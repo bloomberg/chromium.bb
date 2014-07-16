@@ -39,7 +39,7 @@ void SpellCheckHostMetrics::RecordEnabledStats(bool enabled) {
   // custom dictionary is unknown at this time. We mark it as -1 and
   // record actual value later. See SpellCheckHost for more detail.
   if (enabled)
-    RecordCustomWordCountStats(-1);
+    RecordCustomWordCountStats(static_cast<size_t>(-1));
 }
 
 void SpellCheckHostMetrics::RecordCheckedWordStats(const base::string16& word,

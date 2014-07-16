@@ -49,7 +49,7 @@ const uint32 kMinShardStride = 1 << 24;
 const uint64 kMaxShardStride = 1ULL << 32;
 
 // Maximum SBPrefix value.
-const SBPrefix kMaxSBPrefix = ~0;
+const SBPrefix kMaxSBPrefix = 0xFFFFFFFF;
 
 // Header at the front of the main database file.
 struct FileHeaderV8 {
@@ -968,7 +968,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
   // needs |in_stride|, while v7 needs to refer to header information.
   base::MD5Context in_context;
   int version = kInvalidVersion;
-  FileHeader header;
+  FileHeader header = {{0}};
 
   if (!empty_) {
     DCHECK(file_.get());

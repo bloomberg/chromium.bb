@@ -904,55 +904,48 @@ static bool DoesResponseCookieMatchFilter(net::ParsedCookie* cookie,
                                           FilterResponseCookie* filter) {
   if (!cookie->IsValid()) return false;
   if (!filter) return true;
-  if (filter->name.get() && cookie->Name() != *filter->name) return false;
-  if (filter->value.get() && cookie->Value() != *filter->value) return false;
-  if (filter->expires.get()) {
+  if (filter->name && cookie->Name() != *filter->name)
+    return false;
+  if (filter->value && cookie->Value() != *filter->value)
+    return false;
+  if (filter->expires) {
     std::string actual_value =
         cookie->HasExpires() ? cookie->Expires() : std::string();
     if (actual_value != *filter->expires)
       return false;
   }
-  if (filter->max_age.get()) {
+  if (filter->max_age) {
     std::string actual_value =
         cookie->HasMaxAge() ? cookie->MaxAge() : std::string();
     if (actual_value != base::IntToString(*filter->max_age))
       return false;
   }
-  if (filter->domain.get()) {
+  if (filter->domain) {
     std::string actual_value =
         cookie->HasDomain() ? cookie->Domain() : std::string();
     if (actual_value != *filter->domain)
       return false;
   }
-  if (filter->path.get()) {
+  if (filter->path) {
     std::string actual_value =
         cookie->HasPath() ? cookie->Path() : std::string();
     if (actual_value != *filter->path)
       return false;
   }
-  if (filter->secure.get() && cookie->IsSecure() != *filter->secure)
+  if (filter->secure && cookie->IsSecure() != *filter->secure)
     return false;
-  if (filter->http_only.get() && cookie->IsHttpOnly() != *filter->http_only)
+  if (filter->http_only && cookie->IsHttpOnly() != *filter->http_only)
     return false;
-  int64 seconds_till_expiry;
-  bool lifetime_parsed = false;
-  if (filter->age_upper_bound.get() ||
-      filter->age_lower_bound.get() ||
-      (filter->session_cookie.get() && *filter->session_cookie)) {
-    lifetime_parsed = ParseCookieLifetime(cookie, &seconds_till_expiry);
-  }
-  if (filter->age_upper_bound.get()) {
-    if (seconds_till_expiry > *filter->age_upper_bound)
+  if (filter->age_upper_bound || filter->age_lower_bound ||
+      (filter->session_cookie && *filter->session_cookie)) {
+    int64 seconds_to_expiry;
+    bool lifetime_parsed = ParseCookieLifetime(cookie, &seconds_to_expiry);
+    if (filter->age_upper_bound && seconds_to_expiry > *filter->age_upper_bound)
       return false;
-  }
-  if (filter->age_lower_bound.get()) {
-    if (seconds_till_expiry < *filter->age_lower_bound)
+    if (filter->age_lower_bound && seconds_to_expiry < *filter->age_lower_bound)
       return false;
-  }
-  if (filter->session_cookie.get() &&
-      *filter->session_cookie &&
-      lifetime_parsed) {
-    return false;
+    if (filter->session_cookie && *filter->session_cookie && lifetime_parsed)
+      return false;
   }
   return true;
 }

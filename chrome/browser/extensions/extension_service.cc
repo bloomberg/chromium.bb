@@ -1592,8 +1592,9 @@ void ExtensionService::OnExtensionInstalled(
   const std::string& id = extension->id();
   bool initial_enable = ShouldEnableOnInstall(extension);
   std::string install_parameter;
-  const extensions::PendingExtensionInfo* pending_extension_info = NULL;
-  if ((pending_extension_info = pending_extension_manager()->GetById(id))) {
+  const extensions::PendingExtensionInfo* pending_extension_info =
+      pending_extension_manager()->GetById(id);
+  if (pending_extension_info) {
     if (!pending_extension_info->ShouldAllowInstall(extension)) {
       pending_extension_manager()->Remove(id);
 

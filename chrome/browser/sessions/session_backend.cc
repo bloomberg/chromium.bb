@@ -99,8 +99,8 @@ bool SessionFileReader::Read(BaseSessionService::SessionType type,
     return false;
 
   ScopedVector<SessionCommand> read_commands;
-  SessionCommand* command;
-  while ((command = ReadCommand()) && !errored_)
+  for (SessionCommand* command = ReadCommand(); command && !errored_;
+       command = ReadCommand())
     read_commands.push_back(command);
   if (!errored_)
     read_commands.swap(*commands);

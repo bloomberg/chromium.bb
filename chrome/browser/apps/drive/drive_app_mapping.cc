@@ -101,7 +101,7 @@ bool DriveAppMapping::IsChromeAppGenerated(
        it.Advance()) {
     const base::DictionaryValue* info_dict;
     std::string value_string;
-    bool generated;
+    bool generated = false;
     DCHECK(it.value().IsType(base::Value::TYPE_DICTIONARY));
     if (it.value().GetAsDictionary(&info_dict) &&
         info_dict->GetStringWithoutPathExpansion(kKeyChromeApp,

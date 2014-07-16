@@ -103,33 +103,30 @@ void UmaPolicy::ProcessAction(scoped_refptr<Action> action) {
 }
 
 int UmaPolicy::MatchActionToStatus(scoped_refptr<Action> action) {
-  if (action->action_type() == Action::ACTION_CONTENT_SCRIPT) {
+  if (action->action_type() == Action::ACTION_CONTENT_SCRIPT)
     return kContentScript;
-  } else if (action->action_type() == Action::ACTION_API_CALL &&
-             action->api_name() == "tabs.executeScript") {
+  if (action->action_type() == Action::ACTION_API_CALL &&
+      action->api_name() == "tabs.executeScript")
     return kContentScript;
-  } else if (action->action_type() != Action::ACTION_DOM_ACCESS) {
+  if (action->action_type() != Action::ACTION_DOM_ACCESS)
     return kNoStatus;
-  }
 
-  int dom_verb;
+  int dom_verb = DomActionType::MODIFIED;
   if (!action->other() ||
       !action->other()->GetIntegerWithoutPathExpansion(
-          activity_log_constants::kActionDomVerb, &dom_verb)) {
+          activity_log_constants::kActionDomVerb, &dom_verb))
     return kNoStatus;
-  }
 
   int ret_bit = kNoStatus;
   DomActionType::Type dom_type = static_cast<DomActionType::Type>(dom_verb);
   if (dom_type == DomActionType::GETTER)
     return kReadDom;
-  if (dom_type == DomActionType::SETTER) {
+  if (dom_type == DomActionType::SETTER)
     ret_bit |= kModifiedDom;
-  } else if (dom_type == DomActionType::METHOD) {
+  else if (dom_type == DomActionType::METHOD)
     ret_bit |= kDomMethod;
-  } else {
+  else
     return kNoStatus;
-  }
 
   if (action->api_name() == "HTMLDocument.write" ||
       action->api_name() == "HTMLDocument.writeln") {
@@ -139,21 +136,20 @@ int UmaPolicy::MatchActionToStatus(scoped_refptr<Action> action) {
   } else if (action->api_name() == "Document.createElement") {
     std::string arg;
     action->args()->GetString(0, &arg);
-    if (arg == "script") {
+    if (arg == "script")
       ret_bit |= kCreatedScript;
-    } else if (arg == "iframe") {
+    else if (arg == "iframe")
       ret_bit |= kCreatedIframe;
-    } else if (arg == "div") {
+    else if (arg == "div")
       ret_bit |= kCreatedDiv;
-    } else if (arg == "a") {
+    else if (arg == "a")
       ret_bit |= kCreatedLink;
-    } else if (arg == "input") {
+    else if (arg == "input")
       ret_bit |= kCreatedInput;
-    } else if (arg == "embed") {
+    else if (arg == "embed")
       ret_bit |= kCreatedEmbed;
-    } else if (arg == "object") {
+    else if (arg == "object")
       ret_bit |= kCreatedObject;
-    }
   }
 
   const Action::InjectionType ad_injection =

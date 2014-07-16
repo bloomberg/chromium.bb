@@ -181,7 +181,7 @@ bool GetUrlFromHistoryService(HistoryService* service,
                               const GURL& url, history::URLRow* row) {
   base::CancelableTaskTracker tracker;
   base::WaitableEvent wait_event(true, false);
-  bool found;
+  bool found = false;
   service->ScheduleDBTask(new GetUrlTask(url, row, &found, &wait_event),
                           &tracker);
   wait_event.Wait();

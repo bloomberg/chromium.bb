@@ -348,8 +348,10 @@ SegmentID HistoryBackend::UpdateSegments(
     if (!url_id)
       return 0;
 
-    if (!(segment_id = db_->GetSegmentNamed(segment_name))) {
-      if (!(segment_id = db_->CreateSegment(url_id, segment_name))) {
+    segment_id = db_->GetSegmentNamed(segment_name);
+    if (!segment_id) {
+      segment_id = db_->CreateSegment(url_id, segment_name);
+      if (!segment_id) {
         NOTREACHED();
         return 0;
       }
@@ -364,7 +366,8 @@ SegmentID HistoryBackend::UpdateSegments(
     // This can happen if the initial navigation wasn't AUTO_BOOKMARK or
     // TYPED. (For example GENERATED). In this case this visit doesn't count
     // toward any segment.
-    if (!(segment_id = GetLastSegmentID(from_visit)))
+    segment_id = GetLastSegmentID(from_visit);
+    if (!segment_id)
       return 0;
   }
 

@@ -256,7 +256,8 @@ size_t ExtensionToolbarModel::FindNewPositionFromLastKnownGood(
     }
   }
 
-  return -1;
+  // Position not found.
+  return toolbar_items_.size();
 }
 
 void ExtensionToolbarModel::AddExtension(const Extension* extension) {
@@ -264,7 +265,7 @@ void ExtensionToolbarModel::AddExtension(const Extension* extension) {
   if (!ExtensionActionManager::Get(profile_)->GetBrowserAction(*extension))
     return;
 
-  size_t new_index = -1;
+  size_t new_index = toolbar_items_.size();
 
   // See if we have a last known good position for this extension.
   ExtensionIdList::iterator last_pos = std::find(last_known_positions_.begin(),
@@ -280,10 +281,9 @@ void ExtensionToolbarModel::AddExtension(const Extension* extension) {
     }
   } else {
     // This is a never before seen extension, that was added to the end. Make
-    // sure to reflect that.
+    // sure to reflect that. (|new_index| was set above.)
     toolbar_items_.push_back(make_scoped_refptr(extension));
     last_known_positions_.push_back(extension->id());
-    new_index = toolbar_items_.size() - 1;
     UpdatePrefs();
   }
 

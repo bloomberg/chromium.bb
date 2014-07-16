@@ -780,15 +780,10 @@ base::string16 ModuleEnumerator::GetSubjectNameFromDigitalSignature(
     return base::string16();
 
   // Determine the size of the Subject name.
-  DWORD subject_name_size = 0;
-  if (!(subject_name_size = CertGetNameString(cert_context,
-                                              CERT_NAME_SIMPLE_DISPLAY_TYPE,
-                                              0,
-                                              NULL,
-                                              NULL,
-                                              0))) {
+  DWORD subject_name_size = CertGetNameString(
+      cert_context, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, NULL, 0);
+  if (!subject_name_size)
     return base::string16();
-  }
 
   base::string16 subject_name;
   subject_name.resize(subject_name_size);

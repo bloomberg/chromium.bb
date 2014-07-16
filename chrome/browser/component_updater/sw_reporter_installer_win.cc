@@ -254,7 +254,7 @@ void ExecutePendingSwReporter(ComponentUpdateService* cus, PrefService* prefs) {
     // Retrieve the results if the pending request has completed.
     base::win::RegKey srt_key(
         HKEY_CURRENT_USER, kSoftwareRemovalToolRegistryKey, KEY_READ);
-    DWORD exit_code = -1;
+    DWORD exit_code;
     if (srt_key.Valid() &&
         srt_key.ReadValueDW(kExitCodeRegistryValueName, &exit_code) ==
             ERROR_SUCCESS) {

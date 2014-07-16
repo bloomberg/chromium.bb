@@ -321,8 +321,8 @@ void ExternalInstallError::OnWebstoreRequestFailure() {
 void ExternalInstallError::OnWebstoreResponseParseSuccess(
     scoped_ptr<base::DictionaryValue> webstore_data) {
   std::string localized_user_count;
-  double average_rating;
-  int rating_count;
+  double average_rating = 0;
+  int rating_count = 0;
   if (!webstore_data->GetString(kUsersKey, &localized_user_count) ||
       !webstore_data->GetDouble(kAverageRatingKey, &average_rating) ||
       !webstore_data->GetInteger(kRatingCountKey, &rating_count)) {
