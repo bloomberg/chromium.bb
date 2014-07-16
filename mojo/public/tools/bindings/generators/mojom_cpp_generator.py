@@ -128,7 +128,7 @@ def GetCppWrapperType(kind):
   if isinstance(kind, (mojom.Array, mojom.FixedArray)):
     return "mojo::Array<%s>" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return "mojo::ScopedMessagePipeHandle"
+    return "%sPtr" % GetNameForKind(kind)
   if isinstance(kind, mojom.InterfaceRequest):
     raise Exception("InterfaceRequest fields not supported!")
   if kind.spec == 's':

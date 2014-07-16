@@ -14,6 +14,9 @@ struct Request {
   int32 x;
   handle<message_pipe> pipe;
   handle<message_pipe>[] more_pipes;
+
+  // Interfaces can be used as members.
+  imported.ImportedInterface obj;
 };
 
 struct Response {
