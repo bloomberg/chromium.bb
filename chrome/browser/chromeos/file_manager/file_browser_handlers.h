@@ -19,10 +19,6 @@ class FileBrowserHandler;
 class GURL;
 class Profile;
 
-namespace base {
-class FilePath;
-}
-
 namespace extensions {
 class Extension;
 }
@@ -36,11 +32,6 @@ namespace file_browser_handlers {
 
 // Tasks are stored as a vector in order of priorities.
 typedef std::vector<const FileBrowserHandler*> FileBrowserHandlerList;
-
-// Returns true if the given task is a fallback file browser handler. Such
-// handlers are Files.app's internal handlers as well as quick office
-// extensions.
-bool IsFallbackFileBrowserHandler(const file_tasks::TaskDescriptor& task);
 
 // Returns the list of file browser handlers that can open all files in
 // |file_list|.

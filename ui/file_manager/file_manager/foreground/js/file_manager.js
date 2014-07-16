@@ -36,7 +36,7 @@ function FileManager() {
    * True while a user is pressing <Ctrl>.
    *
    * TODO(fukino): This key is used only for controlling gear menu, so it
-   * shoudl be moved to GearMenu class. crbug.com/366032.
+   * should be moved to GearMenu class. crbug.com/366032.
    *
    * @type {boolean}
    * @private

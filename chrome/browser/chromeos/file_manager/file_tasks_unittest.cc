@@ -102,10 +102,6 @@ TEST(FileManagerFileTasksTest, MakeTaskID) {
             MakeTaskID("app-id", TASK_TYPE_DRIVE_APP, "action-id"));
 }
 
-TEST(FileManagerFileTasksTest, MakeDriveAppTaskId) {
-  EXPECT_EQ("app-id|drive|open-with", MakeDriveAppTaskId("app-id"));
-}
-
 TEST(FileManagerFileTasksTest, TaskDescriptorToId) {
   EXPECT_EQ("app-id|file|action-id",
             TaskDescriptorToId(TaskDescriptor("app-id",

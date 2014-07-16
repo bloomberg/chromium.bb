@@ -209,9 +209,6 @@ std::string MakeTaskID(const std::string& app_id,
                        TaskType task_type,
                        const std::string& action_id);
 
-// Returns a task id for the Drive app with |app_id|.
-std::string MakeDriveAppTaskId(const std::string& app_id);
-
 // Converts |task_descriptor| to a task ID.
 std::string TaskDescriptorToId(const TaskDescriptor& task_descriptor);
 

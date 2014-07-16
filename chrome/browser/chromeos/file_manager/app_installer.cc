@@ -5,8 +5,7 @@
 #include "chrome/browser/chromeos/file_manager/app_installer.h"
 
 #include "content/public/browser/web_contents.h"
-
-class Profile;
+#include "content/public/browser/web_contents_observer.h"
 
 namespace file_manager {
 
@@ -14,13 +13,9 @@ namespace {
 const char kWebContentsDestroyedError[] = "WebContents is destroyed.";
 }  // namespace
 
-class AppInstaller::WebContentsObserver
-    : public content::WebContentsObserver {
-
+class AppInstaller::WebContentsObserver : public content::WebContentsObserver {
  public:
-  explicit WebContentsObserver(
-      content::WebContents* web_contents,
-      AppInstaller* parent)
+  WebContentsObserver(content::WebContents* web_contents, AppInstaller* parent)
       : content::WebContentsObserver(web_contents),
         parent_(parent) {
   }
@@ -37,15 +32,11 @@ class AppInstaller::WebContentsObserver
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebContentsObserver);
 };
 
-AppInstaller::AppInstaller(
-    content::WebContents* web_contents,
-    const std::string& webstore_item_id,
-    Profile* profile,
-    const Callback& callback)
-    : extensions::WebstoreStandaloneInstaller(
-          webstore_item_id,
-          profile,
-          callback),
+AppInstaller::AppInstaller(content::WebContents* web_contents,
+                           const std::string& item_id,
+                           Profile* profile,
+                           const Callback& callback)
+    : extensions::WebstoreStandaloneInstaller(item_id, profile, callback),
       callback_(callback),
       web_contents_(web_contents),
       web_contents_observer_(new WebContentsObserver(web_contents, this)) {

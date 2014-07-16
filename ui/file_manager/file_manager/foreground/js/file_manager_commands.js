@@ -79,7 +79,7 @@ CommandUtil.getCommandEntry = function(element) {
 
 /**
  * Obtains an entry from the give navigation model item.
- * @param {NavigationModelItem} item Navigation modle item.
+ * @param {NavigationModelItem} item Navigation model item.
  * @return {Entry} Related entry.
  * @private
  */
@@ -731,7 +731,7 @@ CommandHandler.COMMANDS_['toggle-pinned'] = {
             currentEntry, 'drive', steps.updateUI.bind(this));
       },
 
-      // Update the user interface accoding to the cache state.
+      // Update the user interface according to the cache state.
       updateUI: function(drive /* not used */) {
         fileManager.updateMetadataInUI_('drive', [currentEntry]);
         if (!error)
