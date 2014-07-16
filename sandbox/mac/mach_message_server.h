@@ -33,12 +33,13 @@ class MachMessageServer : public MessageServer {
   // MessageServer:
   virtual bool Initialize() OVERRIDE;
   virtual pid_t GetMessageSenderPID(IPCMessage request) OVERRIDE;
+  virtual IPCMessage CreateReply(IPCMessage request) OVERRIDE;
   virtual bool SendReply(IPCMessage reply) OVERRIDE;
   virtual void ForwardMessage(IPCMessage request,
                               mach_port_t destination) OVERRIDE;
   // Replies to the message with the specified |error_code| as a MIG
   // error_reply RetCode.
-  virtual void RejectMessage(IPCMessage reply, int error_code) OVERRIDE;
+  virtual void RejectMessage(IPCMessage request, int error_code) OVERRIDE;
   virtual mach_port_t GetServerPort() const OVERRIDE;
 
  private:

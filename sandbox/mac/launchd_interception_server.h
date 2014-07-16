@@ -33,21 +33,19 @@ class LaunchdInterceptionServer : public MessageDemuxer {
   bool Initialize(mach_port_t server_receive_right);
 
   // MessageDemuxer:
-  virtual void DemuxMessage(IPCMessage request, IPCMessage reply) OVERRIDE;
+  virtual void DemuxMessage(IPCMessage request) OVERRIDE;
 
   mach_port_t server_port() const { return message_server_->GetServerPort(); }
 
  private:
   // Given a look_up2 request message, this looks up the appropriate sandbox
   // policy for the service name then formulates and sends the reply message.
-  void HandleLookUp(IPCMessage request,
-                    IPCMessage reply,
-                    const BootstrapSandboxPolicy* policy);
+  void HandleLookUp(IPCMessage request, const BootstrapSandboxPolicy* policy);
 
   // Given a swap_integer request message, this verifies that it is safe, and
   // if so, forwards it on to launchd for servicing. If the request is unsafe,
   // it replies with an error.
-  void HandleSwapInteger(IPCMessage request, IPCMessage reply);
+  void HandleSwapInteger(IPCMessage request);
 
   // Forwards the original |request| on to real bootstrap server for handling.
   void ForwardMessage(IPCMessage request);

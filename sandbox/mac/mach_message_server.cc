@@ -108,6 +108,25 @@ pid_t MachMessageServer::GetMessageSenderPID(IPCMessage request) {
   return sender_pid;
 }
 
+IPCMessage MachMessageServer::CreateReply(IPCMessage request_message) {
+  mach_msg_header_t* request = request_message.mach;
+
+  IPCMessage reply_message;
+  mach_msg_header_t* reply = reply_message.mach =
+      reinterpret_cast<mach_msg_header_t*>(reply_buffer_.address());
+  bzero(reply, buffer_size_);
+
+  reply->msgh_bits = MACH_MSGH_BITS_REMOTE(reply->msgh_bits);
+  // Since mach_msg will automatically swap the request and reply ports,
+  // undo that.
+  reply->msgh_remote_port = request->msgh_remote_port;
+  reply->msgh_local_port = MACH_PORT_NULL;
+  // MIG servers simply add 100 to the request ID to generate the reply ID.
+  reply->msgh_id = request->msgh_id + 100;
+
+  return reply_message;
+}
+
 bool MachMessageServer::SendReply(IPCMessage reply) {
   kern_return_t kr = mach_msg(reply.mach, MACH_SEND_MSG,
       reply.mach->msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE,
@@ -133,7 +152,8 @@ void MachMessageServer::ForwardMessage(IPCMessage message,
   }
 }
 
-void MachMessageServer::RejectMessage(IPCMessage reply, int error_code) {
+void MachMessageServer::RejectMessage(IPCMessage request, int error_code) {
+  IPCMessage reply = CreateReply(request);
   mig_reply_error_t* error_reply =
       reinterpret_cast<mig_reply_error_t*>(reply.mach);
   error_reply->Head.msgh_size = sizeof(mig_reply_error_t);
@@ -173,19 +193,9 @@ void MachMessageServer::ReceiveMessage() {
     return;
   }
 
-  // Set up a reply message in case it will be used.
-  reply->msgh_bits = MACH_MSGH_BITS_REMOTE(reply->msgh_bits);
-  // Since mach_msg will automatically swap the request and reply ports,
-  // undo that.
-  reply->msgh_remote_port = request->msgh_remote_port;
-  reply->msgh_local_port = MACH_PORT_NULL;
-  // MIG servers simply add 100 to the request ID to generate the reply ID.
-  reply->msgh_id = request->msgh_id + 100;
-
   // Process the message.
   IPCMessage request_message = { request };
-  IPCMessage reply_message = { reply };
-  demuxer_->DemuxMessage(request_message, reply_message);
+  demuxer_->DemuxMessage(request_message);
 
   // Free any descriptors in the message body. If the message was forwarded,
   // any descriptors would have been moved out of the process on send. If the

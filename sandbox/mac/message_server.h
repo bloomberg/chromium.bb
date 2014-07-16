@@ -24,10 +24,9 @@ union IPCMessage {
 // incoming intercepted IPC messages.
 class MessageDemuxer {
  public:
-  // Handle a |request| message and optionally create a |reply|. Both message
-  // objects are owned by the server. Use the server's methods to send a
-  // reply message.
-  virtual void DemuxMessage(IPCMessage request, IPCMessage reply) = 0;
+  // Handle a |request| message. The message is owned by the server. Use the
+  // server's methods to create and send a reply message.
+  virtual void DemuxMessage(IPCMessage request) = 0;
 
  protected:
   virtual ~MessageDemuxer() {}
@@ -48,15 +47,20 @@ class MessageServer {
   // Given a received request message, returns the PID of the sending process.
   virtual pid_t GetMessageSenderPID(IPCMessage request) = 0;
 
+  // Creates a reply message from a request message. The result is owned by
+  // the server.
+  virtual IPCMessage CreateReply(IPCMessage request) = 0;
+
   // Sends a reply message. Returns true if the message was sent successfully.
   virtual bool SendReply(IPCMessage reply) = 0;
 
   // Forwards the original |request| to the |destination| for handling.
   virtual void ForwardMessage(IPCMessage request, mach_port_t destination) = 0;
 
-  // Replies to the message with the specified |error_code| in an error field
-  // that is interpreted by the underlying IPC system.
-  virtual void RejectMessage(IPCMessage reply, int error_code) = 0;
+  // Replies to the received |request| message by creating a reply and setting
+  // the specified |error_code| in a field that is interpreted by the
+  // underlying IPC system.
+  virtual void RejectMessage(IPCMessage request, int error_code) = 0;
 
   // Returns the Mach port on which the MessageServer is listening.
   virtual mach_port_t GetServerPort() const = 0;

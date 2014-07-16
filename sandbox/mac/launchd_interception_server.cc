@@ -52,8 +52,7 @@ bool LaunchdInterceptionServer::Initialize(mach_port_t server_receive_right) {
   return message_server_->Initialize();
 }
 
-void LaunchdInterceptionServer::DemuxMessage(IPCMessage request,
-                                             IPCMessage reply) {
+void LaunchdInterceptionServer::DemuxMessage(IPCMessage request) {
   const uint64_t message_id = compat_shim_.ipc_message_get_id(request);
   VLOG(3) << "Incoming message #" << message_id;
 
@@ -71,20 +70,19 @@ void LaunchdInterceptionServer::DemuxMessage(IPCMessage request,
   if (message_id == compat_shim_.msg_id_look_up2) {
     // Filter messages sent via bootstrap_look_up to enforce the sandbox policy
     // over the bootstrap namespace.
-    HandleLookUp(request, reply, policy);
+    HandleLookUp(request, policy);
   } else if (message_id == compat_shim_.msg_id_swap_integer) {
     // Ensure that any vproc_swap_integer requests are safe.
-    HandleSwapInteger(request, reply);
+    HandleSwapInteger(request);
   } else {
     // All other messages are not permitted.
     VLOG(1) << "Rejecting unhandled message #" << message_id;
-    message_server_->RejectMessage(reply, MIG_REMOTE_ERROR);
+    message_server_->RejectMessage(request, MIG_REMOTE_ERROR);
   }
 }
 
 void LaunchdInterceptionServer::HandleLookUp(
     IPCMessage request,
-    IPCMessage reply,
     const BootstrapSandboxPolicy* policy) {
   const std::string request_service_name(
       compat_shim_.look_up2_get_request_name(request));
@@ -108,7 +106,7 @@ void LaunchdInterceptionServer::HandleLookUp(
     // reply to the client. Returning a NULL or unserviced port for a look up
     // can cause clients to crash or hang.
     VLOG(1) << "Denying look_up2 with MIG error: " << request_service_name;
-    message_server_->RejectMessage(reply, BOOTSTRAP_UNKNOWN_SERVICE);
+    message_server_->RejectMessage(request, BOOTSTRAP_UNKNOWN_SERVICE);
   } else if (rule.result == POLICY_DENY_DUMMY_PORT ||
              rule.result == POLICY_SUBSTITUTE_PORT) {
     // The policy result is to deny access to the real service port, replying
@@ -123,6 +121,7 @@ void LaunchdInterceptionServer::HandleLookUp(
     else
       result_port = rule.substitute_port;
 
+    IPCMessage reply = message_server_->CreateReply(request);
     compat_shim_.look_up2_fill_reply(reply, result_port);
     // If the message was sent successfully, clear the result_port out of the
     // message so that it is not destroyed at the end of ReceiveMessage. The
@@ -135,8 +134,7 @@ void LaunchdInterceptionServer::HandleLookUp(
   }
 }
 
-void LaunchdInterceptionServer::HandleSwapInteger(IPCMessage request,
-                                                  IPCMessage reply) {
+void LaunchdInterceptionServer::HandleSwapInteger(IPCMessage request) {
   // Only allow getting information out of launchd. Do not allow setting
   // values. Two commonly observed values that are retrieved are
   // VPROC_GSK_MGR_PID and VPROC_GSK_TRANSACTIONS_ENABLED.
@@ -145,7 +143,7 @@ void LaunchdInterceptionServer::HandleSwapInteger(IPCMessage request,
     ForwardMessage(request);
   } else {
     VLOG(2) << "Rejecting non-read-only swap_integer message.";
-    message_server_->RejectMessage(reply, BOOTSTRAP_NOT_PRIVILEGED);
+    message_server_->RejectMessage(request, BOOTSTRAP_NOT_PRIVILEGED);
   }
 }
 void LaunchdInterceptionServer::ForwardMessage(IPCMessage request) {
