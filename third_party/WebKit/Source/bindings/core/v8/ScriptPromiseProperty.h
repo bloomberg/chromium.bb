@@ -144,7 +144,9 @@ v8::Handle<v8::Value> ScriptPromiseProperty<HolderType, ResolvedType, RejectedTy
 template<typename HolderType, typename ResolvedType, typename RejectedType>
 void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_holder);
+#endif
     ScriptPromisePropertyBase::trace(visitor);
 }
 
