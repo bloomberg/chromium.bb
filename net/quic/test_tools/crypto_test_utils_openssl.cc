@@ -32,28 +32,26 @@ class TestChannelIDKey : public ChannelIDKey {
 
   virtual bool Sign(StringPiece signed_data,
                     string* out_signature) const OVERRIDE {
-    EVP_MD_CTX md_ctx;
-    EVP_MD_CTX_init(&md_ctx);
-    crypto::ScopedEVP_MD_CTX md_ctx_cleanup(&md_ctx);
-
-    if (EVP_DigestSignInit(&md_ctx, NULL, EVP_sha256(), NULL,
+    crypto::ScopedEVP_MD_CTX md_ctx(EVP_MD_CTX_create());
+    if (!md_ctx ||
+        EVP_DigestSignInit(md_ctx.get(), NULL, EVP_sha256(), NULL,
                            ecdsa_key_.get()) != 1) {
       return false;
     }
 
-    EVP_DigestUpdate(&md_ctx, ChannelIDVerifier::kContextStr,
+    EVP_DigestUpdate(md_ctx.get(), ChannelIDVerifier::kContextStr,
                      strlen(ChannelIDVerifier::kContextStr) + 1);
-    EVP_DigestUpdate(&md_ctx, ChannelIDVerifier::kClientToServerStr,
+    EVP_DigestUpdate(md_ctx.get(), ChannelIDVerifier::kClientToServerStr,
                      strlen(ChannelIDVerifier::kClientToServerStr) + 1);
-    EVP_DigestUpdate(&md_ctx, signed_data.data(), signed_data.size());
+    EVP_DigestUpdate(md_ctx.get(), signed_data.data(), signed_data.size());
 
     size_t sig_len;
-    if (!EVP_DigestSignFinal(&md_ctx, NULL, &sig_len)) {
+    if (!EVP_DigestSignFinal(md_ctx.get(), NULL, &sig_len)) {
       return false;
     }
 
     scoped_ptr<uint8[]> der_sig(new uint8[sig_len]);
-    if (!EVP_DigestSignFinal(&md_ctx, der_sig.get(), &sig_len)) {
+    if (!EVP_DigestSignFinal(md_ctx.get(), der_sig.get(), &sig_len)) {
       return false;
     }
 
