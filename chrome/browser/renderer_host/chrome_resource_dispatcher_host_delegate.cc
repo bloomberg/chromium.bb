@@ -59,12 +59,12 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 
-#if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
-#endif
-
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)

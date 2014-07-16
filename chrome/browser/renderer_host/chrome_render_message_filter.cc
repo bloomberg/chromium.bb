@@ -12,12 +12,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-
-#if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
-#include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
-#endif
-
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,6 +21,11 @@
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/guest_view/web_view/web_view_permission_helper.h"
+#include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
+#endif
 
 #if defined(ENABLE_TASK_MANAGER)
 #include "chrome/browser/task_manager/task_manager.h"

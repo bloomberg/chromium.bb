@@ -11,11 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-
-#if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
-#endif
-
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
@@ -31,6 +26,10 @@
 #include "url/gurl.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
+#endif
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
