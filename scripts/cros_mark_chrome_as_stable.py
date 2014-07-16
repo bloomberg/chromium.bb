@@ -434,7 +434,8 @@ def main(_argv):
     parser.error('Commit requires arg set to one of %s.'
                  % constants.VALID_CHROME_REVISIONS)
 
-  if options.force_version and args[0] != constants.CHROME_REV_SPEC:
+  if options.force_version and args[0] not in (constants.CHROME_REV_SPEC,
+                                               constants.CHROME_REV_LATEST):
     parser.error('--force_version is not compatible with the %r '
                  'option.' % (args[0],))
 
@@ -470,7 +471,13 @@ def main(_argv):
     version_to_uprev = _GetSpecificVersionUrl(options.chrome_url,
                                               commit_to_use)
   elif chrome_rev == constants.CHROME_REV_LATEST:
-    version_to_uprev = GetLatestRelease(options.chrome_url)
+    if options.force_version:
+      if '.' not in options.force_version:
+        parser.error('%s only accepts released Chrome versions, not SVN or '
+                     'Git revisions.' % (chrome_rev,))
+      version_to_uprev = options.force_version
+    else:
+      version_to_uprev = GetLatestRelease(options.chrome_url)
   else:
     sticky_ebuild = _GetStickyEBuild(stable_ebuilds)
     sticky_version = sticky_ebuild.chrome_version
