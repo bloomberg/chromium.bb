@@ -1,0 +1,259 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+import("//build/config/ui.gni")
+
+gypi_values = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("views.gyp") ],
+    "scope",
+    [ "views.gyp" ])
+
+component("views") {
+  sources = gypi_values.views_sources
+
+  defines = [ "VIEWS_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//base/third_party/dynamic_annotations",
+    "//skia",
+    "//third_party/icu",
+    "//third_party/wtl",
+    "//ui/accessibility",
+    "//ui/accessibility:ax_gen",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/compositor",
+    "//ui/events",
+    "//ui/events:events_base",
+    "//ui/events/platform",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/native_theme",
+    "//ui/resources",
+    "//ui/strings",
+    "//ui/wm",
+    "//url",
+  ]
+
+  forward_dependent_configs_from = [ "//ui/accessibility:ax_gen" ]
+
+  if (!use_ash) {
+    sources -= [
+      "bubble/tray_bubble_view.cc",
+      "bubble/tray_bubble_view.h",
+    ]
+  }
+  if (use_x11 && !is_chromeos) {
+    #deps += [ '../display/display.gyp:display_util' ]  TODO(GYP)
+  }
+  if (is_linux && !is_chromeos) {
+    sources -= [ "window/window_button_order_provider.cc" ]
+    #deps += [ '../shell_dialogs/shell_dialogs.gyp:shell_dialogs' ]  TODO(GYP)
+  } else {
+    sources -= [
+      "linux_ui/linux_ui.h",
+      "linux_ui/linux_ui.cc",
+      "linux_ui/status_icon_linux.h",
+      "linux_ui/status_icon_linux.cc",
+      "linux_ui/window_button_order_observer.h",
+      "linux_ui/window_button_order_provider.cc",
+    ]
+  }
+
+  if (is_win) {
+    sources += gypi_values.views_win_sources
+    cflags = [ "/wd4267" ]  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    libs = [ "/imm32.lib", "oleacc.lib" ]
+    ldflags = [ "/DELAYLOAD:user32.dll" ]
+    deps += [
+      "//third_party/iaccessible2",
+      "//third_party/wtl",
+    ]
+  }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+  if (use_x11) {
+    configs += [
+      "//build/config/linux:x11",
+      "//build/config/linux:xrandr",
+    ]
+    deps += [
+      "//ui/events/platform/x11",
+    ]
+  }
+
+  if (use_aura) {
+    sources += gypi_values.views_aura_sources
+    if (!is_chromeos) {
+      if (use_x11) {
+        sources += gypi_values.views_desktop_aura_x11_sources
+      } else if (is_win) {
+        sources += gypi_values.views_desktop_aura_win_sources
+      } else if (use_ozone) {
+        sources += gypi_values.views_desktop_aura_ozone_sources
+      }
+    }
+  }
+}
+
+static_library("test_support") {
+  sources = gypi_values.views_test_support_sources
+
+  deps = [
+    ":views",
+    "//base",
+    "//ipc",
+    "//skia",
+    "//testing/gtest",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/compositor",
+    "//ui/events",
+    "//ui/events/platform",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/wm",
+  ]
+
+  if (is_chromeos) {
+    sources -= [
+      "test/ui_controls_factory_desktop_aurax11.cc",
+      "test/ui_controls_factory_desktop_aurax11.h",
+    ]
+  }
+  if (use_aura) {
+    sources += gypi_values.views_test_support_aura_sources
+    deps += [ "//ui/aura:test_support" ]
+  }
+}
+
+if (false) {  # TODO(GYP) enable once this links
+
+test("views_unittests") {
+  sources = gypi_values.views_unittests_sources
+
+  deps = [
+    ":test_support",
+    ":views",
+    "//base",
+    "//base:i18n",
+    "//base/allocator",
+    "//base/test:test_support",
+    "//skia",
+    "//testing/gtest",
+    "//third_party/icu",
+    "//ui/accessibility",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/base:test_support",
+    "//ui/compositor",
+    "//ui/compositor:test_support",
+    "//ui/events",
+    "//ui/events:events_base",
+    "//ui/events/platform",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/wm",
+    "//url",
+  ]
+
+  if (is_chromeos) {
+    sources -= [
+      "ime/input_method_bridge_unittest.cc",
+      "widget/desktop_aura",
+    ]
+  }
+
+  if (is_win) {
+    deps += [
+      "//third_party/iaccessible2",
+      "//third_party/wtl",
+    ]
+    libs = [
+      "imm32.lib",
+      "oleacc.lib",
+      "comctl32.lib",
+    ]
+    # TOOD(GYP)
+    #'msvs_settings': {
+    #  'VCManifestTool': {
+    #    'AdditionalManifestFiles': [
+    #      '$(ProjectDir)\\test\\views_unittest.manifest',
+    #    ],
+    #  },
+    #},
+  }
+
+  if (use_x11) {
+    configs += [
+      "//build/config/linux:x11",
+      "//build/config/linux:xext",
+    ]
+    deps += [
+      "//ui/events/platform/x11",
+    ]
+  }
+
+  if (use_ozone) {
+    sources -= [
+      "corewm/capture_controller_unittest.cc",
+    ]
+  }
+  if (use_aura) {
+    sources += gypi_values.views_unittests_aura_sources
+    deps = [ "//ui/aura:test_support" ]
+    if (!is_chromeos) {
+      sources += gypi_values.views_unittests_desktop_aura_sources
+    }
+  }
+  if (use_x11) {
+    deps += [ "//ui/events/platform/x11" ]
+  }
+
+  if (is_mac) {
+    # views_unittests not yet compiling on Mac. http://crbug.com/378134
+    sources -= [
+      "bubble/bubble_window_targeter_unittest.cc",
+      "controls/button/custom_button_unittest.cc",
+      "controls/button/menu_button_unittest.cc",
+      "controls/native/native_view_host_unittest.cc",
+      "controls/menu/menu_controller_unittest.cc",
+      "ime/input_method_bridge_unittest.cc",
+      "focus/focus_manager_unittest.cc",
+      "widget/window_reorderer_unittest.cc",
+      "widget/widget_unittest.cc",
+    ]
+  }
+}
+
+if (is_mac) {
+  test("macviews_interactive_ui_tests") {
+    sources = [
+      "run_all_unittests.cc",
+      "widget/native_widget_mac_interactive_uitest.mm",
+    ]
+    deps = [
+      ":test_support",
+      ":views",
+      "//base",
+      "//base/test:test_support",
+      "//skia",
+      "//testing/gtest",
+      "//ui/aura",
+      "//ui/compositor",
+      "//ui/resources",
+      "//ui/resources:ui_test_pak",
+      "//ui/string",
+      "//ui/wm",
+    ]
+  }
+}
+
+}  # if false

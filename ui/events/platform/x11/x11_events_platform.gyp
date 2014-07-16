@@ -7,6 +7,7 @@
     'chromium_code': 1,
   },
   'targets': [{
+    # GN version: //ui/events/platform/x11
     'target_name': 'x11_events_platform',
     'type': '<(component)',
     'defines': [

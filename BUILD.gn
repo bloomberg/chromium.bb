@@ -101,6 +101,7 @@ group("root") {
     "//ui/snapshot",
     "//ui/strings",
     "//ui/surface",
+    "//ui/views",
     "//ui/web_dialogs",
     "//ui/wm",
     "//url",
@@ -164,6 +165,7 @@ group("root") {
 
       "//tools/gn",
       "//ui/aura",
+      "//ui/views",
 
       # Fails on Android for unknown reasons.
       "//third_party/flac",
