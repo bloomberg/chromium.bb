@@ -233,8 +233,7 @@ void AudioNode::connect(AudioParam* param, unsigned outputIndex, ExceptionState&
         return;
     }
 
-    AudioNodeOutput* output = this->output(outputIndex);
-    param->connect(output);
+    param->connect(*output(outputIndex));
 }
 
 void AudioNode::disconnect(unsigned outputIndex, ExceptionState& exceptionState)

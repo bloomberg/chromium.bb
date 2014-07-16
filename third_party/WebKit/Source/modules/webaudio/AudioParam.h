@@ -104,8 +104,8 @@ public:
     void calculateSampleAccurateValues(float* values, unsigned numberOfValues);
 
     // Connect an audio-rate signal to control this parameter.
-    void connect(AudioNodeOutput*);
-    void disconnect(AudioNodeOutput*);
+    void connect(AudioNodeOutput&);
+    void disconnect(AudioNodeOutput&);
 
 private:
     AudioParam(AudioContext* context, const String& name, double defaultValue, double minValue, double maxValue, unsigned units = 0)
