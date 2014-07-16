@@ -255,7 +255,7 @@ const char kDisableSessionStorage[]         = "disable-session-storage";
 // Disable the setuid sandbox (Linux only).
 const char kDisableSetuidSandbox[]          = "disable-setuid-sandbox";
 
-// Enable shared workers. Functionality not yet complete.
+// Disable shared workers.
 const char kDisableSharedWorkers[]          = "disable-shared-workers";
 
 // Disables site-specific tailoring to compatibility issues in WebKit.
