@@ -658,10 +658,10 @@ void RenderWidgetCompositor::clearViewportLayers() {
 }
 
 void RenderWidgetCompositor::registerSelection(
-    const blink::WebSelectionBound& anchor,
-    const blink::WebSelectionBound& focus) {
-  layer_tree_host_->RegisterSelection(ConvertWebSelectionBound(anchor),
-                                      ConvertWebSelectionBound(focus));
+    const blink::WebSelectionBound& start,
+    const blink::WebSelectionBound& end) {
+  layer_tree_host_->RegisterSelection(ConvertWebSelectionBound(start),
+                                      ConvertWebSelectionBound(end));
 }
 
 void RenderWidgetCompositor::clearSelection() {

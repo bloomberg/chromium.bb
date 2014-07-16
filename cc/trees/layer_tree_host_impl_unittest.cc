@@ -6336,21 +6336,21 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
   // Ensure the default frame selection bounds are empty.
   FakeOutputSurface* fake_output_surface =
       static_cast<FakeOutputSurface*>(host_impl_->output_surface());
-  const ViewportSelectionBound& selection_anchor_before =
-      fake_output_surface->last_sent_frame().metadata.selection_anchor;
-  const ViewportSelectionBound& selection_focus_before =
-      fake_output_surface->last_sent_frame().metadata.selection_focus;
-  EXPECT_EQ(ViewportSelectionBound(), selection_anchor_before);
-  EXPECT_EQ(ViewportSelectionBound(), selection_focus_before);
+  const ViewportSelectionBound& selection_start_before =
+      fake_output_surface->last_sent_frame().metadata.selection_start;
+  const ViewportSelectionBound& selection_end_before =
+      fake_output_surface->last_sent_frame().metadata.selection_end;
+  EXPECT_EQ(ViewportSelectionBound(), selection_start_before);
+  EXPECT_EQ(ViewportSelectionBound(), selection_end_before);
 
   // Plumb the layer-local selection bounds.
   gfx::Rect selection_rect(5, 0, 0, 5);
-  LayerSelectionBound anchor, focus;
-  anchor.type = SELECTION_BOUND_CENTER;
-  anchor.layer_id = root_layer_id;
-  anchor.layer_rect = selection_rect;
-  focus = anchor;
-  host_impl_->active_tree()->RegisterSelection(anchor, focus);
+  LayerSelectionBound start, end;
+  start.type = SELECTION_BOUND_CENTER;
+  start.layer_id = root_layer_id;
+  start.layer_rect = selection_rect;
+  end = start;
+  host_impl_->active_tree()->RegisterSelection(start, end);
 
   // Trigger a draw-swap sequence.
   host_impl_->SetNeedsRedraw();
@@ -6363,16 +6363,16 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
   EXPECT_TRUE(host_impl_->SwapBuffers(frame));
 
   // Ensure the selection bounds have propagated to the frame metadata.
-  const ViewportSelectionBound& selection_anchor_after =
-      fake_output_surface->last_sent_frame().metadata.selection_anchor;
-  const ViewportSelectionBound& selection_focus_after =
-      fake_output_surface->last_sent_frame().metadata.selection_focus;
-  EXPECT_EQ(anchor.type, selection_anchor_after.type);
-  EXPECT_EQ(focus.type, selection_focus_after.type);
-  EXPECT_EQ(selection_rect, selection_anchor_after.viewport_rect);
-  EXPECT_EQ(selection_rect, selection_anchor_after.viewport_rect);
-  EXPECT_TRUE(selection_anchor_after.visible);
-  EXPECT_TRUE(selection_anchor_after.visible);
+  const ViewportSelectionBound& selection_start_after =
+      fake_output_surface->last_sent_frame().metadata.selection_start;
+  const ViewportSelectionBound& selection_end_after =
+      fake_output_surface->last_sent_frame().metadata.selection_end;
+  EXPECT_EQ(start.type, selection_start_after.type);
+  EXPECT_EQ(end.type, selection_end_after.type);
+  EXPECT_EQ(selection_rect, selection_start_after.viewport_rect);
+  EXPECT_EQ(selection_rect, selection_start_after.viewport_rect);
+  EXPECT_TRUE(selection_start_after.visible);
+  EXPECT_TRUE(selection_start_after.visible);
 }
 
 class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {

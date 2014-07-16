@@ -211,7 +211,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
     target_tree->ClearViewportLayers();
   }
 
-  target_tree->RegisterSelection(selection_anchor_, selection_focus_);
+  target_tree->RegisterSelection(selection_start_, selection_end_);
 
   // This should match the property synchronization in
   // LayerTreeHost::finishCommitOnImplThread().
@@ -1315,10 +1315,10 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInTouchHandlerRegion(
   return data_for_recursion.closest_match;
 }
 
-void LayerTreeImpl::RegisterSelection(const LayerSelectionBound& anchor,
-                                      const LayerSelectionBound& focus) {
-  selection_anchor_ = anchor;
-  selection_focus_ = focus;
+void LayerTreeImpl::RegisterSelection(const LayerSelectionBound& start,
+                                      const LayerSelectionBound& end) {
+  selection_start_ = start;
+  selection_end_ = end;
 }
 
 static ViewportSelectionBound ComputeViewportSelection(
@@ -1349,22 +1349,22 @@ static ViewportSelectionBound ComputeViewportSelection(
   return result;
 }
 
-void LayerTreeImpl::GetViewportSelection(ViewportSelectionBound* anchor,
-                                         ViewportSelectionBound* focus) {
-  DCHECK(anchor);
-  DCHECK(focus);
+void LayerTreeImpl::GetViewportSelection(ViewportSelectionBound* start,
+                                         ViewportSelectionBound* end) {
+  DCHECK(start);
+  DCHECK(end);
 
-  *anchor = ComputeViewportSelection(
-      selection_anchor_,
-      selection_anchor_.layer_id ? LayerById(selection_anchor_.layer_id) : NULL,
+  *start = ComputeViewportSelection(
+      selection_start_,
+      selection_start_.layer_id ? LayerById(selection_start_.layer_id) : NULL,
       device_scale_factor());
-  if (anchor->type == SELECTION_BOUND_CENTER ||
-      anchor->type == SELECTION_BOUND_EMPTY) {
-    *focus = *anchor;
+  if (start->type == SELECTION_BOUND_CENTER ||
+      start->type == SELECTION_BOUND_EMPTY) {
+    *end = *start;
   } else {
-    *focus = ComputeViewportSelection(
-        selection_focus_,
-        selection_focus_.layer_id ? LayerById(selection_focus_.layer_id) : NULL,
+    *end = ComputeViewportSelection(
+        selection_end_,
+        selection_end_.layer_id ? LayerById(selection_end_.layer_id) : NULL,
         device_scale_factor());
   }
 }

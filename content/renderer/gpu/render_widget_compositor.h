@@ -115,9 +115,8 @@ class RenderWidgetCompositor : public blink::WebLayerTreeView,
       const blink::WebLayer* innerViewportScrollLayer,
       const blink::WebLayer* outerViewportScrollLayer) OVERRIDE;
   virtual void clearViewportLayers() OVERRIDE;
-  virtual void registerSelection(
-      const blink::WebSelectionBound& anchor,
-      const blink::WebSelectionBound& focus) OVERRIDE;
+  virtual void registerSelection(const blink::WebSelectionBound& start,
+                                 const blink::WebSelectionBound& end) OVERRIDE;
   virtual void clearSelection() OVERRIDE;
   virtual void setShowFPSCounter(bool show);
   virtual void setShowPaintRects(bool show);

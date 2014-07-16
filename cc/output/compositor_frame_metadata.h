@@ -43,8 +43,8 @@ class CC_EXPORT CompositorFrameMetadata {
 
   // Provides selection region updates relative to the current viewport. If the
   // selection is empty or otherwise unused, the bound types will indicate such.
-  ViewportSelectionBound selection_anchor;
-  ViewportSelectionBound selection_focus;
+  ViewportSelectionBound selection_start;
+  ViewportSelectionBound selection_end;
 
   std::vector<ui::LatencyInfo> latency_info;
 };

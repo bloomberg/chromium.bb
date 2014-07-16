@@ -1419,8 +1419,8 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
     metadata.overdraw_bottom_height = overdraw_bottom_height_;
   }
 
-  active_tree_->GetViewportSelection(&metadata.selection_anchor,
-                                     &metadata.selection_focus);
+  active_tree_->GetViewportSelection(&metadata.selection_start,
+                                     &metadata.selection_end);
 
   if (!InnerViewportScrollLayer())
     return metadata;

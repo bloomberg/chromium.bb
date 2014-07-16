@@ -168,8 +168,8 @@ void WebLayerTreeViewImplForTesting::clearViewportLayers() {
 }
 
 void WebLayerTreeViewImplForTesting::registerSelection(
-    const blink::WebSelectionBound& anchor,
-    const blink::WebSelectionBound& focus) {
+    const blink::WebSelectionBound& start,
+    const blink::WebSelectionBound& end) {
 }
 
 void WebLayerTreeViewImplForTesting::clearSelection() {
