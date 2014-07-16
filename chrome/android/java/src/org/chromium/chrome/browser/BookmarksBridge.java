@@ -189,12 +189,21 @@ public class BookmarksBridge {
     }
 
     /**
-     * @return Sub-folders of the given folder.
+     * Reads sub-folder IDs, sub-bookmark IDs, or both of the given folder.
+     *
+     * @param getFolders   Whether sub-folders should be returned.
+     * @param getBookmarks Whether sub-bookmarks should be returned.
+     * @return Child IDs of the given folder, with the specified type.
      */
-    public List<BookmarkId> getSubFolders(BookmarkId id) {
+    public List<BookmarkId> getChildIDs(BookmarkId id, boolean getFolders, boolean getBookmarks) {
         assert mIsNativeBookmarkModelLoaded;
         List<BookmarkId> result = new ArrayList<BookmarkId>();
-        nativeGetChildIDs(mNativeBookmarksBridge, id.mId, id.mType, true, false, result);
+        nativeGetChildIDs(mNativeBookmarksBridge,
+                id.mId,
+                id.mType,
+                getFolders,
+                getBookmarks,
+                result);
         return result;
     }
 
