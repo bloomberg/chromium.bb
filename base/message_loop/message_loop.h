@@ -559,7 +559,7 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
   void RemoveObserver(Observer* observer);
 #endif
 
-#if defined(USE_OZONE) || (defined(OS_CHROMEOS) && !defined(USE_GLIB))
+#if defined(USE_OZONE) || (defined(USE_X11) && !defined(USE_GLIB))
   // Please see MessagePumpLibevent for definition.
   bool WatchFileDescriptor(
       int fd,
