@@ -139,6 +139,8 @@
 
 #endif
 
+#define WebCore blink
+
 #if COMPILER(MSVC)
 #define SKIP_STATIC_CONSTRUCTORS_ON_MSVC 1
 #else
