@@ -44,20 +44,21 @@ const int kButtonHEdgeMargin = 7;
 
 namespace chrome {
 
-void ShowConfirmBubble(gfx::NativeView view,
+void ShowConfirmBubble(gfx::NativeWindow window,
+                       gfx::NativeView anchor_view,
                        const gfx::Point& origin,
                        ConfirmBubbleModel* model) {
   // Create a custom NSViewController that manages a bubble view, and add it to
-  // a child to the specified view. This controller will be automatically
-  // deleted when it loses first-responder status.
+  // a child to the specified |anchor_view|. This controller will be
+  // automatically deleted when it loses first-responder status.
   ConfirmBubbleController* controller =
-      [[ConfirmBubbleController alloc] initWithParent:view
+      [[ConfirmBubbleController alloc] initWithParent:anchor_view
                                                origin:origin.ToCGPoint()
                                                 model:model];
-  [view addSubview:[controller view]
-        positioned:NSWindowAbove
-        relativeTo:nil];
-  [[view window] makeFirstResponder:[controller view]];
+  [anchor_view addSubview:[controller view]
+               positioned:NSWindowAbove
+               relativeTo:nil];
+  [[anchor_view window] makeFirstResponder:[controller view]];
 }
 
 }  // namespace chrome

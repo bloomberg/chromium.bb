@@ -18,7 +18,8 @@ namespace chrome {
 // Creates a bubble and shows it with its top center at the specified
 // |origin|. A bubble created by this function takes ownership of the
 // specified |model|.
-void ShowConfirmBubble(gfx::NativeView view,
+void ShowConfirmBubble(gfx::NativeWindow window,
+                       gfx::NativeView anchor_view,
                        const gfx::Point& origin,
                        ConfirmBubbleModel* model);
 

@@ -298,11 +298,8 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
       content::RenderViewHost* rvh = proxy_->GetRenderViewHost();
       gfx::Rect rect = rvh->GetView()->GetViewBounds();
       chrome::ShowConfirmBubble(
-#if defined(TOOLKIT_VIEWS)
           proxy_->GetWebContents()->GetTopLevelNativeWindow(),
-#else
           rvh->GetView()->GetNativeView(),
-#endif
           gfx::Point(rect.CenterPoint().x(), rect.y()),
           new SpellingBubbleModel(proxy_->GetProfile(),
                                   proxy_->GetWebContents(),
@@ -327,12 +324,13 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
     if (!integrate_spelling_service_.GetValue()) {
       content::RenderViewHost* rvh = proxy_->GetRenderViewHost();
       gfx::Rect rect = rvh->GetView()->GetViewBounds();
-      chrome::ShowConfirmBubble(rvh->GetView()->GetNativeView(),
-                                gfx::Point(rect.CenterPoint().x(), rect.y()),
-                                new SpellingBubbleModel(
-                                    proxy_->GetProfile(),
-                                    proxy_->GetWebContents(),
-                                    true));
+      chrome::ShowConfirmBubble(
+          proxy_->GetWebContents()->GetTopLevelNativeWindow(),
+          rvh->GetView()->GetNativeView(),
+          gfx::Point(rect.CenterPoint().x(), rect.y()),
+          new SpellingBubbleModel(proxy_->GetProfile(),
+                                  proxy_->GetWebContents(),
+                                  true));
     } else {
       Profile* profile = proxy_->GetProfile();
       if (profile) {

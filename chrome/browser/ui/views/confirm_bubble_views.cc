@@ -99,10 +99,11 @@ void ConfirmBubbleViews::LinkClicked(views::Link* source, int event_flags) {
 
 namespace chrome {
 
-void ShowConfirmBubble(gfx::NativeView view,
+void ShowConfirmBubble(gfx::NativeWindow window,
+                       gfx::NativeView anchor_view,
                        const gfx::Point& origin,
                        ConfirmBubbleModel* model) {
-  CreateBrowserModalDialogViews(new ConfirmBubbleViews(model), view)->Show();
+  CreateBrowserModalDialogViews(new ConfirmBubbleViews(model), window)->Show();
 }
 
 }  // namespace chrome
