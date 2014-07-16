@@ -6326,12 +6326,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         4
       </message>
       <if expr="is_macosx">
-        <message name="IDS_FLAGS_APPS_KEEP_CHROME_ALIVE_NAME" desc="Title for the flag to prevent Chrome from quitting when Chrome Apps are open.">
-          Apps keep Chrome alive.
-        </message>
-        <message name="IDS_FLAGS_APPS_KEEP_CHROME_ALIVE_DESCRIPTION" desc="Description for the flag to prevent Chrome from quitting when Chrome Apps are open.">
-          Prevent Chrome from quitting when Chrome Apps are open.
-        </message>
         <message name="IDS_FLAGS_ENABLE_SIMPLIFIED_FULLSCREEN_NAME" desc="Title for the flag to enable a simplified Mac fullscreen interface.">
           Enables simplified fullscreen.
         </message>

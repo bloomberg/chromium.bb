@@ -1324,7 +1324,7 @@ const char kEnableSpeechDispatcher[] = "enable-speech-dispatcher";
 
 #if defined(OS_MACOSX)
 // Prevents Chrome from quitting when Chrome Apps are open.
-const char kAppsKeepChromeAlive[]           = "apps-keep-chrome-alive";
+const char kAppsKeepChromeAliveInTests[]    = "apps-keep-chrome-alive-in-tests";
 
 // Forcibly disables Lion-style on newer OSes, to allow developers to test the
 // older, SnowLeopard-style fullscreen.

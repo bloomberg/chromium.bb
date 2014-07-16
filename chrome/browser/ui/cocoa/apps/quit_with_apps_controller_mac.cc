@@ -104,10 +104,10 @@ std::string QuitWithAppsController::id() const {
 bool QuitWithAppsController::ShouldQuit() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAppsKeepChromeAlive)) {
-    g_browser_process->local_state()->ClearPref(
-        prefs::kNotifyWhenAppsKeepChromeAlive);
+  // Quit immediately if this is a test.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAppsKeepChromeAliveInTests)) {
     return true;
   }
 

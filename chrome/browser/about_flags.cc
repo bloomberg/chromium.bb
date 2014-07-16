@@ -1848,15 +1848,6 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kAllowInsecureWebSocketFromHttpsOrigin)
   },
-#if defined(OS_MACOSX)
-  {
-    "apps-keep-chrome-alive",
-    IDS_FLAGS_APPS_KEEP_CHROME_ALIVE_NAME,
-    IDS_FLAGS_APPS_KEEP_CHROME_ALIVE_DESCRIPTION,
-    kOsMac,
-    SINGLE_VALUE_TYPE(switches::kAppsKeepChromeAlive)
-  },
-#endif
   {
     "enable-apps-file-associations",
     IDS_FLAGS_ENABLE_APPS_FILE_ASSOCIATIONS_NAME,
