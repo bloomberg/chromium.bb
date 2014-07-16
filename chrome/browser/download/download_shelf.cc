@@ -32,10 +32,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 
-#if defined(TOOLKIT_VIEWS)
-#include "ui/views/view.h"
-#endif
-
 using content::DownloadItem;
 
 namespace {
@@ -154,15 +150,14 @@ void DownloadShelf::PaintCustomDownloadProgress(
 }
 
 // static
-void DownloadShelf::PaintDownloadProgress(gfx::Canvas* canvas,
-#if defined(TOOLKIT_VIEWS)
-                                          views::View* containing_view,
-#endif
-                                          int origin_x,
-                                          int origin_y,
-                                          int start_angle,
-                                          int percent_done,
-                                          PaintDownloadProgressSize size) {
+void DownloadShelf::PaintDownloadProgress(
+    gfx::Canvas* canvas,
+    const BoundsAdjusterCallback& rtl_mirror,
+    int origin_x,
+    int origin_y,
+    int start_angle,
+    int percent_done,
+    PaintDownloadProgressSize size) {
   // Load up our common images.
   if (!g_background_16) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -189,11 +184,8 @@ void DownloadShelf::PaintDownloadProgress(gfx::Canvas* canvas,
   gfx::Rect bounds(origin_x, origin_y,
                    background->width(), background->height());
 
-#if defined(TOOLKIT_VIEWS)
   // Mirror the positions if necessary.
-  int mirrored_x = containing_view->GetMirroredXForRect(bounds);
-  bounds.set_x(mirrored_x);
-#endif
+  rtl_mirror.Run(&bounds);
 
   // Draw the background progress image.
   canvas->DrawImageInt(*background,
@@ -210,14 +202,13 @@ void DownloadShelf::PaintDownloadProgress(gfx::Canvas* canvas,
 }
 
 // static
-void DownloadShelf::PaintDownloadComplete(gfx::Canvas* canvas,
-#if defined(TOOLKIT_VIEWS)
-                                          views::View* containing_view,
-#endif
-                                          int origin_x,
-                                          int origin_y,
-                                          double animation_progress,
-                                          PaintDownloadProgressSize size) {
+void DownloadShelf::PaintDownloadComplete(
+    gfx::Canvas* canvas,
+    const BoundsAdjusterCallback& rtl_mirror,
+    int origin_x,
+    int origin_y,
+    double animation_progress,
+    PaintDownloadProgressSize size) {
   // Load up our common images.
   if (!g_foreground_16) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -229,10 +220,8 @@ void DownloadShelf::PaintDownloadComplete(gfx::Canvas* canvas,
 
   gfx::Rect complete_bounds(origin_x, origin_y,
                             complete->width(), complete->height());
-#if defined(TOOLKIT_VIEWS)
   // Mirror the positions if necessary.
-  complete_bounds.set_x(containing_view->GetMirroredXForRect(complete_bounds));
-#endif
+  rtl_mirror.Run(&complete_bounds);
 
   // Start at full opacity, then loop back and forth five times before ending
   // at zero opacity.
@@ -241,14 +230,13 @@ void DownloadShelf::PaintDownloadComplete(gfx::Canvas* canvas,
 }
 
 // static
-void DownloadShelf::PaintDownloadInterrupted(gfx::Canvas* canvas,
-#if defined(TOOLKIT_VIEWS)
-                                             views::View* containing_view,
-#endif
-                                             int origin_x,
-                                             int origin_y,
-                                             double animation_progress,
-                                             PaintDownloadProgressSize size) {
+void DownloadShelf::PaintDownloadInterrupted(
+    gfx::Canvas* canvas,
+    const BoundsAdjusterCallback& rtl_mirror,
+    int origin_x,
+    int origin_y,
+    double animation_progress,
+    PaintDownloadProgressSize size) {
   // Load up our common images.
   if (!g_foreground_16) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -260,10 +248,8 @@ void DownloadShelf::PaintDownloadInterrupted(gfx::Canvas* canvas,
 
   gfx::Rect complete_bounds(origin_x, origin_y,
                             complete->width(), complete->height());
-#if defined(TOOLKIT_VIEWS)
   // Mirror the positions if necessary.
-  complete_bounds.set_x(containing_view->GetMirroredXForRect(complete_bounds));
-#endif
+  rtl_mirror.Run(&complete_bounds);
 
   // Start at zero opacity, then loop back and forth five times before ending
   // at full opacity.

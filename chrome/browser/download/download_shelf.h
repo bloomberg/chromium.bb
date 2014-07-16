@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SHELF_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_SHELF_H_
 
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -21,12 +22,6 @@ namespace content {
 class DownloadItem;
 class DownloadManager;
 }
-
-#if defined(TOOLKIT_VIEWS)
-namespace views {
-class View;
-}
-#endif
 
 // This is an abstract base class for platform specific download shelf
 // implementations.
@@ -78,6 +73,14 @@ class DownloadShelf {
     kSmallProgressIconOffset = (kSmallProgressIconSize - kSmallIconSize) / 2
   };
 
+  // Type of the callback used on toolkit-views platforms for the |rtl_mirror|
+  // argument of the PaintDownload functions. It captures the View subclass
+  // within which the progress animation is drawn and is used to update the
+  // correct 'left' value for the given rectangle in RTL locales. This is used
+  // to mirror the position of the progress animation. The callback is
+  // guaranteed to be invoked before the paint function returns.
+  typedef base::Callback<void(gfx::Rect*)> BoundsAdjusterCallback;
+
   DownloadShelf();
   virtual ~DownloadShelf();
 
@@ -92,12 +95,6 @@ class DownloadShelf {
   // Paint the common download animation progress foreground and background,
   // clipping the foreground to 'percent' full. If percent is -1, then we don't
   // know the total size, so we just draw a rotating segment until we're done.
-  //
-  // |containing_view| is the View subclass within which the progress animation
-  // is drawn (generally either DownloadItemTabView or DownloadItemView). We
-  // require the containing View in addition to the canvas because if we are
-  // drawing in a right-to-left locale, we need to mirror the position of the
-  // progress animation within the containing View.
   static void PaintCustomDownloadProgress(
       gfx::Canvas* canvas,
       const gfx::ImageSkia& background_image,
@@ -108,9 +105,7 @@ class DownloadShelf {
       int percent_done);
 
   static void PaintDownloadProgress(gfx::Canvas* canvas,
-#if defined(TOOLKIT_VIEWS)
-                                    views::View* containing_view,
-#endif
+                                    const BoundsAdjusterCallback& rtl_mirror,
                                     int origin_x,
                                     int origin_y,
                                     int start_angle,
@@ -118,18 +113,14 @@ class DownloadShelf {
                                     PaintDownloadProgressSize size);
 
   static void PaintDownloadComplete(gfx::Canvas* canvas,
-#if defined(TOOLKIT_VIEWS)
-                                    views::View* containing_view,
-#endif
+                                    const BoundsAdjusterCallback& rtl_mirror,
                                     int origin_x,
                                     int origin_y,
                                     double animation_progress,
                                     PaintDownloadProgressSize size);
 
   static void PaintDownloadInterrupted(gfx::Canvas* canvas,
-#if defined(TOOLKIT_VIEWS)
-                                       views::View* containing_view,
-#endif
+                                       const BoundsAdjusterCallback& rtl_mirror,
                                        int origin_x,
                                        int origin_y,
                                        double animation_progress,

@@ -53,6 +53,8 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
+using content::DownloadItem;
+
 // TODO(paulg): These may need to be adjusted when download progress
 //              animation is added, and also possibly to take into account
 //              different screen resolutions.
@@ -90,7 +92,15 @@ static const int kDisabledOnOpenDuration = 3000;
 // light-on-dark themes.
 static const double kDownloadItemLuminanceMod = 0.8;
 
-using content::DownloadItem;
+namespace {
+
+// Callback for DownloadShelf paint functions to mirror the progress animation
+// in RTL locales.
+void RTLMirrorXForView(views::View* containing_view, gfx::Rect* bounds) {
+  bounds->set_x(containing_view->GetMirroredXForRect(*bounds));
+}
+
+}  // namespace
 
 DownloadItemView::DownloadItemView(DownloadItem* download_item,
     DownloadShelfView* parent)
@@ -834,9 +844,11 @@ void DownloadItemView::OnPaintBackground(gfx::Canvas* canvas) {
   if (icon) {
     if (!IsShowingWarningDialog()) {
       DownloadItem::DownloadState state = download()->GetState();
+      DownloadShelf::BoundsAdjusterCallback rtl_mirror =
+          base::Bind(&RTLMirrorXForView, base::Unretained(this));
       if (state == DownloadItem::IN_PROGRESS) {
         DownloadShelf::PaintDownloadProgress(canvas,
-                                             this,
+                                             rtl_mirror,
                                              0,
                                              0,
                                              progress_angle_,
@@ -847,7 +859,7 @@ void DownloadItemView::OnPaintBackground(gfx::Canvas* canvas) {
         if (state == DownloadItem::INTERRUPTED) {
           DownloadShelf::PaintDownloadInterrupted(
               canvas,
-              this,
+              rtl_mirror,
               0,
               0,
               complete_animation_->GetCurrentValue(),
@@ -856,7 +868,7 @@ void DownloadItemView::OnPaintBackground(gfx::Canvas* canvas) {
           DCHECK_EQ(DownloadItem::COMPLETE, state);
           DownloadShelf::PaintDownloadComplete(
               canvas,
-              this,
+              rtl_mirror,
               0,
               0,
               complete_animation_->GetCurrentValue(),
