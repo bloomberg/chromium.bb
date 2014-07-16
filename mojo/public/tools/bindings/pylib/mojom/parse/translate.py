@@ -67,35 +67,7 @@ def _AttributeListToDict(attribute_list):
   return dict([(attribute.key, attribute.value)
                    for attribute in attribute_list])
 
-def _MapMethod(tree):
-  assert isinstance(tree[2], ast.ParameterList)
-  assert tree[3] is None or isinstance(tree[3], ast.Ordinal)
-  assert tree[4] is None or isinstance(tree[2], ast.ParameterList)
-
-  def ParameterToDict(param):
-    assert isinstance(param, ast.Parameter)
-    return {'name': param.name,
-            'kind': _MapKind(param.typename),
-            'ordinal': param.ordinal.value if param.ordinal else None}
-
-  method = {'name': tree[1],
-            'parameters': map(ParameterToDict, tree[2]),
-            'ordinal': tree[3].value if tree[3] else None}
-  if tree[4]:
-    method['response_parameters'] = map(ParameterToDict, tree[4])
-  return method
-
-def _MapInterface(tree):
-  interface = {}
-  interface['name'] = tree[1]
-  interface['attributes'] = _AttributeListToDict(tree[2])
-  interface['client'] = interface['attributes'].get('Client')
-  interface['methods'] = _MapTreeForName(_MapMethod, tree[3], 'METHOD')
-  interface['enums'] = _MapTreeForType(_MapEnum, tree[3], ast.Enum)
-  interface['constants'] = _MapTreeForType(_MapConstant, tree[3], ast.Const)
-  return interface
-
-def _MapEnum(enum):
+def _EnumToDict(enum):
   def EnumValueToDict(enum_value):
     assert isinstance(enum_value, ast.EnumValue)
     return {'name': enum_value.name,
@@ -105,7 +77,7 @@ def _MapEnum(enum):
   return {'name': enum.name,
           'fields': map(EnumValueToDict, enum.enum_value_list)}
 
-def _MapConstant(const):
+def _ConstToDict(const):
   assert isinstance(const, ast.Const)
   return {'name': const.name,
           'kind': _MapKind(const.typename),
@@ -131,8 +103,36 @@ class _MojomBuilder(object):
               'attributes': _AttributeListToDict(struct.attribute_list),
               'fields': _MapTreeForType(StructFieldToDict, struct.body,
                                         ast.StructField),
-              'enums': _MapTreeForType(_MapEnum, struct.body, ast.Enum),
-              'constants': _MapTreeForType(_MapConstant, struct.body,
+              'enums': _MapTreeForType(_EnumToDict, struct.body, ast.Enum),
+              'constants': _MapTreeForType(_ConstToDict, struct.body,
+                                           ast.Const)}
+
+    def InterfaceToDict(interface):
+      def MethodToDict(method):
+        def ParameterToDict(param):
+          assert isinstance(param, ast.Parameter)
+          return {'name': param.name,
+                  'kind': _MapKind(param.typename),
+                  'ordinal': param.ordinal.value if param.ordinal else None}
+
+        assert isinstance(method, ast.Method)
+        rv = {'name': method.name,
+              'parameters': map(ParameterToDict, method.parameter_list),
+              'ordinal': method.ordinal.value if method.ordinal else None}
+        if method.response_parameter_list is not None:
+          rv['response_parameters'] = map(ParameterToDict,
+                                          method.response_parameter_list)
+        return rv
+
+      assert isinstance(interface, ast.Interface)
+      attributes = _AttributeListToDict(interface.attribute_list)
+      return {'name': interface.name,
+              'attributes': attributes,
+              'client': attributes.get('Client'),
+              'methods': _MapTreeForType(MethodToDict, interface.body,
+                                         ast.Method),
+              'enums': _MapTreeForType(_EnumToDict, interface.body, ast.Enum),
+              'constants': _MapTreeForType(_ConstToDict, interface.body,
                                            ast.Const)}
 
     assert isinstance(tree, ast.Mojom)
@@ -145,11 +145,11 @@ class _MojomBuilder(object):
     self.mojom['structs'] = \
         _MapTreeForType(StructToDict, tree.definition_list, ast.Struct)
     self.mojom['interfaces'] = \
-        _MapTreeForName(_MapInterface, tree.definition_list, 'INTERFACE')
+        _MapTreeForType(InterfaceToDict, tree.definition_list, ast.Interface)
     self.mojom['enums'] = \
-        _MapTreeForType(_MapEnum, tree.definition_list, ast.Enum)
+        _MapTreeForType(_EnumToDict, tree.definition_list, ast.Enum)
     self.mojom['constants'] = \
-        _MapTreeForType(_MapConstant, tree.definition_list, ast.Const)
+        _MapTreeForType(_ConstToDict, tree.definition_list, ast.Const)
     return self.mojom
 
 

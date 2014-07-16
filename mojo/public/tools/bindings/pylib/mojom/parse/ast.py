@@ -185,6 +185,50 @@ class ImportList(NodeListBase):
   _list_item_type = Import
 
 
+class Interface(Definition):
+  """Represents an interface definition."""
+
+  def __init__(self, name, attribute_list, body, **kwargs):
+    assert attribute_list is None or isinstance(attribute_list, AttributeList)
+    assert isinstance(body, InterfaceBody)
+    super(Interface, self).__init__(name, **kwargs)
+    self.attribute_list = attribute_list
+    self.body = body
+
+  def __eq__(self, other):
+    return super(Interface, self).__eq__(other) and \
+           self.attribute_list == other.attribute_list and \
+           self.body == other.body
+
+
+class Method(Definition):
+  """Represents a method definition."""
+
+  def __init__(self, name, ordinal, parameter_list, response_parameter_list,
+               **kwargs):
+    assert ordinal is None or isinstance(ordinal, Ordinal)
+    assert isinstance(parameter_list, ParameterList)
+    assert response_parameter_list is None or \
+           isinstance(response_parameter_list, ParameterList)
+    super(Method, self).__init__(name, **kwargs)
+    self.ordinal = ordinal
+    self.parameter_list = parameter_list
+    self.response_parameter_list = response_parameter_list
+
+  def __eq__(self, other):
+    return super(Method, self).__eq__(other) and \
+           self.ordinal == other.ordinal and \
+           self.parameter_list == other.parameter_list and \
+           self.response_parameter_list == other.response_parameter_list
+
+
+# This needs to be declared after |Method|.
+class InterfaceBody(NodeListBase):
+  """Represents the body of (i.e., list of definitions inside) an interface."""
+
+  _list_item_type = (Const, Enum, Method)
+
+
 class Module(NodeBase):
   """Represents a module statement."""
 

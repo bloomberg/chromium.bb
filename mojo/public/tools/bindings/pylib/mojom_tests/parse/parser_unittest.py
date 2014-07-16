@@ -626,14 +626,15 @@ class ParserTest(unittest.TestCase):
     expected1 = ast.Mojom(
         None,
         ast.ImportList(),
-        [('INTERFACE',
-          'MyInterface',
-          None,
-          [('METHOD',
-            'MyMethod',
-            ast.ParameterList(ast.Parameter('a', None, 'int32')),
+        [ast.Interface(
+            'MyInterface',
             None,
-            None)])])
+            ast.InterfaceBody(
+                ast.Method(
+                    'MyMethod',
+                    None,
+                    ast.ParameterList(ast.Parameter('a', None, 'int32')),
+                    None)))])
     self.assertEquals(parser.Parse(source1, "my_file.mojom"), expected1)
 
     source2 = """\
@@ -645,20 +646,23 @@ class ParserTest(unittest.TestCase):
     expected2 = ast.Mojom(
         None,
         ast.ImportList(),
-        [('INTERFACE',
-          'MyInterface',
-          None,
-          [('METHOD',
-            'MyMethod1',
-            ast.ParameterList([ast.Parameter('a', ast.Ordinal(0), 'int32'),
-                               ast.Parameter('b', ast.Ordinal(1), 'int64')]),
-            ast.Ordinal(0),
-            None),
-           ('METHOD',
-            'MyMethod2',
-            ast.ParameterList(),
-            ast.Ordinal(1),
-            ast.ParameterList())])])
+        [ast.Interface(
+            'MyInterface',
+            None,
+            ast.InterfaceBody([
+                ast.Method(
+                    'MyMethod1',
+                    ast.Ordinal(0),
+                    ast.ParameterList([ast.Parameter('a', ast.Ordinal(0),
+                                                     'int32'),
+                                       ast.Parameter('b', ast.Ordinal(1),
+                                                     'int64')]),
+                    None),
+                 ast.Method(
+                    'MyMethod2',
+                    ast.Ordinal(1),
+                    ast.ParameterList(),
+                    ast.ParameterList())]))])
     self.assertEquals(parser.Parse(source2, "my_file.mojom"), expected2)
 
     source3 = """\
@@ -669,15 +673,16 @@ class ParserTest(unittest.TestCase):
     expected3 = ast.Mojom(
         None,
         ast.ImportList(),
-        [('INTERFACE',
-          'MyInterface',
-          None,
-          [('METHOD',
-            'MyMethod',
-            ast.ParameterList(ast.Parameter('a', None, 'string')),
+        [ast.Interface(
+            'MyInterface',
             None,
-            ast.ParameterList([ast.Parameter('a', None, 'int32'),
-                               ast.Parameter('b', None, 'bool')]))])])
+            ast.InterfaceBody(
+                ast.Method(
+                    'MyMethod',
+                    None,
+                    ast.ParameterList(ast.Parameter('a', None, 'string')),
+                    ast.ParameterList([ast.Parameter('a', None, 'int32'),
+                                       ast.Parameter('b', None, 'bool')]))))])
     self.assertEquals(parser.Parse(source3, "my_file.mojom"), expected3)
 
   def testInvalidMethods(self):

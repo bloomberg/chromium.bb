@@ -197,25 +197,30 @@ class Parser(object):
   def p_interface(self, p):
     """interface : attribute_section INTERFACE NAME LBRACE interface_body \
                        RBRACE SEMI"""
-    p[0] = ('INTERFACE', p[3], p[1], p[5])
+    p[0] = ast.Interface(p[3], p[1], p[5])
 
-  def p_interface_body(self, p):
-    """interface_body : method interface_body
-                      | enum interface_body
-                      | const interface_body
-                      | """
-    if len(p) > 1:
-      p[0] = _ListFromConcat(p[1], p[2])
+  def p_interface_body_1(self, p):
+    """interface_body : """
+    p[0] = ast.InterfaceBody()
 
-  def p_response(self, p):
-    """response : RESPONSE LPAREN parameter_list RPAREN
-                | """
-    if len(p) > 3:
-      p[0] = p[3]
+  def p_interface_body_2(self, p):
+    """interface_body : interface_body const
+                      | interface_body enum
+                      | interface_body method"""
+    p[0] = p[1]
+    p[0].Append(p[2])
+
+  def p_response_1(self, p):
+    """response : """
+    p[0] = None
+
+  def p_response_2(self, p):
+    """response : RESPONSE LPAREN parameter_list RPAREN"""
+    p[0] = p[3]
 
   def p_method(self, p):
     """method : NAME ordinal LPAREN parameter_list RPAREN response SEMI"""
-    p[0] = ('METHOD', p[1], p[4], p[2], p[6])
+    p[0] = ast.Method(p[1], p[2], p[4], p[6])
 
   def p_parameter_list_1(self, p):
     """parameter_list : """
