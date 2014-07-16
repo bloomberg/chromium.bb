@@ -446,6 +446,8 @@
       'geolocation/Geolocation.cpp',
       'geolocation/GeolocationController.cpp',
       'geolocation/GeolocationInspectorAgent.cpp',
+      'geolocation/GeoNotifier.cpp',
+      'geolocation/GeoNotifier.h',
       'geolocation/NavigatorGeolocation.cpp',
       'geolocation/NavigatorGeolocation.h',
       'geolocation/PositionOptions.cpp',

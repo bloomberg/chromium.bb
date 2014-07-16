@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
+#include "modules/geolocation/GeoNotifier.h"
 #include "modules/geolocation/Geoposition.h"
 #include "modules/geolocation/PositionCallback.h"
 #include "modules/geolocation/PositionError.h"
@@ -84,6 +85,17 @@ public:
     // Notifies this that an error has occurred, it must be handled immediately.
     void setError(GeolocationError*);
 
+    // Discards the notifier because a fatal error occurred for it.
+    void fatalErrorOccurred(GeoNotifier*);
+
+    // Adds the notifier to the set awaiting a cached position. Runs the success
+    // callbacks for them if permission has been granted. Requests permission if
+    // it is unknown.
+    void requestUsesCachedPosition(GeoNotifier*);
+
+    // Discards the notifier if it is a oneshot because it timed it.
+    void requestTimedOut(GeoNotifier*);
+
     ScriptPromise registerRegion(ScriptState*, GeofencingRegion*);
     ScriptPromise unregisterRegion(ScriptState*, const String& regionId);
     ScriptPromise getRegisteredRegions(ScriptState*) const;
@@ -95,53 +107,6 @@ private:
     bool isDenied() const { return m_geolocationPermission == PermissionDenied; }
 
     explicit Geolocation(ExecutionContext*);
-
-    // Holds the success and error callbacks and the options that were provided
-    // when a oneshot or watcher were created. Also, if specified in the
-    // options, manages a timer to limit the time to wait for the system to
-    // obtain a position.
-    class GeoNotifier : public GarbageCollectedFinalized<GeoNotifier> {
-    public:
-        static GeoNotifier* create(Geolocation* geolocation, PassOwnPtr<PositionCallback> positionCallback, PassOwnPtr<PositionErrorCallback> positionErrorCallback, PositionOptions* options)
-        {
-            return new GeoNotifier(geolocation, positionCallback, positionErrorCallback, options);
-        }
-        void trace(Visitor*);
-
-        PositionOptions* options() const { return m_options.get(); };
-
-        // Sets the given error as the fatal error if there isn't one yet.
-        // Starts the timer with an interval of 0.
-        void setFatalError(PositionError*);
-
-        bool useCachedPosition() const { return m_useCachedPosition; }
-
-        // Tells the notifier to use a cached position and starts its timer with
-        // an interval of 0.
-        void setUseCachedPosition();
-
-        void runSuccessCallback(Geoposition*);
-        void runErrorCallback(PositionError*);
-
-        void startTimer();
-        void stopTimer();
-
-        // Runs the error callback if there is a fatal error. Otherwise, if a
-        // cached position must be used, registers itself for receiving one.
-        // Otherwise, the notifier has expired, and its error callback is run.
-        void timerFired(Timer<GeoNotifier>*);
-
-    private:
-        GeoNotifier(Geolocation*, PassOwnPtr<PositionCallback>, PassOwnPtr<PositionErrorCallback>, PositionOptions*);
-
-        Member<Geolocation> m_geolocation;
-        OwnPtr<PositionCallback> m_successCallback;
-        OwnPtr<PositionErrorCallback> m_errorCallback;
-        Member<PositionOptions> m_options;
-        Timer<GeoNotifier> m_timer;
-        Member<PositionError> m_fatalError;
-        bool m_useCachedPosition;
-    };
 
     typedef HeapVector<Member<GeoNotifier> > GeoNotifierVector;
     typedef HeapHashSet<Member<GeoNotifier> > GeoNotifierSet;
@@ -215,17 +180,6 @@ private:
     // the cached position or by requesting one from the controller. Sets a
     // fatal error if permission is denied or no position can be obtained.
     void startRequest(GeoNotifier*);
-
-    // Discards the notifier because a fatal error occurred for it.
-    void fatalErrorOccurred(GeoNotifier*);
-
-    // Discards the notifier if it is a oneshot because it timed it.
-    void requestTimedOut(GeoNotifier*);
-
-    // Adds the notifier to the set awaiting a cached position. Runs the success
-    // callbacks for them if permission has been granted. Requests permission if
-    // it is unknown.
-    void requestUsesCachedPosition(GeoNotifier*);
 
     bool haveSuitableCachedPosition(PositionOptions*);
 
