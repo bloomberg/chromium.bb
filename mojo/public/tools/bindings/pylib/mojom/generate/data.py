@@ -65,11 +65,18 @@ def LookupKind(kinds, spec, scope):
 
   return kinds.get(spec)
 
-def LookupValue(values, name, scope):
+def LookupValue(values, name, scope, kind):
   """Like LookupKind, but for constant values."""
-  for i in xrange(len(scope), -1, -1):
-    if i > 0:
-      test_spec = '.'.join(scope[:i]) + '.'
+  # If the type is an enum, the value can be specified as a qualified name, in
+  # which case the form EnumName.ENUM_VALUE must be used. We use the presence
+  # of a '.' in the requested name to identify this. Otherwise, we prepend the
+  # enum name.
+  if isinstance(kind, mojom.Enum) and '.' not in name:
+    name = '%s.%s' % (kind.spec.split(':', 1)[1], name)
+  for i in reversed(xrange(len(scope) + 1)):
+    test_spec = '.'.join(scope[:i])
+    if test_spec:
+      test_spec += '.'
     test_spec += name
     value = values.get(test_spec)
     if value:
@@ -77,10 +84,10 @@ def LookupValue(values, name, scope):
 
   return values.get(name)
 
-def FixupExpression(module, value, scope):
+def FixupExpression(module, value, scope, kind):
   """Translates an IDENTIFIER into a structured Value object."""
   if isinstance(value, tuple) and value[0] == 'IDENTIFIER':
-    result = LookupValue(module.values, value[1], scope)
+    result = LookupValue(module.values, value[1], scope, kind)
     if result:
       return result
   return value
@@ -177,7 +184,7 @@ def FieldFromData(module, data, struct):
       module.kinds, data['kind'], (module.namespace, struct.name))
   field.ordinal = data.get('ordinal')
   field.default = FixupExpression(
-      module, data.get('default'), (module.namespace, struct.name))
+      module, data.get('default'), (module.namespace, struct.name), field.kind)
   return field
 
 def ParameterToData(parameter):
@@ -253,10 +260,10 @@ def EnumFieldFromData(module, enum, data, parent_kind):
   # vice versa?
   if parent_kind:
     field.value = FixupExpression(
-        module, data['value'], (module.namespace, parent_kind.name))
+        module, data['value'], (module.namespace, parent_kind.name), enum)
   else:
     field.value = FixupExpression(
-        module, data['value'], (module.namespace, ))
+        module, data['value'], (module.namespace, ), enum)
   value = mojom.EnumValue(module, enum, field)
   module.values[value.GetSpec()] = value
   return field
@@ -285,7 +292,7 @@ def ConstantFromData(module, data, parent_kind):
     scope = (module.namespace, )
   # TODO(mpcomplete): maybe we should only support POD kinds.
   constant.kind = KindFromData(module.kinds, data['kind'], scope)
-  constant.value = FixupExpression(module, data.get('value'), scope)
+  constant.value = FixupExpression(module, data.get('value'), scope, None)
 
   value = mojom.NamedValue(module, parent_kind, constant.name)
   module.values[value.GetSpec()] = value

@@ -12,15 +12,15 @@ const uint8 kTwelve = 12;
 
 struct Bar {
   enum Type {
-    TYPE_VERTICAL = 1,
-    TYPE_HORIZONTAL,
-    TYPE_BOTH,
-    TYPE_INVALID
+    VERTICAL = 1,
+    HORIZONTAL,
+    BOTH,
+    INVALID
   };
   uint8 alpha@0 = 0xff;
   uint8 beta@1;
   uint8 gamma@2;
-  Type type@3 = sample.Bar.TYPE_VERTICAL;
+  Type type@3 = sample.Bar.Type.VERTICAL;
 };
 
 [RequiredFields=7]
@@ -70,7 +70,7 @@ struct DefaultsTest {
   uint8[] a18@18;
   string a19@19;
 
-  Bar.Type a20@20 = Bar.TYPE_BOTH;
+  Bar.Type a20@20 = BOTH;
   imported.Point a21@21;
   imported.Thing a22@22 = default;
 };
@@ -89,8 +89,8 @@ struct StructWithHoleV2 {
 [Client=ServiceClient]
 interface Service {
   enum BazOptions {
-    BAZ_REGULAR = 0,
-    BAZ_EXTRA
+    REGULAR = 0,
+    EXTRA
   };
   const uint8 kFavoriteBaz = 1;
   Frobinate@0(Foo foo@0, BazOptions baz@1, Port port@2);

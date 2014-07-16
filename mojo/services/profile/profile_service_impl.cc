@@ -12,7 +12,7 @@ namespace {
 
 int BaseKeyForMojoKey(mojo::ProfileService::PathKey key) {
   switch(key) {
-    case mojo::ProfileService::DIR_TEMP:
+    case mojo::ProfileService::PATH_KEY_DIR_TEMP:
       return base::DIR_TEMP;
     default:
       return base::PATH_START;

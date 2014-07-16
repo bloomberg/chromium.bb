@@ -845,7 +845,7 @@ TEST_F(ViewManagerTest, ReorderNode) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
 
   {
-    connection_->ReorderNode(node2_id, node3_id, ORDER_ABOVE, 6);
+    connection_->ReorderNode(node2_id, node3_id, ORDER_DIRECTION_ABOVE, 6);
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
@@ -856,7 +856,7 @@ TEST_F(ViewManagerTest, ReorderNode) {
   }
 
   {
-    connection_->ReorderNode(node2_id, node3_id, ORDER_BELOW, 7);
+    connection_->ReorderNode(node2_id, node3_id, ORDER_DIRECTION_BELOW, 7);
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
@@ -868,30 +868,32 @@ TEST_F(ViewManagerTest, ReorderNode) {
 
   {
     // node2 is already below node3.
-    EXPECT_FALSE(connection_->ReorderNode(node2_id, node3_id, ORDER_BELOW, 8));
+    EXPECT_FALSE(
+        connection_->ReorderNode(node2_id, node3_id, ORDER_DIRECTION_BELOW, 8));
   }
 
   {
     // node4 & 5 are unknown to connection2_.
-    EXPECT_FALSE(connection2_->ReorderNode(node4_id, node5_id, ORDER_ABOVE, 8));
+    EXPECT_FALSE(connection2_->ReorderNode(
+        node4_id, node5_id, ORDER_DIRECTION_ABOVE, 8));
   }
 
   {
     // node6 & node3 have different parents.
-    EXPECT_FALSE(connection_->ReorderNode(node3_id, node6_id, ORDER_ABOVE, 8));
+    EXPECT_FALSE(
+        connection_->ReorderNode(node3_id, node6_id, ORDER_DIRECTION_ABOVE, 8));
   }
 
   {
     // Non-existent node-ids
-    EXPECT_FALSE(connection_->ReorderNode(BuildNodeId(1, 27),
-                                          BuildNodeId(1, 28),
-                                          ORDER_ABOVE,
-                                          8));
+    EXPECT_FALSE(connection_->ReorderNode(
+        BuildNodeId(1, 27), BuildNodeId(1, 28), ORDER_DIRECTION_ABOVE, 8));
   }
 
   {
     // node7 & node8 are un-parented.
-    EXPECT_FALSE(connection_->ReorderNode(node7_id, node8_id, ORDER_ABOVE, 8));
+    EXPECT_FALSE(
+        connection_->ReorderNode(node7_id, node8_id, ORDER_DIRECTION_ABOVE, 8));
   }
 }
 

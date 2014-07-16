@@ -110,7 +110,7 @@ class EmbeddedApp : public ApplicationDelegate,
             navigation::NavigationDetails::New());
         nav_details->url = "http://www.aaronboodman.com/z_dropbox/test.html";
         navigator_host_->RequestNavigate(view->node()->id(),
-                                         navigation::SOURCE_NODE,
+                                         navigation::TARGET_SOURCE_NODE,
                                          nav_details.Pass());
       }
     }

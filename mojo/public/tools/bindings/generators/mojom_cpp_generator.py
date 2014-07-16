@@ -197,12 +197,17 @@ def TranslateConstants(token):
   if isinstance(token, (mojom.NamedValue, mojom.EnumValue)):
     # Both variable and enum constants are constructed like:
     # Namespace::Struct::CONSTANT_NAME
+    # For enums, CONSTANT_NAME is ENUM_NAME_ENUM_VALUE.
     name = []
     if token.imported_from:
       name.extend(NamespaceToArray(token.namespace))
     if token.parent_kind:
       name.append(token.parent_kind.name)
-    name.append(token.name)
+    if isinstance(token, mojom.EnumValue):
+      name.append(
+          "%s_%s" % (generator.CamelCaseToAllCaps(token.enum_name), token.name))
+    else:
+      name.append(token.name)
     return "::".join(name)
   return token
 
@@ -255,6 +260,7 @@ class Generator(generator.Generator):
     "struct_from_method": generator.GetStructFromMethod,
     "response_struct_from_method": generator.GetResponseStructFromMethod,
     "stylize_method": generator.StudlyCapsToCamel,
+    "to_all_caps": generator.CamelCaseToAllCaps,
   }
 
   def GetJinjaExports(self):

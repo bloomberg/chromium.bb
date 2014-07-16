@@ -27,7 +27,7 @@ std::string RectToString(const gfx::Rect& rect) {
 }
 
 std::string DirectionToString(OrderDirection direction) {
-  return direction == ORDER_ABOVE ? "above" : "below";
+  return direction == ORDER_DIRECTION_ABOVE ? "above" : "below";
 }
 
 std::string ChangeToDescription1(const Change& change) {
@@ -132,7 +132,8 @@ Change::Change()
       view_id(0),
       view_id2(0),
       event_action(0),
-      direction(ORDER_ABOVE) {}
+      direction(ORDER_DIRECTION_ABOVE) {
+}
 
 Change::~Change() {
 }

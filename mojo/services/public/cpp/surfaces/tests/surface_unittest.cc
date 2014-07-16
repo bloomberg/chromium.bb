@@ -70,7 +70,7 @@ TEST_F(SurfaceLibQuadTest, ColorQuad) {
   cc::DrawQuad* base_ptr = static_cast<cc::DrawQuad*>(color_quad.get());
   surfaces::QuadPtr mojo_quad = surfaces::Quad::From(*base_ptr);
   ASSERT_FALSE(mojo_quad.is_null());
-  EXPECT_EQ(surfaces::SOLID_COLOR, mojo_quad->material);
+  EXPECT_EQ(surfaces::MATERIAL_SOLID_COLOR, mojo_quad->material);
   EXPECT_EQ(Rect::From(rect), mojo_quad->rect);
   EXPECT_EQ(Rect::From(opaque_rect), mojo_quad->opaque_rect);
   EXPECT_EQ(Rect::From(visible_rect), mojo_quad->visible_rect);
@@ -103,7 +103,7 @@ TEST_F(SurfaceLibQuadTest, SurfaceQuad) {
   cc::DrawQuad* base_ptr = static_cast<cc::DrawQuad*>(surface_quad.get());
   surfaces::QuadPtr mojo_quad = surfaces::Quad::From(*base_ptr);
   ASSERT_FALSE(mojo_quad.is_null());
-  EXPECT_EQ(surfaces::SURFACE_CONTENT, mojo_quad->material);
+  EXPECT_EQ(surfaces::MATERIAL_SURFACE_CONTENT, mojo_quad->material);
   ASSERT_TRUE(mojo_quad->surface_quad_state);
   surfaces::SurfaceQuadStatePtr& mojo_surface_state =
       mojo_quad->surface_quad_state;
@@ -143,7 +143,7 @@ TEST_F(SurfaceLibQuadTest, TextureQuad) {
   cc::DrawQuad* base_ptr = static_cast<cc::DrawQuad*>(texture_quad.get());
   surfaces::QuadPtr mojo_quad = surfaces::Quad::From(*base_ptr);
   ASSERT_FALSE(mojo_quad.is_null());
-  EXPECT_EQ(surfaces::TEXTURE_CONTENT, mojo_quad->material);
+  EXPECT_EQ(surfaces::MATERIAL_TEXTURE_CONTENT, mojo_quad->material);
   ASSERT_TRUE(mojo_quad->texture_quad_state);
   surfaces::TextureQuadStatePtr& mojo_texture_state =
       mojo_quad->texture_quad_state;

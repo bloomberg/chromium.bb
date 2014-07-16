@@ -127,17 +127,16 @@ bool ReorderImpl(Node::Children* children,
   const size_t target_i =
       std::find(children->begin(), children->end(), relative) -
       children->begin();
-  if ((direction == ORDER_ABOVE && child_i == target_i + 1) ||
-      (direction == ORDER_BELOW && child_i + 1 == target_i)) {
+  if ((direction == ORDER_DIRECTION_ABOVE && child_i == target_i + 1) ||
+      (direction == ORDER_DIRECTION_BELOW && child_i + 1 == target_i)) {
     return false;
   }
 
   ScopedOrderChangedNotifier notifier(node, relative, direction);
 
-  const size_t dest_i =
-      direction == ORDER_ABOVE ?
-      (child_i < target_i ? target_i : target_i + 1) :
-      (child_i < target_i ? target_i - 1 : target_i);
+  const size_t dest_i = direction == ORDER_DIRECTION_ABOVE
+                            ? (child_i < target_i ? target_i : target_i + 1)
+                            : (child_i < target_i ? target_i - 1 : target_i);
   children->erase(children->begin() + child_i);
   children->insert(children->begin() + dest_i, node);
 
@@ -268,11 +267,11 @@ void Node::RemoveChild(Node* child) {
 }
 
 void Node::MoveToFront() {
-  Reorder(parent_->children_.back(), ORDER_ABOVE);
+  Reorder(parent_->children_.back(), ORDER_DIRECTION_ABOVE);
 }
 
 void Node::MoveToBack() {
-  Reorder(parent_->children_.front(), ORDER_BELOW);
+  Reorder(parent_->children_.front(), ORDER_DIRECTION_BELOW);
 }
 
 void Node::Reorder(Node* relative, OrderDirection direction) {

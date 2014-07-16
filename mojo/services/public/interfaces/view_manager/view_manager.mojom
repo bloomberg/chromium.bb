@@ -17,10 +17,10 @@ struct NodeData {
 };
 
 enum ErrorCode {
-  ERROR_CODE_NONE,
-  ERROR_CODE_VALUE_IN_USE,
-  ERROR_CODE_ILLEGAL_ARGUMENT,
-  ERROR_CODE_UNEXPECTED_CHANGE_ID,
+  NONE,
+  VALUE_IN_USE,
+  ILLEGAL_ARGUMENT,
+  UNEXPECTED_CHANGE_ID,
 };
 
 // ViewManagerInitService is responsible for launching the client that controls

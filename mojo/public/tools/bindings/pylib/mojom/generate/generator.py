@@ -6,6 +6,7 @@
 
 from functools import partial
 import os.path
+import re
 
 import module as mojom
 import pack
@@ -68,6 +69,10 @@ def IsMoveOnlyKind(kind):
 
 def StudlyCapsToCamel(studly):
   return studly[0].lower() + studly[1:]
+
+def CamelCaseToAllCaps(camel_case):
+  return '_'.join(
+      word for word in re.split(r'([A-Z][^A-Z]+)', camel_case) if word).upper()
 
 class Generator(object):
   # Pass |output_dir| to emit files to disk. Omit |output_dir| to echo all

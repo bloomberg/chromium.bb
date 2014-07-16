@@ -70,9 +70,9 @@ void Node::Remove(Node* child) {
 }
 
 void Node::Reorder(Node* child, Node* relative, OrderDirection direction) {
-  if (direction == ORDER_ABOVE)
+  if (direction == ORDER_DIRECTION_ABOVE)
     window_.StackChildAbove(child->window(), relative->window());
-  else if (direction == ORDER_BELOW)
+  else if (direction == ORDER_DIRECTION_BELOW)
     window_.StackChildBelow(child->window(), relative->window());
 }
 

@@ -303,8 +303,8 @@ bool ViewManagerServiceImpl::CanReorderNode(const Node* node,
   const size_t target_i =
       std::find(children.begin(), children.end(), relative_node) -
       children.begin();
-  if ((direction == ORDER_ABOVE && child_i == target_i + 1) ||
-      (direction == ORDER_BELOW && child_i + 1 == target_i)) {
+  if ((direction == ORDER_DIRECTION_ABOVE && child_i == target_i + 1) ||
+      (direction == ORDER_DIRECTION_BELOW && child_i + 1 == target_i)) {
     return false;
   }
 

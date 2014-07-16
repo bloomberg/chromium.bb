@@ -79,6 +79,11 @@ class EnumValue(NamedValue):
     NamedValue.__init__(self, module, enum.parent_kind, field.name)
     self.enum_name = enum.name
 
+  def GetSpec(self):
+    return (self.namespace + '.' +
+        (self.parent_kind and (self.parent_kind.name + '.') or "") +
+        self.enum_name + '.' + self.name)
+
 
 class Constant(object):
   def __init__(self, name=None, kind=None, value=None):

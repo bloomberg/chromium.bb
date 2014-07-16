@@ -397,11 +397,11 @@ TEST_F(NodeObserverTest, Order) {
     EXPECT_EQ(2U, changes.size());
     EXPECT_EQ(&v11, changes[0].node);
     EXPECT_EQ(&v13, changes[0].relative_node);
-    EXPECT_EQ(ORDER_ABOVE, changes[0].direction);
+    EXPECT_EQ(ORDER_DIRECTION_ABOVE, changes[0].direction);
 
     EXPECT_EQ(&v11, changes[1].node);
     EXPECT_EQ(&v13, changes[1].relative_node);
-    EXPECT_EQ(ORDER_ABOVE, changes[1].direction);
+    EXPECT_EQ(ORDER_DIRECTION_ABOVE, changes[1].direction);
   }
 
   {
@@ -417,11 +417,11 @@ TEST_F(NodeObserverTest, Order) {
     EXPECT_EQ(2U, changes.size());
     EXPECT_EQ(&v11, changes[0].node);
     EXPECT_EQ(&v12, changes[0].relative_node);
-    EXPECT_EQ(ORDER_BELOW, changes[0].direction);
+    EXPECT_EQ(ORDER_DIRECTION_BELOW, changes[0].direction);
 
     EXPECT_EQ(&v11, changes[1].node);
     EXPECT_EQ(&v12, changes[1].relative_node);
-    EXPECT_EQ(ORDER_BELOW, changes[1].direction);
+    EXPECT_EQ(ORDER_DIRECTION_BELOW, changes[1].direction);
   }
 
   {
@@ -429,7 +429,7 @@ TEST_F(NodeObserverTest, Order) {
 
     // Move v11 above v12.
     // Resulting order: v12. v11, v13
-    v11.Reorder(&v12, ORDER_ABOVE);
+    v11.Reorder(&v12, ORDER_DIRECTION_ABOVE);
     EXPECT_EQ(&v12, v1.children().front());
     EXPECT_EQ(&v13, v1.children().back());
 
@@ -437,11 +437,11 @@ TEST_F(NodeObserverTest, Order) {
     EXPECT_EQ(2U, changes.size());
     EXPECT_EQ(&v11, changes[0].node);
     EXPECT_EQ(&v12, changes[0].relative_node);
-    EXPECT_EQ(ORDER_ABOVE, changes[0].direction);
+    EXPECT_EQ(ORDER_DIRECTION_ABOVE, changes[0].direction);
 
     EXPECT_EQ(&v11, changes[1].node);
     EXPECT_EQ(&v12, changes[1].relative_node);
-    EXPECT_EQ(ORDER_ABOVE, changes[1].direction);
+    EXPECT_EQ(ORDER_DIRECTION_ABOVE, changes[1].direction);
   }
 
   {
@@ -449,7 +449,7 @@ TEST_F(NodeObserverTest, Order) {
 
     // Move v11 below v12.
     // Resulting order: v11, v12, v13
-    v11.Reorder(&v12, ORDER_BELOW);
+    v11.Reorder(&v12, ORDER_DIRECTION_BELOW);
     EXPECT_EQ(&v11, v1.children().front());
     EXPECT_EQ(&v13, v1.children().back());
 
@@ -457,11 +457,11 @@ TEST_F(NodeObserverTest, Order) {
     EXPECT_EQ(2U, changes.size());
     EXPECT_EQ(&v11, changes[0].node);
     EXPECT_EQ(&v12, changes[0].relative_node);
-    EXPECT_EQ(ORDER_BELOW, changes[0].direction);
+    EXPECT_EQ(ORDER_DIRECTION_BELOW, changes[0].direction);
 
     EXPECT_EQ(&v11, changes[1].node);
     EXPECT_EQ(&v12, changes[1].relative_node);
-    EXPECT_EQ(ORDER_BELOW, changes[1].direction);
+    EXPECT_EQ(ORDER_DIRECTION_BELOW, changes[1].direction);
   }
 }
 

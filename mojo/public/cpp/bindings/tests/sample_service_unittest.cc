@@ -264,7 +264,7 @@ class ServiceImpl : public Service {
     EXPECT_FALSE(foo.is_null());
     if (!foo.is_null())
       CheckFoo(*foo);
-    EXPECT_EQ(BAZ_EXTRA, baz);
+    EXPECT_EQ(BAZ_OPTIONS_EXTRA, baz);
 
     if (g_dump_message_as_text) {
       // Also dump the Foo structure and all of its members.
@@ -341,7 +341,7 @@ TEST_F(BindingsSampleTest, Basic) {
   CheckFoo(*foo);
 
   PortPtr port;
-  service->Frobinate(foo.Pass(), Service::BAZ_EXTRA, port.Pass());
+  service->Frobinate(foo.Pass(), Service::BAZ_OPTIONS_EXTRA, port.Pass());
 
   delete service;
 }

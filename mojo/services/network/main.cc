@@ -39,9 +39,9 @@ class Delegate : public mojo::ApplicationDelegate {
     mojo::InterfacePtr<mojo::ProfileService> profile_service;
     app->ConnectToService("mojo:profile_service", &profile_service);
     base::FilePath base_path;
-    profile_service->GetPath(mojo::ProfileService::DIR_TEMP,
-                             base::Bind(&OnPathReceived,
-                                        base::Unretained(&base_path)));
+    profile_service->GetPath(
+        mojo::ProfileService::PATH_KEY_DIR_TEMP,
+        base::Bind(&OnPathReceived, base::Unretained(&base_path)));
     profile_service.WaitForIncomingMethodCall();
     DCHECK(!base_path.value().empty());
     base_path = base_path.Append(FILE_PATH_LITERAL("network_service"));

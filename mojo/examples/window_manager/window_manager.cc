@@ -387,18 +387,18 @@ class WindowManager : public ApplicationDelegate,
     nav_details->url = view_url;
 
     navigation::Target target = debug_panel_->navigation_target();
-    if (target == navigation::DEFAULT) {
-      if (requested_target != navigation::DEFAULT) {
+    if (target == navigation::TARGET_DEFAULT) {
+      if (requested_target != navigation::TARGET_DEFAULT) {
         target = requested_target;
       } else {
-        // TODO(aa): Should be NEW_NODE if source origin and dest origin are
-        // different?
-        target = navigation::SOURCE_NODE;
+        // TODO(aa): Should be TARGET_NEW_NODE if source origin and dest origin
+        // are different?
+        target = navigation::TARGET_SOURCE_NODE;
       }
     }
 
     Node* dest_node = NULL;
-    if (target == navigation::SOURCE_NODE) {
+    if (target == navigation::TARGET_SOURCE_NODE) {
       Node* source_node = view_manager_->GetNodeById(source_node_id);
       bool app_initiated = std::find(windows_.begin(), windows_.end(),
                                      source_node) != windows_.end();

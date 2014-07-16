@@ -11,8 +11,8 @@ module imported {
 // to test a bug with importing multiple modules with the same namespace.
 
 enum Color {
-  COLOR_RED,
-  COLOR_BLACK,
+  RED,
+  BLACK,
 };
 
 struct Size {
@@ -21,8 +21,8 @@ struct Size {
 };
 
 struct Thing {
-  imported.Shape shape = SHAPE_RECTANGLE;
-  int32 color = COLOR_BLACK;
+  imported.Shape shape = RECTANGLE;
+  int32 color = Color.BLACK;
   Point location;
   Size size;
 };

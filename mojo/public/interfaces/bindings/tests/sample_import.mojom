@@ -9,9 +9,22 @@ module imported {
 // sample_service.mojom, to show how import works.
 
 enum Shape {
-  SHAPE_RECTANGLE = 1,
-  SHAPE_CIRCLE,
-  SHAPE_TRIANGLE,
+  RECTANGLE = 1,
+  CIRCLE,
+  TRIANGLE,
+};
+
+// These enum values should not interfere with those of Shape above.
+enum AnotherShape {
+  RECTANGLE = 10,
+  CIRCLE,
+  TRIANGLE,
+};
+
+enum YetAnotherShape {
+  RECTANGLE = 20,
+  CIRCLE,
+  TRIANGLE,
 };
 
 struct Point {

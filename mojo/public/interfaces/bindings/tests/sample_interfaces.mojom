@@ -10,7 +10,7 @@ module sample {
 const uint64 kLong = 4405;
 
 enum Enum {
-  ENUM_VALUE
+  VALUE
 };
 
 [Client=ProviderClient]

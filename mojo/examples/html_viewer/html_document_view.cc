@@ -43,14 +43,14 @@ navigation::Target WebNavigationPolicyToNavigationTarget(
     blink::WebNavigationPolicy policy) {
   switch (policy) {
     case blink::WebNavigationPolicyCurrentTab:
-      return navigation::SOURCE_NODE;
+      return navigation::TARGET_SOURCE_NODE;
     case blink::WebNavigationPolicyNewBackgroundTab:
     case blink::WebNavigationPolicyNewForegroundTab:
     case blink::WebNavigationPolicyNewWindow:
     case blink::WebNavigationPolicyNewPopup:
-      return navigation::NEW_NODE;
+      return navigation::TARGET_NEW_NODE;
     default:
-      return navigation::DEFAULT;
+      return navigation::TARGET_DEFAULT;
   }
 }
 

@@ -41,7 +41,7 @@ public class BindingsTest extends TestCase {
         bar.alpha = (byte) 0x01;
         bar.beta = (byte) 0x02;
         bar.gamma = (byte) 0x03;
-        bar.type = Type.TYPE_BOTH;
+        bar.type = Type.BOTH;
         return bar;
     }
 
@@ -152,14 +152,14 @@ public class BindingsTest extends TestCase {
     @SmallTest
     public void testEnums() throws NoSuchFieldException, SecurityException,
             IllegalAccessException {
-        checkConstantField(Color.class.getField("COLOR_RED"), int.class, 0);
-        checkConstantField(Color.class.getField("COLOR_BLACK"), int.class, 1);
+        checkConstantField(Color.class.getField("RED"), int.class, 0);
+        checkConstantField(Color.class.getField("BLACK"), int.class, 1);
 
-        checkConstantField(Enum.class.getField("ENUM_VALUE"), int.class, 0);
+        checkConstantField(Enum.class.getField("VALUE"), int.class, 0);
 
-        checkConstantField(Shape.class.getField("SHAPE_RECTANGLE"), int.class, 1);
-        checkConstantField(Shape.class.getField("SHAPE_CIRCLE"), int.class, 2);
-        checkConstantField(Shape.class.getField("SHAPE_TRIANGLE"), int.class, 3);
+        checkConstantField(Shape.class.getField("RECTANGLE"), int.class, 1);
+        checkConstantField(Shape.class.getField("CIRCLE"), int.class, 2);
+        checkConstantField(Shape.class.getField("TRIANGLE"), int.class, 3);
     }
 
     /**
@@ -192,7 +192,7 @@ public class BindingsTest extends TestCase {
         checkField(DefaultsTest.class.getField("a17"), double.class, test, +1.23E-20);
         checkField(DefaultsTest.class.getField("a18"), byte[].class, test, null);
         checkField(DefaultsTest.class.getField("a19"), String.class, test, null);
-        checkField(DefaultsTest.class.getField("a20"), int.class, test, Bar.Type.TYPE_BOTH);
+        checkField(DefaultsTest.class.getField("a20"), int.class, test, Bar.Type.BOTH);
         checkField(DefaultsTest.class.getField("a21"), Point.class, test, null);
 
         assertNotNull(test.a22);

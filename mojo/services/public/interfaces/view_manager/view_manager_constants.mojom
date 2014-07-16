@@ -5,8 +5,8 @@
 module mojo.view_manager {
 
 enum OrderDirection {
-  ORDER_ABOVE = 1,
-  ORDER_BELOW,
+  ABOVE = 1,
+  BELOW,
 };
 
 }

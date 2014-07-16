@@ -76,10 +76,10 @@ gfx::Size DebugPanel::GetPreferredSize(const views::View* view) const {
 
 navigation::Target DebugPanel::navigation_target() const {
   if (navigation_target_new_->checked())
-    return navigation::NEW_NODE;
+    return navigation::TARGET_NEW_NODE;
   if (navigation_target_source_->checked())
-    return navigation::SOURCE_NODE;
-  return navigation::DEFAULT;
+    return navigation::TARGET_SOURCE_NODE;
+  return navigation::TARGET_DEFAULT;
 }
 
 void DebugPanel::Layout(views::View* view) {
@@ -131,7 +131,8 @@ void DebugPanel::Navigate(const std::string& url) {
   navigation::NavigationDetailsPtr details(
       navigation::NavigationDetails::New());
   details->url = url;
-  delegate_->RequestNavigate(node_->id(), navigation::NEW_NODE, details.Pass());
+  delegate_->RequestNavigate(
+      node_->id(), navigation::TARGET_NEW_NODE, details.Pass());
 }
 
 }  // namespace examples

@@ -112,7 +112,7 @@ surfaces::QuadPtr TypeConverter<surfaces::QuadPtr, cc::DrawQuad>::ConvertFrom(
 scoped_ptr<cc::DrawQuad> ConvertTo(const surfaces::QuadPtr& input,
                                    cc::SharedQuadState* sqs) {
   switch (input->material) {
-    case surfaces::SOLID_COLOR: {
+    case surfaces::MATERIAL_SOLID_COLOR: {
       scoped_ptr<cc::SolidColorDrawQuad> color_quad(new cc::SolidColorDrawQuad);
       color_quad->SetAll(
           sqs,
@@ -124,7 +124,7 @@ scoped_ptr<cc::DrawQuad> ConvertTo(const surfaces::QuadPtr& input,
           input->solid_color_quad_state->force_anti_aliasing_off);
       return color_quad.PassAs<cc::DrawQuad>();
     }
-    case surfaces::SURFACE_CONTENT: {
+    case surfaces::MATERIAL_SURFACE_CONTENT: {
       scoped_ptr<cc::SurfaceDrawQuad> surface_quad(new cc::SurfaceDrawQuad);
       surface_quad->SetAll(
           sqs,
@@ -135,7 +135,7 @@ scoped_ptr<cc::DrawQuad> ConvertTo(const surfaces::QuadPtr& input,
           input->surface_quad_state->surface.To<cc::SurfaceId>());
       return surface_quad.PassAs<cc::DrawQuad>();
     }
-    case surfaces::TEXTURE_CONTENT: {
+    case surfaces::MATERIAL_TEXTURE_CONTENT: {
       scoped_ptr<cc::TextureDrawQuad> texture_quad(new cc::TextureDrawQuad);
       surfaces::TextureQuadStatePtr& texture_quad_state =
           input->texture_quad_state;

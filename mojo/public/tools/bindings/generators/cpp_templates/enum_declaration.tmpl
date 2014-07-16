@@ -1,9 +1,9 @@
 enum {{enum.name}} {
 {%- for field in enum.fields %}
 {%-    if field.value %}
-  {{field.name}} = {{field.value|expression_to_text}},
+  {{enum.name|to_all_caps}}_{{field.name}} = {{field.value|expression_to_text}},
 {%-    else %}
-  {{field.name}},
+  {{enum.name|to_all_caps}}_{{field.name}},
 {%-    endif %}
 {%- endfor %}
 };

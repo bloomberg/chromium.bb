@@ -386,10 +386,12 @@ TEST_F(InterfacePtrTest, ReentrantWaitForIncomingMethodCall) {
   ReentrantServiceImpl* impl = BindToProxy(new ReentrantServiceImpl(), &proxy);
   EXPECT_TRUE(impl->got_connection());
 
-  proxy->Frobinate(
-      sample::FooPtr(), sample::Service::BAZ_REGULAR, sample::PortPtr());
-  proxy->Frobinate(
-      sample::FooPtr(), sample::Service::BAZ_REGULAR, sample::PortPtr());
+  proxy->Frobinate(sample::FooPtr(),
+                   sample::Service::BAZ_OPTIONS_REGULAR,
+                   sample::PortPtr());
+  proxy->Frobinate(sample::FooPtr(),
+                   sample::Service::BAZ_OPTIONS_REGULAR,
+                   sample::PortPtr());
 
   PumpMessages();
 

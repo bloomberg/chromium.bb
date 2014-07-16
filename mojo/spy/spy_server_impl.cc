@@ -43,20 +43,20 @@ void SpyServerImpl::StartSession(
     spy_api::VersionPtr version,
     const mojo::Callback<void(spy_api::Result, mojo::String)>& callback) {
   if (has_session_) {
-    callback.Run(spy_api::RESOURCE_LIMIT, "");
+    callback.Run(spy_api::RESULT_RESOURCE_LIMIT, "");
     return;
   }
-  callback.Run(spy_api::ALL_OK, "session 0");
+  callback.Run(spy_api::RESULT_ALL_OK, "session 0");
   has_session_ = true;
 }
 
 void SpyServerImpl::StopSession(
   const mojo::Callback<void(spy_api::Result)>& callback) {
   if (!has_session_) {
-    callback.Run(spy_api::INVALID_CALL);
+    callback.Run(spy_api::RESULT_INVALID_CALL);
     return;
   }
-  callback.Run(spy_api::ALL_OK);
+  callback.Run(spy_api::RESULT_ALL_OK);
   has_session_ = false;
 }
 
@@ -75,13 +75,14 @@ void SpyServerImpl::OnIntercept(const GURL& url) {
     return;
   uint32_t id;
   if (!NextId(&id)) {
-    client()->OnFatalError(spy_api::NO_MORE_IDS);
+    client()->OnFatalError(spy_api::RESULT_NO_MORE_IDS);
     return;
   }
 
   items_[id] = new Item(id, Item::kServiceIntercept);
-  client()->OnClientConnection(
-      url.possibly_invalid_spec(), id, spy_api::PEEK_MESSAGES);
+  client()->OnClientConnection(url.possibly_invalid_spec(),
+                               id,
+                               spy_api::CONNECTION_OPTIONS_PEEK_MESSAGES);
 }
 
 ScopedMessagePipeHandle SpyServerImpl::ServerPipe() {

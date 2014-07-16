@@ -225,7 +225,7 @@ class Browser : public ApplicationDelegate,
           navigation::NavigationDetails::New());
       nav_details->url = String::From(url);
       navigator_host_->RequestNavigate(view_manager_->GetRoots().front()->id(),
-                                       navigation::NEW_NODE,
+                                       navigation::TARGET_NEW_NODE,
                                        nav_details.Pass());
     }
     return false;
