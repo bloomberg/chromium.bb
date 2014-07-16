@@ -421,7 +421,7 @@ TEST_F(VideoRendererImplTest, FlushWithNothingBuffered) {
 
 TEST_F(VideoRendererImplTest, EndOfStream_ClipDuration) {
   Initialize();
-  QueueFrames("0 10 20 30");
+  QueueFrames("0");
   EXPECT_CALL(mock_cb_, Display(HasTimestamp(0)));
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
   StartPlayingFrom(0);
@@ -497,8 +497,12 @@ TEST_F(VideoRendererImplTest, StartPlayingFrom_LowDelay) {
   InitializeWithLowDelay(true);
   QueueFrames("0");
 
+  // Expect to frequently have enough/nothing due to only requiring one frame.
   EXPECT_CALL(mock_cb_, Display(HasTimestamp(0)));
-  EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
+  EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH))
+      .Times(AtLeast(1));
+  EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_NOTHING))
+      .Times(AtLeast(1));
   StartPlayingFrom(0);
 
   QueueFrames("10");
@@ -545,6 +549,37 @@ TEST_F(VideoRendererImplTest, StopDuringOutstandingRead) {
 TEST_F(VideoRendererImplTest, VideoDecoder_InitFailure) {
   InitializeRenderer(DECODER_ERROR_NOT_SUPPORTED, false);
   Stop();
+}
+
+TEST_F(VideoRendererImplTest, Underflow) {
+  Initialize();
+  QueueFrames("0 10 20 30");
+  EXPECT_CALL(mock_cb_, Display(HasTimestamp(0)));
+  EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
+  StartPlayingFrom(0);
+
+  // Frames should be dropped and we should signal having nothing.
+  {
+    SCOPED_TRACE("Waiting for BUFFERING_HAVE_NOTHING");
+    WaitableMessageLoopEvent event;
+    EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_NOTHING))
+        .WillOnce(RunClosure(event.GetClosure()));
+    AdvanceTimeInMs(100);
+    event.RunAndWait();
+  }
+
+  // Receiving end of stream should signal having enough.
+  {
+    SCOPED_TRACE("Waiting for BUFFERING_HAVE_ENOUGH");
+    WaitableMessageLoopEvent event;
+    EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH))
+        .WillOnce(RunClosure(event.GetClosure()));
+    SatisfyPendingReadWithEndOfStream();
+    event.RunAndWait();
+  }
+
+  WaitForEnded();
+  Shutdown();
 }
 
 }  // namespace media

@@ -221,9 +221,15 @@ void VideoRendererImpl::ThreadMain() {
 
     // Remain idle until we have the next frame ready for rendering.
     if (ready_frames_.empty()) {
-      if (received_end_of_stream_ && !rendered_end_of_stream_) {
-        rendered_end_of_stream_ = true;
-        ended_cb_.Run();
+      if (received_end_of_stream_) {
+        if (!rendered_end_of_stream_) {
+          rendered_end_of_stream_ = true;
+          ended_cb_.Run();
+        }
+      } else {
+        buffering_state_ = BUFFERING_HAVE_NOTHING;
+        task_runner_->PostTask(
+            FROM_HERE, base::Bind(buffering_state_cb_, BUFFERING_HAVE_NOTHING));
       }
 
       UpdateStatsAndWait_Locked(kIdleTimeDelta);
