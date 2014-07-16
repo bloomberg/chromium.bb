@@ -47,6 +47,8 @@ private:
 
     virtual void defaultEventHandler(Event*) OVERRIDE;
 
+    virtual bool isLiveLink() const OVERRIDE { return isLink(); }
+
     virtual bool supportsFocus() const OVERRIDE;
     virtual bool isMouseFocusable() const OVERRIDE;
     virtual bool isKeyboardFocusable() const OVERRIDE;

@@ -201,15 +201,8 @@ void ChromeClientImpl::focusedNodeChanged(Node* node)
     m_webView->client()->focusedNodeChanged(WebNode(node));
 
     WebURL focusURL;
-    if (node && node->isLink()) {
-        // This HitTestResult hack is the easiest way to get a link URL out of a
-        // WebCore::Node.
-        HitTestResult hitTest(IntPoint(0, 0));
-        // This cast must be valid because of the isLink() check.
-        hitTest.setURLElement(toElement(node));
-        if (hitTest.isLiveLink())
-            focusURL = hitTest.absoluteLinkURL();
-    }
+    if (node && node->isElementNode() && toElement(node)->isLiveLink())
+        focusURL = toElement(node)->hrefURL();
     m_webView->client()->setKeyboardFocusURL(focusURL);
 }
 

@@ -361,6 +361,9 @@ public:
     virtual bool isURLAttribute(const Attribute&) const { return false; }
     virtual bool isHTMLContentAttribute(const Attribute&) const { return false; }
 
+    virtual bool isLiveLink() const { return false; }
+    KURL hrefURL() const;
+
     KURL getURLAttribute(const QualifiedName&) const;
     KURL getNonEmptyURLAttribute(const QualifiedName&) const;
 

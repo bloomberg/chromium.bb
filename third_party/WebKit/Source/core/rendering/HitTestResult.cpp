@@ -23,7 +23,6 @@
 #include "core/rendering/HitTestResult.h"
 
 #include "core/HTMLNames.h"
-#include "core/XLinkNames.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -344,30 +343,12 @@ KURL HitTestResult::absoluteLinkURL() const
 {
     if (!m_innerURLElement)
         return KURL();
-
-    AtomicString urlString;
-    if (isHTMLAnchorElement(*m_innerURLElement) || isHTMLAreaElement(*m_innerURLElement) || isHTMLLinkElement(*m_innerURLElement))
-        urlString = m_innerURLElement->getAttribute(hrefAttr);
-    else if (isSVGAElement(*m_innerURLElement))
-        urlString = m_innerURLElement->getAttribute(XLinkNames::hrefAttr);
-    else
-        return KURL();
-
-    return m_innerURLElement->document().completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
+    return m_innerURLElement->hrefURL();
 }
 
 bool HitTestResult::isLiveLink() const
 {
-    if (!m_innerURLElement)
-        return false;
-
-    if (isHTMLAnchorElement(*m_innerURLElement))
-        return toHTMLAnchorElement(m_innerURLElement)->isLiveLink();
-
-    if (isSVGAElement(*m_innerURLElement))
-        return m_innerURLElement->isLink();
-
-    return false;
+    return m_innerURLElement && m_innerURLElement->isLiveLink();
 }
 
 bool HitTestResult::isMisspelled() const

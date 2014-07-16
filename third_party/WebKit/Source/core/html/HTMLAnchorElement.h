@@ -72,7 +72,7 @@ public:
     virtual String input() const OVERRIDE FINAL;
     virtual void setInput(const String&) OVERRIDE FINAL;
 
-    bool isLiveLink() const;
+    virtual bool isLiveLink() const OVERRIDE FINAL;
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE FINAL;
 

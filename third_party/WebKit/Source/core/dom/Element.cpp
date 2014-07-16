@@ -31,6 +31,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSValueKeywords.h"
 #include "core/SVGNames.h"
+#include "core/XLinkNames.h"
 #include "core/XMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/animation/AnimationTimeline.h"
@@ -2625,6 +2626,17 @@ DOMStringMap& Element::dataset()
     if (!rareData.dataset())
         rareData.setDataset(DatasetDOMStringMap::create(this));
     return *rareData.dataset();
+}
+
+KURL Element::hrefURL() const
+{
+    // FIXME: These all have href() or url(), but no common super class. Why doesn't
+    // <link> implement URLUtils?
+    if (isHTMLAnchorElement(*this) || isHTMLAreaElement(*this) || isHTMLLinkElement(*this))
+        return getURLAttribute(hrefAttr);
+    if (isSVGAElement(*this))
+        return getURLAttribute(XLinkNames::hrefAttr);
+    return KURL();
 }
 
 KURL Element::getURLAttribute(const QualifiedName& name) const
