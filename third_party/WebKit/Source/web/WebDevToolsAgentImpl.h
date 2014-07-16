@@ -96,7 +96,6 @@ public:
     virtual void dispatchOnInspectorBackend(const WebString& message) OVERRIDE;
     virtual void inspectElementAt(const WebPoint&) OVERRIDE;
     virtual void evaluateInWebInspector(long callId, const WebString& script) OVERRIDE;
-    virtual void setProcessId(long) OVERRIDE;
     virtual void setLayerTreeId(int) OVERRIDE;
     virtual void processGPUEvent(const GPUEvent&) OVERRIDE;
 

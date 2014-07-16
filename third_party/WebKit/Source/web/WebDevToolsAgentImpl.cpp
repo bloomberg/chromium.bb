@@ -678,10 +678,6 @@ void WebDevToolsAgentImpl::updateInspectorStateCookie(const String& state)
     m_client->saveAgentRuntimeState(state);
 }
 
-void WebDevToolsAgentImpl::setProcessId(long processId)
-{
-}
-
 void WebDevToolsAgentImpl::setLayerTreeId(int layerTreeId)
 {
     m_layerTreeId = layerTreeId;

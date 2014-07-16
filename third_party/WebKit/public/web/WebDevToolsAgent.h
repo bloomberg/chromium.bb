@@ -59,7 +59,6 @@ public:
     virtual void dispatchOnInspectorBackend(const WebString& message) = 0;
 
     virtual void inspectElementAt(const WebPoint&) = 0;
-    virtual void setProcessId(long) = 0;
     virtual void setLayerTreeId(int) = 0;
 
     virtual void didBeginFrame(int frameId = 0) = 0;
