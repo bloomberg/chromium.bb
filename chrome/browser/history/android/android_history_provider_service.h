@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/android/android_history_types.h"
 #include "sql/statement.h"
@@ -23,12 +24,10 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
   virtual ~AndroidHistoryProviderService();
 
   // The callback definitions ------------------------------------------------
-  typedef base::Callback<void(
-                    Handle,                // handle
-                    bool,                  // true if the query succeeded.
-                    history::AndroidStatement*)>  // the result of query
-                    QueryCallback;
-  typedef CancelableRequest<QueryCallback> QueryRequest;
+
+  // Callback invoked when a method creating an |AndroidStatement| object is
+  // complete. The pointer is NULL if the creation failed.
+  typedef base::Callback<void(history::AndroidStatement*)> QueryCallback;
 
   typedef base::Callback<void(
                     Handle,                // handle
@@ -66,13 +65,13 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
   // |selection| is the SQL WHERE clause without 'WHERE'.
   // |selection_args| is the arguments for WHERE clause.
   // |sort_order| is the SQL ORDER clause.
-  Handle QueryHistoryAndBookmarks(
+  base::CancelableTaskTracker::TaskId QueryHistoryAndBookmarks(
       const std::vector<history::HistoryAndBookmarkRow::ColumnID>& projections,
       const std::string& selection,
       const std::vector<base::string16>& selection_args,
       const std::string& sort_order,
-      CancelableRequestConsumerBase* consumer,
-      const QueryCallback& callback);
+      const QueryCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
   // Runs the given update and the number of the row updated is returned to the
   // |callback| on success.
@@ -157,19 +156,20 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
                            CancelableRequestConsumerBase* consumer,
                            const DeleteCallback& callback);
 
-  // Returns the result of the given query from the |callback|.
+  // Runs the query and invokes the |callback| to return the result.
+  //
   // |projections| specifies the result columns, can not be empty, otherwise
   // NULL is returned.
   // |selection| is the SQL WHERE clause without 'WHERE'.
   // |selection_args| is the arguments for WHERE clause.
   // |sort_order| the SQL ORDER clause.
-  Handle QuerySearchTerms(
+  base::CancelableTaskTracker::TaskId QuerySearchTerms(
       const std::vector<history::SearchRow::ColumnID>& projections,
       const std::string& selection,
       const std::vector<base::string16>& selection_args,
       const std::string& sort_order,
-      CancelableRequestConsumerBase* consumer,
-      const QueryCallback& callback);
+      const QueryCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
  private:
   Profile* profile_;

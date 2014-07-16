@@ -18,26 +18,33 @@ AndroidHistoryProviderService::AndroidHistoryProviderService(Profile* profile)
 AndroidHistoryProviderService::~AndroidHistoryProviderService() {
 }
 
-AndroidHistoryProviderService::Handle
+base::CancelableTaskTracker::TaskId
 AndroidHistoryProviderService::QueryHistoryAndBookmarks(
     const std::vector<history::HistoryAndBookmarkRow::ColumnID>& projections,
     const std::string& selection,
     const std::vector<base::string16>& selection_args,
     const std::string& sort_order,
-    CancelableRequestConsumerBase* consumer,
-    const QueryCallback& callback) {
-  QueryRequest* request = new QueryRequest(callback);
-  AddRequest(request, consumer);
+    const QueryCallback& callback,
+    base::CancelableTaskTracker* tracker) {
   HistoryService* hs =
       HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
-    hs->Schedule(HistoryService::PRIORITY_NORMAL,
-            &HistoryBackend::QueryHistoryAndBookmarks, NULL, request,
-            projections, selection, selection_args, sort_order);
+    DCHECK(hs->thread_) << "History service being called after cleanup";
+    DCHECK(hs->thread_checker_.CalledOnValidThread());
+    return tracker->PostTaskAndReplyWithResult(
+        hs->thread_->message_loop_proxy().get(),
+        FROM_HERE,
+        base::Bind(&HistoryBackend::QueryHistoryAndBookmarks,
+                   hs->history_backend_.get(),
+                   projections,
+                   selection,
+                   selection_args,
+                   sort_order),
+        callback);
   } else {
-    request->ForwardResultAsync(request->handle(), false, 0);
+    callback.Run(NULL);
+    return base::CancelableTaskTracker::kBadTaskId;
   }
-  return request->handle();
 }
 
 AndroidHistoryProviderService::Handle
@@ -211,24 +218,31 @@ AndroidHistoryProviderService::DeleteSearchTerms(
   return request->handle();
 }
 
-AndroidHistoryProviderService::Handle
+base::CancelableTaskTracker::TaskId
 AndroidHistoryProviderService::QuerySearchTerms(
     const std::vector<history::SearchRow::ColumnID>& projections,
     const std::string& selection,
     const std::vector<base::string16>& selection_args,
     const std::string& sort_order,
-    CancelableRequestConsumerBase* consumer,
-    const QueryCallback& callback) {
-  QueryRequest* request = new QueryRequest(callback);
-  AddRequest(request, consumer);
+    const QueryCallback& callback,
+    base::CancelableTaskTracker* tracker) {
   HistoryService* hs =
       HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
-    hs->Schedule(HistoryService::PRIORITY_NORMAL,
-            &HistoryBackend::QuerySearchTerms, NULL, request, projections,
-            selection, selection_args, sort_order);
+    DCHECK(hs->thread_) << "History service being called after cleanup";
+    DCHECK(hs->thread_checker_.CalledOnValidThread());
+    return tracker->PostTaskAndReplyWithResult(
+        hs->thread_->message_loop_proxy().get(),
+        FROM_HERE,
+        base::Bind(&HistoryBackend::QuerySearchTerms,
+                   hs->history_backend_.get(),
+                   projections,
+                   selection,
+                   selection_args,
+                   sort_order),
+        callback);
   } else {
-    request->ForwardResultAsync(request->handle(), false, 0);
+    callback.Run(NULL);
+    return base::CancelableTaskTracker::kBadTaskId;
   }
-  return request->handle();
 }

@@ -10,6 +10,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/favicon/chrome_favicon_client.h"
@@ -103,6 +104,7 @@ class SQLiteCursorTest : public testing::Test,
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   scoped_ptr<AndroidHistoryProviderService> service_;
+  base::CancelableTaskTracker cancelable_tracker_;
   CancelableRequestConsumer cancelable_consumer_;
   TestingProfile* testing_profile_;
   HistoryService* hs_;
@@ -134,10 +136,8 @@ class CallbackHelper : public base::RefCountedThreadSafe<CallbackHelper> {
     base::MessageLoop::current()->Quit();
   }
 
-  void OnQueryResult(AndroidHistoryProviderService::Handle handle,
-                     bool success,
-                     AndroidStatement* statement) {
-    success_ = success;
+  void OnQueryResult(AndroidStatement* statement) {
+    success_ = statement != NULL;
     statement_ = statement;
     base::MessageLoop::current()->Quit();
   }
@@ -183,9 +183,13 @@ TEST_F(SQLiteCursorTest, Run) {
   projections.push_back(HistoryAndBookmarkRow::FAVICON);
 
   // Query the inserted row.
-  service_->QueryHistoryAndBookmarks(projections, std::string(),
-      std::vector<base::string16>(), std::string(), &cancelable_consumer_,
-      Bind(&CallbackHelper::OnQueryResult, callback.get()));
+  service_->QueryHistoryAndBookmarks(
+      projections,
+      std::string(),
+      std::vector<base::string16>(),
+      std::string(),
+      Bind(&CallbackHelper::OnQueryResult, callback.get()),
+      &cancelable_tracker_);
   base::MessageLoop::current()->Run();
   ASSERT_TRUE(callback->success());
 

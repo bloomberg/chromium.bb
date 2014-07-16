@@ -781,17 +781,19 @@ class QueryBookmarksFromAPITask : public HistoryProviderTask {
       const std::string& sort_order) {
     RunAsyncRequestOnUIThreadBlocking(
         base::Bind(&AndroidHistoryProviderService::QueryHistoryAndBookmarks,
-                   base::Unretained(service()), projections, selection,
-                   selection_args, sort_order, cancelable_consumer(),
+                   base::Unretained(service()),
+                   projections,
+                   selection,
+                   selection_args,
+                   sort_order,
                    base::Bind(&QueryBookmarksFromAPITask::OnBookmarksQueried,
-                              base::Unretained(this))));
+                              base::Unretained(this)),
+                   cancelable_tracker()));
     return result_;
   }
 
  private:
-  void OnBookmarksQueried(AndroidHistoryProviderService::Handle handle,
-                          bool succeeded,
-                          history::AndroidStatement* statement) {
+  void OnBookmarksQueried(history::AndroidStatement* statement) {
     result_ = statement;
     RequestCompleted();
   }
@@ -1002,21 +1004,22 @@ class QuerySearchTermsFromAPITask : public SearchTermTask {
       const std::string& selection,
       const std::vector<base::string16>& selection_args,
       const std::string& sort_order) {
-    RunAsyncRequestOnUIThreadBlocking(
-        base::Bind(&AndroidHistoryProviderService::QuerySearchTerms,
-                   base::Unretained(service()), projections, selection,
-                   selection_args, sort_order, cancelable_consumer(),
-                   base::Bind(
-                      &QuerySearchTermsFromAPITask::OnSearchTermsQueried,
-                      base::Unretained(this))));
+    RunAsyncRequestOnUIThreadBlocking(base::Bind(
+        &AndroidHistoryProviderService::QuerySearchTerms,
+        base::Unretained(service()),
+        projections,
+        selection,
+        selection_args,
+        sort_order,
+        base::Bind(&QuerySearchTermsFromAPITask::OnSearchTermsQueried,
+                   base::Unretained(this)),
+        cancelable_tracker()));
     return result_;
   }
 
  private:
   // Callback to return the result.
-  void OnSearchTermsQueried(AndroidHistoryProviderService::Handle handle,
-                            bool succeeded,
-                            history::AndroidStatement* statement) {
+  void OnSearchTermsQueried(history::AndroidStatement* statement) {
     result_ = statement;
     RequestCompleted();
   }

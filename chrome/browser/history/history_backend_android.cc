@@ -21,21 +21,17 @@ void HistoryBackend::InsertHistoryAndBookmark(
   request->ForwardResult(request->handle(), id != 0, id);
 }
 
-void HistoryBackend::QueryHistoryAndBookmarks(
-    scoped_refptr<QueryRequest> request,
+AndroidStatement* HistoryBackend::QueryHistoryAndBookmarks(
     const std::vector<HistoryAndBookmarkRow::ColumnID>& projections,
     const std::string& selection,
     const std::vector<base::string16>& selection_args,
     const std::string& sort_order) {
-  if (request->canceled())
-    return;
-
   AndroidStatement* statement = NULL;
   if (android_provider_backend_) {
     statement = android_provider_backend_->QueryHistoryAndBookmarks(
         projections, selection, selection_args, sort_order);
   }
-  request->ForwardResult(request->handle(), statement, statement);
+  return statement;
 }
 
 void HistoryBackend::UpdateHistoryAndBookmarks(
@@ -163,21 +159,17 @@ void HistoryBackend::DeleteSearchTerms(
   request->ForwardResult(request->handle(), result, count);
 }
 
-void HistoryBackend::QuerySearchTerms(
-    scoped_refptr<QueryRequest> request,
+AndroidStatement* HistoryBackend::QuerySearchTerms(
     const std::vector<SearchRow::ColumnID>& projections,
     const std::string& selection,
     const std::vector<base::string16>& selection_args,
     const std::string& sort_order) {
-  if (request->canceled())
-    return;
-
   AndroidStatement* statement = NULL;
-  if (android_provider_backend_)
+  if (android_provider_backend_) {
     statement = android_provider_backend_->QuerySearchTerms(projections,
         selection, selection_args, sort_order);
-
-  request->ForwardResult(request->handle(), statement, statement);
+  }
+  return statement;
 }
 
 }  // namespace history

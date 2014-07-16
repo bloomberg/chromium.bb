@@ -5,6 +5,7 @@
 #include "chrome/browser/history/android/android_history_provider_service.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/android/android_history_types.h"
@@ -71,6 +72,7 @@ class AndroidHistoryProviderServiceTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   scoped_ptr<AndroidHistoryProviderService> service_;
+  base::CancelableTaskTracker cancelable_tracker_;
   CancelableRequestConsumer cancelable_consumer_;
   TestingProfile* testing_profile_;
 
@@ -110,10 +112,8 @@ class CallbackHelper : public base::RefCountedThreadSafe<CallbackHelper> {
     base::MessageLoop::current()->Quit();
   }
 
-  void OnQueryResult(AndroidHistoryProviderService::Handle handle,
-                     bool success,
-                     AndroidStatement* statement) {
-    success_ = success;
+  void OnQueryResult(AndroidStatement* statement) {
+    success_ = statement != NULL;
     statement_ = statement;
     base::MessageLoop::current()->Quit();
   }
@@ -171,9 +171,13 @@ TEST_F(AndroidHistoryProviderServiceTest, TestHistoryAndBookmark) {
   projections.push_back(HistoryAndBookmarkRow::ID);
 
   // Query the inserted row.
-  service_->QueryHistoryAndBookmarks(projections, std::string(),
-      std::vector<base::string16>(), std::string(), &cancelable_consumer_,
-      Bind(&CallbackHelper::OnQueryResult, callback.get()));
+  service_->QueryHistoryAndBookmarks(
+      projections,
+      std::string(),
+      std::vector<base::string16>(),
+      std::string(),
+      Bind(&CallbackHelper::OnQueryResult, callback.get()),
+      &cancelable_tracker_);
   base::MessageLoop::current()->Run();
   ASSERT_TRUE(callback->success());
 
@@ -227,9 +231,13 @@ TEST_F(AndroidHistoryProviderServiceTest, TestSearchTerm) {
   projections.push_back(SearchRow::ID);
 
   // Query the inserted row.
-  service_->QuerySearchTerms(projections, std::string(),
-      std::vector<base::string16>(), std::string(), &cancelable_consumer_,
-      Bind(&CallbackHelper::OnQueryResult, callback.get()));
+  service_->QuerySearchTerms(
+      projections,
+      std::string(),
+      std::vector<base::string16>(),
+      std::string(),
+      Bind(&CallbackHelper::OnQueryResult, callback.get()),
+      &cancelable_tracker_);
   base::MessageLoop::current()->Run();
   ASSERT_TRUE(callback->success());
 

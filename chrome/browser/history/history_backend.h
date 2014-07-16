@@ -285,8 +285,13 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void InsertHistoryAndBookmark(scoped_refptr<InsertRequest> request,
                                 const HistoryAndBookmarkRow& row);
 
-  void QueryHistoryAndBookmarks(
-      scoped_refptr<QueryRequest> request,
+  // Runs the given query on history backend and returns the result.
+  //
+  // |projections| is the vector of the result columns.
+  // |selection| is the SQL WHERE clause without 'WHERE'.
+  // |selection_args| is the arguments for WHERE clause.
+  // |sort_order| is the SQL ORDER clause.
+  history::AndroidStatement* QueryHistoryAndBookmarks(
       const std::vector<HistoryAndBookmarkRow::ColumnID>& projections,
       const std::string& selection,
       const std::vector<base::string16>& selection_args,
@@ -330,11 +335,17 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                          const std::string& selection,
                          const std::vector<base::string16> selection_args);
 
-  void QuerySearchTerms(scoped_refptr<QueryRequest> request,
-                        const std::vector<SearchRow::ColumnID>& projections,
-                        const std::string& selection,
-                        const std::vector<base::string16>& selection_args,
-                        const std::string& sort_order);
+  // Returns the result of the given query.
+  //
+  // |projections| specifies the result columns.
+  // |selection| is the SQL WHERE clause without 'WHERE'.
+  // |selection_args| is the arguments for WHERE clause.
+  // |sort_order| is the SQL ORDER clause.
+  history::AndroidStatement* QuerySearchTerms(
+      const std::vector<SearchRow::ColumnID>& projections,
+      const std::string& selection,
+      const std::vector<base::string16>& selection_args,
+      const std::string& sort_order);
 
 #endif  // defined(OS_ANDROID)
 
