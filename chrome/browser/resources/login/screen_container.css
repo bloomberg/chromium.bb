@@ -131,21 +131,24 @@
 
 #account-picker-dot,
 #app-launch-splash-dot,
+#auto-enrollment-check-dot,
 #autolaunch-dot,
+#confirm-password-dot,
+#controller-pairing-dot,
 #enrollment-dot,
-#kiosk-enable-dot,
-#oauth-enrollment-dot,
-#reset-dot,
 #error-message-dot,
-#tpm-error-message-dot,
-#password-changed-dot,
+#fatal-error-dot,
+#hid-detection-dot,
+#host-pairing-dot,
+#kiosk-enable-dot,
 #managed-user-creation-dot,
 #managed-user-creation-dialog-dot,
+#oauth-enrollment-dot,
+#password-changed-dot,
+#reset-dot,
 #terms-of-service-dot,
-#wrong-hwid-dot,
-#confirm-password-dot,
-#fatal-error-dot,
-#hid-detection-dot {
+#tpm-error-message-dot,
+#wrong-hwid-dot {
   display: none;
 }
 
