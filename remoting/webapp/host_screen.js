@@ -41,13 +41,7 @@ remoting.tryShare = function() {
     remoting.startHostUsingFacade_(hostFacade);
   };
 
-  /** @param {remoting.Error} error */
-  var onFacadeInitializationFailed = function(error) {
-    if (error != remoting.Error.MISSING_PLUGIN) {
-      showShareError_(error);
-      return;
-    }
-
+  var onFacadeInitializationFailed = function() {
     // If we failed to initialize the dispatcher then prompt the user to install
     // the host manually.
     var hasHostDialog = (hostInstallDialog != null);  /** jscompile hack */
