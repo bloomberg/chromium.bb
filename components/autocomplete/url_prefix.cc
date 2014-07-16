@@ -39,7 +39,6 @@ const URLPrefixes& URLPrefix::GetURLPrefixes() {
   if (prefixes.empty()) {
     prefixes.push_back(URLPrefix(base::ASCIIToUTF16("https://www."), 2));
     prefixes.push_back(URLPrefix(base::ASCIIToUTF16("http://www."), 2));
-    prefixes.push_back(URLPrefix(base::ASCIIToUTF16("ftp://ftp."), 2));
     prefixes.push_back(URLPrefix(base::ASCIIToUTF16("ftp://www."), 2));
     prefixes.push_back(URLPrefix(base::ASCIIToUTF16("https://"), 1));
     prefixes.push_back(URLPrefix(base::ASCIIToUTF16("http://"), 1));
