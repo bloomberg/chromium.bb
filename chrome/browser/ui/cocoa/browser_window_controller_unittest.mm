@@ -615,7 +615,7 @@ TEST_F(BrowserWindowControllerTest, TestFindBarOnTop) {
   [controller_ addFindBar:bridge.find_bar_cocoa_controller()];
 
   // Test that the Z-order of the find bar is on top of everything.
-  NSArray* subviews = [[[controller_ window] contentView] subviews];
+  NSArray* subviews = [controller_.chromeContentView subviews];
   NSUInteger findBar_index =
       [subviews indexOfObject:[controller_ findBarView]];
   EXPECT_NE(NSNotFound, findBar_index);
