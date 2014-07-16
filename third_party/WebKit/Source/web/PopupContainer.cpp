@@ -55,9 +55,9 @@
 #include "web/WebViewImpl.h"
 #include <limits>
 
-namespace blink {
-
 using namespace WebCore;
+
+namespace blink {
 
 static const int borderSize = 1;
 

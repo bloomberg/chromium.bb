@@ -37,9 +37,9 @@
 #include "core/frame/Settings.h"
 #include "web/PopupContainer.h"
 
-namespace blink {
-
 using namespace WebCore;
+
+namespace blink {
 
 PopupMenuChromium::PopupMenuChromium(LocalFrame& frame, PopupMenuClient* client)
     : m_popupClient(client)

@@ -69,8 +69,6 @@ private:
     bool m_isSafe;
 };
 
-typedef HashSet<String, CaseFoldingHash> HTTPHeaderSet;
-
 void HTTPRequestHeaderValidator::visitHeader(const WebString& name, const WebString& value)
 {
     m_isSafe = m_isSafe && isValidHTTPToken(name) && XMLHttpRequest::isAllowedHTTPHeader(name) && isValidHTTPHeaderValue(value);

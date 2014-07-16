@@ -30,9 +30,9 @@
 #include "public/web/WebGeolocationPermissionRequest.h"
 #include "wtf/HashMap.h"
 
-namespace blink {
-
 using namespace WebCore;
+
+namespace blink {
 
 typedef PersistentHeapHashMap<Member<Geolocation>, int> GeolocationIdMap;
 typedef PersistentHeapHashMap<int, Member<Geolocation> > IdGeolocationMap;

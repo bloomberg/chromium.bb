@@ -57,10 +57,11 @@
 #include "wtf/CurrentTime.h"
 #include <limits>
 
+using namespace WebCore;
+
 namespace blink {
 
 using namespace WTF::Unicode;
-using namespace WebCore;
 
 const int PopupListBox::defaultMaxHeight = 500;
 static const int maxVisibleRows = 20;
