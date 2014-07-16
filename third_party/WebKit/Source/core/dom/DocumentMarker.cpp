@@ -149,6 +149,15 @@ DocumentMarker::DocumentMarker(MarkerType type, unsigned startOffset, unsigned e
 {
 }
 
+DocumentMarker::DocumentMarker(const DocumentMarker& marker)
+    : m_type(marker.type())
+    , m_startOffset(marker.startOffset())
+    , m_endOffset(marker.endOffset())
+    , m_details(marker.details())
+    , m_hash(marker.hash())
+{
+}
+
 void DocumentMarker::shiftOffsets(int delta)
 {
     m_startOffset += delta;

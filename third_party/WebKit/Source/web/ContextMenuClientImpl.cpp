@@ -154,7 +154,7 @@ static bool IsWhiteSpaceOrPunctuation(UChar c)
     return isSpaceOrNewline(c) || WTF::Unicode::isPunct(c);
 }
 
-static String selectMisspellingAsync(LocalFrame* selectedFrame, DocumentMarker& marker)
+static String selectMisspellingAsync(LocalFrame* selectedFrame, String& description, uint32_t& hash)
 {
     VisibleSelection selection = selectedFrame->selection().selection();
     if (!selection.isCaretOrRange())
@@ -165,12 +165,13 @@ static String selectMisspellingAsync(LocalFrame* selectedFrame, DocumentMarker& 
     DocumentMarkerVector markers = selectedFrame->document()->markers().markersInRange(selectionRange.get(), DocumentMarker::MisspellingMarkers());
     if (markers.size() != 1)
         return String();
-    marker = *markers[0];
+    description = markers[0]->description();
+    hash = markers[0]->hash();
 
     // Cloning a range fails only for invalid ranges.
     RefPtrWillBeRawPtr<Range> markerRange = selectionRange->cloneRange();
-    markerRange->setStart(markerRange->startContainer(), marker.startOffset());
-    markerRange->setEnd(markerRange->endContainer(), marker.endOffset());
+    markerRange->setStart(markerRange->startContainer(), markers[0]->startOffset());
+    markerRange->setEnd(markerRange->endContainer(), markers[0]->endOffset());
 
     if (markerRange->text().stripWhiteSpace(&IsWhiteSpaceOrPunctuation) != selectionRange->text().stripWhiteSpace(&IsWhiteSpaceOrPunctuation))
         return String();
@@ -319,12 +320,13 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
         // words and attaches suggestions to these markers in the background. Therefore, when a user right-clicks
         // a mouse on a word, Chrome just needs to find a spelling marker on the word instead of spellchecking it.
         if (selectedFrame->settings() && selectedFrame->settings()->asynchronousSpellCheckingEnabled()) {
-            DocumentMarker marker;
-            data.misspelledWord = selectMisspellingAsync(selectedFrame, marker);
-            data.misspellingHash = marker.hash();
-            if (marker.description().length()) {
+            String description;
+            uint32_t hash = 0;
+            data.misspelledWord = selectMisspellingAsync(selectedFrame, description, hash);
+            data.misspellingHash = hash;
+            if (description.length()) {
                 Vector<String> suggestions;
-                marker.description().split('\n', suggestions);
+                description.split('\n', suggestions);
                 data.dictionarySuggestions = suggestions;
             } else if (m_webView->spellCheckClient()) {
                 int misspelledOffset, misspelledLength;

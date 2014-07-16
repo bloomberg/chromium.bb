@@ -35,8 +35,7 @@ class DocumentMarkerDetails;
 // It optionally includes a description that could be displayed in the user interface.
 // It also optionally includes a flag specifying whether the match is active, which is ignored
 // for all types other than type TextMatch.
-class DocumentMarker {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+class DocumentMarker : public NoBaseWillBeGarbageCollected<DocumentMarker> {
 public:
     enum MarkerTypeIndex {
         SpellingMarkerIndex = 0,
@@ -99,6 +98,7 @@ public:
     DocumentMarker(MarkerType, unsigned startOffset, unsigned endOffset, const String& description, uint32_t hash);
     DocumentMarker(unsigned startOffset, unsigned endOffset, bool activeMatch);
     DocumentMarker(MarkerType, unsigned startOffset, unsigned endOffset, PassRefPtrWillBeRawPtr<DocumentMarkerDetails>);
+    DocumentMarker(const DocumentMarker&);
 
     MarkerType type() const { return m_type; }
     unsigned startOffset() const { return m_startOffset; }
@@ -157,7 +157,5 @@ public:
 };
 
 } // namespace WebCore
-
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(WebCore::DocumentMarker);
 
 #endif // DocumentMarker_h

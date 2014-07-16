@@ -19,7 +19,7 @@ function waitForMarkersToDisappear(firstNode, secondNode, numberOfTries)
     firstMarkerRange = internals.markerRangeForNode(firstNode, "spelling", 0);
     secondMarkerRange = internals.markerRangeForNode(secondNode, "spelling", 0);
 
-    if (firstMarkerRange && secondMarkerRange && numberOfTries > 0) {
+    if ((firstMarkerRange || secondMarkerRange) && numberOfTries > 0) {
 
         window.setTimeout(function() {
             waitForMarkersToDisappear(firstNode, secondNode, numberOfTries - 1);

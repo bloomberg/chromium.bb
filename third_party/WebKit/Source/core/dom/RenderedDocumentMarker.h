@@ -28,15 +28,15 @@
 #define RenderedDocumentMarker_h
 
 #include "core/dom/DocumentMarker.h"
+#include "platform/geometry/LayoutRect.h"
 
 namespace WebCore {
 
-class RenderedDocumentMarker : public DocumentMarker {
+class RenderedDocumentMarker FINAL : public DocumentMarker {
 public:
-
-    explicit RenderedDocumentMarker(const DocumentMarker& marker)
-        : DocumentMarker(marker), m_renderedRect(invalidMarkerRect())
+    static PassOwnPtrWillBeRawPtr<RenderedDocumentMarker> create(const DocumentMarker& marker)
     {
+        return adoptPtrWillBeNoop(new RenderedDocumentMarker(marker));
     }
 
     bool isRendered() const { return invalidMarkerRect() != m_renderedRect; }
@@ -47,6 +47,12 @@ public:
     void invalidate() { m_renderedRect = invalidMarkerRect(); }
 
 private:
+    explicit RenderedDocumentMarker(const DocumentMarker& marker)
+        : DocumentMarker(marker)
+        , m_renderedRect(invalidMarkerRect())
+    {
+    }
+
     static const LayoutRect& invalidMarkerRect()
     {
         static const LayoutRect rect = LayoutRect(-1, -1, -1, -1);

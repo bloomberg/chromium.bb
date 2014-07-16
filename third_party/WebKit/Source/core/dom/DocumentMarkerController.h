@@ -88,7 +88,7 @@ public:
 private:
     void addMarker(Node*, const DocumentMarker&);
 
-    typedef WillBeHeapVector<RenderedDocumentMarker> MarkerList;
+    typedef WillBeHeapVector<OwnPtrWillBeMember<RenderedDocumentMarker> > MarkerList;
     typedef WillBeHeapVector<OwnPtrWillBeMember<MarkerList>, DocumentMarker::MarkerTypeIndexesCount> MarkerLists;
     typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<const Node>, OwnPtrWillBeMember<MarkerLists> > MarkerMap;
     void mergeOverlapping(MarkerList*, DocumentMarker&);
