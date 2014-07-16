@@ -242,8 +242,9 @@ int ChromeTranslateClient::GetInfobarIconID() const {
 }
 
 // ChromeTranslateClient::CreateInfoBar() is implemented in platform-specific
-// files, except the TOOLKIT_VIEWS implementation, which has been removed.
-#if defined(TOOLKIT_VIEWS)
+// files, except the TOOLKIT_VIEWS implementation, which has been removed. Note
+// for Mac, Cocoa is still providing the infobar in a toolkit-views build.
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
 scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
     scoped_ptr<TranslateInfoBarDelegate> delegate) const {
   return scoped_ptr<infobars::InfoBar>();
