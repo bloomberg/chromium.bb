@@ -15,12 +15,27 @@ asyncTest("basic", 2, function() {
   var builder = document.createElement('ct-builder');
   builder.builderName = 'WebKit Linux (dbg)';
 
-  Platform.endOfMicrotask(function() {
+  builder.async(function() {
     var html = builder.shadowRoot.innerHTML;
 
     var a = builder.shadowRoot.querySelector('a');
     ok(a);
     notEqual(a.href.indexOf('WebKit%20Linux%20(dbg)'), -1);
+
+    start();
+  });
+});
+
+asyncTest("steps", 3, function() {
+  var builder = document.createElement('ct-builder');
+  builder.builderName = 'WebKit Linux (dbg)';
+  builder.steps = ['gclient_revert', 'compile', 'unittests'];
+
+  builder.async(function() {
+    var a = builder.shadowRoot.querySelector('a');
+    ok(a);
+    notEqual(a.href.indexOf('WebKit%20Linux%20(dbg)'), -1);
+    notEqual(a.innerText.indexOf('gclient_revert, compile, unittests'), -1);
 
     start();
   });

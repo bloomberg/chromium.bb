@@ -7,22 +7,32 @@ found in the LICENSE file.
 <polymer-element name="ct-failure-analyzer" attributes="failures status">
   <script>
     Polymer({
-      failures: [],
-
-      pendingFailures: [],
+      failures: {},
+      pendingUnexpectedFailures: [],
 
       update: function() {
-        this.pendingFailures = [];
+        this._updateFailingBuilders();
+        this._updateUnexpectedFailures();
+      },
+
+      _updateFailingBuilders: function() {
+        builders.buildersFailingNonLayoutTests().then((function(builders) {
+          this.failures.builders = builders;
+        }).bind(this));
+      },
+
+      _updateUnexpectedFailures: function() {
+        this.pendingUnexpectedFailures = [];
         var numberOfTestsAnalyzed = 0;
         this.status = 'Updating ...';
         Promise.all([model.updateRecentCommits(), model.updateResultsByBuilder()]).then(function() {
           this.status = 'Analyzing test failures ...';
           model.analyzeUnexpectedFailures(function(failureAnalysis, total) {
             this.status = 'Analyzing test failures ... ' + ++numberOfTestsAnalyzed + '/' + total + ' tests analyzed.';
-            this.pendingFailures.push(failureAnalysis);
+            this.pendingUnexpectedFailures.push(failureAnalysis);
           }.bind(this)).then(function() {
             this.status = 'Done!!!';
-            this.failures = this.pendingFailures;
+            this.failures.unexpected = this.pendingUnexpectedFailures;
           }.bind(this));
         }.bind(this));
       },

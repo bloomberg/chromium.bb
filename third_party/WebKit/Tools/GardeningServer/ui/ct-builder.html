@@ -4,8 +4,12 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<!-- Styled link to a builder composed of the version and architecture. -->
-<polymer-element name="ct-builder" attributes="builderName">
+<!--
+Styled link to a builder composed of the version and architecture, or the
+builder name if the builder is unknown. If an array is passed to |steps|, the
+link will show the builder name and architecture followed by the steps instead.
+-->
+<polymer-element name="ct-builder" attributes="builderName steps">
   <template>
     <style>
       a {
@@ -26,30 +30,51 @@ found in the LICENSE file.
       .version {
         background-color: #555;
         color: white;
+      }
+
+      .version:not(.architecture) {
         text-transform: uppercase;
+      }
+
+      .details {
+        padding-left: 3px;
       }
     </style>
     <a href="{{ builderName|builderURL }}">
       <template if="{{ configuration }}">
         <span class="version">{{ configuration.version }}</span>
         <template if="{{ configuration.is64bit }}">
-          <span class="architecture">64-bit</span>
+          <template if="{{ stepList }}">
+            <span class="version architecture">64-bit</span>
+          </template>
+          <template if="{{ !stepList }}">
+            <span>64-bit</span>
+          </template>
         </template>
       </template>
       <template if="{{ !configuration }}">
         <span class="version">{{ builderName }}</span>
       </template>
+      <template if="{{ stepList }}">
+        <span class="details">{{ stepList }}</span>
+      </template>
     </a>
   </template>
   <script>
     Polymer({
+      steps: [],
+
       ready: function() {
         this.configuration = config.builders[this.builderName];
       },
 
+      stepsChanged: function() {
+        this.stepList = this.steps.join(', ');
+      },
+
       builderURL: function() {
-         return config.waterfallURL + '?builder=' +
-             encodeURIComponent(this.builderName);
+        return config.waterfallURL + '?builder=' +
+            encodeURIComponent(this.builderName);
       },
     });
   </script>
