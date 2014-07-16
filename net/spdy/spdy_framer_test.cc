@@ -2987,7 +2987,7 @@ TEST_P(SpdyFramerTest, CreatePriority) {
   SpdyFramer framer(spdy_version_);
 
   const char kDescription[] = "PRIORITY frame";
-  const char kType = static_cast<unsigned char>(
+  const unsigned char kType = static_cast<unsigned char>(
       SpdyConstants::SerializeFrameType(spdy_version_, PRIORITY));
   const unsigned char kFrameData[] = {
       0x00, 0x05, kType, 0x00,
