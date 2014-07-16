@@ -849,6 +849,7 @@
         '../ppapi/ppapi_internal.gyp:ppapi_host',
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',
         '../ppapi/ppapi_internal.gyp:ppapi_shared',
+        '../third_party/libyuv/libyuv.gyp:libyuv',
       ],
     }, {  # enable_plugins==0
       'sources!': [
