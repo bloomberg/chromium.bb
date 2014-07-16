@@ -170,7 +170,7 @@ class SchemaUtilTest(unittest.TestCase):
     }
 
     inlined_schema = deepcopy(schema)
-    InlineDocs(inlined_schema)
+    InlineDocs(inlined_schema, False)
     self.assertEqual(expected_schema, inlined_schema)
 
   def testDetectInline(self):
@@ -201,7 +201,7 @@ class SchemaUtilTest(unittest.TestCase):
     }
 
     DetectInlineableTypes(schema)
-    InlineDocs(schema)
+    InlineDocs(schema, False)
     self.assertEqual(expected_schema, schema)
 
 

@@ -106,17 +106,6 @@ class CompiledFileSystem(object):
                          category='json')
 
     @memoize
-    def ForAPISchema(self, file_system):
-      '''Creates a CompiledFileSystem for parsing raw JSON or IDL API schema
-      data and formatting it so that it can be used by other classes, such
-      as Model and APISchemaGraph.
-      '''
-      return self.Create(file_system,
-                         SingleFile(Unicode(schema_util.ProcessSchema)),
-                         CompiledFileSystem,
-                         category='api-schema')
-
-    @memoize
     def ForTemplates(self, file_system):
       '''Creates a CompiledFileSystem for parsing templates.
       '''

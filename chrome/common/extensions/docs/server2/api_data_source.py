@@ -217,9 +217,7 @@ class _APINodeCursor(object):
       return None
     node_availability = self._LookupAvailability(self._lookup_path)
     if node_availability is None:
-      if not IsReleaseServer():
-        # Bad, and happens a lot :(
-        logging.warning('No availability found for: %s' % self)
+      logging.warning('No availability found for: %s' % self)
       return None
 
     parent_node_availability = self._LookupAvailability(self._GetParentPath())

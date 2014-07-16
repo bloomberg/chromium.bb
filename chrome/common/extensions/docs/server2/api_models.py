@@ -38,7 +38,7 @@ class APIModels(object):
               node['extension_types'] != 'all' and
               self._platform not in node['extension_types'])
 
-    schema = ProcessSchema(path, data, inline=True)[0]
+    schema = ProcessSchema(path, data)[0]
     if not schema:
       raise ValueError('No schema for %s' % path)
     return Namespace(DeleteNodes(

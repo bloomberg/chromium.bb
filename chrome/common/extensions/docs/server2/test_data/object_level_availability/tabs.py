@@ -4,9 +4,32 @@
 
 import json
 
-from extensions_paths import CHROME_EXTENSIONS
+from extensions_paths import CHROME_EXTENSIONS, SERVER2
 from test_file_system import MoveAllTo
+from test_util import ReadFile
 
+FAKE_TABS_IDL = '\n'.join([
+  '// Copyleft stuff.',
+  '',
+  '// Some description here.',
+  'namespace fakeTabs {',
+  '  dictionary WasImplicitlyInlinedType {};',
+  '  interface Functions {',
+  '    static void myFunc(WasImplicitlyInlinedType arg);',
+  '    static void anotherFunc(WasImplicitlyInlinedType arg);',
+  '  };',
+  '};'])
+
+FAKE_TABS_WITH_INLINING_IDL = '\n'.join([
+  '// Copyleft stuff.',
+  '',
+  '// Some description here.',
+  'namespace fakeTabs {',
+  '  dictionary WasImplicitlyInlinedType {};',
+  '  interface Functions {',
+  '    static void myFunc(WasImplicitlyInlinedType arg);',
+  '  };',
+  '};'])
 
 TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
   'trunk': {
@@ -22,6 +45,7 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
       '_api_features.json': '{}',
       '_manifest_features.json': '{}',
       '_permission_features.json': '{}',
+      'fake_tabs.idl': FAKE_TABS_IDL,
       'tabs.json': json.dumps([{
         'namespace': 'tabs',
         'types': [
@@ -168,6 +192,7 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
       '_api_features.json': "{}",
       '_manifest_features.json': "{}",
       '_permission_features.json': "{}",
+      'fake_tabs.idl': FAKE_TABS_IDL,
       'tabs.json': json.dumps([{
         'namespace': 'tabs',
         'types': [
@@ -265,6 +290,7 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
       '_api_features.json': "{}",
       '_manifest_features.json': "{}",
       '_permission_features.json': "{}",
+      'fake_tabs.idl': FAKE_TABS_IDL,
       'tabs.json': json.dumps([{
         'namespace': 'tabs',
         'types': [
@@ -357,6 +383,7 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
     'api': {
       '_manifest_features.json': "{}",
       '_permission_features.json': "{}",
+      'fake_tabs.idl': FAKE_TABS_IDL,
       'tabs.json': json.dumps([{
         'namespace': 'tabs',
         'types': [
@@ -435,6 +462,7 @@ TABS_SCHEMA_BRANCHES = MoveAllTo(CHROME_EXTENSIONS, {
     'api': {
       '_manifest_features.json': "{}",
       '_permission_features.json': "{}",
+      'fake_tabs.idl': FAKE_TABS_WITH_INLINING_IDL,
       'tabs.json': json.dumps([{
         'namespace': 'tabs',
         'types': [

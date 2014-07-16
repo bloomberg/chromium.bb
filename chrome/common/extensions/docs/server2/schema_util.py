@@ -54,8 +54,10 @@ def DetectInlineableTypes(schema):
         type_['inline_doc'] = True
 
 
-def InlineDocs(schema):
+def InlineDocs(schema, retain_inlined_types):
   '''Replace '$ref's that refer to inline_docs with the json for those docs.
+  If |retain_inlined_types| is False, then the inlined nodes are removed
+  from the schema.
   '''
   types = schema.get('types')
   if types is None:
@@ -68,11 +70,13 @@ def InlineDocs(schema):
   for type_ in types:
     if type_.get('inline_doc'):
       inline_docs[type_['id']] = type_
-      for k in ('description', 'id', 'inline_doc'):
-        type_.pop(k, None)
+      if not retain_inlined_types:
+        for k in ('description', 'id', 'inline_doc'):
+          type_.pop(k, None)
     else:
       types_without_inline_doc.append(type_)
-  schema['types'] = types_without_inline_doc
+  if not retain_inlined_types:
+    schema['types'] = types_without_inline_doc
 
   def apply_inline(node):
     if isinstance(node, list):
@@ -89,10 +93,11 @@ def InlineDocs(schema):
   apply_inline(schema)
 
 
-def ProcessSchema(path, file_data, inline=False):
-  '''Parses |file_data| using a method determined by checking the extension of
-  the file at the given |path|. Then, trims 'nodoc' and if |inline| is given
-  and True, handles inlineable types from the parsed schema data.
+def ProcessSchema(path, file_data, retain_inlined_types=False):
+  '''Parses |file_data| using a method determined by checking the
+  extension of the file at the given |path|. Then, trims 'nodoc' and if
+  |retain_inlined_types| is given and False, removes inlineable types from
+  the parsed schema data.
   '''
   def trim_and_inline(schema, is_idl=False):
     '''Modifies an API schema in place by removing nodes that shouldn't be
@@ -102,10 +107,9 @@ def ProcessSchema(path, file_data, inline=False):
       # A return of True signifies that the entire schema should not be
       # documented. Otherwise, only nodes that request 'nodoc' are removed.
       return None
-    if inline:
-      if is_idl:
-        DetectInlineableTypes(schema)
-      InlineDocs(schema)
+    if is_idl:
+      DetectInlineableTypes(schema)
+    InlineDocs(schema, retain_inlined_types)
     return schema
 
   if path.endswith('.idl'):

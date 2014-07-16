@@ -6,9 +6,11 @@ import posixpath
 
 from api_schema_graph import APISchemaGraph
 from branch_utility import BranchUtility, ChannelInfo
+from compiled_file_system import CompiledFileSystem, SingleFile, Unicode
 from extensions_paths import API_PATHS, JSON_TEMPLATES
 from features_bundle import FeaturesBundle
 from file_system import FileNotFoundError
+from schema_util import ProcessSchema
 from third_party.json_schema_compiler.memoize import memoize
 from third_party.json_schema_compiler.model import UnixName
 
@@ -142,6 +144,21 @@ class AvailabilityFinder(object):
     return AvailabilityInfo(
         self._branch_utility.GetChannelInfo(api_info['channel']))
 
+  @memoize
+  def _CreateAPISchemaFileSystem(self, file_system):
+    '''Creates a CompiledFileSystem for parsing raw JSON or IDL API schema
+    data and formatting it so that it can be used to create APISchemaGraphs.
+    '''
+    # When processing the API schemas, we retain inlined types in the schema
+    # so that there are not missing nodes in the APISchemaGraphs when trying
+    # to lookup availability.
+    def process_schema(path, data):
+      return ProcessSchema(path, data, retain_inlined_types=True)
+    return self._compiled_fs_factory.Create(file_system,
+                                            SingleFile(Unicode(process_schema)),
+                                            CompiledFileSystem,
+                                            category='api-schema')
+
   def _GetAPISchema(self, api_name, file_system, version):
     '''Searches |file_system| for |api_name|'s API schema data, and processes
     and returns it if found.
@@ -151,7 +168,7 @@ class AvailabilityFinder(object):
       # No file for the API could be found in the given |file_system|.
       return None
 
-    schema_fs = self._compiled_fs_factory.ForAPISchema(file_system)
+    schema_fs = self._CreateAPISchemaFileSystem(file_system)
     api_schemas = schema_fs.GetFromFile(api_filename).Get()
     matching_schemas = [api for api in api_schemas
                         if api['namespace'] == api_name]
