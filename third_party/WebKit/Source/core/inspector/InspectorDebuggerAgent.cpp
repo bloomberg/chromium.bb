@@ -838,36 +838,6 @@ void InspectorDebuggerAgent::didPerformExecutionContextTask()
         m_asyncCallStackTracker.didFireAsyncCall();
 }
 
-void InspectorDebuggerAgent::didEnqueueAsyncFileSystemCallback(ExecutionContext* context, AsyncFileSystemCallbacks* callback)
-{
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didEnqueueAsyncFileSystemCallback(context, callback, scriptDebugServer().currentCallFramesForAsyncStack());
-}
-
-void InspectorDebuggerAgent::didRemoveAsyncFileSystemCallback(ExecutionContext* context, AsyncFileSystemCallbacks* callback)
-{
-    if (m_asyncCallStackTracker.isEnabled())
-        m_asyncCallStackTracker.didRemoveAsyncFileSystemCallback(context, callback);
-}
-
-void InspectorDebuggerAgent::willHandleAsyncFileSystemCallback(ExecutionContext* context, AsyncFileSystemCallbacks* callback, bool willReschedule, bool hasMore)
-{
-    if (!m_asyncCallStackTracker.isEnabled())
-        return;
-    if (willReschedule)
-        m_asyncCallStackTracker.willRescheduleAsyncCallChain();
-    m_asyncCallStackTracker.willHandleAsyncFileSystemCallback(context, callback, hasMore);
-}
-
-void InspectorDebuggerAgent::didHandleAsyncFileSystemCallback(ExecutionContext* context, AsyncFileSystemCallbacks* callback, bool didReschedule)
-{
-    if (!m_asyncCallStackTracker.isEnabled())
-        return;
-    m_asyncCallStackTracker.didFireAsyncCall();
-    if (didReschedule)
-        m_asyncCallStackTracker.didRescheduleAsyncCallChain();
-}
-
 void InspectorDebuggerAgent::didReceiveV8AsyncTaskEvent(ExecutionContext* context, const String& eventType, const String& eventName, int id)
 {
     if (!m_asyncCallStackTracker.isEnabled())

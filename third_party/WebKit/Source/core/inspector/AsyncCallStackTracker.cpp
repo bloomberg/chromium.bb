@@ -40,7 +40,6 @@
 #include "core/events/EventTarget.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "core/xml/XMLHttpRequestUpload.h"
-#include "platform/AsyncFileSystemCallbacks.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
 #include <v8.h>
@@ -52,7 +51,6 @@ static const char setIntervalName[] = "setInterval";
 static const char requestAnimationFrameName[] = "requestAnimationFrame";
 static const char xhrSendName[] = "XMLHttpRequest.send";
 static const char enqueueMutationRecordName[] = "Mutation";
-static const char fileSystemName[] = "FileSystem";
 
 }
 
@@ -85,7 +83,6 @@ public:
     HashMap<EventTarget*, RefPtr<AsyncCallChain> > m_xhrCallChains;
     HashMap<MutationObserver*, RefPtr<AsyncCallChain> > m_mutationObserverCallChains;
     HashMap<ExecutionContextTask*, RefPtr<AsyncCallChain> > m_executionContextTaskCallChains;
-    HashMap<AsyncFileSystemCallbacks*, RefPtr<AsyncCallChain> > m_fileSystemCallChains;
     HashMap<String, RefPtr<AsyncCallChain> > m_v8AsyncTaskCallChains;
 };
 
@@ -333,38 +330,6 @@ void AsyncCallStackTracker::willPerformExecutionContextTask(ExecutionContext* co
         setCurrentAsyncCallChain(context, nullptr);
 }
 
-void AsyncCallStackTracker::didEnqueueAsyncFileSystemCallback(ExecutionContext* context, AsyncFileSystemCallbacks* callback, const ScriptValue& callFrames)
-{
-    ASSERT(context);
-    ASSERT(isEnabled());
-    if (!validateCallFrames(callFrames))
-        return;
-    ExecutionContextData* data = createContextDataIfNeeded(context);
-    data->m_fileSystemCallChains.set(callback, createAsyncCallChain(fileSystemName, callFrames));
-}
-
-void AsyncCallStackTracker::didRemoveAsyncFileSystemCallback(ExecutionContext* context, AsyncFileSystemCallbacks* callback)
-{
-    ASSERT(context);
-    ASSERT(isEnabled());
-    if (ExecutionContextData* data = m_executionContextDataMap.get(context))
-        data->m_fileSystemCallChains.remove(callback);
-}
-
-void AsyncCallStackTracker::willHandleAsyncFileSystemCallback(ExecutionContext* context, AsyncFileSystemCallbacks* callback, bool hasMore)
-{
-    ASSERT(context);
-    ASSERT(isEnabled());
-    if (ExecutionContextData* data = m_executionContextDataMap.get(context)) {
-        if (hasMore)
-            setCurrentAsyncCallChain(context, data->m_fileSystemCallChains.get(callback));
-        else
-            setCurrentAsyncCallChain(context, data->m_fileSystemCallChains.take(callback));
-    } else {
-        setCurrentAsyncCallChain(context, nullptr);
-    }
-}
-
 static String makeV8AsyncTaskUniqueId(const String& eventName, int id)
 {
     StringBuilder builder;
@@ -398,28 +363,11 @@ void AsyncCallStackTracker::didFireAsyncCall()
     clearCurrentAsyncCallChain();
 }
 
-void AsyncCallStackTracker::willRescheduleAsyncCallChain()
-{
-    ASSERT(isEnabled());
-    if (!m_rescheduledAsyncCallChain)
-        m_rescheduleNextAsyncCallChain = true;
-}
-
-void AsyncCallStackTracker::didRescheduleAsyncCallChain()
-{
-    ASSERT(isEnabled());
-    m_rescheduleNextAsyncCallChain = false;
-    m_rescheduledAsyncCallChain.clear();
-}
-
 PassRefPtr<AsyncCallStackTracker::AsyncCallChain> AsyncCallStackTracker::createAsyncCallChain(const String& description, const ScriptValue& callFrames)
 {
-    // Check if we should propogate the async call stack chain.
-    if (m_rescheduledAsyncCallChain)
-        return m_rescheduledAsyncCallChain;
     if (callFrames.isEmpty()) {
         ASSERT(m_currentAsyncCallChain);
-        return m_currentAsyncCallChain;
+        return m_currentAsyncCallChain; // Propogate async call stack chain.
     }
     RefPtr<AsyncCallChain> chain = adoptRef(m_currentAsyncCallChain ? new AsyncCallStackTracker::AsyncCallChain(*m_currentAsyncCallChain) : new AsyncCallStackTracker::AsyncCallChain());
     ensureMaxAsyncCallChainDepth(chain.get(), m_maxAsyncCallStackDepth - 1);
@@ -429,10 +377,6 @@ PassRefPtr<AsyncCallStackTracker::AsyncCallChain> AsyncCallStackTracker::createA
 
 void AsyncCallStackTracker::setCurrentAsyncCallChain(ExecutionContext* context, PassRefPtr<AsyncCallChain> chain)
 {
-    if (m_rescheduleNextAsyncCallChain) {
-        m_rescheduleNextAsyncCallChain = false;
-        m_rescheduledAsyncCallChain = chain.get();
-    }
     if (V8RecursionScope::recursionLevel(toIsolate(context))) {
         if (m_currentAsyncCallChain)
             ++m_nestedAsyncCallCount;
@@ -460,7 +404,7 @@ void AsyncCallStackTracker::ensureMaxAsyncCallChainDepth(AsyncCallChain* chain, 
 
 bool AsyncCallStackTracker::validateCallFrames(const ScriptValue& callFrames)
 {
-    return !callFrames.isEmpty() || m_currentAsyncCallChain || m_rescheduledAsyncCallChain;
+    return !callFrames.isEmpty() || m_currentAsyncCallChain;
 }
 
 AsyncCallStackTracker::ExecutionContextData* AsyncCallStackTracker::createContextDataIfNeeded(ExecutionContext* context)
@@ -477,8 +421,6 @@ void AsyncCallStackTracker::clear()
 {
     m_currentAsyncCallChain.clear();
     m_nestedAsyncCallCount = 0;
-    m_rescheduleNextAsyncCallChain = false;
-    m_rescheduledAsyncCallChain.clear();
     ExecutionContextDataMap copy;
     m_executionContextDataMap.swap(copy);
     for (ExecutionContextDataMap::const_iterator it = copy.begin(); it != copy.end(); ++it)

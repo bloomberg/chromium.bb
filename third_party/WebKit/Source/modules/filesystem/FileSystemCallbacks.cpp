@@ -35,7 +35,6 @@
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileError.h"
 #include "core/html/VoidCallback.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
@@ -56,34 +55,6 @@
 
 namespace WebCore {
 
-namespace {
-
-class HandleCallbackScope FINAL {
-    WTF_MAKE_NONCOPYABLE(HandleCallbackScope);
-public:
-    HandleCallbackScope(PassRefPtrWillBeRawPtr<ExecutionContext> executionContext, FileSystemCallbacksBase* callback, bool reschedule = false, bool hasMore = false)
-        : m_executionContext(executionContext)
-        , m_callback(callback)
-        , m_reschedule(reschedule)
-    {
-        if (m_executionContext)
-            InspectorInstrumentation::willHandleAsyncFileSystemCallback(m_executionContext.get(), m_callback, m_reschedule, hasMore);
-    }
-
-    ~HandleCallbackScope()
-    {
-        if (m_executionContext)
-            InspectorInstrumentation::didHandleAsyncFileSystemCallback(m_executionContext.get(), m_callback, m_reschedule);
-    }
-
-private:
-    RefPtrWillBePersistent<ExecutionContext> m_executionContext;
-    FileSystemCallbacksBase* m_callback;
-    bool m_reschedule;
-};
-
-} // namespace
-
 FileSystemCallbacksBase::FileSystemCallbacksBase(PassOwnPtr<ErrorCallback> errorCallback, DOMFileSystemBase* fileSystem, ExecutionContext* context)
     : m_errorCallback(errorCallback)
     , m_fileSystem(fileSystem)
@@ -91,14 +62,10 @@ FileSystemCallbacksBase::FileSystemCallbacksBase(PassOwnPtr<ErrorCallback> error
 {
     if (m_fileSystem)
         m_fileSystem->addPendingCallbacks();
-    if (m_executionContext)
-        InspectorInstrumentation::didEnqueueAsyncFileSystemCallback(m_executionContext.get(), this);
 }
 
 FileSystemCallbacksBase::~FileSystemCallbacksBase()
 {
-    if (m_executionContext)
-        InspectorInstrumentation::didRemoveAsyncFileSystemCallback(m_executionContext.get(), this);
     if (m_fileSystem)
         m_fileSystem->removePendingCallbacks();
 }
@@ -118,14 +85,10 @@ template <typename CB, typename CBArg>
 void FileSystemCallbacksBase::handleEventOrScheduleCallback(PassOwnPtr<CB> callback, CBArg* arg)
 {
     ASSERT(callback.get());
-    if (shouldScheduleCallback()) {
-        HandleCallbackScope scope(m_executionContext, this, true /* reschedule */);
+    if (shouldScheduleCallback())
         DOMFileSystem::scheduleCallback(m_executionContext.get(), callback, arg);
-    } else {
-        HandleCallbackScope scope(m_executionContext, this);
-        if (callback)
-            callback->handleEvent(arg);
-    }
+    else if (callback)
+        callback->handleEvent(arg);
     m_executionContext.clear();
 }
 
@@ -133,14 +96,10 @@ template <typename CB, typename CBArg>
 void FileSystemCallbacksBase::handleEventOrScheduleCallback(PassOwnPtr<CB> callback, PassRefPtrWillBeRawPtr<CBArg> arg)
 {
     ASSERT(callback.get());
-    if (shouldScheduleCallback()) {
-        HandleCallbackScope scope(m_executionContext, this, true /* reschedule */);
+    if (shouldScheduleCallback())
         DOMFileSystem::scheduleCallback(m_executionContext.get(), callback, arg);
-    } else {
-        HandleCallbackScope scope(m_executionContext, this);
-        if (callback)
-            callback->handleEvent(arg.get());
-    }
+    else if (callback)
+        callback->handleEvent(arg.get());
     m_executionContext.clear();
 }
 
@@ -148,14 +107,10 @@ template <typename CB>
 void FileSystemCallbacksBase::handleEventOrScheduleCallback(PassOwnPtr<CB> callback)
 {
     ASSERT(callback.get());
-    if (shouldScheduleCallback()) {
-        HandleCallbackScope scope(m_executionContext, this, true /* reschedule */);
+    if (shouldScheduleCallback())
         DOMFileSystem::scheduleCallback(m_executionContext.get(), callback);
-    } else {
-        HandleCallbackScope scope(m_executionContext, this);
-        if (callback)
-            callback->handleEvent();
-    }
+    else if (callback)
+        callback->handleEvent();
     m_executionContext.clear();
 }
 
@@ -214,7 +169,6 @@ void EntriesCallbacks::didReadDirectoryEntries(bool hasMore)
     EntryHeapVector entries;
     entries.swap(m_entries);
     // FIXME: delay the callback iff shouldScheduleCallback() is true.
-    HandleCallbackScope scope(m_executionContext, this, false /* reschedule */, hasMore);
     if (m_successCallback)
         m_successCallback->handleEvent(entries);
 }

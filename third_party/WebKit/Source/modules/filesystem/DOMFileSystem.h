@@ -105,25 +105,9 @@ public:
 private:
     DOMFileSystem(ExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);
 
-    class DispatchCallbackTaskBase : public ExecutionContextTask {
-    public:
-        DispatchCallbackTaskBase()
-            : m_taskName("FileSystem")
-        {
-        }
-
-        virtual const String& taskNameForInstrumentation() const OVERRIDE
-        {
-            return m_taskName;
-        }
-
-    private:
-        const String m_taskName;
-    };
-
     // A helper template to schedule a callback task.
     template <typename CB, typename CBArg>
-    class DispatchCallbackRefPtrArgTask FINAL : public DispatchCallbackTaskBase {
+    class DispatchCallbackRefPtrArgTask FINAL : public ExecutionContextTask {
     public:
         DispatchCallbackRefPtrArgTask(PassOwnPtr<CB> callback, PassRefPtrWillBeRawPtr<CBArg> arg)
             : m_callback(callback)
@@ -142,7 +126,7 @@ private:
     };
 
     template <typename CB, typename CBArg>
-    class DispatchCallbackPtrArgTask FINAL : public DispatchCallbackTaskBase {
+    class DispatchCallbackPtrArgTask FINAL : public ExecutionContextTask {
     public:
         DispatchCallbackPtrArgTask(PassOwnPtr<CB> callback, CBArg* arg)
             : m_callback(callback)
@@ -161,7 +145,7 @@ private:
     };
 
     template <typename CB, typename CBArg>
-    class DispatchCallbackNonPtrArgTask FINAL : public DispatchCallbackTaskBase {
+    class DispatchCallbackNonPtrArgTask FINAL : public ExecutionContextTask {
     public:
         DispatchCallbackNonPtrArgTask(PassOwnPtr<CB> callback, const CBArg& arg)
             : m_callback(callback)
@@ -180,7 +164,7 @@ private:
     };
 
     template <typename CB>
-    class DispatchCallbackNoArgTask FINAL : public DispatchCallbackTaskBase {
+    class DispatchCallbackNoArgTask FINAL : public ExecutionContextTask {
     public:
         DispatchCallbackNoArgTask(PassOwnPtr<CB> callback)
             : m_callback(callback)

@@ -41,8 +41,6 @@ ${includes}
 
 namespace WebCore {
 
-${forward_declarations}
-
 namespace InspectorInstrumentation {
 
 $methods
@@ -197,7 +195,6 @@ class File:
         self.name = name
         self.header_name = self.name + "Inl"
         self.includes = [include_inspector_header("InspectorInstrumentation")]
-        self.forward_declarations = []
         self.declarations = []
         for line in map(str.strip, source.split("\n")):
             line = re.sub("\s{2,}", " ", line).strip()  # Collapse whitespace
@@ -205,12 +202,9 @@ class File:
                 continue
             if line[0] == "#":
                 self.includes.append(line)
-            elif line.startswith("class "):
-                self.forward_declarations.append(line)
             else:
                 self.declarations.append(Method(line))
         self.includes.sort()
-        self.forward_declarations.sort()
 
     def generate(self, cpp_lines, used_agents):
         header_lines = []
@@ -223,7 +217,6 @@ class File:
         return template_h.substitute(None,
                                      file_name=self.header_name,
                                      includes="\n".join(self.includes),
-                                     forward_declarations="\n".join(self.forward_declarations),
                                      methods="\n".join(header_lines))
 
 

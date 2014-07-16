@@ -47,7 +47,6 @@
 
 namespace WebCore {
 
-class AsyncFileSystemCallbacks;
 class Document;
 class Event;
 class EventListener;
@@ -165,10 +164,6 @@ public:
     void didKillAllExecutionContextTasks(ExecutionContext*);
     void willPerformExecutionContextTask(ExecutionContext*, ExecutionContextTask*);
     void didPerformExecutionContextTask();
-    void didEnqueueAsyncFileSystemCallback(ExecutionContext*, AsyncFileSystemCallbacks*);
-    void didRemoveAsyncFileSystemCallback(ExecutionContext*, AsyncFileSystemCallbacks*);
-    void willHandleAsyncFileSystemCallback(ExecutionContext*, AsyncFileSystemCallbacks*, bool willReschedule, bool hasMore);
-    void didHandleAsyncFileSystemCallback(ExecutionContext*, AsyncFileSystemCallbacks*, bool didReschedule);
     bool canBreakProgram();
     void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
     void scriptExecutionBlockedByCSP(const String& directiveText);
