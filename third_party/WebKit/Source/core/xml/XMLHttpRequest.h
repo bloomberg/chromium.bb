@@ -28,7 +28,6 @@
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/xml/XMLHttpRequestEventTarget.h"
 #include "core/xml/XMLHttpRequestProgressEventThrottle.h"
-#include "platform/AsyncMethodRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/FormData.h"
 #include "platform/network/ResourceResponse.h"
@@ -83,15 +82,11 @@ public:
         ResponseTypeStream
     };
 
-    enum DropProtection {
-        DropProtectionSync,
-        DropProtectionAsync,
-    };
-
     virtual void contextDestroyed() OVERRIDE;
     virtual void suspend() OVERRIDE;
     virtual void resume() OVERRIDE;
     virtual void stop() OVERRIDE;
+    virtual bool hasPendingActivity() const OVERRIDE;
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
@@ -184,12 +179,10 @@ private:
     void changeState(State newState);
     void dispatchReadyStateChangeEvent();
 
-    void dropProtectionSoon();
-    void dropProtection();
     // Clears variables used only while the resource is being loaded.
     void clearVariablesForLoading();
     // Returns false iff reentry happened and a new load is started.
-    bool internalAbort(DropProtection = DropProtectionSync);
+    bool internalAbort();
     // Clears variables holding response header and body data.
     void clearResponse();
     void clearRequest();
@@ -239,7 +232,6 @@ private:
 
     RefPtr<ArrayBuffer> m_responseArrayBuffer;
 
-
     // Used for onprogress tracking
     long long m_receivedLength;
 
@@ -254,7 +246,6 @@ private:
 
     // An enum corresponding to the allowed string values for the responseType attribute.
     ResponseTypeCode m_responseTypeCode;
-    AsyncMethodRunner<XMLHttpRequest> m_dropProtectionRunner;
     RefPtr<SecurityOrigin> m_securityOrigin;
 
     bool m_async;
