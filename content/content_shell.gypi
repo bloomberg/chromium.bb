@@ -519,9 +519,6 @@
         'INFOPLIST_FILE': 'shell/app/app-Info.plist',
       },
       'msvs_settings': {
-        'VCLinkerTool': {
-          'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
-        },
         'VCManifestTool': {
           'AdditionalManifestFiles': [
             'shell/app/shell.exe.manifest',
@@ -553,6 +550,13 @@
             '../sandbox/sandbox.gyp:sandbox',
           ],
         }],  # OS=="win"
+        ['OS=="win" and asan==0', {
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
+            },
+          },
+        }],  # OS=="win" and asan==0
         ['OS=="mac"', {
           'product_name': '<(content_shell_product_name)',
           'dependencies!': [
