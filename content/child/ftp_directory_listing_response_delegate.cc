@@ -82,7 +82,10 @@ void FtpDirectoryListingResponseDelegate::OnReceivedData(const char* data,
 
 void FtpDirectoryListingResponseDelegate::OnCompletedRequest() {
   std::vector<FtpDirectoryListingEntry> entries;
-  int rv = net::ParseFtpDirectoryListing(buffer_, base::Time::Now(), &entries);
+  int rv = -1;
+#if !defined(DISABLE_FTP_SUPPORT)
+  rv = net::ParseFtpDirectoryListing(buffer_, base::Time::Now(), &entries);
+#endif
   if (rv != net::OK) {
     SendDataToClient("<script>onListingParsingError();</script>\n");
     return;
