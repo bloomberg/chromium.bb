@@ -776,6 +776,8 @@ Gallery.prototype.onFilenameEditBlur_ = function(event) {
       event.metadata = null;  // Metadata unchanged.
       this.dataModel_.dispatchEvent(event);
     }.bind(this), function(error) {
+      if (error === 'NOT_CHANGED')
+        return;
       this.filenameEdit_.value =
           ImageUtil.getDisplayNameFromName(item.getEntry().name);
       this.filenameEdit_.focus();

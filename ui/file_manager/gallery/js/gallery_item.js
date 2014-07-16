@@ -255,15 +255,15 @@ Gallery.Item.prototype.saveToFile = function(
  * Renames the item.
  *
  * @param {string} displayName New display name (without the extension).
- * @return {Promise} Promise fulfilled after renaming, or rejected with
- *     GalleryRenameError.
+ * @return {Promise} Promise fulfilled with when renaming completes, or rejected
+ *     with the error message.
  */
 Gallery.Item.prototype.rename = function(displayName) {
   var newFileName = this.entry_.name.replace(
       ImageUtil.getDisplayNameFromName(this.entry_.name), displayName);
 
   if (newFileName === this.entry_.name)
-    return Promise.resolve();
+    return Promise.reject('NOT_CHANGED');
 
   if (/^\s*$/.test(displayName))
     return Promise.reject(str('ERROR_WHITESPACE_NAME'));
