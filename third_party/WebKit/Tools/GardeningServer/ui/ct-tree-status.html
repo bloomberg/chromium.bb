@@ -1,0 +1,47 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<polymer-element name="ct-tree-status" attributes="project">
+  <template>
+    <style>
+      span {
+        padding: 0 1em;
+        max-width: 10em;
+        whitespace: nowrap;
+        overflow: hidden;
+        text-overflow: ellispis;
+      }
+    </style>
+    <span id="content">{{project}}: {{status}}</span>
+  </template>
+  <script>
+    Polymer({
+      status: "unknown",
+      update: function() {
+	var url = treestatus.urlByName(this.project);
+        return net.json(url).then(function(response) {
+	  this.updateStatus(response);
+	}.bind(this));
+      },
+      updateStatus: function(status) {
+        if (status.can_commit_freely) {
+          this.status = "Tree is open";
+          this.$.content.style.backgroundColor = "mediumturquoise";
+        } else {
+          this.status = status.message + " by " + status.username;
+	  var responseLowerCase = status.message.toLowerCase();
+          if (responseLowerCase.indexOf("throttled") != -1) {
+            this.$.content.style.backgroundColor = "khaki";
+          } else if (responseLowerCase.indexOf("closed") != -1) {
+            this.$.content.style.backgroundColor = "tomato";
+          } else {
+            this.$.content.style.backgroundColor = "";
+	  }
+        }
+      },
+    });
+  </script>
+</polymer-element>

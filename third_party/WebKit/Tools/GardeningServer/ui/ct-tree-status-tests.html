@@ -1,0 +1,78 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-tree-status.html">
+
+<script>
+(function () {
+
+module("ct-tree-status");
+
+openTreeJson = {
+  "username": "username@test.org",
+  "message": "Tree is open",
+  "can_commit_freely": true
+}
+
+throttledTreeJson = {
+  "username": "username@test.org",
+  "message": "Tree is throttled just for fun",
+  "can_commit_freely": false
+}
+
+closedTreeJson = {
+  "username": "username@test.org",
+  "message": "Tree is closed for maintenance",
+  "can_commit_freely": false
+}
+
+asyncTest("basic", 7, function() {
+  var simulator = new NetworkSimulator();
+  simulator.json = function(url) {
+    if (url.indexOf('closed') != -1)
+      return Promise.resolve(closedTreeJson);
+    else if (url.indexOf('throttled') != -1)
+      return Promise.resolve(throttledTreeJson);
+    else
+      return Promise.resolve(openTreeJson);
+  };
+  var opentree = document.createElement("ct-tree-status");
+  opentree.setAttribute("project", "open-tree-project");
+  var throttledtree = document.createElement("ct-tree-status");
+  throttledtree.setAttribute("project", "throttled-tree-project");
+  var closedtree = document.createElement("ct-tree-status");
+  closedtree.setAttribute("project", "closed-tree-project");
+  simulator.runTest(function() {
+    var urlByName = treestatus.urlByName;
+    treestatus.urlByName = function(name) {
+      return name + "-status.appspot.com/current?format=json";
+    }
+    Promise.all([
+      opentree.update().then(function() {
+        equal(opentree.status, "Tree is open");
+        equal(opentree.$.content.style.backgroundColor, "rgb(72, 209, 204)");
+      }),
+      throttledtree.update().then(function() {
+        equal(throttledtree.status,
+              "Tree is throttled just for fun by username@test.org");
+        equal(throttledtree.$.content.style.backgroundColor,
+              "rgb(240, 230, 140)");
+      }),
+      closedtree.update().then(function() {
+        equal(closedtree.status,
+              "Tree is closed for maintenance by username@test.org");
+        equal(closedtree.$.content.style.backgroundColor,
+              "rgb(255, 99, 71)");
+      })
+    ]).then(function() {
+      start();
+      treestatus.urlByName = urlByName;
+    });
+  });
+});
+
+})();
+</script>

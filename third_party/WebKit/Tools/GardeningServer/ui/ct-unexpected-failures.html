@@ -10,10 +10,21 @@ found in the LICENSE file.
 <link rel="import" href="ct-failure-analyzer.html">
 <link rel="import" href="ct-failure-grouper.html">
 <link rel="import" href="ct-failure-stream.html">
+<link rel="import" href="ct-tree-status.html">
 
 <polymer-element name="ct-unexpected-failures">
   <template>
     <style>
+      .topbar > paper-button {
+        margin-right: 10px;
+        max-height: 35px;
+        min-width: 90px;
+      }
+
+      .treestatus > p {
+        margin: 1px 0;
+      }
+
       paper-toast {
         bottom: 40px;
         left: 10px;
@@ -31,10 +42,14 @@ found in the LICENSE file.
     </style>
     <ct-failure-analyzer id="analyzer" status="{{ analyzerStatus }}" failures="{{ failures }}"></ct-failure-analyzer>
     <ct-failure-grouper failures="{{ failures.unexpected }}" groups="{{ failureGroups }}"></ct-failure-grouper>
-    <div>
+    <div class="topbar" horizontal layout>
       <paper-button on-tap="{{ update }}">Update</paper-button>
-      <ct-failing-builders builders="{{ failures.builders }}"></ct-failing-builders>
+      <div class="treestatus" vertical layout>
+        <p><ct-tree-status project="chromium"></ct-tree-status></p>
+        <p><ct-tree-status project="blink"></ct-tree-status></p>
+      </div>
     </div>
+    <ct-failing-builders builders="{{ failures.builders }}"></ct-failing-builders>
     <ct-failure-stream groups="{{ failureGroups }}"></ct-failure-stream>
     <paper-toast id="toast" text="{{ analyzerStatus }}"></paper-toast>
   </template>
@@ -47,6 +62,9 @@ found in the LICENSE file.
 
       update: function() {
         this.$.analyzer.update();
+        var treeStatuses = this.shadowRoot.querySelectorAll("ct-tree-status");
+        for (var i = 0; i < treeStatuses.length; i++)
+	  treeStatuses[i].update();
       },
 
       analyzerStatusChanged: function() {
