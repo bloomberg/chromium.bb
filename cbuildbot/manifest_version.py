@@ -14,7 +14,8 @@ import re
 import shutil
 import tempfile
 
-from chromite.cbuildbot import constants, metadata_lib, repository
+from chromite.cbuildbot import constants
+from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gs
@@ -759,17 +760,20 @@ class BuildSpecsManager(object):
     except gs.GSContextException as e:
       raise GenerateBuildSpecException(e)
 
-  def _SetPassSymlinks(self):
-    """Marks the buildspec as passed by creating a symlink in passed dir."""
-    local_builder_status = metadata_lib.LocalBuilderStatus.Get()
+  def _SetPassSymlinks(self, success_map):
+    """Marks the buildspec as passed by creating a symlink in passed dir.
+
+    Args:
+      success_map: Map of config names to whether they succeeded.
+    """
     src_file = '%s.xml' % os.path.join(self.all_specs_dir, self.current_version)
     for i, build_name in enumerate(self.build_names):
-      status = local_builder_status.GetBuilderStatus(build_name)
-      if status == constants.FINAL_STATUS_PASSED:
-        pass_dir = self.pass_dirs[i]
+      if success_map[build_name]:
+        sym_dir = self.pass_dirs[i]
       else:
-        pass_dir = self.fail_dirs[i]
-      dest_file = '%s.xml' % os.path.join(pass_dir, self.current_version)
+        sym_dir = self.fail_dirs[i]
+      dest_file = '%s.xml' % os.path.join(sym_dir, self.current_version)
+      status = BuilderStatus.GetCompletedStatus(success_map[build_name])
       logging.debug('Build %s: %s -> %s', status, src_file, dest_file)
       CreateSymlink(src_file, dest_file)
 
@@ -777,12 +781,12 @@ class BuildSpecsManager(object):
     """Pushes any changes you have in the manifest directory."""
     _PushGitChanges(self.manifest_dir, commit_message, dry_run=self.dry_run)
 
-  def UpdateStatus(self, success, message=None, retries=NUM_RETRIES,
+  def UpdateStatus(self, success_map, message=None, retries=NUM_RETRIES,
                    dashboard_url=None):
     """Updates the status of the build for the current build spec.
 
     Args:
-      success: True for success, False for failure
+      success_map: Map of config names to whether they succeeded.
       message: Message accompanied with change in status.
       retries: Number of retries for updating the status
       dashboard_url: Optional url linking to builder dashboard for this build.
@@ -794,12 +798,13 @@ class BuildSpecsManager(object):
       try:
         self.RefreshManifestCheckout()
         git.CreatePushBranch(PUSH_BRANCH, self.manifest_dir, sync=False)
+        success = all(success_map.values())
         commit_message = ('Automatic checkin: status=%s build_version %s for '
                           '%s' % (BuilderStatus.GetCompletedStatus(success),
                                   self.current_version,
                                   self.build_names[0]))
 
-        self._SetPassSymlinks()
+        self._SetPassSymlinks(success_map)
 
         self.PushSpecChanges(commit_message)
       except cros_build_lib.RunCommandError as e:

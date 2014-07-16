@@ -33,64 +33,6 @@ METADATA_URL_GLOB = os.path.join(ARCHIVE_ROOT,
 LATEST_URL = os.path.join(ARCHIVE_ROOT, 'LATEST-master')
 
 
-class LocalBuilderStatus(object):
-  """Class for parsing our local build results."""
-
-  def __init__(self, general_status, board_status_map):
-    """Initialize a LocalBuilderStatus object.
-
-    Args:
-      general_status: The status of general (not board-specific) steps. This is
-        set to FINAL_STATUS_FAILED if any general steps failed.
-      board_status_map: A dictionary mapping boards to the status of the
-        board-specific steps.
-    """
-    self.general_status = general_status
-    self.board_status_map = board_status_map
-
-  @classmethod
-  def Get(cls):
-    """Create a LocalBuilderStatus object containing our current results."""
-    board_status_map = {}
-    general_status = constants.FINAL_STATUS_PASSED
-    for entry in results_lib.Results.Get():
-      passed = entry.result in results_lib.Results.NON_FAILURE_TYPES
-      if entry.board:
-        if passed:
-          board_status_map.setdefault(entry.board,
-                                      constants.FINAL_STATUS_PASSED)
-        else:
-          board_status_map[entry.board] = constants.FINAL_STATUS_FAILED
-      elif not passed:
-        general_status = constants.FINAL_STATUS_FAILED
-
-    return cls(general_status, board_status_map)
-
-  def GetBuilderStatus(self, config_name):
-    """Get the status of the given |config_name| from |board_status_map|.
-
-    A builder is marked as passed if all general steps passed and all steps
-    specific to its boards passed. If a board did not show up in the logs
-    at all (e.g. because the builder aborted before it got to this board),
-    we consider the builder as failed.
-
-    Args:
-      config_name: The name of the builder we wish to get the status of.
-
-    Returns:
-      Whether the builder passed or failed.
-    """
-    if self.general_status == constants.FINAL_STATUS_FAILED:
-      return self.general_status
-
-    for board in cbuildbot_config.config[config_name].boards:
-      status = self.board_status_map.get(board, constants.FINAL_STATUS_FAILED)
-      if status == constants.FINAL_STATUS_FAILED:
-        return status
-
-    return constants.FINAL_STATUS_PASSED
-
-
 class CBuildbotMetadata(object):
   """Class for recording metadata about a run."""
 

@@ -158,6 +158,7 @@ class RunAttributes(object):
       'debug_tarball_generated',    # Set by DebugSymbolsStage.
       'images_generated',           # Set by BuildImageStage.
       'instruction_urls_per_channel', # Set by ArchiveStage
+      'success',                    # Set by cbuildbot.py:Builder
   ))
 
   # Attributes that need to be set by stages that can run in parallel
@@ -790,26 +791,25 @@ class _RealBuilderRun(object):
     finally:
       run_base.config = None
 
-  def _GetChildren(self):
+  def GetChildren(self):
     """Get ChildBuilderRun objects for child configs, if they exist.
 
     Returns:
-      List of ChildBuilderRun objects if self.config has child_configs.  None
+      List of ChildBuilderRun objects if self.config has child_configs.  []
         otherwise.
     """
     # If there are child configs, construct a list of ChildBuilderRun objects
     # for those child configs and return that.
-    if self.config.child_configs:
-      return [ChildBuilderRun(self, ix)
-              for ix in range(len(self.config.child_configs))]
+    return [ChildBuilderRun(self, ix)
+            for ix in range(len(self.config.child_configs))]
 
   def GetUngroupedBuilderRuns(self):
-    """Same as _GetChildren, but defaults to [self] if no children exist.
+    """Same as GetChildren, but defaults to [self] if no children exist.
 
     Returns:
-      Result of self._GetChildren, if children exist, otherwise [self].
+      Result of self.GetChildren, if children exist, otherwise [self].
     """
-    return self._GetChildren() or [self]
+    return self.GetChildren() or [self]
 
   def GetBuilderIds(self):
     """Return a list of builder names for this config and the child configs."""

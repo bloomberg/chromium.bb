@@ -270,7 +270,7 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
 
     self.mox.ReplayAll()
     self.manager.GetNextBuildSpec(retries=0)
-    self.manager.UpdateStatus('pass')
+    self.manager.UpdateStatus({self.build_names[0]: True})
     self.mox.VerifyAll()
 
   def testUnpickleBuildStatus(self):

@@ -34,7 +34,9 @@ class ManifestVersionedSyncCompletionStageTest(
     """Tests basic ManifestVersionedSyncStageCompleted on success"""
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager, 'UpdateStatus')
 
-    self.manager.UpdateStatus(message=None, success=True,
+    board_runattrs = self._run.GetBoardRunAttrs('x86-generic')
+    board_runattrs.SetParallel('success', True)
+    self.manager.UpdateStatus(message=None, success_map={self.BOT_ID: True},
                               dashboard_url=mox.IgnoreArg())
 
     self.mox.ReplayAll()
@@ -50,7 +52,7 @@ class ManifestVersionedSyncCompletionStageTest(
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager, 'UpdateStatus')
     self.mox.StubOutWithMock(stage, 'GetBuildFailureMessage')
 
-    self.manager.UpdateStatus(message=None, success=False,
+    self.manager.UpdateStatus(message=None, success_map={self.BOT_ID: False},
                               dashboard_url=mox.IgnoreArg())
     stage.GetBuildFailureMessage()
 

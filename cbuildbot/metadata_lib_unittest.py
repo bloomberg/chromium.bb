@@ -12,64 +12,8 @@ import sys
 
 sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot import metadata_lib
-from chromite.cbuildbot import results_lib
-from chromite.cbuildbot import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel
-
-
-class LocalBuilderStatusTest(cros_test_lib.TestCase):
-  """Test the correctness of the various LocalBuilderStatus methods."""
-
-  Results = results_lib.Results
-  SUCCESS = results_lib.Results.SUCCESS
-
-  def setUp(self):
-    self.Results.Clear()
-
-  def tearDown(self):
-    self.Results.Clear()
-
-  def testEmptyFail(self):
-    """Sometimes there is no board-specific information."""
-    self.Results.Record('Sync', self.SUCCESS)
-    builder_status = metadata_lib.LocalBuilderStatus.Get()
-    self.assertEqual({}, builder_status.board_status_map)
-    self.assertEqual(constants.FINAL_STATUS_FAILED,
-                     builder_status.GetBuilderStatus('lumpy-paladin'))
-    self.assertEqual(constants.FINAL_STATUS_PASSED,
-                     builder_status.GetBuilderStatus('master-paladin'))
-
-  def testAllFail(self):
-    """Failures in a shared stage cause specific stages to fail."""
-    self.Results.Record('Sync', self.SUCCESS)
-    self.Results.Record('BuildPackages', self.SUCCESS, board='lumpy')
-    self.Results.Record('Completion', 'FAIL')
-    builder_status = metadata_lib.LocalBuilderStatus.Get()
-    self.assertEqual({'lumpy': constants.FINAL_STATUS_PASSED},
-                     builder_status.board_status_map)
-    self.assertEqual(constants.FINAL_STATUS_FAILED,
-                     builder_status.GetBuilderStatus('lumpy-paladin'))
-    self.assertEqual(constants.FINAL_STATUS_FAILED,
-                     builder_status.GetBuilderStatus('master-paladin'))
-
-  def testMixedFail(self):
-    """Specific stages can pass/fail separately."""
-    self.Results.Record('Sync', self.SUCCESS)
-    self.Results.Record('BuildPackages [lumpy]', 'FAIL', board='lumpy')
-    self.Results.Record('BuildPackages [stumpy]', self.SUCCESS, board='stumpy')
-    builder_status = metadata_lib.LocalBuilderStatus.Get()
-    self.assertEqual({'lumpy': constants.FINAL_STATUS_FAILED,
-                      'stumpy': constants.FINAL_STATUS_PASSED},
-                     builder_status.board_status_map)
-    self.assertEqual(constants.FINAL_STATUS_FAILED,
-                     builder_status.GetBuilderStatus('lumpy-paladin'))
-    self.assertEqual(constants.FINAL_STATUS_PASSED,
-                     builder_status.GetBuilderStatus('stumpy-paladin'))
-    self.assertEqual(constants.FINAL_STATUS_FAILED,
-                     builder_status.GetBuilderStatus('winky-paladin'))
-    self.assertEqual(constants.FINAL_STATUS_PASSED,
-                     builder_status.GetBuilderStatus('master-paladin'))
 
 
 @cros_test_lib.NetworkTest()

@@ -54,7 +54,7 @@ class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
     repo = repository.RepoRepository(
       self.source_repo, self.tempdir, self.branch)
     self.manager = manifest_version.BuildSpecsManager(
-      repo, self.manifest_version_url, self.build_name, self.incr_type,
+      repo, self.manifest_version_url, [self.build_name], self.incr_type,
       force=False, branch=self.branch, dry_run=True)
 
     self._Prepare()

@@ -477,8 +477,24 @@ class SimpleBuilder(Builder):
                   for x in stage_list]
     self._RunParallelStages(stage_objs)
 
+  def _RunBackgroundStagesForBoardAndMarkAsSuccessful(self, builder_run, board):
+    """Run background board-specific stages for the specified board.
+
+    After finishing the build, mark it as successful.
+
+    Args:
+      builder_run: BuilderRun object for these background stages.
+      board: Board name.
+    """
+    self._RunBackgroundStagesForBoard(builder_run, board)
+    board_runattrs = builder_run.GetBoardRunAttrs(board)
+    board_runattrs.SetParallel('success', True)
+
   def _RunBackgroundStagesForBoard(self, builder_run, board):
     """Run background board-specific stages for the specified board.
+
+    Used by _RunBackgroundStagesForBoardAndMarkAsSuccessful. Callers should use
+    that method instead.
 
     Args:
       builder_run: BuilderRun object for these background stages.
@@ -625,7 +641,7 @@ class SimpleBuilder(Builder):
 
     # Set up a process pool to run test/archive stages in the background.
     # This process runs task(board) for each board added to the queue.
-    task_runner = self._RunBackgroundStagesForBoard
+    task_runner = self._RunBackgroundStagesForBoardAndMarkAsSuccessful
     with parallel.BackgroundTaskRunner(task_runner) as queue:
       for builder_run, board in tasks:
         if not builder_run.config.build_packages_in_background:

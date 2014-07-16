@@ -80,12 +80,42 @@ class ManifestVersionedSyncCompletionStage(
                                      self._run.config.name,
                                      self._run.ConstructDashboardURL())
 
+  def _GetBuilderSuccessMap(self):
+    """Get the pass/fail status of all builders.
+
+    A builder is marked as passed if all of its steps ran all of the way to
+    completion. We determine this by looking at whether all of the steps for
+    all of the constituent boards ran to completion.
+
+    In cases where a builder does not have any boards, or has child boards, we
+    fall back and instead just look at whether the entire build was successful.
+
+    Args:
+      config_name: The name of the builder we wish to get the status of.
+
+    Returns:
+      A dict, mapping the builder names to whether they succeeded.
+    """
+    success_map = {}
+    for run in [self._run] + self._run.GetChildren():
+      if run.config.boards and not run.config.child_configs:
+        success_map[run.config.name] = True
+        for board in run.config.boards:
+          board_runattrs = self._run.GetBoardRunAttrs(board)
+          if not board_runattrs.HasParallel('success'):
+            success_map[run.config.name] = False
+      else:
+        # If a builder does not have boards, or if it has child configs, we
+        # will just use the overall status instead.
+        success_map[run.config.name] = self.success
+    return success_map
+
   def PerformStage(self):
     if not self.success:
       self.message = self.GetBuildFailureMessage()
 
     self._run.attrs.manifest_manager.UpdateStatus(
-        success=self.success, message=self.message,
+        success_map=self._GetBuilderSuccessMap(), message=self.message,
         dashboard_url=self.ConstructDashboardURL())
 
 
@@ -515,7 +545,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     super(CommitQueueCompletionStage, self).PerformStage()
 
     self._run.attrs.manifest_manager.UpdateStatus(
-        success=self.success, message=self.message,
+        success_map=self._GetBuilderSuccessMap(), message=self.message,
         dashboard_url=self.ConstructDashboardURL())
 
 
