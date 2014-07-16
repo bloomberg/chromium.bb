@@ -12,7 +12,7 @@ TEST(JsonSchemaCompilerAdditionalPropertiesTest,
   {
     scoped_ptr<base::ListValue> list_value(new base::ListValue());
     list_value->Append(base::Value::CreateStringValue("asdf"));
-    list_value->Append(base::Value::CreateIntegerValue(4));
+    list_value->Append(new base::FundamentalValue(4));
     scoped_ptr<base::DictionaryValue> type_value(new base::DictionaryValue());
     type_value->SetString("string", "value");
     type_value->SetInteger("other", 9);

@@ -14,8 +14,7 @@ static scoped_ptr<base::DictionaryValue> CreateTestTypeDictionary() {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetWithoutPathExpansion("number",
                                  base::Value::CreateDoubleValue(1.1));
-  value->SetWithoutPathExpansion("integer",
-                                 base::Value::CreateIntegerValue(4));
+  value->SetWithoutPathExpansion("integer", new base::FundamentalValue(4));
   value->SetWithoutPathExpansion("string",
                                  base::Value::CreateStringValue("bling"));
   value->SetWithoutPathExpansion("boolean",
@@ -28,13 +27,13 @@ static scoped_ptr<base::DictionaryValue> CreateTestTypeDictionary() {
 TEST(JsonSchemaCompilerSimpleTest, IncrementIntegerResultCreate) {
   scoped_ptr<base::ListValue> results = IncrementInteger::Results::Create(5);
   base::ListValue expected;
-  expected.Append(base::Value::CreateIntegerValue(5));
+  expected.Append(new base::FundamentalValue(5));
   EXPECT_TRUE(results->Equals(&expected));
 }
 
 TEST(JsonSchemaCompilerSimpleTest, IncrementIntegerParamsCreate) {
   scoped_ptr<base::ListValue> params_value(new base::ListValue());
-  params_value->Append(base::Value::CreateIntegerValue(6));
+  params_value->Append(new base::FundamentalValue(6));
   scoped_ptr<IncrementInteger::Params> params(
       IncrementInteger::Params::Create(*params_value));
   EXPECT_TRUE(params.get());
@@ -91,7 +90,7 @@ TEST(JsonSchemaCompilerSimpleTest, OptionalParamsTakingNull) {
 TEST(JsonSchemaCompilerSimpleTest, OptionalStringParamsWrongType) {
   {
     scoped_ptr<base::ListValue> params_value(new base::ListValue());
-    params_value->Append(base::Value::CreateIntegerValue(5));
+    params_value->Append(new base::FundamentalValue(5));
     scoped_ptr<OptionalString::Params> params(
         OptionalString::Params::Create(*params_value));
     EXPECT_FALSE(params.get());
@@ -154,7 +153,7 @@ TEST(JsonSchemaCompilerSimpleTest, OnIntegerFiredCreate) {
   {
     scoped_ptr<base::ListValue> results(OnIntegerFired::Create(5));
     base::ListValue expected;
-    expected.Append(base::Value::CreateIntegerValue(5));
+    expected.Append(new base::FundamentalValue(5));
     EXPECT_TRUE(results->Equals(&expected));
   }
 }

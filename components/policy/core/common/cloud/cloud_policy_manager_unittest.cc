@@ -95,8 +95,11 @@ void TestHarness::InstallStringPolicy(const std::string& policy_name,
 
 void TestHarness::InstallIntegerPolicy(const std::string& policy_name,
                                        int policy_value) {
-  store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
-                         base::Value::CreateIntegerValue(policy_value), NULL);
+  store_.policy_map_.Set(policy_name,
+                         policy_level(),
+                         policy_scope(),
+                         new base::FundamentalValue(policy_value),
+                         NULL);
 }
 
 void TestHarness::InstallBooleanPolicy(const std::string& policy_name,

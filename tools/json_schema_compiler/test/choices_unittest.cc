@@ -23,17 +23,17 @@ TEST(JsonSchemaCompilerChoicesTest, TakesIntegersParamsCreate) {
     EXPECT_FALSE(params);
   }
   {
-    scoped_ptr<TakesIntegers::Params> params(TakesIntegers::Params::Create(
-        *List(base::Value::CreateIntegerValue(6))));
+    scoped_ptr<TakesIntegers::Params> params(
+        TakesIntegers::Params::Create(*List(new base::FundamentalValue(6))));
     ASSERT_TRUE(params);
     EXPECT_FALSE(params->nums.as_integers);
     EXPECT_EQ(6, *params->nums.as_integer);
   }
   {
     scoped_ptr<TakesIntegers::Params> params(TakesIntegers::Params::Create(
-        *List(List(base::Value::CreateIntegerValue(2),
-                   base::Value::CreateIntegerValue(6),
-                   base::Value::CreateIntegerValue(8)).release())));
+        *List(List(new base::FundamentalValue(2),
+                   new base::FundamentalValue(6),
+                   new base::FundamentalValue(8)).release())));
     ASSERT_TRUE(params);
     ASSERT_TRUE(params->nums.as_integers);
     EXPECT_EQ(Vector(2, 6, 8), *params->nums.as_integers);
@@ -71,7 +71,7 @@ TEST(JsonSchemaCompilerChoicesTest, ObjectWithChoicesParamsCreateFail) {
   {
     scoped_ptr<base::DictionaryValue> object_param(new base::DictionaryValue());
     object_param->SetWithoutPathExpansion("strings",
-        base::Value::CreateIntegerValue(5));
+                                          new base::FundamentalValue(5));
     scoped_ptr<base::ListValue> params_value(new base::ListValue());
     params_value->Append(object_param.release());
     scoped_ptr<ObjectWithChoices::Params> params(
@@ -93,7 +93,7 @@ TEST(JsonSchemaCompilerChoicesTest, ObjectWithChoicesParamsCreateFail) {
   {
     scoped_ptr<base::DictionaryValue> object_param(new base::DictionaryValue());
     object_param->SetWithoutPathExpansion("integers",
-        base::Value::CreateIntegerValue(6));
+                                          new base::FundamentalValue(6));
     scoped_ptr<base::ListValue> params_value(new base::ListValue());
     params_value->Append(object_param.release());
     scoped_ptr<ObjectWithChoices::Params> params(

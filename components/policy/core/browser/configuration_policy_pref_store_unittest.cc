@@ -144,8 +144,11 @@ TEST_F(ConfigurationPolicyPrefStoreIntegerTest, GetDefault) {
 
 TEST_F(ConfigurationPolicyPrefStoreIntegerTest, SetValue) {
   PolicyMap policy;
-  policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, base::Value::CreateIntegerValue(2), NULL);
+  policy.Set(kTestPolicy,
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER,
+             new base::FundamentalValue(2),
+             NULL);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));

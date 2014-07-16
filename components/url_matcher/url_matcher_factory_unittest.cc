@@ -48,10 +48,10 @@ TEST(URLMatcherFactoryTest, CreateFromURLFilterDictionary) {
 
   // Port range: Allow 80;1000-1010.
   base::ListValue* port_range = new base::ListValue();
-  port_range->Append(base::Value::CreateIntegerValue(1000));
-  port_range->Append(base::Value::CreateIntegerValue(1010));
+  port_range->Append(new base::FundamentalValue(1000));
+  port_range->Append(new base::FundamentalValue(1010));
   base::ListValue* port_ranges = new base::ListValue();
-  port_ranges->Append(base::Value::CreateIntegerValue(80));
+  port_ranges->Append(new base::FundamentalValue(80));
   port_ranges->Append(port_range);
 
   base::ListValue* scheme_list = new base::ListValue();

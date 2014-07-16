@@ -116,7 +116,7 @@ TEST_F(TemplateURLPrepopulateDataTest, UniqueIDs) {
 // override the built-in ones.
 TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   prefs_.SetUserPref(prefs::kSearchProviderOverridesVersion,
-                     base::Value::CreateIntegerValue(1));
+                     new base::FundamentalValue(1));
   base::ListValue* overrides = new base::ListValue;
   scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
   // Set only the minimal required settings for a search provider configuration.
@@ -202,7 +202,7 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
 
 TEST_F(TemplateURLPrepopulateDataTest, ClearProvidersFromPrefs) {
   prefs_.SetUserPref(prefs::kSearchProviderOverridesVersion,
-                     base::Value::CreateIntegerValue(1));
+                     new base::FundamentalValue(1));
   base::ListValue* overrides = new base::ListValue;
   base::DictionaryValue* entry(new base::DictionaryValue);
   // Set only the minimal required settings for a search provider configuration.

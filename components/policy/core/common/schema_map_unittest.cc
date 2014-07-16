@@ -165,8 +165,11 @@ TEST_F(SchemaMapTest, FilterBundle) {
           list.DeepCopy(), NULL);
   map.Set("boolean", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
           base::Value::CreateBooleanValue(true), NULL);
-  map.Set("integer", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          base::Value::CreateIntegerValue(1), NULL);
+  map.Set("integer",
+          POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_USER,
+          new base::FundamentalValue(1),
+          NULL);
   map.Set("null", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
           base::Value::CreateNullValue(), NULL);
   map.Set("double", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -194,8 +197,11 @@ TEST_F(SchemaMapTest, FilterBundle) {
   PolicyMap& badmap = bundle.Get(extension_ns);
   badmap.Set("list", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              base::Value::CreateBooleanValue(false), NULL);
-  badmap.Set("boolean", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateIntegerValue(0), NULL);
+  badmap.Set("boolean",
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER,
+             new base::FundamentalValue(0),
+             NULL);
   badmap.Set("integer", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              base::Value::CreateBooleanValue(false), NULL);
   badmap.Set("null", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,

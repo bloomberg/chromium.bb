@@ -46,7 +46,7 @@ void ExpectSimilar(const TemplateURLData* expected,
 // TODO(caitkp): TemplateURLData-ify this.
 void SetOverrides(user_prefs::TestingPrefServiceSyncable* prefs, bool update) {
   prefs->SetUserPref(prefs::kSearchProviderOverridesVersion,
-                     base::Value::CreateIntegerValue(1));
+                     new base::FundamentalValue(1));
   base::ListValue* overrides = new base::ListValue;
   scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
 

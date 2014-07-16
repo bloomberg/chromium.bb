@@ -30,7 +30,7 @@ TEST(JsonSchemaCompilerCallbacksTest, ReturnsMultipleResultCreate) {
   base::DictionaryValue* expected_dict = new base::DictionaryValue();
   expected_dict->SetString("state", "foo");
   base::ListValue expected;
-  expected.Append(base::Value::CreateIntegerValue(5));
+  expected.Append(new base::FundamentalValue(5));
   expected.Append(expected_dict);
   EXPECT_TRUE(results->Equals(&expected));
 }

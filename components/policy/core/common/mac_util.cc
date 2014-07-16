@@ -64,8 +64,7 @@ scoped_ptr<base::Value> PropertyToValue(CFPropertyListRef property) {
     } else {
       int int_value = 0;
       if (CFNumberGetValue(number, kCFNumberIntType, &int_value)) {
-        return scoped_ptr<base::Value>(
-            base::Value::CreateIntegerValue(int_value));
+        return scoped_ptr<base::Value>(new base::FundamentalValue(int_value));
       }
     }
   }

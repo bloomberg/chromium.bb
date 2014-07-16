@@ -16,7 +16,7 @@ TEST(JsonSchemaCompilerObjectsTest, ObjectParamParamsCreate) {
     strings->Append(base::Value::CreateStringValue("two"));
     scoped_ptr<base::DictionaryValue> info_value(new base::DictionaryValue());
     info_value->Set("strings", strings.release());
-    info_value->Set("integer", base::Value::CreateIntegerValue(5));
+    info_value->Set("integer", new base::FundamentalValue(5));
     info_value->Set("boolean", base::Value::CreateBooleanValue(true));
 
     scoped_ptr<base::ListValue> params_value(new base::ListValue());
@@ -36,7 +36,7 @@ TEST(JsonSchemaCompilerObjectsTest, ObjectParamParamsCreate) {
     strings->Append(base::Value::CreateStringValue("two"));
     scoped_ptr<base::DictionaryValue> info_value(new base::DictionaryValue());
     info_value->Set("strings", strings.release());
-    info_value->Set("integer", base::Value::CreateIntegerValue(5));
+    info_value->Set("integer", new base::FundamentalValue(5));
 
     scoped_ptr<base::ListValue> params_value(new base::ListValue());
     params_value->Append(info_value.release());

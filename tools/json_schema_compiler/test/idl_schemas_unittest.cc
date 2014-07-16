@@ -37,7 +37,7 @@ TEST(IdlCompiler, Basics) {
 
   // Test Function2, which takes an integer parameter.
   base::ListValue list;
-  list.Append(base::Value::CreateIntegerValue(5));
+  list.Append(new base::FundamentalValue(5));
   scoped_ptr<Function2::Params> f2_params = Function2::Params::Create(list);
   EXPECT_EQ(5, f2_params->x);
 
@@ -81,14 +81,14 @@ TEST(IdlCompiler, OptionalArguments) {
   base::ListValue list;
   scoped_ptr<Function7::Params> f7_params = Function7::Params::Create(list);
   EXPECT_EQ(NULL, f7_params->arg.get());
-  list.Append(base::Value::CreateIntegerValue(7));
+  list.Append(new base::FundamentalValue(7));
   f7_params = Function7::Params::Create(list);
   EXPECT_EQ(7, *(f7_params->arg));
 
   // Similar to above, but a function with one required and one optional
   // argument.
   list.Clear();
-  list.Append(base::Value::CreateIntegerValue(8));
+  list.Append(new base::FundamentalValue(8));
   scoped_ptr<Function8::Params> f8_params = Function8::Params::Create(list);
   EXPECT_EQ(8, f8_params->arg1);
   EXPECT_EQ(NULL, f8_params->arg2.get());
@@ -121,7 +121,7 @@ TEST(IdlCompiler, ArrayTypes) {
   // Tests of a function that takes an integer and an array of integers. First
   // use an empty array.
   base::ListValue list;
-  list.Append(base::Value::CreateIntegerValue(33));
+  list.Append(new base::FundamentalValue(33));
   list.Append(new base::ListValue);
   scoped_ptr<Function10::Params> f10_params = Function10::Params::Create(list);
   ASSERT_TRUE(f10_params != NULL);
@@ -130,10 +130,10 @@ TEST(IdlCompiler, ArrayTypes) {
 
   // Same function, but this time with 2 values in the array.
   list.Clear();
-  list.Append(base::Value::CreateIntegerValue(33));
+  list.Append(new base::FundamentalValue(33));
   base::ListValue* sublist = new base::ListValue;
-  sublist->Append(base::Value::CreateIntegerValue(34));
-  sublist->Append(base::Value::CreateIntegerValue(35));
+  sublist->Append(new base::FundamentalValue(34));
+  sublist->Append(new base::FundamentalValue(35));
   list.Append(sublist);
   f10_params = Function10::Params::Create(list);
   ASSERT_TRUE(f10_params != NULL);

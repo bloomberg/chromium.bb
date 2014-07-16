@@ -116,9 +116,9 @@ bool HandleRequestCallback(BrowserContext* current_context,
 
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->Set("list", rvh_list.release());
-  scoped_ptr<base::FundamentalValue> a11y_mode(base::Value::CreateIntegerValue(
-      BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode()));
-  data->Set("global_a11y_mode", a11y_mode.release());
+  data->SetInteger(
+      "global_a11y_mode",
+      BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode());
 
   std::string json_string;
   base::JSONWriter::Write(data.get(), &json_string);

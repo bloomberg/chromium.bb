@@ -817,7 +817,7 @@ base::Value* DecodeIntegerValue(google::protobuf::int64 value) {
     return NULL;
   }
 
-  return base::Value::CreateIntegerValue(static_cast<int>(value));
+  return new base::FundamentalValue(static_cast<int>(value));
 }
 
 base::ListValue* DecodeStringList(const em::StringList& string_list) {
