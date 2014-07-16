@@ -116,14 +116,14 @@ class NET_EXPORT_PRIVATE StrikeRegister {
   //   20 bytes of random data
   //
   // Otherwise, it inserts |nonce| into the observed set and returns true.
-  bool Insert(const uint8 nonce[32], const uint32 current_time);
+  bool Insert(const uint8 nonce[32], uint32 current_time);
 
   // orbit returns a pointer to the 8-byte orbit value for this
   // strike-register.
   const uint8* orbit() const;
 
   // Time window for which the strike register has complete information.
-  uint32 EffectiveWindowSecs(const uint32 current_time_external) const;
+  uint32 GetCurrentValidWindowSecs(uint32 current_time_external) const;
 
   // This is a debugging aid which checks the tree for sanity.
   void Validate();
@@ -133,6 +133,12 @@ class NET_EXPORT_PRIVATE StrikeRegister {
 
   // TimeFromBytes returns a big-endian uint32 from |d|.
   static uint32 TimeFromBytes(const uint8 d[4]);
+
+  // Range of internal times for which the strike register has
+  // complete information.  A nonce is within the valid range of the
+  // strike register if:
+  //   valid_range.first <= nonce_time_internal <= valid_range.second
+  std::pair<uint32, uint32> GetValidRange(uint32 current_time_internal) const;
 
   // ExternalTimeToInternal converts an external time value into an internal
   // time value using |internal_epoch_|.
@@ -174,6 +180,7 @@ class NET_EXPORT_PRIVATE StrikeRegister {
   // time.
   const uint32 internal_epoch_;
   uint8 orbit_[8];
+  // The strike register will reject nonces with internal times < |horizon_| .
   uint32 horizon_;
 
   uint32 internal_node_free_head_;

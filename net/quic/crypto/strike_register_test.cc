@@ -44,11 +44,12 @@ TEST(StrikeRegisterTest, SimpleHorizon) {
   SetNonce(nonce, 1000, kOrbit);
   ASSERT_FALSE(set.Insert(nonce, 1000));
 
-  EXPECT_EQ(0u, set.EffectiveWindowSecs(1000 /* current time */));
-  EXPECT_EQ(49u, set.EffectiveWindowSecs(1050 /* current time */));
-  EXPECT_EQ(99u, set.EffectiveWindowSecs(1100 /* current time */));
-  EXPECT_EQ(199u, set.EffectiveWindowSecs(1200 /* current time */));
-  EXPECT_EQ(200u, set.EffectiveWindowSecs(1300 /* current time */));
+  EXPECT_EQ(0u, set.GetCurrentValidWindowSecs(1000 /* current time */));
+  EXPECT_EQ(0u, set.GetCurrentValidWindowSecs(1100 /* current time */));
+  EXPECT_EQ(1u, set.GetCurrentValidWindowSecs(1101 /* current time */));
+  EXPECT_EQ(50u, set.GetCurrentValidWindowSecs(1150 /* current time */));
+  EXPECT_EQ(100u, set.GetCurrentValidWindowSecs(1200 /* current time */));
+  EXPECT_EQ(101u, set.GetCurrentValidWindowSecs(1300 /* current time */));
 }
 
 TEST(StrikeRegisterTest, NoStartupMode) {
@@ -62,11 +63,11 @@ TEST(StrikeRegisterTest, NoStartupMode) {
   ASSERT_TRUE(set.Insert(nonce, 1000));
   ASSERT_FALSE(set.Insert(nonce, 1000));
 
-  EXPECT_EQ(200u, set.EffectiveWindowSecs(1000 /* current time */));
-  EXPECT_EQ(200u, set.EffectiveWindowSecs(1050 /* current time */));
-  EXPECT_EQ(200u, set.EffectiveWindowSecs(1100 /* current time */));
-  EXPECT_EQ(200u, set.EffectiveWindowSecs(1200 /* current time */));
-  EXPECT_EQ(200u, set.EffectiveWindowSecs(1300 /* current time */));
+  EXPECT_EQ(101u, set.GetCurrentValidWindowSecs(1000 /* current time */));
+  EXPECT_EQ(101u, set.GetCurrentValidWindowSecs(1050 /* current time */));
+  EXPECT_EQ(101u, set.GetCurrentValidWindowSecs(1100 /* current time */));
+  EXPECT_EQ(101u, set.GetCurrentValidWindowSecs(1200 /* current time */));
+  EXPECT_EQ(101u, set.GetCurrentValidWindowSecs(1300 /* current time */));
 }
 
 TEST(StrikeRegisterTest, WindowFuture) {
@@ -98,7 +99,7 @@ TEST(StrikeRegisterTest, OneValue) {
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
   uint8 nonce[32];
   SetNonce(nonce, 1101, kOrbit);
-  ASSERT_TRUE(set.Insert(nonce, 1100));
+  ASSERT_TRUE(set.Insert(nonce, 1101));
 }
 
 TEST(StrikeRegisterTest, RejectDuplicate) {
@@ -108,8 +109,8 @@ TEST(StrikeRegisterTest, RejectDuplicate) {
                      StrikeRegister::DENY_REQUESTS_AT_STARTUP);
   uint8 nonce[32];
   SetNonce(nonce, 1101, kOrbit);
-  ASSERT_TRUE(set.Insert(nonce, 1100));
-  ASSERT_FALSE(set.Insert(nonce, 1100));
+  ASSERT_TRUE(set.Insert(nonce, 1101));
+  ASSERT_FALSE(set.Insert(nonce, 1101));
 }
 
 TEST(StrikeRegisterTest, HorizonUpdating) {
@@ -129,25 +130,40 @@ TEST(StrikeRegisterTest, HorizonUpdating) {
       ASSERT_TRUE(set.Insert(nonce[i], 1100));
     }
 
-    // Effective horizon is still 2 * window.
-    EXPECT_EQ(200u, set.EffectiveWindowSecs(1100));
+    // Valid window is still equal to |window_secs + 1|.
+    EXPECT_EQ(101u, set.GetCurrentValidWindowSecs(1100));
 
     // This should push the oldest value out and force the horizon to
     // be updated.
     SetNonce(nonce[5], 1110, kOrbit);
-    ASSERT_TRUE(set.Insert(nonce[5], 1100));
+    ASSERT_TRUE(set.Insert(nonce[5], 1110));
     // Effective horizon is computed based on the timestamp of the
     // value that was pushed out.
-    EXPECT_EQ(98u, set.EffectiveWindowSecs(1100));
+    EXPECT_EQ(9u, set.GetCurrentValidWindowSecs(1110));
 
     SetNonce(nonce[5], 1111, kOrbit);
-    EXPECT_TRUE(set.Insert(nonce[5], 1100));
-    EXPECT_EQ(97u, set.EffectiveWindowSecs(1100));
+    EXPECT_TRUE(set.Insert(nonce[5], 1110));
+    EXPECT_EQ(8u, set.GetCurrentValidWindowSecs(1110));
 
     // This should be behind the horizon now:
     SetNonce(nonce[5], 1101, kOrbit);
     nonce[5][31] = 10;
-    ASSERT_FALSE(set.Insert(nonce[5], 1100));
+    EXPECT_FALSE(set.Insert(nonce[5], 1110));
+
+    // Insert beyond the valid range.
+    SetNonce(nonce[5], 1117, kOrbit);
+    nonce[5][31] = 2;
+    EXPECT_FALSE(set.Insert(nonce[5], 1110));
+
+    // Insert at the upper valid range.
+    SetNonce(nonce[5], 1116, kOrbit);
+    nonce[5][31] = 1;
+    EXPECT_TRUE(set.Insert(nonce[5], 1110));
+
+    // This should be beyond the upper valid range now:
+    SetNonce(nonce[5], 1116, kOrbit);
+    nonce[5][31] = 2;
+    EXPECT_FALSE(set.Insert(nonce[5], 1110));
   }
 }
 
@@ -228,13 +244,12 @@ class SlowStrikeRegister {
     return true;
   }
 
-  uint32 EffectiveWindowSecs(const uint32 current_time_external) const {
-    const uint32 future_horizon =
-        ExternalTimeToInternal(current_time_external) + window_secs_;
-    if (horizon_ > future_horizon) {
+  uint32 GetCurrentValidWindowSecs(const uint32 current_time_external) const {
+    const uint32 current_time = ExternalTimeToInternal(current_time_external);
+    if (horizon_ > current_time) {
       return 0;
     }
-    return min(future_horizon - horizon_, 2 * window_secs_);
+    return 1 + min(current_time - horizon_, window_secs_);
   }
 
  private:
@@ -304,8 +319,8 @@ TEST_F(StrikeRegisterStressTest, InOrderInsertion) {
     EXPECT_EQ(r1, r2);
     // Inserts succeed after the startup period.
     EXPECT_EQ(time > current_time + window, r1);
-    EXPECT_EQ(s1->EffectiveWindowSecs(time),
-              s2->EffectiveWindowSecs(time));
+    EXPECT_EQ(s1->GetCurrentValidWindowSecs(time),
+              s2->GetCurrentValidWindowSecs(time));
 
     if (i % 10 == 0) {
       s1->Validate();
@@ -367,8 +382,8 @@ TEST_F(StrikeRegisterStressTest, Stress) {
     const bool r2 = s2->Insert(nonce, time, time);
     const bool r1 = s1->Insert(nonce, time);
     EXPECT_EQ(r1, r2);
-    EXPECT_EQ(s1->EffectiveWindowSecs(time),
-              s2->EffectiveWindowSecs(time));
+    EXPECT_EQ(s1->GetCurrentValidWindowSecs(time),
+              s2->GetCurrentValidWindowSecs(time));
 
     if (i % 10 == 0) {
       s1->Validate();

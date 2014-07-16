@@ -4,8 +4,12 @@
 
 #include "net/quic/crypto/strike_register.h"
 
+#include <limits>
+
 #include "base/logging.h"
 
+using std::make_pair;
+using std::max;
 using std::min;
 using std::pair;
 using std::set;
@@ -77,7 +81,7 @@ class StrikeRegister::InternalNode {
 // kCreationTimeFromInternalEpoch contains the number of seconds between the
 // start of the internal epoch and the creation time. This allows us
 // to consider times that are before the creation time.
-static const uint32 kCreationTimeFromInternalEpoch = 63115200.0;  // 2 years.
+static const uint32 kCreationTimeFromInternalEpoch = 63115200;  // 2 years.
 
 void StrikeRegister::ValidateStrikeRegisterConfig(unsigned max_entries) {
   // We only have 23 bits of index available.
@@ -127,7 +131,7 @@ void StrikeRegister::Reset() {
 }
 
 bool StrikeRegister::Insert(const uint8 nonce[32],
-                            const uint32 current_time_external) {
+                            uint32 current_time_external) {
   // Make space for the insertion if the strike register is full.
   while (external_node_free_head_ == kNil ||
          internal_node_free_head_ == kNil) {
@@ -140,17 +144,13 @@ bool StrikeRegister::Insert(const uint8 nonce[32],
   if (memcmp(nonce + sizeof(current_time), orbit_, sizeof(orbit_))) {
     return false;
   }
-  const uint32 nonce_time = ExternalTimeToInternal(TimeFromBytes(nonce));
-  // We have dropped one or more nonces with a time value of |horizon_ - 1|, so
-  // we have to reject anything with a timestamp less than or equal to that.
-  if (nonce_time < horizon_) {
-    return false;
-  }
 
-  // Check that the timestamp is in the current window.
-  if ((current_time > window_secs_ &&
-       nonce_time < (current_time - window_secs_)) ||
-      nonce_time > (current_time + window_secs_)) {
+  const uint32 nonce_time = ExternalTimeToInternal(TimeFromBytes(nonce));
+
+  // Check that the timestamp is in the valid range.
+  pair<uint32, uint32> valid_range =
+      StrikeRegister::GetValidRange(current_time);
+  if (nonce_time < valid_range.first || nonce_time > valid_range.second) {
     return false;
   }
 
@@ -270,15 +270,16 @@ const uint8* StrikeRegister::orbit() const {
   return orbit_;
 }
 
-uint32 StrikeRegister::EffectiveWindowSecs(
-    const uint32 current_time_external) const {
-  const uint32 future_horizon =
-      ExternalTimeToInternal(current_time_external) + window_secs_;
-
-  if (horizon_ >= future_horizon) {
+uint32 StrikeRegister::GetCurrentValidWindowSecs(
+    uint32 current_time_external) const {
+  uint32 current_time = ExternalTimeToInternal(current_time_external);
+  pair<uint32, uint32> valid_range = StrikeRegister::GetValidRange(
+      current_time);
+  if (valid_range.second >= valid_range.first) {
+    return valid_range.second - current_time + 1;
+  } else {
     return 0;
   }
-  return min(future_horizon - horizon_, 2 * window_secs_);
 }
 
 void StrikeRegister::Validate() {
@@ -316,6 +317,33 @@ uint32 StrikeRegister::TimeFromBytes(const uint8 d[4]) {
          static_cast<uint32>(d[1]) << 16 |
          static_cast<uint32>(d[2]) << 8 |
          static_cast<uint32>(d[3]);
+}
+
+pair<uint32, uint32> StrikeRegister::GetValidRange(
+    uint32 current_time_internal) const {
+  if (current_time_internal < horizon_) {
+    // Empty valid range.
+    return make_pair(std::numeric_limits<uint32>::max(), 0);
+  }
+
+  uint32 lower_bound;
+  if (current_time_internal >= window_secs_) {
+    lower_bound = max(horizon_, current_time_internal - window_secs_);
+  } else {
+    lower_bound = horizon_;
+  }
+
+  // Also limit the upper range based on horizon_.  This makes the
+  // strike register reject inserts that are far in the future and
+  // would consume strike register resources for a long time.  This
+  // allows the strike server to degrade optimally in cases where the
+  // insert rate exceeds |max_entries_ / (2 * window_secs_)| entries
+  // per second.
+  uint32 upper_bound =
+      current_time_internal + min(current_time_internal - horizon_,
+                                  window_secs_);
+
+  return make_pair(lower_bound, upper_bound);
 }
 
 uint32 StrikeRegister::ExternalTimeToInternal(uint32 external_time) const {
