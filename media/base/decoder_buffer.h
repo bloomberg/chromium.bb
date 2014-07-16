@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "media/base/buffers.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/media_export.h"
 
@@ -78,9 +77,6 @@ class MEDIA_EXPORT DecoderBuffer
 
   void set_duration(base::TimeDelta duration) {
     DCHECK(!end_of_stream());
-    DCHECK(duration == kNoTimestamp() ||
-           (duration >= base::TimeDelta() && duration != kInfiniteDuration()))
-        << duration.InSecondsF();
     duration_ = duration;
   }
 

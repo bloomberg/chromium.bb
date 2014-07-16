@@ -31,7 +31,8 @@ static const int kDataSize = 1;
 
 class SourceBufferStreamTest : public testing::Test {
  protected:
-  SourceBufferStreamTest() {
+  SourceBufferStreamTest()
+      : accurate_durations_(false) {
     video_config_ = TestVideoConfig::Normal();
     SetStreamInfo(kDefaultFramesPerSecond, kDefaultKeyframesPerSecond);
     stream_.reset(new SourceBufferStream(video_config_, log_cb(), true));
@@ -56,6 +57,7 @@ class SourceBufferStreamTest : public testing::Test {
 
   void SetAudioStream() {
     video_config_ = TestVideoConfig::Invalid();
+    accurate_durations_ = true;
     audio_config_.Initialize(kCodecVorbis,
                              kSampleFormatPlanarF32,
                              CHANNEL_LAYOUT_STEREO,
@@ -276,7 +278,8 @@ class SourceBufferStreamTest : public testing::Test {
             break;
         }
 
-        EXPECT_EQ("C", timestamps[i]);
+        if (timestamps[i] == "C")
+          EXPECT_EQ(SourceBufferStream::kConfigChange, status);
 
         ss << "C";
         continue;
@@ -404,7 +407,8 @@ class SourceBufferStreamTest : public testing::Test {
         presentation_timestamp = timestamp - frame_duration_;
       }
       buffer->set_timestamp(presentation_timestamp);
-      buffer->set_duration(frame_duration_);
+      if (accurate_durations_)
+        buffer->set_duration(frame_duration_);
 
       queue.push_back(buffer);
     }
@@ -412,28 +416,14 @@ class SourceBufferStreamTest : public testing::Test {
       EXPECT_EQ(expect_success, stream_->Append(queue));
   }
 
-  void UpdateLastBufferDuration(base::TimeDelta current_dts,
-                                BufferQueue* buffers) {
-    if (buffers->empty() || buffers->back()->duration() > base::TimeDelta())
-      return;
-
-    base::TimeDelta last_dts = buffers->back()->GetDecodeTimestamp();
-    DCHECK(current_dts >= last_dts);
-    buffers->back()->set_duration(current_dts - last_dts);
-  }
-
   // StringToBufferQueue() allows for the generation of StreamParserBuffers from
   // coded strings of timestamps separated by spaces.  Supported syntax:
   //
-  // ## or ##Dyy:
+  // ##:
   // Generates a StreamParserBuffer with decode timestamp ##.  E.g., "0 1 2 3".
-  // The form with the 'D' sets the decode timestamp to ## and the duration to
-  // yy milliseconds.
   //
-  // ##K or ##DyyK:
+  // ##K:
   // Indicates the buffer with timestamp ## reflects a keyframe.  E.g., "0K 1".
-  // The form with the 'D' indicates a buffer with timestamp ##, duration yy,
-  // and is marked as a keyframe.
   //
   // S(a# ... y# z#)
   // Indicates a splice frame buffer should be created with timestamp z#.  The
@@ -489,15 +479,7 @@ class SourceBufferStreamTest : public testing::Test {
         timestamps[i] = timestamps[i].substr(0, timestamps[i].length() - 1);
       }
 
-      int time_in_ms = 0;
-      int duration_in_ms = 0;
-      size_t duration_pos = timestamps[i].find('D');
-      if (duration_pos != std::string::npos) {
-        CHECK(base::StringToInt(timestamps[i].substr(duration_pos + 1),
-                                &duration_in_ms));
-        timestamps[i] = timestamps[i].substr(0, duration_pos);
-      }
-
+      int time_in_ms;
       CHECK(base::StringToInt(timestamps[i], &time_in_ms));
 
       // Create buffer. Buffer type and track ID are meaningless to these tests.
@@ -507,8 +489,8 @@ class SourceBufferStreamTest : public testing::Test {
       base::TimeDelta timestamp =
           base::TimeDelta::FromMilliseconds(time_in_ms);
       buffer->set_timestamp(timestamp);
-      if (duration_in_ms)
-        buffer->set_duration(base::TimeDelta::FromMilliseconds(duration_in_ms));
+      if (accurate_durations_)
+        buffer->set_duration(frame_duration_);
       buffer->SetDecodeTimestamp(timestamp);
 
       // Simulate preroll buffers by just generating another buffer and sticking
@@ -529,8 +511,6 @@ class SourceBufferStreamTest : public testing::Test {
               pre_splice_buffers.back()->GetDecodeTimestamp().InMicroseconds());
         }
         buffer->SetConfigId(splice_config_id);
-        UpdateLastBufferDuration(buffer->GetDecodeTimestamp(),
-                                 &pre_splice_buffers);
         pre_splice_buffers.push_back(buffer);
         continue;
       }
@@ -543,18 +523,8 @@ class SourceBufferStreamTest : public testing::Test {
         pre_splice_buffers.clear();
       }
 
-      UpdateLastBufferDuration(buffer->GetDecodeTimestamp(), &buffers);
       buffers.push_back(buffer);
     }
-
-    // If the last buffer doesn't have a duration, assume it is the
-    // same as the second to last buffer.
-    if (buffers.size() >= 2 &&
-        buffers.back()->duration() <= base::TimeDelta()) {
-      buffers.back()->set_duration(
-          buffers[buffers.size() - 2]->duration());
-    }
-
     return buffers;
   }
 
@@ -595,6 +565,10 @@ class SourceBufferStreamTest : public testing::Test {
   int frames_per_second_;
   int keyframes_per_second_;
   base::TimeDelta frame_duration_;
+  // TODO(dalecurtis): It's silly to have this, all tests should use accurate
+  // durations instead.  However, currently all tests are written with an
+  // expectation of 0 duration, so it's an involved change.
+  bool accurate_durations_;
   DISALLOW_COPY_AND_ASSIGN(SourceBufferStreamTest);
 };
 
@@ -717,7 +691,7 @@ TEST_F(SourceBufferStreamTest,
   // Completely overlap the old buffers, with a segment that starts
   // after the old segment start timestamp, but before the timestamp
   // of the first buffer in the segment.
-  NewSegmentAppend("20K 50K 80K 110D10K");
+  NewSegmentAppend("20K 50K 80K 110K");
 
   // Verify that the buffered ranges are updated properly and we don't crash.
   CheckExpectedRangesByTimestamp("{ [20,150) }");
@@ -805,7 +779,7 @@ TEST_F(SourceBufferStreamTest, End_Overlap_SingleBuffer) {
   NewSegmentAppend("0K 30 60 90 120K 150");
   CheckExpectedRangesByTimestamp("{ [0,180) }");
 
-  NewSegmentAppend("0D30K");
+  NewSegmentAppend("0K");
   CheckExpectedRangesByTimestamp("{ [0,30) [120,180) }");
 
   CheckExpectedBuffers("0K");
@@ -1574,8 +1548,8 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_DeleteGroup) {
   // Seek to 130ms.
   SeekToTimestamp(base::TimeDelta::FromMilliseconds(130));
 
-  // Overlap with a new segment from 0 to 130ms.
-  NewSegmentAppendOneByOne("0K 120D10");
+  // Overlap with a new segment from 0 to 120ms.
+  NewSegmentAppendOneByOne("0K 120");
 
   // Next buffer should still be 130ms.
   CheckExpectedBuffers("130K");
@@ -1606,21 +1580,21 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_BetweenMediaSegments) {
 // new  : 0K   30   60   90   120K
 // after: 0K   30   60   90  *120K*   130K
 TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer) {
-  NewSegmentAppendOneByOne("10K 40 70 100K 125 130D30K");
+  NewSegmentAppendOneByOne("10K 40 70 100K 125 130K");
   CheckExpectedRangesByTimestamp("{ [10,160) }");
 
   // Seek to 70ms.
   SeekToTimestamp(base::TimeDelta::FromMilliseconds(70));
   CheckExpectedBuffers("10K 40");
 
-  // Overlap with a new segment from 0 to 130ms.
-  NewSegmentAppendOneByOne("0K 30 60 90 120D10K");
+  // Overlap with a new segment from 0 to 120ms.
+  NewSegmentAppendOneByOne("0K 30 60 90 120K");
   CheckExpectedRangesByTimestamp("{ [0,160) }");
 
-  // Should return frame 70ms from the track buffer, then switch
+  // Should return frames 70ms and 100ms from the track buffer, then switch
   // to the new data at 120K, then switch back to the old data at 130K. The
   // frame at 125ms that depended on keyframe 100ms should have been deleted.
-  CheckExpectedBuffers("70 120K 130K");
+  CheckExpectedBuffers("70 100K 120K 130K");
 
   // Check the final result: should not include data from the track buffer.
   SeekToTimestamp(base::TimeDelta::FromMilliseconds(0));
@@ -1632,11 +1606,11 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer) {
 // old  :   10K  40  *70*  100K  125  130K
 // new  : 0K   30   60   90   120K
 // after: 0K   30   60   90  *120K*   130K
-// track:             70
+// track:             70   100K
 // new  :                     110K    130
 // after: 0K   30   60   90  *110K*   130
 TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer2) {
-  NewSegmentAppendOneByOne("10K 40 70 100K 125 130D30K");
+  NewSegmentAppendOneByOne("10K 40 70 100K 125 130K");
   CheckExpectedRangesByTimestamp("{ [10,160) }");
 
   // Seek to 70ms.
@@ -1645,15 +1619,15 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer2) {
 
   // Overlap with a new segment from 0 to 120ms; 70ms and 100ms go in track
   // buffer.
-  NewSegmentAppendOneByOne("0K 30 60 90 120D10K");
+  NewSegmentAppendOneByOne("0K 30 60 90 120K");
   CheckExpectedRangesByTimestamp("{ [0,160) }");
 
   // Now overlap the keyframe at 120ms.
   NewSegmentAppendOneByOne("110K 130");
 
-  // Should return frame 70ms from the track buffer. Then it should
+  // Should expect buffers 70ms and 100ms from the track buffer. Then it should
   // return the keyframe after the track buffer, which is at 110ms.
-  CheckExpectedBuffers("70 110K 130");
+  CheckExpectedBuffers("70 100K 110K 130");
 }
 
 // Overlap the next keyframe after the end of the track buffer without a
@@ -1661,32 +1635,33 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer2) {
 // old  :   10K  40  *70*  100K  125  130K
 // new  : 0K   30   60   90   120K
 // after: 0K   30   60   90  *120K*   130K
-// track:             70
+// track:             70   100K
 // new  :        50K   80   110          140
 // after: 0K   30   50K   80   110   140 * (waiting for keyframe)
-// track:             70
+// track:               70   100K   120K   130K
 TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer3) {
-  NewSegmentAppendOneByOne("10K 40 70 100K 125 130D30K");
+  NewSegmentAppendOneByOne("10K 40 70 100K 125 130K");
   CheckExpectedRangesByTimestamp("{ [10,160) }");
 
   // Seek to 70ms.
   SeekToTimestamp(base::TimeDelta::FromMilliseconds(70));
   CheckExpectedBuffers("10K 40");
 
-  // Overlap with a new segment from 0 to 120ms; 70ms goes in track buffer.
-  NewSegmentAppendOneByOne("0K 30 60 90 120D10K");
+  // Overlap with a new segment from 0 to 120ms; 70ms and 100ms go in track
+  // buffer.
+  NewSegmentAppendOneByOne("0K 30 60 90 120K");
   CheckExpectedRangesByTimestamp("{ [0,160) }");
 
-  // Now overlap the keyframe at 120ms and 130ms.
+  // Now overlap the keyframe at 120ms. There's no keyframe after 70ms, so 120ms
+  // and 130ms go into the track buffer.
   NewSegmentAppendOneByOne("50K 80 110 140");
-  CheckExpectedRangesByTimestamp("{ [0,170) }");
 
   // Should have all the buffers from the track buffer, then stall.
-  CheckExpectedBuffers("70");
+  CheckExpectedBuffers("70 100K 120K 130K");
   CheckNoNextBuffer();
 
   // Appending a keyframe should fulfill the read.
-  AppendBuffersOneByOne("150D30K");
+  AppendBuffersOneByOne("150K");
   CheckExpectedBuffers("150K");
   CheckNoNextBuffer();
 }
@@ -1696,12 +1671,12 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer3) {
 // old  :   10K  40  *70*  100K  125  130K
 // new  : 0K   30   60   90   120K
 // after: 0K   30   60   90  *120K*   130K
-// track:             70
+// track:             70   100K
 // new  :              80K  110          140
 // after: 0K   30   60   *80K*  110   140
 // track:               70
 TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer4) {
-  NewSegmentAppendOneByOne("10K 40 70 100K 125 130D30K");
+  NewSegmentAppendOneByOne("10K 40 70 100K 125 130K");
   CheckExpectedRangesByTimestamp("{ [10,160) }");
 
   // Seek to 70ms.
@@ -1710,7 +1685,7 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer4) {
 
   // Overlap with a new segment from 0 to 120ms; 70ms and 100ms go in track
   // buffer.
-  NewSegmentAppendOneByOne("0K 30 60 90 120D10K");
+  NewSegmentAppendOneByOne("0K 30 60 90 120K");
   CheckExpectedRangesByTimestamp("{ [0,160) }");
 
   // Now append a keyframe at 80ms.
@@ -1726,7 +1701,7 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer4) {
 // old  :   10K  40  *70*  100K
 // new  : 0K   30   60   90   120
 // after: 0K   30   60   90   120 * (waiting for keyframe)
-// track:             70
+// track:             70   100K
 // new  :              80K  110          140
 // after: 0K   30   60   *80K*  110   140
 // track:               70
@@ -1738,12 +1713,13 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer5) {
   SeekToTimestamp(base::TimeDelta::FromMilliseconds(70));
   CheckExpectedBuffers("10K 40");
 
-  // Overlap with a new segment from 0 to 120ms; 70ms goes in track
+  // Overlap with a new segment from 0 to 120ms; 70ms and 100ms go in track
   // buffer.
   NewSegmentAppendOneByOne("0K 30 60 90 120");
   CheckExpectedRangesByTimestamp("{ [0,150) }");
 
-  // Now append a keyframe at 80ms.
+  // Now append a keyframe at 80ms. The buffer at 100ms should be deleted from
+  // the track buffer.
   NewSegmentAppendOneByOne("80K 110 140");
 
   CheckExpectedBuffers("70 80K 110 140");
@@ -1755,13 +1731,13 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer5) {
 // old  :   10K  40  *70*  100K  125  130K ... 200K 230
 // new  : 0K   30   60   90   120K
 // after: 0K   30   60   90  *120K*   130K ... 200K 230
-// track:             70
+// track:             70   100K
 // old  : 0K   30   60   90  *120K*   130K ... 200K 230
 // new  :                                               260K 290
 // after: 0K   30   60   90  *120K*   130K ... 200K 230 260K 290
-// track:             70
+// track:             70   100K
 TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer6) {
-  NewSegmentAppendOneByOne("10K 40 70 100K 125 130D30K");
+  NewSegmentAppendOneByOne("10K 40 70 100K 125 130K");
   NewSegmentAppendOneByOne("200K 230");
   CheckExpectedRangesByTimestamp("{ [10,160) [200,260) }");
 
@@ -1770,7 +1746,7 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer6) {
   CheckExpectedBuffers("10K 40");
 
   // Overlap with a new segment from 0 to 120ms.
-  NewSegmentAppendOneByOne("0K 30 60 90 120D10K");
+  NewSegmentAppendOneByOne("0K 30 60 90 120K");
   CheckExpectedRangesByTimestamp("{ [0,160) [200,260) }");
 
   // Verify that 70 gets read out of the track buffer.
@@ -1780,7 +1756,7 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer6) {
   NewSegmentAppendOneByOne("260K 290");
   CheckExpectedRangesByTimestamp("{ [0,160) [200,320) }");
 
-  CheckExpectedBuffers("120K 130K");
+  CheckExpectedBuffers("100K 120K 130K");
   CheckNoNextBuffer();
 
   // Check the final result: should not include data from the track buffer.
@@ -2146,7 +2122,7 @@ TEST_F(SourceBufferStreamTest, GetNextBuffer_ExhaustThenStartOverlap2) {
   CheckNoNextBuffer();
 
   // Append a keyframe with the same timestamp as the last buffer output.
-  NewSegmentAppend("120D30K");
+  NewSegmentAppend("120K");
   CheckNoNextBuffer();
 
   // Append the rest of the segment and make sure that buffers are returned
@@ -2574,7 +2550,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP) {
 
   // Make sure you can continue appending data to this GOP; again, GC should not
   // wipe out anything.
-  AppendBuffers("120D30");
+  AppendBuffers("120");
   CheckExpectedRangesByTimestamp("{ [0,150) }");
 
   // Set memory limit to 100 and append a 2nd range after this without
@@ -2596,7 +2572,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP) {
   CheckExpectedRangesByTimestamp("{ [290,380) [500,620) }");
 
   // Continue appending to this GOP after GC.
-  AppendBuffers("620D30");
+  AppendBuffers("620");
   CheckExpectedRangesByTimestamp("{ [290,380) [500,650) }");
 }
 
@@ -2615,7 +2591,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Middle) {
   // This whole GOP should be saved, and should be able to continue appending
   // data to it.
   CheckExpectedRangesByTimestamp("{ [80,170) }");
-  AppendBuffers("170D30");
+  AppendBuffers("170");
   CheckExpectedRangesByTimestamp("{ [80,200) }");
 
   // Set memory limit to 100 and append a 2nd range after this without
@@ -2638,7 +2614,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_SaveAppendGOP_Middle) {
   CheckExpectedRangesByTimestamp("{ [80,200) [500,620) }");
 
   // Continue appending to this GOP after GC.
-  AppendBuffers("620D30");
+  AppendBuffers("620");
   CheckExpectedRangesByTimestamp("{ [80,200) [500,650) }");
 }
 
@@ -3653,7 +3629,7 @@ TEST_F(SourceBufferStreamTest, Text_CompleteOverlap) {
   CheckExpectedRangesByTimestamp("{ [3000,4500) }");
   NewSegmentAppend("0K 501K 1001K 1501K 2001K 2501K "
                    "3001K 3501K 4001K 4501K 5001K");
-  CheckExpectedRangesByTimestamp("{ [0,5501) }");
+  CheckExpectedRangesByTimestamp("{ [0,5502) }");
 
   Seek(0);
   CheckExpectedBuffers("0K 501K 1001K 1501K 2001K 2501K "
@@ -3665,7 +3641,7 @@ TEST_F(SourceBufferStreamTest, Text_OverlapAfter) {
   NewSegmentAppend("0K 500K 1000K 1500K 2000K");
   CheckExpectedRangesByTimestamp("{ [0,2500) }");
   NewSegmentAppend("1499K 2001K 2501K 3001K");
-  CheckExpectedRangesByTimestamp("{ [0,3501) }");
+  CheckExpectedRangesByTimestamp("{ [0,3503) }");
 
   Seek(0);
   CheckExpectedBuffers("0K 500K 1000K 1499K 2001K 2501K 3001K");
@@ -3676,22 +3652,22 @@ TEST_F(SourceBufferStreamTest, Text_OverlapBefore) {
   NewSegmentAppend("1500K 2000K 2500K 3000K 3500K");
   CheckExpectedRangesByTimestamp("{ [1500,4000) }");
   NewSegmentAppend("0K 501K 1001K 1501K 2001K");
-  CheckExpectedRangesByTimestamp("{ [0,4000) }");
+  CheckExpectedRangesByTimestamp("{ [0,4001) }");
 
   Seek(0);
-  CheckExpectedBuffers("0K 501K 1001K 1501K 2001K 3000K 3500K");
+  CheckExpectedBuffers("0K 501K 1001K 1501K 2001K 2500K 3000K 3500K");
 }
 
 TEST_F(SourceBufferStreamTest, SpliceFrame_Basic) {
   Seek(0);
-  NewSegmentAppend("0K S(3K 6 9D3 10D5) 15 20 S(25K 30D5 35D5) 40");
+  NewSegmentAppend("0K S(3K 6 9 10) 15 20 S(25K 30 35) 40");
   CheckExpectedBuffers("0K 3K 6 9 C 10 15 20 25K 30 C 35 40");
   CheckNoNextBuffer();
 }
 
 TEST_F(SourceBufferStreamTest, SpliceFrame_SeekClearsSplice) {
   Seek(0);
-  NewSegmentAppend("0K S(3K 6 9D3 10D5) 15K 20");
+  NewSegmentAppend("0K S(3K 6 9 10) 15K 20");
   CheckExpectedBuffers("0K 3K 6");
 
   SeekToTimestamp(base::TimeDelta::FromMilliseconds(15));
@@ -3701,7 +3677,7 @@ TEST_F(SourceBufferStreamTest, SpliceFrame_SeekClearsSplice) {
 
 TEST_F(SourceBufferStreamTest, SpliceFrame_SeekClearsSpliceFromTrackBuffer) {
   Seek(0);
-  NewSegmentAppend("0K 2K S(3K 6 9D3 10D5) 15K 20");
+  NewSegmentAppend("0K 2K S(3K 6 9 10) 15K 20");
   CheckExpectedBuffers("0K 2K");
 
   // Overlap the existing segment.
@@ -3723,7 +3699,7 @@ TEST_F(SourceBufferStreamTest, SpliceFrame_ConfigChangeWithinSplice) {
 
   Seek(0);
   CheckVideoConfig(video_config_);
-  NewSegmentAppend("0K S(3K 6C 9D3 10D5) 15");
+  NewSegmentAppend("0K S(3K 6C 9 10) 15");
 
   CheckExpectedBuffers("0K 3K C");
   CheckVideoConfig(new_config);
@@ -3736,7 +3712,7 @@ TEST_F(SourceBufferStreamTest, SpliceFrame_ConfigChangeWithinSplice) {
 
 TEST_F(SourceBufferStreamTest, SpliceFrame_BasicFromTrackBuffer) {
   Seek(0);
-  NewSegmentAppend("0K 5K S(8K 9D1 10D10) 20");
+  NewSegmentAppend("0K 5K S(8K 9 10) 20");
   CheckExpectedBuffers("0K 5K");
 
   // Overlap the existing segment.
@@ -3756,7 +3732,7 @@ TEST_F(SourceBufferStreamTest,
 
   Seek(0);
   CheckVideoConfig(video_config_);
-  NewSegmentAppend("0K 5K S(7K 8C 9D1 10D10) 20");
+  NewSegmentAppend("0K 5K S(7K 8C 9 10) 20");
   CheckExpectedBuffers("0K 5K");
 
   // Overlap the existing segment.
@@ -3801,7 +3777,7 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoDoubleSplice) {
   Seek(0);
 
   // Create a splice before the first splice which would include it.
-  NewSegmentAppend("9D2K");
+  NewSegmentAppend("9K");
 
   // A splice on top of a splice should result in a discard of the original
   // splice and no new splice frame being generated.
@@ -3827,7 +3803,7 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_CorrectMediaSegmentStartTime) {
   CheckExpectedRangesByTimestamp("{ [0,6) }");
   NewSegmentAppend("6K 8K 10K");
   CheckExpectedRangesByTimestamp("{ [0,12) }");
-  NewSegmentAppend("1K 4D2K");
+  NewSegmentAppend("1K 4K");
   CheckExpectedRangesByTimestamp("{ [0,12) }");
   CheckExpectedBuffers("0K 2K 4K C 1K 4K 6K 8K 10K");
   CheckNoNextBuffer();
@@ -3864,9 +3840,9 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoTinySplices) {
   // 2ms this results in an overlap of 1ms between the ranges.  A splice frame
   // should not be generated since it requires at least 2 frames, or 2ms in this
   // case, of data to crossfade.
-  NewSegmentAppend("0D2K");
+  NewSegmentAppend("0K");
   CheckExpectedRangesByTimestamp("{ [0,2) }");
-  NewSegmentAppend("1D2K");
+  NewSegmentAppend("1K");
   CheckExpectedRangesByTimestamp("{ [0,3) }");
   CheckExpectedBuffers("0K 1K");
   CheckNoNextBuffer();
