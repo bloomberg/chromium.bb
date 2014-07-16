@@ -201,9 +201,6 @@ class AutofillAgent : public content::RenderViewObserver,
   // The form element currently requesting an interactive autocomplete.
   blink::WebFormElement in_flight_request_form_;
 
-  // All the form elements seen in the top frame.
-  std::vector<blink::WebFormElement> form_elements_;
-
   // Pointer to the WebView. Used to access page scale factor.
   blink::WebView* web_view_;
 
@@ -219,10 +216,6 @@ class AutofillAgent : public content::RenderViewObserver,
 
   // If true we just set the node text so we shouldn't show the popup.
   bool did_set_node_text_;
-
-  // Whether or not new forms/fields have been dynamically added
-  // since the last loaded forms were sent to the browser process.
-  bool has_new_forms_for_browser_;
 
   // Whether or not to ignore text changes.  Useful for when we're committing
   // a composition when we are defocusing the WebView and we don't want to
