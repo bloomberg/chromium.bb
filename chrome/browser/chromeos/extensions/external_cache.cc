@@ -153,6 +153,7 @@ void ExternalCache::OnExtensionDownloadFailed(
                  << " not found on update server";
       delegate_->OnExtensionDownloadFailed(id, error);
     } else {
+      // No version update for an already cached extension.
       delegate_->OnExtensionLoadedInCache(id);
     }
   } else {

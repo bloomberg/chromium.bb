@@ -37,9 +37,14 @@ class KioskAppsHandler : public content::WebUIMessageHandler,
   // content::WebUIMessageHandler overrides:
   virtual void RegisterMessages() OVERRIDE;
 
-  // KioskAppPrefsObserver overrides:
+  // KioskAppManagerObserver overrides:
   virtual void OnKioskAppDataChanged(const std::string& app_id) OVERRIDE;
   virtual void OnKioskAppDataLoadFailure(const std::string& app_id) OVERRIDE;
+  virtual void OnKioskExtensionLoadedInCache(
+      const std::string& app_id) OVERRIDE;
+  virtual void OnKioskExtensionDownloadFailed(
+      const std::string& app_id) OVERRIDE;
+
   virtual void OnKioskAppsSettingsChanged() OVERRIDE;
 
  private:
@@ -54,6 +59,9 @@ class KioskAppsHandler : public content::WebUIMessageHandler,
   void HandleEnableKioskAutoLaunch(const base::ListValue* args);
   void HandleDisableKioskAutoLaunch(const base::ListValue* args);
   void HandleSetDisableBailoutShortcut(const base::ListValue* args);
+
+  void UpdateApp(const std::string& app_id);
+  void ShowError(const std::string& app_id);
 
   // Callback for KioskAppManager::GetConsumerKioskModeStatus().
   void OnGetConsumerKioskAutoLaunchStatus(

@@ -178,25 +178,22 @@ void KioskAppsHandler::GetLocalizedValues(content::WebUIDataSource* source) {
 }
 
 void KioskAppsHandler::OnKioskAppDataChanged(const std::string& app_id) {
-  KioskAppManager::App app_data;
-  if (!kiosk_app_manager_->GetApp(app_id, &app_data))
-    return;
-
-  base::DictionaryValue app_dict;
-  PopulateAppDict(app_data, &app_dict);
-
-  web_ui()->CallJavascriptFunction("extensions.KioskAppsOverlay.updateApp",
-                                   app_dict);
+  UpdateApp(app_id);
 }
 
 void KioskAppsHandler::OnKioskAppDataLoadFailure(const std::string& app_id) {
-  base::StringValue app_id_value(app_id);
-  web_ui()->CallJavascriptFunction("extensions.KioskAppsOverlay.showError",
-                                   app_id_value);
-
-  kiosk_app_manager_->RemoveApp(app_id);
+  ShowError(app_id);
 }
 
+void KioskAppsHandler::OnKioskExtensionLoadedInCache(
+    const std::string& app_id) {
+  UpdateApp(app_id);
+}
+
+void KioskAppsHandler::OnKioskExtensionDownloadFailed(
+    const std::string& app_id) {
+  ShowError(app_id);
+}
 
 void KioskAppsHandler::OnGetConsumerKioskAutoLaunchStatus(
     chromeos::KioskAppManager::ConsumerKioskAutoLaunchStatus status) {
@@ -331,6 +328,26 @@ void KioskAppsHandler::HandleSetDisableBailoutShortcut(
   CrosSettings::Get()->SetBoolean(
       kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled,
       !disable_bailout_shortcut);
+}
+
+void KioskAppsHandler::UpdateApp(const std::string& app_id) {
+  KioskAppManager::App app_data;
+  if (!kiosk_app_manager_->GetApp(app_id, &app_data))
+    return;
+
+  base::DictionaryValue app_dict;
+  PopulateAppDict(app_data, &app_dict);
+
+  web_ui()->CallJavascriptFunction("extensions.KioskAppsOverlay.updateApp",
+                                   app_dict);
+}
+
+void KioskAppsHandler::ShowError(const std::string& app_id) {
+  base::StringValue app_id_value(app_id);
+  web_ui()->CallJavascriptFunction("extensions.KioskAppsOverlay.showError",
+                                   app_id_value);
+
+  kiosk_app_manager_->RemoveApp(app_id);
 }
 
 }  // namespace chromeos

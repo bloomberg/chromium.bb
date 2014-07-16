@@ -9,6 +9,7 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -75,6 +76,7 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
   }
 
   virtual void TearDown() OVERRIDE {
+    chromeos::KioskAppManager::Shutdown();
     chromeos::system::StatisticsProvider::SetTestProvider(NULL);
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
   }

@@ -237,6 +237,9 @@ class KioskTest : public OobeBaseTest {
  protected:
   virtual void SetUp() OVERRIDE {
     test_app_id_ = kTestKioskApp;
+    set_test_app_version("1.0.0");
+    set_test_crx_file(test_app_id() + ".crx");
+    needs_background_networking_ = true;
     mock_user_manager_.reset(new MockUserManager);
     ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
     AppLaunchController::SkipSplashWaitForTesting();
@@ -275,17 +278,28 @@ class KioskTest : public OobeBaseTest {
   }
 
   void ReloadKioskApps() {
+    SetupTestAppUpdateCheck();
+
     // Remove then add to ensure NOTIFICATION_KIOSK_APPS_LOADED fires.
     KioskAppManager::Get()->RemoveApp(test_app_id_);
     KioskAppManager::Get()->AddApp(test_app_id_);
   }
 
+  void SetupTestAppUpdateCheck() {
+    if (!test_app_version().empty()) {
+      fake_cws_->SetUpdateCrx(
+          test_app_id(), test_crx_file(), test_app_version());
+    }
+  }
+
   void ReloadAutolaunchKioskApps() {
+    SetupTestAppUpdateCheck();
+
     KioskAppManager::Get()->AddApp(test_app_id_);
     KioskAppManager::Get()->SetAutoLaunchApp(test_app_id_);
   }
 
-  void PrepareAppLaunch() {
+  void StartUIForAppLaunch() {
     EnableConsumerKioskMode();
 
     // Start UI
@@ -307,6 +321,11 @@ class KioskTest : public OobeBaseTest {
       else
         login_signal.Wait();
     }
+  }
+
+  void PrepareAppLaunch() {
+    // Start UI
+    StartUIForAppLaunch();
 
     // Wait for the Kiosk App configuration to reload.
     content::WindowedNotificationObserver apps_loaded_signal(
@@ -431,32 +450,6 @@ class KioskTest : public OobeBaseTest {
     return status;
   }
 
-  // Copies the app profile from |relative_app_profile_dir| from test directory
-  // to the app profile directory (assuming "user") under testing profile. This
-  // is for that needs to have a kiosk app already installed from a previous
-  // run. Note this must be called before app profile is loaded.
-  void SetupAppProfile(const std::string& relative_app_profile_dir) {
-    base::FilePath app_profile_dir;
-    KioskAppManager::App app_data;
-    CHECK(KioskAppManager::Get()->GetApp(test_app_id(), &app_data));
-    std::string app_user_id_hash =
-        CryptohomeClient::GetStubSanitizedUsername(app_data.user_id);
-    app_profile_dir =
-        ProfileHelper::GetProfilePathByUserIdHash(app_user_id_hash);
-    ASSERT_TRUE(base::CreateDirectory(app_profile_dir));
-
-    base::FilePath test_data_dir;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-    test_data_dir = test_data_dir.AppendASCII(relative_app_profile_dir);
-    ASSERT_TRUE(
-        base::CopyFile(test_data_dir.Append(chrome::kPreferencesFilename),
-                       app_profile_dir.Append(chrome::kPreferencesFilename)));
-    ASSERT_TRUE(
-        base::CopyDirectory(test_data_dir.AppendASCII("Extensions"),
-                            app_profile_dir,
-                            true));
-  }
-
   void RunAppLaunchNetworkDownTest() {
     mock_user_manager()->SetActiveUser(kTestOwnerEmail);
     AppLaunchSigninScreen::SetUserManagerForTesting(mock_user_manager());
@@ -509,10 +502,20 @@ class KioskTest : public OobeBaseTest {
     test_app_id_ = test_app_id;
   }
   const std::string& test_app_id() const { return test_app_id_; }
+  void set_test_app_version(const std::string& version) {
+    test_app_version_ = version;
+  }
+  const std::string& test_app_version() const { return test_app_version_; }
+  void set_test_crx_file(const std::string& filename) {
+    test_crx_file_ = filename;
+  }
+  const std::string& test_crx_file() const { return test_crx_file_; }
   FakeCWS* fake_cws() { return fake_cws_.get(); }
 
  private:
   std::string test_app_id_;
+  std::string test_app_version_;
+  std::string test_crx_file_;
   scoped_ptr<FakeCWS> fake_cws_;
   scoped_ptr<MockUserManager> mock_user_manager_;
 
@@ -619,6 +622,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_LaunchAppNetworkPortal) {
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppUserCancel) {
+  // Make fake_cws_ return empty update response.
+  set_test_app_version("");
   StartAppLaunchFromLoginScreen(SimulateNetworkOfflineClosure());
   OobeScreenWaiter splash_waiter(OobeDisplay::SCREEN_APP_LAUNCH_SPLASH);
   splash_waiter.Wait();
@@ -882,75 +887,237 @@ class KioskUpdateTest : public KioskTest {
   virtual ~KioskUpdateTest() {}
 
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    // Needs background networking so that ExtensionDownloader works.
-    needs_background_networking_ = true;
-    KioskTest::SetUpCommandLine(command_line);
-  }
-
   virtual void SetUpOnMainThread() OVERRIDE {
     KioskTest::SetUpOnMainThread();
   }
 
+  void PreCacheApp(const std::string& app_id,
+                   const std::string& version,
+                   const std::string& crx_file) {
+    set_test_app_id(app_id);
+    set_test_app_version(version);
+    set_test_crx_file(crx_file);
+
+    KioskAppManager* manager = KioskAppManager::Get();
+    AppDataLoadWaiter waiter(manager, app_id, version);
+    ReloadKioskApps();
+    waiter.Wait();
+    EXPECT_TRUE(waiter.loaded());
+    std::string cached_version;
+    base::FilePath file_path;
+    EXPECT_TRUE(manager->GetCachedCrx(app_id, &file_path, &cached_version));
+    EXPECT_EQ(version, cached_version);
+  }
+
+  void UpdateExternalCache(const std::string& version,
+                           const std::string& crx_file) {
+    set_test_app_version(version);
+    set_test_crx_file(crx_file);
+    SetupTestAppUpdateCheck();
+
+    KioskAppManager* manager = KioskAppManager::Get();
+    AppDataLoadWaiter waiter(manager, test_app_id(), version);
+    KioskAppManager::Get()->UpdateExternalCache();
+    waiter.Wait();
+    EXPECT_TRUE(waiter.loaded());
+    std::string cached_version;
+    base::FilePath file_path;
+    EXPECT_TRUE(
+        manager->GetCachedCrx(test_app_id(), &file_path, &cached_version));
+    EXPECT_EQ(version, cached_version);
+  }
+
+  void PreCacheAndLaunchApp(const std::string& app_id,
+                            const std::string& version,
+                            const std::string& crx_file) {
+    set_test_app_id(app_id);
+    set_test_app_version(version);
+    set_test_crx_file(crx_file);
+    PrepareAppLaunch();
+    SimulateNetworkOnline();
+    LaunchApp(test_app_id(), false);
+    WaitForAppLaunchSuccess();
+    EXPECT_EQ(version, GetInstalledAppVersion().GetString());
+  }
+
  private:
+  class AppDataLoadWaiter : public KioskAppManagerObserver {
+   public:
+    AppDataLoadWaiter(KioskAppManager* manager,
+                      const std::string& app_id,
+                      const std::string& version)
+        : runner_(NULL),
+          manager_(manager),
+          loaded_(false),
+          quit_(false),
+          app_id_(app_id),
+          version_(version) {
+      manager_->AddObserver(this);
+    }
+
+    virtual ~AppDataLoadWaiter() { manager_->RemoveObserver(this); }
+
+    void Wait() {
+      if (quit_)
+        return;
+      runner_ = new content::MessageLoopRunner;
+      runner_->Run();
+    }
+
+    bool loaded() const { return loaded_; }
+
+   private:
+    // KioskAppManagerObserver overrides:
+    virtual void OnKioskExtensionLoadedInCache(
+        const std::string& app_id) OVERRIDE {
+      std::string cached_version;
+      base::FilePath file_path;
+      if (!manager_->GetCachedCrx(app_id_, &file_path, &cached_version))
+        return;
+      if (version_ != cached_version)
+        return;
+      loaded_ = true;
+      quit_ = true;
+      if (runner_)
+        runner_->Quit();
+    }
+
+    virtual void OnKioskExtensionDownloadFailed(
+        const std::string& app_id) OVERRIDE {
+      loaded_ = false;
+      quit_ = true;
+      if (runner_)
+        runner_->Quit();
+    }
+
+    scoped_refptr<content::MessageLoopRunner> runner_;
+    KioskAppManager* manager_;
+    bool loaded_;
+    bool quit_;
+    std::string app_id_;
+    std::string version_;
+
+    DISALLOW_COPY_AND_ASSIGN(AppDataLoadWaiter);
+  };
 
   DISALLOW_COPY_AND_ASSIGN(KioskUpdateTest);
 };
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoNetwork) {
-  set_test_app_id(kTestOfflineEnabledKioskApp);
-
-  PrepareAppLaunch();
-  SimulateNetworkOffline();
-  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
-
-  LaunchApp(test_app_id(), false);
-  WaitForAppLaunchSuccess();
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_LaunchOfflineEnabledAppNoNetwork) {
+  PreCacheAndLaunchApp(kTestOfflineEnabledKioskApp,
+                       "1.0.0",
+                       std::string(kTestOfflineEnabledKioskApp) + "_v1.crx");
 }
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoUpdate) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoNetwork) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
-
-  fake_cws()->SetNoUpdate(test_app_id());
-
-  PrepareAppLaunch();
-  SimulateNetworkOnline();
-  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
-
+  StartUIForAppLaunch();
+  SimulateNetworkOffline();
   LaunchApp(test_app_id(), false);
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
 }
 
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       PRE_LaunchCachedOfflineEnabledAppNoNetwork) {
+  PreCacheApp(kTestOfflineEnabledKioskApp,
+              "1.0.0",
+              std::string(kTestOfflineEnabledKioskApp) + "_v1.crx");
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       LaunchCachedOfflineEnabledAppNoNetwork) {
+  set_test_app_id(kTestOfflineEnabledKioskApp);
+  EXPECT_TRUE(
+      KioskAppManager::Get()->HasCachedCrx(kTestOfflineEnabledKioskApp));
+  StartUIForAppLaunch();
+  SimulateNetworkOffline();
+  LaunchApp(test_app_id(), false);
+  WaitForAppLaunchSuccess();
+
+  EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
+}
+
+// Network offline, app v1.0 has run before, has cached v2.0 crx and v2.0 should
+// be installed and launched during next launch.
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       PRE_LaunchCachedNewVersionOfflineEnabledAppNoNetwork) {
+  // Install and launch v1 app.
+  PreCacheAndLaunchApp(kTestOfflineEnabledKioskApp,
+                       "1.0.0",
+                       std::string(kTestOfflineEnabledKioskApp) + "_v1.crx");
+  // Update cache for v2 app.
+  UpdateExternalCache("2.0.0",
+                      std::string(kTestOfflineEnabledKioskApp) + ".crx");
+  // The installed app is still in v1.
+  EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       LaunchCachedNewVersionOfflineEnabledAppNoNetwork) {
+  set_test_app_id(kTestOfflineEnabledKioskApp);
+  EXPECT_TRUE(KioskAppManager::Get()->HasCachedCrx(test_app_id()));
+
+  StartUIForAppLaunch();
+  SimulateNetworkOffline();
+  LaunchApp(test_app_id(), false);
+  WaitForAppLaunchSuccess();
+
+  // v2 app should have been installed.
+  EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_LaunchOfflineEnabledAppNoUpdate) {
+  PreCacheAndLaunchApp(kTestOfflineEnabledKioskApp,
+                       "1.0.0",
+                       std::string(kTestOfflineEnabledKioskApp) + "_v1.crx");
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoUpdate) {
+  set_test_app_id(kTestOfflineEnabledKioskApp);
+  fake_cws()->SetNoUpdate(test_app_id());
+
+  StartUIForAppLaunch();
+  SimulateNetworkOnline();
+  LaunchApp(test_app_id(), false);
+  WaitForAppLaunchSuccess();
+
+  EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_LaunchOfflineEnabledAppHasUpdate) {
+  PreCacheAndLaunchApp(kTestOfflineEnabledKioskApp,
+                       "1.0.0",
+                       std::string(kTestOfflineEnabledKioskApp) + "_v1.crx");
+}
+
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppHasUpdate) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
-
   fake_cws()->SetUpdateCrx(
       test_app_id(), "ajoggoflpgplnnjkjamcmbepjdjdnpdp.crx", "2.0.0");
 
-  PrepareAppLaunch();
+  StartUIForAppLaunch();
   SimulateNetworkOnline();
-  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
-
   LaunchApp(test_app_id(), false);
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
 }
 
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_PermissionChange) {
+  PreCacheAndLaunchApp(kTestOfflineEnabledKioskApp,
+                       "2.0.0",
+                       std::string(kTestOfflineEnabledKioskApp) + ".crx");
+}
+
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PermissionChange) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
+  set_test_app_version("2.0.0");
+  set_test_crx_file(test_app_id() + "_v2_permission_change.crx");
 
-  fake_cws()->SetUpdateCrx(
-      test_app_id(),
-      "ajoggoflpgplnnjkjamcmbepjdjdnpdp_v2_permission_change.crx",
-      "2.0.0");
-
-  PrepareAppLaunch();
+  StartUIForAppLaunch();
   SimulateNetworkOnline();
-  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
-
   LaunchApp(test_app_id(), false);
   WaitForAppLaunchSuccess();
 
@@ -960,6 +1127,8 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PermissionChange) {
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_PreserveLocalData) {
   // Installs v1 app and writes some local data.
   set_test_app_id(kTestLocalFsKioskApp);
+  set_test_app_version("1.0.0");
+  set_test_crx_file(test_app_id() + ".crx");
 
   ResultCatcher catcher;
   StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
@@ -971,12 +1140,8 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PreserveLocalData) {
   // Update existing v1 app installed in PRE_PreserveLocalData to v2
   // that reads and verifies the local data.
   set_test_app_id(kTestLocalFsKioskApp);
-
-  fake_cws()->SetUpdateCrx(
-      test_app_id(),
-      "bmbpicmpniaclbbpdkfglgipkkebnbjf_v2_read_and_verify_data.crx",
-      "2.0.0");
-
+  set_test_app_version("2.0.0");
+  set_test_crx_file(test_app_id() + "_v2_read_and_verify_data.crx");
   ResultCatcher catcher;
   StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());
   WaitForAppLaunchSuccess();
@@ -997,6 +1162,11 @@ class KioskEnterpriseTest : public KioskTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    set_test_app_id(kTestEnterpriseKioskApp);
+    set_test_app_version("1.0.0");
+    set_test_crx_file(test_app_id() + ".crx");
+    SetupTestAppUpdateCheck();
+
     KioskTest::SetUpOnMainThread();
     // Configure kTestEnterpriseKioskApp in device policy.
     em::DeviceLocalAccountsProto* accounts =

@@ -17,8 +17,9 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/install_tracker.h"
+#include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
-#include "chrome/browser/extensions/webstore_startup_installer.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -46,7 +47,6 @@
 
 using content::BrowserThread;
 using extensions::Extension;
-using extensions::WebstoreStartupInstaller;
 
 namespace chromeos {
 
@@ -59,7 +59,7 @@ const char kOAuthClientSecret[] = "client_secret";
 const base::FilePath::CharType kOAuthFileName[] =
     FILE_PATH_LITERAL("kiosk_auth");
 
-const int kMaxInstallAttempt = 5;
+const int kMaxLaunchAttempt = 5;
 
 }  // namespace
 
@@ -72,13 +72,17 @@ StartupAppLauncher::StartupAppLauncher(Profile* profile,
       diagnostic_mode_(diagnostic_mode),
       delegate_(delegate),
       network_ready_handled_(false),
-      install_attempt_(0),
-      ready_to_launch_(false) {
+      launch_attempt_(0),
+      ready_to_launch_(false),
+      wait_for_crx_update_(false) {
   DCHECK(profile_);
   DCHECK(Extension::IdIsValid(app_id_));
+  KioskAppManager::Get()->AddObserver(this);
 }
 
 StartupAppLauncher::~StartupAppLauncher() {
+  KioskAppManager::Get()->RemoveObserver(this);
+
   // StartupAppLauncher can be deleted at anytime during the launch process
   // through a user bailout shortcut.
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
@@ -90,10 +94,13 @@ void StartupAppLauncher::Initialize() {
 }
 
 void StartupAppLauncher::ContinueWithNetworkReady() {
-  // Starts install if it is not started.
   if (!network_ready_handled_) {
     network_ready_handled_ = true;
-    MaybeInstall();
+    // The network might not be ready when KioskAppManager tries to update
+    // external cache initially. Update the external cache now that the network
+    // is ready for sure.
+    wait_for_crx_update_ = true;
+    KioskAppManager::Get()->UpdateExternalCache();
   }
 }
 
@@ -152,8 +159,11 @@ void StartupAppLauncher::OnOAuthFileLoaded(KioskOAuthParams* auth_params) {
 void StartupAppLauncher::RestartLauncher() {
   // If the installer is still running in the background, we don't need to
   // restart the launch process. We will just wait until it completes and
-  // lunches the kiosk app.
-  if (installer_ != NULL) {
+  // launches the kiosk app.
+  if (extensions::ExtensionSystem::Get(profile_)
+          ->extension_service()
+          ->pending_extension_manager()
+          ->IsIdPending(app_id_)) {
     LOG(WARNING) << "Installer still running";
     return;
   }
@@ -166,20 +176,23 @@ void StartupAppLauncher::MaybeInitializeNetwork() {
 
   const Extension* extension = extensions::ExtensionSystem::Get(profile_)->
       extension_service()->GetInstalledExtension(app_id_);
-  const bool requires_network = !extension ||
-      !extensions::OfflineEnabledInfo::IsOfflineEnabled(extension);
+  bool crx_cached = KioskAppManager::Get()->HasCachedCrx(app_id_);
+  const bool requires_network =
+      (!extension && !crx_cached) ||
+      (extension &&
+       !extensions::OfflineEnabledInfo::IsOfflineEnabled(extension));
 
   if (requires_network) {
     delegate_->InitializeNetwork();
     return;
   }
 
-  // Offline enabled app attempts update if network is ready. Otherwise,
-  // go directly to launch.
+  // Update the offline enabled crx cache if the network is ready;
+  // or just install the app.
   if (delegate_->IsNetworkReady())
     ContinueWithNetworkReady();
   else
-    OnReadyToLaunch();
+    BeginInstall();
 }
 
 void StartupAppLauncher::InitializeTokenService() {
@@ -228,6 +241,77 @@ void StartupAppLauncher::OnRefreshTokensLoaded() {
   MaybeInitializeNetwork();
 }
 
+void StartupAppLauncher::MaybeLaunchApp() {
+  // Check if the app is offline enabled.
+  const Extension* extension = extensions::ExtensionSystem::Get(profile_)
+                                   ->extension_service()
+                                   ->GetInstalledExtension(app_id_);
+  DCHECK(extension);
+  const bool offline_enabled =
+      extensions::OfflineEnabledInfo::IsOfflineEnabled(extension);
+  if (offline_enabled || delegate_->IsNetworkReady()) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&StartupAppLauncher::OnReadyToLaunch, AsWeakPtr()));
+  } else {
+    ++launch_attempt_;
+    if (launch_attempt_ < kMaxLaunchAttempt) {
+      BrowserThread::PostTask(
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&StartupAppLauncher::MaybeInitializeNetwork, AsWeakPtr()));
+      return;
+    }
+    OnLaunchFailure(KioskAppLaunchError::UNABLE_TO_LAUNCH);
+  }
+}
+
+void StartupAppLauncher::OnFinishCrxInstall(const std::string& extension_id,
+                                            bool success) {
+  if (extension_id != app_id_)
+    return;
+
+  extensions::InstallTracker* tracker =
+      extensions::InstallTrackerFactory::GetForProfile(profile_);
+  tracker->RemoveObserver(this);
+  if (delegate_->IsShowingNetworkConfigScreen()) {
+    LOG(WARNING) << "Showing network config screen";
+    return;
+  }
+
+  if (success) {
+    MaybeLaunchApp();
+    return;
+  }
+
+  LOG(ERROR) << "Failed to install the kiosk application app_id: "
+             << extension_id;
+  OnLaunchFailure(KioskAppLaunchError::UNABLE_TO_INSTALL);
+}
+
+void StartupAppLauncher::OnKioskExtensionLoadedInCache(
+    const std::string& app_id) {
+  OnKioskAppDataLoadStatusChanged(app_id);
+}
+
+void StartupAppLauncher::OnKioskExtensionDownloadFailed(
+    const std::string& app_id) {
+  OnKioskAppDataLoadStatusChanged(app_id);
+}
+
+void StartupAppLauncher::OnKioskAppDataLoadStatusChanged(
+    const std::string& app_id) {
+  if (app_id != app_id_ || !wait_for_crx_update_)
+    return;
+
+  wait_for_crx_update_ = false;
+  if (KioskAppManager::Get()->HasCachedCrx(app_id_))
+    BeginInstall();
+  else
+    OnLaunchFailure(KioskAppLaunchError::UNABLE_TO_DOWNLOAD);
+}
+
 void StartupAppLauncher::LaunchApp() {
   if (!ready_to_launch_) {
     NOTREACHED();
@@ -273,71 +357,34 @@ void StartupAppLauncher::OnLaunchFailure(KioskAppLaunchError::Error error) {
   delegate_->OnLaunchFailed(error);
 }
 
-void StartupAppLauncher::MaybeInstall() {
-  delegate_->OnInstallingApp();
-
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (!extension_service->GetInstalledExtension(app_id_)) {
-    BeginInstall();
-    return;
-  }
-
-  extensions::ExtensionUpdater::CheckParams check_params;
-  check_params.ids.push_back(app_id_);
-  check_params.install_immediately = true;
-  check_params.callback =
-      base::Bind(&StartupAppLauncher::OnUpdateCheckFinished, AsWeakPtr());
-  extension_service->updater()->CheckNow(check_params);
-}
-
 void StartupAppLauncher::OnUpdateCheckFinished() {
   OnReadyToLaunch();
   UpdateAppData();
 }
 
 void StartupAppLauncher::BeginInstall() {
-  installer_ = new WebstoreStartupInstaller(
-      app_id_,
-      profile_,
-      false,
-      base::Bind(&StartupAppLauncher::InstallCallback, AsWeakPtr()));
-  installer_->BeginInstall();
-}
-
-void StartupAppLauncher::InstallCallback(bool success,
-                                         const std::string& error) {
-  installer_ = NULL;
-  if (delegate_->IsShowingNetworkConfigScreen()) {
-    LOG(WARNING) << "Showing network config screen";
+  KioskAppManager::Get()->InstallFromCache(app_id_);
+  if (extensions::ExtensionSystem::Get(profile_)
+          ->extension_service()
+          ->pending_extension_manager()
+          ->IsIdPending(app_id_)) {
+    delegate_->OnInstallingApp();
+    // Observe the crx installation events.
+    extensions::InstallTracker* tracker =
+        extensions::InstallTrackerFactory::GetForProfile(profile_);
+    tracker->AddObserver(this);
     return;
   }
 
-  if (success) {
-    // Finish initialization after the callback returns.
-    // So that the app finishes its installation.
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&StartupAppLauncher::OnReadyToLaunch,
-                   AsWeakPtr()));
-    return;
+  if (extensions::ExtensionSystem::Get(profile_)
+          ->extension_service()
+          ->GetInstalledExtension(app_id_)) {
+    // Launch the app.
+    OnReadyToLaunch();
+  } else {
+    // The extension is skipped for installation due to some error.
+    OnLaunchFailure(KioskAppLaunchError::UNABLE_TO_INSTALL);
   }
-
-  LOG(ERROR) << "App install failed: " << error
-             << ", for attempt " << install_attempt_;
-
-  ++install_attempt_;
-  if (install_attempt_ < kMaxInstallAttempt) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&StartupAppLauncher::MaybeInitializeNetwork,
-                   AsWeakPtr()));
-    return;
-  }
-
-  OnLaunchFailure(KioskAppLaunchError::UNABLE_TO_INSTALL);
 }
 
 void StartupAppLauncher::OnReadyToLaunch() {

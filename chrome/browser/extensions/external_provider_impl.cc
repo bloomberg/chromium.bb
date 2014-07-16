@@ -34,6 +34,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
 #include "chrome/browser/chromeos/login/users/user.h"
@@ -398,14 +399,29 @@ void ExternalProviderImpl::CreateExternalProviders(
                 Extension::NO_FLAGS)));
   }
 
+  // Load the KioskAppExternalProvider when running in kiosk mode.
+  if (chrome::IsRunningInForcedAppMode()) {
+#if defined(OS_CHROMEOS)
+    chromeos::KioskAppManager* kiosk_app_manager =
+        chromeos::KioskAppManager::Get();
+    DCHECK(kiosk_app_manager);
+    if (kiosk_app_manager && !kiosk_app_manager->external_loader_created()) {
+      provider_list->push_back(linked_ptr<ExternalProviderInterface>(
+          new ExternalProviderImpl(service,
+                                   kiosk_app_manager->CreateExternalLoader(),
+                                   profile,
+                                   Manifest::EXTERNAL_PREF,
+                                   Manifest::INVALID_LOCATION,
+                                   Extension::NO_FLAGS)));
+    }
+#endif
+    return;
+  }
+
   // In tests don't install extensions from default external sources.
   // It would only slowdown tests and make them flaky.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableDefaultApps))
-    return;
-
-  // No external app install in app mode.
-  if (chrome::IsRunningInForcedAppMode())
     return;
 
   // On Mac OS, items in /Library/... should be written by the superuser.

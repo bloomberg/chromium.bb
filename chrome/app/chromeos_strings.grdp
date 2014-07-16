@@ -4878,6 +4878,12 @@ Battery full
   <message name="IDS_KIOSK_APP_ERROR_UNABLE_TO_INSTALL" desc="Error message used when a kiosk app fails to launch due to install failure.">
     Kiosk application could not be installed.
   </message>
+  <message name="IDS_KIOSK_APP_ERROR_UNABLE_TO_DOWNLOAD" desc="Error message used when a kiosk app fails to launch due to crx file download failure.">
+    Kiosk application could not be downloaded.
+  </message>  
+  <message name="IDS_KIOSK_APP_ERROR_UNABLE_TO_LAUNCH" desc="Error message used when a kiosk app fails to launch due to app launching failure.">
+    Kiosk application could not be launched.
+  </message>    
   <message name="IDS_KIOSK_APP_ERROR_USER_CANCEL" desc="Error message used when a kiosk app launch is canceled by user.">
     Kiosk application launch canceled.
   </message>

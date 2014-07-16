@@ -17,6 +17,12 @@ class KioskAppManagerObserver {
   // Invoked when failed to load web store data of an app.
   virtual void OnKioskAppDataLoadFailure(const std::string& app_id) {}
 
+  // Invoked when the extension is loaded in cache.
+  virtual void OnKioskExtensionLoadedInCache(const std::string& app_id) {}
+
+  // Invoked when the extension download fails.
+  virtual void OnKioskExtensionDownloadFailed(const std::string& app_id) {}
+
   // Invoked when the Kiosk Apps configuration changes.
   virtual void OnKioskAppsSettingsChanged() {}
 

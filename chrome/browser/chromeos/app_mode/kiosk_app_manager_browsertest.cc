@@ -101,42 +101,6 @@ scoped_refptr<extensions::Extension> MakeApp(const std::string& name,
   return app;
 }
 
-class TestKioskAppManagerObserver : public KioskAppManagerObserver {
- public:
-  explicit TestKioskAppManagerObserver(KioskAppManager* manager)
-      : manager_(manager),
-        data_changed_count_(0),
-        load_failure_count_(0) {
-    manager_->AddObserver(this);
-  }
-  virtual ~TestKioskAppManagerObserver() {
-    manager_->RemoveObserver(this);
-  }
-
-  void Reset() {
-    data_changed_count_ = 0;
-    load_failure_count_ = 0;
-  }
-
-  int data_changed_count() const { return data_changed_count_; }
-  int load_failure_count() const { return load_failure_count_; }
-
- private:
-  // KioskAppManagerObserver overrides:
-  virtual void OnKioskAppDataChanged(const std::string& app_id) OVERRIDE {
-    ++data_changed_count_;
-  }
-  virtual void OnKioskAppDataLoadFailure(const std::string& app_id) OVERRIDE {
-    ++load_failure_count_;
-  }
-
-  KioskAppManager* manager_;
-  int data_changed_count_;
-  int load_failure_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestKioskAppManagerObserver);
-};
-
 class AppDataLoadWaiter : public KioskAppManagerObserver {
  public:
   AppDataLoadWaiter(KioskAppManager* manager, int data_loaded_threshold)
@@ -177,6 +141,16 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
     quit_ = true;
     if (runner_)
       runner_->Quit();
+  }
+
+  virtual void OnKioskExtensionLoadedInCache(
+      const std::string& app_id) OVERRIDE {
+    OnKioskAppDataChanged(app_id);
+  }
+
+  virtual void OnKioskExtensionDownloadFailed(
+      const std::string& app_id) OVERRIDE {
+    OnKioskAppDataLoadFailure(app_id);
   }
 
   scoped_refptr<content::MessageLoopRunner> runner_;
@@ -484,16 +458,12 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAppDataFromProfile) {
   EXPECT_EQ("Updated App1 Name", apps[0].name);
 }
 
-// Test is flaky. See http://crbug.com/379769 for details.
-IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DISABLED_BadApp) {
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, BadApp) {
   AppDataLoadWaiter waiter(manager(), 2);
   manager()->AddApp("unknown_app");
-  TestKioskAppManagerObserver observer(manager());
   waiter.Wait();
   EXPECT_FALSE(waiter.loaded());
-
   EXPECT_EQ("", GetAppIds());
-  EXPECT_EQ(1, observer.load_failure_count());
 }
 
 IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, GoodApp) {
@@ -534,7 +504,6 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, GoodApp) {
 }
 
 IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DownloadNewApp) {
-  base::FilePath crx_path;
   RunAddNewAppTest(kTestLocalFsKioskApp, "1.0.0", kTestLocalFsKioskAppName);
 }
 

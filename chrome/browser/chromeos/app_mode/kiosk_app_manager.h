@@ -29,11 +29,13 @@ class RefCountedString;
 
 namespace extensions {
 class Extension;
+class ExternalLoader;
 }
 
 namespace chromeos {
 
 class KioskAppData;
+class KioskAppExternalLoader;
 class KioskAppManagerObserver;
 
 // KioskAppManager manages cached app data.
@@ -152,14 +154,29 @@ class KioskAppManager : public KioskAppDataDelegate,
 
   void RetryFailedAppDataFetch();
 
+  // Returns true if the app is found in cache.
+  bool HasCachedCrx(const std::string& app_id) const;
+
   void AddObserver(KioskAppManagerObserver* observer);
   void RemoveObserver(KioskAppManagerObserver* observer);
+
+  // Creates extensions::ExternalLoader for installing kiosk apps during their
+  // first time launch.
+  extensions::ExternalLoader* CreateExternalLoader();
+
+  // Installs kiosk app with |id| from cache.
+  void InstallFromCache(const std::string& id);
+
+  void UpdateExternalCache();
+
+  bool external_loader_created() const { return external_loader_created_; }
 
  private:
   friend struct base::DefaultLazyInstanceTraits<KioskAppManager>;
   friend struct base::DefaultDeleter<KioskAppManager>;
   friend class KioskAppManagerTest;
   friend class KioskTest;
+  friend class KioskUpdateTest;
 
   enum AutoLoginState {
     AUTOLOGIN_NONE      = 0,
@@ -178,7 +195,7 @@ class KioskAppManager : public KioskAppDataDelegate,
   const KioskAppData* GetAppData(const std::string& app_id) const;
   KioskAppData* GetAppDataMutable(const std::string& app_id);
 
-  // Update app data |apps_| based on CrosSettings.
+  // Updates app data |apps_| based on CrosSettings.
   void UpdateAppData();
 
   // KioskAppDataDelegate overrides:
@@ -216,9 +233,11 @@ class KioskAppManager : public KioskAppDataDelegate,
 
   void GetCrxCacheDir(base::FilePath* cache_dir);
 
+  // Gets the file path and version information of the cached crx with |app_id|.
+  // Returns true if the app is found in cache.
   bool GetCachedCrx(const std::string& app_id,
                     base::FilePath* file_path,
-                    std::string* version);
+                    std::string* version) const;
 
   // True if machine ownership is already established.
   bool ownership_established_;
@@ -232,6 +251,10 @@ class KioskAppManager : public KioskAppDataDelegate,
       local_account_auto_login_id_subscription_;
 
   scoped_ptr<ExternalCache> external_cache_;
+
+  // The extension external loader for installing kiosk app.
+  bool external_loader_created_;
+  base::WeakPtr<KioskAppExternalLoader> external_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppManager);
 };

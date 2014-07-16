@@ -42,6 +42,12 @@ std::string KioskAppLaunchError::GetErrorMessage(Error error) {
 
     case USER_CANCEL:
       return l10n_util::GetStringUTF8(IDS_KIOSK_APP_ERROR_USER_CANCEL);
+
+    case UNABLE_TO_DOWNLOAD:
+      return l10n_util::GetStringUTF8(IDS_KIOSK_APP_ERROR_UNABLE_TO_DOWNLOAD);
+
+    case UNABLE_TO_LAUNCH:
+      return l10n_util::GetStringUTF8(IDS_KIOSK_APP_ERROR_UNABLE_TO_LAUNCH);
   }
 
   NOTREACHED() << "Unknown kiosk app launch error, error=" << error;

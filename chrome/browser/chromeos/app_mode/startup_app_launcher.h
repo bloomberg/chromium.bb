@@ -11,13 +11,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
+#include "chrome/browser/extensions/install_observer.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 class Profile;
-
-namespace extensions {
-class WebstoreStandaloneInstaller;
-}
 
 namespace chromeos {
 
@@ -31,9 +29,10 @@ namespace chromeos {
 // - After the app is installed/updated, launch it and finish the flow;
 // Report OnLauncherInitialized() or OnLaunchFailed() to observers:
 // - If all goes good, launches the app and finish the flow;
-class StartupAppLauncher
-    : public base::SupportsWeakPtr<StartupAppLauncher>,
-      public OAuth2TokenService::Observer {
+class StartupAppLauncher : public base::SupportsWeakPtr<StartupAppLauncher>,
+                           public OAuth2TokenService::Observer,
+                           public extensions::InstallObserver,
+                           public KioskAppManagerObserver {
  public:
   class Delegate {
    public:
@@ -86,36 +85,46 @@ class StartupAppLauncher
   void OnLaunchSuccess();
   void OnLaunchFailure(KioskAppLaunchError::Error error);
 
-  void MaybeInstall();
-
   // Callbacks from ExtensionUpdater.
   void OnUpdateCheckFinished();
 
   void BeginInstall();
-  void InstallCallback(bool success, const std::string& error);
   void OnReadyToLaunch();
   void UpdateAppData();
 
   void InitializeTokenService();
   void MaybeInitializeNetwork();
+  void MaybeLaunchApp();
 
   void StartLoadingOAuthFile();
   static void LoadOAuthFileOnBlockingPool(KioskOAuthParams* auth_params);
   void OnOAuthFileLoaded(KioskOAuthParams* auth_params);
 
+  void OnKioskAppDataLoadStatusChanged(const std::string& app_id);
+
   // OAuth2TokenService::Observer overrides.
   virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
   virtual void OnRefreshTokensLoaded() OVERRIDE;
+
+  // extensions::InstallObserver overrides.
+  virtual void OnFinishCrxInstall(const std::string& extension_id,
+                                  bool success) OVERRIDE;
+
+  // KioskAppManagerObserver overrides.
+  virtual void OnKioskExtensionLoadedInCache(
+      const std::string& app_id) OVERRIDE;
+  virtual void OnKioskExtensionDownloadFailed(
+      const std::string& app_id) OVERRIDE;
 
   Profile* profile_;
   const std::string app_id_;
   const bool diagnostic_mode_;
   Delegate* delegate_;
   bool network_ready_handled_;
-  int install_attempt_;
+  int launch_attempt_;
   bool ready_to_launch_;
+  bool wait_for_crx_update_;
 
-  scoped_refptr<extensions::WebstoreStandaloneInstaller> installer_;
   KioskOAuthParams auth_params_;
 
   DISALLOW_COPY_AND_ASSIGN(StartupAppLauncher);

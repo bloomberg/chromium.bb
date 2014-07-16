@@ -18,12 +18,14 @@
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_external_loader.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/owner_key_util.h"
+#include "chrome/browser/extensions/external_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -363,6 +365,12 @@ void KioskAppManager::RetryFailedAppDataFetch() {
   }
 }
 
+bool KioskAppManager::HasCachedCrx(const std::string& app_id) const {
+  base::FilePath crx_path;
+  std::string version;
+  return GetCachedCrx(app_id, &crx_path, &version);
+}
+
 void KioskAppManager::AddObserver(KioskAppManagerObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -371,7 +379,37 @@ void KioskAppManager::RemoveObserver(KioskAppManagerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-KioskAppManager::KioskAppManager() : ownership_established_(false) {
+extensions::ExternalLoader* KioskAppManager::CreateExternalLoader() {
+  if (external_loader_created_) {
+    NOTREACHED();
+    return NULL;
+  }
+  external_loader_created_ = true;
+  KioskAppExternalLoader* loader = new KioskAppExternalLoader();
+  external_loader_ = loader->AsWeakPtr();
+
+  return loader;
+}
+
+void KioskAppManager::InstallFromCache(const std::string& id) {
+  const base::DictionaryValue* extension = NULL;
+  if (external_cache_->cached_extensions()->GetDictionary(id, &extension)) {
+    scoped_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
+    base::DictionaryValue* extension_copy = extension->DeepCopy();
+    prefs->Set(id, extension_copy);
+    external_loader_->SetCurrentAppExtensions(prefs.Pass());
+  } else {
+    LOG(ERROR) << "Can't find app in the cached externsions"
+               << " id = " << id;
+  }
+}
+
+void KioskAppManager::UpdateExternalCache() {
+  UpdateAppData();
+}
+
+KioskAppManager::KioskAppManager()
+    : ownership_established_(false), external_loader_created_(false) {
   base::FilePath cache_dir;
   GetCrxCacheDir(&cache_dir);
   external_cache_.reset(
@@ -381,7 +419,6 @@ KioskAppManager::KioskAppManager() : ownership_established_(false) {
                         this,
                         true /* always_check_updates */,
                         false /* wait_for_cache_initialization */));
-
   UpdateAppData();
   local_accounts_subscription_ =
       CrosSettings::Get()->AddSettingsObserver(
@@ -508,7 +545,10 @@ void KioskAppManager::OnExtensionLoadedInCache(const std::string& id) {
   KioskAppData* app_data = GetAppDataMutable(id);
   if (!app_data)
     return;
-  OnKioskAppDataChanged(id);
+  FOR_EACH_OBSERVER(KioskAppManagerObserver,
+                    observers_,
+                    OnKioskExtensionLoadedInCache(id));
+
 }
 
 void KioskAppManager::OnExtensionDownloadFailed(
@@ -517,7 +557,9 @@ void KioskAppManager::OnExtensionDownloadFailed(
   KioskAppData* app_data = GetAppDataMutable(id);
   if (!app_data)
     return;
-  OnKioskAppDataLoadFailure(id);
+  FOR_EACH_OBSERVER(KioskAppManagerObserver,
+                    observers_,
+                    OnKioskExtensionDownloadFailed(id));
 }
 
 KioskAppManager::AutoLoginState KioskAppManager::GetAutoLoginState() const {
@@ -547,7 +589,7 @@ void KioskAppManager::GetCrxCacheDir(base::FilePath* cache_dir) {
 
 bool KioskAppManager::GetCachedCrx(const std::string& app_id,
                                    base::FilePath* file_path,
-                                   std::string* version) {
+                                   std::string* version) const {
   return external_cache_->GetExtension(app_id, file_path, version);
 }
 
