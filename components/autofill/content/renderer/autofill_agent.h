@@ -141,11 +141,18 @@ class AutofillAgent : public content::RenderViewObserver,
   // |datalist_only| specifies whether all of <datalist> suggestions and no
   // autofill suggestions are shown. |autofill_on_empty_values| and
   // |requires_caret_at_end| are ignored if |datalist_only| is true.
+  // |show_full_suggestion_list| specifies that all autofill suggestions should
+  // be shown and none should be elided because of the current value of
+  // |element| (relevant for inline autocomplete).
+  // |show_password_suggestions_only| specifies that only show a suggestions box
+  // if |element| is part of a password form, otherwise show no suggestions.
   void ShowSuggestions(const blink::WebFormControlElement& element,
                        bool autofill_on_empty_values,
                        bool requires_caret_at_end,
                        bool display_warning_if_disabled,
-                       bool datalist_only);
+                       bool datalist_only,
+                       bool show_full_suggestion_list,
+                       bool show_password_suggestions_only);
 
   // Queries the browser for Autocomplete and Autofill suggestions for the given
   // |element|.
@@ -245,6 +252,7 @@ class AutofillAgent : public content::RenderViewObserver,
   FRIEND_TEST_ALL_PREFIXES(
       PasswordAutofillAgentTest,
       PasswordAutofillTriggersOnChangeEventsWaitForUsername);
+  FRIEND_TEST_ALL_PREFIXES(PasswordAutofillAgentTest, CredentialsOnClick);
   FRIEND_TEST_ALL_PREFIXES(RequestAutocompleteRendererTest,
                            NoCancelOnMainFrameNavigateAfterDone);
   FRIEND_TEST_ALL_PREFIXES(RequestAutocompleteRendererTest,

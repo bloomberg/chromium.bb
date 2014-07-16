@@ -318,8 +318,15 @@ void AutofillAgent::FormControlElementClicked(
   if (!input_element && !IsTextAreaElement(element))
     return;
 
-  if (was_focused)
-    ShowSuggestions(element, true, false, true, false);
+  bool show_full_suggestion_list = element.isAutofilled() || was_focused;
+  bool show_password_suggestions_only = !was_focused;
+  ShowSuggestions(element,
+                  true,
+                  false,
+                  true,
+                  false,
+                  show_full_suggestion_list,
+                  show_password_suggestions_only);
 }
 
 void AutofillAgent::FormControlElementLostFocus() {
@@ -375,7 +382,7 @@ void AutofillAgent::TextFieldDidChangeImpl(
     }
   }
 
-  ShowSuggestions(element, false, true, false, false);
+  ShowSuggestions(element, false, true, false, false, false, false);
 
   FormData form;
   FormFieldData field;
@@ -397,11 +404,11 @@ void AutofillAgent::textFieldDidReceiveKeyDown(const WebInputElement& element,
 
   if (event.windowsKeyCode == ui::VKEY_DOWN ||
       event.windowsKeyCode == ui::VKEY_UP)
-    ShowSuggestions(element, true, true, true, false);
+    ShowSuggestions(element, true, true, true, false, false, false);
 }
 
 void AutofillAgent::openTextDataListChooser(const WebInputElement& element) {
-    ShowSuggestions(element, true, false, false, true);
+  ShowSuggestions(element, true, false, false, true, false, false);
 }
 
 void AutofillAgent::firstUserGestureObserved() {
@@ -553,8 +560,12 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
                                     bool autofill_on_empty_values,
                                     bool requires_caret_at_end,
                                     bool display_warning_if_disabled,
-                                    bool datalist_only) {
+                                    bool datalist_only,
+                                    bool show_full_suggestion_list,
+                                    bool show_password_suggestions_only) {
   if (!element.isEnabled() || element.isReadOnly())
+    return;
+  if (!datalist_only && !element.suggestedValue().isEmpty())
     return;
 
   const WebInputElement* input_element = toWebInputElement(&element);
@@ -584,8 +595,10 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
   }
 
   element_ = element;
-  if (input_element &&
-      password_autofill_agent_->ShowSuggestions(*input_element)) {
+  if (IsAutofillableInputElement(input_element) &&
+      (password_autofill_agent_->ShowSuggestions(*input_element,
+                                                 show_full_suggestion_list) ||
+       show_password_suggestions_only)) {
     is_popup_possibly_visible_ = true;
     return;
   }

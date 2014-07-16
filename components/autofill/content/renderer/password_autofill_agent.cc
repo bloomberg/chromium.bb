@@ -337,7 +337,7 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
   // But refresh the popup.  Note, since this is ours, return true to signal
   // no further processing is required.
   if (iter->second.backspace_pressed_last) {
-    ShowSuggestionPopup(iter->second.fill_data, username);
+    ShowSuggestionPopup(iter->second.fill_data, username, false);
     return true;
   }
 
@@ -435,7 +435,8 @@ bool PasswordAutofillAgent::DidClearAutofillSelection(
 }
 
 bool PasswordAutofillAgent::ShowSuggestions(
-    const blink::WebInputElement& element) {
+    const blink::WebInputElement& element,
+    bool show_all) {
   LoginToPasswordInfoMap::const_iterator iter =
       login_to_password_info_.find(element);
   if (iter == login_to_password_info_.end())
@@ -449,7 +450,7 @@ bool PasswordAutofillAgent::ShowSuggestions(
       !IsElementAutocompletable(iter->second.password_field))
     return true;
 
-  return ShowSuggestionPopup(iter->second.fill_data, element);
+  return ShowSuggestionPopup(iter->second.fill_data, element, show_all);
 }
 
 bool PasswordAutofillAgent::OriginCanAccessPasswordManager(
@@ -810,8 +811,10 @@ void PasswordAutofillAgent::GetSuggestions(
     const PasswordFormFillData& fill_data,
     const base::string16& input,
     std::vector<base::string16>* suggestions,
-    std::vector<base::string16>* realms) {
-  if (StartsWith(fill_data.basic_data.fields[0].value, input, false)) {
+    std::vector<base::string16>* realms,
+    bool show_all) {
+  if (show_all ||
+      StartsWith(fill_data.basic_data.fields[0].value, input, false)) {
     suggestions->push_back(fill_data.basic_data.fields[0].value);
     realms->push_back(base::UTF8ToUTF16(fill_data.preferred_realm));
   }
@@ -820,7 +823,7 @@ void PasswordAutofillAgent::GetSuggestions(
            fill_data.additional_logins.begin();
        iter != fill_data.additional_logins.end();
        ++iter) {
-    if (StartsWith(iter->first, input, false)) {
+    if (show_all || StartsWith(iter->first, input, false)) {
       suggestions->push_back(iter->first);
       realms->push_back(base::UTF8ToUTF16(iter->second.realm));
     }
@@ -831,7 +834,7 @@ void PasswordAutofillAgent::GetSuggestions(
        iter != fill_data.other_possible_usernames.end();
        ++iter) {
     for (size_t i = 0; i < iter->second.size(); ++i) {
-      if (StartsWith(iter->second[i], input, false)) {
+      if (show_all || StartsWith(iter->second[i], input, false)) {
         usernames_usage_ = OTHER_POSSIBLE_USERNAME_SHOWN;
         suggestions->push_back(iter->second[i]);
         realms->push_back(base::UTF8ToUTF16(iter->first.realm));
@@ -842,7 +845,8 @@ void PasswordAutofillAgent::GetSuggestions(
 
 bool PasswordAutofillAgent::ShowSuggestionPopup(
     const PasswordFormFillData& fill_data,
-    const blink::WebInputElement& user_input) {
+    const blink::WebInputElement& user_input,
+    bool show_all) {
   blink::WebFrame* frame = user_input.document().frame();
   if (!frame)
     return false;
@@ -853,7 +857,8 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
 
   std::vector<base::string16> suggestions;
   std::vector<base::string16> realms;
-  GetSuggestions(fill_data, user_input.value(), &suggestions, &realms);
+  GetSuggestions(
+      fill_data, user_input.value(), &suggestions, &realms, show_all);
   DCHECK_EQ(suggestions.size(), realms.size());
 
   FormData form;
@@ -1013,7 +1018,7 @@ void PasswordAutofillAgent::PerformInlineAutocomplete(
   }
 
   // Show the popup with the list of available usernames.
-  ShowSuggestionPopup(fill_data, username);
+  ShowSuggestionPopup(fill_data, username, false);
 
 #if !defined(OS_ANDROID)
   // Fill the user and password field with the most relevant match. Android

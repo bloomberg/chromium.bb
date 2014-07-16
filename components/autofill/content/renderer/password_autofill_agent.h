@@ -54,9 +54,11 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   // their previous filled state. Return false if no login information was
   // found for the form.
   bool DidClearAutofillSelection(const blink::WebNode& node);
-  // Shows an Autofill popup with username suggestions for |element|.
+  // Shows an Autofill popup with username suggestions for |element|. If
+  // |show_all| is |true|, will show all possible suggestions for that element,
+  // otherwise shows suggestions based on current value of |element|.
   // Returns true if any suggestions were shown, false otherwise.
-  bool ShowSuggestions(const blink::WebInputElement& element);
+  bool ShowSuggestions(const blink::WebInputElement& element, bool show_all);
 
   // Called when new form controls are inserted.
   void OnDynamicFormsSeen(blink::WebFrame* frame);
@@ -146,10 +148,12 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   void GetSuggestions(const PasswordFormFillData& fill_data,
                       const base::string16& input,
                       std::vector<base::string16>* suggestions,
-                      std::vector<base::string16>* realms);
+                      std::vector<base::string16>* realms,
+                      bool show_all);
 
   bool ShowSuggestionPopup(const PasswordFormFillData& fill_data,
-                           const blink::WebInputElement& user_input);
+                           const blink::WebInputElement& user_input,
+                           bool show_all);
 
   // Attempts to fill |username_element| and |password_element| with the
   // |fill_data|.  Will use the data corresponding to the preferred username,
