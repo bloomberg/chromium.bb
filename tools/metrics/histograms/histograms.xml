@@ -37027,6 +37027,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="EnterpriseCheckError" type="int">
+  <summary>
+    Defined as DomainCheckErrors in
+    components/policy/core/common/policy_loader_win.cc.
+  </summary>
   <int value="0" label="Cound not get net join info."/>
   <int value="1" label="Cound not bind to domain controller."/>
 </enum>
@@ -37034,7 +37038,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="EnterpriseDeviceManagementStatus" type="int">
   <summary>
     Status codes produced by DeviceManagementService for requests made to the
-    device management server.
+    device management server as defined in
+    components/policy/core/common/cloud/cloud_policy_constants.h.
   </summary>
   <int value="0" label="SUCCESS"/>
   <int value="1" label="REQUEST_INVALID"/>
@@ -37049,13 +37054,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="10" label="SERVICE_INVALID_SERIAL_NUMBER"/>
   <int value="11" label="SERVICE_DEVICE_ID_CONFLICT"/>
   <int value="12" label="SERVICE_MISSING_LICENSES"/>
+  <int value="13" label="SERVICE_DEPROVISIONED"/>
+  <int value="14" label="SERVICE_DOMAIN_MISMATCH"/>
   <int value="902" label="SERVICE_POLICY_NOT_FOUND"/>
 </enum>
 
 <enum name="EnterpriseDMTokenType" type="int">
   <summary>
     Result of DMToken operations as defined in
-    chrome/browser/policy/enterprise_metrics.h.
+    components/policy/core/common/cloud/enterprise_metrics.h.
   </summary>
   <int value="0" label="Load Succeeded">
     A cached token was successfully loaded from disk.
@@ -37102,7 +37109,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="EnterpriseEnrollmentType" type="int">
   <summary>
     Result of device enrollment as defined in
-    chrome/browser/policy/enterprise_metrics.h.
+    components/policy/core/common/cloud/enterprise_metrics.h.
   </summary>
   <int value="0" label="Cancelled">
     The enrollment screen was closed without completing the enrollment process.
@@ -37531,6 +37538,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
+  <summary>
+    Defined as PolicyInvalidationType in
+    components/policy/core/common/cloud/enterprise_metrics.h.
+  </summary>
   <int value="0" label="No payload; not expired"/>
   <int value="1" label="Payload; not expired"/>
   <int value="2" label="No payload; expired"/>
@@ -37541,7 +37552,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Status codes produced by the policy loaders that pull policy settings from
     the platform-specific management infrastructure, such as Windows Group
-    Policy.
+    Policy.  Defined as PolicyLoadStatus in
+    components/policy/core/common/policy_load_status.h.
   </summary>
   <int value="0" label="STARTED">
     Policy load attempt started. This gets logged for each policy load attempt
@@ -37569,6 +37581,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="EnterprisePolicyRefresh" type="int">
+  <summary>
+    Defined as MetricPolicyRefresh in
+    components/policy/core/common/cloud/enterprise_metrics.h.
+  </summary>
   <int value="0" label="Changed"/>
   <int value="1" label="Changed; Invalidations disabled"/>
   <int value="2" label="Unchanged"/>
@@ -37578,8 +37594,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <enum name="EnterprisePolicyType" type="int">
   <summary>
-    Result of Policy operations as defined in
-    chrome/browser/policy/enterprise_metrics.h.
+    Result of Policy operations as defined as MetricPolicy in
+    components/policy/core/common/cloud/enterprise_metrics.h.
   </summary>
   <int value="0" label="Load Succeeded">
     A cached policy was successfully loaded from disk.

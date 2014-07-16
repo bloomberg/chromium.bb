@@ -77,10 +77,14 @@ GUID kRegistrySettingsCSEGUID = REGISTRY_EXTENSION_GUID;
 
 // The list of possible errors that can occur while collecting information about
 // the current enterprise environment.
+// This enum is used to define the buckets for an enumerated UMA histogram.
+// Hence,
+//   (a) existing enumerated constants should never be deleted or reordered, and
+//   (b) new constants should only be appended at the end of the enumeration.
 enum DomainCheckErrors {
   DOMAIN_CHECK_ERROR_GET_JOIN_INFO = 0,
-  DOMAIN_CHECK_ERROR_DS_BIND,
-  DOMAIN_CHECK_ERROR_LAST,
+  DOMAIN_CHECK_ERROR_DS_BIND = 1,
+  DOMAIN_CHECK_ERROR_SIZE,  // Not a DomainCheckError.  Must be last.
 };
 
 // If the LBS extension is found and contains a schema in the registry then this
@@ -304,7 +308,7 @@ void CollectEnterpriseUMAs() {
   if (NERR_Success != ::NetGetJoinInformation(NULL, &domain, &join_status)) {
     UMA_HISTOGRAM_ENUMERATION("EnterpriseCheck.DomainCheckFailed",
                               DOMAIN_CHECK_ERROR_GET_JOIN_INFO,
-                              DOMAIN_CHECK_ERROR_LAST);
+                              DOMAIN_CHECK_ERROR_SIZE);
     return;
   }
   ::NetApiBufferFree(domain);
@@ -321,7 +325,7 @@ void CollectEnterpriseUMAs() {
     } else {
       UMA_HISTOGRAM_ENUMERATION("EnterpriseCheck.DomainCheckFailed",
                                 DOMAIN_CHECK_ERROR_DS_BIND,
-                                DOMAIN_CHECK_ERROR_LAST);
+                                DOMAIN_CHECK_ERROR_SIZE);
     }
   }
 }

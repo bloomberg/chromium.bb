@@ -69,37 +69,41 @@ enum UserAffiliation {
 };
 
 // Status codes for communication errors with the device management service.
+// This enum is used to define the buckets for an enumerated UMA histogram.
+// Hence,
+//   (a) existing enumerated constants should never be deleted or reordered, and
+//   (b) new constants should only be appended at the end of the enumeration.
 enum DeviceManagementStatus {
   // All is good.
-  DM_STATUS_SUCCESS,
+  DM_STATUS_SUCCESS = 0,
   // Request payload invalid.
-  DM_STATUS_REQUEST_INVALID,
+  DM_STATUS_REQUEST_INVALID = 1,
   // The HTTP request failed.
-  DM_STATUS_REQUEST_FAILED,
+  DM_STATUS_REQUEST_FAILED = 2,
   // The server returned an error code that points to a temporary problem.
-  DM_STATUS_TEMPORARY_UNAVAILABLE,
+  DM_STATUS_TEMPORARY_UNAVAILABLE = 3,
   // The HTTP request returned a non-success code.
-  DM_STATUS_HTTP_STATUS_ERROR,
+  DM_STATUS_HTTP_STATUS_ERROR = 4,
   // Response could not be decoded.
-  DM_STATUS_RESPONSE_DECODING_ERROR,
+  DM_STATUS_RESPONSE_DECODING_ERROR = 5,
   // Service error: Management not supported.
-  DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED,
+  DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED = 6,
   // Service error: Device not found.
-  DM_STATUS_SERVICE_DEVICE_NOT_FOUND,
+  DM_STATUS_SERVICE_DEVICE_NOT_FOUND = 7,
   // Service error: Device token invalid.
-  DM_STATUS_SERVICE_MANAGEMENT_TOKEN_INVALID,
+  DM_STATUS_SERVICE_MANAGEMENT_TOKEN_INVALID = 8,
   // Service error: Activation pending.
-  DM_STATUS_SERVICE_ACTIVATION_PENDING,
+  DM_STATUS_SERVICE_ACTIVATION_PENDING = 9,
   // Service error: The serial number is not valid or not known to the server.
-  DM_STATUS_SERVICE_INVALID_SERIAL_NUMBER,
+  DM_STATUS_SERVICE_INVALID_SERIAL_NUMBER = 10,
   // Service error: The device id used for registration is already taken.
-  DM_STATUS_SERVICE_DEVICE_ID_CONFLICT,
+  DM_STATUS_SERVICE_DEVICE_ID_CONFLICT = 11,
   // Service error: The licenses have expired or have been exhausted.
-  DM_STATUS_SERVICE_MISSING_LICENSES,
+  DM_STATUS_SERVICE_MISSING_LICENSES = 12,
   // Service error: The administrator has deprovisioned this client.
-  DM_STATUS_SERVICE_DEPROVISIONED,
+  DM_STATUS_SERVICE_DEPROVISIONED = 13,
   // Service error: Device registration for the wrong domain.
-  DM_STATUS_SERVICE_DOMAIN_MISMATCH,
+  DM_STATUS_SERVICE_DOMAIN_MISMATCH = 14,
   // Service error: Policy not found. Error code defined by the DM folks.
   DM_STATUS_SERVICE_POLICY_NOT_FOUND = 902,
 };
