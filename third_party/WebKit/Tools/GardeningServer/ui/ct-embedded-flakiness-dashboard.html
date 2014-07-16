@@ -1,0 +1,39 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<polymer-element name="ct-embedded-flakiness-dashboard" attributes="test">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+      #iframe {
+        border: none;
+        width: 100%;
+      }
+    </style>
+    <iframe id="iframe"></iframe>
+  </template>
+  <script>
+    Polymer({
+      test: "",
+
+      ready: function() {
+        window.addEventListener('message', function(event) {
+          if (event.data.command != 'heightChanged')
+            return;
+
+          this.$.iframe.style.height = event.data.height + 'px';
+        }.bind(this));
+      },
+
+      testChanged: function() {
+        this.$.iframe.src = ui.urlForEmbeddedFlakinessDashboard([this.test]);
+      },      
+
+    });
+  </script>
+</polymer-element>

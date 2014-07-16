@@ -1,0 +1,49 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-embedded-flakiness-dashboard.html">
+
+<script>
+(function() {
+
+module("ct-embedded-flakiness-dashboard");
+
+asyncTest("url", 1, function() {
+  var oldUrlForEmbeddedFlakinessDashboard = ui.urlForEmbeddedFlakinessDashboard;
+  var reset = function() {
+    ui.urlForEmbeddedFlakinessDashboard = oldUrlForEmbeddedFlakinessDashboard;
+  }
+
+  try {
+    ui.urlForEmbeddedFlakinessDashboard = function(testList) { return "about:blank#" + testList.join(','); }
+    var embeddedFlakinessDashboard = document.createElement('ct-embedded-flakiness-dashboard');
+    var testName = "foo/bar.html";
+    embeddedFlakinessDashboard.test = testName;
+
+    requestAnimationFrame(function() {
+      var iframe = embeddedFlakinessDashboard.shadowRoot.querySelector('#iframe');
+      equal(iframe.src, ui.urlForEmbeddedFlakinessDashboard([testName]));
+      reset();
+      start();
+    });
+  } catch (e) {
+    reset();
+  }
+});
+
+asyncTest("heightChanged", 1, function() {
+  var embeddedFlakinessDashboard = document.createElement('ct-embedded-flakiness-dashboard');
+  window.postMessage({command: 'heightChanged', height: "100"}, '*')
+
+  requestAnimationFrame(function() {
+    var iframe = embeddedFlakinessDashboard.shadowRoot.querySelector('#iframe');
+    equal(iframe.style.height, "100px");
+    start();
+  });
+});
+
+})()
+</script>

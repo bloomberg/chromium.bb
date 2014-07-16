@@ -7,6 +7,7 @@ found in the LICENSE file.
 <link rel="import" href="../bower_components/core-menu/core-menu.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="ct-results-by-builder.html">
+<link rel="import" href="ct-embedded-flakiness-dashboard.html">
 
 <polymer-element name="ct-results-panel" attributes="failures">
   <template>
@@ -34,6 +35,7 @@ found in the LICENSE file.
         </template>
       </core-menu>
       <ct-results-by-builder failure="{{failures[selected]}}"></ct-results-by-builder>
+      <ct-embedded-flakiness-dashboard test="{{failures[selected].testName}}"></ct-embedded-flakiness-dashboard>
     </template>
   </template>
   <script>
