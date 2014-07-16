@@ -58,6 +58,7 @@ class ExtensionSyncData {
   bool enabled() const { return enabled_; }
   bool incognito_enabled() const { return incognito_enabled_; }
   bool remote_install() const { return remote_install_; }
+  bool installed_by_custodian() const { return installed_by_custodian_; }
 
   // Version-dependent properties (i.e., should be used only when the
   // version of the currenty-installed extension matches |version|).
@@ -75,6 +76,7 @@ class ExtensionSyncData {
   bool enabled_;
   bool incognito_enabled_;
   bool remote_install_;
+  bool installed_by_custodian_;
   Version version_;
   GURL update_url_;
   std::string name_;

@@ -39,5 +39,8 @@ message ExtensionSpecifics {
   // Whether this extension was installed remotely, and hasn't been approved by
   // a user in chrome yet.
   optional bool remote_install = 7;
+
+  // Whether this extension was installed by the custodian of a supervised user.
+  optional bool installed_by_custodian = 8;
 }
 

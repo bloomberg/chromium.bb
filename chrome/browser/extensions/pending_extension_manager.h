@@ -79,7 +79,8 @@ class PendingExtensionManager {
       const GURL& update_url,
       PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
       bool install_silently,
-      bool remote_install);
+      bool remote_install,
+      bool installed_by_custodian);
 
   // Adds an extension that was depended on by another extension.
   bool AddFromExtensionImport(

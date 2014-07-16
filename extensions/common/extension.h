@@ -170,6 +170,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // also installed by Default (i.e. WAS_INSTALLED_BY_DEFAULT is also true).
     WAS_INSTALLED_BY_OEM = 1 << 10,
 
+    // |WAS_INSTALLED_BY_CUSTODIAN| means this extension was installed by the
+    // custodian of a supervised user.
+    WAS_INSTALLED_BY_CUSTODIAN = 1 << 11,
+
     // When adding new flags, make sure to update kInitFromValueFlagBits.
   };
 
@@ -333,6 +337,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
   bool was_installed_by_oem() const {
     return (creation_flags_ & WAS_INSTALLED_BY_OEM) != 0;
+  }
+  bool was_installed_by_custodian() const {
+    return (creation_flags_ & WAS_INSTALLED_BY_CUSTODIAN) != 0;
   }
 
   // App-related.

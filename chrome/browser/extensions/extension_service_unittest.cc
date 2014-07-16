@@ -2884,13 +2884,16 @@ TEST_F(ExtensionServiceTest, AddPendingExtensionFromSync) {
   const GURL kFakeUpdateURL("http:://fake.update/url");
   const bool kFakeInstallSilently(true);
   const bool kFakeRemoteInstall(false);
+  const bool kFakeInstalledByCustodian(false);
 
   EXPECT_TRUE(
-      service()->pending_extension_manager()->AddFromSync(kFakeId,
-                                                          kFakeUpdateURL,
-                                                          &IsExtension,
-                                                          kFakeInstallSilently,
-                                                          kFakeRemoteInstall));
+      service()->pending_extension_manager()->AddFromSync(
+          kFakeId,
+          kFakeUpdateURL,
+          &IsExtension,
+          kFakeInstallSilently,
+          kFakeRemoteInstall,
+          kFakeInstalledByCustodian));
 
   const extensions::PendingExtensionInfo* pending_extension_info;
   ASSERT_TRUE((pending_extension_info =
@@ -2916,17 +2919,20 @@ const char kGoodUpdateURL[] = "http://good.update/url";
 const bool kGoodIsFromSync = true;
 const bool kGoodInstallSilently = true;
 const bool kGoodRemoteInstall = false;
+const bool kGoodInstalledByCustodian = false;
 }  // namespace
 
 // Test updating a pending extension.
 TEST_F(ExtensionServiceTest, UpdatePendingExtension) {
   InitializeEmptyExtensionService();
   EXPECT_TRUE(
-      service()->pending_extension_manager()->AddFromSync(kGoodId,
-                                                          GURL(kGoodUpdateURL),
-                                                          &IsExtension,
-                                                          kGoodInstallSilently,
-                                                          kGoodRemoteInstall));
+      service()->pending_extension_manager()->AddFromSync(
+          kGoodId,
+          GURL(kGoodUpdateURL),
+          &IsExtension,
+          kGoodInstallSilently,
+          kGoodRemoteInstall,
+          kGoodInstalledByCustodian));
   EXPECT_TRUE(service()->pending_extension_manager()->IsIdPending(kGoodId));
 
   base::FilePath path = data_dir().AppendASCII("good.crx");
@@ -2951,7 +2957,7 @@ bool IsTheme(const Extension* extension) {
 TEST_F(ExtensionServiceTest, DISABLED_UpdatePendingTheme) {
   InitializeEmptyExtensionService();
   EXPECT_TRUE(service()->pending_extension_manager()->AddFromSync(
-      theme_crx, GURL(), &IsTheme, false, false));
+      theme_crx, GURL(), &IsTheme, false, false, false));
   EXPECT_TRUE(service()->pending_extension_manager()->IsIdPending(theme_crx));
 
   base::FilePath path = data_dir().AppendASCII("theme.crx");
@@ -3011,11 +3017,13 @@ TEST_F(ExtensionServiceTest, UpdatePendingExternalCrxWinsOverSync) {
 
   // Add a crx to be installed from the update mechanism.
   EXPECT_TRUE(
-      service()->pending_extension_manager()->AddFromSync(kGoodId,
-                                                          GURL(kGoodUpdateURL),
-                                                          &IsExtension,
-                                                          kGoodInstallSilently,
-                                                          kGoodRemoteInstall));
+      service()->pending_extension_manager()->AddFromSync(
+          kGoodId,
+          GURL(kGoodUpdateURL),
+          &IsExtension,
+          kGoodInstallSilently,
+          kGoodRemoteInstall,
+          kGoodInstalledByCustodian));
 
   // Check that there is a pending crx, with is_from_sync set to true.
   const extensions::PendingExtensionInfo* pending_extension_info;
@@ -3041,11 +3049,13 @@ TEST_F(ExtensionServiceTest, UpdatePendingExternalCrxWinsOverSync) {
 
   // Add a crx to be installed from the update mechanism.
   EXPECT_FALSE(
-      service()->pending_extension_manager()->AddFromSync(kGoodId,
-                                                          GURL(kGoodUpdateURL),
-                                                          &IsExtension,
-                                                          kGoodInstallSilently,
-                                                          kGoodRemoteInstall));
+      service()->pending_extension_manager()->AddFromSync(
+          kGoodId,
+          GURL(kGoodUpdateURL),
+          &IsExtension,
+          kGoodInstallSilently,
+          kGoodRemoteInstall,
+          kGoodInstalledByCustodian));
 
   // Check that the external, non-sync update was not overridden.
   ASSERT_TRUE((pending_extension_info =
@@ -3060,7 +3070,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExternalCrxWinsOverSync) {
 TEST_F(ExtensionServiceTest, UpdatePendingCrxThemeMismatch) {
   InitializeEmptyExtensionService();
   EXPECT_TRUE(service()->pending_extension_manager()->AddFromSync(
-      theme_crx, GURL(), &IsExtension, true, false));
+      theme_crx, GURL(), &IsExtension, true, false, false));
 
   EXPECT_TRUE(service()->pending_extension_manager()->IsIdPending(theme_crx));
 
@@ -3082,11 +3092,13 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtensionFailedShouldInstallTest) {
   InitializeEmptyExtensionService();
   // Add pending extension with a flipped is_theme.
   EXPECT_TRUE(
-      service()->pending_extension_manager()->AddFromSync(kGoodId,
-                                                          GURL(kGoodUpdateURL),
-                                                          &IsTheme,
-                                                          kGoodInstallSilently,
-                                                          kGoodRemoteInstall));
+      service()->pending_extension_manager()->AddFromSync(
+          kGoodId,
+          GURL(kGoodUpdateURL),
+          &IsTheme,
+          kGoodInstallSilently,
+          kGoodRemoteInstall,
+          kGoodInstalledByCustodian));
   EXPECT_TRUE(service()->pending_extension_manager()->IsIdPending(kGoodId));
 
   base::FilePath path = data_dir().AppendASCII("good.crx");
@@ -6474,7 +6486,8 @@ class ExtensionSourcePriorityTest : public ExtensionServiceTest {
         GURL(kGoodUpdateURL),
         &IsExtension,
         kGoodInstallSilently,
-        kGoodRemoteInstall);
+        kGoodRemoteInstall,
+        kGoodInstalledByCustodian);
   }
 
   // Fake a policy install.

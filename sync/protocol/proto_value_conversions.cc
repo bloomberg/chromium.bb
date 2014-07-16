@@ -561,6 +561,7 @@ base::DictionaryValue* ExtensionSpecificsToValue(
   SET_BOOL(enabled);
   SET_BOOL(incognito_enabled);
   SET_BOOL(remote_install);
+  SET_BOOL(installed_by_custodian);
   SET_STR(name);
   return value;
 }

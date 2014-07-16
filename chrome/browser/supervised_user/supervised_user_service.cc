@@ -286,6 +286,7 @@ bool SupervisedUserService::UserMayLoad(const extensions::Extension* extension,
     return true;
 
   bool was_installed_by_default = extension->was_installed_by_default();
+  bool was_installed_by_custodian = extension->was_installed_by_custodian();
 #if defined(OS_CHROMEOS)
   // On Chrome OS all external sources are controlled by us so it means that
   // they are "default". Method was_installed_by_default returns false because
@@ -297,7 +298,8 @@ bool SupervisedUserService::UserMayLoad(const extensions::Extension* extension,
       extensions::Manifest::IsExternalLocation(extension->location());
 #endif
   if (extension->location() == extensions::Manifest::COMPONENT ||
-      was_installed_by_default) {
+      was_installed_by_default ||
+      was_installed_by_custodian) {
     return true;
   }
 
