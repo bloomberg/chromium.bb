@@ -25,16 +25,29 @@ function FullWindowVideoControls(
   this.updateStyle();
   window.addEventListener('resize', this.updateStyle.wrap(this));
   document.addEventListener('keydown', function(e) {
-    if (e.keyIdentifier == 'U+0020') {  // Space
-      this.togglePlayStateWithFeedback();
-      e.preventDefault();
+    switch (e.keyIdentifier) {
+      case 'U+0020': // Space
+      case 'MediaPlayPause':
+        this.togglePlayStateWithFeedback();
+        break;
+      case 'U+001B': // Escape
+        util.toggleFullScreen(
+            chrome.app.window.current(),
+            false);  // Leave the full screen mode.
+        break;
+      case 'Right':
+      case 'MediaNextTrack':
+        player.advance_(1);
+        break;
+      case 'Left':
+      case 'MediaPreviousTrack':
+        player.advance_(0);
+        break;
+      case 'MediaStop':
+        // TODO: Define "Stop" behavior.
+        break;
     }
-    if (e.keyIdentifier == 'U+001B') {  // Escape
-      util.toggleFullScreen(
-          chrome.app.window.current(),
-          false);  // Leave the full screen mode.
-      e.preventDefault();
-    }
+    e.preventDefault();
   }.wrap(this));
 
   // TODO(mtomasz): Simplify. crbug.com/254318.
