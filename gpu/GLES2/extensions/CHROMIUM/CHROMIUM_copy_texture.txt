@@ -8,7 +8,7 @@ Name Strings
 
 Version
 
-    Last Modifed Date: April 1, 2013
+    Last Modifed Date: July 16, 2014
 
 Dependencies
 
@@ -26,7 +26,7 @@ Overview
     UNPACK_FLIP_Y_CHROMIUM, GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM and
     GL_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM.
 
-    If GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM and 
+    If GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM and
     GL_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM are enabled.  Then no alpha
     processing occurs.  This is the equivalent of having neither flag set.
 
@@ -63,7 +63,8 @@ New Procedures and Functions
     been bound as GL_TEXTURE_2D object.
 
     INVALID_VALUE is generated if textures corresponding to <source_id> have not
-    been bound as GL_TEXTURE_2D or GL_TEXTURE_EXTERNAL_OES objects.
+    been bound as GL_TEXTURE_2D, GL_TEXTURE_RECTANGLE_ARB or
+    GL_TEXTURE_EXTERNAL_OES objects.
 
     INVALID_VALUE is generated if <level> is not a valid level of the
     destination texture, or if level 0 of the source texture is not defined.
@@ -84,3 +85,4 @@ Revision History
 
     8/1/2011    Documented the extension
     7/4/2013    Add a new parameter dest_type to glCopyTextureCHROMIUM()
+    16/7/2014   Add GL_TEXTURE_RECTANGLE_ARB as valid source_id target.
