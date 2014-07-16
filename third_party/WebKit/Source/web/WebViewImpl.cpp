@@ -115,6 +115,7 @@
 #include "public/platform/WebGestureCurve.h"
 #include "public/platform/WebImage.h"
 #include "public/platform/WebLayerTreeView.h"
+#include "public/platform/WebURLRequest.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebAXObject.h"
 #include "public/web/WebActiveWheelFlingParameters.h"
@@ -3261,6 +3262,7 @@ void WebViewImpl::saveImageAt(const WebPoint& point)
         return;
 
     ResourceRequest request(url);
+    request.setRequestContext(blink::WebURLRequest::RequestContextDownload);
     m_page->deprecatedLocalMainFrame()->loader().client()->loadURLExternally(
         request, NavigationPolicyDownloadTo, WebString());
 }

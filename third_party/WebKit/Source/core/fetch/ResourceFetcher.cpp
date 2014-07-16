@@ -393,6 +393,8 @@ ResourcePtr<RawResource> ResourceFetcher::fetchRawResource(FetchRequest& request
 ResourcePtr<RawResource> ResourceFetcher::fetchMainResource(FetchRequest& request, const SubstituteData& substituteData)
 {
     ASSERT(request.resourceRequest().frameType() != WebURLRequest::FrameTypeNone);
+    ASSERT(request.resourceRequest().requestContext() == WebURLRequest::RequestContextForm || request.resourceRequest().requestContext() == WebURLRequest::RequestContextFrame || request.resourceRequest().requestContext() == WebURLRequest::RequestContextHyperlink || request.resourceRequest().requestContext() == WebURLRequest::RequestContextIframe || request.resourceRequest().requestContext() == WebURLRequest::RequestContextInternal || request.resourceRequest().requestContext() == WebURLRequest::RequestContextLocation);
+
     if (substituteData.isValid())
         preCacheSubstituteDataForMainResource(request, substituteData);
     return toRawResource(requestResource(Resource::MainResource, request));
