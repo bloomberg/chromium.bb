@@ -170,8 +170,6 @@ void QuicInMemoryCache::Initialize() {
                                        file_contents.length() - processed);
     }
 
-    string response_headers_str;
-    response_headers.DumpToString(&response_headers_str);
     if (!caching_visitor.done_framing()) {
       LOG(DFATAL) << "Did not frame entire message from file: " << file.value()
                   << " (" << processed << " of " << file_contents.length()
