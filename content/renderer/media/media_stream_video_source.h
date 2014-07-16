@@ -35,9 +35,9 @@ class VideoTrackAdapter;
 // on a PeerConnection or a source created in NaCl.
 // All methods calls will be done from the main render thread.
 //
-// When  the first track is added to the source by calling AddTrack
-// the MediaStreamVideoSource implementation calls GetCurrentSupportedFormats.
-// the source implementation must call OnSupportedFormats.
+// When the first track is added to the source by calling AddTrack, the
+// MediaStreamVideoSource implementation calls GetCurrentSupportedFormats.
+// The source implementation must call OnSupportedFormats.
 // MediaStreamVideoSource then match the constraints provided in AddTrack with
 // the formats and call StartSourceImpl. The source implementation must call
 // OnStartDone when the underlying source has been started or failed to start.
@@ -87,6 +87,9 @@ class CONTENT_EXPORT MediaStreamVideoSource
 
   // Sets ready state and notifies the ready state to all registered tracks.
   virtual void SetReadyState(blink::WebMediaStreamSource::ReadyState state);
+
+  // Sets muted state and notifies it to all registered tracks.
+  virtual void SetMutedState(bool state);
 
   // An implementation must fetch the formats that can currently be used by
   // the source and call OnSupportedFormats when done.
@@ -144,6 +147,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
   void FinalizeAddTrack();
 
   State state_;
+  bool muted_state_;
 
   media::VideoCaptureFormat current_format_;
 

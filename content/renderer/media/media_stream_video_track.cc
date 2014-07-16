@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "media/base/bind_to_current_loop.h"
 
 namespace content {
 
@@ -238,6 +237,16 @@ void MediaStreamVideoTrack::OnReadyStateChanged(
        it != sinks_.end(); ++it) {
     (*it)->OnReadyStateChanged(state);
   }
+}
+
+void MediaStreamVideoTrack::SetMutedState(bool muted_state) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  muted_state_ = muted_state;
+}
+
+bool MediaStreamVideoTrack::GetMutedState(void) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return muted_state_;
 }
 
 }  // namespace content

@@ -17,6 +17,12 @@ namespace content {
 
 namespace {
 
+// Amount of frame intervals to wait before considering the source as muted, for
+// the first frame and under normal conditions, respectively. First frame might
+// take longer to arrive due to source startup.
+const float kFirstFrameTimeoutInFrameIntervals = 100.0f;
+const float kNormalFrameTimeoutInFrameIntervals = 25.0f;
+
 // Empty method used for keeping a reference to the original media::VideoFrame
 // in VideoFrameResolutionAdapter::DeliverFrame if cropping is needed.
 // The reference to |frame| is kept in the closure that calls this method.
@@ -301,7 +307,9 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::IsEmpty() const {
 VideoTrackAdapter::VideoTrackAdapter(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
     : io_message_loop_(io_message_loop),
-      renderer_task_runner_(base::MessageLoopProxy::current()) {
+      renderer_task_runner_(base::MessageLoopProxy::current()),
+      frame_counter_(0),
+      source_frame_rate_(0.0f) {
   DCHECK(io_message_loop_);
 }
 
@@ -309,14 +317,23 @@ VideoTrackAdapter::~VideoTrackAdapter() {
   DCHECK(adapters_.empty());
 }
 
-void VideoTrackAdapter::AddTrack(const MediaStreamVideoTrack* track,
-                                 VideoCaptureDeliverFrameCB frame_callback,
-                                 int max_width,
-                                 int max_height,
-                                 double min_aspect_ratio,
-                                 double max_aspect_ratio,
-                                 double max_frame_rate) {
+void VideoTrackAdapter::AddTrack(
+    const MediaStreamVideoTrack* track,
+    VideoCaptureDeliverFrameCB frame_callback,
+    int max_width,
+    int max_height,
+    double min_aspect_ratio,
+    double max_aspect_ratio,
+    double max_frame_rate,
+    double source_frame_rate,
+    const OnMutedCallback& on_muted_state_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  // Track monitoring should be scheduled before AddTrackOnIO() so it can find
+  // |adapters_| empty.
+  io_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&VideoTrackAdapter::StartTrackMonitoringOnIO,
+                 this, on_muted_state_callback, source_frame_rate));
   io_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&VideoTrackAdapter::AddTrackOnIO,
@@ -360,6 +377,26 @@ void VideoTrackAdapter::RemoveTrack(const MediaStreamVideoTrack* track) {
       base::Bind(&VideoTrackAdapter::RemoveTrackOnIO, this, track));
 }
 
+void VideoTrackAdapter::StartTrackMonitoringOnIO(
+    const OnMutedCallback& on_muted_state_callback,
+    double source_frame_rate) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  // Only trigger monitoring for the first Track.
+  if (!adapters_.empty())
+    return;
+  // If the source does not know the frame rate, set one by default.
+  if (source_frame_rate == 0.0f)
+    source_frame_rate = MediaStreamVideoSource::kDefaultFrameRate;
+  source_frame_rate_ = source_frame_rate;
+  DVLOG(1) << "Monitoring frame creation, first (large) delay: "
+      << (kFirstFrameTimeoutInFrameIntervals / source_frame_rate_) << "s";
+  io_message_loop_->PostDelayedTask(FROM_HERE,
+       base::Bind(&VideoTrackAdapter::CheckFramesReceivedOnIO, this,
+                  on_muted_state_callback, frame_counter_),
+       base::TimeDelta::FromSecondsD(kFirstFrameTimeoutInFrameIntervals /
+                                     source_frame_rate_));
+}
+
 void VideoTrackAdapter::RemoveTrackOnIO(const MediaStreamVideoTrack* track) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   for (FrameAdapters::iterator it = adapters_.begin();
@@ -378,10 +415,28 @@ void VideoTrackAdapter::DeliverFrameOnIO(
     const base::TimeTicks& estimated_capture_time) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   TRACE_EVENT0("video", "VideoTrackAdapter::DeliverFrameOnIO");
+  ++frame_counter_;
   for (FrameAdapters::iterator it = adapters_.begin();
        it != adapters_.end(); ++it) {
     (*it)->DeliverFrame(frame, format, estimated_capture_time);
   }
+}
+
+void VideoTrackAdapter::CheckFramesReceivedOnIO(
+    const OnMutedCallback& set_muted_state_callback,
+    uint64 old_frame_counter_snapshot) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DVLOG_IF(1, old_frame_counter_snapshot == frame_counter_)
+      << "No frames have passed, setting source as Muted.";
+  set_muted_state_callback.Run(old_frame_counter_snapshot == frame_counter_);
+
+  // Rearm the monitoring while there are active Tracks, i.e. as long as the
+  // owner MediaStreamSource is active.
+  io_message_loop_->PostDelayedTask(FROM_HERE,
+      base::Bind(&VideoTrackAdapter::CheckFramesReceivedOnIO, this,
+          set_muted_state_callback, frame_counter_),
+      base::TimeDelta::FromSecondsD(kNormalFrameTimeoutInFrameIntervals /
+                                    source_frame_rate_));
 }
 
 }  // namespace content

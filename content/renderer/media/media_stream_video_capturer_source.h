@@ -70,7 +70,6 @@ class CONTENT_EXPORT VideoCapturerDelegate
   base::Closure stop_capture_cb_;
 
   bool is_screen_cast_;
-  bool got_first_frame_;
 
   // |running_callback| is provided to this class in StartCapture and must be
   // valid until StopCapture is called.

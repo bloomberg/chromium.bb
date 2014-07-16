@@ -15,6 +15,7 @@
 #include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/video_track_adapter.h"
+#include "media/base/bind_to_current_loop.h"
 
 namespace content {
 
@@ -350,12 +351,14 @@ bool MediaStreamVideoSource::IsConstraintSupported(const std::string& name) {
 
 MediaStreamVideoSource::MediaStreamVideoSource()
     : state_(NEW),
+      muted_state_(false),
       track_adapter_(new VideoTrackAdapter(
           ChildProcess::current()->io_message_loop_proxy())),
       weak_factory_(this) {
 }
 
 MediaStreamVideoSource::~MediaStreamVideoSource() {
+  DCHECK(CalledOnValidThread());
 }
 
 void MediaStreamVideoSource::AddTrack(
@@ -479,6 +482,7 @@ void MediaStreamVideoSource::OnSupportedFormats(
 bool MediaStreamVideoSource::FindBestFormatWithConstraints(
     const media::VideoCaptureFormats& formats,
     media::VideoCaptureFormat* best_format) {
+  DCHECK(CalledOnValidThread());
   // Find the first constraints that we can fulfill.
   for (std::vector<RequestedConstraints>::iterator request_it =
            requested_constraints_.begin();
@@ -523,6 +527,7 @@ void MediaStreamVideoSource::OnStartDone(bool success) {
 }
 
 void MediaStreamVideoSource::FinalizeAddTrack() {
+  DCHECK(CalledOnValidThread());
   media::VideoCaptureFormats formats;
   formats.push_back(current_format_);
 
@@ -552,10 +557,16 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
       double max_frame_rate = 0.0f;
       GetConstraintValueAsDouble(it->constraints,
                                  kMaxFrameRate, &max_frame_rate);
+
+      VideoTrackAdapter::OnMutedCallback on_mute_callback =
+          media::BindToCurrentLoop(base::Bind(
+              &MediaStreamVideoSource::SetMutedState,
+              weak_factory_.GetWeakPtr()));
       track_adapter_->AddTrack(it->track, it->frame_callback,
                                max_width, max_height,
                                min_aspect_ratio, max_aspect_ratio,
-                               max_frame_rate);
+                               max_frame_rate, current_format_.frame_rate,
+                               on_mute_callback);
     }
 
     DVLOG(3) << "FinalizeAddTrack() success " << success;
@@ -568,12 +579,23 @@ void MediaStreamVideoSource::FinalizeAddTrack() {
 void MediaStreamVideoSource::SetReadyState(
     blink::WebMediaStreamSource::ReadyState state) {
   DVLOG(3) << "MediaStreamVideoSource::SetReadyState state " << state;
+  DCHECK(CalledOnValidThread());
   if (!owner().isNull()) {
     owner().setReadyState(state);
   }
   for (std::vector<MediaStreamVideoTrack*>::iterator it = tracks_.begin();
        it != tracks_.end(); ++it) {
     (*it)->OnReadyStateChanged(state);
+  }
+}
+
+void MediaStreamVideoSource::SetMutedState(bool muted_state) {
+  DVLOG(3) << "MediaStreamVideoSource::SetMutedState state=" << muted_state;
+  DCHECK(CalledOnValidThread());
+  // WebMediaStreamSource doesn't have a muted state, the tracks do.
+  for (std::vector<MediaStreamVideoTrack*>::iterator it = tracks_.begin();
+       it != tracks_.end(); ++it) {
+    (*it)->SetMutedState(muted_state);
   }
 }
 

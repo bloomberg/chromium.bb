@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
@@ -34,6 +35,9 @@ class CONTENT_EXPORT MediaStreamTrack
   // If a subclass overrides this method it has to call the base class.
   virtual void SetEnabled(bool enabled);
 
+  virtual void SetMutedState(bool muted_state);
+  virtual bool GetMutedState(void) const;
+
   // TODO(xians): Make this pure virtual when Stop[Track] has been
   // implemented for remote audio tracks.
   virtual void Stop();
@@ -45,8 +49,13 @@ class CONTENT_EXPORT MediaStreamTrack
  protected:
   scoped_refptr<webrtc::MediaStreamTrackInterface> track_;
 
+  // Set to true if the owner MediaStreamSource is not delivering frames.
+  bool muted_state_;
+
  private:
   const bool is_local_track_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamTrack);
 };

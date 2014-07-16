@@ -38,8 +38,7 @@ VideoCapturerDelegate::VideoCapturerDelegate(
     const StreamDeviceInfo& device_info)
     : session_id_(device_info.session_id),
       is_screen_cast_(device_info.device.type == MEDIA_TAB_VIDEO_CAPTURE ||
-                      device_info.device.type == MEDIA_DESKTOP_VIDEO_CAPTURE),
-      got_first_frame_(false) {
+                      device_info.device.type == MEDIA_DESKTOP_VIDEO_CAPTURE) {
   DVLOG(3) << "VideoCapturerDelegate::ctor";
 
   // NULL in unit test.
@@ -103,7 +102,6 @@ void VideoCapturerDelegate::StartCapture(
   DCHECK(params.requested_format.IsValid());
   DCHECK(thread_checker_.CalledOnValidThread());
   running_callback_ = running_callback;
-  got_first_frame_ = false;
 
   // NULL in unit test.
   if (!RenderThreadImpl::current())
