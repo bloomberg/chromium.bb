@@ -6,8 +6,10 @@
 
 #include "athena/input/public/accelerator_manager.h"
 #include "athena/screen/public/screen_manager.h"
+#include "athena/wm/public/window_manager_observer.h"
 #include "athena/wm/window_overview_mode.h"
 #include "base/logging.h"
+#include "base/observer_list.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/wm/public/window_types.h"
@@ -29,10 +31,15 @@ class WindowManagerImpl : public WindowManager,
 
   // WindowManager:
   virtual void ToggleOverview() OVERRIDE {
-    if (overview_)
+    if (overview_) {
       overview_.reset();
-    else
+      FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
+                        OnOverviewModeExit());
+    } else {
       overview_ = WindowOverviewMode::Create(container_.get(), this);
+      FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
+                        OnOverviewModeEnter());
+    }
   }
 
  private:
@@ -49,11 +56,22 @@ class WindowManagerImpl : public WindowManager,
         accelerator_data, arraysize(accelerator_data), this);
   }
 
+  // WindowManager:
+  virtual void AddObserver(WindowManagerObserver* observer) OVERRIDE {
+    observers_.AddObserver(observer);
+  }
+
+  virtual void RemoveObserver(WindowManagerObserver* observer) OVERRIDE {
+    observers_.RemoveObserver(observer);
+  }
+
   // WindowOverviewModeDelegate:
   virtual void OnSelectWindow(aura::Window* window) OVERRIDE {
     CHECK_EQ(container_.get(), window->parent());
     container_->StackChildAtTop(window);
     overview_.reset();
+    FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
+                      OnOverviewModeExit());
   }
 
   // aura::WindowObserver
@@ -76,6 +94,7 @@ class WindowManagerImpl : public WindowManager,
 
   scoped_ptr<aura::Window> container_;
   scoped_ptr<WindowOverviewMode> overview_;
+  ObserverList<WindowManagerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerImpl);
 };
@@ -154,6 +173,12 @@ void WindowManager::Shutdown() {
   DCHECK(instance);
   delete instance;
   DCHECK(!instance);
+}
+
+// static
+WindowManager* WindowManager::GetInstance() {
+  DCHECK(instance);
+  return instance;
 }
 
 }  // namespace athena
