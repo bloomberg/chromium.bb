@@ -17,7 +17,7 @@ rebased_android_sdk_build_tools = rebase_path(android_sdk_build_tools, root_buil
 # require knowledge about this target's dependencies and cannot be calculated
 # at gn-time). There is a special syntax to add a value in that dictionary to
 # an action/action_foreachs args:
-#   --python-arg=@($rebased_build_config_path:key0:key1)
+#   --python-arg=@FileArg($rebased_build_config_path:key0:key1)
 # At runtime, such an arg will be replaced by the value in the build_config.
 # See build/android/gyp/write_build_config.py and
 # build/android/gyp/util/build_utils.py:ExpandFileArgs
@@ -182,10 +182,10 @@ template("java_library") {
     args = [
       "--depfile=$rebase_depfile",
       "--classpath=$rebase_system_jars",
-      "--classpath=@($rebase_build_config:javac:classpath)",
+      "--classpath=@FileArg($rebase_build_config:javac:classpath)",
       "--jar-path=$rebase_jar_path",
       "--java-srcjars=$rebase_java_srcjars",
-      "--java-srcjars=@($rebase_build_config:javac:srcjars)",
+      "--java-srcjars=@FileArg($rebase_build_config:javac:srcjars)",
       "--jar-excluded-classes=$jar_excluded_patterns",
     ]
     if (chromium_code) {
@@ -300,7 +300,7 @@ template("process_resources") {
       "--srcjar-out", rebase_path(srcjar_path, root_build_dir),
       "--resource-zip-out", rebase_path(zip_path, root_build_dir),
 
-      "--dependencies-res-zips=@($rebase_build_config:resources:dependency_zips)",
+      "--dependencies-res-zips=@FileArg($rebase_build_config:resources:dependency_zips)",
     ]
 
     if (defined(invoker.custom_package)) {

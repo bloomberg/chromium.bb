@@ -20,7 +20,7 @@ Android build scripts should not refer to the build_config directly, and the
 build specification should instead pass information in using the special
 file-arg syntax (see build_utils.py:ExpandFileArgs). That syntax allows passing
 of values in a json dict in a file and looks like this:
-  --python-arg=@(build_config_path:javac:classpath)
+  --python-arg=@FileArg(build_config_path:javac:classpath)
 
 Note: If paths to input files are passed in this way, it is important that:
   1. inputs/deps of the action ensure that the files are available the first

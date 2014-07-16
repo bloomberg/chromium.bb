@@ -8,6 +8,7 @@ import fnmatch
 import json
 import os
 import pipes
+import re
 import shlex
 import shutil
 import subprocess
@@ -315,7 +316,7 @@ def ExpandFileArgs(args):
   """Replaces file-arg placeholders in args.
 
   These placeholders have the form:
-    @(filename:key1:key2:...:keyn)
+    @FileArg(filename:key1:key2:...:keyn)
 
   The value of such a placeholder is calculated by reading 'filename' as json.
   And then extracting the value at [key1][key2]...[keyn].
@@ -327,19 +328,16 @@ def ExpandFileArgs(args):
   """
   new_args = list(args)
   file_jsons = dict()
+  r = re.compile('@FileArg\((.*?)\)')
   for i, arg in enumerate(args):
-    start = arg.find('@(')
-    if start < 0:
+    match = r.search(arg)
+    if not match:
       continue
-    end = arg[start:].find(')')
-    if end < 0:
-      continue
-    end += start
 
-    if '@(' in arg[end:]:
-      raise Exception('Only one file-lookup-expansion is allowed in each arg.')
+    if match.end() != len(arg):
+      raise Exception('Unexpected characters after FileArg: ' + arg)
 
-    lookup_path = arg[start + 2:end].split(':')
+    lookup_path = match.group(1).split(':')
     file_path = lookup_path[0]
     if not file_path in file_jsons:
       file_jsons[file_path] = ReadJson(file_path)
@@ -348,6 +346,7 @@ def ExpandFileArgs(args):
     for k in lookup_path[1:]:
       expansion = expansion[k]
 
-    new_args[i] = arg[:start] + str(expansion) + arg[end + 1:]
+    new_args[i] = arg[:match.start()] + str(expansion)
+
   return new_args
 
