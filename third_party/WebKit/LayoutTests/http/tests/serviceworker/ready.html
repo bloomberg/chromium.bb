@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<title>Service Worker: navigator.serviceWorker.ready</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
+<body>
+<script>
+test(function() {
+    var promise = navigator.serviceWorker.ready;
+    assert_equals(promise, navigator.serviceWorker.ready,
+                  'repeated access to ready without intervening ' +
+                  'registrations should return the same Promise object');
+  }, 'ready returns the same Promise object');
+
+async_test(function(t) {
+    with_iframe('resources/blank.html?uncontrolled')
+      .then(t.step_func(function(frame) {
+          var promise = frame.contentWindow.navigator.serviceWorker.ready;
+          assert_equals(Object.getPrototypeOf(promise),
+                        frame.contentWindow.Promise.prototype,
+                        'the Promise should be in the context of the ' +
+                        'related document');
+          frame.remove();
+          t.done();
+        }));
+  }, 'ready returns a Promise object in the context of the related document');
+
+async_test(function(t) {
+    var url = 'resources/worker-no-op.js';
+    var scope = 'resources/blank.html?ready-active';
+    var frame;
+    var registered_service_worker;
+
+    service_worker_unregister_and_register(t, url, scope)
+      .then(t.step_func(function(service_worker) {
+          registered_service_worker = service_worker;
+          return wait_for_state(t, service_worker, 'activating');
+        }))
+      .then(t.step_func(function() {
+          return with_iframe(scope);
+        }))
+      .then(t.step_func(function(f) {
+          frame = f;
+          return frame.contentWindow.navigator.serviceWorker.ready;
+        }))
+      .then(t.step_func(function(service_worker) {
+          assert_equals(service_worker,
+                        frame.contentWindow.navigator.serviceWorker.active,
+                        'ready should resolve to the active ServiceWorker');
+          assert_equals(Object.getPrototypeOf(service_worker),
+                        frame.contentWindow.ServiceWorker.prototype,
+                        'the prototype of the ServiceWorker from ready ' +
+                        'should be from the ServiceWorkerContainer\'s ' +
+                        'context');
+          assert_equals(Object.getPrototypeOf(registered_service_worker),
+                        ServiceWorker.prototype,
+                        'the prototype of the ServiceWorker from register ' +
+                        'should be from the registering context');
+          // This is a logical consequence of the different prototypes
+          assert_not_equals(service_worker, registered_service_worker,
+                            'ready should resolve to a different ' +
+                            'ServiceWorker than register because of ' +
+                            'different prototypes');
+          frame.remove();
+          service_worker_unregister_and_done(t, scope);
+        }));
+  }, 'ready resolves to active');
+
+// FIXME: When replace() is implemented add a test that .ready is
+// repeatedly created and settled.
+</script>

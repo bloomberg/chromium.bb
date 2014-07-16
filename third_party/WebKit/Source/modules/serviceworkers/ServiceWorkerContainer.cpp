@@ -49,7 +49,6 @@
 #include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
-#include <v8.h>
 
 using blink::WebServiceWorker;
 using blink::WebServiceWorkerProvider;
@@ -66,11 +65,11 @@ ServiceWorkerContainer::~ServiceWorkerContainer()
     ASSERT(!m_provider);
 }
 
-void ServiceWorkerContainer::detachClient()
+void ServiceWorkerContainer::willBeDetachedFromFrame()
 {
     if (m_provider) {
         m_provider->setClient(0);
-        m_provider = 0;
+        m_provider = nullptr;
     }
 }
 
@@ -80,6 +79,7 @@ void ServiceWorkerContainer::trace(Visitor* visitor)
     visitor->trace(m_controller);
     visitor->trace(m_installing);
     visitor->trace(m_waiting);
+    visitor->trace(m_ready);
 }
 
 ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptState, const String& url, const Dictionary& dictionary)
@@ -150,17 +150,23 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ScriptState* scrip
     return promise;
 }
 
-ScriptPromise ServiceWorkerContainer::ready(ScriptState* scriptState)
+PassRefPtr<ServiceWorkerContainer::ReadyProperty> ServiceWorkerContainer::createReadyProperty()
 {
-    if (m_controller.get()) {
-        RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
-        ScriptPromise promise = resolver->promise();
-        resolver->resolve(m_controller.get());
-        return promise;
+    return ReadyProperty::create(executionContext(), this, ReadyProperty::Ready);
+}
+
+ScriptPromise ServiceWorkerContainer::ready(ScriptState* callerState)
+{
+    if (!executionContext())
+        return ScriptPromise();
+
+    if (!callerState->world().isMainWorld()) {
+        // FIXME: Support .ready from isolated worlds when
+        // ScriptPromiseProperty can vend Promises in isolated worlds.
+        return ScriptPromise::rejectWithDOMException(callerState, DOMException::create(NotSupportedError, "'ready' is only supported in pages."));
     }
-    // FIXME: Elaborate the implementation when the "waiting" property
-    // or replace() is implemented.
-    return ScriptPromise();
+
+    return m_ready->promise(callerState->world());
 }
 
 // If the WebServiceWorker is up for adoption (does not have a
@@ -178,7 +184,26 @@ void ServiceWorkerContainer::setActive(blink::WebServiceWorker* serviceWorker)
         deleteIfNoExistingOwner(serviceWorker);
         return;
     }
+    RefPtrWillBeRawPtr<ServiceWorker> previousReadyWorker = m_active;
     m_active = ServiceWorker::from(executionContext(), serviceWorker);
+    checkReadyChanged(previousReadyWorker.release());
+}
+
+void ServiceWorkerContainer::checkReadyChanged(PassRefPtrWillBeRawPtr<ServiceWorker> previousReadyWorker)
+{
+    ServiceWorker* currentReadyWorker = m_active.get();
+
+    if (previousReadyWorker == currentReadyWorker)
+        return;
+
+    if (m_ready->state() != ReadyProperty::Pending) {
+        // Already resolved Promises are now stale because the
+        // ready worker changed
+        m_ready = createReadyProperty();
+    }
+
+    if (currentReadyWorker)
+        m_ready->resolve(currentReadyWorker);
 }
 
 void ServiceWorkerContainer::setController(blink::WebServiceWorker* serviceWorker)
@@ -226,6 +251,8 @@ ServiceWorkerContainer::ServiceWorkerContainer(ExecutionContext* executionContex
 
     if (!executionContext)
         return;
+
+    m_ready = createReadyProperty();
 
     if (ServiceWorkerContainerClient* client = ServiceWorkerContainerClient::from(executionContext)) {
         m_provider = client->provider();

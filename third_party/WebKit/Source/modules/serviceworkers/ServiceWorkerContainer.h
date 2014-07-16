@@ -32,6 +32,7 @@
 #define ServiceWorkerContainer_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "modules/serviceworkers/ServiceWorker.h"
@@ -40,6 +41,7 @@
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace blink {
 class WebServiceWorkerProvider;
@@ -61,7 +63,7 @@ public:
     static PassRefPtrWillBeRawPtr<ServiceWorkerContainer> create(ExecutionContext*);
     ~ServiceWorkerContainer();
 
-    void detachClient();
+    void willBeDetachedFromFrame();
 
     void trace(Visitor*);
 
@@ -85,11 +87,16 @@ public:
 private:
     explicit ServiceWorkerContainer(ExecutionContext*);
 
+    typedef ScriptPromiseProperty<ServiceWorkerContainer*, RefPtrWillBeMember<ServiceWorker>, RefPtrWillBeMember<ServiceWorker> > ReadyProperty;
+    PassRefPtrWillBeRawPtr<ReadyProperty> createReadyProperty();
+    void checkReadyChanged(PassRefPtrWillBeRawPtr<ServiceWorker> previousReadyWorker);
+
     blink::WebServiceWorkerProvider* m_provider;
     RefPtrWillBeMember<ServiceWorker> m_active;
     RefPtrWillBeMember<ServiceWorker> m_controller;
     RefPtrWillBeMember<ServiceWorker> m_installing;
     RefPtrWillBeMember<ServiceWorker> m_waiting;
+    RefPtrWillBeMember<ReadyProperty> m_ready;
 };
 
 } // namespace WebCore
