@@ -182,6 +182,7 @@ def _OutputFailedResults(text_to_print):
 
 
 def _CreateBisectOptionsFromConfig(config):
+  print config['command']
   opts_dict = {}
   opts_dict['command'] = config['command']
   opts_dict['metric'] = config['metric']
@@ -213,7 +214,9 @@ def _CreateBisectOptionsFromConfig(config):
       raise RuntimeError('Cros build selected, but BISECT_CROS_IP or'
           'BISECT_CROS_BOARD undefined.')
   elif 'android' in config['command']:
-    if 'android-chrome' in config['command']:
+    if 'android-chrome-shell' in config['command']:
+      opts_dict['target_platform'] = 'android'
+    elif 'android-chrome' in config['command']:
       opts_dict['target_platform'] = 'android-chrome'
     else:
       opts_dict['target_platform'] = 'android'
@@ -390,7 +393,9 @@ def _RunBisectionScript(config, working_directory, path_to_file, path_to_goma,
       return 1
 
   if 'android' in config['command']:
-    if 'android-chrome' in config['command']:
+    if 'android-chrome-shell' in config['command']:
+      cmd.extend(['--target_platform', 'android'])
+    elif 'android-chrome' in config['command']:
       cmd.extend(['--target_platform', 'android-chrome'])
     else:
       cmd.extend(['--target_platform', 'android'])
