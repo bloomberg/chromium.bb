@@ -71,7 +71,6 @@ private:
 
     ScriptProcessorNode(AudioContext*, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
 
-    static void fireProcessEventDispatch(void* userData);
     void fireProcessEvent();
 
     // Double buffering
@@ -89,7 +88,6 @@ private:
     unsigned m_numberOfOutputChannels;
 
     RefPtr<AudioBus> m_internalInputBus;
-    RefPtr<ScriptProcessorNode> m_keepAliveWhileEventDispatching;
     // Synchronize process() with fireProcessEvent().
     mutable Mutex m_processEventLock;
 };
