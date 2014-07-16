@@ -390,7 +390,7 @@
           'action_name': 'strip_additional_libraries',
           'variables': {
             'ordered_libraries_file': '<(additional_ordered_libraries_file)',
-            'stripped_libraries_dir%': '<(stripped_libraries_dir)',
+            'stripped_libraries_dir': '<(libraries_source_dir)',
             'input_paths': [
               '<@(additional_bundled_libs)',
               '<(strip_stamp)',
