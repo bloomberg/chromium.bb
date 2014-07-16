@@ -10,7 +10,6 @@
 
 namespace ui {
 
-#if !defined(TOOLKIT_VIEWS)
 NSImage* DefaultThemeProvider::GetNSImageNamed(int id) const {
  return ResourceBundle::GetSharedInstance().
      GetNativeImageNamed(id).ToNSImage();
@@ -32,6 +31,5 @@ NSColor* DefaultThemeProvider::GetNSColorTint(int id) const {
 NSGradient* DefaultThemeProvider::GetNSGradient(int id) const {
   return nil;
 }
-#endif
 
 }  // namespace ui

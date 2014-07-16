@@ -77,7 +77,7 @@ class UI_BASE_EXPORT ThemeProvider {
       int id,
       ui::ScaleFactor scale_factor) const = 0;
 
-#if defined(OS_MACOSX) && !defined(TOOLKIT_VIEWS)
+#if defined(OS_MACOSX)
   // Gets the NSImage with the specified |id|.
   virtual NSImage* GetNSImageNamed(int id) const = 0;
 

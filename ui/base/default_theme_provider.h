@@ -34,7 +34,7 @@ class UI_BASE_EXPORT DefaultThemeProvider : public ThemeProvider {
       int id,
       ui::ScaleFactor scale_factor) const OVERRIDE;
 
-#if defined(OS_MACOSX) && !defined(TOOLKIT_VIEWS)
+#if defined(OS_MACOSX)
   virtual NSImage* GetNSImageNamed(int id) const OVERRIDE;
   virtual NSColor* GetNSImageColorNamed(int id) const OVERRIDE;
   virtual NSColor* GetNSColor(int id) const OVERRIDE;
