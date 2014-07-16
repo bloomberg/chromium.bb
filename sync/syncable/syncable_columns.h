@@ -67,7 +67,8 @@ static const ColumnSpec g_metas_columns[] = {
   // proto.  We store a single proto per entry (as opposed to one for each
   // attachment) because it simplifies the database schema and implementation of
   // DirectoryBackingStore.
-  {"attachment_metadata", "blob"}
+  {"attachment_metadata", "blob"},
+  {"server_attachment_metadata", "blob"}
 };
 
 // At least enforce that there are equal number of column names and fields.

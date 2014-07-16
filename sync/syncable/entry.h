@@ -210,6 +210,11 @@ class SYNC_EXPORT Entry {
     return kernel_->ref(ATTACHMENT_METADATA);
   }
 
+  const sync_pb::AttachmentMetadata& GetServerAttachmentMetadata() const {
+    DCHECK(kernel_);
+    return kernel_->ref(SERVER_ATTACHMENT_METADATA);
+  }
+
   bool GetSyncing() const {
     DCHECK(kernel_);
     return kernel_->ref(SYNCING);

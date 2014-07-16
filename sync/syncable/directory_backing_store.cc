@@ -35,7 +35,7 @@ namespace syncable {
 static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
-const int32 kCurrentDBVersion = 88;
+const int32 kCurrentDBVersion = 89;
 
 // Iterate over the fields of |entry| and bind each to |statement| for
 // updating.  Returns the number of args bound.
@@ -441,6 +441,12 @@ bool DirectoryBackingStore::InitializeTables() {
   if (version_on_disk == 87) {
     if (MigrateVersion87To88())
       version_on_disk = 88;
+  }
+
+  // Version 89 migration adds server attachment metadata to the metas table.
+  if (version_on_disk == 88) {
+    if (MigrateVersion88To89())
+      version_on_disk = 89;
   }
 
   // If one of the migrations requested it, drop columns that aren't current.
@@ -1323,6 +1329,18 @@ bool DirectoryBackingStore::MigrateVersion87To88() {
     return false;
 
   SetVersion(88);
+  return true;
+}
+
+bool DirectoryBackingStore::MigrateVersion88To89() {
+  // Version 89 adds server_attachment_metadata.
+  if (!db_->Execute(
+          "ALTER TABLE metas ADD COLUMN "
+          "server_attachment_metadata BLOB")) {
+    return false;
+  }
+  SetVersion(89);
+  needs_column_refresh_ = true;
   return true;
 }
 
