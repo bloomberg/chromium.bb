@@ -273,15 +273,6 @@ void GlassBrowserFrameView::Layout() {
   LayoutClientView();
 }
 
-bool GlassBrowserFrameView::HitTestRect(const gfx::Rect& rect) const {
-  bool hit_avatar_button = avatar_button() &&
-      avatar_button()->GetMirroredBounds().Intersects(rect);
-  bool hit_new_avatar_button = new_avatar_button() &&
-      new_avatar_button()->GetMirroredBounds().Intersects(rect);
-  return hit_avatar_button || hit_new_avatar_button ||
-         !frame()->client_view()->bounds().Intersects(rect);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, views::ButtonListener overrides:
 void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
@@ -295,6 +286,18 @@ void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
 
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, private:
+
+// views::NonClientFrameView:
+bool GlassBrowserFrameView::DoesIntersectRect(const views::View* target,
+                                              const gfx::Rect& rect) const {
+  CHECK_EQ(target, this);
+  bool hit_avatar_button = avatar_button() &&
+      avatar_button()->GetMirroredBounds().Intersects(rect);
+  bool hit_new_avatar_button = new_avatar_button() &&
+      new_avatar_button()->GetMirroredBounds().Intersects(rect);
+  return hit_avatar_button || hit_new_avatar_button ||
+         !frame()->client_view()->bounds().Intersects(rect);
+}
 
 int GlassBrowserFrameView::FrameBorderThickness() const {
   return (frame()->IsMaximized() || frame()->IsFullscreen()) ?

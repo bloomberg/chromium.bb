@@ -35,13 +35,13 @@ class BrowserNonClientFrameViewAsh
 
   void Init();
 
-  // BrowserNonClientFrameView overrides:
+  // BrowserNonClientFrameView:
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
   virtual int GetTopInset() const OVERRIDE;
   virtual int GetThemeBackgroundXInset() const OVERRIDE;
   virtual void UpdateThrobber(bool running) OVERRIDE;
 
-  // views::NonClientFrameView overrides:
+  // views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const OVERRIDE;
@@ -52,11 +52,10 @@ class BrowserNonClientFrameViewAsh
   virtual void UpdateWindowIcon() OVERRIDE;
   virtual void UpdateWindowTitle() OVERRIDE;
 
-  // views::View overrides:
+  // views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
-  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
 
@@ -64,7 +63,7 @@ class BrowserNonClientFrameViewAsh
   virtual void OnMaximizeModeStarted() OVERRIDE;
   virtual void OnMaximizeModeEnded() OVERRIDE;
 
-  // Overridden from chrome::TabIconViewModel:
+  // chrome::TabIconViewModel:
   virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
   virtual gfx::ImageSkia GetFaviconForTabIconView() OVERRIDE;
 
@@ -76,6 +75,10 @@ class BrowserNonClientFrameViewAsh
                            ImmersiveFullscreen);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            ToggleMaximizeModeRelayout);
+
+  // views::NonClientFrameView:
+  virtual bool DoesIntersectRect(const views::View* target,
+                                 const gfx::Rect& rect) const OVERRIDE;
 
   // Distance between the left edge of the NonClientFrameView and the tab strip.
   int GetTabStripLeftInset() const;

@@ -948,8 +948,6 @@ bool View::HitTestPoint(const gfx::Point& point) const {
 }
 
 bool View::HitTestRect(const gfx::Rect& rect) const {
-  // If no ViewTargeter is installed on |this|, use the ViewTargeter installed
-  // on our root view instead.
   ViewTargeter* view_targeter = targeter();
   if (!view_targeter)
     view_targeter = GetWidget()->GetRootView()->targeter();

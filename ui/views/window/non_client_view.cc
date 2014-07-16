@@ -8,6 +8,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/views/rect_based_targeting_utils.h"
+#include "ui/views/view_targeter.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
@@ -301,15 +302,6 @@ int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NonClientFrameView, View overrides:
-
-bool NonClientFrameView::HitTestRect(const gfx::Rect& rect) const {
-  // For the default case, we assume the non-client frame view never overlaps
-  // the client view.
-  return !GetWidget()->client_view()->bounds().Intersects(rect);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, protected:
 
 void NonClientFrameView::GetAccessibleState(ui::AXViewState* state) {
@@ -326,6 +318,18 @@ void NonClientFrameView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 NonClientFrameView::NonClientFrameView() : inactive_rendering_disabled_(false) {
+  SetEventTargeter(
+      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+}
+
+// ViewTargeterDelegate:
+bool NonClientFrameView::DoesIntersectRect(const View* target,
+                                           const gfx::Rect& rect) const {
+  CHECK_EQ(target, this);
+
+  // For the default case, we assume the non-client frame view never overlaps
+  // the client view.
+  return !GetWidget()->client_view()->bounds().Intersects(rect);
 }
 
 }  // namespace views

@@ -41,7 +41,7 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   void InitImmersiveFullscreenControllerForView(
       ImmersiveFullscreenController* immersive_fullscreen_controller);
 
-  // views::NonClientFrameView overrides:
+  // views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const OVERRIDE;
@@ -52,13 +52,12 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   virtual void UpdateWindowIcon() OVERRIDE;
   virtual void UpdateWindowTitle() OVERRIDE;
 
-  // views::View overrides:
+  // views::View:
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual gfx::Size GetMaximumSize() const OVERRIDE;
   virtual void SchedulePaintInRect(const gfx::Rect& r) OVERRIDE;
-  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
   virtual void VisibilityChanged(views::View* starting_from,
                                  bool is_visible) OVERRIDE;
 
@@ -70,6 +69,10 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
  private:
   class OverlayView;
   friend class TestWidgetConstraintsDelegate;
+
+  // views::NonClientFrameView:
+  virtual bool DoesIntersectRect(const views::View* target,
+                                 const gfx::Rect& rect) const OVERRIDE;
 
   // Returns the container for the minimize/maximize/close buttons that is held
   // by the HeaderView. Used in testing.

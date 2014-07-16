@@ -577,16 +577,14 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // the cursor is a shared resource.
   virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event);
 
-  // TODO(tdanderson): HitTestPoint() and HitTestRect() will be removed once
-  //                   their logic is moved into ViewTargeter and its
-  //                   derived classes. See crbug.com/355425.
-
   // A convenience function which calls HitTestRect() with a rect of size
   // 1x1 and an origin of |point|.
   bool HitTestPoint(const gfx::Point& point) const;
 
-  // Tests whether |rect| intersects this view's bounds.
-  virtual bool HitTestRect(const gfx::Rect& rect) const;
+  // Tests whether |rect| intersects this view's bounds using the ViewTargeter
+  // installed on |this|. If there is no ViewTargeter installed on |this|, the
+  // ViewTargeter installed on the root view is used instead.
+  bool HitTestRect(const gfx::Rect& rect) const;
 
   // Returns true if this view or any of its descendants are permitted to
   // be the target of an event.

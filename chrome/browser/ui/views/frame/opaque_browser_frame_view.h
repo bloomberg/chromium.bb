@@ -40,14 +40,14 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   OpaqueBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
   virtual ~OpaqueBrowserFrameView();
 
-  // Overridden from BrowserNonClientFrameView:
+  // BrowserNonClientFrameView:
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
   virtual int GetTopInset() const OVERRIDE;
   virtual int GetThemeBackgroundXInset() const OVERRIDE;
   virtual void UpdateThrobber(bool running) OVERRIDE;
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
 
-  // Overridden from views::NonClientFrameView:
+  // views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const OVERRIDE;
@@ -58,19 +58,18 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual void UpdateWindowIcon() OVERRIDE;
   virtual void UpdateWindowTitle() OVERRIDE;
 
-  // Overridden from views::View:
-  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
+  // views::View:
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
-  // Overridden from views::ButtonListener:
+  // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const ui::Event& event)
       OVERRIDE;
 
-  // Overridden from views::MenuButtonListener:
+  // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source, const gfx::Point& point)
       OVERRIDE;
 
-  // Overridden from chrome::TabIconViewModel:
+  // chrome::TabIconViewModel:
   virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
   virtual gfx::ImageSkia GetFaviconForTabIconView() OVERRIDE;
 
@@ -103,10 +102,14 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   views::ImageButton* restore_button() const { return restore_button_; }
   views::ImageButton* close_button() const { return close_button_; }
 
-  // Overridden from views::View:
+  // views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
+  // views::NonClientFrameView:
+  virtual bool DoesIntersectRect(const views::View* target,
+                                 const gfx::Rect& rect) const OVERRIDE;
+
   // Creates, adds and returns a new image button with |this| as its listener.
   // Memory is owned by the caller.
   views::ImageButton* InitWindowCaptionButton(int normal_image_id,

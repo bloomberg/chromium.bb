@@ -6,6 +6,7 @@
 #define UI_VIEWS_WINDOW_NON_CLIENT_VIEW_H_
 
 #include "ui/views/view.h"
+#include "ui/views/view_targeter_delegate.h"
 
 namespace gfx {
 class Path;
@@ -22,7 +23,8 @@ class ClientView;
 //  responds to events within the frame portions of the non-client area of a
 //  window. This view does _not_ contain the ClientView, but rather is a sibling
 //  of it.
-class VIEWS_EXPORT NonClientFrameView : public View {
+class VIEWS_EXPORT NonClientFrameView : public View,
+                                        public ViewTargeterDelegate {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -78,8 +80,7 @@ class VIEWS_EXPORT NonClientFrameView : public View {
   virtual void UpdateWindowIcon() = 0;
   virtual void UpdateWindowTitle() = 0;
 
-  // Overridden from View:
-  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
+  // View:
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 
@@ -89,6 +90,10 @@ class VIEWS_EXPORT NonClientFrameView : public View {
   NonClientFrameView();
 
  private:
+  // ViewTargeterDelegate:
+  virtual bool DoesIntersectRect(const View* target,
+                                 const gfx::Rect& rect) const OVERRIDE;
+
   // Prevents the non-client frame view from being rendered as inactive when
   // true.
   bool inactive_rendering_disabled_;

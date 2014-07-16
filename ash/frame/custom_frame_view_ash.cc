@@ -31,6 +31,7 @@
 #include "ui/gfx/size.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/view.h"
+#include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -349,16 +350,20 @@ CustomFrameViewAsh::HeaderView::GetVisibleBoundsInScreen() const {
 // View which takes up the entire widget and contains the HeaderView. HeaderView
 // is a child of OverlayView to avoid creating a larger texture than necessary
 // when painting the HeaderView to its own layer.
-class CustomFrameViewAsh::OverlayView : public views::View {
+class CustomFrameViewAsh::OverlayView : public views::View,
+                                        public views::ViewTargeterDelegate {
  public:
   explicit OverlayView(HeaderView* header_view);
   virtual ~OverlayView();
 
-  // views::View override:
+  // views::View:
   virtual void Layout() OVERRIDE;
-  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
 
  private:
+  // views::ViewTargeterDelegate:
+  virtual bool DoesIntersectRect(const views::View* target,
+                                 const gfx::Rect& rect) const OVERRIDE;
+
   HeaderView* header_view_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayView);
@@ -367,6 +372,8 @@ class CustomFrameViewAsh::OverlayView : public views::View {
 CustomFrameViewAsh::OverlayView::OverlayView(HeaderView* header_view)
     : header_view_(header_view) {
   AddChildView(header_view);
+  SetEventTargeter(
+      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
 
 CustomFrameViewAsh::OverlayView::~OverlayView() {
@@ -390,7 +397,13 @@ void CustomFrameViewAsh::OverlayView::Layout() {
   }
 }
 
-bool CustomFrameViewAsh::OverlayView::HitTestRect(const gfx::Rect& rect) const {
+///////////////////////////////////////////////////////////////////////////////
+// CustomFrameViewAsh::OverlayView, views::ViewTargeterDelegate overrides:
+
+bool CustomFrameViewAsh::OverlayView::DoesIntersectRect(
+    const views::View* target,
+    const gfx::Rect& rect) const {
+  CHECK_EQ(target, this);
   // Grab events in the header view. Return false for other events so that they
   // can be handled by the client view.
   return header_view_->HitTestRect(rect);
@@ -513,17 +526,14 @@ void CustomFrameViewAsh::SchedulePaintInRect(const gfx::Rect& r) {
   }
 }
 
-bool CustomFrameViewAsh::HitTestRect(const gfx::Rect& rect) const {
-  // NonClientView hit tests the NonClientFrameView first instead of going in
-  // z-order. Return false so that events get to the OverlayView.
-  return false;
-}
-
 void CustomFrameViewAsh::VisibilityChanged(views::View* starting_from,
                                            bool is_visible) {
   if (is_visible)
     header_view_->UpdateAvatarIcon();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// CustomFrameViewAsh, views::ViewTargeterDelegate overrides:
 
 views::View* CustomFrameViewAsh::GetHeaderView() {
   return header_view_;
@@ -535,6 +545,15 @@ const views::View* CustomFrameViewAsh::GetAvatarIconViewForTest() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAsh, private:
+
+// views::NonClientFrameView:
+bool CustomFrameViewAsh::DoesIntersectRect(const views::View* target,
+                                           const gfx::Rect& rect) const {
+  CHECK_EQ(target, this);
+  // NonClientView hit tests the NonClientFrameView first instead of going in
+  // z-order. Return false so that events get to the OverlayView.
+  return false;
+}
 
 FrameCaptionButtonContainerView* CustomFrameViewAsh::
     GetFrameCaptionButtonContainerViewForTest() {

@@ -48,7 +48,8 @@ class ToolbarView : public views::AccessiblePaneView,
                     public content::NotificationObserver,
                     public CommandObserver,
                     public views::ButtonListener,
-                    public views::WidgetObserver {
+                    public views::WidgetObserver,
+                    public views::ViewTargeterDelegate {
  public:
   // The view class name.
   static const char kViewClassName[];
@@ -97,7 +98,7 @@ class ToolbarView : public views::AccessiblePaneView,
   // Shows the extension's browser action, if present.
   void ShowBrowserActionPopup(const extensions::Extension* extension);
 
-  // Accessors...
+  // Accessors.
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
   ReloadButton* reload_button() const { return reload_; }
@@ -105,15 +106,15 @@ class ToolbarView : public views::AccessiblePaneView,
   views::MenuButton* app_menu() const;
   HomeButton* home_button() const { return home_; }
 
-  // Overridden from AccessiblePaneView
+  // AccessiblePaneView:
   virtual bool SetPaneFocus(View* initial_focus) OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
-  // Overridden from views::MenuButtonListener:
+  // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,
                                    const gfx::Point& point) OVERRIDE;
 
-  // Overridden from LocationBarView::Delegate:
+  // LocationBarView::Delegate:
   virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual ToolbarModel* GetToolbarModel() OVERRIDE;
   virtual const ToolbarModel* GetToolbarModel() const OVERRIDE;
@@ -128,31 +129,30 @@ class ToolbarView : public views::AccessiblePaneView,
                                    const GURL& url,
                                    const content::SSLStatus& ssl) OVERRIDE;
 
-  // Overridden from CommandObserver:
+  // CommandObserver:
   virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE;
 
-  // Overridden from views::ButtonListener:
+  // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  // Overridden from views::WidgetObserver:
+  // views::WidgetObserver:
   virtual void OnWidgetVisibilityChanged(views::Widget* widget,
                                          bool visible) OVERRIDE;
 
-  // Overridden from content::NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Overridden from ui::AcceleratorProvider:
+  // ui::AcceleratorProvider:
   virtual bool GetAcceleratorForCommandId(
       int command_id, ui::Accelerator* accelerator) OVERRIDE;
 
-  // Overridden from views::View:
+  // views::View:
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnThemeChanged() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
@@ -176,7 +176,7 @@ class ToolbarView : public views::AccessiblePaneView,
   };
 
  protected:
-  // Overridden from AccessiblePaneView
+  // AccessiblePaneView:
   virtual bool SetPaneFocusAndFocusDefault() OVERRIDE;
   virtual void RemovePaneFocus() OVERRIDE;
 
@@ -187,6 +187,10 @@ class ToolbarView : public views::AccessiblePaneView,
     DISPLAYMODE_LOCATION      // Slimline toolbar showing only compact location
                               // bar, used for popups.
   };
+
+  // views::ViewTargeterDelegate:
+  virtual bool DoesIntersectRect(const views::View* target,
+                                 const gfx::Rect& rect) const OVERRIDE;
 
   // Returns true if we should show the upgrade recommended dot.
   bool ShouldShowUpgradeRecommended();

@@ -22,14 +22,14 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   GlassBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
   virtual ~GlassBrowserFrameView();
 
-  // Overridden from BrowserNonClientFrameView:
+  // BrowserNonClientFrameView:
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
   virtual int GetTopInset() const OVERRIDE;
   virtual int GetThemeBackgroundXInset() const OVERRIDE;
   virtual void UpdateThrobber(bool running) OVERRIDE;
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
 
-  // Overridden from views::NonClientFrameView:
+  // views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const OVERRIDE;
@@ -41,16 +41,19 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   virtual void UpdateWindowTitle() OVERRIDE {}
 
  protected:
-  // Overridden from views::View:
+  // views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
 
-  // Overidden from views::ButtonListener:
+  // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
  private:
+  // views::NonClientFrameView:
+  virtual bool DoesIntersectRect(const views::View* target,
+                                 const gfx::Rect& rect) const OVERRIDE;
+
   // Returns the thickness of the border that makes up the window frame edges.
   // This does not include any client edge.
   int FrameBorderThickness() const;

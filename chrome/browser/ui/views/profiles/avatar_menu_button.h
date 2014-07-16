@@ -11,6 +11,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
+#include "ui/views/view_targeter_delegate.h"
 
 namespace gfx {
 class Canvas;
@@ -24,7 +25,8 @@ class Browser;
 // The button can optionally have a menu attached to it.
 
 class AvatarMenuButton : public views::MenuButton,
-                         public views::MenuButtonListener {
+                         public views::MenuButtonListener,
+                         public views::ViewTargeterDelegate {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -38,7 +40,6 @@ class AvatarMenuButton : public views::MenuButton,
   // views::MenuButton:
   virtual const char* GetClassName() const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
 
   // Sets the image for the avatar button. Rectangular images, as opposed
   // to Chrome avatar icons, will be resized and modified for the title bar.
@@ -50,6 +51,10 @@ class AvatarMenuButton : public views::MenuButton,
   bool button_on_right() { return button_on_right_; }
 
  private:
+  // views::ViewTargeterDelegate:
+  virtual bool DoesIntersectRect(const views::View* target,
+                                 const gfx::Rect& rect) const OVERRIDE;
+
   // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,
                                    const gfx::Point& point) OVERRIDE;
