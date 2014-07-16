@@ -76,6 +76,7 @@ ChromotingJniInstance::ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
       protocol::AuthenticationMethod::HMAC_SHA256));
   auth_methods.push_back(protocol::AuthenticationMethod::Spake2(
       protocol::AuthenticationMethod::NONE));
+  auth_methods.push_back(protocol::AuthenticationMethod::ThirdParty());
 
   authenticator_.reset(new protocol::NegotiatingClientAuthenticator(
       pairing_id, pairing_secret, host_id_,
