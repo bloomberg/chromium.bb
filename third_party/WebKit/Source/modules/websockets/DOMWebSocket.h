@@ -235,4 +235,4 @@ private:
 
 } // namespace WebCore
 
-#endif // WebSocket_h
+#endif // DOMWebSocket_h
