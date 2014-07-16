@@ -27065,6 +27065,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Settings.JsonDataSizeKilobytes" units="KB">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    The size of the JSON settings content about to be written to disk in
+    kilobytes. Suffixed with the name of the JSON file being written to disk.
+  </summary>
+</histogram>
+
 <histogram name="Settings.MigratedHashesFromLocalState" enum="BooleanMigrated">
   <owner>csharp@chromium.org</owner>
   <owner>gab@chromium.org</owner>
@@ -32645,6 +32653,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="TryScroll.SlowScroll" enum="ScrollThread">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Whether the scroll is executed on main thread.</summary>
+</histogram>
+
+<histogram name="UMA.ClientIdBackupRecoveredWithAge" units="hours">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Recorded when we are somehow missing the client ID stored in Local State yet
+    are able to recover it from a backup location along with the backed up
+    installation date. This report carries the age in hours of the recovered
+    client id.
+  </summary>
 </histogram>
 
 <histogram name="UMA.ClientIdMigrated" enum="BooleanMigrated">
@@ -50561,6 +50579,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
       label="covers fetches when connected to cellular networks"/>
   <affected-histogram name="Precache.DownloadedNonPrecache"/>
   <affected-histogram name="Precache.Saved"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PreferenceFileNames" separator=".">
+  <suffix name="Local_State" label="Local State file"/>
+  <suffix name="Preferences" label="Preferences file"/>
+  <suffix name="Secure_Preferences" label="Secure Preferences file"/>
+  <affected-histogram name="Settings.JsonDataSizeKilobytes"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Prefetch">

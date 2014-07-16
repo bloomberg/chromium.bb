@@ -9,12 +9,15 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_filter.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 
@@ -388,7 +391,27 @@ bool JsonPrefStore::SerializeData(std::string* output) {
 
   JSONStringValueSerializer serializer(output);
   serializer.set_pretty_print(true);
-  return serializer.Serialize(*prefs_);
+  bool result = serializer.Serialize(*prefs_);
+
+  if (result) {
+    std::string spaceless_basename;
+    base::ReplaceChars(path_.BaseName().MaybeAsASCII(), " ", "_",
+                       &spaceless_basename);
+
+    // The histogram below is an expansion of the UMA_HISTOGRAM_COUNTS_10000
+    // macro adapted to allow for a dynamically suffixed histogram name.
+    // Note: The factory creates and owns the histogram.
+    base::HistogramBase* histogram =
+        base::LinearHistogram::FactoryGet(
+            "Settings.JsonDataSizeKilobytes." + spaceless_basename,
+            1,
+            10000,
+            50,
+            base::HistogramBase::kUmaTargetedHistogramFlag);
+    histogram->Add(static_cast<int>(output->size()) / 1024);
+  }
+
+  return result;
 }
 
 void JsonPrefStore::FinalizeFileRead(bool initialization_successful,
