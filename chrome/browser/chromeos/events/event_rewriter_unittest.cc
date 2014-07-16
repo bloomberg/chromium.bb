@@ -858,6 +858,16 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
       {KeyTestCase::TEST_ALL, ui::ET_KEY_PRESSED,
        {ui::VKEY_MENU, ui::EF_ALT_DOWN},
        {ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN}},
+      // Press Shift+comma. Verify that only the flags are changed.
+      // The X11 portion of the test addresses crbug.com/390263 by verifying
+      // that the X keycode remains that for ',<' and not for 105-key '<>'.
+      {KeyTestCase::TEST_ALL, ui::ET_KEY_PRESSED,
+       {ui::VKEY_OEM_COMMA, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN},
+       {ui::VKEY_OEM_COMMA, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN}},
+      // Press Shift+9. Verify that only the flags are changed.
+      {KeyTestCase::TEST_ALL, ui::ET_KEY_PRESSED,
+       {ui::VKEY_9, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN},
+       {ui::VKEY_9, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN}},
   };
 
   for (size_t i = 0; i < arraysize(a2c_tests); ++i) {

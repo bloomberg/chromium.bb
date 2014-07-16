@@ -71,17 +71,6 @@ int XIButtonEventType(ui::EventType type) {
   }
 }
 
-// Converts KeyboardCode to XKeyEvent keycode.
-unsigned int XKeyEventKeyCode(ui::KeyboardCode key_code,
-                              int flags,
-                              XDisplay* display) {
-  // XKeyEvent keycode is hardware keycode which doesn't consider SHIFT state.
-  // There are bugs in XKeysymToKeycode that it returns wrong keycode for keysym
-  // with SHIFT state. e.g. XK_less should return 59 but returns 94;
-  // XK_parenright should return 19 but returns 188; etc.
-  return XKeysymToKeycode(display, XKeysymForWindowsKeyCode(key_code, false));
-}
-
 // Converts Aura event type and flag to X button event.
 unsigned int XButtonEventButton(ui::EventType type,
                                 int flags) {
@@ -177,7 +166,7 @@ void ScopedXI2Event::InitKeyEvent(EventType type,
   event_->xkey.x_root = 0;
   event_->xkey.y_root = 0;
   event_->xkey.state = XEventState(flags);
-  event_->xkey.keycode = XKeyEventKeyCode(key_code, flags, display);
+  event_->xkey.keycode = XKeyCodeForWindowsKeyCode(key_code, flags, display);
   event_->xkey.same_screen = 1;
 }
 
@@ -193,7 +182,7 @@ void ScopedXI2Event::InitGenericKeyEvent(int deviceid,
   event_->xgeneric.display = display;
   xievent->display = display;
   xievent->mods.effective = XEventState(flags);
-  xievent->detail = XKeyEventKeyCode(key_code, flags, display);
+  xievent->detail = XKeyCodeForWindowsKeyCode(key_code, flags, display);
 }
 
 void ScopedXI2Event::InitGenericButtonEvent(int deviceid,

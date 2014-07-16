@@ -10,6 +10,7 @@
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 
 typedef union _XEvent XEvent;
+typedef struct _XDisplay XDisplay;
 
 namespace ui {
 
@@ -25,6 +26,14 @@ EVENTS_BASE_EXPORT uint16 GetCharacterFromXEvent(const XEvent* xev);
 // Converts a KeyboardCode into an X KeySym.
 EVENTS_BASE_EXPORT int XKeysymForWindowsKeyCode(KeyboardCode keycode,
                                                 bool shift);
+
+// Returns a XKeyEvent keycode (scancode) for a KeyboardCode. Keyboard layouts
+// are usually not injective, so inverse mapping should be avoided when
+// practical. A round-trip keycode -> KeyboardCode -> keycode will not
+// necessarily return the original keycode.
+EVENTS_BASE_EXPORT unsigned int XKeyCodeForWindowsKeyCode(KeyboardCode key_code,
+                                                          int flags,
+                                                          XDisplay* display);
 
 // Converts an X keycode into ui::KeyboardCode.
 EVENTS_BASE_EXPORT KeyboardCode

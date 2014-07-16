@@ -1327,4 +1327,30 @@ void InitXKeyEventFromXIDeviceEvent(const XEvent& src, XEvent* xkeyevent) {
   xkeyevent->xkey.same_screen = 1;
 }
 
+unsigned int XKeyCodeForWindowsKeyCode(ui::KeyboardCode key_code,
+                                       int flags,
+                                       XDisplay* display) {
+  // SHIFT state is ignored in the call to XKeysymForWindowsKeyCode() here
+  // because we map the XKeysym back to a keycode, i.e. a physical key position.
+  // Using a SHIFT-modified XKeysym would sometimes yield X keycodes that,
+  // while technically valid, may be surprising in that they do not match
+  // the keycode of the original press, and conflict with assumptions in
+  // other code.
+  //
+  // For example, in a US layout, Shift-9 has the interpretation XK_parenleft,
+  // but the keycode KEY_9 alone does not map to XK_parenleft; instead,
+  // XKeysymToKeycode() returns KEY_KPLEFTPAREN (keypad left parenthesis)
+  // which does map to XK_parenleft -- notwithstanding that keyboards with
+  // dedicated number pad parenthesis keys are currently uncommon.
+  //
+  // Similarly, Shift-Comma has the interpretation XK_less, but KEY_COMMA
+  // alone does not map to XK_less; XKeysymToKeycode() returns KEY_102ND
+  // (the '<>' key between Shift and Z on 105-key keyboards) which does.
+  //
+  // crbug.com/386066 and crbug.com/390263 are examples of problems
+  // associated with this.
+  //
+  return XKeysymToKeycode(display, XKeysymForWindowsKeyCode(key_code, false));
+}
+
 }  // namespace ui

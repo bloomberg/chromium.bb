@@ -264,9 +264,14 @@ void EventRewriter::BuildRewrittenKeyEvent(
       xkeyevent.xkey = xev->xkey;
 
     // Update native event to match rewritten |ui::Event|.
-    xkeyevent.xkey.keycode = XKeysymToKeycode(
-        gfx::GetXDisplay(),
-        ui::XKeysymForWindowsKeyCode(key_code, flags & ui::EF_SHIFT_DOWN));
+    // The X11 keycode represents a physical key position, so it shouldn't
+    // change unless we have actually changed keys, not just modifiers.
+    // This is one guard against problems like crbug.com/390263.
+    if (key_event.key_code() != key_code) {
+      xkeyevent.xkey.keycode =
+          XKeyCodeForWindowsKeyCode(key_code, flags, gfx::GetXDisplay());
+    }
+
     UpdateX11EventMask(flags, &xkeyevent.xkey.state);
     ui::KeyEvent x11_key_event(&xkeyevent, false);
     rewritten_key_event = new ui::KeyEvent(x11_key_event);
