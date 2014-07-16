@@ -76,6 +76,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       int response_code,
       const base::FilePath* file_path_for_history_item,
       const std::vector<GURL>& redirects);
+  void SendBeginNavigationWithURL(const GURL& url);
 
   void set_contents_mime_type(const std::string& mime_type) {
     contents_mime_type_ = mime_type;

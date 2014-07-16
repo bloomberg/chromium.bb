@@ -30,6 +30,7 @@
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/resource_scheduler.h"
 #include "content/common/content_export.h"
+#include "content/common/resource_request_body.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_url_parameters.h"
@@ -61,6 +62,7 @@ class ResourceRequestInfoImpl;
 class SaveFileManager;
 class WebContentsImpl;
 struct DownloadSaveInfo;
+struct NavigationRequestInfo;
 struct Referrer;
 
 class CONTENT_EXPORT ResourceDispatcherHostImpl
@@ -235,6 +237,12 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // using its shared memory buffer. Frees up that file descriptor to be used
   // elsewhere.
   void FinishedWithResourcesForRequest(const net::URLRequest* request_);
+
+  // Called by NavigationRequest to start a navigation request in the node
+  // identified by |frame_node_id|.
+  void NavigationRequest(const NavigationRequestInfo& info,
+                         scoped_refptr<ResourceRequestBody> request_body,
+                         int64 frame_node_id);
 
  private:
   friend class ResourceDispatcherHostTest;

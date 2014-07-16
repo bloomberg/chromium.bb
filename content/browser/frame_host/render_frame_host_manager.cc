@@ -17,6 +17,8 @@
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
+#include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_factory.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -565,6 +567,26 @@ void RenderFrameHostManager::ClearPendingShutdownRFHForSiteInstance(
 
 void RenderFrameHostManager::ResetProxyHosts() {
   STLDeleteValues(&proxy_hosts_);
+}
+
+void RenderFrameHostManager::OnBeginNavigation(
+    const FrameHostMsg_BeginNavigation_Params& params) {
+  // TODO(clamy): Check if navigations are blocked and if so, return
+  // immediately.
+  NavigationRequestInfo info(params);
+
+  info.first_party_for_cookies = frame_tree_node_->IsMainFrame() ?
+      params.url : frame_tree_node_->frame_tree()->root()->current_url();
+  info.is_main_frame = frame_tree_node_->IsMainFrame();
+  info.parent_is_main_frame = !frame_tree_node_->parent() ?
+      false : frame_tree_node_->parent()->IsMainFrame();
+  info.is_showing = GetRenderWidgetHostView()->IsShowing();
+
+  navigation_request_.reset(
+      new NavigationRequest(info, frame_tree_node_->frame_tree_node_id()));
+  navigation_request_->BeginNavigation(params.request_body);
+  // TODO(clamy): If we have no live RenderFrameHost to handle the request (eg
+  // cross-site navigation) spawn one speculatively here and keep track of it.
 }
 
 void RenderFrameHostManager::Observe(

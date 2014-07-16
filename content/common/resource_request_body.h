@@ -23,7 +23,7 @@ namespace content {
 // A struct used to represent upload data. The data field is populated by
 // WebURLLoader from the data given as WebHTTPBody.
 class CONTENT_EXPORT ResourceRequestBody
-    : public base::RefCounted<ResourceRequestBody>,
+    : public base::RefCountedThreadSafe<ResourceRequestBody>,
       public base::SupportsUserData {
  public:
   typedef webkit_common::DataElement Element;
@@ -51,7 +51,7 @@ class CONTENT_EXPORT ResourceRequestBody
   int64 identifier() const { return identifier_; }
 
  private:
-  friend class base::RefCounted<ResourceRequestBody>;
+  friend class base::RefCountedThreadSafe<ResourceRequestBody>;
   virtual ~ResourceRequestBody();
 
   std::vector<Element> elements_;

@@ -32,6 +32,7 @@
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/download/save_file_resource_handler.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
+#include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/async_resource_handler.h"
 #include "content/browser/loader/buffered_resource_handler.h"
 #include "content/browser/loader/cross_site_resource_handler.h"
@@ -56,7 +57,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/resource_messages.h"
-#include "content/common/resource_request_body.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -1613,6 +1613,13 @@ void ResourceDispatcherHostImpl::FinishedWithResourcesForRequest(
   const ResourceRequestInfoImpl* info =
       ResourceRequestInfoImpl::ForRequest(request_);
   IncrementOutstandingRequestsCount(-1, *info);
+}
+
+void ResourceDispatcherHostImpl::NavigationRequest(
+    const NavigationRequestInfo& info,
+    scoped_refptr<ResourceRequestBody> request_body,
+    int64 frame_node_id) {
+  NOTIMPLEMENTED();
 }
 
 // static

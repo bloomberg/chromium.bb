@@ -7,7 +7,10 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/common/frame_messages.h"
+#include "content/public/common/page_transition_types.h"
 #include "content/test/test_render_view_host.h"
+#include "net/base/load_flags.h"
+#include "third_party/WebKit/public/web/WebPageVisibilityState.h"
 
 namespace content {
 
@@ -157,4 +160,18 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   OnNavigate(msg);
 }
 
+void TestRenderFrameHost::SendBeginNavigationWithURL(const GURL& url) {
+  FrameHostMsg_BeginNavigation_Params params;
+  params.method = "GET";
+  params.url = url;
+  params.referrer_policy = blink::WebReferrerPolicyDefault;
+  params.load_flags = net::LOAD_NORMAL | net::LOAD_ENABLE_LOAD_TIMING;
+  params.has_user_gesture = false;
+  params.transition_type = PAGE_TRANSITION_LINK;
+  params.should_replace_current_entry = false;
+  params.allow_download = true;
+  // TODO(clamy): When the BeginNavigation handler is no longer compiled out,
+  // call OnBeginNavigation directly.
+  frame_tree_node()->render_manager()->OnBeginNavigation(params);
+}
 }  // namespace content

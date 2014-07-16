@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/referrer.h"
 
+struct FrameHostMsg_BeginNavigation_Params;
 
 namespace content {
 class BrowserContext;
@@ -27,6 +28,7 @@ class FrameTreeNode;
 class NavigationControllerImpl;
 class NavigationEntry;
 class NavigationEntryImpl;
+class NavigationRequest;
 class RenderFrameHost;
 class RenderFrameHostDelegate;
 class RenderFrameHostImpl;
@@ -300,6 +302,9 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // of WebContentsImpl.
   void ResetProxyHosts();
 
+  // Used to start a navigation, part of browser-side navigation project.
+  void OnBeginNavigation(const FrameHostMsg_BeginNavigation_Params& params);
+
  private:
   friend class RenderFrameHostManagerTest;
   friend class TestWebContents;
@@ -348,6 +353,11 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
     // This is whether the navigation should replace the current history entry.
     bool should_replace_current_entry;
   };
+
+  // Returns the current navigation request (used in the PlzNavigate navigation
+  // logic refactoring project).
+  NavigationRequest* navigation_request_for_testing() const {
+    return navigation_request_.get(); }
 
   // Used with FrameTree::ForEach to erase RenderFrameProxyHosts from a
   // FrameTreeNode's RenderFrameHostManager.
@@ -493,6 +503,9 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   InterstitialPageImpl* interstitial_page_;
 
   NotificationRegistrar registrar_;
+
+  // Owns a navigation request that originated in that frame until it commits.
+  scoped_ptr<NavigationRequest> navigation_request_;
 
   base::WeakPtrFactory<RenderFrameHostManager> weak_factory_;
 

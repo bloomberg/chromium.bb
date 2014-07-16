@@ -10,6 +10,7 @@
 #include "content/common/frame_message_enums.h"
 #include "content/common/frame_param.h"
 #include "content/common/navigation_gesture.h"
+#include "content/common/resource_request_body.h"
 #include "content/public/common/color_suggestion.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/context_menu_params.h"
@@ -254,6 +255,43 @@ IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
   IPC_STRUCT_MEMBER(WindowOpenDisposition, disposition)
   IPC_STRUCT_MEMBER(bool, should_replace_current_entry)
   IPC_STRUCT_MEMBER(bool, user_gesture)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(FrameHostMsg_BeginNavigation_Params)
+  // The request method: GET, POST, etc.
+  IPC_STRUCT_MEMBER(std::string, method)
+
+  // The requested URL.
+  IPC_STRUCT_MEMBER(GURL, url)
+
+  // The referrer to use (may be empty).
+  IPC_STRUCT_MEMBER(GURL, referrer)
+
+  // The referrer policy to use.
+  IPC_STRUCT_MEMBER(blink::WebReferrerPolicy, referrer_policy)
+
+  // Additional HTTP request headers.
+  IPC_STRUCT_MEMBER(std::string, headers)
+
+  // net::URLRequest load flags (net::LOAD_NORMAL | net::LOAD_ENABLE_LOAD_TIMING
+  // by default).
+  IPC_STRUCT_MEMBER(int, load_flags)
+
+  // Optional resource request body (may be null).
+  IPC_STRUCT_MEMBER(scoped_refptr<content::ResourceRequestBody>,
+                    request_body)
+
+  // True if the request was user initiated.
+  IPC_STRUCT_MEMBER(bool, has_user_gesture)
+
+  IPC_STRUCT_MEMBER(content::PageTransition, transition_type)
+
+  // Whether this navigation should replace the current session history entry on
+  // commit.
+  IPC_STRUCT_MEMBER(bool, should_replace_current_entry)
+
+  // Whether or not we should allow the URL to download.
+  IPC_STRUCT_MEMBER(bool, allow_download)
 IPC_STRUCT_END()
 
 // -----------------------------------------------------------------------------
@@ -618,3 +656,7 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_TextSurroundingSelectionResponse,
 IPC_MESSAGE_CONTROL2(FrameHostMsg_SetHasPendingTransitionRequest,
                      int /* render_frame_id */,
                      bool /* is_transition */)
+
+// Tells the browser to perform a navigation.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_BeginNavigation,
+                    FrameHostMsg_BeginNavigation_Params)

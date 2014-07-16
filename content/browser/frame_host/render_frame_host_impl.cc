@@ -336,6 +336,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidDisownOpener, OnDidDisownOpener)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateTitle, OnUpdateTitle)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateEncoding, OnUpdateEncoding)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_BeginNavigation,
+                        OnBeginNavigation)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_RequestPermission,
                         OnRequestDesktopNotificationPermission)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Show,
@@ -768,6 +770,13 @@ void RenderFrameHostImpl::OnUpdateEncoding(const std::string& encoding_name) {
   // This message is only sent for top-level frames. TODO(avi): when frame tree
   // mirroring works correctly, add a check here to enforce it.
   delegate_->UpdateEncoding(this, encoding_name);
+}
+
+void RenderFrameHostImpl::OnBeginNavigation(
+    const FrameHostMsg_BeginNavigation_Params& params) {
+#if defined(USE_BROWSER_SIDE_NAVIGATION)
+  frame_tree_node()->render_manager()->OnBeginNavigation(params);
+#endif
 }
 
 void RenderFrameHostImpl::SetPendingShutdown(const base::Closure& on_swap_out) {
