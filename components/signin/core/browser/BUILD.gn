@@ -1,0 +1,85 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("browser") {
+  sources = [
+    "about_signin_internals.cc",
+    "about_signin_internals.h",
+    "account_reconcilor.cc",
+    "account_reconcilor.h",
+    "account_service_flag_fetcher.cc",
+    "account_service_flag_fetcher.h",
+    "mutable_profile_oauth2_token_service.cc",
+    "mutable_profile_oauth2_token_service.h",
+    "profile_oauth2_token_service.cc",
+    "profile_oauth2_token_service.h",
+    "signin_account_id_helper.cc",
+    "signin_account_id_helper.h",
+    "signin_client.h",
+    "signin_error_controller.cc",
+    "signin_error_controller.h",
+    "signin_internals_util.cc",
+    "signin_internals_util.h",
+    "signin_manager_base.cc",
+    "signin_manager_base.h",
+    "signin_manager.cc",
+    "signin_manager.h",
+    "signin_manager_cookie_helper.cc",
+    "signin_manager_cookie_helper.h",
+    "signin_metrics.cc",
+    "signin_metrics.h",
+    "signin_oauth_helper.cc",
+    "signin_oauth_helper.h",
+    "signin_tracker.cc",
+    "signin_tracker.h",
+    "webdata/token_service_table.cc",
+    "webdata/token_service_table.h",
+    "webdata/token_web_data.cc",
+    "webdata/token_web_data.h",
+  ]
+
+  deps = [
+    "//base",
+    "//crypto",
+    "//google_apis",
+    "//net",
+    "//sql",
+    "//third_party/icu",
+    "//components/keyed_service/core",
+    "//components/os_crypt",
+    "//components/webdata/common",
+  ]
+
+  if (is_android) {
+    sources -= [
+      "mutable_profile_oauth2_token_service.cc",
+      "mutable_profile_oauth2_token_service.h",
+    ]
+  }
+
+  if (is_chromeos) {
+    sources -= [
+      "signin_manager.cc",
+    ]
+  }
+
+  if (is_win) {
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    cflags = [ "/wd4267" ]
+  }
+}
+
+static_library("test_support") {
+  sources = [
+    "fake_auth_status_provider.cc",
+    "fake_auth_status_provider.h",
+    "test_signin_client.cc",
+    "test_signin_client.h",
+  ]
+
+  deps = [
+    ":browser",
+    "//testing/gtest",
+  ]
+}

@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //device/nfc
       'target_name': 'device_nfc',
       'type': 'static_library',
       'dependencies': [
@@ -15,6 +16,7 @@
         '../../url/url.gyp:url_lib',
       ],
       'sources': [
+        # Note: file list duplicated in GN build.
         'nfc_adapter.cc',
         'nfc_adapter.h',
         'nfc_adapter_chromeos.cc',

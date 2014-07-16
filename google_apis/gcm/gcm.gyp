@@ -10,6 +10,7 @@
   'targets': [
     # The public GCM target.
     {
+      # GN version: //google_apis/gcm
       'target_name': 'gcm',
       'type': '<(component)',
       'variables': {
@@ -37,6 +38,7 @@
         '../../url/url.gyp:url_lib',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'base/mcs_message.cc',
         'base/mcs_message.h',
         'base/mcs_util.cc',
@@ -81,6 +83,7 @@
 
     # The test support library that is needed to test gcm.
     {
+      # GN version: //google_apis/gcm:test_support
       'target_name': 'gcm_test_support',
       'type': 'static_library',
       'include_dirs': [
@@ -96,6 +99,7 @@
         'gcm',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'base/fake_encryptor.cc',
         'base/fake_encryptor.h',
         'engine/fake_connection_factory.cc',
@@ -109,6 +113,7 @@
 
     # A standalone MCS (mobile connection server) client.
     {
+      # GN version: //google_apis/gcm:mcs_probe
       'target_name': 'mcs_probe',
       'type': 'executable',
       'variables': { 'enable_wexit_time_destructors': 1, },
@@ -124,6 +129,7 @@
         'gcm_test_support'
       ],
       'sources': [
+        # Note: file list duplicated in GN build.
         'tools/mcs_probe.cc',
       ],
     },
@@ -146,7 +152,6 @@
         '../../net/net.gyp:net_test_support',
         '../../testing/gtest.gyp:gtest',
         '../../third_party/protobuf/protobuf.gyp:protobuf_lite',
-        'mcs_probe',
         'gcm',
         'gcm_test_support'
       ],

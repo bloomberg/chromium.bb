@@ -38,6 +38,7 @@ static_library("browser") {
     "//chrome/browser/net:cert_logger_proto",
     "//chrome/browser/net:probe_message_proto",
     "//chrome/browser/search/suggestions/proto",
+    "//chrome/browser/ui",
     "//chrome/common",
     "//chrome/common/net",
     "//components/autocomplete",
@@ -48,6 +49,8 @@ static_library("browser") {
     "//components/domain_reliability",
     "//components/favicon_base",
     "//components/favicon/core",
+    "//components/feedback",
+    "//components/gcm_driver",
     "//components/history/core/browser",
     "//components/history/core/common",
     "//components/metrics:net",
@@ -56,6 +59,8 @@ static_library("browser") {
     "//components/policy:policy_component",
     "//components/query_parser",
     "//components/rappor",
+    "//components/signin/core/browser",
+    "//components/startup_metric_utils",
     "//components/strings",
     "//components/translate/core/browser",
     "//components/translate/core/common",
@@ -84,10 +89,7 @@ static_library("browser") {
     "//ui/strings",
     "//ui/resources",
     # TODO(GYP)
-    #"browser_ui",
     #"../components/components.gyp:bookmarks_browser",
-    #"../components/components.gyp:feedback_component",
-    #"../components/components.gyp:gcm_driver",
     #"../components/components.gyp:google_core_browser",
     #"../components/components.gyp:infobars_core",
     #"../components/components.gyp:invalidation",
@@ -98,8 +100,6 @@ static_library("browser") {
     #"../components/components.gyp:precache_core",
     #"../components/components.gyp:search_engines",
     #"../components/components.gyp:search_provider_logos",
-    #"../components/components.gyp:signin_core_browser",
-    #"../components/components.gyp:startup_metric_utils",
     #"../components/components.gyp:sync_driver",
     #"../jingle/jingle.gyp:notifier",
     #"../third_party/libjingle/libjingle.gyp:libjingle",
@@ -143,6 +143,7 @@ static_library("browser") {
       "//components/autofill/content/browser",
       "//components/dom_distiller/content",
       "//components/keyed_service/content",
+      "//components/storage_monitor",
       "//components/translate/content/browser",
       "//components/url_matcher",
       "//components/usb_service",
@@ -178,7 +179,6 @@ static_library("browser") {
       #"../components/components.gyp:password_manager_content_browser",
       #"../components/components.gyp:precache_content",
       #"../components/components.gyp:sessions",
-      #"../components/components.gyp:storage_monitor",
       #"../media/cast/cast.gyp:cast_transport",
       #"../media/media.gyp:media",
       ## TODO(tonyg): Remove this dependency (crbug.com/280157).
@@ -455,10 +455,10 @@ static_library("browser") {
     ]
     deps -= [
       "//third_party/libaddressinput",
-      #"../components/components.gyp:feedback_component",  TODO(GYP)
-      #"../components/components.gyp:storage_monitor",  TODO(GYP)
-      #"../components/components.gyp:usb_service",  TODO(GYP)
-      #"../components/components.gyp:web_modal",  TODO(GYP)
+      "//components/feedback",
+      "//components/storage_monitor",
+      "//components/usb_service",
+      "//components/web_modal",
     ]
   } else {
     sources += rebase_path(gypi_values.chrome_browser_non_android_sources,

@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/gcm_driver
       'target_name': 'gcm_driver',
       'type': 'static_library',
       'dependencies': [
@@ -17,6 +18,7 @@
         '..',
       ],
       'sources': [
+         # Note: file list duplicated in GN build.
         'gcm_driver/android/component_jni_registrar.cc',
         'gcm_driver/android/component_jni_registrar.h',
         'gcm_driver/default_gcm_app_handler.cc',
@@ -64,6 +66,7 @@
       ],
     },
     {
+      # GN version: //components/gcm_driver:test_support
       'target_name': 'gcm_driver_test_support',
       'type': 'static_library',
       'dependencies': [
@@ -76,6 +79,7 @@
         '..',
       ],
       'sources': [
+        # Note: file list duplicated in GN build.
         'gcm_driver/fake_gcm_app_handler.cc',
         'gcm_driver/fake_gcm_app_handler.h',
         'gcm_driver/fake_gcm_client.cc',

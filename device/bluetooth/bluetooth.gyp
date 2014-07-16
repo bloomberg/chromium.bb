@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //device/bluetooth
       'target_name': 'device_bluetooth',
       'type': 'static_library',
       'dependencies': [
@@ -21,6 +22,7 @@
         'bluetooth_strings.gyp:device_bluetooth_strings',
       ],
       'sources': [
+        # Note: file list duplicated in GN build.
         'bluetooth_adapter.cc',
         'bluetooth_adapter.h',
         'bluetooth_adapter_chromeos.cc',
@@ -126,6 +128,7 @@
       ],
     },
     {
+      # GN version: //device/bluetooth:mocks
       'target_name': 'device_bluetooth_mocks',
       'type': 'static_library',
       'dependencies': [
@@ -136,6 +139,7 @@
         '../../',
       ],
       'sources': [
+        # Note: file list duplicated in GN build.
         'test/mock_bluetooth_adapter.cc',
         'test/mock_bluetooth_adapter.h',
         'test/mock_bluetooth_device.cc',

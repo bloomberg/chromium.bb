@@ -25,6 +25,7 @@ group("all_components") {
     "//components/favicon/core",
     "//components/favicon_base",
     "//components/feedback",
+    "//components/gcm_driver",
     "//components/history/core/browser",
     "//components/history/core/common",
     "//components/history/core/test",
@@ -44,6 +45,7 @@ group("all_components") {
     "//components/rappor",
     "//components/resources:components_resources",
     "//components/search_engines",
+    "//components/signin/core/browser",
     "//components/startup_metric_utils",
     "//components/strings",
     "//components/tracing",
@@ -89,6 +91,7 @@ group("all_components") {
       "//components/favicon_base",  # Should work, needs checking.
       "//components/favicon/core",  # Blocked on keyed service.
       "//components/feedback",  # Blocked on content.
+      "//components/gcm_driver",  # Should work, needs checking.
       "//components/history/core/browser",  # Should work, needs checking.
       "//components/history/core/common",  # Should work, needs checking.
       "//components/history/core/test",  # Should work, needs checking.
@@ -99,6 +102,7 @@ group("all_components") {
       "//components/policy",  # Blocked on content (indirectly via autofill).
       "//components/rappor",  # Should work, needs checking.
       "//components/search_engines",  # Should work, needs checking.
+      "//components/signin/core/browser",  # Should work, needs checking.
       "//components/translate/content/browser",  # Blocked on content.
       "//components/translate/content/common",  # Blocked on content.
       "//components/translate/content/renderer",  # Blocked on content.

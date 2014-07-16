@@ -43,6 +43,7 @@ static_library("ui") {
     "//components/dom_distiller/core",
     "//components/dom_distiller/webui",
     "//components/feedback/proto",
+    "//components/onc",
     "//components/resources",
     "//components/strings",
     "//content/public/browser",
@@ -68,7 +69,6 @@ static_library("ui") {
     #'../components/components.gyp:auto_login_parser',  TODO(GYP)
     #'../components/components.gyp:invalidation',  TODO(GYP)
     #'../components/components.gyp:omaha_query_params',  TODO(GYP)
-    #'../components/components.gyp:onc_component',  TODO(GYP)
     #'../components/components.gyp:password_manager_core_browser',  TODO(GYP)
     #'../ui/message_center/message_center.gyp:message_center',  TODO(GYP)
   ]
@@ -87,6 +87,8 @@ static_library("ui") {
       "//chrome/browser/ui/webui/omnibox:mojo_bindings",
       "//chrome/common/extensions/api:api",
       "//components/autofill/content/browser:risk_proto",
+      "//device/bluetooth",
+      "//device/nfc",
       "//mojo/system",
       "//net:net_with_v8",
       "//third_party/adobe/flash:flapper_version_h",
@@ -104,8 +106,6 @@ static_library("ui") {
       "//webkit/common:storage",
       #'debugger',  TODO(GYP)
       #'installer_util',  TODO(GYP)
-      #'../device/bluetooth/bluetooth.gyp:device_bluetooth',  TODO(GYP)
-      #'../device/nfc/nfc.gyp:device_nfc',  TODO(GYP)
       #'../media/media.gyp:media',  TODO(GYP)
       #'../third_party/libjingle/libjingle.gyp:libjingle',  TODO(GYP)
       #'../ui/web_dialogs/web_dialogs.gyp:web_dialogs',  TODO(GYP)

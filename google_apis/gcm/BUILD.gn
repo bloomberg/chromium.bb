@@ -1,0 +1,127 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/protobuf/proto_library.gni")
+
+component("gcm") {
+  sources = [
+    "base/mcs_message.cc",
+    "base/mcs_message.h",
+    "base/mcs_util.cc",
+    "base/mcs_util.h",
+    "base/socket_stream.cc",
+    "base/socket_stream.h",
+    "engine/checkin_request.cc",
+    "engine/checkin_request.h",
+    "engine/connection_factory.cc",
+    "engine/connection_factory.h",
+    "engine/connection_factory_impl.cc",
+    "engine/connection_factory_impl.h",
+    "engine/connection_handler.cc",
+    "engine/connection_handler.h",
+    "engine/connection_handler_impl.cc",
+    "engine/connection_handler_impl.h",
+    "engine/gcm_store.cc",
+    "engine/gcm_store.h",
+    "engine/gcm_store_impl.cc",
+    "engine/gcm_store_impl.h",
+    "engine/gservices_settings.cc",
+    "engine/gservices_settings.h",
+    "engine/heartbeat_manager.cc",
+    "engine/heartbeat_manager.h",
+    "engine/mcs_client.cc",
+    "engine/mcs_client.h",
+    "engine/registration_info.cc",
+    "engine/registration_info.h",
+    "engine/registration_request.cc",
+    "engine/registration_request.h",
+    "engine/unregistration_request.cc",
+    "engine/unregistration_request.h",
+    "monitoring/gcm_stats_recorder.h",
+  ]
+
+  defines = [ "GCM_IMPLEMENTATION" ]
+
+  deps = [
+    ":proto",
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    "//net",
+    "//third_party/leveldatabase",
+    "//url",
+  ]
+
+  forward_dependent_configs_from = [ ":proto" ]
+}
+
+proto_library("proto") {
+  visibility = ":*"
+  sources = [
+    "protocol/android_checkin.proto",
+    "protocol/checkin.proto",
+    "protocol/mcs.proto",
+  ]
+}
+
+static_library("test_support") {
+  sources = [
+    "base/fake_encryptor.cc",
+    "base/fake_encryptor.h",
+    "engine/fake_connection_factory.cc",
+    "engine/fake_connection_factory.h",
+    "engine/fake_connection_handler.cc",
+    "engine/fake_connection_handler.h",
+    "monitoring/fake_gcm_stats_recorder.cc",
+    "monitoring/fake_gcm_stats_recorder.h",
+  ]
+
+  deps = [
+    ":gcm",
+    "//base",
+    "//testing/gtest",
+  ]
+
+  forward_dependent_configs_from = [ ":gcm" ]
+}
+
+# A standalone MCS (mobile connection server) client.
+executable("mcs_probe") {
+  sources = [
+    "tools/mcs_probe.cc",
+  ]
+
+  deps = [
+    ":gcm",
+    ":test_support",
+    "//base",
+    "//net",
+    "//net:test_support",
+  ]
+}
+
+test("gcm_unit_tests") {
+  sources = [
+    "base/mcs_message_unittest.cc",
+    "base/mcs_util_unittest.cc",
+    "base/socket_stream_unittest.cc",
+    "engine/checkin_request_unittest.cc",
+    "engine/connection_factory_impl_unittest.cc",
+    "engine/connection_handler_impl_unittest.cc",
+    "engine/gcm_store_impl_unittest.cc",
+    "engine/gservices_settings_unittest.cc",
+    "engine/heartbeat_manager_unittest.cc",
+    "engine/mcs_client_unittest.cc",
+    "engine/registration_request_unittest.cc",
+    "engine/unregistration_request_unittest.cc",
+  ]
+
+  deps = [
+    ":test_support",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//net",
+    "//net:test_support",
+    "//testing/gtest",
+  ]
+}

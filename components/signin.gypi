@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/signin/core/common
       'target_name': 'signin_core_common',
       'type': 'static_library',
       'include_dirs': [
@@ -20,6 +21,7 @@
       ],
     },
     {
+      # GN version: //components/signin/core/browser
       'target_name': 'signin_core_browser',
       'type': 'static_library',
       'dependencies': [
@@ -39,6 +41,7 @@
         '..',
       ],
       'sources': [
+        # Note: file list duplicated in GN build.
         'signin/core/browser/about_signin_internals.cc',
         'signin/core/browser/about_signin_internals.h',
         'signin/core/browser/account_reconcilor.cc',
@@ -91,6 +94,7 @@
       'msvs_disabled_warnings': [4267, ],
     },
     {
+      # GN version: //components/signin/core/browser:test_support
       'target_name': 'signin_core_browser_test_support',
       'type': 'static_library',
       'dependencies': [
@@ -101,6 +105,7 @@
         '..',
       ],
       'sources': [
+        # Note: file list duplicated in GN build.
         'signin/core/browser/fake_auth_status_provider.cc',
         'signin/core/browser/fake_auth_status_provider.h',
         'signin/core/browser/test_signin_client.cc',
@@ -112,6 +117,7 @@
     ['OS == "ios"', {
       'targets': [
         {
+          # GN version: //components/signin/core/browser:ios
           'target_name': 'signin_ios_browser',
           'type': 'static_library',
           'dependencies': [
@@ -122,6 +128,7 @@
             '..',
           ],
           'sources': [
+            # Note: file list duplicated in GN build.
             'signin/ios/browser/profile_oauth2_token_service_ios.h',
             'signin/ios/browser/profile_oauth2_token_service_ios.mm',
           ],

@@ -32,11 +32,14 @@ group("root") {
     "//components:all_components",
     "//content",
     "//crypto",
-    "//extensions/common/api",
+    "//device/bluetooth",
+    "//device/nfc",
     "//device/usb",
+    "//extensions/common/api",
     "//gin",
     "//gpu",
     "//google_apis",
+    "//google_apis/gcm",
     "//ipc",
     "//media",
     "//mojo",
@@ -182,6 +185,7 @@ group("root") {
       "//third_party/WebKit/public:all_blink",
 
       # Not tested on Android yet:
+      "//google_apis/gcm",
       "//third_party/cld_2",
       "//third_party/libaddressinput",
       "//third_party/ffmpeg",
