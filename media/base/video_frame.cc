@@ -372,6 +372,19 @@ scoped_refptr<VideoFrame> VideoFrame::CreateBlackFrame(const gfx::Size& size) {
   return CreateColorFrame(size, kBlackY, kBlackUV, kBlackUV, kZero);
 }
 
+// static
+scoped_refptr<VideoFrame> VideoFrame::CreateTransparentFrame(
+    const gfx::Size& size) {
+  const uint8 kBlackY = 0x00;
+  const uint8 kBlackUV = 0x00;
+  const uint8 kTransparentA = 0x00;
+  const base::TimeDelta kZero;
+  scoped_refptr<VideoFrame> frame = VideoFrame::CreateFrame(
+      VideoFrame::YV12A, size, gfx::Rect(size), size, kZero);
+  FillYUVA(frame, kBlackY, kBlackUV, kBlackUV, kTransparentA);
+  return frame;
+}
+
 #if defined(VIDEO_HOLE)
 // This block and other blocks wrapped around #if defined(VIDEO_HOLE) is not
 // maintained by the general compositor team. Please contact the following

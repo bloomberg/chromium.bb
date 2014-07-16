@@ -189,6 +189,11 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // equivalent of RGB(0,0,0).
   static scoped_refptr<VideoFrame> CreateBlackFrame(const gfx::Size& size);
 
+  // Allocates YV12A frame based on |size|, and sets its data to the YUVA
+  // equivalent of RGBA(0,0,0,0).
+  static scoped_refptr<VideoFrame> CreateTransparentFrame(
+      const gfx::Size& size);
+
 #if defined(VIDEO_HOLE)
   // Allocates a hole frame.
   static scoped_refptr<VideoFrame> CreateHoleFrame(const gfx::Size& size);

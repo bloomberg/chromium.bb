@@ -44,6 +44,13 @@ MEDIA_EXPORT void CopyPlane(size_t plane, const uint8* source, int stride,
 // Fills |frame| containing YUV data to the given color values.
 MEDIA_EXPORT void FillYUV(VideoFrame* frame, uint8 y, uint8 u, uint8 v);
 
+// Fills |frame| containing YUVA data with the given color values.
+MEDIA_EXPORT void FillYUVA(VideoFrame* frame,
+                           uint8 y,
+                           uint8 u,
+                           uint8 v,
+                           uint8 a);
+
 // Creates a border in |frame| such that all pixels outside of
 // |view_area| are black. The size and position of |view_area|
 // must be even to align correctly with the color planes.

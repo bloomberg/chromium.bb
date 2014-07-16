@@ -213,6 +213,10 @@ void SkCanvasVideoRenderer::Paint(media::VideoFrame* video_frame,
     last_frame_timestamp_ = video_frame->timestamp();
   }
 
+  // Use SRC mode so we completely overwrite the buffer (in case we have alpha)
+  // this means we don't need the extra cost of clearing the buffer first.
+  paint.setXfermode(SkXfermode::Create(SkXfermode::kSrc_Mode));
+
   // Paint using |last_frame_|.
   paint.setFilterLevel(SkPaint::kLow_FilterLevel);
   canvas->drawBitmapRect(last_frame_, NULL, dest, &paint);

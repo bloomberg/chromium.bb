@@ -96,6 +96,20 @@ void FillYUV(VideoFrame* frame, uint8 y, uint8 u, uint8 v) {
   }
 }
 
+void FillYUVA(VideoFrame* frame, uint8 y, uint8 u, uint8 v, uint8 a) {
+  // Fill Y, U and V planes.
+  FillYUV(frame, y, u, v);
+
+  // Fill the A plane.
+  uint8* a_plane = frame->data(VideoFrame::kAPlane);
+  int a_rows = frame->rows(VideoFrame::kAPlane);
+  int a_row_bytes = frame->row_bytes(VideoFrame::kAPlane);
+  for (int i = 0; i < a_rows; ++i) {
+    memset(a_plane, a, a_row_bytes);
+    a_plane += frame->stride(VideoFrame::kAPlane);
+  }
+}
+
 static void LetterboxPlane(VideoFrame* frame,
                            int plane,
                            const gfx::Rect& view_area,

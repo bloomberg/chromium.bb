@@ -214,6 +214,16 @@ TEST_F(SkCanvasVideoRendererTest, NoFrame) {
   EXPECT_EQ(SK_ColorBLACK, GetColor(target_canvas()));
 }
 
+TEST_F(SkCanvasVideoRendererTest, TransparentFrame) {
+  // Test that we don't blend with existing canvas contents.
+  FillCanvas(target_canvas(), SK_ColorRED);
+  Paint(VideoFrame::CreateTransparentFrame(gfx::Size(kWidth, kHeight)),
+        target_canvas(),
+        kNone);
+  EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT),
+            GetColor(target_canvas()));
+}
+
 TEST_F(SkCanvasVideoRendererTest, Natural) {
   Paint(natural_frame(), target_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, GetColor(target_canvas()));
