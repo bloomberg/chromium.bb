@@ -3980,7 +3980,7 @@
               ['_toolset=="target"', {
                 'cflags': [
                   '-fsanitize=address',
-                  '-w',  # http://crbug.com/162783
+                  '-Wno-error=macro-redefined',  # http://crbug.com/162783
                 ],
                 'ldflags': [
                   '-fsanitize=address',
@@ -3991,6 +3991,7 @@
               ['OS=="mac"', {
                 'cflags': [
                   '-mllvm -asan-globals=0',  # http://crbug.com/352073
+                  '-Wno-error=unused-function',  # http://crbug.com/162783
                 ],
               }],
             ],
@@ -4002,12 +4003,19 @@
                   '-fsanitize=undefined',
                   # -fsanitize=vptr is incompatible with -fno-rtti.
                   '-fno-sanitize=vptr',
-                  '-w',  # http://crbug.com/162783
+                  '-Wno-error=macro-redefined',  # http://crbug.com/162783
                 ],
                 'ldflags': [
                   '-fsanitize=undefined',
                   # -fsanitize=vptr is incompatible with -fno-rtti.
                   '-fno-sanitize=vptr',
+                ],
+              }],
+            ],
+            'conditions': [
+              ['OS=="mac"', {
+                'cflags': [
+                  '-Wno-error=unused-function',  # http://crbug.com/162783
                 ],
               }],
             ],
@@ -4019,7 +4027,7 @@
                   '-fsanitize=vptr',
                   '-fsanitize=null',  # Avoid dereferences on null pointer objects.
                   '-fsanitize-blacklist=<(ubsan_vptr_blacklist)',
-                  '-w',  # http://crbug.com/162783
+                  '-Wno-error=macro-redefined',  # http://crbug.com/162783
                 ],
                 'cflags_cc!': [
                   '-fno-rtti',
@@ -4032,6 +4040,13 @@
                 ],
                 'defines': [
                   'UNDEFINED_SANITIZER',
+                ],
+              }],
+            ],
+            'conditions': [
+              ['OS=="mac"', {
+                'cflags': [
+                  '-Wno-error=unused-function',  # http://crbug.com/162783
                 ],
               }],
             ],
@@ -4608,7 +4623,8 @@
               # binaries on x86_64 host is problematic.
               # TODO(eugenis): re-enable.
               '-fsanitize=address',
-              '-w',  # http://crbug.com/162783
+              '-Wno-error=macro-redefined',  # http://crbug.com/162783
+
             ],
             'ldflags!': [
               '-fsanitize=address',
@@ -4618,6 +4634,13 @@
               '-Wl,--as-needed',
               '-Wl,--warn-shared-textrel',
               '-Wl,--fatal-warnings',
+            ],
+            'conditions': [
+              ['OS=="mac"', {
+                'cflags!': [
+                  '-Wno-error=unused-function',  # http://crbug.com/162783
+                ],
+              }],
             ],
           }],
           # Settings for building host targets on mac.
@@ -4771,7 +4794,8 @@
               'OTHER_CFLAGS': [
                 '-fsanitize=address',
                 '-mllvm -asan-globals=0',  # http://crbug.com/352073
-                '-w',  # http://crbug.com/162783
+                '-Wno-error=macro-redefined',  # http://crbug.com/162783
+                '-Wno-error=unused-function',  # http://crbug.com/162783
                 '-gline-tables-only',
               ],
             },
