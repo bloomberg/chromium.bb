@@ -40,6 +40,7 @@ namespace translate {
 // hooking up this specific implementation for all of Chromium.
 BrowserCldDataProvider* CreateBrowserCldDataProviderFor(
     content::WebContents* web_contents) {
+  VLOG(1) << "Creating DataFileBrowserCldDataProvider";
   return new DataFileBrowserCldDataProvider(web_contents);
 }
 

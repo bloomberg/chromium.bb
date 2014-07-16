@@ -476,6 +476,10 @@
       #
       # For more information on switching the CLD2 data source, see:
       #   https://sites.google.com/a/chromium.org/dev/developers/how-tos/compact-language-detector-cld-data-source-configuration
+      #
+      # This string will be exposed in chrome://translate-internals under the
+      # heading "CLD Data Source". This allows easy determination of which
+      # data source the browser was built with.
       'cld2_data_source%': 'static',
 
       # Enable spell checker.
@@ -2755,6 +2759,11 @@
       }],
       ['cld_version!=0', {
         'defines': ['CLD_VERSION=<(cld_version)'],
+      }],
+      ['cld_version==2', {
+        # This is used to populate the "CLD Data Source" field in:
+        # chrome://translate-internals
+        'defines': ['CLD2_DATA_SOURCE=<(cld2_data_source)'],
       }],
       ['cld2_data_source=="static"', {
         'defines': ['CLD_DATA_FROM_STATIC'],

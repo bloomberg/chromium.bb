@@ -8,6 +8,7 @@
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "components/translate/content/common/data_file_cld_data_provider_messages.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "ipc/ipc_message.h"
@@ -34,6 +35,9 @@ namespace translate {
 // hooking up this specific implementation for all of Chromium.
 RendererCldDataProvider* CreateRendererCldDataProviderFor(
     content::RenderViewObserver* render_view_observer) {
+  // This log line is to help with determining which kind of provider has been
+  // configured. See also: chrome://translate-internals
+  VLOG(1) << "Creating DataFileRendererCldDataProvider";
   return new DataFileRendererCldDataProvider(render_view_observer);
 }
 

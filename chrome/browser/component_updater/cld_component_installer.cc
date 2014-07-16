@@ -103,6 +103,10 @@ std::string CldComponentInstallerTraits::GetName() const {
 }
 
 void RegisterCldComponent(ComponentUpdateService* cus) {
+  // This log line is to help with determining which kind of provider has been
+  // configured. See also: chrome://translate-internals
+  VLOG(1) << "Registering CLD component with the component update service";
+
   scoped_ptr<ComponentInstallerTraits> traits(
       new CldComponentInstallerTraits());
   // |cus| will take ownership of |installer| during installer->Register(cus).

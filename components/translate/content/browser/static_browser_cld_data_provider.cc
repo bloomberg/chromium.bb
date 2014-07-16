@@ -4,6 +4,7 @@
 
 #include "static_browser_cld_data_provider.h"
 
+#include "base/logging.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
 
@@ -13,6 +14,9 @@ namespace translate {
 // hooking up this specific implementation for all of Chromium.
 BrowserCldDataProvider* CreateBrowserCldDataProviderFor(
     content::WebContents* web_contents) {
+  // This log line is to help with determining which kind of provider has been
+  // configured. See also: chrome://translate-internals
+  VLOG(1) << "Creating StaticBrowserCldDataProvider";
   return new StaticBrowserCldDataProvider();
 }
 
