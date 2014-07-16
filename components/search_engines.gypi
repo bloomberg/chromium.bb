@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/search_engines
       'target_name': 'search_engines',
       'type': 'static_library',
       'dependencies': [
@@ -31,6 +32,7 @@
         '..',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'search_engines/default_search_manager.cc',
         'search_engines/default_search_manager.h',
         'search_engines/default_search_policy_handler.cc',

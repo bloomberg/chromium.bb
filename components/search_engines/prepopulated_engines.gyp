@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/search_engines:prepopulated_engines
       'target_name': 'prepopulated_engines',
       'type': 'static_library',
       'sources': [

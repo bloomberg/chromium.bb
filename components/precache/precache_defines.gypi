@@ -4,6 +4,8 @@
 
 {
   'variables': {
+    # These values are duplicated in the GN build in:
+    # //components/precache/core:precache_config
     'precache_config_settings_url%': 'http://www.gstatic.com/chrome/wifiprefetch/precache_config',
     'precache_manifest_url_prefix%': 'http://www.gstatic.com/chrome/wifiprefetch/precache_manifest_',
   },

@@ -1,0 +1,21 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("content") {
+  sources = [
+    "precache_manager.cc",
+    "precache_manager.h",
+    "precache_manager_factory.cc",
+    "precache_manager_factory.h",
+  ]
+
+  configs += [ "//components/precache/core:precache_config" ]
+
+  deps = [
+    "//base",
+    "//components/precache/core",
+    "//content/public/browser",
+    "//url",
+  ]
+}

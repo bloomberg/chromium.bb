@@ -37,10 +37,13 @@ group("all_components") {
     "//components/onc",
     "//components/os_crypt",
     "//components/policy",
+    "//components/precache/core",
+    "//components/precache/content",
     "//components/pref_registry",
     "//components/query_parser",
     "//components/rappor",
     "//components/resources:components_resources",
+    "//components/search_engines",
     "//components/startup_metric_utils",
     "//components/strings",
     "//components/tracing",
@@ -91,8 +94,11 @@ group("all_components") {
       "//components/history/core/test",  # Should work, needs checking.
       "//components/json_schema",  # Should work, needs checking.
       "//components/keyed_service/content",  # Blocked on content.
+      "//components/precache/core",  # Should work, needs checking.
+      "//components/precache/content",  # Blocked on content.
       "//components/policy",  # Blocked on content (indirectly via autofill).
       "//components/rappor",  # Should work, needs checking.
+      "//components/search_engines",  # Should work, needs checking.
       "//components/translate/content/browser",  # Blocked on content.
       "//components/translate/content/common",  # Blocked on content.
       "//components/translate/content/renderer",  # Blocked on content.
@@ -111,3 +117,9 @@ group("all_components") {
     ]
   }
 }
+
+# TODO(GYP) components_unittests
+#test("components_unittests") {
+##  # Precache tests need these defines.
+#  configs += [ "//components/precache/core:precache_config" ]
+#}

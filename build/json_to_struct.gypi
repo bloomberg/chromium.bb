@@ -14,6 +14,7 @@
   },
   'rules': [
     {
+      # GN version: //tools/json_to_struct/json_to_struct.gni
       'rule_name': 'genstaticinit',
       'extension': 'json',
       'inputs': [
