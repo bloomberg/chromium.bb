@@ -23,24 +23,17 @@ TEST(OpenSSLBIOString, TestWrite) {
     EXPECT_EQ(static_cast<int>(expected1.size()),
               BIO_printf(bio.get(), "a %s\nb %i\n", "one", 2));
     EXPECT_EQ(expected1, s);
-    EXPECT_EQ(static_cast<int>(expected1.size()), BIO_tell(bio.get()));
 
     EXPECT_EQ(1, BIO_flush(bio.get()));
-    EXPECT_EQ(-1, BIO_seek(bio.get(), 0));
     EXPECT_EQ(expected1, s);
 
     EXPECT_EQ(static_cast<int>(expected2.size()),
               BIO_write(bio.get(), expected2.data(), expected2.size()));
     EXPECT_EQ(expected1 + expected2, s);
-    EXPECT_EQ(static_cast<int>(expected1.size() + expected2.size()),
-              BIO_tell(bio.get()));
 
     EXPECT_EQ(static_cast<int>(expected3.size()),
               BIO_puts(bio.get(), expected3.c_str()));
     EXPECT_EQ(expected1 + expected2 + expected3, s);
-    EXPECT_EQ(static_cast<int>(expected1.size() + expected2.size() +
-                               expected3.size()),
-              BIO_tell(bio.get()));
   }
   EXPECT_EQ(expected1 + expected2 + expected3, s);
 }

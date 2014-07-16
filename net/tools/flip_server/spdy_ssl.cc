@@ -80,6 +80,7 @@ void InitSSL(SSLState* state,
   SSL_CTX_set_mode(state->ssl_ctx, SSL_MODE_RELEASE_BUFFERS);
 #endif
 
+#if !defined(OPENSSL_IS_BORINGSSL)
   // Proper methods to disable compression don't exist until 0.9.9+. For now
   // we must manipulate the stack of compression methods directly.
   if (disable_ssl_compression) {
@@ -90,6 +91,7 @@ void InitSSL(SSLState* state,
       static_cast<void>(sk_SSL_COMP_delete(ssl_comp_methods, i));
     }
   }
+#endif
 }
 
 SSL* CreateSSLContext(SSL_CTX* ssl_ctx) {

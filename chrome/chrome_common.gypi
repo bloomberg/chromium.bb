@@ -653,7 +653,7 @@
         ],
         ['OS == "android"', {
             'dependencies': [
-              '../third_party/openssl/openssl.gyp:openssl',
+              '../third_party/boringssl/boringssl.gyp:boringssl',
             ],
             'sources!': [
               'common/net/x509_certificate_model.cc',

@@ -297,7 +297,7 @@
         '<@(webcrypto_openssl_sources)',
       ],
       'dependencies': [
-        '../third_party/openssl/openssl.gyp:openssl',
+        '../third_party/boringssl/boringssl.gyp:boringssl',
       ],
     }, {
       'sources': [
