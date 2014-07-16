@@ -719,9 +719,10 @@ TEST_F(TouchDispositionGestureFilterTest, TapCancelledWhenTouchConsumed) {
   PushGesture(ET_GESTURE_SCROLL_BEGIN);
   MoveTouchPoint(0, 2, 2);
   SendTouchConsumedAck();
-  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_TAP_CANCEL),
-                            GetAndResetSentGestures()));
-  EXPECT_EQ(LastSentGestureLocation(), gfx::PointF(2, 2));
+  EXPECT_TRUE(
+      GesturesMatch(Gestures(ET_GESTURE_TAP_CANCEL, ET_GESTURE_SCROLL_BEGIN),
+                    GetAndResetSentGestures()));
+  EXPECT_EQ(LastSentGestureLocation(), gfx::PointF(1, 1));
 }
 
 TEST_F(TouchDispositionGestureFilterTest,
@@ -1032,16 +1033,18 @@ TEST_F(TouchDispositionGestureFilterTest, TestDisallowedMultiFingerSwipe) {
   PushGesture(ET_GESTURE_SCROLL_BEGIN);
   MoveTouchPoint(0, 0, 0);
   SendTouchConsumedAck();
-  EXPECT_FALSE(GesturesSent());
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_SCROLL_BEGIN),
+                            GetAndResetSentGestures()));
 
   PushGesture(ET_GESTURE_PINCH_BEGIN);
   PressTouchPoint(1, 1);
   SendTouchNotConsumedAck();
-  EXPECT_FALSE(GesturesSent());
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_PINCH_BEGIN),
+                            GetAndResetSentGestures()));
 
   PushGesture(ET_GESTURE_SWIPE);
   PressTouchPoint(1, 1);
-  SendTouchNotConsumedAck();
+  SendTouchConsumedAck();
   EXPECT_FALSE(GesturesSent());
 }
 

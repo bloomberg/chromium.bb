@@ -349,7 +349,7 @@ TouchEventQueue::TouchEventQueue(TouchEventQueueClient* client,
       send_touch_events_async_(false),
       needs_async_touchmove_for_outer_slop_region_(false),
       last_sent_touch_timestamp_sec_(0),
-      touch_scrolling_mode_(config.touch_scrolling_mode) {
+  touch_scrolling_mode_(config.touch_scrolling_mode) {
   DCHECK(client);
   if (ack_timeout_enabled_) {
     timeout_handler_.reset(
@@ -534,36 +534,41 @@ void TouchEventQueue::ForwardNextEventToRenderer() {
 
 void TouchEventQueue::OnGestureScrollEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
-  if (gesture_event.event.type != blink::WebInputEvent::GestureScrollBegin)
-    return;
-
-  if (touch_filtering_state_ != DROP_ALL_TOUCHES &&
-      touch_filtering_state_ != DROP_TOUCHES_IN_SEQUENCE) {
-    DCHECK(!touchmove_slop_suppressor_->suppressing_touchmoves())
-        << "The renderer should be offered a touchmove before scrolling begins";
-  }
-
-  if (touch_scrolling_mode_ == TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE) {
+  if (gesture_event.event.type == blink::WebInputEvent::GestureScrollBegin) {
     if (touch_filtering_state_ != DROP_ALL_TOUCHES &&
         touch_filtering_state_ != DROP_TOUCHES_IN_SEQUENCE) {
+      DCHECK(!touchmove_slop_suppressor_->suppressing_touchmoves())
+          << "The renderer should be offered a touchmove before scrolling "
+             "begins";
+    }
+
+    if (touch_scrolling_mode_ == TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE &&
+        touch_filtering_state_ != DROP_ALL_TOUCHES &&
+        touch_filtering_state_ != DROP_TOUCHES_IN_SEQUENCE &&
+        (touch_ack_states_.empty() ||
+         AllTouchAckStatesHaveState(
+             INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS))) {
       // If no touch points have a consumer, prevent all subsequent touch events
       // received during the scroll from reaching the renderer. This ensures
       // that the first touchstart the renderer sees in any given sequence can
       // always be preventDefault'ed (cancelable == true).
       // TODO(jdduke): Revisit if touchstarts during scroll are made cancelable.
-      if (touch_ack_states_.empty() ||
-          AllTouchAckStatesHaveState(
-              INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS)) {
-        touch_filtering_state_ = DROP_TOUCHES_IN_SEQUENCE;
-        return;
-      }
+      touch_filtering_state_ = DROP_TOUCHES_IN_SEQUENCE;
     }
 
-    pending_async_touchmove_.reset();
-    send_touch_events_async_ = true;
-    needs_async_touchmove_for_outer_slop_region_ = true;
+    if (touch_scrolling_mode_ == TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE) {
+      needs_async_touchmove_for_outer_slop_region_ = true;
+      pending_async_touchmove_.reset();
+    }
+
     return;
   }
+
+  if (gesture_event.event.type != blink::WebInputEvent::GestureScrollUpdate)
+    return;
+
+  if (touch_scrolling_mode_ == TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE)
+    send_touch_events_async_ = true;
 
   if (touch_scrolling_mode_ != TOUCH_SCROLLING_MODE_TOUCHCANCEL)
     return;
