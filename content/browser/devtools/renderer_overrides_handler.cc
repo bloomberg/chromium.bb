@@ -370,7 +370,8 @@ RendererOverridesHandler::PageNavigate(
     if (web_contents) {
       web_contents->GetController()
           .LoadURL(gurl, Referrer(), PAGE_TRANSITION_TYPED, std::string());
-      return command->SuccessResponse(new base::DictionaryValue());
+      // Fall through into the renderer.
+      return NULL;
     }
   }
   return command->InternalErrorResponse("No WebContents to navigate");
