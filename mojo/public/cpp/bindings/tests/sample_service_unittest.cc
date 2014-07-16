@@ -353,11 +353,9 @@ TEST_F(BindingsSampleTest, DefaultValues) {
   EXPECT_EQ(1234, defaults->a2);
   EXPECT_EQ(34567U, defaults->a3);
   EXPECT_EQ(123456, defaults->a4);
-  // TODO(vtl): crbug.com/375522
-  // EXPECT_EQ(3456789012U, defaults->a5);
+  EXPECT_EQ(3456789012U, defaults->a5);
   EXPECT_EQ(111111111111LL, defaults->a6);
-  // TODO(vtl): crbug.com/375522
-  // EXPECT_EQ(9999999999999999999ULL, defaults->a7);
+  EXPECT_EQ(9999999999999999999ULL, defaults->a7);
   EXPECT_EQ(0x12345, defaults->a8);
   EXPECT_EQ(-0x12345, defaults->a9);
   EXPECT_EQ(1234, defaults->a10);

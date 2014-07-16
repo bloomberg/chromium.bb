@@ -22,7 +22,7 @@ namespace {{namespace}} {
 
 {#--- Constants #}
 {%  for constant in module.constants %}
-const {{constant.kind|cpp_pod_type}} {{constant.name}} = {{constant.value|expression_to_text}};
+const {{constant.kind|cpp_pod_type}} {{constant.name}} = {{constant|constant_value}};
 {%- endfor %}
 
 namespace internal {
@@ -58,7 +58,7 @@ const uint32_t {{method_name}} = {{method.ordinal}};
 {#--- Struct Constants #}
 {%- for struct in structs %}
 {%     for constant in struct.constants %}
-const {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}} = {{constant.value|expression_to_text}};
+const {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}} = {{constant|constant_value}};
 {%-   endfor %}
 {%- endfor %}
 

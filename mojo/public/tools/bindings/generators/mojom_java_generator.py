@@ -235,7 +235,12 @@ def ExpressionToText(context, token):
     return _TranslateNamedValue(token)
   # Add Long suffix to all number literals.
   if re.match('^[0-9]+$', token):
-    return token + 'L'
+    number = int(token)
+    # If the literal is too large to fit a signed long, convert it to the
+    # equivalent signed long.
+    if number >= 2 ** 63:
+      number -= 2 ** 64
+    return '%dL' % number
   return token
 
 def IsPointerArrayKind(kind):

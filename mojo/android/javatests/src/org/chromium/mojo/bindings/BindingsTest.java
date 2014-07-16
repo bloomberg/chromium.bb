@@ -179,7 +179,10 @@ public class BindingsTest extends TestCase {
         checkField(DefaultsTest.class.getField("a2"), short.class, test, (short) 1234);
         checkField(DefaultsTest.class.getField("a3"), short.class, test, (short) 34567);
         checkField(DefaultsTest.class.getField("a4"), int.class, test, 123456);
+        checkField(DefaultsTest.class.getField("a5"), int.class, test, (int) 3456789012L);
         checkField(DefaultsTest.class.getField("a6"), long.class, test, 111111111111L);
+        // -8446744073709551617 == 9999999999999999999 - 2 ^ 64.
+        checkField(DefaultsTest.class.getField("a7"), long.class, test, -8446744073709551617L);
         checkField(DefaultsTest.class.getField("a8"), int.class, test, 0x12345);
         checkField(DefaultsTest.class.getField("a9"), int.class, test, -0x12345);
         checkField(DefaultsTest.class.getField("a10"), int.class, test, 1234);

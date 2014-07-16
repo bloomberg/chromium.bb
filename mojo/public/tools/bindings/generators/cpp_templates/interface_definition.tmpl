@@ -76,7 +76,7 @@ params->{{param.name}}
 const char* {{class_name}}::Name_ = "{{namespace_as_string}}::{{class_name}}";
 {#--- Constants #}
 {%  for constant in interface.constants %}
-const {{constant.kind|cpp_pod_type}} {{interface.name}}::{{constant.name}} = {{constant.value|expression_to_text}};
+const {{constant.kind|cpp_pod_type}} {{interface.name}}::{{constant.name}} = {{constant|constant_value}};
 {%- endfor %}
 
 {#--- ForwardToCallback definition #}

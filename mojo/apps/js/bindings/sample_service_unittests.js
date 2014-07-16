@@ -104,12 +104,11 @@ define([
     expect(defaults.a2).toBe(1234);
     expect(defaults.a3).toBe(34567);
     expect(defaults.a4).toBe(123456);
-    // TODO(vtl): crbug.com/375522
-    // expect(defaults.a5).toBe(3456789012);
+    expect(defaults.a5).toBe(3456789012);
     expect(defaults.a6).toBe(111111111111);
-    // TODO(vtl): crbug.com/375522 (Also, can we get exact values for large
-    // int64/uint64's in JS?)
-    // expect(defaults.a7).toBe(9999999999999999999);
+    // JS doesn't have a 64 bit integer type so this is just checking that the
+    // expected and actual values have the same closest double value.
+    expect(defaults.a7).toBe(9999999999999999999);
     expect(defaults.a8).toBe(0x12345);
     expect(defaults.a9).toBe(-0x12345);
     expect(defaults.a10).toBe(1234);
