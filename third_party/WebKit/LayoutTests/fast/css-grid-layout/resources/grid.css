@@ -122,17 +122,51 @@
     grid-row: auto;
 }
 
+.autoRowAutoColumnSpanning2 {
+    background-color: maroon;
+    grid-column: span 2;
+    grid-row: auto;
+}
+
+.autoRowSpanning2AutoColumn {
+    background-color: aqua;
+    grid-column: auto;
+    grid-row: span 2;
+}
+
+.autoRowSpanning2AutoColumnSpanning3 {
+    background-color: olive;
+    grid-column: span 3;
+    grid-row: span 2;
+}
+
+.autoRowSpanning3AutoColumnSpanning2 {
+    background-color: indigo;
+    grid-column: span 2;
+    grid-row: span 3;
+}
+
 /* Grid element flow. */
 .gridAutoFlowStack {
     grid-auto-flow: stack;
 }
 
+/* FIXME: Rename to gridAutoFlowColumnSparse to be more explicit about the algorithm mode by default. */
 .gridAutoFlowColumn {
     grid-auto-flow: column;
 }
 
+.gridAutoFlowColumnDense {
+    grid-auto-flow: column dense;
+}
+
+/* FIXME: Rename to gridAutoFlowRowSparse to be more explicit about the algorithm mode by default. */
 .gridAutoFlowRow {
     grid-auto-flow: row;
+}
+
+.gridAutoFlowRowDense {
+    grid-auto-flow: row dense;
 }
 
 /* This rule makes sure the container is smaller than any grid items to avoid distributing any extra logical space to them. */

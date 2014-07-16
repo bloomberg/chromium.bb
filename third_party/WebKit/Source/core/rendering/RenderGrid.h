@@ -84,7 +84,7 @@ private:
     PassOwnPtr<GridCoordinate> createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(const RenderBox*, GridTrackSizingDirection, const GridSpan& specifiedPositions) const;
     void placeSpecifiedMajorAxisItemsOnGrid(const Vector<RenderBox*>&);
     void placeAutoMajorAxisItemsOnGrid(const Vector<RenderBox*>&);
-    void placeAutoMajorAxisItemOnGrid(RenderBox*);
+    void placeAutoMajorAxisItemOnGrid(RenderBox*, std::pair<size_t, size_t>& autoPlacementCursor);
     GridTrackSizingDirection autoPlacementMajorAxisDirection() const;
     GridTrackSizingDirection autoPlacementMinorAxisDirection() const;
 
