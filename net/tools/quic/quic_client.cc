@@ -124,15 +124,7 @@ bool QuicClient::CreateUDPSocket() {
     return false;
   }
 
-  int get_local_ip = 1;
-  if (address_family == AF_INET) {
-    rc = setsockopt(fd_, IPPROTO_IP, IP_PKTINFO,
-                    &get_local_ip, sizeof(get_local_ip));
-  } else {
-    rc =  setsockopt(fd_, IPPROTO_IPV6, IPV6_RECVPKTINFO,
-                     &get_local_ip, sizeof(get_local_ip));
-  }
-
+  rc = QuicSocketUtils::SetGetAddressInfo(fd_, address_family);
   if (rc < 0) {
     LOG(ERROR) << "IP detection not supported" << strerror(errno);
     return false;

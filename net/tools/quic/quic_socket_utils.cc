@@ -70,13 +70,13 @@ bool QuicSocketUtils::GetOverflowFromMsghdr(struct msghdr *hdr,
 // static
 int QuicSocketUtils::SetGetAddressInfo(int fd, int address_family) {
   int get_local_ip = 1;
-  if (address_family == AF_INET) {
-    return setsockopt(fd, IPPROTO_IP, IP_PKTINFO,
+  int rc = setsockopt(fd, IPPROTO_IP, IP_PKTINFO,
                       &get_local_ip, sizeof(get_local_ip));
-  } else {
-    return setsockopt(fd, IPPROTO_IPV6, IPV6_RECVPKTINFO,
-                      &get_local_ip, sizeof(get_local_ip));
+  if (rc == 0 && address_family == AF_INET6) {
+    rc = setsockopt(fd, IPPROTO_IPV6, IPV6_RECVPKTINFO,
+                    &get_local_ip, sizeof(get_local_ip));
   }
+  return rc;
 }
 
 // static
