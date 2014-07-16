@@ -266,7 +266,13 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, ProcessPerTab) {
 // We don't change process priorities on Mac or Posix because the user lacks the
 // permission to raise a process' priority even after lowering it.
 #if defined(OS_WIN) || defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, Backgrounding) {
+#if defined(OS_WIN)
+// Flaky test: crbug.com/394368
+#define MAYBE_Backgrounding DISABLED_Backgrounding
+#else
+#define MAYBE_Backgrounding Backgrounding
+#endif
+IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_Backgrounding) {
   if (!base::Process::CanBackgroundProcesses()) {
     LOG(ERROR) << "Can't background processes";
     return;
