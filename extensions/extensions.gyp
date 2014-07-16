@@ -220,7 +220,16 @@
           ],
         }, {  # enable_extensions == 0
           'sources!': [
+            'common/api/messaging/message.h',
+            'common/api/sockets/sockets_manifest_data.cc',
+            'common/api/sockets/sockets_manifest_data.h',
+            'common/api/sockets/sockets_manifest_handler.cc',
+            'common/api/sockets/sockets_manifest_handler.h',
+            'common/api/sockets/sockets_manifest_permission.cc',
+            'common/api/sockets/sockets_manifest_permission.h',
             'common/extension_api.cc',
+            'common/manifest_handlers/externally_connectable.cc',
+            'common/manifest_handlers/externally_connectable.h',
           ],
         }],
       ],

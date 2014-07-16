@@ -43,7 +43,6 @@
           }, {
             # TODO: Eliminate these on Android. See crbug.com/305852.
             'schema_files': [
-              'extensions_manifest_types.json',
               'runtime.json',
             ],
           }],

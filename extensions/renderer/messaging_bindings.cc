@@ -18,7 +18,6 @@
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/extension_messages.h"
-#include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/event_bindings.h"
 #include "extensions/renderer/object_backed_native_handler.h"
@@ -30,6 +29,12 @@
 #include "third_party/WebKit/public/web/WebScopedWindowFocusAllowedIndicator.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "v8/include/v8.h"
+
+// TODO(thestig): Remove #ifdef from this file when extensions are no longer
+// used on mobile.
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/common/manifest_handlers/externally_connectable.h"
+#endif
 
 // Message passing API example (in a content script):
 // var extension =
@@ -261,6 +266,7 @@ void DispatchOnConnectToScriptContext(
     if (!source_tab->empty() && !extension->is_platform_app())
       tab = converter->ToV8Value(source_tab, script_context->v8_context());
 
+#if defined(ENABLE_EXTENSIONS)
     ExternallyConnectableInfo* externally_connectable =
         ExternallyConnectableInfo::Get(extension);
     if (externally_connectable &&
@@ -270,6 +276,7 @@ void DispatchOnConnectToScriptContext(
                                                      v8::String::kNormalString,
                                                      tls_channel_id.size());
     }
+#endif
   }
 
   v8::Handle<v8::Value> arguments[] = {
