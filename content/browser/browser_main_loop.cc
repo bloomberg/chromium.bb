@@ -86,6 +86,7 @@
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "content/browser/bootstrap_sandbox_mac.h"
+#include "content/browser/cocoa/system_hotkey_helper_mac.h"
 #include "content/browser/theme_helper_mac.h"
 #endif
 
@@ -1048,6 +1049,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
 #if defined(OS_MACOSX)
   ThemeHelperMac::GetInstance();
+  SystemHotkeyHelperMac::GetInstance()->DeferredLoadSystemHotkeys();
   if (ShouldEnableBootstrapSandbox()) {
     TRACE_EVENT0("startup",
         "BrowserMainLoop::BrowserThreadsStarted:BootstrapSandbox");

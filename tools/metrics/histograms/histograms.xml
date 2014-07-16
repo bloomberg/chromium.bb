@@ -19028,6 +19028,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Events seen by the OSX NSException swizzle.</summary>
 </histogram>
 
+<histogram name="OSX.SystemHotkeyMap.LoadSuccess" enum="BooleanSuccess">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    Whether an attempt to load the system hotkeys on a Mac was successful.
+  </summary>
+</histogram>
+
 <histogram name="OutdatedUpgradeBubble.NumLaterPerEnableAU">
   <owner>mad@chromium.org</owner>
   <summary>

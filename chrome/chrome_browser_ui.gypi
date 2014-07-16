@@ -663,8 +663,6 @@
       'browser/ui/cocoa/styled_text_field.mm',
       'browser/ui/cocoa/styled_text_field_cell.h',
       'browser/ui/cocoa/styled_text_field_cell.mm',
-      'browser/ui/cocoa/system_hotkey_map.h',
-      'browser/ui/cocoa/system_hotkey_map.mm',
       'browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac.h',
       'browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac.mm',
       'browser/ui/cocoa/tab_contents/chrome_web_contents_view_delegate_mac.h',
