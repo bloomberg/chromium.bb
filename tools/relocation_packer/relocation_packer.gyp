@@ -46,6 +46,7 @@
         '../..',
       ],
       'sources': [
+        'src/debug_unittest.cc',
         'src/elf_file_unittest.cc',
         'src/leb128_unittest.cc',
         'src/packer_unittest.cc',

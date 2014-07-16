@@ -29,7 +29,8 @@
 #include "debug.h"
 #include "elf_file.h"
 #include "libelf.h"
-#include "packer.h"
+
+namespace {
 
 void PrintUsage(const char* argv0) {
   std::string temporary = argv0;
@@ -66,6 +67,8 @@ void PrintUsage(const char* argv0) {
       basename, basename, basename);
 }
 
+}  // namespace
+
 int main(int argc, char* argv[]) {
   bool is_unpacking = false;
   bool is_verbose = false;
@@ -92,7 +95,7 @@ int main(int argc, char* argv[]) {
         PrintUsage(argv[0]);
         return 0;
       case '?':
-        LOG("Try '%s --help' for more information.\n", argv[0]);
+        LOG(INFO) << "Try '" << argv[0] << " --help' for more information.";
         return 1;
       case -1:
         has_options = false;
@@ -102,22 +105,23 @@ int main(int argc, char* argv[]) {
     }
   }
   if (optind != argc - 1) {
-    LOG("Try '%s --help' for more information.\n", argv[0]);
+    LOG(INFO) << "Try '" << argv[0] << " --help' for more information.";
     return 1;
   }
 
   if (elf_version(EV_CURRENT) == EV_NONE) {
-    LOG("WARNING: Elf Library is out of date!\n");
+    LOG(WARNING) << "Elf Library is out of date!";
   }
 
   const char* file = argv[argc - 1];
   const int fd = open(file, O_RDWR);
   if (fd == -1) {
-    LOG("%s: %s\n", file, strerror(errno));
+    LOG(ERROR) << file << ": " << strerror(errno);
     return 1;
   }
 
-  relocation_packer::Logger::SetVerbose(is_verbose);
+  if (is_verbose)
+    relocation_packer::Logger::SetVerbose(1);
 
   relocation_packer::ElfFile elf_file(fd);
   elf_file.SetPadding(is_padding);
@@ -131,7 +135,7 @@ int main(int argc, char* argv[]) {
   close(fd);
 
   if (!status) {
-    LOG("ERROR: %s: failed to pack/unpack file\n", file);
+    LOG(ERROR) << file << ": failed to pack/unpack file";
     return 1;
   }
 

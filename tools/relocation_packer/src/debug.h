@@ -2,87 +2,115 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Logging and checks.
+// Logging and checks.  Avoids a dependency on base.
 //
-// Log messages to stdout.  LOG() prints normal user messages, VLOG()
-// is verbose, for tracing and debugging.  SetVerbose() enables/disables
-// VLOG() output.
+// LOG(tag) prints messages.  Tags are INFO, WARNING, ERROR and FATAL.
+// INFO prints to stdout, the others to stderr.  FATAL aborts after printing.
 //
-// LOG() and VLOG() are printf-like, and arguments are checked by gcc.
-// LOG_IF() and VLOG_IF() call LOG/VLOG if their predicate is true.
-// CHECK() aborts if its predicate is false.  NOTREACHED() always aborts.
-// Logging is not thread-safe.
+// LOG_IF(tag, predicate) logs if predicate evaluates to true, else silent.
+//
+// VLOG(level) logs INFO messages where level is less than or equal to the
+// verbosity level set with SetVerbose().
+//
+// VLOG_IF(level, predicate) logs INFO if predicate evaluates to true,
+// else silent.
+//
+// CHECK(predicate) logs a FATAL error if predicate is false.
+// NOTREACHED() always aborts.
+// Log streams can be changed with SetStreams().  Logging is not thread-safe.
 //
 
 #ifndef TOOLS_RELOCATION_PACKER_SRC_DEBUG_H_
 #define TOOLS_RELOCATION_PACKER_SRC_DEBUG_H_
 
-#ifdef NDEBUG
-#undef NDEBUG
-#include <assert.h>
-#define NDEBUG
-#else
-#include <assert.h>
-#endif
-
-#include <stdarg.h>
-#include <string.h>
+#include <limits.h>
+#include <algorithm>
+#include <ostream>
+#include <sstream>
 
 namespace relocation_packer {
 
-// If gcc, define PRINTF_ATTRIBUTE so that gcc checks Log() as printf-like.
-#if defined(__GNUC__) && (__GNUC__ >= 3)
-#define PRINTF_ATTRIBUTE(string_index, first_to_check) \
-    __attribute__((__format__(__printf__, string_index, first_to_check)))
-#else
-#define PRINTF_ATTRIBUTE(string_index, first_to_check)
-#endif
-
-// Logging and checking macros.
-#define LOG(...) ::relocation_packer::Logger::Log(__VA_ARGS__)
-#define VLOG(...) ::relocation_packer::Logger::VLog(__VA_ARGS__)
-#define LOG_IF(cond, ...)  \
-  do {                     \
-    if ((cond))            \
-      LOG(__VA_ARGS__);    \
-  } while (0)
-#define VLOG_IF(cond, ...) \
-  do {                     \
-    if ((cond))            \
-      VLOG(__VA_ARGS__);   \
-  } while (0)
-
-#define CHECK(expr) assert((expr))
-#define NOTREACHED(_) assert(false)
-
 class Logger {
  public:
-  // Log and verbose log to stdout.
-  // |format| is a printf format string.
-  static void Log(const char* format, ...) PRINTF_ATTRIBUTE(1, 2);
-  static void VLog(const char* format, ...) PRINTF_ATTRIBUTE(1, 2);
+  enum Severity {INFO = 0, WARNING, ERROR, FATAL};
 
-  // Set verbose mode.
-  // |flag| is true to enable verbose logging, false to disable it.
-  static void SetVerbose(bool flag);
+  // Construct a new message logger.  Prints if level is less than or
+  // equal to the level set with SetVerbose() and predicate is true.
+  // |severity| is an enumerated severity.
+  // |level| is the verbosity level.
+  // |predicate| controls if the logger prints or is silent.
+  Logger(Severity severity, int level, bool predicate);
+
+  // On destruction, flush and print the strings accumulated in stream_.
+  ~Logger();
+
+  // Return the stream for this logger.
+  std::ostream& GetStream() { return stream_; }
+
+  // Set verbosity level.  Messages with a level less than or equal to
+  // this level are printed, others are discarded.  Static, not thread-safe.
+  static void SetVerbose(int level) { max_level_ = level; }
+
+  // Set info and error logging streams.  Static, not thread-safe.
+  static void SetStreams(std::ostream* info_stream,
+                         std::ostream* error_stream) {
+    info_stream_ = info_stream;
+    error_stream_ = error_stream;
+  }
+
+  // Reset to initial state.
+  static void Reset();
 
  private:
-  Logger() : is_verbose_(false) { }
-  ~Logger() {}
+  // Message severity, verbosity level, and predicate.
+  Severity severity_;
+  int level_;
+  bool predicate_;
 
-  // Implementation of log to stdout.
-  // |format| is a printf format string.
-  // |args| is a varargs list of printf arguments.
-  void Log(const char* format, va_list args);
+  // String stream, accumulates message text.
+  std::ostringstream stream_;
 
-  // If set, VLOG is enabled, otherwise it is a no-op.
-  bool is_verbose_;
+  // Verbosity for INFO messages.  Not thread-safe.
+  static int max_level_;
 
-  // Singleton support.  Not thread-safe.
-  static Logger* GetInstance();
-  static Logger* instance_;
+  // Logging streams.  Not thread-safe.
+  static std::ostream* info_stream_;
+  static std::ostream* error_stream_;
 };
 
 }  // namespace relocation_packer
+
+// Make logging severities visible globally.
+typedef relocation_packer::Logger::Severity LogSeverity;
+const LogSeverity INFO = relocation_packer::Logger::INFO;
+const LogSeverity WARNING = relocation_packer::Logger::WARNING;
+const LogSeverity ERROR = relocation_packer::Logger::ERROR;
+const LogSeverity FATAL = relocation_packer::Logger::FATAL;
+
+// LOG(severity) prints a message with the given severity, and aborts if
+// severity is FATAL.  LOG_IF(severity, predicate) does the same but only if
+// predicate is true.  INT_MIN is guaranteed to be less than or equal to
+// any verbosity level.
+#define LOG(severity) \
+    (relocation_packer::Logger(severity, INT_MIN, true).GetStream())
+#define LOG_IF(severity, predicate) \
+    (relocation_packer::Logger(severity, INT_MIN, (predicate)).GetStream())
+
+// VLOG(level) prints its message as INFO if level is less than or equal to
+// the current verbosity level.
+#define VLOG(level) \
+    (relocation_packer::Logger(INFO, (level), true).GetStream())
+#define VLOG_IF(level, predicate) \
+    (relocation_packer::Logger(INFO, (level), (predicate)).GetStream())
+
+// CHECK(predicate) fails with a FATAL log message if predicate is false.
+#define CHECK(predicate) (LOG_IF(FATAL, !(predicate)) \
+    << __FILE__ << ":" << __LINE__ << ": " \
+    << __FUNCTION__ << ": CHECK '" #predicate "' failed")
+
+// NOTREACHED() always fails with a FATAL log message.
+#define NOTREACHED(_) (LOG(FATAL) \
+    << __FILE__ << ":" << __LINE__ << ": " \
+    << __FUNCTION__ << ": NOTREACHED() hit")
 
 #endif  // TOOLS_RELOCATION_PACKER_SRC_DEBUG_H_

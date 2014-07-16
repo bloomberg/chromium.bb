@@ -2,43 +2,54 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdarg.h>
-#include <stdio.h>
-
 #include "debug.h"
+
+#include <stdlib.h>
+#include <iostream>
+#include <string>
 
 namespace relocation_packer {
 
-Logger* Logger::instance_ = NULL;
-
-Logger* Logger::GetInstance() {
-  if (instance_ == NULL)
-    instance_ = new Logger;
-  return instance_;
+// Construct a new message logger.  Prints if level is less than or equal to
+// the level set with SetVerbose() and predicate is true.
+Logger::Logger(Severity severity, int level, bool predicate) {
+  severity_ = severity;
+  level_ = level;
+  predicate_ = predicate;
 }
 
-void Logger::Log(const char* format, va_list args) {
-  vfprintf(stdout, format, args);
-}
-
-void Logger::Log(const char* format, ...) {
-  va_list args;
-  va_start(args, format);
-  GetInstance()->Log(format, args);
-  va_end(args);
-}
-
-void Logger::VLog(const char* format, ...) {
-  if (GetInstance()->is_verbose_) {
-    va_list args;
-    va_start(args, format);
-    GetInstance()->Log(format, args);
-    va_end(args);
+// On destruction, flush and print the strings accumulated.  Abort if FATAL.
+Logger::~Logger() {
+  if (predicate_) {
+    if (level_ <= max_level_) {
+      std::ostream* log = severity_ == INFO ? info_stream_ : error_stream_;
+      std::string tag;
+      switch (severity_) {
+        case INFO: tag = "INFO"; break;
+        case WARNING: tag = "WARNING"; break;
+        case ERROR: tag = "ERROR"; break;
+        case FATAL: tag = "FATAL"; break;
+      }
+      stream_.flush();
+      *log << tag << ": " << stream_.str() << std::endl;
+    }
+    if (severity_ == FATAL)
+      abort();
   }
 }
 
-void Logger::SetVerbose(bool flag) {
-  GetInstance()->is_verbose_ = flag;
+// Reset to initial state.
+void Logger::Reset() {
+  max_level_ = -1;
+  info_stream_ = &std::cout;
+  error_stream_ = &std::cerr;
 }
+
+// Verbosity.  Not thread-safe.
+int Logger::max_level_ = -1;
+
+// Logging streams.  Not thread-safe.
+std::ostream* Logger::info_stream_ = &std::cout;
+std::ostream* Logger::error_stream_ = &std::cerr;
 
 }  // namespace relocation_packer
