@@ -434,6 +434,11 @@ ManagePasswordsBubbleView* ManagePasswordsBubbleView::manage_passwords_bubble_ =
     NULL;
 
 // static
+const ManagePasswordsBubbleView* ManagePasswordsBubbleView::Bubble() {
+  return ManagePasswordsBubbleView::manage_passwords_bubble_;
+}
+
+// static
 void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
                                            DisplayReason reason) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
@@ -467,6 +472,12 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
   }
   manage_passwords_bubble_->GetWidget()->Show();
   manage_passwords_bubble_->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
+  // set_use_focusless(true) has adverse effect on Windows.
+  // 1) The bubble can't be the active window (which is not desired behavior).
+  // 2) The bubble doesn't get WM_LBUTTONDOWN event. Therefore, all the buttons
+  //    get stuck.
+  // TODO(vasilii): remove this line once the bug in infrastructure is resolved.
+  manage_passwords_bubble_->set_use_focusless(false);
 }
 
 // static
@@ -494,7 +505,8 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
       never_save_passwords_(false) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(2, 0, 2, 0));
-  set_notify_enter_exit_on_child(true);
+  // Don't focus by default.
+  set_use_focusless(true);
   if (anchor_view)
     anchor_view->SetActive(true);
 }
