@@ -107,8 +107,10 @@ source_set("child") {
   }
 
   if (!use_openssl) {
-    sources -= [ "webcrypto/platform_crypto_openssl.cc" ]
+    sources += rebase_path(content_child_gypi_values.webcrypto_nss_sources,
+                           ".", "//content")
   } else {
-    sources -= [ "webcrypto/platform_crypto_nss.cc" ]
+    sources += rebase_path(content_child_gypi_values.webcrypto_openssl_sources,
+                           ".", "//content")
   }
 }
