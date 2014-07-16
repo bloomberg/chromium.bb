@@ -27,7 +27,8 @@ bool ParseFromValue(base::Value* value, WebPoint* point) {
   base::DictionaryValue* dict_value;
   if (!value->GetAsDictionary(&dict_value))
     return false;
-  double x, y;
+  double x = 0;
+  double y = 0;
   if (!dict_value->GetDouble("x", &x) ||
       !dict_value->GetDouble("y", &y))
     return false;
@@ -40,7 +41,8 @@ bool ParseFromValue(base::Value* value, WebSize* size) {
   base::DictionaryValue* dict_value;
   if (!value->GetAsDictionary(&dict_value))
     return false;
-  double width, height;
+  double width = 0;
+  double height = 0;
   if (!dict_value->GetDouble("width", &width) ||
       !dict_value->GetDouble("height", &height))
     return false;
@@ -53,7 +55,10 @@ bool ParseFromValue(base::Value* value, WebRect* rect) {
   base::DictionaryValue* dict_value;
   if (!value->GetAsDictionary(&dict_value))
     return false;
-  double x, y, width, height;
+  double x = 0;
+  double y = 0;
+  double width = 0;
+  double height = 0;
   if (!dict_value->GetDouble("left", &x) ||
       !dict_value->GetDouble("top", &y) ||
       !dict_value->GetDouble("width", &width) ||
@@ -100,7 +105,7 @@ Status VerifyElementClickable(
   if (status.IsError())
     return status;
   base::DictionaryValue* dict;
-  bool is_clickable;
+  bool is_clickable = false;
   if (!result->GetAsDictionary(&dict) ||
       !dict->GetBoolean("clickable", &is_clickable)) {
     return Status(kUnknownError,

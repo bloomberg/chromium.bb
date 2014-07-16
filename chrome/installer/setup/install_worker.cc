@@ -936,8 +936,8 @@ void AddEulaAcceptedWorkItems(const InstallationState& original_state,
 
     // Copy the value from the product with the greatest value.
     bool have_eula_accepted = false;
-    BrowserDistribution::Type product_type;
-    DWORD eula_accepted;
+    BrowserDistribution::Type product_type = BrowserDistribution::NUM_TYPES;
+    DWORD eula_accepted = 0;
     const Products& products = installer_state.products();
     for (Products::const_iterator it = products.begin(); it < products.end();
          ++it) {

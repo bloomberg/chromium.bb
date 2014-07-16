@@ -124,9 +124,9 @@ Status ParseMobileEmulation(const base::Value& option,
     if (!mobile_emulation->GetDictionary("deviceMetrics", &metrics))
       return Status(kUnknownError, "'deviceMetrics' must be a dictionary");
 
-    int width;
-    int height;
-    double device_scale_factor;
+    int width = 0;
+    int height = 0;
+    double device_scale_factor = 0;
     if (!metrics->GetInteger("width", &width) ||
         !metrics->GetInteger("height", &height) ||
         !metrics->GetDouble("pixelRatio", &device_scale_factor))

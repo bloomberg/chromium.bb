@@ -39,7 +39,7 @@ bool ParseFaviconPath(const std::string& path,
   parsed->url = "";
   parsed->size_in_dip = gfx::kFaviconSize;
   parsed->device_scale_factor = 1.0f;
-  parsed->path_index = -1;
+  parsed->path_index = std::string::npos;
 
   if (path.empty())
     return false;

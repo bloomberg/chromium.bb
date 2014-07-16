@@ -76,8 +76,11 @@ Status AutomationExtension::GetWindowInfo(int* x,
   if (status.IsError())
     return status;
 
-  int temp_x, temp_y, temp_width, temp_height;
   base::DictionaryValue* dict;
+  int temp_x = 0;
+  int temp_y = 0;
+  int temp_width = 0;
+  int temp_height = 0;
   if (!result->GetAsDictionary(&dict) ||
       !dict->GetInteger("left", &temp_x) ||
       !dict->GetInteger("top", &temp_y) ||

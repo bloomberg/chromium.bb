@@ -20,7 +20,7 @@ class SpellCheckMarker {
   };
 
   // IPC requires a default constructor.
-  SpellCheckMarker() : hash(-1), offset(-1) {}
+  SpellCheckMarker() : hash(0xFFFFFFFF), offset(static_cast<size_t>(-1)) {}
 
   SpellCheckMarker(uint32 hash, size_t offset) : hash(hash), offset(offset) {}
 

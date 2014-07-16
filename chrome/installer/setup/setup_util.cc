@@ -242,7 +242,7 @@ bool DeleteFileFromTempProcess(const base::FilePath& path,
       }
     } else {
       PLOG(ERROR) << "VirtualAllocEx";
-      ::TerminateProcess(pi.hProcess, ~0);
+      ::TerminateProcess(pi.hProcess, ~static_cast<UINT>(0));
     }
     ::CloseHandle(pi.hThread);
     ::CloseHandle(pi.hProcess);

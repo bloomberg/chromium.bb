@@ -477,7 +477,8 @@ Status ExecuteSetWindowPosition(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  double x, y;
+  double x = 0;
+  double y = 0;
   if (!params.GetDouble("x", &x) || !params.GetDouble("y", &y))
     return Status(kUnknownError, "missing or invalid 'x' or 'y'");
 
@@ -528,7 +529,8 @@ Status ExecuteSetWindowSize(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  double width, height;
+  double width = 0;
+  double height = 0;
   if (!params.GetDouble("width", &width) ||
       !params.GetDouble("height", &height))
     return Status(kUnknownError, "missing or invalid 'width' or 'height'");

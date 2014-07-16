@@ -247,7 +247,8 @@ class GoogleUpdateSettingsTest : public testing::Test {
     return false;
   }
 
-  DWORD GetUpdatePolicyForAppGuid(const base::string16& app_guid) {
+  GoogleUpdateSettings::UpdatePolicy GetUpdatePolicyForAppGuid(
+      const base::string16& app_guid) {
     RegKey policy_key;
     if (policy_key.Create(HKEY_LOCAL_MACHINE,
                           GoogleUpdateSettings::kPoliciesKey,
@@ -256,13 +257,13 @@ class GoogleUpdateSettingsTest : public testing::Test {
           GoogleUpdateSettings::kUpdateOverrideValuePrefix);
       app_update_override.append(app_guid);
 
-      DWORD value = -1;
+      DWORD value;
       if (policy_key.ReadValueDW(app_update_override.c_str(),
                                  &value) == ERROR_SUCCESS) {
-        return value;
+        return static_cast<GoogleUpdateSettings::UpdatePolicy>(value);
       }
     }
-    return -1;
+    return GoogleUpdateSettings::UPDATE_POLICIES_COUNT;
   }
 
   bool SetGlobalUpdatePolicy(GoogleUpdateSettings::UpdatePolicy policy) {
@@ -274,14 +275,16 @@ class GoogleUpdateSettingsTest : public testing::Test {
                                  static_cast<DWORD>(policy)) == ERROR_SUCCESS;
   }
 
-  DWORD GetGlobalUpdatePolicy() {
+  GoogleUpdateSettings::UpdatePolicy GetGlobalUpdatePolicy() {
     RegKey policy_key;
-    DWORD value = -1;
+    DWORD value;
     return (policy_key.Create(HKEY_LOCAL_MACHINE,
                               GoogleUpdateSettings::kPoliciesKey,
                               KEY_QUERY_VALUE) == ERROR_SUCCESS &&
             policy_key.ReadValueDW(GoogleUpdateSettings::kUpdatePolicyValue,
-                                   &value) == ERROR_SUCCESS) ? value : -1;
+                                   &value) == ERROR_SUCCESS) ?
+        static_cast<GoogleUpdateSettings::UpdatePolicy>(value) :
+        GoogleUpdateSettings::UPDATE_POLICIES_COUNT;
   }
 
   bool SetUpdateTimeoutOverride(DWORD time_in_minutes) {
@@ -792,10 +795,9 @@ TEST_F(GoogleUpdateSettingsTest, PerAppUpdatesEnabledWithGlobalDisabled) {
   // Make sure that the reset action returns true and is a no-op.
   EXPECT_TRUE(
       GoogleUpdateSettings::ReenableAutoupdatesForApp(kTestProductGuid));
-  EXPECT_EQ(static_cast<DWORD>(GoogleUpdateSettings::AUTOMATIC_UPDATES),
+  EXPECT_EQ(GoogleUpdateSettings::AUTOMATIC_UPDATES,
             GetUpdatePolicyForAppGuid(kTestProductGuid));
-  EXPECT_EQ(static_cast<DWORD>(GoogleUpdateSettings::UPDATES_DISABLED),
-            GetGlobalUpdatePolicy());
+  EXPECT_EQ(GoogleUpdateSettings::UPDATES_DISABLED, GetGlobalUpdatePolicy());
 }
 
 TEST_F(GoogleUpdateSettingsTest, GlobalUpdatesDisabledByPolicy) {
