@@ -1,0 +1,4 @@
+# DR-i#1476
+LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree.RunSingleThread_DirectRenderer
+LayerTreeHostBlendingPixelTest.*
+LayerTreeHostFiltersPixelTest.*
