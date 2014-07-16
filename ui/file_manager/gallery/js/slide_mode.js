@@ -869,14 +869,14 @@ SlideMode.prototype.onKeyDown = function(event) {
     case 'Ctrl-U+00BB':  // Ctrl+'=' zoom in.
       if (!this.isEditing()) {
         this.viewport_.setZoomIndex(this.viewport_.getZoomIndex() + 1);
-        this.imageView_.draw();
+        this.imageView_.applyViewportChange();
       }
       break;
 
     case 'Ctrl-U+00BD':  // Ctrl+'-' zoom out.
       if (!this.isEditing()) {
         this.viewport_.setZoomIndex(this.viewport_.getZoomIndex() - 1);
-        this.imageView_.draw();
+        this.imageView_.applyViewportChange();
       }
       break;
   }

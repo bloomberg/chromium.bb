@@ -98,7 +98,6 @@ Viewport.prototype.setZoomIndex = function(zoomIndex) {
 
   this.zoomIndex_ = zoomIndex;
   this.zoom_ = Viewport.ZOOM_RATIOS[zoomIndex];
-  this.invalidateCaches();
 };
 
 /**

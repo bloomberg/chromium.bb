@@ -126,6 +126,17 @@ ImageView.prototype.draw = function() {
 };
 
 /**
+ * Applies the viewport change that does not affect the screen cache size (zoom
+ * change or offset change) with animation.
+ */
+ImageView.prototype.applyViewportChange = function() {
+  this.setTransform(
+      this.screenImage_,
+      new ImageView.Effect.None(),
+      ImageView.Effect.DEFAULT_DURATION);
+};
+
+/**
  * @return {number} The cache generation.
  */
 ImageView.prototype.getCacheGeneration = function() {
