@@ -23,6 +23,7 @@
 
 using extensions::Extension;
 using extensions::ExtensionPrefs;
+using extensions::ExtensionRegistry;
 using extensions::ExtensionSet;
 using extensions::ExtensionSystem;
 
@@ -60,8 +61,7 @@ EphemeralAppService::EphemeralAppService(Profile* profile)
             switches::kEnableEphemeralApps))
     return;
 
-  extension_registry_observer_.Add(
-      extensions::ExtensionRegistry::Get(profile_));
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
@@ -69,6 +69,41 @@ EphemeralAppService::EphemeralAppService(Profile* profile)
 }
 
 EphemeralAppService::~EphemeralAppService() {
+}
+
+void EphemeralAppService::ClearCachedApps() {
+  // Cancel any pending garbage collects.
+  garbage_collect_apps_timer_.Stop();
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
+  DCHECK(registry);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
+  DCHECK(prefs);
+  ExtensionService* service =
+      ExtensionSystem::Get(profile_)->extension_service();
+  DCHECK(service);
+
+  scoped_ptr<ExtensionSet> extensions =
+      registry->GenerateInstalledExtensionsSet();
+
+  for (ExtensionSet::const_iterator it = extensions->begin();
+       it != extensions->end();
+       ++it) {
+    std::string extension_id = (*it)->id();
+    if (!prefs->IsEphemeralApp(extension_id))
+      continue;
+
+    // Do not remove apps that are running.
+    if (!extensions::util::IsExtensionIdle(extension_id, profile_))
+      continue;
+
+    DCHECK(registry->GetExtensionById(extension_id,
+                                      ExtensionRegistry::EVERYTHING));
+    service->UninstallExtension(
+        extension_id,
+        ExtensionService::UNINSTALL_REASON_ORPHANED_EPHEMERAL_EXTENSION,
+        NULL);
+  }
 }
 
 void EphemeralAppService::Observe(
@@ -127,8 +162,7 @@ void EphemeralAppService::Init() {
 
 void EphemeralAppService::InitEphemeralAppCount() {
   scoped_ptr<ExtensionSet> extensions =
-      extensions::ExtensionRegistry::Get(profile_)
-          ->GenerateInstalledExtensionsSet();
+      ExtensionRegistry::Get(profile_)->GenerateInstalledExtensionsSet();
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
   DCHECK(prefs);
 
@@ -152,11 +186,13 @@ void EphemeralAppService::TriggerGarbageCollect(const base::TimeDelta& delay) {
 }
 
 void EphemeralAppService::GarbageCollectApps() {
-  scoped_ptr<ExtensionSet> extensions =
-      extensions::ExtensionRegistry::Get(profile_)
-          ->GenerateInstalledExtensionsSet();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
+  DCHECK(registry);
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
   DCHECK(prefs);
+
+  scoped_ptr<ExtensionSet> extensions =
+      registry->GenerateInstalledExtensionsSet();
 
   int app_count = 0;
   LaunchTimeAppMap app_launch_times;
@@ -189,21 +225,22 @@ void EphemeralAppService::GarbageCollectApps() {
   ExtensionService* service =
       ExtensionSystem::Get(profile_)->extension_service();
   DCHECK(service);
-  // Execute the replacement policies and remove apps marked for deletion.
+  // Execute the eviction policies and remove apps marked for deletion.
   if (!app_launch_times.empty()) {
     GetAppsToRemove(app_count, app_launch_times, &remove_app_ids);
+
     for (std::set<std::string>::const_iterator id = remove_app_ids.begin();
          id != remove_app_ids.end(); ++id) {
-      if (service->UninstallExtension(
-              *id,
-              ExtensionService::UNINSTALL_REASON_ORPHANED_EPHEMERAL_EXTENSION,
-              NULL)) {
-        --app_count;
-      }
+      // Protect against cascading uninstalls.
+      if (!registry->GetExtensionById(*id, ExtensionRegistry::EVERYTHING))
+        continue;
+
+      service->UninstallExtension(
+          *id,
+          ExtensionService::UNINSTALL_REASON_ORPHANED_EPHEMERAL_EXTENSION,
+          NULL);
     }
   }
-
-  ephemeral_app_count_ = app_count;
 }
 
 // static

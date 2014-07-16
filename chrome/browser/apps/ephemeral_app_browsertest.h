@@ -20,6 +20,7 @@ class EphemeralAppTestBase : public extensions::PlatformAppBrowserTest {
  public:
   static const char kMessagingReceiverApp[];
   static const char kMessagingReceiverAppV2[];
+  static const char kDispatchEventTestApp[];
 
   EphemeralAppTestBase();
   virtual ~EphemeralAppTestBase();

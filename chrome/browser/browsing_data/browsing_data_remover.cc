@@ -85,6 +85,7 @@
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/apps/ephemeral_app_service.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #endif
 
@@ -604,6 +605,11 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
     storage_partition_remove_mask |=
         content::StoragePartition::REMOVE_DATA_MASK_WEBRTC_IDENTITY;
+
+#if defined(ENABLE_EXTENSIONS)
+    // Clear the ephemeral apps cache.
+    EphemeralAppService::Get(profile_)->ClearCachedApps();
+#endif
   }
 
   if (storage_partition_remove_mask) {

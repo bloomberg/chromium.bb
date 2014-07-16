@@ -53,7 +53,6 @@ namespace {
 
 namespace alarms = extensions::api::alarms;
 
-const char kDispatchEventTestApp[] = "ephemeral_apps/dispatch_event";
 const char kNotificationsTestApp[] = "ephemeral_apps/notification_settings";
 const char kFileSystemTestApp[] = "ephemeral_apps/filesystem_retain_entries";
 
@@ -123,6 +122,8 @@ const char EphemeralAppTestBase::kMessagingReceiverApp[] =
     "ephemeral_apps/messaging_receiver";
 const char EphemeralAppTestBase::kMessagingReceiverAppV2[] =
     "ephemeral_apps/messaging_receiver2";
+const char EphemeralAppTestBase::kDispatchEventTestApp[] =
+    "ephemeral_apps/dispatch_event";
 
 EphemeralAppTestBase::EphemeralAppTestBase() {}
 

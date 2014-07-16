@@ -34,6 +34,9 @@ class EphemeralAppService : public KeyedService,
   explicit EphemeralAppService(Profile* profile);
   virtual ~EphemeralAppService();
 
+  // Clears the ephemeral app cache. Removes all idle ephemeral apps.
+  void ClearCachedApps();
+
   int ephemeral_app_count() const { return ephemeral_app_count_; }
 
   // Constants exposed for testing purposes:
