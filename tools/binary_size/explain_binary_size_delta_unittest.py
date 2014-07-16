@@ -136,10 +136,11 @@ class ExplainBinarySizeDeltaTest(unittest.TestCase):
     result = output_collector.getvalue()
 
     expected_output = """\
-Symbol statistics:
-  4 added, totalling 4000 bytes across 4 sources
-  4 removed, totalling 4000 bytes removed across 4 sources
-  4 changed, resulting in a net change of 4000 bytes \
+Total change: +4000 bytes
+=========================
+  4 added, totalling +4000 bytes across 4 sources
+  4 removed, totalling -4000 bytes across 4 sources
+  4 grown, for a net change of +4000 bytes \
 (4000 bytes before, 8000 bytes after) across 4 sources
   8 unchanged, totalling 8000 bytes
 Source stats:
@@ -149,50 +150,70 @@ Source stats:
   8 partially changed.
   1 completely unchanged.
 Per-source Analysis:
-  Source: /file_all_changed
-    Change: 1000 bytes (gained 1000, lost 0)
-    Changed symbols:
-      changed type=t, delta=1000 bytes (was 1000 bytes, now 2000 bytes)
-  Source: /file_all_deleted
-    Change: -1000 bytes (gained 0, lost 1000)
-    Removed symbols:
-      removed type=t, size=1000 bytes
-  Source: /file_new
-    Change: 1000 bytes (gained 1000, lost 0)
-    New symbols:
-      added type=t, size=1000 bytes
-  Source: /file_pair_unchanged_added
-    Change: 1000 bytes (gained 1000, lost 0)
-    New symbols:
-      added type=t, size=1000 bytes
-  Source: /file_pair_unchanged_changed
-    Change: 1000 bytes (gained 1000, lost 0)
-    Changed symbols:
-      changed type=t, delta=1000 bytes (was 1000 bytes, now 2000 bytes)
-  Source: /file_pair_unchanged_diffbuck_added
-    Change: 1000 bytes (gained 1000, lost 0)
-    New symbols:
-      added type=@, size=1000 bytes
-  Source: /file_pair_unchanged_diffbuck_changed
-    Change: 1000 bytes (gained 1000, lost 0)
-    Changed symbols:
-      changed type=@, delta=1000 bytes (was 1000 bytes, now 2000 bytes)
-  Source: /file_pair_unchanged_diffbuck_removed
-    Change: -1000 bytes (gained 0, lost 1000)
-    Removed symbols:
-      removed type=@, size=1000 bytes
-  Source: /file_pair_unchanged_removed
-    Change: -1000 bytes (gained 0, lost 1000)
-    Removed symbols:
-      removed type=t, size=1000 bytes
-  Source: /file_tetra
-    Change: 1000 bytes (gained 2000, lost 1000)
-    New symbols:
-      added type=t, size=1000 bytes
-    Removed symbols:
-      removed type=t, size=1000 bytes
-    Changed symbols:
-      size_changed type=t, delta=1000 bytes (was 1000 bytes, now 2000 bytes)
+
+--------------------------------------------------
+ +1000 - Source: /file_new - (gained 1000, lost 0)
+--------------------------------------------------
+  New symbols:
+      +1000: added type=t, size=1000 bytes
+
+---------------------------------------------------------------------
+ +1000 - Source: /file_pair_unchanged_changed - (gained 1000, lost 0)
+---------------------------------------------------------------------
+  Grown symbols:
+      +1000: changed type=t, (was 1000 bytes, now 2000 bytes)
+
+----------------------------------------------------------------------------
+ +1000 - Source: /file_pair_unchanged_diffbuck_added - (gained 1000, lost 0)
+----------------------------------------------------------------------------
+  New symbols:
+      +1000: added type=@, size=1000 bytes
+
+-------------------------------------------------------------------
+ +1000 - Source: /file_pair_unchanged_added - (gained 1000, lost 0)
+-------------------------------------------------------------------
+  New symbols:
+      +1000: added type=t, size=1000 bytes
+
+------------------------------------------------------------------------------
+ +1000 - Source: /file_pair_unchanged_diffbuck_changed - (gained 1000, lost 0)
+------------------------------------------------------------------------------
+  Grown symbols:
+      +1000: changed type=@, (was 1000 bytes, now 2000 bytes)
+
+----------------------------------------------------------
+ +1000 - Source: /file_all_changed - (gained 1000, lost 0)
+----------------------------------------------------------
+  Grown symbols:
+      +1000: changed type=t, (was 1000 bytes, now 2000 bytes)
+
+-------------------------------------------------------
+ +1000 - Source: /file_tetra - (gained 2000, lost 1000)
+-------------------------------------------------------
+  New symbols:
+      +1000: added type=t, size=1000 bytes
+  Removed symbols:
+      -1000: removed type=t, size=1000 bytes
+  Grown symbols:
+      +1000: size_changed type=t, (was 1000 bytes, now 2000 bytes)
+
+------------------------------------------------------------------------------
+ -1000 - Source: /file_pair_unchanged_diffbuck_removed - (gained 0, lost 1000)
+------------------------------------------------------------------------------
+  Removed symbols:
+      -1000: removed type=@, size=1000 bytes
+
+----------------------------------------------------------
+ -1000 - Source: /file_all_deleted - (gained 0, lost 1000)
+----------------------------------------------------------
+  Removed symbols:
+      -1000: removed type=t, size=1000 bytes
+
+---------------------------------------------------------------------
+ -1000 - Source: /file_pair_unchanged_removed - (gained 0, lost 1000)
+---------------------------------------------------------------------
+  Removed symbols:
+      -1000: removed type=t, size=1000 bytes
 """
 
     self.maxDiff = None

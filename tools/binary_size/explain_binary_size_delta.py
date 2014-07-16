@@ -37,6 +37,7 @@ dumps. Example:
   explain_binary_size_delta.py --nm1 /tmp/nm1.dump --nm2 /tmp/nm2.dump
 """
 
+import operator
 import optparse
 import os
 import sys
@@ -106,46 +107,76 @@ def Compare(symbols1, symbols2):
       added.append((key[0], key[1], symbol_name, None, symbol_size))
   return (added, removed, changed, unchanged)
 
+def DeltaStr(number):
+  """Returns the number as a string with a '+' prefix if it's > 0 and
+  a '-' prefix if it's < 0."""
+  result = str(number)
+  if number > 0:
+    result = '+' + result
+  return result
+
+
+class CrunchStatsData(object):
+  """Stores a summary of data of a certain kind."""
+  def __init__(self, symbols):
+    self.symbols = symbols
+    self.sources = set()
+    self.before_size = 0
+    self.after_size = 0
+    self.symbols_by_path = {}
+
 
 def CrunchStats(added, removed, changed, unchanged, showsources, showsymbols):
   """Outputs to stdout a summary of changes based on the symbol lists."""
-  print 'Symbol statistics:'
-  sources_with_new_symbols = set()
-  new_symbols_size = 0
-  new_symbols_by_path = {}
-  for file_path, symbol_type, symbol_name, size1, size2 in added:
-    sources_with_new_symbols.add(file_path)
-    new_symbols_size += size2
-    bucket = new_symbols_by_path.setdefault(file_path, [])
-    bucket.append((symbol_name, symbol_type, None, size2))
-  print('  %d added, totalling %d bytes across %d sources' %
-        (len(added), new_symbols_size, len(sources_with_new_symbols)))
+  # Split changed into grown and shrunk because that is easier to
+  # discuss.
+  grown = []
+  shrunk = []
+  for item in changed:
+    file_path, symbol_type, symbol_name, size1, size2 = item
+    if size1 < size2:
+      grown.append(item)
+    else:
+      shrunk.append(item)
 
-  sources_with_removed_symbols = set()
-  removed_symbols_size = 0
-  removed_symbols_by_path = {}
-  for file_path, symbol_type, symbol_name, size1, size2 in removed:
-    sources_with_removed_symbols.add(file_path)
-    removed_symbols_size += size1
-    bucket = removed_symbols_by_path.setdefault(file_path, [])
-    bucket.append((symbol_name, symbol_type, size1, None))
-  print('  %d removed, totalling %d bytes removed across %d sources' %
-        (len(removed), removed_symbols_size, len(sources_with_removed_symbols)))
+  new_symbols = CrunchStatsData(added)
+  removed_symbols = CrunchStatsData(removed)
+  grown_symbols = CrunchStatsData(grown)
+  shrunk_symbols = CrunchStatsData(shrunk)
+  sections = [new_symbols, removed_symbols, grown_symbols, shrunk_symbols]
+  for section in sections:
+    for file_path, symbol_type, symbol_name, size1, size2 in section.symbols:
+      section.sources.add(file_path)
+      if size1 is not None:
+        section.before_size += size1
+      if size2 is not None:
+        section.after_size += size2
+      bucket = section.symbols_by_path.setdefault(file_path, [])
+      bucket.append((symbol_name, symbol_type, size1, size2))
 
-  sources_with_changed_symbols = set()
-  before_size = 0
-  after_size = 0
-  changed_symbols_by_path = {}
-  for file_path, symbol_type, symbol_name, size1, size2 in changed:
-    sources_with_changed_symbols.add(file_path)
-    before_size += size1
-    after_size += size2
-    bucket = changed_symbols_by_path.setdefault(file_path, [])
-    bucket.append((symbol_name, symbol_type, size1, size2))
-  print('  %d changed, resulting in a net change of %d bytes '
-        '(%d bytes before, %d bytes after) across %d sources' %
-        (len(changed), (after_size - before_size), before_size, after_size,
-         len(sources_with_changed_symbols)))
+  total_change = sum(s.after_size - s.before_size for s in sections)
+  summary = 'Total change: %s bytes' % DeltaStr(total_change)
+  print(summary)
+  print('=' * len(summary))
+  for section in sections:
+    if not section.symbols:
+      continue
+    if section.before_size == 0:
+      description = ('added, totalling %s bytes' % DeltaStr(section.after_size))
+    elif section.after_size == 0:
+      description = ('removed, totalling %s bytes' %
+                     DeltaStr(-section.before_size))
+    else:
+      if section.after_size > section.before_size:
+        type_str = 'grown'
+      else:
+        type_str = 'shrunk'
+      description = ('%s, for a net change of %s bytes '
+                     '(%d bytes before, %d bytes after)' %
+            (type_str, DeltaStr(section.after_size - section.before_size),
+             section.before_size, section.after_size))
+    print('  %d %s across %d sources' %
+          (len(section.symbols), description, len(section.sources)))
 
   maybe_unchanged_sources = set()
   unchanged_symbols_size = 0
@@ -156,23 +187,22 @@ def CrunchStats(added, removed, changed, unchanged, showsources, showsymbols):
         (len(unchanged), unchanged_symbols_size))
 
   # High level analysis, always output.
-  unchanged_sources = (maybe_unchanged_sources -
-    sources_with_changed_symbols -
-    sources_with_removed_symbols -
-    sources_with_new_symbols)
-  new_sources = (sources_with_new_symbols -
+  unchanged_sources = maybe_unchanged_sources
+  for section in sections:
+    unchanged_sources = unchanged_sources - section.sources
+  new_sources = (new_symbols.sources -
     maybe_unchanged_sources -
-    sources_with_removed_symbols)
-  removed_sources = (sources_with_removed_symbols -
+    removed_symbols.sources)
+  removed_sources = (removed_symbols.sources -
     maybe_unchanged_sources -
-    sources_with_new_symbols)
-  partially_changed_sources = (sources_with_changed_symbols |
-    sources_with_new_symbols |
-    sources_with_removed_symbols) - removed_sources - new_sources
-  allFiles = (sources_with_new_symbols |
-    sources_with_removed_symbols |
-    sources_with_changed_symbols |
-    maybe_unchanged_sources)
+    new_symbols.sources)
+  partially_changed_sources = (grown_symbols.sources |
+    shrunk_symbols.sources | new_symbols.sources |
+    removed_symbols.sources) - removed_sources - new_sources
+  allFiles = set()
+  for section in sections:
+    allFiles = allFiles | section.sources
+  allFiles = allFiles | maybe_unchanged_sources
   print 'Source stats:'
   print('  %d sources encountered.' % len(allFiles))
   print('  %d completely new.' % len(new_sources))
@@ -187,61 +217,72 @@ def CrunchStats(added, removed, changed, unchanged, showsources, showsymbols):
     return  # Per-source analysis, only if requested
   print 'Per-source Analysis:'
   delta_by_path = {}
-  for path in new_symbols_by_path:
-    entry = delta_by_path.get(path)
-    if not entry:
-      entry = {'plus': 0, 'minus': 0}
-      delta_by_path[path] = entry
-    for symbol_name, symbol_type, size1, size2 in new_symbols_by_path[path]:
-      entry['plus'] += size2
-  for path in removed_symbols_by_path:
-    entry = delta_by_path.get(path)
-    if not entry:
-      entry = {'plus': 0, 'minus': 0}
-      delta_by_path[path] = entry
-    for symbol_name, symbol_type, size1, size2 in removed_symbols_by_path[path]:
-      entry['minus'] += size1
-  for path in changed_symbols_by_path:
-    entry = delta_by_path.get(path)
-    if not entry:
-      entry = {'plus': 0, 'minus': 0}
-      delta_by_path[path] = entry
-    for symbol_name, symbol_type, size1, size2 in changed_symbols_by_path[path]:
-      delta = size2 - size1
-      if delta > 0:
-        entry['plus'] += delta
-      else:
-        entry['minus'] += (-1 * delta)
+  for section in sections:
+    for path in section.symbols_by_path:
+      entry = delta_by_path.get(path)
+      if not entry:
+        entry = {'plus': 0, 'minus': 0}
+        delta_by_path[path] = entry
+      for symbol_name, symbol_type, size1, size2 in \
+            section.symbols_by_path[path]:
+        if size1 is None:
+          delta = size2
+        elif size2 is None:
+          delta = -size1
+        else:
+          delta = size2 - size1
 
-  for path in sorted(delta_by_path):
-    print '  Source: ' + path
-    size_data = delta_by_path[path]
+        if delta > 0:
+          entry['plus'] += delta
+        else:
+          entry['minus'] += (-1 * delta)
+
+  def delta_sort_key(item):
+    _path, size_data = item
+    growth = size_data['plus'] - size_data['minus']
+    return growth
+
+  for path, size_data in sorted(delta_by_path.iteritems(), key=delta_sort_key,
+                                reverse=True):
     gain = size_data['plus']
     loss = size_data['minus']
     delta = size_data['plus'] - size_data['minus']
-    print ('    Change: %d bytes (gained %d, lost %d)' % (delta, gain, loss))
+    header = ' %s - Source: %s - (gained %d, lost %d)' % (DeltaStr(delta),
+                                                          path, gain, loss)
+    divider = '-' * len(header)
+    print ''
+    print divider
+    print header
+    print divider
     if showsymbols:
-      if path in new_symbols_by_path:
-        print '    New symbols:'
+      if path in new_symbols.symbols_by_path:
+        print '  New symbols:'
         for symbol_name, symbol_type, size1, size2 in \
-            new_symbols_by_path[path]:
-          print ('      %s type=%s, size=%d bytes' %
-                 (symbol_name, symbol_type, size2))
-      if path in removed_symbols_by_path:
-        print '    Removed symbols:'
+            sorted(new_symbols.symbols_by_path[path],
+                   key=operator.itemgetter(3),
+                   reverse=True):
+          print ('   %8s: %s type=%s, size=%d bytes' %
+                 (DeltaStr(size2), symbol_name, symbol_type, size2))
+      if path in removed_symbols.symbols_by_path:
+        print '  Removed symbols:'
         for symbol_name, symbol_type, size1, size2 in \
-            removed_symbols_by_path[path]:
-          print ('      %s type=%s, size=%d bytes' %
-                 (symbol_name, symbol_type, size1))
-      if path in changed_symbols_by_path:
-        print '    Changed symbols:'
-        def sortkey(item):
-          symbol_name, _symbol_type, size1, size2 = item
-          return (size1 - size2, symbol_name)
-        for symbol_name, symbol_type, size1, size2 in \
-            sorted(changed_symbols_by_path[path], key=sortkey):
-          print ('      %s type=%s, delta=%d bytes (was %d bytes, now %d bytes)'
-                 % (symbol_name, symbol_type, (size2 - size1), size1, size2))
+            sorted(removed_symbols.symbols_by_path[path],
+                   key=operator.itemgetter(2)):
+          print ('   %8s: %s type=%s, size=%d bytes' %
+                 (DeltaStr(-size1), symbol_name, symbol_type, size1))
+      for (changed_symbols_by_path, type_str) in [
+        (grown_symbols.symbols_by_path, "Grown"),
+        (shrunk_symbols.symbols_by_path, "Shrunk")]:
+        if path in changed_symbols_by_path:
+          print '  %s symbols:' % type_str
+          def changed_symbol_sortkey(item):
+            symbol_name, _symbol_type, size1, size2 = item
+            return (size1 - size2, symbol_name)
+          for symbol_name, symbol_type, size1, size2 in \
+              sorted(changed_symbols_by_path[path], key=changed_symbol_sortkey):
+            print ('   %8s: %s type=%s, (was %d bytes, now %d bytes)'
+                   % (DeltaStr(size2 - size1), symbol_name,
+                      symbol_type, size1, size2))
 
 
 def main():
