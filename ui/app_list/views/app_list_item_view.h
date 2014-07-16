@@ -55,6 +55,8 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   AppListItem* item() const { return item_; }
 
+  views::ImageView* icon() const { return icon_; }
+
   const views::Label* title() const { return title_; }
 
   // In a synchronous drag the item view isn't informed directly of the drag
