@@ -8,12 +8,14 @@
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace sync_file_system {
@@ -21,6 +23,9 @@ namespace drive_backend {
 
 void PutServiceMetadataToBatch(const ServiceMetadata& service_metadata,
                                leveldb::WriteBatch* batch) {
+  if (!batch)
+    return;
+
   std::string value;
   bool success = service_metadata.SerializeToString(&value);
   DCHECK(success);
@@ -159,6 +164,22 @@ bool RemovePrefix(const std::string& str, const std::string& prefix,
   if (out)
     *out = str.substr(prefix.size());
   return true;
+}
+
+scoped_ptr<ServiceMetadata> InitializeServiceMetadata(leveldb::DB* db) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(db);
+
+  std::string value;
+  leveldb::Status status = db->Get(leveldb::ReadOptions(),
+                                   kServiceMetadataKey,
+                                   &value);
+
+  scoped_ptr<ServiceMetadata> service_metadata(new ServiceMetadata);
+  if (!status.ok() || !service_metadata->ParseFromString(value))
+    service_metadata->set_next_tracker_id(1);
+
+  return service_metadata.Pass();
 }
 
 }  // namespace drive_backend

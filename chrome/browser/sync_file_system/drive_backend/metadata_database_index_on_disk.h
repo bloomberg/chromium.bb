@@ -22,6 +22,7 @@ namespace drive_backend {
 
 class FileMetadata;
 class FileTracker;
+class ServiceMetadata;
 struct DatabaseContents;
 // TODO(peria): Migrate implementation of ParentIDAndTitle structure from
 //     metadata_database_index.{cc,h} to here, on removing the files.
@@ -63,6 +64,15 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
   virtual size_t CountDirtyTracker() const OVERRIDE;
   virtual size_t CountFileMetadata() const OVERRIDE;
   virtual size_t CountFileTracker() const OVERRIDE;
+  virtual void SetSyncRootTrackerID(int64 sync_root_id,
+                                    leveldb::WriteBatch* batch) const OVERRIDE;
+  virtual void SetLargestChangeID(int64 largest_change_id,
+                                  leveldb::WriteBatch* batch) const OVERRIDE;
+  virtual void SetNextTrackerID(int64 next_tracker_id,
+                                leveldb::WriteBatch* batch) const OVERRIDE;
+  virtual int64 GetSyncRootTrackerID() const OVERRIDE;
+  virtual int64 GetLargestChangeID() const OVERRIDE;
+  virtual int64 GetNextTrackerID() const OVERRIDE;
   virtual std::vector<std::string> GetRegisteredAppIDs() const OVERRIDE;
   virtual std::vector<int64> GetAllTrackerIDs() const OVERRIDE;
   virtual std::vector<std::string> GetAllMetadataIDs() const OVERRIDE;
@@ -159,6 +169,7 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
   NumEntries CountWithPrefix(const std::string& prefix, int64 ignored_id);
 
   leveldb::DB* db_;  // Not owned.
+  scoped_ptr<ServiceMetadata> service_metadata_;
 
   DISALLOW_COPY_AND_ASSIGN(MetadataDatabaseIndexOnDisk);
 };

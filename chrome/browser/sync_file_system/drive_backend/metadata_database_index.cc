@@ -7,6 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
@@ -199,15 +200,19 @@ void RemoveUnreachableItems(DatabaseContents* contents,
 
 // static
 scoped_ptr<MetadataDatabaseIndex>
-MetadataDatabaseIndex::Create(leveldb::DB* db,
-                              int64 sync_root_tracker_id,
-                              leveldb::WriteBatch* batch) {
+MetadataDatabaseIndex::Create(leveldb::DB* db, leveldb::WriteBatch* batch) {
+  DCHECK(db);
+  DCHECK(batch);
+
+  scoped_ptr<ServiceMetadata> service_metadata = InitializeServiceMetadata(db);
   DatabaseContents contents;
   ReadDatabaseContents(db, &contents);
-  RemoveUnreachableItems(&contents, sync_root_tracker_id, batch);
+  RemoveUnreachableItems(&contents,
+                         service_metadata->sync_root_tracker_id(),
+                         batch);
 
   scoped_ptr<MetadataDatabaseIndex> index(new MetadataDatabaseIndex);
-  index->Initialize(&contents);
+  index->Initialize(service_metadata.Pass(), &contents);
   return index.Pass();
 }
 
@@ -215,11 +220,15 @@ MetadataDatabaseIndex::Create(leveldb::DB* db,
 scoped_ptr<MetadataDatabaseIndex>
 MetadataDatabaseIndex::CreateForTesting(DatabaseContents* contents) {
   scoped_ptr<MetadataDatabaseIndex> index(new MetadataDatabaseIndex);
-  index->Initialize(contents);
+  index->Initialize(make_scoped_ptr(new ServiceMetadata), contents);
   return index.Pass();
 }
 
-void MetadataDatabaseIndex::Initialize(DatabaseContents* contents) {
+void MetadataDatabaseIndex::Initialize(
+    scoped_ptr<ServiceMetadata> service_metadata,
+    DatabaseContents* contents) {
+  service_metadata_ = service_metadata.Pass();
+
   for (size_t i = 0; i < contents->file_metadata.size(); ++i)
     StoreFileMetadata(make_scoped_ptr(contents->file_metadata[i]), NULL);
   contents->file_metadata.weak_clear();
@@ -409,6 +418,44 @@ size_t MetadataDatabaseIndex::CountFileMetadata() const {
 
 size_t MetadataDatabaseIndex::CountFileTracker() const {
   return tracker_by_id_.size();
+}
+
+void MetadataDatabaseIndex::SetSyncRootTrackerID(
+    int64 sync_root_id, leveldb::WriteBatch* batch) const {
+  service_metadata_->set_sync_root_tracker_id(sync_root_id);
+  PutServiceMetadataToBatch(*service_metadata_, batch);
+}
+
+void MetadataDatabaseIndex::SetLargestChangeID(
+    int64 largest_change_id, leveldb::WriteBatch* batch) const {
+  service_metadata_->set_largest_change_id(largest_change_id);
+  PutServiceMetadataToBatch(*service_metadata_, batch);
+}
+
+void MetadataDatabaseIndex::SetNextTrackerID(
+    int64 next_tracker_id, leveldb::WriteBatch* batch) const {
+  service_metadata_->set_next_tracker_id(next_tracker_id);
+  PutServiceMetadataToBatch(*service_metadata_, batch);
+}
+
+int64 MetadataDatabaseIndex::GetSyncRootTrackerID() const {
+  if (!service_metadata_->has_sync_root_tracker_id())
+    return kInvalidTrackerID;
+  return service_metadata_->sync_root_tracker_id();
+}
+
+int64 MetadataDatabaseIndex::GetLargestChangeID() const {
+  if (!service_metadata_->has_largest_change_id())
+    return kInvalidTrackerID;
+  return service_metadata_->largest_change_id();
+}
+
+int64 MetadataDatabaseIndex::GetNextTrackerID() const {
+  if (!service_metadata_->has_next_tracker_id()) {
+    NOTREACHED();
+    return kInvalidTrackerID;
+  }
+  return service_metadata_->next_tracker_id();
 }
 
 std::vector<std::string> MetadataDatabaseIndex::GetRegisteredAppIDs() const {

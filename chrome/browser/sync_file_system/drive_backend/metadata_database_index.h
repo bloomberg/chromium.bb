@@ -65,9 +65,7 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
   virtual ~MetadataDatabaseIndex();
 
   static scoped_ptr<MetadataDatabaseIndex> Create(
-      leveldb::DB* db,
-      int64 sync_root_tracker_id,
-      leveldb::WriteBatch* batch);
+      leveldb::DB* db, leveldb::WriteBatch* batch);
   static scoped_ptr<MetadataDatabaseIndex> CreateForTesting(
       DatabaseContents* contents);
 
@@ -102,6 +100,15 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
   virtual size_t CountDirtyTracker() const OVERRIDE;
   virtual size_t CountFileMetadata() const OVERRIDE;
   virtual size_t CountFileTracker() const OVERRIDE;
+  virtual void SetSyncRootTrackerID(int64 sync_root_id,
+                                    leveldb::WriteBatch* batch) const OVERRIDE;
+  virtual void SetLargestChangeID(int64 largest_change_id,
+                                  leveldb::WriteBatch* batch) const OVERRIDE;
+  virtual void SetNextTrackerID(int64 next_tracker_id,
+                                leveldb::WriteBatch* batch) const OVERRIDE;
+  virtual int64 GetSyncRootTrackerID() const OVERRIDE;
+  virtual int64 GetLargestChangeID() const OVERRIDE;
+  virtual int64 GetNextTrackerID() const OVERRIDE;
   virtual std::vector<std::string> GetRegisteredAppIDs() const OVERRIDE;
   virtual std::vector<int64> GetAllTrackerIDs() const OVERRIDE;
   virtual std::vector<std::string> GetAllMetadataIDs() const OVERRIDE;
@@ -120,7 +127,8 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
   friend class MetadataDatabaseTest;
 
   MetadataDatabaseIndex();
-  void Initialize(DatabaseContents* contents);
+  void Initialize(scoped_ptr<ServiceMetadata> service_metadata,
+                  DatabaseContents* contents);
 
   // Maintains |app_root_by_app_id_|.
   void AddToAppIDIndex(const FileTracker& new_tracker);
@@ -145,6 +153,8 @@ class MetadataDatabaseIndex : public MetadataDatabaseIndexInterface {
   void UpdateInDirtyTrackerIndexes(const FileTracker& old_tracker,
                                    const FileTracker& new_tracker);
   void RemoveFromDirtyTrackerIndexes(const FileTracker& tracker);
+
+  scoped_ptr<ServiceMetadata> service_metadata_;
 
   MetadataByID metadata_by_id_;
   TrackerByID tracker_by_id_;

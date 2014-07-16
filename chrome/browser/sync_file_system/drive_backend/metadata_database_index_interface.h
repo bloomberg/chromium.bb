@@ -106,6 +106,15 @@ class MetadataDatabaseIndexInterface {
   virtual size_t CountFileMetadata() const = 0;
   virtual size_t CountFileTracker() const = 0;
 
+  virtual void SetSyncRootTrackerID(int64 sync_root_id,
+                                    leveldb::WriteBatch* batch) const = 0;
+  virtual void SetLargestChangeID(int64 largest_change_id,
+                                  leveldb::WriteBatch* batch) const = 0;
+  virtual void SetNextTrackerID(int64 next_tracker_id,
+                                leveldb::WriteBatch* batch) const = 0;
+  virtual int64 GetSyncRootTrackerID() const = 0;
+  virtual int64 GetLargestChangeID() const = 0;
+  virtual int64 GetNextTrackerID() const = 0;
   virtual std::vector<std::string> GetRegisteredAppIDs() const = 0;
   virtual std::vector<int64> GetAllTrackerIDs() const = 0;
   virtual std::vector<std::string> GetAllMetadataIDs() const = 0;

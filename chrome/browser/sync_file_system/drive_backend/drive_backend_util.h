@@ -23,6 +23,7 @@ class ResourceEntry;
 }
 
 namespace leveldb {
+class DB;
 class WriteBatch;
 }
 
@@ -54,6 +55,8 @@ SyncStatusCode GDataErrorCodeToSyncStatusCode(
 // If |out| is not NULL, the result is stored in it.
 bool RemovePrefix(const std::string& str, const std::string& prefix,
                   std::string* out);
+
+scoped_ptr<ServiceMetadata> InitializeServiceMetadata(leveldb::DB* db);
 
 template <typename Src, typename Dest>
 void AppendContents(const Src& src, Dest* dest) {

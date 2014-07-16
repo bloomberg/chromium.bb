@@ -293,41 +293,6 @@ SyncStatusCode WriteVersionInfo(leveldb::DB* db) {
               base::Int64ToString(kCurrentDatabaseVersion)));
 }
 
-scoped_ptr<ServiceMetadata> ReadServiceMetadata(leveldb::DB* db) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(db);
-
-  std::string value;
-  leveldb::Status status = db->Get(leveldb::ReadOptions(),
-                                   kServiceMetadataKey,
-                                   &value);
-  if (!status.ok())
-    return scoped_ptr<ServiceMetadata>();
-
-  scoped_ptr<ServiceMetadata> service_metadata(new ServiceMetadata);
-  if (!service_metadata->ParseFromString(value)) {
-    util::Log(logging::LOG_WARNING, FROM_HERE,
-              "Failed to parse SyncServiceMetadata");
-    return scoped_ptr<ServiceMetadata>();
-  }
-  return service_metadata.Pass();
-}
-
-scoped_ptr<ServiceMetadata> InitializeServiceMetadata(
-    leveldb::DB* db, leveldb::WriteBatch* batch) {
-  scoped_ptr<ServiceMetadata> service_metadata = ReadServiceMetadata(db);
-  if (!service_metadata) {
-    service_metadata.reset(new ServiceMetadata);
-    service_metadata->set_next_tracker_id(1);
-
-    std::string value;
-    service_metadata->SerializeToString(&value);
-    if (batch)
-      batch->Put(kServiceMetadataKey, value);
-  }
-  return service_metadata.Pass();
-}
-
 bool HasInvalidTitle(const std::string& title) {
   return title.empty() ||
       title.find('/') != std::string::npos ||
@@ -656,12 +621,12 @@ void MetadataDatabase::ClearDatabase(
 
 int64 MetadataDatabase::GetLargestFetchedChangeID() const {
   DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
-  return service_metadata_->largest_change_id();
+  return index_->GetLargestChangeID();
 }
 
 int64 MetadataDatabase::GetSyncRootTrackerID() const {
   DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
-  return service_metadata_->sync_root_tracker_id();
+  return index_->GetSyncRootTrackerID();
 }
 
 int64 MetadataDatabase::GetLargestKnownChangeID() const {
@@ -678,8 +643,7 @@ void MetadataDatabase::UpdateLargestKnownChangeID(int64 change_id) {
 
 bool MetadataDatabase::HasSyncRoot() const {
   DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
-  return service_metadata_->has_sync_root_tracker_id() &&
-      !!service_metadata_->sync_root_tracker_id();
+  return index_->GetSyncRootTrackerID() != kInvalidTrackerID;
 }
 
 void MetadataDatabase::PopulateInitialData(
@@ -690,7 +654,7 @@ void MetadataDatabase::PopulateInitialData(
   DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
 
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
-  service_metadata_->set_largest_change_id(largest_change_id);
+  index_->SetLargestChangeID(largest_change_id, batch.get());
   UpdateLargestKnownChangeID(largest_change_id);
 
   AttachSyncRoot(sync_root_folder, batch.get());
@@ -744,7 +708,7 @@ void MetadataDatabase::RegisterApp(const std::string& app_id,
     return;
   }
 
-  int64 sync_root_tracker_id = service_metadata_->sync_root_tracker_id();
+  int64 sync_root_tracker_id = index_->GetSyncRootTrackerID();
   if (!sync_root_tracker_id) {
     util::Log(logging::LOG_WARNING, FROM_HERE,
               "Sync-root needs to be set up before registering app-root");
@@ -1009,7 +973,7 @@ void MetadataDatabase::UpdateByChangeList(
     ScopedVector<google_apis::ChangeResource> changes,
     const SyncStatusCallback& callback) {
   DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
-  DCHECK_LE(service_metadata_->largest_change_id(), largest_change_id);
+  DCHECK_LE(index_->GetLargestChangeID(), largest_change_id);
 
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
 
@@ -1026,8 +990,7 @@ void MetadataDatabase::UpdateByChangeList(
   }
 
   UpdateLargestKnownChangeID(largest_change_id);
-  service_metadata_->set_largest_change_id(largest_change_id);
-  PutServiceMetadataToBatch(*service_metadata_, batch.get());
+  index_->SetLargestChangeID(largest_change_id, batch.get());
   WriteToDatabase(batch.Pass(), callback);
 }
 
@@ -1527,16 +1490,14 @@ SyncStatusCode MetadataDatabase::InitializeOnFileTaskRunner() {
   }
 
   leveldb::WriteBatch batch;
-  service_metadata_ = InitializeServiceMetadata(db_.get(), &batch);
-  index_ = MetadataDatabaseIndex::Create(
-      db_.get(), service_metadata_->sync_root_tracker_id(), &batch);
+  index_ = MetadataDatabaseIndex::Create(db_.get(), &batch);
 
   status = LevelDBStatusToSyncStatusCode(
       db_->Write(leveldb::WriteOptions(), &batch));
   if (status != SYNC_STATUS_OK)
     return status;
 
-  UpdateLargestKnownChangeID(service_metadata_->largest_change_id());
+  UpdateLargestKnownChangeID(index_->GetLargestChangeID());
 
   return status;
 }
@@ -1644,9 +1605,8 @@ void MetadataDatabase::MaybeAddTrackersForNewFile(
 int64 MetadataDatabase::IncrementTrackerID(leveldb::WriteBatch* batch) {
   DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
 
-  int64 tracker_id = service_metadata_->next_tracker_id();
-  service_metadata_->set_next_tracker_id(tracker_id + 1);
-  PutServiceMetadataToBatch(*service_metadata_, batch);
+  int64 tracker_id = index_->GetNextTrackerID();
+  index_->SetNextTrackerID(tracker_id + 1, batch);
   DCHECK_GT(tracker_id, 0);
   return tracker_id;
 }
@@ -1654,7 +1614,7 @@ int64 MetadataDatabase::IncrementTrackerID(leveldb::WriteBatch* batch) {
 bool MetadataDatabase::CanActivateTracker(const FileTracker& tracker) {
   DCHECK(worker_sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(!tracker.active());
-  DCHECK_NE(service_metadata_->sync_root_tracker_id(), tracker.tracker_id());
+  DCHECK_NE(index_->GetSyncRootTrackerID(), tracker.tracker_id());
 
   if (HasActiveTrackerForFileID(tracker.file_id()))
     return false;
@@ -2000,9 +1960,7 @@ void MetadataDatabase::AttachSyncRoot(
   scoped_ptr<FileTracker> sync_root_tracker =
       CreateSyncRootTracker(IncrementTrackerID(batch), *sync_root_metadata);
 
-  service_metadata_->set_sync_root_tracker_id(sync_root_tracker->tracker_id());
-  PutServiceMetadataToBatch(*service_metadata_, batch);
-
+  index_->SetSyncRootTrackerID(sync_root_tracker->tracker_id(), batch);
   index_->StoreFileMetadata(sync_root_metadata.Pass(), batch);
   index_->StoreFileTracker(sync_root_tracker.Pass(), batch);
 }

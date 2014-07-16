@@ -147,6 +147,7 @@ MetadataDatabaseIndexOnDisk::MetadataDatabaseIndexOnDisk(leveldb::DB* db)
   // TODO(peria): Add UMA to measure the number of FileMetadata, FileTracker,
   //    and AppRootId.
   // TODO(peria): If the DB version is 3, build up index lists.
+  // TODO(peria): Read service metadata from DB.
 }
 
 MetadataDatabaseIndexOnDisk::~MetadataDatabaseIndexOnDisk() {}
@@ -471,6 +472,42 @@ size_t MetadataDatabaseIndexOnDisk::CountFileTracker() const {
     ++count;
   }
   return count;
+}
+
+void MetadataDatabaseIndexOnDisk::SetSyncRootTrackerID(
+    int64 sync_root_id, leveldb::WriteBatch* batch) const {
+  service_metadata_->set_sync_root_tracker_id(sync_root_id);
+  PutServiceMetadataToBatch(*service_metadata_, batch);
+}
+
+void MetadataDatabaseIndexOnDisk::SetLargestChangeID(
+    int64 largest_change_id, leveldb::WriteBatch* batch) const {
+  service_metadata_->set_largest_change_id(largest_change_id);
+  PutServiceMetadataToBatch(*service_metadata_, batch);
+}
+
+void MetadataDatabaseIndexOnDisk::SetNextTrackerID(
+    int64 next_tracker_id, leveldb::WriteBatch* batch) const {
+  service_metadata_->set_next_tracker_id(next_tracker_id);
+  PutServiceMetadataToBatch(*service_metadata_, batch);
+}
+
+int64 MetadataDatabaseIndexOnDisk::GetSyncRootTrackerID() const {
+  if (!service_metadata_->has_sync_root_tracker_id())
+    return kInvalidTrackerID;
+  return service_metadata_->sync_root_tracker_id();
+}
+
+int64 MetadataDatabaseIndexOnDisk::GetLargestChangeID() const {
+  if (!service_metadata_->has_largest_change_id())
+    return kInvalidTrackerID;
+  return service_metadata_->largest_change_id();
+}
+
+int64 MetadataDatabaseIndexOnDisk::GetNextTrackerID() const {
+  if (!service_metadata_->has_next_tracker_id())
+    return kInvalidTrackerID;
+  return service_metadata_->next_tracker_id();
 }
 
 std::vector<std::string>

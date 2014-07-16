@@ -25,8 +25,6 @@ class ServiceMetadata;
 
 namespace test_util {
 
-void ExpectEquivalentServiceMetadata(const ServiceMetadata& left,
-                                     const ServiceMetadata& right);
 void ExpectEquivalentDetails(const FileDetails& left, const FileDetails& right);
 void ExpectEquivalentMetadata(const FileMetadata& left,
                               const FileMetadata& right);

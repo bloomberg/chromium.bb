@@ -423,7 +423,6 @@ class MetadataDatabase {
   leveldb::Env* env_override_;
   scoped_ptr<leveldb::DB> db_;
 
-  scoped_ptr<ServiceMetadata> service_metadata_;
   int64 largest_known_change_id_;
 
   scoped_ptr<MetadataDatabaseIndexInterface> index_;

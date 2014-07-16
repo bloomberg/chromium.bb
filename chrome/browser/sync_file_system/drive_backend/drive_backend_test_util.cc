@@ -19,13 +19,6 @@ namespace sync_file_system {
 namespace drive_backend {
 namespace test_util {
 
-void ExpectEquivalentServiceMetadata(const ServiceMetadata& left,
-                                     const ServiceMetadata& right) {
-  EXPECT_EQ(left.largest_change_id(), right.largest_change_id());
-  EXPECT_EQ(left.sync_root_tracker_id(), right.sync_root_tracker_id());
-  EXPECT_EQ(left.next_tracker_id(), right.next_tracker_id());
-}
-
 void ExpectEquivalentDetails(const FileDetails& left,
                              const FileDetails& right) {
   std::set<std::string> parents;
