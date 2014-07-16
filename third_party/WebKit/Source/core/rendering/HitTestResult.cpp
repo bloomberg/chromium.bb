@@ -495,21 +495,6 @@ void HitTestResult::resolveRectBasedTest(Node* resolvedInnerNode, const LayoutPo
     ASSERT(!isRectBasedTest());
 }
 
-Node* HitTestResult::targetNode() const
-{
-    Node* node = innerNode();
-    if (!node)
-        return 0;
-    if (node->inDocument())
-        return node;
-
-    Element* element = node->parentElement();
-    if (element && element->inDocument())
-        return element;
-
-    return node;
-}
-
 Element* HitTestResult::innerElement() const
 {
     for (Node* node = m_innerNode.get(); node; node = NodeRenderingTraversal::parent(node)) {
