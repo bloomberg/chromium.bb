@@ -1,4 +1,5 @@
 include_rules = [
+  "+mojo/services",
   "+net/base",
   "+skia",
   "+third_party/WebKit/public",

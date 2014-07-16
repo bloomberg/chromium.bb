@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EXAMPLE_HTML_VIEWER_WEBURLLOADER_IMPL_H_
-#define MOJO_EXAMPLE_HTML_VIEWER_WEBURLLOADER_IMPL_H_
+#ifndef MOJO_SERVICES_HTML_VIEWER_WEBURLLOADER_IMPL_H_
+#define MOJO_SERVICES_HTML_VIEWER_WEBURLLOADER_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
 #include "mojo/common/handle_watcher.h"
@@ -13,8 +13,6 @@
 
 namespace mojo {
 class NetworkService;
-
-namespace examples {
 
 // The concrete type of WebURLRequest::ExtraData.
 class WebURLRequestExtraData : public blink::WebURLRequest::ExtraData {
@@ -59,7 +57,6 @@ class WebURLLoaderImpl : public blink::WebURLLoader {
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderImpl);
 };
 
-}  // namespace examples
 }  // namespace mojo
 
-#endif  // MOJO_EXAMPLE_HTML_VIEWER_WEBURLLOADER_IMPL_H_
+#endif  // MOJO_SERVICES_HTML_VIEWER_WEBURLLOADER_IMPL_H_

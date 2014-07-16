@@ -5,7 +5,7 @@
 // An implementation of WebThread in terms of base::MessageLoop and
 // base::Thread
 
-#include "mojo/examples/html_viewer/webthread_impl.h"
+#include "mojo/services/html_viewer/webthread_impl.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -14,7 +14,6 @@
 #include "base/threading/platform_thread.h"
 
 namespace mojo {
-namespace examples {
 
 WebThreadBase::WebThreadBase() {}
 WebThreadBase::~WebThreadBase() {}
@@ -129,5 +128,4 @@ bool WebThreadImplForMessageLoop::isCurrentThread() const {
 
 WebThreadImplForMessageLoop::~WebThreadImplForMessageLoop() {}
 
-}  // namespace examples
 }  // namespace mojo

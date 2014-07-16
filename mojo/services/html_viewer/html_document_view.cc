@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/examples/html_viewer/html_document_view.h"
+#include "mojo/services/html_viewer/html_document_view.h"
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "mojo/examples/html_viewer/blink_input_events_type_converters.h"
-#include "mojo/examples/html_viewer/webstoragenamespace_impl.h"
-#include "mojo/examples/html_viewer/weburlloader_impl.h"
+#include "mojo/services/html_viewer/blink_input_events_type_converters.h"
+#include "mojo/services/html_viewer/webstoragenamespace_impl.h"
+#include "mojo/services/html_viewer/weburlloader_impl.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
@@ -28,7 +28,6 @@
 #include "third_party/skia/include/core/SkDevice.h"
 
 namespace mojo {
-namespace examples {
 namespace {
 
 void ConfigureSettings(blink::WebSettings* settings) {
@@ -169,7 +168,6 @@ void HTMLDocumentView::didAddMessageToConsole(
     const blink::WebString& source_name,
     unsigned source_line,
     const blink::WebString& stack_trace) {
-  printf("### console: %s\n", std::string(message.text.utf8()).c_str());
 }
 
 void HTMLDocumentView::didNavigateWithinPage(
@@ -218,5 +216,4 @@ void HTMLDocumentView::Repaint() {
   view_->SetContents(canvas->getDevice()->accessBitmap(false));
 }
 
-}  // namespace examples
 }  // namespace mojo

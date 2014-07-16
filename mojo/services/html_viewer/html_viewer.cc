@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
-#include "mojo/examples/html_viewer/blink_platform_impl.h"
-#include "mojo/examples/html_viewer/html_document_view.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/services/html_viewer/blink_platform_impl.h"
+#include "mojo/services/html_viewer/html_document_view.h"
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/types.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
@@ -17,7 +17,6 @@
 #include "third_party/WebKit/public/web/WebKit.h"
 
 namespace mojo {
-namespace examples {
 
 class HTMLViewer;
 
@@ -102,16 +101,12 @@ void NavigatorImpl::Navigate(
     uint32_t node_id,
     navigation::NavigationDetailsPtr navigation_details,
     navigation::ResponseDetailsPtr response_details) {
-  printf("In HTMLViewer, rendering url: %s\n",
-      response_details->response->url.data());
   viewer_->Load(response_details->response.Pass());
-}
-
 }
 
 // static
 ApplicationDelegate* ApplicationDelegate::Create() {
-  return new examples::HTMLViewer;
+  return new HTMLViewer;
 }
 
 }

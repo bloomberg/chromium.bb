@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/examples/html_viewer/webthemeengine_impl.h"
+#include "mojo/services/html_viewer/webthemeengine_impl.h"
 
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -15,7 +15,6 @@ using blink::WebRect;
 using blink::WebThemeEngine;
 
 namespace mojo {
-namespace examples {
 
 static ui::NativeTheme::Part NativeThemePart(
     WebThemeEngine::Part part) {
@@ -200,5 +199,4 @@ void WebThemeEngineImpl::paintStateTransition(blink::WebCanvas* canvas,
       gfx::Rect(rect));
 }
 
-}  // namespace examples
 }  // namespace mojo

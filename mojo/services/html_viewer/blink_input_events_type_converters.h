@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EXAMPLES_HTML_VIEWER_BLINK_INPUT_EVENTS_TYPE_CONVERTERS_H_
-#define MOJO_EXAMPLES_HTML_VIEWER_BLINK_INPUT_EVENTS_TYPE_CONVERTERS_H_
+#ifndef MOJO_SERVICES_HTML_VIEWER_BLINK_INPUT_EVENTS_TYPE_CONVERTERS_H_
+#define MOJO_SERVICES_HTML_VIEWER_BLINK_INPUT_EVENTS_TYPE_CONVERTERS_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
@@ -23,4 +23,4 @@ class TypeConverter<EventPtr, scoped_ptr<blink::WebInputEvent> > {
 
 }  // namespace mojo
 
-#endif  // MOJO_EXAMPLES_HTML_VIEWER_BLINK_INPUT_EVENTS_TYPE_CONVERTERS_H_
+#endif  // MOJO_SERVICES_HTML_VIEWER_BLINK_INPUT_EVENTS_TYPE_CONVERTERS_H_

@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/examples/html_viewer/webstoragenamespace_impl.h"
+#include "mojo/services/html_viewer/webstoragenamespace_impl.h"
 
 #include <stdio.h>
 
 #include "third_party/WebKit/public/platform/WebStorageArea.h"
 
 namespace mojo {
-namespace examples {
 namespace {
 
 class DummyWebStorageAreaImpl : public blink::WebStorageArea {
@@ -43,5 +42,4 @@ bool WebStorageNamespaceImpl::isSameNamespace(
   return false;
 }
 
-}  // namespace examples
 }  // namespace mojo

@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EXAMPLES_HTML_VIEWER_WEBMIMEREGISTRY_IMPL_H_
-#define MOJO_EXAMPLES_HTML_VIEWER_WEBMIMEREGISTRY_IMPL_H_
+#ifndef MOJO_SERVICES_HTML_VIEWER_WEBMIMEREGISTRY_IMPL_H_
+#define MOJO_SERVICES_HTML_VIEWER_WEBMIMEREGISTRY_IMPL_H_
 
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/public/platform/WebMimeRegistry.h"
 
 namespace mojo {
-namespace examples {
 
 class WebMimeRegistryImpl : public blink::WebMimeRegistry {
  public:
@@ -44,7 +43,6 @@ class WebMimeRegistryImpl : public blink::WebMimeRegistry {
       const blink::WebString& path);
 };
 
-}  // namespace examples
 }  // namespace mojo
 
-#endif  // MOJO_EXAMPLES_HTML_VIEWER_WEBMIMEREGISTRY_IMPL_H_
+#endif  // MOJO_SERVICES_HTML_VIEWER_WEBMIMEREGISTRY_IMPL_H_

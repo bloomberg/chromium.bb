@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EXAMPLES_HTML_VIEWER_HTML_DOCUMENT_VIEW_H_
-#define MOJO_EXAMPLES_HTML_VIEWER_HTML_DOCUMENT_VIEW_H_
+#ifndef MOJO_SERVICES_HTML_VIEWER_HTML_DOCUMENT_VIEW_H_
+#define MOJO_SERVICES_HTML_VIEWER_HTML_DOCUMENT_VIEW_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
@@ -23,8 +23,6 @@ class Node;
 class ViewManager;
 class View;
 }
-
-namespace examples {
 
 // A view for a single HTML document.
 class HTMLDocumentView : public blink::WebViewClient,
@@ -86,7 +84,6 @@ class HTMLDocumentView : public blink::WebViewClient,
   DISALLOW_COPY_AND_ASSIGN(HTMLDocumentView);
 };
 
-}  // namespace examples
 }  // namespace mojo
 
-#endif  // MOJO_EXAMPLES_HTML_VIEWER_HTML_DOCUMENT_VIEW_H_
+#endif  // MOJO_SERVICES_HTML_VIEWER_HTML_DOCUMENT_VIEW_H_

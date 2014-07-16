@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/examples/html_viewer/weburlloader_impl.h"
+#include "mojo/services/html_viewer/weburlloader_impl.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -16,7 +16,6 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 
 namespace mojo {
-namespace examples {
 namespace {
 
 blink::WebURLResponse ToWebURLResponse(const URLResponsePtr& url_response) {
@@ -187,5 +186,4 @@ void WebURLLoaderImpl::OnResponseBodyStreamReady(MojoResult result) {
   ReadMore();
 }
 
-}  // namespace examples
 }  // namespace mojo

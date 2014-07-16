@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/examples/html_viewer/blink_platform_impl.h"
+#include "mojo/services/html_viewer/blink_platform_impl.h"
 
 #include <cmath>
 
@@ -10,16 +10,15 @@
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
-#include "mojo/examples/html_viewer/webthread_impl.h"
-#include "mojo/examples/html_viewer/weburlloader_impl.h"
 #include "mojo/public/cpp/application/application_impl.h"
+#include "mojo/services/html_viewer/webthread_impl.h"
+#include "mojo/services/html_viewer/weburlloader_impl.h"
 #include "net/base/data_url.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
 
 namespace mojo {
-namespace examples {
 namespace {
 
 // TODO(darin): Figure out what our UA should really be.
@@ -213,5 +212,4 @@ void BlinkPlatformImpl::DestroyCurrentThread(void* thread) {
   delete impl;
 }
 
-}  // namespace examples
 }  // namespace mojo

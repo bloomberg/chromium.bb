@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/examples/html_viewer/webmimeregistry_impl.h"
+#include "mojo/services/html_viewer/webmimeregistry_impl.h"
 
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
@@ -12,7 +12,6 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace mojo {
-namespace examples {
 namespace {
 
 std::string ToASCIIOrEmpty(const blink::WebString& string) {
@@ -93,5 +92,4 @@ blink::WebString WebMimeRegistryImpl::mimeTypeFromFile(
   return blink::WebString();
 }
 
-}  // namespace examples
 }  // namespace mojo

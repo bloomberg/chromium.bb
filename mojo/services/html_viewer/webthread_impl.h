@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EXAMPLES_HTML_VIEWER_WEBTHREAD_IMPL_H_
-#define MOJO_EXAMPLES_HTML_VIEWER_WEBTHREAD_IMPL_H_
+#ifndef MOJO_SERVICES_HTML_VIEWER_WEBTHREAD_IMPL_H_
+#define MOJO_SERVICES_HTML_VIEWER_WEBTHREAD_IMPL_H_
 
 #include <map>
 
@@ -12,7 +12,6 @@
 #include "third_party/WebKit/public/platform/WebThread.h"
 
 namespace mojo {
-namespace examples {
 
 class WebThreadBase : public blink::WebThread {
  public:
@@ -69,7 +68,6 @@ class WebThreadImplForMessageLoop : public WebThreadBase {
   scoped_refptr<base::MessageLoopProxy> message_loop_;
 };
 
-}  // namespace examples
 }  // namespace mojo
 
-#endif  // MOJO_EXAMPLES_HTML_VIEWER_WEBTHREAD_IMPL_H_
+#endif  // MOJO_SERVICES_HTML_VIEWER_WEBTHREAD_IMPL_H_

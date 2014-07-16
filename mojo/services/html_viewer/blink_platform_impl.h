@@ -2,22 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EXAMPLE_HTML_VIEWER_BLINK_PLATFORM_IMPL_H_
-#define MOJO_EXAMPLE_HTML_VIEWER_BLINK_PLATFORM_IMPL_H_
+#ifndef MOJO_SERVICES_HTML_VIEWER_BLINK_PLATFORM_IMPL_H_
+#define MOJO_SERVICES_HTML_VIEWER_BLINK_PLATFORM_IMPL_H_
 
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/timer/timer.h"
-#include "mojo/examples/html_viewer/webmimeregistry_impl.h"
-#include "mojo/examples/html_viewer/webthemeengine_impl.h"
+#include "mojo/services/html_viewer/webmimeregistry_impl.h"
+#include "mojo/services/html_viewer/webthemeengine_impl.h"
 #include "mojo/services/public/interfaces/network/network_service.mojom.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebScrollbarBehavior.h"
 
 namespace mojo {
 class ApplicationImpl;
-
-namespace examples {
 
 class BlinkPlatformImpl : public blink::Platform {
  public:
@@ -75,7 +73,6 @@ class BlinkPlatformImpl : public blink::Platform {
   blink::WebScrollbarBehavior scrollbar_behavior_;
 };
 
-}  // namespace examples
 }  // namespace mojo
 
-#endif  // MOJO_EXAMPLE_HTML_VIEWER_BLINK_PLATFORM_IMPL_H_
+#endif  // MOJO_SERVICES_HTML_VIEWER_BLINK_PLATFORM_IMPL_H_
