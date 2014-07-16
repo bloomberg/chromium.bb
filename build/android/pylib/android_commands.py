@@ -355,8 +355,15 @@ class AndroidCommands(object):
     Returns:
       True if device is in 'device' mode, False otherwise.
     """
-    out = self._adb.SendCommand('get-state')
-    return out.strip() == 'device'
+    # TODO(aurimas): revert to using adb get-state when android L adb is fixed.
+    #out = self._adb.SendCommand('get-state')
+    #return out.strip() == 'device'
+
+    out = self._adb.SendCommand('devices')
+    for line in out.split('\n'):
+      if self._device in line and 'device' in line:
+        return True
+    return False
 
   def IsRootEnabled(self):
     """Checks if root is enabled on the device."""

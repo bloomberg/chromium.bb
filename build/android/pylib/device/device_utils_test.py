@@ -142,12 +142,12 @@ class DeviceUtilsOldImplTest(unittest.TestCase):
 class DeviceUtilsIsOnlineTest(DeviceUtilsOldImplTest):
 
   def testIsOnline_true(self):
-    with self.assertCalls('adb -s 0123456789abcdef get-state',
-                                 'device\r\n'):
+    with self.assertCalls('adb -s 0123456789abcdef devices',
+                                 '00123456789abcdef  device\r\n'):
       self.assertTrue(self.device.IsOnline())
 
   def testIsOnline_false(self):
-    with self.assertCalls('adb -s 0123456789abcdef get-state', '\r\n'):
+    with self.assertCalls('adb -s 0123456789abcdef devices', '\r\n'):
       self.assertFalse(self.device.IsOnline())
 
 
@@ -309,7 +309,7 @@ class DeviceUtilsRebootTest(DeviceUtilsOldImplTest):
     with mock.patch('time.sleep'):
       with self.assertCallsSequence([
             ('adb -s 0123456789abcdef reboot', ''),
-            ('adb -s 0123456789abcdef get-state', 'unknown\r\n'),
+            ('adb -s 0123456789abcdef devices', 'unknown\r\n'),
             ('adb -s 0123456789abcdef wait-for-device', ''),
             ('adb -s 0123456789abcdef shell pm path android',
              'package:this.is.a.test.package'),
@@ -323,7 +323,7 @@ class DeviceUtilsRebootTest(DeviceUtilsOldImplTest):
     with mock.patch('time.sleep'):
       with self.assertCallsSequence([
             ('adb -s 0123456789abcdef reboot', ''),
-            ('adb -s 0123456789abcdef get-state', 'unknown\r\n'),
+            ('adb -s 0123456789abcdef devices', 'unknown\r\n'),
             ('adb -s 0123456789abcdef wait-for-device', ''),
             ('adb -s 0123456789abcdef shell pm path android',
              'package:this.is.a.test.package'),
