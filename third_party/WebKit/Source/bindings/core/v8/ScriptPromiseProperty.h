@@ -146,6 +146,8 @@ void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::trace(Visito
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_holder);
+    visitor->trace(m_resolved);
+    visitor->trace(m_rejected);
 #endif
     ScriptPromisePropertyBase::trace(visitor);
 }

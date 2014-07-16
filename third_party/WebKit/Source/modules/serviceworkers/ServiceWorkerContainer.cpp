@@ -150,7 +150,7 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ScriptState* scrip
     return promise;
 }
 
-PassRefPtr<ServiceWorkerContainer::ReadyProperty> ServiceWorkerContainer::createReadyProperty()
+PassRefPtrWillBeRawPtr<ServiceWorkerContainer::ReadyProperty> ServiceWorkerContainer::createReadyProperty()
 {
     return ReadyProperty::create(executionContext(), this, ReadyProperty::Ready);
 }
