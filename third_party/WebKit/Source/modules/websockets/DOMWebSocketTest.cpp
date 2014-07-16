@@ -62,11 +62,11 @@ public:
     }
 };
 
-class WebSocketWithMockChannel FINAL : public DOMWebSocket {
+class DOMWebSocketWithMockChannel FINAL : public DOMWebSocket {
 public:
-    static PassRefPtrWillBeRawPtr<WebSocketWithMockChannel> create(ExecutionContext* context)
+    static PassRefPtrWillBeRawPtr<DOMWebSocketWithMockChannel> create(ExecutionContext* context)
     {
-        RefPtrWillBeRawPtr<WebSocketWithMockChannel> websocket = adoptRefWillBeRefCountedGarbageCollected(new WebSocketWithMockChannel(context));
+        RefPtrWillBeRawPtr<DOMWebSocketWithMockChannel> websocket = adoptRefWillBeRefCountedGarbageCollected(new DOMWebSocketWithMockChannel(context));
         websocket->suspendIfNeeded();
         return websocket.release();
     }
@@ -87,7 +87,7 @@ public:
     }
 
 private:
-    WebSocketWithMockChannel(ExecutionContext* context)
+    DOMWebSocketWithMockChannel(ExecutionContext* context)
         : DOMWebSocket(context)
         , m_channel(MockWebSocketChannel::create())
         , m_hasCreatedChannel(false) { }
@@ -96,17 +96,17 @@ private:
     bool m_hasCreatedChannel;
 };
 
-class WebSocketTestBase {
+class DOMWebSocketTestBase {
 public:
-    WebSocketTestBase()
+    DOMWebSocketTestBase()
         : m_pageHolder(DummyPageHolder::create())
-        , m_websocket(WebSocketWithMockChannel::create(&m_pageHolder->document()))
+        , m_websocket(DOMWebSocketWithMockChannel::create(&m_pageHolder->document()))
         , m_executionScope(v8::Isolate::GetCurrent())
         , m_exceptionState(ExceptionState::ConstructionContext, "property", "interface", m_executionScope.scriptState()->context()->Global(), m_executionScope.isolate())
     {
     }
 
-    virtual ~WebSocketTestBase()
+    virtual ~DOMWebSocketTestBase()
     {
         if (!m_websocket)
             return;
@@ -124,16 +124,16 @@ public:
     MockWebSocketChannel& channel() { return *m_websocket->channel(); }
 
     OwnPtr<DummyPageHolder> m_pageHolder;
-    RefPtrWillBePersistent<WebSocketWithMockChannel> m_websocket;
+    RefPtrWillBePersistent<DOMWebSocketWithMockChannel> m_websocket;
     V8TestingScope m_executionScope;
     ExceptionState m_exceptionState;
 };
 
-class WebSocketTest : public WebSocketTestBase, public ::testing::Test {
+class DOMWebSocketTest : public DOMWebSocketTestBase, public ::testing::Test {
 public:
 };
 
-TEST_F(WebSocketTest, connectToBadURL)
+TEST_F(DOMWebSocketTest, connectToBadURL)
 {
     m_websocket->connect("xxx", Vector<String>(), m_exceptionState);
 
@@ -144,7 +144,7 @@ TEST_F(WebSocketTest, connectToBadURL)
     EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, connectToNonWsURL)
+TEST_F(DOMWebSocketTest, connectToNonWsURL)
 {
     m_websocket->connect("http://example.com/", Vector<String>(), m_exceptionState);
 
@@ -155,7 +155,7 @@ TEST_F(WebSocketTest, connectToNonWsURL)
     EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, connectToURLHavingFragmentIdentifier)
+TEST_F(DOMWebSocketTest, connectToURLHavingFragmentIdentifier)
 {
     m_websocket->connect("ws://example.com/#fragment", Vector<String>(), m_exceptionState);
 
@@ -166,7 +166,7 @@ TEST_F(WebSocketTest, connectToURLHavingFragmentIdentifier)
     EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, invalidPort)
+TEST_F(DOMWebSocketTest, invalidPort)
 {
     m_websocket->connect("ws://example.com:7", Vector<String>(), m_exceptionState);
 
@@ -179,7 +179,7 @@ TEST_F(WebSocketTest, invalidPort)
 
 // FIXME: Add a test for Content Security Policy.
 
-TEST_F(WebSocketTest, invalidSubprotocols)
+TEST_F(DOMWebSocketTest, invalidSubprotocols)
 {
     Vector<String> subprotocols;
     subprotocols.append("@subprotocol-|'\"x\x01\x02\x03x");
@@ -197,7 +197,7 @@ TEST_F(WebSocketTest, invalidSubprotocols)
     EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, channelConnectSuccess)
+TEST_F(DOMWebSocketTest, channelConnectSuccess)
 {
     Vector<String> subprotocols;
     subprotocols.append("aa");
@@ -216,7 +216,7 @@ TEST_F(WebSocketTest, channelConnectSuccess)
     EXPECT_EQ(KURL(KURL(), "ws://example.com/hoge"), m_websocket->url());
 }
 
-TEST_F(WebSocketTest, channelConnectFail)
+TEST_F(DOMWebSocketTest, channelConnectFail)
 {
     Vector<String> subprotocols;
     subprotocols.append("aa");
@@ -237,7 +237,7 @@ TEST_F(WebSocketTest, channelConnectFail)
     EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, isValidSubprotocolString)
+TEST_F(DOMWebSocketTest, isValidSubprotocolString)
 {
     EXPECT_TRUE(DOMWebSocket::isValidSubprotocolString("Helloworld!!"));
     EXPECT_FALSE(DOMWebSocket::isValidSubprotocolString("Hello, world!!"));
@@ -261,7 +261,7 @@ TEST_F(WebSocketTest, isValidSubprotocolString)
     }
 }
 
-TEST_F(WebSocketTest, connectSuccess)
+TEST_F(DOMWebSocketTest, connectSuccess)
 {
     Vector<String> subprotocols;
     subprotocols.append("aa");
@@ -282,7 +282,7 @@ TEST_F(WebSocketTest, connectSuccess)
     EXPECT_EQ("cc", m_websocket->extensions());
 }
 
-TEST_F(WebSocketTest, didClose)
+TEST_F(DOMWebSocketTest, didClose)
 {
     {
         InSequence s;
@@ -299,7 +299,7 @@ TEST_F(WebSocketTest, didClose)
     EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, maximumReasonSize)
+TEST_F(DOMWebSocketTest, maximumReasonSize)
 {
     {
         InSequence s;
@@ -320,7 +320,7 @@ TEST_F(WebSocketTest, maximumReasonSize)
     EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, reasonSizeExceeding)
+TEST_F(DOMWebSocketTest, reasonSizeExceeding)
 {
     {
         InSequence s;
@@ -342,7 +342,7 @@ TEST_F(WebSocketTest, reasonSizeExceeding)
     EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, closeWhenConnecting)
+TEST_F(DOMWebSocketTest, closeWhenConnecting)
 {
     {
         InSequence s;
@@ -360,7 +360,7 @@ TEST_F(WebSocketTest, closeWhenConnecting)
     EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, close)
+TEST_F(DOMWebSocketTest, close)
 {
     {
         InSequence s;
@@ -380,7 +380,7 @@ TEST_F(WebSocketTest, close)
     EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, closeWithoutReason)
+TEST_F(DOMWebSocketTest, closeWithoutReason)
 {
     {
         InSequence s;
@@ -400,7 +400,7 @@ TEST_F(WebSocketTest, closeWithoutReason)
     EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, closeWithoutCodeAndReason)
+TEST_F(DOMWebSocketTest, closeWithoutCodeAndReason)
 {
     {
         InSequence s;
@@ -420,7 +420,7 @@ TEST_F(WebSocketTest, closeWithoutCodeAndReason)
     EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, closeWhenClosing)
+TEST_F(DOMWebSocketTest, closeWhenClosing)
 {
     {
         InSequence s;
@@ -444,7 +444,7 @@ TEST_F(WebSocketTest, closeWhenClosing)
     EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, closeWhenClosed)
+TEST_F(DOMWebSocketTest, closeWhenClosed)
 {
     {
         InSequence s;
@@ -471,7 +471,7 @@ TEST_F(WebSocketTest, closeWhenClosed)
     EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, sendStringWhenConnecting)
+TEST_F(DOMWebSocketTest, sendStringWhenConnecting)
 {
     {
         InSequence s;
@@ -489,7 +489,7 @@ TEST_F(WebSocketTest, sendStringWhenConnecting)
     EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, sendStringWhenClosing)
+TEST_F(DOMWebSocketTest, sendStringWhenClosing)
 {
     Checkpoint checkpoint;
     {
@@ -510,7 +510,7 @@ TEST_F(WebSocketTest, sendStringWhenClosing)
     EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, sendStringWhenClosed)
+TEST_F(DOMWebSocketTest, sendStringWhenClosed)
 {
     Checkpoint checkpoint;
     {
@@ -532,7 +532,7 @@ TEST_F(WebSocketTest, sendStringWhenClosed)
     EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, sendStringSuccess)
+TEST_F(DOMWebSocketTest, sendStringSuccess)
 {
     {
         InSequence s;
@@ -550,7 +550,7 @@ TEST_F(WebSocketTest, sendStringSuccess)
     EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, sendStringFail)
+TEST_F(DOMWebSocketTest, sendStringFail)
 {
     {
         InSequence s;
@@ -568,7 +568,7 @@ TEST_F(WebSocketTest, sendStringFail)
     EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, sendStringInvalidMessage)
+TEST_F(DOMWebSocketTest, sendStringInvalidMessage)
 {
     {
         InSequence s;
@@ -588,7 +588,7 @@ TEST_F(WebSocketTest, sendStringInvalidMessage)
     EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, sendArrayBufferWhenConnecting)
+TEST_F(DOMWebSocketTest, sendArrayBufferWhenConnecting)
 {
     RefPtr<ArrayBufferView> view = Uint8Array::create(8);
     {
@@ -607,7 +607,7 @@ TEST_F(WebSocketTest, sendArrayBufferWhenConnecting)
     EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, sendArrayBufferWhenClosing)
+TEST_F(DOMWebSocketTest, sendArrayBufferWhenClosing)
 {
     RefPtr<ArrayBufferView> view = Uint8Array::create(8);
     {
@@ -628,7 +628,7 @@ TEST_F(WebSocketTest, sendArrayBufferWhenClosing)
     EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, sendArrayBufferWhenClosed)
+TEST_F(DOMWebSocketTest, sendArrayBufferWhenClosed)
 {
     Checkpoint checkpoint;
     RefPtr<ArrayBufferView> view = Uint8Array::create(8);
@@ -651,7 +651,7 @@ TEST_F(WebSocketTest, sendArrayBufferWhenClosed)
     EXPECT_EQ(DOMWebSocket::CLOSED, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, sendArrayBufferSuccess)
+TEST_F(DOMWebSocketTest, sendArrayBufferSuccess)
 {
     RefPtr<ArrayBufferView> view = Uint8Array::create(8);
     {
@@ -670,7 +670,7 @@ TEST_F(WebSocketTest, sendArrayBufferSuccess)
     EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, sendArrayBufferFail)
+TEST_F(DOMWebSocketTest, sendArrayBufferFail)
 {
     RefPtr<ArrayBufferView> view = Uint8Array::create(8);
     {
@@ -689,7 +689,7 @@ TEST_F(WebSocketTest, sendArrayBufferFail)
     EXPECT_EQ(DOMWebSocket::OPEN, m_websocket->readyState());
 }
 
-TEST_F(WebSocketTest, sendArrayBufferInvalidMessage)
+TEST_F(DOMWebSocketTest, sendArrayBufferInvalidMessage)
 {
     RefPtr<ArrayBufferView> view = Uint8Array::create(8);
     {
@@ -717,7 +717,7 @@ TEST_F(WebSocketTest, sendArrayBufferInvalidMessage)
 
 // FIXME: We should add tests for data receiving.
 
-TEST_F(WebSocketTest, binaryType)
+TEST_F(DOMWebSocketTest, binaryType)
 {
     EXPECT_EQ("blob", m_websocket->binaryType());
 
@@ -740,11 +740,11 @@ TEST_F(WebSocketTest, binaryType)
 
 // FIXME: We should add tests for suspend / resume.
 
-class WebSocketValidClosingCodeTest : public WebSocketTestBase, public ::testing::TestWithParam<unsigned short> {
+class DOMWebSocketValidClosingTest : public DOMWebSocketTestBase, public ::testing::TestWithParam<unsigned short> {
 public:
 };
 
-TEST_P(WebSocketValidClosingCodeTest, test)
+TEST_P(DOMWebSocketValidClosingTest, test)
 {
     {
         InSequence s;
@@ -762,13 +762,13 @@ TEST_P(WebSocketValidClosingCodeTest, test)
     EXPECT_EQ(DOMWebSocket::CLOSING, m_websocket->readyState());
 }
 
-INSTANTIATE_TEST_CASE_P(WebSocketValidClosingCode, WebSocketValidClosingCodeTest, ::testing::Values(1000, 3000, 3001, 4998, 4999));
+INSTANTIATE_TEST_CASE_P(DOMWebSocketValidClosing, DOMWebSocketValidClosingTest, ::testing::Values(1000, 3000, 3001, 4998, 4999));
 
-class WebSocketInvalidClosingCodeTest : public WebSocketTestBase, public ::testing::TestWithParam<unsigned short> {
+class DOMWebSocketInvalidClosingCodeTest : public DOMWebSocketTestBase, public ::testing::TestWithParam<unsigned short> {
 public:
 };
 
-TEST_P(WebSocketInvalidClosingCodeTest, test)
+TEST_P(DOMWebSocketInvalidClosingCodeTest, test)
 {
     {
         InSequence s;
@@ -787,7 +787,7 @@ TEST_P(WebSocketInvalidClosingCodeTest, test)
     EXPECT_EQ(DOMWebSocket::CONNECTING, m_websocket->readyState());
 }
 
-INSTANTIATE_TEST_CASE_P(WebSocketInvalidClosingCode, WebSocketInvalidClosingCodeTest, ::testing::Values(0, 1, 998, 999, 1001, 2999, 5000, 9999, 65535));
+INSTANTIATE_TEST_CASE_P(DOMWebSocketInvalidClosingCode, DOMWebSocketInvalidClosingCodeTest, ::testing::Values(0, 1, 998, 999, 1001, 2999, 5000, 9999, 65535));
 
 } // namespace
 

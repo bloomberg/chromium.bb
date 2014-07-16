@@ -984,11 +984,11 @@
       'indexeddb/IDBKeyPathTest.cpp',
       'indexeddb/IDBRequestTest.cpp',
       'indexeddb/IDBTransactionTest.cpp',
+      'websockets/DOMWebSocketTest.cpp',
       'websockets/WebSocketDeflaterTest.cpp',
       'websockets/WebSocketExtensionDispatcherTest.cpp',
       'websockets/WebSocketExtensionParserTest.cpp',
       'websockets/WebSocketPerMessageDeflateTest.cpp',
-      'websockets/WebSocketTest.cpp',
     ],
   },
 }
