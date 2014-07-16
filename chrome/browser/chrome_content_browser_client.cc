@@ -1422,10 +1422,14 @@ bool ChromeContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
 bool ChromeContentBrowserClient::ShouldSwapProcessesForRedirect(
     content::ResourceContext* resource_context, const GURL& current_url,
     const GURL& new_url) {
+#if defined(ENABLE_EXTENSIONS)
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   return extensions::CrossesExtensionProcessBoundary(
       io_data->GetExtensionInfoMap()->extensions(),
       current_url, new_url, false);
+#else
+  return false;
+#endif
 }
 
 bool ChromeContentBrowserClient::ShouldAssignSiteForURL(const GURL& url) {
@@ -1870,7 +1874,7 @@ void ChromeContentBrowserClient::GuestPermissionRequestHelper(
     FileSystemAccessed(url, render_frames, callback, allow);
     return;
   }
-  DCHECK(process_map.size() == 1);
+  DCHECK_EQ(1U, process_map.size());
   it = process_map.begin();
   BrowserThread::PostTask(
       BrowserThread::UI,
@@ -1947,10 +1951,12 @@ net::URLRequestContext*
 ChromeContentBrowserClient::OverrideRequestContextForURL(
     const GURL& url, content::ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+#if defined(ENABLE_EXTENSIONS)
   if (url.SchemeIs(extensions::kExtensionScheme)) {
     ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
     return io_data->extensions_request_context();
   }
+#endif
 
   return NULL;
 }
@@ -2256,12 +2262,12 @@ bool ChromeContentBrowserClient::CanCreateWindow(
 
   *no_javascript_access = false;
 
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  InfoMap* map = io_data->GetExtensionInfoMap();
-
   // If the opener is trying to create a background window but doesn't have
   // the appropriate permission, fail the attempt.
   if (container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
+#if defined(ENABLE_EXTENSIONS)
+    ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
+    InfoMap* map = io_data->GetExtensionInfoMap();
     if (!map->SecurityOriginHasAPIPermission(
             source_origin,
             render_process_id,
@@ -2279,6 +2285,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
         map->extensions().GetExtensionOrAppByURL(opener_url);
     if (extension && !extensions::BackgroundInfo::AllowJSAccess(extension))
       *no_javascript_access = true;
+#endif
 
     return true;
   }
@@ -2291,13 +2298,13 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   HostContentSettingsMap* content_settings =
       ProfileIOData::FromResourceContext(context)->GetHostContentSettingsMap();
   BlockedWindowParams blocked_params(target_url,
-                                    referrer,
-                                    disposition,
-                                    features,
-                                    user_gesture,
-                                    opener_suppressed,
-                                    render_process_id,
-                                    opener_id);
+                                     referrer,
+                                     disposition,
+                                     features,
+                                     user_gesture,
+                                     opener_suppressed,
+                                     render_process_id,
+                                     opener_id);
 
   if (!user_gesture && !CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kDisablePopupBlocking)) {
@@ -2330,12 +2337,16 @@ bool ChromeContentBrowserClient::CanCreateWindow(
 std::string ChromeContentBrowserClient::GetWorkerProcessTitle(
     const GURL& url, content::ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+#if defined(ENABLE_EXTENSIONS)
   // Check if it's an extension-created worker, in which case we want to use
   // the name of the extension.
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   const Extension* extension =
       io_data->GetExtensionInfoMap()->extensions().GetByID(url.host());
   return extension ? extension->name() : std::string();
+#else
+  return std::string();
+#endif
 }
 
 void ChromeContentBrowserClient::ResourceDispatcherHostCreated() {

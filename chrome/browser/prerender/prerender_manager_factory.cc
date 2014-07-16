@@ -14,16 +14,19 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "extensions/browser/extension_system_provider.h"
-#include "extensions/browser/extensions_browser_client.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/prerender_condition_platform.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/prerender_condition_network.h"
 #include "chromeos/network/network_handler.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/prerender_condition_platform.h"
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
 #endif
 
 namespace prerender {
@@ -47,8 +50,10 @@ PrerenderManagerFactory::PrerenderManagerFactory()
     : BrowserContextKeyedServiceFactory(
         "PrerenderManager",
         BrowserContextDependencyManager::GetInstance()) {
+#if defined(ENABLE_EXTENSIONS)
   DependsOn(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+#endif
   // PrerenderLocalPredictor observers the history visit DB.
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(predictors::PredictorDatabaseFactory::GetInstance());

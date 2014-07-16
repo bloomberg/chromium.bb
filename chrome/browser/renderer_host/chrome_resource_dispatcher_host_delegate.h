@@ -96,10 +96,12 @@ class ChromeResourceDispatcherHostDelegate
       ExternalProtocolHandler::Delegate* delegate);
 
  private:
+#if defined(ENABLE_EXTENSIONS)
   struct StreamTargetInfo {
     std::string extension_id;
     std::string view_id;
   };
+#endif
 
   void AppendStandardResourceThrottles(
       net::URLRequest* request,
@@ -117,9 +119,11 @@ class ChromeResourceDispatcherHostDelegate
 
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
   scoped_refptr<SafeBrowsingService> safe_browsing_;
+#if defined(ENABLE_EXTENSIONS)
   scoped_refptr<extensions::UserScriptListener> user_script_listener_;
-  prerender::PrerenderTracker* prerender_tracker_;
   std::map<net::URLRequest*, StreamTargetInfo> stream_target_info_;
+#endif
+  prerender::PrerenderTracker* prerender_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeResourceDispatcherHostDelegate);
 };

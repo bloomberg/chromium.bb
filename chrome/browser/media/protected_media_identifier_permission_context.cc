@@ -14,8 +14,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
@@ -23,11 +21,16 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/suggest_permission_util.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
 
 using extensions::APIPermission;
+#endif
 
 ProtectedMediaIdentifierPermissionContext::
     ProtectedMediaIdentifierPermissionContext(Profile* profile)
@@ -63,6 +66,7 @@ void ProtectedMediaIdentifierPermissionContext::
   const PermissionRequestID id(
       render_process_id, render_view_id, 0, origin);
 
+#if defined(ENABLE_EXTENSIONS)
   if (extensions::GetViewType(web_contents) !=
       extensions::VIEW_TYPE_TAB_CONTENTS) {
     // The tab may have gone away, or the request may not be from a tab at all.
@@ -73,6 +77,7 @@ void ProtectedMediaIdentifierPermissionContext::
     NotifyPermissionSet(id, origin, result_callback, false);
     return;
   }
+#endif
 
   GURL embedder = web_contents->GetLastCommittedURL();
   if (!origin.is_valid() || !embedder.is_valid()) {

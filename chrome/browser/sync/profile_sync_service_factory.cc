@@ -12,7 +12,6 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
-#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -33,9 +32,13 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "url/gurl.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "url/gurl.h"
+#endif
 
 // static
 ProfileSyncServiceFactory* ProfileSyncServiceFactory::GetInstance() {
@@ -56,15 +59,12 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "ProfileSyncService",
         BrowserContextDependencyManager::GetInstance()) {
-
   // The ProfileSyncService depends on various SyncableServices being around
   // when it is shut down.  Specify those dependencies here to build the proper
   // destruction order.
   DependsOn(AboutSigninInternalsFactory::GetInstance());
   DependsOn(autofill::PersonalDataManagerFactory::GetInstance());
   DependsOn(BookmarkModelFactory::GetInstance());
-  DependsOn(
-      extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(GlobalErrorServiceFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
@@ -77,6 +77,8 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
 #endif
   DependsOn(WebDataServiceFactory::GetInstance());
 #if defined(ENABLE_EXTENSIONS)
+  DependsOn(
+      extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(notifier::ChromeNotifierServiceFactory::GetInstance());
 #endif
 

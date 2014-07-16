@@ -13,7 +13,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
@@ -31,11 +30,15 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
-#include "extensions/browser/view_type_utils.h"
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/wmi.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/extension_service.h"
+#include "extensions/browser/view_type_utils.h"
 #endif
 
 using content::BrowserThread;
@@ -423,6 +426,7 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
     check_permission = false;
   }
 
+#if defined(ENABLE_EXTENSIONS)
   extensions::ViewType view_type = extensions::GetViewType(web_contents);
 
   if (view_type == extensions::VIEW_TYPE_TAB_CONTENTS ||
@@ -434,6 +438,11 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
     allowed = true;
     check_permission = true;
   }
+#else
+  // Otherwise this should be a regular tab contents.
+  allowed = true;
+  check_permission = true;
+#endif
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(callback, check_permission, allowed));

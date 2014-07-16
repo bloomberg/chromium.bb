@@ -20,7 +20,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+
+#if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/process_map.h"
+#endif
 
 #if defined(ENABLE_PLUGINS)
 #include "chrome/browser/metrics/plugin_metrics_provider.h"
@@ -195,9 +198,12 @@ void ChromeStabilityMetricsProvider::LogRendererCrash(
     content::RenderProcessHost* host,
     base::TerminationStatus status,
     int exit_code) {
-  bool was_extension_process =
-      extensions::ProcessMap::Get(host->GetBrowserContext())
-          ->Contains(host->GetID());
+  bool was_extension_process = false;
+#if defined(ENABLE_EXTENSIONS)
+  was_extension_process =
+      extensions::ProcessMap::Get(host->GetBrowserContext())->Contains(
+          host->GetID());
+#endif
   if (status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
       status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
     if (was_extension_process) {

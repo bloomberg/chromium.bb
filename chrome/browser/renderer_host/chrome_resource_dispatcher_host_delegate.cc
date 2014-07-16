@@ -17,8 +17,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_resource_throttle.h"
-#include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
-#include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/prefetch/prefetch.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -35,7 +33,6 @@
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/manifest_handlers/mime_types_handler.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/browser/google_util.h"
@@ -50,9 +47,6 @@
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_response.h"
-#include "extensions/browser/info_map.h"
-#include "extensions/common/constants.h"
-#include "extensions/common/user_script.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/request_priority.h"
@@ -64,7 +58,15 @@
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/apps/app_url_redirector.h"
+#include "chrome/browser/apps/ephemeral_app_throttle.h"
+#include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
+#include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/guest_view/web_view/web_view_renderer_state.h"
+#include "chrome/common/extensions/manifest_handlers/mime_types_handler.h"
+#include "extensions/browser/info_map.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/user_script.h"
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -81,9 +83,6 @@
 #include "chrome/browser/android/intercept_download_resource_throttle.h"
 #include "chrome/browser/ui/android/infobars/auto_login_prompter.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
-#else
-#include "chrome/browser/apps/app_url_redirector.h"
-#include "chrome/browser/apps/ephemeral_app_throttle.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -97,8 +96,11 @@ using content::RenderViewHost;
 using content::ResourceDispatcherHostLoginDelegate;
 using content::ResourceRequestInfo;
 using content::ResourceType;
+
+#if defined(ENABLE_EXTENSIONS)
 using extensions::Extension;
 using extensions::StreamsPrivateAPI;
+#endif
 
 #if defined(OS_ANDROID)
 using navigation_interception::InterceptNavigationDelegate;
@@ -254,12 +256,16 @@ ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate(
     prerender::PrerenderTracker* prerender_tracker)
     : download_request_limiter_(g_browser_process->download_request_limiter()),
       safe_browsing_(g_browser_process->safe_browsing_service()),
+#if defined(ENABLE_EXTENSIONS)
       user_script_listener_(new extensions::UserScriptListener()),
+#endif
       prerender_tracker_(prerender_tracker) {
 }
 
 ChromeResourceDispatcherHostDelegate::~ChromeResourceDispatcherHostDelegate() {
+#if defined(ENABLE_EXTENSIONS)
   CHECK(stream_target_info_.empty());
+#endif
 }
 
 bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
@@ -503,11 +509,13 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
         io_data->supervised_user_url_filter()));
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
   content::ResourceThrottle* throttle =
       user_script_listener_->CreateResourceThrottle(request->url(),
                                                     resource_type);
   if (throttle)
     throttles->push_back(throttle);
+#endif
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   if (info->GetVisibilityState() == blink::WebPageVisibilityStatePrerender) {
@@ -544,8 +552,12 @@ void ChromeResourceDispatcherHostDelegate::AppendChromeSyncGaiaHeader(
 
 bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(
     const GURL& url, const std::string& mime_type) {
+#if defined(ENABLE_EXTENSIONS)
   // Special-case user scripts to get downloaded instead of viewed.
   return extensions::UserScript::IsURLUserScript(url, mime_type);
+#else
+  return false;
+#endif
 }
 
 bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
