@@ -181,6 +181,18 @@ SKIPPED_PACKAGES = [
     'sys-kernel/chromeos-kernel',  # already manually credit Linux
 ]
 
+SKIPPED_LICENSES = [
+    # Some of our packages contain binary blobs for which we have special
+    # negotiated licenses, and no need to display anything publicly. Strongly
+    # consider using Google-TOS instead, if possible.
+    'Proprietary-Binary',
+
+    # If you have an early repo for which license terms have yet to be decided
+    # use this. It will cause licensing for the package to be mostly ignored.
+    # Official should error for any package with this license.
+    'TAINTED', # TODO(dgarrett): Error on official builds with this license.
+]
+
 LICENSE_NAMES_REGEX = [
     r'^copyright$',
     r'^copyright[.]txt$',
@@ -756,8 +768,14 @@ being scraped currently).""",
       self._FindEbuildPath()
       self._ReadEbuildMetadata()
       self.skip = self.skip or not self._TestEbuildContents()
-      if self.skip:
-        return
+
+    # If this ebuild only uses skipped licenses, skip it.
+    if (self.ebuild_license_names and
+        all(l in SKIPPED_LICENSES for l in self.ebuild_license_names)):
+      self.skip = True
+
+    if self.skip:
+      return
 
     if self.fullname in PACKAGE_HOMEPAGES:
       self.homepages = PACKAGE_HOMEPAGES[self.fullname]
@@ -1058,6 +1076,9 @@ class Licensing(object):
       path = '%s/%s' % (directory, license_name)
       if os.path.exists(path):
         return "Custom"
+
+    if license_name in SKIPPED_LICENSES:
+      return "Custom"
 
     raise AssertionError("""
 license %s could not be found in %s
