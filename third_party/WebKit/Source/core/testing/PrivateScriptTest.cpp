@@ -13,7 +13,7 @@ namespace WebCore {
 
 PrivateScriptTest::PrivateScriptTest(LocalFrame* frame)
 {
-    v8::Handle<v8::Value> classObject = PrivateScriptRunner::installClass(frame, "PrivateScriptTest");
+    v8::Handle<v8::Value> classObject = PrivateScriptRunner::installClassIfNeeded(frame, "PrivateScriptTest");
     RELEASE_ASSERT(!classObject.IsEmpty());
 }
 
