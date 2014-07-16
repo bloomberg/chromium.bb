@@ -838,7 +838,7 @@ void CdmAdapter::DeliverBlock(int32_t result,
                               const LinkedDecryptedBlock& decrypted_block,
                               const PP_DecryptTrackingInfo& tracking_info) {
   PP_DCHECK(result == PP_OK);
-  PP_DecryptedBlockInfo decrypted_block_info;
+  PP_DecryptedBlockInfo decrypted_block_info = {};
   decrypted_block_info.tracking_info = tracking_info;
   decrypted_block_info.tracking_info.timestamp = decrypted_block->Timestamp();
   decrypted_block_info.tracking_info.buffer_id = 0;
@@ -894,7 +894,7 @@ void CdmAdapter::DeliverFrame(
     const LinkedVideoFrame& video_frame,
     const PP_DecryptTrackingInfo& tracking_info) {
   PP_DCHECK(result == PP_OK);
-  PP_DecryptedFrameInfo decrypted_frame_info;
+  PP_DecryptedFrameInfo decrypted_frame_info = {};
   decrypted_frame_info.tracking_info.request_id = tracking_info.request_id;
   decrypted_frame_info.tracking_info.buffer_id = 0;
   decrypted_frame_info.result = CdmStatusToPpDecryptResult(status);
@@ -941,7 +941,7 @@ void CdmAdapter::DeliverSamples(int32_t result,
                                 const PP_DecryptTrackingInfo& tracking_info) {
   PP_DCHECK(result == PP_OK);
 
-  PP_DecryptedSampleInfo decrypted_sample_info;
+  PP_DecryptedSampleInfo decrypted_sample_info = {};
   decrypted_sample_info.tracking_info = tracking_info;
   decrypted_sample_info.tracking_info.timestamp = 0;
   decrypted_sample_info.tracking_info.buffer_id = 0;
