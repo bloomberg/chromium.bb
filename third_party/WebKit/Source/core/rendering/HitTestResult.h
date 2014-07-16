@@ -88,7 +88,6 @@ public:
     PositionWithAffinity position() const;
     RenderObject* renderer() const;
 
-    void setToNodesInDocumentTreeScope();
     void setToShadowHostIfInUserAgentShadowRoot();
 
     const HitTestLocation& hitTestLocation() const { return m_hitTestLocation; }

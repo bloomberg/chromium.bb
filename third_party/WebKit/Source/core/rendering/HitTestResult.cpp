@@ -146,19 +146,6 @@ RenderObject* HitTestResult::renderer() const
     return toRenderTextFragment(renderer)->firstRenderTextInFirstLetter();
 }
 
-void HitTestResult::setToNodesInDocumentTreeScope()
-{
-    if (Node* node = innerNode()) {
-        node = node->document().ancestorInThisScope(node);
-        setInnerNode(node);
-    }
-
-    if (Node* node = innerNonSharedNode()) {
-        node = node->document().ancestorInThisScope(node);
-        setInnerNonSharedNode(node);
-    }
-}
-
 void HitTestResult::setToShadowHostIfInUserAgentShadowRoot()
 {
     if (Node* node = innerNode()) {
