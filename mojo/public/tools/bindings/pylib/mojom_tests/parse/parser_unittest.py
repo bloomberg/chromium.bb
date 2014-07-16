@@ -176,6 +176,72 @@ class ParserTest(unittest.TestCase):
                  ast.StructField('b', None, 'double', None)]))])
     self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
 
+  def testValidStructDefinitions(self):
+    """Tests all types of definitions that can occur in a struct."""
+
+    source = """\
+        struct MyStruct {
+          enum MyEnum { VALUE };
+          const double kMyConst = 1.23;
+          int32 a;
+          SomeOtherStruct b;  // Invalidity detected at another stage.
+        };
+        """
+    expected = ast.Mojom(
+        None,
+        ast.ImportList(),
+        [ast.Struct(
+            'MyStruct',
+            None,
+            ast.StructBody(
+                [ast.Enum('MyEnum',
+                          ast.EnumValueList(ast.EnumValue('VALUE', None))),
+                 ast.Const('kMyConst', 'double', '1.23'),
+                 ast.StructField('a', None, 'int32', None),
+                 ast.StructField('b', None, 'SomeOtherStruct', None)]))])
+    self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
+
+  def testInvalidStructDefinitions(self):
+    """Tests that definitions that aren't allowed in a struct are correctly
+    detected."""
+
+    source1 = """\
+        struct MyStruct {
+          MyMethod(int32 a);
+        };
+        """
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:2: Error: Unexpected '\(':\n"
+            r" *MyMethod\(int32 a\);$"):
+      parser.Parse(source1, "my_file.mojom")
+
+    source2 = """\
+        struct MyStruct {
+          struct MyInnerStruct {
+            int32 a;
+          };
+        };
+        """
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:2: Error: Unexpected 'struct':\n"
+            r" *struct MyInnerStruct {$"):
+      parser.Parse(source2, "my_file.mojom")
+
+    source3 = """\
+        struct MyStruct {
+          interface MyInterface {
+            MyMethod(int32 a);
+          };
+        };
+        """
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:2: Error: Unexpected 'interface':\n"
+            r" *interface MyInterface {$"):
+      parser.Parse(source3, "my_file.mojom")
+
   def testMissingModuleName(self):
     """Tests an (invalid) .mojom with a missing module name."""
 
@@ -649,8 +715,8 @@ class ParserTest(unittest.TestCase):
         [ast.Interface(
             'MyInterface',
             None,
-            ast.InterfaceBody([
-                ast.Method(
+            ast.InterfaceBody(
+                [ast.Method(
                     'MyMethod1',
                     ast.Ordinal(0),
                     ast.ParameterList([ast.Parameter('a', ast.Ordinal(0),
@@ -658,7 +724,7 @@ class ParserTest(unittest.TestCase):
                                        ast.Parameter('b', ast.Ordinal(1),
                                                      'int64')]),
                     None),
-                 ast.Method(
+                  ast.Method(
                     'MyMethod2',
                     ast.Ordinal(1),
                     ast.ParameterList(),
@@ -711,6 +777,76 @@ class ParserTest(unittest.TestCase):
         r"^my_file\.mojom:2: Error: Unexpected ',':\n"
             r" *MyMethod\(, string a\);$"):
       parser.Parse(source2, "my_file.mojom")
+
+  def testValidInterfaceDefinitions(self):
+    """Tests all types of definitions that can occur in an interface."""
+
+    source = """\
+        interface MyInterface {
+          enum MyEnum { VALUE };
+          const int32 kMyConst = 123;
+          MyMethod(int32 x) => (MyEnum y);
+        };
+        """
+    expected = ast.Mojom(
+        None,
+        ast.ImportList(),
+        [ast.Interface(
+            'MyInterface',
+            None,
+            ast.InterfaceBody(
+                [ast.Enum('MyEnum',
+                          ast.EnumValueList(ast.EnumValue('VALUE', None))),
+                 ast.Const('kMyConst', 'int32', '123'),
+                 ast.Method(
+                    'MyMethod',
+                    None,
+                    ast.ParameterList(ast.Parameter('x', None, 'int32')),
+                    ast.ParameterList(ast.Parameter('y', None, 'MyEnum')))]))])
+    self.assertEquals(parser.Parse(source, "my_file.mojom"), expected)
+
+  def testInvalidInterfaceDefinitions(self):
+    """Tests that definitions that aren't allowed in an interface are correctly
+    detected."""
+
+    source1 = """\
+        interface MyInterface {
+          struct MyStruct {
+            int32 a;
+          };
+        };
+        """
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:2: Error: Unexpected 'struct':\n"
+            r" *struct MyStruct {$"):
+      parser.Parse(source1, "my_file.mojom")
+
+    source2 = """\
+        interface MyInterface {
+          interface MyInnerInterface {
+            MyMethod(int32 x);
+          };
+        };
+        """
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:2: Error: Unexpected 'interface':\n"
+            r" *interface MyInnerInterface {$"):
+      parser.Parse(source2, "my_file.mojom")
+
+    source3 = """\
+        interface MyInterface {
+          int32 my_field;
+        };
+        """
+    # The parser thinks that "int32" is a plausible name for a method, so it's
+    # "my_field" that gives it away.
+    with self.assertRaisesRegexp(
+        parser.ParseError,
+        r"^my_file\.mojom:2: Error: Unexpected 'my_field':\n"
+            r" *int32 my_field;$"):
+      parser.Parse(source3, "my_file.mojom")
 
   def testValidAttributes(self):
     """Tests parsing attributes (and attribute lists)."""
