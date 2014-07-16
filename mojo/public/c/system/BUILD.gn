@@ -1,0 +1,28 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("system") {
+  sources = [
+    "../../platform/native/system_thunks.cc",
+    "../../platform/native/system_thunks.h",
+    "buffer.h",
+    "core.h",
+    "data_pipe.h",
+    "functions.h",
+    "macros.h",
+    "message_pipe.h",
+    "system_export.h",
+    "types.h",
+  ]
+  defines = [ "MOJO_SYSTEM_IMPLEMENTATION" ]
+
+  # The GYP target analogous to this one builds this code into a
+  # static library.  When building for Android, both the GYP and GN
+  # builds add --exclude-libs=ALL globally, which means that all
+  # symbols in static libraries are excluded from export.  That's a
+  # problem, as code outside this target needs to be able to call
+  # MojoSetSystemThunks(). Therefore, the GYP target needs to specifiy
+  # that all dependent targets remove that link flag. Since GN uses a
+  # source_set here, this flag change is not needed.
+}

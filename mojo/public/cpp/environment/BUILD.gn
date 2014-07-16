@@ -1,0 +1,18 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("standalone") {
+  sources = [
+    "../c/environment/async_waiter.h",
+    "../c/environment/logger.h",
+    "environment.h",
+    "lib/default_async_waiter.cc",
+    "lib/default_async_waiter.h",
+    "lib/default_logger.cc",
+    "lib/default_logger.h",
+    "lib/environment.cc",
+    "lib/logging.cc",
+    "logging.h",
+  ]
+}

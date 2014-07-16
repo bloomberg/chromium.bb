@@ -1,0 +1,24 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/rules.gni")
+ 
+android_library("java") {
+  java_files = [
+    "src/org/chromium/mojo/bindings/BindingsHelper.java",
+    "src/org/chromium/mojo/bindings/Callbacks.java",
+    "src/org/chromium/mojo/bindings/Connector.java",
+    "src/org/chromium/mojo/bindings/Decoder.java",
+    "src/org/chromium/mojo/bindings/DeserializationException.java",
+    "src/org/chromium/mojo/bindings/Encoder.java",
+    "src/org/chromium/mojo/bindings/ExecutorFactory.java",
+    "src/org/chromium/mojo/bindings/HandleOwner.java",
+    "src/org/chromium/mojo/bindings/Interface.java",
+    "src/org/chromium/mojo/bindings/InterfaceRequest.java",
+    "src/org/chromium/mojo/bindings/InterfaceWithClient.java",
+    "src/org/chromium/mojo/bindings/Message.java",
+    "src/org/chromium/mojo/bindings/MessageReceiver.java",
+    "src/org/chromium/mojo/bindings/Struct.java",
+  ]
+}

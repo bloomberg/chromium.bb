@@ -1,0 +1,22 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("application") {
+  sources = [
+    "application_impl.h",
+    "connect.h",
+    "lib/application_impl.cc",
+    "lib/service_connector.cc",
+    "lib/service_connector.h",
+    "lib/application_connection.cc",
+    "lib/application_delegate.cc",
+    "lib/service_registry.cc",
+    "lib/service_registry.h",
+  ]
+
+  deps = [
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/interfaces/service_provider",
+  ]
+}

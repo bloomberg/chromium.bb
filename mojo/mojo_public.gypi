@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //mojo/public/c/system
       'target_name': 'mojo_system',
       'type': 'static_library',
       'defines': [
@@ -112,6 +113,7 @@
       ],
     },
     {
+      # GN version: //mojo/public/cpp/environment:standalone
       'target_name': 'mojo_environment_standalone',
       'type': 'static_library',
       'sources': [
@@ -131,6 +133,7 @@
       ],
     },
     {
+      # GN version: //mojo/public/cpp/utility
       'target_name': 'mojo_utility',
       'type': 'static_library',
       'sources': [
@@ -176,6 +179,7 @@
       ],
     },
     {
+      # GN version: //mojo/public/cpp/application
       'target_name': 'mojo_application',
       'type': 'static_library',
       'sources': [
@@ -201,6 +205,7 @@
     ['OS == "android"', {
       'targets': [
         {
+          # GN version: //mojo/public/java
           'target_name': 'mojo_public_java',
           'type': 'none',
           'variables': {
@@ -209,6 +214,7 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
+          # GN version: //mojo/bindings/java
           'target_name': 'mojo_bindings_java',
           'type': 'none',
           'variables': {
