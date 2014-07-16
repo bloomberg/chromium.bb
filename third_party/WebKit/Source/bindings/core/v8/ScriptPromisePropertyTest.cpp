@@ -100,7 +100,7 @@ protected:
         return ScriptValue(scriptState(), V8ValueTraits<PassRefPtrWillBeRawPtr<Event> >::toV8Value(event, scriptState()->context()->Global(), isolate()));
     }
 
-    typedef ScriptPromiseProperty<RefPtrWillBeMember<Event>, Event*, Event*> Property;
+    typedef ScriptPromiseProperty<RefPtrWillBeMember<Event>, RefPtrWillBeMember<Event>, RefPtrWillBeMember<Event> > Property;
     PassRefPtrWillBeRawPtr<Property> newProperty() { return Property::create(&document(), Event::create(), Property::Ready); }
 
 private:

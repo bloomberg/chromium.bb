@@ -87,7 +87,7 @@ public:
 private:
     explicit ServiceWorkerContainer(ExecutionContext*);
 
-    typedef ScriptPromiseProperty<ServiceWorkerContainer*, RefPtrWillBeMember<ServiceWorker>, RefPtrWillBeMember<ServiceWorker> > ReadyProperty;
+    typedef ScriptPromiseProperty<RawPtrWillBeMember<ServiceWorkerContainer>, RefPtrWillBeMember<ServiceWorker>, RefPtrWillBeMember<ServiceWorker> > ReadyProperty;
     PassRefPtrWillBeRawPtr<ReadyProperty> createReadyProperty();
     void checkReadyChanged(PassRefPtrWillBeRawPtr<ServiceWorker> previousReadyWorker);
 
