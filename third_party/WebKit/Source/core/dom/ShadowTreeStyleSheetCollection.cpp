@@ -102,7 +102,7 @@ void ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine
         if (change.styleResolverUpdateType != Additive) {
             // We should not destroy StyleResolver when we find any stylesheet update in a shadow tree.
             // In this case, we will reset rulesets created from style elements in the shadow tree.
-            resetAllRuleSetsInTreeScope(styleResolver);
+            styleResolver->resetAuthorStyle(&m_treeScope.rootNode());
             styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);
             styleResolver->lazyAppendAuthorStyleSheets(0, collection.activeAuthorStyleSheets());
         } else {
@@ -112,7 +112,6 @@ void ShadowTreeStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine
     if (change.requiresFullStyleRecalc)
         toShadowRoot(m_treeScope.rootNode()).host()->setNeedsStyleRecalc(SubtreeStyleChange);
 
-    m_scopingNodesForStyleScoped.didRemoveScopingNodes();
     collection.swap(*this);
     updateUsesRemUnits();
 }

@@ -2096,8 +2096,6 @@
             'dom/StyleSheetCandidate.h',
             'dom/StyleSheetCollection.cpp',
             'dom/StyleSheetCollection.h',
-            'dom/StyleSheetScopingNodeList.cpp',
-            'dom/StyleSheetScopingNodeList.h',
             'dom/TagCollection.cpp',
             'dom/TagCollection.h',
             'dom/Text.cpp',

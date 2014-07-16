@@ -31,7 +31,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentOrderedList.h"
 #include "core/dom/StyleSheetCollection.h"
-#include "core/dom/StyleSheetScopingNodeList.h"
 #include "core/dom/TreeScope.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/HashMap.h"
@@ -56,8 +55,6 @@ public:
     bool usesRemUnits() const { return m_usesRemUnits; }
 
     DocumentOrderedList& styleSheetCandidateNodes() { return m_styleSheetCandidateNodes; }
-    DocumentOrderedList* scopingNodesForStyleScoped() { return m_scopingNodesForStyleScoped.scopingNodes(); }
-    WillBeHeapListHashSet<RawPtrWillBeMember<Node>, 4>* scopingNodesRemoved() { return m_scopingNodesForStyleScoped.scopingNodesRemoved(); }
 
     void clearMediaQueryRuleSetStyleSheets();
     void enableExitTransitionStylesheets();
@@ -88,7 +85,6 @@ protected:
     };
 
     void analyzeStyleSheetChange(StyleResolverUpdateMode, const StyleSheetCollection&, StyleSheetChange&);
-    void resetAllRuleSetsInTreeScope(StyleResolver*);
     void updateUsesRemUnits();
 
 private:
@@ -101,10 +97,8 @@ protected:
     bool m_usesRemUnits;
 
     DocumentOrderedList m_styleSheetCandidateNodes;
-    StyleSheetScopingNodeList m_scopingNodesForStyleScoped;
 };
 
 }
 
 #endif
-
