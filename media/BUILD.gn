@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/android/config.gni")
 import("//build/config/arm.gni")
 import("//build/config/ui.gni")
 import("//build/config/linux/pkg_config.gni")
@@ -31,7 +32,7 @@ if (is_android) {
 # Original conditional: (OS=="linux" or OS=="freebsd" or OS=="solaris") and embedded!=1
 use_alsa = false
 use_pulseaudio = false
-if (is_posix) {
+if (is_posix && !is_android) {
   use_alsa = true
   if (!use_cras) {
     use_pulseaudio = true
@@ -46,7 +47,7 @@ proprietary_codecs = false
 
 # TODO(ajwong): Where are these coming from?jk
 enable_mpeg2ts_stream_parser = false
-enable_browser_cdms = false
+enable_browser_cdms = is_android
 
 # Common configuration for targets in the media directory.
 # NOT for exporting.
@@ -114,13 +115,6 @@ if (!linux_link_pulseaudio) {
 component("media") {
   sources = [
     "audio/agc_audio_stream.h",
-    "audio/android/audio_record_input.cc",
-    "audio/android/audio_record_input.h",
-    "audio/android/opensles_input.cc",
-    "audio/android/opensles_input.h",
-    "audio/android/opensles_output.cc",
-    "audio/android/opensles_output.h",
-    "audio/android/opensles_wrapper.cc",
     "audio/audio_buffers_state.cc",
     "audio/audio_buffers_state.h",
     "audio/audio_device_name.cc",
@@ -589,14 +583,19 @@ component("media") {
     sources += [
       "audio/android/audio_manager_android.cc",
       "audio/android/audio_manager_android.h",
+      "audio/android/audio_record_input.cc",
+      "audio/android/audio_record_input.h",
+      "audio/android/opensles_input.cc",
+      "audio/android/opensles_input.h",
+      "audio/android/opensles_output.cc",
+      "audio/android/opensles_output.h",
+      "audio/android/opensles_wrapper.cc",
       "base/android/demuxer_android.h",
       "base/android/demuxer_stream_player_params.cc",
       "base/android/demuxer_stream_player_params.h",
       "base/android/media_player_manager.h",
       "base/android/media_resource_getter.cc",
       "base/android/media_resource_getter.h",
-      "base/media.cc",
-      "base/media.h",
       "base/media_stub.cc",
       "midi/midi_manager_android.cc",
       "midi/usb_midi_device_android.cc",
@@ -609,20 +608,19 @@ component("media") {
       "video/capture/android/video_capture_device_factory_android.h",
     ]
     defines += [ "DISABLE_USER_INPUT_MONITOR" ]
-# TODO(ajwong): Fix for android.
-#    deps += [
-#        ":media_android_jni_headers",
-#        ":player_android",
-#        ":video_capture_android_jni_headers",
-#    ]
-#    if (!android_webview_build) {
-#      deps += [ ":media_java" ]
-#    }
+    deps += [
+      ":media_android_jni_headers",
+      ":player_android",
+      ":video_capture_android_jni_headers",
+    ]
+    if (!is_android_webview_build) {
+      deps += [ ":media_java" ]
+    }
   }
 
   if (is_chromeos) {
     # A simple WebM encoder for animated avatars on ChromeOS.
-    sources += [ 
+    sources += [
       "formats/webm/chromeos/ebml_writer.cc",
       "formats/webm/chromeos/ebml_writer.h",
       "formats/webm/chromeos/webm_encoder.cc",
@@ -791,6 +789,8 @@ component("media") {
 
   if (proprietary_codecs) {
     sources += [
+      "formats/mp2t/es_adapter_video.cc",
+      "formats/mp2t/es_adapter_video.h",
       "formats/mp2t/es_parser.h",
       "formats/mp2t/es_parser_adts.cc",
       "formats/mp2t/es_parser_adts.h",
@@ -1051,6 +1051,7 @@ test("media_unittests") {
       "filters/h264_to_annex_b_bitstream_converter_unittest.cc",
       "formats/common/stream_parser_test_base.cc",
       "formats/common/stream_parser_test_base.h",
+      "formats/mp2t/es_adapter_video_unittest.cc",
       "formats/mp2t/es_parser_h264_unittest.cc",
       "formats/mp2t/mp2t_stream_parser_unittest.cc",
       "formats/mp4/aac_unittest.cc",
@@ -1102,7 +1103,8 @@ test("media_unittests") {
     "//skia",  # Direct dependency required to inherit config.
     "//testing/gmock",
     "//testing/gtest",
-#    "//third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h", TODO(GYP): Port over CDM stuff.
+    # TODO(dalecurtis): Port the rest of Widevine stuff.
+    "//third_party/widevine/cdm:version_h",
     "//ui/base",
     "//ui/gfx:gfx_test_support",
   ]
@@ -1138,7 +1140,7 @@ test("media_perftests") {
     "//testing/gmock",
     "//testing/gtest",
     "//testing/perf",
-#    "//third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h", TODO(GYP): Port over CDM stuff.
+    "//third_party/widevine/cdm:version_h",
     "//ui/gl",
     "//ui/gfx:gfx_test_support",
   ]
@@ -1226,7 +1228,6 @@ if (cpu_arch == "x86" || cpu_arch == "x64") {
   }
 }
 
-
 source_set("media_test_support") {
   sources = [
     "audio/mock_audio_manager.cc",
@@ -1288,48 +1289,50 @@ component("shared_memory_support") {
   deps = [ "//base" ]
 }
 
-test("ffmpeg_unittests") {
-  sources = [ "ffmpeg/ffmpeg_unittest.cc" ]
+if (media_use_ffmpeg) {
+  test("ffmpeg_unittests") {
+    sources = [ "ffmpeg/ffmpeg_unittest.cc" ]
 
-  deps = [
-     ":media",
-     ":media_test_support",
-     "//base",
-     "//base:i18n",
-     "//base/test:test_support",
-     "//testing/gtest",
-     "//third_party/ffmpeg",
-     "//ui/gfx:gfx_test_support",
-  ]
-}
+    deps = [
+       ":media",
+       ":media_test_support",
+       "//base",
+       "//base:i18n",
+       "//base/test:test_support",
+       "//testing/gtest",
+       "//third_party/ffmpeg",
+       "//ui/gfx:gfx_test_support",
+    ]
+  }
 
-test("ffmpeg_regression_tests") {
-  sources = [
-    "base/run_all_unittests.cc",
-    "ffmpeg/ffmpeg_regression_tests.cc",
-    "filters/pipeline_integration_test_base.cc",
-  ]
-  configs += [ ":media_config" ]
-  deps = [
-    ":media",
-    ":media_test_support",
-    "//base/test:test_support",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/ffmpeg",
-    "//ui/gfx/geometry",
-    "//ui/gfx:gfx_test_support",
-  ]
-# TODO(ajwong): This was in the original gyp, but it seems silly.
-#        ['os_posix==1 and OS!="mac"', {
-#          'conditions': [
-#            ['use_allocator!="none"', {
-#              'dependencies': [
-#                '../base/allocator/allocator.gyp:allocator',
-#              ],
-#            }],
-#          ],
-#        }],
+  test("ffmpeg_regression_tests") {
+    sources = [
+      "base/run_all_unittests.cc",
+      "ffmpeg/ffmpeg_regression_tests.cc",
+      "filters/pipeline_integration_test_base.cc",
+    ]
+    configs += [ ":media_config" ]
+    deps = [
+      ":media",
+      ":media_test_support",
+      "//base/test:test_support",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//third_party/ffmpeg",
+      "//ui/gfx/geometry",
+      "//ui/gfx:gfx_test_support",
+    ]
+  # TODO(ajwong): This was in the original gyp, but it seems silly.
+  #        ['os_posix==1 and OS!="mac"', {
+  #          'conditions': [
+  #            ['use_allocator!="none"', {
+  #              'dependencies': [
+  #                '../base/allocator/allocator.gyp:allocator',
+  #              ],
+  #            }],
+  #          ],
+  #        }],
+  }
 }
 
 if (use_x11) {
@@ -1347,7 +1350,7 @@ if (use_x11) {
       ":media_config",
       "//build/config/linux:x11",
       "//build/config/linux:xext",
-# TODO(ajwong): Why does xent get a separate thing in //build/config/linux:BUILD.gn
+# TODO(ajwong): Why does xext get a separate thing in //build/config/linux:BUILD.gn
     #  "//build/config/linux:xrender",
     ]
     deps = [
@@ -1359,4 +1362,87 @@ if (use_x11) {
       "//ui/gfx/geometry",
     ]
   }
+}
+
+if (is_android) {
+  import("//build/config/android/rules.gni")
+  source_set("player_android") {
+    configs += [ ":media_config" ]
+    sources = [
+      "base/android/audio_decoder_job.cc",
+      "base/android/audio_decoder_job.h",
+      "base/android/browser_cdm_factory_android.cc",
+      "base/android/media_codec_bridge.cc",
+      "base/android/media_codec_bridge.h",
+      "base/android/media_decoder_job.cc",
+      "base/android/media_decoder_job.h",
+      "base/android/media_drm_bridge.cc",
+      "base/android/media_drm_bridge.h",
+      "base/android/media_jni_registrar.cc",
+      "base/android/media_jni_registrar.h",
+      "base/android/media_player_android.cc",
+      "base/android/media_player_android.h",
+      "base/android/media_player_bridge.cc",
+      "base/android/media_player_bridge.h",
+      "base/android/media_player_listener.cc",
+      "base/android/media_player_listener.h",
+      "base/android/media_source_player.cc",
+      "base/android/media_source_player.h",
+      "base/android/video_decoder_job.cc",
+      "base/android/video_decoder_job.h",
+      "base/android/webaudio_media_codec_bridge.cc",
+      "base/android/webaudio_media_codec_bridge.h",
+      "base/android/webaudio_media_codec_info.h",
+    ]
+
+    deps = [
+      ":media_android_jni_headers",
+      "//base",
+      "//third_party/widevine/cdm:version_h",
+      "//ui/gl",
+      "//url"
+    ]
+  }
+
+  generate_jni("media_android_jni_headers") {
+    sources = [
+      "base/android/java/src/org/chromium/media/AudioManagerAndroid.java",
+      "base/android/java/src/org/chromium/media/AudioRecordInput.java",
+      "base/android/java/src/org/chromium/media/MediaCodecBridge.java",
+      "base/android/java/src/org/chromium/media/MediaDrmBridge.java",
+      "base/android/java/src/org/chromium/media/MediaPlayerBridge.java",
+      "base/android/java/src/org/chromium/media/MediaPlayerListener.java",
+      "base/android/java/src/org/chromium/media/UsbMidiDeviceAndroid.java",
+      "base/android/java/src/org/chromium/media/UsbMidiDeviceFactoryAndroid.java",
+      "base/android/java/src/org/chromium/media/WebAudioMediaCodecBridge.java",
+    ]
+    jni_package = "media"
+  }
+
+  generate_jni("video_capture_android_jni_headers") {
+    sources = [
+      "base/android/java/src/org/chromium/media/VideoCapture.java",
+      "base/android/java/src/org/chromium/media/VideoCaptureFactory.java",
+    ]
+    jni_package = "media"
+  }
+
+  android_library("media_java") {
+    srcjar_deps = [
+      ":media_android_imageformat_list",
+    ]
+    java_files = []
+  }
+
+  java_cpp_template("media_android_imageformat_list") {
+    sources = [
+      "base/android/java/src/org/chromium/media/ImageFormat.template",
+    ]
+    inputs = [
+      "video/capture/android/imageformat_list.h"
+    ]
+    package_name = "org/chromium/media"
+  }
+
+  # TODO(dalecurtis): Finish media_unittests_apk and media_perftests_apk.
 }
