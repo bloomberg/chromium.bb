@@ -17,7 +17,7 @@ scoped_ptr<LayerTilingData> LayerTilingData::Create(const gfx::Size& tile_size,
 
 LayerTilingData::LayerTilingData(const gfx::Size& tile_size,
                                  BorderTexelOption border)
-    : tiling_data_(tile_size, gfx::Rect(), border == HAS_BORDER_TEXELS) {
+    : tiling_data_(tile_size, gfx::Size(), border == HAS_BORDER_TEXELS) {
   SetTileSize(tile_size);
 }
 
@@ -112,9 +112,9 @@ Region LayerTilingData::OpaqueRegionInContentRect(
   return opaque_region;
 }
 
-void LayerTilingData::SetTilingRect(const gfx::Rect& tiling_rect) {
-  tiling_data_.SetTilingRect(tiling_rect);
-  if (tiling_rect.IsEmpty()) {
+void LayerTilingData::SetTilingSize(const gfx::Size& tiling_size) {
+  tiling_data_.SetTilingSize(tiling_size);
+  if (tiling_size.IsEmpty()) {
     tiles_.clear();
     return;
   }
@@ -122,7 +122,8 @@ void LayerTilingData::SetTilingRect(const gfx::Rect& tiling_rect) {
   // Any tiles completely outside our new bounds are invalid and should be
   // dropped.
   int left, top, right, bottom;
-  ContentRectToTileIndices(tiling_rect, &left, &top, &right, &bottom);
+  ContentRectToTileIndices(
+      gfx::Rect(tiling_size), &left, &top, &right, &bottom);
   std::vector<TileMapKey> invalid_tile_keys;
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     if (it->first.first > right || it->first.second > bottom)

@@ -40,7 +40,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
     timer_.Reset();
     do {
       picture_layer_tiling_->UpdateTilesToCurrentPile(
-          region, picture_layer_tiling_->TilingRect().size());
+          region, picture_layer_tiling_->tiling_size());
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 

@@ -76,7 +76,11 @@ bool PictureLayerTilingSet::SyncTilings(const PictureLayerTilingSet& other,
         have_high_res_tiling = true;
 
       DCHECK(this_tiling->tile_size() ==
-             client_->CalculateTileSize(this_tiling->TilingRect().size()));
+             client_->CalculateTileSize(this_tiling->tiling_size()))
+          << "tile_size: " << this_tiling->tile_size().ToString()
+          << " tiling_size: " << this_tiling->tiling_size().ToString()
+          << " CalculateTileSize: "
+          << client_->CalculateTileSize(this_tiling->tiling_size()).ToString();
       continue;
     }
     scoped_ptr<PictureLayerTiling> new_tiling = PictureLayerTiling::Create(

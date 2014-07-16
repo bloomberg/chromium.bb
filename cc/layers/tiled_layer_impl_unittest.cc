@@ -29,7 +29,7 @@ class TiledLayerImplTest : public testing::Test {
         TiledLayerImpl::Create(host_impl_.active_tree(), 1);
     scoped_ptr<LayerTilingData> tiler =
         LayerTilingData::Create(tile_size, border_texels);
-    tiler->SetTilingRect(gfx::Rect(layer_size));
+    tiler->SetTilingSize(layer_size);
     layer->SetTilingData(*tiler);
     layer->set_skips_draw(false);
     layer->draw_properties().visible_content_rect =
@@ -335,7 +335,7 @@ TEST_F(TiledLayerImplTest, Occlusion) {
 
   scoped_ptr<LayerTilingData> tiler =
       LayerTilingData::Create(tile_size, LayerTilingData::NO_BORDER_TEXELS);
-  tiler->SetTilingRect(gfx::Rect(layer_bounds));
+  tiler->SetTilingSize(layer_bounds);
   tiled_layer->SetTilingData(*tiler);
 
   ResourceProvider::ResourceId resource_id = 1;

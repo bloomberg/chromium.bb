@@ -155,11 +155,11 @@ bool PicturePileBase::HasRecordingAt(int x, int y) {
 
 bool PicturePileBase::CanRaster(float contents_scale,
                                 const gfx::Rect& content_rect) {
-  if (tiling_.tiling_rect().IsEmpty())
+  if (tiling_.tiling_size().IsEmpty())
     return false;
   gfx::Rect layer_rect = gfx::ScaleToEnclosingRect(
       content_rect, 1.f / contents_scale);
-  layer_rect.Intersect(tiling_.tiling_rect());
+  layer_rect.Intersect(gfx::Rect(tiling_.tiling_size()));
 
   // Common case inside of viewport to avoid the slower map lookups.
   if (recorded_viewport_.Contains(layer_rect)) {
@@ -200,7 +200,7 @@ gfx::Rect PicturePileBase::PadRect(const gfx::Rect& rect) {
 
 scoped_ptr<base::Value> PicturePileBase::AsValue() const {
   scoped_ptr<base::ListValue> pictures(new base::ListValue());
-  gfx::Rect tiling_rect(tiling_.tiling_rect());
+  gfx::Rect tiling_rect(tiling_.tiling_size());
   std::set<void*> appended_pictures;
   bool include_borders = true;
   for (TilingData::Iterator tile_iter(&tiling_, tiling_rect, include_borders);

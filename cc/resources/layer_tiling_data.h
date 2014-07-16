@@ -81,8 +81,8 @@ class CC_EXPORT LayerTilingData {
   Tile* TileAt(int i, int j) const;
   const TileMap& tiles() const { return tiles_; }
 
-  void SetTilingRect(const gfx::Rect& tiling_rect);
-  gfx::Rect tiling_rect() const { return tiling_data_.tiling_rect(); }
+  void SetTilingSize(const gfx::Size& tiling_size);
+  gfx::Size tiling_size() const { return tiling_data_.tiling_size(); }
 
   void ContentRectToTileIndices(const gfx::Rect& rect,
                                 int* left,

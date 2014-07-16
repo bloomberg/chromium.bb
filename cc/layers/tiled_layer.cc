@@ -142,17 +142,16 @@ void TiledLayer::UpdateTileSizeAndTilingOption() {
 }
 
 void TiledLayer::UpdateBounds() {
-  gfx::Rect old_tiling_rect = tiler_->tiling_rect();
-  gfx::Rect new_tiling_rect = gfx::Rect(content_bounds());
-  if (old_tiling_rect == new_tiling_rect)
+  gfx::Size old_tiling_size = tiler_->tiling_size();
+  gfx::Size new_tiling_size = content_bounds();
+  if (old_tiling_size == new_tiling_size)
     return;
-  tiler_->SetTilingRect(new_tiling_rect);
+  tiler_->SetTilingSize(new_tiling_size);
 
   // Invalidate any areas that the new bounds exposes.
-  Region old_region = old_tiling_rect;
-  Region new_region = new_tiling_rect;
-  new_tiling_rect.Subtract(old_tiling_rect);
-  for (Region::Iterator new_rects(new_tiling_rect); new_rects.has_rect();
+  Region new_region =
+      SubtractRegions(gfx::Rect(new_tiling_size), gfx::Rect(old_tiling_size));
+  for (Region::Iterator new_rects(new_region); new_rects.has_rect();
        new_rects.next())
     InvalidateContentRect(new_rects.rect());
 }

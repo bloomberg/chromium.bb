@@ -23,14 +23,14 @@ class CC_EXPORT TilingData {
  public:
   TilingData();
   TilingData(const gfx::Size& max_texture_size,
-             const gfx::Rect& tiling_rect,
+             const gfx::Size& tiling_size,
              bool has_border_texels);
   TilingData(const gfx::Size& max_texture_size,
-             const gfx::Rect& tiling_rect,
+             const gfx::Size& tiling_size,
              int border_texels);
 
-  gfx::Rect tiling_rect() const { return tiling_rect_; }
-  void SetTilingRect(const gfx::Rect& tiling_rect);
+  gfx::Size tiling_size() const { return tiling_size_; }
+  void SetTilingSize(const gfx::Size& tiling_size);
 
   gfx::Size max_texture_size() const { return max_texture_size_; }
   void SetMaxTextureSize(const gfx::Size& max_texture_size);
@@ -93,7 +93,7 @@ class CC_EXPORT TilingData {
    public:
     Iterator();
     Iterator(const TilingData* tiling_data,
-             const gfx::Rect& tiling_rect,
+             const gfx::Rect& consider_rect,
              bool include_borders);
     Iterator& operator++();
 
@@ -195,7 +195,7 @@ class CC_EXPORT TilingData {
   void RecomputeNumTiles();
 
   gfx::Size max_texture_size_;
-  gfx::Rect tiling_rect_;
+  gfx::Size tiling_size_;
   int border_texels_;
 
   // These are computed values.

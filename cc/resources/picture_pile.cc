@@ -157,7 +157,7 @@ bool PicturePile::UpdateAndExpandInvalidation(
     SkColor background_color,
     bool contents_opaque,
     bool contents_fill_bounds_completely,
-    const gfx::Rect& layer_bounds_rect,
+    const gfx::Size& layer_size,
     const gfx::Rect& visible_layer_rect,
     int frame_number,
     Picture::RecordingMode recording_mode,
@@ -169,9 +169,9 @@ bool PicturePile::UpdateAndExpandInvalidation(
   bool updated = false;
 
   Region resize_invalidation;
-  gfx::Rect old_tiling_rect = tiling_rect();
-  if (old_tiling_rect != layer_bounds_rect) {
-    tiling_.SetTilingRect(layer_bounds_rect);
+  gfx::Size old_tiling_size = tiling_size();
+  if (old_tiling_size != layer_size) {
+    tiling_.SetTilingSize(layer_size);
     updated = true;
   }
 
@@ -182,85 +182,78 @@ bool PicturePile::UpdateAndExpandInvalidation(
       -kPixelDistanceToRecord,
       -kPixelDistanceToRecord);
   recorded_viewport_ = interest_rect;
-  recorded_viewport_.Intersect(tiling_rect());
+  recorded_viewport_.Intersect(gfx::Rect(tiling_size()));
 
   gfx::Rect interest_rect_over_tiles =
       tiling_.ExpandRectToTileBounds(interest_rect);
 
-  if (old_tiling_rect != layer_bounds_rect) {
+  if (old_tiling_size != layer_size) {
     has_any_recordings_ = false;
 
-    if (tiling_rect().origin() != old_tiling_rect.origin()) {
-      // If the origin changes we just do something simple.
-      picture_map_.clear();
-      invalidation->Union(old_tiling_rect);
-      invalidation->Union(tiling_rect());
-    } else {
-      // Drop recordings that are outside the new layer bounds or that changed
-      // size.
-      std::vector<PictureMapKey> to_erase;
-      int min_toss_x = tiling_.num_tiles_x();
-      if (tiling_rect().right() > old_tiling_rect.right()) {
-        min_toss_x =
-            tiling_.FirstBorderTileXIndexFromSrcCoord(old_tiling_rect.right());
+    // Drop recordings that are outside the new layer bounds or that changed
+    // size.
+    std::vector<PictureMapKey> to_erase;
+    int min_toss_x = tiling_.num_tiles_x();
+    if (tiling_size().width() > old_tiling_size.width()) {
+      min_toss_x =
+          tiling_.FirstBorderTileXIndexFromSrcCoord(old_tiling_size.width());
+    }
+    int min_toss_y = tiling_.num_tiles_y();
+    if (tiling_size().height() > old_tiling_size.height()) {
+      min_toss_y =
+          tiling_.FirstBorderTileYIndexFromSrcCoord(old_tiling_size.height());
+    }
+    for (PictureMap::const_iterator it = picture_map_.begin();
+         it != picture_map_.end();
+         ++it) {
+      const PictureMapKey& key = it->first;
+      if (key.first < min_toss_x && key.second < min_toss_y) {
+        has_any_recordings_ |= !!it->second.GetPicture();
+        continue;
       }
-      int min_toss_y = tiling_.num_tiles_y();
-      if (tiling_rect().bottom() > old_tiling_rect.bottom()) {
-        min_toss_y =
-            tiling_.FirstBorderTileYIndexFromSrcCoord(old_tiling_rect.bottom());
-      }
-      for (PictureMap::const_iterator it = picture_map_.begin();
-           it != picture_map_.end();
-           ++it) {
-        const PictureMapKey& key = it->first;
-        if (key.first < min_toss_x && key.second < min_toss_y) {
-          has_any_recordings_ |= !!it->second.GetPicture();
-          continue;
-        }
-        to_erase.push_back(key);
-      }
+      to_erase.push_back(key);
+    }
 
-      for (size_t i = 0; i < to_erase.size(); ++i)
-        picture_map_.erase(to_erase[i]);
+    for (size_t i = 0; i < to_erase.size(); ++i)
+      picture_map_.erase(to_erase[i]);
 
-      // If a recording is dropped and not re-recorded below, invalidate that
-      // full recording to cause any raster tiles that would use it to be
-      // dropped.
-      // If the recording will be replaced below, just invalidate newly exposed
-      // areas to force raster tiles that include the old recording to know
-      // there is new recording to display.
-      gfx::Rect old_tiling_rect_over_tiles =
-          tiling_.ExpandRectToTileBounds(old_tiling_rect);
-      if (min_toss_x < tiling_.num_tiles_x()) {
-        int unrecorded_left = std::max(tiling_.TilePositionX(min_toss_x),
-                                       interest_rect_over_tiles.right());
-        int exposed_left = old_tiling_rect.right();
-        int left = std::min(unrecorded_left, exposed_left);
-        int tile_right =
-            tiling_.TilePositionX(min_toss_x) + tiling_.TileSizeX(min_toss_x);
-        int exposed_right = tiling_rect().right();
-        int right = std::min(tile_right, exposed_right);
-        gfx::Rect right_side(left,
-                             old_tiling_rect_over_tiles.y(),
-                             right - left,
-                             old_tiling_rect_over_tiles.height());
-        resize_invalidation.Union(right_side);
-      }
-      if (min_toss_y < tiling_.num_tiles_y()) {
-        int unrecorded_top = std::max(tiling_.TilePositionY(min_toss_y),
-                                      interest_rect_over_tiles.bottom());
-        int exposed_top = old_tiling_rect.bottom();
-        int top = std::min(unrecorded_top, exposed_top);
-        int tile_bottom =
-            tiling_.TilePositionY(min_toss_y) + tiling_.TileSizeY(min_toss_y);
-        int exposed_bottom = tiling_rect().bottom();
-        int bottom = std::min(tile_bottom, exposed_bottom);
-        gfx::Rect bottom_side(old_tiling_rect_over_tiles.x(),
-                              top,
-                              old_tiling_rect_over_tiles.width(),
-                              bottom - top);
-        resize_invalidation.Union(bottom_side);
-      }
+    // If a recording is dropped and not re-recorded below, invalidate that
+    // full recording to cause any raster tiles that would use it to be
+    // dropped.
+    // If the recording will be replaced below, just invalidate newly exposed
+    // areas to force raster tiles that include the old recording to know
+    // there is new recording to display.
+    gfx::Rect old_tiling_rect_over_tiles =
+        tiling_.ExpandRectToTileBounds(gfx::Rect(old_tiling_size));
+    if (min_toss_x < tiling_.num_tiles_x()) {
+      int unrecorded_left = std::max(tiling_.TilePositionX(min_toss_x),
+                                     interest_rect_over_tiles.right());
+      int exposed_left = old_tiling_size.width();
+      int left = std::min(unrecorded_left, exposed_left);
+      int tile_right =
+          tiling_.TilePositionX(min_toss_x) + tiling_.TileSizeX(min_toss_x);
+      int exposed_right = tiling_size().width();
+      int right = std::min(tile_right, exposed_right);
+      gfx::Rect right_side(left,
+                           old_tiling_rect_over_tiles.y(),
+                           right - left,
+                           old_tiling_rect_over_tiles.height());
+      resize_invalidation.Union(right_side);
+    }
+    if (min_toss_y < tiling_.num_tiles_y()) {
+      int unrecorded_top = std::max(tiling_.TilePositionY(min_toss_y),
+                                    interest_rect_over_tiles.bottom());
+      int exposed_top = old_tiling_size.height();
+      int top = std::min(unrecorded_top, exposed_top);
+      int tile_bottom =
+          tiling_.TilePositionY(min_toss_y) + tiling_.TileSizeY(min_toss_y);
+      int exposed_bottom = tiling_size().height();
+      int bottom = std::min(tile_bottom, exposed_bottom);
+      gfx::Rect bottom_side(old_tiling_rect_over_tiles.x(),
+                            top,
+                            old_tiling_rect_over_tiles.width(),
+                            bottom - top);
+      resize_invalidation.Union(bottom_side);
     }
   }
 
@@ -409,7 +402,7 @@ bool PicturePile::UpdateAndExpandInvalidation(
 }
 
 void PicturePile::SetEmptyBounds() {
-  tiling_.SetTilingRect(gfx::Rect());
+  tiling_.SetTilingSize(gfx::Size());
   picture_map_.clear();
   has_any_recordings_ = false;
   recorded_viewport_ = gfx::Rect();

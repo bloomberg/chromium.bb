@@ -113,7 +113,7 @@ void PicturePileImpl::RasterToBitmap(
     // texel (since the recording won't cover it) and outside the last texel
     // (due to linear filtering when using this texture).
     gfx::Rect content_tiling_rect = gfx::ToEnclosingRect(
-        gfx::ScaleRect(tiling_.tiling_rect(), contents_scale));
+        gfx::ScaleRect(gfx::Rect(tiling_.tiling_size()), contents_scale));
 
     // The final texel of content may only be partially covered by a
     // rasterization; this rect represents the content rect that is fully
@@ -269,7 +269,7 @@ void PicturePileImpl::RasterCommon(
 
   canvas->translate(-canvas_rect.x(), -canvas_rect.y());
   gfx::Rect content_tiling_rect = gfx::ToEnclosingRect(
-      gfx::ScaleRect(tiling_.tiling_rect(), contents_scale));
+      gfx::ScaleRect(gfx::Rect(tiling_.tiling_size()), contents_scale));
   content_tiling_rect.Intersect(canvas_rect);
 
   canvas->clipRect(gfx::RectToSkRect(content_tiling_rect),
@@ -345,7 +345,7 @@ void PicturePileImpl::RasterCommon(
 skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
   TRACE_EVENT0("cc", "PicturePileImpl::GetFlattenedPicture");
 
-  gfx::Rect tiling_rect(tiling_.tiling_rect());
+  gfx::Rect tiling_rect(tiling_.tiling_size());
   SkPictureRecorder recorder;
   SkCanvas* canvas =
       recorder.beginRecording(tiling_rect.width(), tiling_rect.height());
@@ -374,7 +374,7 @@ void PicturePileImpl::AnalyzeInRect(
   gfx::Rect layer_rect = gfx::ScaleToEnclosingRect(
       content_rect, 1.0f / contents_scale);
 
-  layer_rect.Intersect(tiling_.tiling_rect());
+  layer_rect.Intersect(gfx::Rect(tiling_.tiling_size()));
 
   skia::AnalysisCanvas canvas(layer_rect.width(), layer_rect.height());
 

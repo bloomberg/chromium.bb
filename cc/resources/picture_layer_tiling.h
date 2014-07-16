@@ -135,7 +135,7 @@ class CC_EXPORT PictureLayerTiling {
   void set_resolution(TileResolution resolution) { resolution_ = resolution; }
   TileResolution resolution() const { return resolution_; }
 
-  gfx::Rect TilingRect() const;
+  gfx::Size tiling_size() const { return tiling_data_.tiling_size(); }
   gfx::Rect live_tiles_rect() const { return live_tiles_rect_; }
   gfx::Size tile_size() const { return tiling_data_.max_texture_size(); }
   float contents_scale() const { return contents_scale_; }
@@ -146,7 +146,7 @@ class CC_EXPORT PictureLayerTiling {
   }
 
   void CreateAllTilesForTesting() {
-    SetLiveTilesRect(tiling_data_.tiling_rect());
+    SetLiveTilesRect(gfx::Rect(tiling_data_.tiling_size()));
   }
 
   const TilingData& TilingDataForTesting() const { return tiling_data_; }

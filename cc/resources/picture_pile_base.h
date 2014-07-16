@@ -29,7 +29,7 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   explicit PicturePileBase(const PicturePileBase* other);
   PicturePileBase(const PicturePileBase* other, unsigned thread_index);
 
-  gfx::Rect tiling_rect() const { return tiling_.tiling_rect(); }
+  gfx::Size tiling_size() const { return tiling_.tiling_size(); }
   void SetMinContentsScale(float min_contents_scale);
 
   // If non-empty, all pictures tiles inside this rect are recorded. There may
