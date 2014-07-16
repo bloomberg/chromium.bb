@@ -553,14 +553,16 @@ class DiskCache(isolateserver.LocalCache):
       self._remove_lru_file()
       self._free_disk = get_free_space(self.cache_dir)
     if trimmed_due_to_space:
-      total = sum(self._lru.itervalues())
+      total_usage = sum(self._lru.itervalues())
+      usage_percent = 0.
+      if total_usage:
+        usage_percent = 100. * self.policies.max_cache_size / float(total_usage)
       logging.warning(
           'Trimmed due to not enough free disk space: %.1fkb free, %.1fkb '
           'cache (%.1f%% of its maximum capacity)',
           self._free_disk / 1024.,
-          total / 1024.,
-          100. * self.policies.max_cache_size / float(total),
-          )
+          total_usage / 1024.,
+          usage_percent)
     self._save()
 
   def _path(self, digest):
