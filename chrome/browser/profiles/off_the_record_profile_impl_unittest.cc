@@ -62,7 +62,7 @@ class TestingProfileWithHostZoomMap : public TestingProfile {
       host_zoom_dictionary->RemoveWithoutPathExpansion(change.host, NULL);
     } else {
       host_zoom_dictionary->SetWithoutPathExpansion(
-          change.host, base::Value::CreateDoubleValue(level));
+          change.host, new base::FundamentalValue(level));
     }
   }
 

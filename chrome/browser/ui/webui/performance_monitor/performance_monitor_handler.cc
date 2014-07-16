@@ -275,9 +275,9 @@ void DoGetEvents(base::ListValue* results,
         // The property 'eventType' is set in HandleGetEvents as part of the
         // entire result set, so we don't need to include this here in the
         // event.
-        if (data.key() == "eventType")
+        if (data.key() == "eventType") {
           continue;
-        else if (data.key() == "time") {
+        } else if (data.key() == "time") {
           // The property 'time' is also used computationally, but must be
           // converted to JS-style time.
           double time = 0.0;
@@ -285,9 +285,9 @@ void DoGetEvents(base::ListValue* results,
             LOG(ERROR) << "Failed to get 'time' field from event.";
             continue;
           }
-          value = base::Value::CreateDoubleValue(
-              base::Time::FromInternalValue(
-                  static_cast<int64>(time)).ToJsTime());
+          value = new base::FundamentalValue(
+              base::Time::FromInternalValue(static_cast<int64>(time))
+                  .ToJsTime());
         } else {
           // All other values are user-facing, so we create a new value for
           // localized display.

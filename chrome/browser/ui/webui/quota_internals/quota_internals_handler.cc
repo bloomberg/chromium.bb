@@ -34,9 +34,8 @@ void QuotaInternalsHandler::RegisterMessages() {
 }
 
 void QuotaInternalsHandler::ReportAvailableSpace(int64 available_space) {
-  scoped_ptr<base::Value> avail(
-      base::Value::CreateDoubleValue(static_cast<double>(available_space)));
-  SendMessage("AvailableSpaceUpdated", *avail);
+  SendMessage("AvailableSpaceUpdated",
+              base::FundamentalValue(static_cast<double>(available_space)));
 }
 
 void QuotaInternalsHandler::ReportGlobalInfo(const GlobalStorageInfo& data) {
