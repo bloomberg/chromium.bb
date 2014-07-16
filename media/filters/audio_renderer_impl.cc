@@ -588,7 +588,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
     //
     // Otherwise the buffer has data we can send to the device.
     const base::TimeDelta media_timestamp_before_filling =
-        audio_clock_->CurrentMediaTimestamp();
+        audio_clock_->CurrentMediaTimestamp(base::TimeDelta());
     if (algorithm_->frames_buffered() > 0) {
       frames_written = algorithm_->FillBuffer(audio_bus, requested_frames);
       audio_clock_->WroteAudio(
@@ -598,7 +598,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
 
     if (frames_written == 0) {
       if (received_end_of_stream_ && !rendered_end_of_stream_ &&
-          audio_clock_->CurrentMediaTimestamp() ==
+          audio_clock_->CurrentMediaTimestamp(base::TimeDelta()) ==
               audio_clock_->last_endpoint_timestamp()) {
         rendered_end_of_stream_ = true;
         ended_cb_.Run();
@@ -619,11 +619,12 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
     // We only want to execute |time_cb_| if time has progressed and we haven't
     // signaled end of stream yet.
     if (media_timestamp_before_filling !=
-            audio_clock_->CurrentMediaTimestamp() &&
+            audio_clock_->CurrentMediaTimestamp(base::TimeDelta()) &&
         !rendered_end_of_stream_) {
-      time_cb = base::Bind(time_cb_,
-                           audio_clock_->CurrentMediaTimestamp(),
-                           audio_clock_->last_endpoint_timestamp());
+      time_cb =
+          base::Bind(time_cb_,
+                     audio_clock_->CurrentMediaTimestamp(base::TimeDelta()),
+                     audio_clock_->last_endpoint_timestamp());
     }
   }
 

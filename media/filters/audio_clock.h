@@ -35,7 +35,11 @@ class MEDIA_EXPORT AudioClock {
 
   // Calculates the current media timestamp taking silence and changes in
   // playback rate into account.
-  base::TimeDelta CurrentMediaTimestamp() const;
+  //
+  // Clients can provide |time_since_writing| to simulate the passage of time
+  // since last writing audio to get a more accurate current media timestamp.
+  base::TimeDelta CurrentMediaTimestamp(
+      base::TimeDelta time_since_writing) const;
 
   // Returns the last endpoint timestamp provided to WroteAudio().
   base::TimeDelta last_endpoint_timestamp() const {

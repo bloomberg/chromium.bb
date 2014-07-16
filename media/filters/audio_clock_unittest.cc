@@ -31,7 +31,12 @@ class AudioClockTest : public testing::Test {
   }
 
   int CurrentMediaTimestampInMilliseconds() {
-    return clock_.CurrentMediaTimestamp().InMilliseconds();
+    return CurrentMediaTimestampSinceLastWritingInMilliseconds(0);
+  }
+
+  int CurrentMediaTimestampSinceLastWritingInMilliseconds(int milliseconds) {
+    return clock_.CurrentMediaTimestamp(base::TimeDelta::FromMilliseconds(
+                                            milliseconds)).InMilliseconds();
   }
 
   int LastEndpointTimestampInMilliseconds() {
@@ -47,7 +52,7 @@ class AudioClockTest : public testing::Test {
 };
 
 TEST_F(AudioClockTest, TimestampsStartAtNoTimestamp) {
-  EXPECT_EQ(kNoTimestamp(), clock_.CurrentMediaTimestamp());
+  EXPECT_EQ(kNoTimestamp(), clock_.CurrentMediaTimestamp(base::TimeDelta()));
   EXPECT_EQ(kNoTimestamp(), clock_.last_endpoint_timestamp());
 }
 
@@ -172,6 +177,47 @@ TEST_F(AudioClockTest, ZeroDelay) {
   WroteSilence(10, 0);
   EXPECT_EQ(3000, CurrentMediaTimestampInMilliseconds());
   EXPECT_EQ(3000, LastEndpointTimestampInMilliseconds());
+}
+
+TEST_F(AudioClockTest, CurrentMediaTimestampSinceLastWriting) {
+  // Construct an audio clock with the following representation:
+  //
+  // +-------------------+----------------+------------------+----------------+
+  // | 10 frames silence | 10 frames @ 1x | 10 frames @ 0.5x | 10 frames @ 2x |
+  // +-------------------+----------------+------------------+----------------+
+  // Media timestamp:    0              1000               1500             3500
+  // Wall clock time:  2000             3000               4000             5000
+  WroteAudio(10, 40, 1.0);
+  WroteAudio(10, 40, 0.5);
+  WroteAudio(10, 40, 2.0);
+  EXPECT_EQ(-2000, CurrentMediaTimestampInMilliseconds());
+  EXPECT_EQ(3500, LastEndpointTimestampInMilliseconds());
+
+  // Simulate passing 2000ms of initial delay in the audio hardware.
+  EXPECT_EQ(-2000, CurrentMediaTimestampSinceLastWritingInMilliseconds(0));
+  EXPECT_EQ(-1500, CurrentMediaTimestampSinceLastWritingInMilliseconds(500));
+  EXPECT_EQ(-1000, CurrentMediaTimestampSinceLastWritingInMilliseconds(1000));
+  EXPECT_EQ(-500, CurrentMediaTimestampSinceLastWritingInMilliseconds(1500));
+  EXPECT_EQ(0, CurrentMediaTimestampSinceLastWritingInMilliseconds(2000));
+
+  // New we should see the 1.0x buffer.
+  EXPECT_EQ(500, CurrentMediaTimestampSinceLastWritingInMilliseconds(2500));
+  EXPECT_EQ(1000, CurrentMediaTimestampSinceLastWritingInMilliseconds(3000));
+
+  // Now we should see the 0.5x buffer.
+  EXPECT_EQ(1250, CurrentMediaTimestampSinceLastWritingInMilliseconds(3500));
+  EXPECT_EQ(1500, CurrentMediaTimestampSinceLastWritingInMilliseconds(4000));
+
+  // Now we should see the 2.0x buffer.
+  EXPECT_EQ(2500, CurrentMediaTimestampSinceLastWritingInMilliseconds(4500));
+  EXPECT_EQ(3500, CurrentMediaTimestampSinceLastWritingInMilliseconds(5000));
+
+  // Times beyond the known length of the audio clock should return the last
+  // value we know of.
+  EXPECT_EQ(LastEndpointTimestampInMilliseconds(),
+            CurrentMediaTimestampSinceLastWritingInMilliseconds(5001));
+  EXPECT_EQ(LastEndpointTimestampInMilliseconds(),
+            CurrentMediaTimestampSinceLastWritingInMilliseconds(6000));
 }
 
 }  // namespace media

@@ -45,20 +45,32 @@ void AudioClock::WroteSilence(int frames, int delay_frames) {
   PushBufferedAudio(frames, 0, kNoTimestamp());
 }
 
-base::TimeDelta AudioClock::CurrentMediaTimestamp() const {
+base::TimeDelta AudioClock::CurrentMediaTimestamp(
+    base::TimeDelta time_since_writing) const {
+  int frames_to_skip =
+      static_cast<int>(time_since_writing.InSecondsF() * sample_rate_);
   int silence_frames = 0;
   for (size_t i = 0; i < buffered_audio_.size(); ++i) {
+    int frames = buffered_audio_[i].frames;
+    if (frames_to_skip > 0) {
+      if (frames <= frames_to_skip) {
+        frames_to_skip -= frames;
+        continue;
+      }
+      frames -= frames_to_skip;
+      frames_to_skip = 0;
+    }
+
     // Account for silence ahead of the buffer closest to being played.
     if (buffered_audio_[i].playback_rate == 0) {
-      silence_frames += buffered_audio_[i].frames;
+      silence_frames += frames;
       continue;
     }
 
     // Multiply by playback rate as frames represent time-scaled audio.
     return buffered_audio_[i].endpoint_timestamp -
            base::TimeDelta::FromMicroseconds(
-               ((buffered_audio_[i].frames * buffered_audio_[i].playback_rate) +
-                silence_frames) /
+               ((frames * buffered_audio_[i].playback_rate) + silence_frames) /
                sample_rate_ * base::Time::kMicrosecondsPerSecond);
   }
 
