@@ -10,6 +10,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 import com.google.protos.ipc.invalidation.Types;
 
+import org.chromium.base.FieldTrialList;
+import org.chromium.base.library_loader.LibraryLoader;
+
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -90,6 +93,15 @@ public enum ModelType {
         this(modelType, false);
     }
 
+    private boolean isNonInvalidationType() {
+      if (this == SESSION && LibraryLoader.isInitialized()) {
+        return FieldTrialList
+            .findFullName("AndroidSessionNotifications")
+            .equals("Disabled");
+      }
+      return mNonInvalidationType;
+    }
+
     /**
      * Returns the {@link ObjectId} representation of this {@link ModelType}.
      *
@@ -155,7 +167,7 @@ public enum ModelType {
     public static Set<ObjectId> modelTypesToObjectIds(Set<ModelType> modelTypes) {
         Set<ObjectId> objectIds = new HashSet<ObjectId>(modelTypes.size());
         for (ModelType modelType : modelTypes) {
-            if (!modelType.mNonInvalidationType) {
+            if (!modelType.isNonInvalidationType()) {
                 objectIds.add(modelType.toObjectId());
             }
         }
