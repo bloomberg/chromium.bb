@@ -179,6 +179,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
 #include "components/metrics/metrics_log.h"
@@ -331,6 +332,13 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager,
   DCHECK(state_manager_);
   DCHECK(client_);
   DCHECK(local_state_);
+
+  // Set the install date if this is our first run.
+  int64 install_date = local_state_->GetInt64(metrics::prefs::kInstallDate);
+  if (install_date == 0) {
+    local_state_->SetInt64(metrics::prefs::kInstallDate,
+                           base::Time::Now().ToTimeT());
+  }
 }
 
 MetricsService::~MetricsService() {

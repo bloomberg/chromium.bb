@@ -22,7 +22,6 @@ namespace chrome {
 // platforms.
 // |local_state| is needed by some other methods called from within this one.
 void SetupDesktopFieldTrials(const base::CommandLine& parsed_command_line,
-                             const base::Time& install_time,
                              PrefService* local_state);
 
 }  // namespace chrome

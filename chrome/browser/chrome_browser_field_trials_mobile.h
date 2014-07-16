@@ -20,9 +20,7 @@ namespace chrome {
 // Add an invocation of your field trial init function to this method, or to
 // SetupFieldTrials in chrome_browser_field_trials.cc if it is for all
 // platforms.
-void SetupMobileFieldTrials(const base::CommandLine& parsed_command_line,
-                            const base::Time& install_time,
-                            PrefService* local_state);
+void SetupMobileFieldTrials(const base::CommandLine& parsed_command_line);
 
 }  // namespace chrome
 

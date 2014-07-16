@@ -104,7 +104,6 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
-#include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_process_host.h"
@@ -601,8 +600,9 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   if (variations_service)
     variations_service->CreateTrialsFromSeed();
 
-  // This must be called after the local state is initialized.
-  browser_field_trials_.SetupFieldTrials(local_state_);
+  // This must be called after |local_state_| is initialized.
+  browser_field_trials_.SetupFieldTrials(
+      base::Time::FromTimeT(metrics->GetInstallDate()), local_state_);
 
   // Initialize FieldTrialSynchronizer system. This is a singleton and is used
   // for posting tasks via base::Bind. Its deleted when it goes out of scope.
@@ -936,15 +936,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   // Initialize tracking synchronizer system.
   tracking_synchronizer_ = new chrome_browser_metrics::TrackingSynchronizer();
-
-  // Now that all preferences have been registered, set the install date
-  // for the uninstall metrics if this is our first run. This only actually
-  // gets used if the user has metrics reporting enabled at uninstall time.
-  int64 install_date = local_state_->GetInt64(metrics::prefs::kInstallDate);
-  if (install_date == 0) {
-    local_state_->SetInt64(metrics::prefs::kInstallDate,
-                           base::Time::Now().ToTimeT());
-  }
 
 #if defined(OS_MACOSX)
   // Get the Keychain API to register for distributed notifications on the main

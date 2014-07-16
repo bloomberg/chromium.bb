@@ -72,9 +72,7 @@ void DataCompressionProxyFieldTrials() {
 
 }  // namespace
 
-void SetupMobileFieldTrials(const CommandLine& parsed_command_line,
-                            const base::Time& install_time,
-                            PrefService* local_state) {
+void SetupMobileFieldTrials(const CommandLine& parsed_command_line) {
   DataCompressionProxyFieldTrials();
 #if defined(OS_ANDROID)
   prerender::ConfigurePrerender(parsed_command_line);

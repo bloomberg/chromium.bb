@@ -31,9 +31,8 @@ ChromeBrowserFieldTrials::ChromeBrowserFieldTrials(
 ChromeBrowserFieldTrials::~ChromeBrowserFieldTrials() {
 }
 
-void ChromeBrowserFieldTrials::SetupFieldTrials(PrefService* local_state) {
-  const base::Time install_time = base::Time::FromTimeT(
-      local_state->GetInt64(metrics::prefs::kInstallDate));
+void ChromeBrowserFieldTrials::SetupFieldTrials(const base::Time& install_time,
+                                                PrefService* local_state) {
   DCHECK(!install_time.is_null());
 
   // Field trials that are shared by all platforms.
@@ -41,11 +40,10 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(PrefService* local_state) {
   InstantiateDynamicTrials();
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  chrome::SetupMobileFieldTrials(
-      parsed_command_line_, install_time, local_state);
+  chrome::SetupMobileFieldTrials(parsed_command_line_);
 #else
   chrome::SetupDesktopFieldTrials(
-      parsed_command_line_, install_time, local_state);
+      parsed_command_line_, local_state);
 #endif
 }
 

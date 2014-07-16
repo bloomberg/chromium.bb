@@ -118,7 +118,6 @@ void SetupPreReadFieldTrial() {
 }  // namespace
 
 void SetupDesktopFieldTrials(const CommandLine& parsed_command_line,
-                             const base::Time& install_time,
                              PrefService* local_state) {
   prerender::ConfigurePrerender(parsed_command_line);
   AutoLaunchChromeFieldTrial();
