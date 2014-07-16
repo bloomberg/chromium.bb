@@ -31,7 +31,7 @@ found in the LICENSE file.
             this.status = 'Analyzing test failures ... ' + ++numberOfTestsAnalyzed + '/' + total + ' tests analyzed.';
             this.pendingUnexpectedFailures.push(failureAnalysis);
           }.bind(this)).then(function() {
-            this.status = 'Done!!!';
+            this.status = 'Done';
             this.failures.unexpected = this.pendingUnexpectedFailures;
           }.bind(this));
         }.bind(this));

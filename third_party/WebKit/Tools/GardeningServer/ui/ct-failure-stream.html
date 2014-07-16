@@ -8,6 +8,16 @@ found in the LICENSE file.
 
 <polymer-element name="ct-failure-stream" attributes="groups" noscript>
   <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      ct-failure-card {
+        margin: 5px;
+        padding: 5px;
+      }
+    </style>
     <template repeat="{{failures in groups}}">
       <ct-failure-card failures="{{failures}}"></ct-failure-card>
     </template>
