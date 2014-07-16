@@ -80,12 +80,15 @@ frame_callback_set(struct wl_surface *surface, int *done)
 	return callback;
 }
 
-void
-frame_callback_wait(struct client *client, int *done)
+int
+frame_callback_wait_nofail(struct client *client, int *done)
 {
 	while (!*done) {
-		assert(wl_display_dispatch(client->wl_display) >= 0);
+		if (wl_display_dispatch(client->wl_display) < 0)
+			return 0;
 	}
+
+	return 1;
 }
 
 void
