@@ -2329,24 +2329,6 @@ void RenderFrameImpl::clearContextMenu() {
   context_menu_node_.reset();
 }
 
-void RenderFrameImpl::willRequestAfterPreconnect(
-    blink::WebLocalFrame* frame,
-    blink::WebURLRequest& request) {
-  DCHECK(!frame_ || frame_ == frame);
-  // FIXME(kohei): This will never be set.
-  WebString custom_user_agent;
-
-  DCHECK(!request.extraData());
-
-  bool was_after_preconnect_request = true;
-  // The args after |was_after_preconnect_request| are not used, and set to
-  // correct values at |willSendRequest|.
-  RequestExtraData* extra_data = new RequestExtraData();
-  extra_data->set_custom_user_agent(custom_user_agent);
-  extra_data->set_was_after_preconnect_request(was_after_preconnect_request);
-  request.setExtraData(extra_data);
-}
-
 void RenderFrameImpl::willSendRequest(
     blink::WebLocalFrame* frame,
     unsigned identifier,

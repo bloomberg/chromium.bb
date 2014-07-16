@@ -327,8 +327,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                           const blink::WebString& message);
   virtual void showContextMenu(const blink::WebContextMenuData& data);
   virtual void clearContextMenu();
-  virtual void willRequestAfterPreconnect(blink::WebLocalFrame* frame,
-                                          blink::WebURLRequest& request);
   virtual void willSendRequest(blink::WebLocalFrame* frame,
                                unsigned identifier,
                                blink::WebURLRequest& request,
