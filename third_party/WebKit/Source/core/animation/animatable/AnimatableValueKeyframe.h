@@ -61,7 +61,7 @@ private:
 
     virtual bool isAnimatableValueKeyframe() const OVERRIDE { return true; }
 
-    typedef HashMap<CSSPropertyID, RefPtrWillBeMember<AnimatableValue> > PropertyValueMap;
+    typedef WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<AnimatableValue> > PropertyValueMap;
     PropertyValueMap m_propertyValues;
 };
 
