@@ -25,26 +25,6 @@ class GPU_EXPORT GLES2CmdHelper : public CommandBufferHelper {
 
   // Helpers that could not be auto-generated.
   // TODO(gman): Auto generate these.
-  void GetAttribLocation(
-      GLuint program, uint32 name_bucket_id,
-      uint32 location_shm_id, uint32 location_shm_offset) {
-    gles2::cmds::GetAttribLocation* c =
-        GetCmdSpace<gles2::cmds::GetAttribLocation>();
-    if (c) {
-      c->Init(program, name_bucket_id, location_shm_id, location_shm_offset);
-    }
-  }
-
-  void GetUniformLocation(
-      GLuint program, uint32 name_bucket_id,
-      uint32 location_shm_id, uint32 location_shm_offset) {
-    gles2::cmds::GetUniformLocation* c =
-        GetCmdSpace<gles2::cmds::GetUniformLocation>();
-    if (c) {
-      c->Init(program, name_bucket_id, location_shm_id, location_shm_offset);
-    }
-  }
-
   void CreateAndConsumeTextureCHROMIUMImmediate(GLenum target,
                                                 uint32_t client_id,
                                                 const GLbyte* _mailbox) {

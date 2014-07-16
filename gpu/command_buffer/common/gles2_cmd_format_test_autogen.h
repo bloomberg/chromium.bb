@@ -877,7 +877,23 @@ TEST_F(GLES2FormatTest, GetAttachedShaders) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-// TODO(gman): Write test for GetAttribLocation
+TEST_F(GLES2FormatTest, GetAttribLocation) {
+  cmds::GetAttribLocation& cmd = *GetBufferAs<cmds::GetAttribLocation>();
+  void* next_cmd = cmd.Set(&cmd,
+                           static_cast<GLuint>(11),
+                           static_cast<uint32_t>(12),
+                           static_cast<uint32_t>(13),
+                           static_cast<uint32_t>(14));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::GetAttribLocation::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.name_bucket_id);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.location_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.location_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, GetBooleanv) {
   cmds::GetBooleanv& cmd = *GetBufferAs<cmds::GetBooleanv>();
   void* next_cmd = cmd.Set(&cmd,
@@ -1156,7 +1172,23 @@ TEST_F(GLES2FormatTest, GetUniformiv) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-// TODO(gman): Write test for GetUniformLocation
+TEST_F(GLES2FormatTest, GetUniformLocation) {
+  cmds::GetUniformLocation& cmd = *GetBufferAs<cmds::GetUniformLocation>();
+  void* next_cmd = cmd.Set(&cmd,
+                           static_cast<GLuint>(11),
+                           static_cast<uint32_t>(12),
+                           static_cast<uint32_t>(13),
+                           static_cast<uint32_t>(14));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::GetUniformLocation::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.name_bucket_id);
+  EXPECT_EQ(static_cast<uint32_t>(13), cmd.location_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(14), cmd.location_shm_offset);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, GetVertexAttribfv) {
   cmds::GetVertexAttribfv& cmd = *GetBufferAs<cmds::GetVertexAttribfv>();
   void* next_cmd = cmd.Set(&cmd,

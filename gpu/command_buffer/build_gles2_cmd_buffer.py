@@ -1239,8 +1239,6 @@ _PEPPER_INTERFACES = [
 # gl_test_func: GL function that is expected to be called when testing.
 # cmd_args:     The arguments to use for the command. This overrides generating
 #               them based on the GL function arguments.
-#               a NonImmediate type is a type that stays a pointer even in
-#               and immediate version of acommand.
 # gen_cmd:      Whether or not this function geneates a command. Default = True.
 # data_transfer_methods: Array of methods that are used for transfering the
 #               pointer data.  Possible values: 'immediate', 'shm', 'bucket'.
@@ -1709,10 +1707,10 @@ _FUNCTION_INFO = {
     'result': ['SizedResult<GLuint>'],
   },
   'GetAttribLocation': {
-    'type': 'HandWritten',
-    'needs_size': True,
+    'type': 'Custom',
+    'data_transfer_methods': ['shm'],
     'cmd_args':
-        'GLidProgram program, const char* name, NonImmediate GLint* location',
+        'GLidProgram program, uint32_t name_bucket_id, GLint* location',
     'result': ['GLint'],
     'error_return': -1, # http://www.opengl.org/sdk/docs/man/xhtml/glGetAttribLocation.xml
   },
@@ -1866,10 +1864,10 @@ _FUNCTION_INFO = {
     'result': ['SizedResult<GLint>'],
   },
   'GetUniformLocation': {
-    'type': 'HandWritten',
-    'needs_size': True,
+    'type': 'Custom',
+    'data_transfer_methods': ['shm'],
     'cmd_args':
-        'GLidProgram program, const char* name, NonImmediate GLint* location',
+        'GLidProgram program, uint32_t name_bucket_id, GLint* location',
     'result': ['GLint'],
     'error_return': -1, # http://www.opengl.org/sdk/docs/man/xhtml/glGetUniformLocation.xml
   },
@@ -6530,21 +6528,6 @@ class InputStringBucketArgument(Argument):
     return "_"
 
 
-class NonImmediatePointerArgument(PointerArgument):
-  """A pointer argument that stays a pointer even in an immediate cmd."""
-
-  def __init__(self, name, type):
-    PointerArgument.__init__(self, name, type)
-
-  def IsPointer(self):
-    """Returns true if argument is a pointer."""
-    return False
-
-  def GetImmediateVersion(self):
-    """Overridden from Argument."""
-    return self
-
-
 class ResourceIdArgument(Argument):
   """A class that represents a resource id argument to a function."""
 
@@ -7202,14 +7185,9 @@ def CreateArg(arg_string):
     return None
   # Is this a pointer argument?
   elif arg_string.find('*') >= 0:
-    if arg_parts[0] == 'NonImmediate':
-      return NonImmediatePointerArgument(
-          arg_parts[-1],
-          " ".join(arg_parts[1:-1]))
-    else:
-      return PointerArgument(
-          arg_parts[-1],
-          " ".join(arg_parts[0:-1]))
+    return PointerArgument(
+        arg_parts[-1],
+        " ".join(arg_parts[0:-1]))
   # Is this a resource argument? Must come after pointer check.
   elif arg_parts[0].startswith('GLidBind'):
     return ResourceIdBindArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))

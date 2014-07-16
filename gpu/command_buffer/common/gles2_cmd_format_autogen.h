@@ -2595,6 +2595,61 @@ COMPILE_ASSERT(offsetof(GetAttachedShaders, result_shm_offset) == 12,
 COMPILE_ASSERT(offsetof(GetAttachedShaders, result_size) == 16,
                OffsetOf_GetAttachedShaders_result_size_not_16);
 
+struct GetAttribLocation {
+  typedef GetAttribLocation ValueType;
+  static const CommandId kCmdId = kGetAttribLocation;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef GLint Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _program,
+            uint32_t _name_bucket_id,
+            uint32_t _location_shm_id,
+            uint32_t _location_shm_offset) {
+    SetHeader();
+    program = _program;
+    name_bucket_id = _name_bucket_id;
+    location_shm_id = _location_shm_id;
+    location_shm_offset = _location_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _program,
+            uint32_t _name_bucket_id,
+            uint32_t _location_shm_id,
+            uint32_t _location_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(
+        _program, _name_bucket_id, _location_shm_id, _location_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t program;
+  uint32_t name_bucket_id;
+  uint32_t location_shm_id;
+  uint32_t location_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(GetAttribLocation) == 20,
+               Sizeof_GetAttribLocation_is_not_20);
+COMPILE_ASSERT(offsetof(GetAttribLocation, header) == 0,
+               OffsetOf_GetAttribLocation_header_not_0);
+COMPILE_ASSERT(offsetof(GetAttribLocation, program) == 4,
+               OffsetOf_GetAttribLocation_program_not_4);
+COMPILE_ASSERT(offsetof(GetAttribLocation, name_bucket_id) == 8,
+               OffsetOf_GetAttribLocation_name_bucket_id_not_8);
+COMPILE_ASSERT(offsetof(GetAttribLocation, location_shm_id) == 12,
+               OffsetOf_GetAttribLocation_location_shm_id_not_12);
+COMPILE_ASSERT(offsetof(GetAttribLocation, location_shm_offset) == 16,
+               OffsetOf_GetAttribLocation_location_shm_offset_not_16);
+
 struct GetBooleanv {
   typedef GetBooleanv ValueType;
   static const CommandId kCmdId = kGetBooleanv;
@@ -3486,6 +3541,61 @@ COMPILE_ASSERT(offsetof(GetUniformiv, params_shm_id) == 12,
                OffsetOf_GetUniformiv_params_shm_id_not_12);
 COMPILE_ASSERT(offsetof(GetUniformiv, params_shm_offset) == 16,
                OffsetOf_GetUniformiv_params_shm_offset_not_16);
+
+struct GetUniformLocation {
+  typedef GetUniformLocation ValueType;
+  static const CommandId kCmdId = kGetUniformLocation;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef GLint Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _program,
+            uint32_t _name_bucket_id,
+            uint32_t _location_shm_id,
+            uint32_t _location_shm_offset) {
+    SetHeader();
+    program = _program;
+    name_bucket_id = _name_bucket_id;
+    location_shm_id = _location_shm_id;
+    location_shm_offset = _location_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _program,
+            uint32_t _name_bucket_id,
+            uint32_t _location_shm_id,
+            uint32_t _location_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(
+        _program, _name_bucket_id, _location_shm_id, _location_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t program;
+  uint32_t name_bucket_id;
+  uint32_t location_shm_id;
+  uint32_t location_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(GetUniformLocation) == 20,
+               Sizeof_GetUniformLocation_is_not_20);
+COMPILE_ASSERT(offsetof(GetUniformLocation, header) == 0,
+               OffsetOf_GetUniformLocation_header_not_0);
+COMPILE_ASSERT(offsetof(GetUniformLocation, program) == 4,
+               OffsetOf_GetUniformLocation_program_not_4);
+COMPILE_ASSERT(offsetof(GetUniformLocation, name_bucket_id) == 8,
+               OffsetOf_GetUniformLocation_name_bucket_id_not_8);
+COMPILE_ASSERT(offsetof(GetUniformLocation, location_shm_id) == 12,
+               OffsetOf_GetUniformLocation_location_shm_id_not_12);
+COMPILE_ASSERT(offsetof(GetUniformLocation, location_shm_offset) == 16,
+               OffsetOf_GetUniformLocation_location_shm_offset_not_16);
 
 struct GetVertexAttribfv {
   typedef GetVertexAttribfv ValueType;
