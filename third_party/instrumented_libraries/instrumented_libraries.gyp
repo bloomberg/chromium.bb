@@ -231,6 +231,14 @@
       'package_name': 'libgcrypt11',
       'dependencies=': [],
       'package_ldflags': ['-Wl,-z,muldefs'],
+      'extra_configure_flags': [
+        # From debian/rules.
+        '--enable-noexecstack',
+        '--enable-ld-version-script',
+        '--enable-static',
+        # http://crbug.com/344505
+        '--disable-asm'
+      ],
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
