@@ -30,10 +30,6 @@ class ATHENA_EXPORT HomeCard {
     // HomeCard is visible smaller at the bottom of the screen as a supplemental
     // widget.
     VISIBLE_BOTTOM,
-
-    // HomeCard is minimized (i.e. a small UI element is displayed on screen
-    // that the user can interact with to bring up the BOTTOM or CENTERED view).
-    VISIBLE_MINIMIZED,
   };
 
   // Creates/deletes/gets the singleton object of the HomeCard
@@ -52,8 +48,7 @@ class ATHENA_EXPORT HomeCard {
   virtual void RegisterSearchProvider(
       app_list::SearchProvider* search_provider) = 0;
 
-  // Called when the virtual keyboard changed has changed to |bounds|. An empty
-  // |bounds| indicates that the virtual keyboard is not visible anymore.
+  // Called when the virtual keyboard changed has changed to |bounds|.
   virtual void UpdateVirtualKeyboardBounds(
       const gfx::Rect& bounds) = 0;
 };
