@@ -69,13 +69,15 @@ class FlakyTests(AbstractDeclarativeCommand):
         self.expectations_factory = BotTestExpectationsFactory
 
     def _collect_expectation_lines(self, builder_names, factory):
-        model = TestExpectationsModel()
+        all_lines = []
         for builder_name in builder_names:
+            model = TestExpectationsModel()
             expectations = factory.expectations_for_builder(builder_name)
             for line in expectations.expectation_lines(only_ignore_very_flaky=True):
                 model.add_expectation_line(line)
-        # FIXME: We need an official API to get all the test names or all test lines.
-        return model._test_to_expectation_line.values()
+            # FIXME: We need an official API to get all the test names or all test lines.
+            all_lines.extend(model._test_to_expectation_line.values())
+        return all_lines
 
     def _commit_and_upload(self, tool, options):
         files = tool.scm().changed_files()
@@ -104,7 +106,15 @@ class FlakyTests(AbstractDeclarativeCommand):
 
     def execute(self, options, args, tool):
         factory = self.expectations_factory()
-        lines = self._collect_expectation_lines(builders.all_builder_names(), factory)
+
+        # FIXME: WebKit Linux 32 and WebKit Linux have the same specifiers;
+        # if we include both of them, we'll get duplicate lines. Ideally
+        # Linux 32 would have unique speicifiers.
+        most_builders = builders.all_builder_names()
+        if 'WebKit Linux 32' in most_builders:
+            most_builders.remove('WebKit Linux 32')
+
+        lines = self._collect_expectation_lines(most_builders, factory)
         lines.sort(key=lambda line: line.path)
 
         port = tool.port_factory.get()
