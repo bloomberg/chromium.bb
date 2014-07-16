@@ -34,8 +34,8 @@ found in the LICENSE file.
           <paper-item label="{{failure.testName}}"></paper-item>
         </template>
       </core-menu>
-      <ct-results-by-builder failure="{{failures[selected]}}"></ct-results-by-builder>
       <ct-embedded-flakiness-dashboard test="{{failures[selected].testName}}"></ct-embedded-flakiness-dashboard>
+      <ct-results-by-builder failure="{{failures[selected]}}"></ct-results-by-builder>
     </template>
   </template>
   <script>
