@@ -51,15 +51,15 @@ void V8TrackEvent::trackAttributeGetterCustom(const v8::PropertyCallbackInfo<v8:
 
     switch (track->type()) {
     case TrackBase::TextTrack:
-        v8SetReturnValueFast(info, static_cast<TextTrack*>(track), trackEvent);
+        v8SetReturnValueFast(info, toTextTrack(track), trackEvent);
         return;
 
     case TrackBase::AudioTrack:
-        v8SetReturnValueFast(info, static_cast<AudioTrack*>(track), trackEvent);
+        v8SetReturnValueFast(info, toAudioTrack(track), trackEvent);
         return;
 
     case TrackBase::VideoTrack:
-        v8SetReturnValueFast(info, static_cast<VideoTrack*>(track), trackEvent);
+        v8SetReturnValueFast(info, toVideoTrack(track), trackEvent);
         return;
     }
 

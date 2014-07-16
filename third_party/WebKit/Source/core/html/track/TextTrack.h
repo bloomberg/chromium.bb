@@ -140,6 +140,8 @@ private:
     bool m_hasBeenConfigured;
 };
 
+DEFINE_TRACK_TYPE_CASTS(TextTrack, TrackBase::TextTrack);
+
 } // namespace WebCore
 
 #endif

@@ -78,6 +78,9 @@ private:
     RawPtrWillBeMember<HTMLMediaElement> m_mediaElement;
 };
 
+#define DEFINE_TRACK_TYPE_CASTS(thisType, predicate) \
+    DEFINE_TYPE_CASTS(thisType, TrackBase, track, track->type() == predicate, track.type() == predicate)
+
 } // namespace WebCore
 
 #endif // TrackBase_h

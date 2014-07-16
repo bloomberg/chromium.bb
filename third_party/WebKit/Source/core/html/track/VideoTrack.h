@@ -43,6 +43,8 @@ private:
     bool m_selected;
 };
 
+DEFINE_TRACK_TYPE_CASTS(VideoTrack, TrackBase::VideoTrack);
+
 }
 
 #endif

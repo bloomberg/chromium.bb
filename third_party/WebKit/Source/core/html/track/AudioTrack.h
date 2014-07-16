@@ -39,6 +39,8 @@ private:
     bool m_enabled;
 };
 
+DEFINE_TRACK_TYPE_CASTS(AudioTrack, TrackBase::AudioTrack);
+
 }
 
 #endif
