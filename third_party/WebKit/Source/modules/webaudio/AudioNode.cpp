@@ -147,7 +147,7 @@ void AudioNode::addInput()
     m_inputs.append(AudioNodeInput::create(*this));
 }
 
-void AudioNode::addOutput(PassOwnPtr<AudioNodeOutput> output)
+void AudioNode::addOutput(PassOwnPtrWillBeRawPtr<AudioNodeOutput> output)
 {
     m_outputs.append(output);
 }
@@ -608,6 +608,7 @@ void AudioNode::trace(Visitor* visitor)
 {
     visitor->trace(m_context);
     visitor->trace(m_inputs);
+    visitor->trace(m_outputs);
     EventTargetWithInlineData::trace(visitor);
 }
 

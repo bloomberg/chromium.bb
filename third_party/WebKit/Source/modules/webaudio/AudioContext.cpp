@@ -821,15 +821,16 @@ void AudioContext::deleteMarkedNodes()
             for (unsigned i = 0; i < numberOfInputs; ++i)
                 m_dirtySummingJunctions.remove(node->input(i));
 
-            // Before deleting the node, clear out any AudioNodeOutputs from m_dirtyAudioNodeOutputs.
-            unsigned numberOfOutputs = node->numberOfOutputs();
-            for (unsigned i = 0; i < numberOfOutputs; ++i)
-                m_dirtyAudioNodeOutputs.remove(node->output(i));
 #if ENABLE(OILPAN)
             // Finally, clear the keep alive handle that keeps this
             // object from being collected.
             node->clearKeepAlive();
 #else
+            // Before deleting the node, clear out any AudioNodeOutputs from m_dirtyAudioNodeOutputs.
+            unsigned numberOfOutputs = node->numberOfOutputs();
+            for (unsigned i = 0; i < numberOfOutputs; ++i)
+                m_dirtyAudioNodeOutputs.remove(node->output(i));
+
             // Finally, delete it.
             delete node;
 #endif
@@ -871,7 +872,7 @@ void AudioContext::handleDirtyAudioNodeOutputs()
 {
     ASSERT(isGraphOwner());
 
-    for (HashSet<AudioNodeOutput*>::iterator i = m_dirtyAudioNodeOutputs.begin(); i != m_dirtyAudioNodeOutputs.end(); ++i)
+    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<AudioNodeOutput> >::iterator i = m_dirtyAudioNodeOutputs.begin(); i != m_dirtyAudioNodeOutputs.end(); ++i)
         (*i)->updateRenderingState();
 
     m_dirtyAudioNodeOutputs.clear();
@@ -963,6 +964,7 @@ void AudioContext::trace(Visitor* visitor)
     visitor->trace(m_destinationNode);
     visitor->trace(m_listener);
     visitor->trace(m_dirtySummingJunctions);
+    visitor->trace(m_dirtyAudioNodeOutputs);
     EventTargetWithInlineData::trace(visitor);
 }
 

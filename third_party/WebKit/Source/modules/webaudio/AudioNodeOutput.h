@@ -39,12 +39,12 @@ class AudioNodeInput;
 
 // AudioNodeOutput represents a single output for an AudioNode.
 // It may be connected to one or more AudioNodeInputs.
-
-class AudioNodeOutput {
+class AudioNodeOutput : public NoBaseWillBeGarbageCollectedFinalized<AudioNodeOutput> {
 public:
     // It's OK to pass 0 for numberOfChannels in which case
     // setNumberOfChannels() must be called later on.
-    static PassOwnPtr<AudioNodeOutput> create(AudioNode*, unsigned numberOfChannels);
+    static PassOwnPtrWillBeRawPtr<AudioNodeOutput> create(AudioNode*, unsigned numberOfChannels);
+    void trace(Visitor*);
 
     // Can be called from any thread.
     AudioNode* node() const { return m_node; }
@@ -85,7 +85,7 @@ public:
 private:
     AudioNodeOutput(AudioNode*, unsigned numberOfChannels);
 
-    AudioNode* m_node;
+    RawPtrWillBeMember<AudioNode> m_node;
 
     friend class AudioNodeInput;
     friend class AudioParam;
@@ -137,8 +137,8 @@ private:
     // This RefPtr<AudioNode> is connection reference. We must call AudioNode::
     // makeConnection() after ref(), and call AudioNode::breakConnection()
     // before deref().
-    HashMap<AudioNodeInput*, RefPtr<AudioNode> > m_inputs;
-    typedef HashMap<AudioNodeInput*, RefPtr<AudioNode> >::iterator InputsIterator;
+    WillBeHeapHashMap<RawPtrWillBeMember<AudioNodeInput>, RefPtr<AudioNode> > m_inputs;
+    typedef WillBeHeapHashMap<RawPtrWillBeMember<AudioNodeInput>, RefPtr<AudioNode> >::iterator InputsIterator;
     bool m_isEnabled;
 
     // For the purposes of rendering, keeps track of the number of inputs and AudioParams we're connected to.
@@ -146,7 +146,7 @@ private:
     unsigned m_renderingFanOutCount;
     unsigned m_renderingParamFanOutCount;
 
-    WillBePersistentHeapHashSet<RefPtrWillBeMember<AudioParam> > m_params;
+    WillBeHeapHashSet<RefPtrWillBeMember<AudioParam> > m_params;
 };
 
 } // namespace WebCore

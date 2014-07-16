@@ -194,7 +194,7 @@ public:
 protected:
     // Inputs and outputs must be created before the AudioNode is initialized.
     void addInput();
-    void addOutput(PassOwnPtr<AudioNodeOutput>);
+    void addOutput(PassOwnPtrWillBeRawPtr<AudioNodeOutput>);
 
     // Called by processIfNecessary() to cause all parts of the rendering graph connected to us to process.
     // Each rendering quantum, the audio data for each of the AudioNode's inputs will be available after this method is called.
@@ -210,7 +210,7 @@ private:
     RefPtrWillBeMember<AudioContext> m_context;
     float m_sampleRate;
     WillBeHeapVector<OwnPtrWillBeMember<AudioNodeInput> > m_inputs;
-    Vector<OwnPtr<AudioNodeOutput> > m_outputs;
+    WillBeHeapVector<OwnPtrWillBeMember<AudioNodeOutput> > m_outputs;
 
 #if ENABLE(OILPAN)
     // AudioNodes are in the oilpan heap but they are still reference counted at
