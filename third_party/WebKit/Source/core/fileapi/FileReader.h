@@ -39,7 +39,6 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
-#include "wtf/ThreadSpecific.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -110,7 +109,7 @@ private:
     void fireErrorEvent(int httpStatusCode);
     void fireEvent(const AtomicString& type);
 
-    static ThreadSpecific<ThrottlingController>& throttlingController();
+    ThrottlingController* throttlingController();
     void executePendingRead();
 
     ReadyState m_state;

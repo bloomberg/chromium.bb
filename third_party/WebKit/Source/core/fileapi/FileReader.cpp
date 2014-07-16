@@ -33,11 +33,16 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/CrossThreadTask.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/ProgressEvent.h"
 #include "core/fileapi/File.h"
+#include "core/frame/LocalFrame.h"
+#include "core/workers/WorkerClients.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "platform/Logging.h"
+#include "platform/Supplementable.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/Deque.h"
@@ -70,9 +75,36 @@ const CString utf8FilePath(Blob* blob)
 static const size_t kMaxOutstandingRequestsPerThread = 100;
 static const double progressNotificationIntervalMS = 50;
 
-class FileReader::ThrottlingController {
+class FileReader::ThrottlingController FINAL : public NoBaseWillBeGarbageCollectedFinalized<FileReader::ThrottlingController>, public WillBeHeapSupplement<LocalFrame>, public WillBeHeapSupplement<WorkerClients> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileReader::ThrottlingController);
 public:
-    ThrottlingController() : m_maxRunningReaders(kMaxOutstandingRequestsPerThread) { }
+    static ThrottlingController* from(ExecutionContext* context)
+    {
+        if (context->isDocument()) {
+            Document* document = toDocument(context);
+            if (!document->frame())
+                return 0;
+
+            ThrottlingController* controller = static_cast<ThrottlingController*>(WillBeHeapSupplement<LocalFrame>::from(document->frame(), supplementName()));
+            if (controller)
+                return controller;
+
+            controller = new ThrottlingController();
+            WillBeHeapSupplement<LocalFrame>::provideTo(*document->frame(), supplementName(), adoptPtrWillBeNoop(controller));
+            return controller;
+        }
+        ASSERT(!isMainThread());
+        ASSERT(context->isWorkerGlobalScope());
+        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
+        ThrottlingController* controller = static_cast<ThrottlingController*>(WillBeHeapSupplement<WorkerClients>::from(workerGlobalScope->clients(), supplementName()));
+        if (controller)
+            return controller;
+
+        controller = new ThrottlingController();
+        WillBeHeapSupplement<WorkerClients>::provideTo(*workerGlobalScope->clients(), supplementName(), adoptPtrWillBeNoop(controller));
+        return controller;
+    }
+
     ~ThrottlingController() { }
 
     enum FinishReaderType { DoNotRunPendingReaders, RunPendingReaders };
@@ -92,13 +124,13 @@ public:
 
     FinishReaderType removeReader(FileReader* reader)
     {
-        HashSet<FileReader*>::const_iterator hashIter = m_runningReaders.find(reader);
+        WillBeHeapHashSet<RawPtrWillBeMember<FileReader> >::const_iterator hashIter = m_runningReaders.find(reader);
         if (hashIter != m_runningReaders.end()) {
             m_runningReaders.remove(hashIter);
             return RunPendingReaders;
         }
-        Deque<FileReader*>::const_iterator dequeEnd = m_pendingReaders.end();
-        for (Deque<FileReader*>::const_iterator it = m_pendingReaders.begin(); it != dequeEnd; ++it) {
+        WillBeHeapDeque<RawPtrWillBeMember<FileReader> >::const_iterator dequeEnd = m_pendingReaders.end();
+        for (WillBeHeapDeque<RawPtrWillBeMember<FileReader> >::const_iterator it = m_pendingReaders.begin(); it != dequeEnd; ++it) {
             if (*it == reader) {
                 m_pendingReaders.remove(it);
                 break;
@@ -113,7 +145,22 @@ public:
             executeReaders();
     }
 
+    void trace(Visitor* visitor)
+    {
+#if ENABLE(OILPAN)
+        visitor->trace(m_pendingReaders);
+#endif
+        visitor->trace(m_runningReaders);
+        WillBeHeapSupplement<LocalFrame>::trace(visitor);
+        WillBeHeapSupplement<WorkerClients>::trace(visitor);
+    }
+
 private:
+    ThrottlingController()
+        : m_maxRunningReaders(kMaxOutstandingRequestsPerThread)
+    {
+    }
+
     void executeReaders()
     {
         while (m_runningReaders.size() < m_maxRunningReaders) {
@@ -125,9 +172,11 @@ private:
         }
     }
 
+    static const char* supplementName() { return "FileReaderThrottlingController"; }
+
     const size_t m_maxRunningReaders;
-    Deque<FileReader*> m_pendingReaders;
-    HashSet<FileReader*> m_runningReaders;
+    WillBeHeapDeque<RawPtrWillBeMember<FileReader> > m_pendingReaders;
+    WillBeHeapHashSet<RawPtrWillBeMember<FileReader> > m_runningReaders;
 };
 
 PassRefPtrWillBeRawPtr<FileReader> FileReader::create(ExecutionContext* context)
@@ -387,10 +436,9 @@ void FileReader::fireEvent(const AtomicString& type)
         dispatchEvent(ProgressEvent::create(type, false, m_loader->bytesLoaded(), 0));
 }
 
-ThreadSpecific<FileReader::ThrottlingController>& FileReader::throttlingController()
+FileReader::ThrottlingController* FileReader::throttlingController()
 {
-    AtomicallyInitializedStatic(ThreadSpecific<FileReader::ThrottlingController>*, controller = new ThreadSpecific<FileReader::ThrottlingController>);
-    return *controller;
+    return FileReader::ThrottlingController::from(executionContext());
 }
 
 PassRefPtr<ArrayBuffer> FileReader::arrayBufferResult() const
