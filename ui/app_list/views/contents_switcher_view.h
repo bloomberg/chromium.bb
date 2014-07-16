@@ -31,10 +31,6 @@ class ContentsSwitcherView : public views::View,
   void AddSwitcherButton(int resource_id, int page_index);
 
  private:
-  // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
@@ -46,7 +42,7 @@ class ContentsSwitcherView : public views::View,
   virtual void TransitionChanged() OVERRIDE;
 
   ContentsView* contents_view_;  // Owned by views hierarchy.
-  views::View* buttons_;         // Owned by views hierarchy.
+
   // Stores Views owned by views hierarchy.
   std::vector<views::View*> page_active_indicators_;
 

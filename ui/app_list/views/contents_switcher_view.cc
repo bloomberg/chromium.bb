@@ -36,11 +36,11 @@ class ContentsPageIndicatorView : public views::View {
 }  // namespace
 
 ContentsSwitcherView::ContentsSwitcherView(ContentsView* contents_view)
-    : contents_view_(contents_view), buttons_(new views::View) {
-  AddChildView(buttons_);
-
-  buttons_->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal, 0, 0, kButtonSpacing));
+    : contents_view_(contents_view) {
+  views::BoxLayout* layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, 0, 0, kButtonSpacing);
+  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+  SetLayoutManager(layout);
 }
 
 ContentsSwitcherView::~ContentsSwitcherView() {}
@@ -77,24 +77,7 @@ void ContentsSwitcherView::AddSwitcherButton(int resource_id, int page_index) {
   button_container->AddChildView(indicator_container);
   button_container->AddChildView(button);
 
-  buttons_->AddChildView(button_container);
-}
-
-gfx::Size ContentsSwitcherView::GetPreferredSize() const {
-  return gfx::Size(buttons_->GetPreferredSize().width(),
-                   kButtonImageSize + kContentsSwitcherSeparatorHeight);
-}
-
-void ContentsSwitcherView::Layout() {
-  gfx::Rect rect(GetContentsBounds());
-
-  // Makes |buttons_| horizontally center and vertically fill.
-  gfx::Size buttons_size(buttons_->GetPreferredSize());
-  gfx::Rect buttons_bounds(rect.CenterPoint().x() - buttons_size.width() / 2,
-                           rect.y(),
-                           buttons_size.width(),
-                           rect.height());
-  buttons_->SetBoundsRect(gfx::IntersectRects(rect, buttons_bounds));
+  AddChildView(button_container);
 }
 
 void ContentsSwitcherView::ButtonPressed(views::Button* sender,
