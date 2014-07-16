@@ -242,18 +242,15 @@ void FakeShillDeviceClient::AddDevice(const std::string& device_path,
       AddDevice(device_path);
 
   base::DictionaryValue* properties = GetDeviceProperties(device_path);
-  properties->SetWithoutPathExpansion(shill::kTypeProperty,
-                                      base::Value::CreateStringValue(type));
-  properties->SetWithoutPathExpansion(shill::kNameProperty,
-                                      base::Value::CreateStringValue(name));
-  properties->SetWithoutPathExpansion(
-      shill::kDBusObjectProperty, base::Value::CreateStringValue(device_path));
-  properties->SetWithoutPathExpansion(
-      shill::kDBusServiceProperty,
-      base::Value::CreateStringValue(modemmanager::kModemManager1ServiceName));
+  properties->SetStringWithoutPathExpansion(shill::kTypeProperty, type);
+  properties->SetStringWithoutPathExpansion(shill::kNameProperty, name);
+  properties->SetStringWithoutPathExpansion(shill::kDBusObjectProperty,
+                                            device_path);
+  properties->SetStringWithoutPathExpansion(
+      shill::kDBusServiceProperty, modemmanager::kModemManager1ServiceName);
   if (type == shill::kTypeCellular) {
-    properties->SetWithoutPathExpansion(shill::kCellularAllowRoamingProperty,
-                                        new base::FundamentalValue(false));
+    properties->SetBooleanWithoutPathExpansion(
+        shill::kCellularAllowRoamingProperty, false);
   }
 }
 

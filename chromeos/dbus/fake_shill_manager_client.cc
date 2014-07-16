@@ -361,8 +361,8 @@ ShillManagerClient::TestInterface* FakeShillManagerClient::GetTestInterface() {
 // ShillManagerClient::TestInterface overrides.
 
 void FakeShillManagerClient::AddDevice(const std::string& device_path) {
-  if (GetListProperty(shill::kDevicesProperty)->AppendIfNotPresent(
-      base::Value::CreateStringValue(device_path))) {
+  if (GetListProperty(shill::kDevicesProperty)
+          ->AppendIfNotPresent(new base::StringValue(device_path))) {
     CallNotifyObserversPropertyChanged(shill::kDevicesProperty);
   }
 }
@@ -382,14 +382,14 @@ void FakeShillManagerClient::ClearDevices() {
 
 void FakeShillManagerClient::AddTechnology(const std::string& type,
                                            bool enabled) {
-  if (GetListProperty(shill::kAvailableTechnologiesProperty)->
-      AppendIfNotPresent(base::Value::CreateStringValue(type))) {
+  if (GetListProperty(shill::kAvailableTechnologiesProperty)
+          ->AppendIfNotPresent(new base::StringValue(type))) {
     CallNotifyObserversPropertyChanged(
         shill::kAvailableTechnologiesProperty);
   }
   if (enabled &&
-      GetListProperty(shill::kEnabledTechnologiesProperty)->
-      AppendIfNotPresent(base::Value::CreateStringValue(type))) {
+      GetListProperty(shill::kEnabledTechnologiesProperty)
+          ->AppendIfNotPresent(new base::StringValue(type))) {
     CallNotifyObserversPropertyChanged(
         shill::kEnabledTechnologiesProperty);
   }
@@ -412,8 +412,8 @@ void FakeShillManagerClient::RemoveTechnology(const std::string& type) {
 void FakeShillManagerClient::SetTechnologyInitializing(const std::string& type,
                                                        bool initializing) {
   if (initializing) {
-    if (GetListProperty(shill::kUninitializedTechnologiesProperty)->
-        AppendIfNotPresent(base::Value::CreateStringValue(type))) {
+    if (GetListProperty(shill::kUninitializedTechnologiesProperty)
+            ->AppendIfNotPresent(new base::StringValue(type))) {
       CallNotifyObserversPropertyChanged(
           shill::kUninitializedTechnologiesProperty);
     }
@@ -460,8 +460,8 @@ void FakeShillManagerClient::AddManagerService(
     const std::string& service_path,
     bool notify_observers) {
   DVLOG(2) << "AddManagerService: " << service_path;
-  GetListProperty(shill::kServiceCompleteListProperty)->AppendIfNotPresent(
-      base::Value::CreateStringValue(service_path));
+  GetListProperty(shill::kServiceCompleteListProperty)
+      ->AppendIfNotPresent(new base::StringValue(service_path));
   SortManagerServices(false);
   if (notify_observers)
     CallNotifyObserversPropertyChanged(shill::kServiceCompleteListProperty);

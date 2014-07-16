@@ -66,7 +66,7 @@ TEST_F(ShillProfileClientTest, PropertyChanged) {
 
   // Set expectations.
   base::ListValue value;
-  value.Append(base::Value::CreateStringValue(kExampleEntryPath));
+  value.Append(new base::StringValue(kExampleEntryPath));
   MockPropertyChangeObserver observer;
   EXPECT_CALL(observer,
               OnPropertyChanged(
@@ -108,7 +108,7 @@ TEST_F(ShillProfileClientTest, GetProperties) {
 
   // Create the expected value.
   base::ListValue* entries = new base::ListValue;
-  entries->Append(base::Value::CreateStringValue(kExampleEntryPath));
+  entries->Append(new base::StringValue(kExampleEntryPath));
   base::DictionaryValue value;
   value.SetWithoutPathExpansion(shill::kEntriesProperty, entries);
   // Set expectations.
@@ -142,9 +142,8 @@ TEST_F(ShillProfileClientTest, GetEntry) {
 
   // Create the expected value.
   base::DictionaryValue value;
-  value.SetWithoutPathExpansion(
-      shill::kTypeProperty,
-      base::Value::CreateStringValue(shill::kTypeWifi));
+  value.SetWithoutPathExpansion(shill::kTypeProperty,
+                                new base::StringValue(shill::kTypeWifi));
   // Set expectations.
   PrepareForMethodCall(shill::kGetEntryFunction,
                        base::Bind(&ExpectStringArgument, kExampleEntryPath),

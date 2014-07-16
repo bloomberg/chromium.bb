@@ -165,7 +165,7 @@ TEST_F(ShillManagerClientTest, GetNetworksForGeolocation) {
   base::DictionaryValue* property_dict_value = new base::DictionaryValue;
   property_dict_value->SetWithoutPathExpansion(
       shill::kGeoMacAddressProperty,
-      base::Value::CreateStringValue("01:23:45:67:89:AB"));
+      new base::StringValue("01:23:45:67:89:AB"));
   type_entry_value->Append(property_dict_value);
   type_dict_value.SetWithoutPathExpansion("wifi", type_entry_value);
 

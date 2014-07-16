@@ -267,9 +267,9 @@ TEST_F(GsmSMSClientTest, Get) {
   // Create expected result.
   base::DictionaryValue expected_result;
   expected_result.SetWithoutPathExpansion(
-      kNumberKey, base::Value::CreateStringValue(kExampleNumber));
-  expected_result.SetWithoutPathExpansion(
-      kTextKey, base::Value::CreateStringValue(kExampleText));
+      kNumberKey, new base::StringValue(kExampleNumber));
+  expected_result.SetWithoutPathExpansion(kTextKey,
+                                          new base::StringValue(kExampleText));
   expected_result_ = &expected_result;
   // Call Delete.
   client_->Get(kServiceName, dbus::ObjectPath(kObjectPath), kIndex,
@@ -308,10 +308,9 @@ TEST_F(GsmSMSClientTest, List) {
   // Create expected result.
   base::ListValue expected_result;
   base::DictionaryValue* sms = new base::DictionaryValue;
-  sms->SetWithoutPathExpansion(
-      kNumberKey, base::Value::CreateStringValue(kExampleNumber));
-  sms->SetWithoutPathExpansion(
-      kTextKey, base::Value::CreateStringValue(kExampleText));
+  sms->SetWithoutPathExpansion(kNumberKey,
+                               new base::StringValue(kExampleNumber));
+  sms->SetWithoutPathExpansion(kTextKey, new base::StringValue(kExampleText));
   expected_result.Append(sms);
   expected_result_ = &expected_result;
   // Call List.

@@ -38,7 +38,7 @@ base::DictionaryValue* PopStringToStringDictionary(
         !entry_reader.PopString(&key) ||
         !entry_reader.PopString(&value))
       return NULL;
-    result->SetWithoutPathExpansion(key, base::Value::CreateStringValue(value));
+    result->SetWithoutPathExpansion(key, new base::StringValue(value));
   }
   return result.release();
 }
@@ -282,17 +282,14 @@ ShillClientUnittestBase::CreateExampleServiceProperties() {
   base::DictionaryValue* properties = new base::DictionaryValue;
   properties->SetWithoutPathExpansion(
       shill::kGuidProperty,
-      base::Value::CreateStringValue("00000000-0000-0000-0000-000000000000"));
+      new base::StringValue("00000000-0000-0000-0000-000000000000"));
   properties->SetWithoutPathExpansion(
-      shill::kModeProperty,
-      base::Value::CreateStringValue(shill::kModeManaged));
-  properties->SetWithoutPathExpansion(
-      shill::kTypeProperty,
-      base::Value::CreateStringValue(shill::kTypeWifi));
+      shill::kModeProperty, new base::StringValue(shill::kModeManaged));
+  properties->SetWithoutPathExpansion(shill::kTypeProperty,
+                                      new base::StringValue(shill::kTypeWifi));
   shill_property_util::SetSSID("testssid", properties);
   properties->SetWithoutPathExpansion(
-      shill::kSecurityProperty,
-      base::Value::CreateStringValue(shill::kSecurityPsk));
+      shill::kSecurityProperty, new base::StringValue(shill::kSecurityPsk));
   return properties;
 }
 
