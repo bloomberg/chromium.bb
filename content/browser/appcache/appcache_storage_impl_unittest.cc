@@ -1412,7 +1412,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_TRUE(delegate()->found_entry_.IsExplicit());
     EXPECT_FALSE(delegate()->found_fallback_entry_.has_response_id());
 
-    // Conduct another test perferring kManifestUrl
+    // Conduct another test preferring kManifestUrl
     delegate_.reset(new MockStorageDelegate(this));
     PushNextTask(base::Bind(
         &AppCacheStorageImplTest::Verify_FindMainResponseWithMultipleHits2,
@@ -1430,7 +1430,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_TRUE(delegate()->found_entry_.IsExplicit());
     EXPECT_FALSE(delegate()->found_fallback_entry_.has_response_id());
 
-    // Conduct the another test perferring kManifestUrl2
+    // Conduct the another test preferring kManifestUrl2
     delegate_.reset(new MockStorageDelegate(this));
     PushNextTask(base::Bind(
         &AppCacheStorageImplTest::Verify_FindMainResponseWithMultipleHits3,

@@ -216,13 +216,13 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
       prefs::kManagedNotificationsAllowedForUrls, callback);
   pref_change_registrar_.Add(
       prefs::kManagedNotificationsBlockedForUrls, callback);
-  // The following preferences are only used to indicate if a
-  // default content setting is managed and to hold the managed default setting
-  // value. If the value for any of the following perferences is set then the
-  // corresponding default content setting is managed. These preferences exist
-  // in parallel to the preference default content settings.  If a
-  // default content settings type is managed any user defined excpetions
-  // (patterns) for this type are ignored.
+  // The following preferences are only used to indicate if a default content
+  // setting is managed and to hold the managed default setting value. If the
+  // value for any of the following preferences is set then the corresponding
+  // default content setting is managed. These preferences exist in parallel to
+  // the preference default content settings. If a default content settings type
+  // is managed any user defined exceptions (patterns) for this type are
+  // ignored.
   pref_change_registrar_.Add(prefs::kManagedDefaultCookiesSetting, callback);
   pref_change_registrar_.Add(prefs::kManagedDefaultImagesSetting, callback);
   pref_change_registrar_.Add(prefs::kManagedDefaultJavaScriptSetting, callback);

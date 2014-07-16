@@ -34,7 +34,7 @@ enum { kContinuousTimeoutLimit = 10 };
 // Time to wait in milliseconds before v4l2_thread_ reschedules OnCaptureTask
 // if an event is triggered (select) but no video frame is read.
 enum { kCaptureSelectWaitMs = 10 };
-// MJPEG is prefered if the width or height is larger than this.
+// MJPEG is preferred if the width or height is larger than this.
 enum { kMjpegWidth = 640 };
 enum { kMjpegHeight = 480 };
 // Typical framerate, in fps

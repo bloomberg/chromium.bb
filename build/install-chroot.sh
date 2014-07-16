@@ -12,7 +12,7 @@
 
 # Older Debian based systems had both "admin" and "adm" groups, with "admin"
 # apparently being used in more places. Newer distributions have standardized
-# on just the "adm" group. Check /etc/group for the prefered name of the
+# on just the "adm" group. Check /etc/group for the preferred name of the
 # administrator group.
 admin=$(grep '^admin:' /etc/group >&/dev/null && echo admin || echo adm)
 

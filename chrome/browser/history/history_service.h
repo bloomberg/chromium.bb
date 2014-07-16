@@ -625,7 +625,7 @@ class HistoryService : public CancelableRequestProvider,
   // |icon_types| will be searched and so on.
   // If no icon is larger than |minimum_size_in_pixel|, the largest one of all
   // icon types in |icon_types| is returned.
-  // This feature is especially useful when some types of icon is perfered as
+  // This feature is especially useful when some types of icon is preferred as
   // long as its size is larger than a specific value.
   base::CancelableTaskTracker::TaskId GetLargestFaviconForURL(
       const GURL& page_url,

@@ -290,13 +290,13 @@ below:
       <message name="IDS_FORM_OTHER_WEEK_LABEL" desc="Label for button that opens a full week picker so the user can choose dates other than the ones in the list." meaning="for week label">
         Other...
       </message>
-      <message name="IDS_FORM_PLACEHOLDER_FOR_DAY_OF_MONTH_FIELD" desc="Text for denoting day of month field position in date format. Short text is prefered. See http://crbug.com/152632 for samples.">
+      <message name="IDS_FORM_PLACEHOLDER_FOR_DAY_OF_MONTH_FIELD" desc="Text for denoting day of month field position in date format. Short text is preferred. See http://crbug.com/152632 for samples.">
         dd
       </message>
-      <message name="IDS_FORM_PLACEHOLDER_FOR_MONTH_FIELD" desc="Text for denoting month field position in date format. Short text is prefered. See http://crbug.com/152632 for samples.">
+      <message name="IDS_FORM_PLACEHOLDER_FOR_MONTH_FIELD" desc="Text for denoting month field position in date format. Short text is preferred. See http://crbug.com/152632 for samples.">
         mm
       </message>
-      <message name="IDS_FORM_PLACEHOLDER_FOR_YEAR_FIELD" desc="Text for denoting day of month field position in date format. Short text is prefered. See http://crbug.com/152632 for samples.">
+      <message name="IDS_FORM_PLACEHOLDER_FOR_YEAR_FIELD" desc="Text for denoting day of month field position in date format. Short text is preferred. See http://crbug.com/152632 for samples.">
         yyyy
       </message>
       <message name="IDS_FORM_SELECT_MENU_LIST_TEXT" desc="Text for the menu list rendering of a select element.">

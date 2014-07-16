@@ -966,7 +966,7 @@ TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfigurationStop) {
   FinishDownload(*dtm_, ModelTypeSet(PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
-  // PERFERENCES controller is associating while BOOKMARKS is downloading.
+  // PREFERENCES controller is associating while BOOKMARKS is downloading.
   EXPECT_EQ(DataTypeController::ASSOCIATING,
             GetController(PREFERENCES)->state());
   EXPECT_EQ(DataTypeController::MODEL_LOADED,
@@ -1001,7 +1001,7 @@ TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfigurationDownloadError) {
   FinishDownload(*dtm_, ModelTypeSet(PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
-  // PERFERENCES controller is associating while BOOKMARKS is downloading.
+  // PREFERENCES controller is associating while BOOKMARKS is downloading.
   EXPECT_EQ(DataTypeController::ASSOCIATING,
             GetController(PREFERENCES)->state());
   EXPECT_EQ(DataTypeController::MODEL_LOADED,
@@ -1037,7 +1037,7 @@ TEST_F(SyncDataTypeManagerImplTest, HighPriorityAssociationFailure) {
   FinishDownload(*dtm_, ModelTypeSet(PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
-  // PERFERENCES controller is associating while BOOKMARKS is downloading.
+  // PREFERENCES controller is associating while BOOKMARKS is downloading.
   EXPECT_EQ(DataTypeController::ASSOCIATING,
             GetController(PREFERENCES)->state());
   EXPECT_EQ(DataTypeController::MODEL_LOADED,
@@ -1089,7 +1089,7 @@ TEST_F(SyncDataTypeManagerImplTest, LowPriorityAssociationFailure) {
   FinishDownload(*dtm_, ModelTypeSet(PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
-  // PERFERENCES controller is associating while BOOKMARKS is downloading.
+  // PREFERENCES controller is associating while BOOKMARKS is downloading.
   EXPECT_EQ(DataTypeController::ASSOCIATING,
             GetController(PREFERENCES)->state());
   EXPECT_EQ(DataTypeController::MODEL_LOADED,

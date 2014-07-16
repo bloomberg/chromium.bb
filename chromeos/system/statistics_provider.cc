@@ -134,7 +134,7 @@ bool StatisticsProviderImpl::WaitForStatisticsLoaded() {
     return true;
 
   // Block if the statistics are not loaded yet. Normally this shouldn't
-  // happen excpet during OOBE.
+  // happen except during OOBE.
   base::Time start_time = base::Time::Now();
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   on_statistics_loaded_.TimedWait(base::TimeDelta::FromSeconds(kTimeoutSecs));

@@ -186,7 +186,7 @@ void UserSwichAnimatorChromeOS::TransitionUserShelf(
          iter != root_windows.end(); ++iter) {
       // This shelf change is only part of the animation and will be updated by
       // ChromeLauncherController::ActiveUserChanged() to the new users value.
-      // Note that the user perference will not be changed.
+      // Note that the user preference will not be changed.
       ash::Shell::GetInstance()->SetShelfAutoHideBehavior(
           ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN, *iter);
     }

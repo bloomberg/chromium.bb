@@ -82,8 +82,8 @@ class ProcessSingleton : public base::NonThreadSafe {
   // false is returned, we are not the singleton instance and the caller must
   // exit.
   // NOTE: Most callers should generally prefer NotifyOtherProcessOrCreate() to
-  // this method, only callers for whom failure is prefered to notifying another
-  // process should call this directly.
+  // this method, only callers for whom failure is preferred to notifying
+  // another process should call this directly.
   bool Create();
 
   // Clear any lock state during shutdown.

@@ -897,7 +897,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
     // TODO(macourteau): refactor preferences that are copied from
     // master_preferences into local_state, as a "local_state" section in
-    // master preferences. If possible, a generic solution would be prefered
+    // master preferences. If possible, a generic solution would be preferred
     // over a copy one-by-one of specific preferences. Also see related TODO
     // in first_run.h.
 
