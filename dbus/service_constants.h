@@ -1577,11 +1577,8 @@ const char kEnumerateStorages[] = "EnumerateStorages";
 const char kGetStorageInfo[] = "GetStorageInfo";
 const char kOpenStorage[] = "OpenStorage";
 const char kCloseStorage[] = "CloseStorage";
-const char kReadDirectoryByPath[] = "ReadDirectoryByPath";
 const char kReadDirectoryById[] = "ReadDirectoryById";
-const char kReadFileChunkByPath[] = "ReadFileChunkByPath";
 const char kReadFileChunkById[] = "ReadFileChunkById";
-const char kGetFileInfoByPath[] = "GetFileInfoByPath";
 const char kGetFileInfoById[] = "GetFileInfoById";
 
 // Signals.
