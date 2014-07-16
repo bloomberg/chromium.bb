@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/child/multipart_response_delegate.h"
+
 #include <vector>
 
-#include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "webkit/child/multipart_response_delegate.h"
 
-using std::string;
 using blink::WebString;
 using blink::WebURL;
 using blink::WebURLError;
@@ -20,8 +19,7 @@ using blink::WebURLLoader;
 using blink::WebURLLoaderClient;
 using blink::WebURLRequest;
 using blink::WebURLResponse;
-using content::MultipartResponseDelegateTester;
-using webkit_glue::MultipartResponseDelegate;
+using std::string;
 
 namespace content {
 

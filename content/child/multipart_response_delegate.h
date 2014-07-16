@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -46,14 +46,14 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef WEBKIT_CHILD_MULTIPART_RESPONSE_DELEGATE_H_
-#define WEBKIT_CHILD_MULTIPART_RESPONSE_DELEGATE_H_
+#ifndef CONTENT_CHILD_MULTIPART_RESPONSE_DELEGATE_H_
+#define CONTENT_CHILD_MULTIPART_RESPONSE_DELEGATE_H_
 
 #include <string>
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "webkit/child/webkit_child_export.h"
 
 namespace blink {
 class WebURLLoader;
@@ -61,13 +61,8 @@ class WebURLLoaderClient;
 }
 
 namespace content {
-// Used by unit tests to access private members.
-class MultipartResponseDelegateTester;
-}
 
-namespace webkit_glue {
-
-class WEBKIT_CHILD_EXPORT MultipartResponseDelegate {
+class CONTENT_EXPORT MultipartResponseDelegate {
  public:
   MultipartResponseDelegate(blink::WebURLLoaderClient* client,
                             blink::WebURLLoader* loader,
@@ -100,7 +95,7 @@ class WEBKIT_CHILD_EXPORT MultipartResponseDelegate {
       int64* content_range_instance_size);
 
  private:
-  friend class content::MultipartResponseDelegateTester;  // For unittests.
+  friend class MultipartResponseDelegateTester;  // For unittests.
 
   // Pointers to the client and associated loader so we can make callbacks as
   // we parse pieces of data.
@@ -150,6 +145,6 @@ class WEBKIT_CHILD_EXPORT MultipartResponseDelegate {
   DISALLOW_COPY_AND_ASSIGN(MultipartResponseDelegate);
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_CHILD_MULTIPART_RESPONSE_DELEGATE_H_
+#endif  // CONTENT_CHILD_MULTIPART_RESPONSE_DELEGATE_H_

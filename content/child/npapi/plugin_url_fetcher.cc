@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/child/child_thread.h"
+#include "content/child/multipart_response_delegate.h"
 #include "content/child/npapi/plugin_host.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "content/child/npapi/plugin_stream_url.h"
@@ -25,7 +26,6 @@
 #include "net/url_request/url_request.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "webkit/child/multipart_response_delegate.h"
 #include "webkit/child/resource_loader_bridge.h"
 
 namespace content {
@@ -48,9 +48,10 @@ class MultiPartResponseClient : public blink::WebURLLoaderClient {
       blink::WebURLLoader* loader,
       const blink::WebURLResponse& response) OVERRIDE {
     int64 byte_range_upper_bound, instance_size;
-    if (!webkit_glue::MultipartResponseDelegate::ReadContentRanges(
-            response, &byte_range_lower_bound_, &byte_range_upper_bound,
-            &instance_size)) {
+    if (!MultipartResponseDelegate::ReadContentRanges(response,
+                                                      &byte_range_lower_bound_,
+                                                      &byte_range_upper_bound,
+                                                      &instance_size)) {
       NOTREACHED();
     }
   }
@@ -264,14 +265,14 @@ void PluginURLFetcher::OnReceivedResponse(const ResourceResponseInfo& info) {
       WebURLLoaderImpl::PopulateURLResponse(url_, info, &response);
 
       std::string multipart_boundary;
-      if (webkit_glue::MultipartResponseDelegate::ReadMultipartBoundary(
+      if (MultipartResponseDelegate::ReadMultipartBoundary(
               response, &multipart_boundary)) {
         plugin_stream_->instance()->webplugin()->DidStartLoading();
 
         MultiPartResponseClient* multi_part_response_client =
             new MultiPartResponseClient(plugin_stream_);
 
-        multipart_delegate_.reset(new webkit_glue::MultipartResponseDelegate(
+        multipart_delegate_.reset(new MultipartResponseDelegate(
             multi_part_response_client, NULL, response, multipart_boundary));
 
         // Multiple ranges requested, data will be delivered by
@@ -283,7 +284,7 @@ void PluginURLFetcher::OnReceivedResponse(const ResourceResponseInfo& info) {
       int64 upper_bound = 0, instance_size = 0;
       // Single range requested - go through original processing for
       // non-multipart requests, but update data offset.
-      webkit_glue::MultipartResponseDelegate::ReadContentRanges(
+      MultipartResponseDelegate::ReadContentRanges(
           response, &data_offset_, &upper_bound, &instance_size);
     } else if (response_code == 200) {
       // TODO: should we handle this case? We used to but it's not clear that we

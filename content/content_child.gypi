@@ -90,6 +90,8 @@
       'child/indexed_db/webidbfactory_impl.h',
       'child/mojo/mojo_application.cc',
       'child/mojo/mojo_application.h',
+      'child/multipart_response_delegate.cc',
+      'child/multipart_response_delegate.h',
       'child/npapi/np_channel_base.cc',
       'child/npapi/np_channel_base.h',
       'child/npapi/npobject_base.h',

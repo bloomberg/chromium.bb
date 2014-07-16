@@ -38,11 +38,8 @@ class WebURLLoader;
 class WebURLRequest;
 }
 
-namespace webkit_glue {
-class MultipartResponseDelegate;
-}  // namespace webkit_glue
-
 namespace content {
+class MultipartResponseDelegate;
 class RenderFrameImpl;
 class RenderViewImpl;
 class WebPluginDelegateProxy;
@@ -295,8 +292,7 @@ class WebPluginImpl : public WebPlugin,
   // Unique identifier for this plugin, used to track script objects.
   struct _NPP* npp_;
 
-  typedef std::map<WebPluginResourceClient*,
-                   webkit_glue::MultipartResponseDelegate*>
+  typedef std::map<WebPluginResourceClient*, MultipartResponseDelegate*>
       MultiPartResponseHandlerMap;
   // Tracks HTTP multipart response handlers instantiated for
   // a WebPluginResourceClient instance.

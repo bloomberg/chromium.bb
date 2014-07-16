@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "cc/layers/io_surface_layer.h"
 #include "content/child/appcache/web_application_cache_host_impl.h"
+#include "content/child/multipart_response_delegate.h"
 #include "content/child/npapi/plugin_host.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "content/child/npapi/webplugin_delegate_impl.h"
@@ -57,12 +58,11 @@
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
-#include "webkit/child/multipart_response_delegate.h"
 
+using blink::WebCString;
 using blink::WebCanvas;
 using blink::WebConsoleMessage;
 using blink::WebCookieJar;
-using blink::WebCString;
 using blink::WebCursorInfo;
 using blink::WebData;
 using blink::WebDataSource;
@@ -85,7 +85,6 @@ using blink::WebURLRequest;
 using blink::WebURLResponse;
 using blink::WebVector;
 using blink::WebView;
-using webkit_glue::MultipartResponseDelegate;
 
 namespace content {
 

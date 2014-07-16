@@ -54,8 +54,6 @@
       # include the header generated above.
       'hard_dependency': 1,
       'sources': [
-        'multipart_response_delegate.cc',
-        'multipart_response_delegate.h',
         'resource_loader_bridge.cc',
         'resource_loader_bridge.h',
         'webkit_child_export.h',
