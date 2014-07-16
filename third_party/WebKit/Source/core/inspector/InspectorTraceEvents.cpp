@@ -344,4 +344,13 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorEventDispatchEvent::da
     return TracedValue().setString("type", event.type()).finish();
 }
 
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorTimeStampEvent::data(ExecutionContext* context, const String& message)
+{
+    TracedValue value;
+    value.setString("message", message);
+    if (LocalFrame* frame = frameForExecutionContext(context))
+        value.setString("frame", toHexString(frame));
+    return value.finish();
+}
+
 }

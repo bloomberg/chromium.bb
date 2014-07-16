@@ -144,6 +144,11 @@ public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const Event&);
 };
 
+class InspectorTimeStampEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, const String& message);
+};
+
 } // namespace WebCore
 
 

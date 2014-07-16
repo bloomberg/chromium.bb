@@ -31,6 +31,7 @@
 
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/ScriptArguments.h"
 #include "platform/TraceEvent.h"
 #include "wtf/text/CString.h"
@@ -107,7 +108,7 @@ void ConsoleBase::count(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptA
 
 void ConsoleBase::markTimeline(const String& title)
 {
-    InspectorInstrumentation::consoleTimeStamp(context(), title);
+    timeStamp(title);
 }
 
 void ConsoleBase::profile(ScriptState* scriptState, const String& title)
@@ -134,6 +135,8 @@ void ConsoleBase::timeEnd(ScriptState* scriptState, const String& title)
 
 void ConsoleBase::timeStamp(const String& title)
 {
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TimeStamp", "data", InspectorTimeStampEvent::data(context(), title));
+    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::consoleTimeStamp(context(), title);
 }
 
