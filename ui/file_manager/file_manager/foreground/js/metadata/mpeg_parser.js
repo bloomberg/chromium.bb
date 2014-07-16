@@ -149,10 +149,10 @@ MpegParser.createRootParser = function(metadata) {
  * @param {function} onError Error callback.
  */
 MpegParser.prototype.parse = function(file, metadata, callback, onError) {
-  this.rootParser_ = MpegParser.createRootParser(metadata);
+  var rootParser = MpegParser.createRootParser(metadata);
 
   // Kick off the processing by reading the first atom's header.
-  this.requestRead(file, 0, MpegParser.HEADER_SIZE, null,
+  this.requestRead(rootParser, file, 0, MpegParser.HEADER_SIZE, null,
       onError, callback.bind(null, metadata));
 };
 
@@ -231,6 +231,7 @@ MpegParser.prototype.parseMpegAtomsInRange = function(
 };
 
 /**
+ * @param {Object} rootParser Parser definition.
  * @param {File} file File.
  * @param {number} filePos Start position in the file.
  * @param {number} size Atom size.
@@ -239,13 +240,14 @@ MpegParser.prototype.parseMpegAtomsInRange = function(
  * @param {function} onSuccess Success callback.
  */
 MpegParser.prototype.requestRead = function(
-    file, filePos, size, name, onError, onSuccess) {
+    rootParser, file, filePos, size, name, onError, onSuccess) {
   var self = this;
   var reader = new FileReader();
   reader.onerror = onError;
   reader.onload = function(event) {
     self.processTopLevelAtom(
-        reader.result, file, filePos, size, name, onError, onSuccess);
+        reader.result, rootParser, file, filePos, size, name,
+        onError, onSuccess);
   };
   this.vlog('reading @' + filePos + ':' + size);
   reader.readAsArrayBuffer(file.slice(filePos, filePos + size));
@@ -253,6 +255,7 @@ MpegParser.prototype.requestRead = function(
 
 /**
  * @param {ArrayBuffer} buf Data buffer.
+ * @param {Object} rootParser Parser definition.
  * @param {File} file File.
  * @param {number} filePos Start position in the file.
  * @param {number} size Atom size.
@@ -261,7 +264,7 @@ MpegParser.prototype.requestRead = function(
  * @param {function} onSuccess Success callback.
  */
 MpegParser.prototype.processTopLevelAtom = function(
-    buf, file, filePos, size, name, onError, onSuccess) {
+    buf, rootParser, file, filePos, size, name, onError, onSuccess) {
   try {
     var br = new ByteReader(buf);
 
@@ -280,7 +283,7 @@ MpegParser.prototype.processTopLevelAtom = function(
     // Process the top level atom.
     if (name) { // name is null only the first time.
       this.applyParser(
-          this.rootParser_[name],
+          rootParser[name],
           br,
           {start: 0, end: atomEnd, name: name},
           filePos
@@ -298,12 +301,13 @@ MpegParser.prototype.processTopLevelAtom = function(
 
       // If we do not have a parser for the next atom, skip the content and
       // read only the header (the one after the next).
-      if (!this.rootParser_[nextName]) {
+      if (!rootParser[nextName]) {
         filePos += nextSize - MpegParser.HEADER_SIZE;
         nextSize = MpegParser.HEADER_SIZE;
       }
 
-      this.requestRead(file, filePos, nextSize, nextName, onError, onSuccess);
+      this.requestRead(rootParser, file, filePos, nextSize, nextName,
+                       onError, onSuccess);
     } else {
       // The previous read did not return the next atom header, EOF reached.
       this.vlog('EOF @' + filePos);
