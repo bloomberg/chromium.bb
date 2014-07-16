@@ -103,8 +103,6 @@
       'common/extensions/manifest_handlers/mime_types_handler.h',
       'common/extensions/manifest_handlers/minimum_chrome_version_checker.cc',
       'common/extensions/manifest_handlers/minimum_chrome_version_checker.h',
-      'common/extensions/manifest_handlers/nacl_modules_handler.cc',
-      'common/extensions/manifest_handlers/nacl_modules_handler.h',
       'common/extensions/manifest_handlers/settings_overrides_handler.cc',
       'common/extensions/manifest_handlers/settings_overrides_handler.h',
       'common/extensions/manifest_handlers/synthesize_browser_action_handler.cc',
@@ -363,7 +361,6 @@
             '<(DEPTH)/components/components.gyp:password_manager_core_common',
             '<(DEPTH)/components/components.gyp:signin_core_common',
             '<(DEPTH)/components/components.gyp:translate_content_common',
-            '<(DEPTH)/components/nacl.gyp:nacl_common',
             '<(DEPTH)/components/components.gyp:visitedlink_common',
             '<(DEPTH)/extensions/common/api/api.gyp:extensions_api',
             '<(DEPTH)/extensions/extensions.gyp:extensions_common',
@@ -387,7 +384,6 @@
             ['exclude', '^common/logging_chrome\\.'],
             ['exclude', '^common/media_galleries/'],
             ['exclude', '^common/multi_process_'],
-            ['exclude', '^common/nacl_'],
             ['exclude', '^common/pepper_flash\\.'],
             ['exclude', '^common/profiling\\.'],
             ['exclude', '^common/spellcheck_'],
@@ -405,6 +401,15 @@
           ],
           'include_dirs': [
             '<(DEPTH)/breakpad/src',
+          ],
+        }],
+        ['disable_nacl==0', {
+          'dependencies': [
+            '<(DEPTH)/components/nacl.gyp:nacl_common',
+          ],
+          'sources': [
+            'common/extensions/manifest_handlers/nacl_modules_handler.cc',
+            'common/extensions/manifest_handlers/nacl_modules_handler.h',
           ],
         }],
         ['enable_printing==0', {
@@ -439,18 +444,17 @@
         }],
         ['OS=="android"', {
           'sources/': [
-            ['exclude', '^common/chrome_version_info_posix.cc'],
             ['exclude', '^common/importer/'],
             ['exclude', '^common/media_galleries/'],
             ['exclude', '^common/service_'],
           ],
           'sources!': [
             'common/badge_util.cc',
+            'common/chrome_version_info_posix.cc',
             'common/extensions/api/extension_action/browser_action_handler.cc',
             'common/extensions/api/extension_action/page_action_handler.cc',
             'common/extensions/api/spellcheck/spellcheck_handler.cc',
             'common/extensions/manifest_handlers/minimum_chrome_version_checker.cc',
-            'common/extensions/manifest_handlers/nacl_modules_handler.cc',
             'common/icon_with_badge_image_source.cc',
             'common/net/url_util.cc',
             'common/spellcheck_common.cc',

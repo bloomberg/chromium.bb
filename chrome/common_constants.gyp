@@ -72,7 +72,6 @@
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../components/components.gyp:bookmarks_common',
-        '../components/nacl.gyp:nacl_switches',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
       ],
       'target_conditions': [
@@ -81,6 +80,13 @@
           # re-add it in target_conditionals so it's after that exclusion.
           'sources/': [
             ['include', '^common/chrome_paths_mac\\.mm$'],
+          ],
+        }],
+      ],
+      'conditions': [
+        ['disable_nacl==0', {
+          'dependencies': [
+            '../components/nacl.gyp:nacl_switches',
           ],
         }],
       ],

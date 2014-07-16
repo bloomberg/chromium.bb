@@ -78,7 +78,18 @@ static_library("common") {
       #'<(DEPTH)/components/components.gyp:password_manager_core_common',  TODO(GYP)
       #'<(DEPTH)/components/components.gyp:signin_core_common',  TODO(GYP)
       #'<(DEPTH)/components/nacl.gyp:nacl_common',  TODO(GYP)
+      #'<(DEPTH)/extensions/common/api/api.gyp:extensions_api',  TODO(GYP)
       #'<(DEPTH)/extensions/extensions.gyp:extensions_common',  TODO(GYP)
+    ]
+  }
+
+  if (enable_nacl) {
+    deps += [
+      #'<(DEPTH)/components/nacl.gyp:nacl_common',  TODO(GYP)
+    ]
+    sources += [
+      "extensions/manifest_handlers/nacl_modules_handler.cc",
+      "extensions/manifest_handlers/nacl_modules_handler.h",
     ]
   }
 
@@ -163,8 +174,12 @@ static_library("constants") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//third_party/widevine/cdm:version_h",
-    # TODO(GYP)
-    #'../components/components.gyp:bookmarks_common',
-    #'../components/nacl.gyp:nacl_switches',
+    #'../components/components.gyp:bookmarks_common',  TODO(GYP)
   ]
+
+  if (enable_nacl) {
+    deps += [
+      #'../components/nacl.gyp:nacl_switches',  TODO(GYP)
+    ]
+  }
 }

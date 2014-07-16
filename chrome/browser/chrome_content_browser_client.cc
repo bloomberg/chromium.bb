@@ -101,11 +101,6 @@
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/google/core/browser/google_util.h"
-#include "components/nacl/browser/nacl_browser.h"
-#include "components/nacl/browser/nacl_host_message_filter.h"
-#include "components/nacl/browser/nacl_process_host.h"
-#include "components/nacl/common/nacl_process_type.h"
-#include "components/nacl/common/nacl_switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/translate/core/common/translate_switches.h"
@@ -228,6 +223,14 @@
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #endif
 
+#if !defined(DISABLE_NACL)
+#include "components/nacl/browser/nacl_browser.h"
+#include "components/nacl/browser/nacl_host_message_filter.h"
+#include "components/nacl/browser/nacl_process_host.h"
+#include "components/nacl/common/nacl_process_type.h"
+#include "components/nacl/common/nacl_switches.h"
+#endif
+
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/guest_view/guest_view_base.h"
@@ -255,7 +258,6 @@
 using base::FileDescriptor;
 using blink::WebWindowFeatures;
 using content::AccessTokenStore;
-using content::BrowserChildProcessHostIterator;
 using content::BrowserThread;
 using content::BrowserURLHandler;
 using content::ChildProcessSecurityPolicy;
@@ -1654,8 +1656,10 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableAppWindowControls,
       switches::kEnableBenchmarking,
       switches::kEnableNaCl,
+#if !defined(DISABLE_NACL)
       switches::kEnableNaClDebug,
       switches::kEnableNaClNonSfiMode,
+#endif
       switches::kEnableNetBenchmarking,
       switches::kEnableShowModalDialog,
       switches::kEnableStreamlinedHostedApps,
@@ -1699,8 +1703,10 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     static const char* const kSwitchNames[] = {
       // Load (in-process) Pepper plugins in-process in the zygote pre-sandbox.
       switches::kDisableBundledPpapiFlash,
+#if !defined(DISABLE_NACL)
       switches::kEnableNaClNonSfiMode,
       switches::kNaClDangerousNoSandboxNonSfi,
+#endif
       switches::kPpapiFlashPath,
       switches::kPpapiFlashVersion,
     };
@@ -2582,7 +2588,8 @@ void ChromeContentBrowserClient::DidCreatePpapiPlugin(
 content::BrowserPpapiHost*
     ChromeContentBrowserClient::GetExternalBrowserPpapiHost(
         int plugin_process_id) {
-  BrowserChildProcessHostIterator iter(PROCESS_TYPE_NACL_LOADER);
+#if !defined(DISABLE_NACL)
+  content::BrowserChildProcessHostIterator iter(PROCESS_TYPE_NACL_LOADER);
   while (!iter.Done()) {
     nacl::NaClProcessHost* host = static_cast<nacl::NaClProcessHost*>(
         iter.GetDelegate());
@@ -2593,6 +2600,7 @@ content::BrowserPpapiHost*
     }
     ++iter;
   }
+#endif
   return NULL;
 }
 

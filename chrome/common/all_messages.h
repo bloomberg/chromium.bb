@@ -14,4 +14,7 @@
 #endif
 
 #include "chrome/common/common_message_generator.h"
+
+#if !defined(DISABLE_NACL)
 #include "components/nacl/common/nacl_messages.h"
+#endif
