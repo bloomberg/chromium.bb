@@ -70,9 +70,9 @@ use_seccomp_bpf = (is_linux || is_android) &&
 
 enable_webrtc = !is_ios
 
-# Enable notifications everywhere except Android.
+# Enable notifications everywhere except Android/iOS.
 # Android is http://crbug.com/115320
-enable_notifications = !is_android
+enable_notifications = !is_android && !is_ios
 
 # TODO(brettw) this should be moved to net and only dependents get this define.
 disable_ftp_support = is_ios

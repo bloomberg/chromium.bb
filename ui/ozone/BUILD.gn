@@ -84,9 +84,7 @@ component("ozone") {
   ]
 
   if (is_chromeos) {
-    deps += [
-      #'<(DEPTH)/ui/display/display.gyp:display_types',  TODO(GYP)
-    ]
+    deps += [ "//ui/dusplay/types" ]
   }
 }
 

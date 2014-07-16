@@ -96,6 +96,7 @@ group("root") {
     "//ui/aura",
     "//ui/accessibility",
     "//ui/base",
+    "//ui/display",
     "//ui/events",
     "//ui/gfx",
     "//ui/gl",
@@ -106,6 +107,7 @@ group("root") {
     "//ui/strings",
     "//ui/surface",
     "//ui/views",
+    "//ui/views/controls/webview",
     "//ui/web_dialogs",
     "//ui/wm",
     "//url",
@@ -175,7 +177,9 @@ group("root") {
       "//ash",
       "//tools/gn",
       "//ui/aura",
+      "//ui/display",
       "//ui/views",
+      "//ui/views/controls/webview",
 
       # Fails on Android for unknown reasons.
       "//third_party/flac",

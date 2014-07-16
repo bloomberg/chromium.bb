@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //ui/shell_dialogs
       'target_name': 'shell_dialogs',
       'type': '<(component)',
       'dependencies': [
@@ -21,6 +22,7 @@
         'SHELL_DIALOGS_IMPLEMENTATION',
       ],
       'sources': [
+        # Note: file list duplicated in GN build.
         'android/shell_dialogs_jni_registrar.cc',
         'android/shell_dialogs_jni_registrar.h',
         'base_shell_dialog.cc',
@@ -50,8 +52,8 @@
             'dependencies': [
               '../aura/aura.gyp:aura',
             ],
-            'sources/': [
-              ['exclude', 'select_file_dialog_mac.mm'],
+            'sources!': [
+              'select_file_dialog_mac.mm',
             ],
           }
         ],
@@ -87,6 +89,7 @@
       ],
     },  # target_name: shell_dialogs
     {
+      # GN version: //ui/shell_dialogs:shell_dialogs_unittests
       'target_name': 'shell_dialogs_unittests',
       'type': 'executable',
       'dependencies': [
@@ -97,6 +100,7 @@
         'shell_dialogs',
       ],
       'sources': [
+        # Note: file list duplicated in GN build.
         'select_file_dialog_win_unittest.cc',
       ],
     },

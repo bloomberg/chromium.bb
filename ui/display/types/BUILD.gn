@@ -1,0 +1,27 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("types") {
+  output_name = "display_types"
+  sources = [
+    "chromeos/display_mode.cc",
+    "chromeos/display_mode.h",
+    "chromeos/display_snapshot.cc",
+    "chromeos/display_snapshot.h",
+    "chromeos/native_display_delegate.h",
+    "chromeos/native_display_observer.h",
+    "chromeos/touchscreen_device.cc",
+    "chromeos/touchscreen_device.h",
+    "chromeos/touchscreen_device_manager.h",
+    "display_constants.h",
+    "display_types_export.h",
+  ]
+
+  defines = [ "DISPLAY_TYPES_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//ui/gfx/geometry",
+  ]
+}

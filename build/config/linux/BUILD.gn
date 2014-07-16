@@ -97,7 +97,7 @@ config("xext") {
 }
 
 config("xrandr") {
-  libs = [ "xrandr" ]
+  libs = [ "Xrandr" ]
 }
 
 config("xscrnsaver") {
@@ -110,6 +110,10 @@ config("xfixes") {
 
 config("libcap") {
   libs = [ "cap" ]
+}
+
+config("xi") {
+  libs = [ "Xi" ]
 }
 
 config("libresolv") {

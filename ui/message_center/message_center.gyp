@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //ui/message_center
       'target_name': 'message_center',
       'type': '<(component)',
       'dependencies': [
@@ -26,6 +27,7 @@
         'MESSAGE_CENTER_IMPLEMENTATION',
       ],
       'sources': [
+        # Note: file list duplicated in GN build.
         'cocoa/notification_controller.h',
         'cocoa/notification_controller.mm',
         'cocoa/opaque_views.h',
@@ -132,8 +134,6 @@
             'views/message_bubble_base.h',
             'views/message_center_bubble.cc',
             'views/message_center_bubble.h',
-            'views/message_popup_bubble.cc',
-            'views/message_popup_bubble.h',
           ],
         }],
         # iOS disables notifications altogether, Android implements its own
@@ -143,7 +143,6 @@
             # Exclude everything except dummy impl.
             ['exclude', '\\.(cc|mm)$'],
             ['include', '^dummy_message_center\\.cc$'],
-            ['include', '^message_center_switches\\.cc$'],
             ['include', '^notification_delegate\\.cc$'],
           ],
         }, {  # notifications==1
@@ -159,6 +158,7 @@
       ],
     },  # target_name: message_center
     {
+      # GN version: //ui/message_center:test_support
       'target_name': 'message_center_test_support',
       'type': 'static_library',
       'dependencies': [
@@ -171,6 +171,7 @@
         'message_center',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'fake_message_center.h',
         'fake_message_center.cc',
         'fake_message_center_tray_delegate.h',
@@ -180,6 +181,7 @@
       ],
     },  # target_name: message_center_test_support
     {
+      # GN version: //ui/message_center:message_center_unittests
       'target_name': 'message_center_unittests',
       'type': 'executable',
       'dependencies': [
@@ -197,6 +199,7 @@
         'message_center_test_support',
       ],
       'sources': [
+        # Note: file list duplicated in GN build.
         'cocoa/notification_controller_unittest.mm',
         'cocoa/popup_collection_unittest.mm',
         'cocoa/popup_controller_unittest.mm',

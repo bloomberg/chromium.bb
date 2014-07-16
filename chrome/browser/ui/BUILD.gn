@@ -61,6 +61,7 @@ static_library("ui") {
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/message_center",
     "//ui/native_theme",
     "//ui/resources",
     "//ui/snapshot",
@@ -70,7 +71,6 @@ static_library("ui") {
     #'../components/components.gyp:invalidation',  TODO(GYP)
     #'../components/components.gyp:omaha_query_params',  TODO(GYP)
     #'../components/components.gyp:password_manager_core_browser',  TODO(GYP)
-    #'../ui/message_center/message_center.gyp:message_center',  TODO(GYP)
   ]
 
   forward_dependent_configs_from = [

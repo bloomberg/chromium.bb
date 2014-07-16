@@ -49,11 +49,11 @@ component("views") {
     ]
   }
   if (use_x11 && !is_chromeos) {
-    #deps += [ '../display/display.gyp:display_util' ]  TODO(GYP)
+    deps += [ "//ui/display/util" ]
   }
   if (is_linux && !is_chromeos) {
     sources -= [ "window/window_button_order_provider.cc" ]
-    #deps += [ '../shell_dialogs/shell_dialogs.gyp:shell_dialogs' ]  TODO(GYP)
+    deps += [ "//ui/shell_dialogs" ]
   } else {
     sources -= [
       "linux_ui/linux_ui.h",

@@ -36,11 +36,11 @@ source_set("common") {
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/shell_dialogs",
     "//url",
     "//third_party/WebKit/public:blink_headers",
     # TODO(GYP) convert these dependencies.
     #'../third_party/libjingle/libjingle.gyp:libjingle',
-    #'../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
   ]
 
   if (!is_ios) {

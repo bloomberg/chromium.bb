@@ -1,0 +1,38 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("webview") {
+  sources = [
+    "unhandled_keyboard_event_handler.cc",
+    "unhandled_keyboard_event_handler.h",
+    "unhandled_keyboard_event_handler_linux.cc",
+    "unhandled_keyboard_event_handler_win.cc",
+    "web_dialog_view.cc",
+    "web_dialog_view.h",
+    "webview.cc",
+    "webview.h",
+    "webview_export.h",
+  ]
+
+  defines = [ "WEBVIEW_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//base/third_party/dynamic_annotations",
+    "//content/public/browser",
+    "//skia",
+    "//ui/base",
+    "//ui/events",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/web_dialogs",
+    "//ui/views",
+    "//url",
+  ]
+
+  forward_dependent_configs_from = [
+    "//ui/views",
+  ]
+}
