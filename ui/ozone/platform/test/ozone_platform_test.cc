@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
+#include "ui/ozone/common/window/platform_window_compat.h"
 #include "ui/ozone/platform/test/file_surface_factory.h"
 #include "ui/ozone/platform/test/test_cursor_factory.h"
 #include "ui/ozone/public/gpu_platform_support.h"
@@ -47,6 +48,12 @@ class OzonePlatformTest : public OzonePlatform {
   }
   virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() OVERRIDE {
     return gpu_platform_support_host_.get();
+  }
+  virtual scoped_ptr<PlatformWindow> CreatePlatformWindow(
+      PlatformWindowDelegate* delegate,
+      const gfx::Rect& bounds) OVERRIDE {
+    return make_scoped_ptr<PlatformWindow>(
+        new PlatformWindowCompat(delegate, bounds));
   }
 
 #if defined(OS_CHROMEOS)

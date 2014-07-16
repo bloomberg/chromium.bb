@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/caca/ozone_platform_caca.h"
 
+#include "ui/ozone/common/window/platform_window_compat.h"
 #include "ui/ozone/platform/caca/caca_connection.h"
 #include "ui/ozone/platform/caca/caca_event_factory.h"
 #include "ui/ozone/platform/caca/caca_surface_factory.h"
@@ -39,6 +40,12 @@ class OzonePlatformCaca : public OzonePlatform {
   }
   virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() OVERRIDE {
     return NULL;  // no GPU support
+  }
+  virtual scoped_ptr<PlatformWindow> CreatePlatformWindow(
+      PlatformWindowDelegate* delegate,
+      const gfx::Rect& bounds) OVERRIDE {
+    return make_scoped_ptr<PlatformWindow>(
+        new PlatformWindowCompat(delegate, bounds));
   }
 
 #if defined(OS_CHROMEOS)

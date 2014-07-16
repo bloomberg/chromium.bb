@@ -8,6 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/ozone/ozone_export.h"
 
+namespace gfx {
+class Rect;
+}
+
 namespace ui {
 
 class CursorFactoryOzone;
@@ -17,6 +21,8 @@ class SurfaceFactoryOzone;
 class TouchscreenDeviceManager;
 class GpuPlatformSupport;
 class GpuPlatformSupportHost;
+class PlatformWindow;
+class PlatformWindowDelegate;
 
 // Base class for Ozone platform implementations.
 //
@@ -54,6 +60,9 @@ class OZONE_EXPORT OzonePlatform {
   virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() = 0;
   virtual ui::GpuPlatformSupport* GetGpuPlatformSupport() = 0;
   virtual ui::GpuPlatformSupportHost* GetGpuPlatformSupportHost() = 0;
+  virtual scoped_ptr<PlatformWindow> CreatePlatformWindow(
+      PlatformWindowDelegate* delegate,
+      const gfx::Rect& bounds) = 0;
 #if defined(OS_CHROMEOS)
   virtual scoped_ptr<ui::NativeDisplayDelegate>
       CreateNativeDisplayDelegate() = 0;

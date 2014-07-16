@@ -5,28 +5,36 @@
 #ifndef UI_AURA_WINDOW_TREE_HOST_OZONE_H_
 #define UI_AURA_WINDOW_TREE_HOST_OZONE_H_
 
-#include <vector>
-
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_source.h"
-#include "ui/events/platform/platform_event_dispatcher.h"
-#include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
+#include "ui/platform_window/platform_window_delegate.h"
+
+namespace ui {
+class PlatformWindow;
+}
 
 namespace aura {
 
 class AURA_EXPORT WindowTreeHostOzone : public WindowTreeHost,
                                         public ui::EventSource,
-                                        public ui::PlatformEventDispatcher {
+                                        public ui::PlatformWindowDelegate {
  public:
   explicit WindowTreeHostOzone(const gfx::Rect& bounds);
   virtual ~WindowTreeHostOzone();
 
  private:
-  // ui::PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
-  virtual uint32_t DispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
+  // ui::PlatformWindowDelegate:
+  virtual void OnBoundsChanged(const gfx::Rect&) OVERRIDE;
+  virtual void OnDamageRect(const gfx::Rect& damaged_region) OVERRIDE;
+  virtual void DispatchEvent(ui::Event* event) OVERRIDE;
+  virtual void OnCloseRequest() OVERRIDE;
+  virtual void OnClosed() OVERRIDE;
+  virtual void OnWindowStateChanged(ui::PlatformWindowState new_state) OVERRIDE;
+  virtual void OnLostCapture() OVERRIDE;
+  virtual void OnAcceleratedWidgetAvailable(
+      gfx::AcceleratedWidget widget) OVERRIDE;
 
   // WindowTreeHost:
   virtual ui::EventSource* GetEventSource() OVERRIDE;
@@ -46,8 +54,11 @@ class AURA_EXPORT WindowTreeHostOzone : public WindowTreeHost,
   // ui::EventSource overrides.
   virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
 
+  // Platform-specific part of this WindowTreeHost.
+  scoped_ptr<ui::PlatformWindow> platform_window_;
+
+  // The identifier used to create a compositing surface.
   gfx::AcceleratedWidget widget_;
-  gfx::Rect bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostOzone);
 };
