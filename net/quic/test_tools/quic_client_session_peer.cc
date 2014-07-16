@@ -18,9 +18,9 @@ void QuicClientSessionPeer::SetMaxOpenStreams(QuicClientSession* session,
 }
 
 // static
-void QuicClientSessionPeer::SetChannelIDKey(QuicClientSession* session,
-                                            ChannelIDKey* channel_id_key) {
-  session->crypto_stream_->channel_id_key_.reset(channel_id_key);
+void QuicClientSessionPeer::SetChannelIDSent(QuicClientSession* session,
+                                             bool channel_id_sent) {
+  session->crypto_stream_->channel_id_sent_ = channel_id_sent;
 }
 
 }  // namespace test

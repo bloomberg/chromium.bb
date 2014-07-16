@@ -78,6 +78,7 @@ QuicCryptoClientStream::QuicCryptoClientStream(
       crypto_config_(crypto_config),
       server_id_(server_id),
       generation_counter_(0),
+      channel_id_sent_(false),
       channel_id_source_callback_(NULL),
       verify_context_(verify_context),
       proof_verify_callback_(NULL) {
@@ -110,9 +111,7 @@ int QuicCryptoClientStream::num_sent_client_hellos() const {
 }
 
 bool QuicCryptoClientStream::WasChannelIDSent() const {
-  // TODO(rch): we should replace this with a boolean member so we
-  // can free the memory associated with the key after we're finished with it.
-  return channel_id_key_.get() != NULL;
+  return channel_id_sent_;
 }
 
 // kMaxClientHellos is the maximum number of times that we'll send a client
@@ -203,6 +202,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           CloseConnectionWithDetails(error, error_details);
           return;
         }
+        channel_id_sent_ = (channel_id_key_.get() != NULL);
         if (cached->proof_verify_details()) {
           client_session()->OnProofVerifyDetailsAvailable(
               *cached->proof_verify_details());

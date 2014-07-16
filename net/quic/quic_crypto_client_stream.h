@@ -133,6 +133,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   // Generation counter from QuicCryptoClientConfig's CachedState.
   uint64 generation_counter_;
 
+  // True if a channel ID was sent.
+  bool channel_id_sent_;
+
   // channel_id_source_callback_ contains the callback object that we passed
   // to an asynchronous channel ID lookup. The ChannelIDSource owns this
   // object.

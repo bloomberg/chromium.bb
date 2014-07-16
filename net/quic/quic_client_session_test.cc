@@ -66,20 +66,6 @@ class TestPacketWriter : public QuicDefaultPacketWriter {
   QuicPacketHeader header_;
 };
 
-class FakeChannelIDKey : public ChannelIDKey {
- public:
-  // ChannelIDKey implementation
-  virtual bool Sign(base::StringPiece signed_data,
-                    std::string* out_signature) const OVERRIDE {
-    *out_signature = "";
-    return true;
-  }
-
-  virtual std::string SerializeKey() const OVERRIDE {
-    return "";
-  }
-};
-
 class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
  protected:
   QuicClientSessionTest()
@@ -223,7 +209,7 @@ TEST_P(QuicClientSessionTest, ConnectionPooledWithTlsChannelId) {
 
   session_.OnProofVerifyDetailsAvailable(details);
   CompleteCryptoHandshake();
-  QuicClientSessionPeer::SetChannelIDKey(&session_, new FakeChannelIDKey);
+  QuicClientSessionPeer::SetChannelIDSent(&session_, true);
 
   EXPECT_TRUE(session_.CanPool("www.example.org"));
   EXPECT_TRUE(session_.CanPool("mail.example.org"));
