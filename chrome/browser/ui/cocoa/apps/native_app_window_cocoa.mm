@@ -191,9 +191,10 @@ std::vector<gfx::Rect> CalculateNonDraggableRegions(
   // No-op, swallow the event.
 }
 
-- (BOOL)handledByExtensionCommand:(NSEvent*)event {
+- (BOOL)handledByExtensionCommand:(NSEvent*)event
+    priority:(ui::AcceleratorManager::HandlerPriority)priority {
   if (appWindow_)
-    return appWindow_->HandledByExtensionCommand(event);
+    return appWindow_->HandledByExtensionCommand(event, priority);
   return NO;
 }
 
@@ -912,9 +913,11 @@ void NativeAppWindowCocoa::WindowWillZoom() {
     Maximize();
 }
 
-bool NativeAppWindowCocoa::HandledByExtensionCommand(NSEvent* event) {
+bool NativeAppWindowCocoa::HandledByExtensionCommand(
+    NSEvent* event,
+    ui::AcceleratorManager::HandlerPriority priority) {
   return extension_keybinding_registry_->ProcessKeyEvent(
-      content::NativeWebKeyboardEvent(event));
+      content::NativeWebKeyboardEvent(event), priority);
 }
 
 void NativeAppWindowCocoa::ShowWithApp() {

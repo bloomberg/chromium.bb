@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/common/draggable_region.h"
+#include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/gfx/rect.h"
 
 namespace apps {
@@ -39,7 +40,9 @@ class SkRegion;
 
 // Consults the Command Registry to see if this |event| needs to be handled as
 // an extension command and returns YES if so (NO otherwise).
-- (BOOL)handledByExtensionCommand:(NSEvent*)event;
+// Only extensions with the given |priority| are considered.
+- (BOOL)handledByExtensionCommand:(NSEvent*)event
+    priority:(ui::AcceleratorManager::HandlerPriority)priority;
 
 @end
 
@@ -108,7 +111,9 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   void WindowDidExitFullscreen();
 
   // Called to handle a key event.
-  bool HandledByExtensionCommand(NSEvent* event);
+  bool HandledByExtensionCommand(
+      NSEvent* event,
+      ui::AcceleratorManager::HandlerPriority priority);
 
   // Returns true if |point| in local Cocoa coordinate system falls within
   // the draggable region.

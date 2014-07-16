@@ -1226,9 +1226,10 @@ using content::WebContents;
   chrome::ExecuteCommand(browser_.get(), command);
 }
 
-- (BOOL)handledByExtensionCommand:(NSEvent*)event {
+- (BOOL)handledByExtensionCommand:(NSEvent*)event
+    priority:(ui::AcceleratorManager::HandlerPriority)priority {
   return extension_keybinding_registry_->ProcessKeyEvent(
-      content::NativeWebKeyboardEvent(event));
+      content::NativeWebKeyboardEvent(event), priority);
 }
 
 // StatusBubble delegate method: tell the status bubble the frame it should

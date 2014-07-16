@@ -282,17 +282,10 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, OverwriteBookmarkShortcut) {
   ASSERT_TRUE(result);
 }
 
-// Behavior to be implemented on Mac. See http://crbug.com/389340.
-#if defined(OS_MACOSX)
-#define MAYBE_OverwriteBookmarkShortcutDoesNotOverrideWebKeybinding DISABLED_OverwriteBookmarkShortcutDoesNotOverrideWebKeybinding
-#else
-#define MAYBE_OverwriteBookmarkShortcutDoesNotOverrideWebKeybinding OverwriteBookmarkShortcutDoesNotOverrideWebKeybinding
-#endif
 // This test validates that an extension override of the Chrome bookmark
 // shortcut does not supersede the same keybinding by web pages.
-IN_PROC_BROWSER_TEST_F(
-    CommandsApiTest,
-    MAYBE_OverwriteBookmarkShortcutDoesNotOverrideWebKeybinding) {
+IN_PROC_BROWSER_TEST_F(CommandsApiTest,
+                       OverwriteBookmarkShortcutDoesNotOverrideWebKeybinding) {
   ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
@@ -332,18 +325,11 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(result);
 }
 
-// Behavior to be implemented on Mac. See http://crbug.com/389340.
-#if defined(OS_MACOSX)
-#define MAYBE_OverwriteBookmarkShortcutByUserOverridesWebKeybinding DISABLED_OverwriteBookmarkShortcutByUserOverridesWebKeybinding
-#else
-#define MAYBE_OverwriteBookmarkShortcutByUserOverridesWebKeybinding OverwriteBookmarkShortcutByUserOverridesWebKeybinding
-#endif
 // This test validates that user-set override of the Chrome bookmark shortcut in
 // an extension that does not request it does supersede the same keybinding by
 // web pages.
-IN_PROC_BROWSER_TEST_F(
-    CommandsApiTest,
-    MAYBE_OverwriteBookmarkShortcutByUserOverridesWebKeybinding) {
+IN_PROC_BROWSER_TEST_F(CommandsApiTest,
+                       OverwriteBookmarkShortcutByUserOverridesWebKeybinding) {
   ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
@@ -360,8 +346,13 @@ IN_PROC_BROWSER_TEST_F(
 
   const Extension* extension = GetSingleLoadedExtension();
   // Simulate the user setting the keybinding to Ctrl+D.
+#if defined(OS_MACOSX)
+  const char* hotkey = "Command+D";
+#else
+  const char* hotkey = "Ctrl+D";
+#endif  // defined(OS_MACOSX)
   command_service->UpdateKeybindingPrefs(
-      extension->id(), manifest_values::kBrowserActionCommandEvent, "Ctrl+D");
+      extension->id(), manifest_values::kBrowserActionCommandEvent, hotkey);
 
   ui_test_utils::NavigateToURL(browser(),
       test_server()->GetURL(

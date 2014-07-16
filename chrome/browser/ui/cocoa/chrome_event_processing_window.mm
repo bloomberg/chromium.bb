@@ -61,17 +61,24 @@ typedef int (*KeyToCommandMapper)(bool, bool, bool, bool, int, unichar);
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent*)event {
-  if (redispatchingEvent_)
-    return NO;
-
+  // Some extension commands have higher priority than web content, and some
+  // have lower priority. Regardless of whether the event is being
+  // redispatched, let the extension system try to handle the event.
   NSWindow* window = event.window;
   if (window) {
     BrowserWindowController* controller = [window windowController];
-    if ([controller respondsToSelector:@selector(handledByExtensionCommand:)]) {
-      if ([controller handledByExtensionCommand:event])
+    if ([controller respondsToSelector:@selector(handledByExtensionCommand:
+                                                                  priority:)]) {
+      ui::AcceleratorManager::HandlerPriority priority =
+          redispatchingEvent_ ? ui::AcceleratorManager::kNormalPriority
+                              : ui::AcceleratorManager::kHighPriority;
+      if ([controller handledByExtensionCommand:event priority:priority])
         return YES;
     }
   }
+
+  if (redispatchingEvent_)
+    return NO;
 
   // Give the web site a chance to handle the event. If it doesn't want to
   // handle it, it will call us back with one of the |handle*| methods above.

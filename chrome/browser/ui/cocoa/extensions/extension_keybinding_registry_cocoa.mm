@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/extensions/accelerator_priority.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/common/extension.h"
@@ -38,7 +39,8 @@ ExtensionKeybindingRegistryCocoa::~ExtensionKeybindingRegistryCocoa() {
 }
 
 bool ExtensionKeybindingRegistryCocoa::ProcessKeyEvent(
-    const content::NativeWebKeyboardEvent& event) {
+    const content::NativeWebKeyboardEvent& event,
+    ui::AcceleratorManager::HandlerPriority priority) {
   if (shortcut_handling_suspended_)
     return false;
 
@@ -49,6 +51,12 @@ bool ExtensionKeybindingRegistryCocoa::ProcessKeyEvent(
   std::string extension_id;
   std::string command_name;
   if (!GetFirstTarget(accelerator, &extension_id, &command_name))
+    return false;
+
+  const ui::AcceleratorManager::HandlerPriority accelerator_priority =
+      GetAcceleratorPriorityById(accelerator, extension_id, profile_);
+  // Only handle the event if it has the right priority.
+  if (priority != accelerator_priority)
     return false;
 
   int type = 0;

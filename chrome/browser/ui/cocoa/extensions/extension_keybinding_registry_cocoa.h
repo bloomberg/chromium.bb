@@ -10,6 +10,7 @@
 
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;
@@ -48,7 +49,8 @@ class ExtensionKeybindingRegistryCocoa
   // For a given keyboard |event|, see if a known Extension Command registration
   // exists and route the event to it. Returns true if the event was handled,
   // false otherwise.
-  bool ProcessKeyEvent(const content::NativeWebKeyboardEvent& event);
+  bool ProcessKeyEvent(const content::NativeWebKeyboardEvent& event,
+                       ui::AcceleratorManager::HandlerPriority priority);
 
  protected:
   // Overridden from ExtensionKeybindingRegistry:

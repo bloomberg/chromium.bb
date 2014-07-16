@@ -25,6 +25,7 @@
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
 #include "components/translate/core/common/translate_errors.h"
+#include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/gfx/rect.h"
 
 @class AvatarBaseController;
@@ -308,7 +309,9 @@ class Command;
 
 // Consults the Command Registry to see if this |event| needs to be handled as
 // an extension command and returns YES if so (NO otherwise).
-- (BOOL)handledByExtensionCommand:(NSEvent*)event;
+// Only extensions with the given |priority| are considered.
+- (BOOL)handledByExtensionCommand:(NSEvent*)event
+    priority:(ui::AcceleratorManager::HandlerPriority)priority;
 
 // Delegate method for the status bubble to query its base frame.
 - (NSRect)statusBubbleBaseFrame;

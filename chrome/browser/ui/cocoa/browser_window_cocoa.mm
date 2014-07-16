@@ -579,7 +579,9 @@ bool BrowserWindowCocoa::PreHandleKeyboardEvent(
     return false;
 
   if (event.type == blink::WebInputEvent::RawKeyDown &&
-      [controller_ handledByExtensionCommand:event.os_event])
+      [controller_
+          handledByExtensionCommand:event.os_event
+                           priority:ui::AcceleratorManager::kHighPriority])
     return true;
 
   int id = [BrowserWindowUtils getCommandId:event];
