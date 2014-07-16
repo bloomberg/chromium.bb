@@ -43,7 +43,6 @@ class FakeVideoDecoder : public VideoDecoder {
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
-  virtual void Stop() OVERRIDE;
   virtual int GetMaxDecodeRequests() const OVERRIDE;
 
   // Holds the next init/decode/reset callback from firing.

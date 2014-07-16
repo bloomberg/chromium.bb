@@ -69,8 +69,6 @@ class VideoRendererImplTest : public ::testing::Test {
     EXPECT_CALL(demuxer_stream_, Read(_)).WillRepeatedly(
         RunCallback<0>(DemuxerStream::kOk,
                        scoped_refptr<DecoderBuffer>(new DecoderBuffer(0))));
-    EXPECT_CALL(*decoder_, Stop())
-        .WillRepeatedly(Invoke(this, &VideoRendererImplTest::StopRequested));
     EXPECT_CALL(statistics_cb_object_, OnStatistics(_))
         .Times(AnyNumber());
     EXPECT_CALL(*this, OnTimeUpdate(_))
@@ -318,15 +316,6 @@ class VideoRendererImplTest : public ::testing::Test {
     }
 
     message_loop_.PostTask(FROM_HERE, callback);
-  }
-
-  void StopRequested() {
-    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
-    decode_results_.clear();
-    if (!decode_cb_.is_null()) {
-      QueueFrames("abort");
-      SatisfyPendingRead();
-    }
   }
 
   base::MessageLoop message_loop_;

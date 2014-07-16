@@ -39,7 +39,7 @@ class FakeVideoDecoderTest
         is_reset_pending_(false) {}
 
   virtual ~FakeVideoDecoderTest() {
-    Stop();
+    Destroy();
   }
 
   void InitializeWithConfig(const VideoDecoderConfig& config) {
@@ -197,8 +197,8 @@ class FakeVideoDecoderTest
     ExpectResetResult(OK);
   }
 
-  void Stop() {
-    decoder_->Stop();
+  void Destroy() {
+    decoder_.reset();
     message_loop_.RunUntilIdle();
 
     // All pending callbacks must have been fired.
@@ -365,35 +365,35 @@ TEST_P(FakeVideoDecoderTest, Reset_PendingDuringPendingRead) {
   SatisfyReset();
 }
 
-TEST_P(FakeVideoDecoderTest, Stop) {
+TEST_P(FakeVideoDecoderTest, Destroy) {
   Initialize();
   ReadOneFrame();
   ExpectReadResult(OK);
-  Stop();
+  Destroy();
 }
 
-TEST_P(FakeVideoDecoderTest, Stop_DuringPendingInitialization) {
+TEST_P(FakeVideoDecoderTest, Destroy_DuringPendingInitialization) {
   EnterPendingInitState();
-  Stop();
+  Destroy();
 }
 
-TEST_P(FakeVideoDecoderTest, Stop_DuringPendingRead) {
+TEST_P(FakeVideoDecoderTest, Destroy_DuringPendingRead) {
   Initialize();
   EnterPendingReadState();
-  Stop();
+  Destroy();
 }
 
-TEST_P(FakeVideoDecoderTest, Stop_DuringPendingReset) {
+TEST_P(FakeVideoDecoderTest, Destroy_DuringPendingReset) {
   Initialize();
   EnterPendingResetState();
-  Stop();
+  Destroy();
 }
 
-TEST_P(FakeVideoDecoderTest, Stop_DuringPendingReadAndPendingReset) {
+TEST_P(FakeVideoDecoderTest, Destroy_DuringPendingReadAndPendingReset) {
   Initialize();
   EnterPendingReadState();
   EnterPendingResetState();
-  Stop();
+  Destroy();
 }
 
 }  // namespace media

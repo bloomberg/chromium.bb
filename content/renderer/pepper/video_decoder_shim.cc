@@ -135,9 +135,9 @@ void VideoDecoderShim::DecoderImpl::Initialize(
     decoder_ = ffmpeg_video_decoder.Pass();
   }
   max_decodes_at_decoder_ = decoder_->GetMaxDecodeRequests();
-  // We can use base::Unretained() safely in decoder callbacks because we call
-  // VideoDecoder::Stop() before deletion. Stop() guarantees there will be no
-  // outstanding callbacks after it returns.
+  // We can use base::Unretained() safely in decoder callbacks because
+  // |decoder_| is owned by DecoderImpl. During Stop(), the |decoder_| will be
+  // destroyed and all outstanding callbacks will be fired.
   decoder_->Initialize(
       config,
       true /* low_delay */,
@@ -178,7 +178,7 @@ void VideoDecoderShim::DecoderImpl::Stop() {
   // again.
   while (!pending_decodes_.empty())
     pending_decodes_.pop();
-  decoder_->Stop();
+  decoder_.reset();
   // This instance is deleted once we exit this scope.
 }
 

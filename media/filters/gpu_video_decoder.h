@@ -49,7 +49,6 @@ class MEDIA_EXPORT GpuVideoDecoder
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
-  virtual void Stop() OVERRIDE;
   virtual bool NeedsBitstreamConversion() const OVERRIDE;
   virtual bool CanReadWithoutStalling() const OVERRIDE;
   virtual int GetMaxDecodeRequests() const OVERRIDE;

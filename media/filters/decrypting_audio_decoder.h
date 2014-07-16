@@ -49,7 +49,6 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
-  virtual void Stop() OVERRIDE;
 
  private:
   // For a detailed state diagram please see this link: http://goo.gl/8jAok
@@ -64,7 +63,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
     kPendingDecode,
     kWaitingForKey,
     kDecodeFinished,
-    kStopped,
+    kError
   };
 
   // Callback for DecryptorHost::RequestDecryptor().
@@ -101,7 +100,6 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   OutputCB output_cb_;
   DecodeCB decode_cb_;
   base::Closure reset_cb_;
-  base::Closure stop_cb_;
 
   // The current decoder configuration.
   AudioDecoderConfig config_;

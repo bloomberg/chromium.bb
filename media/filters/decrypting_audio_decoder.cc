@@ -144,13 +144,12 @@ void DecryptingAudioDecoder::Reset(const base::Closure& closure) {
   DoReset();
 }
 
-void DecryptingAudioDecoder::Stop() {
-  DVLOG(2) << "Stop() - state: " << state_;
+DecryptingAudioDecoder::~DecryptingAudioDecoder() {
+  DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  // Invalidate all weak pointers so that pending callbacks won't be fired into
-  // this object.
-  weak_factory_.InvalidateWeakPtrs();
+  if (state_ == kUninitialized)
+    return;
 
   if (decryptor_) {
     decryptor_->DeinitializeDecoder(Decryptor::kAudio);
@@ -165,12 +164,6 @@ void DecryptingAudioDecoder::Stop() {
     base::ResetAndReturn(&decode_cb_).Run(kAborted);
   if (!reset_cb_.is_null())
     base::ResetAndReturn(&reset_cb_).Run();
-
-  state_ = kStopped;
-}
-
-DecryptingAudioDecoder::~DecryptingAudioDecoder() {
-  DCHECK(state_ == kUninitialized || state_ == kStopped) << state_;
 }
 
 void DecryptingAudioDecoder::SetDecryptor(Decryptor* decryptor) {
@@ -184,8 +177,7 @@ void DecryptingAudioDecoder::SetDecryptor(Decryptor* decryptor) {
 
   if (!decryptor) {
     base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
-    // TODO(xhwang): Add kError state. See http://crbug.com/251503
-    state_ = kStopped;
+    state_ = kError;
     return;
   }
 
@@ -212,7 +204,8 @@ void DecryptingAudioDecoder::FinishInitialization(bool success) {
 
   if (!success) {
     base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
-    state_ = kStopped;
+    decryptor_ = NULL;
+    state_ = kError;
     return;
   }
 

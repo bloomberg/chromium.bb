@@ -135,9 +135,12 @@ FFmpegAudioDecoder::FFmpegAudioDecoder(
 }
 
 FFmpegAudioDecoder::~FFmpegAudioDecoder() {
-  DCHECK_EQ(state_, kUninitialized);
-  DCHECK(!codec_context_);
-  DCHECK(!av_frame_);
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (state_ != kUninitialized) {
+    ReleaseFFmpegResources();
+    ResetTimestampState();
+  }
 }
 
 void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
@@ -190,17 +193,6 @@ void FFmpegAudioDecoder::Reset(const base::Closure& closure) {
   state_ = kNormal;
   ResetTimestampState();
   task_runner_->PostTask(FROM_HERE, closure);
-}
-
-void FFmpegAudioDecoder::Stop() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  if (state_ == kUninitialized)
-    return;
-
-  ReleaseFFmpegResources();
-  ResetTimestampState();
-  state_ = kUninitialized;
 }
 
 void FFmpegAudioDecoder::DecodeBuffer(

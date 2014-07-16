@@ -61,7 +61,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
   }
 
   virtual ~FFmpegVideoDecoderTest() {
-    Stop();
+    Destroy();
   }
 
   void Initialize() {
@@ -89,8 +89,8 @@ class FFmpegVideoDecoderTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  void Stop() {
-    decoder_->Stop();
+  void Destroy() {
+    decoder_.reset();
     message_loop_.RunUntilIdle();
   }
 
@@ -421,25 +421,25 @@ TEST_F(FFmpegVideoDecoderTest, Reset_EndOfStream) {
   Reset();
 }
 
-// Test stopping when decoder has initialized but not decoded.
-TEST_F(FFmpegVideoDecoderTest, Stop_Initialized) {
+// Test destruction when decoder has initialized but not decoded.
+TEST_F(FFmpegVideoDecoderTest, Destroy_Initialized) {
   Initialize();
-  Stop();
+  Destroy();
 }
 
-// Test stopping when decoder has decoded single frame.
-TEST_F(FFmpegVideoDecoderTest, Stop_Decoding) {
+// Test destruction when decoder has decoded single frame.
+TEST_F(FFmpegVideoDecoderTest, Destroy_Decoding) {
   Initialize();
   EnterDecodingState();
-  Stop();
+  Destroy();
 }
 
-// Test stopping when decoder has hit end of stream.
-TEST_F(FFmpegVideoDecoderTest, Stop_EndOfStream) {
+// Test destruction when decoder has hit end of stream.
+TEST_F(FFmpegVideoDecoderTest, Destroy_EndOfStream) {
   Initialize();
   EnterDecodingState();
   EnterEndOfStreamState();
-  Stop();
+  Destroy();
 }
 
 }  // namespace media

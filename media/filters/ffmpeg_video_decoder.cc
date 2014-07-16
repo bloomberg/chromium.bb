@@ -241,20 +241,11 @@ void FFmpegVideoDecoder::Reset(const base::Closure& closure) {
   task_runner_->PostTask(FROM_HERE, closure);
 }
 
-void FFmpegVideoDecoder::Stop() {
+FFmpegVideoDecoder::~FFmpegVideoDecoder() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (state_ == kUninitialized)
-    return;
-
-  ReleaseFFmpegResources();
-  state_ = kUninitialized;
-}
-
-FFmpegVideoDecoder::~FFmpegVideoDecoder() {
-  DCHECK_EQ(kUninitialized, state_);
-  DCHECK(!codec_context_);
-  DCHECK(!av_frame_);
+  if (state_ != kUninitialized)
+    ReleaseFFmpegResources();
 }
 
 bool FFmpegVideoDecoder::FFmpegDecode(

@@ -39,7 +39,6 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
-  virtual void Stop() OVERRIDE;
 
  private:
   enum DecoderState {

@@ -25,7 +25,7 @@ class MEDIA_EXPORT AudioDecoder {
   // match, break them into a decoder_status.h.
   enum Status {
     kOk,  // We're all good.
-    kAborted,  // We aborted as a result of Stop() or Reset().
+    kAborted,  // We aborted as a result of Reset() or destruction.
     kDecodeError,  // A decoding error occurred.
     kDecryptError  // Decrypting error happened.
   };
@@ -40,6 +40,11 @@ class MEDIA_EXPORT AudioDecoder {
   typedef base::Callback<void(Status)> DecodeCB;
 
   AudioDecoder();
+
+  // Fires any pending callbacks, stops and destroys the decoder.
+  // Note: Since this is a destructor, |this| will be destroyed after this call.
+  // Make sure the callbacks fired from this call doesn't post any task that
+  // depends on |this|.
   virtual ~AudioDecoder();
 
   // Initializes an AudioDecoder with the given DemuxerStream, executing the
@@ -67,14 +72,6 @@ class MEDIA_EXPORT AudioDecoder {
   // Resets decoder state. All pending Decode() requests will be finished or
   // aborted before |closure| is called.
   virtual void Reset(const base::Closure& closure) = 0;
-
-  // Stops decoder, fires any pending callbacks and sets the decoder to an
-  // uninitialized state. An AudioDecoder cannot be re-initialized after it has
-  // been stopped. DecodeCB and OutputCB may still be called for older buffers
-  // if they were scheduled before this method is called.
-  // Note that if Initialize() is pending or has finished successfully, Stop()
-  // must be called before destructing the decoder.
-  virtual void Stop() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioDecoder);

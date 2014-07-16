@@ -39,6 +39,11 @@ class MEDIA_EXPORT VideoDecoder {
   typedef base::Callback<void(Status status)> DecodeCB;
 
   VideoDecoder();
+
+  // Fires any pending callbacks, stops and destroys the decoder.
+  // Note: Since this is a destructor, |this| will be destroyed after this call.
+  // Make sure the callbacks fired from this call doesn't post any task that
+  // depends on |this|.
   virtual ~VideoDecoder();
 
   // Initializes a VideoDecoder with the given |config|, executing the
@@ -48,9 +53,8 @@ class MEDIA_EXPORT VideoDecoder {
   // Note:
   // 1) The VideoDecoder will be reinitialized if it was initialized before.
   //    Upon reinitialization, all internal buffered frames will be dropped.
-  // 2) This method should not be called during pending decode, reset or stop.
-  // 3) No VideoDecoder calls except for Stop() should be made before
-  //    |status_cb| is executed.
+  // 2) This method should not be called during pending decode or reset.
+  // 3) No VideoDecoder calls should be made before |status_cb| is executed.
   virtual void Initialize(const VideoDecoderConfig& config,
                           bool low_delay,
                           const PipelineStatusCB& status_cb,
@@ -82,13 +86,6 @@ class MEDIA_EXPORT VideoDecoder {
   // aborted before |closure| is called.
   // Note: No VideoDecoder calls should be made before |closure| is executed.
   virtual void Reset(const base::Closure& closure) = 0;
-
-  // Stops decoder, fires any pending callbacks and sets the decoder to an
-  // uninitialized state. A VideoDecoder cannot be re-initialized after it has
-  // been stopped.
-  // Note that if Initialize() is pending or has finished successfully, Stop()
-  // must be called before destructing the decoder.
-  virtual void Stop() = 0;
 
   // Returns true if the decoder needs bitstream conversion before decoding.
   virtual bool NeedsBitstreamConversion() const;

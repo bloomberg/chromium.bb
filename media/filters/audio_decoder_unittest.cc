@@ -110,9 +110,6 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
   }
 
   virtual ~AudioDecoderTest() {
-    // Always issue a Stop() even if it's already been sent to avoid assertion
-    // failures causing crashes.
-    Stop();
     EXPECT_FALSE(pending_decode_);
     EXPECT_FALSE(pending_reset_);
   }
@@ -207,10 +204,6 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
         base::Bind(&AudioDecoderTest::ResetFinished, base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
     ASSERT_FALSE(pending_reset_);
-  }
-
-  void Stop() {
-    decoder_->Stop();
   }
 
   void Seek(base::TimeDelta seek_time) {
@@ -319,10 +312,9 @@ class FFmpegAudioDecoderBehavioralTest : public AudioDecoderTest {};
 
 TEST_P(AudioDecoderTest, Initialize) {
   ASSERT_NO_FATAL_FAILURE(Initialize());
-  Stop();
 }
 
-// Verifies decode audio as well as the Decode() -> Reset() -> Stop() sequence.
+// Verifies decode audio as well as the Decode() -> Reset() sequence.
 TEST_P(AudioDecoderTest, ProduceAudioSamples) {
   ASSERT_NO_FATAL_FAILURE(Initialize());
 
@@ -357,21 +349,17 @@ TEST_P(AudioDecoderTest, ProduceAudioSamples) {
     // Seek back to the beginning.  Calls Reset() on the decoder.
     Seek(start_timestamp());
   }
-
-  Stop();
 }
 
-TEST_P(AudioDecoderTest, DecodeStop) {
+TEST_P(AudioDecoderTest, Decode) {
   ASSERT_NO_FATAL_FAILURE(Initialize());
   Decode();
   EXPECT_EQ(AudioDecoder::kOk, last_decode_status());
-  Stop();
 }
 
-TEST_P(AudioDecoderTest, ResetStop) {
+TEST_P(AudioDecoderTest, Reset) {
   ASSERT_NO_FATAL_FAILURE(Initialize());
   Reset();
-  Stop();
 }
 
 TEST_P(AudioDecoderTest, NoTimestamp) {
@@ -380,7 +368,6 @@ TEST_P(AudioDecoderTest, NoTimestamp) {
   buffer->set_timestamp(kNoTimestamp());
   DecodeBuffer(buffer);
   EXPECT_EQ(AudioDecoder::kDecodeError, last_decode_status());
-  Stop();
 }
 
 TEST_P(OpusAudioDecoderBehavioralTest, InitializeWithNoCodecDelay) {
@@ -397,7 +384,6 @@ TEST_P(OpusAudioDecoderBehavioralTest, InitializeWithNoCodecDelay) {
                             base::TimeDelta::FromMilliseconds(80),
                             0);
   InitializeDecoder(decoder_config);
-  Stop();
 }
 
 TEST_P(OpusAudioDecoderBehavioralTest, InitializeWithBadCodecDelay) {
@@ -416,7 +402,6 @@ TEST_P(OpusAudioDecoderBehavioralTest, InitializeWithBadCodecDelay) {
       // Use a different codec delay than in the extradata.
       100);
   InitializeDecoderWithStatus(decoder_config, DECODER_ERROR_NOT_SUPPORTED);
-  Stop();
 }
 
 TEST_P(FFmpegAudioDecoderBehavioralTest, InitializeWithBadConfig) {
@@ -429,7 +414,6 @@ TEST_P(FFmpegAudioDecoderBehavioralTest, InitializeWithBadConfig) {
                                           0,
                                           false);
   InitializeDecoderWithStatus(decoder_config, DECODER_ERROR_NOT_SUPPORTED);
-  Stop();
 }
 
 const DecodedBufferExpectations kSfxOpusExpectations[] = {

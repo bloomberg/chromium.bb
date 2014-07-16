@@ -43,7 +43,6 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
-  virtual void Stop() OVERRIDE;
 
   // Callback called from within FFmpeg to allocate a buffer based on
   // the dimensions of |codec_context|. See AVCodecContext.get_buffer2

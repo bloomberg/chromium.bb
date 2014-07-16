@@ -130,7 +130,7 @@ void DecoderSelector<StreamType>::Abort() {
   if (decoder_) {
     // |decrypted_stream_| is either NULL or already initialized. We don't
     // need to Stop() |decrypted_stream_| in either case.
-    decoder_->Stop();
+    decoder_.reset();
     ReturnNullDecoder();
     return;
   }

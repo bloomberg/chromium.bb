@@ -79,7 +79,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
   virtual ~DecryptingAudioDecoderTest() {
     EXPECT_CALL(*this, RequestDecryptorNotification(_))
         .Times(testing::AnyNumber());
-    Stop();
+    Destroy();
   }
 
   void InitializeAndExpectStatus(const AudioDecoderConfig& config,
@@ -234,12 +234,12 @@ class DecryptingAudioDecoderTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  void Stop() {
+  void Destroy() {
     EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kAudio))
         .WillRepeatedly(InvokeWithoutArgs(
             this, &DecryptingAudioDecoderTest::AbortAllPendingCBs));
 
-    decoder_->Stop();
+    decoder_.reset();
     message_loop_.RunUntilIdle();
   }
 

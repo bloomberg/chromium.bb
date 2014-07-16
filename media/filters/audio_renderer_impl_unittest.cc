@@ -130,7 +130,6 @@ class AudioRendererImplTest : public ::testing::Test {
     EXPECT_CALL(*decoder_, Initialize(_, _, _))
         .WillOnce(DoAll(SaveArg<2>(&output_cb_),
                         RunCallback<1>(PIPELINE_OK)));
-    EXPECT_CALL(*decoder_, Stop());
     InitializeWithStatus(PIPELINE_OK);
 
     next_timestamp_.reset(new AudioTimestampHelper(
@@ -152,7 +151,6 @@ class AudioRendererImplTest : public ::testing::Test {
     EXPECT_CALL(*decoder_, Initialize(_, _, _))
         .WillOnce(DoAll(SaveArg<2>(&output_cb_),
                         RunCallback<1>(PIPELINE_OK)));
-    EXPECT_CALL(*decoder_, Stop());
 
     WaitableMessageLoopEvent event;
     InitializeRenderer(event.GetPipelineStatusCB());
@@ -169,7 +167,6 @@ class AudioRendererImplTest : public ::testing::Test {
     EXPECT_CALL(*decoder_, Initialize(_, _, _))
         .WillOnce(DoAll(SaveArg<2>(&output_cb_),
                         EnterPendingDecoderInitStateAction(this)));
-    EXPECT_CALL(*decoder_, Stop());
 
     WaitableMessageLoopEvent event;
     InitializeRenderer(event.GetPipelineStatusCB());

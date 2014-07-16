@@ -25,7 +25,19 @@ FakeVideoDecoder::FakeVideoDecoder(int decoding_delay,
 }
 
 FakeVideoDecoder::~FakeVideoDecoder() {
-  DCHECK_EQ(state_, STATE_UNINITIALIZED);
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (state_ == STATE_UNINITIALIZED)
+    return;
+
+  if (!init_cb_.IsNull())
+    SatisfyInit();
+  if (!held_decode_callbacks_.empty())
+    SatisfyDecode();
+  if (!reset_cb_.IsNull())
+    SatisfyReset();
+
+  decoded_frames_.clear();
 }
 
 void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
@@ -64,10 +76,10 @@ void FakeVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
             max_parallel_decoding_requests_);
 
   int buffer_size = buffer->end_of_stream() ? 0 : buffer->data_size();
-  DecodeCB wrapped_decode_cb =
-      BindToCurrentLoop(base::Bind(&FakeVideoDecoder::OnFrameDecoded,
-                                   weak_factory_.GetWeakPtr(),
-                                   buffer_size, decode_cb));
+  DecodeCB wrapped_decode_cb = base::Bind(&FakeVideoDecoder::OnFrameDecoded,
+                                          weak_factory_.GetWeakPtr(),
+                                          buffer_size,
+                                          BindToCurrentLoop(decode_cb));
 
   if (state_ == STATE_ERROR) {
     wrapped_decode_cb.Run(kDecodeError);
@@ -98,20 +110,6 @@ void FakeVideoDecoder::Reset(const base::Closure& closure) {
     return;
 
   DoReset();
-}
-
-void FakeVideoDecoder::Stop() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!init_cb_.IsNull())
-    SatisfyInit();
-  if (!held_decode_callbacks_.empty())
-    SatisfyDecode();
-  if (!reset_cb_.IsNull())
-    SatisfyReset();
-
-  decoded_frames_.clear();
-  state_ = STATE_UNINITIALIZED;
 }
 
 void FakeVideoDecoder::HoldNextInit() {

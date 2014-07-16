@@ -75,7 +75,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
   }
 
   virtual ~DecryptingVideoDecoderTest() {
-    Stop();
+    Destroy();
   }
 
   // Initializes the |decoder_| and expects |status|. Note the initialization
@@ -209,12 +209,12 @@ class DecryptingVideoDecoderTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  void Stop() {
+  void Destroy() {
     EXPECT_CALL(*decryptor_, DeinitializeDecoder(Decryptor::kVideo))
         .WillRepeatedly(InvokeWithoutArgs(
             this, &DecryptingVideoDecoderTest::AbortAllPendingCBs));
 
-    decoder_->Stop();
+    decoder_.reset();
     message_loop_.RunUntilIdle();
   }
 
@@ -399,8 +399,8 @@ TEST_F(DecryptingVideoDecoderTest, Reset_AfterReset) {
   Reset();
 }
 
-// Test stopping when the decoder is in kDecryptorRequested state.
-TEST_F(DecryptingVideoDecoderTest, Stop_DuringDecryptorRequested) {
+// Test destruction when the decoder is in kDecryptorRequested state.
+TEST_F(DecryptingVideoDecoderTest, Destroy_DuringDecryptorRequested) {
   DecryptorReadyCB decryptor_ready_cb;
   EXPECT_CALL(*this, RequestDecryptorNotification(_))
       .WillOnce(SaveArg<0>(&decryptor_ready_cb));
@@ -413,16 +413,16 @@ TEST_F(DecryptingVideoDecoderTest, Stop_DuringDecryptorRequested) {
   // |decryptor_ready_cb| is saved but not called here.
   EXPECT_FALSE(decryptor_ready_cb.is_null());
 
-  // During stop, RequestDecryptorNotification() should be called with a NULL
-  // callback to cancel the |decryptor_ready_cb|.
+  // During destruction, RequestDecryptorNotification() should be called with a
+  // NULL callback to cancel the |decryptor_ready_cb|.
   EXPECT_CALL(*this, RequestDecryptorNotification(IsNullCallback()))
       .WillOnce(ResetAndRunCallback(&decryptor_ready_cb,
                                     reinterpret_cast<Decryptor*>(NULL)));
-  Stop();
+  Destroy();
 }
 
-// Test stopping when the decoder is in kPendingDecoderInit state.
-TEST_F(DecryptingVideoDecoderTest, Stop_DuringPendingDecoderInit) {
+// Test destruction when the decoder is in kPendingDecoderInit state.
+TEST_F(DecryptingVideoDecoderTest, Destroy_DuringPendingDecoderInit) {
   EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
       .WillOnce(SaveArg<1>(&pending_init_cb_));
 
@@ -430,57 +430,57 @@ TEST_F(DecryptingVideoDecoderTest, Stop_DuringPendingDecoderInit) {
                             DECODER_ERROR_NOT_SUPPORTED);
   EXPECT_FALSE(pending_init_cb_.is_null());
 
-  Stop();
+  Destroy();
 }
 
-// Test stopping when the decoder is in kIdle state but has not decoded any
+// Test destruction when the decoder is in kIdle state but has not decoded any
 // frame.
-TEST_F(DecryptingVideoDecoderTest, Stop_DuringIdleAfterInitialization) {
+TEST_F(DecryptingVideoDecoderTest, Destroy_DuringIdleAfterInitialization) {
   Initialize();
-  Stop();
+  Destroy();
 }
 
-// Test stopping when the decoder is in kIdle state after it has decoded one
+// Test destruction when the decoder is in kIdle state after it has decoded one
 // frame.
-TEST_F(DecryptingVideoDecoderTest, Stop_DuringIdleAfterDecodedOneFrame) {
+TEST_F(DecryptingVideoDecoderTest, Destroy_DuringIdleAfterDecodedOneFrame) {
   Initialize();
   EnterNormalDecodingState();
-  Stop();
+  Destroy();
 }
 
-// Test stopping when the decoder is in kPendingDecode state.
-TEST_F(DecryptingVideoDecoderTest, Stop_DuringPendingDecode) {
+// Test destruction when the decoder is in kPendingDecode state.
+TEST_F(DecryptingVideoDecoderTest, Destroy_DuringPendingDecode) {
   Initialize();
   EnterPendingDecodeState();
 
   EXPECT_CALL(*this, DecodeDone(VideoDecoder::kAborted));
 
-  Stop();
+  Destroy();
 }
 
-// Test stopping when the decoder is in kWaitingForKey state.
-TEST_F(DecryptingVideoDecoderTest, Stop_DuringWaitingForKey) {
+// Test destruction when the decoder is in kWaitingForKey state.
+TEST_F(DecryptingVideoDecoderTest, Destroy_DuringWaitingForKey) {
   Initialize();
   EnterWaitingForKeyState();
 
   EXPECT_CALL(*this, DecodeDone(VideoDecoder::kAborted));
 
-  Stop();
+  Destroy();
 }
 
-// Test stopping when the decoder has hit end of stream and is in
+// Test destruction when the decoder has hit end of stream and is in
 // kDecodeFinished state.
-TEST_F(DecryptingVideoDecoderTest, Stop_AfterDecodeFinished) {
+TEST_F(DecryptingVideoDecoderTest, Destroy_AfterDecodeFinished) {
   Initialize();
   EnterNormalDecodingState();
   EnterEndOfStreamState();
-  Stop();
+  Destroy();
 }
 
-// Test stopping when there is a pending reset on the decoder.
+// Test destruction when there is a pending reset on the decoder.
 // Reset is pending because it cannot complete when the video decode callback
 // is pending.
-TEST_F(DecryptingVideoDecoderTest, Stop_DuringPendingReset) {
+TEST_F(DecryptingVideoDecoderTest, Destroy_DuringPendingReset) {
   Initialize();
   EnterPendingDecodeState();
 
@@ -488,23 +488,15 @@ TEST_F(DecryptingVideoDecoderTest, Stop_DuringPendingReset) {
   EXPECT_CALL(*this, DecodeDone(VideoDecoder::kAborted));
 
   decoder_->Reset(NewExpectedClosure());
-  Stop();
+  Destroy();
 }
 
-// Test stopping after the decoder has been reset.
-TEST_F(DecryptingVideoDecoderTest, Stop_AfterReset) {
+// Test destruction after the decoder has been reset.
+TEST_F(DecryptingVideoDecoderTest, Destroy_AfterReset) {
   Initialize();
   EnterNormalDecodingState();
   Reset();
-  Stop();
-}
-
-// Test stopping after the decoder has been stopped.
-TEST_F(DecryptingVideoDecoderTest, Stop_AfterStop) {
-  Initialize();
-  EnterNormalDecodingState();
-  Stop();
-  Stop();
+  Destroy();
 }
 
 }  // namespace media

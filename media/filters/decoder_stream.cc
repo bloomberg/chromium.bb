@@ -189,13 +189,12 @@ void DecoderStream<StreamType>::Stop(const base::Closure& closure) {
 
   if (decrypting_demuxer_stream_)
     decrypting_demuxer_stream_->Stop();
-  if (decoder_)
-    decoder_->Stop();
 
-  state_ = STATE_STOPPED;
   stream_ = NULL;
   decoder_.reset();
   decrypting_demuxer_stream_.reset();
+
+  state_ = STATE_STOPPED;
   task_runner_->PostTask(FROM_HERE, closure);
 }
 

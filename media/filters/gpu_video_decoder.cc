@@ -98,15 +98,6 @@ void GpuVideoDecoder::Reset(const base::Closure& closure)  {
   vda_->Reset();
 }
 
-void GpuVideoDecoder::Stop() {
-  DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
-  if (vda_)
-    DestroyVDA();
-  DCHECK(bitstream_buffers_in_decoder_.empty());
-  if (!pending_reset_cb_.is_null())
-    base::ResetAndReturn(&pending_reset_cb_).Run();
-}
-
 static bool IsCodedSizeSupported(const gfx::Size& coded_size) {
 #if defined(OS_WIN)
   // Windows Media Foundation H.264 decoding does not support decoding videos
@@ -560,14 +551,20 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {
 
 GpuVideoDecoder::~GpuVideoDecoder() {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
-  // Stop should have been already called.
-  DCHECK(!vda_.get() && assigned_picture_buffers_.empty());
+  if (vda_)
+    DestroyVDA();
   DCHECK(bitstream_buffers_in_decoder_.empty());
+  DCHECK(assigned_picture_buffers_.empty());
+
+  if (!pending_reset_cb_.is_null())
+    base::ResetAndReturn(&pending_reset_cb_).Run();
+
   for (size_t i = 0; i < available_shm_segments_.size(); ++i) {
     available_shm_segments_[i]->shm->Close();
     delete available_shm_segments_[i];
   }
   available_shm_segments_.clear();
+
   for (std::map<int32, PendingDecoderBuffer>::iterator it =
            bitstream_buffers_in_decoder_.begin();
        it != bitstream_buffers_in_decoder_.end(); ++it) {

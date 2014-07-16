@@ -209,7 +209,7 @@ VpxVideoDecoder::VpxVideoDecoder(
       vpx_codec_alpha_(NULL) {}
 
 VpxVideoDecoder::~VpxVideoDecoder() {
-  DCHECK_EQ(kUninitialized, state_);
+  DCHECK(task_runner_->BelongsToCurrentThread());
   CloseDecoder();
 }
 
@@ -336,12 +336,6 @@ void VpxVideoDecoder::Reset(const base::Closure& closure) {
 
   state_ = kNormal;
   task_runner_->PostTask(FROM_HERE, closure);
-}
-
-void VpxVideoDecoder::Stop() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  state_ = kUninitialized;
 }
 
 void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer) {

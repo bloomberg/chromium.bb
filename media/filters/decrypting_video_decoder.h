@@ -39,7 +39,6 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
-  virtual void Stop() OVERRIDE;
 
  private:
   // For a detailed state diagram please see this link: http://goo.gl/8jAok
@@ -53,7 +52,6 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
     kPendingDecode,
     kWaitingForKey,
     kDecodeFinished,
-    kStopped,
     kError
   };
 
@@ -76,9 +74,6 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
 
   // Reset decoder and call |reset_cb_|.
   void DoReset();
-
-  // Free decoder resources and call |stop_cb_|.
-  void DoStop();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
