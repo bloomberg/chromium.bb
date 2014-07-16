@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/users/user.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_external_data_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
@@ -29,6 +30,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/user_manager/user_type.h"
@@ -133,6 +135,7 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
   // policy registration.
   // USER_TYPE_PUBLIC_ACCOUNT gets its policy from the
   // DeviceLocalAccountPolicyService.
+  // Non-managed domains will be skipped by the below check
   const std::string& username = user->email();
   if (user->GetType() != user_manager::USER_TYPE_REGULAR ||
       BrowserPolicyConnector::IsNonEnterpriseUser(username)) {
@@ -142,10 +145,17 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   UserAffiliation affiliation = connector->GetUserAffiliation(username);
-  const bool is_managed_user = affiliation == USER_AFFILIATION_MANAGED;
+  const bool is_affiliated_user = affiliation == USER_AFFILIATION_MANAGED;
   const bool is_browser_restart =
       command_line->HasSwitch(chromeos::switches::kLoginUser);
-  const bool wait_for_initial_policy = is_managed_user && !is_browser_restart;
+  const bool wait_for_initial_policy =
+      !is_browser_restart &&
+      (chromeos::UserManager::Get()->IsCurrentUserNew() || is_affiliated_user);
+
+  const base::TimeDelta initial_policy_fetch_timeout =
+      chromeos::UserManager::Get()->IsCurrentUserNew()
+          ? base::TimeDelta::Max()
+          : base::TimeDelta::FromSeconds(kInitialPolicyFetchTimeoutSeconds);
 
   DeviceManagementService* device_management_service =
       connector->device_management_service();
@@ -195,7 +205,7 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
           external_data_manager.Pass(),
           component_policy_cache_dir,
           wait_for_initial_policy,
-          base::TimeDelta::FromSeconds(kInitialPolicyFetchTimeoutSeconds),
+          initial_policy_fetch_timeout,
           base::MessageLoopProxy::current(),
           file_task_runner,
           io_task_runner));

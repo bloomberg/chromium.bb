@@ -86,7 +86,7 @@ leak:CertificateViewerUITest::ShowModalCertificateViewer
 leak:content::SetProcessTitleFromCommandLine
 
 # http://crbug.com/354881
-leak:LoginUtilsBlockingLoginTest_EnterpriseLoginBlocksForEnterpriseUser
+leak:LoginUtilsBlockingLoginTest_LoginBlocksForUser
 leak:LoginUtilsTest::SetUp
 leak:LoginUtilsTest::PrepareProfile
 
