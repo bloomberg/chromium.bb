@@ -56,20 +56,23 @@ Example of a ``program`` for Portable Native Client:
 
   {
     "program": {
-      "pnacl-translate": {
-        // url is required
-        "url": "url_to_my_pexe",
+      "portable": {
+        // Required
+        "pnacl-translate": {
+          // url is required
+          "url": "url_to_my_pexe",
 
-        // optlevel is optional
-        "optlevel": 2
-      },
-      // pnacl-debug is optional
-      "pnacl-debug": {
-        // url is required
-        "url": "url_to_my_bitcode_bc",
+          // optlevel is optional
+          "optlevel": 2
+        },
+        // pnacl-debug is optional
+        "pnacl-debug": {
+          // url is required
+          "url": "url_to_my_bitcode_bc",
 
-        // optlevel is optional
-        "optlevel": 0
+          // optlevel is optional
+          "optlevel": 0
+        }
       }
     }
   }

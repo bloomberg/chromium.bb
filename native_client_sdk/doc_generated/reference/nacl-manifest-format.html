@@ -61,20 +61,23 @@ section for the rules on URL resolution.</p>
 <pre class="prettyprint">
 {
   &quot;program&quot;: {
-    &quot;pnacl-translate&quot;: {
-      // url is required
-      &quot;url&quot;: &quot;url_to_my_pexe&quot;,
+    &quot;portable&quot;: {
+      // Required
+      &quot;pnacl-translate&quot;: {
+        // url is required
+        &quot;url&quot;: &quot;url_to_my_pexe&quot;,
 
-      // optlevel is optional
-      &quot;optlevel&quot;: 2
-    },
-    // pnacl-debug is optional
-    &quot;pnacl-debug&quot;: {
-      // url is required
-      &quot;url&quot;: &quot;url_to_my_bitcode_bc&quot;,
+        // optlevel is optional
+        &quot;optlevel&quot;: 2
+      },
+      // pnacl-debug is optional
+      &quot;pnacl-debug&quot;: {
+        // url is required
+        &quot;url&quot;: &quot;url_to_my_bitcode_bc&quot;,
 
-      // optlevel is optional
-      &quot;optlevel&quot;: 0
+        // optlevel is optional
+        &quot;optlevel&quot;: 0
+      }
     }
   }
 }
