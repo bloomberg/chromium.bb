@@ -39,9 +39,9 @@ using ppapi::UnpackMessage;
 
 namespace content {
 
-#if defined(ENABLE_WEBRTC)
 namespace {
 
+#if defined(ENABLE_WEBRTC)
 bool CanUseMediaStreamAPI(const RendererPpapiHost* host, PP_Instance instance) {
   blink::WebPluginContainer* container =
       host->GetContainerForInstance(instance);
@@ -53,6 +53,7 @@ bool CanUseMediaStreamAPI(const RendererPpapiHost* host, PP_Instance instance) {
       GetContentClient()->renderer();
   return content_renderer_client->AllowPepperMediaStreamAPI(document_url);
 }
+#endif  // defined(ENABLE_WEBRTC)
 
 bool CanUseCompositorAPI(const RendererPpapiHost* host, PP_Instance instance) {
   blink::WebPluginContainer* container =
@@ -81,7 +82,6 @@ bool CanUseVideoDecodeAPI(const RendererPpapiHost* host, PP_Instance instance) {
 }
 
 }  // namespace
-#endif  // defined(ENABLE_WEBRTC)
 
 ContentRendererPepperHostFactory::ContentRendererPepperHostFactory(
     RendererPpapiHostImpl* host)
