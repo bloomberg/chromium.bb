@@ -4321,7 +4321,7 @@ Make sure you do not expose any sensitive information.
         Read the icons of the websites you visit
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_INPUT" desc="Permission string for access to input.">
-        Read anything you type
+        Read and change anything you type
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS" desc="Permission string for access to bookmarks.">
         Read and change your bookmarks
