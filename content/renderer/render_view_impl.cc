@@ -766,9 +766,8 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
 
   if (params->proxy_routing_id != MSG_ROUTING_NONE) {
     CHECK(params->swapped_out);
-    RenderFrameProxy* proxy =
-        RenderFrameProxy::CreateFrameProxy(params->proxy_routing_id,
-                                           params->main_frame_routing_id);
+    RenderFrameProxy* proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
+        main_render_frame_.get(), params->proxy_routing_id);
     main_render_frame_->set_render_frame_proxy(proxy);
   }
 

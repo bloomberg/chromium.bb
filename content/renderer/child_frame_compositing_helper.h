@@ -56,12 +56,10 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
     : public base::RefCounted<ChildFrameCompositingHelper>,
       public cc::DelegatedFrameResourceCollectionClient {
  public:
-  static ChildFrameCompositingHelper* CreateCompositingHelperForBrowserPlugin(
+  static ChildFrameCompositingHelper* CreateForBrowserPlugin(
       const base::WeakPtr<BrowserPlugin>& browser_plugin);
-  static ChildFrameCompositingHelper* CreateCompositingHelperForRenderFrame(
-      blink::WebFrame* frame,
-      RenderFrameProxy* render_frame_proxy,
-      int host_routing_id);
+  static ChildFrameCompositingHelper* CreateForRenderFrameProxy(
+      RenderFrameProxy* render_frame_proxy);
 
   void CopyFromCompositingSurface(int request_id,
                                   gfx::Rect source_rect,

@@ -48,27 +48,55 @@ class CONTENT_EXPORT RenderFrameProxy
       public IPC::Sender,
       NON_EXPORTED_BASE(public blink::WebFrameClient) {
  public:
+  // This method should be used to create a RenderFrameProxy, which will replace
+  // an existing RenderFrame during its cross-process navigation from the
+  // current process to a different one. |routing_id| will be ID of the newly
+  // created RenderFrameProxy. |frame_to_replace| is the frame that the new
+  // proxy will eventually swap places with.
+  static RenderFrameProxy* CreateProxyToReplaceFrame(
+      RenderFrameImpl* frame_to_replace,
+      int routing_id);
+
+  // This method should be used to create a RenderFrameProxy, when there isn't
+  // an existing RenderFrame. It should be called to construct a local
+  // representation of a RenderFrame that has been created in another process --
+  // for example, after a cross-process navigation or after the addition of a
+  // new frame local to some other process. |routing_id| will be the ID of the
+  // newly created RenderFrameProxy. |parent_routing_id| is the routing ID of
+  // the RenderFrameProxy to which the new frame is parented.
+  // |render_view_routing_id| identifies the RenderView to be associated with
+  // this frame.
+  //
+  // |parent_routing_id| always identifies a RenderFrameProxy (never a
+  // RenderFrame) because a new child of a local frame should always start out
+  // as a frame, not a proxy.
   static RenderFrameProxy* CreateFrameProxy(int routing_id,
-                                            int frame_routing_id);
+                                            int parent_routing_id,
+                                            int render_view_routing_id);
 
   // Returns the RenderFrameProxy for the given routing ID.
   static RenderFrameProxy* FromRoutingID(int routing_id);
+
+  // Returns the RenderFrameProxy given a WebFrame.
+  static RenderFrameProxy* FromWebFrame(blink::WebFrame* web_frame);
 
   virtual ~RenderFrameProxy();
 
   // IPC::Sender
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
-  RenderFrameImpl* render_frame() {
-    return render_frame_;
-  }
-
   // Out-of-process child frames receive a signal from RenderWidgetCompositor
   // when a compositor frame has committed.
   void DidCommitCompositorFrame();
 
+  int routing_id() const { return routing_id_; }
+  RenderViewImpl* render_view() const { return render_view_; }
+  blink::WebFrame* web_frame() const { return web_frame_; }
+
  private:
   RenderFrameProxy(int routing_id, int frame_routing_id);
+
+  void Init(blink::WebFrame* frame, RenderViewImpl* render_view);
 
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -79,13 +107,19 @@ class CONTENT_EXPORT RenderFrameProxy
   void OnBuffersSwapped(const FrameMsg_BuffersSwapped_Params& params);
   void OnCompositorFrameSwapped(const IPC::Message& message);
 
-  blink::WebFrame* GetWebFrame();
+  // The routing ID by which this RenderFrameProxy is known.
+  const int routing_id_;
 
-  int routing_id_;
-  int frame_routing_id_;
-  RenderFrameImpl* render_frame_;
+  // The routing ID of the local RenderFrame (if any) which this
+  // RenderFrameProxy is meant to replace in the frame tree.
+  const int frame_routing_id_;
 
+  // Stores the WebFrame we are associated with.
+  // TODO(nick): Make this always a WebRemoteFrame.
+  blink::WebFrame* web_frame_;
   scoped_refptr<ChildFrameCompositingHelper> compositing_helper_;
+
+  RenderViewImpl* render_view_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxy);
 };
