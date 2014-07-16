@@ -6,10 +6,12 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_BROWSER_DATA_REDUCTION_PROXY_SETTINGS_TEST_UTILS_H_
 
 
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/testing_pref_service.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
+#include "net/base/net_util.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -85,6 +87,15 @@ class MockDataReductionProxySettings : public C {
     EXPECT_CALL(*this, LogProxyState(enabled, restricted, at_startup)).Times(1);
     C::SetProxyConfigs(enabled, alternative_enabled, restricted, at_startup);
   }
+  virtual void GetNetworkList(net::NetworkInterfaceList* interfaces,
+                              int policy) OVERRIDE {
+    if (!network_interfaces_.get())
+      return;
+    for (size_t i = 0; i < network_interfaces_->size(); ++i)
+      interfaces->push_back(network_interfaces_->at(i));
+  }
+
+  scoped_ptr<net::NetworkInterfaceList> network_interfaces_;
 };
 
 class DataReductionProxySettingsTestBase : public testing::Test {

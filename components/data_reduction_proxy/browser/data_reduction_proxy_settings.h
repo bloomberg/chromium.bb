@@ -16,6 +16,7 @@
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_usage_stats.h"
+#include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -208,11 +209,19 @@ class DataReductionProxySettings
   // customer feedback. Virtual so tests can mock it for verification.
   virtual void LogProxyState(bool enabled, bool restricted, bool at_startup);
 
-  // Virtualized for mocking
+  // Virtualized for mocking. Records UMA containing the result of requesting
+  // the probe URL.
   virtual void RecordProbeURLFetchResult(
       data_reduction_proxy::ProbeURLFetchResult result);
+
+  // Virtualized for mocking. Records UMA specifying whether the proxy was
+  // enabled or disabled at startup.
   virtual void RecordStartupState(
       data_reduction_proxy::ProxyStartupState state);
+
+  // Virtualized for mocking. Returns the list of network interfaces in use.
+  virtual void GetNetworkList(net::NetworkInterfaceList* interfaces,
+                              int policy);
 
   DataReductionProxyConfigurator* configurator() {
     return configurator_.get();
@@ -273,18 +282,17 @@ class DataReductionProxySettings
   // Warms the connection to the data reduction proxy.
   void WarmProxyConnection();
 
+  // Disables use of the data reduction proxy on VPNs. Returns true if the
+  // data reduction proxy has been disabled.
+  bool DisableIfVPN();
+
   // Generic method to get a URL fetcher.
   net::URLFetcher* GetBaseURLFetcher(const GURL& gurl, int load_flags);
-
-  // Returns a UTF16 string that's the hash of the configured authentication
-  // |key| and |salt|. Returns an empty UTF16 string if no key is configured or
-  // the data reduction proxy feature isn't available.
-  static base::string16 AuthHashForSalt(int64 salt,
-                                        const std::string& key);
 
   std::string key_;
   bool restricted_by_carrier_;
   bool enabled_by_user_;
+  bool disabled_on_vpn_;
 
   scoped_ptr<net::URLFetcher> fetcher_;
   scoped_ptr<net::URLFetcher> warmup_fetcher_;

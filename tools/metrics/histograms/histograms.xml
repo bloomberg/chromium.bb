@@ -3129,6 +3129,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.NetworkChangeEvents"
+    enum="DataReductionProxyNetworkChangeEvent">
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
+  <summary>
+    Counts the number of times various events occur when the data reduction
+    proxy is enabled and the IP address of the client changes.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.ProbeURL"
     enum="DataReductionProxyProbeURLFetchResult">
   <owner>bengr@chromium.org</owner>
@@ -36369,6 +36379,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="8" label="Bypass because the request URI was too long"/>
   <int value="9" label="Bypass due to a 503 response"/>
   <int value="10" label="Bypass due to any network error"/>
+</enum>
+
+<enum name="DataReductionProxyNetworkChangeEvent" type="int">
+  <int value="0" label="IP Address Change"/>
+  <int value="1" label="Proxy disabled on VPN"/>
 </enum>
 
 <enum name="DataReductionProxyProbeURLFetchResult" type="int">
