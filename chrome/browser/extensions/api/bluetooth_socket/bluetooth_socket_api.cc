@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/bluetooth_socket/bluetooth_socket_api.h"
 
+#include <stdint.h>
+
 #include "chrome/browser/extensions/api/bluetooth_socket/bluetooth_api_socket.h"
 #include "chrome/browser/extensions/api/bluetooth_socket/bluetooth_socket_event_dispatcher.h"
 #include "chrome/common/extensions/api/bluetooth/bluetooth_manifest_data.h"
@@ -25,6 +27,7 @@ using extensions::api::bluetooth_socket::SocketProperties;
 namespace {
 
 const char kDeviceNotFoundError[] = "Device not found";
+const char kInvalidPsmError[] = "Invalid PSM";
 const char kInvalidUuidError[] = "Invalid UUID";
 const char kPermissionDeniedError[] = "Permission denied";
 const char kSocketNotFoundError[] = "Socket not found";
@@ -78,6 +81,34 @@ extensions::api::BluetoothSocketEventDispatcher* GetSocketEventDispatcher(
          "TestExtensionSystem is failing to provide an instance of "
          "BluetoothSocketEventDispatcher.";
   return socket_event_dispatcher;
+}
+
+// Returns |true| if |psm| is a valid PSM.
+// Per the Bluetooth specification, the PSM field must be at least two octets in
+// length, with least significant bit of the least significant octet equal to
+// '1' and the least significant bit of the most significant octet equal to '0'.
+bool IsValidPsm(int psm) {
+  if (psm <= 0)
+    return false;
+
+  std::vector<int16_t> octets;
+  while (psm > 0) {
+     octets.push_back(psm & 0xFF);
+     psm = psm >> 8;
+  }
+
+  if (octets.size() < 2U)
+    return false;
+
+  // The least significant bit of the least significant octet must be '1'.
+  if ((octets.front() & 0x01) != 1)
+    return false;
+
+  // The least significant bit of the most significant octet must be '0'.
+  if ((octets.back() & 0x01) != 0)
+    return false;
+
+  return true;
 }
 
 }  // namespace
@@ -387,8 +418,15 @@ void BluetoothSocketListenUsingL2capFunction::CreateService(
 
   ListenOptions* options = params_->options.get();
   if (options) {
-    if (options->psm.get())
-      service_options.psm.reset(new int(*(options->psm)));
+    if (options->psm) {
+      int psm = *options->psm;
+      if (!IsValidPsm(psm)) {
+        error_callback.Run(kInvalidPsmError);
+        return;
+      }
+
+      service_options.psm.reset(new int(psm));
+    }
   }
 
   adapter->CreateL2capService(uuid, service_options, callback, error_callback);

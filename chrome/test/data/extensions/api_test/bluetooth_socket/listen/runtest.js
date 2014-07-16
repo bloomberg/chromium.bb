@@ -75,7 +75,26 @@ function secondStage() {
                       function() {
                         expectError("Permission denied");
 
-                        chrome.test.sendMessage('ready', startTests);
+                        chrome.bluetoothSocket.listenUsingL2cap(
+                          socket.socketId, uuid, {'psm': 1234},
+                          function() {
+                            expectError("Invalid PSM");
+
+                            chrome.bluetoothSocket.listenUsingL2cap(
+                              socket.socketId, uuid, {'psm': 4369},
+                              function() {
+                                expectError("Invalid PSM");
+
+                                chrome.bluetoothSocket.listenUsingL2cap(
+                                  socket.socketId, uuid, {'psm': 13},
+                                  function() {
+                                    expectError("Invalid PSM");
+
+                                    chrome.test.sendMessage(
+                                        'ready', startTests);
+                                  });
+                              });
+                          });
                       });
                   });
               });
