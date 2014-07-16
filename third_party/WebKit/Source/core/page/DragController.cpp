@@ -730,7 +730,7 @@ bool DragController::populateDragDataTransfer(LocalFrame* src, const DragState& 
     HitTestResult hitTestResult = src->eventHandler().hitTestResultAtPoint(dragOrigin);
     // FIXME: Can this even happen? I guess it's possible, but should verify
     // with a layout test.
-    if (!state.m_dragSrc->contains(hitTestResult.innerNode())) {
+    if (!state.m_dragSrc->containsIncludingShadowDOM(hitTestResult.innerNode())) {
         // The original node being dragged isn't under the drag origin anymore... maybe it was
         // hidden or moved out from under the cursor. Regardless, we don't want to start a drag on
         // something that's not actually under the drag origin.
@@ -848,7 +848,7 @@ bool DragController::startDrag(LocalFrame* src, const DragState& state, const Pl
         return false;
 
     HitTestResult hitTestResult = src->eventHandler().hitTestResultAtPoint(dragOrigin);
-    if (!state.m_dragSrc->contains(hitTestResult.innerNode())) {
+    if (!state.m_dragSrc->containsIncludingShadowDOM(hitTestResult.innerNode())) {
         // The original node being dragged isn't under the drag origin anymore... maybe it was
         // hidden or moved out from under the cursor. Regardless, we don't want to start a drag on
         // something that's not actually under the drag origin.
