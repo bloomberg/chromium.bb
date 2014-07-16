@@ -49,7 +49,7 @@ void RunAllPendingMessageAndSendQuit(BrowserThread::ID thread_id,
   BrowserThread::PostTask(thread_id, FROM_HERE, quit_task);
 }
 
-// Class used handle result callbacks for ExecuteScriptAndGetValue.
+// Class used to handle result callbacks for ExecuteScriptAndGetValue.
 class ScriptCallback {
  public:
   ScriptCallback() { }
@@ -69,6 +69,27 @@ void ScriptCallback::ResultCallback(const base::Value* result) {
     result_.reset(result->DeepCopy());
   base::MessageLoop::current()->Quit();
 }
+
+// Monitors if any task is processed by the message loop.
+class TaskObserver : public base::MessageLoop::TaskObserver {
+ public:
+  TaskObserver() : processed_(false) {}
+  virtual ~TaskObserver() {}
+
+  // MessageLoop::TaskObserver overrides.
+  virtual void WillProcessTask(const base::PendingTask& pending_task) OVERRIDE {
+  }
+  virtual void DidProcessTask(const base::PendingTask& pending_task) OVERRIDE {
+    processed_ = true;
+  }
+
+  // Returns true if any task was processed.
+  bool processed() const { return processed_; }
+
+ private:
+  bool processed_;
+  DISALLOW_COPY_AND_ASSIGN(TaskObserver);
+};
 
 // Adapter that makes a WindowedNotificationObserver::ConditionTestCallback from
 // a WindowedNotificationObserver::ConditionTestCallbackWithoutSourceAndDetails
@@ -127,6 +148,20 @@ void RunAllPendingInMessageLoop(BrowserThread::ID thread_id) {
       base::Bind(&RunAllPendingMessageAndSendQuit, current_thread_id,
                  run_loop.QuitClosure()));
   RunThisRunLoop(&run_loop);
+}
+
+void RunAllBlockingPoolTasksUntilIdle() {
+  while (true) {
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+
+    TaskObserver task_observer;
+    base::MessageLoop::current()->AddTaskObserver(&task_observer);
+    base::RunLoop().RunUntilIdle();
+    base::MessageLoop::current()->RemoveTaskObserver(&task_observer);
+
+    if (!task_observer.processed())
+      break;
+  }
 }
 
 base::Closure GetQuitTaskForRunLoop(base::RunLoop* run_loop) {

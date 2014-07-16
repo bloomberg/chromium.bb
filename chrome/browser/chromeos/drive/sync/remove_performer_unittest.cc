@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/drive/fake_drive_service.h"
+#include "content/public/test/test_utils.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 
@@ -33,7 +34,7 @@ TEST_F(RemovePerformerTest, RemoveFile) {
   performer.Remove(entry.local_id(),
                    ClientContext(USER_INITIATED),
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Remove a file in subdirectory.
@@ -44,7 +45,7 @@ TEST_F(RemovePerformerTest, RemoveFile) {
   performer.Remove(entry.local_id(),
                    ClientContext(USER_INITIATED),
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Verify the file is indeed removed in the server.
@@ -54,7 +55,7 @@ TEST_F(RemovePerformerTest, RemoveFile) {
       resource_id,
       google_apis::test_util::CreateCopyResultCallback(&gdata_error,
                                                        &gdata_entry));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   ASSERT_EQ(google_apis::HTTP_SUCCESS, gdata_error);
   EXPECT_TRUE(gdata_entry->labels().is_trashed());
 
@@ -63,7 +64,7 @@ TEST_F(RemovePerformerTest, RemoveFile) {
   performer.Remove("non-existing-id",
                    ClientContext(USER_INITIATED),
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 }
 
@@ -87,7 +88,7 @@ TEST_F(RemovePerformerTest, RemoveShared) {
       true,  // shared_with_me,
       google_apis::test_util::CreateCopyResultCallback(&gdata_error,
                                                        &gdata_entry));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   ASSERT_EQ(google_apis::HTTP_CREATED, gdata_error);
   CheckForUpdates();
 
@@ -98,7 +99,7 @@ TEST_F(RemovePerformerTest, RemoveShared) {
   performer.Remove(entry.local_id(),
                    ClientContext(USER_INITIATED),
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(FILE_ERROR_NOT_FOUND,
             GetLocalResourceEntry(kPathInMyDrive, &entry));
@@ -111,7 +112,7 @@ TEST_F(RemovePerformerTest, RemoveShared) {
       resource_id,
       google_apis::test_util::CreateCopyResultCallback(&gdata_error,
                                                        &gdata_entry));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   ASSERT_EQ(google_apis::HTTP_SUCCESS, gdata_error);
   EXPECT_FALSE(gdata_entry->labels().is_trashed());  // It's not deleted.
   EXPECT_TRUE(gdata_entry->parents().empty());
@@ -136,13 +137,13 @@ TEST_F(RemovePerformerTest, RemoveLocallyCreatedFile) {
                  entry,
                  &local_id),
       google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Remove the entry.
   performer.Remove(local_id, ClientContext(USER_INITIATED),
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntryById(local_id, &entry));
 }

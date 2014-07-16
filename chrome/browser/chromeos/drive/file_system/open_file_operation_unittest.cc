@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
+#include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -50,7 +51,7 @@ TEST_F(OpenFileOperationTest, OpenExistingFile) {
       std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &close_callback));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(base::PathExists(file_path));
@@ -76,7 +77,7 @@ TEST_F(OpenFileOperationTest, OpenNonExistingFile) {
       std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &close_callback));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
   EXPECT_TRUE(close_callback.is_null());
 }
@@ -96,7 +97,7 @@ TEST_F(OpenFileOperationTest, CreateExistingFile) {
       std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &close_callback));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_EXISTS, error);
   EXPECT_TRUE(close_callback.is_null());
@@ -115,7 +116,7 @@ TEST_F(OpenFileOperationTest, CreateNonExistingFile) {
       std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &close_callback));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   EXPECT_EQ(1U, observer()->get_changed_files().size());
   EXPECT_TRUE(observer()->get_changed_files().count(file_in_root));
@@ -148,7 +149,7 @@ TEST_F(OpenFileOperationTest, OpenOrCreateExistingFile) {
       std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &close_callback));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   // Notified because 'available offline' status of the existing file changes.
   EXPECT_EQ(1U, observer()->get_changed_files().size());
@@ -183,7 +184,7 @@ TEST_F(OpenFileOperationTest, OpenOrCreateNonExistingFile) {
       std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &close_callback));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(base::PathExists(file_path));
@@ -213,7 +214,7 @@ TEST_F(OpenFileOperationTest, OpenFileTwice) {
       std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &close_callback));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(base::PathExists(file_path));
@@ -230,7 +231,7 @@ TEST_F(OpenFileOperationTest, OpenFileTwice) {
       std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &close_callback2));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(base::PathExists(file_path));

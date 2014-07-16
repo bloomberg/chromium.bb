@@ -151,7 +151,7 @@ class FileSystemTest : public testing::Test {
     FileError error = FILE_ERROR_FAILED;
     file_system_->change_list_loader_for_testing()->LoadIfNeeded(
         google_apis::test_util::CreateCopyResultCallback(&error));
-    test_util::RunBlockingPoolTask();
+    content::RunAllBlockingPoolTasksUntilIdle();
     return error == FILE_ERROR_OK;
   }
 
@@ -163,7 +163,7 @@ class FileSystemTest : public testing::Test {
     file_system_->GetResourceEntry(
         file_path,
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-    test_util::RunBlockingPoolTask();
+    content::RunAllBlockingPoolTasksUntilIdle();
 
     return entry.Pass();
   }
@@ -177,7 +177,7 @@ class FileSystemTest : public testing::Test {
         file_path,
         base::Bind(&AccumulateReadDirectoryResult, entries.get()),
         google_apis::test_util::CreateCopyResultCallback(&error));
-    test_util::RunBlockingPoolTask();
+    content::RunAllBlockingPoolTasksUntilIdle();
     if (error != FILE_ERROR_OK)
       entries.reset();
     return entries.Pass();
@@ -329,7 +329,7 @@ TEST_F(FileSystemTest, Copy) {
                      dest_file_path,
                      false,  // preserve_last_modified,
                      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Entry is added on the server.
@@ -341,7 +341,7 @@ TEST_F(FileSystemTest, Copy) {
   fake_drive_service_->GetFileResource(
       entry->resource_id(),
       google_apis::test_util::CreateCopyResultCallback(&status, &server_entry));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
   ASSERT_TRUE(server_entry);
   EXPECT_EQ(entry->title(), server_entry->title());
@@ -362,7 +362,7 @@ TEST_F(FileSystemTest, Move) {
   file_system_->Move(src_file_path,
                      dest_file_path,
                      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Entry is moved on the server.
@@ -374,7 +374,7 @@ TEST_F(FileSystemTest, Move) {
   fake_drive_service_->GetFileResource(
       entry->resource_id(),
       google_apis::test_util::CreateCopyResultCallback(&status, &server_entry));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
   ASSERT_TRUE(server_entry);
   EXPECT_EQ(entry->title(), server_entry->title());
@@ -393,7 +393,7 @@ TEST_F(FileSystemTest, Remove) {
       file_path,
       false,  // is_resursive
       google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Entry is removed on the server.
@@ -402,7 +402,7 @@ TEST_F(FileSystemTest, Remove) {
   fake_drive_service_->GetFileResource(
       entry->resource_id(),
       google_apis::test_util::CreateCopyResultCallback(&status, &server_entry));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
   ASSERT_TRUE(server_entry);
   EXPECT_TRUE(server_entry->labels().is_trashed());
@@ -418,7 +418,7 @@ TEST_F(FileSystemTest, CreateDirectory) {
       true,  // is_exclusive
       false,  // is_recursive
       google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Directory is created on the server.
@@ -430,7 +430,7 @@ TEST_F(FileSystemTest, CreateDirectory) {
   fake_drive_service_->GetFileResource(
       entry->resource_id(),
       google_apis::test_util::CreateCopyResultCallback(&status, &server_entry));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
   ASSERT_TRUE(server_entry);
   EXPECT_EQ(entry->title(), server_entry->title());
@@ -447,7 +447,7 @@ TEST_F(FileSystemTest, CreateFile) {
       true,  // is_exclusive
       "text/plain",
       google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // File is created on the server.
@@ -459,7 +459,7 @@ TEST_F(FileSystemTest, CreateFile) {
   fake_drive_service_->GetFileResource(
       entry->resource_id(),
       google_apis::test_util::CreateCopyResultCallback(&status, &server_entry));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
   ASSERT_TRUE(server_entry);
   EXPECT_EQ(entry->title(), server_entry->title());
@@ -484,7 +484,7 @@ TEST_F(FileSystemTest, TouchFile) {
       last_accessed,
       last_modified,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // File is touched on the server.
@@ -493,7 +493,7 @@ TEST_F(FileSystemTest, TouchFile) {
   fake_drive_service_->GetFileResource(
       entry->resource_id(),
       google_apis::test_util::CreateCopyResultCallback(&status, &server_entry));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
   ASSERT_TRUE(server_entry);
   EXPECT_EQ(last_accessed, server_entry->last_viewed_by_me_date());
@@ -512,7 +512,7 @@ TEST_F(FileSystemTest, TruncateFile) {
       file_path,
       kLength,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // File is touched on the server.
@@ -521,7 +521,7 @@ TEST_F(FileSystemTest, TruncateFile) {
   fake_drive_service_->GetFileResource(
       entry->resource_id(),
       google_apis::test_util::CreateCopyResultCallback(&status, &server_entry));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
   ASSERT_TRUE(server_entry);
   EXPECT_EQ(kLength, server_entry->file_size());
@@ -667,7 +667,7 @@ TEST_F(FileSystemTest, LoadFileSystemFromUpToDateCache) {
   const int about_resource_load_count_before =
       fake_drive_service_->about_resource_load_count();
   file_system_->CheckForUpdates();
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_LT(about_resource_load_count_before,
             fake_drive_service_->about_resource_load_count());
 }
@@ -709,7 +709,7 @@ TEST_F(FileSystemTest, LoadFileSystemFromCacheWhileOffline) {
 
   file_system_->CheckForUpdates();
 
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
   EXPECT_EQ(1, fake_drive_service_->change_list_load_count());
 
@@ -753,7 +753,7 @@ TEST_F(FileSystemTest, CreateDirectoryByImplicitLoad) {
       true,  // is_exclusive
       false,  // is_recursive
       google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   // It should fail because is_exclusive is set to true.
   EXPECT_EQ(FILE_ERROR_EXISTS, error);
@@ -771,7 +771,7 @@ TEST_F(FileSystemTest, CreateDirectoryRecursively) {
       true,  // is_exclusive
       true,  // is_recursive
       google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
 
@@ -793,7 +793,7 @@ TEST_F(FileSystemTest, PinAndUnpin) {
   FileError error = FILE_ERROR_FAILED;
   file_system_->Pin(file_path,
                     google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   entry = GetResourceEntrySync(file_path);
@@ -805,7 +805,7 @@ TEST_F(FileSystemTest, PinAndUnpin) {
   error = FILE_ERROR_FAILED;
   file_system_->Unpin(file_path,
                       google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   entry = GetResourceEntrySync(file_path);
@@ -840,7 +840,7 @@ TEST_F(FileSystemTest, PinAndUnpin_NotSynced) {
       file_path,
       google_apis::test_util::CreateCopyResultCallback(&error_unpin));
 
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error_pin);
   EXPECT_EQ(FILE_ERROR_OK, error_unpin);
 
@@ -857,7 +857,7 @@ TEST_F(FileSystemTest, GetAvailableSpace) {
   file_system_->GetAvailableSpace(
       google_apis::test_util::CreateCopyResultCallback(
           &error, &bytes_total, &bytes_used));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(6789012345LL, bytes_used);
   EXPECT_EQ(9876543210LL, bytes_total);
 }
@@ -875,7 +875,7 @@ TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
       file_in_root,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &entry));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Test for mounting.
@@ -884,7 +884,7 @@ TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   file_system_->MarkCacheFileAsMounted(
       file_in_root,
       google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Cannot remove a cache entry while it's being mounted.
@@ -895,7 +895,7 @@ TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   file_system_->MarkCacheFileAsUnmounted(
       file_path,
       google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Now able to remove the cache entry.
@@ -915,7 +915,7 @@ TEST_F(FileSystemTest, GetShareUrl) {
       kFileInRoot,
       kEmbedOrigin,
       google_apis::test_util::CreateCopyResultCallback(&error, &share_url));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   // Verify the share url to the sharing dialog.
   EXPECT_EQ(FILE_ERROR_OK, error);

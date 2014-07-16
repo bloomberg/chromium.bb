@@ -5,12 +5,12 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 
 #include "chrome/browser/chromeos/drive/dummy_file_system.h"
-#include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/dummy_drive_service.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -47,7 +47,7 @@ TEST_F(DriveIntegrationServiceTest, InitializeAndShutdown) {
           base::FilePath(),
           new DummyFileSystem));
   integration_service->SetEnabled(true);
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   integration_service->Shutdown();
 }
 

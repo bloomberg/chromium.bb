@@ -18,6 +18,7 @@
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/drive/test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "net/base/io_buffer.h"
@@ -501,7 +502,7 @@ TEST_F(DriveFileStreamReaderTest, ZeroByteFileRead) {
         "EmptyFile.txt",
         false,  // shared_with_me
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-    drive::test_util::RunBlockingPoolTask();
+    content::RunAllBlockingPoolTasksUntilIdle();
     ASSERT_EQ(google_apis::HTTP_CREATED, error);
     ASSERT_TRUE(entry);
     ASSERT_EQ(0, entry->file_size());

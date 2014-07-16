@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
+#include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,7 +40,7 @@ TEST_F(MoveOperationTest, MoveFileInSameDirectory) {
   operation_->Move(src_path,
                    dest_path,
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &dest_entry));
@@ -69,7 +70,7 @@ TEST_F(MoveOperationTest, MoveFileFromRootToSubDirectory) {
   operation_->Move(src_path,
                    dest_path,
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &dest_entry));
@@ -93,7 +94,7 @@ TEST_F(MoveOperationTest, MoveNotExistingFile) {
   operation_->Move(src_path,
                    dest_path,
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 
   ResourceEntry entry;
@@ -109,7 +110,7 @@ TEST_F(MoveOperationTest, MoveFileToNonExistingDirectory) {
   operation_->Move(src_path,
                    dest_path,
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 
   ResourceEntry entry;
@@ -128,7 +129,7 @@ TEST_F(MoveOperationTest, MoveFileToInvalidPath) {
   operation_->Move(src_path,
                    dest_path,
                    google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_NOT_A_DIRECTORY, error);
 
   ResourceEntry entry;

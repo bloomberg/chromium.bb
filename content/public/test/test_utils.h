@@ -18,7 +18,7 @@
 
 namespace base {
 class Value;
-}
+}  // namespace base
 
 // A collection of functions designed for use with unit and browser tests.
 
@@ -43,6 +43,10 @@ void RunAllPendingInMessageLoop();
 // Blocks the current thread until all the pending messages in the loop of the
 // thread |thread_id| have been processed.
 void RunAllPendingInMessageLoop(BrowserThread::ID thread_id);
+
+// Runs until both the blocking pool and the current message loop are empty
+// (have no more scheduled tasks) and no tasks are running.
+void RunAllBlockingPoolTasksUntilIdle();
 
 // Get task to quit the given RunLoop. It allows a few generations of pending
 // tasks to run as opposed to run_loop->QuitClosure().

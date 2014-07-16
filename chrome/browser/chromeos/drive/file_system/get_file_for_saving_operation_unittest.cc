@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/chromeos/drive/file_write_watcher.h"
+#include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -84,7 +85,7 @@ TEST_F(GetFileForSavingOperationTest, GetFileForSaving_Exist) {
       drive_path,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &local_path, &entry));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   // Checks that the file is retrieved.
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -119,7 +120,7 @@ TEST_F(GetFileForSavingOperationTest, GetFileForSaving_NotExist) {
       drive_path,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &local_path, &entry));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   // Checks that the file is created and retrieved.
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -143,7 +144,7 @@ TEST_F(GetFileForSavingOperationTest, GetFileForSaving_Directory) {
       drive_path,
       google_apis::test_util::CreateCopyResultCallback(
           &error, &local_path, &entry));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   // Checks that an error is returned.
   EXPECT_EQ(FILE_ERROR_EXISTS, error);

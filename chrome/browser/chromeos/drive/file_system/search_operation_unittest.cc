@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/drive/fake_drive_service.h"
+#include "content/public/test/test_utils.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +37,7 @@ TEST_F(SearchOperationTest, ContentSearch) {
   operation.Search("Directory", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
                        &error, &next_link, &results));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(next_link.is_empty());
@@ -59,7 +60,7 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
       "New Directory 1!",
       DriveServiceInterface::AddNewDirectoryOptions(),
       google_apis::test_util::CreateCopyResultCallback(&status, &server_entry));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   ASSERT_EQ(google_apis::HTTP_CREATED, status);
 
   // As the result of the first Search(), only entries in the current file
@@ -76,7 +77,7 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
   operation.Search("\"Directory 1\"", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
                        &error, &next_link, &results));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(next_link.is_empty());
@@ -97,7 +98,7 @@ TEST_F(SearchOperationTest, ContentSearchWithNewEntry) {
   operation.Search("\"Directory 1\"", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
                        &error, &next_link, &results));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(next_link.is_empty());
@@ -119,7 +120,7 @@ TEST_F(SearchOperationTest, ContentSearchEmptyResult) {
   operation.Search("\"no-match query\"", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
                        &error, &next_link, &results));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(next_link.is_empty());
@@ -141,13 +142,13 @@ TEST_F(SearchOperationTest, Lock) {
   operation.Search("\"Directory 1\"", GURL(),
                    google_apis::test_util::CreateCopyResultCallback(
                        &error, &next_link, &results));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_FAILED, error);
   EXPECT_FALSE(results);
 
   // Unlock, this should resume the pending search.
   lock.reset();
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(results);
   EXPECT_EQ(1u, results->size());

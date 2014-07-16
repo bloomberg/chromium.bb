@@ -7,7 +7,6 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -53,7 +52,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
     integration_service_->file_system()->GetResourceEntry(
         base::FilePath::FromUTF8Unsafe("drive/root"),  // whatever
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-    drive::test_util::RunBlockingPoolTask();
+    content::RunAllBlockingPoolTasksUntilIdle();
     ASSERT_EQ(drive::FILE_ERROR_OK, error);
   }
 

@@ -10,7 +10,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/chromeos/file_manager/drive_test_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
@@ -577,7 +576,7 @@ class MultiProfileDriveFileSystemExtensionApiTest :
         "application/vnd.google-apps.document", "",
         resource_ids_["test_dir"], "hosted_doc", true,
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-    drive::test_util::RunBlockingPoolTask();
+    content::RunAllBlockingPoolTasksUntilIdle();
     if (error != google_apis::HTTP_CREATED)
       return false;
 
@@ -588,7 +587,7 @@ class MultiProfileDriveFileSystemExtensionApiTest :
         kResourceId,
         "application/vnd.google-apps.document", "", "", "hosted_doc", true,
         google_apis::test_util::CreateCopyResultCallback(&error, &entry));
-    drive::test_util::RunBlockingPoolTask();
+    content::RunAllBlockingPoolTasksUntilIdle();
     return (error == google_apis::HTTP_CREATED);
   }
 

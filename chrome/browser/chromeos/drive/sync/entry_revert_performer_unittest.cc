@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/drive/fake_drive_service.h"
+#include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -51,7 +52,7 @@ TEST_F(EntryRevertPerformerTest, RevertEntry) {
       base::Bind(&ResourceMetadata::RefreshEntry,
                  base::Unretained(metadata()), updated_entry),
       google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Revert local change.
@@ -60,7 +61,7 @@ TEST_F(EntryRevertPerformerTest, RevertEntry) {
       src_entry.local_id(),
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Verify local change is reverted.
@@ -94,7 +95,7 @@ TEST_F(EntryRevertPerformerTest, RevertEntry_NotFoundOnServer) {
       base::Bind(&ResourceMetadata::AddEntry,
                  base::Unretained(metadata()), entry, &local_id),
       google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Revert local change. The added entry should be removed.
@@ -103,7 +104,7 @@ TEST_F(EntryRevertPerformerTest, RevertEntry_NotFoundOnServer) {
       local_id,
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Verify the entry was deleted locally.
@@ -126,7 +127,7 @@ TEST_F(EntryRevertPerformerTest, RevertEntry_TrashedOnServer) {
   fake_service()->TrashResource(
       entry.resource_id(),
       google_apis::test_util::CreateCopyResultCallback(&gdata_error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(google_apis::HTTP_SUCCESS, gdata_error);
 
   // Revert local change. The entry should be removed.
@@ -135,7 +136,7 @@ TEST_F(EntryRevertPerformerTest, RevertEntry_TrashedOnServer) {
       entry.local_id(),
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Verify the entry was deleted locally.

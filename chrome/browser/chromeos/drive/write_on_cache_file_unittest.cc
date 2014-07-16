@@ -6,8 +6,9 @@
 
 #include "base/bind.h"
 #include "chrome/browser/chromeos/drive/dummy_file_system.h"
-#include "chrome/browser/chromeos/drive/test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
+#include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -70,7 +71,7 @@ TEST(WriteOnCacheFileTest, PrepareFileForWritingSuccess) {
       base::FilePath(kDrivePath),
       std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(&error, &path));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(kLocalPath, path.value());
@@ -92,7 +93,7 @@ TEST(WriteOnCacheFileTest, PrepareFileForWritingCreateFail) {
       base::FilePath(kInvalidPath),
       std::string(),  // mime_type
       google_apis::test_util::CreateCopyResultCallback(&error, &path));
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   EXPECT_EQ(FILE_ERROR_INVALID_OPERATION, error);
   EXPECT_TRUE(path.empty());

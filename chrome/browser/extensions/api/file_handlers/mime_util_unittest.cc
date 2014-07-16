@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_file_system_context.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -76,8 +77,7 @@ TEST_F(FileHandlersMimeUtilTest, GetMimeTypeForLocalPath) {
         &profile_,
         base::FilePath::FromUTF8Unsafe(kJPEGExtensionFilePath),
         base::Bind(&OnMimeTypeResult, &result));
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
+    content::RunAllBlockingPoolTasksUntilIdle();
     EXPECT_EQ("image/jpeg", result);
   }
 
@@ -87,8 +87,7 @@ TEST_F(FileHandlersMimeUtilTest, GetMimeTypeForLocalPath) {
         &profile_,
         base::FilePath::FromUTF8Unsafe(kJPEGExtensionUpperCaseFilePath),
         base::Bind(&OnMimeTypeResult, &result));
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
+    content::RunAllBlockingPoolTasksUntilIdle();
     EXPECT_EQ("image/jpeg", result);
   }
 
@@ -97,14 +96,7 @@ TEST_F(FileHandlersMimeUtilTest, GetMimeTypeForLocalPath) {
     GetMimeTypeForLocalPath(&profile_,
                             html_mime_file_path_,
                             base::Bind(&OnMimeTypeResult, &result));
-
-    // Since there are two calls to the blocking pool, it has to be flushed
-    // twice.
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
-
+    content::RunAllBlockingPoolTasksUntilIdle();
     EXPECT_EQ("text/html", result);
   }
 }
@@ -124,14 +116,7 @@ TEST_F(FileHandlersMimeUtilTest, MimeTypeCollector_ForURLs) {
 
   std::vector<std::string> result;
   collector.CollectForURLs(urls, base::Bind(&OnMimeTypesCollected, &result));
-
-  // Each URL may do up to 2 calls to the blocking pool. Hence, we need to
-  // flush it at least 6 times. This is unelegant, but there seem to be no
-  // better way.
-  for (int i = 0; i < 6; ++i) {
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
-  }
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   ASSERT_EQ(3u, result.size());
   EXPECT_EQ("image/jpeg", result[0]);
@@ -151,11 +136,7 @@ TEST_F(FileHandlersMimeUtilTest, MimeTypeCollector_ForLocalPaths) {
   std::vector<std::string> result;
   collector.CollectForLocalPaths(local_paths,
                                  base::Bind(&OnMimeTypesCollected, &result));
-
-  for (int i = 0; i < 6; ++i) {
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
-  }
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   ASSERT_EQ(3u, result.size());
   EXPECT_EQ("image/jpeg", result[0]);

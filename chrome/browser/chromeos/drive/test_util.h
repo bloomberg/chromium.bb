@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -27,15 +28,6 @@ namespace test_util {
 // Disk space size used by FakeFreeDiskSpaceGetter.
 const int64 kLotsOfSpace = cryptohome::kMinFreeSpaceInBytes * 10;
 
-// Runs a task posted to the blocking pool, including subsequent tasks posted
-// to the UI message loop and the blocking pool.
-//
-// A task is often posted to the blocking pool with PostTaskAndReply(). In
-// that case, a task is posted back to the UI message loop, which can again
-// post a task to the blocking pool. This function processes these tasks
-// repeatedly.
-void RunBlockingPoolTask();
-
 // Helper to destroy objects which needs Destroy() to be called on destruction.
 // Note: When using this helper, you should destruct objects before
 // BrowserThread.
@@ -44,7 +36,7 @@ struct DestroyHelperForTests {
   void operator()(T* object) const {
     if (object) {
       object->Destroy();
-      test_util::RunBlockingPoolTask();  // Finish destruction.
+      content::RunAllBlockingPoolTasksUntilIdle();  // Finish destruction.
     }
   }
 };

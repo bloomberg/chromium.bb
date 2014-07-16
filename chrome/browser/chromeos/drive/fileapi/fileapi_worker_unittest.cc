@@ -9,8 +9,8 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/dummy_file_system.h"
-#include "chrome/browser/chromeos/drive/test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -173,7 +173,7 @@ TEST_F(FileApiWorkerTest, OpenFileForCreateWrite) {
            base::File::FLAG_CREATE | base::File::FLAG_WRITE,
            base::Bind(&VerifyWrite, kExpectedSize, temp_path, kWriteData),
            &file_system);
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_TRUE(file_system.closed());
 }
 
@@ -195,7 +195,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenAlwaysWrite) {
            base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE,
            base::Bind(&VerifyWrite, kExpectedSize, temp_path, kWriteData),
            &file_system);
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_TRUE(file_system.closed());
 }
 
@@ -217,7 +217,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenTruncatedWrite) {
            base::File::FLAG_OPEN_TRUNCATED | base::File::FLAG_WRITE,
            base::Bind(&VerifyWrite, kExpectedSize, temp_path, kWriteData),
            &file_system);
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_TRUE(file_system.closed());
 }
 
@@ -239,7 +239,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenCreateAlwaysWrite) {
            base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE,
            base::Bind(&VerifyWrite, kExpectedSize, temp_path, kWriteData),
            &file_system);
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_TRUE(file_system.closed());
 }
 
@@ -258,7 +258,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenRead) {
            base::File::FLAG_OPEN | base::File::FLAG_READ,
            base::Bind(&VerifyRead, kInitialData),
            &file_system);
-  test_util::RunBlockingPoolTask();
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_TRUE(file_system.closed());
 }
 
