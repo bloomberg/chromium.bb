@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,10 @@
 #define MOJO_PUBLIC_CPP_SYSTEM_MACROS_H_
 
 #include "mojo/public/c/system/macros.h"
+
+// Define a set of C++ specific macros.
+// Mojo C++ API users can assume that mojo/public/cpp/system/macros.h
+// includes mojo/public/c/system/macros.h.
 
 // Annotate a virtual method indicating it must be overriding a virtual method
 // in the parent class. Use like:
