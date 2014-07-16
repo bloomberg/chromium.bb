@@ -4,6 +4,7 @@
 
 #include "athena/wm/public/window_manager.h"
 
+#include "athena/input/public/accelerator_manager.h"
 #include "athena/screen/public/screen_manager.h"
 #include "athena/wm/window_overview_mode.h"
 #include "base/logging.h"
@@ -16,10 +17,13 @@ namespace {
 
 class WindowManagerImpl : public WindowManager,
                           public WindowOverviewModeDelegate,
-                          public aura::WindowObserver {
+                          public aura::WindowObserver,
+                          public AcceleratorHandler {
  public:
   WindowManagerImpl();
   virtual ~WindowManagerImpl();
+
+  void Init() { InstallAccelerators(); }
 
   void Layout();
 
@@ -32,6 +36,19 @@ class WindowManagerImpl : public WindowManager,
   }
 
  private:
+  enum Command {
+    COMMAND_TOGGLE_OVERVIEW,
+  };
+
+  void InstallAccelerators() {
+    const AcceleratorData accelerator_data[] = {
+        {TRIGGER_ON_PRESS, ui::VKEY_6, ui::EF_NONE, COMMAND_TOGGLE_OVERVIEW,
+         AF_NONE},
+    };
+    AcceleratorManager::Get()->RegisterAccelerators(
+        accelerator_data, arraysize(accelerator_data), this);
+  }
+
   // WindowOverviewModeDelegate:
   virtual void OnSelectWindow(aura::Window* window) OVERRIDE {
     CHECK_EQ(container_.get(), window->parent());
@@ -45,8 +62,19 @@ class WindowManagerImpl : public WindowManager,
       container_.reset();
   }
 
+  // AcceleratorHandler:
+  virtual bool IsCommandEnabled(int command_id) const OVERRIDE { return true; }
+  virtual bool OnAcceleratorFired(int command_id,
+                                  const ui::Accelerator& accelerator) OVERRIDE {
+    switch (command_id) {
+      case COMMAND_TOGGLE_OVERVIEW:
+        ToggleOverview();
+        break;
+    }
+    return true;
+  }
+
   scoped_ptr<aura::Window> container_;
-  scoped_ptr<ui::EventHandler> temp_handler_;
   scoped_ptr<WindowOverviewMode> overview_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerImpl);
@@ -82,37 +110,17 @@ class AthenaContainerLayoutManager : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(AthenaContainerLayoutManager);
 };
 
-class TempEventHandler : public ui::EventHandler {
- public:
-  TempEventHandler() {}
-  virtual ~TempEventHandler() {}
-
- private:
-  // ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
-    if (event->type() == ui::ET_KEY_PRESSED &&
-        event->key_code() == ui::VKEY_F6) {
-      instance->ToggleOverview();
-    }
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(TempEventHandler);
-};
-
 WindowManagerImpl::WindowManagerImpl()
-    : container_(ScreenManager::Get()->CreateDefaultContainer("MainContainer")),
-      temp_handler_(new TempEventHandler()) {
+    : container_(
+          ScreenManager::Get()->CreateDefaultContainer("MainContainer")) {
   container_->SetLayoutManager(new AthenaContainerLayoutManager);
   container_->AddObserver(this);
-  container_->AddPreTargetHandler(temp_handler_.get());
   instance = this;
 }
 
 WindowManagerImpl::~WindowManagerImpl() {
-  if (container_) {
-    container_->RemovePreTargetHandler(temp_handler_.get());
+  if (container_)
     container_->RemoveObserver(this);
-  }
   container_.reset();
   instance = NULL;
 }
