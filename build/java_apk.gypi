@@ -771,10 +771,12 @@
       },
       'target_conditions': [
         ['emma_instrument != 0', {
-          'dex_no_locals': 1,
-          'dex_input_paths': [
-            '<(emma_device_jar)'
-          ],
+          'variables': {
+            'dex_no_locals': 1,
+            'dex_input_paths': [
+              '<(emma_device_jar)'
+            ],
+          },
         }],
         ['is_test_apk == 1 and tested_apk_dex_path != "/"', {
           'variables': {
