@@ -102,6 +102,7 @@ bool CommonThemeGetSystemColor(NativeTheme::ColorId color_id, SkColor* color) {
       break;
     case NativeTheme::kColorId_BlueButtonHoverColor:
       *color = kBlueButtonHoverColor;
+      break;
     case NativeTheme::kColorId_BlueButtonShadowColor:
       *color = kBlueButtonShadowColor;
       break;
