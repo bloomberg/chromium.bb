@@ -62,6 +62,8 @@ class FakeDataChannel {
   }
 
   int Read(IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
+    DCHECK(read_callback_.is_null());
+    DCHECK(!read_buf_);
     if (closed_)
       return 0;
     if (data_.empty()) {
@@ -74,6 +76,7 @@ class FakeDataChannel {
   }
 
   int Write(IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
+    DCHECK(write_callback_.is_null());
     if (closed_) {
       if (write_called_after_close_)
         return net::ERR_CONNECTION_RESET;
@@ -84,7 +87,10 @@ class FakeDataChannel {
                                 weak_factory_.GetWeakPtr()));
       return net::ERR_IO_PENDING;
     }
-    data_.push(new net::DrainableIOBuffer(buf, buf_len));
+    // This function returns synchronously, so make a copy of the buffer.
+    data_.push(new net::DrainableIOBuffer(
+        new net::StringIOBuffer(std::string(buf->data(), buf_len)),
+        buf_len));
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&FakeDataChannel::DoReadCallback,
                               weak_factory_.GetWeakPtr()));
@@ -477,17 +483,11 @@ TEST_F(SSLServerSocketTest, DataTransfer) {
   EXPECT_EQ(0, memcmp(write_buf->data(), read_buf->data(), write_buf->size()));
 }
 
-// Flaky on Android: http://crbug.com/381147
-#if defined(OS_ANDROID)
-#define MAYBE_ClientWriteAfterServerClose DISABLED_ClientWriteAfterServerClose
-#else
-#define MAYBE_ClientWriteAfterServerClose ClientWriteAfterServerClose
-#endif
 // A regression test for bug 127822 (http://crbug.com/127822).
 // If the server closes the connection after the handshake is finished,
 // the client's Write() call should not cause an infinite loop.
 // NOTE: this is a test for SSLClientSocket rather than SSLServerSocket.
-TEST_F(SSLServerSocketTest, MAYBE_ClientWriteAfterServerClose) {
+TEST_F(SSLServerSocketTest, ClientWriteAfterServerClose) {
   Initialize();
 
   TestCompletionCallback connect_callback;
