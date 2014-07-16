@@ -190,7 +190,100 @@ TEST_F(RunLoopTest, Current) {
   EXPECT_TRUE(RunLoop::current() == NULL);
 }
 
-// TODO(darin): Add tests for nested calls to RunLoop::Run(). See crbug/384633.
+
+class NestingRunLoopHandler : public TestRunLoopHandler {
+ public:
+  static const size_t kDepthLimit;
+  static const char kSignalMagic;
+
+  NestingRunLoopHandler()
+      : run_loop_(NULL),
+        pipe_(NULL),
+        depth_(0),
+        reached_depth_limit_(false) {}
+
+  virtual ~NestingRunLoopHandler() {}
+
+  void set_run_loop(RunLoop* run_loop) { run_loop_ = run_loop; }
+  void set_pipe(MessagePipe* pipe) { pipe_ = pipe; }
+  bool reached_depth_limit() const { return reached_depth_limit_; }
+
+  // RunLoopHandler:
+  virtual void OnHandleReady(const Handle& handle) MOJO_OVERRIDE {
+    TestRunLoopHandler::OnHandleReady(handle);
+    EXPECT_EQ(handle.value(), pipe_->handle0.get().value());
+
+    ReadSignal();
+    size_t current_depth = ++depth_;
+    if (current_depth < kDepthLimit) {
+      WriteSignal();
+      run_loop_->Run();
+      if (current_depth == kDepthLimit - 1) {
+        // The topmost loop Quit()-ed, so its parent takes back the
+        // control without exeeding deadline.
+        EXPECT_EQ(error_count(), 0);
+      } else {
+        EXPECT_EQ(error_count(), 1);
+      }
+
+    } else {
+      EXPECT_EQ(current_depth, kDepthLimit);
+      reached_depth_limit_ = true;
+      run_loop_->Quit();
+    }
+    --depth_;
+  }
+
+  void WriteSignal() {
+    char write_byte = kSignalMagic;
+    MojoResult write_result = WriteMessageRaw(
+        pipe_->handle1.get(),
+        &write_byte, 1, NULL, 0, MOJO_WRITE_MESSAGE_FLAG_NONE);
+    EXPECT_EQ(write_result, MOJO_RESULT_OK);
+  }
+
+  void ReadSignal() {
+    char read_byte = 0;
+    uint32_t bytes_read = 1;
+    uint32_t handles_read = 0;
+    MojoResult read_result = ReadMessageRaw(
+        pipe_->handle0.get(),
+        &read_byte, &bytes_read, NULL, &handles_read,
+        MOJO_READ_MESSAGE_FLAG_NONE);
+    EXPECT_EQ(read_result, MOJO_RESULT_OK);
+    EXPECT_EQ(read_byte, kSignalMagic);
+  }
+
+ private:
+  RunLoop* run_loop_;
+  MessagePipe* pipe_;
+  size_t depth_;
+  bool reached_depth_limit_;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(NestingRunLoopHandler);
+};
+
+const size_t NestingRunLoopHandler::kDepthLimit = 10;
+const char NestingRunLoopHandler::kSignalMagic = 'X';
+
+TEST_F(RunLoopTest, NestedRun) {
+  NestingRunLoopHandler handler;
+  MessagePipe test_pipe;
+  RunLoop run_loop;
+  handler.set_run_loop(&run_loop);
+  handler.set_pipe(&test_pipe);
+  run_loop.AddHandler(&handler, test_pipe.handle0.get(),
+                      MOJO_HANDLE_SIGNAL_READABLE,
+                      static_cast<MojoDeadline>(10000));
+  handler.WriteSignal();
+  run_loop.Run();
+
+  EXPECT_TRUE(handler.reached_depth_limit());
+  // Got MOJO_RESULT_DEADLINE_EXCEEDED once then removed from the
+  // RunLoop's handler list.
+  EXPECT_EQ(handler.error_count(), 1);
+  EXPECT_EQ(handler.last_error_result(), MOJO_RESULT_DEADLINE_EXCEEDED);
+}
 
 }  // namespace
 }  // namespace mojo
