@@ -72,7 +72,7 @@ void RenderHTMLCanvas::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& pa
     HTMLCanvasElement* canvas = toHTMLCanvasElement(node());
     LayoutSize layoutSize = contentRect.size();
     if (style()->imageRendering() == ImageRenderingPixelated
-        && (layoutSize.width() > canvas->width() || layoutSize.height() > canvas->height())) {
+        && (layoutSize.width() > canvas->width() || layoutSize.height() > canvas->height() || layoutSize == canvas->size())) {
         interpolationQuality = InterpolationNone;
     }
 

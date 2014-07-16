@@ -64,7 +64,7 @@ InterpolationQuality ImageQualityController::chooseInterpolationQuality(Graphics
 {
     if (object->style()->imageRendering() == ImageRenderingPixelated
         && image
-        && (layoutSize.width() > image->width() || layoutSize.height() > image->height())) {
+        && (layoutSize.width() > image->width() || layoutSize.height() > image->height() || layoutSize == image->size())) {
         return InterpolationNone;
     }
 

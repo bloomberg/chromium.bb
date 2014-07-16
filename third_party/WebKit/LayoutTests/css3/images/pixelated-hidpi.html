@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<style>
+    canvas {
+        width: 10px;
+        height: 10px;
+        image-rendering: pixelated;
+    }
+    img {
+        width: 10px;
+        height: 10px;
+        image-rendering: pixelated;
+    }
+    svg {
+        width: 10px;
+        height: 10px;
+    }
+    image {
+        image-rendering: pixelated;
+    }
+</style>
+<body>
+    <!-- The output should be checkerboards all 20x20 with sharp 2x2 blocks and no blurring. -->
+    <canvas width="10" height="10"></canvas>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB94HEAM4DvS4c9UAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAIUlEQVQY02P4////fwYGhv+EaAZiFP3///8/w6iJVDERACxc+Qdc4qF6AAAAAElFTkSuQmCC">
+    <svg><image width="10" height="10" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB94HEAM4DvS4c9UAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAIUlEQVQY02P4////fwYGhv+EaAZiFP3///8/w6iJVDERACxc+Qdc4qF6AAAAAElFTkSuQmCC"/></svg>
+</body>
+<script>
+    function drawImageToCanvas() {
+        var image = document.getElementsByTagName("img")[0];
+        var canvas = document.getElementsByTagName("canvas")[0].getContext("2d");
+        canvas.drawImage(image, 0, 0);
+    }
+
+    function runTest() {
+        if (!window.testRunner)
+            return;
+
+        // Ignore the render tree.
+        testRunner.dumpAsTextWithPixelResults();
+
+        testRunner.waitUntilDone();
+        testRunner.setBackingScaleFactor(2, function () {
+            drawImageToCanvas();
+            testRunner.notifyDone();
+        });
+    }
+
+    window.onload = runTest;
+</script>
