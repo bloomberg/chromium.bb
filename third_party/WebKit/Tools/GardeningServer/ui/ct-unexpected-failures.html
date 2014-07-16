@@ -42,6 +42,7 @@ found in the LICENSE file.
     Polymer({
       attached: function() {
         this.update();
+        setInterval(this.update.bind(this), config.kTreeStatusUpdateFrequency);
       },
 
       update: function() {
