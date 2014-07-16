@@ -1022,6 +1022,13 @@ brillo_non_testable = brillo.derive(
 beaglebone = non_testable_builder.derive(brillo_non_testable,
                                          rootfs_verification=False)
 
+brillo_public_full = full.derive(non_testable_builder,
+                                 brillo_non_testable)
+
+brillo_public_full.add_config('gizmo-full',
+  boards=['gizmo'],
+)
+
 # This adds Chrome branding.
 official_chrome = _config(
   useflags=[constants.USE_CHROME_INTERNAL],
@@ -1372,6 +1379,7 @@ _x86_release_boards = frozenset([
 ])
 _x86_full_boards = _x86_release_boards | frozenset([
   'amd64-generic',
+  'gizmo',
   'x32-generic',
   'x86-generic',
   'x86-pineview',
