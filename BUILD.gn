@@ -18,7 +18,7 @@ group("root") {
   deps = [
     # This is a temporary test of the not-yet-complete NaCl cross-compilation.
     #"//base(//build/toolchain/nacl:x86_newlib)",
-
+    "//ash",
     "//cc",
     "//chrome/browser",
     "//chrome/browser/devtools",
@@ -167,6 +167,8 @@ group("root") {
       # Seems to not be compiled on Android. Otherwise it will need a config.h.
       "//third_party/libxslt",
 
+      # Not relevant to Android.
+      "//ash",
       "//tools/gn",
       "//ui/aura",
       "//ui/views",

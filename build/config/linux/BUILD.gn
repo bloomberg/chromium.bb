@@ -104,6 +104,10 @@ config("xscrnsaver") {
   libs = [ "Xss" ]
 }
 
+config("xfixes") {
+  libs = [ "xfixes" ]
+}
+
 config("libcap") {
   libs = [ "cap" ]
 }

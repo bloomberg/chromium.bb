@@ -2,11 +2,361 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(GYP) this is a placeholder so that targets that depend on ash can get
-# the resources generated.
-group("ash") {
+import("//build/config/features.gni")
+import("//build/config/ui.gni")
+
+gypi_values = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("ash.gyp") ],
+    "scope",
+    [ "ash.gyp" ])
+
+component("ash") {
+  sources = gypi_values.ash_sources
+
+  defines = [ "ASH_IMPLEMENTATION" ]
+
   deps = [
     "//ash/resources",
     "//ash/strings",
+    "//base",
+    "//base:i18n",
+    "//base/third_party/dynamic_annotations",
+    "//cc",
+    "//content/public/browser",
+    "//net",
+    "//skia",
+    "//third_party/icu",
+    "//ui/accessibility",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/compositor",
+    "//ui/events",
+    "//ui/events:events_base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/keyboard",
+    "//ui/resources",
+    "//ui/strings",
+    "//ui/web_dialogs",
+    "//ui/wm",
+    "//url",
+    #'../components/components.gyp:user_manager',  TODO(GYP)
+    #'../media/media.gyp:media',  TODO(GYP)
+    #"//ui/app_list",  TODO(GYP)
+    #'../ui/message_center/message_center.gyp:message_center',  TODO(GYP)
+    #'../ui/views/controls/webview/webview.gyp:webview',  TODO(GYP)
+    #'../ui/views/views.gyp:views'  TODO(GYP),
+  ]
+
+  forward_dependent_configs_from = [
+    "//ash/resources",
+    "//ash/strings",
+  ]
+
+  if (is_win) {
+    sources -= [
+      "host/window_tree_host_factory.cc",
+      "sticky_keys/sticky_keys_controller.cc",
+      "sticky_keys/sticky_keys_controller.h",
+    ]
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    cflags = [ "/wd4267" ]
+  }
+
+  if (use_x11) {
+    configs += [
+      "//build/config/linux:xfixes",
+    ]
+  } else {
+    sources -= [
+      "accelerators/key_hold_detector.cc",
+      "accelerators/key_hold_detector.h",
+      "accelerators/magnifier_key_scroller.cc",
+      "accelerators/magnifier_key_scroller.h",
+      "accelerators/spoken_feedback_toggler.cc",
+      "accelerators/spoken_feedback_toggler.h",
+      "touch/touch_transformer_controller.cc",
+      "touch/touch_transformer_controller.h",
+    ]
+  }
+
+  if (is_chromeos) {
+    deps += [
+      #'../chromeos/chromeos.gyp:chromeos',  TODO(GYP)
+      # Ash #includes power_supply_properties.pb.h directly.
+      #'../chromeos/chromeos.gyp:power_manager_proto',  TODO(GYP)
+      #'../device/bluetooth/bluetooth.gyp:device_bluetooth',  TODO(GYP)
+      #'../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',  TODO(GYP)
+      #'../ui/chromeos/ui_chromeos.gyp:ui_chromeos_strings',  TODO(GYP)
+      #'../ui/chromeos/ui_chromeos.gyp:ui_chromeos',  TODO(GYP)
+      #'../ui/display/display.gyp:display',  TODO(GYP)
+      #'../ui/display/display.gyp:display_util',  TODO(GYP)
+    ]
+  } else {
+    sources -= [
+      "display/display_configurator_animation.cc",
+      "display/display_configurator_animation.h",
+      "display/resolution_notification_controller.cc",
+      "display/resolution_notification_controller.h",
+      "system/tray/media_security/media_capture_observer.h",
+      "system/tray/media_security/multi_profile_media_tray_item.cc",
+      "system/tray/media_security/multi_profile_media_tray_item.h",
+      "touch/touch_transformer_controller.cc",
+      "touch/touch_transformer_controller.h",
+    ]
+  }
+}
+
+component("ash_with_content") {
+  sources = [
+    "content_support/ash_with_content_export.h",
+    "content_support/gpu_support_impl.cc",
+    "content_support/gpu_support_impl.h",
+    "screensaver/screensaver_view.cc",
+    "screensaver/screensaver_view.h",
+    "keyboard_overlay/keyboard_overlay_delegate.cc",
+    "keyboard_overlay/keyboard_overlay_delegate.h",
+    "keyboard_overlay/keyboard_overlay_view.cc",
+    "keyboard_overlay/keyboard_overlay_view.h",
+  ]
+
+  defines = [ "ASH_WITH_CONTENT_IMPLEMENTATION" ]
+
+  deps = [
+    ":ash",
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    "//content/public/browser",
+    "//ipc",
+    "//skia",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/compositor",
+    "//ui/events",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/resources",
+    "//ui/strings",
+    "//ui/web_dialogs",
+    "//url",
+    #'../ui/views/controls/webview/webview.gyp:webview',  TODO(GYP)
+    #'../ui/views/views.gyp:views',  TODO(GYP)
+  ]
+
+  forward_dependent_configs_from = [
+    ":ash",
   ]
 }
+
+static_library("test_support") {
+  sources = gypi_values.ash_test_support_sources
+
+  deps = [
+    ":ash",
+    "//ash/resources",
+    "//skia",
+    "//testing/gtest",
+    "//ui/accessibility",
+    #"//ui/app_list",  TODO(GYP)
+    #"//ui/views",  TODO(GYP)
+  ]
+
+  if (is_win) {
+    sources += [
+      "test/test_metro_viewer_process_host.cc",
+      "test/test_metro_viewer_process_host.h",
+    ]
+    deps += [
+      "//ipc",
+      #'../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages',  TODO(GYP)
+      #'../win8/win8.gyp:metro_viewer',  TODO(GYP)
+      #'../win8/win8.gyp:test_support_win8',  TODO(GYP)
+      #'../win8/win8_tests.gyp:test_registrar',  TODO(GYP)
+    ]
+  }
+}
+
+static_library("ash_shell_lib") {
+  sources = gypi_values.ash_shell_lib_sources
+
+  deps = [
+    ":ash",
+    ":ash_with_content",
+    ":test_support",
+    "//ash/resources",
+    "//ash/strings",
+    "//base",
+    "//base:i18n",
+    #"//chrome:packed_resources",  TODO(GYP)
+    "//content",
+    "//skia",
+    "//third_party/icu",
+    #"//ui/app_list",  TODO(GYP)
+    "//ui/aura",
+    "//ui/base",
+    "//ui/compositor",
+    "//ui/events",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/keyboard",
+    #"//ui/message_center",  TODO(GYP)
+    "//ui/resources",
+    #'../content/content_shell_and_tests.gyp:content_shell_lib',  TODO(GYP)
+    #'../ui/views/examples/examples.gyp:views_examples_lib',  TODO(GYP)
+    #'../ui/views/examples/examples.gyp:views_examples_with_content_lib',  TODO(GYP)
+    #'../ui/views/views.gyp:views',  TODO(GYP)
+    #'../ui/views/views.gyp:views_test_support',  TODO(GYP)
+  ]
+}
+
+if (false) {  # TODO(GYP) enable ash shell and unit tests when they link.
+
+test("ash_unittests") {
+  sources = gypi_values.ash_unittests_sources
+
+  deps = [
+    ":ash",
+    ":ash_with_content",
+    ":test_support",
+    "//ash/resources",
+    "//ash/strings",
+    "//base",
+    "//base/allocator",
+    "//base/test:test_support",
+    "//content/public/browser",
+    "//skia",
+    "//testing/gtest",
+    "//third_party/icu",
+    "//ui/accessibility",
+    "//ui/aura",
+    "//ui/aura:test_support",
+    "//ui/base",
+    "//ui/base:test_support",
+    "//ui/compositor",
+    "//ui/compositor:test_support",
+    "//ui/events",
+    "//ui/events:test_support",
+    "//ui/events:gesture_detection",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/keyboard",
+    "//ui/resources",
+    "//ui/web_dialogs",
+    "//ui/wm",
+    "//url",
+    #'../components/components.gyp:user_manager',  TODO(GYP)
+    #'../content/content_shell_and_tests.gyp:test_support_content',  TODO(GYP)
+    #'../ui/message_center/message_center.gyp:message_center',  TODO(GYP)
+    #'../ui/message_center/message_center.gyp:message_center_test_support',  TODO(GYP)
+    #'../ui/views/controls/webview/webview_tests.gyp:webview_test_support',  TODO(GYP)
+    #'../ui/views/views.gyp:views',  TODO(GYP)
+    #'../ui/views/views.gyp:views_test_support',  TODO(GYP)
+  ]
+
+  if (!is_chromeos) {
+    sources -= [
+      # TODO(zork): fix this test to build on Windows. See: crosbug.com/26906
+      "focus_cycler_unittest.cc",
+      # All tests for multiple displays: not supported on Windows Ash.
+      "accelerators/nested_dispatcher_controller_unittest.cc",
+      "wm/drag_window_resizer_unittest.cc",
+      # Can't resize on Windows Ash. http://crbug.com/165962
+      "ash_root_window_transformer_unittest.cc",
+      "magnifier/magnification_controller_unittest.cc",
+      "wm/workspace/workspace_window_resizer_unittest.cc",
+      "sticky_keys/sticky_keys_overlay_unittest.cc",
+      "sticky_keys/sticky_keys_unittest.cc",
+      "system/tray/media_security/multi_profile_media_tray_item_unittest.cc",
+      "autoclick/autoclick_unittest.cc",
+    ]
+    source += [
+      #'<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_unscaled_resources.rc',  TODO(GYP)
+    ]
+  }
+
+  if (is_win) {
+    cflags = [ "/wd4267" ]
+  }
+
+  if (!use_x11) {
+    sources -= [
+      "accelerators/magnifier_key_scroller_unittest.cc",
+      "accelerators/spoken_feedback_toggler_unittest.cc",
+      "touch/touch_transformer_controller_unittest.cc",
+    ]
+  }
+  if (is_chromeos) {
+    sources += [ "first_run/first_run_helper_unittest.cc" ]
+    deps += [
+      #'../chromeos/chromeos.gyp:chromeos_test_support_without_gmock',  TODO(GYP)
+      #'../chromeos/chromeos.gyp:power_manager_proto',  TODO(GYP)
+      #'../device/bluetooth/bluetooth.gyp:device_bluetooth',  TODO(GYP)
+      #'../ui/display/display.gyp:display',  TODO(GYP)
+      #'../ui/display/display.gyp:display_test_util',  TODO(GYP)
+      #'../ui/display/display.gyp:display_types',  TODO(GYP)
+    ]
+  } else {
+    sources -= [
+      "display/resolution_notification_controller_unittest.cc",
+      "touch/touch_transformer_controller_unittest.cc",
+    ]
+  }
+
+  # TODO(GYP) is this necessary?
+  #['OS=="linux" and component=="shared_library" and use_allocator!="none"', {
+  # ldflags = "-rdynamic"
+
+  if (use_ozone) {
+    sources -= [
+      "sticky_keys/sticky_keys_unittest.cc",  # crbug.com/354035
+    ]
+  }
+}
+
+executable("ash_shell") {
+  sources = [
+    "shell/shell_main.cc",
+  ]
+
+  deps = [
+    ":ash_shell_lib",
+    #'../components/components.gyp:user_manager',  TODO(GYP)
+  ]
+
+  if (is_win) {
+    configs -= [ "//build/config/win:console" ]
+    configs += [ "//build/config/win:windowed" ]
+    deps += [
+      "//sandbox",
+    ]
+  }
+
+  if (is_chromeos) {
+    deps += [
+      "../device/bluetooth/bluetooth.gyp:device_bluetooth",
+    ]
+  }
+}
+
+test("ash_shell_unittests") {
+  sources = [
+    "shell/window_watcher_unittest.cc",
+    "test/ash_unittests.cc",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//skia",
+    "//testing/gtest",
+    "//ui/aaccessibility",
+    #'../components/components.gyp:user_manager',  TODO(GYP)
+    #'../content/content_shell_and_tests.gyp:test_support_content',  TODO(GYP)
+  ]
+
+  if (is_chromeos) {
+    #deps += [ "//ui/display" ]  TODO(GYP)
+  }
+}
+
+}  # if false
