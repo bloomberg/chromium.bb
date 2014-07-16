@@ -1,4 +1,3 @@
-H C EC: Using pointer equality to compare a JavaBridgeCoercionTest$CustomType with a JavaBridgeCoercionTest$CustomType2 in org.chromium.content.browser.JavaBridgeCoercionTest.testPassJavaObject()  At JavaBridgeCoercionTest.java
 M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At JavaBridgeArrayCoercionTest.java
 M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At JavaBridgeArrayTest.java
 M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At JavaBridgeBasicsTest.java

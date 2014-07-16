@@ -8,7 +8,6 @@
 #include "base/android/jni_string.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
-#include "base/strings/string_util.h"  // For ReplaceSubstringsAfterOffset
 #include "content/browser/android/java/jni_helper.h"
 
 using base::android::AttachCurrentThread;
@@ -50,43 +49,11 @@ struct ModifierClassTraits :
 base::LazyInstance<ScopedJavaGlobalRef<jclass>, ModifierClassTraits>
     g_java_lang_reflect_modifier_class = LAZY_INSTANCE_INITIALIZER;
 
-std::string BinaryNameToJNIName(const std::string& binary_name,
-                                JavaType* type) {
+std::string BinaryNameToJNISignature(const std::string& binary_name,
+                                     JavaType* type) {
   DCHECK(type);
   *type = JavaType::CreateFromBinaryName(binary_name);
-  switch (type->type) {
-    case JavaType::TypeBoolean:
-      return "Z";
-    case JavaType::TypeByte:
-      return "B";
-    case JavaType::TypeChar:
-      return "C";
-    case JavaType::TypeShort:
-      return "S";
-    case JavaType::TypeInt:
-      return "I";
-    case JavaType::TypeLong:
-      return "J";
-    case JavaType::TypeFloat:
-      return "F";
-    case JavaType::TypeDouble:
-      return "D";
-    case JavaType::TypeVoid:
-      return "V";
-    case JavaType::TypeArray: {
-      // For array types, the binary name uses the JNI name encodings.
-      std::string jni_name = binary_name;
-      ReplaceSubstringsAfterOffset(&jni_name, 0, ".", "/");
-      return jni_name;
-    }
-    case JavaType::TypeString:
-    case JavaType::TypeObject:
-      std::string jni_name = "L" + binary_name + ";";
-      ReplaceSubstringsAfterOffset(&jni_name, 0, ".", "/");
-      return jni_name;
-  }
-  NOTREACHED();
-  return std::string();
+  return type->JNISignature();
 }
 
 }  // namespace
@@ -191,7 +158,7 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
             kGetName,
             kReturningJavaLangString))));
     std::string name_utf8 = ConvertJavaStringToUTF8(name);
-    signature += BinaryNameToJNIName(name_utf8, &parameter_types_[i]);
+    signature += BinaryNameToJNISignature(name_utf8, &parameter_types_[i]);
   }
   signature += ")";
 
@@ -208,8 +175,8 @@ void JavaMethod::EnsureTypesAndIDAreSetUp() const {
           kJavaLangClass,
           kGetName,
           kReturningJavaLangString))));
-  signature += BinaryNameToJNIName(ConvertJavaStringToUTF8(name),
-                                   &return_type_);
+  signature += BinaryNameToJNISignature(ConvertJavaStringToUTF8(name),
+                                        &return_type_);
 
   // Determine whether the method is static.
   jint modifiers = env->CallIntMethod(

@@ -16,6 +16,7 @@ enum GinJavaBridgeError {
   kGinJavaBridgeMethodNotFound,
   kGinJavaBridgeAccessToObjectGetClassIsBlocked,
   kGinJavaBridgeJavaExceptionRaised,
+  kGinJavaBridgeNonAssignableTypes,
 };
 
 CONTENT_EXPORT const char* GinJavaBridgeErrorToString(GinJavaBridgeError error);

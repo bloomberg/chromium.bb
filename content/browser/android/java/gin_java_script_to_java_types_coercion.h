@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "content/browser/android/java/gin_java_bound_object.h"
 #include "content/browser/android/java/java_type.h"
+#include "content/common/android/gin_java_bridge_errors.h"
 
 namespace content {
 
@@ -22,7 +23,8 @@ jvalue CoerceJavaScriptValueToJavaValue(
     const base::Value* value,
     const JavaType& target_type,
     bool coerce_to_string,
-    const ObjectRefs& object_refs);
+    const ObjectRefs& object_refs,
+    GinJavaBridgeError* error);
 
 void ReleaseJavaValueIfRequired(JNIEnv* env,
                                 jvalue* value,

@@ -14,6 +14,8 @@
 #include "content/common/android/gin_java_bridge_value.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
+using base::android::ScopedJavaLocalRef;
+
 namespace content {
 
 namespace {
@@ -67,7 +69,8 @@ jint RoundDoubleToInt(const double& x) {
 jvalue CoerceJavaScriptIntegerToJavaValue(JNIEnv* env,
                                           const base::Value* value,
                                           const JavaType& target_type,
-                                          bool coerce_to_string) {
+                                          bool coerce_to_string,
+                                          GinJavaBridgeError* error) {
   // See http://jdk6.java.net/plugin2/liveconnect/#JS_NUMBER_VALUES.
 
   // For conversion to numeric types, we need to replicate Java's type
@@ -130,7 +133,8 @@ jvalue CoerceJavaScriptIntegerToJavaValue(JNIEnv* env,
 jvalue CoerceJavaScriptDoubleToJavaValue(JNIEnv* env,
                                          double double_value,
                                          const JavaType& target_type,
-                                         bool coerce_to_string) {
+                                         bool coerce_to_string,
+                                         GinJavaBridgeError* error) {
   // See http://jdk6.java.net/plugin2/liveconnect/#JS_NUMBER_VALUES.
   // For conversion to numeric types, we need to replicate Java's type
   // conversion rules.
@@ -192,7 +196,8 @@ jvalue CoerceJavaScriptDoubleToJavaValue(JNIEnv* env,
 jvalue CoerceJavaScriptBooleanToJavaValue(JNIEnv* env,
                                           const base::Value* value,
                                           const JavaType& target_type,
-                                          bool coerce_to_string) {
+                                          bool coerce_to_string,
+                                          GinJavaBridgeError* error) {
   // See http://jdk6.java.net/plugin2/liveconnect/#JS_BOOLEAN_VALUES.
   bool boolean_value;
   value->GetAsBoolean(&boolean_value);
@@ -239,7 +244,8 @@ jvalue CoerceJavaScriptBooleanToJavaValue(JNIEnv* env,
 
 jvalue CoerceJavaScriptStringToJavaValue(JNIEnv* env,
                                          const base::Value* value,
-                                         const JavaType& target_type) {
+                                         const JavaType& target_type,
+                                         GinJavaBridgeError* error) {
   // See http://jdk6.java.net/plugin2/liveconnect/#JS_STRING_VALUES.
   jvalue result;
   switch (target_type.type) {
@@ -309,7 +315,7 @@ jobject CreateJavaArray(JNIEnv* env, const JavaType& type, jsize length) {
     case JavaType::TypeDouble:
       return env->NewDoubleArray(length);
     case JavaType::TypeString: {
-      base::android::ScopedJavaLocalRef<jclass> clazz(
+      ScopedJavaLocalRef<jclass> clazz(
           base::android::GetClass(env, kJavaLangString));
       return env->NewObjectArray(length, clazz.obj(), NULL);
     }
@@ -382,7 +388,8 @@ void SetArrayElement(JNIEnv* env,
 jvalue CoerceJavaScriptNullOrUndefinedToJavaValue(JNIEnv* env,
                                                   const base::Value* value,
                                                   const JavaType& target_type,
-                                                  bool coerce_to_string) {
+                                                  bool coerce_to_string,
+                                                  GinJavaBridgeError* error) {
   bool is_undefined = false;
   scoped_ptr<const GinJavaBridgeValue> gin_value;
   if (GinJavaBridgeValue::ContainsGinJavaBridgeValue(value)) {
@@ -433,7 +440,8 @@ jvalue CoerceJavaScriptNullOrUndefinedToJavaValue(JNIEnv* env,
 jobject CoerceJavaScriptListToArray(JNIEnv* env,
                                     const base::Value* value,
                                     const JavaType& target_type,
-                                    const ObjectRefs& object_refs) {
+                                    const ObjectRefs& object_refs,
+                                    GinJavaBridgeError* error) {
   DCHECK_EQ(JavaType::TypeArray, target_type.type);
   const JavaType& target_inner_type = *target_type.inner_type.get();
   // LIVECONNECT_COMPLIANCE: Existing behavior is to return null for
@@ -461,7 +469,7 @@ jobject CoerceJavaScriptListToArray(JNIEnv* env,
     const base::Value* value_element = null_value.get();
     list_value->Get(i, &value_element);
     jvalue element = CoerceJavaScriptValueToJavaValue(
-        env, value_element, target_inner_type, false, object_refs);
+        env, value_element, target_inner_type, false, object_refs, error);
     SetArrayElement(env, result, target_inner_type, i, element);
     // CoerceJavaScriptValueToJavaValue() creates new local references to
     // strings, objects and arrays. Of these, only strings can occur here.
@@ -478,7 +486,8 @@ jobject CoerceJavaScriptListToArray(JNIEnv* env,
 jobject CoerceJavaScriptDictionaryToArray(JNIEnv* env,
                                           const base::Value* value,
                                           const JavaType& target_type,
-                                          const ObjectRefs& object_refs) {
+                                          const ObjectRefs& object_refs,
+                                          GinJavaBridgeError* error) {
   DCHECK_EQ(JavaType::TypeArray, target_type.type);
 
   const JavaType& target_inner_type = *target_type.inner_type.get();
@@ -534,7 +543,7 @@ jobject CoerceJavaScriptDictionaryToArray(JNIEnv* env,
       dictionary_value->Get(key, &value_element);
     }
     jvalue element = CoerceJavaScriptValueToJavaValue(
-        env, value_element, target_inner_type, false, object_refs);
+        env, value_element, target_inner_type, false, object_refs, error);
     SetArrayElement(env, result, target_inner_type, i, element);
     // CoerceJavaScriptValueToJavaValue() creates new local references to
     // strings, objects and arrays. Of these, only strings can occur here.
@@ -548,11 +557,29 @@ jobject CoerceJavaScriptDictionaryToArray(JNIEnv* env,
   return result;
 }
 
+// Returns 'true' if it is possible to cast an object of class |src| to
+// an object of class |dst|.
+bool CanAssignClassVariables(JNIEnv* env,
+                             const ScopedJavaLocalRef<jclass>& dst,
+                             const ScopedJavaLocalRef<jclass>& src) {
+  if (dst.is_null() || src.is_null())
+    return false;
+  return env->IsAssignableFrom(src.obj(), dst.obj()) == JNI_TRUE;
+}
+
+ScopedJavaLocalRef<jclass> GetObjectClass(
+    JNIEnv* env,
+    const ScopedJavaLocalRef<jobject>& obj) {
+  jclass clazz = env->GetObjectClass(obj.obj());
+  return ScopedJavaLocalRef<jclass>(env, clazz);
+}
+
 jvalue CoerceJavaScriptObjectToJavaValue(JNIEnv* env,
                                          const base::Value* value,
                                          const JavaType& target_type,
                                          bool coerce_to_string,
-                                         const ObjectRefs& object_refs) {
+                                         const ObjectRefs& object_refs,
+                                         GinJavaBridgeError* error) {
   // This covers both JavaScript objects (including arrays) and Java objects.
   // See http://jdk6.java.net/plugin2/liveconnect/#JS_OTHER_OBJECTS,
   // http://jdk6.java.net/plugin2/liveconnect/#JS_ARRAY_VALUES and
@@ -565,7 +592,7 @@ jvalue CoerceJavaScriptObjectToJavaValue(JNIEnv* env,
             GinJavaBridgeValue::FromValue(value));
         DCHECK(gin_value);
         DCHECK(gin_value->IsType(GinJavaBridgeValue::TYPE_OBJECT_ID));
-        base::android::ScopedJavaLocalRef<jobject> obj;
+        ScopedJavaLocalRef<jobject> obj;
         GinJavaBoundObject::ObjectID object_id;
         if (gin_value->GetAsObjectID(&object_id)) {
           ObjectRefs::const_iterator iter = object_refs.find(object_id);
@@ -573,7 +600,17 @@ jvalue CoerceJavaScriptObjectToJavaValue(JNIEnv* env,
             obj.Reset(iter->second.get(env));
           }
         }
-        result.l = obj.Release();
+        DCHECK(!target_type.class_jni_name.empty());
+        DCHECK(!obj.is_null());
+        if (CanAssignClassVariables(
+                env,
+                base::android::GetClass(env, target_type.JNIName().c_str()),
+                GetObjectClass(env, obj))) {
+          result.l = obj.Release();
+        } else {
+          result.l = NULL;
+          *error = kGinJavaBridgeNonAssignableTypes;
+        }
       } else {
         // LIVECONNECT_COMPLIANCE: Existing behavior is to pass null. Spec
         // requires converting if the target type is
@@ -610,10 +647,10 @@ jvalue CoerceJavaScriptObjectToJavaValue(JNIEnv* env,
     case JavaType::TypeArray:
       if (value->IsType(base::Value::TYPE_DICTIONARY)) {
         result.l = CoerceJavaScriptDictionaryToArray(
-            env, value, target_type, object_refs);
+            env, value, target_type, object_refs, error);
       } else if (value->IsType(base::Value::TYPE_LIST)) {
-        result.l =
-            CoerceJavaScriptListToArray(env, value, target_type, object_refs);
+        result.l = CoerceJavaScriptListToArray(
+            env, value, target_type, object_refs, error);
       } else {
         result.l = NULL;
       }
@@ -630,23 +667,24 @@ jvalue CoerceGinJavaBridgeValueToJavaValue(JNIEnv* env,
                                            const base::Value* value,
                                            const JavaType& target_type,
                                            bool coerce_to_string,
-                                           const ObjectRefs& object_refs) {
+                                           const ObjectRefs& object_refs,
+                                           GinJavaBridgeError* error) {
   DCHECK(GinJavaBridgeValue::ContainsGinJavaBridgeValue(value));
   scoped_ptr<const GinJavaBridgeValue> gin_value(
       GinJavaBridgeValue::FromValue(value));
   switch (gin_value->GetType()) {
     case GinJavaBridgeValue::TYPE_UNDEFINED:
       return CoerceJavaScriptNullOrUndefinedToJavaValue(
-          env, value, target_type, coerce_to_string);
+          env, value, target_type, coerce_to_string, error);
     case GinJavaBridgeValue::TYPE_NONFINITE: {
       float float_value;
       gin_value->GetAsNonFinite(&float_value);
       return CoerceJavaScriptDoubleToJavaValue(
-          env, float_value, target_type, coerce_to_string);
+          env, float_value, target_type, coerce_to_string, error);
     }
     case GinJavaBridgeValue::TYPE_OBJECT_ID:
       return CoerceJavaScriptObjectToJavaValue(
-          env, value, target_type, coerce_to_string, object_refs);
+          env, value, target_type, coerce_to_string, object_refs, error);
     default:
       NOTREACHED();
   }
@@ -670,35 +708,36 @@ jvalue CoerceJavaScriptValueToJavaValue(JNIEnv* env,
                                         const base::Value* value,
                                         const JavaType& target_type,
                                         bool coerce_to_string,
-                                        const ObjectRefs& object_refs) {
+                                        const ObjectRefs& object_refs,
+                                        GinJavaBridgeError* error) {
   // Note that in all these conversions, the relevant field of the jvalue must
   // always be explicitly set, as jvalue does not initialize its fields.
 
   switch (value->GetType()) {
     case base::Value::TYPE_INTEGER:
       return CoerceJavaScriptIntegerToJavaValue(
-          env, value, target_type, coerce_to_string);
+          env, value, target_type, coerce_to_string, error);
     case base::Value::TYPE_DOUBLE: {
       double double_value;
       value->GetAsDouble(&double_value);
       return CoerceJavaScriptDoubleToJavaValue(
-          env, double_value, target_type, coerce_to_string);
+          env, double_value, target_type, coerce_to_string, error);
     }
     case base::Value::TYPE_BOOLEAN:
       return CoerceJavaScriptBooleanToJavaValue(
-          env, value, target_type, coerce_to_string);
+          env, value, target_type, coerce_to_string, error);
     case base::Value::TYPE_STRING:
-      return CoerceJavaScriptStringToJavaValue(env, value, target_type);
+      return CoerceJavaScriptStringToJavaValue(env, value, target_type, error);
     case base::Value::TYPE_DICTIONARY:
     case base::Value::TYPE_LIST:
       return CoerceJavaScriptObjectToJavaValue(
-          env, value, target_type, coerce_to_string, object_refs);
+          env, value, target_type, coerce_to_string, object_refs, error);
     case base::Value::TYPE_NULL:
       return CoerceJavaScriptNullOrUndefinedToJavaValue(
-          env, value, target_type, coerce_to_string);
+          env, value, target_type, coerce_to_string, error);
     case base::Value::TYPE_BINARY:
       return CoerceGinJavaBridgeValueToJavaValue(
-          env, value, target_type, coerce_to_string, object_refs);
+          env, value, target_type, coerce_to_string, object_refs, error);
   }
   NOTREACHED();
   return jvalue();

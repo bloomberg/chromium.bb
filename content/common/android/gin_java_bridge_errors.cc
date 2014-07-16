@@ -22,6 +22,9 @@ const char* GinJavaBridgeErrorToString(GinJavaBridgeError error) {
       return "Access to java.lang.Object.getClass is blocked";
     case kGinJavaBridgeJavaExceptionRaised:
       return "Java exception was raised during method invocation";
+    case kGinJavaBridgeNonAssignableTypes:
+      return "The type of the object passed to the method is incompatible "
+          "with the type of method's argument";
   }
   NOTREACHED();
   return "Unknown error";

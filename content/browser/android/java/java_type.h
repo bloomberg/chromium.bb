@@ -8,12 +8,13 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
 // The type of a Java value. A light-weight enum-like structure intended for
 // use by value and in STL containers.
-struct JavaType {
+struct CONTENT_EXPORT JavaType {
   JavaType();
   JavaType(const JavaType& other);
   ~JavaType();
@@ -22,6 +23,11 @@ struct JavaType {
   // Java's reflection API represents types as a string using an extended
   // 'binary name'.
   static JavaType CreateFromBinaryName(const std::string& binary_name);
+
+  // JNIName is used with FindClass.
+  std::string JNIName() const;
+  // JNISignature is used for creating method signatures.
+  std::string JNISignature() const;
 
   enum Type {
     TypeBoolean,
@@ -43,6 +49,7 @@ struct JavaType {
 
   Type type;
   scoped_ptr<JavaType> inner_type;  // Used for TypeArray only.
+  std::string class_jni_name;  // Used for TypeString and TypeObject only.
 };
 
 }  // namespace content

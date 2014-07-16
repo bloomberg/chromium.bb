@@ -147,19 +147,29 @@ void GinJavaMethodInvocationHelper::Invoke() {
     return;
   }
 
+  GinJavaBridgeError coercion_error = kGinJavaBridgeNoError;
   std::vector<jvalue> parameters(method->num_parameters());
   for (size_t i = 0; i < method->num_parameters(); ++i) {
     const base::Value* argument;
     arguments_->Get(i, &argument);
-    parameters[i] = CoerceJavaScriptValueToJavaValue(
-        env, argument, method->parameter_type(i), true, object_refs_);
+    parameters[i] = CoerceJavaScriptValueToJavaValue(env,
+                                                     argument,
+                                                     method->parameter_type(i),
+                                                     true,
+                                                     object_refs_,
+                                                     &coercion_error);
   }
-  if (method->is_static()) {
-    InvokeMethod(
-        NULL, cls.obj(), method->return_type(), method->id(), &parameters[0]);
+
+  if (coercion_error == kGinJavaBridgeNoError) {
+    if (method->is_static()) {
+      InvokeMethod(
+          NULL, cls.obj(), method->return_type(), method->id(), &parameters[0]);
+    } else {
+      InvokeMethod(
+          obj.obj(), NULL, method->return_type(), method->id(), &parameters[0]);
+    }
   } else {
-    InvokeMethod(
-        obj.obj(), NULL, method->return_type(), method->id(), &parameters[0]);
+    SetInvocationError(coercion_error);
   }
 
   // Now that we're done with the jvalue, release any local references created
