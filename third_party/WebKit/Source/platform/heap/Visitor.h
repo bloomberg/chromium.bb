@@ -607,8 +607,18 @@ class DefaultTraceTrait<T, true> {
 public:
     static void mark(Visitor* visitor, const T* self)
     {
-        if (self)
-            self->adjustAndMark(visitor);
+        if (!self)
+            return;
+
+        // Before doing adjustAndMark we need to check if the page is orphaned
+        // since we cannot call adjustAndMark if so, as there will be no vtable.
+        // If orphaned just mark the page as traced.
+        BaseHeapPage* heapPage = pageHeaderFromObject(self);
+        if (heapPage->orphaned()) {
+            heapPage->setTracedAfterOrphaned();
+            return;
+        }
+        self->adjustAndMark(visitor);
     }
 
 #ifndef NDEBUG
