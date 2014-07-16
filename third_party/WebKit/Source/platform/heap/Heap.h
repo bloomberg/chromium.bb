@@ -2225,6 +2225,7 @@ template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldW
 struct CollectionBackingTraceTrait {
     static bool trace(Visitor* visitor, T&t)
     {
+        Visitor::verifyGarbageCollectedIfMember(reinterpret_cast<T*>(0));
         return WTF::TraceInCollectionTrait<weakHandlingFlag, strongify, T, Traits>::trace(visitor, t);
     }
 };

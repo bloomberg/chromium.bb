@@ -1414,6 +1414,7 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
 
 void CSSPrimitiveValue::traceAfterDispatch(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     switch (m_primitiveUnitType) {
     case CSS_COUNTER:
         visitor->trace(m_value.counter);
@@ -1436,6 +1437,7 @@ void CSSPrimitiveValue::traceAfterDispatch(Visitor* visitor)
     default:
         break;
     }
+#endif
     CSSValue::traceAfterDispatch(visitor);
 }
 

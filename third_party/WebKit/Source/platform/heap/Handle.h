@@ -71,6 +71,11 @@ struct IsGarbageCollectedMixin {
 
 template <typename T>
 struct IsGarbageCollectedType {
+    typedef char TrueType;
+    struct FalseType {
+        char dummy[2];
+    };
+
     typedef typename WTF::RemoveConst<T>::Type NonConstType;
     typedef WTF::IsSubclassOfTemplate<NonConstType, GarbageCollected> GarbageCollectedSubclass;
     typedef IsGarbageCollectedMixin<NonConstType> GarbageCollectedMixinSubclass;
@@ -82,6 +87,11 @@ struct IsGarbageCollectedType {
     typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapDeque> HeapDequeSubclass;
     typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapHashCountedSet> HeapHashCountedSetSubclass;
     typedef WTF::IsSubclassOfTemplate<NonConstType, HeapTerminatedArray> HeapTerminatedArraySubclass;
+
+    template<typename U, size_t inlineCapacity> static TrueType listHashSetNodeIsHeapAllocated(WTF::ListHashSetNode<U, HeapListHashSetAllocator<U, inlineCapacity> >*);
+    static FalseType listHashSetNodeIsHeapAllocated(...);
+    static const bool isHeapAllocatedListHashSetNode = sizeof(TrueType) == sizeof(listHashSetNodeIsHeapAllocated(reinterpret_cast<NonConstType*>(0)));
+
     static const bool value =
         GarbageCollectedSubclass::value
         || GarbageCollectedMixinSubclass::value
@@ -92,7 +102,8 @@ struct IsGarbageCollectedType {
         || HeapVectorSubclass::value
         || HeapDequeSubclass::value
         || HeapHashCountedSetSubclass::value
-        || HeapTerminatedArraySubclass::value;
+        || HeapTerminatedArraySubclass::value
+        || isHeapAllocatedListHashSetNode;
 };
 
 #define COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage) \

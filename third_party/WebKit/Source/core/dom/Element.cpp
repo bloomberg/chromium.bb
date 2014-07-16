@@ -3366,9 +3366,11 @@ bool Element::supportsStyleSharing() const
 
 void Element::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     if (hasRareData())
         visitor->trace(elementRareData());
     visitor->trace(m_elementData);
+#endif
     ContainerNode::trace(visitor);
 }
 

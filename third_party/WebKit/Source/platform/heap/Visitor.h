@@ -208,6 +208,17 @@ class PLATFORM_EXPORT Visitor {
 public:
     virtual ~Visitor() { }
 
+    template<typename T>
+    static void verifyGarbageCollectedIfMember(T*)
+    {
+    }
+
+    template<typename T>
+    static void verifyGarbageCollectedIfMember(Member<T>* t)
+    {
+        t->verifyTypeIsGarbageCollected();
+    }
+
     // One-argument templated mark method. This uses the static type of
     // the argument to get the TraceTrait. By default, the mark method
     // of the TraceTrait just calls the virtual two-argument mark method on this
@@ -221,13 +232,14 @@ public:
         TraceTrait<T>::checkGCInfo(this, t);
 #endif
         TraceTrait<T>::mark(this, t);
+
+        reinterpret_cast<const Member<T>*>(0)->verifyTypeIsGarbageCollected();
     }
 
     // Member version of the one-argument templated trace method.
     template<typename T>
     void trace(const Member<T>& t)
     {
-        t.verifyTypeIsGarbageCollected();
         mark(t.get());
     }
 
@@ -257,6 +269,7 @@ public:
         // Check that we actually know the definition of T when tracing.
         COMPILE_ASSERT(sizeof(T), WeNeedToKnowTheDefinitionOfTheTypeWeAreTracing);
         registerWeakCell(const_cast<WeakMember<T>&>(t).cell());
+        reinterpret_cast<const Member<T>*>(0)->verifyTypeIsGarbageCollected();
     }
 
     template<typename T>

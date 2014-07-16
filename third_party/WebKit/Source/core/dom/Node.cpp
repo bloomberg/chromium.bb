@@ -2525,12 +2525,14 @@ void Node::setCustomElementState(CustomElementState newState)
 
 void Node::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_parentOrShadowHostNode);
     visitor->trace(m_previous);
     visitor->trace(m_next);
     if (hasRareData())
         visitor->trace(rareData());
     visitor->trace(m_treeScope);
+#endif
     EventTarget::trace(visitor);
 }
 
