@@ -13,6 +13,10 @@
 
 class Profile;
 
+namespace base {
+class Time;
+}  // namespace base
+
 namespace net {
 class IOBuffer;
 }  // namespace net
@@ -22,11 +26,22 @@ namespace file_system_provider {
 
 class RequestManager;
 
-extern const char kFakeFileName[];
+// Path of a sample fake file, which is added to the fake file system by
+// default.
 extern const char kFakeFilePath[];
-extern const char kFakeFileText[];
-extern const size_t kFakeFileSize;
-extern const char kFakeFileModificationTime[];
+
+// Represents a file or a directory on a fake file system.
+struct FakeEntry {
+  FakeEntry() {}
+
+  FakeEntry(EntryMetadata& metadata, const std::string& contents)
+      : metadata(metadata), contents(contents) {}
+
+  virtual ~FakeEntry() {}
+
+  EntryMetadata metadata;
+  std::string contents;
+};
 
 // Fake provided file system implementation. Does not communicate with target
 // extensions. Used for unit tests.
@@ -35,6 +50,20 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   explicit FakeProvidedFileSystem(
       const ProvidedFileSystemInfo& file_system_info);
   virtual ~FakeProvidedFileSystem();
+
+  // Adds a fake entry to the fake file system.
+  void AddEntry(const base::FilePath& entry_path,
+                bool is_directory,
+                const std::string& name,
+                int64 size,
+                base::Time modification_time,
+                std::string mime_type,
+                std::string contents);
+
+  // Fetches a pointer to a fake entry registered in the fake file system. If
+  // found, then the result is written to |fake_entry| and true is returned.
+  // Otherwise, false is returned. |fake_entry| must not be NULL.
+  bool GetEntry(const base::FilePath& entry_path, FakeEntry* fake_entry) const;
 
   // ProvidedFileSystemInterface overrides.
   virtual void RequestUnmount(
@@ -77,9 +106,11 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
       const ProvidedFileSystemInfo& file_system_info);
 
  private:
+  typedef std::map<base::FilePath, FakeEntry> Entries;
   typedef std::map<int, base::FilePath> OpenedFilesMap;
 
   ProvidedFileSystemInfo file_system_info_;
+  Entries entries_;
   OpenedFilesMap opened_files_;
   int last_file_handle_;
 

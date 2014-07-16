@@ -101,6 +101,12 @@ class FileSystemProviderFileStreamReader : public testing::Test {
                                                  "Testing File System",
                                                  false /* writable */);
     ASSERT_TRUE(result);
+    FakeProvidedFileSystem* provided_file_system =
+        static_cast<FakeProvidedFileSystem*>(
+            service->GetProvidedFileSystem(kExtensionId, kFileSystemId));
+    DCHECK(provided_file_system);
+    ASSERT_TRUE(provided_file_system->GetEntry(
+        base::FilePath::FromUTF8Unsafe(kFakeFilePath), &fake_file_));
     const ProvidedFileSystemInfo& file_system_info =
         service->GetProvidedFileSystem(kExtensionId, kFileSystemId)
             ->GetFileSystemInfo();
@@ -113,9 +119,6 @@ class FileSystemProviderFileStreamReader : public testing::Test {
     wrong_file_url_ = CreateFileSystemURL(
         mount_point_name, base::FilePath::FromUTF8Unsafe("im-not-here.txt"));
     ASSERT_TRUE(wrong_file_url_.is_valid());
-
-    ASSERT_TRUE(base::Time::FromString(kFakeFileModificationTime,
-                                       &file_modification_time_));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -128,9 +131,9 @@ class FileSystemProviderFileStreamReader : public testing::Test {
   base::ScopedTempDir data_dir_;
   scoped_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;  // Owned by TestingProfileManager.
+  FakeEntry fake_file_;
   fileapi::FileSystemURL file_url_;
   fileapi::FileSystemURL wrong_file_url_;
-  base::Time file_modification_time_;
 };
 
 TEST_F(FileSystemProviderFileStreamReader, Read_AllAtOnce) {
@@ -138,35 +141,39 @@ TEST_F(FileSystemProviderFileStreamReader, Read_AllAtOnce) {
 
   const int64 initial_offset = 0;
   FileStreamReader reader(
-      NULL, file_url_, initial_offset, file_modification_time_);
-  scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(kFakeFileSize));
+      NULL, file_url_, initial_offset, fake_file_.metadata.modification_time);
+  scoped_refptr<net::IOBuffer> io_buffer(
+      new net::IOBuffer(fake_file_.metadata.size));
 
   const int result =
       reader.Read(io_buffer.get(),
-                  kFakeFileSize,
+                  fake_file_.metadata.size,
                   base::Bind(&EventLogger::OnRead, logger.GetWeakPtr()));
   EXPECT_EQ(net::ERR_IO_PENDING, result);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1u, logger.results().size());
   EXPECT_LT(0, logger.results()[0]);
-  EXPECT_EQ(kFakeFileSize, static_cast<size_t>(logger.results()[0]));
+  EXPECT_EQ(fake_file_.metadata.size, logger.results()[0]);
 
-  std::string buffer_as_string(io_buffer->data(), kFakeFileSize);
-  EXPECT_EQ(kFakeFileText, buffer_as_string);
+  std::string buffer_as_string(io_buffer->data(), fake_file_.metadata.size);
+  EXPECT_EQ(fake_file_.contents, buffer_as_string);
 }
 
 TEST_F(FileSystemProviderFileStreamReader, Read_WrongFile) {
   EventLogger logger;
 
   const int64 initial_offset = 0;
-  FileStreamReader reader(
-      NULL, wrong_file_url_, initial_offset, file_modification_time_);
-  scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(kFakeFileSize));
+  FileStreamReader reader(NULL,
+                          wrong_file_url_,
+                          initial_offset,
+                          fake_file_.metadata.modification_time);
+  scoped_refptr<net::IOBuffer> io_buffer(
+      new net::IOBuffer(fake_file_.metadata.size));
 
   const int result =
       reader.Read(io_buffer.get(),
-                  kFakeFileSize,
+                  fake_file_.metadata.size,
                   base::Bind(&EventLogger::OnRead, logger.GetWeakPtr()));
   EXPECT_EQ(net::ERR_IO_PENDING, result);
   base::RunLoop().RunUntilIdle();
@@ -180,9 +187,9 @@ TEST_F(FileSystemProviderFileStreamReader, Read_InChunks) {
 
   const int64 initial_offset = 0;
   FileStreamReader reader(
-      NULL, file_url_, initial_offset, file_modification_time_);
+      NULL, file_url_, initial_offset, fake_file_.metadata.modification_time);
 
-  for (size_t offset = 0; offset < kFakeFileSize; ++offset) {
+  for (int64 offset = 0; offset < fake_file_.metadata.size; ++offset) {
     scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(1));
     const int result =
         reader.Read(io_buffer.get(),
@@ -190,9 +197,9 @@ TEST_F(FileSystemProviderFileStreamReader, Read_InChunks) {
                     base::Bind(&EventLogger::OnRead, logger.GetWeakPtr()));
     EXPECT_EQ(net::ERR_IO_PENDING, result);
     base::RunLoop().RunUntilIdle();
-    ASSERT_EQ(offset + 1u, logger.results().size());
+    ASSERT_EQ(offset + 1, static_cast<int64>(logger.results().size()));
     EXPECT_EQ(1, logger.results()[offset]);
-    EXPECT_EQ(kFakeFileText[offset], io_buffer->data()[0]);
+    EXPECT_EQ(fake_file_.contents[offset], io_buffer->data()[0]);
   }
 }
 
@@ -201,12 +208,12 @@ TEST_F(FileSystemProviderFileStreamReader, Read_Slice) {
 
   // Trim first 3 and last 3 characters.
   const int64 initial_offset = 3;
-  const int length = static_cast<int>(kFakeFileSize) - initial_offset - 3;
-  ASSERT_GT(kFakeFileSize, static_cast<size_t>(initial_offset));
+  const int length = fake_file_.metadata.size - initial_offset - 3;
+  ASSERT_GT(fake_file_.metadata.size, initial_offset);
   ASSERT_LT(0, length);
 
   FileStreamReader reader(
-      NULL, file_url_, initial_offset, file_modification_time_);
+      NULL, file_url_, initial_offset, fake_file_.metadata.modification_time);
   scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(length));
 
   const int result =
@@ -220,7 +227,8 @@ TEST_F(FileSystemProviderFileStreamReader, Read_Slice) {
   EXPECT_EQ(length, logger.results()[0]);
 
   std::string buffer_as_string(io_buffer->data(), length);
-  std::string expected_buffer(kFakeFileText + initial_offset, length);
+  std::string expected_buffer(fake_file_.contents.data() + initial_offset,
+                              length);
   EXPECT_EQ(expected_buffer, buffer_as_string);
 }
 
@@ -229,10 +237,10 @@ TEST_F(FileSystemProviderFileStreamReader, Read_Beyond) {
 
   // Request reading 1KB more than available.
   const int64 initial_offset = 0;
-  const int length = static_cast<int>(kFakeFileSize) + 1024;
+  const int length = fake_file_.metadata.size + 1024;
 
   FileStreamReader reader(
-      NULL, file_url_, initial_offset, file_modification_time_);
+      NULL, file_url_, initial_offset, fake_file_.metadata.modification_time);
   scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(length));
 
   const int result =
@@ -244,10 +252,10 @@ TEST_F(FileSystemProviderFileStreamReader, Read_Beyond) {
 
   ASSERT_EQ(1u, logger.results().size());
   EXPECT_LT(0, logger.results()[0]);
-  EXPECT_EQ(kFakeFileSize, static_cast<size_t>(logger.results()[0]));
+  EXPECT_EQ(fake_file_.metadata.size, logger.results()[0]);
 
-  std::string buffer_as_string(io_buffer->data(), kFakeFileSize);
-  EXPECT_EQ(kFakeFileText, buffer_as_string);
+  std::string buffer_as_string(io_buffer->data(), fake_file_.metadata.size);
+  EXPECT_EQ(fake_file_.contents, buffer_as_string);
 }
 
 TEST_F(FileSystemProviderFileStreamReader, Read_ModifiedFile) {
@@ -256,10 +264,11 @@ TEST_F(FileSystemProviderFileStreamReader, Read_ModifiedFile) {
   const int64 initial_offset = 0;
   FileStreamReader reader(NULL, file_url_, initial_offset, base::Time::Max());
 
-  scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(kFakeFileSize));
+  scoped_refptr<net::IOBuffer> io_buffer(
+      new net::IOBuffer(fake_file_.metadata.size));
   const int result =
       reader.Read(io_buffer.get(),
-                  kFakeFileSize,
+                  fake_file_.metadata.size,
                   base::Bind(&EventLogger::OnRead, logger.GetWeakPtr()));
 
   EXPECT_EQ(net::ERR_IO_PENDING, result);
@@ -275,20 +284,21 @@ TEST_F(FileSystemProviderFileStreamReader, Read_ExpectedModificationTimeNull) {
   const int64 initial_offset = 0;
   FileStreamReader reader(NULL, file_url_, initial_offset, base::Time());
 
-  scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(kFakeFileSize));
+  scoped_refptr<net::IOBuffer> io_buffer(
+      new net::IOBuffer(fake_file_.metadata.size));
   const int result =
       reader.Read(io_buffer.get(),
-                  kFakeFileSize,
+                  fake_file_.metadata.size,
                   base::Bind(&EventLogger::OnRead, logger.GetWeakPtr()));
 
   EXPECT_EQ(net::ERR_IO_PENDING, result);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1u, logger.results().size());
-  EXPECT_EQ(kFakeFileSize, static_cast<size_t>(logger.results()[0]));
+  EXPECT_EQ(fake_file_.metadata.size, logger.results()[0]);
 
-  std::string buffer_as_string(io_buffer->data(), kFakeFileSize);
-  EXPECT_EQ(kFakeFileText, buffer_as_string);
+  std::string buffer_as_string(io_buffer->data(), fake_file_.metadata.size);
+  EXPECT_EQ(fake_file_.contents, buffer_as_string);
 }
 
 TEST_F(FileSystemProviderFileStreamReader, GetLength) {
@@ -296,7 +306,7 @@ TEST_F(FileSystemProviderFileStreamReader, GetLength) {
 
   const int64 initial_offset = 0;
   FileStreamReader reader(
-      NULL, file_url_, initial_offset, file_modification_time_);
+      NULL, file_url_, initial_offset, fake_file_.metadata.modification_time);
 
   const int result = reader.GetLength(
       base::Bind(&EventLogger::OnGetLength, logger.GetWeakPtr()));
@@ -305,15 +315,17 @@ TEST_F(FileSystemProviderFileStreamReader, GetLength) {
 
   ASSERT_EQ(1u, logger.results().size());
   EXPECT_LT(0, logger.results()[0]);
-  EXPECT_EQ(kFakeFileSize, static_cast<size_t>(logger.results()[0]));
+  EXPECT_EQ(fake_file_.metadata.size, logger.results()[0]);
 }
 
 TEST_F(FileSystemProviderFileStreamReader, GetLength_WrongFile) {
   EventLogger logger;
 
   const int64 initial_offset = 0;
-  FileStreamReader reader(
-      NULL, wrong_file_url_, initial_offset, file_modification_time_);
+  FileStreamReader reader(NULL,
+                          wrong_file_url_,
+                          initial_offset,
+                          fake_file_.metadata.modification_time);
 
   const int result = reader.GetLength(
       base::Bind(&EventLogger::OnGetLength, logger.GetWeakPtr()));
@@ -353,7 +365,7 @@ TEST_F(FileSystemProviderFileStreamReader,
 
   ASSERT_EQ(1u, logger.results().size());
   EXPECT_LT(0, logger.results()[0]);
-  EXPECT_EQ(kFakeFileSize, static_cast<size_t>(logger.results()[0]));
+  EXPECT_EQ(fake_file_.metadata.size, logger.results()[0]);
 }
 
 }  // namespace file_system_provider
