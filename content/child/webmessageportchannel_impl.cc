@@ -119,7 +119,8 @@ void WebMessagePortChannelImpl::postMessage(
     child_thread_loop_->PostTask(
         FROM_HERE,
         base::Bind(
-            &WebMessagePortChannelImpl::PostMessage, this, message, channels));
+            &WebMessagePortChannelImpl::PostMessage, this,
+            static_cast<base::string16>(message), channels));
   } else {
     PostMessage(message, channels);
   }
