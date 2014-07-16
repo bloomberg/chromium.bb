@@ -10,6 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
+#include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
@@ -28,11 +29,42 @@ namespace dom_distiller {
 
 namespace {
 
+// JS Themes. Must agree with useTheme() in dom_distiller_viewer.js.
+const char kDarkJsTheme[] = "dark";
+const char kLightJsTheme[] = "light";
+const char kSepiaJsTheme[] = "sepia";
+
+// CSS classes.  Must agree with classes in distilledpage.css.
+const char kDarkCssClass[] = "dark";
+const char kLightCssClass[] = "light";
+const char kSepiaCssClass[] = "sepia";
+
+// Maps themes to JS themes.
+const std::string GetJsTheme(DistilledPagePrefs::Theme theme) {
+  if (theme == DistilledPagePrefs::DARK) {
+    return kDarkJsTheme;
+  } else if (theme == DistilledPagePrefs::SEPIA) {
+    return kSepiaJsTheme;
+  }
+  return kLightJsTheme;
+}
+
+// Maps themes to CSS classes.
+const std::string GetCssClass(DistilledPagePrefs::Theme theme) {
+  if (theme == DistilledPagePrefs::DARK) {
+    return kDarkCssClass;
+  } else if (theme == DistilledPagePrefs::SEPIA) {
+    return kSepiaCssClass;
+  }
+  return kLightCssClass;
+}
+
 std::string ReplaceHtmlTemplateValues(
     const std::string& title,
     const std::string& content,
     const std::string& loading_indicator_class,
-    const std::string& original_url) {
+    const std::string& original_url,
+    const DistilledPagePrefs::Theme theme) {
   base::StringPiece html_template =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_DOM_DISTILLER_VIEWER_HTML);
@@ -40,7 +72,7 @@ std::string ReplaceHtmlTemplateValues(
   substitutions.push_back(title);                                         // $1
   substitutions.push_back(kViewerCssPath);                                // $2
   substitutions.push_back(kViewerJsPath);                                 // $3
-  substitutions.push_back(title);                                         // $4
+  substitutions.push_back(GetCssClass(theme));                            // $4
   substitutions.push_back(content);                                       // $5
   substitutions.push_back(loading_indicator_class);                       // $6
   substitutions.push_back(
@@ -76,7 +108,8 @@ const std::string GetToggleLoadingIndicatorJs(const bool is_last_page) {
 }
 
 const std::string GetUnsafePartialArticleHtml(
-    const DistilledPageProto* page_proto) {
+    const DistilledPageProto* page_proto,
+    const DistilledPagePrefs::Theme theme) {
   DCHECK(page_proto);
   std::string title = net::EscapeForHTML(page_proto->title());
   std::ostringstream unsafe_output_stream;
@@ -86,11 +119,13 @@ const std::string GetUnsafePartialArticleHtml(
   return ReplaceHtmlTemplateValues(title,
                                    unsafe_article_html,
                                    "visible",
-                                   original_url);
+                                   original_url,
+                                   theme);
 }
 
 const std::string GetUnsafeArticleHtml(
-    const DistilledArticleProto* article_proto) {
+    const DistilledArticleProto* article_proto,
+    const DistilledPagePrefs::Theme theme) {
   DCHECK(article_proto);
   std::string title;
   std::string unsafe_article_html;
@@ -116,21 +151,21 @@ const std::string GetUnsafeArticleHtml(
   return ReplaceHtmlTemplateValues(title,
                                    unsafe_article_html,
                                    "hidden",
-                                   original_url);
+                                   original_url,
+                                   theme);
 }
 
-const std::string GetErrorPageHtml() {
+const std::string GetErrorPageHtml(const DistilledPagePrefs::Theme theme) {
   std::string title = l10n_util::GetStringUTF8(
       IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_TITLE);
   std::string content = l10n_util::GetStringUTF8(
       IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_CONTENT);
-  return ReplaceHtmlTemplateValues(title, content, "hidden", "");
+  return ReplaceHtmlTemplateValues(title, content, "hidden", "", theme);
 }
 
 const std::string GetCss() {
-  return ResourceBundle::GetSharedInstance()
-      .GetRawDataResource(IDR_DISTILLER_CSS)
-      .as_string();
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_DISTILLER_CSS).as_string();
 }
 
 const std::string GetJavaScript() {
@@ -173,6 +208,10 @@ scoped_ptr<ViewerHandle> CreateViewRequest(
 
   // It is invalid to not specify a query param for |kEntryIdKey| or |kUrlKey|.
   return scoped_ptr<ViewerHandle>();
+}
+
+const std::string GetDistilledPageThemeJs(DistilledPagePrefs::Theme theme) {
+  return "useTheme('" + GetJsTheme(theme) + "');";
 }
 
 }  // namespace viewer

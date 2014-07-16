@@ -12,3 +12,17 @@ function showLoadingIndicator(isLastPage) {
   document.getElementById('loadingIndicator').className =
       isLastPage ? 'hidden' : 'visible';
 }
+
+// Maps JS theme to CSS class and then changes body class name.
+// CSS classes must agree with distilledpage.css.
+function useTheme(theme) {
+  var cssClass;
+  if (theme == "sepia") {
+    cssClass = "sepia";
+  } else if (theme == "dark") {
+    cssClass = "dark";
+  } else {
+    cssClass = "light";
+  }
+  document.body.className = cssClass;
+}

@@ -7,6 +7,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/distiller_page.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "content/public/browser/notification_source.h"
@@ -91,6 +92,10 @@ void LazyDomDistillerService::AddObserver(DomDistillerObserver* observer) {
 
 void LazyDomDistillerService::RemoveObserver(DomDistillerObserver* observer) {
   instance()->RemoveObserver(observer);
+}
+
+DistilledPagePrefs* LazyDomDistillerService::GetDistilledPagePrefs() {
+  return instance()->GetDistilledPagePrefs();
 }
 
 }  // namespace dom_distiller

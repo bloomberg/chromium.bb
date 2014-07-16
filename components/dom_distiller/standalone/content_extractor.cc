@@ -13,6 +13,7 @@
 #include "base/strings/string_split.h"
 #include "components/dom_distiller/content/distiller_page_web_contents.h"
 #include "components/dom_distiller/core/article_entry.h"
+#include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/distiller.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/dom_distiller_store.h"
@@ -21,6 +22,7 @@
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/leveldb_proto/proto_database_impl.h"
+#include "components/pref_registry/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/content_browser_test.h"
@@ -97,10 +99,17 @@ scoped_ptr<DomDistillerService> CreateDomDistillerService(
   scoped_ptr<DistillerFactory> distiller_factory(
       new DistillerFactoryImpl(distiller_url_fetcher_factory.Pass(), options));
 
+  // Setting up PrefService for DistilledPagePrefs.
+  user_prefs::TestingPrefServiceSyncable* pref_service =
+      new user_prefs::TestingPrefServiceSyncable();
+  DistilledPagePrefs::RegisterProfilePrefs(pref_service->registry());
+
   return scoped_ptr<DomDistillerService>(new DomDistillerService(
       dom_distiller_store.PassAs<DomDistillerStoreInterface>(),
       distiller_factory.Pass(),
-      distiller_page_factory.Pass()));
+      distiller_page_factory.Pass(),
+      scoped_ptr<DistilledPagePrefs>(
+          new DistilledPagePrefs(pref_service))));
 }
 
 void AddComponentsResources() {

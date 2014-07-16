@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/dom_distiller/core/article_entry.h"
+#include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_model.h"
 #include "components/dom_distiller/core/dom_distiller_store.h"
 #include "components/dom_distiller/core/dom_distiller_test_util.h"
@@ -89,7 +90,8 @@ class DomDistillerServiceTest : public testing::Test {
     service_.reset(new DomDistillerService(
         scoped_ptr<DomDistillerStoreInterface>(store_),
         scoped_ptr<DistillerFactory>(distiller_factory_),
-        scoped_ptr<DistillerPageFactory>(distiller_page_factory_)));
+        scoped_ptr<DistillerPageFactory>(distiller_page_factory_),
+        scoped_ptr<DistilledPagePrefs>()));
     fake_db->InitCallback(true);
     fake_db->LoadCallback(true);
   }

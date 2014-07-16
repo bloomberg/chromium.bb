@@ -30,6 +30,7 @@
       'type': 'static_library',
       'dependencies': [
         'pref_registry',
+        '../base/base.gyp:base_prefs_test_support',
       ],
       'include_dirs': [
         '..',

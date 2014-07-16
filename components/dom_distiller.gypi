@@ -60,6 +60,8 @@
             'dom_distiller/core/article_entry.h',
             'dom_distiller/core/distilled_content_store.cc',
             'dom_distiller/core/distilled_content_store.h',
+            'dom_distiller/core/distilled_page_prefs.cc',
+            'dom_distiller/core/distilled_page_prefs.h',
             'dom_distiller/core/distiller.cc',
             'dom_distiller/core/distiller.h',
             'dom_distiller/core/distiller_page.cc',

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DOM_DISTILLER_DOM_DISTILLER_SERVICE_FACTORY_H_
 
 #include "base/memory/singleton.h"
+#include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
@@ -23,7 +24,8 @@ class DomDistillerContextKeyedService : public KeyedService,
   DomDistillerContextKeyedService(
       scoped_ptr<DomDistillerStoreInterface> store,
       scoped_ptr<DistillerFactory> distiller_factory,
-      scoped_ptr<DistillerPageFactory> distiller_page_factory);
+      scoped_ptr<DistillerPageFactory> distiller_page_factory,
+      scoped_ptr<DistilledPagePrefs> distilled_page_prefs);
   virtual ~DomDistillerContextKeyedService() {}
 
  private:

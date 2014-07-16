@@ -5,6 +5,7 @@
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/dom_distiller/content/distiller_page_web_contents.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/distiller.h"
@@ -20,9 +21,13 @@ namespace dom_distiller {
 DomDistillerContextKeyedService::DomDistillerContextKeyedService(
     scoped_ptr<DomDistillerStoreInterface> store,
     scoped_ptr<DistillerFactory> distiller_factory,
-    scoped_ptr<DistillerPageFactory> distiller_page_factory)
-    : DomDistillerService(store.Pass(), distiller_factory.Pass(),
-                          distiller_page_factory.Pass()) {}
+    scoped_ptr<DistillerPageFactory> distiller_page_factory,
+    scoped_ptr<DistilledPagePrefs> distilled_page_prefs)
+    : DomDistillerService(store.Pass(),
+                          distiller_factory.Pass(),
+                          distiller_page_factory.Pass(),
+                          distilled_page_prefs.Pass()) {
+}
 
 // static
 DomDistillerServiceFactory* DomDistillerServiceFactory::GetInstance() {
@@ -72,11 +77,15 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
   }
   scoped_ptr<DistillerFactory> distiller_factory(
       new DistillerFactoryImpl(distiller_url_fetcher_factory.Pass(), options));
+  scoped_ptr<DistilledPagePrefs> distilled_page_prefs(
+      new DistilledPagePrefs(Profile::FromBrowserContext(profile)->GetPrefs()));
 
   DomDistillerContextKeyedService* service =
       new DomDistillerContextKeyedService(
           dom_distiller_store.PassAs<DomDistillerStoreInterface>(),
-          distiller_factory.Pass(), distiller_page_factory.Pass());
+          distiller_factory.Pass(),
+          distiller_page_factory.Pass(),
+          distilled_page_prefs.Pass());
 
   return service;
 }

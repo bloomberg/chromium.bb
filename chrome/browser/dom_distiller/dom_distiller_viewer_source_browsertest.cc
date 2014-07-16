@@ -18,6 +18,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/dom_distiller/content/dom_distiller_viewer_source.h"
 #include "components/dom_distiller/core/article_entry.h"
+#include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/distiller.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/dom_distiller_store.h"
@@ -56,6 +57,10 @@ const char kGetLoadIndicatorClassName[] =
 const char kGetContent[] =
     "window.domAutomationController.send("
         "document.getElementById('content').innerHTML)";
+
+const char kGetBodyClass[] =
+    "window.domAutomationController.send("
+        "document.body.className)";
 
 void AddEntry(const ArticleEntry& e, FakeDB<ArticleEntry>::EntryMap* map) {
   (*map)[e.entry_id()] = e;
@@ -99,7 +104,11 @@ class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
                 CreateStoreWithFakeDB(fake_db,
                                       FakeDB<ArticleEntry>::EntryMap())),
             scoped_ptr<DistillerFactory>(distiller_factory_),
-            scoped_ptr<DistillerPageFactory>(distiller_page_factory_));
+            scoped_ptr<DistillerPageFactory>(distiller_page_factory_),
+            scoped_ptr<DistilledPagePrefs>(
+                new DistilledPagePrefs(
+                      Profile::FromBrowserContext(
+                          context)->GetPrefs())));
     fake_db->InitCallback(true);
     fake_db->LoadCallback(true);
     if (expect_distillation_) {
@@ -319,6 +328,33 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
       contents, kGetContent , &result));
   EXPECT_THAT(result, HasSubstr("Page 1 content"));
   EXPECT_THAT(result, HasSubstr("Page 2 content"));
+}
+
+IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefChange) {
+  expect_distillation_ = true;
+  expect_distiller_page_ = true;
+  GURL view_url("http://www.example.com/1");
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  const GURL url = url_utils::GetDistillerViewUrlFromUrl(
+      chrome::kDomDistillerScheme, view_url);
+  ViewSingleDistilledPage(url, "text/html");
+  content::WaitForLoadStop(contents);
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      contents, kGetBodyClass, &result));
+  EXPECT_EQ("light", result);
+
+  // Getting DistilledPagePrefs instance.
+  DistilledPagePrefs* distilled_page_prefs =
+       DomDistillerServiceFactory::GetForBrowserContext(
+            browser()->profile())->GetDistilledPagePrefs();
+
+  distilled_page_prefs->SetTheme(DistilledPagePrefs::DARK);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      contents, kGetBodyClass, &result));
+  EXPECT_EQ("dark", result);
 }
 
 }  // namespace dom_distiller

@@ -54,6 +54,7 @@ class LazyDomDistillerService : public DomDistillerServiceInterface,
       scoped_ptr<SourcePageHandle> handle) OVERRIDE;
   virtual void AddObserver(DomDistillerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DomDistillerObserver* observer) OVERRIDE;
+  virtual DistilledPagePrefs* GetDistilledPagePrefs() OVERRIDE;
 
  private:
   // Accessor method for the backing service instance.

@@ -75,12 +75,30 @@ th {
 
 body,
 html {
-  color: #333;
   font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   line-height: 1.4;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+}
+
+/* Classes for light, dark and sepia themes.
+ * Must agree with classes returned by useTheme() in dom_distiller_viewer.js
+ * and with CSS class constants in viewer.cc */
+
+.light {
+  color: #333;
+  background-color: #FFF;
+}
+
+.dark {
+  color: #FFF;
+  background-color: #000;
+}
+
+.sepia {
+  color: #000;
+  background-color: rgb(203, 173, 141);
 }
 
 /* Define vertical rhythm (baseline grid of 4px). */
@@ -133,8 +151,14 @@ h6 {
   margin: 1.296rem 1.296rem auto;
 }
 
-a {
-  color: #222;
+/* Link colors for light, dark and sepia themes */
+
+a:link {
+  color: #55F;
+}
+
+a:visited {
+  color: #902290;
 }
 
 blockquote {
@@ -203,11 +227,25 @@ ul {
   margin-left: 1.296rem;
 }
 
-code,
-pre {
+.light code,
+.light pre,
+.sepia code,
+.sepia pre {
   background-color: #f8f8f8;
   border: 1px solid #eee;
   border-radius: 2px;
+}
+
+.dark code,
+.dark pre {
+  background-color: #333;
+  border: 1px solid #555;
+  border-radius: 2px;
+}
+
+code {
+  display: block;
+  padding: .4444rem;
 }
 
 pre code {

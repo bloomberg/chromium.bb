@@ -4,6 +4,7 @@
 
 #include "components/dom_distiller/core/viewer.h"
 
+#include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/dom_distiller_test_util.h"
 #include "components/dom_distiller/core/task_tracker.h"
@@ -66,6 +67,7 @@ class TestDomDistillerService : public DomDistillerServiceInterface {
       scoped_ptr<SourcePageHandle> handle) {
     return scoped_ptr<DistillerPage>();
   }
+  virtual DistilledPagePrefs* GetDistilledPagePrefs() OVERRIDE;
 };
 
 class DomDistillerViewerTest : public testing::Test {
@@ -127,6 +129,25 @@ TEST_F(DomDistillerViewerTest, TestCreatingInvalidViewRequest) {
   CreateViewRequest("?" + std::string(kUrlKey) + "=" +
                         std::string(kTestScheme) + "%3A%2F%2Fabc-def%2F",
                     view_request_delegate.get());
+}
+
+DistilledPagePrefs* TestDomDistillerService::GetDistilledPagePrefs() {
+  return NULL;
+}
+
+TEST_F(DomDistillerViewerTest, TestGetDistilledPageThemeJsOutput) {
+  std::string kDarkJs = "useTheme('dark');";
+  std::string kSepiaJs = "useTheme('sepia');";
+  std::string kLightJs = "useTheme('light');";
+  EXPECT_EQ(kDarkJs.compare(viewer::GetDistilledPageThemeJs(
+                DistilledPagePrefs::DARK)),
+            0);
+  EXPECT_EQ(kLightJs.compare(viewer::GetDistilledPageThemeJs(
+                DistilledPagePrefs::LIGHT)),
+            0);
+  EXPECT_EQ(kSepiaJs.compare(viewer::GetDistilledPageThemeJs(
+                DistilledPagePrefs::SEPIA)),
+            0);
 }
 
 }  // namespace dom_distiller

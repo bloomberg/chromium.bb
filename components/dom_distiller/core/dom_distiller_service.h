@@ -13,6 +13,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "components/dom_distiller/core/article_entry.h"
+#include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/distiller_page.h"
 
 class GURL;
@@ -90,6 +91,10 @@ class DomDistillerServiceInterface {
   virtual void AddObserver(DomDistillerObserver* observer) = 0;
   virtual void RemoveObserver(DomDistillerObserver* observer) = 0;
 
+  // Returns the DistilledPagePrefs owned by the instance of
+  // DomDistillerService.
+  virtual DistilledPagePrefs* GetDistilledPagePrefs() = 0;
+
  protected:
   DomDistillerServiceInterface() {}
 
@@ -102,7 +107,8 @@ class DomDistillerService : public DomDistillerServiceInterface {
  public:
   DomDistillerService(scoped_ptr<DomDistillerStoreInterface> store,
                       scoped_ptr<DistillerFactory> distiller_factory,
-                      scoped_ptr<DistillerPageFactory> distiller_page_factory);
+                      scoped_ptr<DistillerPageFactory> distiller_page_factory,
+                      scoped_ptr<DistilledPagePrefs> distilled_page_prefs);
   virtual ~DomDistillerService();
 
   // DomDistillerServiceInterface implementation.
@@ -127,6 +133,7 @@ class DomDistillerService : public DomDistillerServiceInterface {
       scoped_ptr<SourcePageHandle> handle) OVERRIDE;
   virtual void AddObserver(DomDistillerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DomDistillerObserver* observer) OVERRIDE;
+  virtual DistilledPagePrefs* GetDistilledPagePrefs() OVERRIDE;
 
  private:
   void CancelTask(TaskTracker* task);
@@ -148,6 +155,7 @@ class DomDistillerService : public DomDistillerServiceInterface {
   scoped_ptr<DistilledContentStore> content_store_;
   scoped_ptr<DistillerFactory> distiller_factory_;
   scoped_ptr<DistillerPageFactory> distiller_page_factory_;
+  scoped_ptr<DistilledPagePrefs> distilled_page_prefs_;
 
   typedef ScopedVector<TaskTracker> TaskList;
   TaskList tasks_;

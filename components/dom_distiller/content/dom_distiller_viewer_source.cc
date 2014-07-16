@@ -12,6 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/dom_distiller/core/distilled_page_prefs.h"
+#include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/viewer.h"
@@ -31,16 +33,18 @@ namespace dom_distiller {
 // the current main frame's page in the Viewer instance.
 class DomDistillerViewerSource::RequestViewerHandle
     : public ViewRequestDelegate,
-      public content::WebContentsObserver {
+      public content::WebContentsObserver,
+      public DistilledPagePrefs::Observer {
  public:
   explicit RequestViewerHandle(
       content::WebContents* web_contents,
       const std::string& expected_scheme,
       const std::string& expected_request_path,
-      const content::URLDataSource::GotDataCallback& callback);
+      const content::URLDataSource::GotDataCallback& callback,
+      DistilledPagePrefs* distilled_page_prefs);
   virtual ~RequestViewerHandle();
 
-  // ViewRequestDelegate implementation.
+  // ViewRequestDelegate implementation:
   virtual void OnArticleReady(
       const DistilledArticleProto* article_proto) OVERRIDE;
 
@@ -49,7 +53,7 @@ class DomDistillerViewerSource::RequestViewerHandle
 
   void TakeViewerHandle(scoped_ptr<ViewerHandle> viewer_handle);
 
-  // WebContentsObserver:
+  // content::WebContentsObserver implementation:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
@@ -68,6 +72,9 @@ class DomDistillerViewerSource::RequestViewerHandle
   // cancelled.
   void Cancel();
 
+  // DistilledPagePrefs::Observer implementation:
+  virtual void OnChangeTheme(DistilledPagePrefs::Theme new_theme) OVERRIDE;
+
   // The handle to the view request towards the DomDistillerService. It
   // needs to be kept around to ensure the distillation request finishes.
   scoped_ptr<ViewerHandle> viewer_handle_;
@@ -85,6 +92,9 @@ class DomDistillerViewerSource::RequestViewerHandle
   // the viewer.
   int page_count_;
 
+  // Interface for accessing preferences for distilled pages.
+  DistilledPagePrefs* distilled_page_prefs_;
+
   // Whether the page is sufficiently initialized to handle updates from the
   // distiller.
   bool waiting_for_page_ready_;
@@ -98,16 +108,20 @@ DomDistillerViewerSource::RequestViewerHandle::RequestViewerHandle(
     content::WebContents* web_contents,
     const std::string& expected_scheme,
     const std::string& expected_request_path,
-    const content::URLDataSource::GotDataCallback& callback)
+    const content::URLDataSource::GotDataCallback& callback,
+    DistilledPagePrefs* distilled_page_prefs)
     : expected_scheme_(expected_scheme),
       expected_request_path_(expected_request_path),
       callback_(callback),
       page_count_(0),
+      distilled_page_prefs_(distilled_page_prefs),
       waiting_for_page_ready_(true) {
   content::WebContentsObserver::Observe(web_contents);
+  distilled_page_prefs_->AddObserver(this);
 }
 
 DomDistillerViewerSource::RequestViewerHandle::~RequestViewerHandle() {
+  distilled_page_prefs_->RemoveObserver(this);
 }
 
 void DomDistillerViewerSource::RequestViewerHandle::SendJavaScript(
@@ -173,7 +187,8 @@ void DomDistillerViewerSource::RequestViewerHandle::OnArticleReady(
     const DistilledArticleProto* article_proto) {
   if (page_count_ == 0) {
     // This is a single-page article.
-    std::string unsafe_page_html = viewer::GetUnsafeArticleHtml(article_proto);
+    std::string unsafe_page_html = viewer::GetUnsafeArticleHtml(
+        article_proto, distilled_page_prefs_->GetTheme());
     callback_.Run(base::RefCountedString::TakeString(&unsafe_page_html));
   } else if (page_count_ == article_proto->pages_size()) {
     // We may still be showing the "Loading" indicator.
@@ -201,7 +216,8 @@ void DomDistillerViewerSource::RequestViewerHandle::OnArticleUpdated(
         article_update.GetDistilledPage(page_count_);
     if (page_count_ == 0) {
       // This is the first page, so send Viewer page scaffolding too.
-      std::string unsafe_page_html = viewer::GetUnsafePartialArticleHtml(&page);
+      std::string unsafe_page_html = viewer::GetUnsafePartialArticleHtml(
+          &page, distilled_page_prefs_->GetTheme());
       callback_.Run(base::RefCountedString::TakeString(&unsafe_page_html));
     } else {
       SendJavaScript(
@@ -213,6 +229,11 @@ void DomDistillerViewerSource::RequestViewerHandle::OnArticleUpdated(
 void DomDistillerViewerSource::RequestViewerHandle::TakeViewerHandle(
     scoped_ptr<ViewerHandle> viewer_handle) {
   viewer_handle_ = viewer_handle.Pass();
+}
+
+void DomDistillerViewerSource::RequestViewerHandle::OnChangeTheme(
+    DistilledPagePrefs::Theme new_theme) {
+  SendJavaScript(viewer::GetDistilledPageThemeJs(new_theme));
 }
 
 DomDistillerViewerSource::DomDistillerViewerSource(
@@ -261,7 +282,8 @@ void DomDistillerViewerSource::StartDataRequest(
   const std::string path_after_query_separator =
       path.size() > 0 ? path.substr(1) : "";
   RequestViewerHandle* request_viewer_handle = new RequestViewerHandle(
-      web_contents, scheme_, path_after_query_separator, callback);
+      web_contents, scheme_, path_after_query_separator, callback,
+      dom_distiller_service_->GetDistilledPagePrefs());
   scoped_ptr<ViewerHandle> viewer_handle = viewer::CreateViewRequest(
       dom_distiller_service_, path, request_viewer_handle);
 
@@ -276,7 +298,8 @@ void DomDistillerViewerSource::StartDataRequest(
     // |RequestViewerHandle| will never be called, so clean up now.
     delete request_viewer_handle;
 
-    std::string error_page_html = viewer::GetErrorPageHtml();
+    std::string error_page_html = viewer::GetErrorPageHtml(
+        dom_distiller_service_->GetDistilledPagePrefs()->GetTheme());
     callback.Run(base::RefCountedString::TakeString(&error_page_html));
   }
 };

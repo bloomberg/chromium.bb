@@ -39,11 +39,13 @@ void RunArticleAvailableCallback(
 DomDistillerService::DomDistillerService(
     scoped_ptr<DomDistillerStoreInterface> store,
     scoped_ptr<DistillerFactory> distiller_factory,
-    scoped_ptr<DistillerPageFactory> distiller_page_factory)
+    scoped_ptr<DistillerPageFactory> distiller_page_factory,
+    scoped_ptr<DistilledPagePrefs> distilled_page_prefs)
     : store_(store.Pass()),
       content_store_(new InMemoryContentStore(kDefaultMaxNumCachedEntries)),
       distiller_factory_(distiller_factory.Pass()),
-      distiller_page_factory_(distiller_page_factory.Pass()) {
+      distiller_page_factory_(distiller_page_factory.Pass()),
+      distilled_page_prefs_(distilled_page_prefs.Pass()) {
 }
 
 DomDistillerService::~DomDistillerService() {
@@ -237,6 +239,10 @@ void DomDistillerService::AddObserver(DomDistillerObserver* observer) {
 void DomDistillerService::RemoveObserver(DomDistillerObserver* observer) {
   DCHECK(observer);
   store_->RemoveObserver(observer);
+}
+
+DistilledPagePrefs* DomDistillerService::GetDistilledPagePrefs() {
+  return distilled_page_prefs_.get();
 }
 
 }  // namespace dom_distiller
