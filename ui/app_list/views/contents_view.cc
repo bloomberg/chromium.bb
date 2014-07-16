@@ -40,7 +40,8 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view)
       start_page_view_(NULL),
       app_list_main_view_(app_list_main_view),
       contents_switcher_view_(NULL),
-      view_model_(new views::ViewModel) {
+      view_model_(new views::ViewModel),
+      page_before_search_(0) {
   pagination_model_.AddObserver(this);
 }
 
@@ -77,6 +78,7 @@ void ContentsView::InitNamedPages(AppListModel* model,
   if (app_list::switches::IsExperimentalAppListEnabled())
     initial_page_index = GetPageIndexForNamedPage(NAMED_PAGE_START);
 
+  page_before_search_ = initial_page_index;
   pagination_model_.SelectPage(initial_page_index, false);
 
   // Needed to update the main search box visibility.
@@ -143,6 +145,8 @@ int ContentsView::NumLauncherPages() const {
 
 void ContentsView::SetActivePageInternal(int page_index,
                                          bool show_search_results) {
+  if (!show_search_results)
+    page_before_search_ = page_index;
   // Start animating to the new page.
   pagination_model_.SelectPage(page_index, true);
   ActivePageChanged(show_search_results);
@@ -169,11 +173,12 @@ void ContentsView::ActivePageChanged(bool show_search_results) {
 }
 
 void ContentsView::ShowSearchResults(bool show) {
-  NamedPage new_named_page = show ? NAMED_PAGE_SEARCH_RESULTS : NAMED_PAGE_APPS;
-  if (app_list::switches::IsExperimentalAppListEnabled())
-    new_named_page = NAMED_PAGE_START;
+  int search_page = GetPageIndexForNamedPage(
+      app_list::switches::IsExperimentalAppListEnabled()
+          ? NAMED_PAGE_START
+          : NAMED_PAGE_SEARCH_RESULTS);
 
-  SetActivePageInternal(GetPageIndexForNamedPage(new_named_page), show);
+  SetActivePageInternal(show ? search_page : page_before_search_, show);
 }
 
 bool ContentsView::IsShowingSearchResults() const {

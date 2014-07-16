@@ -443,7 +443,6 @@ void AppListViewTestContext::RunSearchResultsTest() {
   ContentsView* contents_view = main_view->contents_view();
   ShowContentsViewPageAndVerify(
       contents_view->GetPageIndexForNamedPage(ContentsView::NAMED_PAGE_APPS));
-  EXPECT_TRUE(IsViewAtOrigin(contents_view->apps_container_view()));
   EXPECT_TRUE(main_view->search_box_view()->visible());
 
   // Show the search results.
@@ -466,19 +465,16 @@ void AppListViewTestContext::RunSearchResultsTest() {
   contents_view->ShowSearchResults(false);
   contents_view->Layout();
   EXPECT_FALSE(contents_view->IsShowingSearchResults());
-  if (test_type_ == EXPERIMENTAL) {
-    EXPECT_TRUE(
-        contents_view->IsNamedPageActive(ContentsView::NAMED_PAGE_START));
-    EXPECT_TRUE(IsViewAtOrigin(contents_view->start_page_view()));
-    EXPECT_FALSE(main_view->search_box_view()->visible());
-  } else {
-    EXPECT_TRUE(
-        contents_view->IsNamedPageActive(ContentsView::NAMED_PAGE_APPS));
-    EXPECT_TRUE(IsViewAtOrigin(contents_view->apps_container_view()));
-    EXPECT_TRUE(main_view->search_box_view()->visible());
-  }
+
+  // Check that we return to the page that we were on before the search.
+  EXPECT_TRUE(contents_view->IsNamedPageActive(ContentsView::NAMED_PAGE_APPS));
+  EXPECT_TRUE(IsViewAtOrigin(contents_view->apps_container_view()));
+  EXPECT_TRUE(main_view->search_box_view()->visible());
 
   if (test_type_ == EXPERIMENTAL) {
+    ShowContentsViewPageAndVerify(contents_view->GetPageIndexForNamedPage(
+        ContentsView::NAMED_PAGE_START));
+
     // Check that typing into the dummy search box triggers the search page.
     base::string16 search_text = base::UTF8ToUTF16("test");
     SearchBoxView* dummy_search_box =
