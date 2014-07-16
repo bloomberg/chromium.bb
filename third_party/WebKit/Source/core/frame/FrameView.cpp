@@ -1019,7 +1019,7 @@ void FrameView::invalidateTreeIfNeeded()
 
     PaintInvalidationState rootPaintInvalidationState(*rootForPaintInvalidation);
 
-    rootForPaintInvalidation->invalidateTreeAfterLayout(rootPaintInvalidationState);
+    rootForPaintInvalidation->invalidateTreeIfNeeded(rootPaintInvalidationState);
 
     // Invalidate the paint of the frameviews scrollbars if needed
     if (hasVerticalBarDamage())

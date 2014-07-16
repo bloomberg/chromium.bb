@@ -2007,7 +2007,7 @@ void RenderBlockFlow::invalidatePaintForOverhangingFloats(bool paintAllDescendan
             && (floatingObject->shouldPaint() || (paintAllDescendants && floatingObject->renderer()->isDescendantOf(this)))) {
 
             RenderBox* floatingRenderer = floatingObject->renderer();
-            floatingRenderer->setShouldDoFullPaintInvalidationAfterLayout(true);
+            floatingRenderer->setShouldDoFullPaintInvalidation(true);
             floatingRenderer->invalidatePaintForOverhangingFloats(false);
         }
     }

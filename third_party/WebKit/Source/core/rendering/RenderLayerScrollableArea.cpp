@@ -402,7 +402,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
     // Just schedule a full repaint of our object.
     if (requiresRepaint) {
         if (box().frameView()->isInPerformLayout())
-            box().setShouldDoFullPaintInvalidationAfterLayout(true);
+            box().setShouldDoFullPaintInvalidation(true);
         else
             box().invalidatePaintUsingContainer(repaintContainer, layer()->renderer()->previousPaintInvalidationRect(), InvalidationScroll);
     }

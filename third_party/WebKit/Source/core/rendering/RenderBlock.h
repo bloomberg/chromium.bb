@@ -343,7 +343,7 @@ protected:
 
     virtual bool isInlineBlockOrInlineTable() const OVERRIDE FINAL { return isInline() && isReplaced(); }
 
-    virtual void invalidateTreeAfterLayout(const PaintInvalidationState&) OVERRIDE;
+    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) OVERRIDE;
 
 private:
     virtual RenderObjectChildList* virtualChildren() OVERRIDE FINAL { return children(); }

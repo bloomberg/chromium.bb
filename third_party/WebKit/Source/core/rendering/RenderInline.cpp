@@ -1560,12 +1560,12 @@ void RenderInline::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
     regions.append(region);
 }
 
-void RenderInline::invalidateTreeAfterLayout(const PaintInvalidationState& paintInvalidationState)
+void RenderInline::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     bool establishesNewPaintInvalidationContainer = isPaintInvalidationContainer();
     const RenderLayerModelObject& newPaintInvalidationContainer = *adjustCompositedContainerForSpecialAncestors(establishesNewPaintInvalidationContainer ? this : &paintInvalidationState.paintInvalidationContainer());
     PaintInvalidationState childPaintInvalidationState(paintInvalidationState, *this, newPaintInvalidationContainer);
-    RenderObject::invalidateTreeAfterLayout(childPaintInvalidationState);
+    RenderObject::invalidateTreeIfNeeded(childPaintInvalidationState);
 }
 
 } // namespace WebCore

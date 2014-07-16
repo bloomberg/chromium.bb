@@ -112,13 +112,13 @@ bool RenderSVGBlock::nodeAtPoint(const HitTestRequest&, HitTestResult&, const Hi
     return false;
 }
 
-void RenderSVGBlock::invalidateTreeAfterLayout(const PaintInvalidationState& paintInvalidationState)
+void RenderSVGBlock::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
-    if (!shouldCheckForPaintInvalidationAfterLayout())
+    if (!shouldCheckForPaintInvalidation())
         return;
 
     ForceHorriblySlowRectMapping slowRectMapping(&paintInvalidationState);
-    RenderBlockFlow::invalidateTreeAfterLayout(paintInvalidationState);
+    RenderBlockFlow::invalidateTreeIfNeeded(paintInvalidationState);
 }
 
 }

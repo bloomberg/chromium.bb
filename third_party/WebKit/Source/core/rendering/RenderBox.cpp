@@ -1544,7 +1544,7 @@ bool RenderBox::repaintLayerRectsForImage(WrappedImagePtr image, const FillLayer
     return false;
 }
 
-void RenderBox::invalidateTreeAfterLayout(const PaintInvalidationState& paintInvalidationState)
+void RenderBox::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     // FIXME: Currently only using this logic for RenderBox and its ilk. Ideally, RenderBlockFlows with
     // inline children should track a dirty rect in local coordinates for dirty lines instead of invalidating
@@ -1554,7 +1554,7 @@ void RenderBox::invalidateTreeAfterLayout(const PaintInvalidationState& paintInv
     // FIXME: SVG should probably also go through this unified paint invalidation system.
     ASSERT(!needsLayout());
 
-    if (!shouldCheckForPaintInvalidationAfterLayout())
+    if (!shouldCheckForPaintInvalidation())
         return;
 
     bool establishesNewPaintInvalidationContainer = isPaintInvalidationContainer();
@@ -1572,7 +1572,7 @@ void RenderBox::invalidateTreeAfterLayout(const PaintInvalidationState& paintInv
     // renderers as they'll be covered by the RenderView.
     if (view()->doingFullRepaint()) {
         PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, newPaintInvalidationContainer);
-        RenderObject::invalidateTreeAfterLayout(childTreeWalkState);
+        RenderObject::invalidateTreeIfNeeded(childTreeWalkState);
         // For the next invalidatePaintIfNeeded.
         savePreviousBorderBoxSizeIfNeeded();
         return;
@@ -1582,7 +1582,7 @@ void RenderBox::invalidateTreeAfterLayout(const PaintInvalidationState& paintInv
         || (shouldDoFullPaintInvalidationIfSelfPaintingLayer()
             && hasLayer()
             && layer()->isSelfPaintingLayer())) {
-        setShouldDoFullPaintInvalidationAfterLayout(true);
+        setShouldDoFullPaintInvalidation(true);
     }
 
     if (!invalidatePaintIfNeeded(newPaintInvalidationContainer, oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer, paintInvalidationState))
@@ -1603,7 +1603,7 @@ void RenderBox::invalidateTreeAfterLayout(const PaintInvalidationState& paintInv
     }
 
     PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, newPaintInvalidationContainer);
-    RenderObject::invalidateTreeAfterLayout(childTreeWalkState);
+    RenderObject::invalidateTreeIfNeeded(childTreeWalkState);
 }
 
 bool RenderBox::pushContentsClip(PaintInfo& paintInfo, const LayoutPoint& accumulatedOffset, ContentsClipBehavior contentsClipBehavior)

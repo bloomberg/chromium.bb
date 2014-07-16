@@ -162,7 +162,7 @@ private:
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const OVERRIDE;
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const OVERRIDE;
 
-    virtual void invalidateTreeAfterLayout(const PaintInvalidationState&) OVERRIDE FINAL;
+    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) OVERRIDE FINAL;
 
     bool shouldRepaint(const LayoutRect&) const;
 

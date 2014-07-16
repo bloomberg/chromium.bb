@@ -1215,7 +1215,7 @@ void RenderBlockFlow::repaintDirtyFloats(Vector<FloatWithRect>& floats)
         if (!floats[i].everHadLayout) {
             RenderBox* f = floats[i].object;
             if (!f->x() && !f->y() && f->checkForPaintInvalidation()) {
-                f->setShouldDoFullPaintInvalidationAfterLayout(true);
+                f->setShouldDoFullPaintInvalidation(true);
             }
         }
     }
@@ -1662,7 +1662,7 @@ void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& re
     if (isFullLayout) {
         // Ensure the old line boxes will be erased.
         if (firstLineBox())
-            setShouldDoFullPaintInvalidationAfterLayout(true);
+            setShouldDoFullPaintInvalidation(true);
         lineBoxes()->deleteLineBoxes();
     }
 
@@ -1750,7 +1750,7 @@ void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& re
 
     // Ensure the new line boxes will be painted.
     if (isFullLayout && firstLineBox())
-        setShouldDoFullPaintInvalidationAfterLayout(true);
+        setShouldDoFullPaintInvalidation(true);
 }
 
 void RenderBlockFlow::checkFloatsInCleanLine(RootInlineBox* line, Vector<FloatWithRect>& floats, size_t& floatIndex, bool& encounteredNewFloat, bool& dirtiedByFloat)
@@ -1829,7 +1829,7 @@ RootInlineBox* RenderBlockFlow::determineStartPosition(LineLayoutState& layoutSt
         // If we encountered a new float and have inline children, mark ourself to force us to issue paint invalidations.
         if (layoutState.hasInlineChild() && !selfNeedsLayout()) {
             setNeedsLayoutAndFullPaintInvalidation(MarkOnlyThis);
-            setShouldDoFullPaintInvalidationAfterLayout(true);
+            setShouldDoFullPaintInvalidation(true);
         }
 
         // FIXME: This should just call deleteLineBoxTree, but that causes

@@ -845,7 +845,7 @@ public:
         const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationContainer, const PaintInvalidationState&);
 
     // Walk the tree after layout issuing paint invalidations for renderers that have changed or moved, updating bounds that have changed, and clearing paint invalidation state.
-    virtual void invalidateTreeAfterLayout(const PaintInvalidationState&);
+    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&);
 
     virtual void invalidatePaintForOverflow();
     void invalidatePaintForOverflowIfNeeded();
@@ -995,8 +995,8 @@ public:
     const LayoutPoint& previousPositionFromPaintInvalidationContainer() const { return m_previousPositionFromPaintInvalidationContainer; }
     void setPreviousPositionFromPaintInvalidationContainer(const LayoutPoint& location) { m_previousPositionFromPaintInvalidationContainer = location; }
 
-    bool shouldDoFullPaintInvalidationAfterLayout() const { return m_bitfields.shouldDoFullPaintInvalidationAfterLayout(); }
-    void setShouldDoFullPaintInvalidationAfterLayout(bool b) { m_bitfields.setShouldDoFullPaintInvalidationAfterLayout(b); }
+    bool shouldDoFullPaintInvalidation() const { return m_bitfields.shouldDoFullPaintInvalidation(); }
+    void setShouldDoFullPaintInvalidation(bool b) { m_bitfields.setShouldDoFullPaintInvalidation(b); }
     bool shouldInvalidateOverflowForPaint() const { return m_bitfields.shouldInvalidateOverflowForPaint(); }
 
     bool shouldDoFullPaintInvalidationIfSelfPaintingLayer() const { return m_bitfields.shouldDoFullPaintInvalidationIfSelfPaintingLayer(); }
@@ -1025,7 +1025,7 @@ public:
     bool neededLayoutBecauseOfChildren() const { return m_bitfields.neededLayoutBecauseOfChildren(); }
     void setNeededLayoutBecauseOfChildren(bool b) { m_bitfields.setNeededLayoutBecauseOfChildren(b); }
 
-    bool shouldCheckForPaintInvalidationAfterLayout()
+    bool shouldCheckForPaintInvalidation()
     {
         return layoutDidGetCalled() || mayNeedPaintInvalidation();
     }
@@ -1148,11 +1148,7 @@ private:
     public:
         RenderObjectBitfields(Node* node)
             : m_selfNeedsLayout(false)
-            // FIXME: shouldDoFullPaintInvalidationAfterLayout is needed because we reset
-            // the layout bits beforeissing paint invalidations when doing invalidateTreeAfterLayout.
-            // Holding the layout bits until after paint invalidation would remove the need
-            // for this flag.
-            , m_shouldDoFullPaintInvalidationAfterLayout(false)
+            , m_shouldDoFullPaintInvalidation(false)
             , m_shouldInvalidateOverflowForPaint(false)
             , m_shouldDoFullPaintInvalidationIfSelfPaintingLayer(false)
             // FIXME: We should remove mayNeedPaintInvalidation once we are able to
@@ -1195,7 +1191,7 @@ private:
 
         // 32 bits have been used in the first word, and 6 in the second.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
-        ADD_BOOLEAN_BITFIELD(shouldDoFullPaintInvalidationAfterLayout, ShouldDoFullPaintInvalidationAfterLayout);
+        ADD_BOOLEAN_BITFIELD(shouldDoFullPaintInvalidation, ShouldDoFullPaintInvalidation);
         ADD_BOOLEAN_BITFIELD(shouldInvalidateOverflowForPaint, ShouldInvalidateOverflowForPaint);
         ADD_BOOLEAN_BITFIELD(shouldDoFullPaintInvalidationIfSelfPaintingLayer, ShouldDoFullPaintInvalidationIfSelfPaintingLayer);
         ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidation, MayNeedPaintInvalidation);
@@ -1352,7 +1348,7 @@ inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLay
 inline void RenderObject::setNeedsLayoutAndFullPaintInvalidation(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
 {
     setNeedsLayout(markParents, layouter);
-    setShouldDoFullPaintInvalidationAfterLayout(true);
+    setShouldDoFullPaintInvalidation(true);
 }
 
 inline void RenderObject::clearNeedsLayout()

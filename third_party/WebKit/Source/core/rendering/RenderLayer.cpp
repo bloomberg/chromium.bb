@@ -1372,7 +1372,7 @@ void RenderLayer::removeOnlyThisLayer()
         removeChild(current);
         m_parent->addChild(current, nextSib);
 
-        current->renderer()->setShouldDoFullPaintInvalidationAfterLayout(true);
+        current->renderer()->setShouldDoFullPaintInvalidation(true);
 
         // Hits in compositing/overflow/automatically-opt-into-composited-scrolling-part-1.html
         DisableCompositingQueryAsserts disabler;
@@ -3723,7 +3723,7 @@ void RenderLayer::filterNeedsPaintInvalidation()
 
     if (renderer()->view()) {
         if (renderer()->frameView()->isInPerformLayout())
-            renderer()->setShouldDoFullPaintInvalidationAfterLayout(true);
+            renderer()->setShouldDoFullPaintInvalidation(true);
         else
             renderer()->paintInvalidationForWholeRenderer();
     }

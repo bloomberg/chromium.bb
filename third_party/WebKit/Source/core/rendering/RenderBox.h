@@ -622,7 +622,7 @@ public:
             removeFloatingOrPositionedChildFromBlockLists();
     }
 
-    virtual void invalidateTreeAfterLayout(const PaintInvalidationState&) OVERRIDE;
+    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) OVERRIDE;
 
 protected:
     virtual void willBeDestroyed() OVERRIDE;

@@ -1594,18 +1594,18 @@ const char* RenderObject::invalidationReasonToString(InvalidationReason reason) 
     return "";
 }
 
-void RenderObject::invalidateTreeAfterLayout(const PaintInvalidationState& paintInvalidationState)
+void RenderObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     // If we didn't need paint invalidation then our children don't need as well.
     // Skip walking down the tree as everything should be fine below us.
-    if (!shouldCheckForPaintInvalidationAfterLayout())
+    if (!shouldCheckForPaintInvalidation())
         return;
 
     clearPaintInvalidationState();
 
     for (RenderObject* child = slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->isOutOfFlowPositioned())
-            child->invalidateTreeAfterLayout(paintInvalidationState);
+            child->invalidateTreeIfNeeded(paintInvalidationState);
     }
 }
 
@@ -1653,7 +1653,7 @@ bool RenderObject::invalidatePaintIfNeeded(const RenderLayerModelObject& paintIn
 InvalidationReason RenderObject::getPaintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
     const LayoutRect& oldBounds, const LayoutPoint& oldLocation, const LayoutRect& newBounds, const LayoutPoint& newLocation)
 {
-    if (shouldDoFullPaintInvalidationAfterLayout())
+    if (shouldDoFullPaintInvalidation())
         return InvalidationFull;
 
     // Presumably a background or a border exists if border-fit:lines was specified.
@@ -2062,7 +2062,7 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
         // The paintInvalidationForWholeRenderer() call is needed for non-layout changes to style. See the corresponding
         // comment in RenderObject::styleWillChange for why.
         if (needsLayout())
-            setShouldDoFullPaintInvalidationAfterLayout(true);
+            setShouldDoFullPaintInvalidation(true);
         else if (!selfNeedsLayout())
             paintInvalidationForWholeRenderer();
     }
@@ -2938,7 +2938,7 @@ void RenderObject::scheduleRelayout()
 void RenderObject::forceLayout()
 {
     setSelfNeedsLayout(true);
-    setShouldDoFullPaintInvalidationAfterLayout(true);
+    setShouldDoFullPaintInvalidation(true);
     layout();
 }
 
@@ -3396,7 +3396,7 @@ bool RenderObject::isRelayoutBoundaryForInspector() const
 
 void RenderObject::clearPaintInvalidationState()
 {
-    setShouldDoFullPaintInvalidationAfterLayout(false);
+    setShouldDoFullPaintInvalidation(false);
     setShouldDoFullPaintInvalidationIfSelfPaintingLayer(false);
     setOnlyNeededPositionedMovementLayout(false);
     setNeededLayoutBecauseOfChildren(false);

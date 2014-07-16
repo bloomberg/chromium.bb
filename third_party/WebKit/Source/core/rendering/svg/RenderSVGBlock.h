@@ -42,7 +42,7 @@ public:
 
     virtual LayerType layerTypeRequired() const OVERRIDE FINAL { return NoLayer; }
 
-    virtual void invalidateTreeAfterLayout(const PaintInvalidationState&) OVERRIDE;
+    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) OVERRIDE;
 
 protected:
     virtual void willBeDestroyed() OVERRIDE;

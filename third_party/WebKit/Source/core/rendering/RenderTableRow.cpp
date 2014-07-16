@@ -183,7 +183,7 @@ void RenderTableRow::layout()
     if (selfNeedsLayout() && checkForPaintInvalidation()) {
         for (RenderTableCell* cell = firstCell(); cell; cell = cell->nextCell()) {
             // FIXME: Is this needed with Repaint After Layout?
-            cell->setShouldDoFullPaintInvalidationAfterLayout(true);
+            cell->setShouldDoFullPaintInvalidation(true);
         }
     }
 

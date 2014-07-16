@@ -361,14 +361,14 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
         ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->addRenderObject(this);
 }
 
-void RenderBlock::invalidateTreeAfterLayout(const PaintInvalidationState& paintInvalidationState)
+void RenderBlock::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     // Note, we don't want to early out here using shouldCheckForInvalidationAfterLayout as
     // we have to make sure we go through any positioned objects as they won't be seen in
     // the normal tree walk.
 
-    if (shouldCheckForPaintInvalidationAfterLayout())
-        RenderBox::invalidateTreeAfterLayout(paintInvalidationState);
+    if (shouldCheckForPaintInvalidation())
+        RenderBox::invalidateTreeIfNeeded(paintInvalidationState);
 
     // Take care of positioned objects. This is required as PaintInvalidationState keeps a single clip rect.
     if (TrackedRendererListHashSet* positionedObjects = this->positionedObjects()) {
@@ -389,7 +389,7 @@ void RenderBlock::invalidateTreeAfterLayout(const PaintInvalidationState& paintI
             if (&repaintContainerForChild != newPaintInvalidationContainer) {
                 ForceHorriblySlowRectMapping slowRectMapping(&childPaintInvalidationState);
                 PaintInvalidationState disabledPaintInvalidationState(childPaintInvalidationState, *this, repaintContainerForChild);
-                box->invalidateTreeAfterLayout(disabledPaintInvalidationState);
+                box->invalidateTreeIfNeeded(disabledPaintInvalidationState);
                 continue;
             }
 
@@ -404,12 +404,12 @@ void RenderBlock::invalidateTreeAfterLayout(const PaintInvalidationState& paintI
                     // relatively positioned inline blocks in the wrong location. crbug.com/371485
                     ForceHorriblySlowRectMapping slowRectMapping(&childPaintInvalidationState);
                     PaintInvalidationState disabledPaintInvalidationState(childPaintInvalidationState, *this, repaintContainerForChild);
-                    box->invalidateTreeAfterLayout(disabledPaintInvalidationState);
+                    box->invalidateTreeIfNeeded(disabledPaintInvalidationState);
                     continue;
                 }
             }
 
-            box->invalidateTreeAfterLayout(childPaintInvalidationState);
+            box->invalidateTreeIfNeeded(childPaintInvalidationState);
         }
     }
 }

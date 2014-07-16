@@ -444,7 +444,7 @@ void RenderView::paintBoxDecorationBackground(PaintInfo& paintInfo, const Layout
     }
 }
 
-void RenderView::invalidateTreeAfterLayout(const PaintInvalidationState& paintInvalidationState)
+void RenderView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     ASSERT(!needsLayout());
 
@@ -453,7 +453,7 @@ void RenderView::invalidateTreeAfterLayout(const PaintInvalidationState& paintIn
     if (doingFullRepaint() && !viewRect().isEmpty())
         repaintViewRectangle(viewRect());
 
-    RenderBlock::invalidateTreeAfterLayout(paintInvalidationState);
+    RenderBlock::invalidateTreeIfNeeded(paintInvalidationState);
 }
 
 void RenderView::repaintViewRectangle(const LayoutRect& repaintRect) const

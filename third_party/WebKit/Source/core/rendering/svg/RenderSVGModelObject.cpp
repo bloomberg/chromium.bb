@@ -124,13 +124,13 @@ void RenderSVGModelObject::absoluteFocusRingQuads(Vector<FloatQuad>& quads)
     quads.append(localToAbsoluteQuad(FloatQuad(paintInvalidationRectInLocalCoordinates())));
 }
 
-void RenderSVGModelObject::invalidateTreeAfterLayout(const PaintInvalidationState& paintInvalidationState)
+void RenderSVGModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
-    // Note: This is a reduced version of RenderBox::invalidateTreeAfterLayout().
-    // FIXME: Should share code with RenderBox::invalidateTreeAfterLayout().
+    // Note: This is a reduced version of RenderBox::invalidateTreeIfNeeded().
+    // FIXME: Should share code with RenderBox::invalidateTreeIfNeeded().
     ASSERT(!needsLayout());
 
-    if (!shouldCheckForPaintInvalidationAfterLayout())
+    if (!shouldCheckForPaintInvalidation())
         return;
 
     ForceHorriblySlowRectMapping slowRectMapping(&paintInvalidationState);
@@ -152,13 +152,13 @@ void RenderSVGModelObject::invalidateTreeAfterLayout(const PaintInvalidationStat
     // issue paint invalidations. We can then skip issuing of paint invalidations for the child
     // renderers as they'll be covered by the RenderView.
     if (view()->doingFullRepaint()) {
-        RenderObject::invalidateTreeAfterLayout(paintInvalidationState);
+        RenderObject::invalidateTreeIfNeeded(paintInvalidationState);
         return;
     }
 
     invalidatePaintIfNeeded(paintInvalidationState.paintInvalidationContainer(), oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer, paintInvalidationState);
 
-    RenderObject::invalidateTreeAfterLayout(paintInvalidationState);
+    RenderObject::invalidateTreeIfNeeded(paintInvalidationState);
 }
 
 } // namespace WebCore

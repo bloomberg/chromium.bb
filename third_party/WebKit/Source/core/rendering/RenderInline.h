@@ -119,7 +119,7 @@ private:
     InlineBox* culledInlineFirstLineBox() const;
     InlineBox* culledInlineLastLineBox() const;
 
-    virtual void invalidateTreeAfterLayout(const PaintInvalidationState&) OVERRIDE FINAL;
+    virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) OVERRIDE FINAL;
 
     template<typename GeneratorContext>
     void generateLineBoxRects(GeneratorContext& yield) const;

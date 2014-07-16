@@ -203,10 +203,10 @@ void RenderListBox::layout()
         scrollToRevealSelection();
 }
 
-void RenderListBox::invalidateTreeAfterLayout(const PaintInvalidationState& paintInvalidationState)
+void RenderListBox::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
     repaintScrollbarIfNeeded();
-    RenderBox::invalidateTreeAfterLayout(paintInvalidationState);
+    RenderBox::invalidateTreeIfNeeded(paintInvalidationState);
 }
 
 void RenderListBox::scrollToRevealSelection()
@@ -672,7 +672,7 @@ void RenderListBox::scrollTo(int newOffset)
     m_indexOffset = newOffset;
 
     if (frameView()->isInPerformLayout())
-        setShouldDoFullPaintInvalidationAfterLayout(true);
+        setShouldDoFullPaintInvalidation(true);
     else
         paintInvalidationForWholeRenderer();
 
