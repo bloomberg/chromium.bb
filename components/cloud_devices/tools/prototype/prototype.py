@@ -706,7 +706,7 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
         '/deprecated/wifi/switch': self.do_wifi_switch,
         '/privet/v3/session/handshake': self.do_session_handshake,
         '/privet/v3/session/cancel': self.do_session_cancel,
-        '/privet/v3/session/call': self.do_session_call,
+        '/privet/v3/session/request': self.do_session_call,
         '/privet/v3/setup/start':
             self.get_insecure_api_handler(self.do_secure_setup_start),
         '/privet/v3/setup/cancel':
@@ -793,7 +793,10 @@ class WebRequestHandler(WifiHandler.Delegate, CloudDevice.Delegate):
       stype = data['keyExchangeType']
       step = data['step']
       package = base64.b64decode(data['package'])
-      session_id = data['sessionID']
+      if 'sessionID' in data:
+        session_id = data['sessionID']
+      else:
+        session_id = "dummy"
     except (KeyError, TypeError):
       traceback.print_exc()
       print 'Malformed content: ' + repr(data)
