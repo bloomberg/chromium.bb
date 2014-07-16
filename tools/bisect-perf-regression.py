@@ -2235,6 +2235,27 @@ class BisectPerformanceMetrics(object):
   def _IsBisectModeStandardDeviation(self):
     return self.opts.bisect_mode in [BISECT_MODE_STD_DEV]
 
+  def GetCompatibleCommand(self, command_to_run, revision):
+    # Prior to crrev.com/274857 *only* android-chromium-testshell
+    # Then until crrev.com/276628 *both* (android-chromium-testshell and
+    # android-chrome-shell) work. After that rev 276628 *only*
+    # android-chrome-shell works. bisect-perf-reggresion.py script should
+    # handle these cases and set appropriate browser type based on revision.
+    if self.opts.target_platform in ['android', 'android-chrome']:
+      svn_revision = self.source_control.SVNFindRev(revision)
+      cmd_re = re.compile('--browser=(?P<browser_type>\S+)')
+      matches = cmd_re.search(command_to_run)
+      if IsStringInt(svn_revision) and matches:
+        cmd_browser = matches.group('browser_type')
+        if svn_revision <= 274857 and cmd_browser == 'android-chrome-shell':
+          return command_to_run.replace(cmd_browser,
+                                        'android-chromium-testshell')
+        elif (svn_revision >= 276628 and
+              cmd_browser == 'android-chromium-testshell'):
+          return command_to_run.replace(cmd_browser,
+                                        'android-chrome-shell')
+    return command_to_run
+
   def RunPerformanceTestAndParseResults(
       self, command_to_run, metric, reset_on_first_run=False,
       upload_on_last_run=False, results_label=None):
@@ -2616,6 +2637,8 @@ class BisectPerformanceMetrics(object):
         start_build_time = time.time()
         if self.BuildCurrentRevision(depot, revision):
           after_build_time = time.time()
+          # Hack to support things that got changed.
+          command_to_run = self.GetCompatibleCommand(command_to_run, revision)
           results = self.RunPerformanceTestAndParseResults(command_to_run,
                                                            metric)
           # Restore build output directory once the tests are done, to avoid
