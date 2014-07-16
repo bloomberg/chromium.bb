@@ -27,13 +27,13 @@ namespace extensions {
 
 LazyBackgroundTaskQueue::LazyBackgroundTaskQueue(
     content::BrowserContext* browser_context)
-    : browser_context_(browser_context) {
+    : browser_context_(browser_context), extension_registry_observer_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<content::BrowserContext>(browser_context));
+
+  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context));
 }
 
 LazyBackgroundTaskQueue::~LazyBackgroundTaskQueue() {
@@ -162,27 +162,25 @@ void LazyBackgroundTaskQueue::Observe(
       }
       break;
     }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      // Notify consumers that the page failed to load.
-      content::BrowserContext* browser_context =
-          content::Source<content::BrowserContext>(source).ptr();
-      UnloadedExtensionInfo* unloaded =
-          content::Details<UnloadedExtensionInfo>(details).ptr();
-      ProcessPendingTasks(NULL, browser_context, unloaded->extension);
-      // If this extension is also running in an off-the-record context,
-      // notify that task queue as well.
-      ExtensionsBrowserClient* browser_client = ExtensionsBrowserClient::Get();
-      if (browser_client->HasOffTheRecordContext(browser_context)) {
-        ProcessPendingTasks(
-            NULL,
-            browser_client->GetOffTheRecordContext(browser_context),
-            unloaded->extension);
-      }
-      break;
-    }
     default:
       NOTREACHED();
       break;
+  }
+}
+
+void LazyBackgroundTaskQueue::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  // Notify consumers that the page failed to load.
+  ProcessPendingTasks(NULL, browser_context, extension);
+  // If this extension is also running in an off-the-record context, notify that
+  // task queue as well.
+  ExtensionsBrowserClient* browser_client = ExtensionsBrowserClient::Get();
+  if (browser_client->HasOffTheRecordContext(browser_context)) {
+    ProcessPendingTasks(NULL,
+                        browser_client->GetOffTheRecordContext(browser_context),
+                        extension);
   }
 }
 

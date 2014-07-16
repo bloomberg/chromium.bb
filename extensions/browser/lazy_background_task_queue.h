@@ -12,8 +12,10 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
+#include "base/scoped_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace content {
 class BrowserContext;
@@ -22,6 +24,7 @@ class BrowserContext;
 namespace extensions {
 class Extension;
 class ExtensionHost;
+class ExtensionRegistry;
 
 // This class maintains a queue of tasks that should execute when an
 // extension's lazy background page is loaded. It is also in charge of loading
@@ -29,7 +32,8 @@ class ExtensionHost;
 //
 // It is the consumer's responsibility to use this class when appropriate, i.e.
 // only with extensions that have not-yet-loaded lazy background pages.
-class LazyBackgroundTaskQueue : public content::NotificationObserver {
+class LazyBackgroundTaskQueue : public content::NotificationObserver,
+                                public ExtensionRegistryObserver {
  public:
   typedef base::Callback<void(ExtensionHost*)> PendingTask;
 
@@ -72,6 +76,12 @@ class LazyBackgroundTaskQueue : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // ExtensionRegistryObserver interface.
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
   // Called when a lazy background page has finished loading, or has failed to
   // load (host is NULL in that case). All enqueued tasks are run in order.
   void ProcessPendingTasks(
@@ -82,6 +92,9 @@ class LazyBackgroundTaskQueue : public content::NotificationObserver {
   content::BrowserContext* browser_context_;
   content::NotificationRegistrar registrar_;
   PendingTasksMap pending_tasks_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 };
 
 }  // namespace extensions
