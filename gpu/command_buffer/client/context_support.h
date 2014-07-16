@@ -40,6 +40,9 @@ class ContextSupport {
                                     const gfx::Rect& display_bounds,
                                     const gfx::RectF& uv_rect) = 0;
 
+  virtual uint32 InsertFutureSyncPointCHROMIUM() = 0;
+  virtual void RetireSyncPointCHROMIUM(uint32 sync_point) = 0;
+
  protected:
   ContextSupport() {}
   virtual ~ContextSupport() {}

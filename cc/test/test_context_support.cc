@@ -65,6 +65,15 @@ void TestContextSupport::Swap() {
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
+uint32 TestContextSupport::InsertFutureSyncPointCHROMIUM() {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+void TestContextSupport::RetireSyncPointCHROMIUM(uint32 sync_point) {
+  NOTIMPLEMENTED();
+}
+
 void TestContextSupport::PartialSwapBuffers(const gfx::Rect& sub_buffer) {
   last_swap_type_ = PARTIAL_SWAP;
   last_partial_swap_rect_ = sub_buffer;

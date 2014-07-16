@@ -230,6 +230,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
                                     unsigned overlay_texture_id,
                                     const gfx::Rect& display_bounds,
                                     const gfx::RectF& uv_rect) OVERRIDE;
+  virtual GLuint InsertFutureSyncPointCHROMIUM() OVERRIDE;
+  virtual void RetireSyncPointCHROMIUM(GLuint sync_point) OVERRIDE;
 
   void GetProgramInfoCHROMIUMHelper(GLuint program, std::vector<int8>* result);
   GLint GetAttribLocationHelper(GLuint program, const char* name);

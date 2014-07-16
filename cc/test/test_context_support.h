@@ -25,6 +25,8 @@ class TestContextSupport : public gpu::ContextSupport {
   virtual void SetSurfaceVisible(bool visible) OVERRIDE;
   virtual void Swap() OVERRIDE;
   virtual void PartialSwapBuffers(const gfx::Rect& sub_buffer) OVERRIDE;
+  virtual uint32 InsertFutureSyncPointCHROMIUM() OVERRIDE;
+  virtual void RetireSyncPointCHROMIUM(uint32 sync_point) OVERRIDE;
   virtual void SetSwapBuffersCompleteCallback(
       const base::Closure& callback) OVERRIDE;
   virtual void ScheduleOverlayPlane(int plane_z_order,

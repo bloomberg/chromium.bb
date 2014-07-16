@@ -2213,6 +2213,8 @@ const GLubyte* GLES2Implementation::GetStringHelper(GLenum name) {
           // The first space character is intentional.
           str += " GL_CHROMIUM_map_image";
         }
+        if (capabilities_.future_sync_points)
+          str += " GL_CHROMIUM_future_sync_point";
         break;
       default:
         break;
@@ -3992,6 +3994,23 @@ GLuint GLES2Implementation::InsertSyncPointCHROMIUM() {
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glInsertSyncPointCHROMIUM");
   helper_->CommandBufferHelper::Flush();
   return gpu_control_->InsertSyncPoint();
+}
+
+GLuint GLES2Implementation::InsertFutureSyncPointCHROMIUM() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glInsertFutureSyncPointCHROMIUM");
+  DCHECK(capabilities_.future_sync_points);
+  helper_->CommandBufferHelper::Flush();
+  return gpu_control_->InsertFutureSyncPoint();
+}
+
+void GLES2Implementation::RetireSyncPointCHROMIUM(GLuint sync_point) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glRetireSyncPointCHROMIUM("
+                     << sync_point << ")");
+  DCHECK(capabilities_.future_sync_points);
+  helper_->CommandBufferHelper::Flush();
+  gpu_control_->RetireSyncPoint(sync_point);
 }
 
 GLuint GLES2Implementation::CreateImageCHROMIUMHelper(GLsizei width,
