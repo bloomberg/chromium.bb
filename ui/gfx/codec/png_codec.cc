@@ -33,13 +33,8 @@ void ConvertBetweenBGRAandRGBA(const unsigned char* input, int pixel_width,
 
 void ConvertRGBAtoRGB(const unsigned char* rgba, int pixel_width,
                       unsigned char* rgb, bool* is_opaque) {
-  for (int x = 0; x < pixel_width; x++) {
-    const unsigned char* pixel_in = &rgba[x * 4];
-    unsigned char* pixel_out = &rgb[x * 3];
-    pixel_out[0] = pixel_in[0];
-    pixel_out[1] = pixel_in[1];
-    pixel_out[2] = pixel_in[2];
-  }
+  for (int x = 0; x < pixel_width; x++)
+    memcpy(&rgb[x * 3], &rgba[x * 4], 3);
 }
 
 void ConvertSkiatoRGB(const unsigned char* skia, int pixel_width,
