@@ -304,7 +304,7 @@ NSDictionary* BuildServiceDefinition(const BluetoothUUID& uuid,
 NSDictionary* BuildRfcommServiceDefinition(
     const BluetoothUUID& uuid,
     const BluetoothAdapter::ServiceOptions& options) {
-  int channel_id = options.channel ? *options.channel : 0;
+  int channel_id = options.channel ? *options.channel : kInvalidRfcommChannelId;
   NSArray* rfcomm_protocol_definition =
       @[
         @[
@@ -328,7 +328,7 @@ NSDictionary* BuildRfcommServiceDefinition(
 NSDictionary* BuildL2capServiceDefinition(
     const BluetoothUUID& uuid,
     const BluetoothAdapter::ServiceOptions& options) {
-  int psm = options.psm ? *options.psm : 0;
+  int psm = options.psm ? *options.psm : kInvalidL2capPsm;
   NSArray* l2cap_protocol_definition =
       @[
         @[
@@ -390,7 +390,7 @@ bool VerifyRfcommService(const int* requested_channel_id,
                          IOBluetoothSDPServiceRecord* service_record) {
   // Test whether the requested channel id was available.
   // TODO(isherman): The OS doesn't seem to actually pick a random channel if we
-  // pass in |kChannelAuto|.
+  // pass in |kInvalidRfcommChannelId|.
   BluetoothRFCOMMChannelID rfcomm_channel_id;
   IOReturn result = [service_record getRFCOMMChannelID:&rfcomm_channel_id];
   if (result != kIOReturnSuccess ||
@@ -426,7 +426,7 @@ bool VerifyL2capService(const int* requested_psm,
                         IOBluetoothSDPServiceRecord* service_record) {
   // Test whether the requested PSM was available.
   // TODO(isherman): The OS doesn't seem to actually pick a random PSM if we
-  // pass in |kPsmAuto|.
+  // pass in |kInvalidL2capPsm|.
   BluetoothL2CAPPSM l2cap_psm;
   IOReturn result = [service_record getL2CAPPSM:&l2cap_psm];
   if (result != kIOReturnSuccess ||
@@ -631,17 +631,14 @@ void BluetoothSocketMac::OnChannelOpened(
   if (accept_request_)
     AcceptConnectionRequest();
 
-  // TODO(isherman): Test whether these TODOs are still relevant.
-  // TODO(isherman): Currently, both the profile and the socket remain alive
-  // even after the app that requested them is closed. That's not great, as a
-  // misbehaving app could saturate all of the system's RFCOMM channels, and
-  // then they would not be freed until the user restarts Chrome.
-  // http://crbug.com/367316
+  // TODO(isherman): Currently, the socket remains alive even after the app that
+  // requested it is closed. That's not great, as a misbehaving app could
+  // saturate all of the system's RFCOMM channels, and then they would not be
+  // freed until the user restarts Chrome.  http://crbug.com/367316
   // TODO(isherman): Likewise, the socket currently remains alive even if the
-  // underlying rfcomm_channel is closed, e.g. via the client disconnecting, or
-  // the user closing the Bluetooth connection via the system menu. This
-  // functions essentially as a minor memory leak.
-  // http://crbug.com/367319
+  // underlying channel is closed, e.g. via the client disconnecting, or the
+  // user closing the Bluetooth connection via the system menu. This functions
+  // essentially as a minor memory leak.  http://crbug.com/367319
 }
 
 void BluetoothSocketMac::OnChannelOpenComplete(
