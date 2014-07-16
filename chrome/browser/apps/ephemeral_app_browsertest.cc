@@ -379,7 +379,9 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, EventDispatchWhenLaunched) {
 }
 
 // Verify that ephemeral apps will receive messages while they are running.
-IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, ReceiveMessagesWhenLaunched) {
+// Flaky test: crbug.com/394426
+IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
+                       DISABLED_ReceiveMessagesWhenLaunched) {
   const Extension* receiver =
       InstallAndLaunchEphemeralApp(kMessagingReceiverApp);
   ASSERT_TRUE(receiver);
