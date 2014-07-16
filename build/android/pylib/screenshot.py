@@ -84,7 +84,7 @@ class VideoRecorder(object):
     """
     host_file_name = host_file or ('screen-recording-%s.mp4' %
                                    self._device.old_interface.GetTimestamp())
-    host_file = os.path.abspath(host_file_name)
-    self._device.old_interface.EnsureHostDirectory(self._host_file)
+    host_file_name = os.path.abspath(host_file_name)
+    self._device.old_interface.EnsureHostDirectory(host_file_name)
     self._device.PullFile(self._device_file, host_file_name)
     self._device.RunShellCommand('rm -f "%s"' % self._device_file)
