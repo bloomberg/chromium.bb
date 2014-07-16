@@ -8,6 +8,7 @@ group("all_components") {
   visibility = "//:*"  # Only for the root targets to bring in.
 
   deps = [
+    "//components/auto_login_parser",
     "//components/autocomplete",
     "//components/autofill/content/browser",
     "//components/autofill/content/common",
