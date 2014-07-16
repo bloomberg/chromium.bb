@@ -6244,3 +6244,9 @@
    fun:_ZN8chromeos24HostResolverImplChromeOS25CreateHostResolverForTestE13scoped_refptrIN4base16MessageLoopProxyEEPNS_19NetworkStateHandlerE
    fun:_ZN28HostResolverImplChromeOSTest22InitializeHostResolverEv
 }
+{
+   bug_394558
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN32ProfileSyncComponentsFactoryMockC1Ev
+}
