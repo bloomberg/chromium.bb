@@ -11,6 +11,7 @@
       # on browser here.
       'dependencies': [
         '../chrome/chrome_resources.gyp:chrome_strings',
+        '../content/content.gyp:content_common',
         '../skia/skia.gyp:skia',
       ],
       'include_dirs': [
