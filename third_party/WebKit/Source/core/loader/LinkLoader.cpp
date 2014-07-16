@@ -41,6 +41,7 @@
 #include "core/loader/PrerenderHandle.h"
 #include "platform/Prerender.h"
 #include "platform/network/DNS.h"
+#include "public/platform/WebPrerender.h"
 
 namespace WebCore {
 
@@ -48,9 +49,9 @@ static unsigned prerenderRelTypesFromRelAttribute(const LinkRelAttribute& relAtt
 {
     unsigned result = 0;
     if (relAttribute.isLinkPrerender())
-        result |= PrerenderRelTypePrerender;
+        result |= blink::PrerenderRelTypePrerender;
     if (relAttribute.isLinkNext())
-        result |= PrerenderRelTypeNext;
+        result |= blink::PrerenderRelTypeNext;
 
     return result;
 }

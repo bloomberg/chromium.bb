@@ -50,13 +50,6 @@ namespace WebCore {
 
 class PrerenderClient;
 
-// PrerenderRelType is a bitfield since multiple rel attributes can be set
-// on the same link.
-enum PrerenderRelType {
-    PrerenderRelTypePrerender = 0x1,
-    PrerenderRelTypeNext = 0x2,
-};
-
 class PLATFORM_EXPORT Prerender : public RefCounted<Prerender> {
     WTF_MAKE_NONCOPYABLE(Prerender);
 public:
