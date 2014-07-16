@@ -12,6 +12,8 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/idle_detector.h"
 
+class PrefRegistrySimple;
+
 namespace chromeos {
 
 // Helper for idle state and demo-mode detection.
@@ -23,6 +25,9 @@ class DemoModeDetector {
 
   void InitDetection();
   void StopDetection();
+
+  // Registers the preference for derelict state.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
   void StartIdleDetection();

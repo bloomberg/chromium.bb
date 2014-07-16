@@ -16,8 +16,6 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "ui/gfx/point.h"
 
-class PrefRegistrySimple;
-
 namespace chromeos {
 
 class CoreOobeActor;
@@ -60,9 +58,6 @@ class NetworkScreenHandler : public NetworkScreenActor,
   // InputMethodManager::Observer implementation:
   virtual void InputMethodChanged(input_method::InputMethodManager* manager,
                                   bool show_message) OVERRIDE;
-
-  // Registers the preference for derelict state.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Reloads localized contents.
   void ReloadLocalizedContent();

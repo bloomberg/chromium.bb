@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/demo_mode_detector.h"
 
 #include "base/command_line.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -30,6 +31,8 @@ DemoModeDetector::DemoModeDetector()
 DemoModeDetector::~DemoModeDetector() {
 }
 
+// Public methods.
+
 void DemoModeDetector::InitDetection() {
   if (IsDerelict())
     StartIdleDetection();
@@ -40,6 +43,13 @@ void DemoModeDetector::InitDetection() {
 void DemoModeDetector::StopDetection() {
   idle_detector_.reset();
 }
+
+// static
+void DemoModeDetector::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterInt64Pref(prefs::kTimeOnOobe, 0);
+}
+
+// Private methods.
 
 void DemoModeDetector::StartIdleDetection() {
   if (!idle_detector_.get()) {

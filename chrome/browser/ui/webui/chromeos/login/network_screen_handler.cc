@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -248,11 +247,6 @@ void NetworkScreenHandler::RegisterMessages() {
               &NetworkScreenHandler::HandleOnTimezoneChanged);
 }
 
-
-// static
-void NetworkScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterInt64Pref(prefs::kTimeOnOobe, 0);
-}
 
 // NetworkScreenHandler, private: ----------------------------------------------
 
