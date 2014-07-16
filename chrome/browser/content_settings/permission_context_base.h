@@ -79,6 +79,7 @@ class PermissionContextBase : public KeyedService {
                          const GURL& requesting_origin,
                          const GURL& embedder_origin,
                          const BrowserPermissionCallback& callback,
+                         bool persist,
                          bool allowed);
 
   void NotifyPermissionSet(const PermissionRequestID& id,

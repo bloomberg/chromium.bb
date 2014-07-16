@@ -7,6 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/permission_context_uma_util.h"
 #include "chrome/browser/geolocation/geolocation_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/midi_permission_infobar_delegate.h"
@@ -105,9 +106,6 @@ void PermissionQueueController::PendingInfobarRequest::RunCallback(
 void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
     PermissionQueueController* controller,
     const std::string& display_languages) {
-  // TODO(toyoshim): Remove following ContentType dependent code.
-  // Also these InfoBarDelegate can share much more code each other.
-  // http://crbug.com/266743
   switch (type_) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       infobar_ = GeolocationInfoBarDelegate::Create(
@@ -117,12 +115,12 @@ void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       infobar_ = MidiPermissionInfoBarDelegate::Create(
           GetInfoBarService(id_), controller, id_, requesting_frame_,
-          display_languages);
+          display_languages, type_);
       break;
     case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       infobar_ = gcm::PushMessagingInfoBarDelegate::Create(
           GetInfoBarService(id_), controller, id_, requesting_frame_,
-          display_languages);
+          display_languages, type_);
       break;
 #if defined(OS_ANDROID)
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
@@ -194,8 +192,18 @@ void PermissionQueueController::OnPermissionSet(
     bool update_content_setting,
     bool allowed) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (update_content_setting)
+
+  // TODO(miguelg): move the permission persistence to
+  // PermissionContextBase once all the types are moved there.
+  if (update_content_setting) {
     UpdateContentSetting(requesting_frame, embedder, allowed);
+    if (allowed)
+      PermissionContextUmaUtil::PermissionGranted(type_);
+    else
+      PermissionContextUmaUtil::PermissionDenied(type_);
+  } else {
+    PermissionContextUmaUtil::PermissionDismissed(type_);
+  }
 
   // Cancel this request first, then notify listeners.  TODO(pkasting): Why
   // is this order important?

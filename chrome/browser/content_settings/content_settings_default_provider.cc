@@ -169,8 +169,11 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
       ValueToContentSetting(
           default_settings_[CONTENT_SETTINGS_TYPE_MIDI_SYSEX].get()),
       CONTENT_SETTING_NUM_SETTINGS);
-
-  // TODO(miguelg): Add UMA for Push messaging here
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSettings.DefaultPushMessagingSetting",
+      ValueToContentSetting(
+          default_settings_[CONTENT_SETTINGS_TYPE_PUSH_MESSAGING].get()),
+      CONTENT_SETTING_NUM_SETTINGS);
 
   pref_change_registrar_.Init(prefs_);
   PrefChangeRegistrar::NamedChangeCallback callback = base::Bind(

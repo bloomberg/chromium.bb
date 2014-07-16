@@ -2892,6 +2892,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The default popups setting at profile open.</summary>
 </histogram>
 
+<histogram name="ContentSettings.DefaultPushMessagingSetting"
+    enum="ContentSetting">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    The default permission setting for push messages at profile open.
+  </summary>
+</histogram>
+
+<histogram name="ContentSettings.PermissionActions" enum="PermissionAction">
+  <owner>miguelg</owner>
+  <summary>
+    Tracks whether a permission was granted, rejected, etc. The suffix of the
+    histogram indicates which particular permission.
+  </summary>
+</histogram>
+
+<histogram name="ContentSettings.PermissionRequested" enum="PermissionType">
+  <owner>miguelg@chromium.org</owner>
+  <summary>Number of times a given permission was requested.</summary>
+</histogram>
+
 <histogram name="Cookie.ParsedCookieStatus" enum="ParsedCookieStatus">
   <obsolete>
     Deprecated as of 9/2013. Experiment to measure control characters in cookies
@@ -44224,6 +44245,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </int>
 </enum>
 
+<enum name="PermissionAction" type="int">
+  <int value="0" label="GRANTED"/>
+  <int value="1" label="DENIED"/>
+  <int value="2" label="DISMISSED"/>
+  <int value="3" label="IGNORED"/>
+</enum>
+
+<enum name="PermissionType" type="int">
+  <int value="0" label="PERMISSION_UNKONWN"/>
+  <int value="1" label="PERMISSION_MIDI_SYSEX"/>
+  <int value="2" label="PERMISSION_PUSH_MESSAGING"/>
+</enum>
+
 <enum name="PhotoEditorFileType" type="int">
   <int value="0" label="jpg"/>
   <int value="1" label="png"/>
@@ -50580,6 +50614,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <suffix name="PPAPIProcess"/>
   <affected-histogram name="PerformanceMonitor.AverageCPU"/>
   <affected-histogram name="PerformanceMonitor.HighCPU"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PermissionActions">
+  <suffix name="MidiSysEx" label="Midi SysEx permsision actions"/>
+  <suffix name="PushMessaging" label="Push messaging permission actions"/>
+  <affected-histogram name="ContentSettings.PermissionActions"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PpapiPluginName">

@@ -336,6 +336,8 @@
       'browser/content_settings/permission_bubble_request_impl.h',
       'browser/content_settings/permission_context_base.cc',
       'browser/content_settings/permission_context_base.h',
+      'browser/content_settings/permission_context_uma_util.cc',
+      'browser/content_settings/permission_context_uma_util.h',
       'browser/content_settings/permission_infobar_delegate.cc',
       'browser/content_settings/permission_infobar_delegate.h',
       'browser/content_settings/permission_queue_controller.cc',

@@ -1366,6 +1366,10 @@ void ContentSettingsHandler::SetContentFilter(const base::ListValue* args) {
       content::RecordAction(
           UserMetricsAction("Options_DefaultMIDISysExSettingChanged"));
       break;
+    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
+      content::RecordAction(
+          UserMetricsAction("Options_DefaultPushMessagingSettingChanged"));
+      break;
     default:
       break;
   }

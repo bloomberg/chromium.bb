@@ -8250,8 +8250,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Options_DefaultMIDISysExSettingChanged">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>toyoshim@chromium.org</owner>
+  <description>
+    Triggers when the default decision for Midi SysEx permissions is changed.
+  </description>
 </action>
 
 <action name="Options_DefaultMediaStreamMicSettingChanged">
@@ -8287,6 +8289,13 @@ should be able to be added at any place in this file.
 <action name="Options_DefaultPopupsSettingChanged">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Options_DefaultPushMessagingSettingChanged">
+  <owner>miguelg@chromium.org</owner>
+  <description>
+    Triggers when the default decision for push message permissions is changed.
+  </description>
 </action>
 
 <action name="Options_DictionaryLanguage">

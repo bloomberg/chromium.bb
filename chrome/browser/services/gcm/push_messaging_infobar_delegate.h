@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SERVICES_GCM_PUSH_MESSAGING_INFOBAR_DELEGATE_H_
 
 #include "chrome/browser/content_settings/permission_infobar_delegate.h"
+#include "chrome/common/content_settings_types.h"
 
 class GURL;
 class InfoBarService;
@@ -22,13 +23,15 @@ class PushMessagingInfoBarDelegate : public PermissionInfobarDelegate {
                                    PermissionQueueController* controller,
                                    const PermissionRequestID& id,
                                    const GURL& requesting_frame,
-                                   const std::string& display_languages);
+                                   const std::string& display_languages,
+                                   ContentSettingsType type);
 
  private:
   PushMessagingInfoBarDelegate(PermissionQueueController* controller,
                                const PermissionRequestID& id,
                                const GURL& requesting_frame,
-                               const std::string& display_languages);
+                               const std::string& display_languages,
+                               ContentSettingsType type);
   virtual ~PushMessagingInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:

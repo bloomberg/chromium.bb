@@ -8,6 +8,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/permission_bubble_request_impl.h"
+#include "chrome/browser/content_settings/permission_context_uma_util.h"
 #include "chrome/browser/content_settings/permission_queue_controller.h"
 #include "chrome/browser/content_settings/permission_request_id.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -18,7 +19,6 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-
 
 PermissionContextBase::PermissionContextBase(
     Profile* profile,
@@ -40,7 +40,6 @@ void PermissionContextBase::RequestPermission(
     const GURL& requesting_frame,
     bool user_gesture,
     const BrowserPermissionCallback& callback) {
-  // TODO(miguelg): Add UMA instrumentation.
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   DecidePermission(web_contents,
@@ -65,15 +64,18 @@ void PermissionContextBase::DecidePermission(
           requesting_origin, embedder_origin, permission_type_, std::string());
   switch (content_setting) {
     case CONTENT_SETTING_BLOCK:
-      PermissionDecided(
-          id, requesting_origin, embedder_origin, callback, false);
+      NotifyPermissionSet(id, requesting_origin, embedder_origin,
+                          callback, false /* persist */, false /* granted */);
       return;
     case CONTENT_SETTING_ALLOW:
-      PermissionDecided(id, requesting_origin, embedder_origin, callback, true);
+      NotifyPermissionSet(id, requesting_origin, embedder_origin,
+                          callback, false /* persist */, true /* granted */);
       return;
     default:
       break;
   }
+
+  PermissionContextUmaUtil::PermissionRequested(permission_type_);
 
   if (PermissionBubbleManager::Enabled()) {
     PermissionBubbleManager* bubble_manager =
@@ -85,7 +87,7 @@ void PermissionContextBase::DecidePermission(
             user_gesture,
             permission_type_,
             profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
-            base::Bind(&PermissionContextBase::NotifyPermissionSet,
+            base::Bind(&PermissionContextBase::PermissionDecided,
                        weak_factory_.GetWeakPtr(),
                        id,
                        requesting_origin,
@@ -109,7 +111,7 @@ void PermissionContextBase::DecidePermission(
       requesting_origin,
       embedder_origin,
       std::string(),
-      base::Bind(&PermissionContextBase::NotifyPermissionSet,
+      base::Bind(&PermissionContextBase::PermissionDecided,
                  weak_factory_.GetWeakPtr(),
                  id,
                  requesting_origin,
@@ -125,10 +127,24 @@ void PermissionContextBase::PermissionDecided(
     const GURL& requesting_origin,
     const GURL& embedder_origin,
     const BrowserPermissionCallback& callback,
+    bool persist,
     bool allowed) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  // Infobar persistance and its related UMA is tracked on the infobar
+  // controller directly.
+  if (PermissionBubbleManager::Enabled()) {
+    if (persist) {
+      if (allowed)
+        PermissionContextUmaUtil::PermissionGranted(permission_type_);
+      else
+        PermissionContextUmaUtil::PermissionDenied(permission_type_);
+    } else {
+      PermissionContextUmaUtil::PermissionDismissed(permission_type_);
+    }
+  }
+
   NotifyPermissionSet(
-      id, requesting_origin, embedder_origin, callback, false, allowed);
+      id, requesting_origin, embedder_origin, callback, persist, allowed);
 }
 
 PermissionQueueController* PermissionContextBase::GetQueueController() {

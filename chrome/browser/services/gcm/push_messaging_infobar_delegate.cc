@@ -18,20 +18,22 @@ infobars::InfoBar* PushMessagingInfoBarDelegate::Create(
     PermissionQueueController* controller,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
-    const std::string& display_languages) {
+    const std::string& display_languages,
+    ContentSettingsType type) {
   DCHECK(infobar_service);
   DCHECK(controller);
   return infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new PushMessagingInfoBarDelegate(
-          controller, id, requesting_frame, display_languages))));
+          controller, id, requesting_frame, display_languages, type))));
 }
 
 PushMessagingInfoBarDelegate::PushMessagingInfoBarDelegate(
     PermissionQueueController* controller,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
-    const std::string& display_languages)
-  : PermissionInfobarDelegate(controller, id, requesting_frame),
+    const std::string& display_languages,
+    ContentSettingsType type)
+  : PermissionInfobarDelegate(controller, id, requesting_frame, type),
     requesting_origin_(requesting_frame.GetOrigin()),
     display_languages_(display_languages) {
 }

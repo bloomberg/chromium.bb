@@ -22,14 +22,15 @@ infobars::InfoBar* MidiPermissionInfoBarDelegate::Create(
     PermissionQueueController* controller,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
-    const std::string& display_languages) {
+    const std::string& display_languages,
+    ContentSettingsType type) {
   const content::NavigationEntry* committed_entry =
       infobar_service->web_contents()->GetController().GetLastCommittedEntry();
   return infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new MidiPermissionInfoBarDelegate(
           controller, id, requesting_frame,
           committed_entry ? committed_entry->GetUniqueID() : 0,
-          display_languages))));
+          display_languages, type))));
 }
 
 MidiPermissionInfoBarDelegate::MidiPermissionInfoBarDelegate(
@@ -37,8 +38,9 @@ MidiPermissionInfoBarDelegate::MidiPermissionInfoBarDelegate(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     int contents_unique_id,
-    const std::string& display_languages)
-    : PermissionInfobarDelegate(controller, id, requesting_frame),
+    const std::string& display_languages,
+    ContentSettingsType type)
+    : PermissionInfobarDelegate(controller, id, requesting_frame, type),
       requesting_frame_(requesting_frame),
       display_languages_(display_languages) {
 }

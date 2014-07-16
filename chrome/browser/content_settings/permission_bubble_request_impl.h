@@ -18,7 +18,7 @@ class PermissionContextBase;
 // caller owns it and that it can be deleted once the |delete_callback|
 // is executed.
 class PermissionBubbleRequestImpl : public PermissionBubbleRequest {
-  public:
+ public:
 
   typedef base::Callback<void(bool persist_permission, bool grant_permission)>
       PermissionDecidedCallback;
@@ -41,10 +41,16 @@ class PermissionBubbleRequestImpl : public PermissionBubbleRequest {
 
   // TODO(miguelg) Change this method to GetOrigin()
   virtual GURL GetRequestingHostname() const OVERRIDE;
+
+  // Remember to call RegisterActionTaken for these methods if you are
+  // overriding them.
   virtual void PermissionGranted() OVERRIDE;
   virtual void PermissionDenied() OVERRIDE;
   virtual void Cancelled() OVERRIDE;
   virtual void RequestFinished() OVERRIDE;
+
+ protected:
+  void RegisterActionTaken() { action_taken_ = true; }
 
  private:
   GURL request_origin_;
@@ -59,6 +65,7 @@ class PermissionBubbleRequestImpl : public PermissionBubbleRequest {
   // the caller.
   const base::Closure delete_callback_;
   bool is_finished_;
+  bool action_taken_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionBubbleRequestImpl);
 };

@@ -5,6 +5,7 @@
 #include "chrome/browser/content_settings/permission_bubble_request_impl.h"
 
 #include "chrome/browser/content_settings/permission_context_base.h"
+#include "chrome/browser/content_settings/permission_context_uma_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
@@ -23,11 +24,14 @@ PermissionBubbleRequestImpl::PermissionBubbleRequestImpl(
       display_languages_(display_languages),
       permission_decided_callback_(permission_decided_callback),
       delete_callback_(delete_callback),
-      is_finished_(false) {
+      is_finished_(false),
+      action_taken_(false) {
 }
 
 PermissionBubbleRequestImpl::~PermissionBubbleRequestImpl() {
   DCHECK(is_finished_);
+  if (!action_taken_)
+    PermissionContextUmaUtil::PermissionIgnored(type_);
 }
 
 int PermissionBubbleRequestImpl::GetIconID() const {
@@ -92,14 +96,17 @@ GURL PermissionBubbleRequestImpl::GetRequestingHostname() const {
 }
 
 void PermissionBubbleRequestImpl::PermissionGranted() {
+  RegisterActionTaken();
   permission_decided_callback_.Run(true, true);
 }
 
 void PermissionBubbleRequestImpl::PermissionDenied() {
+  RegisterActionTaken();
   permission_decided_callback_.Run(true, false);
 }
 
 void PermissionBubbleRequestImpl::Cancelled() {
+  RegisterActionTaken();
   permission_decided_callback_.Run(false, false);
 }
 
