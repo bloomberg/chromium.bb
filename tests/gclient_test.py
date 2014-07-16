@@ -720,6 +720,44 @@ class GclientTest(trial_dir.TestCase):
         ],
         self._get_processed())
 
+  def testRecursedepsOverrideWithRelativePaths(self):
+    """Verifies gclient respects |recursedeps| with relative paths."""
+
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "svn://example.com/foo" },\n'
+          ']')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'use_relative_paths = True\n'
+        'deps = {\n'
+        '  "bar": "/bar",\n'
+        '}\n'
+        'recursedeps = {"bar"}')
+    write(
+        os.path.join('bar', 'DEPS'),
+        'deps = {\n'
+        '  "baz": "/baz",\n'
+        '}')
+    write(
+        os.path.join('baz', 'DEPS'),
+        'deps = {\n'
+        '  "fizz": "/fizz",\n'
+        '}')
+
+    options, _ = gclient.OptionParser().parse_args([])
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    obj.RunOnDeps('None', [])
+    self.assertEquals(
+        [
+          'svn://example.com/foo',
+          # use_relative_paths means the following dep evaluates with 'foo'
+          # prepended.
+          'svn://example.com/foo/bar',
+        ],
+        self._get_processed())
+
   def testRecursionOverridesRecursedeps(self):
     """Verifies gclient respects |recursion| over |recursedeps|.
 

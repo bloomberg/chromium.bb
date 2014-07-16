@@ -595,6 +595,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           'Setting %s recursion to %d.', self.name, self.recursion_limit)
     self.recursedeps = local_scope.get('recursedeps', None)
     if 'recursedeps' in local_scope:
+      self.recursedeps = set(self.recursedeps)
       logging.warning('Found recursedeps %r.', repr(self.recursedeps))
     # If present, save 'target_os' in the local_target_os property.
     if 'target_os' in local_scope:
@@ -613,15 +614,26 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     # If use_relative_paths is set in the DEPS file, regenerate
     # the dictionary using paths relative to the directory containing
-    # the DEPS file.
+    # the DEPS file.  Also update recursedeps if use_relative_paths is
+    # enabled.
     use_relative_paths = local_scope.get('use_relative_paths', False)
     if use_relative_paths:
+      logging.warning('use_relative_paths enabled.')
       rel_deps = {}
       for d, url in deps.items():
         # normpath is required to allow DEPS to use .. in their
         # dependency local path.
         rel_deps[os.path.normpath(os.path.join(self.name, d))] = url
+      logging.warning('Updating deps by prepending %s.', self.name)
       deps = rel_deps
+
+      # Update recursedeps if it's set.
+      if self.recursedeps is not None:
+        logging.warning('Updating recursedeps by prepending %s.', self.name)
+        rel_deps = set()
+        for d in self.recursedeps:
+          rel_deps.add(os.path.normpath(os.path.join(self.name, d)))
+        self.recursedeps = rel_deps
 
     # Convert the deps into real Dependency.
     deps_to_add = []
