@@ -429,10 +429,6 @@ bool MyInstance::HandleInputEvent(const pp::InputEvent& event) {
           if (!video_decoders_[i]->resetting())
             video_decoders_[i]->Reset();
         }
-
-        // Clear pending pictures.
-        while (!pending_pictures_.empty())
-          pending_pictures_.pop();
       }
       return true;
     }

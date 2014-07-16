@@ -269,8 +269,6 @@ int32_t PepperVideoDecoderHost::OnHostMsgRecyclePicture(
   if (!initialized_)
     return PP_ERROR_FAILED;
   DCHECK(decoder_);
-  if (reset_reply_context_.is_valid())
-    return PP_ERROR_FAILED;
 
   decoder_->ReusePictureBuffer(texture_id);
   return PP_OK;

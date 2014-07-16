@@ -556,12 +556,6 @@ void VideoDecoderShim::OnResetComplete() {
   // Dismiss any old textures now.
   while (!textures_to_dismiss_.empty())
     DismissTexture(*textures_to_dismiss_.begin());
-  // Make all textures available.
-  for (TextureIdMap::const_iterator it = texture_id_map_.begin();
-       it != texture_id_map_.end();
-       ++it) {
-    available_textures_.insert(it->first);
-  }
 
   state_ = DECODING;
   host_->NotifyResetDone();

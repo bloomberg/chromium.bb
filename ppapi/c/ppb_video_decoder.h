@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_video_decoder.idl modified Wed May 21 09:50:52 2014. */
+/* From ppb_video_decoder.idl modified Fri Jul 11 18:06:37 2014. */
 
 #ifndef PPAPI_C_PPB_VIDEO_DECODER_H_
 #define PPAPI_C_PPB_VIDEO_DECODER_H_
@@ -180,8 +180,8 @@ struct PPB_VideoDecoder_0_1 { /* dev */
    * the decoder signals completion by running |callback|. Just before
    * completion, any pending GetPicture() call will complete by running its
    * callback with result PP_ERROR_ABORTED to signal that no more pictures are
-   * available. The plugin should recycle any pictures it is using before
-   * resuming decoding.
+   * available. Any pictures held by the plugin remain valid during and after
+   * the flush and should be recycled back to the decoder.
    *
    * @param[in] video_decoder A <code>PP_Resource</code> identifying the video
    * decoder.
@@ -198,9 +198,10 @@ struct PPB_VideoDecoder_0_1 { /* dev */
    * skip to another position in the video stream. After Reset() returns, any
    * pending calls to Decode() and GetPicture()) abort, causing their callbacks
    * to run with PP_ERROR_ABORTED. The plugin should not make further calls to
-   * the decoder until the decoder signals completion by running |callback|.
-   * The pictures in use by the plugin remain valid until decoding is resumed,
-   * but need not be recycled.
+   * the decoder other than RecyclePicture() until the decoder signals
+   * completion by running |callback|. Any pictures held by the plugin remain
+   * valid during and after the reset and should be recycled back to the
+   * decoder.
    *
    * @param[in] video_decoder A <code>PP_Resource</code> identifying the video
    * decoder.

@@ -149,8 +149,8 @@ class VideoDecoder : public Resource {
   /// the decoder signals completion by running |callback|. Just before
   /// completion, any pending GetPicture() call will complete by running its
   /// callback with result PP_ERROR_ABORTED to signal that no more pictures are
-  /// available. The plugin should recycle any pictures it is using before
-  /// resuming decoding.
+  /// available. Any pictures held by the plugin remain valid during and after
+  /// the flush and should be recycled back to the decoder.
   ///
   /// @param[in] callback A <code>CompletionCallback</code> to be called on
   /// completion.
@@ -163,9 +163,10 @@ class VideoDecoder : public Resource {
   /// skip to another position in the video stream. After Reset() returns, any
   /// pending calls to Decode() and GetPicture()) abort, causing their callbacks
   /// to run with PP_ERROR_ABORTED. The plugin should not make further calls to
-  /// the decoder until the decoder signals completion by running |callback|.
-  /// The pictures in use by the plugin remain valid until decoding is resumed,
-  /// but need not be recycled.
+  /// the decoder other than RecyclePicture() until the decoder signals
+  /// completion by running |callback|. Any pictures held by the plugin remain
+  /// valid during and after the reset and should be recycled back to the
+  /// decoder.
   ///
   /// @param[in] callback A <code>CompletionCallback</code> to be called on
   /// completion.

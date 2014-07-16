@@ -260,8 +260,6 @@ int32_t VideoDecoderResource::GetPicture(
 void VideoDecoderResource::RecyclePicture(const PP_VideoPicture* picture) {
   if (decoder_last_error_)
     return;
-  if (reset_callback_)
-    return;
 
   Post(RENDERER, PpapiHostMsg_VideoDecoder_RecyclePicture(picture->texture_id));
 }
@@ -471,9 +469,12 @@ void VideoDecoderResource::OnPluginMsgResetComplete(
     const ResourceMessageReplyParams& params) {
   // All shm buffers should have been made available by now.
   DCHECK_EQ(shm_buffers_.size(), available_shm_buffers_.size());
-  // Received pictures are no longer valid.
-  while (!received_pictures_.empty())
+  // Recycle any pictures which haven't been passed to the plugin.
+  while (!received_pictures_.empty()) {
+    Post(RENDERER, PpapiHostMsg_VideoDecoder_RecyclePicture(
+        received_pictures_.front().texture_id));
     received_pictures_.pop();
+  }
 
   scoped_refptr<TrackedCallback> callback;
   callback.swap(reset_callback_);
