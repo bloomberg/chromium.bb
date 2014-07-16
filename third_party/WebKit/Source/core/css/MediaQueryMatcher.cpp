@@ -122,8 +122,10 @@ void MediaQueryMatcher::mediaFeaturesChanged()
 
 void MediaQueryMatcher::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_document);
     visitor->trace(m_mediaLists);
+#endif
 }
 
 }

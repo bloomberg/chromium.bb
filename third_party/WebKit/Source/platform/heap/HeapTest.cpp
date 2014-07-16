@@ -2017,7 +2017,7 @@ public:
     static OffHeapContainer* create() { return new OffHeapContainer(); }
 
     static const int iterations = 300;
-    static const int deadWrappers = 2700;
+    static const int deadWrappers = 2400;
 
     OffHeapContainer()
     {
@@ -2029,7 +2029,6 @@ public:
             m_hashSet.add(IntWrapper::create(i));
             m_hashMap.add(i + 103, IntWrapper::create(i));
             m_listHashSet.add(IntWrapper::create(i));
-            m_linkedHashSet.add(IntWrapper::create(i));
             m_ownedVector.append(adoptPtr(new ShouldBeTraced(IntWrapper::create(i))));
         }
 
@@ -2040,7 +2039,6 @@ public:
         HashSet<Member<IntWrapper> >::iterator setIterator(m_hashSet.begin());
         HashMap<int, Member<IntWrapper> >::iterator mapIterator(m_hashMap.begin());
         ListHashSet<Member<IntWrapper> >::iterator listSetIterator(m_listHashSet.begin());
-        LinkedHashSet<Member<IntWrapper> >::iterator linkedSetIterator(m_linkedHashSet.begin());
         Vector<OwnPtr<ShouldBeTraced> >::iterator ownedVectorIterator(m_ownedVector.begin());
 
         for (int i = 0; i < iterations; i++) {
@@ -2050,7 +2048,6 @@ public:
             EXPECT_EQ(i, v1Iterator->m_wrapper->value());
             EXPECT_EQ(i, d2Iterator->get()->value());
             EXPECT_EQ(i, v2Iterator->get()->value());
-            EXPECT_EQ(i, linkedSetIterator->get()->value());
             EXPECT_EQ(i, listSetIterator->get()->value());
             EXPECT_EQ(i, ownedVectorIterator->get()->m_wrapper->value());
             int value = setIterator->get()->value();
@@ -2066,7 +2063,6 @@ public:
             ++setIterator;
             ++mapIterator;
             ++listSetIterator;
-            ++linkedSetIterator;
             ++ownedVectorIterator;
         }
         EXPECT_EQ(d1Iterator, m_deque1.end());
@@ -2076,7 +2072,6 @@ public:
         EXPECT_EQ(setIterator, m_hashSet.end());
         EXPECT_EQ(mapIterator, m_hashMap.end());
         EXPECT_EQ(listSetIterator, m_listHashSet.end());
-        EXPECT_EQ(linkedSetIterator, m_linkedHashSet.end());
         EXPECT_EQ(ownedVectorIterator, m_ownedVector.end());
     }
 
@@ -2089,7 +2084,6 @@ public:
         visitor->trace(m_hashSet);
         visitor->trace(m_hashMap);
         visitor->trace(m_listHashSet);
-        visitor->trace(m_linkedHashSet);
         visitor->trace(m_listHashSet);
         visitor->trace(m_ownedVector);
     }
@@ -2101,7 +2095,6 @@ public:
     HashSet<Member<IntWrapper> > m_hashSet;
     HashMap<int, Member<IntWrapper> > m_hashMap;
     ListHashSet<Member<IntWrapper> > m_listHashSet;
-    LinkedHashSet<Member<IntWrapper> > m_linkedHashSet;
     Vector<OwnPtr<ShouldBeTraced> > m_ownedVector;
 };
 

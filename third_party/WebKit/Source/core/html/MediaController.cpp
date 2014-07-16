@@ -613,9 +613,11 @@ void MediaController::scheduleTimeupdateEvent()
 
 void MediaController::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_mediaElements);
     visitor->trace(m_pendingEventsQueue);
     visitor->trace(m_executionContext);
+#endif
     EventTargetWithInlineData::trace(visitor);
 }
 
