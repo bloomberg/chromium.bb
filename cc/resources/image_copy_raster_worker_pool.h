@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "cc/output/context_provider.h"
 #include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/rasterizer.h"
 
@@ -26,6 +27,7 @@ class CC_EXPORT ImageCopyRasterWorkerPool : public RasterWorkerPool,
   static scoped_ptr<RasterWorkerPool> Create(
       base::SequencedTaskRunner* task_runner,
       TaskGraphRunner* task_graph_runner,
+      ContextProvider* context_provider,
       ResourceProvider* resource_provider,
       ResourcePool* resource_pool);
 
@@ -45,6 +47,7 @@ class CC_EXPORT ImageCopyRasterWorkerPool : public RasterWorkerPool,
  protected:
   ImageCopyRasterWorkerPool(base::SequencedTaskRunner* task_runner,
                             TaskGraphRunner* task_graph_runner,
+                            ContextProvider* context_provider,
                             ResourceProvider* resource_provider,
                             ResourcePool* resource_pool);
 
@@ -81,6 +84,7 @@ class CC_EXPORT ImageCopyRasterWorkerPool : public RasterWorkerPool,
   TaskGraphRunner* task_graph_runner_;
   const NamespaceToken namespace_token_;
   RasterizerClient* client_;
+  ContextProvider* context_provider_;
   ResourceProvider* resource_provider_;
   ResourcePool* resource_pool_;
 

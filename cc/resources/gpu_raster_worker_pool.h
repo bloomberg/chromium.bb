@@ -21,6 +21,7 @@ class CC_EXPORT GpuRasterWorkerPool : public RasterWorkerPool,
 
   static scoped_ptr<RasterWorkerPool> Create(
       base::SequencedTaskRunner* task_runner,
+      ContextProvider* context_provider,
       ResourceProvider* resource_provider);
 
   // Overridden from RasterWorkerPool:
@@ -38,6 +39,7 @@ class CC_EXPORT GpuRasterWorkerPool : public RasterWorkerPool,
 
  private:
   GpuRasterWorkerPool(base::SequencedTaskRunner* task_runner,
+                      ContextProvider* context_provider,
                       ResourceProvider* resource_provider);
 
   void OnRasterFinished();
@@ -50,6 +52,7 @@ class CC_EXPORT GpuRasterWorkerPool : public RasterWorkerPool,
   scoped_ptr<TaskGraphRunner> task_graph_runner_;
   const NamespaceToken namespace_token_;
   RasterizerClient* client_;
+  ContextProvider* context_provider_;
   ResourceProvider* resource_provider_;
 
   bool run_tasks_on_origin_thread_pending_;

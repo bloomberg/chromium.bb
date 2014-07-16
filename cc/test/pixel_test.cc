@@ -25,6 +25,7 @@
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/test_in_process_context_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -71,7 +72,8 @@ bool PixelTest::RunPixelTestWithReadbackTarget(
                        disable_picture_quad_image_filtering_);
 
   // Wait for the readback to complete.
-  resource_provider_->Finish();
+  if (output_surface_->context_provider())
+    output_surface_->context_provider()->ContextGL()->Finish();
   run_loop.Run();
 
   return PixelsMatchReference(ref_file, comparator);

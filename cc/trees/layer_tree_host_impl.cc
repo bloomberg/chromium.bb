@@ -64,6 +64,7 @@
 #include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "ui/gfx/frame_time.h"
 #include "ui/gfx/size_conversions.h"
@@ -1393,8 +1394,9 @@ void LayerTreeHostImpl::ReclaimResources(const CompositorFrameAck* ack) {
   // If we're not visible, we likely released resources, so we want to
   // aggressively flush here to make sure those DeleteTextures make it to the
   // GPU process to free up the memory.
-  if (resource_provider_ && !visible_)
-    resource_provider_->ShallowFlushIfSupported();
+  if (output_surface_->context_provider() && !visible_) {
+    output_surface_->context_provider()->ContextGL()->ShallowFlushCHROMIUM();
+  }
 }
 
 void LayerTreeHostImpl::OnCanDrawStateChangedForTree() {
@@ -1928,8 +1930,10 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
                              GL_TEXTURE_2D,
                              resource_provider_->best_texture_format());
 
-    raster_worker_pool_ = GpuRasterWorkerPool::Create(
-        proxy_->ImplThreadTaskRunner(), resource_provider_.get());
+    raster_worker_pool_ =
+        GpuRasterWorkerPool::Create(proxy_->ImplThreadTaskRunner(),
+                                    context_provider,
+                                    resource_provider_.get());
     on_demand_task_graph_runner_ = &synchronous_task_graph_runner_;
   } else if (UseZeroCopyTextureUpload()) {
     resource_pool_ =
@@ -1956,6 +1960,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
     raster_worker_pool_ = ImageCopyRasterWorkerPool::Create(
         proxy_->ImplThreadTaskRunner(),
         RasterWorkerPool::GetTaskGraphRunner(),
+        context_provider,
         resource_provider_.get(),
         staging_resource_pool_.get());
     on_demand_task_graph_runner_ = RasterWorkerPool::GetTaskGraphRunner();
@@ -1968,6 +1973,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
     raster_worker_pool_ = PixelBufferRasterWorkerPool::Create(
         proxy_->ImplThreadTaskRunner(),
         RasterWorkerPool::GetTaskGraphRunner(),
+        context_provider,
         resource_provider_.get(),
         transfer_buffer_memory_limit_);
     on_demand_task_graph_runner_ = RasterWorkerPool::GetTaskGraphRunner();

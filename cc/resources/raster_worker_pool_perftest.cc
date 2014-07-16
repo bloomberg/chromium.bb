@@ -221,6 +221,7 @@ class RasterWorkerPoolPerfTest
         raster_worker_pool_ = PixelBufferRasterWorkerPool::Create(
             task_runner_.get(),
             task_graph_runner_.get(),
+            context_provider_.get(),
             resource_provider_.get(),
             std::numeric_limits<size_t>::max());
         break;
@@ -234,12 +235,15 @@ class RasterWorkerPoolPerfTest
         raster_worker_pool_ =
             ImageCopyRasterWorkerPool::Create(task_runner_.get(),
                                               task_graph_runner_.get(),
+                                              context_provider_.get(),
                                               resource_provider_.get(),
                                               staging_resource_pool_.get());
         break;
       case RASTER_WORKER_POOL_TYPE_GPU:
-        raster_worker_pool_ = GpuRasterWorkerPool::Create(
-            task_runner_.get(), resource_provider_.get());
+        raster_worker_pool_ =
+            GpuRasterWorkerPool::Create(task_runner_.get(),
+                                        context_provider_.get(),
+                                        resource_provider_.get());
         break;
     }
 

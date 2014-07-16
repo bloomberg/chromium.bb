@@ -181,6 +181,12 @@ const size_t kMaxPendingSyncQueries = 16;
 
 }  // anonymous namespace
 
+static GLint GetActiveTextureUnit(GLES2Interface* gl) {
+  GLint active_unit = 0;
+  gl->GetIntegerv(GL_ACTIVE_TEXTURE, &active_unit);
+  return active_unit;
+}
+
 class GLRenderer::ScopedUseGrContext {
  public:
   static scoped_ptr<ScopedUseGrContext> Create(GLRenderer* renderer,
@@ -1066,7 +1072,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   if (filter_bitmap.getTexture()) {
     GrTexture* texture =
         reinterpret_cast<GrTexture*>(filter_bitmap.getTexture());
-    DCHECK_EQ(GL_TEXTURE0, ResourceProvider::GetActiveTextureUnit(gl_));
+    DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
     gl_->BindTexture(GL_TEXTURE_2D, texture->getTextureHandle());
   } else {
     contents_resource_lock =
@@ -1854,7 +1860,7 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
 
   ResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                           quad->resource_id);
-  DCHECK_EQ(GL_TEXTURE0, ResourceProvider::GetActiveTextureUnit(gl_));
+  DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
   GLC(gl_, gl_->BindTexture(GL_TEXTURE_EXTERNAL_OES, lock.texture_id()));
 
   GLC(gl_, gl_->Uniform1i(program->fragment_shader().sampler_location(), 0));
@@ -1964,7 +1970,7 @@ void GLRenderer::FlushTextureQuadCache() {
   // Assume the current active textures is 0.
   ResourceProvider::ScopedReadLockGL locked_quad(resource_provider_,
                                                  draw_cache_.resource_id);
-  DCHECK_EQ(GL_TEXTURE0, ResourceProvider::GetActiveTextureUnit(gl_));
+  DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
   GLC(gl_, gl_->BindTexture(GL_TEXTURE_2D, locked_quad.texture_id()));
 
   COMPILE_ASSERT(sizeof(Float4) == 4 * sizeof(float), struct_is_densely_packed);
@@ -2113,7 +2119,7 @@ void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame* frame,
 
   ResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                           quad->io_surface_resource_id);
-  DCHECK_EQ(GL_TEXTURE0, ResourceProvider::GetActiveTextureUnit(gl_));
+  DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
   GLC(gl_, gl_->BindTexture(GL_TEXTURE_RECTANGLE_ARB, lock.texture_id()));
 
   DrawQuadGeometry(
@@ -2266,7 +2272,7 @@ void GLRenderer::CopyTextureToFramebuffer(const DrawingFrame* frame,
   }
 
   SetShaderOpacity(1.f, program->fragment_shader().alpha_location());
-  DCHECK_EQ(GL_TEXTURE0, ResourceProvider::GetActiveTextureUnit(gl_));
+  DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
   GLC(gl_, gl_->BindTexture(GL_TEXTURE_2D, texture_id));
   DrawQuadGeometry(
       frame, draw_matrix, rect, program->vertex_shader().matrix_location());

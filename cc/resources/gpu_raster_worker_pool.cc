@@ -8,6 +8,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/resources/resource.h"
 #include "cc/resources/resource_provider.h"
+#include "cc/resources/scoped_gpu_raster.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
@@ -16,16 +17,19 @@ namespace cc {
 // static
 scoped_ptr<RasterWorkerPool> GpuRasterWorkerPool::Create(
     base::SequencedTaskRunner* task_runner,
+    ContextProvider* context_provider,
     ResourceProvider* resource_provider) {
-  return make_scoped_ptr<RasterWorkerPool>(
-      new GpuRasterWorkerPool(task_runner, resource_provider));
+  return make_scoped_ptr<RasterWorkerPool>(new GpuRasterWorkerPool(
+      task_runner, context_provider, resource_provider));
 }
 
 GpuRasterWorkerPool::GpuRasterWorkerPool(base::SequencedTaskRunner* task_runner,
+                                         ContextProvider* context_provider,
                                          ResourceProvider* resource_provider)
     : task_runner_(task_runner),
       task_graph_runner_(new TaskGraphRunner),
       namespace_token_(task_graph_runner_->GetNamespaceToken()),
+      context_provider_(context_provider),
       resource_provider_(resource_provider),
       run_tasks_on_origin_thread_pending_(false),
       raster_tasks_pending_(false),
@@ -185,7 +189,7 @@ void GpuRasterWorkerPool::RunTasksOnOriginThread() {
   DCHECK(run_tasks_on_origin_thread_pending_);
   run_tasks_on_origin_thread_pending_ = false;
 
-  ResourceProvider::ScopedGpuRaster gpu_raster(resource_provider_);
+  ScopedGpuRaster gpu_raster(context_provider_);
   task_graph_runner_->RunUntilIdle();
 }
 

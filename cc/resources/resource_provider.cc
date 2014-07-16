@@ -1015,30 +1015,6 @@ base::TimeTicks ResourceProvider::EstimatedUploadCompletionTime(
   return gfx::FrameTime::Now() + upload_one_texture_time * total_uploads;
 }
 
-void ResourceProvider::Flush() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  GLES2Interface* gl = ContextGL();
-  if (gl)
-    gl->Flush();
-}
-
-void ResourceProvider::Finish() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  GLES2Interface* gl = ContextGL();
-  if (gl)
-    gl->Finish();
-}
-
-bool ResourceProvider::ShallowFlushIfSupported() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  GLES2Interface* gl = ContextGL();
-  if (!gl)
-    return false;
-
-  gl->ShallowFlushCHROMIUM();
-  return true;
-}
-
 ResourceProvider::Resource* ResourceProvider::GetResource(ResourceId id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ResourceMap::iterator it = resources_.find(id);
@@ -1229,16 +1205,6 @@ ResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware() {
   resource_provider_->UnlockForWrite(resource_id_);
 }
 
-ResourceProvider::ScopedGpuRaster::ScopedGpuRaster(
-    ResourceProvider* resource_provider)
-    : resource_provider_(resource_provider) {
-  resource_provider_->BeginGpuRaster();
-}
-
-ResourceProvider::ScopedGpuRaster::~ScopedGpuRaster() {
-  resource_provider_->EndGpuRaster();
-}
-
 ResourceProvider::ResourceProvider(OutputSurface* output_surface,
                                    SharedBitmapManager* shared_bitmap_manager,
                                    int highp_threshold_min,
@@ -1331,7 +1297,7 @@ void ResourceProvider::CleanUpGLIfNeeded() {
   texture_uploader_.reset();
   texture_id_allocator_.reset();
   buffer_id_allocator_.reset();
-  Finish();
+  gl->Finish();
 }
 
 int ResourceProvider::CreateChild(const ReturnCallback& return_callback) {
@@ -2281,34 +2247,6 @@ GLES2Interface* ResourceProvider::ContextGL() const {
 class GrContext* ResourceProvider::GrContext() const {
   ContextProvider* context_provider = output_surface_->context_provider();
   return context_provider ? context_provider->GrContext() : NULL;
-}
-
-void ResourceProvider::BeginGpuRaster() {
-  GLES2Interface* gl = ContextGL();
-  DCHECK(gl);
-
-  // TODO(alokp): Use a trace macro to push/pop markers.
-  // Using push/pop functions directly incurs cost to evaluate function
-  // arguments even when tracing is disabled.
-  gl->PushGroupMarkerEXT(0, "GpuRasterization");
-
-  class GrContext* gr_context = GrContext();
-  if (gr_context)
-    gr_context->resetContext();
-}
-
-void ResourceProvider::EndGpuRaster() {
-  GLES2Interface* gl = ContextGL();
-  DCHECK(gl);
-
-  class GrContext* gr_context = GrContext();
-  if (gr_context)
-    gr_context->flush();
-
-  // TODO(alokp): Use a trace macro to push/pop markers.
-  // Using push/pop functions directly incurs cost to evaluate function
-  // arguments even when tracing is disabled.
-  gl->PopGroupMarkerEXT();
 }
 
 }  // namespace cc

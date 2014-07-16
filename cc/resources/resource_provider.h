@@ -153,14 +153,6 @@ class CC_EXPORT ResourceProvider {
   void ReleaseCachedData();
   base::TimeTicks EstimatedUploadCompletionTime(size_t uploads_per_tick);
 
-  // Flush all context operations, kicking uploads and ensuring ordering with
-  // respect to other contexts.
-  void Flush();
-
-  // Finish all context operations, causing any pending callbacks to be
-  // scheduled.
-  void Finish();
-
   // Only flush the command buffer if supported.
   // Returns true if the shallow flush occurred, false otherwise.
   bool ShallowFlushIfSupported();
@@ -304,20 +296,6 @@ class CC_EXPORT ResourceProvider {
     scoped_ptr<SkCanvas> sk_canvas_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockSoftware);
-  };
-
-  // The following class is needed to modify GL resources using GPU
-  // raster. The user must ensure that they only use GPU raster on
-  // GL resources while an instance of this class is alive.
-  class CC_EXPORT ScopedGpuRaster {
-   public:
-    ScopedGpuRaster(ResourceProvider* resource_provider);
-    ~ScopedGpuRaster();
-
-   private:
-    ResourceProvider* resource_provider_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedGpuRaster);
   };
 
   class Fence : public base::RefCounted<Fence> {
@@ -640,9 +618,6 @@ class CC_EXPORT ResourceProvider {
   // Returns NULL if the output_surface_ does not have a ContextProvider.
   gpu::gles2::GLES2Interface* ContextGL() const;
   class GrContext* GrContext() const;
-
-  void BeginGpuRaster();
-  void EndGpuRaster();
 
   OutputSurface* output_surface_;
   SharedBitmapManager* shared_bitmap_manager_;

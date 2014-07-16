@@ -25,6 +25,7 @@
 #include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gfx/frame_time.h"
 
 namespace {
@@ -1273,8 +1274,12 @@ void ThreadProxy::InitializeOutputSurfaceOnImplThread(
 void ThreadProxy::FinishGLOnImplThread(CompletionEvent* completion) {
   TRACE_EVENT0("cc", "ThreadProxy::FinishGLOnImplThread");
   DCHECK(IsImplThread());
-  if (impl().layer_tree_host_impl->resource_provider())
-    impl().layer_tree_host_impl->resource_provider()->Finish();
+  if (impl().layer_tree_host_impl->output_surface()) {
+    ContextProvider* context_provider =
+        impl().layer_tree_host_impl->output_surface()->context_provider();
+    if (context_provider)
+      context_provider->ContextGL()->Finish();
+  }
   completion->Signal();
 }
 

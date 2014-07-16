@@ -10,6 +10,7 @@
 #include "cc/debug/traced_value.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/scoped_resource.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 
 namespace cc {
 
@@ -17,26 +18,34 @@ namespace cc {
 scoped_ptr<RasterWorkerPool> ImageCopyRasterWorkerPool::Create(
     base::SequencedTaskRunner* task_runner,
     TaskGraphRunner* task_graph_runner,
+    ContextProvider* context_provider,
     ResourceProvider* resource_provider,
     ResourcePool* resource_pool) {
-  return make_scoped_ptr<RasterWorkerPool>(new ImageCopyRasterWorkerPool(
-      task_runner, task_graph_runner, resource_provider, resource_pool));
+  return make_scoped_ptr<RasterWorkerPool>(
+      new ImageCopyRasterWorkerPool(task_runner,
+                                    task_graph_runner,
+                                    context_provider,
+                                    resource_provider,
+                                    resource_pool));
 }
 
 ImageCopyRasterWorkerPool::ImageCopyRasterWorkerPool(
     base::SequencedTaskRunner* task_runner,
     TaskGraphRunner* task_graph_runner,
+    ContextProvider* context_provider,
     ResourceProvider* resource_provider,
     ResourcePool* resource_pool)
     : task_runner_(task_runner),
       task_graph_runner_(task_graph_runner),
       namespace_token_(task_graph_runner->GetNamespaceToken()),
+      context_provider_(context_provider),
       resource_provider_(resource_provider),
       resource_pool_(resource_pool),
       has_performed_copy_since_last_flush_(false),
       raster_tasks_pending_(false),
       raster_tasks_required_for_activation_pending_(false),
-      raster_finished_weak_ptr_factory_(this) {}
+      raster_finished_weak_ptr_factory_(this) {
+}
 
 ImageCopyRasterWorkerPool::~ImageCopyRasterWorkerPool() {
   DCHECK_EQ(0u, raster_task_states_.size());
@@ -226,7 +235,8 @@ void ImageCopyRasterWorkerPool::FlushCopies() {
   if (!has_performed_copy_since_last_flush_)
     return;
 
-  resource_provider_->ShallowFlushIfSupported();
+  if (context_provider_)
+    context_provider_->ContextGL()->ShallowFlushCHROMIUM();
   has_performed_copy_since_last_flush_ = false;
 }
 
