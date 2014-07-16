@@ -100,9 +100,6 @@ void X11Window::Show() {
   XISetMask(mask, XI_TouchBegin);
   XISetMask(mask, XI_TouchUpdate);
   XISetMask(mask, XI_TouchEnd);
-  XISetMask(mask, XI_ButtonPress);
-  XISetMask(mask, XI_ButtonRelease);
-  XISetMask(mask, XI_Motion);
 
   XIEventMask evmask;
   evmask.deviceid = XIAllDevices;
