@@ -305,6 +305,8 @@ WebContents* DevToolsWindow::ObserverWithAccessor::GetWebContents() {
 const char DevToolsWindow::kDevToolsApp[] = "DevToolsApp";
 
 DevToolsWindow::~DevToolsWindow() {
+  life_stage_ = kClosing;
+
   UpdateBrowserWindow();
   UpdateBrowserToolbar();
 
