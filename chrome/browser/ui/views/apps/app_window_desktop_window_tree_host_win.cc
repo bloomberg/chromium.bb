@@ -75,17 +75,11 @@ void AppWindowDesktopWindowTreeHostWin::UpdateDWMFrame() {
     gfx::Insets insets = app_window_->glass_frame_view()->GetGlassInsets();
     // The DWM API's expect values in pixels. We need to convert from DIP to
     // pixels here.
-    gfx::Rect insets_rect_in_pixels(insets.left(),
-                                    insets.top(),
-                                    insets.right() - insets.left(),
-                                    insets.bottom() - insets.top());
-    insets_rect_in_pixels = gfx::win::DIPToScreenRect(insets_rect_in_pixels);
-    margins.cxLeftWidth = insets_rect_in_pixels.x();
-    margins.cxRightWidth =
-        insets_rect_in_pixels.x() + insets_rect_in_pixels.width();
-    margins.cyBottomHeight =
-        insets_rect_in_pixels.y() + insets_rect_in_pixels.height();
-    margins.cyTopHeight = insets_rect_in_pixels.y();
+    insets = insets.Scale(gfx::win::GetDeviceScaleFactor());
+    margins.cxLeftWidth = insets.left();
+    margins.cxRightWidth = insets.right();
+    margins.cyBottomHeight = insets.bottom();
+    margins.cyTopHeight = insets.top();
   }
 
   DwmExtendFrameIntoClientArea(GetHWND(), &margins);
