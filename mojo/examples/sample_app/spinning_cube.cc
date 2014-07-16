@@ -22,7 +22,6 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
-namespace mojo {
 namespace examples {
 
 namespace {
@@ -469,4 +468,3 @@ void SpinningCube::Update() {
 }
 
 }  // namespace examples
-}  // namespace mojo

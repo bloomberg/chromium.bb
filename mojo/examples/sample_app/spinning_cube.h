@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 
-namespace mojo {
 namespace examples {
 
 class SpinningCube {
@@ -46,6 +45,5 @@ class SpinningCube {
 };
 
 }  // namespace examples
-}  // namespace mojo
 
 #endif  // MOJO_EXAMPLES_SAMPLE_APP_SPINNING_CUBE_H_

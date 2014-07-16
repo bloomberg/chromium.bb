@@ -11,16 +11,15 @@
 #include "ui/gfx/point_f.h"
 #include "ui/gfx/size.h"
 
-namespace mojo {
 namespace examples {
 
 class GLES2ClientImpl {
  public:
-  explicit GLES2ClientImpl(CommandBufferPtr command_buffer);
+  explicit GLES2ClientImpl(mojo::CommandBufferPtr command_buffer);
   virtual ~GLES2ClientImpl();
 
-  void SetSize(const Size& size);
-  void HandleInputEvent(const Event& event);
+  void SetSize(const mojo::Size& size);
+  void HandleInputEvent(const mojo::Event& event);
 
  private:
   void ContextLost();
@@ -45,6 +44,5 @@ class GLES2ClientImpl {
 };
 
 }  // namespace examples
-}  // namespace mojo
 
 #endif  // MOJO_EXAMPLES_SAMPLE_APP_GLES2_CLIENT_IMPL_H_

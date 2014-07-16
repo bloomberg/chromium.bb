@@ -12,11 +12,10 @@
 #include "mojo/public/c/gles2/gles2.h"
 #include "ui/events/event_constants.h"
 
-namespace mojo {
 namespace examples {
 namespace {
 
-float CalculateDragDistance(const gfx::PointF& start, const Point& end) {
+float CalculateDragDistance(const gfx::PointF& start, const mojo::Point& end) {
   return hypot(start.x() - end.x, start.y() - end.y);
 }
 
@@ -26,7 +25,7 @@ float GetRandomColor() {
 
 }
 
-GLES2ClientImpl::GLES2ClientImpl(CommandBufferPtr command_buffer)
+GLES2ClientImpl::GLES2ClientImpl(mojo::CommandBufferPtr command_buffer)
     : getting_animation_frames_(false) {
   context_ = MojoGLES2CreateContext(
       command_buffer.PassMessagePipe().release().value(),
@@ -40,7 +39,7 @@ GLES2ClientImpl::~GLES2ClientImpl() {
   MojoGLES2DestroyContext(context_);
 }
 
-void GLES2ClientImpl::SetSize(const Size& size) {
+void GLES2ClientImpl::SetSize(const mojo::Size& size) {
   size_ = gfx::Size(size.width, size.height);
   if (size_.IsEmpty())
     return;
@@ -48,7 +47,7 @@ void GLES2ClientImpl::SetSize(const Size& size) {
   RequestAnimationFrames();
 }
 
-void GLES2ClientImpl::HandleInputEvent(const Event& event) {
+void GLES2ClientImpl::HandleInputEvent(const mojo::Event& event) {
   switch (event.action) {
   case ui::ET_MOUSE_PRESSED:
   case ui::ET_TOUCH_PRESSED:
@@ -57,7 +56,7 @@ void GLES2ClientImpl::HandleInputEvent(const Event& event) {
     CancelAnimationFrames();
     capture_point_.SetPoint(event.location->x, event.location->y);
     last_drag_point_ = capture_point_;
-    drag_start_time_ = GetTimeTicksNow();
+    drag_start_time_ = mojo::GetTimeTicksNow();
     break;
   case ui::ET_MOUSE_DRAGGED:
   case ui::ET_TOUCH_MOVED:
@@ -81,7 +80,7 @@ void GLES2ClientImpl::HandleInputEvent(const Event& event) {
       cube_.set_color(GetRandomColor(), GetRandomColor(), GetRandomColor());
       break;
     }
-    MojoTimeTicks offset = GetTimeTicksNow() - drag_start_time_;
+    MojoTimeTicks offset = mojo::GetTimeTicksNow() - drag_start_time_;
     float delta = static_cast<float>(offset) / 1000000.;
     cube_.SetFlingMultiplier(
         CalculateDragDistance(capture_point_, *event.location),
@@ -105,7 +104,7 @@ void GLES2ClientImpl::ContextLostThunk(void* closure) {
 }
 
 void GLES2ClientImpl::DrawAnimationFrame() {
-  MojoTimeTicks now = GetTimeTicksNow();
+  MojoTimeTicks now = mojo::GetTimeTicksNow();
   MojoTimeTicks offset = now - last_time_;
   float delta = static_cast<float>(offset) / 1000000.;
   last_time_ = now;
@@ -122,7 +121,7 @@ void GLES2ClientImpl::DrawAnimationFrameThunk(void* closure) {
 void GLES2ClientImpl::RequestAnimationFrames() {
   getting_animation_frames_ = true;
   MojoGLES2RequestAnimationFrames(context_);
-  last_time_ = GetTimeTicksNow();
+  last_time_ = mojo::GetTimeTicksNow();
 }
 
 void GLES2ClientImpl::CancelAnimationFrames() {
@@ -131,4 +130,3 @@ void GLES2ClientImpl::CancelAnimationFrames() {
 }
 
 }  // namespace examples
-}  // namespace mojo
