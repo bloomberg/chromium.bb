@@ -450,7 +450,7 @@ crbug.com/268832 [ SnowLeopard Debug ] virtual/regionbasedmulticol/fast/multicol
 
 crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
 
-crbug.com/278497 [ SnowLeopard Debug ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
+crbug.com/278497 [ Mac Win ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
 
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 crbug.com/282081 [ Debug ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Crash Pass ]
@@ -1195,7 +1195,6 @@ crbug.com/384566 svg/custom/textPath-change-reference2.svg [ ImageOnlyFailure Pa
 crbug.com/30536 [ Win ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ ImageOnlyFailure ]
 crbug.com/30536 [ Win ] http/tests/images/drag-image-to-desktop.html [ Failure ]
 crbug.com/30536 [ Win ] http/tests/inspector/network/long-script-content.html [ Failure ]
-crbug.com/30536 [ Win7 ] http/tests/inspector/network/network-timing.html [ Failure Pass ]
 crbug.com/30536 [ Win ] http/tests/inspector/resource-parameters.html [ Failure ]
 crbug.com/30536 [ Win ] http/tests/local/blob/send-data-blob.html [ Failure ]
 crbug.com/30536 [ Win ] http/tests/local/blob/send-hybrid-blob.html [ Failure ]
@@ -1240,9 +1239,15 @@ crbug.com/30536 [ XP ] http/tests/security/script-crossorigin-fails-cross-origin
 crbug.com/30536 [ Win ] http/tests/htmlimports/import-async-grandchild-not-child.html [ Pass Timeout ]
 crbug.com/30536 [ Win ] http/tests/encoding/meta-switch-mid-parse.html [ Timeout Pass ]
 crbug.com/30536 [ Win ] http/tests/encoding/meta-switch-mid-parse-with-title.html [ Timeout Pass ]
+crbug.com/30536 [ Win ] http/tests/htmlimports/csp-import-block-but-domain-nested.html [ Timeout Pass ]
+crbug.com/30536 [ Win ] http/tests/ssl/referer-301.html [ Timeout Pass ]
 
 crbug.com/390204 [ Release ] inspector/console/console-viewport-selection.html [ Pass Failure ]
 crbug.com/390204 [ Debug ] inspector/console/console-viewport-selection.html [ Pass Failure Slow ]
+crbug.com/394206 [ Mac Win ] http/tests/inspector/network/network-timing.html [ Pass Failure ]
+crbug.com/394208 [ Win ] http/tests/security/link-crossorigin-stylesheet-use-credentials.html [ Timeout Pass ]
+crbug.com/394208 [ Mac Linux ] http/tests/security/link-crossorigin-stylesheet-use-credentials.html [ Failure Pass ]
+crbug.com/394210 [ Win ] inspector/profiler/webgl/webgl-profiler-api-changes.html [ Timeout Pass ]
 
 # Assertion failures seen only on Slow Leopard.
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-skip-step-in.html [ Crash ]
