@@ -57,6 +57,8 @@ class SyncNotificationDelegate : public NotificationDelegate {
   virtual ~SyncNotificationDelegate();
 
  private:
+  void ShowSyncSetup();
+
   // Unique id of the notification.
   const std::string id_;
 
@@ -89,6 +91,11 @@ bool SyncNotificationDelegate::HasClickedListener() {
 }
 
 void SyncNotificationDelegate::Click() {
+  ShowSyncSetup();
+}
+
+void SyncNotificationDelegate::ButtonClick(int button_index) {
+  ShowSyncSetup();
 }
 
 std::string SyncNotificationDelegate::id() const {
@@ -99,7 +106,7 @@ content::WebContents* SyncNotificationDelegate::GetWebContents() const {
   return NULL;
 }
 
-void SyncNotificationDelegate::ButtonClick(int button_index) {
+void SyncNotificationDelegate::ShowSyncSetup() {
   LoginUIService* login_ui = LoginUIServiceFactory::GetForProfile(profile_);
   if (login_ui->current_login_ui()) {
     // TODO(michaelpg): The LoginUI might be on an inactive desktop.

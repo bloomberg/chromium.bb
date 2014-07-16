@@ -62,6 +62,8 @@ class SigninNotificationDelegate : public NotificationDelegate {
   virtual ~SigninNotificationDelegate();
 
  private:
+  void FixSignIn();
+
   // Unique id of the notification.
   const std::string id_;
 
@@ -94,9 +96,22 @@ bool SigninNotificationDelegate::HasClickedListener() {
 }
 
 void SigninNotificationDelegate::Click() {
+  FixSignIn();
 }
 
 void SigninNotificationDelegate::ButtonClick(int button_index) {
+  FixSignIn();
+}
+
+std::string SigninNotificationDelegate::id() const {
+  return id_;
+}
+
+content::WebContents* SigninNotificationDelegate::GetWebContents() const {
+  return NULL;
+}
+
+void SigninNotificationDelegate::FixSignIn() {
 #if defined(OS_CHROMEOS)
   chrome::AttemptUserExit();
 #else
@@ -114,14 +129,6 @@ void SigninNotificationDelegate::ButtonClick(int button_index) {
   chrome::ShowSettingsSubPage(browser_displayer.browser(),
                               chrome::kSyncSetupSubPage);
 #endif
-}
-
-std::string SigninNotificationDelegate::id() const {
-  return id_;
-}
-
-content::WebContents* SigninNotificationDelegate::GetWebContents() const {
-  return NULL;
 }
 
 }  // namespace
