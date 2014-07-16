@@ -33,24 +33,15 @@ namespace {
 #  define MAYBE_SysconfNprocessorsOnln SysconfNprocessorsOnln
 #endif
 
-// crbug.com/392768
-#if defined(OS_LINUX)
-#  define MAYBE_Messaging DISABLED_Messaging
-#  define MAYBE_Irt DISABLED_Irt
-#else
-#  define MAYBE_Messaging MAYBE_NONSFI(Messaging)
-#  define MAYBE_Irt MAYBE_NONSFI(Irt)
-#endif
-
 NACL_BROWSER_TEST_F(NaClBrowserTest, SimpleLoad, {
   RunLoadTest(FILE_PATH_LITERAL("nacl_load_test.html"));
 })
 
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestNonSfiMode, MAYBE_Messaging) {
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestNonSfiMode, MAYBE_NONSFI(Messaging)) {
   RunLoadTest(FILE_PATH_LITERAL("libc_free.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestNonSfiMode, MAYBE_Irt) {
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestNonSfiMode, MAYBE_NONSFI(Irt)) {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("irt_test.html"));
 }
 

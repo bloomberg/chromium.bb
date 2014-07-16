@@ -1139,6 +1139,11 @@
 
             # Stack-Smashing protector does not work with libc-free context.
             '-fno-stack-protector',
+            # Optimizers may translate the original code to code which
+            # requires builtin functions and/or relocations. Specifically,
+            # the LLVM's optimizer translates for-loop based zero
+            # clear to memset.
+            '-O0',
           ],
           'cflags!': [
             # We filter these out because release_extra_cflags or another
@@ -1148,14 +1153,25 @@
             '-fstack-protector-all',
             '-fprofile-generate',
             '-finstrument-functions',
+            '-O2',
           ],
           'ldflags': [
             '-nostdlib',
             '-shared',
+            # This binary cannot relocate itself, so we should have no
+            # undefined references left.
+            '-Wl,--no-undefined',
           ],
           'ldflags!': [
             # Explicitly remove the -pthread flag to avoid a link time warning.
             '-pthread',
+          ],
+          # Do not use any sanitizers tools, which require a few symbols.
+          'cflags/': [
+            ['exclude', '-fsanitize'],
+          ],
+          'ldflags/': [
+            ['exclude', '-fsanitize'],
           ],
           'defines': [
             # The code depends on NaCl's headers. This is a macro for them.
