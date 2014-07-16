@@ -87,7 +87,7 @@ AppListDialogContentsView::~AppListDialogContentsView() {
 
 // static
 views::Widget* AppListDialogContentsView::CreateDialogWidget(
-    gfx::NativeWindow parent,
+    gfx::NativeView parent,
     const gfx::Rect& bounds,
     AppListDialogContentsView* dialog) {
   views::Widget::InitParams params;

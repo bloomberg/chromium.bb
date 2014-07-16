@@ -27,7 +27,7 @@ class AppListDialogContentsView : public views::WidgetDelegateView,
 
   // Create a |dialog| window Widget with the specified |parent|. The dialog
   // will be resized to fill the body of the app list.
-  static views::Widget* CreateDialogWidget(gfx::NativeWindow parent,
+  static views::Widget* CreateDialogWidget(gfx::NativeView parent,
                                            const gfx::Rect& bounds,
                                            AppListDialogContentsView* dialog);
 
