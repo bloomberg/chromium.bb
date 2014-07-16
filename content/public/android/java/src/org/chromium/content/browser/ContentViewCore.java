@@ -1171,9 +1171,11 @@ public class ContentViewCore
     public boolean onTouchEvent(MotionEvent event) {
         TraceEvent.begin("onTouchEvent");
         try {
-            cancelRequestToScrollFocusedEditableNodeIntoView();
-
             int eventAction = event.getActionMasked();
+
+            if (eventAction == MotionEvent.ACTION_DOWN) {
+                cancelRequestToScrollFocusedEditableNodeIntoView();
+            }
 
             if (isSPenSupported(mContext))
                 eventAction = convertSPenEventAction(eventAction);
