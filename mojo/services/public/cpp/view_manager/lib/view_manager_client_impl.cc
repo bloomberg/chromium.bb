@@ -478,9 +478,7 @@ class EmbedTransaction : public ViewManagerTransaction {
  private:
   // Overridden from ViewManagerTransaction:
   virtual void DoCommit() OVERRIDE {
-    std::vector<Id> ids;
-    ids.push_back(node_id_);
-    service()->Embed(url_, Array<Id>::From(ids), ActionCompletedCallback());
+    service()->Embed(url_, node_id_, ActionCompletedCallback());
   }
   virtual void DoActionCompleted(bool success) OVERRIDE {
     // TODO(beng): recovery?
@@ -745,7 +743,7 @@ void ViewManagerClientImpl::OnViewManagerConnectionEstablished(
   AddRoot(BuildNodeTree(this, nodes));
 }
 
-void ViewManagerClientImpl::OnRootsAdded(Array<NodeDataPtr> nodes) {
+void ViewManagerClientImpl::OnRootAdded(Array<NodeDataPtr> nodes) {
   AddRoot(BuildNodeTree(this, nodes));
 }
 

@@ -126,15 +126,14 @@ interface ViewManagerService {
   // Sets focus to the specified node.
   SetFocus(uint32 node_id) => (bool success);
 
-  // Embeds the app at |url| in the specified nodes. More specifically this
+  // Embeds the app for |url| in the specified node. More specifically this
   // creates a new connection to the specified url, expecting to get an
-  // ViewManagerClient and configures it with the root nodes |nodes|. Fails
-  // if |nodes| is empty or contains nodes that were not created by this
-  // connection.
+  // ViewManagerClient and configures it with the root node |node|. Fails
+  // if |node| was not created by this connection.
   // If a particular client invokes Embed() multiple times with the same url,
   // the connection is reused. When this happens the ViewManagerClient is
-  // notified of the additional roots by way of OnRootsAdded().
-  Embed(string url, uint32[] nodes) => (bool success);
+  // notified of the additional roots by way of OnRootAdded().
+  Embed(string url, uint32 node_id) => (bool success);
 
   // TODO(sky): move these to a separate interface when FIFO works.
 
@@ -156,9 +155,9 @@ interface ViewManagerClient {
                                      uint32 next_server_change_id,
                                      NodeData[] nodes);
 
-  // See description of ViewManagerService::Connect() for details as to when
+  // See description of ViewManagerService::Embed() for details as to when
   // this is invoked.
-  OnRootsAdded(NodeData[] nodes);
+  OnRootAdded(NodeData[] nodes);
 
   // This is sent to clients when a change is made to the server that results
   // in the |server_change_id| changing but the client isn't notified. This is

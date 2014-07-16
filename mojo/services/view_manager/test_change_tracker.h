@@ -101,7 +101,7 @@ class TestChangeTracker {
                                           const String& creator_url,
                                           Id next_server_change_id,
                                           Array<NodeDataPtr> nodes);
-  void OnRootsAdded(Array<NodeDataPtr> nodes);
+  void OnRootAdded(Array<NodeDataPtr> nodes);
   void OnServerChangeIdAdvanced(Id change_id);
   void OnNodeBoundsChanged(Id node_id, RectPtr old_bounds, RectPtr new_bounds);
   void OnNodeHierarchyChanged(Id node_id,

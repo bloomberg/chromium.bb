@@ -92,15 +92,14 @@ void RootNodeManager::RemoveConnection(ViewManagerServiceImpl* connection) {
 
 void RootNodeManager::EmbedRoot(const std::string& url) {
   CHECK(connection_map_.empty());
-  Array<Id> roots(0);
-  EmbedImpl(kRootConnection, String::From(url), roots);
+  EmbedImpl(kRootConnection, String::From(url), InvalidNodeId());
 }
 
 void RootNodeManager::Embed(ConnectionSpecificId creator_id,
                             const String& url,
-                            const Array<Id>& node_ids) {
-  CHECK_GT(node_ids.size(), 0u);
-  EmbedImpl(creator_id, url, node_ids)->set_delete_on_connection_error();
+                            Id transport_node_id) {
+  EmbedImpl(creator_id, url, NodeIdFromTransportId(transport_node_id))->
+      set_delete_on_connection_error();
 }
 
 ViewManagerServiceImpl* RootNodeManager::GetConnection(
@@ -240,7 +239,7 @@ void RootNodeManager::FinishChange() {
 ViewManagerServiceImpl* RootNodeManager::EmbedImpl(
     const ConnectionSpecificId creator_id,
     const String& url,
-    const Array<Id>& node_ids) {
+    const NodeId& root_id) {
   MessagePipe pipe;
 
   ServiceProvider* service_provider =
@@ -258,8 +257,8 @@ ViewManagerServiceImpl* RootNodeManager::EmbedImpl(
       new ViewManagerServiceImpl(this,
                                  creator_id,
                                  creator_url,
-                                 url.To<std::string>());
-  connection->SetRoots(node_ids);
+                                 url.To<std::string>(),
+                                 root_id);
   BindToPipe(connection, pipe.handle0.Pass());
   connections_created_by_connect_.insert(connection);
   return connection;

@@ -167,11 +167,11 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
                                           base::Unretained(this), nodes));
     RunMainLoop();
   }
-  bool Embed(const std::vector<Id>& nodes) {
+  bool Embed(const Id node_id) {
     changes_.clear();
     base::AutoReset<bool> auto_reset(&in_embed_, true);
     bool result = false;
-    view_manager_->Embed(kTestServiceURL, Array<Id>::From(nodes),
+    view_manager_->Embed(kTestServiceURL, node_id,
                          base::Bind(&ViewManagerProxy::GotResult,
                                     base::Unretained(this), &result));
     RunMainLoop();
@@ -324,8 +324,8 @@ class TestViewManagerClientConnection
     tracker_.OnViewManagerConnectionEstablished(
         connection_id, creator_url, next_server_change_id, nodes.Pass());
   }
-  virtual void OnRootsAdded(Array<NodeDataPtr> nodes) OVERRIDE {
-    tracker_.OnRootsAdded(nodes.Pass());
+  virtual void OnRootAdded(Array<NodeDataPtr> nodes) OVERRIDE {
+    tracker_.OnRootAdded(nodes.Pass());
   }
   virtual void OnServerChangeIdAdvanced(
       Id next_server_change_id) OVERRIDE {
@@ -478,12 +478,8 @@ class ViewManagerTest : public testing::Test {
   }
 
  protected:
-  void EstablishSecondConnectionWithRoots(Id id1, Id id2) {
-    std::vector<Id> node_ids;
-    node_ids.push_back(id1);
-    if (id2 != 0)
-      node_ids.push_back(id2);
-    ASSERT_TRUE(connection_->Embed(node_ids));
+  void EstablishSecondConnectionWithRoot(Id root_id) {
+    ASSERT_TRUE(connection_->Embed(root_id));
     connection2_ = ViewManagerProxy::WaitForInstance();
     ASSERT_TRUE(connection2_ != NULL);
     connection2_->DoRunLoopUntilChangesCount(1);
@@ -495,7 +491,7 @@ class ViewManagerTest : public testing::Test {
     if (create_initial_node)
       ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
     ASSERT_NO_FATAL_FAILURE(
-        EstablishSecondConnectionWithRoots(BuildNodeId(1, 1), 0));
+        EstablishSecondConnectionWithRoot(BuildNodeId(1, 1)));
     const std::vector<Change>& changes(connection2_->changes());
     ASSERT_EQ(1u, changes.size());
     EXPECT_EQ("OnConnectionEstablished creator=mojo:test_url",
@@ -1180,15 +1176,16 @@ TEST_F(ViewManagerTest, SetRoots) {
   // Parent 1 to the root.
   ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1), 1));
 
-  // Establish the second connection and give it the roots 1 and 3.
+  // Establish the second connection with roots 1 and 3.
   {
-    ASSERT_NO_FATAL_FAILURE(EstablishSecondConnectionWithRoots(
-                                BuildNodeId(1, 1), BuildNodeId(1, 3)));
+    ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
+
+    ASSERT_TRUE(connection_->Embed(BuildNodeId(1, 3)));
+    connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("OnConnectionEstablished creator=mojo:test_url", changes[0]);
-    EXPECT_EQ("[node=1,1 parent=null view=null],"
-              "[node=1,3 parent=null view=null]",
+    EXPECT_EQ("OnRootAdded", changes[0]);
+    EXPECT_EQ("[node=1,3 parent=null view=null]",
               ChangeNodeDescription(connection2_->changes()));
   }
 
@@ -1349,20 +1346,16 @@ TEST_F(ViewManagerTest, ConnectTwice) {
   // Try to connect again to 1,1, this should fail as already connected to that
   // root.
   {
-    std::vector<Id> node_ids;
-    node_ids.push_back(BuildNodeId(1, 1));
-    ASSERT_FALSE(connection_->Embed(node_ids));
+    ASSERT_FALSE(connection_->Embed(BuildNodeId(1, 1)));
   }
 
   // Connecting to 1,2 should succeed and end up in connection2.
   {
-    std::vector<Id> node_ids;
-    node_ids.push_back(BuildNodeId(1, 2));
-    ASSERT_TRUE(connection_->Embed(node_ids));
+    ASSERT_TRUE(connection_->Embed(BuildNodeId(1, 2)));
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("OnRootsAdded", changes[0]);
+    EXPECT_EQ("OnRootAdded", changes[0]);
     EXPECT_EQ("[node=1,2 parent=1,1 view=null]",
               ChangeNodeDescription(connection2_->changes()));
   }

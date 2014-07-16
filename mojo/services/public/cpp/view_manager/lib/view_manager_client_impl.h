@@ -104,7 +104,7 @@ class ViewManagerClientImpl : public ViewManager,
       const String& creator_url,
       Id next_server_change_id,
       Array<NodeDataPtr> nodes) OVERRIDE;
-  virtual void OnRootsAdded(Array<NodeDataPtr> nodes) OVERRIDE;
+  virtual void OnRootAdded(Array<NodeDataPtr> nodes) OVERRIDE;
   virtual void OnServerChangeIdAdvanced(Id next_server_change_id) OVERRIDE;
   virtual void OnNodeBoundsChanged(Id node_id,
                                    RectPtr old_bounds,

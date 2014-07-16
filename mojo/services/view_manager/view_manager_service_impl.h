@@ -42,7 +42,8 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   ViewManagerServiceImpl(RootNodeManager* root_node_manager,
                          ConnectionSpecificId creator_id,
                          const std::string& creator_url,
-                         const std::string& url);
+                         const std::string& url,
+                         const NodeId& root_id);
   virtual ~ViewManagerServiceImpl();
 
   // Used to mark this connection as originating from a call to
@@ -66,8 +67,6 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
         const_cast<const ViewManagerServiceImpl*>(this)->GetView(id));
   }
   const View* GetView(const ViewId& id) const;
-
-  void SetRoots(const Array<Id>& node_ids);
 
   // Invoked when a connection is destroyed.
   void OnViewManagerServiceImplDestroyed(ConnectionSpecificId id);
@@ -123,7 +122,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   bool CanSetView(const Node* node, const ViewId& view_id) const;
   bool CanSetFocus(const Node* node) const;
   bool CanGetNodeTree(const Node* node) const;
-  bool CanEmbed(const mojo::Array<uint32_t>& node_ids) const;
+  bool CanEmbed(Id transport_node_id) const;
   bool CanSetNodeVisibility(const Node* node, bool visible) const;
 
   // Deletes a node owned by this connection. Returns true on success. |source|
@@ -145,10 +144,10 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   // recurse through nodes that were created by this connection.
   void RemoveFromKnown(const Node* node);
 
-  // Adds |node_ids| to roots, returning true if at least one of the nodes was
-  // not already a root. If at least one of the nodes was not already a root
-  // the client is told of the new roots.
-  bool AddRoots(const std::vector<Id>& node_ids);
+  // Adds |transport_node_id| to the set of roots this connection knows about.
+  // Returns true if |transport_node_id| was not already a root for this
+  // connection.
+  bool AddRoot(Id transport_node_id);
 
   // Returns true if |node| is a non-null and a descendant of |roots_| (or
   // |roots_| is empty).
@@ -167,7 +166,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   // are set to NULL (in the returned NodeDatas).
   Array<NodeDataPtr> NodesToNodeDatas(const std::vector<const Node*>& nodes);
 
-  // Overridden from ViewManagerService:
+  // ViewManagerService:
   virtual void CreateNode(Id transport_node_id,
                           const Callback<void(ErrorCode)>& callback) OVERRIDE;
   virtual void DeleteNode(Id transport_node_id,
@@ -209,7 +208,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
                                  bool visible,
                                  const Callback<void(bool)>& callback) OVERRIDE;
   virtual void Embed(const mojo::String& url,
-                     mojo::Array<uint32_t> node_ids,
+                     Id transport_node_id,
                      const mojo::Callback<void(bool)>& callback) OVERRIDE;
   virtual void DispatchOnViewInputEvent(Id transport_view_id,
                                         EventPtr event) OVERRIDE;

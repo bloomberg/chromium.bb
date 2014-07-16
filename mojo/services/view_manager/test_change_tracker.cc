@@ -37,7 +37,7 @@ std::string ChangeToDescription1(const Change& change) {
                                 change.creator_url.data());
 
     case CHANGE_TYPE_ROOTS_ADDED:
-      return "OnRootsAdded";
+      return "OnRootAdded";
 
     case CHANGE_TYPE_SERVER_CHANGE_ID_ADVANCED:
       return base::StringPrintf(
@@ -158,7 +158,7 @@ void TestChangeTracker::OnViewManagerConnectionEstablished(
   AddChange(change);
 }
 
-void TestChangeTracker::OnRootsAdded(Array<NodeDataPtr> nodes) {
+void TestChangeTracker::OnRootAdded(Array<NodeDataPtr> nodes) {
   Change change;
   change.type = CHANGE_TYPE_ROOTS_ADDED;
   NodeDatasToTestNodes(nodes, &change.nodes);

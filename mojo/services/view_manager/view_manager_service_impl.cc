@@ -37,13 +37,18 @@ ViewManagerServiceImpl::ViewManagerServiceImpl(
     RootNodeManager* root_node_manager,
     ConnectionSpecificId creator_id,
     const std::string& creator_url,
-    const std::string& url)
+    const std::string& url,
+    const NodeId& root_id)
     : root_node_manager_(root_node_manager),
       id_(root_node_manager_->GetAndAdvanceNextConnectionId()),
       url_(url),
       creator_id_(creator_id),
       creator_url_(creator_url),
       delete_on_connection_error_(false) {
+  if (root_id != InvalidNodeId()) {
+    CHECK(GetNode(root_id));
+    roots_.insert(NodeIdToTransportId(root_id));
+  }
 }
 
 ViewManagerServiceImpl::~ViewManagerServiceImpl() {
@@ -79,16 +84,6 @@ const View* ViewManagerServiceImpl::GetView(const ViewId& id) const {
     return i == view_map_.end() ? NULL : i->second;
   }
   return root_node_manager_->GetView(id);
-}
-
-void ViewManagerServiceImpl::SetRoots(const Array<Id>& node_ids) {
-  DCHECK(roots_.empty());
-  NodeIdSet roots;
-  for (size_t i = 0; i < node_ids.size(); ++i) {
-    DCHECK(GetNode(NodeIdFromTransportId(node_ids[i])));
-    roots.insert(node_ids[i]);
-  }
-  roots_.swap(roots);
 }
 
 void ViewManagerServiceImpl::OnViewManagerServiceImplDestroyed(
@@ -343,14 +338,9 @@ bool ViewManagerServiceImpl::CanGetNodeTree(const Node* node) const {
       (IsNodeDescendantOfRoots(node) || node->id().connection_id == id_);
 }
 
-bool ViewManagerServiceImpl::CanEmbed(
-    const mojo::Array<uint32_t>& node_ids) const {
-  for (size_t i = 0; i < node_ids.size(); ++i) {
-    const Node* node = GetNode(NodeIdFromTransportId(node_ids[i]));
-    if (!node || node->id().connection_id != id_)
-      return false;
-  }
-  return node_ids.size() > 0;
+bool ViewManagerServiceImpl::CanEmbed(Id transport_node_id) const {
+  const Node* node = GetNode(NodeIdFromTransportId(transport_node_id));
+  return node && node->id().connection_id == id_;
 }
 
 bool ViewManagerServiceImpl::CanSetNodeVisibility(const Node* node,
@@ -426,32 +416,25 @@ void ViewManagerServiceImpl::RemoveFromKnown(const Node* node) {
     RemoveFromKnown(children[i]);
 }
 
-bool ViewManagerServiceImpl::AddRoots(
-    const std::vector<Id>& node_ids) {
-  std::vector<const Node*> to_send;
-  bool did_add_root = false;
-  for (size_t i = 0; i < node_ids.size(); ++i) {
-    CHECK_EQ(creator_id_, NodeIdFromTransportId(node_ids[i]).connection_id);
-    if (roots_.count(node_ids[i]) > 0)
-      continue;
-
-    did_add_root = true;
-    roots_.insert(node_ids[i]);
-    Node* node = GetNode(NodeIdFromTransportId(node_ids[i]));
-    DCHECK(node);
-    if (known_nodes_.count(node_ids[i]) == 0) {
-      GetUnknownNodesFrom(node, &to_send);
-    } else {
-      // Even though the connection knows about the new root we need to tell it
-      // |node| is now a root.
-      to_send.push_back(node);
-    }
-  }
-
-  if (!did_add_root)
+bool ViewManagerServiceImpl::AddRoot(Id transport_node_id) {
+  if (roots_.count(transport_node_id) > 0)
     return false;
 
-  client()->OnRootsAdded(NodesToNodeDatas(to_send));
+  std::vector<const Node*> to_send;
+  const NodeId node_id(NodeIdFromTransportId(transport_node_id));
+  CHECK_EQ(creator_id_, node_id.connection_id);
+  roots_.insert(transport_node_id);
+  Node* node = GetNode(node_id);
+  CHECK(node);
+  if (known_nodes_.count(transport_node_id) == 0) {
+    GetUnknownNodesFrom(node, &to_send);
+  } else {
+    // Even though the connection knows about the new root we need to tell it
+    // |node| is now a root.
+    to_send.push_back(node);
+  }
+
+  client()->OnRootAdded(NodesToNodeDatas(to_send));
   return true;
 }
 
@@ -750,17 +733,17 @@ void ViewManagerServiceImpl::SetNodeVisibility(
 }
 
 void ViewManagerServiceImpl::Embed(const String& url,
-                                   Array<uint32_t> node_ids,
+                                   Id transport_node_id,
                                    const Callback<void(bool)>& callback) {
-  bool success = CanEmbed(node_ids);
+  bool success = CanEmbed(transport_node_id);
   if (success) {
     // We may already have this connection, if so reuse it.
     ViewManagerServiceImpl* existing_connection =
         root_node_manager_->GetConnectionByCreator(id_, url.To<std::string>());
     if (existing_connection)
-      success = existing_connection->AddRoots(node_ids.storage());
+      success = existing_connection->AddRoot(transport_node_id);
     else
-      root_node_manager_->Embed(id_, url, node_ids);
+      root_node_manager_->Embed(id_, url, transport_node_id);
   }
   callback.Run(success);
 }

@@ -101,10 +101,10 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
   void EmbedRoot(const std::string& url);
 
   // See description of ViewManagerService::Embed() for details. This assumes
-  // |node_ids| has been validated.
+  // |transport_node_id| is valid.
   void Embed(ConnectionSpecificId creator_id,
              const String& url,
-             const Array<Id>& node_ids);
+             Id transport_node_id);
 
   // Returns the connection by id.
   ViewManagerServiceImpl* GetConnection(ConnectionSpecificId connection_id);
@@ -185,8 +185,8 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
 
   // Implementation of the two embed variants.
   ViewManagerServiceImpl* EmbedImpl(ConnectionSpecificId creator_id,
-                                   const String& url,
-                                   const Array<Id>& node_ids);
+                                    const String& url,
+                                    const NodeId& root_id);
 
   // Overridden from NodeDelegate:
   virtual void OnNodeDestroyed(const Node* node) OVERRIDE;
