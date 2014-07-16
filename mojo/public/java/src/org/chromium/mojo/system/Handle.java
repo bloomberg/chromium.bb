@@ -23,9 +23,9 @@ public interface Handle extends Closeable {
     public void close();
 
     /**
-     * @see Core#wait(Handle, Core.WaitFlags, long)
+     * @see Core#wait(Handle, Core.HandleSignals, long)
      */
-    public int wait(Core.WaitFlags flags, long deadline);
+    public int wait(Core.HandleSignals signals, long deadline);
 
     /**
      * @return whether the handle is valid. A handle is valid until it has been explicitly closed or

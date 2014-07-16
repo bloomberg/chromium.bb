@@ -33,10 +33,10 @@ public class HandleMock implements UntypedHandle, MessagePipeHandle,
     }
 
     /**
-     * @see Handle#wait(Core.WaitFlags, long)
+     * @see Handle#wait(Core.HandleSignals, long)
      */
     @Override
-    public int wait(Core.WaitFlags flags, long deadline) {
+    public int wait(Core.HandleSignals signals, long deadline) {
         // Do nothing.
         return MojoResult.OK;
     }

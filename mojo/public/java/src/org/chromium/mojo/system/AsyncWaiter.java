@@ -4,7 +4,7 @@
 
 package org.chromium.mojo.system;
 
-import org.chromium.mojo.system.Core.WaitFlags;
+import org.chromium.mojo.system.Core.HandleSignals;
 
 /**
  * A class which implements the {@link AsyncWaiter} allows asynchronously waiting on a background
@@ -48,6 +48,6 @@ public interface AsyncWaiter {
      *         should only be used on the current thread, and becomes invalid once the callback has
      *         been notified.
      */
-    Cancellable asyncWait(Handle handle, WaitFlags flags, long deadline, Callback callback);
+    Cancellable asyncWait(Handle handle, HandleSignals signals, long deadline, Callback callback);
 
 }

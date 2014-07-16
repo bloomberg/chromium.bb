@@ -80,7 +80,7 @@ class ExecutorFactory {
          * executor thread.
          */
         private void asyncWait() {
-            mWaiter.asyncWait(mReadHandle, Core.WaitFlags.READABLE, Core.DEADLINE_INFINITE,
+            mWaiter.asyncWait(mReadHandle, Core.HandleSignals.READABLE, Core.DEADLINE_INFINITE,
                     this);
         }
 

@@ -177,21 +177,21 @@ public class CoreImplTest extends MojoTestCase {
         Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
         addHandlePairToClose(handles);
 
-        List<Pair<Handle, Core.WaitFlags>> handlesToWaitOn = new ArrayList<
-                Pair<Handle, Core.WaitFlags>>();
+        List<Pair<Handle, Core.HandleSignals>> handlesToWaitOn = new ArrayList<
+                Pair<Handle, Core.HandleSignals>>();
         handlesToWaitOn.add(
-                new Pair<Handle, Core.WaitFlags>(handles.second, Core.WaitFlags.READABLE));
+                new Pair<Handle, Core.HandleSignals>(handles.second, Core.HandleSignals.READABLE));
         handlesToWaitOn.add(
-                new Pair<Handle, Core.WaitFlags>(handles.first, Core.WaitFlags.WRITABLE));
+                new Pair<Handle, Core.HandleSignals>(handles.first, Core.HandleSignals.WRITABLE));
         WaitManyResult result = core.waitMany(handlesToWaitOn, 0);
         assertEquals(MojoResult.OK, result.getMojoResult());
         assertEquals(1, result.getHandleIndex());
 
         handlesToWaitOn.clear();
         handlesToWaitOn.add(
-                new Pair<Handle, Core.WaitFlags>(handles.first, Core.WaitFlags.WRITABLE));
+                new Pair<Handle, Core.HandleSignals>(handles.first, Core.HandleSignals.WRITABLE));
         handlesToWaitOn.add(
-                new Pair<Handle, Core.WaitFlags>(handles.second, Core.WaitFlags.READABLE));
+                new Pair<Handle, Core.HandleSignals>(handles.second, Core.HandleSignals.READABLE));
         result = core.waitMany(handlesToWaitOn, 0);
         assertEquals(MojoResult.OK, result.getMojoResult());
         assertEquals(0, result.getHandleIndex());
@@ -231,10 +231,12 @@ public class CoreImplTest extends MojoTestCase {
         Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe();
         addHandlePairToClose(handles);
         // Testing wait.
-        assertEquals(MojoResult.OK, handles.first.wait(Core.WaitFlags.all(), 0));
-        assertEquals(MojoResult.OK, handles.first.wait(Core.WaitFlags.WRITABLE, 0));
+        assertEquals(MojoResult.OK,
+                handles.first.wait(Core.HandleSignals.none().setReadable(true).setWritable(true),
+                        0));
+        assertEquals(MojoResult.OK, handles.first.wait(Core.HandleSignals.WRITABLE, 0));
         assertEquals(MojoResult.DEADLINE_EXCEEDED,
-                handles.first.wait(Core.WaitFlags.READABLE, 0));
+                handles.first.wait(Core.HandleSignals.READABLE, 0));
 
         // Testing read on an empty pipe.
         MessagePipeHandle.ReadMessageResult result = handles.first.readMessage(null, 0,
@@ -244,7 +246,7 @@ public class CoreImplTest extends MojoTestCase {
         // Closing a pipe while waiting.
         WORKER.schedule(new CloseHandle(handles.first), 10, TimeUnit.MILLISECONDS);
         assertEquals(MojoResult.CANCELLED,
-                handles.first.wait(Core.WaitFlags.READABLE, 1000000L));
+                handles.first.wait(Core.HandleSignals.READABLE, 1000000L));
 
         handles = core.createMessagePipe();
         addHandlePairToClose(handles);
@@ -252,13 +254,13 @@ public class CoreImplTest extends MojoTestCase {
         // Closing the other pipe while waiting.
         WORKER.schedule(new CloseHandle(handles.first), 10, TimeUnit.MILLISECONDS);
         assertEquals(MojoResult.FAILED_PRECONDITION,
-                handles.second.wait(Core.WaitFlags.READABLE, 1000000L));
+                handles.second.wait(Core.HandleSignals.READABLE, 1000000L));
 
         // Waiting on a closed pipe.
         assertEquals(MojoResult.FAILED_PRECONDITION,
-                handles.second.wait(Core.WaitFlags.READABLE, 0));
+                handles.second.wait(Core.HandleSignals.READABLE, 0));
         assertEquals(MojoResult.FAILED_PRECONDITION,
-                handles.second.wait(Core.WaitFlags.WRITABLE, 0));
+                handles.second.wait(Core.HandleSignals.WRITABLE, 0));
     }
 
     /**
@@ -483,7 +485,7 @@ public class CoreImplTest extends MojoTestCase {
         // Checking wait.
         boolean exception = false;
         try {
-            core.wait(handle, Core.WaitFlags.all(), 0);
+            core.wait(handle, Core.HandleSignals.WRITABLE, 0);
         } catch (MojoException e) {
             assertEquals(MojoResult.INVALID_ARGUMENT, e.getMojoResult());
             exception = true;
@@ -493,9 +495,9 @@ public class CoreImplTest extends MojoTestCase {
         // Checking waitMany.
         exception = false;
         try {
-            List<Pair<Handle, Core.WaitFlags>> handles = new ArrayList<
-                    Pair<Handle, Core.WaitFlags>>();
-            handles.add(Pair.create(handle, Core.WaitFlags.all()));
+            List<Pair<Handle, Core.HandleSignals>> handles = new ArrayList<
+                    Pair<Handle, Core.HandleSignals>>();
+            handles.add(Pair.create(handle, Core.HandleSignals.WRITABLE));
             core.waitMany(handles, 0);
         } catch (MojoException e) {
             assertEquals(MojoResult.INVALID_ARGUMENT, e.getMojoResult());
@@ -571,7 +573,7 @@ public class CoreImplTest extends MojoTestCase {
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
 
-        core.getDefaultAsyncWaiter().asyncWait(handles.first, Core.WaitFlags.READABLE,
+        core.getDefaultAsyncWaiter().asyncWait(handles.first, Core.HandleSignals.READABLE,
                 Core.DEADLINE_INFINITE, asyncWaiterResult);
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
@@ -598,7 +600,7 @@ public class CoreImplTest extends MojoTestCase {
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
 
-        core.getDefaultAsyncWaiter().asyncWait(handles.first, Core.WaitFlags.READABLE,
+        core.getDefaultAsyncWaiter().asyncWait(handles.first, Core.HandleSignals.READABLE,
                 Core.DEADLINE_INFINITE, asyncWaiterResult);
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
@@ -628,7 +630,7 @@ public class CoreImplTest extends MojoTestCase {
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
 
-        core.getDefaultAsyncWaiter().asyncWait(handles.first, Core.WaitFlags.READABLE,
+        core.getDefaultAsyncWaiter().asyncWait(handles.first, Core.HandleSignals.READABLE,
                 Core.DEADLINE_INFINITE, asyncWaiterResult);
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
@@ -660,7 +662,7 @@ public class CoreImplTest extends MojoTestCase {
         assertEquals(null, asyncWaiterResult.getException());
 
         handles.first.close();
-        core.getDefaultAsyncWaiter().asyncWait(handles.first, Core.WaitFlags.READABLE,
+        core.getDefaultAsyncWaiter().asyncWait(handles.first, Core.HandleSignals.READABLE,
                 Core.DEADLINE_INFINITE, asyncWaiterResult);
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
@@ -683,7 +685,7 @@ public class CoreImplTest extends MojoTestCase {
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
 
-        core.getDefaultAsyncWaiter().asyncWait(InvalidHandle.INSTANCE, Core.WaitFlags.READABLE,
+        core.getDefaultAsyncWaiter().asyncWait(InvalidHandle.INSTANCE, Core.HandleSignals.READABLE,
                 Core.DEADLINE_INFINITE, asyncWaiterResult);
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
@@ -709,7 +711,7 @@ public class CoreImplTest extends MojoTestCase {
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
 
-        core.getDefaultAsyncWaiter().asyncWait(handles.first, Core.WaitFlags.READABLE,
+        core.getDefaultAsyncWaiter().asyncWait(handles.first, Core.HandleSignals.READABLE,
                 RUN_LOOP_TIMEOUT_MS, asyncWaiterResult);
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
@@ -735,7 +737,7 @@ public class CoreImplTest extends MojoTestCase {
         assertEquals(null, asyncWaiterResult.getException());
 
         Cancellable cancellable = core.getDefaultAsyncWaiter().asyncWait(handles.first,
-                Core.WaitFlags.READABLE, Core.DEADLINE_INFINITE, asyncWaiterResult);
+                Core.HandleSignals.READABLE, Core.DEADLINE_INFINITE, asyncWaiterResult);
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
 
@@ -772,7 +774,7 @@ public class CoreImplTest extends MojoTestCase {
         assertEquals(null, asyncWaiterResult.getException());
 
         Cancellable cancellable = core.getDefaultAsyncWaiter().asyncWait(handles.first,
-                Core.WaitFlags.READABLE, Core.DEADLINE_INFINITE, asyncWaiterResult);
+                Core.HandleSignals.READABLE, Core.DEADLINE_INFINITE, asyncWaiterResult);
         assertEquals(Integer.MIN_VALUE, asyncWaiterResult.getResult());
         assertEquals(null, asyncWaiterResult.getException());
         cancellable.cancel();

@@ -7,7 +7,7 @@ package org.chromium.mojo.system.impl;
 import android.util.Log;
 
 import org.chromium.mojo.system.Core;
-import org.chromium.mojo.system.Core.WaitFlags;
+import org.chromium.mojo.system.Core.HandleSignals;
 import org.chromium.mojo.system.Handle;
 import org.chromium.mojo.system.UntypedHandle;
 
@@ -62,11 +62,11 @@ abstract class HandleBase implements Handle {
     }
 
     /**
-     * @see org.chromium.mojo.system.Handle#wait(WaitFlags, long)
+     * @see org.chromium.mojo.system.Handle#wait(HandleSignals, long)
      */
     @Override
-    public int wait(WaitFlags flags, long deadline) {
-        return mCore.wait(this, flags, deadline);
+    public int wait(HandleSignals signals, long deadline) {
+        return mCore.wait(this, signals, deadline);
     }
 
     /**

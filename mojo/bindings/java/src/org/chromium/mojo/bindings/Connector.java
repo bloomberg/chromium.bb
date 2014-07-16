@@ -188,7 +188,7 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
     private void registerAsyncWaiterForRead() {
         assert mCancellable == null;
         if (mAsyncWaiter != null) {
-            mCancellable = mAsyncWaiter.asyncWait(mMessagePipeHandle, Core.WaitFlags.READABLE,
+            mCancellable = mAsyncWaiter.asyncWait(mMessagePipeHandle, Core.HandleSignals.READABLE,
                     Core.DEADLINE_INFINITE, mAsyncWaiterCallback);
         } else {
             onError(new MojoException(MojoResult.INVALID_ARGUMENT));

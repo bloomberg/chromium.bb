@@ -61,7 +61,7 @@ static jint WaitMany(JNIEnv* env,
                      jobject jcaller,
                      jobject buffer,
                      jlong deadline) {
-  // Buffer contains first the list of handles, then the list of flags.
+  // Buffer contains first the list of handles, then the list of signals.
   const void* buffer_start = env->GetDirectBufferAddress(buffer);
   DCHECK(buffer_start);
   const size_t record_size = 8;

@@ -18,64 +18,58 @@ public interface Core {
     public static final long DEADLINE_INFINITE = -1;
 
     /**
-     * Flags for the wait operations on handles.
+     * Signals for the wait operations on handles.
      */
-    public static class WaitFlags extends Flags<WaitFlags> {
+    public static class HandleSignals extends Flags<HandleSignals> {
         /**
          * Constructor.
          *
-         * @param flags the serialized flags.
+         * @param signals the serialized signals.
          */
-        private WaitFlags(int flags) {
-            super(flags);
+        private HandleSignals(int signals) {
+            super(signals);
         }
 
         private static final int FLAG_NONE = 0;
         private static final int FLAG_READABLE = 1 << 0;
         private static final int FLAG_WRITABLE = 1 << 1;
-        private static final int FLAG_ALL = ~0;
 
         /**
-         * Immutable flags.
+         * Immutable signals.
          */
-        public static final WaitFlags NONE = WaitFlags.none().immutable();
-        public static final WaitFlags READABLE = WaitFlags.none().setReadable(true).immutable();
-        public static final WaitFlags WRITABLE = WaitFlags.none().setWritable(true).immutable();
-        public static final WaitFlags ALL = WaitFlags.all().immutable();
+        public static final HandleSignals NONE = HandleSignals.none().immutable();
+        public static final HandleSignals READABLE =
+                HandleSignals.none().setReadable(true).immutable();
+        public static final HandleSignals WRITABLE =
+                HandleSignals.none().setWritable(true).immutable();
 
         /**
-         * Change the readable bit of this flag.
+         * Change the readable bit of this signal.
          *
          * @param readable the new value of the readable bit.
          * @return this.
          */
-        public WaitFlags setReadable(boolean readable) {
+        public HandleSignals setReadable(boolean readable) {
             return setFlag(FLAG_READABLE, readable);
         }
 
         /**
-         * Change the writable bit of this flag.
+         * Change the writable bit of this signal.
          *
          * @param writable the new value of the writable bit.
          * @return this.
          */
-        public WaitFlags setWritable(boolean writable) {
+        public HandleSignals setWritable(boolean writable) {
             return setFlag(FLAG_WRITABLE, writable);
         }
 
         /**
-         * @return a flag with no bit set.
+         * @return a signal with no bit set.
          */
-        public static WaitFlags none() {
-            return new WaitFlags(FLAG_NONE);
+        public static HandleSignals none() {
+            return new HandleSignals(FLAG_NONE);
         }
 
-        /**
-         * @return a flag with all bits set.
-         */
-        public static WaitFlags all() {
-            return new WaitFlags(FLAG_ALL);
-        }
     }
 
     /**
@@ -84,20 +78,20 @@ public interface Core {
     public long getTimeTicksNow();
 
     /**
-     * Waits on the given |handle| until the state indicated by |flags| is satisfied or until
+     * Waits on the given |handle| until the state indicated by |signals| is satisfied or until
      * |deadline| has passed.
      *
-     * @return |MojoResult.OK| if some flag in |flags| was satisfied (or is already satisfied).
+     * @return |MojoResult.OK| if some signal in |signals| was satisfied (or is already satisfied).
      *         <p>
-     *         |MojoResult.DEADLINE_EXCEEDED| if the deadline has passed without any of the flags
-     *         begin satisfied.
+     *         |MojoResult.DEADLINE_EXCEEDED| if the deadline has passed without any of the signals
+     *         being satisfied.
      *         <p>
      *         |MojoResult.CANCELLED| if |handle| is closed concurrently by another thread.
      *         <p>
      *         |MojoResult.FAILED_PRECONDITION| if it is or becomes impossible that any flag in
-     *         |flags| will ever be satisfied (for example, if the other endpoint is close).
+     *         |signals| will ever be satisfied (for example, if the other endpoint is close).
      */
-    public int wait(Handle handle, WaitFlags flags, long deadline);
+    public int wait(Handle handle, HandleSignals signals, long deadline);
 
     /**
      * Result for the |waitMany| method.
@@ -146,12 +140,12 @@ public interface Core {
     }
 
     /**
-     * Waits on handle in |handles| for at least one of them to satisfy the associated |WaitFlags|,
-     * or until |deadline| has passed.
+     * Waits on handle in |handles| for at least one of them to satisfy the associated
+     * |HandleSignals|, or until |deadline| has passed.
      *
      * @returns a |WaitManyResult|.
      */
-    public WaitManyResult waitMany(List<Pair<Handle, WaitFlags>> handles, long deadline);
+    public WaitManyResult waitMany(List<Pair<Handle, HandleSignals>> handles, long deadline);
 
     /**
      * Creates a message pipe, which is a bidirectional communication channel for framed data (i.e.,
