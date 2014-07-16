@@ -14,10 +14,6 @@ DebugBorderDrawQuad::DebugBorderDrawQuad()
       width(0) {
 }
 
-scoped_ptr<DebugBorderDrawQuad> DebugBorderDrawQuad::Create() {
-  return make_scoped_ptr(new DebugBorderDrawQuad);
-}
-
 void DebugBorderDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                  const gfx::Rect& rect,
                                  const gfx::Rect& visible_rect,

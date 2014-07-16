@@ -16,10 +16,6 @@ PictureDrawQuad::PictureDrawQuad() {
 PictureDrawQuad::~PictureDrawQuad() {
 }
 
-scoped_ptr<PictureDrawQuad> PictureDrawQuad::Create() {
-  return make_scoped_ptr(new PictureDrawQuad);
-}
-
 void PictureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              const gfx::Rect& rect,
                              const gfx::Rect& opaque_rect,

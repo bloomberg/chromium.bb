@@ -11,10 +11,6 @@ namespace cc {
 
 CheckerboardDrawQuad::CheckerboardDrawQuad() : color(0) {}
 
-scoped_ptr<CheckerboardDrawQuad> CheckerboardDrawQuad::Create() {
-  return make_scoped_ptr(new CheckerboardDrawQuad);
-}
-
 void CheckerboardDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                   const gfx::Rect& rect,
                                   const gfx::Rect& visible_rect,

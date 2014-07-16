@@ -395,7 +395,7 @@ static size_t ReserveSizeForRenderPassWrite(const cc::RenderPass& p) {
 template<typename QuadType>
 static scoped_ptr<cc::DrawQuad> ReadDrawQuad(const Message* m,
                                              PickleIterator* iter) {
-  scoped_ptr<QuadType> quad = QuadType::Create();
+  scoped_ptr<QuadType> quad(new QuadType);
   if (!ReadParam(m, iter, quad.get()))
     return scoped_ptr<QuadType>().template PassAs<cc::DrawQuad>();
   return quad.template PassAs<cc::DrawQuad>();

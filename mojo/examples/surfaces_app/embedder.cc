@@ -49,11 +49,11 @@ void Embedder::ProduceFrame(cc::SurfaceId child_one,
   one_transform.Translate(-child_size.width() / 2, -child_size.height() / 2);
   CreateAndAppendSimpleSharedQuadState(pass.get(), one_transform, size);
 
-  scoped_ptr<SurfaceDrawQuad> surface_one_quad = SurfaceDrawQuad::Create();
+  SurfaceDrawQuad* surface_one_quad =
+      pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   gfx::Rect one_rect(child_size);
   surface_one_quad->SetNew(
       pass->shared_quad_state_list.back(), one_rect, one_rect, child_one);
-  pass->quad_list.push_back(surface_one_quad.PassAs<DrawQuad>());
 
   gfx::Transform two_transform;
   two_transform.Translate(10 + size.width() / 2 + child_size.width() / 2,
@@ -62,21 +62,21 @@ void Embedder::ProduceFrame(cc::SurfaceId child_one,
   two_transform.Translate(-child_size.width() / 2, -child_size.height() / 2);
   CreateAndAppendSimpleSharedQuadState(pass.get(), two_transform, size);
 
-  scoped_ptr<SurfaceDrawQuad> surface_two_quad = SurfaceDrawQuad::Create();
+  SurfaceDrawQuad* surface_two_quad =
+      pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   gfx::Rect two_rect(child_size);
   surface_two_quad->SetNew(
       pass->shared_quad_state_list.back(), two_rect, two_rect, child_two);
-  pass->quad_list.push_back(surface_two_quad.PassAs<DrawQuad>());
 
   CreateAndAppendSimpleSharedQuadState(pass.get(), gfx::Transform(), size);
-  scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
+  SolidColorDrawQuad* color_quad =
+      pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   bool force_anti_aliasing_off = false;
   color_quad->SetNew(pass->shared_quad_state_list.back(),
                      rect,
                      rect,
                      SK_ColorYELLOW,
                      force_anti_aliasing_off);
-  pass->quad_list.push_back(color_quad.PassAs<DrawQuad>());
 
   scoped_ptr<DelegatedFrameData> delegated_frame_data(new DelegatedFrameData);
   delegated_frame_data->render_pass_list.push_back(pass.Pass());

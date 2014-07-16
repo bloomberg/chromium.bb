@@ -85,14 +85,14 @@ void ChildImpl::Draw() {
 
   CreateAndAppendSimpleSharedQuadState(pass.get(), gfx::Transform(), size_);
 
-  scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
+  SolidColorDrawQuad* color_quad =
+      pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
   bool force_anti_aliasing_off = false;
   color_quad->SetNew(pass->shared_quad_state_list.back(),
                      rect,
                      rect,
                      color_,
                      force_anti_aliasing_off);
-  pass->quad_list.push_back(color_quad.PassAs<DrawQuad>());
 
   scoped_ptr<DelegatedFrameData> delegated_frame_data(new DelegatedFrameData);
   delegated_frame_data->render_pass_list.push_back(pass.Pass());

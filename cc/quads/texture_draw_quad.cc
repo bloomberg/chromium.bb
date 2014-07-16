@@ -22,10 +22,6 @@ TextureDrawQuad::TextureDrawQuad()
   this->vertex_opacity[3] = 0.f;
 }
 
-scoped_ptr<TextureDrawQuad> TextureDrawQuad::Create() {
-  return make_scoped_ptr(new TextureDrawQuad);
-}
-
 void TextureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              const gfx::Rect& rect,
                              const gfx::Rect& opaque_rect,

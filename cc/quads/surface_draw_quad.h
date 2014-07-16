@@ -14,7 +14,7 @@ namespace cc {
 
 class CC_EXPORT SurfaceDrawQuad : public DrawQuad {
  public:
-  static scoped_ptr<SurfaceDrawQuad> Create();
+  SurfaceDrawQuad();
 
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
@@ -36,7 +36,6 @@ class CC_EXPORT SurfaceDrawQuad : public DrawQuad {
   static const SurfaceDrawQuad* MaterialCast(const DrawQuad* quad);
 
  private:
-  SurfaceDrawQuad();
   virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE;
 };
 

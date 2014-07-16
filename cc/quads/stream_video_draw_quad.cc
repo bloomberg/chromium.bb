@@ -12,10 +12,6 @@ namespace cc {
 
 StreamVideoDrawQuad::StreamVideoDrawQuad() : resource_id(0) {}
 
-scoped_ptr<StreamVideoDrawQuad> StreamVideoDrawQuad::Create() {
-  return make_scoped_ptr(new StreamVideoDrawQuad);
-}
-
 void StreamVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                  const gfx::Rect& rect,
                                  const gfx::Rect& opaque_rect,

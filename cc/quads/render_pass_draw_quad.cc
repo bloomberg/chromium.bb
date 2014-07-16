@@ -20,10 +20,6 @@ RenderPassDrawQuad::RenderPassDrawQuad()
 RenderPassDrawQuad::~RenderPassDrawQuad() {
 }
 
-scoped_ptr<RenderPassDrawQuad> RenderPassDrawQuad::Create() {
-  return make_scoped_ptr(new RenderPassDrawQuad);
-}
-
 void RenderPassDrawQuad::SetNew(
     const SharedQuadState* shared_quad_state,
     const gfx::Rect& rect,

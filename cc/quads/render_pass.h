@@ -92,7 +92,7 @@ class CC_EXPORT RenderPass {
   SharedQuadState* CreateAndAppendSharedQuadState();
   template <typename DrawQuadType>
   DrawQuadType* CreateAndAppendDrawQuad() {
-    scoped_ptr<DrawQuadType> draw_quad = DrawQuadType::Create();
+    scoped_ptr<DrawQuadType> draw_quad = make_scoped_ptr(new DrawQuadType);
     quad_list.push_back(draw_quad.template PassAs<DrawQuad>());
     return static_cast<DrawQuadType*>(quad_list.back());
   }

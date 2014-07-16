@@ -56,8 +56,7 @@ class SurfaceLibQuadTest : public testing::Test {
 };
 
 TEST_F(SurfaceLibQuadTest, ColorQuad) {
-  scoped_ptr<cc::SolidColorDrawQuad> color_quad =
-      cc::SolidColorDrawQuad::Create();
+  scoped_ptr<cc::SolidColorDrawQuad> color_quad(new cc::SolidColorDrawQuad);
   SkColor arbitrary_color = SK_ColorGREEN;
   bool force_anti_aliasing_off = true;
   color_quad->SetAll(sqs.get(),
@@ -97,7 +96,7 @@ TEST_F(SurfaceLibQuadTest, ColorQuad) {
 }
 
 TEST_F(SurfaceLibQuadTest, SurfaceQuad) {
-  scoped_ptr<cc::SurfaceDrawQuad> surface_quad = cc::SurfaceDrawQuad::Create();
+  scoped_ptr<cc::SurfaceDrawQuad> surface_quad(new cc::SurfaceDrawQuad);
   cc::SurfaceId arbitrary_id(5);
   surface_quad->SetAll(
       sqs.get(), rect, opaque_rect, visible_rect, needs_blending, arbitrary_id);
@@ -120,7 +119,7 @@ TEST_F(SurfaceLibQuadTest, SurfaceQuad) {
 }
 
 TEST_F(SurfaceLibQuadTest, TextureQuad) {
-  scoped_ptr<cc::TextureDrawQuad> texture_quad = cc::TextureDrawQuad::Create();
+  scoped_ptr<cc::TextureDrawQuad> texture_quad(new cc::TextureDrawQuad);
   unsigned resource_id = 9;
   bool premultiplied_alpha = true;
   gfx::PointF uv_top_left(1.7f, 2.1f);
@@ -241,7 +240,7 @@ TEST_F(SurfaceLibQuadTest, RenderPass) {
   float opacity = 0.65f;
   int sorting_context_id = 13;
   SkXfermode::Mode blend_mode = SkXfermode::kSrcOver_Mode;
-  scoped_ptr<cc::SharedQuadState> sqs(new cc::SharedQuadState);
+  cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
   sqs->SetAll(content_to_target_transform,
               content_bounds,
               visible_content_rect,
@@ -250,10 +249,9 @@ TEST_F(SurfaceLibQuadTest, RenderPass) {
               opacity,
               blend_mode,
               sorting_context_id);
-  pass->shared_quad_state_list.push_back(sqs.Pass());
 
-  scoped_ptr<cc::SolidColorDrawQuad> color_quad =
-      cc::SolidColorDrawQuad::Create();
+  cc::SolidColorDrawQuad* color_quad =
+      pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
   SkColor arbitrary_color = SK_ColorGREEN;
   bool force_anti_aliasing_off = true;
   color_quad->SetAll(pass->shared_quad_state_list.back(),
@@ -263,7 +261,6 @@ TEST_F(SurfaceLibQuadTest, RenderPass) {
                      needs_blending,
                      arbitrary_color,
                      force_anti_aliasing_off);
-  pass->quad_list.push_back(color_quad.PassAs<cc::DrawQuad>());
 
   surfaces::PassPtr mojo_pass = surfaces::Pass::From(*pass);
   ASSERT_FALSE(mojo_pass.is_null());

@@ -17,10 +17,6 @@ YUVVideoDrawQuad::YUVVideoDrawQuad()
       a_plane_resource_id(0) {}
 YUVVideoDrawQuad::~YUVVideoDrawQuad() {}
 
-scoped_ptr<YUVVideoDrawQuad> YUVVideoDrawQuad::Create() {
-  return make_scoped_ptr(new YUVVideoDrawQuad);
-}
-
 void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                               const gfx::Rect& rect,
                               const gfx::Rect& opaque_rect,

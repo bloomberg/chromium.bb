@@ -212,7 +212,8 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
                        SkColor());
 
   // And a RenderPassDrawQuad for the contributing pass.
-  scoped_ptr<RenderPassDrawQuad> pass_quad = RenderPassDrawQuad::Create();
+  scoped_ptr<RenderPassDrawQuad> pass_quad =
+      make_scoped_ptr(new RenderPassDrawQuad);
   pass_quad->SetNew(pass->shared_quad_state_list.back(),
                     contrib_output_rect,
                     contrib_output_rect,

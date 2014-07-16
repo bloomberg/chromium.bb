@@ -15,10 +15,6 @@ IOSurfaceDrawQuad::IOSurfaceDrawQuad()
       orientation(FLIPPED) {
 }
 
-scoped_ptr<IOSurfaceDrawQuad> IOSurfaceDrawQuad::Create() {
-  return make_scoped_ptr(new IOSurfaceDrawQuad);
-}
-
 void IOSurfaceDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                const gfx::Rect& rect,
                                const gfx::Rect& opaque_rect,

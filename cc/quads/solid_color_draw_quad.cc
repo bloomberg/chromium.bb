@@ -12,10 +12,6 @@ namespace cc {
 SolidColorDrawQuad::SolidColorDrawQuad()
     : color(0), force_anti_aliasing_off(false) {}
 
-scoped_ptr<SolidColorDrawQuad> SolidColorDrawQuad::Create() {
-  return make_scoped_ptr(new SolidColorDrawQuad);
-}
-
 void SolidColorDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                 const gfx::Rect& rect,
                                 const gfx::Rect& visible_rect,

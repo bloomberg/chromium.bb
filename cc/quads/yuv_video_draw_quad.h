@@ -23,7 +23,7 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
 
   virtual ~YUVVideoDrawQuad();
 
-  static scoped_ptr<YUVVideoDrawQuad> Create();
+  YUVVideoDrawQuad();
 
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
@@ -61,7 +61,6 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
   static const YUVVideoDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
-  YUVVideoDrawQuad();
   virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE;
 };
 

@@ -113,8 +113,7 @@ scoped_ptr<cc::DrawQuad> ConvertTo(const surfaces::QuadPtr& input,
                                    cc::SharedQuadState* sqs) {
   switch (input->material) {
     case surfaces::SOLID_COLOR: {
-      scoped_ptr<cc::SolidColorDrawQuad> color_quad =
-          cc::SolidColorDrawQuad::Create();
+      scoped_ptr<cc::SolidColorDrawQuad> color_quad(new cc::SolidColorDrawQuad);
       color_quad->SetAll(
           sqs,
           input->rect.To<gfx::Rect>(),
@@ -126,8 +125,7 @@ scoped_ptr<cc::DrawQuad> ConvertTo(const surfaces::QuadPtr& input,
       return color_quad.PassAs<cc::DrawQuad>();
     }
     case surfaces::SURFACE_CONTENT: {
-      scoped_ptr<cc::SurfaceDrawQuad> surface_quad =
-          cc::SurfaceDrawQuad::Create();
+      scoped_ptr<cc::SurfaceDrawQuad> surface_quad(new cc::SurfaceDrawQuad);
       surface_quad->SetAll(
           sqs,
           input->rect.To<gfx::Rect>(),
@@ -138,8 +136,7 @@ scoped_ptr<cc::DrawQuad> ConvertTo(const surfaces::QuadPtr& input,
       return surface_quad.PassAs<cc::DrawQuad>();
     }
     case surfaces::TEXTURE_CONTENT: {
-      scoped_ptr<cc::TextureDrawQuad> texture_quad =
-          cc::TextureDrawQuad::Create();
+      scoped_ptr<cc::TextureDrawQuad> texture_quad(new cc::TextureDrawQuad);
       surfaces::TextureQuadStatePtr& texture_quad_state =
           input->texture_quad_state;
       texture_quad->SetAll(

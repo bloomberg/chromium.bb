@@ -19,7 +19,7 @@ namespace cc {
 // Used for on-demand tile rasterization.
 class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
  public:
-  static scoped_ptr<PictureDrawQuad> Create();
+  PictureDrawQuad();
   virtual ~PictureDrawQuad();
 
   void SetNew(const SharedQuadState* shared_quad_state,
@@ -56,7 +56,6 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
   static const PictureDrawQuad* MaterialCast(const DrawQuad* quad);
 
  private:
-  PictureDrawQuad();
   virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE;
 };
 

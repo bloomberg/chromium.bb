@@ -12,10 +12,6 @@ namespace cc {
 SurfaceDrawQuad::SurfaceDrawQuad() {
 }
 
-scoped_ptr<SurfaceDrawQuad> SurfaceDrawQuad::Create() {
-  return make_scoped_ptr(new SurfaceDrawQuad);
-}
-
 void SurfaceDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              const gfx::Rect& rect,
                              const gfx::Rect& visible_rect,

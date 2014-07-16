@@ -20,7 +20,7 @@ class CC_EXPORT IOSurfaceDrawQuad : public DrawQuad {
     ORIENTATION_LAST = UNFLIPPED
   };
 
-  static scoped_ptr<IOSurfaceDrawQuad> Create();
+  IOSurfaceDrawQuad();
 
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
@@ -49,7 +49,6 @@ class CC_EXPORT IOSurfaceDrawQuad : public DrawQuad {
   static const IOSurfaceDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
-  IOSurfaceDrawQuad();
   virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE;
 };
 

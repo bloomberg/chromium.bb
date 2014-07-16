@@ -17,10 +17,6 @@ TileDrawQuad::TileDrawQuad()
 TileDrawQuad::~TileDrawQuad() {
 }
 
-scoped_ptr<TileDrawQuad> TileDrawQuad::Create() {
-  return make_scoped_ptr(new TileDrawQuad);
-}
-
 void TileDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                           const gfx::Rect& rect,
                           const gfx::Rect& opaque_rect,

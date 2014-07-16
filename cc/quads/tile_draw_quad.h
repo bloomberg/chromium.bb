@@ -11,7 +11,7 @@ namespace cc {
 
 class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
  public:
-  static scoped_ptr<TileDrawQuad> Create();
+  TileDrawQuad();
   virtual ~TileDrawQuad();
 
   void SetNew(const SharedQuadState* shared_quad_state,
@@ -41,7 +41,6 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
   static const TileDrawQuad* MaterialCast(const DrawQuad*);
 
  private:
-  TileDrawQuad();
   virtual void ExtendValue(base::DictionaryValue* value) const OVERRIDE;
 };
 
