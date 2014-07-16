@@ -9,6 +9,7 @@ import logging
 import os
 import re
 import sqlalchemy
+import sqlalchemy.exc
 from sqlalchemy import MetaData
 
 from chromite.cbuildbot import constants
@@ -201,7 +202,7 @@ class SchemaVersionedMySQLConnection(object):
     """
     self._ReflectToMetadata()
     ins = self._meta.tables[table].insert()
-    r = self._GetEngine().execute(ins, values)
+    r = self._Execute(ins, values)
     return r.inserted_primary_key[0]
 
   def _InsertMany(self, table, values):
@@ -216,7 +217,7 @@ class SchemaVersionedMySQLConnection(object):
     """
     self._ReflectToMetadata()
     ins = self._meta.tables[table].insert()
-    r = self._GetEngine().execute(ins, values)
+    r = self._Execute(ins, values)
     return r.rowcount
 
   def _GetPrimaryKey(self, table):
@@ -255,8 +256,37 @@ class SchemaVersionedMySQLConnection(object):
     self._ReflectToMetadata()
     primary_key = self._GetPrimaryKey(table)
     upd = self._meta.tables[table].update().where(primary_key==row_id)
-    r = self._GetEngine().execute(upd, values)
+    r = self._Execute(upd, values)
     return r.rowcount
+
+  def _Execute(self, query, *args, **kwargs):
+    """Execute a query using engine, with retires.
+
+    This method wraps execution of a query in a single retry in case the
+    engine's connection has been dropped.
+
+    Args:
+      query: Query to execute, of type string, or sqlalchemy.Executible,
+             or other sqlalchemy-executible statement (see sqlalchemy
+             docs).
+      *args: Additional args passed along to .execute(...)
+      **kwargs: Additional args passed along to .execute(...)
+
+    Returns:
+      The result of .execute(...)
+    """
+    try:
+      return self._GetEngine().execute(query, *args, **kwargs)
+    except sqlalchemy.exc.OperationalError as e:
+      error_code = e.orig.args[0]
+      # Error coded 2006 'MySQL server has gone away' indicates that the
+      # connection used was closed or dropped.
+      if error_code == 2006:
+        logging.debug('Retrying a query on engine %s, due to dropped '
+                      'connection.', self._GetEngine())
+        return self._GetEngine().execute(query, *args, **kwargs)
+      else:
+        raise
 
   def _GetEngine(self):
     """Get the sqlalchemy engine for this process.
