@@ -1,17 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_BASE_MODULE_SYSTEM_TEST_H_
-#define CHROME_TEST_BASE_MODULE_SYSTEM_TEST_H_
+#ifndef EXTENSIONS_RENDERER_MODULE_SYSTEM_TEST_H_
+#define EXTENSIONS_RENDERER_MODULE_SYSTEM_TEST_H_
 
-#include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "extensions/renderer/module_system.h"
 #include "extensions/renderer/scoped_persistent.h"
+#include "extensions/renderer/script_context.h"
 #include "gin/public/context_holder.h"
 #include "gin/public/isolate_holder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
+
+namespace extensions {
 
 class ModuleSystemTestEnvironment {
  public:
@@ -44,11 +46,9 @@ class ModuleSystemTestEnvironment {
 
   void ShutdownModuleSystem();
 
-  extensions::ModuleSystem* module_system() {
-    return context_->module_system();
-  }
+  ModuleSystem* module_system() { return context_->module_system(); }
 
-  extensions::ChromeV8Context* context() { return context_.get(); }
+  ScriptContext* context() { return context_.get(); }
 
   v8::Isolate* isolate() { return isolate_holder_->isolate(); }
 
@@ -58,7 +58,7 @@ class ModuleSystemTestEnvironment {
   gin::IsolateHolder* isolate_holder_;
   scoped_ptr<gin::ContextHolder> context_holder_;
   v8::HandleScope handle_scope_;
-  scoped_ptr<extensions::ChromeV8Context> context_;
+  scoped_ptr<ScriptContext> context_;
   AssertNatives* assert_natives_;
   scoped_ptr<StringSourceMap> source_map_;
 
@@ -77,8 +77,6 @@ class ModuleSystemTestEnvironment {
 //
 // By default a test will fail if no method in the native module 'assert' is
 // called. This behaviour can be overridden by calling ExpectNoAssertionsMade().
-//
-// TODO(kalman): move this back into chrome/renderer/extensions.
 class ModuleSystemTest : public testing::Test {
  public:
   ModuleSystemTest();
@@ -108,4 +106,6 @@ class ModuleSystemTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ModuleSystemTest);
 };
 
-#endif  // CHROME_TEST_BASE_MODULE_SYSTEM_TEST_H_
+}  // namespace extensions
+
+#endif  // EXTENSIONS_RENDERER_MODULE_SYSTEM_TEST_H_

@@ -693,9 +693,12 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
+        '../content/content_shell_and_tests.gyp:test_support_content',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         'extensions_common',
+        'extensions_renderer',
+        'extensions_resources.gyp:extensions_resources',
         'extensions_strings.gyp:extensions_strings',
         'extensions_test_support',
       ],
@@ -707,6 +710,14 @@
         'common/one_shot_event_unittest.cc',
         'common/permissions/manifest_permission_set_unittest.cc',
         'common/user_script_unittest.cc',
+        'renderer/event_unittest.cc',
+        'renderer/json_schema_unittest.cc',
+        'renderer/messaging_utils_unittest.cc',
+        'renderer/module_system_test.cc',
+        'renderer/module_system_test.h',
+        'renderer/module_system_unittest.cc',
+        'renderer/safe_builtins_unittest.cc',
+        'renderer/utils_unittest.cc',
         'test/extensions_unittests_main.cc',
         'test/test_extensions_client.cc',
         'test/test_extensions_client.h',
@@ -714,6 +725,19 @@
         'test/test_permission_message_provider.h',
         'test/test_permissions_provider.cc',
         'test/test_permissions_provider.h',
+      ],
+      'actions': [
+        {
+          'action_name': 'repack_components_pack',
+          'variables': {
+            'pak_inputs': [
+              '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_renderer_resources.pak',
+            ],
+            'pak_output': '<(PRODUCT_DIR)/extensions_unittests_resources.pak',
+          },
+          'includes': [ '../build/repack_action.gypi' ],
+        },
       ],
     },
   ]

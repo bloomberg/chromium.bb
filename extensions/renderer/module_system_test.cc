@@ -1,8 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/module_system_test.h"
+#include "extensions/renderer/module_system_test.h"
+
+#include <map>
+#include <string>
 
 #include "base/callback.h"
 #include "base/file_util.h"
@@ -12,21 +15,14 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/renderer/extensions/chrome_v8_context.h"
+#include "extensions/common/extension_paths.h"
 #include "extensions/renderer/logging_native_handler.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/utils_native_handler.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#include <map>
-#include <string>
-
-using extensions::ModuleSystem;
-using extensions::NativeHandler;
-using extensions::ObjectBackedNativeHandler;
-
+namespace extensions {
 namespace {
 
 class FailsOnException : public ModuleSystem::ExceptionHandler {
@@ -39,10 +35,11 @@ class FailsOnException : public ModuleSystem::ExceptionHandler {
 class V8ExtensionConfigurator {
  public:
   V8ExtensionConfigurator()
-      : safe_builtins_(extensions::SafeBuiltins::CreateV8Extension()),
+      : safe_builtins_(SafeBuiltins::CreateV8Extension()),
         names_(1, safe_builtins_->name()),
-        configuration_(new v8::ExtensionConfiguration(
-            names_.size(), vector_as_array(&names_))) {
+        configuration_(
+            new v8::ExtensionConfiguration(static_cast<int>(names_.size()),
+                                           vector_as_array(&names_))) {
     v8::RegisterExtension(safe_builtins_.get());
   }
 
@@ -65,14 +62,16 @@ base::LazyInstance<V8ExtensionConfigurator>::Leaky g_v8_extension_configurator =
 class ModuleSystemTestEnvironment::AssertNatives
     : public ObjectBackedNativeHandler {
  public:
-  explicit AssertNatives(extensions::ChromeV8Context* context)
+  explicit AssertNatives(ScriptContext* context)
       : ObjectBackedNativeHandler(context),
         assertion_made_(false),
         failed_(false) {
-    RouteFunction("AssertTrue", base::Bind(&AssertNatives::AssertTrue,
-        base::Unretained(this)));
-    RouteFunction("AssertFalse", base::Bind(&AssertNatives::AssertFalse,
-        base::Unretained(this)));
+    RouteFunction(
+        "AssertTrue",
+        base::Bind(&AssertNatives::AssertTrue, base::Unretained(this)));
+    RouteFunction(
+        "AssertFalse",
+        base::Bind(&AssertNatives::AssertFalse, base::Unretained(this)));
   }
 
   bool assertion_made() { return assertion_made_; }
@@ -97,7 +96,7 @@ class ModuleSystemTestEnvironment::AssertNatives
 
 // Source map that operates on std::strings.
 class ModuleSystemTestEnvironment::StringSourceMap
-    : public extensions::ModuleSystem::SourceMap {
+    : public ModuleSystem::SourceMap {
  public:
   StringSourceMap() {}
   virtual ~StringSourceMap() {}
@@ -131,11 +130,10 @@ ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(
   context_holder_->SetContext(
       v8::Context::New(isolate_holder->isolate(),
                        g_v8_extension_configurator.Get().GetConfiguration()));
-  context_.reset(new extensions::ChromeV8Context(
-      context_holder_->context(),
-      NULL,  // WebFrame
-      NULL,  // Extension
-      extensions::Feature::UNSPECIFIED_CONTEXT));
+  context_.reset(new ScriptContext(context_holder_->context(),
+                                   NULL,  // WebFrame
+                                   NULL,  // Extension
+                                   Feature::UNSPECIFIED_CONTEXT));
   context_->v8_context()->Enter();
   assert_natives_ = new AssertNatives(context_.get());
 
@@ -145,12 +143,14 @@ ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(
     context_->set_module_system(module_system.Pass());
   }
   ModuleSystem* module_system = context_->module_system();
-  module_system->RegisterNativeHandler("assert", scoped_ptr<NativeHandler>(
-      assert_natives_));
-  module_system->RegisterNativeHandler("logging", scoped_ptr<NativeHandler>(
-      new extensions::LoggingNativeHandler(context_.get())));
-  module_system->RegisterNativeHandler("utils", scoped_ptr<NativeHandler>(
-      new extensions::UtilsNativeHandler(context_.get())));
+  module_system->RegisterNativeHandler(
+      "assert", scoped_ptr<NativeHandler>(assert_natives_));
+  module_system->RegisterNativeHandler(
+      "logging",
+      scoped_ptr<NativeHandler>(new LoggingNativeHandler(context_.get())));
+  module_system->RegisterNativeHandler(
+      "utils",
+      scoped_ptr<NativeHandler>(new UtilsNativeHandler(context_.get())));
   module_system->SetExceptionHandlerForTest(
       scoped_ptr<ModuleSystem::ExceptionHandler>(new FailsOnException));
 }
@@ -167,8 +167,9 @@ void ModuleSystemTestEnvironment::RegisterModule(const std::string& name,
 
 void ModuleSystemTestEnvironment::RegisterModule(const std::string& name,
                                                  int resource_id) {
-  const std::string& code = ResourceBundle::GetSharedInstance().
-      GetRawDataResource(resource_id).as_string();
+  const std::string& code = ResourceBundle::GetSharedInstance()
+                                .GetRawDataResource(resource_id)
+                                .as_string();
   source_map_->RegisterModule(name, code);
 }
 
@@ -183,9 +184,8 @@ void ModuleSystemTestEnvironment::RegisterTestFile(
     const std::string& module_name,
     const std::string& file_name) {
   base::FilePath test_js_file_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_js_file_path));
-  test_js_file_path = test_js_file_path.AppendASCII("extensions")
-                                       .AppendASCII(file_name);
+  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &test_js_file_path));
+  test_js_file_path = test_js_file_path.AppendASCII(file_name);
   std::string test_js;
   ASSERT_TRUE(base::ReadFileToString(test_js_file_path, &test_js));
   source_map_->RegisterModule(module_name, test_js);
@@ -237,3 +237,5 @@ void ModuleSystemTest::ExpectNoAssertionsMade() {
 void ModuleSystemTest::RunResolvedPromises() {
   isolate_holder_.isolate()->RunMicrotasks();
 }
+
+}  // namespace extensions

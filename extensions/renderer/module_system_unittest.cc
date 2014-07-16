@@ -1,25 +1,23 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/test/base/module_system_test.h"
 #include "extensions/renderer/module_system.h"
+#include "extensions/renderer/module_system_test.h"
 #include "gin/modules/module_registry.h"
 
-// TODO(cduvall/kalman): Put this file in extensions namespace.
-using extensions::ModuleSystem;
-using extensions::NativeHandler;
-using extensions::ObjectBackedNativeHandler;
+namespace extensions {
 
 class CounterNatives : public ObjectBackedNativeHandler {
  public:
-  explicit CounterNatives(extensions::ChromeV8Context* context)
+  explicit CounterNatives(ScriptContext* context)
       : ObjectBackedNativeHandler(context), counter_(0) {
-    RouteFunction("Get", base::Bind(&CounterNatives::Get,
-        base::Unretained(this)));
-    RouteFunction("Increment", base::Bind(&CounterNatives::Increment,
-        base::Unretained(this)));
+    RouteFunction("Get",
+                  base::Bind(&CounterNatives::Get, base::Unretained(this)));
+    RouteFunction(
+        "Increment",
+        base::Bind(&CounterNatives::Increment, base::Unretained(this)));
   }
 
   void Get(const v8::FunctionCallbackInfo<v8::Value>& args) {
@@ -36,9 +34,7 @@ class CounterNatives : public ObjectBackedNativeHandler {
 
 class TestExceptionHandler : public ModuleSystem::ExceptionHandler {
  public:
-  TestExceptionHandler()
-      : handled_exception_(false) {
-  }
+  TestExceptionHandler() : handled_exception_(false) {}
 
   virtual void HandleUncaughtException(const v8::TryCatch& try_catch) OVERRIDE {
     handled_exception_ = true;
@@ -487,3 +483,5 @@ TEST_F(ModuleSystemTest, TestRequireAsyncFromContextWithNoModuleSystem) {
   env()->module_system()->Require("test");
   RunResolvedPromises();
 }
+
+}  // namespace extensions
