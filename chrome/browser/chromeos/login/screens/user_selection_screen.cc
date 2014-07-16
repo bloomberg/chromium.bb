@@ -36,6 +36,7 @@ const char kKeyMultiProfilesAllowed[] = "isMultiProfilesAllowed";
 const char kKeyMultiProfilesPolicy[] = "multiProfilesPolicy";
 
 // Max number of users to show.
+// Please keep synced with one in signin_userlist_unittest.cc.
 const size_t kMaxUsers = 18;
 
 const int kPasswordClearTimeoutSec = 60;

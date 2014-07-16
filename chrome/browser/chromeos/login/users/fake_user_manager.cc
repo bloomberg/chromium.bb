@@ -43,11 +43,29 @@ const User* FakeUserManager::AddUser(const std::string& email) {
   return user;
 }
 
+const User* FakeUserManager::AddPublicAccountUser(const std::string& email) {
+  User* user = User::CreatePublicAccountUser(email);
+  user->set_username_hash(email + kUserIdHashSuffix);
+  user->SetStubImage(User::kProfileImageIndex, false);
+  user_list_.push_back(user);
+  ProfileHelper::Get()->SetProfileToUserMappingForTesting(user);
+  return user;
+}
+
 void FakeUserManager::AddKioskAppUser(const std::string& kiosk_app_username) {
   User* user = User::CreateKioskAppUser(kiosk_app_username);
   user->set_username_hash(kiosk_app_username + kUserIdHashSuffix);
   user_list_.push_back(user);
   ProfileHelper::Get()->SetProfileToUserMappingForTesting(user);
+}
+
+void FakeUserManager::RemoveUserFromList(const std::string& email) {
+  UserList::iterator it = user_list_.begin();
+  while (it != user_list_.end() && (*it)->email() != email) ++it;
+  if (it != user_list_.end()) {
+    delete *it;
+    user_list_.erase(it);
+  }
 }
 
 void FakeUserManager::LoginUser(const std::string& email) {

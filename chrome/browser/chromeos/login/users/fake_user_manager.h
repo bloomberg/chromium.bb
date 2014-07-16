@@ -31,6 +31,9 @@ class FakeUserManager : public UserManager {
   // Create and add a kiosk app user.
   void AddKioskAppUser(const std::string& kiosk_app_username);
 
+  // Create and add a public account user.
+  const User* AddPublicAccountUser(const std::string& email);
+
   // Calculates the user name hash and calls UserLoggedIn to login a user.
   void LoginUser(const std::string& email);
 
@@ -65,7 +68,7 @@ class FakeUserManager : public UserManager {
   virtual void SessionStarted() OVERRIDE {}
   virtual void RemoveUser(const std::string& email,
       RemoveUserDelegate* delegate) OVERRIDE {}
-  virtual void RemoveUserFromList(const std::string& email) OVERRIDE {}
+  virtual void RemoveUserFromList(const std::string& email) OVERRIDE;
   virtual bool IsKnownUser(const std::string& email) const OVERRIDE;
   virtual const User* FindUser(const std::string& email) const OVERRIDE;
   virtual User* FindUserAndModify(const std::string& email) OVERRIDE;
