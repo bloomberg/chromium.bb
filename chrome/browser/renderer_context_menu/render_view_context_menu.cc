@@ -210,7 +210,7 @@ const struct UmaEnumCommandIdPair {
 };
 
 // Collapses large ranges of ids before looking for UMA enum.
-int CollapleCommandsForUMA(int id) {
+int CollapseCommandsForUMA(int id) {
   if (id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
       id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST) {
     return IDC_CONTENT_CONTEXT_CUSTOM_FIRST;
@@ -241,7 +241,7 @@ int CollapleCommandsForUMA(int id) {
 
 // Returns UMA enum value for command specified by |id| or -1 if not found.
 int FindUMAEnumValueForCommand(int id) {
-  id = CollapleCommandsForUMA(id);
+  id = CollapseCommandsForUMA(id);
   const size_t kMappingSize = arraysize(kUmaEnumToControlId);
   for (size_t i = 0; i < kMappingSize; ++i) {
     if (kUmaEnumToControlId[i].control_id == id) {
