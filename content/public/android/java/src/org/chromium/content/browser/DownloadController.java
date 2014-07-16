@@ -17,7 +17,7 @@ import org.chromium.base.JNINamespace;
 @JNINamespace("content")
 public class DownloadController {
     private static final String LOGTAG = "DownloadController";
-    private static DownloadController sInstance;
+    private static final DownloadController sInstance = new DownloadController();
 
     /**
      * Class for notifying the application that download has completed.
@@ -40,9 +40,6 @@ public class DownloadController {
 
     @CalledByNative
     public static DownloadController getInstance() {
-        if (sInstance == null) {
-            sInstance = new DownloadController();
-        }
         return sInstance;
     }
 
