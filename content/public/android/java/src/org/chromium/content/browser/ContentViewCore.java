@@ -10,6 +10,7 @@ import android.app.SearchManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.FeatureInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
@@ -110,6 +111,13 @@ public class ContentViewCore
 
     // Length of the delay (in ms) before fading in handles after the last page movement.
     private static final int TEXT_HANDLE_FADE_IN_DELAY = 300;
+
+    // These values are empirically obtained.
+    private static final int SPEN_ACTION_DOWN = 11;
+    private static final int SPEN_ACTION_UP = 12;
+    private static final int SPEN_ACTION_MOVE = 13;
+    private static final int SPEN_ACTION_CANCEL = 14;
+    private static Boolean sIsSPenSupported;
 
     // If the embedder adds a JavaScript interface object that contains an indirect reference to
     // the ContentViewCore, then storing a strong ref to the interface object on the native
@@ -1122,6 +1130,41 @@ public class ContentViewCore
 
     // End FrameLayout overrides.
 
+    private static boolean isSPenSupported(Context context) {
+        if (sIsSPenSupported == null)
+            sIsSPenSupported = detectSPenSupport(context);
+        return sIsSPenSupported.booleanValue();
+    }
+
+    private static boolean detectSPenSupport(Context context) {
+        if (!"SAMSUNG".equalsIgnoreCase(Build.MANUFACTURER))
+            return false;
+
+        final FeatureInfo[] infos = context.getPackageManager().getSystemAvailableFeatures();
+        for (FeatureInfo info : infos) {
+            if ("com.sec.feature.spen_usp".equalsIgnoreCase(info.name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static int convertSPenEventAction(int eventActionMasked) {
+        // S-Pen support: convert to normal stylus event handling
+        switch (eventActionMasked) {
+            case SPEN_ACTION_DOWN:
+                return MotionEvent.ACTION_DOWN;
+            case SPEN_ACTION_UP:
+                return MotionEvent.ACTION_UP;
+            case SPEN_ACTION_MOVE:
+                return MotionEvent.ACTION_MOVE;
+            case SPEN_ACTION_CANCEL:
+                return MotionEvent.ACTION_CANCEL;
+            default:
+                return eventActionMasked;
+        }
+    }
+
     /**
      * @see View#onTouchEvent(MotionEvent)
      */
@@ -1130,7 +1173,10 @@ public class ContentViewCore
         try {
             cancelRequestToScrollFocusedEditableNodeIntoView();
 
-            final int eventAction = event.getActionMasked();
+            int eventAction = event.getActionMasked();
+
+            if (isSPenSupported(mContext))
+                eventAction = convertSPenEventAction(eventAction);
 
             // Only these actions have any effect on gesture detection.  Other
             // actions have no corresponding WebTouchEvent type and may confuse the
