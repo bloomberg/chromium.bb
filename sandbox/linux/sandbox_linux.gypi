@@ -117,9 +117,6 @@
       'target_name': 'seccomp_bpf',
       'type': '<(component)',
       'sources': [
-        'bpf_dsl/bpf_dsl.cc',
-        'bpf_dsl/bpf_dsl.h',
-        'bpf_dsl/cons.h',
         'seccomp-bpf/basicblock.cc',
         'seccomp-bpf/basicblock.h',
         'seccomp-bpf/codegen.cc',
