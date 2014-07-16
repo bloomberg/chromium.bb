@@ -1557,7 +1557,7 @@ using content::WebContents;
   if (!downloadShelfController_.get()) {
     downloadShelfController_.reset([[DownloadShelfController alloc]
         initWithBrowser:browser_.get() resizeDelegate:self]);
-    [self.chromeContentView addSubview:[downloadShelfController_ view]];
+    [[[self window] contentView] addSubview:[downloadShelfController_ view]];
   }
   return downloadShelfController_;
 }

@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 
-#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 
 @implementation FullscreenWindow
@@ -28,7 +27,6 @@
     // Borderless windows don't usually show up in the Windows menu so whine at
     // Cocoa until it complies. See -dealloc and -setTitle: as well.
     [NSApp addWindowsItem:self title:@"" filename:NO];
-    [[self contentView] cr_setWantsLayer:YES];
   }
   return self;
 }
