@@ -251,7 +251,7 @@
             ],
           },
           'dependencies': [
-            'src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:shim_for_irt',
+            'src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:irt',
             '../ppapi_proxy_nacl.gyp:ppapi_proxy_nacl',
             '../ppapi_ipc_nacl.gyp:ppapi_ipc_nacl',
             '../ppapi_shared_nacl.gyp:ppapi_shared_nacl',

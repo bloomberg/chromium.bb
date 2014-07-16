@@ -37,7 +37,7 @@
     'conditions': [
       ['disable_nacl==0 and disable_pnacl==0 and disable_nacl_untrusted==0', {
         'dependencies': [
-          '../../../../../ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:shim_browser',
+          '../../../../../ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:browser',
           '../../../../../native_client/tools.gyp:prep_toolchain',
           'untar_pnacl_translator',
         ],
@@ -77,14 +77,14 @@
                       '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_pnacl_llc_nexe',
                     ],
                     'inputs': [
-                      '>(tc_lib_dir_pnacl_translate)/lib-x86-32/for_browser/libpnacl_irt_shim.a',
-                      '>(tc_lib_dir_pnacl_translate)/lib-x86-64/for_browser/libpnacl_irt_shim.a',
+                      '>(tc_lib_dir_pnacl_translate)/lib-x86-32/browser/libpnacl_irt_shim.a',
+                      '>(tc_lib_dir_pnacl_translate)/lib-x86-64/browser/libpnacl_irt_shim.a',
                     ],
                     'variables': {
                       'lib_overrides': [
                         # Use the two freshly generated shims.
-                        '--lib_override=ia32,>(tc_lib_dir_pnacl_translate)/lib-x86-32/for_browser/libpnacl_irt_shim.a',
-                        '--lib_override=x64,>(tc_lib_dir_pnacl_translate)/lib-x86-64/for_browser/libpnacl_irt_shim.a',
+                        '--lib_override=ia32,>(tc_lib_dir_pnacl_translate)/lib-x86-32/browser/libpnacl_irt_shim.a',
+                        '--lib_override=x64,>(tc_lib_dir_pnacl_translate)/lib-x86-64/browser/libpnacl_irt_shim.a',
                       ],
                     },
                 }],
@@ -103,12 +103,12 @@
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_arm_pnacl_llc_nexe',
                         ],
                         'inputs': [
-                          '>(tc_lib_dir_pnacl_translate)/lib-arm/for_browser/libpnacl_irt_shim.a',
+                          '>(tc_lib_dir_pnacl_translate)/lib-arm/browser/libpnacl_irt_shim.a',
                         ],
                         'variables': {
                           'lib_overrides': [
                             # Use the freshly generated shim.
-                            '--lib_override=arm,>(tc_lib_dir_pnacl_translate)/lib-arm/for_browser/libpnacl_irt_shim.a',
+                            '--lib_override=arm,>(tc_lib_dir_pnacl_translate)/lib-arm/browser/libpnacl_irt_shim.a',
                           ],
                         },
                       }],
@@ -124,12 +124,12 @@
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_mips32_llc_nexe',
                         ],
                         'inputs': [
-                          '>(tc_lib_dir_pnacl_translate)/lib-mips32/for_browser/libpnacl_irt_shim.a',
+                          '>(tc_lib_dir_pnacl_translate)/lib-mips32/browser/libpnacl_irt_shim.a',
                         ],
                         'variables': {
                           'lib_overrides': [
                             # Use the freshly generated shim.
-                            '--lib_override=mipsel,>(tc_lib_dir_pnacl_translate)/lib-mips32/for_browser/libpnacl_irt_shim.a',
+                            '--lib_override=mipsel,>(tc_lib_dir_pnacl_translate)/lib-mips32/browser/libpnacl_irt_shim.a',
                           ],
                         },
                       }],
@@ -145,12 +145,12 @@
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_32_pnacl_llc_nexe',
                         ],
                         'inputs': [
-                          '>(tc_lib_dir_pnacl_translate)/lib-x86-32/for_browser/libpnacl_irt_shim.a',
+                          '>(tc_lib_dir_pnacl_translate)/lib-x86-32/browser/libpnacl_irt_shim.a',
                         ],
                         'variables': {
                           'lib_overrides': [
                             # Use the freshly generated shim.
-                            '--lib_override=ia32,>(tc_lib_dir_pnacl_translate)/lib-x86-32/for_browser/libpnacl_irt_shim.a',
+                            '--lib_override=ia32,>(tc_lib_dir_pnacl_translate)/lib-x86-32/browser/libpnacl_irt_shim.a',
                           ],
                         },
                       }],
@@ -166,12 +166,12 @@
                           '<(PRODUCT_DIR)/pnacl/pnacl_public_x86_64_pnacl_llc_nexe',
                         ],
                         'inputs': [
-                          '>(tc_lib_dir_pnacl_translate)/lib-x86-64/for_browser/libpnacl_irt_shim.a',
+                          '>(tc_lib_dir_pnacl_translate)/lib-x86-64/browser/libpnacl_irt_shim.a',
                         ],
                         'variables': {
                           'lib_overrides': [
                             # Use the freshly generated shim.
-                            '--lib_override=x64,>(tc_lib_dir_pnacl_translate)/lib-x86-64/for_browser/libpnacl_irt_shim.a',
+                            '--lib_override=x64,>(tc_lib_dir_pnacl_translate)/lib-x86-64/browser/libpnacl_irt_shim.a',
                           ],
                         },
                       }],
