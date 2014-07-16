@@ -94,7 +94,8 @@ bool StyledLabel::StyleRange::operator<(
 
 StyledLabel::StyledLabel(const base::string16& text,
                          StyledLabelListener* listener)
-    : listener_(listener),
+    : specified_line_height_(0),
+      listener_(listener),
       displayed_on_background_color_set_(false),
       auto_color_readability_enabled_(true) {
   base::TrimWhitespace(text, base::TRIM_TRAILING, &text_);
@@ -130,6 +131,11 @@ void StyledLabel::AddStyleRange(const gfx::Range& range,
 
 void StyledLabel::SetDefaultStyle(const RangeStyleInfo& style_info) {
   default_style_info_ = style_info;
+  PreferredSizeChanged();
+}
+
+void StyledLabel::SetLineHeight(int line_height) {
+  specified_line_height_ = line_height;
   PreferredSizeChanged();
 }
 
@@ -193,7 +199,8 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
   if (width <= 0 || text_.empty())
     return gfx::Size();
 
-  const int line_height = CalculateLineHeight(font_list_);
+  const int line_height = specified_line_height_ > 0 ? specified_line_height_
+      : CalculateLineHeight(font_list_);
   // The index of the line we're on.
   int line = 0;
   // The x position (in pixels) of the line we're on, relative to content
@@ -295,7 +302,6 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
     gfx::Insets focus_border_insets(label->GetInsets());
     focus_border_insets += -label->View::GetInsets();
     const gfx::Size view_size = label->GetPreferredSize();
-    DCHECK_EQ(line_height, view_size.height() - focus_border_insets.height());
     if (!dry_run) {
       label->SetBoundsRect(gfx::Rect(
           gfx::Point(GetInsets().left() + x - focus_border_insets.left(),
@@ -309,7 +315,11 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
     remaining_string = remaining_string.substr(chunk.size());
   }
 
-  return gfx::Size(width, (line + 1) * line_height + GetInsets().height());
+  // The user-specified line height only applies to interline spacing, so the
+  // final line's height is unaffected.
+  int total_height = line * line_height +
+      CalculateLineHeight(font_list_) + GetInsets().height();
+  return gfx::Size(width, total_height);
 }
 
 }  // namespace views

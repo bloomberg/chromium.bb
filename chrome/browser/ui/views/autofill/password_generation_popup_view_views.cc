@@ -6,9 +6,13 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_controller.h"
+#include "chrome/browser/ui/autofill/popup_constants.h"
+#include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
@@ -20,35 +24,42 @@ namespace {
 
 // The amount of whitespace that is present when there is no padding. Used
 // to get the proper spacing in the help section.
-const int kHelpVerticalOffset = 3;
+const int kHelpVerticalOffset = 5;
+const int kPasswordSectionHeight = 62;
 
-// Class that shows the password and the suggestion side-by-side.
-class PasswordRow : public views::View {
+// Wrapper around just the text portions of the generation UI (password and
+// prompting text).
+class PasswordTextBox : public views::View {
  public:
-  PasswordRow(const base::string16& password,
-              const base::string16& suggestion,
-              const gfx::FontList& font_list,
-              int horizontal_border) {
-    set_clip_insets(gfx::Insets(
-        PasswordGenerationPopupView::kPasswordVerticalInset, 0,
-        PasswordGenerationPopupView::kPasswordVerticalInset, 0));
+  PasswordTextBox() {}
+  virtual ~PasswordTextBox() {}
+
+  // |suggestion_text| prompts the user to select the password,
+  // |generated_password| is the generated password, and |font_list| is the font
+  // used for all text in this class.
+  void Init(const base::string16& suggestion_text,
+            const base::string16& generated_password,
+            const gfx::FontList& font_list) {
     views::BoxLayout* box_layout = new views::BoxLayout(
-        views::BoxLayout::kHorizontal, horizontal_border, 0, 0);
+        views::BoxLayout::kVertical, 0, 10, 5);
     box_layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_FILL);
+        views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
     SetLayoutManager(box_layout);
 
-    password_label_ = new views::Label(password, font_list);
-    password_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    AddChildView(password_label_);
+    views::Label* suggestion_label = new views::Label(
+        suggestion_text, font_list.DeriveWithStyle(gfx::Font::BOLD));
+    suggestion_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    suggestion_label->SetEnabledColor(
+        PasswordGenerationPopupViewViews::kItemTextColor);
+    AddChildView(suggestion_label);
 
-    suggestion_label_ = new views::Label(suggestion, font_list);
-    suggestion_label_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-    suggestion_label_->SetEnabledColor(
-        PasswordGenerationPopupView::kExplanatoryTextColor);
-    AddChildView(suggestion_label_);
+    views::Label* password_label =
+        new views::Label(generated_password, font_list);
+    password_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    password_label->SetEnabledColor(
+        PasswordGenerationPopupViewViews::kItemTextColor);
+    AddChildView(password_label);
   }
-  virtual ~PasswordRow() {}
 
   // views::View:
   virtual bool CanProcessEventsWithinSubtree() const OVERRIDE {
@@ -57,44 +68,86 @@ class PasswordRow : public views::View {
   }
 
  private:
-  // Child views. Not owned.
-  views::Label* suggestion_label_;
-  views::Label* password_label_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordRow);
+  DISALLOW_COPY_AND_ASSIGN(PasswordTextBox);
 };
 
 }  // namespace
+
+// Class that shows the generated password and associated UI (currently a key
+// image and some explanatory text).
+class PasswordGenerationPopupViewViews::PasswordBox : public views::View {
+ public:
+  PasswordBox() {}
+  virtual ~PasswordBox() {}
+
+  // |password| is the generated password, |suggestion| is the text prompting
+  // the user to select the password, and |font_list| is the font used for all
+  // the text.
+  void Init(const base::string16& password,
+            const base::string16& suggestion,
+            const gfx::FontList& font_list) {
+    views::BoxLayout* box_layout = new views::BoxLayout(
+        views::BoxLayout::kHorizontal,
+        PasswordGenerationPopupController::kHorizontalPadding,
+        0,
+        15);
+    box_layout->set_main_axis_alignment(
+        views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+    SetLayoutManager(box_layout);
+
+    views::ImageView* key_image = new views::ImageView();
+    key_image->SetImage(
+        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+            IDR_GENERATE_PASSWORD_KEY).ToImageSkia());
+    AddChildView(key_image);
+
+    PasswordTextBox* password_text_box = new PasswordTextBox();
+    password_text_box->Init(suggestion, password, font_list);
+    AddChildView(password_text_box);
+  }
+
+  // views::View:
+  virtual bool CanProcessEventsWithinSubtree() const OVERRIDE {
+    // Send events to the parent view for handling.
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PasswordBox);
+};
 
 PasswordGenerationPopupViewViews::PasswordGenerationPopupViewViews(
     PasswordGenerationPopupController* controller,
     views::Widget* observing_widget)
     : AutofillPopupBaseView(controller, observing_widget),
       password_view_(NULL),
+      font_list_(ResourceBundle::GetSharedInstance().GetFontList(
+          ResourceBundle::SmallFont)),
       controller_(controller) {
   if (controller_->display_password())
     CreatePasswordView();
 
   help_label_ = new views::StyledLabel(controller_->HelpText(), this);
-  help_label_->SetBaseFontList(controller_->font_list());
+  help_label_->SetBaseFontList(font_list_);
+  help_label_->SetLineHeight(20);
   views::StyledLabel::RangeStyleInfo default_style;
   default_style.color = kExplanatoryTextColor;
   help_label_->SetDefaultStyle(default_style);
 
-  views::StyledLabel::RangeStyleInfo link_style =
-      views::StyledLabel::RangeStyleInfo::CreateForLink();
-  link_style.color = kLinkColor;
-  help_label_->AddStyleRange(controller_->HelpTextLinkRange(), link_style);
+  help_label_->AddStyleRange(
+      controller_->HelpTextLinkRange(),
+      views::StyledLabel::RangeStyleInfo::CreateForLink());
 
-  help_label_->SetBoundsRect(controller_->help_bounds());
   help_label_->set_background(
       views::Background::CreateSolidBackground(
           kExplanatoryTextBackgroundColor));
   help_label_->SetBorder(views::Border::CreateEmptyBorder(
-      controller_->kHelpVerticalPadding - kHelpVerticalOffset,
-      controller_->kHorizontalPadding,
-      0,
-      controller_->kHorizontalPadding));
+      PasswordGenerationPopupController::kHelpVerticalPadding -
+      kHelpVerticalOffset,
+      PasswordGenerationPopupController::kHorizontalPadding,
+      PasswordGenerationPopupController::kHelpVerticalPadding -
+      kHelpVerticalOffset,
+      PasswordGenerationPopupController::kHorizontalPadding));
   AddChildView(help_label_);
 
   set_background(views::Background::CreateSolidBackground(kPopupBackground));
@@ -106,11 +159,26 @@ void PasswordGenerationPopupViewViews::CreatePasswordView() {
   if (password_view_)
     return;
 
-  password_view_ = new PasswordRow(controller_->password(),
-                                   controller_->SuggestedText(),
-                                   controller_->font_list(),
-                                   controller_->kHorizontalPadding);
+  password_view_ = new PasswordBox();
+  password_view_->Init(controller_->password(),
+                       controller_->SuggestedText(),
+                       font_list_);
+  password_view_->SetPosition(gfx::Point(kPopupBorderThickness,
+                                         kPopupBorderThickness));
+  password_view_->SizeToPreferredSize();
   AddChildView(password_view_);
+}
+
+gfx::Size PasswordGenerationPopupViewViews::GetPreferredSizeOfPasswordView() {
+  int height = kPopupBorderThickness;
+  if (controller_->display_password()) {
+    // Add divider height as well.
+    height += kPasswordSectionHeight + 1;
+  }
+  int width = controller_->GetMinimumWidth();
+  int popup_width = width - 2 * kPopupBorderThickness;
+  height += help_label_->GetHeightForWidth(popup_width);
+  return gfx::Size(width, height + kPopupBorderThickness);
 }
 
 void PasswordGenerationPopupViewViews::Show() {
@@ -125,11 +193,6 @@ void PasswordGenerationPopupViewViews::Hide() {
 }
 
 void PasswordGenerationPopupViewViews::UpdateBoundsAndRedrawPopup() {
-  // Currently the UI can change from not offering a password to offering
-  // a password (e.g. the user is editing a generated password and deletes it),
-  // but it can't change the other way around.
-  if (controller_->display_password())
-    CreatePasswordView();
 
   DoUpdateBoundsAndRedrawPopup();
 }
@@ -146,10 +209,24 @@ void PasswordGenerationPopupViewViews::PasswordSelectionUpdated() {
 }
 
 void PasswordGenerationPopupViewViews::Layout() {
-  if (password_view_)
-    password_view_->SetBoundsRect(controller_->password_bounds());
+  // Need to leave room for the border.
+  int y = kPopupBorderThickness;
+  int popup_width = bounds().width() - 2 * kPopupBorderThickness;
+  if (controller_->display_password()) {
+    // Currently the UI can change from not offering a password to offering
+    // a password (e.g. the user is editing a generated password and deletes
+    // it), but it can't change the other way around.
+    CreatePasswordView();
+    password_view_->SetBounds(
+        kPopupBorderThickness, y, popup_width, kPasswordSectionHeight);
+    divider_bounds_ =
+        gfx::Rect(kPopupBorderThickness, password_view_->bounds().bottom(),
+                  popup_width, 1);
+    y = divider_bounds_.bottom();
+  }
 
-  help_label_->SetBoundsRect(controller_->help_bounds());
+  help_label_->SetBounds(kPopupBorderThickness, y, popup_width,
+                         help_label_->GetHeightForWidth(popup_width));
 }
 
 void PasswordGenerationPopupViewViews::OnPaint(gfx::Canvas* canvas) {
@@ -162,12 +239,17 @@ void PasswordGenerationPopupViewViews::OnPaint(gfx::Canvas* canvas) {
   // Divider line needs to be drawn after OnPaint() otherwise the background
   // will overwrite the divider.
   if (password_view_)
-    canvas->FillRect(controller_->divider_bounds(), kDividerColor);
+    canvas->FillRect(divider_bounds_, kDividerColor);
 }
 
 void PasswordGenerationPopupViewViews::StyledLabelLinkClicked(
     const gfx::Range& range, int event_flags) {
   controller_->OnSavedPasswordsLinkClicked();
+}
+
+bool PasswordGenerationPopupViewViews::IsPointInPasswordBounds(
+    const gfx::Point& point) {
+  return password_view_->bounds().Contains(point);
 }
 
 PasswordGenerationPopupView* PasswordGenerationPopupView::Create(

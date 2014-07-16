@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 
 namespace gfx {
-class FontList;
 class Range;
 }
 
@@ -17,9 +16,6 @@ namespace autofill {
 
 class PasswordGenerationPopupController : public AutofillPopupViewDelegate {
  public:
-  // Space above and below the password section.
-  static const int kPasswordVerticalPadding = 16;
-
   // Space above and below help section.
   static const int kHelpVerticalPadding = 15;
 
@@ -29,11 +25,10 @@ class PasswordGenerationPopupController : public AutofillPopupViewDelegate {
   // Called by the view when the saved passwords link is clicked.
   virtual void OnSavedPasswordsLinkClicked() = 0;
 
+  // Return the minimum allowable width for the popup.
+  virtual int GetMinimumWidth() = 0;
+
   // Accessors
-  virtual const gfx::FontList& font_list() const = 0;
-  virtual const gfx::Rect& password_bounds() const = 0;
-  virtual const gfx::Rect& divider_bounds() const = 0;
-  virtual const gfx::Rect& help_bounds() const = 0;
   virtual bool display_password() const = 0;
   virtual bool password_selected() const = 0;
   virtual base::string16 password() const = 0;

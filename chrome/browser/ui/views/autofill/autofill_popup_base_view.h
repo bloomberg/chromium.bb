@@ -26,6 +26,14 @@ namespace autofill {
 class AutofillPopupBaseView : public views::WidgetDelegateView,
                               public views::WidgetFocusChangeListener,
                               public views::WidgetObserver {
+ public:
+  static const SkColor kBorderColor;
+  static const SkColor kHoveredBackgroundColor;
+  static const SkColor kItemTextColor;
+  static const SkColor kPopupBackground;
+  static const SkColor kValueTextColor;
+  static const SkColor kWarningTextColor;
+
  protected:
   explicit AutofillPopupBaseView(AutofillPopupViewDelegate* delegate,
                                  views::Widget* observing_widget);
@@ -39,13 +47,6 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
 
   // Update size of popup and paint.
   void DoUpdateBoundsAndRedrawPopup();
-
-  static const SkColor kBorderColor;
-  static const SkColor kHoveredBackgroundColor;
-  static const SkColor kItemTextColor;
-  static const SkColor kPopupBackground;
-  static const SkColor kValueTextColor;
-  static const SkColor kWarningTextColor;
 
  private:
   friend class AutofillPopupBaseViewTest;

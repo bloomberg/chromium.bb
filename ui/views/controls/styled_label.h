@@ -73,6 +73,11 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // a range set by AddStyleRange.
   void SetDefaultStyle(const RangeStyleInfo& style_info);
 
+  // Get or set the distance in pixels between baselines of multi-line text.
+  // Default is 0, indicating the distance between lines should be the standard
+  // one for the label's text, font list, and platform.
+  void SetLineHeight(int height);
+
   // Sets the color of the background on which the label is drawn. This won't
   // be explicitly drawn, but the label will force the text color to be
   // readable over it.
@@ -121,6 +126,9 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
 
   // Fonts used to display text. Can be augmented by RangeStyleInfo.
   gfx::FontList font_list_;
+
+  // Line height.
+  int specified_line_height_;
 
   // The default style to use for any part of the text that isn't within
   // a range in |style_ranges_|.

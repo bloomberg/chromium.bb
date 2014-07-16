@@ -74,7 +74,7 @@ TEST_F(PopupControllerBaseTest, GetPopupBoundsTest) {
         new TestPopupControllerCommon(element_bounds[i]));
     popup_controller->set_display(display);
     gfx::Rect actual_popup_bounds =
-        popup_controller->GetPopupBounds(desired_height, desired_width);
+        popup_controller->GetPopupBounds(desired_width, desired_height);
 
     EXPECT_EQ(expected_popup_bounds[i].ToString(),
               actual_popup_bounds.ToString()) <<

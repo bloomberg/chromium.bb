@@ -106,10 +106,6 @@ NSColor* HelpLinkColor() {
   if (controller_->password_selected()) {
     // Draw a highlight under the suggested password.
     NSRect highlightBounds = [self passwordBounds];
-    highlightBounds.origin.y +=
-        PasswordGenerationPopupView::kPasswordVerticalInset;
-    highlightBounds.size.height -=
-        2 * PasswordGenerationPopupView::kPasswordVerticalInset;
     [[self highlightColor] set];
     [NSBezierPath fillRect:highlightBounds];
   }
@@ -188,19 +184,20 @@ NSColor* HelpLinkColor() {
 }
 
 - (NSRect)passwordBounds {
-  return NSRectFromCGRect(controller_->password_bounds().ToCGRect());
+  return NSZeroRect;
 }
 
 - (NSRect)helpBounds {
-  return NSRectFromCGRect(controller_->help_bounds().ToCGRect());
+  return NSZeroRect;
 }
 
 - (NSRect)dividerBounds {
-  return NSRectFromCGRect(controller_->divider_bounds().ToCGRect());
+  return NSZeroRect;
 }
 
 - (NSFont*)textFont {
-  return controller_->font_list().GetPrimaryFont().GetNativeFont();
+  return ResourceBundle::GetSharedInstance().GetFontList(
+      ResourceBundle::SmallFont).GetPrimaryFont().GetNativeFont();
 }
 
 @end

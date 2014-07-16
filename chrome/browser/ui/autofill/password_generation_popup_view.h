@@ -7,6 +7,11 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 
+namespace gfx {
+class Point;
+class Size;
+}
+
 namespace autofill {
 
 class PasswordGenerationPopupController;
@@ -14,9 +19,8 @@ class PasswordGenerationPopupController;
 // Interface for creating and controlling a platform dependent view.
 class PasswordGenerationPopupView {
  public:
-  // This is the amount of vertical whitespace that is left above and below the
-  // password when it is highlighted.
-  static const int kPasswordVerticalInset = 7;
+  // Number of pixels added in between lines of the help section.
+  static const int kHelpSectionAdditionalSpacing = 3;
 
   // Display the popup.
   virtual void Show() = 0;
@@ -24,11 +28,16 @@ class PasswordGenerationPopupView {
   // This will cause the popup to be deleted.
   virtual void Hide() = 0;
 
+  // Get desired size of the popup.
+  virtual gfx::Size GetPreferredSizeOfPasswordView() = 0;
+
   // Updates layout information from the controller.
   virtual void UpdateBoundsAndRedrawPopup() = 0;
 
   // Called when the password selection state has changed.
   virtual void PasswordSelectionUpdated() = 0;
+
+  virtual bool IsPointInPasswordBounds(const gfx::Point& point) = 0;
 
   // Note that PasswordGenerationPopupView owns itself, and will only be deleted
   // when Hide() is called.
@@ -38,7 +47,6 @@ class PasswordGenerationPopupView {
   static const SkColor kExplanatoryTextBackgroundColor;
   static const SkColor kExplanatoryTextColor;
   static const SkColor kDividerColor;
-  static const SkColor kLinkColor;
 };
 
 }  // namespace autofill

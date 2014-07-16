@@ -604,11 +604,11 @@ int AutofillPopupControllerImpl::RowWidthWithoutText(int row) const {
 }
 
 void AutofillPopupControllerImpl::UpdatePopupBounds() {
-  int popup_required_width = GetDesiredPopupWidth();
+  int popup_width = GetDesiredPopupWidth();
   int popup_height = GetDesiredPopupHeight();
 
-  popup_bounds_ = controller_common_->GetPopupBounds(popup_height,
-                                                     popup_required_width);
+  popup_bounds_ = controller_common_->GetPopupBounds(popup_width,
+                                                     popup_height);
 }
 #endif  // !defined(OS_ANDROID)
 

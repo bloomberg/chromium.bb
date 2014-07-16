@@ -405,6 +405,16 @@ TEST_F(StyledLabelTest, SetBaseFontList) {
   EXPECT_EQ(label.GetPreferredSize().width(), styled()->width());
 }
 
+TEST_F(StyledLabelTest, LineHeight) {
+  const std::string text("one");
+  InitStyledLabel(text);
+  int default_height = styled()->GetHeightForWidth(100);
+  const std::string newline_text("one\ntwo\nthree");
+  InitStyledLabel(newline_text);
+  styled()->SetLineHeight(18);
+  EXPECT_EQ(18 * 2 + default_height, styled()->GetHeightForWidth(100));
+}
+
 TEST_F(StyledLabelTest, HandleEmptyLayout) {
   const std::string text("This is a test block of text.");
   InitStyledLabel(text);

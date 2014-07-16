@@ -35,12 +35,23 @@ void PasswordGenerationPopupViewBridge::Show() {
   [view_ showPopup];
 }
 
+gfx::Size PasswordGenerationPopupViewBridge::GetPreferredSizeOfPasswordView() {
+  // TODO(gcasto): Implement this function.
+  return gfx::Size();
+}
+
 void PasswordGenerationPopupViewBridge::UpdateBoundsAndRedrawPopup() {
   [view_ updateBoundsAndRedrawPopup];
 }
 
 void PasswordGenerationPopupViewBridge::PasswordSelectionUpdated() {
   [view_ setNeedsDisplay:YES];
+}
+
+bool PasswordGenerationPopupViewBridge::IsPointInPasswordBounds(
+    const gfx::Point& point) {
+  // TODO(gcasto): Implement this function.
+  return true;
 }
 
 PasswordGenerationPopupView* PasswordGenerationPopupView::Create(

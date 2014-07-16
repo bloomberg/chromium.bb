@@ -23,26 +23,11 @@ class MockPasswordGenerationPopupController
  public:
   MockPasswordGenerationPopupController()
     : help_text_(base::ASCIIToUTF16("Help me if you can I'm feeling dooown")),
-      font_list_("Lucida Grande, 12px"),
       popup_bounds_(gfx::Rect(0, 0, 200, 100)) {}
 
   virtual void OnSavedPasswordsLinkClicked() OVERRIDE {}
 
-  virtual const gfx::FontList& font_list() const OVERRIDE {
-    return font_list_;
-  }
-
-  virtual const gfx::Rect& password_bounds() const OVERRIDE {
-    return password_bounds_;
-  }
-
-  virtual const gfx::Rect& divider_bounds() const OVERRIDE {
-    return divider_bounds_;
-  }
-
-  virtual const gfx::Rect& help_bounds() const OVERRIDE {
-    return help_bounds_;
-  }
+  virtual int GetMinimumWidth() OVERRIDE { return 200; }
 
   virtual bool display_password() const OVERRIDE { return true; }
 
@@ -71,12 +56,8 @@ class MockPasswordGenerationPopupController
 
  private:
   base::string16 help_text_;
-  const gfx::FontList font_list_;
   gfx::Range link_range_;
 
-  gfx::Rect password_bounds_;
-  gfx::Rect divider_bounds_;
-  gfx::Rect help_bounds_;
   const gfx::Rect popup_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPasswordGenerationPopupController);
