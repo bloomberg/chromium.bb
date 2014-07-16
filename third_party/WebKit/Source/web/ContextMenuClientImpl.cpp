@@ -190,6 +190,9 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
         return;
 
     HitTestResult r = m_webView->page()->contextMenuController().hitTestResult();
+
+    r.setToShadowHostIfInUserAgentShadowRoot();
+
     LocalFrame* selectedFrame = r.innerNodeFrame();
 
     WebContextMenuData data;
