@@ -53,8 +53,8 @@ namespace get_offline_wallpaper_list =
 namespace {
 
 #if defined(GOOGLE_CHROME_BUILD)
-const char kWallpaperManifestBaseURL[] = "https://commondatastorage.googleapis."
-    "com/chromeos-wallpaper-public/manifest_";
+const char kWallpaperManifestBaseURL[] =
+    "https://storage.googleapis.com/chromeos-wallpaper-public/manifest_";
 #endif
 
 bool IsOEMDefaultWallpaper() {

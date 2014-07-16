@@ -43,7 +43,7 @@
   /**
    * URL to get latest wallpaper RSS feed.
    */
-  WallpaperRssURL: 'https://commondatastorage.googleapis.com/' +
+  WallpaperRssURL: 'https://storage.googleapis.com/' +
       'chromeos-wallpaper-public/wallpaper.rss',
 
   /**
