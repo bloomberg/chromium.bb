@@ -30,40 +30,46 @@ using content::WebContents;
   NSView* contentsView_;
 }
 
-- (void)setContentsResizingStrategy:
-    (const DevToolsContentsResizingStrategy&)strategy;
+- (void)setDevToolsView:(NSView*)devToolsView
+           withStrategy:(const DevToolsContentsResizingStrategy&)strategy;
 - (void)adjustSubviews;
-- (void)showDevTools:(NSView*)devToolsView;
-- (void)hideDevTools;
+- (BOOL)hasDevToolsView;
 
 @end
 
 
 @implementation DevToolsContainerView
 
-- (void)setContentsResizingStrategy:
-    (const DevToolsContentsResizingStrategy&)strategy {
+- (void)setDevToolsView:(NSView*)devToolsView
+           withStrategy:(const DevToolsContentsResizingStrategy&)strategy {
   strategy_.CopyFrom(strategy);
+
+  if (devToolsView == devToolsView_)
+    return;
+
+  if (devToolsView_) {
+    DCHECK_EQ(2u, [[self subviews] count]);
+    [devToolsView_ removeFromSuperview];
+    contentsView_ = nil;
+    devToolsView_ = nil;
+  }
+
+  if (devToolsView) {
+    NSArray* subviews = [self subviews];
+    DCHECK_EQ(1u, [subviews count]);
+    contentsView_ = [subviews objectAtIndex:0];
+    devToolsView_ = devToolsView;
+    // Place DevTools under contents.
+    [self addSubview:devToolsView positioned:NSWindowBelow relativeTo:nil];
+  }
 }
 
 - (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize {
   [self adjustSubviews];
 }
 
-- (void)showDevTools:(NSView*)devToolsView {
-  NSArray* subviews = [self subviews];
-  DCHECK_EQ(1u, [subviews count]);
-  contentsView_ = [subviews objectAtIndex:0];
-  devToolsView_ = devToolsView;
-  // Place DevTools under contents.
-  [self addSubview:devToolsView positioned:NSWindowBelow relativeTo:nil];
-}
-
-- (void)hideDevTools {
-  DCHECK_EQ(2u, [[self subviews] count]);
-  [devToolsView_ removeFromSuperview];
-  contentsView_ = nil;
-  devToolsView_ = nil;
+- (BOOL)hasDevToolsView {
+  return devToolsView_ != nil;
 }
 
 - (void)adjustSubviews {
@@ -92,11 +98,6 @@ using content::WebContents;
 
 @end
 
-@interface DevToolsController (Private)
-- (void)showDevToolsView;
-- (void)hideDevToolsView;
-@end
-
 
 @implementation DevToolsController
 
@@ -122,47 +123,33 @@ using content::WebContents;
 
   // Make sure we do not draw any transient arrangements of views.
   gfx::ScopedNSDisableScreenUpdates disabler;
-  bool shouldHide = devTools_ && devTools_ != devTools;
-  bool shouldShow = devTools && devTools_ != devTools;
 
-  if (shouldHide)
-    [self hideDevToolsView];
-
-  devTools_ = devTools;
-  if (devTools_) {
-    devTools_->SetOverlayView(
-        contents,
-        gfx::Point(strategy.insets().left(), strategy.insets().top()));
-    [devToolsContainerView_ setContentsResizingStrategy:strategy];
-  } else {
-    DevToolsContentsResizingStrategy zeroStrategy;
-    [devToolsContainerView_ setContentsResizingStrategy:zeroStrategy];
+  if (devTools && ![devToolsContainerView_ hasDevToolsView]) {
+    focusTracker_.reset(
+        [[FocusTracker alloc] initWithWindow:[devToolsContainerView_ window]]);
   }
 
-  if (shouldShow)
-    [self showDevToolsView];
+  if (!devTools && [devToolsContainerView_ hasDevToolsView]) {
+    [focusTracker_ restoreFocusInWindow:[devToolsContainerView_ window]];
+    focusTracker_.reset();
+  }
 
+  NSView* devToolsView = nil;
+  if (devTools) {
+    devToolsView = devTools->GetNativeView();
+    // |devToolsView| is a WebContentsViewCocoa object, whose ViewID was
+    // set to VIEW_ID_TAB_CONTAINER initially, so we need to change it to
+    // VIEW_ID_DEV_TOOLS_DOCKED here.
+    view_id_util::SetID(devToolsView, VIEW_ID_DEV_TOOLS_DOCKED);
+
+    devTools->SetAllowOtherViews(true);
+    contents->SetAllowOtherViews(true);
+  } else {
+    contents->SetAllowOtherViews(false);
+  }
+
+  [devToolsContainerView_ setDevToolsView:devToolsView withStrategy:strategy];
   [devToolsContainerView_ adjustSubviews];
-}
-
-- (void)showDevToolsView {
-  focusTracker_.reset(
-      [[FocusTracker alloc] initWithWindow:[devToolsContainerView_ window]]);
-
-  // |devToolsView| is a WebContentsViewCocoa object, whose ViewID was
-  // set to VIEW_ID_TAB_CONTAINER initially, so we need to change it to
-  // VIEW_ID_DEV_TOOLS_DOCKED here.
-  NSView* devToolsView = devTools_->GetNativeView();
-  view_id_util::SetID(devToolsView, VIEW_ID_DEV_TOOLS_DOCKED);
-
-  [devToolsContainerView_ showDevTools:devToolsView];
-}
-
-- (void)hideDevToolsView {
-  devTools_->RemoveOverlayView();
-  [devToolsContainerView_ hideDevTools];
-  [focusTracker_ restoreFocusInWindow:[devToolsContainerView_ window]];
-  focusTracker_.reset();
 }
 
 @end

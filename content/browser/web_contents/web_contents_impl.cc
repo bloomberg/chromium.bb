@@ -3998,14 +3998,12 @@ bool WebContentsImpl::GetAllowOverlappingViews() {
   return view_->GetAllowOverlappingViews();
 }
 
-void WebContentsImpl::SetOverlayView(WebContents* overlay,
-                                     const gfx::Point& offset) {
-  view_->SetOverlayView(static_cast<WebContentsImpl*>(overlay)->GetView(),
-                        offset);
+void WebContentsImpl::SetAllowOtherViews(bool allow) {
+  view_->SetAllowOtherViews(allow);
 }
 
-void WebContentsImpl::RemoveOverlayView() {
-  view_->RemoveOverlayView();
+bool WebContentsImpl::GetAllowOtherViews() {
+  return view_->GetAllowOtherViews();
 }
 
 #endif

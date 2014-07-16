@@ -577,14 +577,12 @@ class WebContents : public PageNavigator,
   // Returns true if overlapping views are allowed, false otherwise.
   virtual bool GetAllowOverlappingViews() = 0;
 
-  // To draw two overlapping web contents view, the underlaying one should
-  // know about the overlaying one. Caller must ensure that |overlay| exists
-  // until |RemoveOverlayView| is called.
-  virtual void SetOverlayView(WebContents* overlay,
-                              const gfx::Point& offset) = 0;
+  // Allowing other views disables optimizations which assume that only a single
+  // WebContents is present.
+  virtual void SetAllowOtherViews(bool allow) = 0;
 
-  // Removes the previously set overlay view.
-  virtual void RemoveOverlayView() = 0;
+  // Returns true if other views are allowed, false otherwise.
+  virtual bool GetAllowOtherViews() = 0;
 #endif  // OS_ANDROID
 
  private:

@@ -127,13 +127,12 @@ bool WebContentsViewGuest::GetAllowOverlappingViews() const {
   return platform_view_->GetAllowOverlappingViews();
 }
 
-void WebContentsViewGuest::SetOverlayView(
-    WebContentsView* overlay, const gfx::Point& offset) {
-  platform_view_->SetOverlayView(overlay, offset);
+void WebContentsViewGuest::SetAllowOtherViews(bool allow) {
+  platform_view_->SetAllowOtherViews(allow);
 }
 
-void WebContentsViewGuest::RemoveOverlayView() {
-  platform_view_->RemoveOverlayView();
+bool WebContentsViewGuest::GetAllowOtherViews() const {
+  return platform_view_->GetAllowOtherViews();
 }
 #endif
 

@@ -113,14 +113,12 @@ class WebContentsView {
   // Returns true if overlapping views are allowed, false otherwise.
   virtual bool GetAllowOverlappingViews() const = 0;
 
-  // To draw two overlapping web contents view, the underlaying one should
-  // know about the overlaying one. Caller must ensure that |overlay| exists
-  // until |RemoveOverlayView| is called.
-  virtual void SetOverlayView(WebContentsView* overlay,
-                              const gfx::Point& offset) = 0;
+  // Allowing other views disables optimizations which assume that only a single
+  // WebContents is present.
+  virtual void SetAllowOtherViews(bool allow) = 0;
 
-  // Removes the previously set overlay view.
-  virtual void RemoveOverlayView() = 0;
+  // Returns true if other views are allowed, false otherwise.
+  virtual bool GetAllowOtherViews() const = 0;
 
   // If we close the tab while a UI control is in an event-tracking
   // loop, the control may message freed objects and crash.

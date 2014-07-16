@@ -235,6 +235,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   CONTENT_EXPORT void SetDelegate(
     NSObject<RenderWidgetHostViewMacDelegate>* delegate);
   void SetAllowOverlappingViews(bool overlapping);
+  void SetAllowPauseForResizeOrRepaint(bool allow);
 
   // RenderWidgetHostView implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -371,15 +372,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Called when a GPU error is detected. Posts a task to destroy all
   // compositing state.
   void GotAcceleratedCompositingError();
-
-  // Sets the overlay view, which should be drawn in the same IOSurface
-  // atop of this view, if both views are drawing accelerated content.
-  // Overlay is stored as a weak ptr.
-  void SetOverlayView(RenderWidgetHostViewMac* overlay,
-                      const gfx::Point& offset);
-
-  // Removes the previously set overlay view.
-  void RemoveOverlayView();
 
   // Returns true and stores first rectangle for character range if the
   // requested |range| is already cached, otherwise returns false.
@@ -583,6 +575,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Indicates if the page is loading.
   bool is_loading_;
 
+  // Whether it's allowed to pause waiting for a new frame.
+  bool allow_pause_for_resize_or_repaint_;
+
   // The text to be shown in the tooltip, supplied by the renderer.
   base::string16 tooltip_text_;
 
@@ -600,20 +595,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   base::scoped_nsobject<FullscreenWindowManager> fullscreen_window_manager_;
   // Our parent host view, if this is fullscreen.  NULL otherwise.
   RenderWidgetHostViewMac* fullscreen_parent_host_view_;
-
-  // The overlay view which is rendered above this one in the same
-  // accelerated IOSurface.
-  // Overlay view has |underlay_view_| set to this view.
-  base::WeakPtr<RenderWidgetHostViewMac> overlay_view_;
-
-  // The underlay view which this view is rendered above in the same
-  // accelerated IOSurface.
-  // Underlay view has |overlay_view_| set to this view.
-  base::WeakPtr<RenderWidgetHostViewMac> underlay_view_;
-
-  // Factory used to safely reference overlay view set in SetOverlayView.
-  base::WeakPtrFactory<RenderWidgetHostViewMac>
-      overlay_view_weak_factory_;
 
   // Display link for getting vsync info.
   scoped_refptr<DisplayLinkMac> display_link_;

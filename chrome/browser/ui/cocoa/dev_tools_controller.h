@@ -26,10 +26,6 @@ class WebContents;
   // A view hosting docked devTools contents.
   base::scoped_nsobject<DevToolsContainerView> devToolsContainerView_;
 
-  // Docked devtools web contents. NULL when current tab is not inspected
-  // or is inspected with undocked version of DevToolsWindow.
-  content::WebContents* devTools_;
-
   base::scoped_nsobject<FocusTracker> focusTracker_;
 }
 

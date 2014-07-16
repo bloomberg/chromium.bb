@@ -13,7 +13,6 @@
 
 class Browser;
 class BrowserWindow;
-class DevToolsControllerTest;
 class DevToolsEventForwarder;
 
 namespace content {
@@ -182,7 +181,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   static void OnPageCloseCanceled(content::WebContents* contents);
 
  private:
-  friend class DevToolsControllerTest;
   friend class DevToolsSanityTest;
   friend class BrowserWindowControllerTest;
 

@@ -79,9 +79,8 @@ class WebContentsViewMac : public WebContentsView,
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual void SetAllowOverlappingViews(bool overlapping) OVERRIDE;
   virtual bool GetAllowOverlappingViews() const OVERRIDE;
-  virtual void SetOverlayView(WebContentsView* overlay,
-                              const gfx::Point& offset) OVERRIDE;
-  virtual void RemoveOverlayView() OVERRIDE;
+  virtual void SetAllowOtherViews(bool allow) OVERRIDE;
+  virtual bool GetAllowOtherViews() const OVERRIDE;
   virtual void CreateView(
       const gfx::Size& initial_size, gfx::NativeView context) OVERRIDE;
   virtual RenderWidgetHostViewBase* CreateViewForWidget(
@@ -123,9 +122,6 @@ class WebContentsViewMac : public WebContentsView,
   WebContentsViewDelegate* delegate() { return delegate_.get(); }
 
  private:
-  // Updates overlay view on current RenderWidgetHostView.
-  void UpdateRenderWidgetHostViewOverlay();
-
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* web_contents_;
 
@@ -142,16 +138,8 @@ class WebContentsViewMac : public WebContentsView,
   // Whether to allow overlapping views.
   bool allow_overlapping_views_;
 
-  // The overlay view which is rendered above this one.
-  // Overlay view has |underlay_view_| set to this view.
-  WebContentsViewMac* overlay_view_;
-
-  // The offset of overlay view relative to this view.
-  gfx::Point overlay_view_offset_;
-
-  // The underlay view which this view is rendered above.
-  // Underlay view has |overlay_view_| set to this view.
-  WebContentsViewMac* underlay_view_;
+  // Whether to allow other views.
+  bool allow_other_views_;
 
   scoped_ptr<PopupMenuHelper> popup_menu_helper_;
 

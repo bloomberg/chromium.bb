@@ -501,9 +501,9 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
           new BrowserCompositorViewPlaceholderMac),
       backing_store_scale_factor_(1),
       is_loading_(false),
+      allow_pause_for_resize_or_repaint_(true),
       weak_factory_(this),
       fullscreen_parent_host_view_(NULL),
-      overlay_view_weak_factory_(this),
       software_frame_weak_ptr_factory_(this) {
   software_frame_manager_.reset(new SoftwareFrameManager(
       software_frame_weak_ptr_factory_.GetWeakPtr()));
@@ -554,6 +554,10 @@ void RenderWidgetHostViewMac::SetDelegate(
 
 void RenderWidgetHostViewMac::SetAllowOverlappingViews(bool overlapping) {
   // TODO(ccameron): Remove callers of this function.
+}
+
+void RenderWidgetHostViewMac::SetAllowPauseForResizeOrRepaint(bool allow) {
+  allow_pause_for_resize_or_repaint_ = allow;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1579,22 +1583,6 @@ void RenderWidgetHostViewMac::DestroyCompositingStateOnError() {
   // repeatedly.
 }
 
-void RenderWidgetHostViewMac::SetOverlayView(
-    RenderWidgetHostViewMac* overlay, const gfx::Point& offset) {
-  if (overlay_view_)
-    overlay_view_->underlay_view_.reset();
-
-  overlay_view_ = overlay->overlay_view_weak_factory_.GetWeakPtr();
-  overlay_view_->underlay_view_ = overlay_view_weak_factory_.GetWeakPtr();
-}
-
-void RenderWidgetHostViewMac::RemoveOverlayView() {
-  if (overlay_view_) {
-    overlay_view_->underlay_view_.reset();
-    overlay_view_.reset();
-  }
-}
-
 bool RenderWidgetHostViewMac::GetLineBreakIndex(
     const std::vector<gfx::Rect>& bounds,
     const gfx::Range& range,
@@ -2207,10 +2195,9 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
   if (delegated_frame_host_)
     return;
 
-  // Pausing for the overlay/underlay view prevents the other one from receiving
-  // frames. This may lead to large delays, causing overlaps.
-  // See crbug.com/352020.
-  if (underlay_view_ || overlay_view_)
+  // Pausing for one view prevents others from receiving frames.
+  // This may lead to large delays, causing overlaps. See crbug.com/352020.
+  if (!allow_pause_for_resize_or_repaint_)
     return;
 
   // Ensure that all frames are acked before waiting for a frame to come in.

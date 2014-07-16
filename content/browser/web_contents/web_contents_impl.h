@@ -309,9 +309,8 @@ class CONTENT_EXPORT WebContentsImpl
 #elif defined(OS_MACOSX)
   virtual void SetAllowOverlappingViews(bool overlapping) OVERRIDE;
   virtual bool GetAllowOverlappingViews() OVERRIDE;
-  virtual void SetOverlayView(WebContents* overlay,
-                              const gfx::Point& offset) OVERRIDE;
-  virtual void RemoveOverlayView() OVERRIDE;
+  virtual void SetAllowOtherViews(bool allow) OVERRIDE;
+  virtual bool GetAllowOtherViews() OVERRIDE;
 #endif
 
   // Implementation of PageNavigator.
