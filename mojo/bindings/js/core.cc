@@ -44,13 +44,37 @@ MojoResult WaitMany(
 }
 
 gin::Dictionary CreateMessagePipe(const gin::Arguments& args) {
+  gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
+  dictionary.Set("result", MOJO_RESULT_INVALID_ARGUMENT);
+
   MojoHandle handle0 = MOJO_HANDLE_INVALID;
   MojoHandle handle1 = MOJO_HANDLE_INVALID;
-  // TODO(vtl): Add support for the options struct.
-  MojoResult result = MojoCreateMessagePipe(NULL, &handle0, &handle1);
-  CHECK(result == MOJO_RESULT_OK);
+  MojoResult result = MOJO_RESULT_OK;
 
-  gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
+  v8::Handle<v8::Value> options_value = args.PeekNext();
+  if (options_value.IsEmpty() || options_value->IsNull() ||
+      options_value->IsUndefined()) {
+    result = MojoCreateMessagePipe(NULL, &handle0, &handle1);
+  } else if (options_value->IsObject()) {
+    gin::Dictionary options_dict(args.isolate(), options_value->ToObject());
+    MojoCreateMessagePipeOptions options;
+    // For future struct_size, we can probably infer that from the presence of
+    // properties in options_dict. For now, it's always 8.
+    options.struct_size = 8;
+    // Ideally these would be optional. But the interface makes it hard to
+    // typecheck them then.
+    if (!options_dict.Get("flags", &options.flags)) {
+      return dictionary;
+    }
+
+    result = MojoCreateMessagePipe(&options, &handle0, &handle1);
+  } else {
+      return dictionary;
+  }
+
+  CHECK_EQ(MOJO_RESULT_OK, result);
+
+  dictionary.Set("result", result);
   dictionary.Set("handle0", mojo::Handle(handle0));
   dictionary.Set("handle1", mojo::Handle(handle1));
   return dictionary;
@@ -118,8 +142,7 @@ gin::Dictionary ReadMessage(const gin::Arguments& args,
   return dictionary;
 }
 
-gin::Dictionary CreateDataPipe(const gin::Arguments& args,
-                               v8::Handle<v8::Value> options_value) {
+gin::Dictionary CreateDataPipe(const gin::Arguments& args) {
   gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
   dictionary.Set("result", MOJO_RESULT_INVALID_ARGUMENT);
 
@@ -127,7 +150,11 @@ gin::Dictionary CreateDataPipe(const gin::Arguments& args,
   MojoHandle consumer_handle = MOJO_HANDLE_INVALID;
   MojoResult result = MOJO_RESULT_OK;
 
-  if (options_value->IsObject()) {
+  v8::Handle<v8::Value> options_value = args.PeekNext();
+  if (options_value.IsEmpty() || options_value->IsNull() ||
+      options_value->IsUndefined()) {
+    result = MojoCreateDataPipe(NULL, &producer_handle, &consumer_handle);
+  } else if (options_value->IsObject()) {
     gin::Dictionary options_dict(args.isolate(), options_value->ToObject());
     MojoCreateDataPipeOptions options;
     // For future struct_size, we can probably infer that from the presence of
@@ -142,8 +169,6 @@ gin::Dictionary CreateDataPipe(const gin::Arguments& args,
     }
 
     result = MojoCreateDataPipe(&options, &producer_handle, &consumer_handle);
-  } else if (options_value->IsNull() || options_value->IsUndefined()) {
-    result = MojoCreateDataPipe(NULL, &producer_handle, &consumer_handle);
   } else {
     return dictionary;
   }
@@ -245,6 +270,9 @@ v8::Local<v8::Value> Core::GetModule(v8::Isolate* isolate) {
         .SetValue("HANDLE_SIGNAL_NONE", MOJO_HANDLE_SIGNAL_NONE)
         .SetValue("HANDLE_SIGNAL_READABLE", MOJO_HANDLE_SIGNAL_READABLE)
         .SetValue("HANDLE_SIGNAL_WRITABLE", MOJO_HANDLE_SIGNAL_WRITABLE)
+
+        .SetValue("CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE",
+                  MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE)
 
         .SetValue("WRITE_MESSAGE_FLAG_NONE", MOJO_WRITE_MESSAGE_FLAG_NONE)
 

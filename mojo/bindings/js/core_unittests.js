@@ -9,13 +9,30 @@ define([
   ], function(expect, core, gc) {
   runWithMessagePipe(testNop);
   runWithMessagePipe(testReadAndWriteMessage);
+  runWithMessagePipeWithOptions(testNop);
+  runWithMessagePipeWithOptions(testReadAndWriteMessage);
   runWithDataPipe(testNop);
   runWithDataPipe(testReadAndWriteDataPipe);
+  runWithDataPipeWithOptions(testNop);
+  runWithDataPipeWithOptions(testReadAndWriteDataPipe);
   gc.collectGarbage();  // should not crash
   this.result = "PASS";
 
   function runWithMessagePipe(test) {
     var pipe = core.createMessagePipe();
+    expect(pipe.result).toBe(core.RESULT_OK);
+
+    test(pipe);
+
+    expect(core.close(pipe.handle0)).toBe(core.RESULT_OK);
+    expect(core.close(pipe.handle1)).toBe(core.RESULT_OK);
+  }
+
+  function runWithMessagePipeWithOptions(test) {
+    var pipe = core.createMessagePipe({
+        flags: core.CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE
+    });
+    expect(pipe.result).toBe(core.RESULT_OK);
 
     test(pipe);
 
@@ -24,6 +41,16 @@ define([
   }
 
   function runWithDataPipe(test) {
+    var pipe = core.createDataPipe();
+    expect(pipe.result).toBe(core.RESULT_OK);
+
+    test(pipe);
+
+    expect(core.close(pipe.producerHandle)).toBe(core.RESULT_OK);
+    expect(core.close(pipe.consumerHandle)).toBe(core.RESULT_OK);
+  }
+
+  function runWithDataPipeWithOptions(test) {
     var pipe = core.createDataPipe({
         flags: core.CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
         elementNumBytes: 1,

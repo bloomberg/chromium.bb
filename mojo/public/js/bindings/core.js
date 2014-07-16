@@ -56,6 +56,18 @@ var HANDLE_SIGNAL_NONE;
 var HANDLE_SIGNAL_READABLE;
 var HANDLE_SIGNAL_WRITABLE;
 
+/**
+ * MojoCreateDataMessageOptions: Used to specify creation parameters for a data
+ * pipe to |createDataMessage()|.
+ * See core.h for more information.
+ */
+dictionary MojoCreateDataMessageOptions {
+  MojoCreateDataMessageOptionsFlags flags;  // See below.
+};
+
+// MojoCreateDataMessageOptionsFlags
+var CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE;
+
 /*
  * MojoWriteMessageFlags: Used to specify different modes to |writeMessage()|.
  * See core.h for more information.
@@ -136,13 +148,15 @@ function waitMany(handles, signals, deadline) { [native code] }
  * Creates a message pipe. This function always succeeds.
  * See MojoCreateMessagePipe for more information on message pipes.
  *
+ * @param {MojoCreateMessagePipeOptions} optionsDict Options to control the
+ * message pipe parameters. May be null.
  * @return {MessagePipe} An object of the form {
  *     handle0,
  *     handle1,
  *   }
  *   where |handle0| and |handle1| are MojoHandles to each end of the channel.
  */
-function createMessagePipe() { [native code] }
+function createMessagePipe(optionsDict) { [native code] }
 
 /**
  * Writes a message to the message pipe endpoint given by |handle|. See
