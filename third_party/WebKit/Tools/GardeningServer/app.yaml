@@ -29,3 +29,14 @@ handlers:
 # if there is no bower_components, or, even better just run "bower update".
 - url: /bower_components
   static_dir: bower_components
+
+skip_files:
+- ^(.*/)?#.*#$
+- ^(.*/)?.*~$
+- ^(.*/)?.*\.py[co]$
+- ^(.*/)?.*/RCS/.*$
+- ^(.*/)?\..*$
+- ^(.*/)?.*\.md$
+- ^(.*/)?LICENSE$
+- ^(.*/)?README$
+- ^(.*/)?Makefile$
