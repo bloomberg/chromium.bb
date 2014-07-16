@@ -4,6 +4,8 @@
 
 #include "components/policy/core/common/forwarding_policy_provider.h"
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"

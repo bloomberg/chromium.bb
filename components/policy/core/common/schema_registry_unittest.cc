@@ -272,11 +272,9 @@ TEST(SchemaRegistryTest, ForwardingSchemaRegistry) {
   EXPECT_FALSE(registry->IsReady());
   EXPECT_FALSE(forwarding.IsReady());
 
-#if defined(ENABLE_EXTENSIONS)
   registry->SetReady(POLICY_DOMAIN_EXTENSIONS);
   EXPECT_FALSE(registry->IsReady());
   EXPECT_FALSE(forwarding.IsReady());
-#endif
 
   registry->SetReady(POLICY_DOMAIN_CHROME);
   EXPECT_TRUE(registry->IsReady());

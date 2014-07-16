@@ -205,9 +205,9 @@ ForwardingSchemaRegistry::~ForwardingSchemaRegistry() {
 void ForwardingSchemaRegistry::RegisterComponents(
     PolicyDomain domain,
     const ComponentMap& components) {
-  // POLICY_DOMAIN_CHROME is skipped to avoid spurious updated when a new
-  // Profile is created. If the ForwardingSchemaRegistry is meant to be used
-  // outside device-level accounts then this should become configurable.
+  // POLICY_DOMAIN_CHROME is skipped to avoid spurious updates when a new
+  // Profile is created. If the ForwardingSchemaRegistry is used outside
+  // device-level accounts then this should become configurable.
   if (wrapped_ && domain != POLICY_DOMAIN_CHROME)
     wrapped_->RegisterComponents(domain, components);
   // Ignore otherwise.
