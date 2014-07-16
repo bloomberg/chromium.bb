@@ -195,6 +195,19 @@ crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-fl
 
 crbug.com/389648 fast/text-autosizing/table-inflation-crash.html [ Pass Crash ]
 
+crbug.com/391215 editing/deleting/delete-block-contents-003.html [ NeedsRebaseline ]
+crbug.com/391215 editing/selection/contenteditable-click-inside.html [ NeedsRebaseline ]
+crbug.com/391215 editing/execCommand/create-list-with-hr.html [ NeedsRebaseline ]
+crbug.com/391215 editing/selection/4975120.html [ NeedsRebaseline ]
+crbug.com/391215 editing/deleting/delete-image-004.html [ NeedsRebaseline ]
+crbug.com/391215 fast/forms/input-placeholder-paint-order.html [ NeedsRebaseline ]
+crbug.com/391215 editing/deleting/delete-block-contents-002.html [ NeedsRebaseline ]
+crbug.com/391215 editing/deleting/delete-block-contents-001.html [ NeedsRebaseline ]
+crbug.com/391215 editing/deleting/delete-at-start-or-end.html [ NeedsRebaseline ]
+crbug.com/391215 editing/undo/undo-misspellings.html [ NeedsRebaseline ]
+crbug.com/391215 fast/forms/caret-rtl.html [ NeedsRebaseline ]
+crbug.com/391215 editing/deleting/transpose-empty.html [ NeedsRebaseline ]
+
 # Flaky:
 crbug.com/374270 http/tests/security/frameNavigation/context-for-location.html [ Failure Pass ]
 crbug.com/374270 http/tests/security/frameNavigation/context-for-location-assign.html [ Failure Pass ]
