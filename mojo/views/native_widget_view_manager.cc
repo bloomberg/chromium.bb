@@ -40,10 +40,9 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
                                 public ui::EventHandler {
  public:
   explicit MinimalInputEventFilter(aura::Window* root)
-      : root_(root),
-        input_method_(
-            ui::CreateInputMethod(this, gfx::kNullAcceleratedWidget).Pass()) {
+      : root_(root) {
     ui::InitializeInputMethodForTesting();
+    input_method_ = ui::CreateInputMethod(this, gfx::kNullAcceleratedWidget);
     input_method_->Init(true);
     root_->AddPreTargetHandler(this);
     root_->SetProperty(aura::client::kRootWindowInputMethodKey,
