@@ -6,10 +6,13 @@
 
 import logging
 import shutil
+import sys
 import time
 import traceback
 from xml.etree import ElementTree
 from xml.sax.saxutils import escape
+
+sys.path.insert(0, '../../../../third_party/webdriver/pylib/')
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException

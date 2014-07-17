@@ -471,9 +471,9 @@ def RunTests(chrome_path, chromedriver_path, profile_path,
   Tests(environment)
 
   if environment_tested_websites == TypeOfTestedWebsites.ALL_TESTS:
-    environment.ALL_TESTS(run_prompt_tests)
+    environment.AllTests(run_prompt_tests)
   elif environment_tested_websites == TypeOfTestedWebsites.DISABLED_TESTS:
-    environment.DISABLED_TESTS(run_prompt_tests)
+    environment.DisabledTests(run_prompt_tests)
   elif environment_tested_websites == TypeOfTestedWebsites.LIST_OF_TESTS:
     environment.Test(tests, run_prompt_tests)
   elif environment_tested_websites == TypeOfTestedWebsites.ENABLED_TESTS:

@@ -5,7 +5,10 @@
 """WebsiteTest testing class."""
 
 import logging
+import sys
 import time
+
+sys.path.insert(0, '../../../../third_party/webdriver/pylib/')
 
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
