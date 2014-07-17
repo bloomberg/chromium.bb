@@ -45,7 +45,7 @@ namespace WebCore {
 
 class ScriptArguments;
 
-class ConsoleBase : public RefCountedWillBeGarbageCollectedFinalized<ConsoleBase> {
+class ConsoleBase : public RefCountedWillBeGarbageCollectedFinalized<ConsoleBase>, public ScriptWrappable {
 public:
     void debug(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
     void error(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);

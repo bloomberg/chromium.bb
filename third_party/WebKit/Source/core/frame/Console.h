@@ -29,7 +29,6 @@
 #ifndef Console_h
 #define Console_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/frame/ConsoleBase.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"
@@ -44,7 +43,7 @@ class MemoryInfo;
 class Page;
 class ScriptArguments;
 
-class Console FINAL : public ConsoleBase, public ScriptWrappable, public DOMWindowProperty {
+class Console FINAL : public ConsoleBase, public DOMWindowProperty {
 public:
     static PassRefPtrWillBeRawPtr<Console> create(LocalFrame* frame)
     {
