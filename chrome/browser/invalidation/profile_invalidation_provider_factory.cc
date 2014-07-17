@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "components/invalidation/invalidation_service.h"
+#include "components/invalidation/invalidation_state_tracker.h"
 #include "components/invalidation/invalidator_storage.h"
 #include "components/invalidation/profile_invalidation_provider.h"
 #include "components/invalidation/ticl_invalidation_service.h"
@@ -27,7 +28,6 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "sync/notifier/invalidation_state_tracker.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/invalidation/invalidation_controller_android.h"

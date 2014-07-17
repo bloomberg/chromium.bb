@@ -4,6 +4,8 @@
 
 static_library("invalidation") {
   sources = [
+    "invalidation_handler.cc",
+    "invalidation_handler.h",
     "invalidation_logger.cc",
     "invalidation_logger.h",
     "invalidation_logger_observer.h",
@@ -12,14 +14,26 @@ static_library("invalidation") {
     "invalidation_service.h",
     "invalidation_service_util.cc",
     "invalidation_service_util.h",
+    "invalidation_state_tracker.cc",
+    "invalidation_state_tracker.h",
     "invalidation_switches.cc",
     "invalidation_switches.h",
+    "invalidator.cc",
+    "invalidator.h",
     "invalidator_registrar.cc",
     "invalidator_registrar.h",
     "invalidator_storage.cc",
     "invalidator_storage.h",
+    "mock_ack_handler.cc",
+    "mock_ack_handler.h",
+    "object_id_invalidation_map.cc",
+    "object_id_invalidation_map.h",
     "profile_invalidation_provider.cc",
     "profile_invalidation_provider.h",
+    "single_object_invalidation_set.cc",
+    "single_object_invalidation_set.h",
+    "unacked_invalidation_set.cc",
+    "unacked_invalidation_set.h",
   ]
   if (!is_android) {
     sources += [
@@ -38,6 +52,8 @@ static_library("invalidation") {
       "p2p_invalidator.h",
       "push_client_channel.cc",
       "push_client_channel.h",
+      "registration_manager.cc",
+      "registration_manager.h",
       "state_writer.h",
       "sync_invalidation_listener.cc",
       "sync_invalidation_listener.h",
@@ -58,11 +74,15 @@ static_library("invalidation") {
     #"//components/gcm_driver",  TODO(GYP)
     "//google_apis",
     "//components/keyed_service/core",
+    "//components/signin/core/browser:browser",
     "//components/pref_registry",
     #"//components/signin/core/browser",  TODO(GYP)
     "//sync",
     "//third_party/cacheinvalidation",
     #'../jingle/jingle.gyp:notifier',  TODO(GYP)
+
+    # TODO(sync): Remove this (http://crbug.com/133352);
+    # "//third_party/cacheinvalidation/src/google/cacheinvalidation:cacheinvalidation_proto_cpp",
   ]
 }
 
@@ -78,6 +98,10 @@ static_library("test_support") {
     "invalidation_service_test_template.h",
     "invalidator_test_template.cc",
     "invalidator_test_template.h",
+    "object_id_invalidation_map_test_util.cc",
+    "object_id_invalidation_map_test_util.h",
+    "unacked_invalidation_set_test_util.cc",
+    "unacked_invalidation_set_test_util.h",
   ]
   if (!is_android) {
     sources += [
@@ -88,6 +112,7 @@ static_library("test_support") {
 
   deps = [
     "//base",
+    "//components/keyed_service/core",
     "//google_apis",
     "//net",
     "//sync",

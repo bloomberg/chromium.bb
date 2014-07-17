@@ -1,13 +1,13 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/notifier/unacked_invalidation_set.h"
+#include "components/invalidation/unacked_invalidation_set.h"
 
 #include "base/json/json_string_value_serializer.h"
-#include "sync/notifier/object_id_invalidation_map.h"
-#include "sync/notifier/single_object_invalidation_set.h"
-#include "sync/notifier/unacked_invalidation_set_test_util.h"
+#include "components/invalidation/object_id_invalidation_map.h"
+#include "components/invalidation/single_object_invalidation_set.h"
+#include "components/invalidation/unacked_invalidation_set_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

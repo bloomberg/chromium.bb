@@ -6,9 +6,9 @@
 #define COMPONENTS_INVALIDATION_INVALIDATION_LOGGER_OBSERVER_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "components/invalidation/object_id_invalidation_map.h"
+#include "sync/internal_api/public/base/invalidation_util.h"
 #include "sync/internal_api/public/base/invalidator_state.h"
-#include "sync/notifier/invalidation_util.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 
 namespace base {
 class DictionaryValue;

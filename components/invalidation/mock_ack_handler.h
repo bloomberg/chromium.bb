@@ -1,19 +1,19 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_NOTIFIER_MOCK_ACK_HANDLER_H_
-#define SYNC_NOTIFIER_MOCK_ACK_HANDLER_H_
+#ifndef COMPONENTS_INVALIDATION_MOCK_ACK_HANDLER_H_
+#define COMPONENTS_INVALIDATION_MOCK_ACK_HANDLER_H_
 
 #include <map>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "sync/base/sync_export.h"
+#include "components/invalidation/invalidation_export.h"
+#include "sync/internal_api/public/base/ack_handler.h"
+#include "sync/internal_api/public/base/invalidation_util.h"
 #include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/notifier/ack_handler.h"
-#include "sync/notifier/invalidation_util.h"
 
 namespace syncer {
 
@@ -21,7 +21,7 @@ class Invalidation;
 
 // This AckHandler implementation colaborates with the FakeInvalidationService
 // to enable unit tests to assert that invalidations are being acked properly.
-class SYNC_EXPORT MockAckHandler
+class INVALIDATION_EXPORT MockAckHandler
   : public AckHandler,
     public base::SupportsWeakPtr<MockAckHandler> {
  public:
@@ -80,4 +80,4 @@ class SYNC_EXPORT MockAckHandler
 
 }  // namespace syncer
 
-#endif  // SYNC_NOTIFIER_MOCK_ACK_HANDLER_H_
+#endif  // COMPONENTS_INVALIDATION_MOCK_ACK_HANDLER_H_

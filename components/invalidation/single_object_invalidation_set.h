@@ -1,16 +1,16 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_NOTIFIER_SINGLE_OBJECT_INVALIDATION_SET_H_
-#define SYNC_NOTIFIER_SINGLE_OBJECT_INVALIDATION_SET_H_
+#ifndef COMPONENTS_INVALIDATION_SINGLE_OBJECT_INVALIDATION_SET_H_
+#define COMPONENTS_INVALIDATION_SINGLE_OBJECT_INVALIDATION_SET_H_
 
 #include <set>
 
 #include "base/memory/scoped_ptr.h"
-#include "sync/base/sync_export.h"
+#include "components/invalidation/invalidation_export.h"
 #include "sync/internal_api/public/base/invalidation.h"
-#include "sync/notifier/invalidation_util.h"
+#include "sync/internal_api/public/base/invalidation_util.h"
 
 namespace base {
 class ListValue;
@@ -23,7 +23,7 @@ namespace syncer {
 // The list is kept sorted by version to make it easier to perform common
 // operations, like checking for an unknown version invalidation or fetching the
 // highest invalidation with the highest version number.
-class SYNC_EXPORT SingleObjectInvalidationSet {
+class INVALIDATION_EXPORT SingleObjectInvalidationSet {
  public:
   typedef std::set<Invalidation, InvalidationVersionLessThan> InvalidationsSet;
   typedef InvalidationsSet::const_iterator const_iterator;
@@ -61,4 +61,4 @@ class SYNC_EXPORT SingleObjectInvalidationSet {
 
 }  // syncer
 
-#endif  // SYNC_NOTIFIER_SINGLE_OBJECT_INVALIDATION_SET_H_
+#endif  // COMPONENTS_INVALIDATION_SINGLE_OBJECT_INVALIDATION_SET_H_

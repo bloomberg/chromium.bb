@@ -14,6 +14,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "components/invalidation/invalidation_handler.h"
 #include "components/invalidation/invalidation_logger.h"
 #include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/invalidator_registrar.h"
@@ -22,7 +23,6 @@
 #include "google_apis/gaia/identity_provider.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
-#include "sync/notifier/invalidation_handler.h"
 
 namespace gcm {
 class GCMDriver;

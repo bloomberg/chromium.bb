@@ -81,10 +81,10 @@
 #include "base/compiler_specific.h"
 #include "components/invalidation/fake_invalidation_handler.h"
 #include "components/invalidation/fake_invalidation_state_tracker.h"
+#include "components/invalidation/invalidator.h"
+#include "components/invalidation/object_id_invalidation_map_test_util.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/types.pb.h"
-#include "sync/internal_api/public/base/object_id_invalidation_map_test_util.h"
-#include "sync/notifier/invalidator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

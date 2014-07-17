@@ -12,8 +12,12 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../net/net.gyp:net',
+    '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
     '../third_party/zlib/zlib.gyp:zlib',
     '../url/url.gyp:url_lib',
+  ],
+  'export_dependent_settings': [
+    '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
   ],
   'sources': [
     'internal_api/attachments/attachment_downloader_impl.cc',
@@ -54,6 +58,8 @@
     'internal_api/public/attachments/fake_attachment_uploader.h',
     'internal_api/public/base/ack_handle.cc',
     'internal_api/public/base/ack_handle.h',
+    'internal_api/public/base/ack_handler.cc',
+    'internal_api/public/base/ack_handler.h',
     'internal_api/public/base/attachment_id_proto.cc',
     'internal_api/public/base/attachment_id_proto.h',
     'internal_api/public/base/cancelation_observer.cc',
@@ -66,6 +72,8 @@
     'internal_api/public/base/invalidation.h',
     'internal_api/public/base/invalidation_interface.cc',
     'internal_api/public/base/invalidation_interface.h',
+    'internal_api/public/base/invalidation_util.cc',
+    'internal_api/public/base/invalidation_util.h',
     'internal_api/public/base/invalidator_state.cc',
     'internal_api/public/base/invalidator_state.h',
     'internal_api/public/base/model_type.h',

@@ -3,7 +3,6 @@ include_rules = [
   "+sync/api",
   "+sync/base",
   "+sync/internal_api/public",
-  "+sync/notifier",
   "+sync/protocol",
 
   # TODO(tim): Remove. Bug 131130

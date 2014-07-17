@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "sync/notifier/invalidation_state_tracker.h"
+#include "components/invalidation/invalidation_state_tracker.h"
 
 class PrefRegistrySimple;
 class PrefService;

@@ -7,6 +7,5 @@ include_rules = [
   "+sync/base",
   "+sync/internal_api/public/base",
   "+sync/internal_api/public/util",
-  "+sync/notifier",
   "+sync/protocol",
 ]

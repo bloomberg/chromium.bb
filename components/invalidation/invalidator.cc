@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/notifier/invalidation_handler.h"
+#include "components/invalidation/invalidator.h"
 
 namespace syncer {
 
-InvalidationHandler::InvalidationHandler() {
+Invalidator::Invalidator() {
 }
 
-InvalidationHandler::~InvalidationHandler() {
+Invalidator::~Invalidator() {
 }
 
 }  // namespace syncer

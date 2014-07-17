@@ -18,6 +18,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../crypto/crypto.gyp:crypto',
         '../net/net.gyp:net',
         '../third_party/libxml/libxml.gyp:libxml',

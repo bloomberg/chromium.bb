@@ -9,15 +9,6 @@ include_rules = [
 
   "+jingle/notifier/base",
 
-  # Should these live in their own "includes" (e.g) directory(ies)?
-  # Bug 19878.
-  "+sync/notifier/invalidation_util.h",
-  "+sync/notifier/mock_sync_notifier_observer.h",
-  "+sync/notifier/sync_notifier.h",
-  "+sync/notifier/sync_notifier_helper.h",
-  "+sync/notifier/sync_notifier_factory.h",
-  "+sync/notifier/sync_notifier_observer.h",
-
   # TODO(zea): SessionModelAssociator shouldn't need this.
   # TODO(sync): Also need to fix crbug.com/123674.
   "+sync/syncable",

@@ -15,9 +15,9 @@
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "components/invalidation/invalidation_prefs.h"
+#include "components/invalidation/unacked_invalidation_set.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "google/cacheinvalidation/types.pb.h"
-#include "sync/notifier/unacked_invalidation_set.h"
 
 namespace {
 

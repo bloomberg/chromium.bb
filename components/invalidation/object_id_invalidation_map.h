@@ -1,23 +1,23 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_NOTIFIER_OBJECT_ID_INVALIDATION_MAP_H_
-#define SYNC_NOTIFIER_OBJECT_ID_INVALIDATION_MAP_H_
+#ifndef COMPONENTS_INVALIDATION_OBJECT_ID_INVALIDATION_MAP_H_
+#define COMPONENTS_INVALIDATION_OBJECT_ID_INVALIDATION_MAP_H_
 
 #include <map>
 #include <vector>
 
-#include "sync/base/sync_export.h"
+#include "components/invalidation/invalidation_export.h"
+#include "components/invalidation/single_object_invalidation_set.h"
 #include "sync/internal_api/public/base/invalidation.h"
-#include "sync/notifier/invalidation_util.h"
-#include "sync/notifier/single_object_invalidation_set.h"
+#include "sync/internal_api/public/base/invalidation_util.h"
 
 namespace syncer {
 
 // A set of notifications with some helper methods to organize them by object ID
 // and version number.
-class SYNC_EXPORT ObjectIdInvalidationMap {
+class INVALIDATION_EXPORT ObjectIdInvalidationMap {
   public:
    // Creates an invalidation map that includes an 'unknown version'
    // invalidation for each specified ID in |ids|.
@@ -73,4 +73,4 @@ class SYNC_EXPORT ObjectIdInvalidationMap {
 
 }  // namespace syncer
 
-#endif  // SYNC_NOTIFIER_OBJECT_ID_INVALIDATION_MAP_H_
+#endif  // COMPONENTS_INVALIDATION_OBJECT_ID_INVALIDATION_MAP_H_

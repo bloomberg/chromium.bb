@@ -13,6 +13,7 @@
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/invalidation/invalidation_service.h"
+#include "components/invalidation/object_id_invalidation_map.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/sync_driver/sync_frontend.h"
 #include "components/sync_driver/sync_prefs.h"
@@ -29,7 +30,6 @@
 #include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/internal_api/public/util/sync_string_conversions.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncers involved.

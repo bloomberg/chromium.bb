@@ -7,8 +7,8 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/drive/drive_notification_observer.h"
 #include "components/invalidation/invalidation_service.h"
+#include "components/invalidation/object_id_invalidation_map.h"
 #include "google/cacheinvalidation/types.pb.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 
 namespace drive {
 

@@ -6,7 +6,7 @@
 #define COMPONENTS_INVALIDATION_FAKE_INVALIDATION_STATE_TRACKER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "sync/notifier/invalidation_state_tracker.h"
+#include "components/invalidation/invalidation_state_tracker.h"
 
 namespace syncer {
 

@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "sync/notifier/object_id_invalidation_map.h"
+#include "components/invalidation/object_id_invalidation_map.h"
 
 namespace syncer {
 

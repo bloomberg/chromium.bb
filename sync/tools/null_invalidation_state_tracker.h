@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "sync/notifier/invalidation_state_tracker.h"
+#include "components/invalidation/invalidation_state_tracker.h"
 
 namespace syncer {
 

@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "sync/notifier/invalidation_handler.h"
-#include "sync/notifier/object_id_invalidation_map.h"
+#include "components/invalidation/invalidation_handler.h"
+#include "components/invalidation/object_id_invalidation_map.h"
 
 namespace syncer {
 

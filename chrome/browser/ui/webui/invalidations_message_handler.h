@@ -11,7 +11,7 @@
 #include "base/values.h"
 #include "components/invalidation/invalidation_logger_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "sync/notifier/invalidation_util.h"
+#include "sync/internal_api/public/base/invalidation_util.h"
 
 class Profile;
 

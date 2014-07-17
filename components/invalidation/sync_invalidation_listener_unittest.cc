@@ -12,15 +12,15 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "components/invalidation/fake_invalidation_state_tracker.h"
+#include "components/invalidation/object_id_invalidation_map.h"
 #include "components/invalidation/push_client_channel.h"
 #include "components/invalidation/sync_invalidation_listener.h"
+#include "components/invalidation/unacked_invalidation_set_test_util.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "jingle/notifier/listener/fake_push_client.h"
+#include "sync/internal_api/public/base/invalidation_util.h"
 #include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/notifier/invalidation_util.h"
-#include "sync/notifier/object_id_invalidation_map.h"
-#include "sync/notifier/unacked_invalidation_set_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

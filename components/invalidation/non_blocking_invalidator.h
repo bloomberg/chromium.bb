@@ -16,12 +16,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/invalidation/invalidation_export.h"
+#include "components/invalidation/invalidation_state_tracker.h"
+#include "components/invalidation/invalidator.h"
 #include "components/invalidation/invalidator_registrar.h"
+#include "components/invalidation/unacked_invalidation_set.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "sync/internal_api/public/base/invalidator_state.h"
-#include "sync/notifier/invalidation_state_tracker.h"
-#include "sync/notifier/invalidator.h"
-#include "sync/notifier/unacked_invalidation_set.h"
 
 namespace base {
 class SingleThreadTaskRunner;

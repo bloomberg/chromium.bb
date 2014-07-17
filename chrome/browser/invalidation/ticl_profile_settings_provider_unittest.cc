@@ -12,6 +12,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/invalidation/fake_invalidation_state_tracker.h"
+#include "components/invalidation/invalidation_state_tracker.h"
 #include "components/invalidation/ticl_invalidation_service.h"
 #include "components/invalidation/ticl_settings_provider.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -19,7 +20,6 @@
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/identity_provider.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "sync/notifier/invalidation_state_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace invalidation {

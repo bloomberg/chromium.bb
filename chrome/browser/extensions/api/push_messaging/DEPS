@@ -1,6 +1,6 @@
 include_rules = [
+  "+components/invalidation",
   "+google/cacheinvalidation/types.pb.h",
   "+sync/internal_api/public/base/invalidation.h",
-  "+sync/notifier/sync_notifier_observer.h",
-  "+components/invalidation",
+  "+sync/internal_api/public/base/invalidation_util.h",
 ]

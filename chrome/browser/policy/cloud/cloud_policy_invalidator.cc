@@ -14,11 +14,11 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/invalidation/invalidation_service.h"
+#include "components/invalidation/object_id_invalidation_map.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
 #include "policy/policy_constants.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 
 namespace policy {
 

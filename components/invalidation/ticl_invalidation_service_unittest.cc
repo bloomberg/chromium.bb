@@ -13,11 +13,11 @@
 #include "components/invalidation/fake_invalidator.h"
 #include "components/invalidation/gcm_invalidation_bridge.h"
 #include "components/invalidation/invalidation_service_test_template.h"
+#include "components/invalidation/invalidation_state_tracker.h"
+#include "components/invalidation/invalidator.h"
 #include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "sync/notifier/invalidation_state_tracker.h"
-#include "sync/notifier/invalidator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace invalidation {

@@ -298,6 +298,8 @@
             # Dependencies of invalidation
             'components.gyp:invalidation',
             'components.gyp:invalidation_test_support',
+            '../jingle/jingle.gyp:notifier_test_util',
+            '../third_party/libjingle/libjingle.gyp:libjingle',
 
             # Dependencies of json_schema
             'components.gyp:json_schema',
@@ -545,11 +547,15 @@
                 'invalidation/invalidation_notifier_unittest.cc',
                 'invalidation/invalidator_registrar_unittest.cc',
                 'invalidation/non_blocking_invalidator_unittest.cc',
+                'invalidation/object_id_invalidation_map_unittest.cc',
                 'invalidation/p2p_invalidator_unittest.cc',
                 'invalidation/push_client_channel_unittest.cc',
+                'invalidation/registration_manager_unittest.cc',
+                'invalidation/single_object_invalidation_set_unittest.cc',
                 'invalidation/sync_invalidation_listener_unittest.cc',
                 'invalidation/sync_system_resources_unittest.cc',
                 'invalidation/ticl_invalidation_service_unittest.cc',
+                'invalidation/unacked_invalidation_set_unittest.cc',
               ],
             }],
             ['chromeos==1', {

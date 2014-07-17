@@ -10,8 +10,8 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "sync/notifier/ack_handler.h"
-#include "sync/notifier/invalidation_util.h"
+#include "sync/internal_api/public/base/ack_handler.h"
+#include "sync/internal_api/public/base/invalidation_util.h"
 
 namespace syncer {
 
@@ -96,6 +96,16 @@ scoped_ptr<Invalidation> Invalidation::InitFromValue(
 }
 
 Invalidation::~Invalidation() {}
+
+Invalidation& Invalidation::operator=(const Invalidation& other) {
+  id_ = other.id_;
+  is_unknown_version_ = other.is_unknown_version_;
+  version_ = other.version_;
+  payload_ = other.payload_;
+  ack_handle_ = other.ack_handle_;
+  ack_handler_ = other.ack_handler_;
+  return *this;
+}
 
 invalidation::ObjectId Invalidation::object_id() const {
   return id_;

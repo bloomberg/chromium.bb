@@ -87,7 +87,6 @@ include_rules = [
   "+sandbox/win/src",  # The path doesn't say it, but this is the Windows sandbox.
   "+skia/ext",
   "+sync/api",  # Sync API files.
-  "+sync/notifier",  # Sync invalidation API files.
   "+sync/protocol",  # Sync protobuf files.
   "+third_party/cros_system_api",
   "+win8/util",

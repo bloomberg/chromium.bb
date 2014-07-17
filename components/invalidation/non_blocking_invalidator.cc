@@ -13,12 +13,12 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "components/invalidation/gcm_network_channel_delegate.h"
+#include "components/invalidation/invalidation_handler.h"
 #include "components/invalidation/invalidation_notifier.h"
+#include "components/invalidation/object_id_invalidation_map.h"
 #include "components/invalidation/sync_system_resources.h"
 #include "jingle/notifier/listener/push_client.h"
 #include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/notifier/invalidation_handler.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 
 namespace syncer {
 

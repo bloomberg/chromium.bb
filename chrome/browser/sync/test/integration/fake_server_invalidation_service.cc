@@ -8,9 +8,9 @@
 
 #include "base/macros.h"
 #include "components/invalidation/invalidation_service_util.h"
+#include "components/invalidation/object_id_invalidation_map.h"
 #include "sync/internal_api/public/base/invalidation.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 #
 
 namespace fake_server {

@@ -154,34 +154,6 @@
       ],
     },
 
-    # Test support files for the 'sync_notifier' target.
-    {
-      'target_name': 'test_support_sync_notifier',
-      'type': 'static_library',
-      'include_dirs': [
-        '..',
-      ],
-      'defines': [
-        'SYNC_TEST'
-      ],
-      'dependencies': [
-        '../testing/gmock.gyp:gmock',
-        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
-        'sync',
-      ],
-      'export_dependent_settings': [
-        '../testing/gmock.gyp:gmock',
-        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
-        'sync',
-      ],
-      'sources': [
-        'notifier/unacked_invalidation_set_test_util.cc',
-        'notifier/unacked_invalidation_set_test_util.h',
-        'internal_api/public/base/object_id_invalidation_map_test_util.h',
-        'internal_api/public/base/object_id_invalidation_map_test_util.cc',
-      ],
-    },
-
     # Test support files for the 'sync_internal_api' target.
     {
       'target_name': 'test_support_sync_internal_api',
@@ -196,11 +168,13 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         'sync',
         'test_support_sync_core',
       ],
       'export_dependent_settings': [
         '../testing/gtest.gyp:gtest',
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         'sync',
         'test_support_sync_core',
       ],
@@ -343,58 +317,6 @@
       },
     },
 
-    # Unit tests for the 'sync_notifier' target.  This cannot be a static
-    # library because the unit test files have to be compiled directly
-    # into the executable, so we push the target files to the
-    # depending executable target via direct_dependent_settings.
-    {
-      'target_name': 'sync_notifier_tests',
-      'type': 'none',
-      # We only want unit test executables to include this target.
-      'suppress_wildcard': 1,
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../google_apis/google_apis.gyp:google_apis',
-        '../jingle/jingle.gyp:notifier_test_util',
-        '../net/net.gyp:net_test_support',
-        '../testing/gmock.gyp:gmock',
-        '../testing/gtest.gyp:gtest',
-        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
-        '../third_party/libjingle/libjingle.gyp:libjingle',
-        'sync',
-        'test_support_sync_notifier',
-      ],
-      # Propagate all dependencies since the actual compilation
-      # happens in the dependents.
-      'export_dependent_settings': [
-        '../base/base.gyp:base',
-        '../google_apis/google_apis.gyp:google_apis',
-        '../jingle/jingle.gyp:notifier_test_util',
-        '../net/net.gyp:net_test_support',
-        '../testing/gmock.gyp:gmock',
-        '../testing/gtest.gyp:gtest',
-        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
-        '../third_party/libjingle/libjingle.gyp:libjingle',
-        'sync',
-        'test_support_sync_notifier',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '..',
-        ],
-        'conditions': [
-          ['OS != "android"', {
-            'sources': [
-              'notifier/object_id_invalidation_map_unittest.cc',
-              'notifier/registration_manager_unittest.cc',
-              'notifier/single_object_invalidation_set_unittest.cc',
-              'notifier/unacked_invalidation_set_unittest.cc',
-            ],
-          }],
-        ],
-      },
-    },
-
     # Unit tests for the 'sync_internal_api' target.  This cannot be a static
     # library because the unit test files have to be compiled directly
     # into the executable, so we push the target files to the
@@ -406,6 +328,7 @@
       'suppress_wildcard': 1,
       'dependencies': [
         '../base/base.gyp:base',
+        '../google_apis/google_apis.gyp:google_apis',
         '../google_apis/google_apis.gyp:google_apis_test_support',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
@@ -418,6 +341,8 @@
       # happens in the dependents.
       'export_dependent_settings': [
         '../base/base.gyp:base',
+        '../google_apis/google_apis.gyp:google_apis',
+        '../google_apis/google_apis.gyp:google_apis_test_support',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
         '../testing/gmock.gyp:gmock',
@@ -515,7 +440,8 @@
         'sync_api_tests',
         'sync_core_tests',
         'sync_internal_api_tests',
-        'sync_notifier_tests',
+        'sync',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
       ],
       'conditions': [
         # TODO(akalin): This is needed because histogram.cc uses

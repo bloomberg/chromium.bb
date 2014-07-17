@@ -13,8 +13,8 @@
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/invalidator_registrar.h"
+#include "components/invalidation/mock_ack_handler.h"
 #include "google_apis/gaia/fake_identity_provider.h"
-#include "sync/notifier/mock_ack_handler.h"
 
 namespace syncer {
 class Invalidation;

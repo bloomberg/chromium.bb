@@ -7,11 +7,11 @@
 #include "base/bind.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/invalidation/invalidation_handler.h"
 #include "components/invalidation/invalidation_logger.h"
 #include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/profile_invalidation_provider.h"
 #include "content/public/browser/web_ui.h"
-#include "sync/notifier/invalidation_handler.h"
 
 namespace invalidation {
 class InvalidationLogger;

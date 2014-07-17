@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/notifier/invalidation_state_tracker.h"
+#include "components/invalidation/invalidation_handler.h"
 
 namespace syncer {
 
-InvalidationStateTracker::InvalidationStateTracker() {}
+InvalidationHandler::InvalidationHandler() {
+}
 
-InvalidationStateTracker::~InvalidationStateTracker() {}
+InvalidationHandler::~InvalidationHandler() {
+}
 
 }  // namespace syncer

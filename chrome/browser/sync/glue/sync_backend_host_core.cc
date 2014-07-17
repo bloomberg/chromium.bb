@@ -11,6 +11,8 @@
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/common/chrome_version_info.h"
+#include "components/invalidation/object_id_invalidation_map.h"
+#include "sync/internal_api/public/base/invalidation_util.h"
 #include "sync/internal_api/public/events/protocol_event.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/internal_components_factory.h"
@@ -21,8 +23,6 @@
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
-#include "sync/notifier/invalidation_util.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncers involved.

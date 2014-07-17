@@ -1,16 +1,16 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_NOTIFIER_UNACKED_INVALIDATION_SET_H_
-#define SYNC_NOTIFIER_UNACKED_INVALIDATION_SET_H_
+#ifndef COMPONENTS_INVALIDATION_UNACKED_INVALIDATION_SET_H_
+#define COMPONENTS_INVALIDATION_UNACKED_INVALIDATION_SET_H_
 
 #include <vector>
 
-#include "sync/base/sync_export.h"
+#include "components/invalidation/invalidation_export.h"
 #include "sync/internal_api/public/base/invalidation.h"
+#include "sync/internal_api/public/base/invalidation_util.h"
 #include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/notifier/invalidation_util.h"
 
 namespace base {
 class DictionaryValue;
@@ -29,7 +29,7 @@ class AckHandle;
 // Manages the set of invalidations that are awaiting local acknowledgement for
 // a particular ObjectId.  This set of invalidations will be persisted across
 // restarts, though this class is not directly responsible for that.
-class SYNC_EXPORT UnackedInvalidationSet {
+class INVALIDATION_EXPORT UnackedInvalidationSet {
  public:
   static const size_t kMaxBufferedInvalidations;
 
@@ -115,4 +115,4 @@ typedef std::map<invalidation::ObjectId,
 
 }  // namespace syncer
 
-#endif  // SYNC_NOTIFIER_UNACKED_INVALIDATION_SET_H_
+#endif  // COMPONENTS_INVALIDATION_UNACKED_INVALIDATION_SET_H_

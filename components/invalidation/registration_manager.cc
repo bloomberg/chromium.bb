@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/notifier/registration_manager.h"
+#include "components/invalidation/registration_manager.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -14,7 +14,7 @@
 #include "base/stl_util.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "sync/notifier/invalidation_util.h"
+#include "sync/internal_api/public/base/invalidation_util.h"
 
 namespace syncer {
 

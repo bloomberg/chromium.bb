@@ -21,6 +21,7 @@
 #include "base/task_runner.h"
 #include "base/threading/thread.h"
 #include "components/invalidation/non_blocking_invalidator.h"
+#include "components/invalidation/object_id_invalidation_map.h"
 #include "jingle/notifier/base/notification_method.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/base/host_port_pair.h"
@@ -42,7 +43,6 @@
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_event_handler.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/test/fake_encryptor.h"
 #include "sync/tools/null_invalidation_state_tracker.h"
 

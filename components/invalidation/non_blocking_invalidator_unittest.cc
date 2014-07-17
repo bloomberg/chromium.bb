@@ -11,11 +11,11 @@
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "components/invalidation/fake_invalidation_handler.h"
+#include "components/invalidation/invalidation_state_tracker.h"
 #include "components/invalidation/invalidator_test_template.h"
 #include "google/cacheinvalidation/types.pb.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "net/url_request/url_request_test_util.h"
-#include "sync/notifier/invalidation_state_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

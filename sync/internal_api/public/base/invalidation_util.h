@@ -1,11 +1,11 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 // Various utilities for dealing with invalidation data types.
 
-#ifndef SYNC_NOTIFIER_INVALIDATION_UTIL_H_
-#define SYNC_NOTIFIER_INVALIDATION_UTIL_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATION_UTIL_H_
+#define SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATION_UTIL_H_
 
 #include <iosfwd>
 #include <map>
@@ -74,4 +74,4 @@ std::string InvalidationToString(
 
 }  // namespace syncer
 
-#endif  // SYNC_NOTIFIER_INVALIDATION_UTIL_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_BASE_INVALIDATION_UTIL_H_

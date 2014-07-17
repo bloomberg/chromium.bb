@@ -20,7 +20,7 @@
 #include "google/cacheinvalidation/deps/callback.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "jingle/notifier/listener/push_client.h"
-#include "sync/notifier/invalidation_util.h"
+#include "sync/internal_api/public/base/invalidation_util.h"
 
 namespace syncer {
 

@@ -29,7 +29,7 @@
 #include "components/policy/core/common/policy_types.h"
 #include "policy/policy_constants.h"
 #include "policy/proto/device_management_backend.pb.h"
-#include "sync/notifier/invalidation_util.h"
+#include "sync/internal_api/public/base/invalidation_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

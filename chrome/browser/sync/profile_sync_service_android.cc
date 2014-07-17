@@ -22,6 +22,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
+#include "components/invalidation/object_id_invalidation_map.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/sync_driver/sync_prefs.h"
@@ -34,7 +35,6 @@
 #include "grit/generated_resources.h"
 #include "jni/ProfileSyncService_jni.h"
 #include "sync/internal_api/public/read_transaction.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::android::AttachCurrentThread;

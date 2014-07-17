@@ -1,8 +1,11 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/notifier/unacked_invalidation_set.h"
+#ifndef COMPONENTS_INVALIDATION_UNACKED_INVALIDATION_SET_TEST_UTIL_H_
+#define COMPONENTS_INVALIDATION_UNACKED_INVALIDATION_SET_TEST_UTIL_H_
+
+#include "components/invalidation/unacked_invalidation_set.h"
 
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 
@@ -23,3 +26,5 @@ void PrintTo(const UnackedInvalidationsMap& map, ::std::ostream* os);
 }  // namespace test_util
 
 }  // namespace syncer
+
+#endif  // COMPONENTS_INVALIDATION_UNACKED_INVALIDATION_SET_TEST_UTIL_H_

@@ -6,8 +6,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "components/invalidation/invalidation_handler.h"
 #include "components/invalidation/invalidation_logger_observer.h"
-#include "sync/notifier/invalidation_handler.h"
 
 namespace invalidation {
 class InvalidationLoggerObserver;

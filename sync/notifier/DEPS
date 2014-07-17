@@ -1,7 +1,0 @@
-include_rules = [
-  "+google/cacheinvalidation",
-
-  "+sync/base",
-  "+sync/internal_api/public/base",
-  "+sync/internal_api/public/util",
-]

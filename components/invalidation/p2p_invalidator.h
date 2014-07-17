@@ -17,14 +17,14 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/invalidation/invalidation_export.h"
+#include "components/invalidation/invalidator.h"
 #include "components/invalidation/invalidator_registrar.h"
+#include "components/invalidation/object_id_invalidation_map.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/push_client.h"
 #include "jingle/notifier/listener/push_client_observer.h"
 #include "sync/internal_api/public/base/invalidator_state.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/notifier/invalidator.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 
 namespace notifier {
 class PushClient;

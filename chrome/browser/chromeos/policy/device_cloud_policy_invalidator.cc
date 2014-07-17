@@ -23,7 +23,9 @@
 #include "chrome/browser/policy/cloud/cloud_policy_invalidator.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_content_client.h"
+#include "components/invalidation/invalidation_handler.h"
 #include "components/invalidation/invalidation_service.h"
+#include "components/invalidation/invalidation_state_tracker.h"
 #include "components/invalidation/invalidator_storage.h"
 #include "components/invalidation/profile_invalidation_provider.h"
 #include "components/invalidation/ticl_invalidation_service.h"
@@ -33,8 +35,6 @@
 #include "google_apis/gaia/identity_provider.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/internal_api/public/base/invalidator_state.h"
-#include "sync/notifier/invalidation_handler.h"
-#include "sync/notifier/invalidation_state_tracker.h"
 
 class Profile;
 

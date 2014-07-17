@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -6,21 +6,21 @@
 // invalidations for registered object IDs. The corresponding
 // InvalidationHandler is notifier when such an event occurs.
 
-#ifndef SYNC_NOTIFIER_INVALIDATOR_H_
-#define SYNC_NOTIFIER_INVALIDATOR_H_
+#ifndef COMPONENTS_INVALIDATION_INVALIDATOR_H_
+#define COMPONENTS_INVALIDATION_INVALIDATOR_H_
 
 #include <string>
 
 #include "base/callback.h"
-#include "sync/base/sync_export.h"
+#include "components/invalidation/invalidation_export.h"
+#include "sync/internal_api/public/base/invalidation_util.h"
 #include "sync/internal_api/public/base/invalidator_state.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/notifier/invalidation_util.h"
 
 namespace syncer {
 class InvalidationHandler;
 
-class SYNC_EXPORT Invalidator {
+class INVALIDATION_EXPORT Invalidator {
  public:
   Invalidator();
   virtual ~Invalidator();
@@ -86,4 +86,4 @@ class SYNC_EXPORT Invalidator {
 };
 }  // namespace syncer
 
-#endif  // SYNC_NOTIFIER_INVALIDATOR_H_
+#endif  // COMPONENTS_INVALIDATION_INVALIDATOR_H_

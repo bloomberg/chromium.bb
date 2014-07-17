@@ -19,6 +19,7 @@
     ],
     'dependencies': [
       '../../base/base.gyp:base',
+      '../../components/components.gyp:invalidation',
       '../sync.gyp:sync',
     ],
     'export_dependent_settings': [

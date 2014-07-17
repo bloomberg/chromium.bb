@@ -8,10 +8,10 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
+#include "components/invalidation/invalidation_handler.h"
 #include "google/cacheinvalidation/include/invalidation-client-factory.h"
 #include "jingle/notifier/listener/push_client.h"
 #include "net/url_request/url_request_context.h"
-#include "sync/notifier/invalidation_handler.h"
 #include "talk/xmpp/jid.h"
 #include "talk/xmpp/xmppclientsettings.h"
 

@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "components/invalidation/fake_invalidation_handler.h"
 #include "components/invalidation/fake_invalidation_state_tracker.h"
+#include "components/invalidation/invalidation_state_tracker.h"
 #include "components/invalidation/invalidator_test_template.h"
 #include "components/invalidation/push_client_channel.h"
 #include "jingle/notifier/base/fake_base_task.h"
@@ -16,7 +17,6 @@
 #include "net/url_request/url_request_test_util.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/weak_handle.h"
-#include "sync/notifier/invalidation_state_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

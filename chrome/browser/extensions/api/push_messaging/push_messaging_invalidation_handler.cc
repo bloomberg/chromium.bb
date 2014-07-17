@@ -11,9 +11,9 @@
 #include "base/strings/string_split.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler_delegate.h"
 #include "components/invalidation/invalidation_service.h"
+#include "components/invalidation/object_id_invalidation_map.h"
 #include "extensions/common/extension.h"
 #include "google/cacheinvalidation/types.pb.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 
 namespace extensions {
 

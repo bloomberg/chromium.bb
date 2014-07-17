@@ -13,7 +13,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/notifier/invalidation_state_tracker.h"
 
 class PrefService;
 class ProfileIOData;

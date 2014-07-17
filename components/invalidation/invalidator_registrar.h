@@ -11,8 +11,8 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/invalidation/invalidation_export.h"
-#include "sync/notifier/invalidation_handler.h"
-#include "sync/notifier/invalidation_util.h"
+#include "components/invalidation/invalidation_handler.h"
+#include "sync/internal_api/public/base/invalidation_util.h"
 
 namespace invalidation {
 class ObjectId;
