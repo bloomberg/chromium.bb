@@ -21,3 +21,6 @@ fun:*convolveVertically_SSE2*
 # (Both functions call __mm_maddubs_epi16()).
 fun:*ProcessPixelPairHelper*
 fun:*ProcessOnePixel*
+
+# An actual Chromium bug which is blocking our progress. http://crbug.com/334448
+fun:*UTF8GenericReplaceInternal*
