@@ -127,8 +127,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
         exceptionState.throwDOMException(InvalidStateError, "The provided element has not retrieved data.");
         return ScriptPromise();
     }
-    // FIXME: Remove the below null check once we fix the bug 382721
-    if (video->readyState() <= HTMLMediaElement::HAVE_METADATA || !video->webMediaPlayer()) {
+    if (video->readyState() <= HTMLMediaElement::HAVE_METADATA) {
         exceptionState.throwDOMException(InvalidStateError, "The provided element's player has no current data.");
         return ScriptPromise();
     }
