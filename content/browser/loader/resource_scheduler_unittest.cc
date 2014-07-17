@@ -137,9 +137,6 @@ class ResourceSchedulerTest : public testing::Test {
       : next_request_id_(0),
         ui_thread_(BrowserThread::UI, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
-    // TODO(aiolos): remove when throttling and coalescing have both landed
-    scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
-                                            false /* should_coalesce */);
 
     scheduler_.OnClientCreated(kChildId, kRouteId);
     scheduler_.OnVisibilityChanged(kChildId, kRouteId, true);
@@ -546,6 +543,9 @@ TEST_F(ResourceSchedulerTest, NonHTTPSchedulesImmediately) {
 }
 
 TEST_F(ResourceSchedulerTest, ActiveLoadingSyncSchedulesImmediately) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
             scheduler_.GetClientStateForTesting(kChildId, kRouteId));
   // Dummies to enforce scheduling.
@@ -558,6 +558,9 @@ TEST_F(ResourceSchedulerTest, ActiveLoadingSyncSchedulesImmediately) {
 }
 
 TEST_F(ResourceSchedulerTest, UnthrottledSyncSchedulesImmediately) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   scheduler_.OnLoadingStateChanged(kChildId, kRouteId, true);
   EXPECT_EQ(ResourceScheduler::UNTHROTTLED,
             scheduler_.GetClientStateForTesting(kBackgroundChildId,
@@ -617,6 +620,9 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
 }
 
 TEST_F(ResourceSchedulerTest, ThrottledClientCreation) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   EXPECT_TRUE(scheduler_.should_throttle());
   scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
 
@@ -627,6 +633,9 @@ TEST_F(ResourceSchedulerTest, ThrottledClientCreation) {
 }
 
 TEST_F(ResourceSchedulerTest, ActiveClientThrottleUpdateOnLoadingChange) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
             scheduler_.GetClientStateForTesting(kChildId, kRouteId));
   scheduler_.OnLoadingStateChanged(kChildId, kRouteId, true);
@@ -672,6 +681,9 @@ TEST_F(ResourceSchedulerTest, UnthrottleBackgroundClientOnLoadingStarted) {
 }
 
 TEST_F(ResourceSchedulerTest, OneRequestPerThrottledClient) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
             scheduler_.GetClientStateForTesting(kChildId, kRouteId));
   EXPECT_EQ(ResourceScheduler::THROTTLED,
@@ -687,6 +699,9 @@ TEST_F(ResourceSchedulerTest, OneRequestPerThrottledClient) {
 }
 
 TEST_F(ResourceSchedulerTest, UnthrottleNewlyVisibleClient) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   EXPECT_EQ(ResourceScheduler::THROTTLED,
             scheduler_.GetClientStateForTesting(kBackgroundChildId,
                                                 kBackgroundRouteId));
@@ -704,6 +719,9 @@ TEST_F(ResourceSchedulerTest, UnthrottleNewlyVisibleClient) {
 }
 
 TEST_F(ResourceSchedulerTest, UnthrottleNewlyAudibleClient) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   EXPECT_EQ(ResourceScheduler::THROTTLED,
             scheduler_.GetClientStateForTesting(kBackgroundChildId,
                                                 kBackgroundRouteId));
@@ -721,6 +739,9 @@ TEST_F(ResourceSchedulerTest, UnthrottleNewlyAudibleClient) {
 }
 
 TEST_F(ResourceSchedulerTest, VisibleClientStillUnthrottledOnAudabilityChange) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
             scheduler_.GetClientStateForTesting(kChildId, kRouteId));
   EXPECT_EQ(ResourceScheduler::THROTTLED,
@@ -743,6 +764,9 @@ TEST_F(ResourceSchedulerTest, VisibleClientStillUnthrottledOnAudabilityChange) {
 }
 
 TEST_F(ResourceSchedulerTest, AudibleClientStillUnthrottledOnVisabilityChange) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   scheduler_.OnVisibilityChanged(kChildId, kRouteId, false);
   scheduler_.OnAudibilityChanged(kChildId, kRouteId, true);
   EXPECT_EQ(ResourceScheduler::ACTIVE_AND_LOADING,
@@ -767,6 +791,9 @@ TEST_F(ResourceSchedulerTest, AudibleClientStillUnthrottledOnVisabilityChange) {
 }
 
 TEST_F(ResourceSchedulerTest, ThrottledClientStartsNextHighestPriorityRequest) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   scoped_ptr<TestRequest> request(
       NewBackgroundRequest("http://host/req", net::IDLE));
   // Lower priority request started first to test request prioritizaton.
@@ -785,6 +812,9 @@ TEST_F(ResourceSchedulerTest, ThrottledClientStartsNextHighestPriorityRequest) {
 }
 
 TEST_F(ResourceSchedulerTest, ThrottledSpdyProxySchedulesImmediately) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   EXPECT_EQ(ResourceScheduler::THROTTLED,
             scheduler_.GetClientStateForTesting(kBackgroundChildId,
                                                 kBackgroundRouteId));
@@ -856,6 +886,9 @@ TEST_F(ResourceSchedulerTest, CoalescedSpdyProxyWaits) {
 }
 
 TEST_F(ResourceSchedulerTest, ThrottledNonHTTPSchedulesImmediately) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   // Dummies to enforce scheduling.
   scoped_ptr<TestRequest> high(
       NewBackgroundRequest("http://host/high", net::HIGHEST));
@@ -890,6 +923,9 @@ TEST_F(ResourceSchedulerTest, CoalescedNonHTTPSchedulesImmediately) {
 }
 
 TEST_F(ResourceSchedulerTest, ThrottledSyncSchedulesImmediately) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   // Dummies to enforce scheduling.
   scoped_ptr<TestRequest> high(
       NewBackgroundRequest("http://host/high", net::HIGHEST));
@@ -925,6 +961,9 @@ TEST_F(ResourceSchedulerTest, CoalescedSyncSchedulesImmediately) {
 }
 
 TEST_F(ResourceSchedulerTest, AllBackgroundClientsUnthrottle) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   EXPECT_EQ(ResourceScheduler::THROTTLED,
             scheduler_.GetClientStateForTesting(kBackgroundChildId,
                                                 kBackgroundRouteId));
@@ -966,6 +1005,9 @@ TEST_F(ResourceSchedulerTest, AllBackgroundClientsUnthrottle) {
 
 TEST_F(ResourceSchedulerTest,
        UnloadedClientVisibilityChangedCorrectlyUnthrottles) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   scheduler_.OnClientCreated(kChildId2, kRouteId2);
   scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
   scheduler_.OnLoadingStateChanged(kChildId2, kRouteId2, true);
@@ -1019,6 +1061,9 @@ TEST_F(ResourceSchedulerTest,
 
 TEST_F(ResourceSchedulerTest,
        UnloadedClientAudibilityChangedCorrectlyUnthrottles) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   scheduler_.OnClientCreated(kChildId2, kRouteId2);
   scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
   scheduler_.OnLoadingStateChanged(
@@ -1073,6 +1118,9 @@ TEST_F(ResourceSchedulerTest,
 
 TEST_F(ResourceSchedulerTest,
        LoadedClientVisibilityChangedCorrectlyUnthrottles) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   scheduler_.OnClientCreated(kChildId2, kRouteId2);
   scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
   scheduler_.OnLoadingStateChanged(kChildId2, kRouteId2, true);
@@ -1125,6 +1173,9 @@ TEST_F(ResourceSchedulerTest,
 
 TEST_F(ResourceSchedulerTest,
        LoadedClientAudibilityChangedCorrectlyUnthrottles) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   scheduler_.OnClientCreated(kChildId2, kRouteId2);
   scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
   scheduler_.OnLoadingStateChanged(kChildId2, kRouteId2, true);
@@ -1178,6 +1229,9 @@ TEST_F(ResourceSchedulerTest,
 }
 
 TEST_F(ResourceSchedulerTest, UnloadedClientBecomesHiddenCorrectlyUnthrottles) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   scheduler_.OnClientCreated(kChildId2, kRouteId2);
   scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
   scheduler_.OnLoadingStateChanged(
@@ -1244,6 +1298,9 @@ TEST_F(ResourceSchedulerTest, UnloadedClientBecomesHiddenCorrectlyUnthrottles) {
 }
 
 TEST_F(ResourceSchedulerTest, UnloadedClientBecomesSilentCorrectlyUnthrottles) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   scheduler_.OnClientCreated(kChildId2, kRouteId2);
   scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
   scheduler_.OnLoadingStateChanged(
@@ -1311,6 +1368,9 @@ TEST_F(ResourceSchedulerTest, UnloadedClientBecomesSilentCorrectlyUnthrottles) {
 }
 
 TEST_F(ResourceSchedulerTest, LoadedClientBecomesHiddenCorrectlyThrottles) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   scheduler_.OnClientCreated(kChildId2, kRouteId2);
   scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
   scheduler_.OnLoadingStateChanged(
@@ -1377,6 +1437,9 @@ TEST_F(ResourceSchedulerTest, LoadedClientBecomesHiddenCorrectlyThrottles) {
 }
 
 TEST_F(ResourceSchedulerTest, LoadedClientBecomesSilentCorrectlyThrottles) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   scheduler_.OnClientCreated(kChildId2, kRouteId2);
   scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
   scheduler_.OnLoadingStateChanged(
@@ -1445,6 +1508,9 @@ TEST_F(ResourceSchedulerTest, LoadedClientBecomesSilentCorrectlyThrottles) {
 }
 
 TEST_F(ResourceSchedulerTest, HiddenLoadedChangesCorrectlyStayThrottled) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   scheduler_.OnClientCreated(kChildId2, kRouteId2);
   scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
 
@@ -1513,6 +1579,9 @@ TEST_F(ResourceSchedulerTest, HiddenLoadedChangesCorrectlyStayThrottled) {
 }
 
 TEST_F(ResourceSchedulerTest, PartialVisibleClientLoadedDoesNotUnthrottle) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   scheduler_.OnClientCreated(kChildId2, kRouteId2);
   scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
   scheduler_.OnVisibilityChanged(kChildId2, kRouteId2, true);
@@ -1565,6 +1634,9 @@ TEST_F(ResourceSchedulerTest, PartialVisibleClientLoadedDoesNotUnthrottle) {
 }
 
 TEST_F(ResourceSchedulerTest, FullVisibleLoadedCorrectlyUnthrottle) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   scheduler_.OnClientCreated(kChildId2, kRouteId2);
   scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
   scheduler_.OnVisibilityChanged(kChildId2, kRouteId2, true);
@@ -1629,6 +1701,9 @@ TEST_F(ResourceSchedulerTest, FullVisibleLoadedCorrectlyUnthrottle) {
 
 TEST_F(ResourceSchedulerTest,
        ActiveAndLoadingClientDeletedCorrectlyUnthrottle) {
+  // TODO(aiolos): remove when throttling and coalescing have both landed
+  scheduler_.SetThrottleOptionsForTesting(true /* should_throttle */,
+                                          false /* should_coalesce */);
   scheduler_.OnClientCreated(kChildId2, kRouteId2);
   scheduler_.OnClientCreated(kBackgroundChildId2, kBackgroundRouteId2);
   scheduler_.OnVisibilityChanged(kChildId2, kRouteId2, true);

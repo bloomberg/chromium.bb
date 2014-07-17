@@ -634,7 +634,9 @@ class ResourceScheduler::Client {
   ResourceScheduler::ClientThrottleState throttle_state_;
 };
 
-ResourceScheduler::ResourceScheduler() : active_clients_loading_(0) {
+ResourceScheduler::ResourceScheduler(): should_coalesce_(false),
+                                        should_throttle_(false),
+                                        active_clients_loading_(0) {
 }
 
 ResourceScheduler::~ResourceScheduler() {
