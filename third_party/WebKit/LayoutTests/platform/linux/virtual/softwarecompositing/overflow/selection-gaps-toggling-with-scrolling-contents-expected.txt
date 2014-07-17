@@ -33,7 +33,7 @@ Lorem Ipsum
                   "shouldFlattenTransform": false,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }
@@ -162,7 +162,7 @@ Lorem Ipsum
                   "drawsContent": true,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }
@@ -291,7 +291,7 @@ Lorem Ipsum
                   "drawsContent": true,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }
@@ -418,6 +418,7 @@ Lorem Ipsum
                     {
                       "position": [0, 195],
                       "bounds": [285, 15],
+                      "shouldFlattenTransform": false,
                       "drawsContent": true
                     }
                   ]

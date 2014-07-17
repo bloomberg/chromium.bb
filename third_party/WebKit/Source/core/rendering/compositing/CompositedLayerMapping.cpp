@@ -1095,20 +1095,9 @@ void CompositedLayerMapping::updateChildrenTransform()
     if (GraphicsLayer* childTransformLayer = layerForChildrenTransform()) {
         childTransformLayer->setTransform(owningLayer().perspectiveTransform());
         childTransformLayer->setTransformOrigin(FloatPoint3D(childTransformLayer->size().width() * 0.5f, childTransformLayer->size().height() * 0.5f, 0.f));
-        bool hasPerspective = false;
-        if (RenderStyle* style = m_owningLayer.renderer()->style())
-            hasPerspective = style->hasPerspective();
-        if (hasPerspective)
-            childTransformLayer->setShouldFlattenTransform(false);
-
-        // Note, if the target is the scrolling layer, we need to ensure that the
-        // scrolling content layer doesn't flatten the transform. (It would be nice
-        // if we could apply transform to the scrolling content layer, but that's
-        // too late, we need the children transform to be applied _before_ the
-        // scrolling offset.)
-        if (childTransformLayer == m_scrollingLayer.get())
-            m_scrollingContentsLayer->setShouldFlattenTransform(false);
     }
+
+    updateShouldFlattenTransform();
 }
 
 // Return true if the layers changed.
@@ -1153,7 +1142,6 @@ bool CompositedLayerMapping::updateChildTransformLayer(bool needsChildTransformL
         if (!m_childTransformLayer) {
             m_childTransformLayer = createGraphicsLayer(CompositingReasonLayerForPerspective);
             m_childTransformLayer->setDrawsContent(false);
-            m_childTransformLayer->setShouldFlattenTransform(false);
             layersChanged = true;
         }
     } else if (m_childTransformLayer) {
@@ -1279,6 +1267,8 @@ static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping, const F
         f(mapping->clippingLayer());
     if ((mode & ApplyToCoreLayers) && mapping->scrollingLayer())
         f(mapping->scrollingLayer());
+    if ((mode & ApplyToCoreLayers) && mapping->scrollingBlockSelectionLayer())
+        f(mapping->scrollingBlockSelectionLayer());
     if (((mode & ApplyToCoreLayers) || (mode & ApplyToContentLayers)) && mapping->scrollingContentsLayer())
         f(mapping->scrollingContentsLayer());
     if (((mode & ApplyToCoreLayers) || (mode & ApplyToContentLayers)) && mapping->foregroundLayer())
@@ -1344,6 +1334,26 @@ void CompositedLayerMapping::updateShouldFlattenTransform()
     UpdateShouldFlattenTransformFunctor functor = { !m_owningLayer.shouldPreserve3D() };
     ApplyToGraphicsLayersMode mode = ApplyToCoreLayers;
     ApplyToGraphicsLayers(this, functor, mode);
+
+    // Note, if we apply perspective, we have to set should flatten differently
+    // so that the transform propagates to child layers correctly.
+    if (GraphicsLayer* childTransformLayer = layerForChildrenTransform()) {
+        bool hasPerspective = false;
+        if (RenderStyle* style = m_owningLayer.renderer()->style())
+            hasPerspective = style->hasPerspective();
+        if (hasPerspective)
+            childTransformLayer->setShouldFlattenTransform(false);
+
+        // Note, if the target is the scrolling layer, we need to ensure that the
+        // scrolling content layer doesn't flatten the transform. (It would be nice
+        // if we could apply transform to the scrolling content layer, but that's
+        // too late, we need the children transform to be applied _before_ the
+        // scrolling offset.)
+        if (childTransformLayer == m_scrollingLayer.get()) {
+            m_scrollingContentsLayer->setShouldFlattenTransform(false);
+            m_scrollingBlockSelectionLayer->setShouldFlattenTransform(false);
+        }
+    }
 }
 
 bool CompositedLayerMapping::updateForegroundLayer(bool needsForegroundLayer)
