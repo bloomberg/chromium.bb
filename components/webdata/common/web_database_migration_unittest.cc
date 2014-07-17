@@ -16,8 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/webdata/web_apps_table.h"
-#include "chrome/browser/webdata/web_intents_table.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -189,16 +187,12 @@ class WebDatabaseMigrationTest : public testing::Test {
     KeywordTable keyword_table;
     LoginsTable logins_table;
     TokenServiceTable token_service_table;
-    WebAppsTable web_apps_table;
-    WebIntentsTable web_intents_table;
 
     WebDatabase db;
     db.AddTable(&autofill_table);
     db.AddTable(&keyword_table);
     db.AddTable(&logins_table);
     db.AddTable(&token_service_table);
-    db.AddTable(&web_apps_table);
-    db.AddTable(&web_intents_table);
 
     // This causes the migration to occur.
     ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
@@ -256,7 +250,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 57;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 58;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -312,10 +306,13 @@ TEST_F(WebDatabaseMigrationTest, MigrateEmptyToCurrent) {
     EXPECT_FALSE(connection.DoesTableExist("logins"));
     EXPECT_TRUE(connection.DoesTableExist("meta"));
     EXPECT_TRUE(connection.DoesTableExist("token_service"));
-    EXPECT_TRUE(connection.DoesTableExist("web_app_icons"));
-    EXPECT_TRUE(connection.DoesTableExist("web_apps"));
-    EXPECT_TRUE(connection.DoesTableExist("web_intents"));
-    EXPECT_TRUE(connection.DoesTableExist("web_intents_defaults"));
+    // The web_apps and web_apps_icons tables are obsolete as of version 58.
+    EXPECT_FALSE(connection.DoesTableExist("web_apps"));
+    EXPECT_FALSE(connection.DoesTableExist("web_app_icons"));
+    // The web_intents and web_intents_defaults tables are obsolete as of
+    // version 58.
+    EXPECT_FALSE(connection.DoesTableExist("web_intents"));
+    EXPECT_FALSE(connection.DoesTableExist("web_intents_defaults"));
   }
 }
 
@@ -1877,8 +1874,10 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion44ToCurrent) {
   }
 }
 
-// Tests that the web_intents and web_intents_defaults tables are
-// modified to include "scheme" columns.
+// Previously, this tested that the web_intents and web_intents_defaults tables
+// were modified to include "scheme" columns. Since the web_intents and
+// web_intents_defaults tables are now obsolete, this test checks to ensure that
+// they are properly removed.
 TEST_F(WebDatabaseMigrationTest, MigrateVersion45ToCurrent) {
   ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_45.sql")));
 
@@ -1915,45 +1914,16 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion45ToCurrent) {
         kCurrentTestedVersionNumber,
         kCurrentTestedVersionNumber));
 
-    // A new "scheme" column should have been added to each web_intents table.
-    EXPECT_TRUE(connection.DoesColumnExist("web_intents", "scheme"));
-    EXPECT_TRUE(connection.DoesColumnExist("web_intents_defaults", "scheme"));
-
-    // Verify existing user data was copied.
-    sql::Statement s1(
-        connection.GetUniqueStatement("SELECT * FROM web_intents"));
-
-    ASSERT_TRUE(s1.Step());
-    EXPECT_EQ("http://poodles.com/fuzzer", s1.ColumnString(0));
-    EXPECT_EQ(ASCIIToUTF16("fuzz"), s1.ColumnString16(1));
-    EXPECT_EQ(ASCIIToUTF16("poodle/*"), s1.ColumnString16(2));
-    EXPECT_EQ(ASCIIToUTF16("Poodle Fuzzer"), s1.ColumnString16(3));
-    EXPECT_EQ(ASCIIToUTF16("window"), s1.ColumnString16(4));
-    EXPECT_EQ(ASCIIToUTF16(""), s1.ColumnString16(5));
-    ASSERT_FALSE(s1.Step());
-
-    // Now we want to verify existing user data was copied
-    sql::Statement s2(
-        connection.GetUniqueStatement("SELECT * FROM web_intents_defaults"));
-
-    ASSERT_TRUE(s2.Step());
-    EXPECT_EQ("fuzz", s2.ColumnString(0));
-    EXPECT_EQ(ASCIIToUTF16("poodle/*"), s2.ColumnString16(1));
-    EXPECT_EQ(ASCIIToUTF16(""), s2.ColumnString16(2));
-    EXPECT_EQ(0, s2.ColumnInt(3));
-    EXPECT_EQ(0, s2.ColumnInt(4));
-    EXPECT_EQ(ASCIIToUTF16("http://poodles.com/fuzzer"), s2.ColumnString16(5));
-    EXPECT_EQ(ASCIIToUTF16(""), s2.ColumnString16(6));
-    ASSERT_FALSE(s2.Step());
-
     // finally ensure the migration code cleaned up after itself
-    EXPECT_FALSE(connection.DoesTableExist("old_web_intents"));
-    EXPECT_FALSE(connection.DoesTableExist("old_web_intents_defaults"));
+    EXPECT_FALSE(connection.DoesTableExist("web_intents"));
+    EXPECT_FALSE(connection.DoesTableExist("web_intents_defaults"));
   }
 }
 
-// Tests that the web_intents and web_intents_defaults tables are
-// modified to include "scheme" columns.
+// Previously, this tested that the web_intents and web_intents_defaults tables
+// were modified to include "scheme" columns. Since the web_intents and
+// web_intents_defaults tables are now obsolete, this test checks to ensure that
+// they are properly removed.
 TEST_F(WebDatabaseMigrationTest, MigrateVersion45InvalidToCurrent) {
   ASSERT_NO_FATAL_FAILURE(
       LoadDatabase(FILE_PATH_LITERAL("version_45_invalid.sql")));
@@ -1991,27 +1961,8 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion45InvalidToCurrent) {
         kCurrentTestedVersionNumber,
         kCurrentTestedVersionNumber));
 
-    // A new "scheme" column should have been added to each web_intents table.
-    EXPECT_TRUE(connection.DoesColumnExist("web_intents", "scheme"));
-    EXPECT_TRUE(connection.DoesColumnExist("web_intents_defaults", "scheme"));
-
-    // Verify existing user data was copied.
-    sql::Statement s1(
-        connection.GetUniqueStatement("SELECT * FROM web_intents"));
-
-    ASSERT_FALSE(s1.Step());  // Basically should be empty at this point.
-
-    // Now we want to verify existing user data was copied
-    sql::Statement s2(
-        connection.GetUniqueStatement("SELECT * FROM web_intents_defaults"));
-
-    // We were able to create the new tables, but unable to copy any data
-    // Given the initial bad state of the tables.
-    ASSERT_FALSE(s2.Step());
-
-    // Finally ensure the migration code cleaned up after itself.
-    EXPECT_FALSE(connection.DoesTableExist("old_web_intents"));
-    EXPECT_FALSE(connection.DoesTableExist("old_web_intents_defaults"));
+    EXPECT_FALSE(connection.DoesTableExist("web_intents"));
+    EXPECT_FALSE(connection.DoesTableExist("web_intents_defaults"));
   }
 }
 
@@ -2731,5 +2682,42 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion56ToCurrent) {
 
     // No more entries expected.
     ASSERT_FALSE(s_names.Step());
+  }
+}
+
+// Tests that migrating from version 57 to version 58 drops the web_intents and
+// web_apps tables.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion57ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_57.sql")));
+
+  // Verify pre-conditions. These are expectations for version 57 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    EXPECT_TRUE(connection.DoesTableExist("web_apps"));
+    EXPECT_TRUE(connection.DoesTableExist("web_app_icons"));
+    EXPECT_TRUE(connection.DoesTableExist("web_intents"));
+    EXPECT_TRUE(connection.DoesTableExist("web_intents_defaults"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions. These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    EXPECT_FALSE(connection.DoesTableExist("web_apps"));
+    EXPECT_FALSE(connection.DoesTableExist("web_app_icons"));
+    EXPECT_FALSE(connection.DoesTableExist("web_intents"));
+    EXPECT_FALSE(connection.DoesTableExist("web_intents_defaults"));
   }
 }

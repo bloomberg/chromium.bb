@@ -11,8 +11,6 @@
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
-#include "chrome/browser/webdata/web_apps_table.h"
-#include "chrome/browser/webdata/web_intents_table.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -93,12 +91,6 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
   web_database_->AddTable(scoped_ptr<WebDatabaseTable>(new LoginsTable()));
   web_database_->AddTable(
       scoped_ptr<WebDatabaseTable>(new TokenServiceTable()));
-  // TODO(caitkp): Add a migration to delete the SQL table used by
-  // WebIntentsTable, then remove this.
-  web_database_->AddTable(scoped_ptr<WebDatabaseTable>(new WebAppsTable()));
-  // TODO(thakis): Add a migration to delete the SQL table used by
-  // WebIntentsTable, then remove this.
-  web_database_->AddTable(scoped_ptr<WebDatabaseTable>(new WebIntentsTable()));
 
   web_database_->LoadDatabase();
 

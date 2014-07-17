@@ -1835,7 +1835,6 @@
         'browser/web_resource/resource_request_allowed_notifier_test_util.h',
         'browser/web_resource/resource_request_allowed_notifier_unittest.cc',
         'browser/webdata/keyword_table_unittest.cc',
-        'browser/webdata/web_apps_table_unittest.cc',
         'common/chrome_paths_unittest.cc',
         'common/chrome_content_client_unittest.cc',
         'common/cloud_print/cloud_print_helpers_unittest.cc',

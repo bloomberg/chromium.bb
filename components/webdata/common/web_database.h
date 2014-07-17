@@ -59,6 +59,18 @@ class WEBDATA_EXPORT WebDatabase {
   // current version.
   sql::InitStatus MigrateOldVersionsAsNeeded();
 
+  // Migrates this database to |version|. Returns false if there was
+  // migration work to do and it failed, true otherwise.
+  //
+  // Implementations may set |*update_compatible_version| to true if
+  // the compatible version should be changed to |version|.
+  // Implementations should otherwise not modify this parameter.
+  bool MigrateToVersion(int version,
+                        bool* update_compatible_version);
+
+  // Migration method for version 58.
+  bool MigrateToVersion58DropWebAppsAndIntents();
+
   sql::Connection db_;
   sql::MetaTable meta_table_;
 

@@ -14,11 +14,11 @@
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
 // static
-const int WebDatabase::kCurrentVersionNumber = 57;
+const int WebDatabase::kCurrentVersionNumber = 58;
 
 namespace {
 
-const int kCompatibleVersionNumber = 57;
+const int kCompatibleVersionNumber = 58;
 
 // Change the version number and possibly the compatibility version of
 // |meta_table_|.
@@ -155,10 +155,18 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
   for (int next_version = current_version + 1;
        next_version <= kCurrentVersionNumber;
        ++next_version) {
+
+    // Do any database-wide migrations.
+    bool update_compatible_version = false;
+    if (!MigrateToVersion(next_version, &update_compatible_version))
+      return FailedMigrationTo(next_version);
+
+    ChangeVersion(&meta_table_, next_version, update_compatible_version);
+
     // Give each table a chance to migrate to this version.
     for (TableMap::iterator it = tables_.begin(); it != tables_.end(); ++it) {
       // Any of the tables may set this to true, but by default it is false.
-      bool update_compatible_version = false;
+      update_compatible_version = false;
       if (!it->second->MigrateToVersion(next_version,
                                         &update_compatible_version)) {
         return FailedMigrationTo(next_version);
@@ -168,4 +176,26 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
     }
   }
   return sql::INIT_OK;
+}
+
+bool WebDatabase::MigrateToVersion(int version,
+                      bool* update_compatible_version) {
+  // Migrate if necessary.
+  switch (version) {
+    case 58:
+      *update_compatible_version = true;
+      return MigrateToVersion58DropWebAppsAndIntents();
+  }
+
+  return true;
+}
+
+bool WebDatabase::MigrateToVersion58DropWebAppsAndIntents() {
+  sql::Transaction transaction(&db_);
+  return transaction.Begin() &&
+      db_.Execute("DROP TABLE IF EXISTS web_apps") &&
+      db_.Execute("DROP TABLE IF EXISTS web_app_icons") &&
+      db_.Execute("DROP TABLE IF EXISTS web_intents") &&
+      db_.Execute("DROP TABLE IF EXISTS web_intents_defaults") &&
+      transaction.Commit();
 }

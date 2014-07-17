@@ -1435,12 +1435,8 @@
       'browser/web_resource/web_resource_service.h',
       'browser/webdata/autocomplete_syncable_service.cc',
       'browser/webdata/autocomplete_syncable_service.h',
-      'browser/webdata/web_apps_table.cc',
-      'browser/webdata/web_apps_table.h',
       'browser/webdata/web_data_service_factory.cc',
       'browser/webdata/web_data_service_factory.h',
-      'browser/webdata/web_intents_table.cc',
-      'browser/webdata/web_intents_table.h',
     ],
     'chrome_browser_mac_sources': [
       'browser/media_galleries/fileapi/iphoto_data_provider.cc',
