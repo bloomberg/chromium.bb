@@ -6250,3 +6250,12 @@
    fun:_Znw*
    fun:_ZN32ProfileSyncComponentsFactoryMockC1Ev
 }
+{
+   bug_394624
+   Memcheck:Leak
+   ...
+   fun:_ZN3net24URLRequestJobFactoryImpl18SetProtocolHandlerERKSsPNS_20URLRequestJobFactory15ProtocolHandlerE
+   ...
+   fun:_ZN7content28ShellURLRequestContextGetter20GetURLRequestContextEv
+   fun:_ZN7content21ChromeAppCacheService20InitializeOnIOThreadERKN4base8FilePathEPNS_15ResourceContextEPN3net23URLRequestContextGetterE13scoped_refptrIN5quota20SpecialStoragePolicyEE
+}
