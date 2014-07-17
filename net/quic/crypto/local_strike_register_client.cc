@@ -30,19 +30,21 @@ bool LocalStrikeRegisterClient::IsKnownOrbit(StringPiece orbit) const {
 }
 
 void LocalStrikeRegisterClient::VerifyNonceIsValidAndUnique(
-    StringPiece nonce, QuicWallTime now, ResultCallback* cb) {
-  bool nonce_is_valid_and_unique;
+    StringPiece nonce,
+    QuicWallTime now,
+    ResultCallback* cb) {
+  InsertStatus nonce_error;
   if (nonce.length() != kNonceSize) {
-    nonce_is_valid_and_unique = false;
+    nonce_error = NONCE_INVALID_FAILURE;
   } else {
     base::AutoLock lock(m_);
-    nonce_is_valid_and_unique = strike_register_.Insert(
+    nonce_error = strike_register_.Insert(
         reinterpret_cast<const uint8*>(nonce.data()),
         static_cast<uint32>(now.ToUNIXSeconds()));
   }
 
   // m_ must not be held when the ResultCallback runs.
-  cb->Run(nonce_is_valid_and_unique);
+  cb->Run((nonce_error == NONCE_OK), nonce_error);
 }
 
 }  // namespace net

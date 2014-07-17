@@ -15,6 +15,26 @@
 
 namespace net {
 
+// InsertStatus enum values cannot be changed, they need to be stable.
+enum InsertStatus {
+  NONCE_OK = 0,
+  // The default error value for nonce verification failures from strike
+  // register (covers old strike registers and unknown failures).
+  NONCE_UNKNOWN_FAILURE = 1,
+  // Decrypted nonce had incorrect length.
+  NONCE_INVALID_FAILURE = 2,
+  // Nonce is not unique.
+  NONCE_NOT_UNIQUE_FAILURE = 3,
+  // Nonce's orbit is invalid or incorrect.
+  NONCE_INVALID_ORBIT_FAILURE = 4,
+  // Nonce's timestamp is not in the strike register's valid time range.
+  NONCE_INVALID_TIME_FAILURE = 5,
+  // Strike register's RPC call timed out, nonce couldn't be verified.
+  STRIKE_REGISTER_TIMEOUT = 6,
+  // Strike register is down, nonce couldn't be verified.
+  STRIKE_REGISTER_FAILURE = 7,
+};
+
 // A StrikeRegister is critbit tree which stores a set of observed nonces.
 // We use a critbit tree because:
 //   1) It's immune to algorithmic complexity attacks. If we had used a hash
@@ -107,16 +127,17 @@ class NET_EXPORT_PRIVATE StrikeRegister {
   //   b) before the current horizon
   //   c) outside of the valid time window
   //   d) already in the set of observed nonces
-  // and returns false if any of these are true. It is also free to return
-  // false for other reasons as it's always safe to reject an nonce.
+  // and returns the failure reason if any of these are true. It is also free to
+  // return failure reason for other reasons as it's always safe to reject an
+  // nonce.
   //
   // nonces are:
   //   4 bytes of timestamp (UNIX epoch seconds)
   //   8 bytes of orbit value (a cluster id)
   //   20 bytes of random data
   //
-  // Otherwise, it inserts |nonce| into the observed set and returns true.
-  bool Insert(const uint8 nonce[32], uint32 current_time);
+  // Otherwise, it inserts |nonce| into the observed set and returns NONCE_OK.
+  InsertStatus Insert(const uint8 nonce[32], uint32 current_time);
 
   // orbit returns a pointer to the 8-byte orbit value for this
   // strike-register.

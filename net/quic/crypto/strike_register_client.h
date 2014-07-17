@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
+#include "net/quic/crypto/strike_register.h"
 #include "net/quic/quic_time.h"
 
 namespace net {
@@ -24,13 +25,14 @@ class NET_EXPORT_PRIVATE StrikeRegisterClient {
    public:
     ResultCallback() {}
     virtual ~ResultCallback() {}
-    void Run(bool nonce_is_valid_and_unique) {
-      RunImpl(nonce_is_valid_and_unique);
+    void Run(bool nonce_is_valid_and_unique, InsertStatus nonce_error) {
+      RunImpl(nonce_is_valid_and_unique, nonce_error);
       delete this;
     }
 
    protected:
-    virtual void RunImpl(bool nonce_is_valid_and_unique) = 0;
+    virtual void RunImpl(bool nonce_is_valid_and_unique,
+                         InsertStatus nonce_error) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ResultCallback);
@@ -42,7 +44,8 @@ class NET_EXPORT_PRIVATE StrikeRegisterClient {
   // Returns true iff the strike register knows about the given orbit.
   virtual bool IsKnownOrbit(base::StringPiece orbit) const = 0;
   // Validate a nonce for freshness and uniqueness.
-  // Will invoke cb->Run(ValidateResponse::nonce_is_valid_and_unique())
+  // Will invoke cb->Run(ValidateResponse::nonce_is_valid_and_unique(),
+  //                     ValidateResponse::nonce_error())
   // once the asynchronous operation is complete.
   virtual void VerifyNonceIsValidAndUnique(
       base::StringPiece nonce,

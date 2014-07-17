@@ -130,8 +130,8 @@ void StrikeRegister::Reset() {
   internal_node_head_ = kNil;
 }
 
-bool StrikeRegister::Insert(const uint8 nonce[32],
-                            uint32 current_time_external) {
+InsertStatus StrikeRegister::Insert(const uint8 nonce[32],
+                                    uint32 current_time_external) {
   // Make space for the insertion if the strike register is full.
   while (external_node_free_head_ == kNil ||
          internal_node_free_head_ == kNil) {
@@ -142,7 +142,7 @@ bool StrikeRegister::Insert(const uint8 nonce[32],
 
   // Check to see if the orbit is correct.
   if (memcmp(nonce + sizeof(current_time), orbit_, sizeof(orbit_))) {
-    return false;
+    return NONCE_INVALID_ORBIT_FAILURE;
   }
 
   const uint32 nonce_time = ExternalTimeToInternal(TimeFromBytes(nonce));
@@ -151,7 +151,7 @@ bool StrikeRegister::Insert(const uint8 nonce[32],
   pair<uint32, uint32> valid_range =
       StrikeRegister::GetValidRange(current_time);
   if (nonce_time < valid_range.first || nonce_time > valid_range.second) {
-    return false;
+    return NONCE_INVALID_TIME_FAILURE;
   }
 
   // We strip the orbit out of the nonce.
@@ -171,13 +171,13 @@ bool StrikeRegister::Insert(const uint8 nonce[32],
     memcpy(external_node(index), value, sizeof(value));
     internal_node_head_ = (index | kExternalFlag) << 8;
     DCHECK_LE(horizon_, nonce_time);
-    return true;
+    return NONCE_OK;
   }
 
   const uint8* best_match = external_node(best_match_index);
   if (memcmp(best_match, value, sizeof(value)) == 0) {
     // We found the value in the tree.
-    return false;
+    return NONCE_NOT_UNIQUE_FAILURE;
   }
 
   // We are going to insert a new entry into the tree, so get the nodes now.
@@ -263,7 +263,7 @@ bool StrikeRegister::Insert(const uint8 nonce[32],
   *where_index = (*where_index & 0xff) | (internal_node_index << 8);
 
   DCHECK_LE(horizon_, nonce_time);
-  return true;
+  return NONCE_OK;
 }
 
 const uint8* StrikeRegister::orbit() const {

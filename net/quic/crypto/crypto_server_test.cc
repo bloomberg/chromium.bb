@@ -365,7 +365,7 @@ TEST_F(CryptoServerTest, DISABLED_DefaultCert) {
   EXPECT_NE(0u, cert.size());
   EXPECT_NE(0u, proof.size());
   const HandshakeFailureReason kRejectReasons[] = {
-    CLIENT_NONCE_INVALID_FAILURE
+    CLIENT_NONCE_INVALID_TIME_FAILURE
   };
   CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
 }
@@ -551,7 +551,7 @@ TEST_P(CryptoServerTest, ReplayProtection) {
   ASSERT_EQ(kREJ, out_.tag());
 
   const HandshakeFailureReason kRejectReasons[] = {
-    CLIENT_NONCE_INVALID_FAILURE
+    CLIENT_NONCE_INVALID_TIME_FAILURE
   };
   CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
 
@@ -652,7 +652,7 @@ TEST_P(CryptoServerTestNoConfig, DontCrash) {
       NULL));
 
   const HandshakeFailureReason kRejectReasons[] = {
-    CLIENT_NONCE_INVALID_FAILURE
+    SERVER_CONFIG_INCHOATE_HELLO_FAILURE
   };
   CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
 }
