@@ -44,7 +44,6 @@
         '<(DEPTH)/ui/native_theme/native_theme.gyp:native_theme',
         '<(DEPTH)/url/url.gyp:url_lib',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
-        '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
       ],
       'include_dirs': [
         # For JNI generated header.

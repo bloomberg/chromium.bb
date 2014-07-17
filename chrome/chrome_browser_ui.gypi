@@ -2613,7 +2613,6 @@
             '../ui/surface/surface.gyp:surface',
             '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
             '../v8/tools/gyp/v8.gyp:v8',
-            '../webkit/common/webkit_common.gyp:webkit_common',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
             '../webkit/webkit_resources.gyp:webkit_resources',

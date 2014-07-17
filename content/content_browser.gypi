@@ -1571,6 +1571,7 @@
         '../mojo/mojo.gyp:mojo_js_bindings',
         '../mojo/mojo.gyp:mojo_service_provider_bindings',
         '../net/net.gyp:http_server',
+        '../third_party/angle/src/build_angle.gyp:commit_id',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../ui/surface/surface.gyp:surface',
         '../webkit/common/webkit_common.gyp:webkit_common',
@@ -1578,7 +1579,6 @@
         '../webkit/storage_common.gyp:webkit_storage_common',
         '../webkit/webkit_resources.gyp:webkit_resources',
         '../webkit/webkit_resources.gyp:webkit_strings',
-        '../third_party/angle/src/build_angle.gyp:commit_id',
       ],
     }],
     ['enable_printing!=0', {

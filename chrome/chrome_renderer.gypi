@@ -299,7 +299,6 @@
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
         '../ui/surface/surface.gyp:surface',
         '../webkit/child/webkit_child.gyp:webkit_child',
-        '../webkit/common/webkit_common.gyp:webkit_common',
         '../webkit/webkit_resources.gyp:webkit_resources',
       ],
       'include_dirs': [
