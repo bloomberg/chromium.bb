@@ -8322,18 +8322,12 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
     case CSSPropertyStopColor: // TODO : icccolor
     case CSSPropertyFloodColor:
     case CSSPropertyLightingColor:
-        if (isSystemColor(id)) {
+        if (isSystemColor(id))
             parsedValue = cssValuePool().createColorValue(RenderTheme::theme().systemColor(id).rgb());
-        } else if ((id >= CSSValueAqua && id <= CSSValueTransparent)
-            || (id >= CSSValueAliceblue && id <= CSSValueYellowgreen) || id == CSSValueGrey) {
-            StyleColor styleColor = BisonCSSParser::colorFromRGBColorString(value->string);
-            ASSERT(!styleColor.isCurrentColor());
-            parsedValue = cssValuePool().createColorValue(styleColor.color().rgb());
-        } else if (id == CSSValueCurrentcolor) {
+        else if (id == CSSValueCurrentcolor)
             parsedValue = cssValuePool().createIdentifierValue(id);
-        } else { // TODO : svgcolor (iccColor)
+        else // TODO : svgcolor (iccColor)
             parsedValue = parseColor();
-        }
 
         if (parsedValue)
             m_valueList->next();

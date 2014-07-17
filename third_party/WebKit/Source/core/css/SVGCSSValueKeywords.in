@@ -5,7 +5,6 @@
 // CSS_PROP_*_COLOR
 //
 aliceblue
-alpha
 antiquewhite
 // aqua
 aquamarine
@@ -90,7 +89,6 @@ lightyellow
 // lime
 limegreen
 linen
-luminance
 magenta
 // maroon
 mediumaquamarine
@@ -153,6 +151,10 @@ wheat
 whitesmoke
 // yellow
 yellowgreen
+
+// mask-type / mask-mode
+alpha
+luminance
 
 // CSS_PROP_CLIP_PATH
 // CSS_PROP_CLIP_RULE
