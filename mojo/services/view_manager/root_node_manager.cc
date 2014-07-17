@@ -20,21 +20,15 @@ namespace service {
 RootNodeManager::ScopedChange::ScopedChange(
     ViewManagerServiceImpl* connection,
     RootNodeManager* root,
-    RootNodeManager::ChangeType change_type,
     bool is_delete_node)
     : root_(root),
       connection_id_(connection->id()),
-      change_type_(change_type),
       is_delete_node_(is_delete_node) {
   root_->PrepareForChange(this);
 }
 
 RootNodeManager::ScopedChange::~ScopedChange() {
   root_->FinishChange();
-}
-
-void RootNodeManager::ScopedChange::SendServerChangeIdAdvanced() {
-  root_->SendServerChangeIdAdvanced();
 }
 
 RootNodeManager::Context::Context() {
@@ -52,7 +46,6 @@ RootNodeManager::RootNodeManager(
     const Callback<void()>& native_viewport_closed_callback)
     : app_connection_(app_connection),
       next_connection_id_(1),
-      next_server_change_id_(1),
       root_view_manager_(app_connection,
                          this,
                          view_manager_delegate,
@@ -184,8 +177,7 @@ void RootNodeManager::ProcessNodeHierarchyChanged(const Node* node,
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
     i->second->ProcessNodeHierarchyChanged(
-        node, new_parent, old_parent, next_server_change_id_,
-        IsChangeSource(i->first));
+        node, new_parent, old_parent, IsChangeSource(i->first));
   }
 }
 
@@ -195,8 +187,7 @@ void RootNodeManager::ProcessNodeReorder(const Node* node,
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
     i->second->ProcessNodeReorder(
-        node, relative_node, direction, next_server_change_id_,
-        IsChangeSource(i->first));
+        node, relative_node, direction, IsChangeSource(i->first));
   }
 }
 
@@ -213,8 +204,7 @@ void RootNodeManager::ProcessNodeViewReplaced(const Node* node,
 void RootNodeManager::ProcessNodeDeleted(const NodeId& node) {
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
-    i->second->ProcessNodeDeleted(node, next_server_change_id_,
-                                  IsChangeSource(i->first));
+    i->second->ProcessNodeDeleted(node, IsChangeSource(i->first));
   }
 }
 
@@ -245,18 +235,7 @@ void RootNodeManager::PrepareForChange(ScopedChange* change) {
 void RootNodeManager::FinishChange() {
   // PrepareForChange/FinishChange should be balanced.
   CHECK(current_change_);
-  if (current_change_->change_type() == CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID)
-    next_server_change_id_++;
   current_change_ = NULL;
-}
-
-void RootNodeManager::SendServerChangeIdAdvanced() {
-  CHECK(current_change_);
-  for (ConnectionMap::iterator i = connection_map_.begin();
-       i != connection_map_.end(); ++i) {
-    if (!DidConnectionMessageClient(i->first))
-      i->second->client()->OnServerChangeIdAdvanced(next_server_change_id_ + 1);
-  }
 }
 
 ViewManagerServiceImpl* RootNodeManager::EmbedImpl(

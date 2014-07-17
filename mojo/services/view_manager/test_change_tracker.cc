@@ -39,11 +39,6 @@ std::string ChangeToDescription1(const Change& change) {
     case CHANGE_TYPE_ROOTS_ADDED:
       return "OnRootAdded";
 
-    case CHANGE_TYPE_SERVER_CHANGE_ID_ADVANCED:
-      return base::StringPrintf(
-          "ServerChangeIdAdvanced %d", static_cast<int>(change.change_id));
-
-
     case CHANGE_TYPE_NODE_BOUNDS_CHANGED:
       return base::StringPrintf(
           "BoundsChanged node=%s old_bounds=%s new_bounds=%s",
@@ -53,23 +48,20 @@ std::string ChangeToDescription1(const Change& change) {
 
     case CHANGE_TYPE_NODE_HIERARCHY_CHANGED:
       return base::StringPrintf(
-            "HierarchyChanged change_id=%d node=%s new_parent=%s old_parent=%s",
-            static_cast<int>(change.change_id),
+            "HierarchyChanged node=%s new_parent=%s old_parent=%s",
             NodeIdToString(change.node_id).c_str(),
             NodeIdToString(change.node_id2).c_str(),
             NodeIdToString(change.node_id3).c_str());
 
     case CHANGE_TYPE_NODE_REORDERED:
       return base::StringPrintf(
-          "Reordered change_id=%d node=%s relative=%s direction=%s",
-          static_cast<int>(change.change_id),
+          "Reordered node=%s relative=%s direction=%s",
           NodeIdToString(change.node_id).c_str(),
           NodeIdToString(change.node_id2).c_str(),
           DirectionToString(change.direction).c_str());
 
     case CHANGE_TYPE_NODE_DELETED:
-      return base::StringPrintf("NodeDeleted change_id=%d node=%s",
-                                static_cast<int>(change.change_id),
+      return base::StringPrintf("NodeDeleted node=%s",
                                 NodeIdToString(change.node_id).c_str());
 
     case CHANGE_TYPE_VIEW_DELETED:
@@ -125,7 +117,6 @@ void NodeDatasToTestNodes(const Array<NodeDataPtr>& data,
 Change::Change()
     : type(CHANGE_TYPE_CONNECTION_ESTABLISHED),
       connection_id(0),
-      change_id(0),
       node_id(0),
       node_id2(0),
       node_id3(0),
@@ -148,12 +139,10 @@ TestChangeTracker::~TestChangeTracker() {
 void TestChangeTracker::OnViewManagerConnectionEstablished(
     ConnectionSpecificId connection_id,
     const String& creator_url,
-    Id next_server_change_id,
     Array<NodeDataPtr> nodes) {
   Change change;
   change.type = CHANGE_TYPE_CONNECTION_ESTABLISHED;
   change.connection_id = connection_id;
-  change.change_id = next_server_change_id;
   change.creator_url = creator_url;
   NodeDatasToTestNodes(nodes, &change.nodes);
   AddChange(change);
@@ -163,13 +152,6 @@ void TestChangeTracker::OnRootAdded(Array<NodeDataPtr> nodes) {
   Change change;
   change.type = CHANGE_TYPE_ROOTS_ADDED;
   NodeDatasToTestNodes(nodes, &change.nodes);
-  AddChange(change);
-}
-
-void TestChangeTracker::OnServerChangeIdAdvanced(Id change_id) {
-  Change change;
-  change.type = CHANGE_TYPE_SERVER_CHANGE_ID_ADVANCED;
-  change.change_id = change_id;
   AddChange(change);
 }
 
@@ -187,36 +169,31 @@ void TestChangeTracker::OnNodeBoundsChanged(Id node_id,
 void TestChangeTracker::OnNodeHierarchyChanged(Id node_id,
                                                Id new_parent_id,
                                                Id old_parent_id,
-                                               Id server_change_id,
                                                Array<NodeDataPtr> nodes) {
   Change change;
   change.type = CHANGE_TYPE_NODE_HIERARCHY_CHANGED;
   change.node_id = node_id;
   change.node_id2 = new_parent_id;
   change.node_id3 = old_parent_id;
-  change.change_id = server_change_id;
   NodeDatasToTestNodes(nodes, &change.nodes);
   AddChange(change);
 }
 
 void TestChangeTracker::OnNodeReordered(Id node_id,
                                         Id relative_node_id,
-                                        OrderDirection direction,
-                                        Id server_change_id) {
+                                        OrderDirection direction) {
   Change change;
   change.type = CHANGE_TYPE_NODE_REORDERED;
   change.node_id = node_id;
   change.node_id2 = relative_node_id;
   change.direction = direction;
-  change.change_id = server_change_id;
   AddChange(change);
 }
 
-void TestChangeTracker::OnNodeDeleted(Id node_id, Id server_change_id) {
+void TestChangeTracker::OnNodeDeleted(Id node_id) {
   Change change;
   change.type = CHANGE_TYPE_NODE_DELETED;
   change.node_id = node_id;
-  change.change_id = server_change_id;
   AddChange(change);
 }
 

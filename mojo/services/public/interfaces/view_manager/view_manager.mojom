@@ -20,7 +20,6 @@ enum ErrorCode {
   NONE,
   VALUE_IN_USE,
   ILLEGAL_ARGUMENT,
-  UNEXPECTED_CHANGE_ID,
 };
 
 // ViewManagerInitService is responsible for launching the client that controls
@@ -30,12 +29,6 @@ interface ViewManagerInitService {
   EmbedRoot(string url) => (bool success);
 };
 
-// Functions that mutate the hierarchy take a change id. This is an ever
-// increasing integer used to identify the change. Every hierarchy change
-// increases this value. The server only accepts changes where the supplied
-// |server_change_id| matches the expected next value. This ensures changes are
-// made in a well defined order.
-//
 // Nodes and Views are identified by a uint32. The upper 16 bits are the
 // connection id, and the lower 16 the id assigned by the client.
 //
@@ -55,7 +48,7 @@ interface ViewManagerService {
   // Deletes a node. This does not recurse. No hierarchy change notifications
   // are sent as a result of this. Only the connection that created the node can
   // delete it.
-  DeleteNode(uint32 node_id, uint32 change_id) => (bool success);
+  DeleteNode(uint32 node_id) => (bool success);
 
   // Sets the specified bounds of the specified node.
   SetNodeBounds(uint32 node_id, mojo.Rect bounds) => (bool success);
@@ -65,30 +58,25 @@ interface ViewManagerService {
   // any of their roots.
   SetNodeVisibility(uint32 node_id, bool visible) => (bool success);
 
-  // Reparents a node. See description above class for details of |change_id|.
+  // Reparents a node.
   // This fails for any of the following reasons:
-  // . |server_change_id| is not the expected id.
   // . |parent| or |child| does not identify a valid node.
   // . |child| is an ancestor of |parent|.
   // . |child| is already a child of |parent|.
   //
   // This may result in a connection getting OnNodeDeleted(). See
   // RemoveNodeFromParent for details.
-  AddNode(uint32 parent,
-          uint32 child,
-          uint32 server_change_id) => (bool success);
+  AddNode(uint32 parent, uint32 child) => (bool success);
 
-  // Removes a view from its current parent. See description above class for
-  // details of |change_id|. This fails if the node is not valid,
-  // |server_change_id| doesn't match, or the node already has no parent.
+  // Removes a view from its current parent. This fails if the node is not
+  // valid, |server_change_id| doesn't match, or the node already has no parent.
   //
   // Removing a node from a parent may result in OnNodeDeleted() being sent to
   // other connections. For example, connection A has nodes 1 and 2, with 2 a
   // child of 1. Connection B has a root 1. If 2 is removed from 1 then B gets
   // OnNodeDeleted(). This is done as node 2 is effectively no longer visible to
   // connection B.
-  RemoveNodeFromParent(uint32 node_id,
-                       uint32 server_change_id) => (bool success);
+  RemoveNodeFromParent(uint32 node_id) => (bool success);
 
   // Reorders a node in its parent, relative to |relative_node_id| according to
   // |direction|.
@@ -96,8 +84,7 @@ interface ViewManagerService {
   // children.
   ReorderNode(uint32 node_id,
               uint32 relative_node_id,
-              OrderDirection direction,
-              uint32 server_change_id) => (bool success);
+              OrderDirection direction) => (bool success);
 
   // Returns the nodes comprising the tree starting at |node_id|. |node_id| is
   // the first result in the return value, unless |node_id| is invalid, in which
@@ -155,25 +142,15 @@ interface ViewManagerService {
 [Client=ViewManagerService]
 interface ViewManagerClient {
   // Invoked once the connection has been established. |connection_id| is the id
-  // that uniquely identifies this connection. |next_server_change_id| is the
-  // id of the next change the server is expecting. |nodes| are the nodes
-  // parented to the root.
+  // that uniquely identifies this connection. |nodes| are the nodes parented to
+  // the root.
   OnViewManagerConnectionEstablished(uint16 connection_id,
                                      string creator_url,
-                                     uint32 next_server_change_id,
                                      NodeData[] nodes);
 
   // See description of ViewManagerService::Embed() for details as to when
   // this is invoked.
   OnRootAdded(NodeData[] nodes);
-
-  // This is sent to clients when a change is made to the server that results
-  // in the |server_change_id| changing but the client isn't notified. This is
-  // not sent if the client receives a callback giving a new
-  // |server_change_id|. For example, if a client 1 changes the hierarchy in
-  // some way but client 2 isn't notified of the change, then client 2 gets
-  // OnServerChangeIdAdvanced().
-  OnServerChangeIdAdvanced(uint32 next_server_change_id);
 
   // Invoked when a node's bounds have changed.
   OnNodeBoundsChanged(uint32 node, mojo.Rect old_bounds, mojo.Rect new_bounds);
@@ -187,17 +164,15 @@ interface ViewManagerClient {
   OnNodeHierarchyChanged(uint32 node,
                          uint32 new_parent,
                          uint32 old_parent,
-                         uint32 server_change_id,
                          NodeData[] nodes);
 
   // Invoked when the order of nodes within a parent changes.
   OnNodeReordered(uint32 node_id,
                   uint32 relative_node_id,
-                  OrderDirection direction,
-                  uint32 server_change_id);                     
+                  OrderDirection direction);                     
 
   // Invoked when a node is deleted.
-  OnNodeDeleted(uint32 node, uint32 server_change_id);
+  OnNodeDeleted(uint32 node);
 
   // Invoked when the view associated with a node is replaced by another view.
   // 0 is used to identify a null view.

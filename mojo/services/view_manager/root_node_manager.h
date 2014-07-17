@@ -38,25 +38,16 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
     : public NodeDelegate,
       public aura::client::FocusChangeObserver {
  public:
-  // Used to indicate if the server id should be incremented after notifiying
-  // clients of the change.
-  enum ChangeType {
-    CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID,
-    CHANGE_TYPE_DONT_ADVANCE_SERVER_CHANGE_ID,
-  };
-
   // Create when a ViewManagerServiceImpl is about to make a change. Ensures
   // clients are notified of the correct change id.
   class ScopedChange {
    public:
     ScopedChange(ViewManagerServiceImpl* connection,
                  RootNodeManager* root,
-                 RootNodeManager::ChangeType change_type,
                  bool is_delete_node);
     ~ScopedChange();
 
     ConnectionSpecificId connection_id() const { return connection_id_; }
-    ChangeType change_type() const { return change_type_; }
     bool is_delete_node() const { return is_delete_node_; }
 
     // Marks the connection with the specified id as having seen a message.
@@ -69,14 +60,9 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
       return message_ids_.count(connection_id) > 0;
     }
 
-    // Sends OnServerChangeIdAdvanced() to all connections that have not yet
-    // been messaged.
-    void SendServerChangeIdAdvanced();
-
    private:
     RootNodeManager* root_;
     const ConnectionSpecificId connection_id_;
-    const ChangeType change_type_;
     const bool is_delete_node_;
 
     // See description of MarkConnectionAsMessaged/DidMessageConnection.
@@ -92,10 +78,6 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
 
   // Returns the id for the next ViewManagerServiceImpl.
   ConnectionSpecificId GetAndAdvanceNextConnectionId();
-
-  Id next_server_change_id() const {
-    return next_server_change_id_;
-  }
 
   void AddConnection(ViewManagerServiceImpl* connection);
   void RemoveConnection(ViewManagerServiceImpl* connection);
@@ -185,9 +167,6 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
   // Balances a call to PrepareForChange().
   void FinishChange();
 
-  // See description in ScopedChange.
-  void SendServerChangeIdAdvanced();
-
   // Returns true if the specified connection originated the current change.
   bool IsChangeSource(ConnectionSpecificId connection_id) const {
     return current_change_ && current_change_->connection_id() == connection_id;
@@ -218,8 +197,6 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
 
   // ID to use for next ViewManagerServiceImpl.
   ConnectionSpecificId next_connection_id_;
-
-  Id next_server_change_id_;
 
   // Set of ViewManagerServiceImpls.
   ConnectionMap connection_map_;

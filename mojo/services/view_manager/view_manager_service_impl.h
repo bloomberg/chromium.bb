@@ -84,20 +84,16 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   void ProcessNodeHierarchyChanged(const Node* node,
                                    const Node* new_parent,
                                    const Node* old_parent,
-                                   Id server_change_id,
                                    bool originated_change);
   void ProcessNodeReorder(const Node* node,
                           const Node* relative_node,
                           OrderDirection direction,
-                          Id server_change_id,
                           bool originated_change);
   void ProcessNodeViewReplaced(const Node* node,
                                const View* new_view,
                                const View* old_view,
                                bool originated_change);
-  void ProcessNodeDeleted(const NodeId& node,
-                          Id server_change_id,
-                          bool originated_change);
+  void ProcessNodeDeleted(const NodeId& node, bool originated_change);
   void ProcessViewDeleted(const ViewId& view, bool originated_change);
   void ProcessFocusChanged(const Node* focused_node,
                            const Node* blurred_node,
@@ -176,20 +172,16 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   virtual void CreateNode(Id transport_node_id,
                           const Callback<void(ErrorCode)>& callback) OVERRIDE;
   virtual void DeleteNode(Id transport_node_id,
-                          Id server_change_id,
                           const Callback<void(bool)>& callback) OVERRIDE;
   virtual void AddNode(Id parent_id,
                        Id child_id,
-                       Id server_change_id,
                        const Callback<void(bool)>& callback) OVERRIDE;
   virtual void RemoveNodeFromParent(
       Id node_id,
-      Id server_change_id,
       const Callback<void(bool)>& callback) OVERRIDE;
   virtual void ReorderNode(Id node_id,
                            Id relative_node_id,
                            OrderDirection direction,
-                           Id server_change_id,
                            const Callback<void(bool)>& callback) OVERRIDE;
   virtual void GetNodeTree(
       Id node_id,

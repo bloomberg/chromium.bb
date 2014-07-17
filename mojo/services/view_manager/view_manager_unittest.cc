@@ -117,19 +117,19 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
     RunMainLoop();
     return result;
   }
-  bool AddNode(Id parent, Id child, Id server_change_id) {
+  bool AddNode(Id parent, Id child) {
     changes_.clear();
     bool result = false;
-    view_manager_->AddNode(parent, child, server_change_id,
+    view_manager_->AddNode(parent, child,
                            base::Bind(&ViewManagerProxy::GotResult,
                                       base::Unretained(this), &result));
     RunMainLoop();
     return result;
   }
-  bool RemoveNodeFromParent(Id node_id, Id server_change_id) {
+  bool RemoveNodeFromParent(Id node_id) {
     changes_.clear();
     bool result = false;
-    view_manager_->RemoveNodeFromParent(node_id, server_change_id,
+    view_manager_->RemoveNodeFromParent(node_id,
         base::Bind(&ViewManagerProxy::GotResult,
                    base::Unretained(this), &result));
     RunMainLoop();
@@ -137,12 +137,10 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
   }
   bool ReorderNode(Id node_id,
                    Id relative_node_id,
-                   OrderDirection direction,
-                   Id server_change_id) {
+                   OrderDirection direction) {
     changes_.clear();
     bool result = false;
     view_manager_->ReorderNode(node_id, relative_node_id, direction,
-                               server_change_id,
                                base::Bind(&ViewManagerProxy::GotResult,
                                           base::Unretained(this), &result));
     RunMainLoop();
@@ -183,11 +181,10 @@ class ViewManagerProxy : public TestChangeTracker::Delegate {
     RunMainLoop();
     return result;
   }
-  bool DeleteNode(Id node_id, Id server_change_id) {
+  bool DeleteNode(Id node_id) {
     changes_.clear();
     bool result = false;
     view_manager_->DeleteNode(node_id,
-                              server_change_id,
                               base::Bind(&ViewManagerProxy::GotResult,
                                          base::Unretained(this), &result));
     RunMainLoop();
@@ -325,17 +322,12 @@ class TestViewManagerClientConnection
   virtual void OnViewManagerConnectionEstablished(
       ConnectionSpecificId connection_id,
       const String& creator_url,
-      Id next_server_change_id,
       Array<NodeDataPtr> nodes) OVERRIDE {
     tracker_.OnViewManagerConnectionEstablished(
-        connection_id, creator_url, next_server_change_id, nodes.Pass());
+        connection_id, creator_url, nodes.Pass());
   }
   virtual void OnRootAdded(Array<NodeDataPtr> nodes) OVERRIDE {
     tracker_.OnRootAdded(nodes.Pass());
-  }
-  virtual void OnServerChangeIdAdvanced(
-      Id next_server_change_id) OVERRIDE {
-    tracker_.OnServerChangeIdAdvanced(next_server_change_id);
   }
   virtual void OnNodeBoundsChanged(Id node_id,
                                    RectPtr old_bounds,
@@ -345,20 +337,16 @@ class TestViewManagerClientConnection
   virtual void OnNodeHierarchyChanged(Id node,
                                       Id new_parent,
                                       Id old_parent,
-                                      Id server_change_id,
                                       Array<NodeDataPtr> nodes) OVERRIDE {
-    tracker_.OnNodeHierarchyChanged(node, new_parent, old_parent,
-                                    server_change_id, nodes.Pass());
+    tracker_.OnNodeHierarchyChanged(node, new_parent, old_parent, nodes.Pass());
   }
   virtual void OnNodeReordered(Id node_id,
                                Id relative_node_id,
-                               OrderDirection direction,
-                               Id server_change_id) OVERRIDE {
-    tracker_.OnNodeReordered(node_id, relative_node_id, direction,
-                             server_change_id);
+                               OrderDirection direction) OVERRIDE {
+    tracker_.OnNodeReordered(node_id, relative_node_id, direction);
   }
-  virtual void OnNodeDeleted(Id node, Id server_change_id) OVERRIDE {
-    tracker_.OnNodeDeleted(node, server_change_id);
+  virtual void OnNodeDeleted(Id node) OVERRIDE {
+    tracker_.OnNodeDeleted(node);
   }
   virtual void OnViewDeleted(Id view) OVERRIDE {
     tracker_.OnViewDeleted(view);
@@ -539,9 +527,6 @@ TEST_F(ViewManagerTest, ValidId) {
   // All these tests assume 1 for the client id. The only real assertion here is
   // the client id is not zero, but adding this as rest of code here assumes 1.
   EXPECT_EQ(1, connection_->changes()[0].connection_id);
-
-  // Change ids start at 1 as well.
-  EXPECT_EQ(static_cast<Id>(1), connection_->changes()[0].change_id);
 }
 
 // Verifies two clients/connections get different ids.
@@ -554,9 +539,6 @@ TEST_F(ViewManagerTest, TwoClientsGetDifferentConnectionIds) {
   // tests are written assuming that is the case. The key thing is the
   // connection ids of |connection_| and |connection2_| differ.
   EXPECT_EQ(2, connection2_->changes()[0].connection_id);
-
-  // Change ids start at 1 as well.
-  EXPECT_EQ(static_cast<Id>(1), connection2_->changes()[0].change_id);
 }
 
 // Verifies client gets a valid id.
@@ -570,45 +552,14 @@ TEST_F(ViewManagerTest, CreateNode) {
   EXPECT_TRUE(connection_->changes().empty());
 
   // Can't create a node with a bogus connection id.
-  EXPECT_EQ(
-      ERROR_CODE_ILLEGAL_ARGUMENT,
-      connection_->CreateNodeWithErrorCode(BuildNodeId(2, 1)));
+  EXPECT_EQ(ERROR_CODE_ILLEGAL_ARGUMENT,
+            connection_->CreateNodeWithErrorCode(BuildNodeId(2, 1)));
   EXPECT_TRUE(connection_->changes().empty());
 }
 
 TEST_F(ViewManagerTest, CreateViewFailsWithBogusConnectionId) {
   EXPECT_FALSE(connection_->CreateView(BuildViewId(2, 1)));
   EXPECT_TRUE(connection_->changes().empty());
-}
-
-// Verifies hierarchy changes.
-TEST_F(ViewManagerTest, AddRemoveNotify) {
-  ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
-  ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 3)));
-
-  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
-
-  // Make 3 a child of 2.
-  {
-    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 2), BuildNodeId(1, 3), 2));
-    EXPECT_TRUE(connection_->changes().empty());
-
-    connection2_->DoRunLoopUntilChangesCount(1);
-    const Changes changes(ChangesToDescription1(connection2_->changes()));
-    ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("ServerChangeIdAdvanced 3", changes[0]);
-  }
-
-  // Remove 3 from its parent.
-  {
-    ASSERT_TRUE(connection_->RemoveNodeFromParent(BuildNodeId(1, 3), 3));
-    EXPECT_TRUE(connection_->changes().empty());
-
-    connection2_->DoRunLoopUntilChangesCount(1);
-    const Changes changes(ChangesToDescription1(connection2_->changes()));
-    ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("ServerChangeIdAdvanced 4", changes[0]);
-  }
 }
 
 // Verifies AddNode fails when node is already in position.
@@ -619,19 +570,10 @@ TEST_F(ViewManagerTest, AddNodeWithNoChange) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   // Make 3 a child of 2.
-  {
-    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 2), BuildNodeId(1, 3), 2));
-
-    connection2_->DoRunLoopUntilChangesCount(1);
-    const Changes changes(ChangesToDescription1(connection2_->changes()));
-    ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("ServerChangeIdAdvanced 3", changes[0]);
-  }
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 2), BuildNodeId(1, 3)));
 
   // Try again, this should fail.
-  {
-    EXPECT_FALSE(connection_->AddNode(BuildNodeId(1, 2), BuildNodeId(1, 3), 3));
-  }
+  EXPECT_FALSE(connection_->AddNode(BuildNodeId(1, 2), BuildNodeId(1, 3)));
 }
 
 // Verifies AddNode fails when node is already in position.
@@ -642,28 +584,10 @@ TEST_F(ViewManagerTest, AddAncestorFails) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   // Make 3 a child of 2.
-  {
-    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 2), BuildNodeId(1, 3), 2));
-    connection2_->DoRunLoopUntilChangesCount(1);
-    const Changes changes(ChangesToDescription1(connection2_->changes()));
-    ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("ServerChangeIdAdvanced 3", changes[0]);
-  }
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 2), BuildNodeId(1, 3)));
 
   // Try to make 2 a child of 3, this should fail since 2 is an ancestor of 3.
-  {
-    EXPECT_FALSE(connection_->AddNode(BuildNodeId(1, 3), BuildNodeId(1, 2), 3));
-  }
-}
-
-// Verifies adding with an invalid id fails.
-TEST_F(ViewManagerTest, AddWithInvalidServerId) {
-  // Create two nodes.
-  ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
-  ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
-
-  // Make 2 a child of 1. Supply an invalid change id, which should fail.
-  ASSERT_FALSE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2), 0));
+  EXPECT_FALSE(connection_->AddNode(BuildNodeId(1, 3), BuildNodeId(1, 2)));
 }
 
 // Verifies adding to root sends right notifications.
@@ -674,25 +598,17 @@ TEST_F(ViewManagerTest, AddToRoot) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   // Make 3 a child of 21.
-  {
-    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 21), BuildNodeId(1, 3), 2));
-
-    connection2_->DoRunLoopUntilChangesCount(1);
-    const Changes changes(ChangesToDescription1(connection2_->changes()));
-    ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("ServerChangeIdAdvanced 3", changes[0]);
-  }
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 21), BuildNodeId(1, 3)));
 
   // Make 21 a child of 1.
   {
-    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 21), 3));
+    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 21)));
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ(
-        "HierarchyChanged change_id=3 node=1,21 new_parent=1,1 old_parent=null",
-        changes[0]);
+    EXPECT_EQ("HierarchyChanged node=1,21 new_parent=1,1 old_parent=null",
+              changes[0]);
   }
 }
 
@@ -701,13 +617,13 @@ TEST_F(ViewManagerTest, NodeHierarchyChangedNodes) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 11)));
   // Make 11 a child of 2.
-  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 2), BuildNodeId(1, 11), 1));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 2), BuildNodeId(1, 11)));
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   // Make 2 a child of 1.
   {
-    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2), 3));
+    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2)));
 
     // Client 2 should get a hierarchy change that includes the new nodes as it
     // has not yet seen them.
@@ -715,8 +631,7 @@ TEST_F(ViewManagerTest, NodeHierarchyChangedNodes) {
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
     EXPECT_EQ(
-        "HierarchyChanged change_id=3 node=1,2 new_parent=1,1 old_parent=null",
-        changes[0]);
+        "HierarchyChanged node=1,2 new_parent=1,1 old_parent=null", changes[0]);
     EXPECT_EQ("[node=1,2 parent=1,1 view=null],"
               "[node=1,11 parent=1,2 view=null]",
               ChangeNodeDescription(connection2_->changes()));
@@ -724,58 +639,53 @@ TEST_F(ViewManagerTest, NodeHierarchyChangedNodes) {
 
   // Add 1 to the root.
   {
-    ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1), 4));
+    ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1)));
 
     // Client 2 should get a hierarchy change that includes the new nodes as it
     // has not yet seen them.
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ(
-        "HierarchyChanged change_id=4 node=1,1 new_parent=null old_parent=null",
-        changes[0]);
+    EXPECT_EQ("HierarchyChanged node=1,1 new_parent=null old_parent=null",
+              changes[0]);
     EXPECT_EQ(std::string(), ChangeNodeDescription(connection2_->changes()));
   }
 
   // Remove 1 from its parent.
   {
-    ASSERT_TRUE(connection_->RemoveNodeFromParent(BuildNodeId(1, 1), 5));
+    ASSERT_TRUE(connection_->RemoveNodeFromParent(BuildNodeId(1, 1)));
     EXPECT_TRUE(connection_->changes().empty());
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ(
-        "HierarchyChanged change_id=5 node=1,1 new_parent=null old_parent=null",
-        changes[0]);
+    EXPECT_EQ("HierarchyChanged node=1,1 new_parent=null old_parent=null",
+              changes[0]);
   }
 
   // Create another node, 111, parent it to 11.
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 111)));
   {
-    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 11), BuildNodeId(1, 111),
-                                     6));
+    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 11), BuildNodeId(1, 111)));
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ(
-        "HierarchyChanged change_id=6 node=1,111 new_parent=1,11 "
-        "old_parent=null", changes[0]);
+    EXPECT_EQ("HierarchyChanged node=1,111 new_parent=1,11 old_parent=null",
+              changes[0]);
     EXPECT_EQ("[node=1,111 parent=1,11 view=null]",
               ChangeNodeDescription(connection2_->changes()));
   }
 
   // Reattach 1 to the root.
   {
-    ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1), 7));
+    ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1)));
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ(
-        "HierarchyChanged change_id=7 node=1,1 new_parent=null old_parent=null",
-        changes[0]);
+    EXPECT_EQ("HierarchyChanged node=1,1 new_parent=null old_parent=null",
+              changes[0]);
     EXPECT_EQ(std::string(), ChangeNodeDescription(connection2_->changes()));
   }
 }
@@ -789,38 +699,35 @@ TEST_F(ViewManagerTest, NodeHierarchyChangedAddingKnownToUnknown) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 21)));
 
   // Set up the hierarchy.
-  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1), 1));
-  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 11), 2));
-  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 2), BuildNodeId(1, 21), 3));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1)));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 11)));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 2), BuildNodeId(1, 21)));
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
-  {
-    EXPECT_EQ("[node=1,1 parent=null view=null],"
-              "[node=1,11 parent=1,1 view=null]",
-              ChangeNodeDescription(connection2_->changes()));
-  }
+  EXPECT_EQ("[node=1,1 parent=null view=null],"
+            "[node=1,11 parent=1,1 view=null]",
+            ChangeNodeDescription(connection2_->changes()));
 
   // Remove 11, should result in a delete (since 11 is no longer in connection
   // 2's root).
   {
-    ASSERT_TRUE(connection_->RemoveNodeFromParent(BuildNodeId(1, 11), 5));
+    ASSERT_TRUE(connection_->RemoveNodeFromParent(BuildNodeId(1, 11)));
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("NodeDeleted change_id=5 node=1,11", changes[0]);
+    EXPECT_EQ("NodeDeleted node=1,11", changes[0]);
   }
 
   // Add 2 to 1.
   {
-    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2), 6));
+    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2)));
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ(
-        "HierarchyChanged change_id=6 node=1,2 new_parent=1,1 old_parent=null",
-        changes[0]);
+    EXPECT_EQ("HierarchyChanged node=1,2 new_parent=1,1 old_parent=null",
+              changes[0]);
     EXPECT_EQ("[node=1,2 parent=1,1 view=null],"
               "[node=1,21 parent=1,2 view=null]",
               ChangeNodeDescription(connection2_->changes()));
@@ -844,67 +751,55 @@ TEST_F(ViewManagerTest, ReorderNode) {
   ASSERT_TRUE(connection_->CreateNode(node6_id));
   ASSERT_TRUE(connection_->CreateNode(node7_id));
   ASSERT_TRUE(connection_->CreateNode(node8_id));
-  ASSERT_TRUE(connection_->AddNode(node1_id, node2_id, 1));
-  ASSERT_TRUE(connection_->AddNode(node2_id, node6_id, 2));
-  ASSERT_TRUE(connection_->AddNode(node1_id, node3_id, 3));
+  ASSERT_TRUE(connection_->AddNode(node1_id, node2_id));
+  ASSERT_TRUE(connection_->AddNode(node2_id, node6_id));
+  ASSERT_TRUE(connection_->AddNode(node1_id, node3_id));
   ASSERT_TRUE(connection_->AddNode(
-      NodeIdToTransportId(RootNodeId()), node4_id, 4));
+      NodeIdToTransportId(RootNodeId()), node4_id));
   ASSERT_TRUE(connection_->AddNode(
-      NodeIdToTransportId(RootNodeId()), node5_id, 5));
+      NodeIdToTransportId(RootNodeId()), node5_id));
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
 
   {
-    connection_->ReorderNode(node2_id, node3_id, ORDER_DIRECTION_ABOVE, 7);
+    connection_->ReorderNode(node2_id, node3_id, ORDER_DIRECTION_ABOVE);
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ(
-        "Reordered change_id=7 node=1,2 relative=1,3 direction=above",
-        changes[0]);
+    EXPECT_EQ("Reordered node=1,2 relative=1,3 direction=above",
+              changes[0]);
   }
 
   {
-    connection_->ReorderNode(node2_id, node3_id, ORDER_DIRECTION_BELOW, 8);
+    connection_->ReorderNode(node2_id, node3_id, ORDER_DIRECTION_BELOW);
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ(
-        "Reordered change_id=8 node=1,2 relative=1,3 direction=below",
-        changes[0]);
+    EXPECT_EQ("Reordered node=1,2 relative=1,3 direction=below",
+              changes[0]);
   }
 
-  {
-    // node2 is already below node3.
-    EXPECT_FALSE(
-        connection_->ReorderNode(node2_id, node3_id, ORDER_DIRECTION_BELOW, 9));
-  }
+  // node2 is already below node3.
+  EXPECT_FALSE(
+      connection_->ReorderNode(node2_id, node3_id, ORDER_DIRECTION_BELOW));
 
-  {
-    // node4 & 5 are unknown to connection2_.
-    EXPECT_FALSE(connection2_->ReorderNode(
-        node4_id, node5_id, ORDER_DIRECTION_ABOVE, 9));
-  }
+  // node4 & 5 are unknown to connection2_.
+  EXPECT_FALSE(connection2_->ReorderNode(
+                   node4_id, node5_id, ORDER_DIRECTION_ABOVE));
 
-  {
-    // node6 & node3 have different parents.
-    EXPECT_FALSE(
-        connection_->ReorderNode(node3_id, node6_id, ORDER_DIRECTION_ABOVE, 9));
-  }
+  // node6 & node3 have different parents.
+  EXPECT_FALSE(
+      connection_->ReorderNode(node3_id, node6_id, ORDER_DIRECTION_ABOVE));
 
-  {
-    // Non-existent node-ids
-    EXPECT_FALSE(connection_->ReorderNode(
-        BuildNodeId(1, 27), BuildNodeId(1, 28), ORDER_DIRECTION_ABOVE, 9));
-  }
+  // Non-existent node-ids
+  EXPECT_FALSE(connection_->ReorderNode(
+      BuildNodeId(1, 27), BuildNodeId(1, 28), ORDER_DIRECTION_ABOVE));
 
-  {
-    // node7 & node8 are un-parented.
-    EXPECT_FALSE(
-        connection_->ReorderNode(node7_id, node8_id, ORDER_DIRECTION_ABOVE, 9));
-  }
+  // node7 & node8 are un-parented.
+  EXPECT_FALSE(
+      connection_->ReorderNode(node7_id, node8_id, ORDER_DIRECTION_ABOVE));
 }
 
 // Verifies DeleteNode works.
@@ -915,30 +810,30 @@ TEST_F(ViewManagerTest, DeleteNode) {
 
   // Make 2 a child of 1.
   {
-    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2), 2));
+    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2)));
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("HierarchyChanged change_id=2 node=1,2 new_parent=1,1 "
-              "old_parent=null", changes[0]);
+    EXPECT_EQ("HierarchyChanged node=1,2 new_parent=1,1 old_parent=null",
+              changes[0]);
   }
 
   // Delete 2.
   {
-    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 2), 3));
+    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 2)));
     EXPECT_TRUE(connection_->changes().empty());
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("NodeDeleted change_id=3 node=1,2", changes[0]);
+    EXPECT_EQ("NodeDeleted node=1,2", changes[0]);
   }
 }
 
 // Verifies DeleteNode isn't allowed from a separate connection.
 TEST_F(ViewManagerTest, DeleteNodeFromAnotherConnectionDisallowed) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
-  EXPECT_FALSE(connection2_->DeleteNode(BuildNodeId(1, 1), 1));
+  EXPECT_FALSE(connection2_->DeleteNode(BuildNodeId(1, 1)));
 }
 
 // Verifies DeleteView isn't allowed from a separate connection.
@@ -956,37 +851,35 @@ TEST_F(ViewManagerTest, ReuseDeletedNodeId) {
 
   // Add 2 to 1.
   {
-    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2), 2));
+    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2)));
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
-    EXPECT_EQ(
-        "HierarchyChanged change_id=2 node=1,2 new_parent=1,1 old_parent=null",
-        changes[0]);
+    EXPECT_EQ("HierarchyChanged node=1,2 new_parent=1,1 old_parent=null",
+              changes[0]);
     EXPECT_EQ("[node=1,2 parent=1,1 view=null]",
               ChangeNodeDescription(connection2_->changes()));
   }
 
   // Delete 2.
   {
-    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 2), 3));
+    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 2)));
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("NodeDeleted change_id=3 node=1,2", changes[0]);
+    EXPECT_EQ("NodeDeleted node=1,2", changes[0]);
   }
 
   // Create 2 again, and add it back to 1. Should get the same notification.
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
   {
-    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2), 4));
+    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2)));
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
-    EXPECT_EQ(
-        "HierarchyChanged change_id=4 node=1,2 new_parent=1,1 old_parent=null",
-        changes[0]);
+    EXPECT_EQ("HierarchyChanged node=1,2 new_parent=1,1 old_parent=null",
+              changes[0]);
     EXPECT_EQ("[node=1,2 parent=1,1 view=null]",
               ChangeNodeDescription(connection2_->changes()));
   }
@@ -999,8 +892,8 @@ TEST_F(ViewManagerTest, SetView) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 3)));
   ASSERT_TRUE(connection_->CreateView(BuildViewId(1, 11)));
-  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2), 1));
-  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 3), 2));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2)));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 3)));
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
 
@@ -1044,17 +937,10 @@ TEST_F(ViewManagerTest, DeleteNodeWithView) {
 
   // Delete node 2. The second connection should not see this because the node
   // was not known to it.
-  {
-    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 2), 2));
-
-    connection2_->DoRunLoopUntilChangesCount(1);
-    const Changes changes(ChangesToDescription1(connection2_->changes()));
-    ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("ServerChangeIdAdvanced 3", changes[0]);
-  }
+  ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 2)));
 
   // Parent 3 to 1.
-  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 3), 3));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 3)));
   connection2_->DoRunLoopUntilChangesCount(1);
 
   // Set view 11 on node 3.
@@ -1069,12 +955,12 @@ TEST_F(ViewManagerTest, DeleteNodeWithView) {
 
   // Delete 3.
   {
-    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 3), 4));
+    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 3)));
 
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("NodeDeleted change_id=4 node=1,3", changes[0]);
+    EXPECT_EQ("NodeDeleted node=1,3", changes[0]);
   }
 }
 
@@ -1113,14 +999,14 @@ TEST_F(ViewManagerTest, GetNodeTree) {
 
   // Create 11 in first connection and make it a child of 1.
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 11)));
-  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1), 2));
-  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 11), 3));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1)));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 11)));
 
   // Create two nodes in second connection, 2 and 3, both children of 1.
   ASSERT_TRUE(connection2_->CreateNode(BuildNodeId(2, 2)));
   ASSERT_TRUE(connection2_->CreateNode(BuildNodeId(2, 3)));
-  ASSERT_TRUE(connection2_->AddNode(BuildNodeId(1, 1), BuildNodeId(2, 2), 4));
-  ASSERT_TRUE(connection2_->AddNode(BuildNodeId(1, 1), BuildNodeId(2, 3), 5));
+  ASSERT_TRUE(connection2_->AddNode(BuildNodeId(1, 1), BuildNodeId(2, 2)));
+  ASSERT_TRUE(connection2_->AddNode(BuildNodeId(1, 1), BuildNodeId(2, 3)));
 
   // Attach view to node 11 in the first connection.
   ASSERT_TRUE(connection_->CreateView(BuildViewId(1, 51)));
@@ -1159,7 +1045,7 @@ TEST_F(ViewManagerTest, GetNodeTree) {
 
 TEST_F(ViewManagerTest, SetNodeBounds) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
-  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1), 1));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1)));
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
 
@@ -1186,7 +1072,7 @@ TEST_F(ViewManagerTest, SetRoots) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 3)));
 
   // Parent 1 to the root.
-  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1), 1));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1)));
 
   // Establish the second connection with roots 1 and 3.
   {
@@ -1201,48 +1087,37 @@ TEST_F(ViewManagerTest, SetRoots) {
               ChangeNodeDescription(connection2_->changes()));
   }
 
-  // Create 4 and add it to the root, connection 2 should only get id advanced.
+  // Create 4 and add it to the root, connection 2 should not getting anything.
   {
     ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 4)));
-    ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 4), 4));
-
-    connection2_->DoRunLoopUntilChangesCount(1);
-    const Changes changes(ChangesToDescription1(connection2_->changes()));
-    ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("ServerChangeIdAdvanced 5", changes[0]);
+    ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 4)));
   }
 
   // Move 4 under 3, this should expose 4 to the client.
   {
-    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 3), BuildNodeId(1, 4), 5));
+    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 3), BuildNodeId(1, 4)));
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
     EXPECT_EQ(
-        "HierarchyChanged change_id=5 node=1,4 new_parent=1,3 "
-        "old_parent=null", changes[0]);
+        "HierarchyChanged node=1,4 new_parent=1,3 old_parent=null", changes[0]);
     EXPECT_EQ("[node=1,4 parent=1,3 view=null]",
               ChangeNodeDescription(connection2_->changes()));
   }
 
   // Move 4 under 2, since 2 isn't a root client should get a delete.
   {
-    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 2), BuildNodeId(1, 4), 6));
+    ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 2), BuildNodeId(1, 4)));
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("NodeDeleted change_id=6 node=1,4", changes[0]);
+    EXPECT_EQ("NodeDeleted node=1,4", changes[0]);
   }
 
   // Delete 4, client shouldn't receive a delete since it should no longer know
   // about 4.
   {
-    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 4), 7));
-
-    connection2_->DoRunLoopUntilChangesCount(1);
-    const Changes changes(ChangesToDescription1(connection2_->changes()));
-    ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("ServerChangeIdAdvanced 8", changes[0]);
+    ASSERT_TRUE(connection_->DeleteNode(BuildNodeId(1, 4)));
   }
 }
 
@@ -1256,11 +1131,11 @@ TEST_F(ViewManagerTest, CantMoveNodesFromOtherRoot) {
 
   // Try to move 2 to be a child of 1 from connection 2. This should fail as 2
   // should not be able to access 1.
-  ASSERT_FALSE(connection2_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2), 1));
+  ASSERT_FALSE(connection2_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2)));
 
   // Try to reparent 1 to the root. A connection is not allowed to reparent its
   // roots.
-  ASSERT_FALSE(connection2_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1), 1));
+  ASSERT_FALSE(connection2_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1)));
 }
 
 // Verify RemoveNodeFromParent fails for nodes that are descendants of the
@@ -1270,24 +1145,24 @@ TEST_F(ViewManagerTest, CantRemoveNodesInOtherRoots) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
 
-  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1), 1));
-  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 2), 2));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1)));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 2)));
 
   // Establish the second connection and give it the root 1.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
 
   // Connection 2 should not be able to remove node 2 or 1 from its parent.
-  ASSERT_FALSE(connection2_->RemoveNodeFromParent(BuildNodeId(1, 2), 4));
-  ASSERT_FALSE(connection2_->RemoveNodeFromParent(BuildNodeId(1, 1), 4));
+  ASSERT_FALSE(connection2_->RemoveNodeFromParent(BuildNodeId(1, 2)));
+  ASSERT_FALSE(connection2_->RemoveNodeFromParent(BuildNodeId(1, 1)));
 
   // Create nodes 10 and 11 in 2.
   ASSERT_TRUE(connection2_->CreateNode(BuildNodeId(2, 10)));
   ASSERT_TRUE(connection2_->CreateNode(BuildNodeId(2, 11)));
 
   // Parent 11 to 10.
-  ASSERT_TRUE(connection2_->AddNode(BuildNodeId(2, 10), BuildNodeId(2, 11), 4));
+  ASSERT_TRUE(connection2_->AddNode(BuildNodeId(2, 10), BuildNodeId(2, 11)));
   // Remove 11 from 10.
-  ASSERT_TRUE(connection2_->RemoveNodeFromParent( BuildNodeId(2, 11), 5));
+  ASSERT_TRUE(connection2_->RemoveNodeFromParent( BuildNodeId(2, 11)));
 
   // Verify nothing was actually removed.
   {
@@ -1306,8 +1181,8 @@ TEST_F(ViewManagerTest, CantRemoveSetViewInOtherRoots) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
 
-  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1), 1));
-  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 2), 2));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1)));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 2)));
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
 
@@ -1326,8 +1201,8 @@ TEST_F(ViewManagerTest, CantGetNodeTreeOfOtherRoots) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
 
-  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1), 1));
-  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 2), 2));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 1)));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(0, 1), BuildNodeId(1, 2)));
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
 
@@ -1351,15 +1226,13 @@ TEST_F(ViewManagerTest, ConnectTwice) {
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 1)));
   ASSERT_TRUE(connection_->CreateNode(BuildNodeId(1, 2)));
 
-  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2), 1));
+  ASSERT_TRUE(connection_->AddNode(BuildNodeId(1, 1), BuildNodeId(1, 2)));
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
 
   // Try to connect again to 1,1, this should fail as already connected to that
   // root.
-  {
-    ASSERT_FALSE(connection_->Embed(BuildNodeId(1, 1), kTestServiceURL));
-  }
+  ASSERT_FALSE(connection_->Embed(BuildNodeId(1, 1), kTestServiceURL));
 
   // Connecting to 1,2 should succeed and end up in connection2.
   {
@@ -1414,7 +1287,7 @@ TEST_F(ViewManagerTest, EmbedWithSameNodeId) {
     connection2_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection2_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("NodeDeleted change_id=2 node=1,1", changes[0]);
+    EXPECT_EQ("NodeDeleted node=1,1", changes[0]);
   }
 
   // Connection2 has no root. Verify it can't see node 1,1 anymore.
@@ -1448,21 +1321,16 @@ TEST_F(ViewManagerTest, EmbedWithSameNodeId2) {
 
   // Create a node in the third connection and parent it to the root.
   ASSERT_TRUE(connection3->CreateNode(BuildNodeId(3, 1)));
-  ASSERT_TRUE(connection3->AddNode(BuildNodeId(1, 1), BuildNodeId(3, 1), 3));
+  ASSERT_TRUE(connection3->AddNode(BuildNodeId(1, 1), BuildNodeId(3, 1)));
 
   // Connection 1 should have been told about the add (it owns the node).
   {
     connection_->DoRunLoopUntilChangesCount(1);
     const Changes changes(ChangesToDescription1(connection_->changes()));
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ(
-        "HierarchyChanged change_id=3 node=3,1 new_parent=1,1 old_parent=null",
-        changes[0]);
+    EXPECT_EQ("HierarchyChanged node=3,1 new_parent=1,1 old_parent=null",
+              changes[0]);
   }
-
-  // connection2_ should get an advance.
-  connection2_->DoRunLoopUntilChangesCount(1);
-  connection2_->ClearChanges();
 
   // Embed 1,1 back in connection 2.
   {
@@ -1478,7 +1346,7 @@ TEST_F(ViewManagerTest, EmbedWithSameNodeId2) {
     // And 3 should get a delete.
     connection3->DoRunLoopUntilChangesCount(1);
     ASSERT_EQ(1u, connection3->changes().size());
-    EXPECT_EQ("NodeDeleted change_id=4 node=1,1",
+    EXPECT_EQ("NodeDeleted node=1,1",
               ChangesToDescription1(connection3->changes())[0]);
   }
 
@@ -1510,7 +1378,7 @@ TEST_F(ViewManagerTest, EmbedWithSameNodeId2) {
 }
 
 // TODO(sky): add coverage of test that destroys connections and ensures other
-// connections get deletion notification (or advanced server id).
+// connections get deletion notification.
 
 // TODO(sky): need to better track changes to initial connection. For example,
 // that SetBounsdNodes/AddNode and the like don't result in messages to the

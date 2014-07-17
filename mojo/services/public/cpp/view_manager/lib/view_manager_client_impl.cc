@@ -133,10 +133,6 @@ class ViewManagerTransaction {
 
   ViewManagerService* service() { return client_->service_; }
 
-  Id GetAndAdvanceNextServerChangeId() {
-    return client_->next_server_change_id_++;
-  }
-
   // TODO(sky): nuke this and covert all to new one, then rename
   // ActionCompletedCallbackWithErrorCode to ActionCompletedCallback.
   base::Callback<void(bool)> ActionCompletedCallback() {
@@ -246,9 +242,7 @@ class DestroyNodeTransaction : public ViewManagerTransaction {
  private:
   // Overridden from ViewManagerTransaction:
   virtual void DoCommit() OVERRIDE {
-    service()->DeleteNode(node_id_,
-                          GetAndAdvanceNextServerChangeId(),
-                          ActionCompletedCallback());
+    service()->DeleteNode(node_id_, ActionCompletedCallback());
   }
   virtual void DoActionCompleted(bool success) OVERRIDE {
     // TODO(beng): recovery?
@@ -272,10 +266,7 @@ class AddChildTransaction : public ViewManagerTransaction {
  private:
   // Overridden from ViewManagerTransaction:
   virtual void DoCommit() OVERRIDE {
-    service()->AddNode(parent_id_,
-                       child_id_,
-                       GetAndAdvanceNextServerChangeId(),
-                       ActionCompletedCallback());
+    service()->AddNode(parent_id_, child_id_, ActionCompletedCallback());
   }
 
   virtual void DoActionCompleted(bool success) OVERRIDE {
@@ -299,10 +290,7 @@ class RemoveChildTransaction : public ViewManagerTransaction {
  private:
   // Overridden from ViewManagerTransaction:
   virtual void DoCommit() OVERRIDE {
-    service()->RemoveNodeFromParent(
-        child_id_,
-        GetAndAdvanceNextServerChangeId(),
-        ActionCompletedCallback());
+    service()->RemoveNodeFromParent(child_id_, ActionCompletedCallback());
   }
 
   virtual void DoActionCompleted(bool success) OVERRIDE {
@@ -333,7 +321,6 @@ class ReorderNodeTransaction : public ViewManagerTransaction {
     service()->ReorderNode(node_id_,
                            relative_id_,
                            direction_,
-                           GetAndAdvanceNextServerChangeId(),
                            ActionCompletedCallback());
   }
 
@@ -478,7 +465,6 @@ class EmbedTransaction : public ViewManagerTransaction {
  private:
   // Overridden from ViewManagerTransaction:
   virtual void DoCommit() OVERRIDE {
-    GetAndAdvanceNextServerChangeId();
     service()->Embed(url_, node_id_, ActionCompletedCallback());
   }
   virtual void DoActionCompleted(bool success) OVERRIDE {
@@ -542,7 +528,6 @@ ViewManagerClientImpl::ViewManagerClientImpl(ApplicationConnection* connection,
     : connected_(false),
       connection_id_(0),
       next_id_(1),
-      next_server_change_id_(0),
       delegate_(delegate),
       dispatcher_(NULL) {}
 
@@ -733,12 +718,10 @@ void ViewManagerClientImpl::OnConnectionEstablished() {
 void ViewManagerClientImpl::OnViewManagerConnectionEstablished(
     ConnectionSpecificId connection_id,
     const String& creator_url,
-    Id next_server_change_id,
     Array<NodeDataPtr> nodes) {
   connected_ = true;
   connection_id_ = connection_id;
   creator_url_ = TypeConverter<String, std::string>::ConvertFrom(creator_url);
-  next_server_change_id_ = next_server_change_id;
 
   DCHECK(pending_transactions_.empty());
   AddRoot(BuildNodeTree(this, nodes));
@@ -746,11 +729,6 @@ void ViewManagerClientImpl::OnViewManagerConnectionEstablished(
 
 void ViewManagerClientImpl::OnRootAdded(Array<NodeDataPtr> nodes) {
   AddRoot(BuildNodeTree(this, nodes));
-}
-
-void ViewManagerClientImpl::OnServerChangeIdAdvanced(
-    Id next_server_change_id) {
-  next_server_change_id_ = next_server_change_id;
 }
 
 void ViewManagerClientImpl::OnNodeBoundsChanged(Id node_id,
@@ -765,10 +743,7 @@ void ViewManagerClientImpl::OnNodeHierarchyChanged(
     Id node_id,
     Id new_parent_id,
     Id old_parent_id,
-    Id server_change_id,
     mojo::Array<NodeDataPtr> nodes) {
-  next_server_change_id_ = server_change_id + 1;
-
   BuildNodeTree(this, nodes);
 
   Node* new_parent = GetNodeById(new_parent_id);
@@ -782,20 +757,14 @@ void ViewManagerClientImpl::OnNodeHierarchyChanged(
 
 void ViewManagerClientImpl::OnNodeReordered(Id node_id,
                                             Id relative_node_id,
-                                            OrderDirection direction,
-                                            Id server_change_id) {
-  next_server_change_id_ = server_change_id + 1;
-
+                                            OrderDirection direction) {
   Node* node = GetNodeById(node_id);
   Node* relative_node = GetNodeById(relative_node_id);
-  if (node && relative_node) {
+  if (node && relative_node)
     NodePrivate(node).LocalReorder(relative_node, direction);
-  }
 }
 
-void ViewManagerClientImpl::OnNodeDeleted(Id node_id, Id server_change_id) {
-  next_server_change_id_ = server_change_id + 1;
-
+void ViewManagerClientImpl::OnNodeDeleted(Id node_id) {
   Node* node = GetNodeById(node_id);
   if (node)
     NodePrivate(node).LocalDestroy();
