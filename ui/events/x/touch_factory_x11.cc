@@ -174,6 +174,10 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
     return !touch_events_disabled_ && IsTouchDevice(xiev->deviceid);
   }
 #endif
+  // Make sure only key-events from the master device are processed.
+  if (event->evtype == XI_KeyPress || event->evtype == XI_KeyRelease)
+    return xiev->deviceid == xiev->sourceid;
+
   if (event->evtype != XI_ButtonPress &&
       event->evtype != XI_ButtonRelease &&
       event->evtype != XI_Motion)
