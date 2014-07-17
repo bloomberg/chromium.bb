@@ -14,6 +14,7 @@
 #include "chrome/test/chromedriver/chrome/log.h"
 
 struct Capabilities;
+class CommandListener;
 class DevToolsEventListener;
 class ListValue;
 class Status;
@@ -64,9 +65,11 @@ class WebDriverLog : public Log {
 // Initializes logging system for ChromeDriver. Returns true on success.
 bool InitLogging();
 
-// Creates Log's and DevToolsEventListener's based on logging preferences.
+// Creates |Log|s, |DevToolsEventListener|s, and |CommandListener|s based on
+// logging preferences.
 Status CreateLogs(const Capabilities& capabilities,
                   ScopedVector<WebDriverLog>* out_logs,
-                  ScopedVector<DevToolsEventListener>* out_listeners);
+                  ScopedVector<DevToolsEventListener>* out_devtools_listeners,
+                  ScopedVector<CommandListener>* out_command_listeners);
 
 #endif  // CHROME_TEST_CHROMEDRIVER_LOGGING_H_

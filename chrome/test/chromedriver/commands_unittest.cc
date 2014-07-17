@@ -18,6 +18,7 @@
 #include "chrome/test/chromedriver/chrome/stub_chrome.h"
 #include "chrome/test/chromedriver/chrome/stub_web_view.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
+#include "chrome/test/chromedriver/command_listener_proxy.h"
 #include "chrome/test/chromedriver/commands.h"
 #include "chrome/test/chromedriver/element_commands.h"
 #include "chrome/test/chromedriver/session.h"
@@ -545,4 +546,114 @@ TEST(CommandsTest, ErrorFindChildElement) {
       kStaleElementReference,
       ExecuteFindChildElements(
           1, &session, &web_view, element_id, params, &result).code());
+}
+
+namespace {
+
+class MockCommandListener : public CommandListener {
+ public:
+  MockCommandListener() : called_(false) {}
+  virtual ~MockCommandListener() {}
+
+  virtual Status BeforeCommand(const std::string& command_name) OVERRIDE {
+    called_ = true;
+    EXPECT_STREQ("cmd", command_name.c_str());
+    return Status(kOk);
+  }
+
+  void VerifyCalled() {
+    EXPECT_TRUE(called_);
+  }
+
+  void VerifyNotCalled() {
+    EXPECT_FALSE(called_);
+  }
+
+ private:
+  bool called_;
+};
+
+Status ExecuteAddListenerToSessionCommand(
+    CommandListener* listener,
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* return_value) {
+  session->command_listeners.push_back(listener);
+  return Status(kOk);
+}
+
+Status ExecuteQuitSessionCommand(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* return_value) {
+  session->quit = true;
+  return Status(kOk);
+}
+
+void OnSessionCommand(
+    base::RunLoop* run_loop,
+    const Status& status,
+    scoped_ptr<base::Value> value,
+    const std::string& session_id) {
+  ASSERT_EQ(kOk, status.code());
+  run_loop->Quit();
+}
+
+}  // namespace
+
+TEST(CommandsTest, SessionNotifiedOfCommand) {
+  SessionThreadMap map;
+  linked_ptr<base::Thread> thread(new base::Thread("1"));
+  ASSERT_TRUE(thread->Start());
+  std::string id("id");
+  thread->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&internal::CreateSessionOnSessionThreadForTesting, id));
+  map[id] = thread;
+
+  base::DictionaryValue params;
+  scoped_ptr<MockCommandListener> listener(new MockCommandListener());
+  CommandListenerProxy* proxy = new CommandListenerProxy(listener.get());
+  // We add |proxy| to the session instead of adding |listener| directly so that
+  // after the session is destroyed by ExecuteQuitSessionCommand, we can still
+  // verify the listener was called. The session owns and will destroy |proxy|.
+  SessionCommand cmd = base::Bind(
+      &ExecuteAddListenerToSessionCommand, proxy);
+  base::MessageLoop loop;
+  base::RunLoop run_loop_addlistener;
+
+  // |CommandListener|s are notified immediately before commands are run.
+  // Here, the command adds |listener| to the session, so |listener|
+  // should not be notified since it will not have been added yet.
+  ExecuteSessionCommand(
+      &map,
+      "cmd",
+      cmd,
+      false,
+      params,
+      id,
+      base::Bind(&OnSessionCommand,
+                 &run_loop_addlistener));
+  run_loop_addlistener.Run();
+
+  listener->VerifyNotCalled();
+
+  base::RunLoop run_loop_testlistener;
+  cmd = base::Bind(
+        &ExecuteQuitSessionCommand);
+
+  // |listener| was added to |session| by ExecuteAddListenerToSessionCommand
+  // and should be notified before the next command, ExecuteQuitSessionCommand.
+  ExecuteSessionCommand(
+      &map,
+      "cmd",
+      cmd,
+      false,
+      params,
+      id,
+      base::Bind(&OnSessionCommand,
+                 &run_loop_testlistener));
+  run_loop_testlistener.Run();
+
+  listener->VerifyCalled();
 }

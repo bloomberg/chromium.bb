@@ -14,8 +14,9 @@
 #include "base/time/time.h"
 #include "chrome/test/chromedriver/capabilities.h"
 #include "chrome/test/chromedriver/chrome/console_logger.h"
-#include "chrome/test/chromedriver/chrome/performance_logger.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/command_listener_proxy.h"
+#include "chrome/test/chromedriver/performance_logger.h"
 #include "chrome/test/chromedriver/session.h"
 
 #if defined(OS_POSIX)
@@ -239,9 +240,11 @@ bool InitLogging() {
 
 Status CreateLogs(const Capabilities& capabilities,
                   ScopedVector<WebDriverLog>* out_logs,
-                  ScopedVector<DevToolsEventListener>* out_listeners) {
+                  ScopedVector<DevToolsEventListener>* out_devtools_listeners,
+                  ScopedVector<CommandListener>* out_command_listeners) {
   ScopedVector<WebDriverLog> logs;
-  ScopedVector<DevToolsEventListener> listeners;
+  ScopedVector<DevToolsEventListener> devtools_listeners;
+  ScopedVector<CommandListener> command_listeners;
   Log::Level browser_log_level = Log::kWarning;
   const LoggingPrefs& prefs = capabilities.logging_prefs;
 
@@ -254,7 +257,13 @@ Status CreateLogs(const Capabilities& capabilities,
       if (level != Log::kOff) {
         WebDriverLog* log = new WebDriverLog(type, Log::kAll);
         logs.push_back(log);
-        listeners.push_back(new PerformanceLogger(log));
+        PerformanceLogger* perf_log = new PerformanceLogger(log);
+        // We use a proxy for |perf_log|'s |CommandListener| interface.
+        // session->chrome will own |perf_log|, and |session| will own |proxy|.
+        // session->command_listeners (the proxy) will be destroyed first.
+        CommandListenerProxy* proxy = new CommandListenerProxy(perf_log);
+        devtools_listeners.push_back(perf_log);
+        command_listeners.push_back(proxy);
       }
     } else if (type == WebDriverLog::kBrowserType) {
       browser_log_level = level;
@@ -271,9 +280,10 @@ Status CreateLogs(const Capabilities& capabilities,
   logs.push_back(browser_log);
   // If the level is OFF, don't even bother listening for DevTools events.
   if (browser_log_level != Log::kOff)
-    listeners.push_back(new ConsoleLogger(browser_log));
+    devtools_listeners.push_back(new ConsoleLogger(browser_log));
 
   out_logs->swap(logs);
-  out_listeners->swap(listeners);
+  out_devtools_listeners->swap(devtools_listeners);
+  out_command_listeners->swap(command_listeners);
   return Status(kOk);
 }

@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/chromedriver/chrome/performance_logger.h"
+#include "chrome/test/chromedriver/performance_logger.h"
 
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
@@ -61,5 +61,10 @@ Status PerformanceLogger::OnEvent(
   base::JSONWriter::Write(&log_message_dict, &log_message_json);
 
   log_->AddEntry(Log::kInfo, log_message_json);
+  return Status(kOk);
+}
+
+// TODO(johnmoore): Use BeforeCommand to implement tracing log.
+Status PerformanceLogger::BeforeCommand(const std::string& command_name) {
   return Status(kOk);
 }
