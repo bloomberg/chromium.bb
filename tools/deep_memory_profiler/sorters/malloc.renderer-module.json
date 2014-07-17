@@ -14,11 +14,11 @@
       "backtrace_function": ".* Sk[A-Z][A-Za-z0-9_]+::.*"
     },
     {
-      "name": "WebCore",
+      "name": "blink",
       "subs": [
-        [ "malloc", "WebCore" ]
+        [ "malloc", "blink" ]
       ],
-      "backtrace_function": ".*WebCore::.*"
+      "backtrace_function": ".*blink::.*"
     },
     {
       "name": "Blink-others",

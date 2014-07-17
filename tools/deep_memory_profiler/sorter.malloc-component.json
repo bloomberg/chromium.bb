@@ -42,7 +42,7 @@
   "rules": [
     {
       "name": "tc-webcore-fontcache",
-      "backtrace_function": ".*WebCore::FontCache::getCachedFontData.*"
+      "backtrace_function": ".*blink::FontCache::getCachedFontData.*"
     },
     {
       "name": "tc-skia",
@@ -50,144 +50,144 @@
     },
     {
       "name": "tc-renderstyle",
-      "backtrace_function": ".*WebCore::RenderStyle::create.*"
+      "backtrace_function": ".*blink::RenderStyle::create.*"
     },
     {
       "name": "tc-renderstyle",
-      "backtrace_function": ".*WebCore::RenderStyle::clone.*"
+      "backtrace_function": ".*blink::RenderStyle::clone.*"
     },
     {
       "name": "tc-webcore-sharedbuf",
-      "backtrace_function": ".*WebCore::SharedBuffer::create.*"
+      "backtrace_function": ".*blink::SharedBuffer::create.*"
     },
     {
       "name": "tc-webcore-sharedbuf",
-      "backtrace_function": ".*WebCore::SharedBuffer::buffer.*"
+      "backtrace_function": ".*blink::SharedBuffer::buffer.*"
     },
     {
       "name": "tc-webcore-sharedbuf",
-      "backtrace_function": ".*WebCore::SharedBuffer::append.*"
+      "backtrace_function": ".*blink::SharedBuffer::append.*"
     },
     {
       "name": "tc-webcore-XHRcreate",
-      "backtrace_function": ".*WebCore::XMLHttpRequest::create .*"
+      "backtrace_function": ".*blink::XMLHttpRequest::create .*"
     },
     {
       "name": "tc-webcore-XHRreceived",
-      "backtrace_function": ".*WebCore::XMLHttpRequest::didReceiveData.*"
+      "backtrace_function": ".*blink::XMLHttpRequest::didReceiveData.*"
     },
     {
       "name": "tc-webcore-docwriter-add",
-      "backtrace_function": ".*WebCore::DocumentWriter::addData.*"
+      "backtrace_function": ".*blink::DocumentWriter::addData.*"
     },
     {
       "name": "tc-webcore-node-and-doc",
-      "backtrace_function": ".*WebCore::HTML[a-zA-Z0-9_]*Element::create .*"
+      "backtrace_function": ".*blink::HTML[a-zA-Z0-9_]*Element::create .*"
     },
     {
       "name": "tc-webcore-node-and-doc",
-      "backtrace_function": ".*WebCore::Text::create .*"
+      "backtrace_function": ".*blink::Text::create .*"
     },
     {
       "name": "tc-webcore-node-and-doc",
-      "backtrace_function": ".*WebCore::Comment::create .*"
+      "backtrace_function": ".*blink::Comment::create .*"
     },
     {
       "name": "tc-webcore-node-and-doc",
-      "backtrace_function": ".*WebCore::HTMLDocument::create .*"
+      "backtrace_function": ".*blink::HTMLDocument::create .*"
     },
     {
       "name": "tc-webcore-node-and-doc",
-      "backtrace_function": ".*WebCore::CSSStyleRule::create .*"
+      "backtrace_function": ".*blink::CSSStyleRule::create .*"
     },
     {
       "name": "tc-webcore-node-and-doc",
-      "backtrace_function": ".*WebCore::Attribute::create .*"
+      "backtrace_function": ".*blink::Attribute::create .*"
     },
     {
       "name": "tc-webcore-node-and-doc",
-      "backtrace_function": ".*WebCore::DOMWindow::create .*"
+      "backtrace_function": ".*blink::DOMWindow::create .*"
     },
     {
       "name": "tc-webcore-node-factory",
-      "backtrace_function": ".*WebCore::HTML[a-zA-Z0-9_]*Factory::create[a-zA-Z0-9_]*Element.*"
+      "backtrace_function": ".*blink::HTML[a-zA-Z0-9_]*Factory::create[a-zA-Z0-9_]*Element.*"
     },
     {
       "name": "tc-webcore-element-wrapper",
-      "backtrace_function": ".*WebCore::createHTML[a-zA-Z0-9_]*ElementWrapper.*"
+      "backtrace_function": ".*blink::createHTML[a-zA-Z0-9_]*ElementWrapper.*"
     },
     {
       "name": "tc-webcore-stylepropertyset",
-      "backtrace_function": ".*WebCore::StylePropertySet::create .*"
+      "backtrace_function": ".*blink::StylePropertySet::create .*"
     },
     {
       "name": "tc-webcore-style-createsheet",
-      "backtrace_function": ".*WebCore::StyleElement::createSheet.*"
+      "backtrace_function": ".*blink::StyleElement::createSheet.*"
     },
     {
       "name": "tc-webcore-resource",
-      "backtrace_function": ".*WebCore::ResourceFetcher::requestResource .*"
+      "backtrace_function": ".*blink::ResourceFetcher::requestResource .*"
     },
     {
       "name": "tc-webcore-script-execute",
-      "backtrace_function": ".*WebCore::ScriptLoader::execute.*"
+      "backtrace_function": ".*blink::ScriptLoader::execute.*"
     },
     {
       "name": "tc-webcore-events-related",
-      "backtrace_function": ".*WebCore::createAttributeEventListener.*"
+      "backtrace_function": ".*blink::createAttributeEventListener.*"
     },
     {
       "name": "tc-webcore-events-related",
-      "backtrace_function": ".*WebCore::V8LazyEventListener::create.*"
+      "backtrace_function": ".*blink::V8LazyEventListener::create.*"
     },
     {
       "name": "tc-webcore-events-related",
-      "backtrace_function": ".*WebCore::V8EventListener::create.*"
+      "backtrace_function": ".*blink::V8EventListener::create.*"
     },
     {
       "name": "tc-webcore-events-related",
-      "backtrace_function": ".*WebCore::Event::create .*"
+      "backtrace_function": ".*blink::Event::create .*"
     },
     {
       "name": "tc-webcore-events-related",
-      "backtrace_function": ".*WebCore::EventListener::create .*"
+      "backtrace_function": ".*blink::EventListener::create .*"
     },
     {
       "name": "tc-webcore-document-write",
-      "backtrace_function": ".*WebCore::Document::write.*"
+      "backtrace_function": ".*blink::Document::write.*"
     },
     {
       "name": "tc-webcore-element-create-renderer",
-      "stacktrace": ".*WebCore::[a-zA-Z0-9_]*Element::createRenderer .*",
+      "stacktrace": ".*blink::[a-zA-Z0-9_]*Element::createRenderer .*",
       "allocator": "malloc"
     },
     {
       "name": "tc-webcore-render-catch-all",
-      "backtrace_function": ".*WebCore::RenderLayer.*"
+      "backtrace_function": ".*blink::RenderLayer.*"
     },
     {
       "name": "tc-webcore-render-catch-all",
-      "backtrace_function": ".*WebCore::RenderBlock.*"
+      "backtrace_function": ".*blink::RenderBlock.*"
     },
     {
       "name": "tc-webcore-render-catch-all",
-      "backtrace_function": ".*WebCore::RenderWidget.*"
+      "backtrace_function": ".*blink::RenderWidget.*"
     },
     {
       "name": "tc-webcore-render-catch-all",
-      "backtrace_function": ".*WebCore::RenderView.*"
+      "backtrace_function": ".*blink::RenderView.*"
     },
     {
       "name": "tc-webcore-render-catch-all",
-      "backtrace_function": ".*WebCore::RenderViewImpl.*"
+      "backtrace_function": ".*blink::RenderViewImpl.*"
     },
     {
       "name": "tc-webcore-render-catch-all",
-      "backtrace_function": ".*WebCore::RenderStyle.*"
+      "backtrace_function": ".*blink::RenderStyle.*"
     },
     {
       "name": "tc-webcore-render-catch-all",
-      "backtrace_function": ".*WebCore::RenderText.*"
+      "backtrace_function": ".*blink::RenderText.*"
     },
     {
       "name": "tc-webcore-render-catch-all",
@@ -195,7 +195,7 @@
     },
     {
       "name": "tc-webcore-setInnerHTML-except-node",
-      "backtrace_function": ".*WebCore::Element::setInnerHTML.*"
+      "backtrace_function": ".*blink::Element::setInnerHTML.*"
     },
     {
       "name": "tc-wtf-StringImpl-user-catch-all",
@@ -211,15 +211,15 @@
     },
     {
       "name": "tc-webcore-everything-create",
-      "backtrace_function": ".*WebCore::[a-zA-Z0-9_]*::create .*"
+      "backtrace_function": ".*blink::[a-zA-Z0-9_]*::create .*"
     },
     {
       "name": "tc-webkit-from-v8-catch-all",
-      "backtrace_function": ".*(WTF::|WebCore::|WebKit::).*v8::.*"
+      "backtrace_function": ".*(WTF::|blink::|WebKit::).*v8::.*"
     },
     {
       "name": "tc-webkit-catch-all",
-      "backtrace_function": ".*(WTF::|WebCore::|WebKit::).*"
+      "backtrace_function": ".*(WTF::|blink::|WebKit::).*"
     },
     {
       "name": "tc-v8-catch-all",

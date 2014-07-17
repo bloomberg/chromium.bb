@@ -11,7 +11,7 @@
     "mmap-gpu": ["vm", "gpu", {}],
     "mmap-skia": ["vm", "skia", {}],
     "mmap-tcmalloc": ["malloc", "renderer-module", {
-      "WebCore": ["malloc", "WebCore", {}]
+      "blink": ["malloc", "blink", {}]
     }]
   }],
   "linux.browser": ["vm", "base", {
@@ -33,7 +33,7 @@
     "mmap-gpu": ["vm", "gpu", {}],
     "mmap-skia": ["vm", "skia", {}],
     "mmap-tcmalloc": ["malloc", "renderer-module", {
-      "WebCore": ["malloc", "WebCore", {}]
+      "blink": ["malloc", "blink", {}]
     }]
   }],
   "android.webview": ["vm", "base", {
@@ -42,7 +42,7 @@
     "mmap-gpu": ["vm", "gpu", {}],
     "mmap-skia": ["vm", "skia", {}],
     "mmap-tcmalloc": ["malloc", "renderer-module", {
-      "WebCore": ["malloc", "WebCore", {}],
+      "blink": ["malloc", "blink", {}],
       "others": ["malloc", "browser-module", {}]
     }]
   }]

@@ -23,8 +23,8 @@
       "typeinfo": "(skia::|SkGlyph).*"
     },
     {
-      "name": "tc-WebCore-Style",
-      "typeinfo": "WebCore::Style.*"
+      "name": "tc-blink-Style",
+      "typeinfo": "blink::Style.*"
     },
     {
       "name": "tc-no-typeinfo-other",

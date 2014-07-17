@@ -19,7 +19,7 @@ DEFAULT_SORTERS = [
     os.path.join(BASE_PATH, 'sorters', 'malloc.browser-module.json'),
     os.path.join(BASE_PATH, 'sorters', 'malloc.renderer-module.json'),
     os.path.join(BASE_PATH, 'sorters', 'malloc.type.json'),
-    os.path.join(BASE_PATH, 'sorters', 'malloc.WebCore.json'),
+    os.path.join(BASE_PATH, 'sorters', 'malloc.blink.json'),
     os.path.join(BASE_PATH, 'sorters', 'vm.Android-specific.json'),
     os.path.join(BASE_PATH, 'sorters', 'vm.base.json'),
     os.path.join(BASE_PATH, 'sorters', 'vm.GPU.json'),
