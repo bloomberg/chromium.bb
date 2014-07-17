@@ -168,7 +168,7 @@ void SpeechSynthesis::handleSpeakingCompleted(SpeechSynthesisUtterance* utteranc
     fireEvent(errorOccurred ? EventTypeNames::error : EventTypeNames::end, utterance, 0, String());
 
     // Start the next utterance if we just finished one and one was pending.
-    if (didJustFinishCurrentUtterance && !m_utteranceQueue.isEmpty())
+    if (didJustFinishCurrentUtterance && !m_utteranceQueue.isEmpty() && !utterance->startTime())
         startSpeakingImmediately();
 }
 
