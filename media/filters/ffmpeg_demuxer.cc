@@ -278,8 +278,16 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
       buffer->set_decrypt_config(decrypt_config.Pass());
   }
 
-  buffer->set_duration(
-      ConvertStreamTimestamp(stream_->time_base, packet->duration));
+  if (packet->duration >= 0) {
+    buffer->set_duration(
+        ConvertStreamTimestamp(stream_->time_base, packet->duration));
+  } else {
+    // TODO(wolenetz): Remove when FFmpeg stops returning negative durations.
+    // https://crbug.com/394418
+    DVLOG(1) << "FFmpeg returned a buffer with a negative duration! "
+             << packet->duration;
+    buffer->set_duration(kNoTimestamp());
+  }
 
   // Note: If pts is AV_NOPTS_VALUE, stream_timestamp will be kNoTimestamp().
   const base::TimeDelta stream_timestamp =

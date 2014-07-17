@@ -717,6 +717,11 @@ bool SourceBufferStream::IsMonotonicallyIncreasing(
     base::TimeDelta current_timestamp = (*itr)->GetDecodeTimestamp();
     bool current_is_keyframe = (*itr)->IsKeyframe();
     DCHECK(current_timestamp != kNoTimestamp());
+    DCHECK((*itr)->duration() >= base::TimeDelta())
+        << "Packet with invalid duration."
+        << " pts " << (*itr)->timestamp().InSecondsF()
+        << " dts " << (*itr)->GetDecodeTimestamp().InSecondsF()
+        << " dur " << (*itr)->duration().InSecondsF();
 
     if (prev_timestamp != kNoTimestamp()) {
       if (current_timestamp < prev_timestamp) {

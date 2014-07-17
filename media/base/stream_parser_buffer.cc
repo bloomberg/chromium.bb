@@ -106,6 +106,11 @@ void StreamParserBuffer::SetConfigId(int config_id) {
 void StreamParserBuffer::ConvertToSpliceBuffer(
     const BufferQueue& pre_splice_buffers) {
   DCHECK(splice_buffers_.empty());
+  DCHECK(duration() > base::TimeDelta())
+      << "Only buffers with a valid duration can convert to a splice buffer."
+      << " pts " << timestamp().InSecondsF()
+      << " dts " << GetDecodeTimestamp().InSecondsF()
+      << " dur " << duration().InSecondsF();
   DCHECK(!end_of_stream());
 
   // Make a copy of this first, before making any changes.
@@ -139,6 +144,8 @@ void StreamParserBuffer::ConvertToSpliceBuffer(
 
   // The splice duration is the duration of all buffers before the splice plus
   // the highest ending timestamp after the splice point.
+  DCHECK(overlapping_buffer->duration() > base::TimeDelta());
+  DCHECK(pre_splice_buffers.back()->duration() > base::TimeDelta());
   set_duration(
       std::max(overlapping_buffer->timestamp() + overlapping_buffer->duration(),
                pre_splice_buffers.back()->timestamp() +
