@@ -66,9 +66,9 @@ void MTPReadFileWorker::ReadDataChunkFromDeviceFile(
 
   device::MediaTransferProtocolManager* mtp_device_manager =
       StorageMonitor::GetInstance()->media_transfer_protocol_manager();
-  mtp_device_manager->ReadFileChunkByPath(
+  mtp_device_manager->ReadFileChunkById(
       device_handle_,
-      snapshot_file_details_ptr->device_file_path(),
+      snapshot_file_details_ptr->file_id(),
       snapshot_file_details_ptr->bytes_written(),
       snapshot_file_details_ptr->BytesToRead(),
       base::Bind(&MTPReadFileWorker::OnDidReadDataChunkFromDeviceFile,

@@ -11,12 +11,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 SnapshotRequestInfo::SnapshotRequestInfo(
-    const std::string& device_file_path,
+    uint32 file_id,
     const base::FilePath& snapshot_file_path,
     const MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback&
         success_callback,
     const MTPDeviceAsyncDelegate::ErrorCallback& error_callback)
-    : device_file_path(device_file_path),
+    : file_id(file_id),
       snapshot_file_path(snapshot_file_path),
       success_callback(success_callback),
       error_callback(error_callback) {

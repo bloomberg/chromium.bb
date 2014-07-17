@@ -49,13 +49,13 @@ class MTPDeviceAsyncDelegate {
            int bytes_read)> ReadBytesSuccessCallback;
 
   struct ReadBytesRequest {
-    ReadBytesRequest(const std::string& device_file_relative_path,
+    ReadBytesRequest(uint32 file_id,
                      net::IOBuffer* buf, int64 offset, int buf_len,
                      const ReadBytesSuccessCallback& success_callback,
                      const ErrorCallback& error_callback);
     ~ReadBytesRequest();
 
-    std::string device_file_relative_path;
+    uint32 file_id;
     scoped_refptr<net::IOBuffer> buf;
     int64 offset;
     int buf_len;

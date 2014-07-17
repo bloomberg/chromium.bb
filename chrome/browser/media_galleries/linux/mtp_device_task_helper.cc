@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/media_galleries/linux/mtp_device_object_enumerator.h"
 #include "chrome/browser/media_galleries/linux/mtp_read_file_worker.h"
 #include "chrome/browser/media_galleries/linux/snapshot_file_details.h"
@@ -74,33 +75,33 @@ void MTPDeviceTaskHelper::OpenStorage(const std::string& storage_name,
                  callback));
 }
 
-void MTPDeviceTaskHelper::GetFileInfoByPath(
-    const std::string& file_path,
+void MTPDeviceTaskHelper::GetFileInfoById(
+    uint32 file_id,
     const GetFileInfoSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (device_handle_.empty())
     return HandleDeviceError(error_callback, base::File::FILE_ERROR_FAILED);
 
-  GetMediaTransferProtocolManager()->GetFileInfoByPath(
-      device_handle_, file_path,
+  GetMediaTransferProtocolManager()->GetFileInfoById(
+      device_handle_, file_id,
       base::Bind(&MTPDeviceTaskHelper::OnGetFileInfo,
                  weak_ptr_factory_.GetWeakPtr(),
                  success_callback,
                  error_callback));
 }
 
-void MTPDeviceTaskHelper::ReadDirectoryByPath(
-    const std::string& dir_path,
+void MTPDeviceTaskHelper::ReadDirectoryById(
+    uint32 dir_id,
     const ReadDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (device_handle_.empty())
     return HandleDeviceError(error_callback, base::File::FILE_ERROR_FAILED);
 
-  GetMediaTransferProtocolManager()->ReadDirectoryByPath(
-      device_handle_, dir_path,
-      base::Bind(&MTPDeviceTaskHelper::OnDidReadDirectoryByPath,
+  GetMediaTransferProtocolManager()->ReadDirectoryById(
+      device_handle_, dir_id,
+      base::Bind(&MTPDeviceTaskHelper::OnDidReadDirectoryById,
                  weak_ptr_factory_.GetWeakPtr(),
                  success_callback,
                  error_callback));
@@ -129,8 +130,8 @@ void MTPDeviceTaskHelper::ReadBytes(
                              base::File::FILE_ERROR_FAILED);
   }
 
-  GetMediaTransferProtocolManager()->GetFileInfoByPath(
-      device_handle_, request.device_file_relative_path,
+  GetMediaTransferProtocolManager()->GetFileInfoById(
+      device_handle_, request.file_id,
       base::Bind(&MTPDeviceTaskHelper::OnGetFileInfoToReadBytes,
                  weak_ptr_factory_.GetWeakPtr(), request));
 }
@@ -171,7 +172,7 @@ void MTPDeviceTaskHelper::OnGetFileInfo(
       base::Bind(success_callback, FileInfoFromMTPFileEntry(file_entry)));
 }
 
-void MTPDeviceTaskHelper::OnDidReadDirectoryByPath(
+void MTPDeviceTaskHelper::OnDidReadDirectoryById(
     const ReadDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback,
     const std::vector<MtpFileEntry>& file_entries,
@@ -186,6 +187,11 @@ void MTPDeviceTaskHelper::OnDidReadDirectoryByPath(
   while (!(current = file_enum.Next()).empty()) {
     fileapi::DirectoryEntry entry;
     entry.name = fileapi::VirtualPath::BaseName(current).value();
+    uint32 file_id = 0;
+    bool ret = file_enum.GetEntryId(&file_id);
+    DCHECK(ret);
+    entry.name.push_back(',');
+    entry.name += base::UintToString(file_id);
     entry.is_directory = file_enum.IsDirectory();
     entry.size = file_enum.Size();
     entry.last_modified_time = file_enum.LastModifiedTime();
@@ -202,7 +208,7 @@ void MTPDeviceTaskHelper::OnGetFileInfoToReadBytes(
     bool error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(request.buf);
-  DCHECK(request.buf_len >= 0);
+  DCHECK_GE(request.buf_len, 0);
   DCHECK_GE(request.offset, 0);
   if (error) {
     return HandleDeviceError(request.error_callback,
@@ -229,9 +235,9 @@ void MTPDeviceTaskHelper::OnGetFileInfoToReadBytes(
       base::checked_cast<uint32>(request.buf_len),
       base::saturated_cast<uint32>(file_info.size - request.offset));
 
-  GetMediaTransferProtocolManager()->ReadFileChunkByPath(
+  GetMediaTransferProtocolManager()->ReadFileChunkById(
       device_handle_,
-      request.device_file_relative_path,
+      request.file_id,
       base::checked_cast<uint32>(request.offset),
       bytes_to_read,
       base::Bind(&MTPDeviceTaskHelper::OnDidReadBytes,

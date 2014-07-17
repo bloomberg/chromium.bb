@@ -31,6 +31,8 @@ class MTPDeviceTaskHelper {
   typedef MTPDeviceAsyncDelegate::GetFileInfoSuccessCallback
       GetFileInfoSuccessCallback;
 
+  // NOTE: The file names in the entry list have their file id appended at the
+  // end. e.g. foo.jpg with file id 45 becomes foo.jpg,45.
   typedef base::Callback<void(const fileapi::AsyncFileUtil::EntryList&)>
       ReadDirectorySuccessCallback;
 
@@ -48,34 +50,36 @@ class MTPDeviceTaskHelper {
   void OpenStorage(const std::string& storage_name,
                    const OpenStorageCallback& callback);
 
-  // Dispatches the GetFileInfoByPath request to the
+  // Dispatches the GetFileInfoById request to the
   // MediaTransferProtocolManager.
   //
-  // |file_path| specifies the relative of the file whose details are requested.
+  // |file_id| specifies the id of the file whose details are requested.
   //
   // If the file details are fetched successfully, |success_callback| is invoked
   // on the IO thread to notify the caller about the file details.
   //
   // If there is an error, |error_callback| is invoked on the IO thread to
   // notify the caller about the file error.
-  void GetFileInfoByPath(
-      const std::string& file_path,
+  void GetFileInfoById(
+      uint32 file_id,
       const GetFileInfoSuccessCallback& success_callback,
       const ErrorCallback& error_callback);
 
   // Dispatches the read directory request to the MediaTransferProtocolManager.
   //
-  // |dir_path| specifies the directory file path.
+  // |dir_id| specifies the directory id.
   //
   // If the directory file entries are enumerated successfully,
   // |success_callback| is invoked on the IO thread to notify the caller about
-  // the directory file entries.
+  // the directory file entries. Please see the note in the
+  // ReadDirectorySuccessCallback typedef regarding the special treatment of
+  // file names.
   //
   // If there is an error, |error_callback| is invoked on the IO thread to
   // notify the caller about the file error.
-  void ReadDirectoryByPath(const std::string& dir_path,
-                           const ReadDirectorySuccessCallback& success_callback,
-                           const ErrorCallback& error_callback);
+  void ReadDirectoryById(uint32 dir_id,
+                         const ReadDirectorySuccessCallback& success_callback,
+                         const ErrorCallback& error_callback);
 
   // Forwards the WriteDataIntoSnapshotFile request to the MTPReadFileWorker
   // object.
@@ -122,7 +126,7 @@ class MTPDeviceTaskHelper {
                      const MtpFileEntry& file_entry,
                      bool error) const;
 
-  // Query callback for ReadDirectoryByPath().
+  // Query callback for ReadDirectoryById().
   //
   // If there is no error, |error| is set to false, |file_entries| has the
   // directory file entries and |success_callback| is invoked on the IO thread
@@ -130,7 +134,7 @@ class MTPDeviceTaskHelper {
   //
   // If there is an error, |error| is set to true, |file_entries| is empty
   // and |error_callback| is invoked on the IO thread to notify the caller.
-  void OnDidReadDirectoryByPath(
+  void OnDidReadDirectoryById(
       const ReadDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback,
       const std::vector<MtpFileEntry>& file_entries,

@@ -7,11 +7,10 @@
 #include "net/base/io_buffer.h"
 
 MTPDeviceAsyncDelegate::ReadBytesRequest::ReadBytesRequest(
-    const std::string& device_file_relative_path,
-    net::IOBuffer* buf, int64 offset, int buf_len,
+    uint32 file_id, net::IOBuffer* buf, int64 offset, int buf_len,
     const ReadBytesSuccessCallback& success_callback,
     const ErrorCallback& error_callback)
-    : device_file_relative_path(device_file_relative_path),
+    : file_id(file_id),
       buf(buf),
       offset(offset),
       buf_len(buf_len),

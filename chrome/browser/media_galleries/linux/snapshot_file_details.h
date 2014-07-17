@@ -16,15 +16,15 @@
 // Used to represent snapshot file request params.
 struct SnapshotRequestInfo {
   SnapshotRequestInfo(
-      const std::string& device_file_path,
+      uint32 file_id,
       const base::FilePath& snapshot_file_path,
       const MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback&
           success_callback,
       const MTPDeviceAsyncDelegate::ErrorCallback& error_callback);
   ~SnapshotRequestInfo();
 
-  // MTP device file path.
-  const std::string device_file_path;
+  // MTP device file id.
+  const uint32 file_id;
 
   // Local platform path of the snapshot file.
   const base::FilePath snapshot_file_path;
@@ -47,8 +47,8 @@ class SnapshotFileDetails {
 
   ~SnapshotFileDetails();
 
-  std::string device_file_path() const {
-    return request_info_.device_file_path;
+  uint32 file_id() const {
+    return request_info_.file_id;
   }
 
   base::FilePath snapshot_file_path() const {
