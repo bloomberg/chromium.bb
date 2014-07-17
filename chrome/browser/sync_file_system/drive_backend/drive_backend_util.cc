@@ -21,6 +21,11 @@
 namespace sync_file_system {
 namespace drive_backend {
 
+void PutVersionToBatch(int64 version, leveldb::WriteBatch* batch) {
+  if (batch)
+    batch->Put(kDatabaseVersionKey, base::Int64ToString(version));
+}
+
 void PutServiceMetadataToBatch(const ServiceMetadata& service_metadata,
                                leveldb::WriteBatch* batch) {
   if (!batch)

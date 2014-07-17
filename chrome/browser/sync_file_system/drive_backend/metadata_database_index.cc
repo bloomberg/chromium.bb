@@ -206,6 +206,8 @@ MetadataDatabaseIndex::Create(leveldb::DB* db, leveldb::WriteBatch* batch) {
 
   scoped_ptr<ServiceMetadata> service_metadata = InitializeServiceMetadata(db);
   DatabaseContents contents;
+
+  PutVersionToBatch(kCurrentDatabaseVersion, batch);
   ReadDatabaseContents(db, &contents);
   RemoveUnreachableItems(&contents,
                          service_metadata->sync_root_tracker_id(),

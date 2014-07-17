@@ -31,7 +31,9 @@ struct ParentIDAndTitle;
 // Maintains indexes of MetadataDatabase on disk.
 class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
  public:
-  explicit MetadataDatabaseIndexOnDisk(leveldb::DB* db);
+  static scoped_ptr<MetadataDatabaseIndexOnDisk>
+      Create(leveldb::DB* db, leveldb::WriteBatch* batch);
+
   virtual ~MetadataDatabaseIndexOnDisk();
 
   // MetadataDatabaseIndexInterface overrides.
@@ -83,6 +85,8 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
     SINGLE,    // One entry is found.
     MULTIPLE,  // Two or more entires are found.
   };
+
+  explicit MetadataDatabaseIndexOnDisk(leveldb::DB* db);
 
   // Maintain indexes from AppIDs to tracker IDs.
   void AddToAppIDIndex(const FileTracker& new_tracker,

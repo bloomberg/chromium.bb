@@ -36,7 +36,7 @@ class MetadataDatabaseIndexOnDiskTest : public testing::Test {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     InitializeLevelDB();
-    index_.reset(new MetadataDatabaseIndexOnDisk(db_.get()));
+    index_ = MetadataDatabaseIndexOnDisk::Create(db_.get(), NULL);
   }
 
   virtual void TearDown() OVERRIDE {

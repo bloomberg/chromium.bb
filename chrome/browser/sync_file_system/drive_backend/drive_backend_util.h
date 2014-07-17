@@ -30,6 +30,8 @@ class WriteBatch;
 namespace sync_file_system {
 namespace drive_backend {
 
+void PutVersionToBatch(int64 version, leveldb::WriteBatch* batch);
+
 void PutServiceMetadataToBatch(const ServiceMetadata& service_metadata,
                                leveldb::WriteBatch* batch);
 void PutFileMetadataToBatch(const FileMetadata& file,

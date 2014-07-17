@@ -142,12 +142,16 @@ std::string GenerateDemotedDirtyIDKey(int64 tracker_id) {
 
 }  // namespace
 
-MetadataDatabaseIndexOnDisk::MetadataDatabaseIndexOnDisk(leveldb::DB* db)
-    : db_(db) {
-  // TODO(peria): Add UMA to measure the number of FileMetadata, FileTracker,
-  //    and AppRootId.
-  // TODO(peria): If the DB version is 3, build up index lists.
-  // TODO(peria): Read service metadata from DB.
+// static
+scoped_ptr<MetadataDatabaseIndexOnDisk>
+MetadataDatabaseIndexOnDisk::Create(
+    leveldb::DB* db, leveldb::WriteBatch* batch) {
+  DCHECK(db);
+
+  PutVersionToBatch(kDatabaseOnDiskVersion, batch);
+  scoped_ptr<MetadataDatabaseIndexOnDisk>
+      index(new MetadataDatabaseIndexOnDisk(db));
+  return index.Pass();
 }
 
 MetadataDatabaseIndexOnDisk::~MetadataDatabaseIndexOnDisk() {}
@@ -550,6 +554,14 @@ MetadataDatabaseIndexOnDisk::GetAllMetadataIDs() const {
     file_ids.push_back(file_id);
   }
   return file_ids;
+}
+
+MetadataDatabaseIndexOnDisk::MetadataDatabaseIndexOnDisk(leveldb::DB* db)
+    : db_(db) {
+  // TODO(peria): Add UMA to measure the number of FileMetadata, FileTracker,
+  //    and AppRootId.
+  // TODO(peria): If the DB version is 3, build up index lists.
+  service_metadata_ = InitializeServiceMetadata(db_);
 }
 
 void MetadataDatabaseIndexOnDisk::AddToAppIDIndex(

@@ -284,15 +284,6 @@ SyncStatusCode MigrateDatabaseIfNeeded(leveldb::DB* db) {
   }
 }
 
-SyncStatusCode WriteVersionInfo(leveldb::DB* db) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(db);
-  return LevelDBStatusToSyncStatusCode(
-      db->Put(leveldb::WriteOptions(),
-              kDatabaseVersionKey,
-              base::Int64ToString(kCurrentDatabaseVersion)));
-}
-
 bool HasInvalidTitle(const std::string& title) {
   return title.empty() ||
       title.find('/') != std::string::npos ||
@@ -1479,11 +1470,7 @@ SyncStatusCode MetadataDatabase::InitializeOnFileTaskRunner() {
       return status;
   }
 
-  if (created) {
-    status = WriteVersionInfo(db_.get());
-    if (status != SYNC_STATUS_OK)
-      return status;
-  } else {
+  if (!created) {
     status = MigrateDatabaseIfNeeded(db_.get());
     if (status != SYNC_STATUS_OK)
       return status;

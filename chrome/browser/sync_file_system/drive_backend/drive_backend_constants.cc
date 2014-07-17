@@ -16,6 +16,7 @@ const base::FilePath::CharType kDatabaseName[] =
 
 const char kDatabaseVersionKey[] = "VERSION";
 const int64 kCurrentDatabaseVersion = 3;
+const int64 kDatabaseOnDiskVersion = 4;
 const char kServiceMetadataKey[] = "SERVICE";
 const char kFileMetadataKeyPrefix[] = "FILE: ";
 const char kFileTrackerKeyPrefix[] = "TRACKER: ";
