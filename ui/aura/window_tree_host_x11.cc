@@ -416,8 +416,7 @@ uint32_t WindowTreeHostX11::DispatchEvent(const ui::PlatformEvent& event) {
       break;
     }
     case FocusOut:
-      if (xev->xfocus.mode != NotifyGrab)
-        OnHostLostWindowCapture();
+      OnHostLostWindowCapture();
       break;
     case ConfigureNotify: {
       DCHECK_EQ(xwindow_, xev->xconfigure.event);

@@ -201,11 +201,6 @@ gfx::Point WindowEventDispatcher::GetLastMouseLocationInRoot() const {
   return location;
 }
 
-void WindowEventDispatcher::OnHostLostMouseGrab() {
-  mouse_pressed_handler_ = NULL;
-  mouse_moved_handler_ = NULL;
-}
-
 void WindowEventDispatcher::OnCursorMovedToRootLocation(
     const gfx::Point& root_location) {
   SetLastMouseLocation(window(), root_location);
