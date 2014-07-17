@@ -28,14 +28,15 @@ namespace {
 
 const char kShutdownErrorMessage[] =
     "The Service Worker system has shutdown.";
-const char kDomainMismatchErrorMessage[] =
-    "Scope and scripts do not have the same origin";
 
 const uint32 kFilteredMessageClasses[] = {
   ServiceWorkerMsgStart,
   EmbeddedWorkerMsgStart,
 };
 
+// TODO(dominicc): When crbug.com/362214 is fixed, make
+// Can(R|Unr)egisterServiceWorker also check that these are secure
+// origins to defend against compromised renderers.
 bool CanRegisterServiceWorker(const GURL& document_url,
                               const GURL& pattern,
                               const GURL& script_url) {
@@ -196,11 +197,7 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
 
   if (!CanRegisterServiceWorker(
       provider_host->document_url(), pattern, script_url)) {
-    Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
-        thread_id,
-        request_id,
-        WebServiceWorkerError::ErrorTypeSecurity,
-        base::ASCIIToUTF16(kDomainMismatchErrorMessage)));
+    BadMessageReceived();
     return;
   }
   GetContext()->RegisterServiceWorker(
@@ -244,11 +241,7 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
   }
 
   if (!CanUnregisterServiceWorker(provider_host->document_url(), pattern)) {
-    Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
-        thread_id,
-        request_id,
-        WebServiceWorkerError::ErrorTypeSecurity,
-        base::ASCIIToUTF16(kDomainMismatchErrorMessage)));
+    BadMessageReceived();
     return;
   }
 
