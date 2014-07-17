@@ -6,7 +6,6 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_PTR_INTERNAL_H_
 
 #include <assert.h>
-#include <stdio.h>
 
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/message_header_validator.h"
