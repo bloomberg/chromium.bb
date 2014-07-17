@@ -40,10 +40,10 @@ class BrowserRootView : public views::internal::RootView {
   virtual const char* GetClassName() const OVERRIDE;
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
 
-  // Overridden from internal::RootView:
-  virtual void DispatchGestureEvent(ui::GestureEvent* event) OVERRIDE;
-
  private:
+  // ui::EventProcessor:
+  virtual ui::EventDispatchDetails OnEventFromSource(ui::Event* event) OVERRIDE;
+
   // Returns true if the event should be forwarded to the tabstrip.
   bool ShouldForwardToTabStrip(const ui::DropTargetEvent& event);
 

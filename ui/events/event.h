@@ -184,6 +184,11 @@ class EVENTS_EXPORT Event {
     return type_ == ET_MOUSEWHEEL;
   }
 
+  // Convenience methods to cast |this| to a GestureEvent. IsGestureEvent()
+  // must be true as a precondition to calling these methods.
+  GestureEvent* AsGestureEvent();
+  const GestureEvent* AsGestureEvent() const;
+
   // Returns true if the event has a valid |native_event_|.
   bool HasNativeEvent() const;
 

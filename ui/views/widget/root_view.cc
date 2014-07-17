@@ -262,7 +262,7 @@ ui::EventDispatchDetails RootView::OnEventFromSource(ui::Event* event) {
   else if (event->IsTouchEvent())
     NOTREACHED() << "Touch events should not be sent to RootView.";
   else if (event->IsGestureEvent())
-    DispatchGestureEvent(static_cast<ui::GestureEvent*>(event));
+    DispatchGestureEvent(event->AsGestureEvent());
   else if (event->IsMouseEvent())
     NOTREACHED() << "Should not be called with a MouseEvent.";
   else
@@ -556,6 +556,65 @@ void RootView::UpdateParentLayer() {
 ////////////////////////////////////////////////////////////////////////////////
 // RootView, protected:
 
+void RootView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  widget_->ViewHierarchyChanged(details);
+
+  if (!details.is_add) {
+    if (!explicit_mouse_handler_ && mouse_pressed_handler_ == details.child)
+      mouse_pressed_handler_ = NULL;
+    if (mouse_move_handler_ == details.child)
+      mouse_move_handler_ = NULL;
+    if (gesture_handler_ == details.child)
+      gesture_handler_ = NULL;
+    if (scroll_gesture_handler_ == details.child)
+      scroll_gesture_handler_ = NULL;
+    if (event_dispatch_target_ == details.child)
+      event_dispatch_target_ = NULL;
+    if (old_dispatch_target_ == details.child)
+      old_dispatch_target_ = NULL;
+  }
+}
+
+void RootView::VisibilityChanged(View* /*starting_from*/, bool is_visible) {
+  if (!is_visible) {
+    // When the root view is being hidden (e.g. when widget is minimized)
+    // handlers are reset, so that after it is reshown, events are not captured
+    // by old handlers.
+    explicit_mouse_handler_ = false;
+    mouse_pressed_handler_ = NULL;
+    mouse_move_handler_ = NULL;
+    gesture_handler_ = NULL;
+    scroll_gesture_handler_ = NULL;
+    event_dispatch_target_ = NULL;
+    old_dispatch_target_ = NULL;
+  }
+}
+
+void RootView::OnPaint(gfx::Canvas* canvas) {
+  if (!layer() || !layer()->fills_bounds_opaquely())
+    canvas->DrawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
+
+  View::OnPaint(canvas);
+}
+
+gfx::Vector2d RootView::CalculateOffsetToAncestorWithLayer(
+    ui::Layer** layer_parent) {
+  gfx::Vector2d offset(View::CalculateOffsetToAncestorWithLayer(layer_parent));
+  if (!layer() && layer_parent)
+    *layer_parent = widget_->GetLayer();
+  return offset;
+}
+
+View::DragInfo* RootView::GetDragInfo() {
+  return &drag_info_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// RootView, private:
+
+// Input -----------------------------------------------------------------------
+
 void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
   if (gesture_handler_) {
     // |gesture_handler_| (or |scroll_gesture_handler_|) can be deleted during
@@ -691,65 +750,6 @@ void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
 
   gesture_handler_ = NULL;
 }
-
-void RootView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
-  widget_->ViewHierarchyChanged(details);
-
-  if (!details.is_add) {
-    if (!explicit_mouse_handler_ && mouse_pressed_handler_ == details.child)
-      mouse_pressed_handler_ = NULL;
-    if (mouse_move_handler_ == details.child)
-      mouse_move_handler_ = NULL;
-    if (gesture_handler_ == details.child)
-      gesture_handler_ = NULL;
-    if (scroll_gesture_handler_ == details.child)
-      scroll_gesture_handler_ = NULL;
-    if (event_dispatch_target_ == details.child)
-      event_dispatch_target_ = NULL;
-    if (old_dispatch_target_ == details.child)
-      old_dispatch_target_ = NULL;
-  }
-}
-
-void RootView::VisibilityChanged(View* /*starting_from*/, bool is_visible) {
-  if (!is_visible) {
-    // When the root view is being hidden (e.g. when widget is minimized)
-    // handlers are reset, so that after it is reshown, events are not captured
-    // by old handlers.
-    explicit_mouse_handler_ = false;
-    mouse_pressed_handler_ = NULL;
-    mouse_move_handler_ = NULL;
-    gesture_handler_ = NULL;
-    scroll_gesture_handler_ = NULL;
-    event_dispatch_target_ = NULL;
-    old_dispatch_target_ = NULL;
-  }
-}
-
-void RootView::OnPaint(gfx::Canvas* canvas) {
-  if (!layer() || !layer()->fills_bounds_opaquely())
-    canvas->DrawColor(SK_ColorBLACK, SkXfermode::kClear_Mode);
-
-  View::OnPaint(canvas);
-}
-
-gfx::Vector2d RootView::CalculateOffsetToAncestorWithLayer(
-    ui::Layer** layer_parent) {
-  gfx::Vector2d offset(View::CalculateOffsetToAncestorWithLayer(layer_parent));
-  if (!layer() && layer_parent)
-    *layer_parent = widget_->GetLayer();
-  return offset;
-}
-
-View::DragInfo* RootView::GetDragInfo() {
-  return &drag_info_;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// RootView, private:
-
-// Input -----------------------------------------------------------------------
 
 void RootView::UpdateCursor(const ui::MouseEvent& event) {
   if (!(event.flags() & ui::EF_IS_NON_CLIENT)) {

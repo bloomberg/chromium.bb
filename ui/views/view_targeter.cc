@@ -26,8 +26,7 @@ bool ViewTargeter::DoesIntersectRect(const View* target,
 gfx::RectF ViewTargeter::BoundsForEvent(const ui::LocatedEvent& event) const {
   gfx::RectF event_bounds(event.location_f(), gfx::SizeF(1, 1));
   if (event.IsGestureEvent()) {
-    const ui::GestureEvent& gesture =
-        static_cast<const ui::GestureEvent&>(event);
+    const ui::GestureEvent& gesture = *(event.AsGestureEvent());
     event_bounds = gesture.details().bounding_box_f();
   }
 

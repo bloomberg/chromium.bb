@@ -112,11 +112,6 @@ class VIEWS_EXPORT RootView : public View,
   virtual void UpdateParentLayer() OVERRIDE;
 
  protected:
-  // TODO(tdanderson): Remove RootView::DispatchGestureEvent() once
-  //                   its targeting and dispatch logic has been moved
-  //                   elsewhere. See crbug.com/348083.
-  virtual void DispatchGestureEvent(ui::GestureEvent* event);
-
   // Overridden from View:
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
@@ -132,6 +127,11 @@ class VIEWS_EXPORT RootView : public View,
   friend class ::views::test::WidgetTest;
 
   // Input ---------------------------------------------------------------------
+
+  // TODO(tdanderson): Remove RootView::DispatchGestureEvent() once
+  //                   its targeting and dispatch logic has been moved
+  //                   elsewhere. See crbug.com/348083.
+  void DispatchGestureEvent(ui::GestureEvent* event);
 
   // Update the cursor given a mouse event. This is called by non mouse_move
   // event handlers to honor the cursor desired by views located under the

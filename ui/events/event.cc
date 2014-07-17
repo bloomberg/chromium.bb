@@ -116,6 +116,16 @@ Event::~Event() {
     ReleaseCopiedNativeEvent(native_event_);
 }
 
+GestureEvent* Event::AsGestureEvent() {
+  CHECK(IsGestureEvent());
+  return static_cast<GestureEvent*>(this);
+}
+
+const GestureEvent* Event::AsGestureEvent() const {
+  CHECK(IsGestureEvent());
+  return static_cast<const GestureEvent*>(this);
+}
+
 bool Event::HasNativeEvent() const {
   base::NativeEvent null_event;
   std::memset(&null_event, 0, sizeof(null_event));

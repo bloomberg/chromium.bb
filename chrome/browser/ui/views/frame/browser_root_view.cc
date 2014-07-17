@@ -151,14 +151,17 @@ bool BrowserRootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   return RootView::OnMouseWheel(event);
 }
 
-void BrowserRootView::DispatchGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP &&
-      event->location().y() <= 0 &&
-      event->location().x() <= browser_view_->GetBounds().width()) {
-    TouchUMA::RecordGestureAction(TouchUMA::GESTURE_ROOTVIEWTOP_TAP);
+ui::EventDispatchDetails BrowserRootView::OnEventFromSource(ui::Event* event) {
+  if (event->IsGestureEvent()) {
+    ui::GestureEvent* gesture_event = event->AsGestureEvent();
+    if (gesture_event->type() == ui::ET_GESTURE_TAP &&
+        gesture_event->location().y() <= 0 &&
+        gesture_event->location().x() <= browser_view_->GetBounds().width()) {
+      TouchUMA::RecordGestureAction(TouchUMA::GESTURE_ROOTVIEWTOP_TAP);
+    }
   }
 
-  RootView::DispatchGestureEvent(event);
+  return RootView::OnEventFromSource(event);
 }
 
 bool BrowserRootView::ShouldForwardToTabStrip(
