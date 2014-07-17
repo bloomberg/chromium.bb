@@ -36,7 +36,6 @@ class NodeListBase(NodeBase):
     self.items = []
     if item_or_items is None:
       pass
-      self.items = []
     elif isinstance(item_or_items, list):
       for item in item_or_items:
         assert isinstance(item, self._list_item_type)
