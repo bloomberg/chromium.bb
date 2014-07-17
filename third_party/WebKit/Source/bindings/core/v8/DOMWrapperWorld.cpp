@@ -114,7 +114,6 @@ DOMWrapperWorld::~DOMWrapperWorld()
 
     map.remove(it);
     isolatedWorldCount--;
-    ASSERT(map.size() == isolatedWorldCount);
 }
 
 void DOMWrapperWorld::dispose()
@@ -145,8 +144,6 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(int worldId, in
     world = DOMWrapperWorld::create(worldId, extensionGroup);
     result.storedValue->value = world.get();
     isolatedWorldCount++;
-    ASSERT(map.size() == isolatedWorldCount);
-
     return world.release();
 }
 
