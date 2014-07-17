@@ -818,34 +818,57 @@ TEST_F(SearchProviderTest, ScoreNewerSearchesHigher) {
 }
 
 // An autocompleted multiword search should not be replaced by a different
-// autocompletion while the user is still typing a valid prefix.
+// autocompletion while the user is still typing a valid prefix unless the
+// user has typed the prefix as a query before.
 TEST_F(SearchProviderTest, DontReplacePreviousAutocompletion) {
   GURL term_url_a(AddSearchToHistory(default_t_url_,
-                                     ASCIIToUTF16("four searches aaa"), 2));
+                                     ASCIIToUTF16("four searches aaa"), 3));
   GURL term_url_b(AddSearchToHistory(default_t_url_,
                                      ASCIIToUTF16("four searches bbb"), 1));
+  GURL term_url_c(AddSearchToHistory(default_t_url_,
+                                     ASCIIToUTF16("four searches"), 1));
   profile_.BlockUntilHistoryProcessesPendingRequests();
 
   AutocompleteMatch wyt_match;
   ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("fo"),
                                                       &wyt_match));
-  ASSERT_EQ(3u, provider_->matches().size());
+  ASSERT_EQ(4u, provider_->matches().size());
   AutocompleteMatch term_match_a;
   EXPECT_TRUE(FindMatchWithDestination(term_url_a, &term_match_a));
   AutocompleteMatch term_match_b;
   EXPECT_TRUE(FindMatchWithDestination(term_url_b, &term_match_b));
+  AutocompleteMatch term_match_c;
+  EXPECT_TRUE(FindMatchWithDestination(term_url_c, &term_match_c));
   EXPECT_GT(term_match_a.relevance, wyt_match.relevance);
+  // We don't care about the relative order of b and c.
   EXPECT_GT(wyt_match.relevance, term_match_b.relevance);
+  EXPECT_GT(wyt_match.relevance, term_match_c.relevance);
   EXPECT_TRUE(term_match_a.allowed_to_be_default_match);
   EXPECT_TRUE(term_match_b.allowed_to_be_default_match);
+  EXPECT_TRUE(term_match_c.allowed_to_be_default_match);
   EXPECT_TRUE(wyt_match.allowed_to_be_default_match);
 
   ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("four se"),
                                                       &wyt_match));
+  ASSERT_EQ(4u, provider_->matches().size());
+  EXPECT_TRUE(FindMatchWithDestination(term_url_a, &term_match_a));
+  EXPECT_TRUE(FindMatchWithDestination(term_url_b, &term_match_b));
+  EXPECT_TRUE(FindMatchWithDestination(term_url_c, &term_match_c));
+  EXPECT_GT(term_match_a.relevance, wyt_match.relevance);
+  EXPECT_GT(wyt_match.relevance, term_match_b.relevance);
+  EXPECT_GT(wyt_match.relevance, term_match_c.relevance);
+  EXPECT_TRUE(term_match_a.allowed_to_be_default_match);
+  EXPECT_TRUE(term_match_b.allowed_to_be_default_match);
+  EXPECT_TRUE(term_match_c.allowed_to_be_default_match);
+  EXPECT_TRUE(wyt_match.allowed_to_be_default_match);
+
+  // For the exact previously-issued query, the what-you-typed match should win.
+  ASSERT_NO_FATAL_FAILURE(
+      QueryForInputAndSetWYTMatch(ASCIIToUTF16("four searches"), &wyt_match));
   ASSERT_EQ(3u, provider_->matches().size());
   EXPECT_TRUE(FindMatchWithDestination(term_url_a, &term_match_a));
   EXPECT_TRUE(FindMatchWithDestination(term_url_b, &term_match_b));
-  EXPECT_GT(term_match_a.relevance, wyt_match.relevance);
+  EXPECT_GT(wyt_match.relevance, term_match_a.relevance);
   EXPECT_GT(wyt_match.relevance, term_match_b.relevance);
   EXPECT_TRUE(term_match_a.allowed_to_be_default_match);
   EXPECT_TRUE(term_match_b.allowed_to_be_default_match);

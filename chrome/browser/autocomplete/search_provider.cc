@@ -894,6 +894,8 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
   AutocompleteClassifier* classifier =
       AutocompleteClassifierFactory::GetForProfile(profile_);
   SuggestResults scored_results;
+  // True if the user has asked this exact query previously.
+  bool found_what_you_typed_match = false;
   const bool prevent_search_history_inlining =
       OmniboxFieldTrial::SearchHistoryPreventInlining(
           input_.current_page_classification());
@@ -935,7 +937,15 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
     int relevance = CalculateRelevanceForHistory(
         i->time, is_keyword, !prevent_inline_autocomplete,
         prevent_search_history_inlining);
-    scored_results.push_back(SuggestResult(
+    // Add the match to |scored_results| by putting the what-you-typed match
+    // on the front and appending all other matches.  We want the what-you-
+    // typed match to always be first.
+    SuggestResults::iterator insertion_position = scored_results.end();
+    if (trimmed_suggestion == trimmed_input) {
+      found_what_you_typed_match = true;
+      insertion_position = scored_results.begin();
+    }
+    scored_results.insert(insertion_position, SuggestResult(
         trimmed_suggestion, AutocompleteMatchType::SEARCH_HISTORY,
         trimmed_suggestion, base::string16(), base::string16(),
         base::string16(), base::string16(), std::string(), std::string(),
@@ -943,11 +953,14 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
   }
 
   // History returns results sorted for us.  However, we may have docked some
-  // results' scores, so things are no longer in order.  Do a stable sort to get
+  // results' scores, so things are no longer in order.  While keeping the
+  // what-you-typed match at the front (if it exists), do a stable sort to get
   // things back in order without otherwise disturbing results with equal
   // scores, then force the scores to be unique, so that the order in which
   // they're shown is deterministic.
-  std::stable_sort(scored_results.begin(), scored_results.end(),
+  std::stable_sort(scored_results.begin() +
+                       (found_what_you_typed_match ? 1 : 0),
+                   scored_results.end(),
                    CompareScoredResults());
   int last_relevance = 0;
   for (SuggestResults::iterator i(scored_results.begin());
