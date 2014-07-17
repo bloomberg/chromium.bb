@@ -1027,6 +1027,11 @@ TEST_F(EventRewriterTest, TestRewriteDiamondKey) {
        {ui::VKEY_F15, ui::EF_NONE},
        {ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN}},
 
+      {KeyTestCase::TEST_VKEY,
+       ui::ET_KEY_RELEASED,
+       {ui::VKEY_F15, ui::EF_NONE},
+       {ui::VKEY_CONTROL, ui::EF_NONE}},
+
       // However, Mod2Mask should not be rewritten to CtrlMask when
       // --has-chromeos-diamond-key is not specified.
       {KeyTestCase::TEST_VKEY,
@@ -1060,6 +1065,21 @@ TEST_F(EventRewriterTest, TestRewriteDiamondKeyWithFlag) {
                 ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(
                 &rewriter, ui::VKEY_F15, ui::EF_NONE, ui::ET_KEY_PRESSED));
+  // Check that Control is applied to a subsequent key press.
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_A, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED));
+  // Release F15
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CONTROL, ui::EF_NONE, ui::ET_KEY_RELEASED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_F15, ui::EF_NONE, ui::ET_KEY_RELEASED));
+  // Check that Control is no longer applied to a subsequent key press.
+  EXPECT_EQ(
+      GetExpectedResultAsString(ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED));
 
   IntegerPrefMember diamond;
   diamond.Init(prefs::kLanguageRemapDiamondKeyTo, &prefs);
@@ -1069,6 +1089,11 @@ TEST_F(EventRewriterTest, TestRewriteDiamondKeyWithFlag) {
                 ui::VKEY_UNKNOWN, ui::EF_NONE, ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(
                 &rewriter, ui::VKEY_F15, ui::EF_NONE, ui::ET_KEY_PRESSED));
+  // Check that no modifier is applied to another key.
+  EXPECT_EQ(
+      GetExpectedResultAsString(ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED));
 
   diamond.SetValue(chromeos::input_method::kControlKey);
 
@@ -1076,6 +1101,21 @@ TEST_F(EventRewriterTest, TestRewriteDiamondKeyWithFlag) {
                 ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(
                 &rewriter, ui::VKEY_F15, ui::EF_NONE, ui::ET_KEY_PRESSED));
+  // Check that Control is applied to a subsequent key press.
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_A, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED));
+  // Release F15
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CONTROL, ui::EF_NONE, ui::ET_KEY_RELEASED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_F15, ui::EF_NONE, ui::ET_KEY_RELEASED));
+  // Check that Control is no longer applied to a subsequent key press.
+  EXPECT_EQ(
+      GetExpectedResultAsString(ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED));
 
   diamond.SetValue(chromeos::input_method::kAltKey);
 
@@ -1083,6 +1123,21 @@ TEST_F(EventRewriterTest, TestRewriteDiamondKeyWithFlag) {
                 ui::VKEY_MENU, ui::EF_ALT_DOWN, ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(
                 &rewriter, ui::VKEY_F15, ui::EF_NONE, ui::ET_KEY_PRESSED));
+  // Check that Alt is applied to a subsequent key press.
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_A, ui::EF_ALT_DOWN, ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED));
+  // Release F15
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_MENU, ui::EF_NONE, ui::ET_KEY_RELEASED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_F15, ui::EF_NONE, ui::ET_KEY_RELEASED));
+  // Check that Alt is no longer applied to a subsequent key press.
+  EXPECT_EQ(
+      GetExpectedResultAsString(ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED));
 
   diamond.SetValue(chromeos::input_method::kCapsLockKey);
 
@@ -1091,6 +1146,22 @@ TEST_F(EventRewriterTest, TestRewriteDiamondKeyWithFlag) {
                                       ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(
                 &rewriter, ui::VKEY_F15, ui::EF_NONE, ui::ET_KEY_PRESSED));
+  // Check that Caps is applied to a subsequent key press.
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_A,
+                                      ui::EF_CAPS_LOCK_DOWN | ui::EF_MOD3_DOWN,
+                                      ui::ET_KEY_PRESSED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED));
+  // Release F15
+  EXPECT_EQ(GetExpectedResultAsString(
+                ui::VKEY_CAPITAL, ui::EF_NONE, ui::ET_KEY_RELEASED),
+            GetRewrittenEventAsString(
+                &rewriter, ui::VKEY_F15, ui::EF_NONE, ui::ET_KEY_RELEASED));
+  // Check that Control is no longer applied to a subsequent key press.
+  EXPECT_EQ(
+      GetExpectedResultAsString(ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED),
+      GetRewrittenEventAsString(
+          &rewriter, ui::VKEY_A, ui::EF_NONE, ui::ET_KEY_PRESSED));
 
   *CommandLine::ForCurrentProcess() = original_cl;
 }

@@ -182,7 +182,8 @@ EventRewriter::EventRewriter(ash::StickyKeysController* sticky_keys_controller)
     : last_keyboard_device_id_(ui::ED_UNKNOWN_DEVICE),
       ime_keyboard_for_testing_(NULL),
       pref_service_for_testing_(NULL),
-      sticky_keys_controller_(sticky_keys_controller) {
+      sticky_keys_controller_(sticky_keys_controller),
+      current_diamond_key_modifier_flags_(ui::EF_NONE) {
 }
 
 EventRewriter::~EventRewriter() {
@@ -330,7 +331,7 @@ int EventRewriter::GetRemappedModifierMasks(const PrefService& pref_service,
                                             const ui::Event& event,
                                             int original_flags) const {
   int unmodified_flags = original_flags;
-  int rewritten_flags = 0;
+  int rewritten_flags = current_diamond_key_modifier_flags_;
   for (size_t i = 0; unmodified_flags && (i < arraysize(kModifierRemappings));
        ++i) {
     const ModifierRemapping* remapped_key = NULL;
@@ -624,11 +625,20 @@ void EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
       if (HasDiamondKey())
         remapped_key =
             GetRemappedKey(prefs::kLanguageRemapDiamondKeyTo, *pref_service);
-      // Default behavior is Ctrl key.
+      // Default behavior of F15 is Control, even if --has-chromeos-diamond-key
+      // is absent, according to unit test comments.
       if (!remapped_key) {
         DCHECK_EQ(ui::VKEY_CONTROL, kModifierRemappingCtrl->key_code);
         remapped_key = kModifierRemappingCtrl;
-        characteristic_flag = ui::EF_CONTROL_DOWN;
+      }
+      // F15 is not a modifier key, so we need to track its state directly.
+      if (key_event.type() == ui::ET_KEY_PRESSED) {
+        int remapped_flag = remapped_key->flag;
+        if (remapped_key->remap_to == input_method::kCapsLockKey)
+          remapped_flag |= ui::EF_CAPS_LOCK_DOWN;
+        current_diamond_key_modifier_flags_ = remapped_flag;
+      } else {
+        current_diamond_key_modifier_flags_ = ui::EF_NONE;
       }
       break;
     // On Chrome OS, XF86XK_Launch7 (F16) with Mod3Mask is sent when Caps Lock

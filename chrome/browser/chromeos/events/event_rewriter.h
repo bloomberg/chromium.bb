@@ -179,8 +179,15 @@ class EventRewriter : public ui::EventRewriter {
   const PrefService* pref_service_for_testing_;
 
   // The sticky keys controller is not owned here;
-  // at time of writing it is a singleton in ash::Shell>
+  // at time of writing it is a singleton in ash::Shell.
   ash::StickyKeysController* sticky_keys_controller_;
+
+  // The ChromeOS Diamond key arrives as F15. Since F15 is not a modifier,
+  // we need to track its pressed state explicitly, and apply the selected
+  // modifier flag to key and mouse presses that arrive while F15 is down.
+  // While the Diamond key is down, this holds the corresponding modifier
+  // ui::EventFlags; otherwise it is EF_NONE.
+  int current_diamond_key_modifier_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(EventRewriter);
 };
