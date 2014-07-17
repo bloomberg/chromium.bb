@@ -282,7 +282,9 @@ class OzonePlatformEgltest : public OzonePlatform {
 
   virtual void InitializeUI() OVERRIDE {
     device_manager_ = CreateDeviceManager();
-    surface_factory_ozone_.reset(new SurfaceFactoryEgltest(&eglplatform_shim_));
+    if (!surface_factory_ozone_)
+      surface_factory_ozone_.reset(
+          new SurfaceFactoryEgltest(&eglplatform_shim_));
     event_factory_ozone_.reset(
         new EventFactoryEvdev(NULL, device_manager_.get()));
     cursor_factory_ozone_.reset(new CursorFactoryOzone());
@@ -290,7 +292,9 @@ class OzonePlatformEgltest : public OzonePlatform {
   }
 
   virtual void InitializeGPU() OVERRIDE {
-    surface_factory_ozone_.reset(new SurfaceFactoryEgltest(&eglplatform_shim_));
+    if (!surface_factory_ozone_)
+      surface_factory_ozone_.reset(
+          new SurfaceFactoryEgltest(&eglplatform_shim_));
     gpu_platform_support_.reset(CreateStubGpuPlatformSupport());
   }
 

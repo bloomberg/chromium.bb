@@ -9,90 +9,80 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/event_factory_ozone.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
+#include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_delegate.h"
 
 namespace mojo {
 namespace services {
 
-bool override_redirect = false;
-
+// TODO(spang): Deduplicate with NativeViewportX11.. but there's a hack
+// in there that prevents this.
 class NativeViewportOzone : public NativeViewport,
-                            public ui::PlatformEventDispatcher {
+                            public ui::PlatformWindowDelegate {
  public:
-  NativeViewportOzone(NativeViewportDelegate* delegate)
-      : delegate_(delegate),
-        widget_(gfx::kNullAcceleratedWidget) {
-    ui::SurfaceFactoryOzone* surface_factory =
-        ui::SurfaceFactoryOzone::GetInstance();
-    widget_ = surface_factory->GetAcceleratedWidget();
-    // TODO(sky): need to enable this.
-    // ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
+  explicit NativeViewportOzone(NativeViewportDelegate* delegate)
+      : delegate_(delegate) {
+    ui::OzonePlatform::InitializeForUI();
   }
 
   virtual ~NativeViewportOzone() {
-    // TODO(sky): need to enable this.
-    // ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(
-    // this);
+    // Destroy the platform-window while |this| is still alive.
+    platform_window_.reset();
   }
 
  private:
   // Overridden from NativeViewport:
   virtual void Init(const gfx::Rect& bounds) OVERRIDE {
-    NOTIMPLEMENTED();
-    bounds_ = bounds;
-    delegate_->OnAcceleratedWidgetAvailable(widget_);
+    platform_window_ =
+        ui::OzonePlatform::GetInstance()->CreatePlatformWindow(this, bounds);
   }
 
-  virtual void Show() OVERRIDE {
-    NOTIMPLEMENTED();
-  }
+  virtual void Show() OVERRIDE { platform_window_->Show(); }
 
-  virtual void Hide() OVERRIDE {
-    NOTIMPLEMENTED();
-  }
+  virtual void Hide() OVERRIDE { platform_window_->Hide(); }
 
-  virtual void Close() OVERRIDE {
-    delegate_->OnDestroyed();
-  }
+  virtual void Close() OVERRIDE { platform_window_->Close(); }
 
   virtual gfx::Size GetSize() OVERRIDE {
-    return bounds_.size();
+    return platform_window_->GetBounds().size();
   }
 
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE {
-    bounds_ = bounds;
-    NOTIMPLEMENTED();
+    platform_window_->SetBounds(bounds);
   }
 
-  virtual void SetCapture() OVERRIDE {
-    NOTIMPLEMENTED();
+  virtual void SetCapture() OVERRIDE { platform_window_->SetCapture(); }
+
+  virtual void ReleaseCapture() OVERRIDE { platform_window_->ReleaseCapture(); }
+
+  // ui::PlatformWindowDelegate:
+  virtual void OnBoundsChanged(const gfx::Rect& new_bounds) OVERRIDE {
+    delegate_->OnBoundsChanged(new_bounds);
   }
 
-  virtual void ReleaseCapture() OVERRIDE {
-    NOTIMPLEMENTED();
-  }
+  virtual void OnDamageRect(const gfx::Rect& damaged_region) OVERRIDE {}
 
-  // ui::PlatformEventDispatcher:
-  virtual bool CanDispatchEvent(const ui::PlatformEvent& ne) OVERRIDE {
-    CHECK(ne);
-    ui::Event* event = static_cast<ui::Event*>(ne);
-    if (event->IsMouseEvent() || event->IsScrollEvent()) {
-      return ui::CursorFactoryOzone::GetInstance()->GetCursorWindow() ==
-          widget_;
-    }
-
-    return true;
-  }
-
-  virtual uint32_t DispatchEvent(const ui::PlatformEvent& ne) OVERRIDE {
-    ui::Event* event = static_cast<ui::Event*>(ne);
+  virtual void DispatchEvent(ui::Event* event) OVERRIDE {
     delegate_->OnEvent(event);
-    return ui::POST_DISPATCH_STOP_PROPAGATION;
   }
 
+  virtual void OnCloseRequest() OVERRIDE { platform_window_->Close(); }
+
+  virtual void OnClosed() OVERRIDE { delegate_->OnDestroyed(); }
+
+  virtual void OnWindowStateChanged(ui::PlatformWindowState state) OVERRIDE {}
+
+  virtual void OnLostCapture() OVERRIDE {}
+
+  virtual void OnAcceleratedWidgetAvailable(
+      gfx::AcceleratedWidget widget) OVERRIDE {
+    delegate_->OnAcceleratedWidgetAvailable(widget);
+  }
+
+  scoped_ptr<ui::PlatformWindow> platform_window_;
   NativeViewportDelegate* delegate_;
-  gfx::AcceleratedWidget widget_;
-  gfx::Rect bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewportOzone);
 };
