@@ -74,9 +74,6 @@ DecoderStream<StreamType>::~DecoderStream() {
   if (!reset_cb_.is_null())
     task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&reset_cb_));
 
-  if (decrypting_demuxer_stream_)
-    decrypting_demuxer_stream_->Stop();
-
   stream_ = NULL;
   decoder_.reset();
   decrypting_demuxer_stream_.reset();

@@ -74,7 +74,6 @@ void DecryptingDemuxerStream::Reset(const base::Closure& closure) {
   DVLOG(2) << __FUNCTION__ << " - state: " << state_;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ != kUninitialized) << state_;
-  DCHECK(state_ != kStopped) << state_;
   DCHECK(reset_cb_.is_null());
 
   reset_cb_ = BindToCurrentLoop(closure);
@@ -110,35 +109,6 @@ void DecryptingDemuxerStream::Reset(const base::Closure& closure) {
   DoReset();
 }
 
-void DecryptingDemuxerStream::Stop() {
-  DVLOG(2) << __FUNCTION__ << " - state: " << state_;
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(state_ != kUninitialized) << state_;
-
-  // Invalidate all weak pointers so that pending callbacks won't be fired into
-  // this object.
-  weak_factory_.InvalidateWeakPtrs();
-
-  // At this point the render thread is likely paused (in WebMediaPlayerImpl's
-  // Destroy()), so running |closure| can't wait for anything that requires the
-  // render thread to process messages to complete (such as PPAPI methods).
-  if (decryptor_) {
-    decryptor_->CancelDecrypt(GetDecryptorStreamType());
-    decryptor_ = NULL;
-  }
-  if (!set_decryptor_ready_cb_.is_null())
-    base::ResetAndReturn(&set_decryptor_ready_cb_).Run(DecryptorReadyCB());
-  if (!init_cb_.is_null())
-    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_ABORT);
-  if (!read_cb_.is_null())
-    base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
-  if (!reset_cb_.is_null())
-    base::ResetAndReturn(&reset_cb_).Run();
-  pending_buffer_to_decrypt_ = NULL;
-
-  state_ = kStopped;
-}
-
 AudioDecoderConfig DecryptingDemuxerStream::audio_decoder_config() {
   DCHECK(state_ != kUninitialized && state_ != kDecryptorRequested) << state_;
   CHECK_EQ(demuxer_stream_->type(), AUDIO);
@@ -170,6 +140,24 @@ VideoRotation DecryptingDemuxerStream::video_rotation() {
 
 DecryptingDemuxerStream::~DecryptingDemuxerStream() {
   DVLOG(2) << __FUNCTION__ << " : state_ = " << state_;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (state_ == kUninitialized)
+    return;
+
+  if (decryptor_) {
+    decryptor_->CancelDecrypt(GetDecryptorStreamType());
+    decryptor_ = NULL;
+  }
+  if (!set_decryptor_ready_cb_.is_null())
+    base::ResetAndReturn(&set_decryptor_ready_cb_).Run(DecryptorReadyCB());
+  if (!init_cb_.is_null())
+    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_ABORT);
+  if (!read_cb_.is_null())
+    base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
+  if (!reset_cb_.is_null())
+    base::ResetAndReturn(&reset_cb_).Run();
+  pending_buffer_to_decrypt_ = NULL;
 }
 
 void DecryptingDemuxerStream::SetDecryptor(Decryptor* decryptor) {

@@ -31,6 +31,8 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   DecryptingDemuxerStream(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const SetDecryptorReadyCB& set_decryptor_ready_cb);
+
+  // Cancels all pending operations immediately and fires all pending callbacks.
   virtual ~DecryptingDemuxerStream();
 
   void Initialize(DemuxerStream* stream,
@@ -41,13 +43,6 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   // operation to finish before satisfying |closure|. Sets the state to
   // kUninitialized if |this| hasn't been initialized, or to kIdle otherwise.
   void Reset(const base::Closure& closure);
-
-  // Cancels all pending operations immediately and fires all pending callbacks
-  // and sets the state to kStopped. Does NOT wait for any pending operations.
-  // Note: During the teardown process, media pipeline will be waiting on the
-  // render main thread. If a Decryptor depends on the render main thread
-  // (e.g. PpapiDecryptor), the pending DecryptCB would not be satisfied.
-  void Stop();
 
   // DemuxerStream implementation.
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
@@ -69,8 +64,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
     kIdle,
     kPendingDemuxerRead,
     kPendingDecrypt,
-    kWaitingForKey,
-    kStopped
+    kWaitingForKey
   };
 
   // Callback for DecryptorHost::RequestDecryptor().

@@ -128,16 +128,19 @@ class VideoDecoderSelectorTest : public ::testing::Test {
     NOTREACHED();
   }
 
-  // Fixture members.
-  scoped_ptr<VideoDecoderSelector> decoder_selector_;
+  // Declare |decoder_selector_| after |demuxer_stream_| and |decryptor_| since
+  // |demuxer_stream_| and |decryptor_| should outlive |decoder_selector_|.
   scoped_ptr<StrictMock<MockDemuxerStream> > demuxer_stream_;
+
   // Use NiceMock since we don't care about most of calls on the decryptor, e.g.
   // RegisterNewKeyCB().
   scoped_ptr<NiceMock<MockDecryptor> > decryptor_;
+
+  scoped_ptr<VideoDecoderSelector> decoder_selector_;
+
   StrictMock<MockVideoDecoder>* decoder_1_;
   StrictMock<MockVideoDecoder>* decoder_2_;
   ScopedVector<VideoDecoder> all_decoders_;
-
   scoped_ptr<VideoDecoder> selected_decoder_;
 
   base::MessageLoop message_loop_;
