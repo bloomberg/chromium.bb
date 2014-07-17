@@ -254,7 +254,7 @@ igdumd32.dll!*
 UNADDRESSABLE ACCESS
 name=http://code.google.com/p/drmemory/issues/detail?id=582 bizarre cl-generated read-beyond-TOS
 instruction=mov    0xfffffffc(%esp) -> %eax
-chrome.dll!WebCore::RenderStyle::resetBorder*
+chrome.dll!blink::RenderStyle::resetBorder*
 
 INVALID HEAP ARGUMENT
 name=http://crbug.com/101537, http://crbug.com/101717 (1)
@@ -524,9 +524,9 @@ system call NtGdiCreateCompatibleDC
 ...
 *!SkPaint::descriptorProc
 ...
-*!WebCore::RenderBlockFlow::layoutBlockFlow
-*!WebCore::RenderBlockFlow::layoutBlock
-*!WebCore::RenderBlock::layout
+*!blink::RenderBlockFlow::layoutBlockFlow
+*!blink::RenderBlockFlow::layoutBlock
+*!blink::RenderBlock::layout
 
 HANDLE LEAK
 name=https://code.google.com/p/drmemory/issues/detail?id=1545
@@ -558,9 +558,9 @@ UNADDRESSABLE ACCESS
 name=http://crbug.com/379204
 ...
 *!WTF::MessageQueue<>::waitForMessageWithTimeout
-*!WebCore::WorkerRunLoop::run
-*!WebCore::WorkerRunLoop::run
-*!WebCore::WorkerThread::workerThread
+*!blink::WorkerRunLoop::run
+*!blink::WorkerRunLoop::run
+*!blink::WorkerThread::workerThread
 *!WTF::threadEntryPoint
 
 GDI USAGE ERROR
