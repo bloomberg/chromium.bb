@@ -390,6 +390,8 @@ def _GetSVNRevisionFromGitHash(snapshot_hashcode):
     response = urllib2.urlopen(json_url)
   except urllib2.HTTPError as error:
     util.PrintAndFlush('HTTP Error %d' % error.getcode())
+  except urllib2.URLError as error:
+    util.PrintAndFlush('URL Error %s' % error.message)
     return None
   data = json.loads(response.read()[4:])
   if 'message' in data:
