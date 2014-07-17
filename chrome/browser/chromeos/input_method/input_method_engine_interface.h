@@ -231,10 +231,6 @@ class InputMethodEngineInterface : public IMEEngineHandlerInterface {
   // Returns true if this IME is active, false if not.
   virtual bool IsActive() const = 0;
 
-  // Inform the engine that a key event has been processed.
-  virtual void KeyEventDone(input_method::KeyEventHandle* key_data,
-                            bool handled) = 0;
-
   // Deletes |number_of_chars| unicode characters as the basis of |offset| from
   // the surrounding text. The |offset| is relative position based on current
   // caret.

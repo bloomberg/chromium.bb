@@ -90,10 +90,6 @@ bool MockInputMethodEngine::IsActive() const {
   return true;
 }
 
-void MockInputMethodEngine::KeyEventDone(input_method::KeyEventHandle* key_data,
-                                         bool handled) {
-}
-
 bool MockInputMethodEngine::DeleteSurroundingText(int context_id,
                                                   int offset,
                                                   size_t number_of_chars,

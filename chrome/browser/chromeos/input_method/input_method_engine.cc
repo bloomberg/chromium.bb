@@ -470,14 +470,6 @@ bool InputMethodEngine::IsActive() const {
   return active_;
 }
 
-void InputMethodEngine::KeyEventDone(input_method::KeyEventHandle* key_data,
-                                     bool handled) {
-  KeyEventDoneCallback* callback =
-      reinterpret_cast<KeyEventDoneCallback*>(key_data);
-  callback->Run(handled);
-  delete callback;
-}
-
 bool InputMethodEngine::DeleteSurroundingText(int context_id,
                                               int offset,
                                               size_t number_of_chars,

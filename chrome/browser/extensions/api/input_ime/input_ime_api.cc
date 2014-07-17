@@ -7,12 +7,15 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/input_ime.h"
 #include "chrome/common/extensions/api/input_ime/input_components_handler.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 
 #if defined(USE_X11)
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
@@ -80,13 +83,32 @@ static void DispatchEventToExtension(Profile* profile,
       ->DispatchEventToExtension(extension_id, event.Pass());
 }
 
+void CallbackKeyEventHandle(chromeos::input_method::KeyEventHandle* key_data,
+                            bool handled) {
+  base::Callback<void(bool consumed)>* callback =
+      reinterpret_cast<base::Callback<void(bool consumed)>*>(key_data);
+  callback->Run(handled);
+  delete callback;
+}
+
 }  // namespace
 
 namespace chromeos {
 class ImeObserver : public InputMethodEngineInterface::Observer {
  public:
   ImeObserver(Profile* profile, const std::string& extension_id)
-      : profile_(profile), extension_id_(extension_id) {}
+      : profile_(profile), extension_id_(extension_id), has_background_(false) {
+    extensions::ExtensionSystem* extension_system =
+        extensions::ExtensionSystem::Get(profile_);
+    ExtensionService* extension_service = extension_system->extension_service();
+    const extensions::Extension* extension =
+        extension_service->GetExtensionById(extension_id, false);
+    DCHECK(extension);
+    extensions::BackgroundInfo* info = static_cast<extensions::BackgroundInfo*>(
+        extension->GetManifestData("background"));
+    if (info)
+      has_background_ = info->has_background_page();
+  }
 
   virtual ~ImeObserver() {}
 
@@ -163,13 +185,10 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
 
     // If there is no listener for the event, no need to dispatch the event to
     // extension. Instead, releases the key event for default system behavior.
-    if (!HasKeyEventListener()) {
+    if (!ShouldForwardKeyEvent()) {
       // Continue processing the key event so that the physical keyboard can
       // still work.
-      base::Callback<void(bool consumed)>* callback =
-          reinterpret_cast<base::Callback<void(bool consumed)>*>(key_data);
-      callback->Run(false);
-      delete callback;
+      CallbackKeyEventHandle(key_data, false);
       return;
     }
 
@@ -281,14 +300,20 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
   }
 
  private:
-  bool HasKeyEventListener() const {
-    return extensions::EventRouter::Get(profile_)
+  // Returns true if the extension is ready to accept key event, otherwise
+  // returns false.
+  bool ShouldForwardKeyEvent() const {
+    // Need to check the background page first since the
+    // ExtensionHasEventListner returns true if the extension does not have a
+    // background page. See crbug.com/394682.
+    return has_background_ && extensions::EventRouter::Get(profile_)
         ->ExtensionHasEventListener(extension_id_,
                                     input_ime::OnKeyEvent::kEventName);
   }
 
   Profile* profile_;
   std::string extension_id_;
+  bool has_background_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeObserver);
 };
@@ -415,13 +440,7 @@ void InputImeEventRouter::OnKeyEventHandled(
   chromeos::input_method::KeyEventHandle* key_data = request->second.second;
   request_map_.erase(request);
 
-  InputMethodEngineInterface* engine = GetEngine(extension_id, engine_id);
-  if (!engine) {
-    LOG(ERROR) << "Engine does not exist: " << engine_id;
-    return;
-  }
-
-  engine->KeyEventDone(key_data, handled);
+  CallbackKeyEventHandle(key_data, handled);
 }
 
 std::string InputImeEventRouter::AddRequest(

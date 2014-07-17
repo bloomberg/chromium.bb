@@ -66,8 +66,6 @@ class MockInputMethodEngine : public InputMethodEngineInterface {
   virtual bool SetMenuItems(const std::vector<MenuItem>& items) OVERRIDE;
   virtual bool UpdateMenuItems(const std::vector<MenuItem>& items) OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
-  virtual void KeyEventDone(input_method::KeyEventHandle* key_data,
-                            bool handled) OVERRIDE;
   virtual bool DeleteSurroundingText(int context_id,
                                      int offset,
                                      size_t number_of_chars,
