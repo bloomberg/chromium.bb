@@ -44,8 +44,7 @@ gfx::Size ExtensionToolbarMenuView::GetPreferredSize() const {
 void ExtensionToolbarMenuView::Layout() {
   // All buttons are given the same width.
   gfx::Size sz = container_->GetPreferredSize();
-  container_->SetBounds(views::MenuItemView::label_start(),
-                        0,
-                        sz.width(),
-                        sz.height() + (kVerticalPadding / 2));
+  int height = sz.height() + kVerticalPadding / 2;
+  SetBounds(views::MenuItemView::label_start(), 0, sz.width(), height);
+  container_->SetBounds(0, 0, sz.width(), height);
 }
