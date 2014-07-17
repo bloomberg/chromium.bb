@@ -319,13 +319,20 @@ class TestRunner(base_test_runner.BaseTestRunner):
     """Returns the timeout in seconds for the given |test|."""
     annotations = self.test_pkg.GetTestAnnotations(test)
     if 'Manual' in annotations:
-      return 600 * 60
+      return 10 * 60 * 60
     if 'External' in annotations:
+      return 10 * 60
+    if 'EnormousTest' in annotations:
       return 10 * 60
     if 'LargeTest' in annotations or _PERF_TEST_ANNOTATION in annotations:
       return 5 * 60
     if 'MediumTest' in annotations:
       return 3 * 60
+    if 'SmallTest' in annotations:
+      return 1 * 60
+
+    logging.warn(("Test size not found in annotations for test '{0}', using " +
+                  "1 minute for timeout.").format(test))
     return 1 * 60
 
   def _RunTest(self, test, timeout):

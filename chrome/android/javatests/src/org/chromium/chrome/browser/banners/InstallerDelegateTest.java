@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.banners;
 import android.content.pm.PackageInfo;
 import android.os.HandlerThread;
 import android.test.mock.MockPackageManager;
+import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.test.util.Criteria;
@@ -115,6 +116,7 @@ public class InstallerDelegateTest extends ChromeShellTestBase
      * Tests what happens when the InstallerDelegate detects that the package has successfully
      * been installed.
      */
+    @SmallTest
     public void testInstallSuccessful() throws InterruptedException {
         mTestDelegate.setTimingForTests(1, 5000);
         startMonitoring();
@@ -130,6 +132,7 @@ public class InstallerDelegateTest extends ChromeShellTestBase
     /**
      * Tests what happens when the InstallerDelegate task is canceled.
      */
+    @SmallTest
     public void testInstallWaitUntilCancel() throws InterruptedException {
         mTestDelegate.setTimingForTests(1, 5000);
         startMonitoring();
@@ -145,6 +148,7 @@ public class InstallerDelegateTest extends ChromeShellTestBase
     /**
      * Tests what happens when the InstallerDelegate times out.
      */
+    @SmallTest
     public void testInstallTimeout() throws InterruptedException {
         mTestDelegate.setTimingForTests(1, 50);
         startMonitoring();
@@ -154,6 +158,7 @@ public class InstallerDelegateTest extends ChromeShellTestBase
     /**
      * Makes sure that the runnable isn't called until returning from start().
      */
+    @SmallTest
     public void testRunnableRaceCondition() throws InterruptedException {
         mPackageManager.isInstalled = true;
         mTestDelegate.setTimingForTests(1, 5000);
