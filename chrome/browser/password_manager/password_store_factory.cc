@@ -24,7 +24,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/password_store_win.h"
-#include "chrome/browser/webdata/password_web_data_service_win.h"
+#include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/password_manager/password_store_mac.h"
 #include "crypto/apple_keychain.h"

@@ -11,7 +11,6 @@
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
-#include "chrome/browser/webdata/logins_table.h"
 #include "chrome/browser/webdata/web_apps_table.h"
 #include "chrome/browser/webdata/web_intents_table.h"
 #include "components/autofill/core/browser/autofill_country.h"
@@ -19,6 +18,7 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/password_manager/core/browser/webdata/logins_table.h"
 #include "components/search_engines/keyword_table.h"
 #include "components/search_engines/keyword_web_data_service.h"
 #include "components/signin/core/browser/webdata/token_service_table.h"
@@ -29,7 +29,7 @@
 #include "grit/generated_resources.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/webdata/password_web_data_service_win.h"
+#include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 #endif
 
 using autofill::AutofillWebDataService;
@@ -125,6 +125,7 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
 #if defined(OS_WIN)
   password_web_data_ = new PasswordWebDataService(
       web_database_,
+      ui_thread,
       base::Bind(&ProfileErrorCallback, PROFILE_ERROR_DB_WEB_DATA));
   password_web_data_->Init();
 #endif

@@ -2,22 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/webdata/password_web_data_service_win.h"
+#include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 
 #include "base/bind.h"
-#include "chrome/browser/webdata/logins_table.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "components/os_crypt/ie7_password_win.h"
+#include "components/password_manager/core/browser/webdata/logins_table.h"
 #include "components/webdata/common/web_database_service.h"
-#include "content/public/browser/browser_thread.h"
 
 PasswordWebDataService::PasswordWebDataService(
     scoped_refptr<WebDatabaseService> wdbs,
+    scoped_refptr<base::MessageLoopProxy> ui_thread,
     const ProfileErrorCallback& callback)
-    : WebDataServiceBase(
-          wdbs,
-          callback,
-          content::BrowserThread::GetMessageLoopProxyForThread(
-              content::BrowserThread::UI)) {
+    : WebDataServiceBase(wdbs, callback, ui_thread) {
 }
 
 void PasswordWebDataService::AddIE7Login(const IE7PasswordInfo& info) {
@@ -66,12 +63,9 @@ scoped_ptr<WDTypedResult> PasswordWebDataService::GetIE7LoginImpl(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-PasswordWebDataService::PasswordWebDataService()
-    : WebDataServiceBase(
-          NULL,
-          ProfileErrorCallback(),
-          content::BrowserThread::GetMessageLoopProxyForThread(
-              content::BrowserThread::UI)) {
+PasswordWebDataService::PasswordWebDataService(
+    scoped_refptr<base::MessageLoopProxy> ui_thread)
+    : WebDataServiceBase(NULL, ProfileErrorCallback(), ui_thread) {
 }
 
 PasswordWebDataService::~PasswordWebDataService() {

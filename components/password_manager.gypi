@@ -60,6 +60,11 @@
         'password_manager/core/browser/password_store_sync.h',
         'password_manager/core/browser/psl_matching_helper.cc',
         'password_manager/core/browser/psl_matching_helper.h',
+        'password_manager/core/browser/webdata/logins_table.cc',
+        'password_manager/core/browser/webdata/logins_table.h',
+        'password_manager/core/browser/webdata/logins_table_win.cc',
+        'password_manager/core/browser/webdata/password_web_data_service_win.cc',
+        'password_manager/core/browser/webdata/password_web_data_service_win.h',
       ],
       'variables': {
         'conditions': [

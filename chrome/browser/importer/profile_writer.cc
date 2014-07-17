@@ -31,8 +31,8 @@
 #include "components/search_engines/template_url_service.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/webdata/password_web_data_service_win.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
+#include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 #endif
 
 namespace {

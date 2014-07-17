@@ -11,9 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/webdata/password_web_data_service_win.h"
 #include "components/os_crypt/ie7_password_win.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 #include "content/public/browser/browser_thread.h"
 
 using autofill::PasswordForm;

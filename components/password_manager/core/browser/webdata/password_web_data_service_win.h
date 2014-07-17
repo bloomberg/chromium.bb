@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBDATA_PASSWORD_WEB_DATA_SERVICE_WIN_H_
-#define CHROME_BROWSER_WEBDATA_PASSWORD_WEB_DATA_SERVICE_WIN_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_WEBDATA_PASSWORD_WEB_DATA_SERVICE_WIN_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_WEBDATA_PASSWORD_WEB_DATA_SERVICE_WIN_H_
 
 #include <vector>
 
@@ -20,6 +20,7 @@ class Profile;
 class WebDatabaseService;
 
 namespace base {
+class MessageLoopProxy;
 class Thread;
 }
 
@@ -39,6 +40,7 @@ class PasswordWebDataService : public WebDataServiceBase {
       content::BrowserContext* context);
 
   PasswordWebDataService(scoped_refptr<WebDatabaseService> wdbs,
+                         scoped_refptr<base::MessageLoopProxy> ui_thread,
                          const ProfileErrorCallback& callback);
 
   // Adds |info| to the list of imported passwords from ie7/ie8.
@@ -57,7 +59,7 @@ class PasswordWebDataService : public WebDataServiceBase {
 
  protected:
   // For unit tests, passes a null callback.
-  PasswordWebDataService();
+  PasswordWebDataService(scoped_refptr<base::MessageLoopProxy> ui_thread);
 
   virtual ~PasswordWebDataService();
 
@@ -73,4 +75,4 @@ class PasswordWebDataService : public WebDataServiceBase {
   DISALLOW_COPY_AND_ASSIGN(PasswordWebDataService);
 };
 
-#endif  // CHROME_BROWSER_WEBDATA_PASSWORD_WEB_DATA_SERVICE_WIN_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_WEBDATA_PASSWORD_WEB_DATA_SERVICE_WIN_H_

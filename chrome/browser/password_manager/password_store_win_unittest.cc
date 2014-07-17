@@ -17,12 +17,12 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/password_store_win.h"
-#include "chrome/browser/webdata/logins_table.h"
-#include "chrome/browser/webdata/password_web_data_service_win.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/os_crypt/ie7_password_win.h"
 #include "components/password_manager/core/browser/password_form_data.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/password_manager/core/browser/webdata/logins_table.h"
+#include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/webdata/common/web_database_service.h"
 #include "content/public/test/test_browser_thread.h"
@@ -126,7 +126,9 @@ class PasswordStoreWinTest : public testing::Test {
     wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new LoginsTable()));
     wdbs_->LoadDatabase();
     wds_ = new PasswordWebDataService(
-        wdbs_, WebDataServiceBase::ProfileErrorCallback());
+        wdbs_,
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        WebDataServiceBase::ProfileErrorCallback());
     wds_->Init();
   }
 

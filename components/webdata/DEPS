@@ -15,6 +15,7 @@ specific_include_rules = {
     "+chrome/browser/webdata/web_data_service_factory.h",
     "+chrome/browser/webdata/web_intents_table.h",
     "+components/autofill/core",
+    "+components/password_manager/core/browser/webdata",
     "+components/search_engines/keyword_table.h",
     "+components/signin/core/browser/webdata",
     "+content/public/test",

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBDATA_LOGINS_TABLE_H_
-#define CHROME_BROWSER_WEBDATA_LOGINS_TABLE_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_WEBDATA_LOGINS_TABLE_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_WEBDATA_LOGINS_TABLE_H_
 
 #include <vector>
 
@@ -49,4 +49,4 @@ class LoginsTable : public WebDatabaseTable {
   DISALLOW_COPY_AND_ASSIGN(LoginsTable);
 };
 
-#endif  // CHROME_BROWSER_WEBDATA_LOGINS_TABLE_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_WEBDATA_LOGINS_TABLE_H_
