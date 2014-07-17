@@ -4233,7 +4233,7 @@ int main(int argc, char *argv[])
 	char *server_socket = NULL, *end;
 	int32_t idle_time = 300;
 	int32_t help = 0;
-	char *socket_name = "wayland-0";
+	const char *socket_name = NULL;
 	int32_t version = 0;
 	int32_t noconfig = 0;
 	struct weston_config *config = NULL;
@@ -4339,30 +4339,6 @@ int main(int argc, char *argv[])
 	ec->idle_time = idle_time;
 	ec->default_pointer_grab = NULL;
 
-	setenv("WAYLAND_DISPLAY", socket_name, 1);
-
-	if (option_shell)
-		shell = strdup(option_shell);
-	else
-		weston_config_section_get_string(section, "shell", &shell,
-						 "desktop-shell.so");
-
-	if (load_modules(ec, shell, &argc, argv) < 0) {
-		free(shell);
-		goto out;
-	}
-	free(shell);
-
-	weston_config_section_get_string(section, "modules", &modules, "");
-	if (load_modules(ec, modules, &argc, argv) < 0) {
-		free(modules);
-		goto out;
-	}
-	free(modules);
-
-	if (load_modules(ec, option_modules, &argc, argv) < 0)
-		goto out;
-
 	for (i = 1; i < argc; i++)
 		weston_log("fatal: unhandled option: %s\n", argv[i]);
 	if (argc > 1) {
@@ -4394,12 +4370,45 @@ int main(int argc, char *argv[])
 		wl_client_add_destroy_listener(primary_client,
 					       &primary_client_destroyed);
 	} else {
-		if (wl_display_add_socket(display, socket_name)) {
-			weston_log("fatal: failed to add socket: %m\n");
-			ret = EXIT_FAILURE;
-			goto out;
+		if (socket_name) {
+			if (wl_display_add_socket(display, socket_name)) {
+				weston_log("fatal: failed to add socket: %m\n");
+				ret = EXIT_FAILURE;
+				goto out;
+			}
+		} else {
+			socket_name = wl_display_add_socket_auto(display);
+			if (!socket_name) {
+				weston_log("fatal: failed to add socket: %m\n");
+				ret = EXIT_FAILURE;
+				goto out;
+			}
 		}
+
+		setenv("WAYLAND_DISPLAY", socket_name, 1);
 	}
+
+	if (option_shell)
+		shell = strdup(option_shell);
+	else
+		weston_config_section_get_string(section, "shell", &shell,
+						 "desktop-shell.so");
+
+	if (load_modules(ec, shell, &argc, argv) < 0) {
+		free(shell);
+		goto out;
+	}
+	free(shell);
+
+	weston_config_section_get_string(section, "modules", &modules, "");
+	if (load_modules(ec, modules, &argc, argv) < 0) {
+		free(modules);
+		goto out;
+	}
+	free(modules);
+
+	if (load_modules(ec, option_modules, &argc, argv) < 0)
+		goto out;
 
 	weston_compositor_wake(ec);
 
