@@ -246,19 +246,18 @@ void MutableEntry::PutAttachmentMetadata(
   }
 }
 
-void MutableEntry::UpdateAttachmentIdWithServerInfo(
-    const sync_pb::AttachmentIdProto& updated_attachment_id) {
+void MutableEntry::MarkAttachmentAsOnServer(
+    const sync_pb::AttachmentIdProto& attachment_id) {
   DCHECK(kernel_);
-  DCHECK(!updated_attachment_id.unique_id().empty());
+  DCHECK(!attachment_id.unique_id().empty());
   write_transaction()->TrackChangesTo(kernel_);
   sync_pb::AttachmentMetadata& attachment_metadata =
       kernel_->mutable_ref(ATTACHMENT_METADATA);
   for (int i = 0; i < attachment_metadata.record_size(); ++i) {
     sync_pb::AttachmentMetadataRecord* record =
         attachment_metadata.mutable_record(i);
-    if (record->id().unique_id() != updated_attachment_id.unique_id())
+    if (record->id().unique_id() != attachment_id.unique_id())
       continue;
-    *record->mutable_id() = updated_attachment_id;
     record->set_is_on_server(true);
   }
   kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);

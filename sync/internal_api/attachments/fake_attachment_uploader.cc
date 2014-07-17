@@ -25,11 +25,9 @@ void FakeAttachmentUploader::UploadAttachment(const Attachment& attachment,
   DCHECK(!attachment.GetId().GetProto().unique_id().empty());
 
   UploadResult result = UPLOAD_SUCCESS;
-  AttachmentId updated_id = attachment.GetId();
-  // TODO(maniscalco): Update the attachment id with server address information
-  // before passing it to the callback.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(callback, result, updated_id));
+  AttachmentId id = attachment.GetId();
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(callback, result, id));
 }
 
 }  // namespace syncer

@@ -52,9 +52,9 @@ class SYNC_EXPORT WriteTransaction : public BaseTransaction {
       syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
       const std::string& context);
 
-  // Attachment id was just updated. Propagate this change to all entries that
-  // refer this attachment id and set is_on_server for corresponding records.
-  void UpdateEntriesWithAttachmentId(const AttachmentId& attachment_id);
+  // Update all entries that refer to |attachment_id| indicating that
+  // |attachment_id| has been uploaded to the sync server.
+  void UpdateEntriesMarkAttachmentAsOnServer(const AttachmentId& attachment_id);
 
  protected:
   WriteTransaction() {}

@@ -81,7 +81,7 @@ void WriteTransaction::SetDataTypeContext(
   // See crbug.com/360280
 }
 
-void WriteTransaction::UpdateEntriesWithAttachmentId(
+void WriteTransaction::UpdateEntriesMarkAttachmentAsOnServer(
     const AttachmentId& attachment_id) {
   syncable::Directory::Metahandles handles;
   GetDirectory()->GetMetahandlesByAttachmentId(
@@ -90,7 +90,7 @@ void WriteTransaction::UpdateEntriesWithAttachmentId(
        iter != handles.end();
        ++iter) {
     syncable::MutableEntry entry(transaction_, syncable::GET_BY_HANDLE, *iter);
-    entry.UpdateAttachmentIdWithServerInfo(attachment_id.GetProto());
+    entry.MarkAttachmentAsOnServer(attachment_id.GetProto());
   }
 }
 

@@ -137,8 +137,6 @@ void AttachmentUploaderImpl::UploadState::OnURLFetchComplete(
   AttachmentId attachment_id = attachment_.GetId();
   if (source->GetResponseCode() == net::HTTP_OK) {
     result = UPLOAD_SUCCESS;
-    // TODO(maniscalco): Update the attachment id with server address
-    // information before passing it to the callback (bug 371522).
   } else if (source->GetResponseCode() == net::HTTP_UNAUTHORIZED) {
     // TODO(maniscalco): One possibility is that we received a 401 because our
     // access token has expired.  We should probably fetch a new access token

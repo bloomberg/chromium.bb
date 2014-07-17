@@ -187,7 +187,7 @@ class AttachmentUploaderImplTest : public testing::Test,
   const AttachmentUploader::UploadCallback& upload_callback() const;
   std::vector<HttpRequest>& http_requests_received();
   std::vector<AttachmentUploader::UploadResult>& upload_results();
-  std::vector<AttachmentId>& updated_attachment_ids();
+  std::vector<AttachmentId>& attachment_ids();
   MockOAuth2TokenService& token_service();
   base::MessageLoopForIO& message_loop();
   RequestHandler& request_handler();
@@ -195,7 +195,7 @@ class AttachmentUploaderImplTest : public testing::Test,
  private:
   // An UploadCallback invoked by AttachmentUploaderImpl.
   void UploadDone(const AttachmentUploader::UploadResult& result,
-                  const AttachmentId& updated_attachment_id);
+                  const AttachmentId& attachment_id);
 
   base::MessageLoopForIO message_loop_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
@@ -207,7 +207,7 @@ class AttachmentUploaderImplTest : public testing::Test,
   base::Closure signal_upload_done_;
   std::vector<HttpRequest> http_requests_received_;
   std::vector<AttachmentUploader::UploadResult> upload_results_;
-  std::vector<AttachmentId> updated_attachment_ids_;
+  std::vector<AttachmentId> attachment_ids_;
   scoped_ptr<MockOAuth2TokenService> token_service_;
 
   // Must be last data member.
@@ -315,8 +315,8 @@ AttachmentUploaderImplTest::upload_results() {
 }
 
 std::vector<AttachmentId>&
-AttachmentUploaderImplTest::updated_attachment_ids() {
-  return updated_attachment_ids_;
+AttachmentUploaderImplTest::attachment_ids() {
+  return attachment_ids_;
 }
 
 MockOAuth2TokenService& AttachmentUploaderImplTest::token_service() {
@@ -333,10 +333,10 @@ RequestHandler& AttachmentUploaderImplTest::request_handler() {
 
 void AttachmentUploaderImplTest::UploadDone(
     const AttachmentUploader::UploadResult& result,
-    const AttachmentId& updated_attachment_id) {
+    const AttachmentId& attachment_id) {
   DCHECK(CalledOnValidThread());
   upload_results_.push_back(result);
-  updated_attachment_ids_.push_back(updated_attachment_id);
+  attachment_ids_.push_back(attachment_id);
   DCHECK(!signal_upload_done_.is_null());
   signal_upload_done_.Run();
 }
@@ -432,8 +432,8 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_HappyCase) {
   // See that the done callback was invoked with the right arguments.
   ASSERT_EQ(1U, upload_results().size());
   EXPECT_EQ(AttachmentUploader::UPLOAD_SUCCESS, upload_results()[0]);
-  ASSERT_EQ(1U, updated_attachment_ids().size());
-  EXPECT_EQ(attachment.GetId(), updated_attachment_ids()[0]);
+  ASSERT_EQ(1U, attachment_ids().size());
+  EXPECT_EQ(attachment.GetId(), attachment_ids()[0]);
 
   // See that the HTTP server received one request.
   ASSERT_EQ(1U, http_requests_received().size());
@@ -448,10 +448,6 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_HappyCase) {
   const std::string header_value(std::string("Bearer ") + kAccessToken);
   EXPECT_THAT(http_request.headers,
               testing::Contains(testing::Pair(header_name, header_value)));
-
-  // TODO(maniscalco): Once AttachmentUploaderImpl is capable of updating the
-  // AttachmentId with server address information about the attachment, add some
-  // checks here to verify it works properly (bug 371522).
 }
 
 // Verify two overlapping calls to upload the same attachment result in only one
@@ -513,8 +509,8 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_FailToGetToken) {
   // See that the done callback was invoked.
   ASSERT_EQ(1U, upload_results().size());
   EXPECT_EQ(AttachmentUploader::UPLOAD_UNSPECIFIED_ERROR, upload_results()[0]);
-  ASSERT_EQ(1U, updated_attachment_ids().size());
-  EXPECT_EQ(attachment.GetId(), updated_attachment_ids()[0]);
+  ASSERT_EQ(1U, attachment_ids().size());
+  EXPECT_EQ(attachment.GetId(), attachment_ids()[0]);
 
   // See that no HTTP request was received.
   ASSERT_EQ(0U, http_requests_received().size());
@@ -535,8 +531,8 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_ServiceUnavilable) {
   // See that the done callback was invoked.
   ASSERT_EQ(1U, upload_results().size());
   EXPECT_EQ(AttachmentUploader::UPLOAD_UNSPECIFIED_ERROR, upload_results()[0]);
-  ASSERT_EQ(1U, updated_attachment_ids().size());
-  EXPECT_EQ(attachment.GetId(), updated_attachment_ids()[0]);
+  ASSERT_EQ(1U, attachment_ids().size());
+  EXPECT_EQ(attachment.GetId(), attachment_ids()[0]);
 
   // See that the HTTP server received one request.
   ASSERT_EQ(1U, http_requests_received().size());
@@ -573,8 +569,8 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_BadToken) {
   // See that the done callback was invoked.
   ASSERT_EQ(1U, upload_results().size());
   EXPECT_EQ(AttachmentUploader::UPLOAD_UNSPECIFIED_ERROR, upload_results()[0]);
-  ASSERT_EQ(1U, updated_attachment_ids().size());
-  EXPECT_EQ(attachment.GetId(), updated_attachment_ids()[0]);
+  ASSERT_EQ(1U, attachment_ids().size());
+  EXPECT_EQ(attachment.GetId(), attachment_ids()[0]);
 
   // See that the HTTP server received one request.
   ASSERT_EQ(1U, http_requests_received().size());

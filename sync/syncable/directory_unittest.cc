@@ -1649,8 +1649,7 @@ TEST_F(SyncableDirectoryTest, MutableEntry_UpdateAttachmentId) {
   ASSERT_FALSE(entry_metadata.record(1).is_on_server());
   ASSERT_FALSE(entry.GetIsUnsynced());
 
-  // TODO(pavely): When we add server info to proto, add test for it here.
-  entry.UpdateAttachmentIdWithServerInfo(attachment_id_proto);
+  entry.MarkAttachmentAsOnServer(attachment_id_proto);
 
   ASSERT_TRUE(entry_metadata.record(0).is_on_server());
   ASSERT_FALSE(entry_metadata.record(1).is_on_server());

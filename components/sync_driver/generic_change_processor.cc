@@ -214,7 +214,7 @@ syncer::SyncError GenericChangeProcessor::UpdateDataTypeContext(
 void GenericChangeProcessor::OnAttachmentUploaded(
     const syncer::AttachmentId& attachment_id) {
   syncer::WriteTransaction trans(FROM_HERE, share_handle());
-  trans.UpdateEntriesWithAttachmentId(attachment_id);
+  trans.UpdateEntriesMarkAttachmentAsOnServer(attachment_id);
 }
 
 syncer::SyncError GenericChangeProcessor::GetAllSyncDataReturnError(

@@ -34,8 +34,8 @@ class SYNC_EXPORT AttachmentUploader {
   // |callback| will be invoked when the operation has completed (successfully
   // or otherwise).
   //
-  // |callback| will receive an UploadResult code and an updated AttachmentId
-  // containing the server address of the newly uploaded attachment.
+  // |callback| will receive an UploadResult code and the AttachmentId of the
+  // newly uploaded attachment.
   virtual void UploadAttachment(const Attachment& attachment,
                                 const UploadCallback& callback) = 0;
 };
