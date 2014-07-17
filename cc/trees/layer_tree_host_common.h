@@ -21,7 +21,6 @@ namespace cc {
 
 class LayerImpl;
 class Layer;
-class SwapPromise;
 
 class CC_EXPORT LayerTreeHostCommon {
  public:
@@ -140,7 +139,6 @@ struct CC_EXPORT ScrollAndScaleSet {
 
   std::vector<LayerTreeHostCommon::ScrollUpdateInfo> scrolls;
   float page_scale_delta;
-  ScopedPtrVector<SwapPromise> swap_promises;
 };
 
 template <typename LayerType>

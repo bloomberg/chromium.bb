@@ -19,8 +19,6 @@ class CC_EXPORT LatencyInfoSwapPromise : public SwapPromise {
   virtual void DidSwap(CompositorFrameMetadata* metadata) OVERRIDE;
   virtual void DidNotSwap(DidNotSwapReason reason) OVERRIDE;
 
-  virtual int64 TraceId() const OVERRIDE;
-
  private:
   ui::LatencyInfo latency_;
 };
