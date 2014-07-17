@@ -825,7 +825,7 @@ static Position previousIfPositionIsAfterLineBreak(const Position& position, HTM
     } else if (position.anchorNode()->isTextNode()) {
         Text* textNode = toText(position.anchorNode());
         unsigned offset = position.offsetInContainerNode();
-        if (textNode->length() == 0 || offset <= 0) {
+        if (textNode->length() == 0 || offset == 0) {
             return previousIfPositionIsAfterLineBreak(endOfPrevious(*position.anchorNode(), innerEditor), innerEditor);
         }
 
