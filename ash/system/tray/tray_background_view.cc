@@ -548,9 +548,13 @@ gfx::Rect TrayBackgroundView::GetBubbleAnchorRect(
       } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_LEFT) {
         rect.Inset(0, 0, kBubblePaddingVerticalSide + 4,
                    kBubblePaddingVerticalBottom);
-      } else {
+      } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT) {
         rect.Inset(kBubblePaddingVerticalSide, 0, 0,
                    kBubblePaddingVerticalBottom);
+      } else {
+        // TODO(bruthig) May need to handle other ANCHOR_ALIGNMENT_ values.
+        // ie. ANCHOR_ALIGNMENT_TOP
+        DCHECK(false) << "Unhandled anchor alignment.";
       }
     } else if (anchor_type == TrayBubbleView::ANCHOR_TYPE_BUBBLE) {
       // Invert the offsets to align with the bubble below.
@@ -562,21 +566,48 @@ gfx::Rect TrayBackgroundView::GetBubbleAnchorRect(
         rect.Inset(vertical_alignment, 0, 0, horizontal_alignment);
       else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT)
         rect.Inset(0, 0, vertical_alignment, horizontal_alignment);
+    } else {
+      DCHECK(false) << "Unhandled anchor type.";
     }
-  }
-
-  // TODO(jennyz): May need to add left/right alignment in the following code.
-  if (rect.IsEmpty()) {
+  } else {
     aura::Window* target_root = anchor_widget ?
         anchor_widget->GetNativeView()->GetRootWindow() :
         Shell::GetPrimaryRootWindow();
     rect = target_root->bounds();
-    rect = gfx::Rect(
-        base::i18n::IsRTL() ? kPaddingFromRightEdgeOfScreenBottomAlignment :
-        rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,
-        rect.height() - kPaddingFromBottomOfScreenBottomAlignment,
-        0, 0);
-    rect = ScreenUtil::ConvertRectToScreen(target_root, rect);
+    if (anchor_type == TrayBubbleView::ANCHOR_TYPE_TRAY) {
+      if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
+        rect = gfx::Rect(
+            base::i18n::IsRTL() ?
+            kPaddingFromRightEdgeOfScreenBottomAlignment :
+            rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,
+            rect.height() - kPaddingFromBottomOfScreenBottomAlignment,
+            0, 0);
+        rect = ScreenUtil::ConvertRectToScreen(target_root, rect);
+      } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_LEFT) {
+        rect = gfx::Rect(
+            kPaddingFromRightEdgeOfScreenBottomAlignment,
+            rect.height() - kPaddingFromBottomOfScreenBottomAlignment,
+            1, 1);
+        rect = ScreenUtil::ConvertRectToScreen(target_root, rect);
+      } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT) {
+        rect = gfx::Rect(
+            rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,
+            rect.height() - kPaddingFromBottomOfScreenBottomAlignment,
+            1, 1);
+        rect = ScreenUtil::ConvertRectToScreen(target_root, rect);
+      } else {
+        // TODO(bruthig) May need to handle other ANCHOR_ALIGNMENT_ values.
+        // ie. ANCHOR_ALIGNMENT_TOP
+        DCHECK(false) << "Unhandled anchor alignment.";
+      }
+    } else {
+      rect = gfx::Rect(
+          base::i18n::IsRTL() ?
+          kPaddingFromRightEdgeOfScreenBottomAlignment :
+          rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,
+          rect.height() - kPaddingFromBottomOfScreenBottomAlignment,
+          0, 0);
+    }
   }
   return rect;
 }
