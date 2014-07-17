@@ -53,7 +53,7 @@
       'conditions': [
         ['chromeos==1', {
           'dependencies': [
-            'metrics_chromeos',
+            'metrics_serialization',
           ],
         }],
         ['OS=="win"', {
@@ -125,16 +125,16 @@
     },
   ],
   'conditions': [
-    ['chromeos==1', {
+    ['OS=="linux"', {
       'targets': [
         {
-          'target_name': 'metrics_chromeos',
+          'target_name': 'metrics_serialization',
           'type': 'static_library',
           'sources': [
-            'metrics/chromeos/serialization_utils.cc',
-            'metrics/chromeos/serialization_utils.h',
-            'metrics/chromeos/metric_sample.cc',
-            'metrics/chromeos/metric_sample.h',
+            'metrics/serialization/serialization_utils.cc',
+            'metrics/serialization/serialization_utils.h',
+            'metrics/serialization/metric_sample.cc',
+            'metrics/serialization/metric_sample.h',
           ],
           'dependencies': [
             '../base/base.gyp:base',

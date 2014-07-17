@@ -8,8 +8,8 @@
 #include "base/metrics/statistics_recorder.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/test/base/uma_histogram_helper.h"
-#include "components/metrics/chromeos/metric_sample.h"
-#include "components/metrics/chromeos/serialization_utils.h"
+#include "components/metrics/serialization/metric_sample.h"
+#include "components/metrics/serialization/serialization_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 
 namespace chromeos {  // Need this because of the FRIEND_TEST

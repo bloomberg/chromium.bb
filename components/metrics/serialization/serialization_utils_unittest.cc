@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/metrics/chromeos/serialization_utils.h"
+#include "components/metrics/serialization/serialization_utils.h"
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "components/metrics/chromeos/metric_sample.h"
+#include "components/metrics/serialization/metric_sample.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace metrics {
 namespace {
 
-class SerializationUtilsChromeOSTest : public testing::Test {
+class SerializationUtilsTest : public testing::Test {
  protected:
-  SerializationUtilsChromeOSTest() {
+  SerializationUtilsTest() {
     bool success = temporary_dir.CreateUniqueTempDir();
     if (success) {
       base::FilePath dir_path = temporary_dir.path();
@@ -43,29 +43,29 @@ class SerializationUtilsChromeOSTest : public testing::Test {
   base::FilePath filepath;
 };
 
-TEST_F(SerializationUtilsChromeOSTest, CrashSerializeTest) {
+TEST_F(SerializationUtilsTest, CrashSerializeTest) {
   TestSerialization(MetricSample::CrashSample("test").get());
 }
 
-TEST_F(SerializationUtilsChromeOSTest, HistogramSerializeTest) {
+TEST_F(SerializationUtilsTest, HistogramSerializeTest) {
   TestSerialization(
       MetricSample::HistogramSample("myhist", 13, 1, 100, 10).get());
 }
 
-TEST_F(SerializationUtilsChromeOSTest, LinearSerializeTest) {
+TEST_F(SerializationUtilsTest, LinearSerializeTest) {
   TestSerialization(
       MetricSample::LinearHistogramSample("linearhist", 12, 30).get());
 }
 
-TEST_F(SerializationUtilsChromeOSTest, SparseSerializeTest) {
+TEST_F(SerializationUtilsTest, SparseSerializeTest) {
   TestSerialization(MetricSample::SparseHistogramSample("mysparse", 30).get());
 }
 
-TEST_F(SerializationUtilsChromeOSTest, UserActionSerializeTest) {
+TEST_F(SerializationUtilsTest, UserActionSerializeTest) {
   TestSerialization(MetricSample::UserActionSample("myaction").get());
 }
 
-TEST_F(SerializationUtilsChromeOSTest, IllegalNameAreFilteredTest) {
+TEST_F(SerializationUtilsTest, IllegalNameAreFilteredTest) {
   scoped_ptr<MetricSample> sample1 =
       MetricSample::SparseHistogramSample("no space", 10);
   scoped_ptr<MetricSample> sample2 = MetricSample::LinearHistogramSample(
@@ -80,13 +80,13 @@ TEST_F(SerializationUtilsChromeOSTest, IllegalNameAreFilteredTest) {
   EXPECT_EQ(0, size);
 }
 
-TEST_F(SerializationUtilsChromeOSTest, BadInputIsCaughtTest) {
+TEST_F(SerializationUtilsTest, BadInputIsCaughtTest) {
   std::string input(
       base::StringPrintf("sparsehistogram%cname foo%c", '\0', '\0'));
   EXPECT_EQ(NULL, MetricSample::ParseSparseHistogram(input).get());
 }
 
-TEST_F(SerializationUtilsChromeOSTest, MessageSeparatedByZero) {
+TEST_F(SerializationUtilsTest, MessageSeparatedByZero) {
   scoped_ptr<MetricSample> crash = MetricSample::CrashSample("mycrash");
 
   SerializationUtils::WriteMetricToFile(*crash.get(), filename);
@@ -100,7 +100,7 @@ TEST_F(SerializationUtilsChromeOSTest, MessageSeparatedByZero) {
   EXPECT_EQ(size, 18);
 }
 
-TEST_F(SerializationUtilsChromeOSTest, MessagesTooLongAreDiscardedTest) {
+TEST_F(SerializationUtilsTest, MessagesTooLongAreDiscardedTest) {
   // Creates a message that is bigger than the maximum allowed size.
   // As we are adding extra character (crash, \0s, etc), if the name is
   // kMessageMaxLength long, it will be too long.
@@ -113,7 +113,7 @@ TEST_F(SerializationUtilsChromeOSTest, MessagesTooLongAreDiscardedTest) {
   EXPECT_EQ(0, size);
 }
 
-TEST_F(SerializationUtilsChromeOSTest, ReadLongMessageTest) {
+TEST_F(SerializationUtilsTest, ReadLongMessageTest) {
   base::File test_file(filepath,
                        base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_APPEND);
   std::string message(SerializationUtils::kMessageMaxLength + 1, 'c');
@@ -134,7 +134,7 @@ TEST_F(SerializationUtilsChromeOSTest, ReadLongMessageTest) {
   EXPECT_TRUE(crash->IsEqual(*samples[0]));
 }
 
-TEST_F(SerializationUtilsChromeOSTest, WriteReadTest) {
+TEST_F(SerializationUtilsTest, WriteReadTest) {
   scoped_ptr<MetricSample> hist =
       MetricSample::HistogramSample("myhist", 1, 2, 3, 4);
   scoped_ptr<MetricSample> crash = MetricSample::CrashSample("mycrash");

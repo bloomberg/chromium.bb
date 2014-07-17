@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_METRICS_CHROMEOS_SERIALIZATION_UTILS_H_
-#define COMPONENTS_METRICS_CHROMEOS_SERIALIZATION_UTILS_H_
+#ifndef COMPONENTS_METRICS_SERIALIZATION_SERIALIZATION_UTILS_H_
+#define COMPONENTS_METRICS_SERIALIZATION_SERIALIZATION_UTILS_H_
 
 #include <string>
 
@@ -45,4 +45,4 @@ static const int kMessageMaxLength = 1024;
 }  // namespace SerializationUtils
 }  // namespace metrics
 
-#endif  // COMPONENTS_METRICS_CHROMEOS_SERIALIZATION_UTILS_H_
+#endif  // COMPONENTS_METRICS_SERIALIZATION_SERIALIZATION_UTILS_H_
