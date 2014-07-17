@@ -701,6 +701,8 @@ LocalDOMWindow* callingDOMWindow(v8::Isolate* isolate)
 
 ExecutionContext* toExecutionContext(v8::Handle<v8::Context> context)
 {
+    if (context.IsEmpty())
+        return 0;
     v8::Handle<v8::Object> global = context->Global();
     v8::Handle<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(global, context->GetIsolate());
     if (!windowWrapper.IsEmpty())
