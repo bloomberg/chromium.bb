@@ -122,8 +122,12 @@ content::WebContents* AddRestoredTab(
     // location calculations to be incorrect even after a new layout with
     // proper view dimensions. TabStripModel::AddWebContents() contains similar
     // logic.
-    apps::ResizeWebContents(web_contents,
-                            browser->window()->GetRestoredBounds().size());
+    gfx::Size size = browser->window()->GetBounds().size();
+    // Fallback to the restore bounds if it's empty as the window is not shown
+    // yet and the bounds may not be available on all platforms.
+    if (size.IsEmpty())
+      size = browser->window()->GetRestoredBounds().size();
+    apps::ResizeWebContents(web_contents, size);
     web_contents->WasHidden();
   }
   SessionService* session_service =
