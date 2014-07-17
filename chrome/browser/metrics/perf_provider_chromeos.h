@@ -75,7 +75,7 @@ class PerfProvider : public base::NonThreadSafe,
   // Selects a random time in the upcoming profiling interval that begins at
   // |next_profiling_interval_start_|. Schedules |timer_| to invoke
   // DoPeriodicCollection() when that time comes.
-  void ScheduleCollection();
+  void ScheduleIntervalCollection();
 
   // Collects perf data for a given |trigger_event|. Calls perf via the ChromeOS
   // debug daemon's dbus interface.
@@ -84,6 +84,17 @@ class PerfProvider : public base::NonThreadSafe,
   // Collects perf data on a repeating basis by calling CollectIfNecessary() and
   // reschedules it to be collected again.
   void DoPeriodicCollection();
+
+  // Collects perf data after a resume. |sleep_duration| is the duration the
+  // system was suspended before resuming. |time_after_resume_ms| is how long
+  // ago the system resumed.
+  void CollectPerfDataAfterResume(const base::TimeDelta& sleep_duration,
+                                  const base::TimeDelta& time_after_resume);
+
+  // Collects perf data after a session restore. |time_after_restore| is how
+  // long ago the session restore started.
+  void CollectPerfDataAfterSessionRestore(
+      const base::TimeDelta& time_after_restore);
 
   // Parses a perf data protobuf from the |data| passed in only if the
   // |incognito_observer| indicates that no incognito window had been opened

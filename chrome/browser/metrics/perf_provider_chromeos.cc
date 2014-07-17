@@ -54,6 +54,16 @@ const int kRestoreSessionSamplingFactor = 10;
 // much time between collections. The current value is 30 seconds.
 const int kMinIntervalBetweenSessionRestoreCollectionsMs = 30 * 1000;
 
+// If collecting after a resume, add a random delay before collecting. The delay
+// should be randomly selected between 0 and this value. Currently the value is
+// equal to 5 seconds.
+const int kMaxResumeCollectionDelayMs = 5 * 1000;
+
+// If collecting after a session restore, add a random delay before collecting.
+// The delay should be randomly selected between 0 and this value. Currently the
+// value is equal to 10 seconds.
+const int kMaxRestoreSessionCollectionDelayMs = 10 * 1000;
+
 // Enumeration representing success and various failure modes for collecting and
 // sending perf data.
 enum GetPerfDataOutcome {
@@ -190,14 +200,20 @@ void PerfProvider::SuspendDone(const base::TimeDelta& sleep_duration) {
   if (base::RandGenerator(kResumeSamplingFactor) != 0)
     return;
 
-  // Fill out a SampledProfile protobuf that will contain the collected data.
-  scoped_ptr<SampledProfile> sampled_profile(new SampledProfile);
-  sampled_profile->set_trigger_event(SampledProfile::RESUME_FROM_SUSPEND);
-  sampled_profile->set_suspend_duration_ms(sleep_duration.InMilliseconds());
-  // TODO(sque): Vary the time after resume at which to collect a profile.
-  // http://crbug.com/358778.
-  sampled_profile->set_ms_after_resume(0);
-  CollectIfNecessary(sampled_profile.Pass());
+  // Override any existing profiling.
+  if (timer_.IsRunning())
+    timer_.Stop();
+
+  // Randomly pick a delay before doing the collection.
+  base::TimeDelta collection_delay =
+      base::TimeDelta::FromMilliseconds(
+          base::RandGenerator(kMaxResumeCollectionDelayMs));
+  timer_.Start(FROM_HERE,
+               collection_delay,
+               base::Bind(&PerfProvider::CollectPerfDataAfterResume,
+                          weak_factory_.GetWeakPtr(),
+                          sleep_duration,
+                          collection_delay));
 }
 
 void PerfProvider::Observe(int type,
@@ -205,6 +221,10 @@ void PerfProvider::Observe(int type,
                            const content::NotificationDetails& details) {
   // Only handle session restore notifications.
   DCHECK_EQ(type, chrome::NOTIFICATION_SESSION_RESTORE_DONE);
+
+  // Do not collect a profile unless logged in as a normal user.
+  if (!IsNormalUserLoggedIn())
+    return;
 
   // Collect a profile only 1/|kRestoreSessionSamplingFactor| of the time, to
   // avoid collecting too much data and potentially causing UI latency.
@@ -223,21 +243,25 @@ void PerfProvider::Observe(int type,
     return;
   }
 
-  // Fill out a SampledProfile protobuf that will contain the collected data.
-  scoped_ptr<SampledProfile> sampled_profile(new SampledProfile);
-  sampled_profile->set_trigger_event(SampledProfile::RESTORE_SESSION);
-  // TODO(sque): Vary the time after restore at which to collect a profile,
-  // and find a way to determine the number of tabs restored.
-  // http://crbug.com/358778.
-  sampled_profile->set_ms_after_restore(0);
+  // Stop any existing scheduled collection.
+  if (timer_.IsRunning())
+    timer_.Stop();
 
-  CollectIfNecessary(sampled_profile.Pass());
-  last_session_restore_collection_time_ = base::TimeTicks::Now();
+  // Randomly pick a delay before doing the collection.
+  base::TimeDelta collection_delay =
+      base::TimeDelta::FromMilliseconds(
+          base::RandGenerator(kMaxRestoreSessionCollectionDelayMs));
+  timer_.Start(
+      FROM_HERE,
+      collection_delay,
+      base::Bind(&PerfProvider::CollectPerfDataAfterSessionRestore,
+                 weak_factory_.GetWeakPtr(),
+                 collection_delay));
 }
 
 void PerfProvider::OnUserLoggedIn() {
   login_time_ = base::TimeTicks::Now();
-  ScheduleCollection();
+  ScheduleIntervalCollection();
 }
 
 void PerfProvider::Deactivate() {
@@ -245,7 +269,7 @@ void PerfProvider::Deactivate() {
   timer_.Stop();
 }
 
-void PerfProvider::ScheduleCollection() {
+void PerfProvider::ScheduleIntervalCollection() {
   DCHECK(CalledOnValidThread());
   if (timer_.IsRunning())
     return;
@@ -273,6 +297,12 @@ void PerfProvider::ScheduleCollection() {
 void PerfProvider::CollectIfNecessary(
     scoped_ptr<SampledProfile> sampled_profile) {
   DCHECK(CalledOnValidThread());
+
+  // Schedule another interval collection. This call makes sense regardless of
+  // whether or not the current collection was interval-triggered. If it had
+  // been another type of trigger event, the interval timer would have been
+  // halted, so it makes sense to reschedule a new interval collection.
+  ScheduleIntervalCollection();
 
   // Do not collect further data if we've already collected a substantial amount
   // of data, as indicated by |kCachedPerfDataProtobufSizeThreshold|.
@@ -313,7 +343,29 @@ void PerfProvider::DoPeriodicCollection() {
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
   CollectIfNecessary(sampled_profile.Pass());
-  ScheduleCollection();
+}
+
+void PerfProvider::CollectPerfDataAfterResume(
+    const base::TimeDelta& sleep_duration,
+    const base::TimeDelta& time_after_resume) {
+  // Fill out a SampledProfile protobuf that will contain the collected data.
+  scoped_ptr<SampledProfile> sampled_profile(new SampledProfile);
+  sampled_profile->set_trigger_event(SampledProfile::RESUME_FROM_SUSPEND);
+  sampled_profile->set_suspend_duration_ms(sleep_duration.InMilliseconds());
+  sampled_profile->set_ms_after_resume(time_after_resume.InMilliseconds());
+
+  CollectIfNecessary(sampled_profile.Pass());
+}
+
+void PerfProvider::CollectPerfDataAfterSessionRestore(
+    const base::TimeDelta& time_after_restore) {
+  // Fill out a SampledProfile protobuf that will contain the collected data.
+  scoped_ptr<SampledProfile> sampled_profile(new SampledProfile);
+  sampled_profile->set_trigger_event(SampledProfile::RESTORE_SESSION);
+  sampled_profile->set_ms_after_restore(time_after_restore.InMilliseconds());
+
+  CollectIfNecessary(sampled_profile.Pass());
+  last_session_restore_collection_time_ = base::TimeTicks::Now();
 }
 
 void PerfProvider::ParseProtoIfValid(
