@@ -22,6 +22,7 @@
 namespace ui {
 
 namespace {
+
 // Records all mouse, touch, gesture, and key events.
 class EventCapturer : public ui::EventHandler {
  public:
@@ -72,6 +73,53 @@ int Factorial(int n) {
 }
 
 }  // namespace
+
+class TouchExplorationControllerTestApi {
+ public:
+  TouchExplorationControllerTestApi(
+      TouchExplorationController* touch_exploration_controller)
+      : touch_exploration_controller_(touch_exploration_controller) {}
+
+  void CallTapTimerNowForTesting() {
+    DCHECK(touch_exploration_controller_->tap_timer_.IsRunning());
+    touch_exploration_controller_->tap_timer_.Stop();
+    touch_exploration_controller_->OnTapTimerFired();
+  }
+
+  void CallTapTimerNowIfRunningForTesting() {
+    if (touch_exploration_controller_->tap_timer_.IsRunning()) {
+      touch_exploration_controller_->tap_timer_.Stop();
+      touch_exploration_controller_->OnTapTimerFired();
+    }
+  }
+
+  void SetEventHandlerForTesting(
+      ui::EventHandler* event_handler_for_testing) {
+    touch_exploration_controller_->event_handler_for_testing_ =
+        event_handler_for_testing;
+  }
+
+  bool IsInNoFingersDownStateForTesting() const {
+    return touch_exploration_controller_->state_ ==
+           touch_exploration_controller_->NO_FINGERS_DOWN;
+  }
+
+  bool IsInGestureInProgressStateForTesting() const {
+    return touch_exploration_controller_->state_ ==
+           touch_exploration_controller_->GESTURE_IN_PROGRESS;
+  }
+
+  // VLOGs should be suppressed in tests that generate a lot of logs,
+  // for example permutations of nine touch events.
+  void SuppressVLOGsForTesting(bool suppress) {
+    touch_exploration_controller_->VLOG_on_ = !suppress;
+  }
+
+ private:
+  TouchExplorationController* touch_exploration_controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(TouchExplorationControllerTestApi);
+};
 
 class TouchExplorationTest : public aura::test::AuraTestBase {
  public:
@@ -163,8 +211,8 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     if (!on && touch_exploration_controller_.get()) {
       touch_exploration_controller_.reset();
     } else if (on && !touch_exploration_controller_.get()) {
-      touch_exploration_controller_.reset(
-          new ui::TouchExplorationController(root_window()));
+      touch_exploration_controller_.reset(new TouchExplorationControllerTestApi(
+          new ui::TouchExplorationController(root_window())));
       touch_exploration_controller_->SetEventHandlerForTesting(
           &event_capturer_);
       cursor_client()->ShowCursor();
@@ -221,7 +269,8 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
 
  private:
   EventCapturer event_capturer_;
-  scoped_ptr<ui::TouchExplorationController> touch_exploration_controller_;
+  scoped_ptr<TouchExplorationControllerTestApi>
+      touch_exploration_controller_;
   scoped_ptr<aura::test::TestCursorClient> cursor_client_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationTest);
