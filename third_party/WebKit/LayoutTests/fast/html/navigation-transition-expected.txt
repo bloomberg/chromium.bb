@@ -1,0 +1,15 @@
+Tests for the HTML markup serializer used for transition elements
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS sourceElementRect.top is destElement.offsetTop
+PASS sourceElementRect.left is destElement.offsetLeft
+PASS sourceElementRect.height is destElement.offsetHeight
+PASS sourceElementRect.width is destElement.offsetWidth
+PASS successfullyParsed is true
+
+TEST COMPLETE
+This text should appear twice.
+
+

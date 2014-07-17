@@ -2335,4 +2335,17 @@ unsigned Internals::countHitRegions(CanvasRenderingContext2D* context)
     return context->hitRegionsCount();
 }
 
+String Internals::serializeNavigationMarkup(Document* document)
+{
+    Vector<Document::TransitionElementData> elementData;
+    frame()->document()->getTransitionElementData(elementData);
+
+    StringBuilder markup;
+    Vector<Document::TransitionElementData>::iterator iter = elementData.begin();
+    for (; iter != elementData.end(); ++iter)
+        markup.append(iter->markup);
+
+    return markup.toString();
+}
+
 } // namespace WebCore

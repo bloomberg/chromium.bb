@@ -393,6 +393,13 @@ public:
     bool isTransitionDocument() const { return m_isTransitionDocument; }
     void setIsTransitionDocument() { m_isTransitionDocument = true; }
 
+    struct TransitionElementData {
+        String scope;
+        String selector;
+        String markup;
+    };
+    void getTransitionElementData(Vector<TransitionElementData>&);
+
     StyleResolver* styleResolver() const;
     StyleResolver& ensureStyleResolver() const;
 

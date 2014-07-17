@@ -34,6 +34,7 @@
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSValueList.h"
+#include "core/css/CSSValuePool.h"
 #include "core/css/FontSize.h"
 #include "core/css/RuntimeCSSEnabled.h"
 #include "core/css/StylePropertySet.h"
@@ -52,6 +53,8 @@
 #include "core/editing/htmlediting.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFontElement.h"
+#include "core/rendering/RenderBox.h"
+#include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
@@ -1221,6 +1224,31 @@ void EditingStyle::removePropertiesInElementDefaultStyle(Element* element)
     RefPtrWillBeRawPtr<StylePropertySet> defaultStyle = styleFromMatchedRulesForElement(element, StyleResolver::UAAndUserCSSRules);
 
     removePropertiesInStyle(m_mutableStyle.get(), defaultStyle.get());
+}
+
+void EditingStyle::addAbsolutePositioningFromElement(const Element& element)
+{
+    LayoutRect rect = element.boundingBox();
+    RenderObject* renderer = element.renderer();
+
+    LayoutUnit x = rect.x();
+    LayoutUnit y = rect.y();
+    LayoutUnit width = rect.width();
+    LayoutUnit height = rect.height();
+    if (renderer && renderer->isBox()) {
+        RenderBox* renderBox = toRenderBox(renderer);
+
+        x -= renderBox->marginLeft();
+        y -= renderBox->marginTop();
+
+        m_mutableStyle->setProperty(CSSPropertyBoxSizing, CSSValueBorderBox);
+    }
+
+    m_mutableStyle->setProperty(CSSPropertyPosition, CSSValueAbsolute);
+    m_mutableStyle->setProperty(CSSPropertyLeft, cssValuePool().createValue(x, CSSPrimitiveValue::CSS_PX));
+    m_mutableStyle->setProperty(CSSPropertyTop, cssValuePool().createValue(y, CSSPrimitiveValue::CSS_PX));
+    m_mutableStyle->setProperty(CSSPropertyWidth, cssValuePool().createValue(width, CSSPrimitiveValue::CSS_PX));
+    m_mutableStyle->setProperty(CSSPropertyHeight, cssValuePool().createValue(height, CSSPrimitiveValue::CSS_PX));
 }
 
 void EditingStyle::forceInline()

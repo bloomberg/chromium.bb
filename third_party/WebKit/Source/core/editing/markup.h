@@ -65,6 +65,7 @@ String createMarkup(const Range*, WillBeHeapVector<RawPtrWillBeMember<Node> >* =
 String createMarkup(const Node*, EChildrenOnly = IncludeNode, WillBeHeapVector<RawPtrWillBeMember<Node> >* = 0, EAbsoluteURLs = DoNotResolveURLs, Vector<QualifiedName>* tagNamesToSkip = 0);
 
 String createFullMarkup(const Node*);
+String createStyledMarkupForNavigationTransition(Node*);
 
 String urlToMarkup(const KURL&, const String& title);
 void mergeWithNextTextNode(PassRefPtrWillBeRawPtr<Node>, ExceptionState&);

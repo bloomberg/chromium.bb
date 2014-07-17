@@ -87,6 +87,7 @@
 #include "core/dom/ScriptRunner.h"
 #include "core/dom/ScriptedAnimationController.h"
 #include "core/dom/SelectorQuery.h"
+#include "core/dom/StaticNodeList.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/TouchList.h"
 #include "core/dom/TransformSource.h"
@@ -100,6 +101,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/SpellChecker.h"
+#include "core/editing/markup.h"
 #include "core/events/BeforeUnloadEvent.h"
 #include "core/events/Event.h"
 #include "core/events/EventFactory.h"
@@ -5698,6 +5700,44 @@ Element* Document::activeElement() const
     if (Element* element = treeScope().adjustedFocusedElement())
         return element;
     return body();
+}
+
+void Document::getTransitionElementData(Vector<TransitionElementData>& elementData)
+{
+    if (!head())
+        return;
+
+    for (HTMLMetaElement* metaElement = Traversal<HTMLMetaElement>::firstChild(*head()); metaElement; metaElement = Traversal<HTMLMetaElement>::nextSibling(*metaElement)) {
+        if (metaElement->name() != "transition-elements")
+            continue;
+
+        const String& metaElementContents = metaElement->content().string();
+        size_t firstSemicolon = metaElementContents.find(';');
+        if (firstSemicolon == kNotFound)
+            continue;
+
+        TrackExceptionState exceptionState;
+        AtomicString selector(metaElementContents.substring(0, firstSemicolon));
+        RefPtr<StaticNodeList> nodeList = querySelectorAll(selector, exceptionState);
+        if (!nodeList || exceptionState.hadException())
+            continue;
+
+        unsigned nodeListLength = nodeList->length();
+        if (!nodeListLength)
+            continue;
+
+        StringBuilder markup;
+        for (unsigned nodeIndex = 0; nodeIndex < nodeListLength; ++nodeIndex) {
+            Node* node = nodeList->item(nodeIndex);
+            markup.append(createStyledMarkupForNavigationTransition(node));
+        }
+
+        TransitionElementData newElements;
+        newElements.scope = metaElementContents.substring(firstSemicolon + 1).stripWhiteSpace();
+        newElements.selector = selector;
+        newElements.markup = markup.toString();
+        elementData.append(newElements);
+    }
 }
 
 bool Document::hasFocus() const

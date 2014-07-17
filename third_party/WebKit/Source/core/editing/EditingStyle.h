@@ -133,6 +133,7 @@ public:
     void mergeStyleFromRulesForSerialization(Element*);
     void removeStyleFromRulesAndContext(Element*, Node* context);
     void removePropertiesInElementDefaultStyle(Element*);
+    void addAbsolutePositioningFromElement(const Element&);
     void forceInline();
     int legacyFontSize(Document*) const;
 
