@@ -13,6 +13,7 @@
     ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'isolate_dependency_untracked': [
+          '../media/test/data/',
           '../net/data/',
           'test/data/',
         ],

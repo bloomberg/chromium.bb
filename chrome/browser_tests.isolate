@@ -67,6 +67,7 @@
         ],
         'isolate_dependency_untracked': [
           '../content/test/data/',
+          '../media/test/data/',
           '../net/data/',
           '../net/tools/testserver/',
           '../third_party/WebKit/Tools/Scripts/',
