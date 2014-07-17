@@ -129,10 +129,8 @@ class CallbackHelper : public base::RefCountedThreadSafe<CallbackHelper> {
     return statement_;
   }
 
-  void OnInserted(AndroidHistoryProviderService::Handle handle,
-                  bool success,
-                  int64 id) {
-    success_ = success;
+  void OnInserted(int64 id) {
+    success_ = id != 0;
     base::MessageLoop::current()->Quit();
   }
 
@@ -170,8 +168,10 @@ TEST_F(SQLiteCursorTest, Run) {
   scoped_refptr<CallbackHelper> callback(new CallbackHelper());
 
   // Insert a row and verify it succeeded.
-  service_->InsertHistoryAndBookmark(row, &cancelable_consumer_,
-      Bind(&CallbackHelper::OnInserted, callback.get()));
+  service_->InsertHistoryAndBookmark(
+      row,
+      Bind(&CallbackHelper::OnInserted, callback.get()),
+      &cancelable_tracker_);
 
   base::MessageLoop::current()->Run();
   EXPECT_TRUE(callback->success());

@@ -36,12 +36,9 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
                     UpdateCallback;
   typedef CancelableRequest<UpdateCallback> UpdateRequest;
 
-  typedef base::Callback<void(
-                    Handle,                // handle
-                    bool,                  // true if the insert succeeded.
-                    int64)>                // the id of inserted row.
-                    InsertCallback;
-  typedef CancelableRequest<InsertCallback> InsertRequest;
+  // Callback invoked when a method inserting rows in the database complete.
+  // The value is the new row id or 0 if the insertion failed.
+  typedef base::Callback<void(int64)> InsertCallback;
 
   typedef base::Callback<void(
                     Handle,                // handle
@@ -100,9 +97,10 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
 
   // Inserts the given values into history backend, and invokes the |callback|
   // to return the result.
-  Handle InsertHistoryAndBookmark(const history::HistoryAndBookmarkRow& values,
-                                  CancelableRequestConsumerBase* consumer,
-                                  const InsertCallback& callback);
+  base::CancelableTaskTracker::TaskId InsertHistoryAndBookmark(
+      const history::HistoryAndBookmarkRow& values,
+      const InsertCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
   // Deletes the matched history and invokes |callback| to return the number of
   // the row deleted from the |callback|.
@@ -128,12 +126,13 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
 
   // Search term --------------------------------------------------------------
   // Inserts the given values and returns the SearchTermID of the inserted row
-  // from the |callback| on success.
-  Handle InsertSearchTerm(const history::SearchRow& row,
-                          CancelableRequestConsumerBase* consumer,
-                          const InsertCallback& callback);
+  // to the |callback| on success.
+  base::CancelableTaskTracker::TaskId InsertSearchTerm(
+      const history::SearchRow& row,
+      const InsertCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
-  // Runs the given update and returns the number of the update rows from the
+  // Runs the given update and returns the number of the update rows to the
   // |callback| on success.
   //
   // |row| is the value need to update.
@@ -145,8 +144,9 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
                            CancelableRequestConsumerBase* consumer,
                            const UpdateCallback& callback);
 
-  // Deletes the matched rows and the number of deleted rows is returned from
+  // Deletes the matched rows and the number of deleted rows is returned to
   // the |callback| on success.
+  //
   // |selection| is the SQL WHERE clause without 'WHERE'.
   // |selection_args| is the arguments for WHERE clause.
   //

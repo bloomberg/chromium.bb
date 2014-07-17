@@ -25,6 +25,10 @@
 #include "components/history/core/browser/keyword_id.h"
 #include "sql/init_status.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/history/android/android_history_types.h"
+#endif
+
 class TestingProfile;
 class TypedUrlSyncableService;
 struct ThumbnailScore;
@@ -282,8 +286,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Android Provider ---------------------------------------------------------
 
   // History and bookmarks ----------------------------------------------------
-  void InsertHistoryAndBookmark(scoped_refptr<InsertRequest> request,
-                                const HistoryAndBookmarkRow& row);
+  // Inserts the given values into history backend.
+  AndroidURLID InsertHistoryAndBookmark(const HistoryAndBookmarkRow& row);
 
   // Runs the given query on history backend and returns the result.
   //
@@ -322,8 +326,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void CloseStatement(AndroidStatement* statement);
 
   // Search terms -------------------------------------------------------------
-  void InsertSearchTerm(scoped_refptr<InsertRequest> request,
-                        const SearchRow& row);
+  // Inserts the given values and returns the SearchTermID of the inserted row.
+  SearchTermID InsertSearchTerm(const SearchRow& row);
 
   void UpdateSearchTerms(scoped_refptr<UpdateRequest> request,
                          const SearchRow& row,

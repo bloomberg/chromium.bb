@@ -8,17 +8,12 @@
 
 namespace history {
 
-void HistoryBackend::InsertHistoryAndBookmark(
-    scoped_refptr<InsertRequest> request,
+AndroidURLID HistoryBackend::InsertHistoryAndBookmark(
     const HistoryAndBookmarkRow& row) {
-  if (request->canceled())
-    return;
-
   AndroidURLID id = 0;
   if (android_provider_backend_)
     id = android_provider_backend_->InsertHistoryAndBookmark(row);
-
-  request->ForwardResult(request->handle(), id != 0, id);
+  return id;
 }
 
 AndroidStatement* HistoryBackend::QueryHistoryAndBookmarks(
@@ -111,16 +106,11 @@ void HistoryBackend::CloseStatement(AndroidStatement* statement) {
 
 // Search Term -----------------------------------------------------------------
 
-void HistoryBackend::InsertSearchTerm(scoped_refptr<InsertRequest> request,
-                                      const SearchRow& row) {
-  if (request->canceled())
-    return;
-
+SearchTermID HistoryBackend::InsertSearchTerm(const SearchRow& row) {
   SearchTermID id = 0;
   if (android_provider_backend_)
     id = android_provider_backend_->InsertSearchTerm(row);
-
-  request->ForwardResult(request->handle(), id != 0, id);
+  return id;
 }
 
 void HistoryBackend::UpdateSearchTerms(

@@ -744,17 +744,17 @@ class AddBookmarkFromAPITask : public HistoryProviderTask {
   history::URLID Run(const history::HistoryAndBookmarkRow& row) {
     RunAsyncRequestOnUIThreadBlocking(
         base::Bind(&AndroidHistoryProviderService::InsertHistoryAndBookmark,
-                   base::Unretained(service()), row, cancelable_consumer(),
+                   base::Unretained(service()),
+                   row,
                    base::Bind(&AddBookmarkFromAPITask::OnBookmarkInserted,
-                              base::Unretained(this))));
+                              base::Unretained(this)),
+                   cancelable_tracker()));
     return result_;
   }
 
  private:
-  void OnBookmarkInserted(AndroidHistoryProviderService::Handle handle,
-                          bool succeeded,
-                          history::URLID id) {
-    // Note that here 0 means an invalid id too.
+  void OnBookmarkInserted(history::URLID id) {
+    // Note that here 0 means an invalid id.
     // This is because it represents a SQLite database row id.
     result_ = id;
     RequestCompleted();
@@ -967,15 +967,15 @@ class AddSearchTermFromAPITask : public SearchTermTask {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     history::SearchRow internal_row = row;
     BuildSearchRow(&internal_row);
-    service()->InsertSearchTerm(internal_row, cancelable_consumer(),
+    service()->InsertSearchTerm(
+        internal_row,
         base::Bind(&AddSearchTermFromAPITask::OnSearchTermInserted,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        cancelable_tracker());
   }
 
-  void OnSearchTermInserted(AndroidHistoryProviderService::Handle handle,
-                            bool succeeded,
-                            history::URLID id) {
-    // Note that here 0 means an invalid id too.
+  void OnSearchTermInserted(history::URLID id) {
+    // Note that here 0 means an invalid id.
     // This is because it represents a SQLite database row id.
     result_ = id;
     RequestCompleted();
