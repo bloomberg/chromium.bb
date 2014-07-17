@@ -558,8 +558,9 @@ void BrowserPlugin::EnableCompositing(bool enable) {
   if (enable) {
     DCHECK(!compositing_helper_.get());
     if (!compositing_helper_.get()) {
-      compositing_helper_ = ChildFrameCompositingHelper::CreateForBrowserPlugin(
-          weak_ptr_factory_.GetWeakPtr());
+      compositing_helper_ =
+          ChildFrameCompositingHelper::CreateCompositingHelperForBrowserPlugin(
+              weak_ptr_factory_.GetWeakPtr());
     }
   }
   compositing_helper_->EnableCompositing(enable);

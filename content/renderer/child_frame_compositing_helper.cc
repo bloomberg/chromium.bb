@@ -40,19 +40,20 @@ ChildFrameCompositingHelper::SwapBuffersInfo::SwapBuffersInfo()
       shared_memory(NULL) {}
 
 ChildFrameCompositingHelper*
-ChildFrameCompositingHelper::CreateForBrowserPlugin(
+ChildFrameCompositingHelper::CreateCompositingHelperForBrowserPlugin(
     const base::WeakPtr<BrowserPlugin>& browser_plugin) {
   return new ChildFrameCompositingHelper(
       browser_plugin, NULL, NULL, browser_plugin->render_view_routing_id());
 }
 
 ChildFrameCompositingHelper*
-ChildFrameCompositingHelper::CreateForRenderFrameProxy(
-    RenderFrameProxy* render_frame_proxy) {
-  return new ChildFrameCompositingHelper(base::WeakPtr<BrowserPlugin>(),
-                                         render_frame_proxy->web_frame(),
-                                         render_frame_proxy,
-                                         render_frame_proxy->routing_id());
+ChildFrameCompositingHelper::CreateCompositingHelperForRenderFrame(
+    blink::WebFrame* frame,
+    RenderFrameProxy* render_frame_proxy,
+    int host_routing_id) {
+  return new ChildFrameCompositingHelper(
+      base::WeakPtr<BrowserPlugin>(), frame, render_frame_proxy,
+      host_routing_id);
 }
 
 ChildFrameCompositingHelper::ChildFrameCompositingHelper(
