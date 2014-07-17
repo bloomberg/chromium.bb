@@ -37,7 +37,7 @@ void ConvertRGBAtoRGB(const unsigned char* rgba, int pixel_width,
     memcpy(&rgb[x * 3], &rgba[x * 4], 3);
 }
 
-void ConvertSkiatoRGB(const unsigned char* skia, int pixel_width,
+void ConvertSkiaToRGB(const unsigned char* skia, int pixel_width,
                       unsigned char* rgb, bool* is_opaque) {
   for (int x = 0; x < pixel_width; x++) {
     const uint32_t pixel_in = *reinterpret_cast<const uint32_t*>(&skia[x * 4]);
@@ -57,7 +57,7 @@ void ConvertSkiatoRGB(const unsigned char* skia, int pixel_width,
   }
 }
 
-void ConvertSkiatoRGBA(const unsigned char* skia, int pixel_width,
+void ConvertSkiaToRGBA(const unsigned char* skia, int pixel_width,
                        unsigned char* rgba, bool* is_opaque) {
   gfx::ConvertSkiaToRGBA(skia, pixel_width, rgba);
 }
@@ -688,11 +688,11 @@ bool EncodeWithCompressionLevel(const unsigned char* input,
         if (discard_transparency) {
           output_color_components = 3;
           png_output_color_type = PNG_COLOR_TYPE_RGB;
-          converter = ConvertSkiatoRGB;
+          converter = ConvertSkiaToRGB;
         } else {
           output_color_components = 4;
           png_output_color_type = PNG_COLOR_TYPE_RGB_ALPHA;
-          converter = ConvertSkiatoRGBA;
+          converter = ConvertSkiaToRGBA;
         }
       }
       break;
