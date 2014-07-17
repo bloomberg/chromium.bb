@@ -60,13 +60,24 @@ void PacedSender::RegisterVideoSsrc(uint32 video_ssrc) {
   video_ssrc_ = video_ssrc;
 }
 
+void PacedSender::RegisterPrioritySsrc(uint32 ssrc) {
+  priority_ssrcs_.push_back(ssrc);
+}
+
 bool PacedSender::SendPackets(const SendPacketVector& packets) {
   if (packets.empty()) {
     return true;
   }
+  const bool high_priority = IsHighPriority(packets.begin()->first);
   for (size_t i = 0; i < packets.size(); i++) {
-    packet_list_[packets[i].first] =
-        make_pair(PacketType_Normal, packets[i].second);
+    DCHECK(IsHighPriority(packets[i].first) == high_priority);
+    if (high_priority) {
+      priority_packet_list_[packets[i].first] =
+          make_pair(PacketType_Normal, packets[i].second);
+    } else {
+      packet_list_[packets[i].first] =
+          make_pair(PacketType_Normal, packets[i].second);
+    }
   }
   if (state_ == State_Unblocked) {
     SendStoredPackets();
@@ -79,6 +90,7 @@ bool PacedSender::ResendPackets(const SendPacketVector& packets,
   if (packets.empty()) {
     return true;
   }
+  const bool high_priority = IsHighPriority(packets.begin()->first);
   base::TimeTicks now = clock_->NowTicks();
   for (size_t i = 0; i < packets.size(); i++) {
     std::map<PacketKey, base::TimeTicks>::const_iterator j =
@@ -89,8 +101,14 @@ bool PacedSender::ResendPackets(const SendPacketVector& packets,
       continue;
     }
 
-    packet_list_[packets[i].first] =
-        make_pair(PacketType_Resend, packets[i].second);
+    DCHECK(IsHighPriority(packets[i].first) == high_priority);
+    if (high_priority) {
+      priority_packet_list_[packets[i].first] =
+          make_pair(PacketType_Resend, packets[i].second);
+    } else {
+      packet_list_[packets[i].first] =
+          make_pair(PacketType_Resend, packets[i].second);
+    }
   }
   if (state_ == State_Unblocked) {
     SendStoredPackets();
@@ -100,7 +118,8 @@ bool PacedSender::ResendPackets(const SendPacketVector& packets,
 
 bool PacedSender::SendRtcpPacket(uint32 ssrc, PacketRef packet) {
   if (state_ == State_TransportBlocked) {
-    packet_list_[PacedPacketSender::MakePacketKey(base::TimeTicks(), ssrc, 0)] =
+    priority_packet_list_[
+        PacedPacketSender::MakePacketKey(base::TimeTicks(), ssrc, 0)] =
         make_pair(PacketType_RTCP, packet);
   } else {
     // We pass the RTCP packets straight through.
@@ -110,33 +129,39 @@ bool PacedSender::SendRtcpPacket(uint32 ssrc, PacketRef packet) {
                        weak_factory_.GetWeakPtr()))) {
       state_ = State_TransportBlocked;
     }
-
   }
   return true;
 }
 
 void PacedSender::CancelSendingPacket(const PacketKey& packet_key) {
   packet_list_.erase(packet_key);
+  priority_packet_list_.erase(packet_key);
 }
 
-PacketRef PacedSender::GetNextPacket(PacketType* packet_type,
+PacketRef PacedSender::PopNextPacket(PacketType* packet_type,
                                      PacketKey* packet_key) {
-  std::map<PacketKey, std::pair<PacketType, PacketRef> >::iterator i;
-  i = packet_list_.begin();
-  DCHECK(i != packet_list_.end());
+  PacketList* list = !priority_packet_list_.empty() ?
+      &priority_packet_list_ : &packet_list_;
+  DCHECK(!list->empty());
+  PacketList::iterator i = list->begin();
   *packet_type = i->second.first;
   *packet_key = i->first;
   PacketRef ret = i->second.second;
-  packet_list_.erase(i);
+  list->erase(i);
   return ret;
 }
 
+bool PacedSender::IsHighPriority(const PacketKey& packet_key) const {
+  return std::find(priority_ssrcs_.begin(), priority_ssrcs_.end(),
+                   packet_key.second.first) != priority_ssrcs_.end();
+}
+
 bool PacedSender::empty() const {
-  return packet_list_.empty();
+  return packet_list_.empty() && priority_packet_list_.empty();
 }
 
 size_t PacedSender::size() const {
-  return packet_list_.size();
+  return packet_list_.size() + priority_packet_list_.size();
 }
 
 // This function can be called from three places:
@@ -199,7 +224,7 @@ void PacedSender::SendStoredPackets() {
     }
     PacketType packet_type;
     PacketKey packet_key;
-    PacketRef packet = GetNextPacket(&packet_type, &packet_key);
+    PacketRef packet = PopNextPacket(&packet_type, &packet_key);
     sent_time_[packet_key] = now;
     sent_time_buffer_[packet_key] = now;
 

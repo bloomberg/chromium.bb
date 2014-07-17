@@ -5,7 +5,7 @@
 #ifndef MEDIA_CAST_NET_PACING_PACED_SENDER_H_
 #define MEDIA_CAST_NET_PACING_PACED_SENDER_H_
 
-#include <list>
+#include <map>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -69,6 +69,12 @@ class PacedSender : public PacedPacketSender,
   void RegisterAudioSsrc(uint32 audio_ssrc);
   void RegisterVideoSsrc(uint32 video_ssrc);
 
+  // Register SSRC that has a higher priority for sending. Multiple SSRCs can
+  // be registered.
+  // Note that it is not expected to register many SSRCs with this method.
+  // Because IsHigherPriority() is determined in linear time.
+  void RegisterPrioritySsrc(uint32 ssrc);
+
   // PacedPacketSender implementation.
   virtual bool SendPackets(const SendPacketVector& packets) OVERRIDE;
   virtual bool ResendPackets(const SendPacketVector& packets,
@@ -108,8 +114,11 @@ class PacedSender : public PacedPacketSender,
   // Returns the next packet to send. RTCP packets have highest priority,
   // resend packets have second highest priority and then comes everything
   // else.
-  PacketRef GetNextPacket(PacketType* packet_type,
+  PacketRef PopNextPacket(PacketType* packet_type,
                           PacketKey* packet_key);
+
+  // Returns true if the packet should have a higher priority.
+  bool IsHighPriority(const PacketKey& packet_key) const;
 
   base::TickClock* const clock_;  // Not owned by this class.
   LoggingImpl* const logging_;    // Not owned by this class.
@@ -117,7 +126,13 @@ class PacedSender : public PacedPacketSender,
   scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
   uint32 audio_ssrc_;
   uint32 video_ssrc_;
-  std::map<PacketKey, std::pair<PacketType, PacketRef> > packet_list_;
+
+  // Set of SSRCs that have higher priority. This is a vector instead of a
+  // set because there's only very few in it (most likely 1).
+  std::vector<uint32> priority_ssrcs_;
+  typedef std::map<PacketKey, std::pair<PacketType, PacketRef> > PacketList;
+  PacketList packet_list_;
+  PacketList priority_packet_list_;
   std::map<PacketKey, base::TimeTicks> sent_time_;
   std::map<PacketKey, base::TimeTicks> sent_time_buffer_;
 

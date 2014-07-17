@@ -89,7 +89,9 @@ void CastTransportSenderImpl::InitializeAudio(
   }
   audio_sender_.reset(new RtpSender(clock_, transport_task_runner_, &pacer_));
   if (audio_sender_->Initialize(config)) {
+    // Audio packets have a higher priority.
     pacer_.RegisterAudioSsrc(config.ssrc);
+    pacer_.RegisterPrioritySsrc(config.ssrc);
     status_callback_.Run(TRANSPORT_AUDIO_INITIALIZED);
   } else {
     audio_sender_.reset();

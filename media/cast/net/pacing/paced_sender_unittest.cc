@@ -19,11 +19,11 @@ namespace cast {
 namespace {
 
 static const uint8 kValue = 123;
-static const size_t kSize1 = 100;
-static const size_t kSize2 = 101;
-static const size_t kSize3 = 102;
-static const size_t kSize4 = 103;
-static const size_t kNackSize = 104;
+static const size_t kSize1 = 101;
+static const size_t kSize2 = 102;
+static const size_t kSize3 = 103;
+static const size_t kSize4 = 104;
+static const size_t kNackSize = 105;
 static const int64 kStartMillisecond = INT64_C(12345678900000);
 static const uint32 kVideoSsrc = 0x1234;
 static const uint32 kAudioSsrc = 0x5678;
@@ -347,6 +347,57 @@ TEST_F(PacedSenderTest, PaceWith60fps) {
 
   // No more packets.
   EXPECT_TRUE(RunUntilEmpty(5));
+}
+
+TEST_F(PacedSenderTest, SendPriority) {
+  // Actual order to the network is:
+  // 1. Video packets x 10.
+  // 2. RTCP packet x 1.
+  // 3. Audio packet x 1.
+  // 4. Video retransmission packet x 10.
+  // 5. Video packet x 10.
+  mock_transport_.AddExpectedSize(kSize2, 10);  // Normal video packets.
+  mock_transport_.AddExpectedSize(kSize3, 1);  // RTCP packet.
+  mock_transport_.AddExpectedSize(kSize1, 1);  // Audio packet.
+  mock_transport_.AddExpectedSize(kSize4, 10);  // Resend video packets.
+  mock_transport_.AddExpectedSize(kSize2, 10);  // Normal video packets.
+
+  paced_sender_->RegisterPrioritySsrc(kAudioSsrc);
+
+  // Retransmission packets with the earlier timestamp.
+  SendPacketVector resend_packets =
+      CreateSendPacketVector(kSize4, 10, false);
+  testing_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
+
+  // Send 20 normal video packets. Only 10 will be sent in this
+  // call, the rest will be sitting in the queue waiting for pacing.
+  EXPECT_TRUE(paced_sender_->SendPackets(
+      CreateSendPacketVector(kSize2, 20, false)));
+
+  testing_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
+
+  // Send normal audio packet. This is queued and will be sent
+  // earlier than video packets.
+  EXPECT_TRUE(paced_sender_->SendPackets(
+      CreateSendPacketVector(kSize1, 1, true)));
+
+  // Send RTCP packet. This is queued and will be sent first.
+  EXPECT_TRUE(paced_sender_->SendRtcpPacket(
+      kVideoSsrc,
+      new base::RefCountedData<Packet>(Packet(kSize3, kValue))));
+
+  // Resend video packets. This is queued and will be sent
+  // earlier than normal video packets.
+  EXPECT_TRUE(paced_sender_->ResendPackets(
+      resend_packets, base::TimeDelta()));
+
+  // Roll the clock. Queued packets will be sent in this order:
+  // 1. RTCP packet x 1.
+  // 2. Audio packet x 1.
+  // 3. Video retransmission packet x 10.
+  // 4. Video packet x 10.
+  task_runner_->RunTasks();
+  EXPECT_TRUE(RunUntilEmpty(4));
 }
 
 }  // namespace cast
