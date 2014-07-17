@@ -551,11 +551,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // The points, rects, mouse locations, and touch locations in the following
   // functions are in the view's coordinates, except for a RootView.
 
-  // TODO(tdanderson): GetEventHandlerForPoint() and GetEventHandlerForRect()
-  //                   will be removed once their logic is moved into
-  //                   ViewTargeter and its derived classes. See
-  //                   crbug.com/355425.
-
   // Convenience functions which calls into GetEventHandler() with
   // a 1x1 rect centered at |point|.
   View* GetEventHandlerForPoint(const gfx::Point& point);

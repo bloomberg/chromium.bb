@@ -267,9 +267,6 @@ TEST_F(ViewTargeterTest, SubtreeShouldBeExploredForEvent) {
   EXPECT_FALSE(targeter->SubtreeShouldBeExploredForEvent(&v2, event));
   v1.ConvertEventToTarget(&v2, &event);
   EXPECT_FALSE(targeter->SubtreeShouldBeExploredForEvent(&v3, event));
-
-  // TODO(tdanderson): Move the hit-testing unit tests out of view_unittest
-  // and into here. See crbug.com/355425.
 }
 
 // Tests that FindTargetForEvent() returns the correct target when some
