@@ -1252,7 +1252,6 @@ crbug.com/30536 [ Win ] http/tests/ssl/referer-301.html [ Timeout Pass ]
 crbug.com/390204 [ Release ] inspector/console/console-viewport-selection.html [ Pass Failure ]
 crbug.com/390204 [ Debug ] inspector/console/console-viewport-selection.html [ Pass Failure Slow ]
 crbug.com/394208 [ Win ] http/tests/security/link-crossorigin-stylesheet-use-credentials.html [ Timeout Pass ]
-crbug.com/394208 [ Mac Linux ] http/tests/security/link-crossorigin-stylesheet-use-credentials.html [ Failure Pass ]
 crbug.com/394210 [ Win ] inspector/profiler/webgl/webgl-profiler-api-changes.html [ Timeout Pass ]
 
 # Assertion failures seen only on Slow Leopard.

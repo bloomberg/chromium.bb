@@ -1,5 +1,8 @@
 // Tiny test rig for all security/link-crossorigin-*.html tests,
 // which exercise <link> + CORS variations.
+
+self.jsTestIsAsync = true;
+
 if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
@@ -13,13 +16,12 @@ var event_count = 0;
 test_count = window.test_count || default_test_count;
 
 function finish(pass, msg) {
-    var out = document.querySelector("pre");
-    var txt = pass ? "PASS" : "FAIL";
-    if (msg) txt += ": " + msg;
-    out.appendChild(document.createTextNode(txt));
-    out.appendChild(document.createElement("br"));
-    if (++event_count >= test_count && window.testRunner)
-        testRunner.notifyDone();
+    if (pass)
+        testPassed(msg || "");
+     else
+        testFailed(msg || "");
+    if (++event_count >= test_count)
+        finishJSTest();
 }
 
 function pass() { finish(true); }
