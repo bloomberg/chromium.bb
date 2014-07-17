@@ -4,26 +4,21 @@
 
 #include "third_party/libaddressinput/chromium/chrome_address_validator.h"
 
-#include <cstddef>
-#include <string>
-#include <vector>
+#include <cmath>
 
-#include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "third_party/libaddressinput/chromium/addressinput_util.h"
 #include "third_party/libaddressinput/chromium/input_suggester.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_normalizer.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_validator.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/callback.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/downloader.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/preload_supplier.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
 
 namespace autofill {
+namespace {
 
 using ::i18n::addressinput::AddressData;
 using ::i18n::addressinput::AddressField;
@@ -38,6 +33,11 @@ using ::i18n::addressinput::ADMIN_AREA;
 using ::i18n::addressinput::DEPENDENT_LOCALITY;
 using ::i18n::addressinput::POSTAL_CODE;
 
+// The maximum number attempts to load rules.
+static const int kMaxAttemptsNumber = 8;
+
+}  // namespace
+
 AddressValidator::AddressValidator(const std::string& validation_data_url,
                                    scoped_ptr<Downloader> downloader,
                                    scoped_ptr<Storage> storage,
@@ -50,12 +50,13 @@ AddressValidator::AddressValidator(const std::string& validation_data_url,
       validator_(new ::i18n::addressinput::AddressValidator(supplier_.get())),
       validated_(BuildCallback(this, &AddressValidator::Validated)),
       rules_loaded_(BuildCallback(this, &AddressValidator::RulesLoaded)),
-      load_rules_listener_(load_rules_listener) {}
+      load_rules_listener_(load_rules_listener),
+      weak_factory_(this) {}
 
 AddressValidator::~AddressValidator() {}
 
 void AddressValidator::LoadRules(const std::string& region_code) {
-  DCHECK(supplier_);
+  attempts_number_[region_code] = 0;
   supplier_->LoadRules(region_code, *rules_loaded_);
 }
 
@@ -63,9 +64,6 @@ AddressValidator::Status AddressValidator::ValidateAddress(
     const AddressData& address,
     const FieldProblemMap* filter,
     FieldProblemMap* problems) const {
-  DCHECK(supplier_);
-  DCHECK(validator_);
-
   if (supplier_->IsPending(address.region_code)) {
     if (problems)
       addressinput::ValidateRequiredFields(address, filter, problems);
@@ -96,9 +94,6 @@ AddressValidator::Status AddressValidator::GetSuggestions(
     AddressField focused_field,
     size_t suggestion_limit,
     std::vector<AddressData>* suggestions) const {
-  DCHECK(supplier_);
-  DCHECK(input_suggester_);
-
   if (supplier_->IsPending(user_input.region_code))
     return RULES_NOT_READY;
 
@@ -121,10 +116,6 @@ AddressValidator::Status AddressValidator::GetSuggestions(
 
 bool AddressValidator::CanonicalizeAdministrativeArea(
     AddressData* address) const {
-  DCHECK(address);
-  DCHECK(supplier_);
-  DCHECK(normalizer_);
-
   if (!supplier_->IsLoaded(address->region_code))
     return false;
 
@@ -136,7 +127,12 @@ bool AddressValidator::CanonicalizeAdministrativeArea(
   return true;
 }
 
-AddressValidator::AddressValidator() : load_rules_listener_(NULL) {}
+AddressValidator::AddressValidator()
+    : load_rules_listener_(NULL), weak_factory_(this) {}
+
+base::TimeDelta AddressValidator::GetBaseRetryPeriod() const {
+  return base::TimeDelta::FromSeconds(8);
+}
 
 void AddressValidator::Validated(bool success,
                                  const AddressData&,
@@ -145,10 +141,26 @@ void AddressValidator::Validated(bool success,
 }
 
 void AddressValidator::RulesLoaded(bool success,
-                                   const std::string& country_code,
+                                   const std::string& region_code,
                                    int) {
   if (load_rules_listener_)
-    load_rules_listener_->OnAddressValidationRulesLoaded(country_code, success);
+    load_rules_listener_->OnAddressValidationRulesLoaded(region_code, success);
+
+  // Count the first failed attempt to load rules as well.
+  if (success || attempts_number_[region_code] + 1 >= kMaxAttemptsNumber)
+    return;
+
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&AddressValidator::RetryLoadRules,
+                 weak_factory_.GetWeakPtr(),
+                 region_code),
+      GetBaseRetryPeriod() * pow(2, attempts_number_[region_code]++));
+}
+
+void AddressValidator::RetryLoadRules(const std::string& region_code) {
+  // Do not reset retry count.
+  supplier_->LoadRules(region_code, *rules_loaded_);
 }
 
 }  // namespace autofill

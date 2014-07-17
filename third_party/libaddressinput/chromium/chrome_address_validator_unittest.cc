@@ -8,25 +8,19 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
-#include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_problem.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_validator.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/callback.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/downloader.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/null_storage.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
 #include "third_party/libaddressinput/src/cpp/test/fake_downloader.h"
 
-namespace {
+namespace autofill {
 
-using ::autofill::AddressValidator;
-using ::autofill::LoadRulesListener;
 using ::i18n::addressinput::AddressData;
 using ::i18n::addressinput::AddressField;
 using ::i18n::addressinput::AddressProblem;
@@ -84,7 +78,7 @@ class AddressValidatorTest : public testing::Test, LoadRulesListener {
   DISALLOW_COPY_AND_ASSIGN(AddressValidatorTest);
 };
 
-// Use this text fixture if you're going to use a region with a large set of
+// Use this test fixture if you're going to use a region with a large set of
 // validation rules. All rules should be loaded in SetUpTestCase().
 class LargeAddressValidatorTest : public testing::Test {
  protected:
@@ -737,4 +731,164 @@ TEST_F(AddressValidatorTest,
   EXPECT_TRUE(problems.empty());
 }
 
-}  // namespace
+// Use this test fixture for configuring the number of failed attempts to load
+// rules.
+class FailingAddressValidatorTest : public testing::Test, LoadRulesListener {
+ protected:
+  // A validator that retries loading rules without delay.
+  class TestAddressValidator : public AddressValidator {
+   public:
+    // Takes ownership of |downloader| and |storage|.
+    TestAddressValidator(
+        const std::string& validation_data_url,
+        scoped_ptr< ::i18n::addressinput::Downloader> downloader,
+        scoped_ptr< ::i18n::addressinput::Storage> storage,
+        LoadRulesListener* load_rules_listener)
+        : AddressValidator(validation_data_url,
+                           downloader.Pass(),
+                           storage.Pass(),
+                           load_rules_listener) {}
+
+    virtual ~TestAddressValidator() {}
+
+   protected:
+    virtual base::TimeDelta GetBaseRetryPeriod() const OVERRIDE {
+      return base::TimeDelta::FromSeconds(0);
+    }
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(TestAddressValidator);
+  };
+
+  // A downloader that always fails |failures_number| times before downloading
+  // data.
+  class FailingDownloader : public Downloader {
+   public:
+    explicit FailingDownloader() : failures_number_(0), attempts_number_(0) {}
+    virtual ~FailingDownloader() {}
+
+    // Sets the number of times to fail before downloading data.
+    void set_failures_number(int failures_number) {
+      failures_number_ = failures_number;
+    }
+
+    // Downloader implementation.
+    // Always fails for the first |failures_number| times.
+    virtual void Download(const std::string& url,
+                          const Callback& callback) const OVERRIDE {
+      ++attempts_number_;
+      // |callback| takes ownership of the |new std::string|.
+      if (failures_number_-- > 0)
+        callback(false, url, new std::string);
+      else
+        actual_downloader_.Download(url, callback);
+    }
+
+    // Returns the number of download attempts.
+    int attempts_number() const { return attempts_number_; }
+
+   private:
+    // The number of times to fail before downloading data.
+    mutable int failures_number_;
+
+    // The number of times Download was called.
+    mutable int attempts_number_;
+
+    // The downloader to use for successful downloads.
+    FakeDownloader actual_downloader_;
+
+    DISALLOW_COPY_AND_ASSIGN(FailingDownloader);
+  };
+
+  FailingAddressValidatorTest()
+      : downloader_(new FailingDownloader),
+        validator_(
+            new TestAddressValidator(FakeDownloader::kFakeAggregateDataUrl,
+                                     scoped_ptr<Downloader>(downloader_),
+                                     scoped_ptr<Storage>(new NullStorage),
+                                     this)),
+        load_rules_success_(false) {}
+
+  virtual ~FailingAddressValidatorTest() {}
+
+  FailingDownloader* downloader_;  // Owned by |validator_|.
+  scoped_ptr<AddressValidator> validator_;
+  bool load_rules_success_;
+
+ private:
+  // LoadRulesListener implementation.
+  virtual void OnAddressValidationRulesLoaded(const std::string&,
+                                              bool success) OVERRIDE {
+    load_rules_success_ = success;
+  }
+
+  base::MessageLoop ui_;
+
+  DISALLOW_COPY_AND_ASSIGN(FailingAddressValidatorTest);
+};
+
+// The validator will attempt to load rules at most 8 times.
+TEST_F(FailingAddressValidatorTest, RetryLoadingRulesHasLimit) {
+  downloader_->set_failures_number(99);
+  validator_->LoadRules("CH");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(load_rules_success_);
+  EXPECT_EQ(8, downloader_->attempts_number());
+}
+
+// The validator will load rules successfully if the downloader returns data
+// before the maximum number of retries.
+TEST_F(FailingAddressValidatorTest, RuleRetryingWillSucceed) {
+  downloader_->set_failures_number(4);
+  validator_->LoadRules("CH");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(load_rules_success_);
+  EXPECT_EQ(5, downloader_->attempts_number());
+}
+
+// The delayed task to retry loading rules should stop (instead of crashing) if
+// the validator is destroyed before it fires.
+TEST_F(FailingAddressValidatorTest, DestroyedValidatorStopsRetries) {
+  downloader_->set_failures_number(4);
+  validator_->LoadRules("CH");
+
+  // Destroy the validator.
+  validator_.reset();
+
+  // Fire the delayed task to retry loading rules.
+  EXPECT_NO_FATAL_FAILURE(base::RunLoop().RunUntilIdle());
+}
+
+// Each call to LoadRules should reset the number of retry attempts. If the
+// first call to LoadRules exceeded the maximum number of retries, the second
+// call to LoadRules should start counting the retries from zero.
+TEST_F(FailingAddressValidatorTest, LoadingRulesSecondTimeSucceeds) {
+  downloader_->set_failures_number(11);
+  validator_->LoadRules("CH");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(load_rules_success_);
+  EXPECT_EQ(8, downloader_->attempts_number());
+
+  validator_->LoadRules("CH");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(load_rules_success_);
+  EXPECT_EQ(12, downloader_->attempts_number());
+}
+
+// Calling LoadRules("CH") and LoadRules("GB") simultaneously should attempt to
+// load both rules up to the maximum number of attempts for each region.
+TEST_F(FailingAddressValidatorTest, RegionsShouldRetryIndividually) {
+  downloader_->set_failures_number(99);
+  validator_->LoadRules("CH");
+  validator_->LoadRules("GB");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(load_rules_success_);
+  EXPECT_EQ(16, downloader_->attempts_number());
+}
+
+}  // namespace autofill

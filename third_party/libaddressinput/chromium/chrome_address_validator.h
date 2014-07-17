@@ -5,12 +5,14 @@
 #ifndef THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_CHROME_ADDRESS_VALIDATOR_H_
 #define THIRD_PARTY_LIBADDRESSINPUT_CHROMIUM_CHROME_ADDRESS_VALIDATOR_H_
 
-#include <cstddef>
+#include <map>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_validator.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/callback.h"
@@ -35,14 +37,14 @@ class LoadRulesListener {
  public:
   virtual ~LoadRulesListener() {}
 
-  // Called when the validation rules for the |country_code| have been loaded.
-  // The validation rules include the generic rules for the |country_code| and
+  // Called when the validation rules for the |region_code| have been loaded.
+  // The validation rules include the generic rules for the |region_code| and
   // specific rules for the country's administrative areas, localities, and
   // dependent localities. If a country has language-specific validation rules,
   // then these are also loaded.
   //
   // The |success| parameter is true when the rules were loaded successfully.
-  virtual void OnAddressValidationRulesLoaded(const std::string& country_code,
+  virtual void OnAddressValidationRulesLoaded(const std::string& region_code,
                                               bool success) = 0;
 };
 
@@ -138,12 +140,15 @@ class AddressValidator {
   virtual bool CanonicalizeAdministrativeArea(
       ::i18n::addressinput::AddressData* address) const;
 
- private:
-  friend class MockAddressValidator;
-
+ protected:
   // Constructor used only for MockAddressValidator.
   AddressValidator();
 
+  // Returns the period of time to wait between the first attempt's failure and
+  // the second attempt's initiation to load rules. Exposed for testing.
+  virtual base::TimeDelta GetBaseRetryPeriod() const;
+
+ private:
   // Verifies that |validator_| succeeded. Invoked by |validated_| callback.
   void Validated(bool success,
                  const ::i18n::addressinput::AddressData&,
@@ -151,7 +156,10 @@ class AddressValidator {
 
   // Invokes the |load_rules_listener_|, if it's not NULL. Called by
   // |rules_loaded_| callback.
-  void RulesLoaded(bool success, const std::string& country_code, int);
+  void RulesLoaded(bool success, const std::string& region_code, int);
+
+  // Retries loading rules without resetting the retry counter.
+  void RetryLoadRules(const std::string& region_code);
 
   // Loads and stores aggregate rules at COUNTRY level.
   const scoped_ptr< ::i18n::addressinput::PreloadSupplier> supplier_;
@@ -177,6 +185,14 @@ class AddressValidator {
   // Not owned delegate to invoke when |suppler_| finished loading rules. Can be
   // NULL.
   LoadRulesListener* const load_rules_listener_;
+
+  // A mapping of region codes to the number of attempts to retry loading rules.
+  std::map<std::string, int> attempts_number_;
+
+  // Member variables should appear before the WeakPtrFactory, to ensure that
+  // any WeakPtrs to AddressValidator are invalidated before its members
+  // variable's destructors are executed, rendering them invalid.
+  base::WeakPtrFactory<AddressValidator> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AddressValidator);
 };
