@@ -102,6 +102,9 @@ def OverrideConfigForTrybot(build_config, options):
           hw_config.pool = constants.HWTEST_TRYBOT_POOL
           hw_config.file_bugs = False
           hw_config.priority = constants.HWTEST_DEFAULT_PRIORITY
+      # TODO: Fix full_release_test.py/AUTest on trybots, crbug.com/390828.
+      my_config['hw_tests'] = [hw_config for hw_config in my_config['hw_tests']
+                               if hw_config.suite != constants.HWTEST_AU_SUITE]
 
     # Default to starting with a fresh chroot on remote trybot runs.
     if options.remote_trybot:
