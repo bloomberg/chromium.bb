@@ -55,12 +55,13 @@ namespace ash {
 namespace test {
 namespace {
 
-class AshEventGeneratorDelegate : public aura::test::EventGeneratorDelegate {
+class AshEventGeneratorDelegate
+    : public aura::test::EventGeneratorDelegateAura {
  public:
   AshEventGeneratorDelegate() {}
   virtual ~AshEventGeneratorDelegate() {}
 
-  // aura::test::EventGeneratorDelegate overrides:
+  // aura::test::EventGeneratorDelegateAura overrides:
   virtual aura::WindowTreeHost* GetHostAt(
       const gfx::Point& point_in_screen) const OVERRIDE {
     gfx::Screen* screen = Shell::GetScreen();
@@ -191,10 +192,10 @@ void AshTestBase::TearDown() {
   gfx::Display::SetInternalDisplayId(gfx::Display::kInvalidDisplayID);
 }
 
-aura::test::EventGenerator& AshTestBase::GetEventGenerator() {
+ui::test::EventGenerator& AshTestBase::GetEventGenerator() {
   if (!event_generator_) {
     event_generator_.reset(
-        new aura::test::EventGenerator(new AshEventGeneratorDelegate()));
+        new ui::test::EventGenerator(new AshEventGeneratorDelegate()));
   }
   return *event_generator_.get();
 }

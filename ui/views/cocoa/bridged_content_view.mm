@@ -11,8 +11,13 @@
 #include "ui/gfx/canvas_paint_mac.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 @interface BridgedContentView ()
+
+// Translates the location of |theEvent| to toolkit-views coordinates and passes
+// the event to NativeWidgetMac for handling.
+- (void)handleMouseEvent:(NSEvent*)theEvent;
 
 // Execute a command on the currently focused TextInputClient.
 // |commandId| should be a resource ID from ui_strings.grd.
@@ -44,12 +49,24 @@
 
 // BridgedContentView private implementation.
 
+- (void)handleMouseEvent:(NSEvent*)theEvent {
+  if (!hostedView_)
+    return;
+
+  ui::MouseEvent event(theEvent);
+  hostedView_->GetWidget()->OnMouseEvent(&event);
+}
+
 - (void)doCommandByID:(int)commandId {
   if (textInputClient_ && textInputClient_->IsEditingCommandEnabled(commandId))
     textInputClient_->ExecuteEditingCommand(commandId);
 }
 
 // NSView implementation.
+
+- (BOOL)acceptsFirstResponder {
+  return YES;
+}
 
 - (void)setFrameSize:(NSSize)newSize {
   [super setFrameSize:newSize];
@@ -67,11 +84,62 @@
   hostedView_->Paint(&canvas, views::CullSet());
 }
 
+// NSResponder implementation.
+
 - (void)keyDown:(NSEvent*)theEvent {
   if (textInputClient_)
     [self interpretKeyEvents:@[ theEvent ]];
   else
     [super keyDown:theEvent];
+}
+
+- (void)mouseDown:(NSEvent*)theEvent {
+  [self handleMouseEvent:theEvent];
+}
+
+- (void)rightMouseDown:(NSEvent*)theEvent {
+  [self handleMouseEvent:theEvent];
+}
+
+- (void)otherMouseDown:(NSEvent*)theEvent {
+  [self handleMouseEvent:theEvent];
+}
+
+- (void)mouseUp:(NSEvent*)theEvent {
+  [self handleMouseEvent:theEvent];
+}
+
+- (void)rightMouseUp:(NSEvent*)theEvent {
+  [self handleMouseEvent:theEvent];
+}
+
+- (void)otherMouseUp:(NSEvent*)theEvent {
+  [self handleMouseEvent:theEvent];
+}
+
+- (void)mouseDragged:(NSEvent*)theEvent {
+  [self handleMouseEvent:theEvent];
+}
+
+- (void)rightMouseDragged:(NSEvent*)theEvent {
+  [self handleMouseEvent:theEvent];
+}
+
+- (void)otherMouseDragged:(NSEvent*)theEvent {
+  [self handleMouseEvent:theEvent];
+}
+
+- (void)mouseMoved:(NSEvent*)theEvent {
+  // Note: mouseEntered: and mouseExited: are not handled separately.
+  // |hostedView_| is responsible for converting the move events into entered
+  // and exited events for the view heirarchy.
+  // TODO(tapted): Install/uninstall tracking areas when required so that the
+  // NSView will receive these events outside of tests.
+  [self handleMouseEvent:theEvent];
+}
+
+- (void)scrollWheel:(NSEvent*)theEvent {
+  [self handleMouseEvent:theEvent];
 }
 
 - (void)deleteBackward:(id)sender {

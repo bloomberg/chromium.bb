@@ -237,6 +237,8 @@
       'sources': [
         'test/cocoa_test_event_utils.h',
         'test/cocoa_test_event_utils.mm',
+        'test/event_generator.cc',
+        'test/event_generator.h',
         'test/events_test_utils.cc',
         'test/events_test_utils.h',
         'test/events_test_utils_x11.cc',
@@ -262,6 +264,13 @@
         ['OS=="ios"', {
           # The cocoa files don't apply to iOS.
           'sources/': [['exclude', 'cocoa']],
+        }],
+        ['OS == "android"', {
+          'sources!': [
+            # Event generator not yet ported to Android.
+            'test/event_generator.cc',
+            'test/event_generator.h',
+          ],
         }],
       ],
     },

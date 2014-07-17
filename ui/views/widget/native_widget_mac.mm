@@ -589,8 +589,7 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
 
 // static
 bool NativeWidgetPrivate::IsMouseButtonDown() {
-  NOTIMPLEMENTED();
-  return false;
+  return [NSEvent pressedMouseButtons] != 0;
 }
 
 // static

@@ -212,13 +212,14 @@ bool GetIsDragged(Browser* browser) {
 }  // namespace
 
 #if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
-class ScreenEventGeneratorDelegate : public aura::test::EventGeneratorDelegate {
+class ScreenEventGeneratorDelegate
+    : public aura::test::EventGeneratorDelegateAura {
  public:
   explicit ScreenEventGeneratorDelegate(aura::Window* root_window)
       : root_window_(root_window) {}
   virtual ~ScreenEventGeneratorDelegate() {}
 
-  // EventGeneratorDelegate overrides:
+  // EventGeneratorDelegateAura overrides:
   virtual aura::WindowTreeHost* GetHostAt(
       const gfx::Point& point) const OVERRIDE {
     return root_window_->GetHost();

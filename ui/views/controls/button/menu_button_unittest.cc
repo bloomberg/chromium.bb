@@ -5,8 +5,7 @@
 #include "ui/views/controls/button/menu_button.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "ui/aura/test/event_generator.h"
-#include "ui/aura/window.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/test/views_test_base.h"
 
@@ -128,8 +127,7 @@ TEST_F(MenuButtonTest, ActivateNonDropDownOnMouseClick) {
   scoped_ptr<TestButtonListener> button_listener(new TestButtonListener);
   CreateMenuButtonWithButtonListener(button_listener.get());
 
-  aura::test::EventGenerator generator(
-      widget()->GetNativeView()->GetRootWindow());
+  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
 
   generator.set_current_location(gfx::Point(10, 10));
   generator.ClickLeftButton();
@@ -147,9 +145,7 @@ TEST_F(MenuButtonTest, ActivateNonDropDownOnGestureTap) {
   scoped_ptr<TestButtonListener> button_listener(new TestButtonListener);
   CreateMenuButtonWithButtonListener(button_listener.get());
 
-  aura::test::EventGenerator generator(
-      widget()->GetNativeView()->GetRootWindow());
-
+  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
   generator.GestureTapAt(gfx::Point(10, 10));
 
   // Check that MenuButton has notified the listener on gesture tap event, while
@@ -166,8 +162,7 @@ TEST_F(MenuButtonTest, ActivateDropDownOnMouseClick) {
       new TestMenuButtonListener);
   CreateMenuButtonWithMenuButtonListener(menu_button_listener.get());
 
-  aura::test::EventGenerator generator(
-      widget()->GetNativeView()->GetRootWindow());
+  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
 
   generator.set_current_location(gfx::Point(10, 10));
   generator.ClickLeftButton();
@@ -185,9 +180,7 @@ TEST_F(MenuButtonTest, ActivateDropDownOnGestureTap) {
       new TestMenuButtonListener);
   CreateMenuButtonWithMenuButtonListener(menu_button_listener.get());
 
-  aura::test::EventGenerator generator(
-      widget()->GetNativeView()->GetRootWindow());
-
+  ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
   generator.GestureTapAt(gfx::Point(10, 10));
 
   // Check that MenuButton has notified the listener, while it was in pressed

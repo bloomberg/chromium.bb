@@ -23,14 +23,16 @@ namespace gfx {
 class Rect;
 }
 
+namespace ui {
+namespace test {
+class EventGenerator;
+}
+}
+
 namespace aura {
 class RootWindow;
 class Window;
 class WindowDelegate;
-
-namespace test {
-class EventGenerator;
-}  // namespace test
 }  // namespace aura
 
 namespace ash {
@@ -86,7 +88,7 @@ class AshTestBase : public testing::Test {
   // Returns the EventGenerator that uses screen coordinates and works
   // across multiple displays. It createse a new generator if it
   // hasn't been created yet.
-  aura::test::EventGenerator& GetEventGenerator();
+  ui::test::EventGenerator& GetEventGenerator();
 
  protected:
   enum UserSessionBlockReason {
@@ -132,7 +134,7 @@ class AshTestBase : public testing::Test {
   bool start_session_;
   scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
   scoped_ptr<AshTestHelper> ash_test_helper_;
-  scoped_ptr<aura::test::EventGenerator> event_generator_;
+  scoped_ptr<ui::test::EventGenerator> event_generator_;
 #if defined(OS_WIN)
   // Note that the order is important here as ipc_thread_ should be destroyed
   // after metro_viewer_host_->channel_.

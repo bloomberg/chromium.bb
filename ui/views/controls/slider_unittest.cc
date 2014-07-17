@@ -11,11 +11,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/test/event_generator.h"
-#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/events/gesture_event_details.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/test/slider_test_api.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
@@ -147,7 +146,7 @@ class SliderTest : public views::ViewsTestBase {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  aura::test::EventGenerator* event_generator() {
+  ui::test::EventGenerator* event_generator() {
     return event_generator_.get();
   }
 
@@ -168,7 +167,7 @@ class SliderTest : public views::ViewsTestBase {
   // The widget container for the slider being tested.
   views::Widget* widget_;
   // An event generator.
-  scoped_ptr<aura::test::EventGenerator> event_generator_;
+  scoped_ptr<ui::test::EventGenerator> event_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(SliderTest);
 };
@@ -204,9 +203,8 @@ void SliderTest::SetUp() {
   widget_->SetContentsView(slider_);
   widget_->Show();
 
-  aura::Window* native_window = widget_->GetNativeWindow();
-  event_generator_.reset(new aura::test::EventGenerator(
-        native_window->GetRootWindow()));
+  event_generator_.reset(new ui::test::EventGenerator(
+      GetContext(), widget_->GetNativeWindow()));
 }
 
 void SliderTest::TearDown() {

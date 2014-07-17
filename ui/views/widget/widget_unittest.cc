@@ -12,14 +12,13 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/test/event_generator.h"
-#include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/views/bubble/bubble_delegate.h"
@@ -40,10 +39,21 @@
 namespace views {
 namespace test {
 
-// A view that keeps track of the events it receives, but consumes no events.
+// A view that keeps track of the events it receives, optionally consuming them.
 class EventCountView : public View {
  public:
-  EventCountView() {}
+  // Whether to call SetHandled() on events as they are received. For some event
+  // types, this will allow EventCountView to receives future events in the
+  // event sequence, such as a drag.
+  enum HandleMode {
+    PROPAGATE_EVENTS,
+    CONSUME_EVENTS
+  };
+
+  EventCountView()
+      : last_flags_(0),
+        handle_mode_(PROPAGATE_EVENTS) {}
+
   virtual ~EventCountView() {}
 
   int GetEventCount(ui::EventType type) {
@@ -54,27 +64,47 @@ class EventCountView : public View {
     event_count_.clear();
   }
 
+  int last_flags() const {
+    return last_flags_;
+  }
+
+  void set_handle_mode(HandleMode handle_mode) {
+    handle_mode_ = handle_mode;
+  }
+
  protected:
+  // Overridden from View:
+  virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE {
+    // MouseMove events are not re-dispatched from the RootView.
+    ++event_count_[ui::ET_MOUSE_MOVED];
+    last_flags_ = 0;
+  }
+
   // Overridden from ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
-    RecordEvent(*event);
+    RecordEvent(event);
   }
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
-    RecordEvent(*event);
+    RecordEvent(event);
   }
   virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
-    RecordEvent(*event);
+    RecordEvent(event);
   }
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
-    RecordEvent(*event);
+    RecordEvent(event);
   }
 
  private:
-  void RecordEvent(const ui::Event& event) {
-    ++event_count_[event.type()];
+  void RecordEvent(ui::Event* event) {
+    ++event_count_[event->type()];
+    last_flags_ = event->flags();
+    if (handle_mode_ == CONSUME_EVENTS)
+      event->SetHandled();
   }
 
   std::map<ui::EventType, int> event_count_;
+  int last_flags_;
+  HandleMode handle_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(EventCountView);
 };
@@ -1525,7 +1555,7 @@ TEST_F(WidgetTest, MouseEventDispatchWhileTouchIsDown) {
   MousePressEventConsumer consumer;
   event_count_view->AddPostTargetHandler(&consumer);
 
-  aura::test::EventGenerator generator(GetContext(), widget->GetNativeWindow());
+  ui::test::EventGenerator generator(GetContext(), widget->GetNativeWindow());
   generator.PressTouch();
   generator.ClickLeftButton();
 
@@ -1645,7 +1675,7 @@ TEST_F(WidgetTest, WidgetDeleted_InOnMousePressed) {
   widget->SetSize(gfx::Size(100, 100));
   widget->Show();
 
-  aura::test::EventGenerator generator(GetContext(), widget->GetNativeWindow());
+  ui::test::EventGenerator generator(GetContext(), widget->GetNativeWindow());
 
   WidgetDeletionObserver deletion_observer(widget);
   generator.ClickLeftButton();
@@ -1665,7 +1695,7 @@ TEST_F(WidgetTest, WidgetDeleted_InDispatchGestureEvent) {
   widget->SetSize(gfx::Size(100, 100));
   widget->Show();
 
-  aura::test::EventGenerator generator(GetContext());
+  ui::test::EventGenerator generator(GetContext(), widget->GetNativeWindow());
 
   WidgetDeletionObserver deletion_observer(widget);
   generator.GestureTapAt(widget->GetWindowBoundsInScreen().CenterPoint());
@@ -2177,7 +2207,6 @@ TEST_F(WidgetTest, FullscreenStatePropagated) {
               IsNativeWindowVisible(top_level_widget.GetNativeWindow()));
     top_level_widget.CloseNow();
   }
-
 #if !defined(OS_CHROMEOS)
   {
     Widget top_level_widget;
@@ -2191,7 +2220,6 @@ TEST_F(WidgetTest, FullscreenStatePropagated) {
   }
 #endif
 }
-
 #if defined(OS_WIN)
 
 // Provides functionality to test widget activation via an activation flag
@@ -2498,6 +2526,75 @@ TEST_F(WidgetTest, IsActiveFromDestroy) {
   parent_widget.CloseNow();
 }
 #endif  // !defined(OS_CHROMEOS)
+
+// Tests that events propagate through from the dispatcher with the correct
+// event type, and that the different platforms behave the same.
+TEST_F(WidgetTest, MouseEventTypesViaGenerator) {
+  EventCountView* view = new EventCountView;
+  view->set_handle_mode(EventCountView::CONSUME_EVENTS);
+  view->SetBounds(10, 10, 50, 40);
+
+  Widget* widget = CreateTopLevelFramelessPlatformWidget();
+  widget->GetRootView()->AddChildView(view);
+
+  widget->SetBounds(gfx::Rect(0, 0, 100, 80));
+  widget->Show();
+
+  ui::test::EventGenerator generator(GetContext(), widget->GetNativeWindow());
+  generator.set_current_location(gfx::Point(20, 20));
+
+  generator.ClickLeftButton();
+  EXPECT_EQ(1, view->GetEventCount(ui::ET_MOUSE_PRESSED));
+  EXPECT_EQ(1, view->GetEventCount(ui::ET_MOUSE_RELEASED));
+  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, view->last_flags());
+
+  generator.PressRightButton();
+  EXPECT_EQ(2, view->GetEventCount(ui::ET_MOUSE_PRESSED));
+  EXPECT_EQ(1, view->GetEventCount(ui::ET_MOUSE_RELEASED));
+  EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, view->last_flags());
+
+  generator.ReleaseRightButton();
+  EXPECT_EQ(2, view->GetEventCount(ui::ET_MOUSE_PRESSED));
+  EXPECT_EQ(2, view->GetEventCount(ui::ET_MOUSE_RELEASED));
+  EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, view->last_flags());
+
+  // Test mouse move events.
+  EXPECT_EQ(0, view->GetEventCount(ui::ET_MOUSE_MOVED));
+  EXPECT_EQ(0, view->GetEventCount(ui::ET_MOUSE_ENTERED));
+
+  // Move the mouse within the view (20, 20) -> (30, 30).
+  generator.MoveMouseTo(gfx::Point(30, 30));
+  EXPECT_EQ(1, view->GetEventCount(ui::ET_MOUSE_MOVED));
+  EXPECT_EQ(1, view->GetEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(ui::EF_NONE, view->last_flags());
+
+  // Move it again - entered count shouldn't change.
+  generator.MoveMouseTo(gfx::Point(31, 31));
+  EXPECT_EQ(2, view->GetEventCount(ui::ET_MOUSE_MOVED));
+  EXPECT_EQ(1, view->GetEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(0, view->GetEventCount(ui::ET_MOUSE_EXITED));
+
+  // Move it off the view.
+  generator.MoveMouseTo(gfx::Point(5, 5));
+  EXPECT_EQ(2, view->GetEventCount(ui::ET_MOUSE_MOVED));
+  EXPECT_EQ(1, view->GetEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(1, view->GetEventCount(ui::ET_MOUSE_EXITED));
+
+  // Move it back on.
+  generator.MoveMouseTo(gfx::Point(20, 20));
+  EXPECT_EQ(3, view->GetEventCount(ui::ET_MOUSE_MOVED));
+  EXPECT_EQ(2, view->GetEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(1, view->GetEventCount(ui::ET_MOUSE_EXITED));
+
+  // Drargging. Cover HasCapture() and NativeWidgetPrivate::IsMouseButtonDown().
+  generator.DragMouseTo(gfx::Point(40, 40));
+  EXPECT_EQ(3, view->GetEventCount(ui::ET_MOUSE_PRESSED));
+  EXPECT_EQ(3, view->GetEventCount(ui::ET_MOUSE_RELEASED));
+  EXPECT_EQ(1, view->GetEventCount(ui::ET_MOUSE_DRAGGED));
+  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, view->last_flags());
+
+  widget->CloseNow();
+}
 
 }  // namespace test
 }  // namespace views

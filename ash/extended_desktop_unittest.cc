@@ -868,13 +868,13 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
   // The lock window should get events on both root windows.
   aura::test::EventGenerator& event_generator(GetEventGenerator());
 
-  event_generator.set_current_host(root_windows[0]->GetHost());
+  event_generator.set_current_target(root_windows[0]);
   event_generator.PressKey(ui::VKEY_A, 0);
   event_generator.ReleaseKey(ui::VKEY_A, 0);
   EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
   EXPECT_EQ("a", base::UTF16ToASCII(textfield->text()));
 
-  event_generator.set_current_host(root_windows[1]->GetHost());
+  event_generator.set_current_target(root_windows[1]);
   event_generator.PressKey(ui::VKEY_B, 0);
   event_generator.ReleaseKey(ui::VKEY_B, 0);
   EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
@@ -891,13 +891,13 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
   // on both root windows.
   UpdateDisplay("100x100,200x200");
   root_windows = Shell::GetAllRootWindows();
-  event_generator.set_current_host(root_windows[0]->GetHost());
+  event_generator.set_current_target(root_windows[0]);
   event_generator.PressKey(ui::VKEY_D, 0);
   event_generator.ReleaseKey(ui::VKEY_D, 0);
   EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
   EXPECT_EQ("abcd", base::UTF16ToASCII(textfield->text()));
 
-  event_generator.set_current_host(root_windows[1]->GetHost());
+  event_generator.set_current_target(root_windows[1]);
   event_generator.PressKey(ui::VKEY_E, 0);
   event_generator.ReleaseKey(ui::VKEY_E, 0);
   EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
