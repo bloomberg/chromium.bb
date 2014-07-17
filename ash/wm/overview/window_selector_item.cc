@@ -78,37 +78,6 @@ const int WindowSelectorItem::kFadeInMilliseconds = 80;
 // Opacity for dimmed items.
 static const float kDimmedItemOpacity = 0.5f;
 
-views::Widget* CreateWindowLabel(aura::Window* root_window,
-                                 const base::string16 title) {
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_POPUP;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.parent =
-      Shell::GetContainer(root_window, ash::kShellWindowId_OverlayContainer);
-  params.accept_events = false;
-  params.visible_on_all_workspaces = true;
-  widget->set_focus_on_creation(false);
-  widget->Init(params);
-  views::Label* label = new views::Label;
-  label->SetEnabledColor(kLabelColor);
-  label->SetBackgroundColor(kLabelBackground);
-  label->set_shadows(gfx::ShadowValues(1, gfx::ShadowValue(
-      gfx::Point(0, kVerticalShadowOffset), kShadowBlur, kLabelShadow)));
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  label->SetFontList(bundle.GetFontList(ui::ResourceBundle::BoldFont));
-  label->SetText(title);
-  views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kVertical,
-                                                  0,
-                                                  kVerticalLabelPadding,
-                                                  0);
-  label->SetLayoutManager(layout);
-  widget->SetContentsView(label);
-  widget->Show();
-  return widget;
-}
-
 WindowSelectorItem::WindowSelectorItem()
     : dimmed_(false),
       root_window_(NULL),
