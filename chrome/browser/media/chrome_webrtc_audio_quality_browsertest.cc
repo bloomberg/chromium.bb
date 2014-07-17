@@ -82,8 +82,7 @@ static const char kMainWebrtcTestHtmlPage[] =
 //    50 / 100 in level. Also go into the playback tab, right-click Speakers,
 //    and set that level to 50 / 100. Otherwise you will get distortion in
 //    the recording.
-class WebRtcAudioQualityBrowserTest : public WebRtcTestBase,
-                                      public testing::WithParamInterface<bool> {
+class WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
  public:
   WebRtcAudioQualityBrowserTest() {}
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -97,10 +96,6 @@ class WebRtcAudioQualityBrowserTest : public WebRtcTestBase,
         switches::kUseFakeDeviceForMediaStream));
     EXPECT_FALSE(command_line->HasSwitch(
         switches::kUseFakeUIForMediaStream));
-
-    bool enable_audio_track_processing = GetParam();
-    if (!enable_audio_track_processing)
-      command_line->AppendSwitch(switches::kDisableAudioTrackProcessing);
   }
 
   void AddAudioFile(const std::string& input_file_relative_url,
@@ -335,11 +330,6 @@ bool RunPesq(const base::FilePath& reference_file,
   return true;
 }
 
-static const bool kRunTestsWithFlag[] = { false, true };
-INSTANTIATE_TEST_CASE_P(WebRtcAudioQualityBrowserTests,
-                        WebRtcAudioQualityBrowserTest,
-                        testing::ValuesIn(kRunTestsWithFlag));
-
 #if defined(OS_LINUX) || defined(OS_WIN)
 // Only implemented on Linux and Windows for now.
 #define MAYBE_MANUAL_TestAudioQuality MANUAL_TestAudioQuality
@@ -347,7 +337,7 @@ INSTANTIATE_TEST_CASE_P(WebRtcAudioQualityBrowserTests,
 #define MAYBE_MANUAL_TestAudioQuality DISABLED_MANUAL_TestAudioQuality
 #endif
 
-IN_PROC_BROWSER_TEST_P(WebRtcAudioQualityBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebRtcAudioQualityBrowserTest,
                        MAYBE_MANUAL_TestAudioQuality) {
   if (OnWinXp()) {
     LOG(ERROR) << "This test is not implemented for Windows XP.";

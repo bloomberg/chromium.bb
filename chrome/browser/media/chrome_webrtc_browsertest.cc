@@ -22,8 +22,7 @@ static const char kMainWebrtcTestHtmlPage[] =
 // Top-level integration test for WebRTC. It always uses fake devices; see
 // WebRtcWebcamBrowserTest for a test that acquires any real webcam on the
 // system.
-class WebRtcBrowserTest : public WebRtcTestBase,
-                          public testing::WithParamInterface<bool> {
+class WebRtcBrowserTest : public WebRtcTestBase {
  public:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
@@ -41,12 +40,7 @@ class WebRtcBrowserTest : public WebRtcTestBase,
   }
 };
 
-static const bool kRunTestsWithFlag[] = { false, true };
-INSTANTIATE_TEST_CASE_P(WebRtcBrowserTests,
-                        WebRtcBrowserTest,
-                        testing::ValuesIn(kRunTestsWithFlag));
-
-IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, RunsAudioVideoWebRTCCallInTwoTabs) {
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, RunsAudioVideoWebRTCCallInTwoTabs) {
   if (OnWinXp()) return;
 
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
@@ -71,7 +65,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, RunsAudioVideoWebRTCCallInTwoTabs) {
   HangUp(right_tab);
 }
 
-IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, TestWebAudioMediaStream) {
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, TestWebAudioMediaStream) {
   // This tests against crash regressions for the WebAudio-MediaStream
   // integration.
   if (OnWinXp()) return;
