@@ -249,7 +249,7 @@ class Forwarder(object):
     current process is returned.
     """
     use_multiprocessing = Forwarder._MULTIPROCESSING_ENV_VAR in os.environ
-    return os.getppid() if use_multiprocessing else os.getpid()
+    return os.getpgrp() if use_multiprocessing else os.getpid()
 
   def _InitHostLocked(self):
     """Initializes the host forwarder daemon.
