@@ -167,7 +167,6 @@ void SQLiteCursor::DestroyOnUIThread() {
   // Consumer requests were set in the UI thread. They must be cancelled
   // using the same thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  consumer_.reset();
   tracker_.reset();
   service_->CloseStatement(statement_);
   delete this;
@@ -218,8 +217,7 @@ void SQLiteCursor::OnFaviconData(
     test_observer_->OnGetFaviconResult();
 }
 
-void SQLiteCursor::OnMoved(AndroidHistoryProviderService::Handle handle,
-                           int pos) {
+void SQLiteCursor::OnMoved(int pos) {
   position_ = pos;
   event_.Signal();
   if (test_observer_)
@@ -236,9 +234,12 @@ SQLiteCursor::JavaColumnType SQLiteCursor::GetColumnTypeInternal(int column) {
 
 void SQLiteCursor::RunMoveStatementOnUIThread(int pos) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!consumer_.get())
-    consumer_.reset(new CancelableRequestConsumer());
+  if (!tracker_.get())
+    tracker_.reset(new base::CancelableTaskTracker());
   service_->MoveStatement(
-      statement_, position_, pos, consumer_.get(),
-      base::Bind(&SQLiteCursor::OnMoved, base::Unretained(this)));
+      statement_,
+      position_,
+      pos,
+      base::Bind(&SQLiteCursor::OnMoved, base::Unretained(this)),
+      tracker_.get());
 }

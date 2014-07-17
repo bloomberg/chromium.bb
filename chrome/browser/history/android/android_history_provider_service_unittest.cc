@@ -134,8 +134,7 @@ class CallbackHelper : public base::RefCountedThreadSafe<CallbackHelper> {
     base::MessageLoop::current()->Quit();
   }
 
-  void OnStatementMoved(AndroidHistoryProviderService::Handle handle,
-                        int cursor_position) {
+  void OnStatementMoved(int cursor_position) {
     cursor_position_ = cursor_position;
     base::MessageLoop::current()->Quit();
   }
@@ -184,8 +183,12 @@ TEST_F(AndroidHistoryProviderServiceTest, TestHistoryAndBookmark) {
   // Move the cursor to the begining and verify whether we could get
   // the same result.
   AndroidStatement* statement = callback->statement();
-  service_->MoveStatement(statement, 0, -1, &cancelable_consumer_,
-      Bind(&CallbackHelper::OnStatementMoved, callback.get()));
+  service_->MoveStatement(
+      statement,
+      0,
+      -1,
+      Bind(&CallbackHelper::OnStatementMoved, callback.get()),
+      &cancelable_tracker_);
   base::MessageLoop::current()->Run();
   EXPECT_EQ(-1, callback->cursor_position());
   EXPECT_TRUE(callback->statement()->statement()->Step());
@@ -244,8 +247,12 @@ TEST_F(AndroidHistoryProviderServiceTest, TestSearchTerm) {
   // Move the cursor to the begining and verify whether we could get
   // the same result.
   AndroidStatement* statement = callback->statement();
-  service_->MoveStatement(statement, 0, -1, &cancelable_consumer_,
-      Bind(&CallbackHelper::OnStatementMoved, callback.get()));
+  service_->MoveStatement(
+      statement,
+      0,
+      -1,
+      Bind(&CallbackHelper::OnStatementMoved, callback.get()),
+      &cancelable_tracker_);
   base::MessageLoop::current()->Run();
   EXPECT_EQ(-1, callback->cursor_position());
   EXPECT_TRUE(callback->statement()->statement()->Step());

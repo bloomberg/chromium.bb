@@ -126,25 +126,31 @@ AndroidHistoryProviderService::DeleteHistory(
   return request->handle();
 }
 
-AndroidHistoryProviderService::Handle
+base::CancelableTaskTracker::TaskId
 AndroidHistoryProviderService::MoveStatement(
     history::AndroidStatement* statement,
     int current_pos,
     int destination,
-    CancelableRequestConsumerBase* consumer,
-    const MoveStatementCallback& callback) {
-  MoveStatementRequest* request = new MoveStatementRequest(callback);
-  AddRequest(request, consumer);
+    const MoveStatementCallback& callback,
+    base::CancelableTaskTracker* tracker) {
   HistoryService* hs =
       HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
-    hs->Schedule(HistoryService::PRIORITY_NORMAL,
-            &HistoryBackend::MoveStatement, NULL, request, statement,
-            current_pos, destination);
+    DCHECK(hs->thread_) << "History service being called after cleanup";
+    DCHECK(hs->thread_checker_.CalledOnValidThread());
+    return tracker->PostTaskAndReplyWithResult(
+        hs->thread_->message_loop_proxy().get(),
+        FROM_HERE,
+        base::Bind(&HistoryBackend::MoveStatement,
+                   hs->history_backend_.get(),
+                   statement,
+                   current_pos,
+                   destination),
+        callback);
   } else {
-    request->ForwardResultAsync(request->handle(), current_pos);
+    callback.Run(current_pos);
+    return base::CancelableTaskTracker::kBadTaskId;
   }
-  return request->handle();
 }
 
 void AndroidHistoryProviderService::CloseStatement(

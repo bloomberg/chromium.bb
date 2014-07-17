@@ -314,10 +314,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Statement ----------------------------------------------------------------
   // Move the statement's current position.
-  void MoveStatement(scoped_refptr<MoveStatementRequest> request,
-                     history::AndroidStatement* statement,
-                     int current_pos,
-                     int destination);
+  int MoveStatement(history::AndroidStatement* statement,
+                    int current_pos,
+                    int destination);
 
   // Close the given statement. The ownership is transfered.
   void CloseStatement(AndroidStatement* statement);

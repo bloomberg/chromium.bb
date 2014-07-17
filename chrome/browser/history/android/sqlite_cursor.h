@@ -15,7 +15,6 @@
 #include "base/strings/string16.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/android/android_history_provider_service.h"
 #include "chrome/browser/history/history_types.h"
 #include "components/favicon_base/favicon_callback.h"
@@ -159,7 +158,7 @@ class SQLiteCursor {
   void OnFaviconData(const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
   // The callback function of MoveTo().
-  void OnMoved(AndroidHistoryProviderService::Handle handle, int pos);
+  void OnMoved(int pos);
 
   JavaColumnType GetColumnTypeInternal(int column);
 
@@ -182,7 +181,6 @@ class SQLiteCursor {
   FaviconService* favicon_service_;
 
   // Live on UI thread.
-  scoped_ptr<CancelableRequestConsumer> consumer_;
   scoped_ptr<base::CancelableTaskTracker> tracker_;
 
   // The count of result rows.

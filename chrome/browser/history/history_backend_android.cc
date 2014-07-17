@@ -86,11 +86,9 @@ void HistoryBackend::DeleteHistory(
 
 // Statement -------------------------------------------------------------------
 
-void HistoryBackend::MoveStatement(
-    scoped_refptr<MoveStatementRequest> request,
-    history::AndroidStatement* statement,
-    int current_pos,
-    int destination) {
+int HistoryBackend::MoveStatement(history::AndroidStatement* statement,
+                                  int current_pos,
+                                  int destination) {
   DCHECK_LE(-1, current_pos);
   DCHECK_LE(-1, destination);
 
@@ -104,7 +102,7 @@ void HistoryBackend::MoveStatement(
       break;
   }
 
-  request->ForwardResult(request->handle(), cur);
+  return cur;
 }
 
 void HistoryBackend::CloseStatement(AndroidStatement* statement) {

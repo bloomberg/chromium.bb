@@ -50,11 +50,10 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
                     DeleteCallback;
   typedef CancelableRequest<DeleteCallback> DeleteRequest;
 
-  typedef base::Callback<void(
-                    Handle,                // handle
-                    int)>                  // the new position.
-                    MoveStatementCallback;
-  typedef CancelableRequest<MoveStatementCallback> MoveStatementRequest;
+  // Callback invoked when a method moving an |AndroidStatement| is complete.
+  // The value passed to the callback is the new position, or in case of
+  // failure, the old position.
+  typedef base::Callback<void(int)> MoveStatementCallback;
 
   // History and Bookmarks ----------------------------------------------------
   //
@@ -116,11 +115,12 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
   // Moves the statement's current row from |current_pos| to |destination| in DB
   // thread. The new position is returned to the callback. The result supplied
   // the callback is constrained by the number of rows might.
-  Handle MoveStatement(history::AndroidStatement* statement,
-                       int current_pos,
-                       int destination,
-                       CancelableRequestConsumerBase* consumer,
-                       const MoveStatementCallback& callback);
+  base::CancelableTaskTracker::TaskId MoveStatement(
+      history::AndroidStatement* statement,
+      int current_pos,
+      int destination,
+      const MoveStatementCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
   // Closes the statement in db thread. The AndroidHistoryProviderService takes
   // the ownership of |statement|.
