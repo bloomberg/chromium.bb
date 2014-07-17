@@ -203,6 +203,7 @@ RESULTS_REVISION_INFO = """
 ===== SUSPECTED CL(s) =====
 Subject : %(subject)s
 Author  : %(author)s%(email_info)s%(commit_info)s
+Commit  : %(cl)s
 Date    : %(cl_date)s"""
 
 REPRO_STEPS_LOCAL = """
@@ -3374,6 +3375,7 @@ class BisectPerformanceMetrics(object):
         'author': info['author'],
         'email_info': email_info,
         'commit_info': commit_info,
+        'cl': cl,
         'cl_date': info['date']
         }
 
