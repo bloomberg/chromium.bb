@@ -4,6 +4,7 @@
 
 #include "apps/shell/app/shell_main_delegate.h"
 #include "apps/shell/browser/shell_browser_main_delegate.h"
+#include "apps/shell/browser/shell_content_browser_client.h"
 #include "apps/shell/browser/shell_desktop_controller.h"
 #include "apps/shell/browser/shell_extension_system.h"
 #include "apps/shell/common/switches.h"
@@ -110,6 +111,23 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
   DISALLOW_COPY_AND_ASSIGN(AthenaBrowserMainDelegate);
 };
 
+class AthenaContentBrowserClient : public apps::ShellContentBrowserClient {
+ public:
+  AthenaContentBrowserClient()
+      : apps::ShellContentBrowserClient(new AthenaBrowserMainDelegate()) {}
+  virtual ~AthenaContentBrowserClient() {}
+
+  // content::ContentBrowserClient:
+  virtual content::WebContentsViewDelegate* GetWebContentsViewDelegate(
+      content::WebContents* web_contents) OVERRIDE {
+    // TODO(oshima): Implement athena's WebContentsViewDelegate.
+    return NULL;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AthenaContentBrowserClient);
+};
+
 class AthenaRendererMainDelegate : public apps::ShellRendererMainDelegate {
  public:
   AthenaRendererMainDelegate() {}
@@ -133,9 +151,9 @@ class AthenaMainDelegate : public apps::ShellMainDelegate {
 
  private:
   // apps::ShellMainDelegate:
-  virtual apps::ShellBrowserMainDelegate* CreateShellBrowserMainDelegate()
+  virtual content::ContentBrowserClient* CreateShellContentBrowserClient()
       OVERRIDE {
-    return new AthenaBrowserMainDelegate();
+    return new AthenaContentBrowserClient();
   }
 
   virtual scoped_ptr<apps::ShellRendererMainDelegate>

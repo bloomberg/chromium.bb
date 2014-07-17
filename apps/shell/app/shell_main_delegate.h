@@ -33,8 +33,8 @@ class ShellMainDelegate : public content::ContentMainDelegate {
       OVERRIDE;
 
  protected:
-  // The created object is owned by ShellBrowserMainParts.
-  virtual ShellBrowserMainDelegate* CreateShellBrowserMainDelegate();
+  // The created object is owned by this object.
+  virtual content::ContentBrowserClient* CreateShellContentBrowserClient();
 
   // The returned object is owned by ShellContentRendererClient.
   virtual scoped_ptr<ShellRendererMainDelegate>

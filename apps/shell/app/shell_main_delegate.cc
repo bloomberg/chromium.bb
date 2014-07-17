@@ -67,9 +67,14 @@ void ShellMainDelegate::PreSandboxStartup() {
 }
 
 content::ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
-  browser_client_.reset(
-      new apps::ShellContentBrowserClient(CreateShellBrowserMainDelegate()));
+  browser_client_.reset(CreateShellContentBrowserClient());
   return browser_client_.get();
+}
+
+content::ContentBrowserClient*
+ShellMainDelegate::CreateShellContentBrowserClient() {
+  return new apps::ShellContentBrowserClient(
+      new DefaultShellBrowserMainDelegate());
 }
 
 content::ContentRendererClient*
@@ -77,10 +82,6 @@ ShellMainDelegate::CreateContentRendererClient() {
   renderer_client_.reset(
       new ShellContentRendererClient(CreateShellRendererMainDelegate()));
   return renderer_client_.get();
-}
-
-ShellBrowserMainDelegate* ShellMainDelegate::CreateShellBrowserMainDelegate() {
-  return new DefaultShellBrowserMainDelegate();
 }
 
 scoped_ptr<ShellRendererMainDelegate>
