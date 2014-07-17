@@ -4,6 +4,7 @@
 
 #include "net/quic/crypto/quic_crypto_client_config.h"
 
+#include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "net/quic/crypto/cert_compressor.h"
@@ -592,7 +593,6 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
   COMPILE_ASSERT(sizeof(QuicTag) == sizeof(uint32), header_out_of_sync);
   if (rej.GetTaglist(kRREJ, &reject_reasons,
                      &num_reject_reasons) == QUIC_NO_ERROR) {
-#if defined(DEBUG)
     uint32 packed_error = 0;
     for (size_t i = 0; i < num_reject_reasons; ++i) {
       // HANDSHAKE_OK is 0 and don't report that as error.
@@ -604,7 +604,8 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
       packed_error |= 1 << (reason - 1);
     }
     DVLOG(1) << "Reasons for rejection: " << packed_error;
-#endif
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicClientHelloRejectReasons",
+                                packed_error);
   }
 
   return QUIC_NO_ERROR;

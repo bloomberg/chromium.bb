@@ -14871,6 +14871,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicClientHelloRejectReasons" enum="QuicRejectReasons">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The reject reasons for QUIC's CHLO (client hello) message from server.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicEphemeralPortsSuggested">
   <owner>rch@chromium.org</owner>
   <summary>The number of ports suggested per server.</summary>
@@ -45352,6 +45359,28 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="9" label="pps"/>
   <int value="10" label="ppsx"/>
   <int value="11" label="ppsm"/>
+</enum>
+
+<enum name="QuicRejectReasons" type="int">
+  <int value="1" label="CLIENT_NONCE_UNKNOWN_FAILURE"/>
+  <int value="2" label="CLIENT_NONCE_INVALID_FAILURE"/>
+  <int value="4" label="CLIENT_NONCE_NOT_UNIQUE_FAILURE"/>
+  <int value="8" label="CLIENT_NONCE_INVALID_ORBIT_FAILURE"/>
+  <int value="16" label="CLIENT_NONCE_INVALID_TIME_FAILURE"/>
+  <int value="32" label="CLIENT_NONCE_STRIKE_REGISTER_TIMEOUT"/>
+  <int value="64" label="CLIENT_NONCE_STRIKE_REGISTER_FAILURE"/>
+  <int value="128" label="SERVER_NONCE_DECRYPTION_FAILURE"/>
+  <int value="256" label="SERVER_NONCE_INVALID_FAILURE"/>
+  <int value="512" label="SERVER_NONCE_NOT_UNIQUE_FAILURE"/>
+  <int value="1024" label="SERVER_NONCE_INVALID_TIME_FAILURE"/>
+  <int value="2048" label="SERVER_CONFIG_INCHOATE_HELLO_FAILURE"/>
+  <int value="4096" label="SERVER_CONFIG_UNKNOWN_CONFIG_FAILURE"/>
+  <int value="8192" label="SOURCE_ADDRESS_TOKEN_INVALID_FAILURE"/>
+  <int value="16384" label="SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE"/>
+  <int value="32768" label="SOURCE_ADDRESS_TOKEN_PARSE_FAILURE"/>
+  <int value="65536" label="SOURCE_ADDRESS_TOKEN_DIFFERENT_IP_ADDRESS_FAILURE"/>
+  <int value="131072" label="SOURCE_ADDRESS_TOKEN_CLOCK_SKEW_FAILURE"/>
+  <int value="262144" label="SOURCE_ADDRESS_TOKEN_EXPIRED_FAILURE"/>
 </enum>
 
 <enum name="QuicRstStreamErrorCodes" type="int">
