@@ -1,0 +1,24 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo {
+
+[Client=WindowManagerClient]
+interface WindowManagerService {
+  OpenWindow() => (uint32 node_id);
+  SetCapture(uint32 node_id) => (bool success);
+};
+
+[Client=WindowManagerService]
+interface WindowManagerClient {
+  // Called when the window manager is ready to use (in the event a client
+  // connects to it before it has been initialized).
+  OnWindowManagerReady();
+
+  // TODO(beng): how is the WM supposed to know if a node is known to a client
+  //             or not?
+  OnCaptureChanged(uint32 old_capture_node_id, uint32 new_capture_node_id);
+};
+
+}

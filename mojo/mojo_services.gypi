@@ -633,6 +633,20 @@
         'services/test_service/test_request_tracker_impl.h',
       ],
     },
+    {
+      'target_name': 'mojo_core_window_manager_bindings',
+      'type': 'static_library',
+      'sources': [
+        'services/public/interfaces/window_manager/window_manager.mojom',
+      ],
+      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
+      'export_dependent_settings': [
+        'mojo_cpp_bindings',
+      ],
+      'dependencies': [
+        'mojo_cpp_bindings',
+      ],
+    },
   ],
   'conditions': [
     ['use_aura==1', {
@@ -760,6 +774,63 @@
             'app_name': 'mojo_view_manager',
           },
           'includes': [ 'build/package_app.gypi' ],
+        },
+        {
+          'target_name': 'mojo_core_window_manager',
+          'type': 'loadable_module',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../ui/base/ui_base.gyp:ui_base',
+            '../ui/gfx/gfx.gyp:gfx',
+            '../ui/gfx/gfx.gyp:gfx_geometry',
+            '../ui/wm/wm.gyp:wm',
+            'mojo_application',
+            'mojo_aura_support',
+            'mojo_common_lib',
+            'mojo_core_window_manager_bindings',
+            'mojo_environment_chromium',
+            'mojo_view_manager_lib',
+            '<(mojo_system_for_loadable_module)',
+          ],
+          'sources': [
+            'public/cpp/application/lib/mojo_main_chromium.cc',
+            'services/window_manager/window_manager_app.cc',
+            'services/window_manager/window_manager_app.h',
+            'services/window_manager/window_manager_service_impl.cc',
+            'services/window_manager/window_manager_service_impl.h',
+          ],
+        },
+        {
+          'target_name': 'mojo_core_window_manager_unittests',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:test_support_base',
+            '../testing/gtest.gyp:gtest',
+            '../ui/gl/gl.gyp:gl',
+            'mojo_core_window_manager_bindings',
+            'mojo_environment_chromium',
+            'mojo_service_manager',
+            'mojo_shell_test_support',
+            'mojo_system_impl',
+            'mojo_view_manager_bindings',
+          ],
+          'sources': [
+            'services/window_manager/window_manager_api_unittest.cc',
+            'services/window_manager/window_manager_unittests.cc',
+          ],
+          'conditions': [
+            ['OS=="linux"', {
+              'dependencies': [
+                '../third_party/mesa/mesa.gyp:osmesa',
+                'mojo_native_viewport_service',
+              ],
+            }],
+            ['use_x11==1', {
+              'dependencies': [
+                '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
+              ],
+            }],
+          ],
         },
       ],
     }],

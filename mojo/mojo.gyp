@@ -110,6 +110,8 @@
             'mojo_aura_demo',
             'mojo_aura_demo_init',
             'mojo_browser',
+            'mojo_core_window_manager',
+            'mojo_core_window_manager_unittests',
             'mojo_demo_launcher',
             'mojo_embedded_app',
             'mojo_keyboard',
