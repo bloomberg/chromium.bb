@@ -190,7 +190,6 @@ TEST_F(RunLoopTest, Current) {
   EXPECT_TRUE(RunLoop::current() == NULL);
 }
 
-
 class NestingRunLoopHandler : public TestRunLoopHandler {
  public:
   static const size_t kDepthLimit;
