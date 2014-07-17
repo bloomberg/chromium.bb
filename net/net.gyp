@@ -569,7 +569,6 @@
         }],
         ['chromeos==1', {
           'sources!': [
-            'base/network_change_notifier_linux_unittest.cc',
             'proxy/proxy_config_service_linux_unittest.cc',
           ],
         }],
