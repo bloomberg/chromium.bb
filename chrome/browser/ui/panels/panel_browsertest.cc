@@ -521,11 +521,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AnimateBounds) {
   // Set bounds with animation.
   gfx::Rect bounds = gfx::Rect(10, 20, 150, 160);
   panel->SetPanelBounds(bounds);
-  // There is no animation on Linux, by design.
-#if !defined(OS_LINUX)
   EXPECT_TRUE(panel_testing->IsAnimatingBounds());
   WaitForBoundsAnimationFinished(panel);
-#endif
   EXPECT_FALSE(panel_testing->IsAnimatingBounds());
   EXPECT_EQ(bounds, panel->GetBounds());
 
@@ -1727,14 +1724,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   EXPECT_TRUE(panel_testing->IsWindowVisible());
 
   // Panel should become hidden when entering full-screen mode.
-  // Note that this is not needed on Linux because the full-screen window will
-  // be always placed above any other windows.
   mock_display_settings_provider()->EnableFullScreenMode(true);
-#if defined(OS_LINUX)
-  EXPECT_TRUE(panel_testing->IsWindowVisible());
-#else
   EXPECT_FALSE(panel_testing->IsWindowVisible());
-#endif
 
   // Panel should become visible when leaving full-screen mode.
   mock_display_settings_provider()->EnableFullScreenMode(false);

@@ -41,10 +41,12 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CheckDetachedPanelProperties) {
   EXPECT_TRUE(panel_testing->IsButtonVisible(panel::CLOSE_BUTTON));
   // The minimize button will not be shown on some Linux desktop environment
   // that does not support system minimize.
-  if (PanelManager::CanUseSystemMinimize())
+  if (PanelManager::CanUseSystemMinimize() &&
+      PanelManager::IsPanelStackingEnabled()) {
     EXPECT_TRUE(panel_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
-  else
+  } else {
     EXPECT_FALSE(panel_testing->IsButtonVisible(panel::MINIMIZE_BUTTON));
+  }
   EXPECT_FALSE(panel_testing->IsButtonVisible(panel::RESTORE_BUTTON));
 
   EXPECT_EQ(panel::RESIZABLE_ALL, panel->CanResizeByMouse());

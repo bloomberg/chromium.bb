@@ -135,6 +135,9 @@ IN_PROC_BROWSER_TEST_F(PanelViewTest, PanelLayout) {
   EXPECT_LT(minimize_button->x() + minimize_button->width(), close_button->x());
 }
 
+// TODO(pkotwicz): Enable on Linux crbug.com/382301
+#if !defined(OS_LINUX)
+
 IN_PROC_BROWSER_TEST_F(PanelViewTest, CheckTitleOnlyHeight) {
   gfx::Rect bounds(0, 0, 200, 50);
   Panel* panel = CreatePanelWithBounds("PanelTest", bounds);
@@ -160,3 +163,4 @@ IN_PROC_BROWSER_TEST_F(PanelViewTest, CheckMinimizedHeight) {
 
   panel->Close();
 }
+#endif

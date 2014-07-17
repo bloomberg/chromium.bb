@@ -181,15 +181,8 @@
             # when run under openbox.
             #
             # Merge this back into the next block post switch to linux_aura.
-            'browser/ui/panels/base_panel_browser_test.cc',
-            'browser/ui/panels/base_panel_browser_test.h',
-            'browser/ui/panels/detached_panel_browsertest.cc',
-            'browser/ui/panels/docked_panel_browsertest.cc',
-            'browser/ui/panels/panel_browsertest.cc',
             'browser/ui/panels/panel_drag_browsertest.cc',
-            'browser/ui/panels/panel_resize_browsertest.cc',
             'browser/ui/panels/stacked_panel_browsertest.cc',
-            'browser/ui/views/panels/panel_view_browsertest.cc',
           ],
         }],
         ['OS=="linux" and use_aura==1 and chromeos==0', {

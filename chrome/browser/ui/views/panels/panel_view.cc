@@ -98,9 +98,10 @@ const std::map<ui::Accelerator, int>& GetAcceleratorTable() {
 }
 
 // NativePanelTesting implementation.
-class NativePanelTestingWin : public NativePanelTesting {
+class NativePanelTestingViews : public NativePanelTesting {
  public:
-  explicit NativePanelTestingWin(PanelView* panel_view);
+  explicit NativePanelTestingViews(PanelView* panel_view);
+  virtual ~NativePanelTestingViews();
 
  private:
   virtual void PressLeftMouseButtonTitlebar(
@@ -125,45 +126,48 @@ class NativePanelTestingWin : public NativePanelTesting {
   PanelView* panel_view_;
 };
 
-NativePanelTestingWin::NativePanelTestingWin(PanelView* panel_view)
+NativePanelTestingViews::NativePanelTestingViews(PanelView* panel_view)
     : panel_view_(panel_view) {
 }
 
-void NativePanelTestingWin::PressLeftMouseButtonTitlebar(
+NativePanelTestingViews::~NativePanelTestingViews() {
+}
+
+void NativePanelTestingViews::PressLeftMouseButtonTitlebar(
     const gfx::Point& mouse_location, panel::ClickModifier modifier) {
   panel_view_->OnTitlebarMousePressed(mouse_location);
 }
 
-void NativePanelTestingWin::ReleaseMouseButtonTitlebar(
+void NativePanelTestingViews::ReleaseMouseButtonTitlebar(
     panel::ClickModifier modifier) {
   panel_view_->OnTitlebarMouseReleased(modifier);
 }
 
-void NativePanelTestingWin::DragTitlebar(const gfx::Point& mouse_location) {
+void NativePanelTestingViews::DragTitlebar(const gfx::Point& mouse_location) {
   panel_view_->OnTitlebarMouseDragged(mouse_location);
 }
 
-void NativePanelTestingWin::CancelDragTitlebar() {
+void NativePanelTestingViews::CancelDragTitlebar() {
   panel_view_->OnTitlebarMouseCaptureLost();
 }
 
-void NativePanelTestingWin::FinishDragTitlebar() {
+void NativePanelTestingViews::FinishDragTitlebar() {
   panel_view_->OnTitlebarMouseReleased(panel::NO_MODIFIER);
 }
 
-bool NativePanelTestingWin::VerifyDrawingAttention() const {
+bool NativePanelTestingViews::VerifyDrawingAttention() const {
   base::MessageLoop::current()->RunUntilIdle();
   return panel_view_->GetFrameView()->GetPaintState() ==
          PanelFrameView::PAINT_FOR_ATTENTION;
 }
 
-bool NativePanelTestingWin::VerifyActiveState(bool is_active) {
+bool NativePanelTestingViews::VerifyActiveState(bool is_active) {
   return panel_view_->GetFrameView()->GetPaintState() ==
          (is_active ? PanelFrameView::PAINT_AS_ACTIVE
                     : PanelFrameView::PAINT_AS_INACTIVE);
 }
 
-bool NativePanelTestingWin::VerifyAppIcon() const {
+bool NativePanelTestingViews::VerifyAppIcon() const {
 #if defined(OS_WIN)
   // We only care about Windows 7 and later.
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
@@ -183,7 +187,7 @@ bool NativePanelTestingWin::VerifyAppIcon() const {
 #endif
 }
 
-bool NativePanelTestingWin::VerifySystemMinimizeState() const {
+bool NativePanelTestingViews::VerifySystemMinimizeState() const {
 #if defined(OS_WIN)
   HWND native_window = views::HWNDForWidget(panel_view_->window());
   WINDOWPLACEMENT placement;
@@ -207,24 +211,19 @@ bool NativePanelTestingWin::VerifySystemMinimizeState() const {
 #endif
 }
 
-bool NativePanelTestingWin::IsWindowVisible() const {
-#if defined(OS_WIN)
-  HWND native_window = views::HWNDForWidget(panel_view_->window());
-  return ::IsWindowVisible(native_window) == TRUE;
-#else
-  return panel_view_->visible();
-#endif
+bool NativePanelTestingViews::IsWindowVisible() const {
+  return panel_view_->window()->IsVisible();
 }
 
-bool NativePanelTestingWin::IsWindowSizeKnown() const {
+bool NativePanelTestingViews::IsWindowSizeKnown() const {
   return true;
 }
 
-bool NativePanelTestingWin::IsAnimatingBounds() const {
+bool NativePanelTestingViews::IsAnimatingBounds() const {
   return panel_view_->IsAnimatingBounds();
 }
 
-bool NativePanelTestingWin::IsButtonVisible(
+bool NativePanelTestingViews::IsButtonVisible(
     panel::TitlebarButtonType button_type) const {
   PanelFrameView* frame_view = panel_view_->GetFrameView();
 
@@ -241,11 +240,11 @@ bool NativePanelTestingWin::IsButtonVisible(
   return false;
 }
 
-panel::CornerStyle NativePanelTestingWin::GetWindowCornerStyle() const {
+panel::CornerStyle NativePanelTestingViews::GetWindowCornerStyle() const {
   return panel_view_->GetFrameView()->corner_style();
 }
 
-bool NativePanelTestingWin::EnsureApplicationRunOnForeground() {
+bool NativePanelTestingViews::EnsureApplicationRunOnForeground() {
   // Not needed on views.
   return true;
 }
@@ -753,7 +752,7 @@ void PanelView::DetachWebContents(content::WebContents* contents) {
 }
 
 NativePanelTesting* PanelView::CreateNativePanelTesting() {
-  return new NativePanelTestingWin(this);
+  return new NativePanelTestingViews(this);
 }
 
 void PanelView::OnDisplayChanged() {
@@ -992,7 +991,6 @@ void PanelView::OnWidgetActivationChanged(views::Widget* widget, bool active) {
         views::HWNDForWidget(widget) == ::GetForegroundWindow();
   }
 #else
-  NOTIMPLEMENTED();
   bool focused = active;
 #endif
 
