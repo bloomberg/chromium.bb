@@ -333,7 +333,6 @@ StyleSharingList& StyleResolver::styleSharingList()
     // We never put things at depth 0 into the list since that's only the <html> element
     // and it has no siblings or cousins to share with.
     unsigned depth = std::max(std::min(m_styleSharingDepth, styleSharingMaxDepth), 1u) - 1u;
-    ASSERT(depth >= 0);
 
     if (!m_styleSharingLists[depth])
         m_styleSharingLists[depth] = adoptPtr(new StyleSharingList);
