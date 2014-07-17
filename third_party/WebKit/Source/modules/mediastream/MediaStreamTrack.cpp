@@ -104,6 +104,11 @@ void MediaStreamTrack::setEnabled(bool enabled)
         MediaStreamCenter::instance().didSetMediaStreamTrackEnabled(m_component.get());
 }
 
+bool MediaStreamTrack::muted() const
+{
+    return m_component->muted();
+}
+
 String MediaStreamTrack::readyState() const
 {
     if (ended())

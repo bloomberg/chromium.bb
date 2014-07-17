@@ -63,6 +63,7 @@ public:
     String id() const { return m_id; }
     bool enabled() const { return m_enabled; }
     void setEnabled(bool enabled) { m_enabled = enabled; }
+    bool muted() const { return m_muted; }
 
 #if ENABLE(WEB_AUDIO)
     AudioSourceProvider* audioSourceProvider() { return &m_sourceProvider; }
@@ -105,6 +106,7 @@ private:
     RefPtr<MediaStreamSource> m_source;
     String m_id;
     bool m_enabled;
+    bool m_muted;
     OwnPtr<ExtraData> m_extraData;
 };
 

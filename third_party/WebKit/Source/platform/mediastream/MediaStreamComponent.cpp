@@ -54,6 +54,7 @@ MediaStreamComponent::MediaStreamComponent(const String& id, PassRefPtr<MediaStr
     : m_source(source)
     , m_id(id)
     , m_enabled(true)
+    , m_muted(false)
 {
     ASSERT(m_id.length());
 }

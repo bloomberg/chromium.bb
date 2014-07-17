@@ -58,6 +58,8 @@ public:
     bool enabled() const;
     void setEnabled(bool);
 
+    bool muted() const;
+
     String readyState() const;
 
     static void getSources(ExecutionContext*, PassOwnPtr<MediaStreamTrackSourcesCallback>, ExceptionState&);

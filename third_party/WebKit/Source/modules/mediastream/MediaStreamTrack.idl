@@ -30,6 +30,7 @@
     readonly attribute DOMString id;
     readonly attribute DOMString label;
     attribute boolean enabled;
+    readonly attribute boolean muted;
     readonly attribute DOMString readyState;
 
     [CallWith=ExecutionContext, RaisesException, MeasureAs=MediaStreamTrackGetSources] static void getSources(MediaStreamTrackSourcesCallback callback);
