@@ -103,19 +103,6 @@ static Mutex& threadAttachMutex()
     return mutex;
 }
 
-// The threadShutdownMutex is used to synchronize thread shutdown
-// since the thread local GC, as of now, cannot run in parallel
-// with other thread local GCs since it is using the global marking
-// stack. It can also not run in parallel with a global GC, but
-// that is honored by not entering a safepoint while doing the
-// thread local GC, meaning a request for a global GC would time
-// out.
-static Mutex& threadShutdownMutex()
-{
-    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
-    return mutex;
-}
-
 static double lockingTimeout()
 {
     // Wait time for parking all threads is at most 100 MS.
@@ -360,14 +347,12 @@ void ThreadState::detachMainThread()
     ThreadState* state = mainThreadState();
 
     {
-        // We enter a safepoint while waiting for the thread shutdown mutex.
-        SafePointAwareMutexLocker locker(threadShutdownMutex(), NoHeapPointersOnStack);
+        SafePointAwareMutexLocker locker(threadAttachMutex(), NoHeapPointersOnStack);
 
         // First add the main thread's heap pages to the orphaned pool.
         state->cleanupPages();
-    }
-    {
-        SafePointAwareMutexLocker locker(threadAttachMutex(), NoHeapPointersOnStack);
+
+        // Second detach thread.
         ASSERT(attachedThreads().contains(state));
         attachedThreads().remove(state);
         state->~ThreadState();
@@ -407,8 +392,13 @@ void ThreadState::cleanup()
         m_cleanupTasks[i]->preCleanup();
 
     {
-        // We enter a safepoint while waiting for the thread shutdown mutex.
-        SafePointAwareMutexLocker locker(threadShutdownMutex(), NoHeapPointersOnStack);
+        // Grab the threadAttachMutex to ensure only one thread can shutdown at
+        // a time and that no other thread can do a global GC. It also allows
+        // safe iteration of the attachedThreads set which happens as part of
+        // thread local GC asserts. We enter a safepoint while waiting for the
+        // lock to avoid a dead-lock where another thread has already requested
+        // GC.
+        SafePointAwareMutexLocker locker(threadAttachMutex(), NoHeapPointersOnStack);
 
         // From here on ignore all conservatively discovered
         // pointers into the heap owned by this thread.
@@ -437,14 +427,7 @@ void ThreadState::cleanup()
         // Add pages to the orphaned page pool to ensure any global GCs from this point
         // on will not trace objects on this thread's heaps.
         cleanupPages();
-    }
 
-    {
-        // Enter a safe point while trying to acquire threadAttachMutex
-        // to avoid dead lock if another thread is preparing for GC, has acquired
-        // threadAttachMutex and waiting for other threads to pause or reach a
-        // safepoint.
-        SafePointAwareMutexLocker locker(threadAttachMutex(), NoHeapPointersOnStack);
         ASSERT(attachedThreads().contains(this));
         attachedThreads().remove(this);
     }
