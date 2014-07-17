@@ -16,6 +16,8 @@ class Point;
 }
 
 namespace views {
+class MenuItemView;
+class MenuModelAdapter;
 class MenuRunner;
 class Widget;
 }
@@ -60,7 +62,11 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
   // Model for the BiDi input submenu.
   ui::SimpleMenuModel bidi_submenu_model_;
 
+  scoped_ptr<views::MenuModelAdapter> menu_adapter_;
   scoped_ptr<views::MenuRunner> menu_runner_;
+
+  // Weak. Owned by menu_runner_;
+  views::MenuItemView* menu_view_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuViews);
 };

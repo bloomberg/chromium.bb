@@ -98,14 +98,6 @@ class VIEWS_EXPORT MenuRunner {
   MenuRunner(MenuItemView* menu, int32 run_types);
   ~MenuRunner();
 
-  // Returns the menu.
-  MenuItemView* GetMenu();
-
-  // Takes ownership of |menu|, deleting it when MenuRunner is deleted. You
-  // only need call this if you create additional menus from
-  // MenuDelegate::GetSiblingMenu.
-  void OwnMenu(MenuItemView* menu);
-
   // Runs the menu. If this returns MENU_DELETED the method is returning
   // because the MenuRunner was deleted.
   // Typically callers should NOT do any processing if this returns

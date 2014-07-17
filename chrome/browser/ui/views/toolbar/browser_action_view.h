@@ -231,9 +231,6 @@ class BrowserActionButton : public views::MenuButton,
   // Delegate that usually represents a container for BrowserActionView.
   BrowserActionView::Delegate* delegate_;
 
-  // The context menu.  This member is non-NULL only when the menu is shown.
-  views::MenuItemView* context_menu_;
-
   // Used to make sure MaybeRegisterExtensionCommand() is called only once
   // from ViewHierarchyChanged().
   bool called_registered_extension_command_;

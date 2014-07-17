@@ -232,6 +232,7 @@ Combobox::Combobox(ui::ComboboxModel* model)
       listener_(NULL),
       selected_index_(model_->GetDefaultIndex()),
       invalid_(false),
+      menu_(NULL),
       dropdown_open_(false),
       text_button_(new TransparentButton(this)),
       arrow_button_(new TransparentButton(this)),
@@ -589,9 +590,9 @@ void Combobox::ButtonPressed(Button* sender, const ui::Event& event) {
 void Combobox::UpdateFromModel() {
   const gfx::FontList& font_list = Combobox::GetFontList();
 
-  MenuItemView* menu = new MenuItemView(this);
-  // MenuRunner owns |menu|.
-  dropdown_list_menu_runner_.reset(new MenuRunner(menu, MenuRunner::COMBOBOX));
+  menu_ = new MenuItemView(this);
+  // MenuRunner owns |menu_|.
+  dropdown_list_menu_runner_.reset(new MenuRunner(menu_, MenuRunner::COMBOBOX));
 
   int num_items = model()->GetItemCount();
   int width = 0;
@@ -602,7 +603,7 @@ void Combobox::UpdateFromModel() {
     // always selected and rendered on the top of the action button.
     if (model()->IsItemSeparatorAt(i)) {
       if (text_item_appended || style_ != STYLE_ACTION)
-        menu->AppendSeparator();
+        menu_->AppendSeparator();
       continue;
     }
 
@@ -613,7 +614,7 @@ void Combobox::UpdateFromModel() {
     base::i18n::AdjustStringForLocaleDirection(&text);
 
     if (style_ != STYLE_ACTION || i > 0) {
-      menu->AppendMenuItem(i + kFirstMenuItemId, text, MenuItemView::NORMAL);
+      menu_->AppendMenuItem(i + kFirstMenuItemId, text, MenuItemView::NORMAL);
       text_item_appended = true;
     }
 
@@ -752,8 +753,7 @@ void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
     UpdateFromModel();
 
   // Extend the menu to the width of the combobox.
-  MenuItemView* menu = dropdown_list_menu_runner_->GetMenu();
-  SubmenuView* submenu = menu->CreateSubmenu();
+  SubmenuView* submenu = menu_->CreateSubmenu();
   submenu->set_minimum_preferred_width(
       size().width() - (kMenuBorderWidthLeft + kMenuBorderWidthRight));
 

@@ -110,7 +110,6 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
       extension_(extension),
       icon_factory_(browser->profile(), extension, browser_action_, this),
       delegate_(delegate),
-      context_menu_(NULL),
       called_registered_extension_command_(false),
       icon_observer_(NULL) {
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -140,8 +139,8 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
 void BrowserActionButton::Destroy() {
   MaybeUnregisterExtensionCommand(false);
 
-  if (context_menu_) {
-    context_menu_->Cancel();
+  if (menu_runner_) {
+    menu_runner_->Cancel();
     base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   } else {
     delete this;
@@ -207,7 +206,6 @@ void BrowserActionButton::ShowContextMenuForView(
 
   menu_runner_.reset(
       new views::MenuRunner(context_menu_contents.get(), run_types));
-  context_menu_ = menu_runner_->GetMenu();
 
   if (menu_runner_->RunMenuAt(parent,
                               NULL,
@@ -220,7 +218,6 @@ void BrowserActionButton::ShowContextMenuForView(
 
   menu_runner_.reset();
   SetButtonNotPushed();
-  context_menu_ = NULL;
 }
 
 void BrowserActionButton::UpdateState() {
@@ -342,7 +339,7 @@ bool BrowserActionButton::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void BrowserActionButton::OnMouseReleased(const ui::MouseEvent& event) {
-  if (IsPopup() || context_menu_) {
+  if (IsPopup() || menu_runner_) {
     // TODO(erikkay) this never actually gets called (probably because of the
     // loss of focus).
     MenuButton::OnMouseReleased(event);
@@ -352,7 +349,7 @@ void BrowserActionButton::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 void BrowserActionButton::OnMouseExited(const ui::MouseEvent& event) {
-  if (IsPopup() || context_menu_)
+  if (IsPopup() || menu_runner_)
     MenuButton::OnMouseExited(event);
   else
     LabelButton::OnMouseExited(event);

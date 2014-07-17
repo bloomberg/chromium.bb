@@ -33,8 +33,6 @@ class MenuRunnerImpl : public internal::MenuControllerDelegate {
  public:
   explicit MenuRunnerImpl(MenuItemView* menu);
 
-  MenuItemView* menu() { return menu_; }
-
   bool running() const { return running_; }
 
   // See description above class for details.
@@ -292,10 +290,6 @@ MenuRunner::MenuRunner(MenuItemView* menu_view, int32 run_types)
 
 MenuRunner::~MenuRunner() {
   holder_->Release();
-}
-
-MenuItemView* MenuRunner::GetMenu() {
-  return holder_->menu();
 }
 
 MenuRunner::RunResult MenuRunner::RunMenuAt(Widget* parent,

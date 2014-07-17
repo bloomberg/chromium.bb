@@ -189,6 +189,9 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
   // Responsible for showing the context menu.
   scoped_ptr<MenuRunner> dropdown_list_menu_runner_;
 
+  // Weak. Owned by dropdown_list_menu_runner_.
+  MenuItemView* menu_;
+
   // Is the drop down list showing
   bool dropdown_open_;
 
