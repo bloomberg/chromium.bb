@@ -770,7 +770,7 @@ void MCSClient::HandleStreamAck(StreamId last_stream_id_received) {
 void MCSClient::HandleSelectiveAck(const PersistentIdList& id_list) {
   std::set<PersistentId> remaining_ids(id_list.begin(), id_list.end());
 
-  StreamId last_stream_id_received = -1;
+  StreamId last_stream_id_received = 0;
 
   // First check the to_resend_ queue. Acknowledgments are always contiguous,
   // so if there's a pending message that hasn't been acked, all newer messages
@@ -839,6 +839,10 @@ void MCSClient::HandleSelectiveAck(const PersistentIdList& id_list) {
     to_send_.push_front(to_resend_.back());
     to_resend_.pop_back();
   }
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&MCSClient::MaybeSendMessage,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MCSClient::HandleServerConfirmedReceipt(StreamId device_stream_id) {
