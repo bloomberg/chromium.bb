@@ -64,4 +64,13 @@ public class MathUtils {
         else if (value > max) value = max;
         return value;
     }
+
+    /**
+     * Computes a%b that is positive. Note that result of % operation is not always positive.
+     * @return a%b >= 0 ? a%b : a%b + b
+     */
+    public static int positiveModulo(int a, int b) {
+        int mod = a % b;
+        return mod >= 0 ? mod : mod + b;
+    }
 }
