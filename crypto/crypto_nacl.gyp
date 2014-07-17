@@ -22,7 +22,7 @@
         'build_pnacl_newlib': 1,
       },
       'dependencies': [
-        '../third_party/openssl/openssl_nacl.gyp:openssl_nacl',
+        '../third_party/boringssl/boringssl_nacl.gyp:boringssl_nacl',
         '../native_client/tools.gyp:prep_toolchain',
         '../native_client_sdk/native_client_sdk_untrusted.gyp:nacl_io_untrusted',
       ],

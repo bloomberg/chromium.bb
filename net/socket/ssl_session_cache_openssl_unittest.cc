@@ -75,8 +75,8 @@ class SSLKeyHelper {
   // Called when an SSL object is copied through SSL_dup(). This needs to copy
   // the value as well.
   static int KeyDup(CRYPTO_EX_DATA* to,
-                    CRYPTO_EX_DATA* from,
-                    void* from_fd,
+                    const CRYPTO_EX_DATA* from,
+                    void** from_fd,
                     int idx,
                     long argl,
                     void* argp) {

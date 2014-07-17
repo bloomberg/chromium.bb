@@ -7,8 +7,8 @@
 
 #include "net/socket/ssl_client_socket_openssl.h"
 
+#include <errno.h>
 #include <openssl/err.h>
-#include <openssl/opensslv.h>
 #include <openssl/ssl.h>
 
 #include "base/bind.h"
@@ -153,6 +153,7 @@ class SSLClientSocketOpenSSL::SSLContext {
     // but that is an OpenSSL issue.
     SSL_CTX_set_next_proto_select_cb(ssl_ctx_.get(), SelectNextProtoCallback,
                                      NULL);
+    ssl_ctx_->tlsext_channel_id_enabled_new = 1;
   }
 
   static std::string GetSessionCacheKey(const SSL* ssl) {
@@ -248,7 +249,7 @@ SSLClientSocketOpenSSL::PeerCertificateChain::operator=(
 
   // Must increase the reference count manually for sk_X509_dup
   openssl_chain_.reset(sk_X509_dup(other.openssl_chain_.get()));
-  for (int i = 0; i < sk_X509_num(openssl_chain_.get()); ++i) {
+  for (size_t i = 0; i < sk_X509_num(openssl_chain_.get()); ++i) {
     X509* x = sk_X509_value(openssl_chain_.get(), i);
     CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509);
   }
@@ -267,7 +268,7 @@ void SSLClientSocketOpenSSL::PeerCertificateChain::Reset(
     return;
 
   X509Certificate::OSCertHandles intermediates;
-  for (int i = 1; i < sk_X509_num(chain); ++i)
+  for (size_t i = 1; i < sk_X509_num(chain); ++i)
     intermediates.push_back(sk_X509_value(chain, i));
 
   os_chain_ =
@@ -277,7 +278,7 @@ void SSLClientSocketOpenSSL::PeerCertificateChain::Reset(
   openssl_chain_.reset(sk_X509_dup(chain));
 
   std::vector<base::StringPiece> der_chain;
-  for (int i = 0; i < sk_X509_num(openssl_chain_.get()); ++i) {
+  for (size_t i = 0; i < sk_X509_num(openssl_chain_.get()); ++i) {
     X509* x = sk_X509_value(openssl_chain_.get(), i);
     // Increase the reference count for the certs in openssl_chain_.
     CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509);
@@ -507,8 +508,8 @@ bool SSLClientSocketOpenSSL::IsConnectedAndIdle() const {
     return false;
   // If there is data waiting to be sent, or data read from the network that
   // has not yet been consumed.
-  if (BIO_ctrl_pending(transport_bio_) > 0 ||
-      BIO_ctrl_wpending(transport_bio_) > 0) {
+  if (BIO_pending(transport_bio_) > 0 ||
+      BIO_wpending(transport_bio_) > 0) {
     return false;
   }
 
@@ -578,11 +579,9 @@ bool SSLClientSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
   const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl_);
   CHECK(cipher);
   ssl_info->security_bits = SSL_CIPHER_get_bits(cipher, NULL);
-  const COMP_METHOD* compression = SSL_get_current_compression(ssl_);
 
   ssl_info->connection_status = EncodeSSLConnectionStatus(
-      SSL_CIPHER_get_id(cipher),
-      compression ? compression->type : 0,
+      SSL_CIPHER_get_id(cipher), 0 /* no compression */,
       GetNetSSLVersion(ssl_));
 
   bool peer_supports_renego_ext = !!SSL_get_secure_renegotiation_support(ssl_);
@@ -732,7 +731,7 @@ int SSLClientSocketOpenSSL::Init() {
                       "!aECDH:!AESGCM+AES256");
   // Walk through all the installed ciphers, seeing if any need to be
   // appended to the cipher removal |command|.
-  for (int i = 0; i < sk_SSL_CIPHER_num(ciphers); ++i) {
+  for (size_t i = 0; i < sk_SSL_CIPHER_num(ciphers); ++i) {
     const SSL_CIPHER* cipher = sk_SSL_CIPHER_value(ciphers, i);
     const uint16 id = SSL_CIPHER_get_id(cipher);
     // Remove any ciphers with a strength of less than 80 bits. Note the NSS
@@ -1206,7 +1205,7 @@ int SSLClientSocketOpenSSL::BufferSend(void) {
 
   if (!send_buffer_.get()) {
     // Get a fresh send buffer out of the send BIO.
-    size_t max_read = BIO_ctrl_pending(transport_bio_);
+    size_t max_read = BIO_pending(transport_bio_);
     if (!max_read)
       return 0;  // Nothing pending in the OpenSSL write BIO.
     send_buffer_ = new DrainableIOBuffer(new IOBuffer(max_read), max_read);
@@ -1329,7 +1328,7 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl,
     // have one at hand.
     client_auth_cert_needed_ = true;
     STACK_OF(X509_NAME) *authorities = SSL_get_client_CA_list(ssl);
-    for (int i = 0; i < sk_X509_NAME_num(authorities); i++) {
+    for (size_t i = 0; i < sk_X509_NAME_num(authorities); i++) {
       X509_NAME *ca_name = (X509_NAME *)sk_X509_NAME_value(authorities, i);
       unsigned char* str = NULL;
       int length = i2d_X509_NAME(ca_name, &str);

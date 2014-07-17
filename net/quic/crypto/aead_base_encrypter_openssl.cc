@@ -81,14 +81,18 @@ bool AeadBaseEncrypter::Encrypt(StringPiece nonce,
     return false;
   }
 
-  ssize_t len = EVP_AEAD_CTX_seal(
-      ctx_.get(), output, plaintext.size() + auth_tag_size_,
-      reinterpret_cast<const uint8_t*>(nonce.data()), nonce.size(),
-      reinterpret_cast<const uint8_t*>(plaintext.data()), plaintext.size(),
-      reinterpret_cast<const uint8_t*>(associated_data.data()),
-      associated_data.size());
-
-  if (len < 0) {
+  size_t len;
+  if (!EVP_AEAD_CTX_seal(
+          ctx_.get(),
+          output,
+          &len,
+          plaintext.size() + auth_tag_size_,
+          reinterpret_cast<const uint8_t*>(nonce.data()),
+          nonce.size(),
+          reinterpret_cast<const uint8_t*>(plaintext.data()),
+          plaintext.size(),
+          reinterpret_cast<const uint8_t*>(associated_data.data()),
+          associated_data.size())) {
     DLogOpenSslErrors();
     return false;
   }

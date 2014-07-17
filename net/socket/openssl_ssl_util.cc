@@ -4,6 +4,8 @@
 
 #include "net/socket/openssl_ssl_util.h"
 
+#include <errno.h>
+
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 
@@ -39,16 +41,16 @@ class OpenSSLNetErrorLibSingleton {
     net_error_lib_ = ERR_get_next_error_library();
   }
 
-  int net_error_lib() const { return net_error_lib_; }
+  unsigned net_error_lib() const { return net_error_lib_; }
 
  private:
-  int net_error_lib_;
+  unsigned net_error_lib_;
 };
 
 base::LazyInstance<OpenSSLNetErrorLibSingleton>::Leaky g_openssl_net_error_lib =
     LAZY_INSTANCE_INITIALIZER;
 
-int OpenSSLNetErrorLib() {
+unsigned OpenSSLNetErrorLib() {
   return g_openssl_net_error_lib.Get().net_error_lib();
 }
 
@@ -162,7 +164,7 @@ void OpenSSLPutNetError(const tracked_objects::Location& location, int err) {
     NOTREACHED();
     err = ERR_INVALID_ARGUMENT;
   }
-  ERR_PUT_error(OpenSSLNetErrorLib(), 0, err,
+  ERR_put_error(OpenSSLNetErrorLib(), 0, err,
                 location.file_name(), location.line_number());
 }
 

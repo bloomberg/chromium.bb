@@ -5,10 +5,10 @@
 #include "net/cert/x509_certificate.h"
 
 #include <openssl/asn1.h>
+#include <openssl/bytestring.h>
 #include <openssl/crypto.h>
 #include <openssl/obj_mac.h>
 #include <openssl/pem.h>
-#include <openssl/pkcs7.h>
 #include <openssl/sha.h>
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
@@ -40,27 +40,20 @@ void CreateOSCertHandlesFromPKCS7Bytes(
     const char* data, int length,
     X509Certificate::OSCertHandles* handles) {
   crypto::EnsureOpenSSLInit();
-  const unsigned char* der_data = reinterpret_cast<const unsigned char*>(data);
-  crypto::ScopedOpenSSL<PKCS7, PKCS7_free>::Type pkcs7_cert(
-      d2i_PKCS7(NULL, &der_data, length));
-  if (!pkcs7_cert.get())
-    return;
+  crypto::OpenSSLErrStackTracer err_cleaner(FROM_HERE);
 
-  STACK_OF(X509)* certs = NULL;
-  int nid = OBJ_obj2nid(pkcs7_cert.get()->type);
-  if (nid == NID_pkcs7_signed) {
-    certs = pkcs7_cert.get()->d.sign->cert;
-  } else if (nid == NID_pkcs7_signedAndEnveloped) {
-    certs = pkcs7_cert.get()->d.signed_and_enveloped->cert;
-  }
+  CBS der_data;
+  CBS_init(&der_data, reinterpret_cast<const uint8_t*>(data), length);
+  STACK_OF(X509)* certs = sk_X509_new_null();
 
-  if (certs) {
-    for (int i = 0; i < sk_X509_num(certs); ++i) {
+  if (PKCS7_get_certificates(certs, &der_data)) {
+    for (size_t i = 0; i < sk_X509_num(certs); ++i) {
       X509* x509_cert =
           X509Certificate::DupOSCertHandle(sk_X509_value(certs, i));
       handles->push_back(x509_cert);
     }
   }
+  sk_X509_pop_free(certs, X509_free);
 }
 
 void ParsePrincipalValues(X509_NAME* name,
@@ -114,7 +107,7 @@ void ParseSubjectAltName(X509Certificate::OSCertHandle cert,
   if (!alt_names.get())
     return;
 
-  for (int i = 0; i < sk_GENERAL_NAME_num(alt_names.get()); ++i) {
+  for (size_t i = 0; i < sk_GENERAL_NAME_num(alt_names.get()); ++i) {
     const GENERAL_NAME* name = sk_GENERAL_NAME_value(alt_names.get(), i);
     if (name->type == GEN_DNS && dns_names) {
       const unsigned char* dns_name = ASN1_STRING_data(name->d.dNSName);
@@ -509,7 +502,7 @@ bool X509Certificate::IsIssuedByEncoded(
 
   // and 'cert_names'.
   for (size_t n = 0; n < cert_names.size(); ++n) {
-    for (int m = 0; m < sk_X509_NAME_num(issuer_names.get()); ++m) {
+    for (size_t m = 0; m < sk_X509_NAME_num(issuer_names.get()); ++m) {
       X509_NAME* issuer = sk_X509_NAME_value(issuer_names.get(), m);
       if (X509_NAME_cmp(issuer, cert_names[n]) == 0) {
         return true;

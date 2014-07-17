@@ -255,7 +255,7 @@
               'third_party/mozilla_security_manager/nsPKCS12Blob.h',
             ],
             'dependencies': [
-              '../third_party/openssl/openssl.gyp:openssl',
+              '../third_party/boringssl/boringssl.gyp:boringssl',
             ],
           },
           {  # else !use_openssl: remove the unneeded files
@@ -466,7 +466,7 @@
         }],
         [ 'OS == "android"', {
             'dependencies': [
-              '../third_party/openssl/openssl.gyp:openssl',
+              '../third_party/boringssl/boringssl.gyp:boringssl',
               'net_jni_headers',
             ],
             'sources!': [
@@ -474,11 +474,6 @@
               'cert/cert_database_openssl.cc',
               'cert/cert_verify_proc_openssl.cc',
               'cert/test_root_certs_openssl.cc',
-            ],
-            # The net/android/keystore_openssl.cc source file needs to
-            # access an OpenSSL-internal header.
-            'include_dirs': [
-              '../third_party/openssl',
             ],
           },
         ],
@@ -594,7 +589,7 @@
         [ 'use_openssl == 1', {
           # Avoid compiling/linking with the system library.
           'dependencies': [
-            '../third_party/openssl/openssl.gyp:openssl',
+            '../third_party/boringssl/boringssl.gyp:boringssl',
           ],
         }, {  # use_openssl == 0
           'conditions': [
@@ -797,7 +792,7 @@
         }],
         [ 'OS == "android"', {
             'dependencies': [
-              '../third_party/openssl/openssl.gyp:openssl',
+              '../third_party/boringssl/boringssl.gyp:boringssl',
             ],
             'sources!': [
               'dns/dns_config_service_posix_unittest.cc',
@@ -978,7 +973,7 @@
           'conditions': [
             ['use_openssl==1', {
               'dependencies': [
-                '../third_party/openssl/openssl.gyp:openssl',
+                '../third_party/boringssl/boringssl.gyp:boringssl',
               ],
             }, {
               'dependencies': [
@@ -1376,7 +1371,7 @@
           ],
           'dependencies': [
             '../base/base.gyp:base',
-            '../third_party/openssl/openssl.gyp:openssl',
+            '../third_party/boringssl/boringssl.gyp:boringssl',
             'balsa',
             'epoll_server',
             'net',
@@ -1421,7 +1416,7 @@
           'dependencies': [
               '../testing/gtest.gyp:gtest',
               '../testing/gmock.gyp:gmock',
-              '../third_party/openssl/openssl.gyp:openssl',
+              '../third_party/boringssl/boringssl.gyp:boringssl',
               'flip_in_mem_edsm_server_base',
               'net',
               'net_test_support',
