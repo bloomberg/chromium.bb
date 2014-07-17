@@ -19,9 +19,9 @@
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_process.h"
+#include "remoting/host/fake_screen_capturer.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_mock_objects.h"
-#include "remoting/host/screen_capturer_fake.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -219,7 +219,7 @@ InputInjector* DesktopProcessTest::CreateInputInjector() {
 }
 
 webrtc::ScreenCapturer* DesktopProcessTest::CreateVideoCapturer() {
-  return new ScreenCapturerFake();
+  return new FakeScreenCapturer();
 }
 
 void DesktopProcessTest::DisconnectChannels() {

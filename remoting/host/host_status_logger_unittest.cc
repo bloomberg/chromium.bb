@@ -6,7 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "remoting/host/host_status_monitor_fake.h"
+#include "remoting/host/fake_host_status_monitor.h"
 #include "remoting/signaling/mock_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
@@ -141,7 +141,7 @@ class HostStatusLoggerTest : public testing::Test {
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   MockSignalStrategy signal_strategy_;
   scoped_ptr<HostStatusLogger> host_status_logger_;
-  HostStatusMonitorFake host_status_monitor_;
+  FakeHostStatusMonitor host_status_monitor_;
 };
 
 TEST_F(HostStatusLoggerTest, SendNow) {

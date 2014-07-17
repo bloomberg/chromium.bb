@@ -11,8 +11,8 @@
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/desktop_environment.h"
+#include "remoting/host/fake_screen_capturer.h"
 #include "remoting/host/host_mock_objects.h"
-#include "remoting/host/screen_capturer_fake.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/protocol_mock_objects.h"
@@ -267,7 +267,7 @@ class ChromotingHostTest : public testing::Test {
   // Creates a fake webrtc::ScreenCapturer, to mock
   // DesktopEnvironment::CreateVideoCapturer().
   webrtc::ScreenCapturer* CreateVideoCapturer() {
-    return new ScreenCapturerFake();
+    return new FakeScreenCapturer();
   }
 
   void DisconnectAllClients() {

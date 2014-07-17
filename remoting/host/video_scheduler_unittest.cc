@@ -11,7 +11,7 @@
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/codec/video_encoder_verbatim.h"
-#include "remoting/host/screen_capturer_fake.h"
+#include "remoting/host/fake_screen_capturer.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -83,7 +83,7 @@ class ThreadCheckVideoEncoder : public VideoEncoderVerbatim {
   DISALLOW_COPY_AND_ASSIGN(ThreadCheckVideoEncoder);
 };
 
-class ThreadCheckScreenCapturer : public ScreenCapturerFake {
+class ThreadCheckScreenCapturer : public FakeScreenCapturer {
  public:
   ThreadCheckScreenCapturer(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)

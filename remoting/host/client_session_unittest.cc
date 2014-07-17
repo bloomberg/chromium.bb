@@ -14,9 +14,9 @@
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
+#include "remoting/host/fake_screen_capturer.h"
 #include "remoting/host/host_extension.h"
 #include "remoting/host/host_mock_objects.h"
-#include "remoting/host/screen_capturer_fake.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock_mutant.h"
@@ -347,7 +347,7 @@ InputInjector* ClientSessionTest::CreateInputInjector() {
 }
 
 webrtc::ScreenCapturer* ClientSessionTest::CreateVideoCapturer() {
-  return new ScreenCapturerFake();
+  return new FakeScreenCapturer();
 }
 
 void ClientSessionTest::ConnectClientSession() {
@@ -645,9 +645,9 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
   Expectation connected = authenticated;
 
   int input_x[3] = { -999, 100, 999 };
-  int expected_x[3] = { 0, 100, ScreenCapturerFake::kWidth - 1 };
+  int expected_x[3] = { 0, 100, FakeScreenCapturer::kWidth - 1 };
   int input_y[3] = { -999, 50, 999 };
-  int expected_y[3] = { 0, 50, ScreenCapturerFake::kHeight - 1 };
+  int expected_y[3] = { 0, 50, FakeScreenCapturer::kHeight - 1 };
 
   protocol::MouseEvent expected_event;
   for (int j = 0; j < 3; j++) {

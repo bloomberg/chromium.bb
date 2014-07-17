@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_SCREEN_CAPTURER_FAKE_H_
-#define REMOTING_HOST_SCREEN_CAPTURER_FAKE_H_
+#ifndef REMOTING_HOST_FAKE_SCREEN_CAPTURER_H_
+#define REMOTING_HOST_FAKE_SCREEN_CAPTURER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
@@ -13,17 +13,17 @@
 
 namespace remoting {
 
-// A ScreenCapturerFake generates artificial image for testing purpose.
+// A FakeScreenCapturer generates artificial image for testing purpose.
 //
-// ScreenCapturerFake is double-buffered as required by ScreenCapturer.
-class ScreenCapturerFake : public webrtc::ScreenCapturer {
+// FakeScreenCapturer is double-buffered as required by ScreenCapturer.
+class FakeScreenCapturer : public webrtc::ScreenCapturer {
  public:
-  // ScreenCapturerFake generates a picture of size kWidth x kHeight.
+  // FakeScreenCapturer generates a picture of size kWidth x kHeight.
   static const int kWidth = 800;
   static const int kHeight = 600;
 
-  ScreenCapturerFake();
-  virtual ~ScreenCapturerFake();
+  FakeScreenCapturer();
+  virtual ~FakeScreenCapturer();
 
   // webrtc::DesktopCapturer interface.
   virtual void Start(Callback* callback) OVERRIDE;
@@ -54,9 +54,9 @@ class ScreenCapturerFake : public webrtc::ScreenCapturer {
 
   webrtc::ScreenCaptureFrameQueue queue_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScreenCapturerFake);
+  DISALLOW_COPY_AND_ASSIGN(FakeScreenCapturer);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_SCREEN_CAPTURER_FAKE_H_
+#endif  // REMOTING_HOST_FAKE_SCREEN_CAPTURER_H_

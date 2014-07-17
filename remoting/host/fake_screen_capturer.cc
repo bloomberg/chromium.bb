@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/screen_capturer_fake.h"
+#include "remoting/host/fake_screen_capturer.h"
 
 #include "base/logging.h"
 #include "base/time/time.h"
@@ -10,11 +10,11 @@
 
 namespace remoting {
 
-// ScreenCapturerFake generates a white picture of size kWidth x kHeight
+// FakeScreenCapturer generates a white picture of size kWidth x kHeight
 // with a rectangle of size kBoxWidth x kBoxHeight. The rectangle moves kSpeed
 // pixels per frame along both axes, and bounces off the sides of the screen.
-static const int kWidth = ScreenCapturerFake::kWidth;
-static const int kHeight = ScreenCapturerFake::kHeight;
+static const int kWidth = FakeScreenCapturer::kWidth;
+static const int kHeight = FakeScreenCapturer::kHeight;
 static const int kBoxWidth = 140;
 static const int kBoxHeight = 140;
 static const int kSpeed = 20;
@@ -24,7 +24,7 @@ COMPILE_ASSERT((kBoxWidth % kSpeed == 0) && (kWidth % kSpeed == 0) &&
                (kBoxHeight % kSpeed == 0) && (kHeight % kSpeed == 0),
                sizes_must_be_multiple_of_kSpeed);
 
-ScreenCapturerFake::ScreenCapturerFake()
+FakeScreenCapturer::FakeScreenCapturer()
     : callback_(NULL),
       mouse_shape_observer_(NULL),
       bytes_per_row_(0),
@@ -35,16 +35,16 @@ ScreenCapturerFake::ScreenCapturerFake()
   ScreenConfigurationChanged();
 }
 
-ScreenCapturerFake::~ScreenCapturerFake() {
+FakeScreenCapturer::~FakeScreenCapturer() {
 }
 
-void ScreenCapturerFake::Start(Callback* callback) {
+void FakeScreenCapturer::Start(Callback* callback) {
   DCHECK(!callback_);
   DCHECK(callback);
   callback_ = callback;
 }
 
-void ScreenCapturerFake::Capture(const webrtc::DesktopRegion& region) {
+void FakeScreenCapturer::Capture(const webrtc::DesktopRegion& region) {
   base::Time capture_start_time = base::Time::Now();
 
   queue_.MoveToNextFrame();
@@ -75,24 +75,24 @@ void ScreenCapturerFake::Capture(const webrtc::DesktopRegion& region) {
   callback_->OnCaptureCompleted(queue_.current_frame()->Share());
 }
 
-void ScreenCapturerFake::SetMouseShapeObserver(
+void FakeScreenCapturer::SetMouseShapeObserver(
       MouseShapeObserver* mouse_shape_observer) {
   DCHECK(!mouse_shape_observer_);
   DCHECK(mouse_shape_observer);
   mouse_shape_observer_ = mouse_shape_observer;
 }
 
-bool ScreenCapturerFake::GetScreenList(ScreenList* screens) {
+bool FakeScreenCapturer::GetScreenList(ScreenList* screens) {
   NOTIMPLEMENTED();
   return false;
 }
 
-bool ScreenCapturerFake::SelectScreen(webrtc::ScreenId id) {
+bool FakeScreenCapturer::SelectScreen(webrtc::ScreenId id) {
   NOTIMPLEMENTED();
   return false;
 }
 
-void ScreenCapturerFake::GenerateImage() {
+void FakeScreenCapturer::GenerateImage() {
   webrtc::DesktopFrame* frame = queue_.current_frame();
 
   const int kBytesPerPixel = webrtc::DesktopFrame::kBytesPerPixel;
@@ -129,7 +129,7 @@ void ScreenCapturerFake::GenerateImage() {
   }
 }
 
-void ScreenCapturerFake::ScreenConfigurationChanged() {
+void FakeScreenCapturer::ScreenConfigurationChanged() {
   size_.set(kWidth, kHeight);
   queue_.Reset();
   bytes_per_row_ = size_.width() * webrtc::DesktopFrame::kBytesPerPixel;

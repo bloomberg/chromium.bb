@@ -5,44 +5,13 @@
 #include "remoting/host/shaped_screen_capturer.h"
 
 #include "remoting/host/desktop_shape_tracker.h"
+#include "remoting/host/fake_screen_capturer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
 namespace remoting {
-
-const int kScreenSize = 10;
-
-class FakeScreenCapturer : public webrtc::ScreenCapturer {
- public:
-  FakeScreenCapturer() {}
-  virtual ~FakeScreenCapturer() {}
-
-  virtual void Start(Callback* callback) OVERRIDE {
-    callback_ = callback;
-  }
-
-  virtual void Capture(const webrtc::DesktopRegion& region) OVERRIDE {
-    webrtc::DesktopFrame* frame = new webrtc::BasicDesktopFrame(
-        webrtc::DesktopSize(kScreenSize, kScreenSize));
-    memset(frame->data(), 0, frame->stride() * kScreenSize);
-    callback_->OnCaptureCompleted(frame);
-  }
-
-  virtual void SetMouseShapeObserver(
-      MouseShapeObserver* mouse_shape_observer) OVERRIDE {
-  }
-  virtual bool GetScreenList(ScreenList* screens) OVERRIDE {
-    return false;
-  }
-  virtual bool SelectScreen(webrtc::ScreenId id) OVERRIDE {
-    return false;
-  }
-
- private:
-  Callback* callback_;
-};
 
 class FakeDesktopShapeTracker : public DesktopShapeTracker {
  public:
