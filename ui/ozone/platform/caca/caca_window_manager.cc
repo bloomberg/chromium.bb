@@ -1,0 +1,153 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ui/ozone/platform/caca/caca_window_manager.h"
+
+#include "base/debug/trace_event.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkSurface.h"
+#include "ui/gfx/skia_util.h"
+#include "ui/gfx/vsync_provider.h"
+#include "ui/ozone/platform/caca/caca_window.h"
+#include "ui/ozone/platform/caca/scoped_caca_types.h"
+#include "ui/ozone/public/surface_ozone_canvas.h"
+
+namespace ui {
+
+namespace {
+
+class CacaSurface : public ui::SurfaceOzoneCanvas {
+ public:
+  CacaSurface(CacaWindow* window);
+  virtual ~CacaSurface();
+
+  bool Initialize();
+
+  // ui::SurfaceOzoneCanvas overrides:
+  virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE;
+  virtual void ResizeCanvas(const gfx::Size& viewport_size) OVERRIDE;
+  virtual void PresentCanvas(const gfx::Rect& damage) OVERRIDE;
+  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() OVERRIDE;
+
+ private:
+  CacaWindow* window_;  // Not owned.
+
+  ScopedCacaDither dither_;
+
+  skia::RefPtr<SkSurface> surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(CacaSurface);
+};
+
+CacaSurface::CacaSurface(CacaWindow* window) : window_(window) {
+}
+
+CacaSurface::~CacaSurface() {
+}
+
+bool CacaSurface::Initialize() {
+  ResizeCanvas(window_->bitmap_size());
+  return true;
+}
+
+skia::RefPtr<SkCanvas> CacaSurface::GetCanvas() {
+  return skia::SharePtr<SkCanvas>(surface_->getCanvas());
+}
+
+void CacaSurface::ResizeCanvas(const gfx::Size& viewport_size) {
+  TRACE_EVENT0("ozone", "CacaSurface::ResizeCanvas");
+
+  VLOG(2) << "creating libcaca surface with from window " << (void*)window_;
+
+  SkImageInfo info = SkImageInfo::Make(window_->bitmap_size().width(),
+                                       window_->bitmap_size().height(),
+                                       kN32_SkColorType,
+                                       kPremul_SkAlphaType);
+
+  surface_ = skia::AdoptRef(SkSurface::NewRaster(info));
+  if (!surface_)
+    LOG(ERROR) << "Failed to create SkSurface";
+
+  dither_.reset(caca_create_dither(info.bytesPerPixel() * 8,
+                                   info.width(),
+                                   info.height(),
+                                   info.minRowBytes(),
+                                   0x00ff0000,
+                                   0x0000ff00,
+                                   0x000000ff,
+                                   0xff000000));
+  if (!dither_)
+    LOG(ERROR) << "failed to create dither";
+}
+
+void CacaSurface::PresentCanvas(const gfx::Rect& damage) {
+  TRACE_EVENT0("ozone", "CacaSurface::PresentCanvas");
+
+  SkImageInfo info;
+  size_t row_bytes;
+  const void* pixels = surface_->peekPixels(&info, &row_bytes);
+
+  caca_canvas_t* canvas = caca_get_canvas(window_->display());
+  caca_dither_bitmap(canvas,
+                     0,
+                     0,
+                     caca_get_canvas_width(canvas),
+                     caca_get_canvas_height(canvas),
+                     dither_.get(),
+                     static_cast<const uint8_t*>(pixels));
+  caca_refresh_display(window_->display());
+}
+
+scoped_ptr<gfx::VSyncProvider> CacaSurface::CreateVSyncProvider() {
+  return scoped_ptr<gfx::VSyncProvider>();
+}
+
+}  // namespace
+
+CacaWindowManager::CacaWindowManager() {
+}
+
+int32_t CacaWindowManager::AddWindow(CacaWindow* window) {
+  return windows_.Add(window);
+}
+
+void CacaWindowManager::RemoveWindow(int window_id, CacaWindow* window) {
+  DCHECK_EQ(window, windows_.Lookup(window_id));
+  windows_.Remove(window_id);
+}
+
+CacaWindowManager::~CacaWindowManager() {
+}
+
+ui::SurfaceFactoryOzone::HardwareState CacaWindowManager::InitializeHardware() {
+  return INITIALIZED;
+}
+
+void CacaWindowManager::ShutdownHardware() {
+}
+
+gfx::AcceleratedWidget CacaWindowManager::GetAcceleratedWidget() {
+  NOTREACHED();
+  return gfx::kNullAcceleratedWidget;
+}
+
+bool CacaWindowManager::LoadEGLGLES2Bindings(
+    AddGLLibraryCallback add_gl_library,
+    SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
+  NOTREACHED();
+  return false;
+}
+
+scoped_ptr<ui::SurfaceOzoneCanvas> CacaWindowManager::CreateCanvasForWidget(
+    gfx::AcceleratedWidget widget) {
+  CacaWindow* window = windows_.Lookup(widget);
+  DCHECK(window);
+
+  scoped_ptr<CacaSurface> canvas(new CacaSurface(window));
+  CHECK(canvas->Initialize());
+  return canvas.PassAs<ui::SurfaceOzoneCanvas>();
+}
+
+}  // namespace ui

@@ -5,41 +5,37 @@
 #ifndef UI_OZONE_PLATFORM_CACA_CACA_EVENT_FACTORY_H_
 #define UI_OZONE_PLATFORM_CACA_CACA_EVENT_FACTORY_H_
 
+#include <caca.h>
+
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/events/platform/scoped_event_dispatcher.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/ozone/public/event_factory_ozone.h"
 
 namespace ui {
 
-class CacaConnection;
+class CacaWindow;
 
 class CacaEventFactory : public EventFactoryOzone,
                          public PlatformEventSource {
  public:
-  CacaEventFactory(CacaConnection* connection);
+  CacaEventFactory();
   virtual ~CacaEventFactory();
 
   // ui::EventFactoryOzone:
   virtual void WarpCursorTo(gfx::AcceleratedWidget widget,
                             const gfx::PointF& location) OVERRIDE;
 
+  // Poll for an event on a particular window. Input events will be
+  // dispatched on the given dispatcher.
+  void TryProcessingEvent(CacaWindow* window);
+
+  // Process an input event on a particular window.
+  void OnInputEvent(caca_event_t* event, CacaWindow* window);
+
  private:
-  // PlatformEventSource:
-  virtual void OnDispatcherListChanged() OVERRIDE;
-
-  void ScheduleEventProcessing();
-
-  void TryProcessingEvent();
-
-  CacaConnection* connection_;  // Not owned.
-
-  base::WeakPtrFactory<CacaEventFactory> weak_ptr_factory_;
-
-  // Delay between event polls.
-  base::TimeDelta delay_;
-
   // Keep track of last cursor position to dispatch correct mouse push/release
   // events.
   gfx::PointF last_cursor_location_;

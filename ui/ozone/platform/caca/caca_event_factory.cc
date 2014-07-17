@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/ozone/platform/caca/caca_connection.h"
+#include "ui/ozone/platform/caca/caca_window.h"
 
 namespace ui {
 
@@ -108,10 +108,9 @@ int ModifierFromButton(const caca_event_t& event) {
 }
 
 // Translate coordinates to bitmap coordinates.
-gfx::PointF TranslateLocation(const gfx::PointF& location,
-                              CacaConnection* connection) {
-  gfx::Size physical_size = connection->physical_size();
-  gfx::Size bitmap_size = connection->bitmap_size();
+gfx::PointF TranslateLocation(const gfx::PointF& location, CacaWindow* window) {
+  gfx::Size physical_size = window->physical_size();
+  gfx::Size bitmap_size = window->bitmap_size();
   return gfx::PointF(
       location.x() * bitmap_size.width() / physical_size.width(),
       location.y() * bitmap_size.height() / physical_size.height());
@@ -136,11 +135,7 @@ ui::EventType GetEventTypeFromNative(const caca_event_t& event) {
 
 }  // namespace
 
-CacaEventFactory::CacaEventFactory(CacaConnection* connection)
-  : connection_(connection),
-    weak_ptr_factory_(this),
-    delay_(base::TimeDelta::FromMilliseconds(10)),
-    modifier_flags_(0) {
+CacaEventFactory::CacaEventFactory() : modifier_flags_(0) {
 }
 
 CacaEventFactory::~CacaEventFactory() {
@@ -151,82 +146,90 @@ void CacaEventFactory::WarpCursorTo(gfx::AcceleratedWidget widget,
   NOTIMPLEMENTED();
 }
 
-void CacaEventFactory::OnDispatcherListChanged() {
-  ScheduleEventProcessing();
-}
+void CacaEventFactory::TryProcessingEvent(CacaWindow* window) {
+  if (!window->display())
+    return;
 
-void CacaEventFactory::ScheduleEventProcessing() {
-  // Caca uses a poll based event retrieval. Since we don't want to block we'd
-  // either need to spin up a new thread or just poll. For simplicity just poll
-  // for a message every |delay_| time delta.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&CacaEventFactory::TryProcessingEvent,
-                 weak_ptr_factory_.GetWeakPtr()),
-      delay_);
-}
-
-void CacaEventFactory::TryProcessingEvent() {
   caca_event_t event;
   int event_mask = CACA_EVENT_KEY_PRESS | CACA_EVENT_KEY_RELEASE |
                    CACA_EVENT_MOUSE_PRESS | CACA_EVENT_MOUSE_RELEASE |
-                   CACA_EVENT_MOUSE_MOTION;
-  if (connection_->display() &&
-      caca_get_event(connection_->display(), event_mask, &event, 0)) {
+                   CACA_EVENT_MOUSE_MOTION | CACA_EVENT_RESIZE |
+                   CACA_EVENT_QUIT;
 
-    ui::EventType type = GetEventTypeFromNative(event);
-    bool pressed = type == ui::ET_KEY_PRESSED || type == ui::ET_MOUSE_PRESSED;
+  if (!caca_get_event(window->display(), event_mask, &event, 0))
+    return;
 
-    switch (type) {
-      case ui::ET_KEY_PRESSED:
-      case ui::ET_KEY_RELEASED: {
-        if (pressed)
-          modifier_flags_ |= ModifierFromKey(event);
-        else
-          modifier_flags_ &= ~ModifierFromKey(event);
-
-        ui::KeyEvent key_event(
-            type, GetKeyboardCode(event), modifier_flags_, true);
-        DispatchEvent(&key_event);
-        break;
-      }
-      case ui::ET_MOUSE_MOVED:
-        last_cursor_location_.SetPoint(caca_get_event_mouse_x(&event),
-                                       caca_get_event_mouse_y(&event));
-        // Update cursor location.
-        caca_gotoxy(caca_get_canvas(connection_->display()),
-                    last_cursor_location_.x(),
-                    last_cursor_location_.y());
-      // fallthrough
-      case ui::ET_MOUSE_PRESSED:
-      case ui::ET_MOUSE_RELEASED: {
-        int flags = 0;
-        int changed_flags = 0;
-        if (type != ui::ET_MOUSE_MOVED) {
-          if (pressed) {
-            changed_flags = ModifierFromButton(event);
-            modifier_flags_ |= changed_flags;
-          } else {
-            modifier_flags_ &= ~changed_flags;
-          }
-          // On release the button pressed is removed from |modifier_flags_|,
-          // but sending the event needs it set.
-          flags = modifier_flags_ | changed_flags;
-        }
-        gfx::PointF location = TranslateLocation(last_cursor_location_,
-                                                 connection_);
-        ui::MouseEvent mouse_event(
-            type, location, location, flags, changed_flags);
-        DispatchEvent(&mouse_event);
-        break;
-      }
-      default:
-        NOTIMPLEMENTED();
-        break;
-    }
+  switch (caca_get_event_type(&event)) {
+    case CACA_EVENT_KEY_PRESS:
+    case CACA_EVENT_KEY_RELEASE:
+    case CACA_EVENT_MOUSE_PRESS:
+    case CACA_EVENT_MOUSE_RELEASE:
+    case CACA_EVENT_MOUSE_MOTION:
+      OnInputEvent(&event, window);
+      break;
+    case CACA_EVENT_RESIZE:
+      window->OnCacaResize();
+      break;
+    case CACA_EVENT_QUIT:
+      window->OnCacaQuit();
+      break;
+    default:
+      NOTIMPLEMENTED();
   }
+}
 
-  ScheduleEventProcessing();
+void CacaEventFactory::OnInputEvent(caca_event_t* event, CacaWindow* window) {
+  ui::EventType type = GetEventTypeFromNative(*event);
+  bool pressed = type == ui::ET_KEY_PRESSED || type == ui::ET_MOUSE_PRESSED;
+
+  switch (type) {
+    case ui::ET_KEY_PRESSED:
+    case ui::ET_KEY_RELEASED: {
+      if (pressed)
+        modifier_flags_ |= ModifierFromKey(*event);
+      else
+        modifier_flags_ &= ~ModifierFromKey(*event);
+
+      ui::KeyEvent key_event(
+          type, GetKeyboardCode(*event), modifier_flags_, false);
+      window->OnCacaEvent(&key_event);
+      break;
+    }
+    case ui::ET_MOUSE_MOVED:
+      last_cursor_location_.SetPoint(caca_get_event_mouse_x(event),
+                                     caca_get_event_mouse_y(event));
+      // Update cursor location.
+      caca_gotoxy(caca_get_canvas(window->display()),
+                  last_cursor_location_.x(),
+                  last_cursor_location_.y());
+
+    // fallthrough
+    case ui::ET_MOUSE_PRESSED:
+    case ui::ET_MOUSE_RELEASED: {
+      int flags = 0;
+      int changed_flags = 0;
+      if (type != ui::ET_MOUSE_MOVED) {
+        if (pressed) {
+          changed_flags = ModifierFromButton(*event);
+          modifier_flags_ |= changed_flags;
+        } else {
+          modifier_flags_ &= ~changed_flags;
+        }
+        // On release the button pressed is removed from |modifier_flags_|,
+        // but sending the event needs it set.
+        flags = modifier_flags_ | changed_flags;
+      }
+      gfx::PointF location = TranslateLocation(last_cursor_location_, window);
+      ui::MouseEvent mouse_event(
+          type, location, location, flags, changed_flags);
+      ui::MouseEvent mouse_event2(&mouse_event);
+      window->OnCacaEvent(&mouse_event2);
+      break;
+    }
+    default:
+      NOTIMPLEMENTED();
+      break;
+  }
 }
 
 }  // namespace ui
