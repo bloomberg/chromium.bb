@@ -117,7 +117,7 @@ void GetNetworkListOnFileThread(
   bool success = net::GetNetworkList(
       &list, net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
   if (!success)
-    DVLOG(1) << "Could not retrieve network list!";
+    VLOG(1) << "Could not retrieve network list!";
 
   loop->PostTask(FROM_HERE, base::Bind(cb, list));
 }
@@ -136,8 +136,8 @@ void InsertBestBindAddressChromeOS(
   if (state
       && net::ParseIPLiteralToNumber(state->ip_address(), &bind_ip_address)
       && bind_ip_address.size() == net::kIPv4AddressSize) {
-    DVLOG(1) << "Found " << state->type() << ", " << state->name() << ": "
-             << state->ip_address();
+    VLOG(2) << "Found " << state->type() << ", " << state->name() << ": "
+            << state->ip_address();
     bind_address_list->push_back(bind_ip_address);
   }
 }
@@ -191,12 +191,12 @@ void DialServiceImpl::DialSocket::SendOneRequest(
     const net::IPEndPoint& send_address,
     const scoped_refptr<net::StringIOBuffer>& send_buffer) {
   if (!socket_.get()) {
-    DLOG(WARNING) << "Socket not connected.";
+    VLOG(1) << "Socket not connected.";
     return;
   }
 
   if (is_writing_) {
-    VLOG(2) << "Already writing.";
+    VLOG(1) << "Already writing.";
     return;
   }
 
@@ -225,7 +225,7 @@ bool DialServiceImpl::DialSocket::CheckResult(const char* operation,
   if (result < net::OK && result != net::ERR_IO_PENDING) {
     Close();
     std::string error_str(net::ErrorToString(result));
-    DVLOG(0) << "dial socket error: " << error_str;
+    VLOG(1) << "dial socket error: " << error_str;
     on_error_cb_.Run();
     return false;
   }
@@ -246,8 +246,8 @@ void DialServiceImpl::DialSocket::OnSocketWrite(int send_buffer_size,
   if (!CheckResult("OnSocketWrite", result))
     return;
   if (result != send_buffer_size) {
-    DLOG(ERROR) << "Sent " << result << " chars, expected "
-                << send_buffer_size << " chars";
+    VLOG(1) << "Sent " << result << " chars, expected "
+            << send_buffer_size << " chars";
   }
   discovery_request_cb_.Run();
 }
@@ -255,12 +255,12 @@ void DialServiceImpl::DialSocket::OnSocketWrite(int send_buffer_size,
 bool DialServiceImpl::DialSocket::ReadSocket() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!socket_.get()) {
-    DLOG(WARNING) << "Socket not connected.";
+    VLOG(1) << "Socket not connected.";
     return false;
   }
 
   if (is_reading_) {
-    VLOG(2) << "Already reading.";
+    VLOG(1) << "Already reading.";
     return false;
   }
 
@@ -300,7 +300,7 @@ void DialServiceImpl::DialSocket::HandleResponse(int bytes_read) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GT(bytes_read, 0);
   if (bytes_read > kDialRecvBufferSize) {
-    DLOG(ERROR) << bytes_read << " > " << kDialRecvBufferSize << "!?";
+    VLOG(1) << bytes_read << " > " << kDialRecvBufferSize << "!?";
     return;
   }
   VLOG(2) << "Read " << bytes_read << " bytes from "
@@ -323,32 +323,32 @@ bool DialServiceImpl::DialSocket::ParseResponse(
   int headers_end = HttpUtil::LocateEndOfHeaders(response.c_str(),
                                                  response.size());
   if (headers_end < 1) {
-    VLOG(2) << "Headers invalid or empty, ignoring: " << response;
+    VLOG(1) << "Headers invalid or empty, ignoring: " << response;
     return false;
   }
   std::string raw_headers =
       HttpUtil::AssembleRawHeaders(response.c_str(), headers_end);
-  VLOG(2) << "raw_headers: " << raw_headers << "\n";
+  VLOG(3) << "raw_headers: " << raw_headers << "\n";
   scoped_refptr<HttpResponseHeaders> headers =
       new HttpResponseHeaders(raw_headers);
 
   std::string device_url_str;
   if (!GetHeader(headers.get(), kSsdpLocationHeader, &device_url_str) ||
       device_url_str.empty()) {
-    VLOG(2) << "No LOCATION header found.";
+    VLOG(1) << "No LOCATION header found.";
     return false;
   }
 
   GURL device_url(device_url_str);
   if (!DialDeviceData::IsDeviceDescriptionUrl(device_url)) {
-    VLOG(2) << "URL " << device_url_str << " not valid.";
+    VLOG(1) << "URL " << device_url_str << " not valid.";
     return false;
   }
 
   std::string device_id;
   if (!GetHeader(headers.get(), kSsdpUsnHeader, &device_id) ||
       device_id.empty()) {
-    VLOG(2) << "No USN header found.";
+    VLOG(1) << "No USN header found.";
     return false;
   }
 
@@ -367,7 +367,7 @@ bool DialServiceImpl::DialSocket::ParseResponse(
       base::StringToInt(config_id, &config_id_int)) {
     device->set_config_id(config_id_int);
   } else {
-    VLOG(2) << "Malformed or missing " << kSsdpConfigIdHeader << ": "
+    VLOG(1) << "Malformed or missing " << kSsdpConfigIdHeader << ": "
             << config_id;
   }
 
@@ -466,9 +466,9 @@ void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
   for (NetworkInterfaceList::const_iterator iter = networks.begin();
        iter != networks.end(); ++iter) {
     net::AddressFamily addr_family = net::GetAddressFamily(iter->address);
-    DVLOG(1) << "Found " << iter->name << ", "
-             << net::IPAddressToString(iter->address)
-             << ", address family: " << addr_family;
+    VLOG(2) << "Found " << iter->name << ", "
+            << net::IPAddressToString(iter->address)
+            << ", address family: " << addr_family;
     if (addr_family == net::ADDRESS_FAMILY_IPV4) {
       InterfaceIndexAddressFamily interface_index_addr_family =
           std::make_pair(iter->interface_index, addr_family);
@@ -498,7 +498,7 @@ void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
 void DialServiceImpl::DiscoverOnAddresses(
     const std::vector<IPAddressNumber>& ip_addresses) {
   if (ip_addresses.empty()) {
-    DVLOG(1) << "Could not find a valid interface to bind. Finishing discovery";
+    VLOG(1) << "Could not find a valid interface to bind. Finishing discovery";
     FinishDiscovery();
     return;
   }

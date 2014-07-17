@@ -72,13 +72,13 @@ void DialAPI::OnListenerRemoved(const EventListenerInfo& details) {
 
 void DialAPI::NotifyListenerAddedOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  VLOG(1) << "DIAL device event listener added.";
+  VLOG(2) << "DIAL device event listener added.";
   dial_registry()->OnListenerAdded();
 }
 
 void DialAPI::NotifyListenerRemovedOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  VLOG(1) << "DIAL device event listener removed";
+  VLOG(2) << "DIAL device event listener removed";
   dial_registry()->OnListenerRemoved();
 }
 

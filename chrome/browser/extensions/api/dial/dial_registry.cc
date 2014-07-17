@@ -261,7 +261,7 @@ bool DialRegistry::MaybeAddDevice(
     const linked_ptr<DialDeviceData>& device_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (device_by_id_map_.size() == max_devices_) {
-    DLOG(WARNING) << "Maximum registry size reached.  Cannot add device.";
+    VLOG(1) << "Maximum registry size reached.  Cannot add device.";
     return false;
   }
   device_data->set_label(NextLabel());
