@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "6.4",
+  "version": "6.5",
   "entries": [
     {
       "id": 1,
@@ -1048,6 +1048,25 @@ LONG_STRING_CONST(
       },
       "features": [
         "disable_arb_sync"
+      ]
+    },
+    {
+      "id": 82,
+      "description": "PBO mappings segfault on certain older Qualcomm drivers",
+      "cr_bugs": [394510],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "4.3"
+        }
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "Qualcomm"
+      },
+      "features": [
+        "disable_async_readpixels"
       ]
     }
   ]
