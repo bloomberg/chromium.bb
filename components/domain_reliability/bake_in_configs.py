@@ -17,7 +17,10 @@ import sys
 # A whitelist of domains that the script will accept when baking configs in to
 # Chrome, to ensure incorrect ones are not added accidentally. Subdomains of
 # whitelist entries are also allowed (e.g. maps.google.com, ssl.gstatic.com).
-DOMAIN_WHITELIST = ('google.com', 'gstatic.com', 'youtube.com')
+DOMAIN_WHITELIST = ('2mdn.net', 'admob.com', 'doubleclick.net', 'ggpht.com',
+                    'google.com', 'googleadservices.com', 'googleapis.com',
+                    'googlesyndication.com', 'googleusercontent.com',
+                    'googlevideo.com', 'gstatic.com', 'gvt1.com', 'youtube.com')
 
 
 CC_HEADER = """// Copyright (C) 2014 The Chromium Authors. All rights reserved.
@@ -78,22 +81,28 @@ def main():
     return 1
 
   cpp_code = CC_HEADER
+  found_invalid_config = False
   for json_file in sys.argv[1:-1]:
     with open(json_file, 'r') as f:
       json_text = f.read()
     config = json.loads(json_text)
     if 'monitored_domain' not in config:
-      print >> sys.stderr ('%s: no monitored_domain found' % json_file)
-      return 1
+      print >> sys.stderr, ('%s: no monitored_domain found' % json_file)
+      found_invalid_config = True
+      continue
     domain = config['monitored_domain']
     if not domain_is_whitelisted(domain):
-      print >> sys.stderr ('%s: monitored_domain "%s" not in whitelist' %
-                           (json_file, domain))
-      return 1
+      print >> sys.stderr, ('%s: monitored_domain "%s" not in whitelist' %
+                            (json_file, domain))
+      found_invalid_config = True
+      continue
     cpp_code += "  // " + json_file + ":\n"
     cpp_code += quote_and_wrap_text(json_text) + ",\n"
     cpp_code += "\n"
   cpp_code += CC_FOOTER
+
+  if found_invalid_config:
+    return 1
 
   with open(sys.argv[-1], 'wb') as f:
     f.write(cpp_code)

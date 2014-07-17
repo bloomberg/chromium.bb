@@ -1,7 +1,7 @@
 {
-  "config_version": "apis-google-com-v1",
+  "config_version": "ad-doubleclick-net-v1",
   "config_valid_until": 1413331200.0,
-  "monitored_domain": "apis.google.com",
+  "monitored_domain": "ad.doubleclick.net",
   "collectors": [
     {
       "upload_url": "https://clients2.google.com/domainreliability/upload"
@@ -9,8 +9,8 @@
   ],
   "monitored_resources": [
     {
-      "resource_name": "apis",
-      "url_patterns": ["http*://apis.google.com/*"],
+      "resource_name": "dblclk",
+      "url_patterns": ["http*://ad.doubleclick.net/*"],
       "success_sample_rate": 0.05,
       "failure_sample_rate": 1.00
     }

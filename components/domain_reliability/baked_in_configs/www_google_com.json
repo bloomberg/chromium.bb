@@ -1,6 +1,6 @@
 {
   "config_version": "www-google-com-v1",
-  "config_valid_until": 1405382400.0,
+  "config_valid_until": 1413331200.0,
   "monitored_domain": "www.google.com",
   "collectors": [
     {
@@ -9,31 +9,61 @@
   ],
   "monitored_resources": [
     {
-      "resource_name": "search",
+      "resource_name": "www-google-com-search",
       "url_patterns": ["http*://www.google.com/search?*"],
       "success_sample_rate": 0.05,
       "failure_sample_rate": 1.00
     },
     {
-      "resource_name": "maps",
+      "resource_name": "www-google-com-maps",
       "url_patterns": ["http*://www.google.com/maps/*"],
       "success_sample_rate": 0.05,
       "failure_sample_rate": 1.00
     },
     {
-      "resource_name": "calendar",
+      "resource_name": "www-google-com-calendar",
       "url_patterns": ["http*://www.google.com/calendar/*"],
       "success_sample_rate": 0.05,
       "failure_sample_rate": 1.00
     },
     {
-      "resource_name": "home",
+      "resource_name": "www-google-com-images",
+      "url_patterns": ["http*://www.google.com/images/*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 1.00
+    },
+    {
+      "resource_name": "www-google-com-adwords",
+      "url_patterns": ["http*://www.google.com/adwords/*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 1.00
+    },
+    {
+      "resource_name": "www-google-com-adsense",
+      "url_patterns": ["http*://www.google.com/adsense/*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 1.00
+    },
+    {
+      "resource_name": "www-google-com-ads",
+      "url_patterns": ["http*://www.google.com/ads/*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 1.00
+    },
+    {
+      "resource_name": "www-google-com-business",
+      "url_patterns": ["http*://www.google.com/business/*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 1.00
+    },
+    {
+      "resource_name": "www-google-com-home",
       "url_patterns": ["http*://www.google.com/"],
       "success_sample_rate": 0.05,
       "failure_sample_rate": 1.00
     },
     {
-      "resource_name": "other",
+      "resource_name": "www-google-com-other",
       "url_patterns": ["http*://www.google.com/*"],
       "success_sample_rate": 0.05,
       "failure_sample_rate": 1.00

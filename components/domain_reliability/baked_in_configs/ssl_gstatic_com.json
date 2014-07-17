@@ -1,6 +1,6 @@
 {
   "config_version": "ssl-gstatic-com-v1",
-  "config_valid_until": 1405382400.0,
+  "config_valid_until": 1413331200.0,
   "monitored_domain": "ssl.gstatic.com",
   "collectors": [
     {

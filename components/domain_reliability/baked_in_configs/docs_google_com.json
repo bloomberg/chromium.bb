@@ -1,0 +1,36 @@
+{
+  "config_version": "docs-google-com-v1",
+  "config_valid_until": 1413331200.0,
+  "monitored_domain": "docs.google.com",
+  "collectors": [
+    {
+      "upload_url": "https://clients2.google.com/domainreliability/upload"
+    }
+  ],
+  "monitored_resources": [
+    {
+      "resource_name": "docs-google-com-docs",
+      "url_patterns": ["http*://docs.google.com/*/document/*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 1.00
+    },
+    {
+      "resource_name": "docs-google-com-slides",
+      "url_patterns": ["http*://docs.google.com/*/presentation/*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 1.00
+    },
+    {
+      "resource_name": "docs-google-com-sheets",
+      "url_patterns": ["http*://docs.google.com/*/spreadsheets/*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 1.00
+    },
+    {
+      "resource_name": "docs-google-com-other",
+      "url_patterns": ["http*://docs.google.com/*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 1.00
+    }
+  ]
+}

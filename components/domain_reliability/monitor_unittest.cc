@@ -236,8 +236,9 @@ TEST_F(DomainReliabilityMonitorTest, WasFetchedViaProxy) {
   EXPECT_TRUE(beacons[0].server_ip.empty());
 }
 
-// Disabled; does not handle when baked in configs expire.
-TEST_F(DomainReliabilityMonitorTest, DISABLED_AddBakedInConfigs) {
+// Will fail when baked-in configs expire, as a reminder to update them.
+// (Contact ttuttle@chromium.org if this starts failing.)
+TEST_F(DomainReliabilityMonitorTest, AddBakedInConfigs) {
   // AddBakedInConfigs DCHECKs that the baked-in configs parse correctly, so
   // this unittest will fail if someone tries to add an invalid config to the
   // source tree.
