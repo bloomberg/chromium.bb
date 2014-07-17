@@ -158,6 +158,16 @@ bool MediaStream::ended() const
     return m_stopped || m_descriptor->ended();
 }
 
+MediaStreamTrackVector MediaStream::getTracks()
+{
+    MediaStreamTrackVector tracks;
+    for (MediaStreamTrackVector::iterator iter = m_audioTracks.begin(); iter != m_audioTracks.end(); ++iter)
+        tracks.append(iter->get());
+    for (MediaStreamTrackVector::iterator iter = m_videoTracks.begin(); iter != m_videoTracks.end(); ++iter)
+        tracks.append(iter->get());
+    return tracks;
+}
+
 void MediaStream::addTrack(MediaStreamTrack* track, ExceptionState& exceptionState)
 {
     if (ended()) {

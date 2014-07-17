@@ -64,6 +64,7 @@ public:
 
     MediaStreamTrackVector getAudioTracks() const { return m_audioTracks; }
     MediaStreamTrackVector getVideoTracks() const { return m_videoTracks; }
+    MediaStreamTrackVector getTracks();
 
     bool ended() const;
     void stop();
