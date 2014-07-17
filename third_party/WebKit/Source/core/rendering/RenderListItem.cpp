@@ -298,7 +298,6 @@ bool RenderListItem::updateMarkerLocation()
     }
 
     if (markerParent != lineBoxParent) {
-        updateFirstLetter();
         m_marker->remove();
         lineBoxParent->addChild(m_marker, firstNonMarkerChild(lineBoxParent));
         m_marker->updateMarginsAndContent();
