@@ -96,9 +96,8 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescrip
             return fontData;
     }
 
-    icu::Locale locale = icu::Locale::getDefault();
     FontCache::PlatformFallbackFont fallbackFont;
-    FontCache::getFontForCharacter(c, locale.getLanguage(), &fallbackFont);
+    FontCache::getFontForCharacter(c, "", &fallbackFont);
     if (fallbackFont.name.isEmpty())
         return nullptr;
 

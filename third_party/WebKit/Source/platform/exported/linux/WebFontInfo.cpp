@@ -61,7 +61,7 @@ void WebFontInfo::fallbackFontForChar(WebUChar32 c, const char* preferredLocale,
     fcvalue.u.b = FcTrue;
     FcPatternAdd(pattern, FC_SCALABLE, fcvalue, FcFalse);
 
-    if (preferredLocale) {
+    if (preferredLocale && strlen(preferredLocale)) {
         FcLangSet* langset = FcLangSetCreate();
         FcLangSetAdd(langset, reinterpret_cast<const FcChar8 *>(preferredLocale));
         FcPatternAddLangSet(pattern, FC_LANG, langset);
@@ -70,6 +70,11 @@ void WebFontInfo::fallbackFontForChar(WebUChar32 c, const char* preferredLocale,
 
     FcConfigSubstitute(0, pattern, FcMatchPattern);
     FcDefaultSubstitute(pattern);
+
+    // Default substitution reintroduces an FC_LANG entry,
+    // which causes sorting order to change.
+    if (!preferredLocale || !strlen(preferredLocale))
+        FcPatternDel(pattern, FC_LANG);
 
     FcResult result;
     FcFontSet* fontSet = FcFontSort(0, pattern, 0, 0, &result);
