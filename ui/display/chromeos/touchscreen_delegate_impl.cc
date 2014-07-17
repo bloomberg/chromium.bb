@@ -23,7 +23,38 @@ void TouchscreenDelegateImpl::AssociateTouchscreens(
     std::vector<DisplayConfigurator::DisplayState>* displays) {
   std::set<int> no_match_touchscreen;
   std::vector<TouchscreenDevice> devices = touch_device_manager_->GetDevices();
+
+  int internal_touchscreen = -1;
   for (size_t i = 0; i < devices.size(); ++i) {
+    if (devices[i].is_internal) {
+      internal_touchscreen = i;
+      break;
+    }
+  }
+
+  DisplayConfigurator::DisplayState* internal_state = NULL;
+  for (size_t i = 0; i < displays->size(); ++i) {
+    DisplayConfigurator::DisplayState* state = &(*displays)[i];
+    if (state->display->type() == DISPLAY_CONNECTION_TYPE_INTERNAL &&
+        state->display->native_mode() &&
+        state->touch_device_id == 0) {
+      internal_state = state;
+      break;
+    }
+  }
+
+  if (internal_state && internal_touchscreen >= 0) {
+    internal_state->touch_device_id = devices[internal_touchscreen].id;
+    VLOG(2) << "Found internal touchscreen for internal display "
+            << internal_state->display->display_id() << " touch_device_id "
+            << internal_state->touch_device_id << " size "
+            << devices[internal_touchscreen].size.ToString();
+  }
+
+  for (size_t i = 0; i < devices.size(); ++i) {
+    if (internal_state &&
+        internal_state->touch_device_id == devices[i].id)
+      continue;
     bool found_mapping = false;
     for (size_t j = 0; j < displays->size(); ++j) {
       DisplayConfigurator::DisplayState* state = &(*displays)[j];

@@ -14,13 +14,16 @@ namespace ui {
 struct DISPLAY_TYPES_EXPORT TouchscreenDevice {
   static const int kInvalidId;
 
-  TouchscreenDevice(int id, const gfx::Size& size);
+  TouchscreenDevice(int id, const gfx::Size& size, bool is_internal);
 
   // ID of the touch screen. This ID must uniquely identify the touch screen.
   int id;
 
   // Size of the touch screen area.
   gfx::Size size;
+
+  // True if this is an internal touchscreen.
+  bool is_internal;
 };
 
 }  // namespace ui

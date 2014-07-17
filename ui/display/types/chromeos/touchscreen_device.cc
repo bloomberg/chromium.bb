@@ -9,8 +9,11 @@ namespace ui {
 // static
 const int TouchscreenDevice::kInvalidId = 0;
 
-TouchscreenDevice::TouchscreenDevice(int id, const gfx::Size& size)
+TouchscreenDevice::TouchscreenDevice(int id,
+                                     const gfx::Size& size,
+                                     bool is_internal)
     : id(id),
-      size(size) {}
+      size(size),
+      is_internal(is_internal) {}
 
 }  // namespace ui

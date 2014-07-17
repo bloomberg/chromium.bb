@@ -9,8 +9,87 @@
 
 #include <cmath>
 #include <set>
+#include <string>
+#include <vector>
 
+#include "base/command_line.h"
+#include "base/files/file_enumerator.h"
+#include "base/logging.h"
+#include "base/process/launch.h"
+#include "base/strings/string_util.h"
+#include "base/sys_info.h"
 #include "ui/gfx/x/x11_types.h"
+
+namespace {
+
+// We consider the touchscreen to be internal if it is an I2c device.
+// With the device id, we can query X to get the device's dev input
+// node eventXXX. Then we search all the dev input nodes registered
+// by I2C devices to see if we can find eventXXX.
+bool IsTouchscreenInternal(XDisplay* dpy, int device_id) {
+  using base::FileEnumerator;
+  using base::FilePath;
+
+  if (!base::SysInfo::IsRunningOnChromeOS())
+    return false;
+
+  // Input device has a property "Device Node" pointing to its dev input node,
+  // e.g.   Device Node (250): "/dev/input/event8"
+  Atom device_node = XInternAtom(dpy, "Device Node", False);
+  if (device_node == None)
+    return false;
+
+  Atom actual_type;
+  int actual_format;
+  unsigned long nitems, bytes_after;
+  unsigned char* data;
+  XDevice* dev = XOpenDevice(dpy, device_id);
+  if (!dev)
+    return false;
+
+  if (XGetDeviceProperty(dpy, dev, device_node, 0, 1000, False,
+                         AnyPropertyType, &actual_type, &actual_format,
+                         &nitems, &bytes_after, &data) != Success) {
+    XCloseDevice(dpy, dev);
+    return false;
+  }
+  base::FilePath dev_node_path(reinterpret_cast<char*>(data));
+  XFree(data);
+  XCloseDevice(dpy, dev);
+
+  std::string event_node = dev_node_path.BaseName().value();
+  if (event_node.empty() ||
+      !StartsWithASCII(event_node, "event", false)) {
+    return false;
+  }
+
+  // Extract id "XXX" from "eventXXX"
+  std::string event_node_id = event_node.substr(5);
+
+  // I2C input device registers its dev input node at
+  // /sys/bus/i2c/devices/*/input/inputXXX/eventXXX
+  FileEnumerator i2c_enum(FilePath(FILE_PATH_LITERAL("/sys/bus/i2c/devices/")),
+                          false,
+                          base::FileEnumerator::DIRECTORIES);
+  for (FilePath i2c_name = i2c_enum.Next();
+       !i2c_name.empty();
+       i2c_name = i2c_enum.Next()) {
+    FileEnumerator input_enum(i2c_name.Append(FILE_PATH_LITERAL("input")),
+                              false,
+                              base::FileEnumerator::DIRECTORIES,
+                              FILE_PATH_LITERAL("input*"));
+    for (base::FilePath input = input_enum.Next();
+         !input.empty();
+         input = input_enum.Next()) {
+      if (input.BaseName().value().substr(5) == event_node_id)
+        return true;
+    }
+  }
+
+  return false;
+}
+
+}  // namespace
 
 namespace ui {
 
@@ -70,8 +149,10 @@ std::vector<TouchscreenDevice> TouchscreenDeviceManagerX11::GetDevices() {
     // Touchscreens should have absolute X and Y axes, and be direct touch
     // devices.
     if (width > 0.0 && height > 0.0 && is_direct_touch) {
+      bool is_internal = IsTouchscreenInternal(display_, info[i].deviceid);
       devices.push_back(TouchscreenDevice(info[i].deviceid,
-                                          gfx::Size(width, height)));
+                                          gfx::Size(width, height),
+                                          is_internal));
     }
   }
 
