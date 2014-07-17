@@ -132,6 +132,7 @@ AudioContext::AudioContext(Document* document, unsigned numberOfChannels, size_t
     , m_isCleared(false)
     , m_isInitialized(false)
     , m_destinationNode(nullptr)
+    , m_isDeletionScheduled(false)
     , m_automaticPullNodesNeedUpdating(false)
     , m_connectionCount(0)
     , m_audioThread(0)
