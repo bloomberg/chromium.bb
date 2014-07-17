@@ -4,7 +4,7 @@
 
 #include "weak_fields_require_tracing.h"
 
-namespace WebCore {
+namespace blink {
 
 void HeapObject::trace(Visitor* visitor)
 {

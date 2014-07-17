@@ -4,7 +4,7 @@
 
 #include "cycle_super.h"
 
-namespace WebCore {
+namespace blink {
 
 void A::trace(Visitor* visitor) {
     visitor->trace(m_d);

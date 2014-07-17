@@ -4,7 +4,7 @@
 
 #include "part_object_to_gc_derived_class.h"
 
-namespace WebCore {
+namespace blink {
 
 void B::trace(Visitor* visitor)
 {

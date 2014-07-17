@@ -4,7 +4,7 @@
 
 #include "virtual_and_trace_after_dispatch.h"
 
-namespace WebCore {
+namespace blink {
 
 static B* toB(A* a) { return static_cast<B*>(a); }
 

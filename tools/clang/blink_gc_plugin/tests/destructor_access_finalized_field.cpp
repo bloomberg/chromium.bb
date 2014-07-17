@@ -4,7 +4,7 @@
 
 #include "destructor_access_finalized_field.h"
 
-namespace WebCore {
+namespace blink {
 
 HeapObject::~HeapObject()
 {

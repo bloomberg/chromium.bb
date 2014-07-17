@@ -1,4 +1,4 @@
 
 Found a potentially leaking cycle starting from a GC root:
-./cycle_super.h:36:5: WebCore::D (m_c) => WebCore::C
-./cycle_super.h:21:5: WebCore::C (WebCore::B <: WebCore::A <: m_d) => WebCore::D
+./cycle_super.h:36:5: blink::D (m_c) => blink::C
+./cycle_super.h:21:5: blink::C (blink::B <: blink::A <: m_d) => blink::D

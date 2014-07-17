@@ -4,7 +4,7 @@
 
 #include "fields_require_tracing.h"
 
-namespace WebCore {
+namespace blink {
 
 void PartObject::trace(Visitor* visitor) {
     // Missing visitor->trace(m_obj1);

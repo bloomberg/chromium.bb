@@ -4,7 +4,7 @@
 
 #include "destructor_in_nonfinalized_class.h"
 
-namespace WebCore {
+namespace blink {
 
 HeapObject::~HeapObject()
 {

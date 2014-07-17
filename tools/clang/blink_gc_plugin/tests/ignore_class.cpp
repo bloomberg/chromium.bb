@@ -4,7 +4,7 @@
 
 #include "ignore_class.h"
 
-namespace WebCore {
+namespace blink {
 
 void B::trace(Visitor* visitor)
 {

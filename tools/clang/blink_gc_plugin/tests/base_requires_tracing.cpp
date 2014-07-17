@@ -4,7 +4,7 @@
 
 #include "base_requires_tracing.h"
 
-namespace WebCore {
+namespace blink {
 
 void A::trace(Visitor* visitor) { }
 

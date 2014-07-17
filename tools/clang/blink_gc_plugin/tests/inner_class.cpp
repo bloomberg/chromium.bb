@@ -4,7 +4,7 @@
 
 #include "inner_class.h"
 
-namespace WebCore {
+namespace blink {
 
 void SomeObject::InnerObject::trace(Visitor* visitor)
 {

@@ -7,7 +7,7 @@
 
 #include "heap/stubs.h"
 
-namespace WebCore {
+namespace blink {
 
 class Mixin : public GarbageCollectedMixin {
 public:

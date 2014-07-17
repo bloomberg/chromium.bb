@@ -7,7 +7,7 @@
 
 #include "heap/stubs.h"
 
-namespace WebCore {
+namespace blink {
 
 class OffHeap : public RefCounted<OffHeap> { };
 class OnHeap : public GarbageCollected<OnHeap> { };

@@ -4,7 +4,7 @@
 
 #include "class_requires_finalization_base.h"
 
-namespace WebCore {
+namespace blink {
 
 void NeedsFinalizer::trace(Visitor* visitor)
 {

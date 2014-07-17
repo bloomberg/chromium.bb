@@ -4,7 +4,7 @@
 
 #include "member_in_offheap_class.h"
 
-namespace WebCore {
+namespace blink {
 
 void OffHeapObject::trace(Visitor* visitor)
 {

@@ -7,7 +7,7 @@
 
 #include "heap/stubs.h"
 
-namespace WebCore {
+namespace blink {
 
 class HeapObject : public GarbageCollected<HeapObject> { };
 

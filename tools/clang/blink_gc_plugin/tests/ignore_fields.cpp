@@ -4,7 +4,7 @@
 
 #include "ignore_fields.h"
 
-namespace WebCore {
+namespace blink {
 
 void C::trace(Visitor* visitor)
 {

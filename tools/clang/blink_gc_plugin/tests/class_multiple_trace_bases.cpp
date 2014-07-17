@@ -4,7 +4,7 @@
 
 #include "class_multiple_trace_bases.h"
 
-namespace WebCore {
+namespace blink {
 
 void Base::trace(Visitor* visitor) { }
 

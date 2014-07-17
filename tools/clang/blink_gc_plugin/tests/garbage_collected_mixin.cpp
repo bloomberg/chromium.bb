@@ -4,7 +4,7 @@
 
 #include "garbage_collected_mixin.h"
 
-namespace WebCore {
+namespace blink {
 
 void Mixin::trace(Visitor* visitor)
 {

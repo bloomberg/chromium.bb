@@ -257,7 +257,7 @@ def detect_cycles():
     reset_graph()
     # Mark ignored classes as already visited
     for ignore in args.ignore_classes:
-      name = ignore.find("::") > 0 and ignore or ("WebCore::" + ignore)
+      name = ignore.find("::") > 0 and ignore or ("blink::" + ignore)
       node = graph.get(name)
       if node:
         node.visited = True
@@ -344,22 +344,22 @@ def read_ignored_cycles():
     ignored_cycles.append(block)
 
 gc_bases = (
-  'WebCore::GarbageCollected',
-  'WebCore::GarbageCollectedFinalized',
-  'WebCore::GarbageCollectedMixin',
+  'blink::GarbageCollected',
+  'blink::GarbageCollectedFinalized',
+  'blink::GarbageCollectedMixin',
 )
 ref_bases = (
   'WTF::RefCounted',
   'WTF::ThreadSafeRefCounted',
 )
 gcref_bases = (
-  'WebCore::RefCountedGarbageCollected',
-  'WebCore::ThreadSafeRefCountedGarbageCollected',
+  'blink::RefCountedGarbageCollected',
+  'blink::ThreadSafeRefCountedGarbageCollected',
 )
 ref_mixins = (
-  'WebCore::EventTarget',
-  'WebCore::EventTargetWithInlineData',
-  'WebCore::ActiveDOMObject',
+  'blink::EventTarget',
+  'blink::EventTargetWithInlineData',
+  'blink::ActiveDOMObject',
 )
 
 def print_stats():
@@ -400,7 +400,7 @@ def print_stats():
       "%s %3d%% of %-30s: %3d cls, %3d mem, %3d ref, %3d raw, %3d ref-mixins" %
       (stats['ref'] == 0 and stats['ref-mixins'] == 0 and "*" or " ",
        total == 0 and 100 or stats['mem'] * 100 / total,
-       node.name.replace('WebCore::', ''),
+       node.name.replace('blink::', ''),
        stats['classes'],
        stats['mem'],
        stats['ref'],

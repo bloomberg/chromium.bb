@@ -7,7 +7,7 @@
 
 #include "heap/stubs.h"
 
-namespace WebCore {
+namespace blink {
 
 class A : public GarbageCollected<A> {
 public:
@@ -27,18 +27,18 @@ public:
     void trace(Visitor*) { };
 };
 
-} // WebCore namespace
+} // blink namespace
 
 namespace WTF {
 
 template<>
-struct VectorTraits<WebCore::C> {
+struct VectorTraits<blink::C> {
     static const bool needsDestruction = false;
 };
 
 } // WTF namespace
 
-namespace WebCore {
+namespace blink {
 
 // Off-heap vectors always need to be finalized.
 class NeedsFinalizer : public A, public ScriptWrappable {

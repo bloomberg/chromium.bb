@@ -4,7 +4,7 @@
 
 #include "class_requires_finalization_mixin.h"
 
-namespace WebCore {
+namespace blink {
 
 void MixinFinalizable::trace(Visitor* visitor)
 {

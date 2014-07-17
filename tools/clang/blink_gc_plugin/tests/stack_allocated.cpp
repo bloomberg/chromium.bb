@@ -4,7 +4,7 @@
 
 #include "stack_allocated.h"
 
-namespace WebCore {
+namespace blink {
 
 void HeapObject::trace(Visitor* visitor)
 {

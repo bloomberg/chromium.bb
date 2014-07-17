@@ -4,7 +4,7 @@
 
 #include "trace_collections.h"
 
-namespace WebCore {
+namespace blink {
 
 void HeapObject::trace(Visitor* visitor)
 {

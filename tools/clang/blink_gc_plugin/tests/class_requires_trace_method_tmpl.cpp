@@ -4,7 +4,7 @@
 
 #include "class_requires_trace_method_tmpl.h"
 
-namespace WebCore {
+namespace blink {
 
 // Does not need a trace method.
 class NoTrace : public TemplatedObject<PartObjectA> { };

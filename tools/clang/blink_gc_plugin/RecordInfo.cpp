@@ -524,7 +524,7 @@ Edge* RecordInfo::CreateEdge(const Type* type) {
     // TODO: Consider using a more canonical identification than names.
     NamespaceDecl* ns =
         dyn_cast<NamespaceDecl>(info->record()->getDeclContext());
-    if (!ns || ns->getName() != "WebCore")
+    if (!ns || ns->getName() != "blink")
       return 0;
     if (!info->GetTemplateArgs(1, &args))
       return 0;

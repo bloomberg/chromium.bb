@@ -4,7 +4,7 @@
 
 #include "own_ptr_to_gc_managed_class.h"
 
-namespace WebCore {
+namespace blink {
 
 void HeapObject::trace(Visitor* visitor) { }
 

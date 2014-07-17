@@ -574,9 +574,9 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         options_(options),
         json_(0) {
 
-    // Only check structures in the blink, WebCore and WebKit namespaces.
+    // Only check structures in the blink, blink and WebKit namespaces.
     options_.checked_namespaces.insert("blink");
-    options_.checked_namespaces.insert("WebCore");
+    options_.checked_namespaces.insert("blink");
     options_.checked_namespaces.insert("WebKit");
 
     // Ignore GC implementation files.
