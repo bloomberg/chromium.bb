@@ -5565,6 +5565,12 @@
    fun:_ZN5media18AudioStreamHandler20AudioStreamContainer4PlayEv
 }
 {
+   bug_318221
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base23EnsureProcessTerminatedEi
+}
+{
    bug_321976
    Memcheck:Leak
    ...
