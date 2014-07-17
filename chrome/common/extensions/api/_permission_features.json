@@ -349,8 +349,10 @@
         "8C0B1873FFFB65E4D0F4D772879F7304CEF125C2",  // Apps Editor old.
         // TODO(grv) : clean up once after publish.
         "FA0501B579070BB9CBD4FCAEC8CB0EDF22BA2F04", // Apps Editor published.
-        "4A4EA121622FCA3D78ED2AB534197F43D7189EE0", // Spark nightly build
-        "9FDE6E7F06FCFA11D9A05041C7FF6D8AE662F5D1"  // Spark release
+        "4A4EA121622FCA3D78ED2AB534197F43D7189EE0", // Spark nightly build.
+        "9FDE6E7F06FCFA11D9A05041C7FF6D8AE662F5D1", // Spark release.
+        "50B4A905D522C06E27CA6D099E3E54BDA1F152C5", // Spark Beta channel.
+        "BA0C8BB92084C9741312D90D3EA882526853455F"  // Spark dev channel.
     ]
   },
   "devtools": {
