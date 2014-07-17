@@ -45,7 +45,7 @@
 IPC_ENUM_TRAITS_MAX_VALUE(content::CauseForGpuLaunch,
                           content::CAUSE_FOR_GPU_LAUNCH_MAX_ENUM - 1)
 IPC_ENUM_TRAITS_MAX_VALUE(content::CreateCommandBufferResult,
-                          content::CREATE_COMMAND_BUFFER_RESULT_LAST);
+                          content::CREATE_COMMAND_BUFFER_RESULT_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::GpuPreference,
                           gfx::GpuPreferenceLast)
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::SurfaceType,
