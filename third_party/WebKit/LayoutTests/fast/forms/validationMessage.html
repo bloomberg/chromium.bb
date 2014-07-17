@@ -104,7 +104,6 @@ inputWithMax.maxLength = 3;
 inputWithMax.value = "abcdef";
 document.body.appendChild(inputWithMax);
 inputWithMax.focus();
-inputWithMax.setSelectionRange(6, 6);
 document.execCommand("delete");
 debug("input tooLong: " + inputWithMax.validationMessage);
 // fancyX should be treated as 3 characters.

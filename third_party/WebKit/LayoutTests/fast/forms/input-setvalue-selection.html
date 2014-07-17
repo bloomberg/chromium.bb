@@ -12,7 +12,7 @@ JavaScript Form Validation issue on Banco do Brasil site.</p>
 
   input = document.getElementsByTagName("input")[0];
   input.value = "1";
-  document.write(input.selectionStart == 0 ? "1. SUCCESS" : "1. FAILURE (the insertion point should be at the beginning)");
+  document.write(input.selectionStart == 1 ? "1. SUCCESS" : "1. FAILURE (the insertion point should be at the end)");
 
   document.write("<br>");
   input.focus();

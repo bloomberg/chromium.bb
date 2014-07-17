@@ -163,7 +163,7 @@ void TextFieldInputType::setValue(const String& sanitizedValue, bool valueChange
     if (input->focused())
         input->setSelectionRange(max, max);
     else
-        input->setSelectionRange(input->selectionStart(), input->selectionEnd());
+        input->cacheSelectionInResponseToSetValue(max);
 
     if (!valueChanged)
         return;
