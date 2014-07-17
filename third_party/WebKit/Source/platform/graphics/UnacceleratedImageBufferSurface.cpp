@@ -31,17 +31,29 @@
 #include "config.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 
-#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
 UnacceleratedImageBufferSurface::UnacceleratedImageBufferSurface(const IntSize& size, OpacityMode opacityMode)
     : ImageBufferSurface(size, opacityMode)
-    , m_canvas(adoptRef(SkCanvas::NewRasterN32(size.width(), size.height())))
+    , m_surface(adoptRef(SkSurface::NewRasterPMColor(size.width(), size.height())))
 {
-    if (m_canvas)
+    if (m_surface)
         clear();
+}
+
+UnacceleratedImageBufferSurface::~UnacceleratedImageBufferSurface() { }
+
+SkCanvas* UnacceleratedImageBufferSurface::canvas() const
+{
+    return m_surface->getCanvas();
+}
+
+bool UnacceleratedImageBufferSurface::isValid() const
+{
+    return m_surface;
 }
 
 } // namespace WebCore
