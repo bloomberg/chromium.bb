@@ -32,44 +32,46 @@ class TestingObserver : public DistilledPagePrefs::Observer {
 class DistilledPagePrefsTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
-    user_prefs::TestingPrefServiceSyncable* pref_service =
-        new user_prefs::TestingPrefServiceSyncable();
-    DistilledPagePrefs::RegisterProfilePrefs(pref_service->registry());
-    distilled_page_prefs_ = new DistilledPagePrefs(pref_service);
+    pref_service_.reset(new user_prefs::TestingPrefServiceSyncable());
+    DistilledPagePrefs::RegisterProfilePrefs(pref_service_->registry());
+    distilled_page_prefs_.reset(new DistilledPagePrefs(pref_service_.get()));
   }
 
-  DistilledPagePrefs* distilled_page_prefs_;
+  scoped_ptr<user_prefs::TestingPrefServiceSyncable> pref_service_;
+  scoped_ptr<DistilledPagePrefs> distilled_page_prefs_;
 
  private:
   base::MessageLoop message_loop_;
 };
 
 TEST_F(DistilledPagePrefsTest, TestingOnChangeThemeIsBeingCalled) {
-  TestingObserver* obs = new TestingObserver();
-  distilled_page_prefs_->AddObserver(obs);
+  TestingObserver obs;
+  distilled_page_prefs_->AddObserver(&obs);
   distilled_page_prefs_->SetTheme(DistilledPagePrefs::SEPIA);
-  EXPECT_EQ(DistilledPagePrefs::LIGHT, obs->GetTheme());
+  EXPECT_EQ(DistilledPagePrefs::LIGHT, obs.GetTheme());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(DistilledPagePrefs::SEPIA, obs->GetTheme());
+  EXPECT_EQ(DistilledPagePrefs::SEPIA, obs.GetTheme());
   distilled_page_prefs_->SetTheme(DistilledPagePrefs::DARK);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(DistilledPagePrefs::DARK, obs->GetTheme());
+  EXPECT_EQ(DistilledPagePrefs::DARK, obs.GetTheme());
+  distilled_page_prefs_->RemoveObserver(&obs);
 }
 
 TEST_F(DistilledPagePrefsTest, TestingMultipleObservers) {
-  TestingObserver* obs = new TestingObserver();
-  distilled_page_prefs_->AddObserver(obs);
-  TestingObserver* obs2 = new TestingObserver();
-  distilled_page_prefs_->AddObserver(obs2);
+  TestingObserver obs;
+  distilled_page_prefs_->AddObserver(&obs);
+  TestingObserver obs2;
+  distilled_page_prefs_->AddObserver(&obs2);
   distilled_page_prefs_->SetTheme(DistilledPagePrefs::SEPIA);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(DistilledPagePrefs::SEPIA, obs->GetTheme());
-  EXPECT_EQ(DistilledPagePrefs::SEPIA, obs2->GetTheme());
-  distilled_page_prefs_->RemoveObserver(obs);
+  EXPECT_EQ(DistilledPagePrefs::SEPIA, obs.GetTheme());
+  EXPECT_EQ(DistilledPagePrefs::SEPIA, obs2.GetTheme());
+  distilled_page_prefs_->RemoveObserver(&obs);
   distilled_page_prefs_->SetTheme(DistilledPagePrefs::LIGHT);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(DistilledPagePrefs::SEPIA, obs->GetTheme());
-  EXPECT_EQ(DistilledPagePrefs::LIGHT, obs2->GetTheme());
+  EXPECT_EQ(DistilledPagePrefs::SEPIA, obs.GetTheme());
+  EXPECT_EQ(DistilledPagePrefs::LIGHT, obs2.GetTheme());
+  distilled_page_prefs_->RemoveObserver(&obs2);
 }
 
 }  // namespace dom_distiller
