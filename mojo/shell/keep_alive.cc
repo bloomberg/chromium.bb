@@ -11,12 +11,12 @@ namespace mojo {
 namespace shell {
 
 KeepAlive::KeepAlive(Context* context) : context_(context) {
-  DCHECK(context_->task_runners()->ui_runner()->RunsTasksOnCurrentThread());
+  DCHECK(context_->task_runners()->shell_runner()->RunsTasksOnCurrentThread());
   ++context_->keep_alive_counter()->count_;
 }
 
 KeepAlive::~KeepAlive() {
-  DCHECK(context_->task_runners()->ui_runner()->RunsTasksOnCurrentThread());
+  DCHECK(context_->task_runners()->shell_runner()->RunsTasksOnCurrentThread());
   if (--context_->keep_alive_counter()->count_ == 0) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,

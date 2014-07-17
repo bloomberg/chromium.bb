@@ -61,7 +61,7 @@ public class MojoShellActivity extends Activity {
     }
 
     private void startWithURL(String url) {
-        MojoMain.start(this, url);
+        MojoMain.start(url);
         Log.i(TAG, "Mojo started: " + url);
     }
 }

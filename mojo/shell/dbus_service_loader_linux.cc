@@ -116,11 +116,11 @@ class DBusServiceLoader::LoadContext {
   // and that would be superior?
   void HandleNameOwnerChanged(const std::string& old_owner,
                               const std::string& new_owner) {
-    DCHECK(loader_->context_->task_runners()->ui_runner()->
+    DCHECK(loader_->context_->task_runners()->shell_runner()->
            BelongsToCurrentThread());
 
     if (new_owner.empty()) {
-      loader_->context_->task_runners()->ui_runner()->PostTask(
+      loader_->context_->task_runners()->shell_runner()->PostTask(
           FROM_HERE,
           base::Bind(&DBusServiceLoader::ForgetService,
                      base::Unretained(loader_), url_));
@@ -165,7 +165,7 @@ void DBusServiceLoader::OnServiceError(ServiceManager* manager,
 }
 
 void DBusServiceLoader::ForgetService(const GURL& url) {
-  DCHECK(context_->task_runners()->ui_runner()->BelongsToCurrentThread());
+  DCHECK(context_->task_runners()->shell_runner()->BelongsToCurrentThread());
   DVLOG(2) << "Forgetting service (url: " << url << ")";
 
   LoadContextMap::iterator it = url_to_load_context_.find(url);

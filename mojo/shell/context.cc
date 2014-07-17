@@ -19,6 +19,7 @@
 #include "mojo/shell/in_process_dynamic_service_runner.h"
 #include "mojo/shell/out_of_process_dynamic_service_runner.h"
 #include "mojo/shell/switches.h"
+#include "mojo/shell/ui_service_loader_android.h"
 #include "mojo/spy/spy.h"
 
 #if defined(OS_LINUX)
@@ -103,6 +104,14 @@ Context::Context()
   // The native viewport service synchronously waits for certain messages. If we
   // don't run it on its own thread we can easily deadlock. Long term native
   // viewport should run its own process so that this isn't an issue.
+#if defined(OS_ANDROID)
+  service_manager_.SetLoaderForURL(
+      scoped_ptr<ServiceLoader>(
+          new UIServiceLoader(
+              scoped_ptr<ServiceLoader>(new NativeViewportServiceLoader(this)),
+              this)),
+      GURL("mojo:mojo_native_viewport_service"));
+#else
   service_manager_.SetLoaderForURL(
       scoped_ptr<ServiceLoader>(
           new BackgroundServiceLoader(
@@ -110,6 +119,7 @@ Context::Context()
               "native_viewport",
               base::MessageLoop::TYPE_UI)),
       GURL("mojo:mojo_native_viewport_service"));
+#endif
 #if defined(USE_AURA)
   // TODO(sky): need a better way to find this. It shouldn't be linked in.
   service_manager_.SetLoaderForURL(

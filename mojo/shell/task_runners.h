@@ -22,11 +22,11 @@ namespace shell {
 // process.
 class TaskRunners {
  public:
-  explicit TaskRunners(base::SingleThreadTaskRunner* ui_runner);
+  explicit TaskRunners(base::SingleThreadTaskRunner* shell_runner);
   ~TaskRunners();
 
-  base::SingleThreadTaskRunner* ui_runner() const {
-    return ui_runner_.get();
+  base::SingleThreadTaskRunner* shell_runner() const {
+    return shell_runner_.get();
   }
 
   base::SingleThreadTaskRunner* io_runner() const {
@@ -38,8 +38,7 @@ class TaskRunners {
   }
 
  private:
-  // TODO(beng): should this be named shell_runner_?
-  scoped_refptr<base::SingleThreadTaskRunner> ui_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> shell_runner_;
   scoped_ptr<base::Thread> io_thread_;
 
   scoped_refptr<base::SequencedWorkerPool> blocking_pool_;

@@ -585,6 +585,8 @@
         'shell/task_runners.h',
         'shell/test_child_process.cc',
         'shell/test_child_process.h',
+        'shell/ui_service_loader_android.cc',
+        'shell/ui_service_loader_android.h',
         'shell/view_manager_loader.cc',
         'shell/view_manager_loader.h',
       ],

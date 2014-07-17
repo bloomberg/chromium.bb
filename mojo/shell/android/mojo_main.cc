@@ -4,6 +4,7 @@
 
 #include "mojo/shell/android/mojo_main.h"
 
+#include "base/android/java_handler_thread.h"
 #include "base/android/jni_string.h"
 #include "base/at_exit.h"
 #include "base/bind.h"
@@ -32,6 +33,18 @@ LazyInstance<scoped_ptr<base::MessageLoop> > g_java_message_loop =
 LazyInstance<scoped_ptr<shell::Context> > g_context =
     LAZY_INSTANCE_INITIALIZER;
 
+LazyInstance<scoped_ptr<base::android::JavaHandlerThread> > g_shell_thread =
+    LAZY_INSTANCE_INITIALIZER;
+
+void RunShell(std::vector<GURL> app_urls) {
+  shell::Context* shell_context = new shell::Context();
+  shell_context->set_activity(base::android::GetApplicationContext());
+  shell_context->set_ui_loop(g_java_message_loop.Get().get());
+
+  g_context.Get().reset(shell_context);
+  shell::Run(shell_context, app_urls);
+}
+
 }  // namespace
 
 static void Init(JNIEnv* env, jclass clazz, jobject context) {
@@ -51,7 +64,7 @@ static void Init(JNIEnv* env, jclass clazz, jobject context) {
   gfx::GLSurface::InitializeOneOff();
 }
 
-static void Start(JNIEnv* env, jclass clazz, jobject context, jstring jurl) {
+static void Start(JNIEnv* env, jclass clazz, jstring jurl) {
   std::vector<GURL> app_urls;
 #if defined(MOJO_SHELL_DEBUG_URL)
   app_urls.push_back(GURL(MOJO_SHELL_DEBUG_URL));
@@ -62,14 +75,11 @@ static void Start(JNIEnv* env, jclass clazz, jobject context, jstring jurl) {
     app_urls.push_back(GURL(base::android::ConvertJavaStringToUTF8(env, jurl)));
 #endif
 
-  base::android::ScopedJavaGlobalRef<jobject> activity;
-  activity.Reset(env, context);
-
-  shell::Context* shell_context = new shell::Context();
-  shell_context->set_activity(activity.obj());
-
-  g_context.Get().reset(shell_context);
-  shell::Run(shell_context, app_urls);
+  g_shell_thread.Get().reset(
+      new base::android::JavaHandlerThread("shell_thread"));
+  g_shell_thread.Get()->Start();
+  g_shell_thread.Get()->message_loop()->PostTask(
+      FROM_HERE, base::Bind(&RunShell, app_urls));
 }
 
 bool RegisterMojoMain(JNIEnv* env) {

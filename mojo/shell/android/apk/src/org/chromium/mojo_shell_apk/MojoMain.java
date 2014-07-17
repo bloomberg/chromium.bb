@@ -31,13 +31,13 @@ public class MojoMain {
     /**
      * Starts the specified application in the specified context.
      **/
-    public static void start(Context context, String appUrl) {
-        nativeStart(context, appUrl);
+    public static void start(final String appUrl) {
+        nativeStart(appUrl);
     }
 
     /**
      * Initializes the native system. This API should be called only once per process.
      **/
     private static native void nativeInit(Context context);
-    private static native void nativeStart(Context context, String appUrl);
+    private static native void nativeStart(String appUrl);
 };

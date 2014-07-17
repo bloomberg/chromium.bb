@@ -38,6 +38,8 @@ class Context {
 #if defined(OS_ANDROID)
   jobject activity() const { return activity_.obj(); }
   void set_activity(jobject activity) { activity_.Reset(NULL, activity); }
+  base::MessageLoop* ui_loop() const { return ui_loop_; }
+  void set_ui_loop(base::MessageLoop* ui_loop) { ui_loop_ = ui_loop; }
 #endif  // defined(OS_ANDROID)
 
  private:
@@ -49,6 +51,7 @@ class Context {
   scoped_ptr<Spy> spy_;
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> activity_;
+  base::MessageLoop* ui_loop_;
 #endif  // defined(OS_ANDROID)
 
   KeepAliveCounter keep_alive_counter_;
