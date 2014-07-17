@@ -101,6 +101,8 @@ class PasswordManagerTest : public testing::Test {
         .WillRepeatedly(Return(manager_.get()));
     EXPECT_CALL(driver_, GetPasswordAutofillManager())
         .WillRepeatedly(Return(password_autofill_manager_.get()));
+    EXPECT_CALL(driver_, DidLastPageLoadEncounterSSLErrors())
+        .WillRepeatedly(Return(false));
   }
 
   virtual void TearDown() {
