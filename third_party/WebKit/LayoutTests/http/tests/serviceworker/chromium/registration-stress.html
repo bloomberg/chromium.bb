@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<title>Service Worker: registration stress test</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/test-helpers.js"></script>
+<body>
+<script>
+
+async_test(function(t) {
+    var step = t.step_func.bind(t);
+    var url = '../resources/worker-no-op.js';
+    var frames = [];
+
+    var number_of_workers = 50;
+    var register_promises = [];
+
+    for (var i = 0; i < number_of_workers; i++) {
+      var scope = i;
+      register_promises.push(with_iframe(scope)
+        .then(step(function(f) {
+            frames.push(f);
+            return service_worker_unregister_and_register(t, url, scope);
+          })));
+    }
+
+    Promise.all(register_promises)
+      .then(step(function(workers) {
+          var unregister_promises = [];
+          for (var i = 0; i < number_of_workers; i++) {
+            frames[i].remove();
+            unregister_promises.push(
+                navigator.serviceWorker.unregister(workers[i].scope));
+          }
+          return Promise.all(unregister_promises);
+        }))
+      .then(step(function() { t.done(); }))
+      .catch(unreached_rejection(t));
+  }, 'Registration: stress test');
+
+</script>
