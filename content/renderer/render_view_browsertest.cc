@@ -49,6 +49,7 @@
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebPerformance.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
@@ -2387,6 +2388,52 @@ TEST_F(RenderViewImplTest, ScreenMetricsEmulation) {
 
   view()->EnableScreenMetricsEmulation(params);
   // Don't disable here to test that emulation is being shutdown properly.
+}
+
+// Sanity checks for the Navigation Timing API |navigationStart| override. We
+// are asserting only most basic constraints, as TimeTicks (passed as the
+// override) are not comparable with the wall time (returned by the Blink API).
+TEST_F(RenderViewImplTest, NavigationStartOverride) {
+  // Verify that a navigation that claims to have started at the earliest
+  // possible TimeTicks is indeed reported as one that started before
+  // OnNavigate() is called.
+  base::Time before_navigation = base::Time::Now();
+  FrameMsg_Navigate_Params early_nav_params;
+  early_nav_params.url = GURL("data:text/html,<div>Page</div>");
+  early_nav_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  early_nav_params.transition = PAGE_TRANSITION_TYPED;
+  early_nav_params.page_id = -1;
+  early_nav_params.is_post = true;
+  early_nav_params.browser_navigation_start =
+      base::TimeTicks::FromInternalValue(1);
+
+  frame()->OnNavigate(early_nav_params);
+  ProcessPendingMessages();
+
+  base::Time early_nav_reported_start =
+      base::Time::FromDoubleT(GetMainFrame()->performance().navigationStart());
+  EXPECT_LT(early_nav_reported_start, before_navigation);
+
+  // Verify that a navigation that claims to have started in the future - 42
+  // days from now is *not* reported as one that starts in the future; as we
+  // sanitize the override allowing a maximum of ::Now().
+  FrameMsg_Navigate_Params late_nav_params;
+  late_nav_params.url = GURL("data:text/html,<div>Another page</div>");
+  late_nav_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  late_nav_params.transition = PAGE_TRANSITION_TYPED;
+  late_nav_params.page_id = -1;
+  late_nav_params.is_post = true;
+  late_nav_params.browser_navigation_start =
+      base::TimeTicks::Now() + base::TimeDelta::FromDays(42);
+
+  frame()->OnNavigate(late_nav_params);
+  ProcessPendingMessages();
+  base::Time after_navigation =
+      base::Time::Now() + base::TimeDelta::FromDays(1);
+
+  base::Time late_nav_reported_start =
+      base::Time::FromDoubleT(GetMainFrame()->performance().navigationStart());
+  EXPECT_LE(late_nav_reported_start, after_navigation);
 }
 
 }  // namespace content

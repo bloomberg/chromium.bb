@@ -893,6 +893,9 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
       request.setHTTPBody(http_body);
     }
 
+    // Record this before starting the load, we need a lower bound of this time
+    // to sanitize the navigationStart override set below.
+    base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
     frame->loadRequest(request);
 
     // The browser provides the navigation_start time to bootstrap the
@@ -901,11 +904,12 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
     // finishing the onbeforeunload handler of the previous page.
     DCHECK(!params.browser_navigation_start.is_null());
     if (frame->provisionalDataSource()) {
-      // browser_navigation_start is likely before this process existed, so we
-      // can't use InterProcessTimeTicksConverter. Instead, the best we can do
-      // is just ensure we don't report a bogus value in the future.
+      // |browser_navigation_start| is likely before this process existed, so we
+      // can't use InterProcessTimeTicksConverter. We need at least to ensure
+      // that the browser-side navigation start we set is not later than the one
+      // on the renderer side.
       base::TimeTicks navigation_start = std::min(
-          base::TimeTicks::Now(), params.browser_navigation_start);
+          params.browser_navigation_start, renderer_navigation_start);
       double navigation_start_seconds =
           (navigation_start - base::TimeTicks()).InSecondsF();
       frame->provisionalDataSource()->setNavigationStartTime(
