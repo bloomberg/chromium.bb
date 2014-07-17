@@ -18,7 +18,7 @@ public:
 
     void update();
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     static void assertNeedsCompositingInputsUpdateBitsCleared(RenderLayer*);
 #endif
 

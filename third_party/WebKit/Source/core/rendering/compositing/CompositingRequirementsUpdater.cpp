@@ -283,7 +283,7 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
         childRecursionData.m_testingOverlap = true;
     }
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     LayerListMutationDetector mutationChecker(layer->stackingNode());
 #endif
 

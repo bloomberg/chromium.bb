@@ -111,7 +111,7 @@ public:
     explicit InternalSettingsWrapper(Page& page)
         : m_internalSettings(InternalSettings::create(page)) { }
     virtual ~InternalSettingsWrapper() { m_internalSettings->hostDestroyed(); }
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     virtual bool isRefCountedWrapper() const OVERRIDE { return true; }
 #endif
     InternalSettings* internalSettings() const { return m_internalSettings.get(); }

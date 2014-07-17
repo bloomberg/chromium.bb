@@ -236,7 +236,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element
 {
     const ActiveAnimations* activeAnimations = element ? element->activeAnimations() : 0;
 
-#if !ASSERT_ENABLED
+#if !ENABLE(ASSERT)
     // If we're in an animation style change, no animations can have started, been cancelled or changed play state.
     // When ASSERT is enabled, we verify this optimization.
     if (activeAnimations && activeAnimations->isAnimationStyleChange())
@@ -460,7 +460,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
     const TransitionMap* activeTransitions = activeAnimations ? &activeAnimations->cssAnimations().m_transitions : 0;
     const CSSTransitionData* transitionData = style.transitions();
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     // In debug builds we verify that it would have been safe to avoid populating and testing listedProperties if the style recalc is due to animation.
     const bool animationStyleRecalc = false;
 #else

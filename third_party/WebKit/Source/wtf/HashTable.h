@@ -124,7 +124,7 @@ namespace WTF {
         HashTableConstIterator(PointerType position, PointerType endPosition, const HashTableType* container)
             : m_position(position)
             , m_endPosition(endPosition)
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
             , m_container(container)
             , m_containerModifications(container->modifications())
 #endif
@@ -135,7 +135,7 @@ namespace WTF {
         HashTableConstIterator(PointerType position, PointerType endPosition, const HashTableType* container, HashItemKnownGoodTag)
             : m_position(position)
             , m_endPosition(endPosition)
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
             , m_container(container)
             , m_containerModifications(container->modifications())
 #endif
@@ -197,7 +197,7 @@ namespace WTF {
     private:
         PointerType m_position;
         PointerType m_endPosition;
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
         const HashTableType* m_container;
         int64_t m_containerModifications;
 #endif
@@ -272,7 +272,7 @@ namespace WTF {
         HashTableAddResult(const HashTableType* container, ValueType* storedValue, bool isNewEntry)
             : storedValue(storedValue)
             , isNewEntry(isNewEntry)
-#if SECURITY_ASSERT_ENABLED
+#if ENABLE(SECURITY_ASSERT)
             , m_container(container)
             , m_containerModifications(container->modifications())
 #endif
@@ -294,7 +294,7 @@ namespace WTF {
         ValueType* storedValue;
         bool isNewEntry;
 
-#if SECURITY_ASSERT_ENABLED
+#if ENABLE(SECURITY_ASSERT)
     private:
         const HashTableType* m_container;
         const int64_t m_containerModifications;
@@ -462,7 +462,7 @@ namespace WTF {
 
         void trace(typename Allocator::Visitor*);
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
         int64_t modifications() const { return m_modifications; }
         void registerModification() { m_modifications++; }
         // HashTable and collections that build on it do not support
@@ -528,7 +528,7 @@ namespace WTF {
         unsigned m_keyCount;
         unsigned m_deletedCount:31;
         bool m_queueFlag:1;
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
         unsigned m_modifications;
 #endif
 
@@ -586,7 +586,7 @@ namespace WTF {
         , m_keyCount(0)
         , m_deletedCount(0)
         , m_queueFlag(false)
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
         , m_modifications(0)
 #endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
@@ -1065,7 +1065,7 @@ namespace WTF {
         , m_keyCount(0)
         , m_deletedCount(0)
         , m_queueFlag(false)
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
         , m_modifications(0)
 #endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
@@ -1092,7 +1092,7 @@ namespace WTF {
         ASSERT(!m_queueFlag);
         ASSERT(!other.m_queueFlag);
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
         std::swap(m_modifications, other.m_modifications);
 #endif
 

@@ -123,7 +123,7 @@ private:
     void dumpSteps() const;
 #endif
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     bool isTopmostRenderView(const RenderObject* renderer) const;
 #endif
 

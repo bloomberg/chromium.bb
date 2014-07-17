@@ -544,7 +544,7 @@ bool WebAXObject::ariaOwns(WebVector<WebAXObject>& ownsElements) const
     return true;
 }
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 static bool isLayoutClean(Document* document)
 {
     if (!document || !document->view())

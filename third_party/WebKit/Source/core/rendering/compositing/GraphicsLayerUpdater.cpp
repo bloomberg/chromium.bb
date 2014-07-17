@@ -124,7 +124,7 @@ void GraphicsLayerUpdater::updateRecursive(RenderLayer& layer, UpdateType update
         updateRecursive(*child, updateType, childContext, layersNeedingPaintInvalidation);
 }
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 
 void GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(RenderLayer& layer)
 {

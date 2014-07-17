@@ -56,7 +56,7 @@ private:
     virtual void didDownloadData(int) OVERRIDE;
 };
 
-#ifdef SECURITY_ASSERT_ENABLED
+#if ENABLE(SECURITY_ASSERT)
 inline bool isRawResource(const Resource& resource)
 {
     Resource::Type type = resource.type();

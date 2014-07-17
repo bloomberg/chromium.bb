@@ -234,7 +234,7 @@ protected:
 private:
     void initGroup();
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     void checkSubframeCountConsistency() const;
 #else
     void checkSubframeCountConsistency() const { }

@@ -30,7 +30,7 @@ bool EventHandlerRegistry::eventTypeToClass(const AtomicString& eventType, Event
         *result = ScrollEvent;
     } else if (eventType == EventTypeNames::wheel || eventType == EventTypeNames::mousewheel) {
         *result = WheelEvent;
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     } else if (eventType == EventTypeNames::load || eventType == EventTypeNames::mousemove || eventType == EventTypeNames::touchstart) {
         *result = EventsForTesting;
 #endif
@@ -167,7 +167,7 @@ void EventHandlerRegistry::notifyHasHandlersChanged(EventHandlerClass handlerCla
         if (scrollingCoordinator)
             scrollingCoordinator->updateHaveWheelEventHandlers();
         break;
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     case EventsForTesting:
         break;
 #endif
@@ -231,7 +231,7 @@ void EventHandlerRegistry::documentDetached(Document& document)
 
 void EventHandlerRegistry::checkConsistency() const
 {
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     for (size_t i = 0; i < EventHandlerClassCount; ++i) {
         EventHandlerClass handlerClass = static_cast<EventHandlerClass>(i);
         const EventTargetSet* targets = &m_targets[handlerClass];
@@ -249,7 +249,7 @@ void EventHandlerRegistry::checkConsistency() const
             }
         }
     }
-#endif // ASSERT_ENABLED
+#endif // ENABLE(ASSERT)
 }
 
 } // namespace WebCore

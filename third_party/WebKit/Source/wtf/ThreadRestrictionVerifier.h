@@ -53,7 +53,7 @@ public:
     // Indicates that the object may (or may not) be owned by more than one place.
     void setShared(bool shared)
     {
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
         bool previouslyShared = m_shared;
 #endif
         m_shared = shared;

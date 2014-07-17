@@ -2038,7 +2038,7 @@ void RenderLayer::paintChildren(unsigned childrenToVisit, GraphicsContext* conte
     if (!hasSelfPaintingLayerDescendant())
         return;
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     LayerListMutationDetector mutationChecker(m_stackingNode.get());
 #endif
 
@@ -3181,7 +3181,7 @@ static void expandRectForReflectionAndStackingChildren(const RenderLayer* ancest
 
     ASSERT(ancestorLayer->stackingNode()->isStackingContext() || !ancestorLayer->stackingNode()->hasPositiveZOrderList());
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     LayerListMutationDetector mutationChecker(const_cast<RenderLayer*>(ancestorLayer)->stackingNode());
 #endif
 

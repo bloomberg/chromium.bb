@@ -2370,16 +2370,16 @@ inline void TreeScope::removedLastRefToScope()
         // extra self-only ref.
         guardRef();
         dispose();
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
         // We need to do this right now since guardDeref() can delete this.
         rootNode().m_inRemovedLastRefFunction = false;
 #endif
         guardDeref();
     } else {
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
         rootNode().m_inRemovedLastRefFunction = false;
 #endif
-#if SECURITY_ASSERT_ENABLED
+#if ENABLE(SECURITY_ASSERT)
         beginDeletion();
 #endif
         delete this;
@@ -2398,7 +2398,7 @@ void Node::removedLastRef()
         return;
     }
 
-#if SECURITY_ASSERT_ENABLED
+#if ENABLE(SECURITY_ASSERT)
     m_deletionHasBegun = true;
 #endif
     delete this;

@@ -34,6 +34,7 @@
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -118,7 +119,7 @@ public:
         const FloatSize&, const FloatPoint& phase, CompositeOperator,
         const FloatRect&, blink::WebBlendMode = blink::WebBlendModeNormal, const IntSize& repeatSpacing = IntSize());
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     virtual bool notSolidColor() { return true; }
 #endif
 

@@ -117,7 +117,7 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge()
     ASSERT(!Canvas2DLayerManager::get().isInList(this));
     m_layer.clear();
     freeReleasedMailbox();
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     Vector<MailboxInfo>::iterator mailboxInfo;
     for (mailboxInfo = m_mailboxes.begin(); mailboxInfo < m_mailboxes.end(); ++mailboxInfo) {
         ASSERT(mailboxInfo->m_status != MailboxInUse);

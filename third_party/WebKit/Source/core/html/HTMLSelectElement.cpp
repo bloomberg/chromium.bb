@@ -725,7 +725,7 @@ const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& HTMLSelectElement::lis
     if (m_shouldRecalcListItems)
         recalcListItems();
     else {
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
         WillBeHeapVector<RawPtrWillBeMember<HTMLElement> > items = m_listItems;
         recalcListItems(false);
         ASSERT(items == m_listItems);

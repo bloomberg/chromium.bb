@@ -158,7 +158,7 @@ unsigned BitStack::size() const
 
 // --------
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 
 static unsigned depthCrossingShadowBoundaries(Node* node)
 {

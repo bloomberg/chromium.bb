@@ -200,7 +200,7 @@ public:
 
     GraphicsLayerUpdater::UpdateType updateTypeForChildren(GraphicsLayerUpdater::UpdateType) const;
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     void assertNeedsToUpdateGraphicsLayerBitsCleared() {  ASSERT(m_pendingUpdateScope == GraphicsLayerUpdateNone); }
 #endif
 

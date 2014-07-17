@@ -57,7 +57,7 @@ void RenderGeometryMap::mapToContainer(TransformState& transformState, const Ren
     }
 
     bool inFixed = false;
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     bool foundContainer = !container || (m_mapping.size() && m_mapping[0].m_renderer == container);
 #endif
 
@@ -66,7 +66,7 @@ void RenderGeometryMap::mapToContainer(TransformState& transformState, const Ren
 
         // If container is the root RenderView (step 0) we want to apply its fixed position offset.
         if (i > 0 && currentStep.m_renderer == container) {
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
             foundContainer = true;
 #endif
             break;
@@ -116,7 +116,7 @@ FloatPoint RenderGeometryMap::mapToContainer(const FloatPoint& p, const RenderLa
         result = transformState.lastPlanarPoint();
     }
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     if (m_mapping.size() > 0) {
         const RenderObject* lastRenderer = m_mapping.last().m_renderer;
         const RenderLayer* layer = lastRenderer->enclosingLayer();
@@ -162,7 +162,7 @@ FloatQuad RenderGeometryMap::mapToContainer(const FloatRect& rect, const RenderL
         result = transformState.lastPlanarQuad().boundingBox();
     }
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     if (m_mapping.size() > 0) {
         const RenderObject* lastRenderer = m_mapping.last().m_renderer;
         const RenderLayer* layer = lastRenderer->enclosingLayer();
@@ -329,7 +329,7 @@ void RenderGeometryMap::stepRemoved(const RenderGeometryMapStep& step)
     }
 }
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 bool RenderGeometryMap::isTopmostRenderView(const RenderObject* renderer) const
 {
     if (!renderer->isRenderView())

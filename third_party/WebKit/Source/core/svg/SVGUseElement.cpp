@@ -115,7 +115,7 @@ void SVGUseElement::parseAttribute(const QualifiedName& name, const AtomicString
     reportAttributeParsingError(parseError, name, value);
 }
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 static inline bool isWellFormedDocument(Document* document)
 {
     if (document->isXMLDocument())

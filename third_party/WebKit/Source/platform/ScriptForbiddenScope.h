@@ -11,7 +11,7 @@
 
 namespace WebCore {
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 
 class PLATFORM_EXPORT ScriptForbiddenScope {
 public:

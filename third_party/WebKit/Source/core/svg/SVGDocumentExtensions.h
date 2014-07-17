@@ -104,7 +104,7 @@ private:
     OwnPtr<SVGResourcesCache> m_resourcesCache;
     WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement> > m_relativeLengthSVGRoots; // Root SVG elements with relative length descendants.
     FloatPoint m_translate;
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     bool m_inRelativeLengthSVGRootsInvalidation;
 #endif
 

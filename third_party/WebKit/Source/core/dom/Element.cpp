@@ -2642,7 +2642,7 @@ KURL Element::hrefURL() const
 
 KURL Element::getURLAttribute(const QualifiedName& name) const
 {
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     if (elementData()) {
         if (const Attribute* attribute = attributes().find(name))
             ASSERT(isURLAttribute(*attribute));
@@ -2653,7 +2653,7 @@ KURL Element::getURLAttribute(const QualifiedName& name) const
 
 KURL Element::getNonEmptyURLAttribute(const QualifiedName& name) const
 {
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     if (elementData()) {
         if (const Attribute* attribute = attributes().find(name))
             ASSERT(isURLAttribute(*attribute));

@@ -175,7 +175,7 @@ public:
 private:
     class OverlapMap;
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     void assertNoUnresolvedDirtyBits();
 #endif
 

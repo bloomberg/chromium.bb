@@ -32,7 +32,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 #include "wtf/Threading.h"
 #endif
 
@@ -124,7 +124,7 @@ public:
 template<typename T, bool isGarbageCollected = false>
 class SupplementBase : public SupplementTracing<isGarbageCollected> {
 public:
-#if SECURITY_ASSERT_ENABLED
+#if ENABLE(SECURITY_ASSERT)
     virtual bool isRefCountedWrapper() const { return false; }
 #endif
 
@@ -183,7 +183,7 @@ public:
 
     void reattachThread()
     {
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
         m_threadId = currentThread();
 #endif
     }
@@ -202,7 +202,7 @@ protected:
     GC_PLUGIN_IGNORE("")
     typename SupplementableTraits<T, isGarbageCollected>::SupplementMap m_supplements;
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 protected:
     SupplementableBase() : m_threadId(currentThread()) { }
 

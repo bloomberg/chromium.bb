@@ -69,7 +69,7 @@ public:
     // reject is called.
     ScriptPromise promise()
     {
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
         m_isPromiseCalled = true;
 #endif
         return m_resolver.promise();
@@ -137,7 +137,7 @@ private:
     Timer<ScriptPromiseResolver> m_timer;
     Resolver m_resolver;
     ScopedPersistent<v8::Value> m_value;
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     // True if promise() is called.
     bool m_isPromiseCalled;
 #endif

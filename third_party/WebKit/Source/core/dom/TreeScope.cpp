@@ -481,7 +481,7 @@ TreeScope* commonTreeScope(Node* nodeA, Node* nodeB)
     return treeScopesA[indexA] == treeScopesB[indexB] ? treeScopesA[indexA] : 0;
 }
 
-#if SECURITY_ASSERT_ENABLED && !ENABLE(OILPAN)
+#if ENABLE(SECURITY_ASSERT) && !ENABLE(OILPAN)
 bool TreeScope::deletionHasBegun()
 {
     return rootNode().m_deletionHasBegun;

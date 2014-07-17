@@ -613,7 +613,7 @@ void DocumentMarkerController::shiftMarkers(Node* node, unsigned startOffset, in
             continue;
         MarkerList::iterator startPos = std::lower_bound(list->begin(), list->end(), startOffset, startsAfter);
         for (MarkerList::iterator marker = startPos; marker != list->end(); ++marker) {
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
             int startOffset = (*marker)->startOffset();
             ASSERT(startOffset + delta >= 0);
 #endif

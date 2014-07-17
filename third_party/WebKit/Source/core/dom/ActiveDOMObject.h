@@ -39,7 +39,7 @@ public:
     // suspendIfNeeded() should be called exactly once after object construction to synchronize
     // the suspend state with that in ExecutionContext.
     void suspendIfNeeded();
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     bool suspendIfNeededCalled() const { return m_suspendIfNeededCalled; }
 #endif
 
@@ -77,7 +77,7 @@ protected:
 
 private:
     unsigned m_pendingActivityCount;
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     bool m_suspendIfNeededCalled;
 #endif
 };

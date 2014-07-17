@@ -53,7 +53,7 @@ public:
 
 #define IGNORE_EXCEPTION (::WebCore::IgnorableExceptionState().returnThis())
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 
 class NoExceptionStateAssertionChecker FINAL : public ExceptionState {
 public:

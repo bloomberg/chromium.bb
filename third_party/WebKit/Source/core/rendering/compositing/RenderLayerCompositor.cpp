@@ -204,7 +204,7 @@ void RenderLayerCompositor::updateIfNeededRecursive()
 
     DocumentAnimations::startPendingAnimations(m_renderView.document());
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     ASSERT(lifecycle().state() == DocumentLifecycle::CompositingClean);
     assertNoUnresolvedDirtyBits();
     for (Frame* child = m_renderView.frameView()->frame().tree().firstChild(); child; child = child->tree().nextSibling()) {
@@ -235,7 +235,7 @@ void RenderLayerCompositor::didLayout()
     rootRenderLayer()->setNeedsCompositingInputsUpdate();
 }
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 
 void RenderLayerCompositor::assertNoUnresolvedDirtyBits()
 {
@@ -294,7 +294,7 @@ void RenderLayerCompositor::updateIfNeeded()
     if (updateType >= CompositingUpdateAfterCompositingInputChange) {
         CompositingInputsUpdater(updateRoot).update();
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
         // FIXME: Move this check to the end of the compositing update.
         CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(updateRoot);
 #endif
@@ -325,7 +325,7 @@ void RenderLayerCompositor::updateIfNeeded()
         if (updater.needsRebuildTree())
             updateType = std::max(updateType, CompositingUpdateRebuildTree);
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
         // FIXME: Move this check to the end of the compositing update.
         GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(*updateRoot);
 #endif
@@ -632,7 +632,7 @@ void RenderLayerCompositor::recursiveRepaintLayer(RenderLayer* layer)
 
     layer->stackingNode()->updateLayerListsIfNeeded();
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     LayerListMutationDetector mutationChecker(layer->stackingNode());
 #endif
 

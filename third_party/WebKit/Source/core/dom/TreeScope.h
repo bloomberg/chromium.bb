@@ -160,7 +160,7 @@ private:
 #if !ENABLE(OILPAN)
     int refCount() const;
 
-#if SECURITY_ASSERT_ENABLED
+#if ENABLE(SECURITY_ASSERT)
     bool deletionHasBegun();
     void beginDeletion();
 #else

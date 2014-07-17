@@ -54,29 +54,31 @@
 #define BACKTRACE_DISABLED ASSERTIONS_DISABLED_DEFAULT
 #endif
 
-#ifndef ASSERT_ENABLED
+// Users must test "#if ENABLE(ASSERT)", which helps ensure that code
+// testing this macro has included this header.
+#ifndef ENABLE_ASSERT
 // Notice the not below:
-#define ASSERT_ENABLED !ASSERTIONS_DISABLED_DEFAULT
+#define ENABLE_ASSERT !ASSERTIONS_DISABLED_DEFAULT
 #endif
 
 #ifndef ASSERT_MSG_DISABLED
-#define ASSERT_MSG_DISABLED ASSERTIONS_DISABLED_DEFAULT
+#define ASSERT_MSG_DISABLED !ENABLE(ASSERT)
 #endif
 
 #ifndef ASSERT_ARG_DISABLED
-#define ASSERT_ARG_DISABLED ASSERTIONS_DISABLED_DEFAULT
+#define ASSERT_ARG_DISABLED !ENABLE(ASSERT)
 #endif
 
 #ifndef FATAL_DISABLED
-#define FATAL_DISABLED ASSERTIONS_DISABLED_DEFAULT
+#define FATAL_DISABLED !ENABLE(ASSERT)
 #endif
 
 #ifndef ERROR_DISABLED
-#define ERROR_DISABLED ASSERTIONS_DISABLED_DEFAULT
+#define ERROR_DISABLED !ENABLE(ASSERT)
 #endif
 
 #ifndef LOG_DISABLED
-#define LOG_DISABLED ASSERTIONS_DISABLED_DEFAULT
+#define LOG_DISABLED !ENABLE(ASSERT)
 #endif
 
 /* WTF logging functions can process %@ in the format string to log a NSObject* but the printf format attribute
@@ -196,7 +198,7 @@ using WTF::FrameToNameScope;
 #undef ASSERT
 #endif
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 
 #define ASSERT(assertion) \
     (!(assertion) ? \
@@ -255,10 +257,12 @@ using WTF::FrameToNameScope;
 
 #endif
 
-#if defined(ADDRESS_SANITIZER) || ASSERT_ENABLED
-#define SECURITY_ASSERT_ENABLED 1
+// Users must test "#if ENABLE(SECURITY_ASSERT)", which helps ensure
+// that code testing this macro has included this header.
+#if defined(ADDRESS_SANITIZER) || ENABLE(ASSERT)
+#define ENABLE_SECURITY_ASSERT 1
 #else
-#define SECURITY_ASSERT_ENABLED 0
+#define ENABLE_SECURITY_ASSERT 0
 #endif
 
 /* ASSERT_WITH_MESSAGE */
@@ -369,7 +373,7 @@ static inline void UNREACHABLE_FOR_PLATFORM()
       http://code.google.com/p/chromium/issues/entry?template=Security%20Bug
 */
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 #define RELEASE_ASSERT(assertion) ASSERT(assertion)
 #define RELEASE_ASSERT_WITH_MESSAGE(assertion, ...) ASSERT_WITH_MESSAGE(assertion, __VA_ARGS__)
 #define RELEASE_ASSERT_NOT_REACHED() ASSERT_NOT_REACHED()

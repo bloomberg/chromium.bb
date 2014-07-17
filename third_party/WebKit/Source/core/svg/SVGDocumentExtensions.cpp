@@ -40,7 +40,7 @@ namespace WebCore {
 SVGDocumentExtensions::SVGDocumentExtensions(Document* document)
     : m_document(document)
     , m_resourcesCache(adoptPtr(new SVGResourcesCache))
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     , m_inRelativeLengthSVGRootsInvalidation(false)
 #endif
 {
@@ -328,7 +328,7 @@ bool SVGDocumentExtensions::isSVGRootWithRelativeLengthDescendents(SVGSVGElement
 void SVGDocumentExtensions::invalidateSVGRootsWithRelativeLengthDescendents(SubtreeLayoutScope* scope)
 {
     ASSERT(!m_inRelativeLengthSVGRootsInvalidation);
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     TemporaryChange<bool> inRelativeLengthSVGRootsChange(m_inRelativeLengthSVGRootsInvalidation, true);
 #endif
 

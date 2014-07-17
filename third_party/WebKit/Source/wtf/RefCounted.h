@@ -82,7 +82,7 @@ public:
 protected:
     RefCountedBase()
         : m_refCount(1)
-#if SECURITY_ASSERT_ENABLED
+#if ENABLE(SECURITY_ASSERT)
         , m_deletionHasBegun(false)
 #endif
 #if CHECK_REF_COUNTED_LIFECYCLE
@@ -111,7 +111,7 @@ protected:
         ASSERT(m_refCount > 0);
         --m_refCount;
         if (!m_refCount) {
-#if SECURITY_ASSERT_ENABLED
+#if ENABLE(SECURITY_ASSERT)
             m_deletionHasBegun = true;
 #endif
             return true;
@@ -135,12 +135,12 @@ protected:
 
 private:
 
-#if CHECK_REF_COUNTED_LIFECYCLE || SECURITY_ASSERT_ENABLED
+#if CHECK_REF_COUNTED_LIFECYCLE || ENABLE(SECURITY_ASSERT)
     friend void adopted(RefCountedBase*);
 #endif
 
     int m_refCount;
-#if SECURITY_ASSERT_ENABLED
+#if ENABLE(SECURITY_ASSERT)
     bool m_deletionHasBegun;
 #endif
 #if CHECK_REF_COUNTED_LIFECYCLE
@@ -149,7 +149,7 @@ private:
 #endif
 };
 
-#if CHECK_REF_COUNTED_LIFECYCLE || SECURITY_ASSERT_ENABLED
+#if CHECK_REF_COUNTED_LIFECYCLE || ENABLE(SECURITY_ASSERT)
 inline void adopted(RefCountedBase* object)
 {
     if (!object)

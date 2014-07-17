@@ -34,7 +34,7 @@ SuspendableTimer::SuspendableTimer(ExecutionContext* context)
     , m_nextFireInterval(0)
     , m_repeatInterval(0)
     , m_active(false)
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     , m_suspended(false)
 #endif
 {
@@ -56,7 +56,7 @@ void SuspendableTimer::stop()
 
 void SuspendableTimer::suspend()
 {
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     ASSERT(!m_suspended);
     m_suspended = true;
 #endif
@@ -70,7 +70,7 @@ void SuspendableTimer::suspend()
 
 void SuspendableTimer::resume()
 {
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     ASSERT(m_suspended);
     m_suspended = false;
 #endif

@@ -54,7 +54,7 @@ struct AlgorithmNameMapping {
     unsigned char algorithmNameLength;
     blink::WebCryptoAlgorithmId algorithmId;
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     bool operator<(const AlgorithmNameMapping&) const;
 #endif
 };
@@ -75,7 +75,7 @@ const AlgorithmNameMapping algorithmNameMappings[] = {
     {"RSASSA-PKCS1-V1_5", 17, blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5},
 };
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 
 // Essentially std::is_sorted() (however that function is new to C++11).
 template <typename Iterator>

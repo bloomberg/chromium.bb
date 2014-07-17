@@ -45,7 +45,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Uint8Array.h"
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 namespace {
 
 // The list of possible values for |sessionType| passed to createSession().

@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 
 NoExceptionStateAssertionChecker::NoExceptionStateAssertionChecker(const char* file, int line)
     : ExceptionState(ExceptionState::UnknownContext, 0, 0, v8::Handle<v8::Object>(), 0)

@@ -141,7 +141,7 @@ void Database::runTransaction(PassOwnPtr<SQLTransactionCallback> callback, PassO
     // FIXME: Rather than passing errorCallback to SQLTransaction and then sometimes firing it ourselves,
     // this code should probably be pushed down into DatabaseBackend so that we only create the SQLTransaction
     // if we're actually going to run it.
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     SQLTransactionErrorCallback* originalErrorCallback = errorCallback.get();
 #endif
     RefPtrWillBeRawPtr<SQLTransaction> transaction = SQLTransaction::create(this, callback, successCallback, errorCallback, readOnly);

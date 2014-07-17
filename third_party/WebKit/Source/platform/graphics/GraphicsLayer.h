@@ -272,7 +272,7 @@ private:
     // can be batched before updating.
     void addChildInternal(GraphicsLayer*);
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     bool hasAncestor(GraphicsLayer*) const;
 #endif
 

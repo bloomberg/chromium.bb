@@ -172,7 +172,7 @@ void CompositingInputsUpdater::updateRecursive(RenderLayer* layer, UpdateType up
     layer->didUpdateCompositingInputs();
 }
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 
 void CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(RenderLayer* layer)
 {

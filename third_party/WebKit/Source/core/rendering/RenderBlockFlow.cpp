@@ -2304,7 +2304,7 @@ void RenderBlockFlow::removeFloatingObject(RenderBox* floatBox)
                         ASSERT(floatingObject->originatingLine()->renderer() == this);
                         floatingObject->originatingLine()->markDirty();
                     }
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
                     floatingObject->setOriginatingLine(0);
 #endif
                 }

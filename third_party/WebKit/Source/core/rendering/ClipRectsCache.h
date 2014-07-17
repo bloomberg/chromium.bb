@@ -7,7 +7,7 @@
 
 #include "core/rendering/ClipRects.h"
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 #include "core/rendering/RenderBox.h" // For OverlayScrollbarSizeRelevancy.
 #endif
 
@@ -34,7 +34,7 @@ public:
     struct Entry {
         Entry()
             : root(0)
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
             , scrollbarRelevancy(IgnoreOverlayScrollbarSize)
 #endif
         {
@@ -42,7 +42,7 @@ public:
 
         const RenderLayer* root;
         RefPtr<ClipRects> clipRects;
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
         OverlayScrollbarSizeRelevancy scrollbarRelevancy;
 #endif
     };

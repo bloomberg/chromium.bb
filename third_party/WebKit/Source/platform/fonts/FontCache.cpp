@@ -151,7 +151,7 @@ PassRefPtr<SimpleFontData> FontCache::fontDataFromFontPlatformData(const FontPla
     if (!gFontDataCache)
         gFontDataCache = new FontDataCache;
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     if (shouldRetain == DoNotRetain)
         ASSERT(m_purgePreventCount);
 #endif

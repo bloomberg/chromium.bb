@@ -727,7 +727,7 @@ Element* HTMLFormElement::elementFromPastNamesMap(const AtomicString& pastName)
     if (pastName.isEmpty() || !m_pastNamesMap)
         return 0;
     Element* element = m_pastNamesMap->get(pastName);
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     if (!element)
         return 0;
     ASSERT_WITH_SECURITY_IMPLICATION(toHTMLElement(element)->formOwner() == this);

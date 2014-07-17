@@ -44,7 +44,7 @@ extern "C" {
 
 namespace WebCore {
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 const int kMaxFFTPow2Size = 24;
 #endif
 

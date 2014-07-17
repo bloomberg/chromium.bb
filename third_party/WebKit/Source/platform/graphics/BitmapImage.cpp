@@ -399,7 +399,7 @@ ImageOrientation BitmapImage::frameOrientationAtIndex(size_t index)
     return m_source.orientationAtIndex(index);
 }
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 bool BitmapImage::notSolidColor()
 {
     return size().width() != 1 || size().height() != 1 || frameCount() > 1;

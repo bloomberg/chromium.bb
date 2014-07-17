@@ -154,7 +154,7 @@ void Step::evaluate(EvaluationContext& evaluationContext, Node* context, NodeSet
     }
 }
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 static inline Node::NodeType primaryNodeType(Step::Axis axis)
 {
     switch (axis) {

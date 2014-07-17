@@ -124,7 +124,7 @@ ClipRects* RenderLayerClipper::storeClipRectsInCache(const ClipRectsContext& con
 {
     ClipRectsCache::Entry& entry = cache().get(context.cacheSlot);
     entry.root = context.rootLayer;
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     entry.scrollbarRelevancy = context.scrollbarRelevancy;
 #endif
 

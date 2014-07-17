@@ -28,7 +28,7 @@
 
 namespace WebCore {
 
-#if SECURITY_ASSERT_ENABLED
+#if ENABLE(SECURITY_ASSERT)
 template<typename NodeType> class TreeShared;
 template<typename NodeType> void adopted(TreeShared<NodeType>*);
 #endif
@@ -38,9 +38,9 @@ template<typename NodeType> class TreeShared : public NoBaseWillBeGarbageCollect
 protected:
     TreeShared()
         : m_refCount(1)
-#if SECURITY_ASSERT_ENABLED
+#if ENABLE(SECURITY_ASSERT)
         , m_deletionHasBegun(false)
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
         , m_inRemovedLastRefFunction(false)
         , m_adoptionIsRequired(true)
 #endif
@@ -76,7 +76,7 @@ public:
         ASSERT(!m_adoptionIsRequired);
         NodeType* thisNode = static_cast<NodeType*>(this);
         if (!--m_refCount && !thisNode->hasTreeSharedParent()) {
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
             m_inRemovedLastRefFunction = true;
 #endif
             thisNode->removedLastRef();
@@ -88,10 +88,10 @@ public:
 private:
     int m_refCount;
 
-#if SECURITY_ASSERT_ENABLED
+#if ENABLE(SECURITY_ASSERT)
 public:
     bool m_deletionHasBegun;
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     bool m_inRemovedLastRefFunction;
 
 private:
@@ -101,14 +101,14 @@ private:
 #endif
 };
 
-#if SECURITY_ASSERT_ENABLED
+#if ENABLE(SECURITY_ASSERT)
 template<typename NodeType> void adopted(TreeShared<NodeType>* object)
 {
     if (!object)
         return;
 
     ASSERT_WITH_SECURITY_IMPLICATION(!object->m_deletionHasBegun);
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     ASSERT(!object->m_inRemovedLastRefFunction);
     object->m_adoptionIsRequired = false;
 #endif

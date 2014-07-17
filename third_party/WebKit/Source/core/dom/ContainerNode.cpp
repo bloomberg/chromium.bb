@@ -486,7 +486,7 @@ void ContainerNode::addChildNodesToDeletionQueue(Node*& head, Node*& tail, Conta
             next->setPreviousSibling(0);
 
         if (!n->refCount()) {
-#if SECURITY_ASSERT_ENABLED
+#if ENABLE(SECURITY_ASSERT)
             n->m_deletionHasBegun = true;
 #endif
             // Add the node to the list of nodes to be deleted.

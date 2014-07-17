@@ -362,7 +362,7 @@ enum PageshowEventPersistence {
         RefPtrWillBeMember<Document> m_document;
 
         bool m_shouldPrintWhenFinishedLoading;
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
         bool m_hasBeenReset;
 #endif
 

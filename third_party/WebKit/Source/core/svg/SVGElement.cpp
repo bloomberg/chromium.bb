@@ -57,7 +57,7 @@ using namespace SVGNames;
 
 SVGElement::SVGElement(const QualifiedName& tagName, Document& document, ConstructionType constructionType)
     : Element(tagName, &document, constructionType)
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     , m_inRelativeLengthClientsInvalidation(false)
 #endif
     // |m_isContextElement| must be initialized before |m_className|, as SVGAnimatedString tear-off c-tor currently set this to true.
@@ -416,7 +416,7 @@ void SVGElement::invalidateRelativeLengthClients(SubtreeLayoutScope* layoutScope
         return;
 
     ASSERT(!m_inRelativeLengthClientsInvalidation);
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     TemporaryChange<bool> inRelativeLengthClientsInvalidationChange(m_inRelativeLengthClientsInvalidation, true);
 #endif
 

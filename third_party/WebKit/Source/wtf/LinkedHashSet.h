@@ -380,7 +380,7 @@ private:
 protected:
     LinkedHashSetConstIterator(const LinkedHashSetNodeBase* position, const LinkedHashSetType* container)
         : m_position(position)
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
         , m_container(container)
         , m_containerModifications(container->modifications())
 #endif
@@ -426,7 +426,7 @@ public:
 
 private:
     const LinkedHashSetNodeBase* m_position;
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     void checkModifications() const { m_container->checkModifications(m_containerModifications); }
     const LinkedHashSetType* m_container;
     int64_t m_containerModifications;

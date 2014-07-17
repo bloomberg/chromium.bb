@@ -74,7 +74,7 @@ private:
     RawPtrWillBeMember<CSSStyleSheet> m_styleSheet;
 };
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 static bool isAcceptableCSSStyleSheetParent(Node* parentNode)
 {
     // Only these nodes can be parents of StyleSheets, and they need to call

@@ -71,7 +71,7 @@ DocumentLifecycle::~DocumentLifecycle()
 {
 }
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 
 bool DocumentLifecycle::canAdvanceTo(State state) const
 {

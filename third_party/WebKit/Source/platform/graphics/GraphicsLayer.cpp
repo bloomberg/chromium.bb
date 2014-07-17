@@ -147,7 +147,7 @@ void GraphicsLayer::setParent(GraphicsLayer* layer)
     m_parent = layer;
 }
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 
 bool GraphicsLayer::hasAncestor(GraphicsLayer* ancestor) const
 {

@@ -1635,7 +1635,7 @@ bool CompositedLayerMapping::hasVisibleNonCompositingDescendant(RenderLayer* par
     // FIXME: We shouldn't be called with a stale z-order lists. See bug 85512.
     parent->stackingNode()->updateLayerListsIfNeeded();
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     LayerListMutationDetector mutationChecker(parent->stackingNode());
 #endif
 

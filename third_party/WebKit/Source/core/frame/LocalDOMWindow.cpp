@@ -329,7 +329,7 @@ bool LocalDOMWindow::canShowModalDialogNow(const LocalFrame* frame)
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     : FrameDestructionObserver(&frame)
     , m_shouldPrintWhenFinishedLoading(false)
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     , m_hasBeenReset(false)
 #endif
 {
@@ -606,7 +606,7 @@ void LocalDOMWindow::resetDOMWindowProperties()
     m_sessionStorage = nullptr;
     m_localStorage = nullptr;
     m_applicationCache = nullptr;
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
     m_hasBeenReset = true;
 #endif
 }

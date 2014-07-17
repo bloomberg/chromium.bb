@@ -33,7 +33,7 @@
 
 #include "wtf/FastAllocBase.h"
 
-#if ASSERT_ENABLED
+#if ENABLE(ASSERT)
 #include "wtf/MainThread.h"
 #endif
 
