@@ -71,7 +71,7 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
           (value.GetAsString(&string_value) &&
            base::StringToInt(string_value, &int_value))) {
         return scoped_ptr<base::Value>(
-            base::Value::CreateBooleanValue(int_value != 0));
+            new base::FundamentalValue(int_value != 0));
       }
       break;
     }

@@ -856,7 +856,7 @@ CPP_FOOT = '''}
 
 def _CreateValue(type, arg):
   if type == 'TYPE_BOOLEAN':
-    return 'base::Value::CreateBooleanValue(%s)' % arg
+    return 'new base::FundamentalValue(%s)' % arg
   elif type == 'TYPE_INTEGER':
     return 'DecodeIntegerValue(%s)' % arg
   elif type == 'TYPE_STRING':

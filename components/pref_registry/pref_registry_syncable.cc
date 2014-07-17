@@ -25,9 +25,9 @@ base::Value* CreateLocaleDefaultValue(base::Value::Type type,
   switch (type) {
     case base::Value::TYPE_BOOLEAN: {
       if ("true" == resource_string)
-        return base::Value::CreateBooleanValue(true);
+        return new base::FundamentalValue(true);
       if ("false" == resource_string)
-        return base::Value::CreateBooleanValue(false);
+        return new base::FundamentalValue(false);
       break;
     }
 
@@ -77,9 +77,8 @@ void PrefRegistrySyncable::SetSyncableRegistrationCallback(
 void PrefRegistrySyncable::RegisterBooleanPref(const char* path,
                                                bool default_value,
                                                PrefSyncStatus sync_status) {
-  RegisterSyncablePreference(path,
-                             base::Value::CreateBooleanValue(default_value),
-                             sync_status);
+  RegisterSyncablePreference(
+      path, new base::FundamentalValue(default_value), sync_status);
 }
 
 void PrefRegistrySyncable::RegisterIntegerPref(const char* path,

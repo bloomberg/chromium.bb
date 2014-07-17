@@ -399,9 +399,7 @@ base::DictionaryValue* NinePatchLayerImpl::LayerTreeAsJson() const {
 
   result->Set("Border", MathUtil::AsValue(border_).release());
 
-  base::FundamentalValue* fill_center =
-      base::Value::CreateBooleanValue(fill_center_);
-  result->Set("FillCenter", fill_center);
+  result->SetBoolean("FillCenter", fill_center_);
 
   return result;
 }

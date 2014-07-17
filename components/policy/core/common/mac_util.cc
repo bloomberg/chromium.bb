@@ -48,8 +48,8 @@ scoped_ptr<base::Value> PropertyToValue(CFPropertyListRef property) {
     return scoped_ptr<base::Value>(base::Value::CreateNullValue());
 
   if (CFBooleanRef boolean = CFCast<CFBooleanRef>(property)) {
-    return scoped_ptr<base::Value>(
-        base::Value::CreateBooleanValue(CFBooleanGetValue(boolean)));
+    return scoped_ptr<base::Value>(new base::FundamentalValue(
+        static_cast<bool>(CFBooleanGetValue(boolean))));
   }
 
   if (CFNumberRef number = CFCast<CFNumberRef>(property)) {

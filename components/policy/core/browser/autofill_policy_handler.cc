@@ -23,10 +23,8 @@ void AutofillPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                 PrefValueMap* prefs) {
   const base::Value* value = policies.GetValue(policy_name());
   bool auto_fill_enabled;
-  if (value && value->GetAsBoolean(&auto_fill_enabled) && !auto_fill_enabled) {
-    prefs->SetValue(autofill::prefs::kAutofillEnabled,
-                    base::Value::CreateBooleanValue(false));
-  }
+  if (value && value->GetAsBoolean(&auto_fill_enabled) && !auto_fill_enabled)
+    prefs->SetBoolean(autofill::prefs::kAutofillEnabled, false);
 }
 
 }  // namespace policy

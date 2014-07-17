@@ -720,8 +720,9 @@ bool ExtensionPrefs::HasWipeoutBeenAcknowledged(
 void ExtensionPrefs::SetWipeoutAcknowledged(
     const std::string& extension_id,
     bool value) {
-  UpdateExtensionPref(extension_id, kPrefWipeoutAcknowledged,
-                      value ? base::Value::CreateBooleanValue(value) : NULL);
+  UpdateExtensionPref(extension_id,
+                      kPrefWipeoutAcknowledged,
+                      value ? new base::FundamentalValue(value) : NULL);
 }
 
 bool ExtensionPrefs::HasSettingsApiBubbleBeenAcknowledged(
@@ -735,7 +736,7 @@ void ExtensionPrefs::SetSettingsApiBubbleBeenAcknowledged(
     bool value) {
   UpdateExtensionPref(extension_id,
                       kPrefSettingsBubbleAcknowledged,
-                      value ? base::Value::CreateBooleanValue(value) : NULL);
+                      value ? new base::FundamentalValue(value) : NULL);
 }
 
 bool ExtensionPrefs::HasNtpOverriddenBubbleBeenAcknowledged(
@@ -748,7 +749,7 @@ void ExtensionPrefs::SetNtpOverriddenBubbleBeenAcknowledged(
     bool value) {
   UpdateExtensionPref(extension_id,
                       kPrefNtpBubbleAcknowledged,
-                      value ? base::Value::CreateBooleanValue(value) : NULL);
+                      value ? new base::FundamentalValue(value) : NULL);
 }
 
 bool ExtensionPrefs::HasProxyOverriddenBubbleBeenAcknowledged(
@@ -761,7 +762,7 @@ void ExtensionPrefs::SetProxyOverriddenBubbleBeenAcknowledged(
     bool value) {
   UpdateExtensionPref(extension_id,
                       kPrefProxyBubbleAcknowledged,
-                      value ? base::Value::CreateBooleanValue(value) : NULL);
+                      value ? new base::FundamentalValue(value) : NULL);
 }
 
 bool ExtensionPrefs::SetAlertSystemFirstRun() {
