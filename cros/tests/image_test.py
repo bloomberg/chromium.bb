@@ -4,6 +4,8 @@
 
 """Collection of tests to run on the rootfs of a built image."""
 
+import cStringIO
+import collections
 import itertools
 import logging
 import magic
@@ -449,3 +451,116 @@ class FileSystemMetaDataTest(ForgivingImageTestCase):
                          higher_is_better=False, graph='filesystem_stats')
     self.OutputPerfValue('metadata_size', metadata_size, 'bytes',
                          higher_is_better=False, graph='filesystem_stats')
+
+
+class SymbolsTest(NonForgivingImageTestCase):
+  """Tests related to symbols in ELF files."""
+
+  def setUp(self):
+    # Mapping of file name --> 2-tuple (import, export).
+    self._known_symtabs = {}
+
+  def _GetSymbols(self, file_name):
+    """Return a 2-tuple (import, export) of an ELF file |file_name|.
+
+    Import and export in the returned tuple are sets of strings (symbol names).
+    """
+    if file_name in self._known_symtabs:
+      return self._known_symtabs[file_name]
+
+    # We use cstringio here to obviate fseek/fread time in pyelftools.
+    stream = cStringIO.StringIO(osutils.ReadFile(file_name))
+
+    # pyelftools is not available during initial bootstrap, crbug.com/341152.
+    from elftools.elf import elffile
+    from elftools.common import utils
+    from elftools.common import exceptions
+
+    try:
+      elf = elffile.ELFFile(stream)
+    except exceptions.ELFError:
+      raise ValueError('%s is not an ELF file.' % file_name)
+
+    imp = set()
+    exp = set()
+    self._known_symtabs[file_name] = imp, exp
+
+    if elf.header.e_type not in ('ET_DYN', 'ET_EXEC'):
+      return imp, exp
+
+    for segment in elf.iter_segments():
+      if segment.header.p_type != 'PT_DYNAMIC':
+        continue
+
+      # Find strtab and symtab virtual addresses.
+      strtab_ptr = None
+      symtab_ptr = None
+      symbol_size = elf.structs.Elf_Sym.sizeof()
+      for tag in segment.iter_tags():
+        if tag.entry.d_tag == 'DT_SYMTAB':
+          symtab_ptr = tag.entry.d_ptr
+        if tag.entry.d_tag == 'DT_STRTAB':
+          strtab_ptr = tag.entry.d_ptr
+        if tag.entry.d_tag == 'DT_SYMENT':
+          assert symbol_size == tag.entry.d_val
+
+      stringtable = segment._get_stringtable()  # pylint: disable=W0212
+
+      symtab_offset = next(elf.address_offsets(symtab_ptr))
+      # Assume that symtab ends right before strtab.
+      # This is the same assumption that glibc makes in dl-addr.c.
+      # The first symbol is always local undefined, unnamed so we ignore it.
+      for i in range(1, (strtab_ptr - symtab_ptr) / symbol_size):
+        symbol_offset = symtab_offset + (i * symbol_size)
+        symbol = utils.struct_parse(elf.structs.Elf_Sym, stream, symbol_offset)
+        if symbol['st_info']['bind'] == 'STB_LOCAL':
+          # Ignore local symbols.
+          continue
+        symbol_name = stringtable.get_string(symbol.st_name)
+        if symbol['st_shndx'] == 'SHN_UNDEF':
+          if symbol['st_info']['bind'] == 'STB_GLOBAL':
+            # Global undefined --> required symbols.
+            # We ignore weak undefined symbols.
+            imp.add(symbol_name)
+        elif symbol['st_other']['visibility'] == 'STV_DEFAULT':
+          # Exported symbols must have default visibility.
+          exp.add(symbol_name)
+
+    return imp, exp
+
+  def TestImportedSymbolsAreAvailable(self):
+    """Ensure all ELF files' imported symbols are available in ROOT-A.
+
+    In this test, we find all imported symbols and exported symbols from all
+    ELF files on the system. This test will fail if the set of imported symbols
+    is not a subset of exported symbols.
+
+    This test DOES NOT simulate ELF loading. "TestLinkage" does that with
+    `lddtree`.
+    """
+    # Import tables of files, keyed by file names.
+    importeds = collections.defaultdict(set)
+    # All exported symbols.
+    exported = set()
+
+    for root, _, filenames in os.walk(ROOT_A):
+      for filename in filenames:
+        full_name = os.path.join(root, filename)
+        if os.path.islink(full_name) or not os.path.isfile(full_name):
+          continue
+
+        try:
+          imp, exp = self._GetSymbols(full_name)
+        except (ValueError, IOError):
+          continue
+        else:
+          importeds[full_name] = imp
+          exported.update(exp)
+
+    failures = []
+    for full_name, imported in importeds.iteritems():
+      missing = imported - exported
+      if missing:
+        failures.append('File %s contains unsatisfied symbols: %r' %
+                        (full_name, missing))
+    self.assertFalse(failures, '\n'.join(failures))
