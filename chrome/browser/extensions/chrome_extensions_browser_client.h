@@ -26,6 +26,7 @@ namespace extensions {
 
 class ChromeComponentExtensionResourceManager;
 class ChromeExtensionsAPIClient;
+class ChromeProcessManagerDelegate;
 class ContentSettingsPrefsObserver;
 
 // Implementation of extensions::BrowserClient for Chrome, which includes
@@ -76,10 +77,7 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   virtual void GetEarlyExtensionPrefsObservers(
       content::BrowserContext* context,
       std::vector<ExtensionPrefsObserver*>* observers) const OVERRIDE;
-  virtual bool DeferLoadingBackgroundHosts(
-      content::BrowserContext* context) const OVERRIDE;
-  virtual bool IsBackgroundPageAllowed(
-      content::BrowserContext* context) const OVERRIDE;
+  virtual ProcessManagerDelegate* GetProcessManagerDelegate() const OVERRIDE;
   virtual scoped_ptr<ExtensionHostDelegate> CreateExtensionHostDelegate()
       OVERRIDE;
   virtual bool DidVersionUpdate(content::BrowserContext* context) OVERRIDE;
@@ -102,6 +100,9 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   ChromeNotificationObserver notification_observer_;
 
 #if defined(ENABLE_EXTENSIONS)
+  // Support for ProcessManager.
+  scoped_ptr<ChromeProcessManagerDelegate> process_manager_delegate_;
+
   // Client for API implementations.
   scoped_ptr<ChromeExtensionsAPIClient> api_client_;
 #endif

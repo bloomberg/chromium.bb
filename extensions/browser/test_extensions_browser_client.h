@@ -15,9 +15,13 @@ namespace extensions {
 // this class should call ExtensionsBrowserClient::Set() with its instance.
 class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
  public:
-  // |context| is required and must not be an incognito context.
+  // |main_context| is required and must not be an incognito context.
   explicit TestExtensionsBrowserClient(content::BrowserContext* main_context);
   virtual ~TestExtensionsBrowserClient();
+
+  void set_process_manager_delegate(ProcessManagerDelegate* delegate) {
+    process_manager_delegate_ = delegate;
+  }
 
   // Associates an incognito context with |main_context_|.
   void SetIncognitoContext(content::BrowserContext* incognito_context);
@@ -59,10 +63,7 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
   virtual void GetEarlyExtensionPrefsObservers(
       content::BrowserContext* context,
       std::vector<ExtensionPrefsObserver*>* observers) const OVERRIDE;
-  virtual bool DeferLoadingBackgroundHosts(
-      content::BrowserContext* context) const OVERRIDE;
-  virtual bool IsBackgroundPageAllowed(content::BrowserContext* context) const
-      OVERRIDE;
+  virtual ProcessManagerDelegate* GetProcessManagerDelegate() const OVERRIDE;
   virtual scoped_ptr<ExtensionHostDelegate> CreateExtensionHostDelegate()
       OVERRIDE;
   virtual bool DidVersionUpdate(content::BrowserContext* context) OVERRIDE;
@@ -81,6 +82,9 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
  private:
   content::BrowserContext* main_context_;       // Not owned.
   content::BrowserContext* incognito_context_;  // Not owned, defaults to NULL.
+
+  // Not owned, defaults to NULL.
+  ProcessManagerDelegate* process_manager_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TestExtensionsBrowserClient);
 };
