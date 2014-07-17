@@ -17,10 +17,6 @@ import time
 
 from chromite.cbuildbot import constants
 
-TEST_DB_CREDENTIALS_DIR = os.path.join(constants.SOURCE_ROOT,
-                                       'crostools', 'cidb',
-                                       'test_credentials')
-
 CIDB_MIGRATIONS_DIR = os.path.join(constants.CHROMITE_DIR, 'cidb',
                                    'migrations')
 
@@ -335,9 +331,9 @@ class SchemaVersionedMySQLConnection(object):
 
 class CIDBConnection(SchemaVersionedMySQLConnection):
   """Connection to a Continuous Integration database."""
-  def __init__(self):
+  def __init__(self, db_credentials_dir):
     super(CIDBConnection, self).__init__('cidb', CIDB_MIGRATIONS_DIR,
-                                         TEST_DB_CREDENTIALS_DIR)
+                                         db_credentials_dir)
 
   @minimum_schema(2)
   def InsertBuild(self, builder_name, waterfall, build_number,

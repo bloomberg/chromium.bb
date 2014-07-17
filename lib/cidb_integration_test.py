@@ -32,6 +32,18 @@ from chromite.lib import parallel
 SERIES_0_TEST_DATA_PATH = os.path.join(
     constants.CHROMITE_DIR, 'cidb', 'test_data', 'series_0')
 
+TEST_DB_CRED_ROOT = os.path.join(constants.SOURCE_ROOT,
+                                 'crostools', 'cidb',
+                                 'cidb_test_root')
+
+TEST_DB_CRED_READONLY = os.path.join(constants.SOURCE_ROOT,
+                                     'crostools', 'cidb',
+                                     'cidb_test_readonly')
+
+TEST_DB_CRED_BOT = os.path.join(constants.SOURCE_ROOT,
+                                'crostools', 'cidb',
+                                'cidb_test_bot')
+
 
 class CIDBIntegrationTest(cros_test_lib.TestCase):
   """Base class for cidb tests that connect to a test MySQL instance."""
@@ -44,14 +56,15 @@ class CIDBIntegrationTest(cros_test_lib.TestCase):
       defaults to None in which case all migrations will be applied.
 
     Returns:
-      A CIDBConnection instance, connected to a an empty database.
+      A CIDBConnection instance, connected to a an empty database as the
+      root user.
     """
     # Connect to database and drop its contents.
-    db = cidb.CIDBConnection()
+    db = cidb.CIDBConnection(TEST_DB_CRED_ROOT)
     db.DropDatabase()
 
     # Connect to now fresh database and apply migrations.
-    db = cidb.CIDBConnection()
+    db = cidb.CIDBConnection(TEST_DB_CRED_ROOT)
     db.ApplySchemaMigrations(max_schema_version)
 
     return db
@@ -117,33 +130,40 @@ class DataSeries0Test(CIDBIntegrationTest):
     # Migrate db to specified version. As new schema versions are added,
     # migrations to later version can be applied after the test builds are
     # simulated, to test that db contents are correctly migrated.
-    db = self._PrepareFreshDatabase(4)
+    self._PrepareFreshDatabase(5)
 
-    # Simulate the test builds.
-    self.simulate_builds(db, metadatas)
+    bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
+
+    # Simulate the test builds, using a database connection as the
+    # bot user.
+    self.simulate_builds(bot_db, metadatas)
+
+    # Perform some sanity check queries against the database, connected
+    # as the readonly user.
+    readonly_db = cidb.CIDBConnection(TEST_DB_CRED_READONLY)
 
     # Sanity checks that correct data was recorded, and can be retrieved.
-    max_start_time = db._GetEngine().execute(
+    max_start_time = readonly_db._GetEngine().execute(
         'select max(start_time) from buildTable').fetchall()[0][0]
-    min_start_time = db._GetEngine().execute(
+    min_start_time = readonly_db._GetEngine().execute(
         'select min(start_time) from buildTable').fetchall()[0][0]
-    max_fin_time = db._GetEngine().execute(
+    max_fin_time = readonly_db._GetEngine().execute(
           'select max(finish_time) from buildTable').fetchall()[0][0]
-    min_fin_time = db._GetEngine().execute(
+    min_fin_time = readonly_db._GetEngine().execute(
           'select min(finish_time) from buildTable').fetchall()[0][0]
     self.assertEqual(max_start_time, datetime.datetime(2014, 7, 7, 12, 49, 44))
     self.assertEqual(min_start_time, datetime.datetime(2014, 7, 4, 16, 14, 28))
     self.assertEqual(max_fin_time, datetime.datetime(2014, 7, 7, 14, 51, 38))
     self.assertEqual(min_fin_time, datetime.datetime(2014, 7, 4, 16, 33, 10))
 
-    submitted_cl_count = db._GetEngine().execute(
+    submitted_cl_count = readonly_db._GetEngine().execute(
         'select count(*) from clActionTable where action="submitted"'
         ).fetchall()[0][0]
-    rejected_cl_count = db._GetEngine().execute(
+    rejected_cl_count = readonly_db._GetEngine().execute(
         'select count(*) from clActionTable where action="kicked_out"'
         ).fetchall()[0][0]
-    total_actions = db._GetEngine().execute('select count(*) from clActionTable'
-        ).fetchall()[0][0]
+    total_actions = readonly_db._GetEngine().execute(
+        'select count(*) from clActionTable').fetchall()[0][0]
     self.assertEqual(submitted_cl_count, 56)
     self.assertEqual(rejected_cl_count, 8)
     self.assertEqual(total_actions, 1877)
