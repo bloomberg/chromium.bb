@@ -7,6 +7,7 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 
@@ -30,7 +31,8 @@ MockDriWrapper::MockDriWrapper(int fd)
       overlay_flip_call_count_(0),
       set_crtc_expectation_(true),
       add_framebuffer_expectation_(true),
-      page_flip_expectation_(true) {
+      page_flip_expectation_(true),
+      create_dumb_buffer_expectation_(true) {
   fd_ = fd;
 }
 
@@ -118,6 +120,30 @@ bool MockDriWrapper::MoveCursor(uint32_t crtc_id, int x, int y) {
 }
 
 void MockDriWrapper::HandleEvent(drmEventContext& event) {
+}
+
+bool MockDriWrapper::CreateDumbBuffer(const SkImageInfo& info,
+                                      uint32_t* handle,
+                                      uint32_t* stride,
+                                      void** pixels) {
+  if (!create_dumb_buffer_expectation_)
+    return false;
+
+  *handle = 0;
+  *stride = info.minRowBytes();
+  *pixels = new char[info.getSafeSize(*stride)];
+  buffers_.push_back(
+      skia::AdoptRef(SkSurface::NewRasterDirect(info, *pixels, *stride)));
+  buffers_.back()->getCanvas()->clear(SK_ColorBLACK);
+
+  return true;
+}
+
+void MockDriWrapper::DestroyDumbBuffer(const SkImageInfo& info,
+                                       uint32_t handle,
+                                       uint32_t stride,
+                                       void* pixels) {
+  delete[] static_cast<char*>(pixels);
 }
 
 }  // namespace ui

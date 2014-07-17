@@ -8,7 +8,6 @@
 #include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
-#include "ui/ozone/platform/dri/test/mock_dri_surface.h"
 #include "ui/ozone/platform/dri/test/mock_dri_wrapper.h"
 #include "ui/ozone/public/native_pixmap.h"
 
@@ -50,7 +49,7 @@ void HardwareDisplayControllerTest::TearDown() {
 
 TEST_F(HardwareDisplayControllerTest, CheckStateAfterSurfaceIsBound) {
   scoped_ptr<ui::ScanoutSurface> surface(
-      new ui::MockDriSurface(drm_.get(), kDefaultModeSize));
+      new ui::DriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass(),
@@ -60,7 +59,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateAfterSurfaceIsBound) {
 
 TEST_F(HardwareDisplayControllerTest, CheckStateAfterPageFlip) {
   scoped_ptr<ui::ScanoutSurface> surface(
-      new ui::MockDriSurface(drm_.get(), kDefaultModeSize));
+      new ui::DriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass(),
@@ -74,7 +73,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfModesetFails) {
   drm_->set_set_crtc_expectation(false);
 
   scoped_ptr<ui::ScanoutSurface> surface(
-      new ui::MockDriSurface(drm_.get(), kDefaultModeSize));
+      new ui::DriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_FALSE(controller_->BindSurfaceToController(surface.Pass(),
@@ -86,7 +85,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
   drm_->set_page_flip_expectation(false);
 
   scoped_ptr<ui::ScanoutSurface> surface(
-      new ui::MockDriSurface(drm_.get(), kDefaultModeSize));
+      new ui::DriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass(),
@@ -97,7 +96,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
 
 TEST_F(HardwareDisplayControllerTest, VerifyNoDRMCallsWhenDisabled) {
   scoped_ptr<ui::ScanoutSurface> surface(
-      new ui::MockDriSurface(drm_.get(), kDefaultModeSize));
+      new ui::DriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass(),
@@ -107,7 +106,7 @@ TEST_F(HardwareDisplayControllerTest, VerifyNoDRMCallsWhenDisabled) {
       std::vector<ui::OzoneOverlayPlane>(), NULL));
   EXPECT_EQ(0, drm_->get_page_flip_call_count());
 
-  surface.reset(new ui::MockDriSurface(drm_.get(), kDefaultModeSize));
+  surface.reset(new ui::DriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass(),
@@ -119,9 +118,9 @@ TEST_F(HardwareDisplayControllerTest, VerifyNoDRMCallsWhenDisabled) {
 
 TEST_F(HardwareDisplayControllerTest, CheckOverlayMainSurfaceReplacement) {
   scoped_ptr<ui::ScanoutSurface> surface(
-      new ui::MockDriSurface(drm_.get(), kDefaultModeSize));
+      new ui::DriSurface(drm_.get(), kDefaultModeSize));
   scoped_ptr<ui::ScanoutSurface> overlay(
-      new ui::MockDriSurface(drm_.get(), kDefaultModeSize));
+      new ui::DriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(
@@ -144,9 +143,9 @@ TEST_F(HardwareDisplayControllerTest, CheckOverlayMainSurfaceReplacement) {
 
 TEST_F(HardwareDisplayControllerTest, CheckOverlayPresent) {
   scoped_ptr<ui::ScanoutSurface> surface(
-      new ui::MockDriSurface(drm_.get(), kDefaultModeSize));
+      new ui::DriSurface(drm_.get(), kDefaultModeSize));
   scoped_ptr<ui::ScanoutSurface> overlay(
-      new ui::MockDriSurface(drm_.get(), kDefaultModeSize));
+      new ui::DriSurface(drm_.get(), kDefaultModeSize));
 
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(

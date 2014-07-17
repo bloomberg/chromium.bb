@@ -98,8 +98,6 @@
           'dri_surface_unittest.cc',
           'hardware_display_controller_unittest.cc',
           'screen_manager_unittest.cc',
-          'test/mock_dri_surface.cc',
-          'test/mock_dri_surface.h',
           'test/mock_dri_wrapper.cc',
           'test/mock_dri_wrapper.h',
           'test/mock_surface_generator.cc',

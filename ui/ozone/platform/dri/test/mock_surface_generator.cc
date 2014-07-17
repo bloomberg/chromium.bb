@@ -11,7 +11,7 @@ MockSurfaceGenerator::MockSurfaceGenerator(DriWrapper* dri) : dri_(dri) {}
 MockSurfaceGenerator::~MockSurfaceGenerator() {}
 
 ScanoutSurface* MockSurfaceGenerator::Create(const gfx::Size& size) {
-  surfaces_.push_back(new MockDriSurface(dri_, size));
+  surfaces_.push_back(new DriSurface(dri_, size));
   return surfaces_.back();
 }
 

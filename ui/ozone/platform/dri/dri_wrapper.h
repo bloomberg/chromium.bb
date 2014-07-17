@@ -16,6 +16,8 @@
 typedef struct _drmEventContext drmEventContext;
 typedef struct _drmModeModeInfo drmModeModeInfo;
 
+struct SkImageInfo;
+
 namespace ui {
 
 // Wraps DRM calls into a nice interface. Used to provide different
@@ -110,6 +112,16 @@ class DriWrapper {
   virtual bool MoveCursor(uint32_t crtc_id, int x, int y);
 
   virtual void HandleEvent(drmEventContext& event);
+
+  virtual bool CreateDumbBuffer(const SkImageInfo& info,
+                                uint32_t* handle,
+                                uint32_t* stride,
+                                void** pixels);
+
+  virtual void DestroyDumbBuffer(const SkImageInfo& info,
+                                 uint32_t handle,
+                                 uint32_t stride,
+                                 void* pixels);
 
   int get_fd() const { return fd_; }
 

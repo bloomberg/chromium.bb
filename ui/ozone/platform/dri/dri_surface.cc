@@ -31,7 +31,7 @@ DriSurface::~DriSurface() {
 
 bool DriSurface::Initialize() {
   for (size_t i = 0; i < arraysize(bitmaps_); ++i) {
-    bitmaps_[i].reset(CreateBuffer());
+    bitmaps_[i].reset(new DriBuffer(dri_));
     // TODO(dnicoara) Should select the configuration based on what the
     // underlying system supports.
     SkImageInfo info = SkImageInfo::MakeN32Premul(size_.width(),
@@ -75,7 +75,5 @@ SkCanvas* DriSurface::GetDrawableForWidget() {
   CHECK(backbuffer());
   return backbuffer()->canvas();
 }
-
-DriBuffer* DriSurface::CreateBuffer() { return new DriBuffer(dri_); }
 
 }  // namespace ui

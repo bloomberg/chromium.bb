@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "ui/ozone/platform/dri/test/mock_dri_surface.h"
+#include "ui/ozone/platform/dri/dri_surface.h"
 
 namespace gfx {
 class Size;
@@ -22,7 +22,7 @@ class MockSurfaceGenerator : public ScanoutSurfaceGenerator {
   MockSurfaceGenerator(DriWrapper* dri);
   virtual ~MockSurfaceGenerator();
 
-  std::vector<MockDriSurface*> surfaces() const { return surfaces_; }
+  std::vector<DriSurface*> surfaces() const { return surfaces_; }
 
   // ScanoutSurfaceGenerator:
   virtual ScanoutSurface* Create(const gfx::Size& size) OVERRIDE;
@@ -30,7 +30,7 @@ class MockSurfaceGenerator : public ScanoutSurfaceGenerator {
  private:
   DriWrapper* dri_;  // Not owned.
 
-  std::vector<MockDriSurface*> surfaces_;
+  std::vector<DriSurface*> surfaces_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSurfaceGenerator);
 };

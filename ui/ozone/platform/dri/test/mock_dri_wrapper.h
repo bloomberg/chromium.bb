@@ -5,6 +5,10 @@
 #ifndef UI_OZONE_PLATFORM_DRI_TEST_MOCK_DRI_WRAPPER_H_
 #define UI_OZONE_PLATFORM_DRI_TEST_MOCK_DRI_WRAPPER_H_
 
+#include <vector>
+
+#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 
 namespace ui {
@@ -30,6 +34,13 @@ class MockDriWrapper : public ui::DriWrapper {
   void set_page_flip_expectation(bool state) { page_flip_expectation_ = state; }
   void set_add_framebuffer_expectation(bool state) {
     add_framebuffer_expectation_ = state;
+  }
+  void set_create_dumb_buffer_expectation(bool state) {
+    create_dumb_buffer_expectation_ = state;
+  }
+
+  const std::vector<skia::RefPtr<SkSurface> > buffers() const {
+    return buffers_;
   }
 
   // DriWrapper:
@@ -68,6 +79,14 @@ class MockDriWrapper : public ui::DriWrapper {
                          uint32_t height) OVERRIDE;
   virtual bool MoveCursor(uint32_t crtc_id, int x, int y) OVERRIDE;
   virtual void HandleEvent(drmEventContext& event) OVERRIDE;
+  virtual bool CreateDumbBuffer(const SkImageInfo& info,
+                                uint32_t* handle,
+                                uint32_t* stride,
+                                void** pixels) OVERRIDE;
+  virtual void DestroyDumbBuffer(const SkImageInfo& info,
+                                 uint32_t handle,
+                                 uint32_t stride,
+                                 void* pixels) OVERRIDE;
 
  private:
   int get_crtc_call_count_;
@@ -80,6 +99,9 @@ class MockDriWrapper : public ui::DriWrapper {
   bool set_crtc_expectation_;
   bool add_framebuffer_expectation_;
   bool page_flip_expectation_;
+  bool create_dumb_buffer_expectation_;
+
+  std::vector<skia::RefPtr<SkSurface> > buffers_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDriWrapper);
 };

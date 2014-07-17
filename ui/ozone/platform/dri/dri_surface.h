@@ -40,9 +40,6 @@ class DriSurface : public ScanoutSurface {
   DriBuffer* frontbuffer() const { return bitmaps_[front_buffer_].get(); }
   DriBuffer* backbuffer() const { return bitmaps_[front_buffer_ ^ 1].get(); }
 
-  // Used to create the backing buffers.
-  virtual DriBuffer* CreateBuffer();
-
   // Stores the connection to the graphics card. Pointer not owned by this
   // class.
   DriWrapper* dri_;
