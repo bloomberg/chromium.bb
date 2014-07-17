@@ -14,38 +14,40 @@ cr.define('print_preview', function() {
     cr.EventTarget.call(this);
 
     // Bind global handlers
-    global['setInitialSettings'] = this.onSetInitialSettings_.bind(this);
-    global['setUseCloudPrint'] = this.onSetUseCloudPrint_.bind(this);
-    global['setPrinters'] = this.onSetPrinters_.bind(this);
-    global['updateWithPrinterCapabilities'] =
+    global.setInitialSettings = this.onSetInitialSettings_.bind(this);
+    global.setUseCloudPrint = this.onSetUseCloudPrint_.bind(this);
+    global.setPrinters = this.onSetPrinters_.bind(this);
+    global.updateWithPrinterCapabilities =
         this.onUpdateWithPrinterCapabilities_.bind(this);
-    global['failedToGetPrinterCapabilities'] =
+    global.failedToGetPrinterCapabilities =
         this.onFailedToGetPrinterCapabilities_.bind(this);
-    global['failedToGetPrivetPrinterCapabilities'] =
+    global.failedToGetPrivetPrinterCapabilities =
       this.onFailedToGetPrivetPrinterCapabilities_.bind(this);
-    global['reloadPrintersList'] = this.onReloadPrintersList_.bind(this);
-    global['printToCloud'] = this.onPrintToCloud_.bind(this);
-    global['fileSelectionCancelled'] =
+    global.reloadPrintersList = this.onReloadPrintersList_.bind(this);
+    global.printToCloud = this.onPrintToCloud_.bind(this);
+    global.fileSelectionCancelled =
         this.onFileSelectionCancelled_.bind(this);
-    global['fileSelectionCompleted'] =
+    global.fileSelectionCompleted =
         this.onFileSelectionCompleted_.bind(this);
-    global['printPreviewFailed'] = this.onPrintPreviewFailed_.bind(this);
-    global['invalidPrinterSettings'] =
+    global.printPreviewFailed = this.onPrintPreviewFailed_.bind(this);
+    global.invalidPrinterSettings =
         this.onInvalidPrinterSettings_.bind(this);
-    global['onDidGetDefaultPageLayout'] =
+    global.onDidGetDefaultPageLayout =
         this.onDidGetDefaultPageLayout_.bind(this);
-    global['onDidGetPreviewPageCount'] =
+    global.onDidGetPreviewPageCount =
         this.onDidGetPreviewPageCount_.bind(this);
-    global['onDidPreviewPage'] = this.onDidPreviewPage_.bind(this);
-    global['updatePrintPreview'] = this.onUpdatePrintPreview_.bind(this);
-    global['printScalingDisabledForSourcePDF'] =
+    global.onDidPreviewPage = this.onDidPreviewPage_.bind(this);
+    global.updatePrintPreview = this.onUpdatePrintPreview_.bind(this);
+    global.printScalingDisabledForSourcePDF =
         this.onPrintScalingDisabledForSourcePDF_.bind(this);
-    global['onDidGetAccessToken'] = this.onDidGetAccessToken_.bind(this);
-    global['autoCancelForTesting'] = this.autoCancelForTesting_.bind(this);
-    global['onPrivetPrinterChanged'] = this.onPrivetPrinterChanged_.bind(this);
-    global['onPrivetCapabilitiesSet'] =
+    global.onDidGetAccessToken = this.onDidGetAccessToken_.bind(this);
+    global.autoCancelForTesting = this.autoCancelForTesting_.bind(this);
+    global.onPrivetPrinterChanged = this.onPrivetPrinterChanged_.bind(this);
+    global.onPrivetCapabilitiesSet =
         this.onPrivetCapabilitiesSet_.bind(this);
-    global['onPrivetPrintFailed'] = this.onPrivetPrintFailed_.bind(this);
+    global.onPrivetPrintFailed = this.onPrivetPrintFailed_.bind(this);
+    global.onEnableManipulateSettingsForTest =
+        this.onEnableManipulateSettingsForTest_.bind(this);
   };
 
   /**
@@ -65,6 +67,8 @@ cr.define('print_preview', function() {
     GET_CAPABILITIES_FAIL: 'print_preview.NativeLayer.GET_CAPABILITIES_FAIL',
     INITIAL_SETTINGS_SET: 'print_preview.NativeLayer.INITIAL_SETTINGS_SET',
     LOCAL_DESTINATIONS_SET: 'print_preview.NativeLayer.LOCAL_DESTINATIONS_SET',
+    MANIPULATE_SETTINGS_FOR_TEST:
+        'print_preview.NativeLayer.MANIPULATE_SETTINGS_FOR_TEST',
     PAGE_COUNT_READY: 'print_preview.NativeLayer.PAGE_COUNT_READY',
     PAGE_LAYOUT_READY: 'print_preview.NativeLayer.PAGE_LAYOUT_READY',
     PAGE_PREVIEW_READY: 'print_preview.NativeLayer.PAGE_PREVIEW_READY',
@@ -77,7 +81,7 @@ cr.define('print_preview', function() {
     PRIVET_PRINTER_CHANGED: 'print_preview.NativeLayer.PRIVET_PRINTER_CHANGED',
     PRIVET_CAPABILITIES_SET:
         'print_preview.NativeLayer.PRIVET_CAPABILITIES_SET',
-    PRIVET_PRINT_FAILED: 'print_preview.NativeLayer.PRIVET_PRINT_FAILED'
+    PRIVET_PRINT_FAILED: 'print_preview.NativeLayer.PRIVET_PRINT_FAILED',
   };
 
   /**
@@ -690,6 +694,49 @@ cr.define('print_preview', function() {
             new Event(NativeLayer.EventType.PRIVET_PRINT_FAILED);
       privetPrintFailedEvent.httpError = http_error;
       this.dispatchEvent(privetPrintFailedEvent);
+    },
+
+    /**
+     * Allows for onManipulateSettings to be called
+     * from the native layer.
+     * @private
+     */
+    onEnableManipulateSettingsForTest_: function() {
+      global.onManipulateSettingsForTest =
+          this.onManipulateSettingsForTest_.bind(this);
+    },
+
+    /**
+     * Dispatches an event to print_preview.js to change
+     * a particular setting for print preview.
+     * @param {!Object} settings Object containing the value to be
+     *     changed and that value should be set to.
+     * @private
+     */
+    onManipulateSettingsForTest_: function(settings) {
+      var manipulateSettingsEvent =
+          new Event(NativeLayer.EventType.MANIPULATE_SETTINGS_FOR_TEST);
+      manipulateSettingsEvent.settings = settings;
+      this.dispatchEvent(manipulateSettingsEvent);
+    },
+
+    /**
+     * Sends a message to the test, letting it know that an
+     * option has been set to a particular value and that the change has
+     * finished modifying the preview area.
+     */
+    previewReadyForTest: function() {
+      if (global.onManipulateSettingsForTest)
+        chrome.send('UILoadedForTest');
+    },
+
+    /**
+     * Notifies the test that the option it tried to change
+     * had not been changed successfully.
+     */
+    previewFailedForTest: function() {
+      if (global.onManipulateSettingsForTest)
+        chrome.send('UIFailedLoadingForTest');
     }
   };
 
