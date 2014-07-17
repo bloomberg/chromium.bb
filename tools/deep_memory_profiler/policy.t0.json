@@ -19,7 +19,7 @@
     "tc-WTF-String",
     "tc-no-typeinfo-StringImpl",
     "tc-Skia",
-    "tc-blink-Style",
+    "tc-WebCore-Style",
     "tc-no-typeinfo-other",
     "tc-other",
     "tc-unused",
@@ -138,9 +138,9 @@
       "allocator": "malloc"
     },
     {
-      "name": "tc-blink-Style",
+      "name": "tc-WebCore-Style",
       "stacktrace": ".*",
-      "typeinfo": "blink::Style.*",
+      "typeinfo": "WebCore::Style.*",
       "allocator": "malloc"
     },
     {

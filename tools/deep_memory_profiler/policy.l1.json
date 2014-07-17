@@ -141,7 +141,7 @@
     },
     {
       "name": "tc-webkit-catch-all",
-      "stacktrace": ".*(WTF::|blink::|WebKit::).*",
+      "stacktrace": ".*(WTF::|WebCore::|WebKit::).*",
       "allocator": "malloc"
     },
     {

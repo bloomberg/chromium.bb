@@ -2,84 +2,84 @@
   "type": "sorter",
   "version": 1,
   "world": "malloc",
-  "name": "blink",
+  "name": "WebCore",
   "order": {},
   "rules": [
     {
       "name": "RenderStyle",
-      "backtrace_function": ".*blink::RenderStyle::(create|clone).*"
+      "backtrace_function": ".*WebCore::RenderStyle::(create|clone).*"
     },
     {
       "name": "SharedBuffer",
-      "backtrace_function": ".*blink::SharedBuffer::(create|buffer|append).*"
+      "backtrace_function": ".*WebCore::SharedBuffer::(create|buffer|append).*"
     },
     {
       "name": "XMLHttpRequest",
-      "backtrace_function": ".*blink::XMLHttpRequest::create .*"
+      "backtrace_function": ".*WebCore::XMLHttpRequest::create .*"
     },
     {
       "name": "XMLHttpRequest-received",
-      "backtrace_function": ".*blink::XMLHttpRequest::didReceiveData.*"
+      "backtrace_function": ".*WebCore::XMLHttpRequest::didReceiveData.*"
     },
     {
       "name": "DocumentWriter-addData",
-      "backtrace_function": ".*blink::DocumentWriter::addData.*"
+      "backtrace_function": ".*WebCore::DocumentWriter::addData.*"
     },
     {
       "name": "Element-create",
-      "backtrace_function": ".*blink::(HTML[A-Za-z0-9_]*Element|Text|Comment|HTMLDocument|CSSStyleRule|Attribute|DOMWindow)::create .*"
+      "backtrace_function": ".*WebCore::(HTML[A-Za-z0-9_]*Element|Text|Comment|HTMLDocument|CSSStyleRule|Attribute|DOMWindow)::create .*"
     },
     {
       "name": "Element-factory",
-      "backtrace_function": ".*blink::HTML[a-zA-Z0-9_]*Factory::create[a-zA-Z0-9_]*Element.*"
+      "backtrace_function": ".*WebCore::HTML[a-zA-Z0-9_]*Factory::create[a-zA-Z0-9_]*Element.*"
     },
     {
       "name": "ElementWrapper",
-      "backtrace_function": ".*blink::createHTML[a-zA-Z0-9_]*ElementWrapper.*"
+      "backtrace_function": ".*WebCore::createHTML[a-zA-Z0-9_]*ElementWrapper.*"
     },
     {
       "name": "StylePropertySet",
-      "backtrace_function": ".*blink::StylePropertySet::create .*"
+      "backtrace_function": ".*WebCore::StylePropertySet::create .*"
     },
     {
       "name": "StyleElement-createSheet",
-      "backtrace_function": ".*blink::StyleElement::createSheet.*"
+      "backtrace_function": ".*WebCore::StyleElement::createSheet.*"
     },
     {
       "name": "Resource",
-      "backtrace_function": ".*blink::ResourceFetcher::requestResource .*"
+      "backtrace_function": ".*WebCore::ResourceFetcher::requestResource .*"
     },
     {
       "name": "ScriptLoader-execute",
-      "backtrace_function": ".*blink::ScriptLoader::execute.*"
+      "backtrace_function": ".*WebCore::ScriptLoader::execute.*"
     },
     {
       "name": "Events",
-      "backtrace_function": ".*blink::(createAttributeEventListener|V8LazyEventListener::create|V8EventListener::create|Event::create |EventListener::create ).*"
+      "backtrace_function": ".*WebCore::(createAttributeEventListener|V8LazyEventListener::create|V8EventListener::create|Event::create |EventListener::create ).*"
     },
     {
       "name": "Document-write",
-      "backtrace_function": ".*blink::Document::write.*"
+      "backtrace_function": ".*WebCore::Document::write.*"
     },
     {
       "name": "Element-createRenderer",
-      "backtrace_function": ".*blink::[a-zA-Z0-9_]*Element::createRenderer .*"
+      "backtrace_function": ".*WebCore::[a-zA-Z0-9_]*Element::createRenderer .*"
     },
     {
       "name": "ImageFrameGenerator",
-      "stacktrace": ".*blink::ImageFrameGenerator.*"
+      "stacktrace": ".*WebCore::ImageFrameGenerator.*"
     },
     {
       "name": "Render",
-      "backtrace_function": ".*blink::(RenderLayer|RenderBlock|RenderWidget|RenderView|RenderViewImpl|RenderStyle|RenderText).*"
+      "backtrace_function": ".*WebCore::(RenderLayer|RenderBlock|RenderWidget|RenderView|RenderViewImpl|RenderStyle|RenderText).*"
     },
     {
       "name": "setInnerHTML",
-      "backtrace_function": ".*blink::Element::setInnerHTML.*"
+      "backtrace_function": ".*WebCore::Element::setInnerHTML.*"
     },
     {
       "name": "Others-create",
-      "backtrace_function": ".*blink::[a-zA-Z0-9_]*::create .*"
+      "backtrace_function": ".*WebCore::[a-zA-Z0-9_]*::create .*"
     }
   ]
 }

@@ -198,17 +198,17 @@
     },
     {
       "name": "mmap-blink-css",
-      "stacktrace": ".*blink::Element::createPseudo.*",
+      "stacktrace": ".*WebCore::Element::createPseudo.*",
       "allocator": "mmap"
     },
     {
       "name": "mmap-blink-document",
-      "stacktrace": ".*blink::.*(DocumentType::Comment|Text|(HTML|SVG).*Element)::create.*",
+      "stacktrace": ".*WebCore::.*(DocumentType::Comment|Text|(HTML|SVG).*Element)::create.*",
       "allocator": "mmap"
     },
     {
       "name": "mmap-blink-layout",
-      "stacktrace": ".*blink::Render.*",
+      "stacktrace": ".*WebCore::Render.*",
       "allocator": "mmap"
     },
     {
@@ -314,12 +314,12 @@
     },
     {
       "name": "tc-blink-css",
-      "stacktrace": ".*(WTF::|blink::|WebKit::).*(CSS|Style|Sheet).*",
+      "stacktrace": ".*(WTF::|WebCore::|WebKit::).*(CSS|Style|Sheet).*",
       "allocator": "malloc"
     },
     {
       "name": "tc-webkit-catch-all",
-      "stacktrace": ".*(WTF::|blink::|WebKit::).*",
+      "stacktrace": ".*(WTF::|WebCore::|WebKit::).*",
       "allocator": "malloc"
     },
     {

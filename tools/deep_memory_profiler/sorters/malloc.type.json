@@ -34,8 +34,8 @@
       "typeinfo": "(skia::|SkGlyph).*"
     },
     {
-      "name": "blink-Style",
-      "typeinfo": "blink::Style.*"
+      "name": "WebCore-Style",
+      "typeinfo": "WebCore::Style.*"
     },
     {
       "name": "STL-string",
