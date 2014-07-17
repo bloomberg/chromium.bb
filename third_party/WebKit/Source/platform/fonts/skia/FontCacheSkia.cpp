@@ -148,6 +148,17 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
         DEFINE_STATIC_LOCAL(const FontFaceCreationParams, arialCreationParams, (AtomicString("Arial", AtomicString::ConstructFromLiteral)));
         fontPlatformData = getFontPlatformData(description, arialCreationParams);
     }
+#if OS(WIN)
+    // Try some more Windows-specific fallbacks.
+    if (!fontPlatformData) {
+        DEFINE_STATIC_LOCAL(const FontFaceCreationParams, msuigothicCreationParams, (AtomicString("MS UI Gothic", AtomicString::ConstructFromLiteral)));
+        fontPlatformData = getFontPlatformData(description, msuigothicCreationParams);
+    }
+    if (!fontPlatformData) {
+        DEFINE_STATIC_LOCAL(const FontFaceCreationParams, mssansserifCreationParams, (AtomicString("Microsoft Sans Serif", AtomicString::ConstructFromLiteral)));
+        fontPlatformData = getFontPlatformData(description, mssansserifCreationParams);
+    }
+#endif
 
     ASSERT(fontPlatformData);
     return fontDataFromFontPlatformData(fontPlatformData, shouldRetain);
