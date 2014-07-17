@@ -286,11 +286,11 @@ private:
     Vector<AudioNode*> m_nodesToDelete;
     bool m_isDeletionScheduled;
 
-    // Only accessed when the graph lock is held.
-    // Oilpan: This HashSet can't be HeapHashSet because this is updated in
-    // audio rendering thread, which doesn't support GC.
-    HashSet<AudioSummingJunction* > m_dirtySummingJunctions;
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<AudioNodeOutput> > m_dirtyAudioNodeOutputs;
+    // These two HashSet must be accessed only when the graph lock is held.
+    // Oilpan: These HashSet should be HeapHashSet<WeakMember<AudioNodeOutput>>
+    // ideally. But it's difficult to lock them correctly during GC.
+    HashSet<AudioSummingJunction*> m_dirtySummingJunctions;
+    HashSet<AudioNodeOutput*> m_dirtyAudioNodeOutputs;
     void handleDirtyAudioSummingJunctions();
     void handleDirtyAudioNodeOutputs();
 
