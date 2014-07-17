@@ -177,11 +177,20 @@ void StartPageHandler::HandleInitialize(const base::ListValue* args) {
     extension_registry_observer_.Add(
         extensions::ExtensionRegistry::Get(profile));
   }
-#endif
 
-  web_ui()->CallJavascriptFunction(
-      "appList.startPage.setNaclArch",
-      base::StringValue(omaha_query_params::OmahaQueryParams::GetNaclArch()));
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  const extensions::Extension* hotword_extension =
+      registry->GetExtensionById(extension_misc::kHotwordExtensionId,
+                                 extensions::ExtensionRegistry::ENABLED);
+  if (hotword_extension &&
+      hotword_extension->version()->CompareTo(
+          base::Version(kOldHotwordExtensionVersionString)) <= 0) {
+    web_ui()->CallJavascriptFunction(
+        "appList.startPage.setNaclArch",
+        base::StringValue(omaha_query_params::OmahaQueryParams::GetNaclArch()));
+  }
+#endif
 
   if (!app_list::switches::IsExperimentalAppListEnabled()) {
     web_ui()->CallJavascriptFunction(
