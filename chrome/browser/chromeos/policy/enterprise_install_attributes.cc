@@ -22,40 +22,6 @@ namespace cryptohome_util = chromeos::cryptohome_util;
 
 namespace {
 
-// Translates DeviceMode constants to strings used in the lockbox.
-std::string GetDeviceModeString(DeviceMode mode) {
-  switch (mode) {
-    case DEVICE_MODE_CONSUMER:
-      return EnterpriseInstallAttributes::kConsumerDeviceMode;
-    case DEVICE_MODE_ENTERPRISE:
-      return EnterpriseInstallAttributes::kEnterpriseDeviceMode;
-    case DEVICE_MODE_RETAIL_KIOSK:
-      return EnterpriseInstallAttributes::kRetailKioskDeviceMode;
-    case DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH:
-      return EnterpriseInstallAttributes::kConsumerKioskDeviceMode;
-    case DEVICE_MODE_PENDING:
-    case DEVICE_MODE_NOT_SET:
-      break;
-  }
-  NOTREACHED() << "Invalid device mode: " << mode;
-  return EnterpriseInstallAttributes::kUnknownDeviceMode;
-}
-
-// Translates strings used in the lockbox to DeviceMode values.
-DeviceMode GetDeviceModeFromString(
-    const std::string& mode) {
-  if (mode == EnterpriseInstallAttributes::kConsumerDeviceMode)
-    return DEVICE_MODE_CONSUMER;
-  else if (mode == EnterpriseInstallAttributes::kEnterpriseDeviceMode)
-    return DEVICE_MODE_ENTERPRISE;
-  else if (mode == EnterpriseInstallAttributes::kRetailKioskDeviceMode)
-    return DEVICE_MODE_RETAIL_KIOSK;
-  else if (mode == EnterpriseInstallAttributes::kConsumerKioskDeviceMode)
-    return DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH;
-  NOTREACHED() << "Unknown device mode string: " << mode;
-  return DEVICE_MODE_NOT_SET;
-}
-
 bool ReadMapKey(const std::map<std::string, std::string>& map,
                 const std::string& key,
                 std::string* value) {
@@ -69,25 +35,23 @@ bool ReadMapKey(const std::map<std::string, std::string>& map,
 
 }  // namespace
 
-const char EnterpriseInstallAttributes::kConsumerDeviceMode[] = "consumer";
-const char EnterpriseInstallAttributes::kEnterpriseDeviceMode[] = "enterprise";
-const char EnterpriseInstallAttributes::kRetailKioskDeviceMode[] = "kiosk";
-const char EnterpriseInstallAttributes::kConsumerKioskDeviceMode[] =
-    "consumer_kiosk";
-const char EnterpriseInstallAttributes::kUnknownDeviceMode[] = "unknown";
+// static
+std::string
+EnterpriseInstallAttributes::GetEnterpriseOwnedInstallAttributesBlobForTesting(
+    const std::string& user_name) {
+  cryptohome::SerializedInstallAttributes install_attrs_proto;
+  cryptohome::SerializedInstallAttributes::Attribute* attribute = NULL;
 
-const char EnterpriseInstallAttributes::kAttrEnterpriseDeviceId[] =
-    "enterprise.device_id";
-const char EnterpriseInstallAttributes::kAttrEnterpriseDomain[] =
-    "enterprise.domain";
-const char EnterpriseInstallAttributes::kAttrEnterpriseMode[] =
-    "enterprise.mode";
-const char EnterpriseInstallAttributes::kAttrEnterpriseOwned[] =
-    "enterprise.owned";
-const char EnterpriseInstallAttributes::kAttrEnterpriseUser[] =
-    "enterprise.user";
-const char EnterpriseInstallAttributes::kAttrConsumerKioskEnabled[] =
-    "consumer.app_kiosk_enabled";
+  attribute = install_attrs_proto.add_attributes();
+  attribute->set_name(EnterpriseInstallAttributes::kAttrEnterpriseOwned);
+  attribute->set_value("true");
+
+  attribute = install_attrs_proto.add_attributes();
+  attribute->set_name(EnterpriseInstallAttributes::kAttrEnterpriseUser);
+  attribute->set_value(user_name);
+
+  return install_attrs_proto.SerializeAsString();
+}
 
 EnterpriseInstallAttributes::EnterpriseInstallAttributes(
     chromeos::CryptohomeClient* cryptohome_client)
@@ -331,6 +295,61 @@ std::string EnterpriseInstallAttributes::GetDeviceId() {
 
 DeviceMode EnterpriseInstallAttributes::GetMode() {
   return registration_mode_;
+}
+
+// Note that some of these constants have been copied to
+// login_manager/device_policy_service.cc.  Please make sure that all changes to
+// the constants are reflected there as well.
+const char EnterpriseInstallAttributes::kConsumerDeviceMode[] = "consumer";
+const char EnterpriseInstallAttributes::kEnterpriseDeviceMode[] = "enterprise";
+const char EnterpriseInstallAttributes::kRetailKioskDeviceMode[] = "kiosk";
+const char EnterpriseInstallAttributes::kConsumerKioskDeviceMode[] =
+    "consumer_kiosk";
+const char EnterpriseInstallAttributes::kUnknownDeviceMode[] = "unknown";
+
+const char EnterpriseInstallAttributes::kAttrEnterpriseDeviceId[] =
+    "enterprise.device_id";
+const char EnterpriseInstallAttributes::kAttrEnterpriseDomain[] =
+    "enterprise.domain";
+const char EnterpriseInstallAttributes::kAttrEnterpriseMode[] =
+    "enterprise.mode";
+const char EnterpriseInstallAttributes::kAttrEnterpriseOwned[] =
+    "enterprise.owned";
+const char EnterpriseInstallAttributes::kAttrEnterpriseUser[] =
+    "enterprise.user";
+const char EnterpriseInstallAttributes::kAttrConsumerKioskEnabled[] =
+    "consumer.app_kiosk_enabled";
+
+std::string EnterpriseInstallAttributes::GetDeviceModeString(DeviceMode mode) {
+  switch (mode) {
+    case DEVICE_MODE_CONSUMER:
+      return EnterpriseInstallAttributes::kConsumerDeviceMode;
+    case DEVICE_MODE_ENTERPRISE:
+      return EnterpriseInstallAttributes::kEnterpriseDeviceMode;
+    case DEVICE_MODE_RETAIL_KIOSK:
+      return EnterpriseInstallAttributes::kRetailKioskDeviceMode;
+    case DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH:
+      return EnterpriseInstallAttributes::kConsumerKioskDeviceMode;
+    case DEVICE_MODE_PENDING:
+    case DEVICE_MODE_NOT_SET:
+      break;
+  }
+  NOTREACHED() << "Invalid device mode: " << mode;
+  return EnterpriseInstallAttributes::kUnknownDeviceMode;
+}
+
+DeviceMode EnterpriseInstallAttributes::GetDeviceModeFromString(
+    const std::string& mode) {
+  if (mode == EnterpriseInstallAttributes::kConsumerDeviceMode)
+    return DEVICE_MODE_CONSUMER;
+  else if (mode == EnterpriseInstallAttributes::kEnterpriseDeviceMode)
+    return DEVICE_MODE_ENTERPRISE;
+  else if (mode == EnterpriseInstallAttributes::kRetailKioskDeviceMode)
+    return DEVICE_MODE_RETAIL_KIOSK;
+  else if (mode == EnterpriseInstallAttributes::kConsumerKioskDeviceMode)
+    return DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH;
+  NOTREACHED() << "Unknown device mode string: " << mode;
+  return DEVICE_MODE_NOT_SET;
 }
 
 void EnterpriseInstallAttributes::DecodeInstallAttributes(

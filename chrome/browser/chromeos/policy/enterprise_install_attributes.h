@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -35,20 +36,9 @@ class EnterpriseInstallAttributes {
   // A callback to handle responses of methods returning a LockResult value.
   typedef base::Callback<void(LockResult lock_result)> LockResultCallback;
 
-  // Constants for the possible device modes that can be stored in the lockbox.
-  static const char kConsumerDeviceMode[];
-  static const char kEnterpriseDeviceMode[];
-  static const char kRetailKioskDeviceMode[];
-  static const char kConsumerKioskDeviceMode[];
-  static const char kUnknownDeviceMode[];
-
-  // Field names in the lockbox.
-  static const char kAttrEnterpriseDeviceId[];
-  static const char kAttrEnterpriseDomain[];
-  static const char kAttrEnterpriseMode[];
-  static const char kAttrEnterpriseOwned[];
-  static const char kAttrEnterpriseUser[];
-  static const char kAttrConsumerKioskEnabled[];
+  // Return serialized InstallAttributes of an enterprise-owned configuration.
+  static std::string GetEnterpriseOwnedInstallAttributesBlobForTesting(
+      const std::string& user_name);
 
   explicit EnterpriseInstallAttributes(
       chromeos::CryptohomeClient* cryptohome_client);
@@ -106,6 +96,36 @@ class EnterpriseInstallAttributes {
   DeviceMode registration_mode_;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(EnterpriseInstallAttributesTest,
+                           DeviceLockedFromOlderVersion);
+  FRIEND_TEST_ALL_PREFIXES(EnterpriseInstallAttributesTest,
+                           ReadCacheFile);
+  FRIEND_TEST_ALL_PREFIXES(EnterpriseInstallAttributesTest,
+                           ReadCacheFileForConsumerKiosk);
+  FRIEND_TEST_ALL_PREFIXES(EnterpriseInstallAttributesTest,
+                           VerifyFakeInstallAttributesCache);
+
+  // Constants for the possible device modes that can be stored in the lockbox.
+  static const char kConsumerDeviceMode[];
+  static const char kEnterpriseDeviceMode[];
+  static const char kRetailKioskDeviceMode[];
+  static const char kConsumerKioskDeviceMode[];
+  static const char kUnknownDeviceMode[];
+
+  // Field names in the lockbox.
+  static const char kAttrEnterpriseDeviceId[];
+  static const char kAttrEnterpriseDomain[];
+  static const char kAttrEnterpriseMode[];
+  static const char kAttrEnterpriseOwned[];
+  static const char kAttrEnterpriseUser[];
+  static const char kAttrConsumerKioskEnabled[];
+
+  // Translates DeviceMode constants to strings used in the lockbox.
+  std::string GetDeviceModeString(DeviceMode mode);
+
+  // Translates strings used in the lockbox to DeviceMode values.
+  DeviceMode GetDeviceModeFromString(const std::string& mode);
+
   // Decodes the install attributes provided in |attr_map|.
   void DecodeInstallAttributes(
       const std::map<std::string, std::string>& attr_map);

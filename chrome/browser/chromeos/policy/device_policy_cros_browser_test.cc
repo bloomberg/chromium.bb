@@ -13,7 +13,6 @@
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
-#include "chrome/browser/chromeos/policy/proto/install_attributes.pb.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
@@ -35,22 +34,14 @@ DevicePolicyCrosTestHelper::~DevicePolicyCrosTestHelper() {}
 void DevicePolicyCrosTestHelper::MarkAsEnterpriseOwned() {
   OverridePaths();
 
-  cryptohome::SerializedInstallAttributes install_attrs_proto;
-  cryptohome::SerializedInstallAttributes::Attribute* attribute = NULL;
-
-  attribute = install_attrs_proto.add_attributes();
-  attribute->set_name(EnterpriseInstallAttributes::kAttrEnterpriseOwned);
-  attribute->set_value("true");
-
-  attribute = install_attrs_proto.add_attributes();
-  attribute->set_name(EnterpriseInstallAttributes::kAttrEnterpriseUser);
-  attribute->set_value(device_policy_.policy_data().username());
+  const std::string install_attrs_blob(
+      EnterpriseInstallAttributes::
+          GetEnterpriseOwnedInstallAttributesBlobForTesting(
+              device_policy_.policy_data().username()));
 
   base::FilePath install_attrs_file;
   ASSERT_TRUE(
       PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES, &install_attrs_file));
-  const std::string install_attrs_blob(
-      install_attrs_proto.SerializeAsString());
   ASSERT_EQ(static_cast<int>(install_attrs_blob.size()),
             base::WriteFile(install_attrs_file,
                             install_attrs_blob.c_str(),
