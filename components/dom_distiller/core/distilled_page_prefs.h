@@ -22,10 +22,9 @@ class DistilledPagePrefs {
  public:
   // Possible themes for distilled page.
   enum Theme {
-    LIGHT,
-    DARK,
-    SEPIA,
-    THEME_COUNT
+#define DEFINE_THEME(name, value) name = value,
+#include "components/dom_distiller/core/theme_list.h"
+#undef DEFINE_THEME
   };
 
   class Observer {

@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/dom_distiller/android/java/src/org/chromium/components/dom_distiller/core",
   "+content/public/android/java",
   "+sync/android/java/src/org/chromium/sync/internal_api/pub",
   "+sync/android/java/src/org/chromium/sync/notifier",
