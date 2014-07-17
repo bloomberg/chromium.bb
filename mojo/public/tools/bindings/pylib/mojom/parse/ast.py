@@ -20,6 +20,10 @@ class NodeBase(object):
   def __eq__(self, other):
     return type(self) == type(other)
 
+  # Make != the inverse of ==. (Subclasses shouldn't have to override this.)
+  def __ne__(self, other):
+    return not self == other
+
 
 # TODO(vtl): Some of this is complicated enough that it should be tested.
 class NodeListBase(NodeBase):
@@ -49,8 +53,7 @@ class NodeListBase(NodeBase):
 
   def __eq__(self, other):
     return super(NodeListBase, self).__eq__(other) and \
-           len(self.items) == len(other.items) and \
-           all(self.items[i] == other.items[i] for i in xrange(len(self.items)))
+           self.items == other.items
 
   # Implement this so that on failure, we get slightly more sensible output.
   def __repr__(self):
