@@ -231,7 +231,7 @@ deps = {
     "/trunk/KERN/usrsctp/usrsctplib@8912",
 
   "src/third_party/libsrtp":
-    "/trunk/deps/third_party/libsrtp@261337",
+    "/trunk/deps/third_party/libsrtp@283418",
 
   "src/third_party/speex":
     "/trunk/deps/third_party/speex@272757",
