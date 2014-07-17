@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,18 +6,31 @@
 #define UI_OZONE_PLATFORM_TEST_FILE_SURFACE_FACTORY_H_
 
 #include "base/files/file_path.h"
+#include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/platform/test/test_window.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
 
-class OZONE_BASE_EXPORT FileSurfaceFactory : public SurfaceFactoryOzone {
+class TestWindowManager : public SurfaceFactoryOzone {
  public:
-  explicit FileSurfaceFactory(const base::FilePath& dump_location);
-  virtual ~FileSurfaceFactory();
+  explicit TestWindowManager(const base::FilePath& dump_location);
+  virtual ~TestWindowManager();
 
- private:
+  // Initialize (mainly check that we have a place to write output to).
+  void Initialize();
+
+  // Register a new window. Returns the window id.
+  int32_t AddWindow(TestWindow* window);
+
+  // Remove a window.
+  void RemoveWindow(int32_t window_id, TestWindow* window);
+
+  // User-supplied path for images.
+  base::FilePath base_path() const;
+
   // SurfaceFactoryOzone:
   virtual HardwareState InitializeHardware() OVERRIDE;
   virtual void ShutdownHardware() OVERRIDE;
@@ -28,9 +41,12 @@ class OZONE_BASE_EXPORT FileSurfaceFactory : public SurfaceFactoryOzone {
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;
 
+ private:
   base::FilePath location_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileSurfaceFactory);
+  IDMap<TestWindow> windows_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWindowManager);
 };
 
 }  // namespace ui

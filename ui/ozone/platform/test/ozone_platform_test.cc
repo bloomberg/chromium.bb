@@ -8,9 +8,10 @@
 #include "base/files/file_path.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
-#include "ui/ozone/common/window/platform_window_compat.h"
-#include "ui/ozone/platform/test/file_surface_factory.h"
 #include "ui/ozone/platform/test/test_cursor_factory.h"
+#include "ui/ozone/platform/test/test_window.h"
+#include "ui/ozone/platform/test/test_window_manager.h"
+#include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -35,7 +36,7 @@ class OzonePlatformTest : public OzonePlatform {
 
   // OzonePlatform:
   virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
-    return surface_factory_ozone_.get();
+    return window_manager_.get();
   }
   virtual EventFactoryOzone* GetEventFactoryOzone() OVERRIDE {
     return event_factory_ozone_.get();
@@ -53,7 +54,7 @@ class OzonePlatformTest : public OzonePlatform {
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) OVERRIDE {
     return make_scoped_ptr<PlatformWindow>(
-        new PlatformWindowCompat(delegate, bounds));
+        new TestWindow(delegate, window_manager_.get(), bounds));
   }
 
 #if defined(OS_CHROMEOS)
@@ -70,7 +71,8 @@ class OzonePlatformTest : public OzonePlatform {
 
   virtual void InitializeUI() OVERRIDE {
     device_manager_ = CreateDeviceManager();
-    surface_factory_ozone_.reset(new FileSurfaceFactory(file_path_));
+    window_manager_.reset(new TestWindowManager(file_path_));
+    window_manager_->Initialize();
     event_factory_ozone_.reset(
         new EventFactoryEvdev(NULL, device_manager_.get()));
     cursor_factory_ozone_.reset(new TestCursorFactory());
@@ -83,7 +85,7 @@ class OzonePlatformTest : public OzonePlatform {
 
  private:
   scoped_ptr<DeviceManager> device_manager_;
-  scoped_ptr<FileSurfaceFactory> surface_factory_ozone_;
+  scoped_ptr<TestWindowManager> window_manager_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
   scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
   scoped_ptr<GpuPlatformSupport> gpu_platform_support_;

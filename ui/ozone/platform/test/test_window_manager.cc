@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/test/file_surface_factory.h"
+#include "ui/ozone/platform/test/test_window_manager.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -63,33 +63,54 @@ class FileSurface : public SurfaceOzoneCanvas {
 
 }  // namespace
 
-FileSurfaceFactory::FileSurfaceFactory(const base::FilePath& dump_location)
+TestWindowManager::TestWindowManager(const base::FilePath& dump_location)
     : location_(dump_location) {
-  CHECK(!base::DirectoryExists(location_)) << "Location cannot be a directory ("
-                                           << location_.value() << ")";
-  CHECK(!base::PathExists(location_) || base::PathIsWritable(location_));
 }
 
-FileSurfaceFactory::~FileSurfaceFactory() {
+TestWindowManager::~TestWindowManager() {
 }
 
-SurfaceFactoryOzone::HardwareState FileSurfaceFactory::InitializeHardware() {
+void TestWindowManager::Initialize() {
+  if (!DirectoryExists(location_) && !base::CreateDirectory(location_) &&
+      location_ != base::FilePath("/dev/null"))
+    PLOG(FATAL) << "unable to create output directory";
+  if (!base::PathIsWritable(location_))
+    PLOG(FATAL) << "unable to write to output location";
+}
+
+int32_t TestWindowManager::AddWindow(TestWindow* window) {
+  return windows_.Add(window);
+}
+
+void TestWindowManager::RemoveWindow(int32_t window_id, TestWindow* window) {
+  DCHECK_EQ(window, windows_.Lookup(window_id));
+  windows_.Remove(window_id);
+}
+
+base::FilePath TestWindowManager::base_path() const {
+  return location_;
+}
+
+SurfaceFactoryOzone::HardwareState TestWindowManager::InitializeHardware() {
   return INITIALIZED;
 }
 
-void FileSurfaceFactory::ShutdownHardware() {
+void TestWindowManager::ShutdownHardware() {
 }
 
-gfx::AcceleratedWidget FileSurfaceFactory::GetAcceleratedWidget() {
-  return 1;
+gfx::AcceleratedWidget TestWindowManager::GetAcceleratedWidget() {
+  NOTREACHED();
+  return -1;
 }
 
-scoped_ptr<SurfaceOzoneCanvas> FileSurfaceFactory::CreateCanvasForWidget(
-    gfx::AcceleratedWidget w) {
-  return make_scoped_ptr<SurfaceOzoneCanvas>(new FileSurface(location_));
+scoped_ptr<SurfaceOzoneCanvas> TestWindowManager::CreateCanvasForWidget(
+    gfx::AcceleratedWidget widget) {
+  TestWindow* window = windows_.Lookup(widget);
+  DCHECK(window);
+  return make_scoped_ptr<SurfaceOzoneCanvas>(new FileSurface(window->path()));
 }
 
-bool FileSurfaceFactory::LoadEGLGLES2Bindings(
+bool TestWindowManager::LoadEGLGLES2Bindings(
     AddGLLibraryCallback add_gl_library,
     SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
   return false;
