@@ -3,47 +3,24 @@
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
-#include "base/bind.h"
+#include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "mojo/public/interfaces/service_provider/service_provider.mojom.h"
 #include "mojo/services/network/network_context.h"
 #include "mojo/services/network/network_service_impl.h"
-#include "mojo/services/public/interfaces/profile/profile_service.mojom.h"
-
-namespace {
-
-void OnPathReceived(base::FilePath* path, const mojo::String& path_as_string) {
-  DCHECK(!path_as_string.is_null());
-#if defined(OS_POSIX)
-  *path = base::FilePath(path_as_string);
-#elif defined(OS_WIN)
-  *path = base::FilePath::FromUTF8Unsafe(path_as_string);
-#else
-#error Not implemented
-#endif
-}
-
-}  // namespace
 
 class Delegate : public mojo::ApplicationDelegate {
  public:
   Delegate() {}
 
   virtual void Initialize(mojo::ApplicationImpl* app) MOJO_OVERRIDE {
-    mojo::InterfacePtr<mojo::ProfileService> profile_service;
-    app->ConnectToService("mojo:profile_service", &profile_service);
     base::FilePath base_path;
-    profile_service->GetPath(
-        mojo::ProfileService::PATH_KEY_DIR_TEMP,
-        base::Bind(&OnPathReceived, base::Unretained(&base_path)));
-    profile_service.WaitForIncomingMethodCall();
-    DCHECK(!base_path.value().empty());
+    CHECK(PathService::Get(base::DIR_TEMP, &base_path));
     base_path = base_path.Append(FILE_PATH_LITERAL("network_service"));
     context_.reset(new mojo::NetworkContext(base_path));
   }

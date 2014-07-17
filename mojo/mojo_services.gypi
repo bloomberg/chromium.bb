@@ -361,8 +361,8 @@
       ],
     },
     {
-      'target_name': 'mojo_network_service',
-      'type': 'loadable_module',
+      'target_name': 'mojo_network_service_lib',
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../net/net.gyp:net',
@@ -371,7 +371,25 @@
         'mojo_common_lib',
         'mojo_environment_chromium',
         'mojo_network_bindings',
-        'mojo_profile_service_bindings',
+      ],
+      'export_dependent_settings': [
+        'mojo_network_bindings',
+      ],
+      'sources': [
+        'services/network/network_context.cc',
+        'services/network/network_context.h',
+        'services/network/network_service_impl.cc',
+        'services/network/network_service_impl.h',
+        'services/network/url_loader_impl.cc',
+        'services/network/url_loader_impl.h',
+      ],
+    },
+    {
+      'target_name': 'mojo_network_service',
+      'type': 'loadable_module',
+      'dependencies': [
+        'mojo_network_bindings',
+        'mojo_network_service_lib',
         '<(mojo_system_for_loadable_module)',
       ],
       'export_dependent_settings': [
@@ -379,12 +397,6 @@
       ],
       'sources': [
         'services/network/main.cc',
-        'services/network/network_context.cc',
-        'services/network/network_context.h',
-        'services/network/network_service_impl.cc',
-        'services/network/network_service_impl.h',
-        'services/network/url_loader_impl.cc',
-        'services/network/url_loader_impl.h',
       ],
     },
     {
@@ -619,32 +631,6 @@
         'services/test_service/test_time_service_impl.h',
         'services/test_service/test_request_tracker_impl.cc',
         'services/test_service/test_request_tracker_impl.h',
-      ],
-    },
-    {
-      'target_name': 'mojo_profile_service_bindings',
-      'type': 'static_library',
-      'sources': [
-        'services/public/interfaces/profile/profile_service.mojom',
-      ],
-      'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
-      'export_dependent_settings': [
-        'mojo_cpp_bindings',
-      ],
-      'dependencies': [
-        'mojo_cpp_bindings',
-      ],
-    },
-    {
-      'target_name': 'mojo_profile_service',
-      'type': 'static_library',
-      'sources': [
-        'services/profile/profile_service_impl.cc',
-        'services/profile/profile_service_impl.h',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base',
-        'mojo_profile_service_bindings',
       ],
     },
   ],

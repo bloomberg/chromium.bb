@@ -2,23 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/profile_service_loader.h"
+#include "mojo/shell/network_service_loader.h"
 
+#include "base/base_paths.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "mojo/services/profile/profile_service_impl.h"
+#include "mojo/services/network/network_service_impl.h"
+
+namespace {
+base::FilePath GetBasePath() {
+  base::FilePath path;
+  CHECK(PathService::Get(base::DIR_TEMP, &path));
+  return path.Append(FILE_PATH_LITERAL("network_service"));
+}
+}
 
 namespace mojo {
 namespace shell {
 
-ProfileServiceLoader::ProfileServiceLoader() {
+NetworkServiceLoader::NetworkServiceLoader() {
 }
 
-ProfileServiceLoader::~ProfileServiceLoader() {
+NetworkServiceLoader::~NetworkServiceLoader() {
 }
 
-void ProfileServiceLoader::LoadService(
+void NetworkServiceLoader::LoadService(
     ServiceManager* manager,
     const GURL& url,
     ScopedMessagePipeHandle shell_handle) {
@@ -30,14 +41,19 @@ void ProfileServiceLoader::LoadService(
   }
 }
 
-void ProfileServiceLoader::OnServiceError(ServiceManager* manager,
+void NetworkServiceLoader::OnServiceError(ServiceManager* manager,
                                           const GURL& url) {
   apps_.erase(reinterpret_cast<uintptr_t>(manager));
 }
 
-bool ProfileServiceLoader::ConfigureIncomingConnection(
+void NetworkServiceLoader::Initialize(ApplicationImpl* app) {
+  // The context must be created on the same thread as the network service.
+  context_.reset(new NetworkContext(GetBasePath()));
+}
+
+bool NetworkServiceLoader::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
-    connection->AddService<ProfileServiceImpl>();
+  connection->AddService<NetworkServiceImpl>(context_.get());
   return true;
 }
 

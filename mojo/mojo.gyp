@@ -75,7 +75,6 @@
         'mojo_network_service',
         'mojo_pepper_container_app',
         'mojo_png_viewer',
-        'mojo_profile_service',
         'mojo_public_application_unittests',
         'mojo_public_test_utils',
         'mojo_public_bindings_unittests',
@@ -545,7 +544,6 @@
         'mojo_gles2_impl',
         'mojo_native_viewport_service',
         'mojo_network_bindings',
-        'mojo_profile_service',
         'mojo_service_manager',
         'mojo_service_provider_bindings',
         'mojo_spy',
@@ -579,8 +577,6 @@
         'shell/mojo_url_resolver.h',
         'shell/out_of_process_dynamic_service_runner.cc',
         'shell/out_of_process_dynamic_service_runner.h',
-        'shell/profile_service_loader.cc',
-        'shell/profile_service_loader.h',
         'shell/run.cc',
         'shell/run.h',
         'shell/switches.cc',
@@ -597,6 +593,15 @@
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../dbus/dbus.gyp:dbus',
+          ],
+        }],
+        ['OS=="android"', {
+          'dependencies': [
+            'mojo_network_service_lib',
+          ],
+          'sources': [
+            'shell/network_service_loader.cc',
+            'shell/network_service_loader.h',
           ],
         }],
         ['use_aura==1', {
@@ -927,9 +932,6 @@
             'java_in_dir': '<(DEPTH)/mojo/shell/android/apk',
             'resource_dir': '<(DEPTH)/mojo/shell/android/apk/res',
             'native_lib_target': 'libmojo_shell',
-            'additional_bundled_libs': [
-              '<(PRODUCT_DIR)/libmojo_network_service.so',
-            ],
           },
           'includes': [ '../build/java_apk.gypi' ],
         }

@@ -18,13 +18,16 @@
 #include "mojo/shell/dynamic_service_loader.h"
 #include "mojo/shell/in_process_dynamic_service_runner.h"
 #include "mojo/shell/out_of_process_dynamic_service_runner.h"
-#include "mojo/shell/profile_service_loader.h"
 #include "mojo/shell/switches.h"
 #include "mojo/spy/spy.h"
 
 #if defined(OS_LINUX)
 #include "mojo/shell/dbus_service_loader_linux.h"
 #endif  // defined(OS_LINUX)
+
+#if defined(OS_ANDROID)
+#include "mojo/shell/network_service_loader.h"
+#endif  // defined(OS_ANDROID)
 
 #if defined(USE_AURA)
 #include "mojo/shell/view_manager_loader.h"
@@ -120,14 +123,22 @@ Context::Context()
       "dbus");
 #endif  // defined(OS_LINUX)
 
-  service_manager_.SetLoaderForURL(
-      scoped_ptr<ServiceLoader>(new ProfileServiceLoader()),
-      GURL("mojo:profile_service"));
-
   if (cmdline->HasSwitch(switches::kSpy)) {
     spy_.reset(new mojo::Spy(&service_manager_,
                              cmdline->GetSwitchValueASCII(switches::kSpy)));
   }
+
+#if defined(OS_ANDROID)
+  // On android, the network service is bundled with the shell because the
+  // network stack depends on the android runtime.
+  service_manager_.SetLoaderForURL(
+      scoped_ptr<ServiceLoader>(
+          new BackgroundServiceLoader(
+              scoped_ptr<ServiceLoader>(new NetworkServiceLoader()),
+              "network_service",
+              base::MessageLoop::TYPE_IO)),
+      GURL("mojo:mojo_network_service"));
+#endif
 }
 
 Context::~Context() {
