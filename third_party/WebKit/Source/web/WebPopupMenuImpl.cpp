@@ -252,23 +252,23 @@ bool WebPopupMenuImpl::handleInputEvent(const WebInputEvent& inputEvent)
     // whether keyboard events are processed).
     switch (inputEvent.type) {
     case WebInputEvent::MouseMove:
-        handleMouseMove(*static_cast<const WebMouseEvent*>(&inputEvent));
+        handleMouseMove(static_cast<const WebMouseEvent&>(inputEvent));
         return true;
 
     case WebInputEvent::MouseLeave:
-        handleMouseLeave(*static_cast<const WebMouseEvent*>(&inputEvent));
+        handleMouseLeave(static_cast<const WebMouseEvent&>(inputEvent));
         return true;
 
     case WebInputEvent::MouseWheel:
-        handleMouseWheel(*static_cast<const WebMouseWheelEvent*>(&inputEvent));
+        handleMouseWheel(static_cast<const WebMouseWheelEvent&>(inputEvent));
         return true;
 
     case WebInputEvent::MouseDown:
-        handleMouseDown(*static_cast<const WebMouseEvent*>(&inputEvent));
+        handleMouseDown(static_cast<const WebMouseEvent&>(inputEvent));
         return true;
 
     case WebInputEvent::MouseUp:
-        handleMouseUp(*static_cast<const WebMouseEvent*>(&inputEvent));
+        handleMouseUp(static_cast<const WebMouseEvent&>(inputEvent));
         return true;
 
     // In Windows, RawKeyDown only has information about the physical key, but
@@ -283,13 +283,13 @@ bool WebPopupMenuImpl::handleInputEvent(const WebInputEvent& inputEvent)
     case WebInputEvent::KeyDown:
     case WebInputEvent::KeyUp:
     case WebInputEvent::Char:
-        return handleKeyEvent(*static_cast<const WebKeyboardEvent*>(&inputEvent));
+        return handleKeyEvent(static_cast<const WebKeyboardEvent&>(inputEvent));
 
     case WebInputEvent::TouchStart:
     case WebInputEvent::TouchMove:
     case WebInputEvent::TouchEnd:
     case WebInputEvent::TouchCancel:
-        return handleTouchEvent(*static_cast<const WebTouchEvent*>(&inputEvent));
+        return handleTouchEvent(static_cast<const WebTouchEvent&>(inputEvent));
 
     case WebInputEvent::GestureScrollBegin:
     case WebInputEvent::GestureScrollEnd:
@@ -309,7 +309,7 @@ bool WebPopupMenuImpl::handleInputEvent(const WebInputEvent& inputEvent)
     case WebInputEvent::GesturePinchBegin:
     case WebInputEvent::GesturePinchEnd:
     case WebInputEvent::GesturePinchUpdate:
-        return handleGestureEvent(*static_cast<const WebGestureEvent*>(&inputEvent));
+        return handleGestureEvent(static_cast<const WebGestureEvent&>(inputEvent));
 
     case WebInputEvent::Undefined:
     case WebInputEvent::MouseEnter:

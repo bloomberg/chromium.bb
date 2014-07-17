@@ -117,36 +117,36 @@ bool PageWidgetDelegate::handleInputEvent(Page* page, PageWidgetEventHandler& ha
     case WebInputEvent::MouseMove:
         if (!frame || !frame->view())
             return true;
-        handler.handleMouseMove(*frame, *static_cast<const WebMouseEvent*>(&event));
+        handler.handleMouseMove(*frame, static_cast<const WebMouseEvent&>(event));
         return true;
     case WebInputEvent::MouseLeave:
         if (!frame || !frame->view())
             return true;
-        handler.handleMouseLeave(*frame, *static_cast<const WebMouseEvent*>(&event));
+        handler.handleMouseLeave(*frame, static_cast<const WebMouseEvent&>(event));
         return true;
     case WebInputEvent::MouseDown:
         if (!frame || !frame->view())
             return true;
-        handler.handleMouseDown(*frame, *static_cast<const WebMouseEvent*>(&event));
+        handler.handleMouseDown(*frame, static_cast<const WebMouseEvent&>(event));
         return true;
     case WebInputEvent::MouseUp:
         if (!frame || !frame->view())
             return true;
-        handler.handleMouseUp(*frame, *static_cast<const WebMouseEvent*>(&event));
+        handler.handleMouseUp(*frame, static_cast<const WebMouseEvent&>(event));
         return true;
 
     case WebInputEvent::MouseWheel:
         if (!frame || !frame->view())
             return false;
-        return handler.handleMouseWheel(*frame, *static_cast<const WebMouseWheelEvent*>(&event));
+        return handler.handleMouseWheel(*frame, static_cast<const WebMouseWheelEvent&>(event));
 
     case WebInputEvent::RawKeyDown:
     case WebInputEvent::KeyDown:
     case WebInputEvent::KeyUp:
-        return handler.handleKeyEvent(*static_cast<const WebKeyboardEvent*>(&event));
+        return handler.handleKeyEvent(static_cast<const WebKeyboardEvent&>(event));
 
     case WebInputEvent::Char:
-        return handler.handleCharEvent(*static_cast<const WebKeyboardEvent*>(&event));
+        return handler.handleCharEvent(static_cast<const WebKeyboardEvent&>(event));
     case WebInputEvent::GestureScrollBegin:
     case WebInputEvent::GestureScrollEnd:
     case WebInputEvent::GestureScrollUpdate:
@@ -162,7 +162,7 @@ bool PageWidgetDelegate::handleInputEvent(Page* page, PageWidgetEventHandler& ha
     case WebInputEvent::GestureTwoFingerTap:
     case WebInputEvent::GestureLongPress:
     case WebInputEvent::GestureLongTap:
-        return handler.handleGestureEvent(*static_cast<const WebGestureEvent*>(&event));
+        return handler.handleGestureEvent(static_cast<const WebGestureEvent&>(event));
 
     case WebInputEvent::TouchStart:
     case WebInputEvent::TouchMove:
@@ -170,7 +170,7 @@ bool PageWidgetDelegate::handleInputEvent(Page* page, PageWidgetEventHandler& ha
     case WebInputEvent::TouchCancel:
         if (!frame || !frame->view())
             return false;
-        return handler.handleTouchEvent(*frame, *static_cast<const WebTouchEvent*>(&event));
+        return handler.handleTouchEvent(*frame, static_cast<const WebTouchEvent&>(event));
 
     case WebInputEvent::GesturePinchBegin:
     case WebInputEvent::GesturePinchEnd:

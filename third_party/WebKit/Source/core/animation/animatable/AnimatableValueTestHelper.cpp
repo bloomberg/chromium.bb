@@ -175,29 +175,29 @@ void PrintTo(const AnimatableVisibility& animVisibility, ::std::ostream* os)
 void PrintTo(const AnimatableValue& animValue, ::std::ostream* os)
 {
     if (animValue.isClipPathOperation())
-        PrintTo(*(toAnimatableClipPathOperation(&animValue)), os);
+        PrintTo(toAnimatableClipPathOperation(animValue), os);
     else if (animValue.isColor())
-        PrintTo(*(toAnimatableColor(&animValue)), os);
+        PrintTo(toAnimatableColor(animValue), os);
     else if (animValue.isImage())
-        PrintTo(*(toAnimatableImage(&animValue)), os);
+        PrintTo(toAnimatableImage(animValue), os);
     else if (animValue.isNeutral())
-        PrintTo(*(static_cast<const AnimatableNeutral*>(&animValue)), os);
+        PrintTo(static_cast<const AnimatableNeutral&>(animValue), os);
     else if (animValue.isRepeatable())
-        PrintTo(*(toAnimatableRepeatable(&animValue)), os);
+        PrintTo(toAnimatableRepeatable(animValue), os);
     else if (animValue.isSVGLength())
-        PrintTo(*(toAnimatableSVGLength(&animValue)), os);
+        PrintTo(toAnimatableSVGLength(animValue), os);
     else if (animValue.isSVGPaint())
-        PrintTo(*(toAnimatableSVGPaint(&animValue)), os);
+        PrintTo(toAnimatableSVGPaint(animValue), os);
     else if (animValue.isShapeValue())
-        PrintTo(*(toAnimatableShapeValue(&animValue)), os);
+        PrintTo(toAnimatableShapeValue(animValue), os);
     else if (animValue.isStrokeDasharrayList())
-        PrintTo(*(toAnimatableStrokeDasharrayList(&animValue)), os);
+        PrintTo(toAnimatableStrokeDasharrayList(animValue), os);
     else if (animValue.isTransform())
-        PrintTo(*(toAnimatableTransform(&animValue)), os);
+        PrintTo(toAnimatableTransform(animValue), os);
     else if (animValue.isUnknown())
-        PrintTo(*(toAnimatableUnknown(&animValue)), os);
+        PrintTo(toAnimatableUnknown(animValue), os);
     else if (animValue.isVisibility())
-        PrintTo(*(toAnimatableVisibility(&animValue)), os);
+        PrintTo(toAnimatableVisibility(animValue), os);
     else
         *os << "Unknown AnimatableValue - update ifelse chain in AnimatableValueTestHelper.h";
 }

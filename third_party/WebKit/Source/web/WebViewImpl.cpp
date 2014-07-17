@@ -1977,8 +1977,8 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
         }
 
         node->dispatchMouseEvent(
-              PlatformMouseEventBuilder(mainFrameImpl()->frameView(), *static_cast<const WebMouseEvent*>(&inputEvent)),
-              eventType, static_cast<const WebMouseEvent*>(&inputEvent)->clickCount);
+            PlatformMouseEventBuilder(mainFrameImpl()->frameView(), static_cast<const WebMouseEvent&>(inputEvent)),
+            eventType, static_cast<const WebMouseEvent&>(inputEvent).clickCount);
         return true;
     }
 

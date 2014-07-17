@@ -128,7 +128,7 @@ PassRefPtr<TimingFunction> CompositorAnimationsTimingFunctionReverser::reverse(c
 
 bool CompositorAnimations::getAnimatedBoundingBox(FloatBox& box, const AnimationEffect& effect, double minValue, double maxValue) const
 {
-    const KeyframeEffectModelBase& keyframeEffect = *toKeyframeEffectModelBase(&effect);
+    const KeyframeEffectModelBase& keyframeEffect = toKeyframeEffectModelBase(effect);
 
     PropertySet properties = keyframeEffect.properties();
 
@@ -190,7 +190,7 @@ bool CompositorAnimations::getAnimatedBoundingBox(FloatBox& box, const Animation
 
 bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& timing, const AnimationEffect& effect)
 {
-    const KeyframeEffectModelBase& keyframeEffect = *toKeyframeEffectModelBase(&effect);
+    const KeyframeEffectModelBase& keyframeEffect = toKeyframeEffectModelBase(effect);
 
     PropertySet properties = keyframeEffect.properties();
 
@@ -252,7 +252,7 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, do
     ASSERT(isCandidateForAnimationOnCompositor(timing, effect));
     ASSERT(canStartAnimationOnCompositor(element));
 
-    const KeyframeEffectModelBase& keyframeEffect = *toKeyframeEffectModelBase(&effect);
+    const KeyframeEffectModelBase& keyframeEffect = toKeyframeEffectModelBase(effect);
 
     RenderLayer* layer = toRenderBoxModelObject(element.renderer())->layer();
     ASSERT(layer);

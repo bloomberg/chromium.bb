@@ -68,7 +68,7 @@ inline void PrintTo(const CSSValue& cssValue, ::std::ostream* os, const char* ty
 
 inline void PrintTo(const CSSPrimitiveValue& cssValue, ::std::ostream* os, const char* typeName = "CSSPrimitiveValue")
 {
-    PrintTo(*static_cast<const CSSValue*>(&cssValue), os, typeName);
+    PrintTo(static_cast<const CSSValue&>(cssValue), os, typeName);
 }
 
 }

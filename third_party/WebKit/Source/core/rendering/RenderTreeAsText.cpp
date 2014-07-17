@@ -189,21 +189,21 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
     if (o.isText()) {
         // FIXME: Would be better to dump the bounding box x and y rather than the first run's x and y, but that would involve updating
         // many test results.
-        const RenderText& text = *toRenderText(&o);
+        const RenderText& text = toRenderText(o);
         IntRect linesBox = text.linesBoundingBox();
         r = IntRect(text.firstRunX(), text.firstRunY(), linesBox.width(), linesBox.height());
         if (adjustForTableCells && !text.firstTextBox())
             adjustForTableCells = false;
     } else if (o.isRenderInline()) {
         // FIXME: Would be better not to just dump 0, 0 as the x and y here.
-        const RenderInline& inlineFlow = *toRenderInline(&o);
+        const RenderInline& inlineFlow = toRenderInline(o);
         r = IntRect(0, 0, inlineFlow.linesBoundingBox().width(), inlineFlow.linesBoundingBox().height());
         adjustForTableCells = false;
     } else if (o.isTableCell()) {
         // FIXME: Deliberately dump the "inner" box of table cells, since that is what current results reflect.  We'd like
         // to clean up the results to dump both the outer box and the intrinsic padding so that both bits of information are
         // captured by the results.
-        const RenderTableCell& cell = *toRenderTableCell(&o);
+        const RenderTableCell& cell = toRenderTableCell(o);
         r = LayoutRect(cell.x(), cell.y() + cell.intrinsicPaddingBefore(), cell.width(), cell.height() - cell.intrinsicPaddingBefore() - cell.intrinsicPaddingAfter());
     } else if (o.isBox())
         r = toRenderBox(&o)->frameRect();
@@ -246,7 +246,7 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
         if (!o.isBoxModelObject())
             return;
 
-        const RenderBoxModelObject& box = *toRenderBoxModelObject(&o);
+        const RenderBoxModelObject& box = toRenderBoxModelObject(o);
         if (box.borderTop() || box.borderRight() || box.borderBottom() || box.borderLeft()) {
             ts << " [border:";
 
@@ -301,7 +301,7 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
     }
 
     if (o.isTableCell()) {
-        const RenderTableCell& c = *toRenderTableCell(&o);
+        const RenderTableCell& c = toRenderTableCell(o);
         ts << " [r=" << c.rowIndex() << " c=" << c.col() << " rs=" << c.rowSpan() << " cs=" << c.colSpan() << "]";
     }
 
@@ -324,7 +324,7 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
     }
 
     if (o.isListMarker()) {
-        String text = toRenderListMarker(&o)->text();
+        String text = toRenderListMarker(o).text();
         if (!text.isEmpty()) {
             if (text.length() != 1)
                 text = quoteAndEscapeNonPrintables(text);
@@ -429,11 +429,11 @@ static void writeTextRun(TextStream& ts, const RenderText& o, const InlineTextBo
 void write(TextStream& ts, const RenderObject& o, int indent, RenderAsTextBehavior behavior)
 {
     if (o.isSVGShape()) {
-        write(ts, *toRenderSVGShape(&o), indent);
+        write(ts, toRenderSVGShape(o), indent);
         return;
     }
     if (o.isSVGGradientStop()) {
-        writeSVGGradientStop(ts, *toRenderSVGGradientStop(&o), indent);
+        writeSVGGradientStop(ts, toRenderSVGGradientStop(o), indent);
         return;
     }
     if (o.isSVGResourceContainer()) {
@@ -445,19 +445,19 @@ void write(TextStream& ts, const RenderObject& o, int indent, RenderAsTextBehavi
         return;
     }
     if (o.isSVGRoot()) {
-        write(ts, *toRenderSVGRoot(&o), indent);
+        write(ts, toRenderSVGRoot(o), indent);
         return;
     }
     if (o.isSVGText()) {
-        writeSVGText(ts, *toRenderSVGText(&o), indent);
+        writeSVGText(ts, toRenderSVGText(o), indent);
         return;
     }
     if (o.isSVGInlineText()) {
-        writeSVGInlineText(ts, *toRenderSVGInlineText(&o), indent);
+        writeSVGInlineText(ts, toRenderSVGInlineText(o), indent);
         return;
     }
     if (o.isSVGImage()) {
-        writeSVGImage(ts, *toRenderSVGImage(&o), indent);
+        writeSVGImage(ts, toRenderSVGImage(o), indent);
         return;
     }
 
@@ -467,7 +467,7 @@ void write(TextStream& ts, const RenderObject& o, int indent, RenderAsTextBehavi
     ts << "\n";
 
     if (o.isText() && !o.isBR()) {
-        const RenderText& text = *toRenderText(&o);
+        const RenderText& text = toRenderText(o);
         for (InlineTextBox* box = text.firstTextBox(); box; box = box->nextTextBox()) {
             writeIndent(ts, indent + 1);
             writeTextRun(ts, text, *box);
@@ -481,7 +481,7 @@ void write(TextStream& ts, const RenderObject& o, int indent, RenderAsTextBehavi
     }
 
     if (o.isWidget()) {
-        Widget* widget = toRenderWidget(&o)->widget();
+        Widget* widget = toRenderWidget(o).widget();
         if (widget && widget->isFrameView()) {
             FrameView* view = toFrameView(widget);
             RenderView* root = view->frame().contentRenderer();

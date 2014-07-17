@@ -122,7 +122,7 @@ PassOwnPtr<Shape> ShapeOutsideInfo::createShapeForImage(StyleImage* styleImage, 
 
     const LayoutRect& marginRect = getShapeImageMarginRect(m_renderer, m_referenceBoxLogicalSize);
     const LayoutRect& imageRect = (m_renderer.isRenderImage())
-        ? toRenderImage(&m_renderer)->replacedContentRect()
+        ? toRenderImage(m_renderer).replacedContentRect()
         : LayoutRect(LayoutPoint(), imageSize);
 
     if (!isValidRasterShapeRect(marginRect) || !isValidRasterShapeRect(imageRect)) {

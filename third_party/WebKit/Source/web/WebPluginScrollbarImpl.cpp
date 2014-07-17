@@ -282,7 +282,7 @@ void WebPluginScrollbarImpl::setIsAlphaLocked(bool flag)
 
 bool WebPluginScrollbarImpl::onMouseDown(const WebInputEvent& event)
 {
-    WebMouseEvent mousedown = *static_cast<const WebMouseEvent*>(&event);
+    WebMouseEvent mousedown = static_cast<const WebMouseEvent&>(event);
     if (!m_scrollbar->frameRect().contains(mousedown.x, mousedown.y))
         return false;
 
@@ -294,7 +294,7 @@ bool WebPluginScrollbarImpl::onMouseDown(const WebInputEvent& event)
 
 bool WebPluginScrollbarImpl::onMouseUp(const WebInputEvent& event)
 {
-    WebMouseEvent mouseup = *static_cast<const WebMouseEvent*>(&event);
+    WebMouseEvent mouseup = static_cast<const WebMouseEvent&>(event);
     if (m_scrollbar->pressedPart() == WebCore::NoPart)
         return false;
 
@@ -304,7 +304,7 @@ bool WebPluginScrollbarImpl::onMouseUp(const WebInputEvent& event)
 
 bool WebPluginScrollbarImpl::onMouseMove(const WebInputEvent& event)
 {
-    WebMouseEvent mousemove = *static_cast<const WebMouseEvent*>(&event);
+    WebMouseEvent mousemove = static_cast<const WebMouseEvent&>(event);
     if (m_scrollbar->frameRect().contains(mousemove.x, mousemove.y)
         || m_scrollbar->pressedPart() != WebCore::NoPart) {
         mousemove.x -= m_scrollbar->x();
@@ -328,14 +328,14 @@ bool WebPluginScrollbarImpl::onMouseLeave(const WebInputEvent& event)
 
 bool WebPluginScrollbarImpl::onMouseWheel(const WebInputEvent& event)
 {
-    WebMouseWheelEvent mousewheel = *static_cast<const WebMouseWheelEvent*>(&event);
+    WebMouseWheelEvent mousewheel = static_cast<const WebMouseWheelEvent&>(event);
     PlatformWheelEventBuilder platformEvent(m_scrollbar.get(), mousewheel);
     return m_group->handleWheelEvent(platformEvent);
 }
 
 bool WebPluginScrollbarImpl::onKeyDown(const WebInputEvent& event)
 {
-    WebKeyboardEvent keyboard = *static_cast<const WebKeyboardEvent*>(&event);
+    WebKeyboardEvent keyboard = static_cast<const WebKeyboardEvent&>(event);
     int keyCode;
     // We have to duplicate this logic from WebViewImpl because there it uses
     // Char and RawKeyDown events, which don't exist at this point.

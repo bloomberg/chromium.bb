@@ -221,15 +221,15 @@ LayoutPoint RenderFlowThread::adjustedPositionRelativeToOffsetParent(const Rende
             // Get the logical top coordinate of the current object.
             LayoutUnit top = 0;
             if (boxModelObject.isRenderBlock()) {
-                top = toRenderBlock(&boxModelObject)->offsetFromLogicalTopOfFirstPage();
+                top = toRenderBlock(boxModelObject).offsetFromLogicalTopOfFirstPage();
             } else {
                 if (boxModelObject.containingBlock())
                     top = boxModelObject.containingBlock()->offsetFromLogicalTopOfFirstPage();
 
                 if (boxModelObject.isBox())
-                    top += toRenderBox(&boxModelObject)->topLeftLocation().y();
+                    top += toRenderBox(boxModelObject).topLeftLocation().y();
                 else if (boxModelObject.isRenderInline())
-                    top -= toRenderInline(&boxModelObject)->borderTop();
+                    top -= toRenderInline(boxModelObject).borderTop();
             }
 
             // Get the logical top of the columnSet this object starts in

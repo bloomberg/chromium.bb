@@ -313,7 +313,7 @@ bool WebDevToolsAgentImpl::handleInputEvent(WebCore::Page* page, const WebInputE
     bool isPinch = inputEvent.type == WebInputEvent::GesturePinchBegin || inputEvent.type == WebInputEvent::GesturePinchUpdate || inputEvent.type == WebInputEvent::GesturePinchEnd;
     if (isPinch && m_touchEventEmulationEnabled && m_emulateMobileEnabled) {
         FrameView* frameView = page->deprecatedLocalMainFrame()->view();
-        PlatformGestureEventBuilder gestureEvent(frameView, *static_cast<const WebGestureEvent*>(&inputEvent));
+        PlatformGestureEventBuilder gestureEvent(frameView, static_cast<const WebGestureEvent&>(inputEvent));
         float pageScaleFactor = page->pageScaleFactor();
         if (gestureEvent.type() == PlatformEvent::GesturePinchBegin) {
             m_lastPinchAnchorCss = adoptPtr(new WebCore::IntPoint(frameView->scrollPosition() + gestureEvent.position()));
@@ -340,20 +340,20 @@ bool WebDevToolsAgentImpl::handleInputEvent(WebCore::Page* page, const WebInputE
 
     if (WebInputEvent::isGestureEventType(inputEvent.type) && inputEvent.type == WebInputEvent::GestureTap) {
         // Only let GestureTab in (we only need it and we know PlatformGestureEventBuilder supports it).
-        PlatformGestureEvent gestureEvent = PlatformGestureEventBuilder(page->deprecatedLocalMainFrame()->view(), *static_cast<const WebGestureEvent*>(&inputEvent));
+        PlatformGestureEvent gestureEvent = PlatformGestureEventBuilder(page->deprecatedLocalMainFrame()->view(), static_cast<const WebGestureEvent&>(inputEvent));
         return ic->handleGestureEvent(toLocalFrame(page->mainFrame()), gestureEvent);
     }
     if (WebInputEvent::isMouseEventType(inputEvent.type) && inputEvent.type != WebInputEvent::MouseEnter) {
         // PlatformMouseEventBuilder does not work with MouseEnter type, so we filter it out manually.
-        PlatformMouseEvent mouseEvent = PlatformMouseEventBuilder(page->deprecatedLocalMainFrame()->view(), *static_cast<const WebMouseEvent*>(&inputEvent));
+        PlatformMouseEvent mouseEvent = PlatformMouseEventBuilder(page->deprecatedLocalMainFrame()->view(), static_cast<const WebMouseEvent&>(inputEvent));
         return ic->handleMouseEvent(toLocalFrame(page->mainFrame()), mouseEvent);
     }
     if (WebInputEvent::isTouchEventType(inputEvent.type)) {
-        PlatformTouchEvent touchEvent = PlatformTouchEventBuilder(page->deprecatedLocalMainFrame()->view(), *static_cast<const WebTouchEvent*>(&inputEvent));
+        PlatformTouchEvent touchEvent = PlatformTouchEventBuilder(page->deprecatedLocalMainFrame()->view(), static_cast<const WebTouchEvent&>(inputEvent));
         return ic->handleTouchEvent(toLocalFrame(page->mainFrame()), touchEvent);
     }
     if (WebInputEvent::isKeyboardEventType(inputEvent.type)) {
-        PlatformKeyboardEvent keyboardEvent = PlatformKeyboardEventBuilder(*static_cast<const WebKeyboardEvent*>(&inputEvent));
+        PlatformKeyboardEvent keyboardEvent = PlatformKeyboardEventBuilder(static_cast<const WebKeyboardEvent&>(inputEvent));
         return ic->handleKeyboardEvent(page->deprecatedLocalMainFrame(), keyboardEvent);
     }
     return false;
