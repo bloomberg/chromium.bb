@@ -35,7 +35,6 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/utility/chrome_content_utility_client.h"
 #include "components/component_updater/component_updater_paths.h"
-#include "components/nacl/common/nacl_switches.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
@@ -107,6 +106,10 @@
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
 #include "chrome/browser/policy/policy_path_parser.h"
+#endif
+
+#if !defined(DISABLE_NACL)
+#include "components/nacl/common/nacl_switches.h"
 #endif
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
@@ -234,7 +237,9 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
 #if defined(OS_MACOSX)
       // Mac needs them too for scrollbar related images and for sandbox
       // profiles.
+#if !defined(DISABLE_NACL)
       process_type == switches::kNaClLoaderProcess ||
+#endif
       process_type == switches::kPpapiPluginProcess ||
       process_type == switches::kPpapiBrokerProcess ||
       process_type == switches::kGpuProcess ||
@@ -598,15 +603,23 @@ void ChromeMainDelegate::InitMacCrashReporter(
             << switches::kPluginProcess << " or "
             << switches::kUtilityProcess << ", saw " << process_type;
       } else if (last_three == " NP") {
+#if !defined(DISABLE_NACL)
         CHECK_EQ(switches::kNaClLoaderProcess, process_type)
             << "Non-PIE process requires --type="
             << switches::kNaClLoaderProcess << ", saw " << process_type;
+#endif
       } else {
+#if defined(DISABLE_NACL)
+        CHECK(process_type != switches::kPluginProcess)
+            << "Non-executable-heap PIE process is intolerant of --type="
+            << switches::kPluginProcess;
+#else
         CHECK(process_type != switches::kPluginProcess &&
               process_type != switches::kNaClLoaderProcess)
             << "Non-executable-heap PIE process is intolerant of --type="
             << switches::kPluginProcess << " and "
             << switches::kNaClLoaderProcess << ", saw " << process_type;
+#endif
       }
     }
   } else {
@@ -829,7 +842,11 @@ void ChromeMainDelegate::ProcessExiting(const std::string& process_type) {
 #if defined(OS_MACOSX)
 bool ChromeMainDelegate::ProcessRegistersWithSystemProcess(
     const std::string& process_type) {
+#if defined(DISABLE_NACL)
+  return false;
+#else
   return process_type == switches::kNaClLoaderProcess;
+#endif
 }
 
 bool ChromeMainDelegate::ShouldSendMachPort(const std::string& process_type) {
@@ -839,10 +856,13 @@ bool ChromeMainDelegate::ShouldSendMachPort(const std::string& process_type) {
 
 bool ChromeMainDelegate::DelaySandboxInitialization(
     const std::string& process_type) {
+#if !defined(DISABLE_NACL)
   // NaClLoader does this in NaClMainPlatformDelegate::EnableSandbox().
   // No sandbox needed for relauncher.
-  return process_type == switches::kNaClLoaderProcess ||
-      process_type == switches::kRelauncherProcess;
+  if (process_type == switches::kNaClLoaderProcess)
+    return true;
+#endif
+  return process_type == switches::kRelauncherProcess;
 }
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
 void ChromeMainDelegate::ZygoteStarting(
