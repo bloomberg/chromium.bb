@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_JINGLE_GLUE_SOCKET_UTIL_H_
-#define REMOTING_JINGLE_GLUE_SOCKET_UTIL_H_
+#ifndef REMOTING_PROTOCOL_SOCKET_UTIL_H_
+#define REMOTING_PROTOCOL_SOCKET_UTIL_H_
 
 namespace remoting {
 
@@ -20,4 +20,4 @@ SocketErrorAction GetSocketErrorAction(int error);
 
 }  // namespace remoting
 
-#endif  // REMOTING_JINGLE_GLUE_SOCKET_UTIL_H_
+#endif  // REMOTING_PROTOCOL_SOCKET_UTIL_H_

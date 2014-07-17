@@ -12,7 +12,7 @@
 #include "remoting/client/audio_player.h"
 #include "remoting/client/plugin/delegating_signal_strategy.h"
 #include "remoting/ios/bridge/client_proxy.h"
-#include "remoting/jingle_glue/chromium_port_allocator.h"
+#include "remoting/protocol/chromium_port_allocator.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
@@ -346,10 +346,12 @@ void ClientInstance::ConnectToHostOnNetworkThread(
                              url_requester_,
                              xmpp_config_));
 
-  NetworkSettings network_settings(NetworkSettings::NAT_TRAVERSAL_ENABLED);
+  protocol::NetworkSettings network_settings(
+      protocol::NetworkSettings::NAT_TRAVERSAL_ENABLED);
 
-  scoped_ptr<ChromiumPortAllocator> port_allocator(
-      ChromiumPortAllocator::Create(url_requester_, network_settings));
+  scoped_ptr<protocol::ChromiumPortAllocator> port_allocator(
+      protocol::ChromiumPortAllocator::Create(url_requester_,
+                                              network_settings));
 
   scoped_ptr<protocol::TransportFactory> transport_factory(
       new protocol::LibjingleTransportFactory(

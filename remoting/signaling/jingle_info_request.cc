@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/jingle_glue/jingle_info_request.h"
+#include "remoting/signaling/jingle_info_request.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "net/base/net_util.h"
-#include "remoting/jingle_glue/iq_sender.h"
+#include "remoting/signaling/iq_sender.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 #include "third_party/libjingle/source/talk/xmpp/constants.h"

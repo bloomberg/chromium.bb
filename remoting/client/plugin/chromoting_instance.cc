@@ -753,7 +753,8 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
           signal_strategy_.get(),
           PepperPortAllocator::Create(this)
               .PassAs<cricket::HttpPortAllocatorBase>(),
-          NetworkSettings(NetworkSettings::NAT_TRAVERSAL_FULL)));
+          protocol::NetworkSettings(
+              protocol::NetworkSettings::NAT_TRAVERSAL_FULL)));
 
   // Create Authenticator.
   scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>

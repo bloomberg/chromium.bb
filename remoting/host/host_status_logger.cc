@@ -9,8 +9,8 @@
 #include "remoting/base/constants.h"
 #include "remoting/host/host_status_monitor.h"
 #include "remoting/host/server_log_entry_host.h"
-#include "remoting/jingle_glue/server_log_entry.h"
 #include "remoting/protocol/transport.h"
+#include "remoting/signaling/server_log_entry.h"
 
 namespace remoting {
 

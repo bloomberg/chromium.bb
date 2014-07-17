@@ -8,7 +8,7 @@
 #include <list>
 
 #include "base/callback_forward.h"
-#include "remoting/jingle_glue/network_settings.h"
+#include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/transport.h"
 
 namespace cricket {

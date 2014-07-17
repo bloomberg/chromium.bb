@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/jingle_glue/chromium_port_allocator.h"
+#include "remoting/protocol/chromium_port_allocator.h"
 
 #include "base/bind.h"
 #include "base/stl_util.h"
@@ -11,11 +11,12 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "remoting/jingle_glue/chromium_socket_factory.h"
-#include "remoting/jingle_glue/network_settings.h"
+#include "remoting/protocol/chromium_socket_factory.h"
+#include "remoting/protocol/network_settings.h"
 #include "url/gurl.h"
 
 namespace remoting {
+namespace protocol {
 
 namespace {
 
@@ -135,7 +136,7 @@ scoped_ptr<ChromiumPortAllocator> ChromiumPortAllocator::Create(
   scoped_ptr<talk_base::NetworkManager> network_manager(
       new talk_base::BasicNetworkManager());
   scoped_ptr<talk_base::PacketSocketFactory> socket_factory(
-      new remoting::ChromiumPacketSocketFactory());
+      new ChromiumPacketSocketFactory());
   scoped_ptr<ChromiumPortAllocator> result(
       new ChromiumPortAllocator(url_context, network_manager.Pass(),
                             socket_factory.Pass()));
@@ -185,4 +186,5 @@ cricket::PortAllocatorSession* ChromiumPortAllocator::CreateSessionInternal(
       stun_hosts(), relay_hosts(), relay_token(), url_context_);
 }
 
+}  // namespace protocol
 }  // namespace remoting

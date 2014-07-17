@@ -12,7 +12,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "remoting/base/constants.h"
-#include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/channel_multiplexer.h"
@@ -20,6 +19,7 @@
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/session_config.h"
+#include "remoting/signaling/iq_sender.h"
 #include "third_party/libjingle/source/talk/p2p/base/candidate.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 

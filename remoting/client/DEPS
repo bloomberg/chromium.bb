@@ -6,5 +6,5 @@ include_rules = [
 
   "+remoting/codec",
   "+remoting/protocol",
-  "+remoting/jingle_glue",
+  "+remoting/signaling",
 ]

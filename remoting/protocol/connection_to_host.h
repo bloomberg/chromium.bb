@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
-#include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/clipboard_filter.h"
 #include "remoting/protocol/errors.h"
@@ -22,6 +21,7 @@
 #include "remoting/protocol/monitored_video_stub.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_manager.h"
+#include "remoting/signaling/signal_strategy.h"
 
 namespace remoting {
 

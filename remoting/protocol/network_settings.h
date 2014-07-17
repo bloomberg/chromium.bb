@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_JINGLE_GLUE_NETWORK_SETTINGS_H_
-#define REMOTING_JINGLE_GLUE_NETWORK_SETTINGS_H_
+#ifndef REMOTING_PROTOCOL_NETWORK_SETTINGS_H_
+#define REMOTING_PROTOCOL_NETWORK_SETTINGS_H_
 
 #include <string>
 
@@ -11,6 +11,7 @@
 #include "base/logging.h"
 
 namespace remoting {
+namespace protocol {
 
 struct NetworkSettings {
 
@@ -69,6 +70,7 @@ struct NetworkSettings {
   int max_port;
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_HOST_NETWORK_SETTINGS_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/jingle_glue/log_to_server.h"
+#include "remoting/signaling/log_to_server.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "remoting/jingle_glue/mock_objects.h"
-#include "remoting/jingle_glue/server_log_entry_unittest.h"
+#include "remoting/signaling/mock_signal_strategy.h"
+#include "remoting/signaling/server_log_entry_unittest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/jingle_glue/chromium_socket_factory.h"
+#include "remoting/protocol/chromium_socket_factory.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -12,6 +12,7 @@
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
 
 namespace remoting {
+namespace protocol {
 
 class ChromiumSocketFactoryTest : public testing::Test,
                                   public sigslot::has_slots<> {
@@ -110,4 +111,5 @@ TEST_F(ChromiumSocketFactoryTest, TransientError) {
   VerifyCanSendAndReceive(sending_socket.get());
 }
 
+}  // namespace protocol
 }  // namespace remoting

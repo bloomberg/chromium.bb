@@ -10,8 +10,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/host/host_status_observer.h"
-#include "remoting/jingle_glue/log_to_server.h"
 #include "remoting/protocol/transport.h"
+#include "remoting/signaling/log_to_server.h"
 
 namespace remoting {
 

@@ -9,7 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "remoting/client/chromoting_stats.h"
-#include "remoting/jingle_glue/server_log_entry.h"
+#include "remoting/signaling/server_log_entry.h"
 
 using base::StringPrintf;
 using base::SysInfo;

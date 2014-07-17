@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/jingle_glue/network_settings.h"
+#include "remoting/protocol/network_settings.h"
 
 #include <limits.h>
 #include <stdlib.h>
@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 
 namespace remoting {
+namespace protocol {
 
 // static
   bool NetworkSettings::ParsePortRange(const std::string& port_range,
@@ -42,4 +43,5 @@ namespace remoting {
   return true;
 }
 
+}  // namespace protocol
 }  // namespace remoting

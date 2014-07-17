@@ -11,7 +11,7 @@
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/base/test_rsa_key_pair.h"
 #include "remoting/host/host_exit_codes.h"
-#include "remoting/jingle_glue/mock_objects.h"
+#include "remoting/signaling/mock_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"

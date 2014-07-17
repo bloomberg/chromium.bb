@@ -122,7 +122,7 @@
       ],
       'sources!': [
         'base/url_request_context_getter.cc',
-        'jingle_glue/chromium_socket_factory.cc',
+        'protocol/chromium_socket_factory.cc',
       ],
 
       # Include normalizing_input_filter_mac.cc excluded by the filename

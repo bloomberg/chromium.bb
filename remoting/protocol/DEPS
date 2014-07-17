@@ -6,7 +6,7 @@ include_rules = [
   "+ppapi/cpp",
   "+ppapi/utility",
   "+remoting/codec",
-  "+remoting/jingle_glue",
+  "+remoting/signaling",
   "+third_party/libjingle",
   "+third_party/protobuf/src",
 ]

@@ -6,7 +6,7 @@
 
 #include "base/strings/stringize_macros.h"
 #include "base/sys_info.h"
-#include "remoting/jingle_glue/server_log_entry.h"
+#include "remoting/signaling/server_log_entry.h"
 
 using base::SysInfo;
 

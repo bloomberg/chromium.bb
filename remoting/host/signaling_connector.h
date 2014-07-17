@@ -11,7 +11,7 @@
 #include "base/timer/timer.h"
 #include "net/base/network_change_notifier.h"
 #include "remoting/host/oauth_token_getter.h"
-#include "remoting/jingle_glue/xmpp_signal_strategy.h"
+#include "remoting/signaling/xmpp_signal_strategy.h"
 
 namespace remoting {
 

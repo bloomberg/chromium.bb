@@ -16,9 +16,9 @@
 #include "remoting/client/client_user_interface.h"
 #include "remoting/client/frame_consumer_proxy.h"
 #include "remoting/client/jni/jni_frame_consumer.h"
-#include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/cursor_shape_stub.h"
+#include "remoting/signaling/xmpp_signal_strategy.h"
 
 namespace remoting {
 

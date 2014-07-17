@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_JINGLE_GLUE_SERVER_LOG_ENTRY_H_
-#define REMOTING_JINGLE_GLUE_SERVER_LOG_ENTRY_H_
+#ifndef REMOTING_SIGNALING_SERVER_LOG_ENTRY_H_
+#define REMOTING_SIGNALING_SERVER_LOG_ENTRY_H_
 
 #include <map>
 #include <string>
@@ -61,4 +61,4 @@ class ServerLogEntry {
 
 }  // namespace remoting
 
-#endif  // REMOTING_JINGLE_GLUE_SERVER_LOG_ENTRY_H_
+#endif  // REMOTING_SIGNALING_SERVER_LOG_ENTRY_H_

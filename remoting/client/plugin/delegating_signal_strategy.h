@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/observer_list.h"
-#include "remoting/jingle_glue/signal_strategy.h"
+#include "remoting/signaling/signal_strategy.h"
 
 namespace base {
 class SingleThreadTaskRunner;

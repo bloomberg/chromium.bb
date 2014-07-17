@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "remoting/jingle_glue/signal_strategy.h"
+#include "remoting/signaling/signal_strategy.h"
 
 namespace buzz {
 class XmlElement;

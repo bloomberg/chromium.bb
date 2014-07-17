@@ -18,13 +18,11 @@
 #include "remoting/client/client_user_interface.h"
 #include "remoting/client/frame_consumer_proxy.h"
 #include "remoting/client/software_video_renderer.h"
-
 #include "remoting/ios/bridge/frame_consumer_bridge.h"
-
-#include "remoting/jingle_glue/network_settings.h"
-#include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/cursor_shape_stub.h"
+#include "remoting/protocol/network_settings.h"
+#include "remoting/signaling/xmpp_signal_strategy.h"
 
 namespace remoting {
 

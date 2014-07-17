@@ -7,7 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "remoting/host/host_status_monitor_fake.h"
-#include "remoting/jingle_glue/mock_objects.h"
+#include "remoting/signaling/mock_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"

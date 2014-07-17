@@ -14,13 +14,13 @@
 #include "base/timer/timer.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/completion_callback.h"
-#include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_factory.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/transport.h"
+#include "remoting/signaling/iq_sender.h"
 
 namespace net {
 class Socket;

@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_JINGLE_GLUE_CHROMIUM_PORT_ALLOCATOR_H_
-#define REMOTING_JINGLE_GLUE_CHROMIUM_PORT_ALLOCATOR_H_
+#ifndef REMOTING_PROTOCOL_CHROMIUM_PORT_ALLOCATOR_H_
+#define REMOTING_PROTOCOL_CHROMIUM_PORT_ALLOCATOR_H_
 
 #include <set>
 
@@ -16,6 +16,7 @@ class URLRequestContextGetter;
 }  // namespace net
 
 namespace remoting {
+namespace protocol {
 
 struct NetworkSettings;
 
@@ -50,6 +51,7 @@ class ChromiumPortAllocator : public cricket::HttpPortAllocatorBase {
   DISALLOW_COPY_AND_ASSIGN(ChromiumPortAllocator);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_HOST_HOST_PORT_ALLOCATOR_H_

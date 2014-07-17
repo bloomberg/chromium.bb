@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "remoting/base/constants.h"
-#include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/protocol/audio_reader.h"
 #include "remoting/protocol/audio_stub.h"
 #include "remoting/protocol/auth_util.h"

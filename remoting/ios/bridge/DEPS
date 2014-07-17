@@ -3,6 +3,6 @@ include_rules = [
 
   "-remoting/host",
   "+remoting/client",
-  "+remoting/jingle_glue",
   "+remoting/protocol",
-] 
+  "+remoting/signaling",
+]

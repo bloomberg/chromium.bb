@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "remoting/base/rsa_key_pair.h"
-#include "remoting/jingle_glue/signal_strategy.h"
+#include "remoting/signaling/signal_strategy.h"
 
 namespace base {
 class MessageLoopProxy;

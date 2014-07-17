@@ -4,24 +4,24 @@
 
 #include "remoting/host/session_manager_factory.h"
 
-#include "remoting/jingle_glue/chromium_port_allocator.h"
-#include "remoting/jingle_glue/chromium_socket_factory.h"
-#include "remoting/jingle_glue/network_settings.h"
+#include "remoting/protocol/chromium_port_allocator.h"
+#include "remoting/protocol/chromium_socket_factory.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
+#include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/session_manager.h"
 
 namespace remoting {
 
 scoped_ptr<protocol::SessionManager> CreateHostSessionManager(
     SignalStrategy* signal_strategy,
-    const NetworkSettings& network_settings,
+    const protocol::NetworkSettings& network_settings,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter) {
   // Use Chrome's network stack to allocate ports for peer-to-peer channels.
-  scoped_ptr<ChromiumPortAllocator> port_allocator(
-      ChromiumPortAllocator::Create(url_request_context_getter,
-          network_settings));
+  scoped_ptr<protocol::ChromiumPortAllocator> port_allocator(
+      protocol::ChromiumPortAllocator::Create(url_request_context_getter,
+                                              network_settings));
 
   scoped_ptr<protocol::TransportFactory> transport_factory(
       new protocol::LibjingleTransportFactory(

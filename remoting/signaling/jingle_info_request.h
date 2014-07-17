@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_JINGLE_GLUE_JINGLE_INFO_REQUEST_H_
-#define REMOTING_JINGLE_GLUE_JINGLE_INFO_REQUEST_H_
+#ifndef REMOTING_SIGNALING_JINGLE_INFO_REQUEST_H_
+#define REMOTING_SIGNALING_JINGLE_INFO_REQUEST_H_
 
 #include <set>
 #include <string>
@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "remoting/jingle_glue/iq_sender.h"
+#include "remoting/signaling/iq_sender.h"
 
 namespace buzz {
 class XmlElement;
@@ -61,4 +61,4 @@ class JingleInfoRequest {
 
 }  // namespace remoting
 
-#endif  // REMOTING_JINGLE_GLUE_JINGLE_INFO_REQUEST_H_
+#endif  // REMOTING_SIGNALING_JINGLE_INFO_REQUEST_H_

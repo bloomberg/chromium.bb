@@ -1,19 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_JINGLE_GLUE_FAKE_SIGNAL_STRATEGY_H_
-#define REMOTING_JINGLE_GLUE_FAKE_SIGNAL_STRATEGY_H_
+#ifndef REMOTING_SIGNALING_FAKE_SIGNAL_STRATEGY_H_
+#define REMOTING_SIGNALING_FAKE_SIGNAL_STRATEGY_H_
 
 #include <list>
 #include <queue>
 #include <string>
 
-#include "base/observer_list.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
-#include "remoting/jingle_glue/iq_sender.h"
-#include "remoting/jingle_glue/signal_strategy.h"
+#include "remoting/signaling/iq_sender.h"
+#include "remoting/signaling/signal_strategy.h"
 
 namespace remoting {
 
@@ -65,4 +65,4 @@ class FakeSignalStrategy : public SignalStrategy,
 
 }  // namespace remoting
 
-#endif  // REMOTING_JINGLE_GLUE_FAKE_SIGNAL_STRATEGY_H_
+#endif  // REMOTING_SIGNALING_FAKE_SIGNAL_STRATEGY_H_

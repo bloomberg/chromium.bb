@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/jingle_glue/chromium_socket_factory.h"
+#include "remoting/protocol/chromium_socket_factory.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -12,11 +12,12 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/udp/udp_server_socket.h"
-#include "remoting/jingle_glue/socket_util.h"
+#include "remoting/protocol/socket_util.h"
 #include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
 #include "third_party/libjingle/source/talk/base/nethelpers.h"
 
 namespace remoting {
+namespace protocol {
 
 namespace {
 
@@ -392,4 +393,5 @@ ChromiumPacketSocketFactory::CreateAsyncResolver() {
   return new talk_base::AsyncResolver();
 }
 
+}  // namespace protocol
 }  // namespace remoting

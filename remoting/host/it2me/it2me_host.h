@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/host_status_observer.h"
-#include "remoting/jingle_glue/xmpp_signal_strategy.h"
+#include "remoting/signaling/xmpp_signal_strategy.h"
 
 namespace base {
 class DictionaryValue;

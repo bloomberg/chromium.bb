@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_JINGLE_GLUE_IQ_SENDER_H_
-#define REMOTING_JINGLE_GLUE_IQ_SENDER_H_
+#ifndef REMOTING_SIGNALING_IQ_SENDER_H_
+#define REMOTING_SIGNALING_IQ_SENDER_H_
 
 #include <map>
 #include <string>
@@ -13,7 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "remoting/jingle_glue/signal_strategy.h"
+#include "remoting/signaling/signal_strategy.h"
 
 namespace base {
 class TimeDelta;
@@ -110,4 +110,4 @@ class IqRequest : public  base::SupportsWeakPtr<IqRequest> {
 
 }  // namespace remoting
 
-#endif  // REMOTING_JINGLE_GLUE_IQ_SENDER_H_
+#endif  // REMOTING_SIGNALING_IQ_SENDER_H_

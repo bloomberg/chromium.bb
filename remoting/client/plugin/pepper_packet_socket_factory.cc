@@ -12,7 +12,7 @@
 #include "ppapi/cpp/udp_socket.h"
 #include "ppapi/utility/completion_callback_factory.h"
 #include "remoting/client/plugin/pepper_util.h"
-#include "remoting/jingle_glue/socket_util.h"
+#include "remoting/protocol/socket_util.h"
 #include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
 
 namespace remoting {

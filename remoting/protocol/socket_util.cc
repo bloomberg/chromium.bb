@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/jingle_glue/socket_util.h"
+#include "remoting/protocol/socket_util.h"
 
 #include "net/base/net_errors.h"
 

@@ -11,9 +11,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "net/cert/x509_certificate.h"
-#include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/session_manager.h"
+#include "remoting/signaling/signal_strategy.h"
 
 namespace pp {
 class Instance;

@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/jingle_glue/network_settings.h"
+#include "remoting/protocol/network_settings.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
+namespace protocol {
 
 TEST(ParsePortRange, Basic) {
   int min, max;
@@ -38,4 +40,5 @@ TEST(ParsePortRange, Basic) {
   EXPECT_FALSE(NetworkSettings::ParsePortRange("1foo-2bar", &min, &max));
 }
 
+}  // namespace protocol
 }  // namespace remoting

@@ -7,8 +7,8 @@
 #include "base/sys_info.h"
 #include "remoting/client/chromoting_stats.h"
 #include "remoting/client/server_log_entry_client.h"
-#include "remoting/jingle_glue/server_log_entry.h"
-#include "remoting/jingle_glue/server_log_entry_unittest.h"
+#include "remoting/signaling/server_log_entry.h"
+#include "remoting/signaling/server_log_entry_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 

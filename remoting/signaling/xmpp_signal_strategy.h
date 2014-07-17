@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,10 @@
 //
 // This class is not threadsafe.
 
-#ifndef REMOTING_JINGLE_GLUE_XMPP_SIGNAL_STRATEGY_H_
-#define REMOTING_JINGLE_GLUE_XMPP_SIGNAL_STRATEGY_H_
+#ifndef REMOTING_SIGNALING_XMPP_SIGNAL_STRATEGY_H_
+#define REMOTING_SIGNALING_XMPP_SIGNAL_STRATEGY_H_
 
-#include "remoting/jingle_glue/signal_strategy.h"
+#include "remoting/signaling/signal_strategy.h"
 
 #include <vector>
 
@@ -112,4 +112,4 @@ class XmppSignalStrategy : public base::NonThreadSafe,
 
 }  // namespace remoting
 
-#endif  // REMOTING_JINGLE_GLUE_XMPP_SIGNAL_STRATEGY_H_
+#endif  // REMOTING_SIGNALING_XMPP_SIGNAL_STRATEGY_H_

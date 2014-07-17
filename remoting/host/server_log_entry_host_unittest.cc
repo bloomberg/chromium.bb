@@ -5,8 +5,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringize_macros.h"
 #include "remoting/host/server_log_entry_host.h"
-#include "remoting/jingle_glue/server_log_entry.h"
-#include "remoting/jingle_glue/server_log_entry_unittest.h"
+#include "remoting/signaling/server_log_entry.h"
+#include "remoting/signaling/server_log_entry_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 

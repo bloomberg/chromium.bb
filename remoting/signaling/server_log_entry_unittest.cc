@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/jingle_glue/server_log_entry_unittest.h"
+#include "remoting/signaling/server_log_entry_unittest.h"
 
 #include <sstream>
 

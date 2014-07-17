@@ -7,9 +7,9 @@
 
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
-#include "remoting/jingle_glue/log_to_server.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/errors.h"
+#include "remoting/signaling/log_to_server.h"
 
 namespace remoting {
 

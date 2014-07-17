@@ -21,9 +21,9 @@
 #include "remoting/host/policy_hack/policy_watcher.h"
 #include "remoting/host/register_support_host_request.h"
 #include "remoting/host/session_manager_factory.h"
-#include "remoting/jingle_glue/network_settings.h"
-#include "remoting/jingle_glue/server_log_entry.h"
 #include "remoting/protocol/it2me_host_authenticator_factory.h"
+#include "remoting/protocol/network_settings.h"
+#include "remoting/signaling/server_log_entry.h"
 
 namespace remoting {
 
@@ -184,13 +184,13 @@ void It2MeHost::FinishConnect() {
 
   // If NAT traversal is off then limit port range to allow firewall pin-holing.
   HOST_LOG << "NAT state: " << nat_traversal_enabled_;
-  NetworkSettings network_settings(
+  protocol::NetworkSettings network_settings(
      nat_traversal_enabled_ ?
-     NetworkSettings::NAT_TRAVERSAL_FULL :
-     NetworkSettings::NAT_TRAVERSAL_DISABLED);
+     protocol::NetworkSettings::NAT_TRAVERSAL_FULL :
+     protocol::NetworkSettings::NAT_TRAVERSAL_DISABLED);
   if (!nat_traversal_enabled_) {
-    network_settings.min_port = NetworkSettings::kDefaultMinPort;
-    network_settings.max_port = NetworkSettings::kDefaultMaxPort;
+    network_settings.min_port = protocol::NetworkSettings::kDefaultMinPort;
+    network_settings.max_port = protocol::NetworkSettings::kDefaultMaxPort;
   }
 
   // Create the host.

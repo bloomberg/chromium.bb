@@ -68,11 +68,11 @@
 #include "remoting/host/token_validator_factory_impl.h"
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/host/username.h"
-#include "remoting/jingle_glue/network_settings.h"
-#include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
+#include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/token_validator.h"
+#include "remoting/signaling/xmpp_signal_strategy.h"
 
 #if defined(OS_POSIX)
 #include <signal.h>
@@ -99,7 +99,9 @@
 #include "remoting/host/pairing_registry_delegate_win.h"
 #include "remoting/host/win/session_desktop_environment.h"
 #endif  // defined(OS_WIN)
+
 using remoting::protocol::PairingRegistry;
+using remoting::protocol::NetworkSettings;
 
 namespace {
 

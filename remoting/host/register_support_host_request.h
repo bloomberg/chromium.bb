@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/base/rsa_key_pair.h"
-#include "remoting/jingle_glue/signal_strategy.h"
+#include "remoting/signaling/signal_strategy.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace buzz {

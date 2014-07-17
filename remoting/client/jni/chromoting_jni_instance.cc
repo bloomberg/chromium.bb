@@ -17,13 +17,13 @@
 #include "remoting/client/jni/chromoting_jni_runtime.h"
 #include "remoting/client/software_video_renderer.h"
 #include "remoting/client/token_fetcher_proxy.h"
-#include "remoting/jingle_glue/chromium_port_allocator.h"
-#include "remoting/jingle_glue/chromium_socket_factory.h"
-#include "remoting/jingle_glue/network_settings.h"
-#include "remoting/jingle_glue/server_log_entry.h"
+#include "remoting/protocol/chromium_port_allocator.h"
+#include "remoting/protocol/chromium_socket_factory.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
+#include "remoting/protocol/network_settings.h"
+#include "remoting/signaling/server_log_entry.h"
 
 namespace remoting {
 
@@ -376,12 +376,13 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
                              signaling_.get(),
                              ServiceUrls::GetInstance()->directory_bot_jid()));
 
-  NetworkSettings network_settings(NetworkSettings::NAT_TRAVERSAL_FULL);
+  protocol::NetworkSettings network_settings(
+      protocol::NetworkSettings::NAT_TRAVERSAL_FULL);
 
   // Use Chrome's network stack to allocate ports for peer-to-peer channels.
-  scoped_ptr<ChromiumPortAllocator> port_allocator(
-      ChromiumPortAllocator::Create(jni_runtime_->url_requester(),
-                                    network_settings));
+  scoped_ptr<protocol::ChromiumPortAllocator> port_allocator(
+      protocol::ChromiumPortAllocator::Create(jni_runtime_->url_requester(),
+                                              network_settings));
 
   scoped_ptr<protocol::TransportFactory> transport_factory(
       new protocol::LibjingleTransportFactory(
