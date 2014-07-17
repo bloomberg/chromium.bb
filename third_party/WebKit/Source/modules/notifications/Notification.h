@@ -38,7 +38,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
@@ -116,16 +116,16 @@ private:
     KURL m_iconUrl;
 
     enum NotificationState {
-        Idle = 0,
-        Showing = 1,
-        Closed = 2,
+        NotificationStateIdle,
+        NotificationStateShowing,
+        NotificationStateClosed
     };
 
     NotificationState m_state;
 
     NotificationClient* m_client;
 
-    OwnPtr<AsyncMethodRunner<Notification> > m_asyncRunner;
+    AsyncMethodRunner<Notification> m_asyncRunner;
 };
 
 } // namespace WebCore

@@ -70,14 +70,14 @@ Notification::Notification(const String& title, ExecutionContext* context, Notif
     : ActiveDOMObject(context)
     , m_title(title)
     , m_dir("auto")
-    , m_state(Idle)
+    , m_state(NotificationStateIdle)
     , m_client(client)
-    , m_asyncRunner(adoptPtr(new AsyncMethodRunner<Notification>(this, &Notification::show)))
+    , m_asyncRunner(this, &Notification::show)
 {
     ASSERT(m_client);
     ScriptWrappable::init(this);
 
-    m_asyncRunner->runAsync();
+    m_asyncRunner.runAsync();
 }
 
 Notification::~Notification()
@@ -86,7 +86,7 @@ Notification::~Notification()
 
 void Notification::show()
 {
-    ASSERT(m_state == Idle);
+    ASSERT(m_state == NotificationStateIdle);
     if (!toDocument(executionContext())->page())
         return;
 
@@ -96,18 +96,18 @@ void Notification::show()
     }
 
     if (m_client->show(this))
-        m_state = Showing;
+        m_state = NotificationStateShowing;
 }
 
 void Notification::close()
 {
     switch (m_state) {
-    case Idle:
+    case NotificationStateIdle:
         break;
-    case Showing:
+    case NotificationStateShowing:
         m_client->close(this);
         break;
-    case Closed:
+    case NotificationStateClosed:
         break;
     }
 }
@@ -132,7 +132,7 @@ void Notification::dispatchErrorEvent()
 void Notification::dispatchCloseEvent()
 {
     dispatchEvent(Event::create(EventTypeNames::close));
-    m_state = Closed;
+    m_state = NotificationStateClosed;
 }
 
 TextDirection Notification::direction() const
@@ -174,7 +174,7 @@ void Notification::requestPermission(ExecutionContext* context, PassOwnPtr<Notif
 
 bool Notification::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
-    ASSERT(m_state != Closed);
+    ASSERT(m_state != NotificationStateClosed);
 
     return EventTarget::dispatchEvent(event);
 }
@@ -186,19 +186,19 @@ const AtomicString& Notification::interfaceName() const
 
 void Notification::stop()
 {
-    if (m_client)
+    m_state = NotificationStateClosed;
+
+    if (m_client) {
         m_client->notificationObjectDestroyed(this);
+        m_client = 0;
+    }
 
-    if (m_asyncRunner)
-        m_asyncRunner->stop();
-
-    m_client = 0;
-    m_state = Closed;
+    m_asyncRunner.stop();
 }
 
 bool Notification::hasPendingActivity() const
 {
-    return m_state == Showing || (m_asyncRunner && m_asyncRunner->isActive());
+    return m_state == NotificationStateShowing || m_asyncRunner.isActive();
 }
 
 } // namespace WebCore
