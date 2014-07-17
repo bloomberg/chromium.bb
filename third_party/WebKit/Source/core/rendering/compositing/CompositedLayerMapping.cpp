@@ -1935,10 +1935,8 @@ void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r)
 const GraphicsLayerPaintInfo* CompositedLayerMapping::containingSquashedLayer(const RenderObject* renderObject, const Vector<GraphicsLayerPaintInfo>& layers)
 {
     for (size_t i = 0; i < layers.size(); ++i) {
-        if (renderObject->isDescendantOf(layers[i].renderLayer->renderer())) {
+        if (renderObject->isDescendantOf(layers[i].renderLayer->renderer()))
             return &layers[i];
-            break;
-        }
     }
     return 0;
 }
