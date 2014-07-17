@@ -1,0 +1,10 @@
+Test that interrupting a smooth scroll on a listbox works with both scroll behaviors and with input
+
+
+This is a testharness.js-based test.
+FAIL instant scroll assert_equals: expected 3400 but got 6800
+FAIL smooth scroll assert_equals: expected 3400 but got 6800
+FAIL touch scroll assert_equals: expected 3400 but got 6800
+FAIL wheel scroll assert_equals: expected 3400 but got 6800
+Harness: the test ran to completion.
+
