@@ -94,10 +94,10 @@ scoped_ptr<base::Value> TreePriorityAsValue(TreePriority prio) {
   case NEW_CONTENT_TAKES_PRIORITY:
       return scoped_ptr<base::Value>(new base::StringValue(
           "NEW_CONTENT_TAKES_PRIORITY"));
+  default:
+    DCHECK(false) << "Unrecognized priority value " << prio;
+    return scoped_ptr<base::Value>(new base::StringValue("<unknown>"));
   }
-  DCHECK(false) << "Unrecognized priority value " << prio;
-  return scoped_ptr<base::Value>(new base::StringValue(
-      "<unknown>"));
 }
 
 scoped_ptr<base::Value> GlobalStateThatImpactsTilePriority::AsValue() const {

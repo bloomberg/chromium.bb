@@ -134,8 +134,8 @@ scoped_ptr<base::Value> TileMemoryLimitPolicyAsValue(
 enum TreePriority {
   SAME_PRIORITY_FOR_BOTH_TREES,
   SMOOTHNESS_TAKES_PRIORITY,
-  NEW_CONTENT_TAKES_PRIORITY
-
+  NEW_CONTENT_TAKES_PRIORITY,
+  NUM_TREE_PRIORITIES
   // Be sure to update TreePriorityAsValue when adding new fields.
 };
 scoped_ptr<base::Value> TreePriorityAsValue(TreePriority prio);

@@ -596,6 +596,8 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
         mts.bin = tree_bin[PENDING_TREE];
         tile_priority = pending_priority;
         break;
+      default:
+        NOTREACHED();
     }
 
     // Bump up the priority if we determined it's NEVER_BIN on one tree,
@@ -1317,6 +1319,8 @@ TileManager::RasterTileIterator::PairedPictureLayerIterator::NextTileIterator(
         return std::make_pair(&active_iterator, ACTIVE_TREE);
       return std::make_pair(&pending_iterator, PENDING_TREE);
     }
+    default:
+      NOTREACHED();
   }
 
   NOTREACHED();
@@ -1534,12 +1538,16 @@ bool TileManager::EvictionTileIterator::EvictionOrderComparator::operator()(
 
   // Now we have to return true iff b is lower priority than a.
 
-  // If the bin is the same but the resolution is not, then the order will be
-  // determined by whether we prioritize low res or not.
+  // If the priority bin differs, b is lower priority if it has the higher
+  // priority bin.
+  if (a_priority.priority_bin != b_priority.priority_bin)
+    return b_priority.priority_bin > a_priority.priority_bin;
+
+  // Otherwise if the resolution differs, then the order will be determined by
+  // whether we prioritize low res or not.
   // TODO(vmpstr): Remove this when TilePriority is no longer a member of Tile
   // class but instead produced by the iterators.
-  if (b_priority.priority_bin == a_priority.priority_bin &&
-      b_priority.resolution != a_priority.resolution) {
+  if (b_priority.resolution != a_priority.resolution) {
     // Non ideal resolution should be sorted higher than other resolutions.
     if (a_priority.resolution == NON_IDEAL_RESOLUTION)
       return false;
@@ -1552,7 +1560,15 @@ bool TileManager::EvictionTileIterator::EvictionOrderComparator::operator()(
 
     return a_priority.resolution == HIGH_RESOLUTION;
   }
-  return a_priority.IsHigherPriorityThan(b_priority);
+
+  // Otherwise if the occlusion differs, b is lower priority if it is occluded.
+  bool a_is_occluded = a_tile->is_occluded_for_tree_priority(tree_priority_);
+  bool b_is_occluded = b_tile->is_occluded_for_tree_priority(tree_priority_);
+  if (a_is_occluded != b_is_occluded)
+    return b_is_occluded;
+
+  // b is lower priorty if it is farther from visible.
+  return b_priority.distance_to_visible > a_priority.distance_to_visible;
 }
 
 void TileManager::SetRasterizerForTesting(Rasterizer* rasterizer) {

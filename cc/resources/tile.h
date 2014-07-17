@@ -48,9 +48,10 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
         return priority_[PENDING_TREE];
       case SAME_PRIORITY_FOR_BOTH_TREES:
         return combined_priority();
+      default:
+        NOTREACHED();
+        return TilePriority();
     }
-    NOTREACHED();
-    return TilePriority();
   }
 
   TilePriority combined_priority() const {
@@ -59,6 +60,26 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   }
 
   void SetPriority(WhichTree tree, const TilePriority& priority);
+
+  void set_is_occluded(WhichTree tree, bool is_occluded) {
+    is_occluded_[tree] = is_occluded;
+  }
+
+  bool is_occluded(WhichTree tree) const { return is_occluded_[tree]; }
+
+  bool is_occluded_for_tree_priority(TreePriority tree_priority) const {
+    switch (tree_priority) {
+      case SMOOTHNESS_TAKES_PRIORITY:
+        return is_occluded_[ACTIVE_TREE];
+      case NEW_CONTENT_TAKES_PRIORITY:
+        return is_occluded_[PENDING_TREE];
+      case SAME_PRIORITY_FOR_BOTH_TREES:
+        return is_occluded_[ACTIVE_TREE] && is_occluded_[PENDING_TREE];
+      default:
+        NOTREACHED();
+        return false;
+    }
+  }
 
   void MarkRequiredForActivation();
 
@@ -129,12 +150,6 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   ManagedTileState::TileVersion& GetTileVersionForTesting(RasterMode mode) {
     return managed_state_.tile_versions[mode];
   }
-
-  void set_is_occluded(WhichTree tree, bool is_occluded) {
-    is_occluded_[tree] = is_occluded;
-  }
-
-  bool is_occluded(WhichTree tree) const { return is_occluded_[tree]; }
 
  private:
   friend class TileManager;

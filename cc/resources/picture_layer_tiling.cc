@@ -35,11 +35,23 @@ class TileEvictionOrder {
     const TilePriority& b_priority =
         b->priority_for_tree_priority(tree_priority_);
 
-    if (a_priority.priority_bin == b_priority.priority_bin &&
-        a->required_for_activation() != b->required_for_activation()) {
+    // Evict a before b if their priority bins differ and a has the higher
+    // priority bin.
+    if (a_priority.priority_bin != b_priority.priority_bin)
+      return a_priority.priority_bin > b_priority.priority_bin;
+
+    // Or if a is not required and b is required.
+    if (a->required_for_activation() != b->required_for_activation())
       return b->required_for_activation();
-    }
-    return b_priority.IsHigherPriorityThan(a_priority);
+
+    // Or if a is occluded and b is unoccluded.
+    bool a_is_occluded = a->is_occluded_for_tree_priority(tree_priority_);
+    bool b_is_occluded = b->is_occluded_for_tree_priority(tree_priority_);
+    if (a_is_occluded != b_is_occluded)
+      return a_is_occluded;
+
+    // Or if a is farther away from visible.
+    return a_priority.distance_to_visible > b_priority.distance_to_visible;
   }
 
  private:
