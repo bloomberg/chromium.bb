@@ -28,7 +28,7 @@ function test()
     InspectorTest.invokeWithTracing(WebInspector.TracingTimelineModel.defaultTracingCategoryFilter, "doActions", onTracingComplete);
 
     var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
-    var layerTree = new WebInspector.TracingLayerTree(target);
+    var layerTree = new WebInspector.TracingLayerTree(target.weakReference());
 
     function onTracingComplete()
     {
