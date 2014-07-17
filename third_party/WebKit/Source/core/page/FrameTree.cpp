@@ -38,7 +38,7 @@ namespace WebCore {
 
 namespace {
 
-const unsigned invalidChildCount = ~0;
+const unsigned invalidChildCount = ~0U;
 
 } // namespace
 

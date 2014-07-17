@@ -182,7 +182,8 @@ TreeScopeEventContext* EventPath::ensureTreeScopeEventContext(Node* currentTarge
     bool isNewEntry;
     {
         TreeScopeEventContextMap::AddResult addResult = treeScopeEventContextMap.add(treeScope, nullptr);
-        if ((isNewEntry = addResult.isNewEntry))
+        isNewEntry = addResult.isNewEntry;
+        if (isNewEntry)
             addResult.storedValue->value = TreeScopeEventContext::create(*treeScope);
         treeScopeEventContext = addResult.storedValue->value.get();
     }

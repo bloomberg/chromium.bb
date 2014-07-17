@@ -1378,8 +1378,8 @@ AXObject* AXRenderObject::nextSibling() const
 
     RenderObject* nextSibling = 0;
 
-    RenderInline* inlineContinuation;
-    if (m_renderer->isRenderBlock() && (inlineContinuation = toRenderBlock(m_renderer)->inlineElementContinuation())) {
+    RenderInline* inlineContinuation = m_renderer->isRenderBlock() ? toRenderBlock(m_renderer)->inlineElementContinuation() : 0;
+    if (inlineContinuation) {
         // Case 1: node is a block and has an inline continuation. Next sibling is the inline continuation's first child.
         nextSibling = firstChildConsideringContinuation(inlineContinuation);
     } else if (m_renderer->isAnonymousBlock() && lastChildHasContinuation(m_renderer)) {
@@ -1953,23 +1953,26 @@ RenderObject* AXRenderObject::renderParentObject() const
     if (!m_renderer)
         return 0;
 
-    RenderObject* parent = m_renderer->parent();
-
-    RenderObject* startOfConts = 0;
-    RenderObject* firstChild = 0;
-    if (m_renderer->isRenderBlock() && (startOfConts = startOfContinuations(m_renderer))) {
+    RenderObject* startOfConts = m_renderer->isRenderBlock() ? startOfContinuations(m_renderer) : 0;
+    if (startOfConts) {
         // Case 1: node is a block and is an inline's continuation. Parent
         // is the start of the continuation chain.
-        parent = startOfConts;
-    } else if (parent && parent->isRenderInline() && (startOfConts = startOfContinuations(parent))) {
+        return startOfConts;
+    }
+
+    RenderObject* parent = m_renderer->parent();
+    startOfConts = parent && parent->isRenderInline() ? startOfContinuations(parent) : 0;
+    if (startOfConts) {
         // Case 2: node's parent is an inline which is some node's continuation; parent is
         // the earliest node in the continuation chain.
-        parent = startOfConts;
-    } else if (parent && (firstChild = parent->slowFirstChild()) && firstChild->node()) {
+        return startOfConts;
+    }
+
+    RenderObject* firstChild = parent ? parent->slowFirstChild() : 0;
+    if (firstChild && firstChild->node()) {
         // Case 3: The first sibling is the beginning of a continuation chain. Find the origin of that continuation.
         // Get the node's renderer and follow that continuation chain until the first child is found.
-        RenderObject* nodeRenderFirstChild = firstChild->node()->renderer();
-        while (nodeRenderFirstChild != firstChild) {
+        for (RenderObject* nodeRenderFirstChild = firstChild->node()->renderer(); nodeRenderFirstChild != firstChild; nodeRenderFirstChild = firstChild->node()->renderer()) {
             for (RenderObject* contsTest = nodeRenderFirstChild; contsTest; contsTest = nextContinuation(contsTest)) {
                 if (contsTest == firstChild) {
                     parent = nodeRenderFirstChild->parent();
@@ -1982,7 +1985,6 @@ RenderObject* AXRenderObject::renderParentObject() const
             firstChild = newFirstChild;
             if (!firstChild->node())
                 break;
-            nodeRenderFirstChild = firstChild->node()->renderer();
         }
     }
 

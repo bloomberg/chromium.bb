@@ -935,10 +935,11 @@ static bool shouldEmitNewlineAfterNode(Node& node)
     // Check if this is the very last renderer in the document.
     // If so, then we should not emit a newline.
     Node* next = &node;
-    while ((next = NodeTraversal::nextSkippingChildren(*next))) {
-        if (next->renderer())
+    do {
+        next = NodeTraversal::nextSkippingChildren(*next);
+        if (next && next->renderer())
             return true;
-    }
+    } while (next);
     return false;
 }
 

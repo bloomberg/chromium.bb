@@ -1288,19 +1288,15 @@ VisiblePosition nextParagraphPosition(const VisiblePosition& p, int x)
 VisiblePosition startOfBlock(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
 {
     Position position = visiblePosition.deepEquivalent();
-    Node* startBlock;
-    if (!position.containerNode() || !(startBlock = enclosingBlock(position.containerNode(), rule)))
-        return VisiblePosition();
-    return VisiblePosition(firstPositionInNode(startBlock));
+    Node* startBlock = position.containerNode() ? enclosingBlock(position.containerNode(), rule) : 0;
+    return startBlock ? VisiblePosition(firstPositionInNode(startBlock)) : VisiblePosition();
 }
 
 VisiblePosition endOfBlock(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
 {
     Position position = visiblePosition.deepEquivalent();
-    Node* endBlock;
-    if (!position.containerNode() || !(endBlock = enclosingBlock(position.containerNode(), rule)))
-        return VisiblePosition();
-    return VisiblePosition(lastPositionInNode(endBlock));
+    Node* endBlock = position.containerNode() ? enclosingBlock(position.containerNode(), rule) : 0;
+    return endBlock ? VisiblePosition(lastPositionInNode(endBlock)) : VisiblePosition();
 }
 
 bool inSameBlock(const VisiblePosition &a, const VisiblePosition &b)

@@ -500,10 +500,10 @@ static LayoutRect rectToAbsoluteCoordinates(LocalFrame* initialFrame, const Layo
         if (!frame->isLocalFrame())
             continue;
         // FIXME: Spatial navigation is broken for OOPI.
-        if (Element* element = frame->deprecatedLocalOwner()) {
-            do {
+        Element* element = frame->deprecatedLocalOwner();
+        if (element) {
+            for (; element; element = element->offsetParent())
                 rect.move(element->offsetLeft(), element->offsetTop());
-            } while ((element = element->offsetParent()));
             rect.move((-toLocalFrame(frame)->view()->scrollOffset()));
         }
     }

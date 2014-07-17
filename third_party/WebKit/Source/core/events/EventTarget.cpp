@@ -224,40 +224,34 @@ void EventTarget::countLegacyEvents(const AtomicString& legacyTypeName, EventLis
     UseCounter::Feature unprefixedFeature;
     UseCounter::Feature prefixedFeature;
     UseCounter::Feature prefixedAndUnprefixedFeature;
-    bool shouldCount = false;
-
     if (legacyTypeName == EventTypeNames::webkitTransitionEnd) {
         prefixedFeature = UseCounter::PrefixedTransitionEndEvent;
         unprefixedFeature = UseCounter::UnprefixedTransitionEndEvent;
         prefixedAndUnprefixedFeature = UseCounter::PrefixedAndUnprefixedTransitionEndEvent;
-        shouldCount = true;
     } else if (legacyTypeName == EventTypeNames::webkitAnimationEnd) {
         prefixedFeature = UseCounter::PrefixedAnimationEndEvent;
         unprefixedFeature = UseCounter::UnprefixedAnimationEndEvent;
         prefixedAndUnprefixedFeature = UseCounter::PrefixedAndUnprefixedAnimationEndEvent;
-        shouldCount = true;
     } else if (legacyTypeName == EventTypeNames::webkitAnimationStart) {
         prefixedFeature = UseCounter::PrefixedAnimationStartEvent;
         unprefixedFeature = UseCounter::UnprefixedAnimationStartEvent;
         prefixedAndUnprefixedFeature = UseCounter::PrefixedAndUnprefixedAnimationStartEvent;
-        shouldCount = true;
     } else if (legacyTypeName == EventTypeNames::webkitAnimationIteration) {
         prefixedFeature = UseCounter::PrefixedAnimationIterationEvent;
         unprefixedFeature = UseCounter::UnprefixedAnimationIterationEvent;
         prefixedAndUnprefixedFeature = UseCounter::PrefixedAndUnprefixedAnimationIterationEvent;
-        shouldCount = true;
+    } else {
+        return;
     }
 
-    if (shouldCount) {
-        if (LocalDOMWindow* executingWindow = this->executingWindow()) {
-            if (legacyListenersVector) {
-                if (listenersVector)
-                    UseCounter::count(executingWindow->document(), prefixedAndUnprefixedFeature);
-                else
-                    UseCounter::count(executingWindow->document(), prefixedFeature);
-            } else if (listenersVector) {
-                UseCounter::count(executingWindow->document(), unprefixedFeature);
-            }
+    if (LocalDOMWindow* executingWindow = this->executingWindow()) {
+        if (legacyListenersVector) {
+            if (listenersVector)
+                UseCounter::count(executingWindow->document(), prefixedAndUnprefixedFeature);
+            else
+                UseCounter::count(executingWindow->document(), prefixedFeature);
+        } else if (listenersVector) {
+            UseCounter::count(executingWindow->document(), unprefixedFeature);
         }
     }
 }
