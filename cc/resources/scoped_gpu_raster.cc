@@ -30,6 +30,7 @@ void ScopedGpuRaster::BeginGpuRaster() {
   gl->PushGroupMarkerEXT(0, "GpuRasterization");
 
   class GrContext* gr_context = context_provider_->GrContext();
+  // TODO(sohanjg): Remove when TestContextProvider gives a GrContext.
   if (gr_context)
     gr_context->resetContext();
 }
@@ -38,6 +39,7 @@ void ScopedGpuRaster::EndGpuRaster() {
   GLES2Interface* gl = context_provider_->ContextGL();
 
   class GrContext* gr_context = context_provider_->GrContext();
+  // TODO(sohanjg): Remove when TestContextProvider gives a GrContext.
   if (gr_context)
     gr_context->flush();
 
