@@ -20,6 +20,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/events/event_target_iterator.h"
@@ -112,6 +113,7 @@ View::View()
       root_bounds_dirty_(true),
       clip_insets_(0, 0, 0, 0),
       needs_layout_(true),
+      snap_layer_to_pixel_boundary_(false),
       flip_canvas_on_paint_for_rtl_ui_(false),
       paint_to_layer_(false),
       accelerator_focus_manager_(NULL),
@@ -570,6 +572,19 @@ void View::SetLayoutManager(LayoutManager* layout_manager) {
   layout_manager_.reset(layout_manager);
   if (layout_manager_.get())
     layout_manager_->Installed(this);
+}
+
+void View::SnapLayerToPixelBoundary() {
+  if (!layer())
+    return;
+
+  if (snap_layer_to_pixel_boundary_ && layer()->parent() &&
+      layer()->GetCompositor()) {
+    ui::SnapLayerToPhysicalPixelBoundary(layer()->parent(), layer());
+  } else {
+    // Reset the offset.
+    layer()->SetSubpixelPositionOffset(gfx::Vector2dF());
+  }
 }
 
 // Attributes ------------------------------------------------------------------
@@ -1518,6 +1533,9 @@ void View::OnPaintLayer(gfx::Canvas* canvas) {
 }
 
 void View::OnDeviceScaleFactorChanged(float device_scale_factor) {
+  snap_layer_to_pixel_boundary_ =
+      (device_scale_factor - std::floor(device_scale_factor)) != 0.0f;
+  SnapLayerToPixelBoundary();
   // Repainting with new scale factor will paint the content at the right scale.
 }
 
@@ -2038,6 +2056,7 @@ void View::RemoveDescendantToNotify(View* view) {
 
 void View::SetLayerBounds(const gfx::Rect& bounds) {
   layer()->SetBounds(bounds);
+  SnapLayerToPixelBoundary();
 }
 
 void View::SetRootBoundsDirty(bool origin_changed) {

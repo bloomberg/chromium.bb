@@ -5,6 +5,8 @@
 #include "ui/compositor/dip_util.h"
 
 #include "base/command_line.h"
+#include "cc/base/math_util.h"
+#include "cc/layers/layer.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/layer.h"
@@ -68,6 +70,47 @@ gfx::Rect ConvertRectToPixel(const Layer* layer,
   return gfx::ToEnclosingRect(
       gfx::RectF(gfx::ScalePoint(rect_in_dip.origin(), scale),
                  gfx::ScaleSize(rect_in_dip.size(), scale)));
+}
+
+#if !defined(NDEBUG)
+namespace {
+
+void CheckSnapped(float snapped_position) {
+  const float kEplison = 0.0001f;
+  float diff = std::abs(snapped_position - static_cast<int>(snapped_position));
+  DCHECK_LT(diff, kEplison);
+}
+
+}  // namespace
+#endif
+
+void SnapLayerToPhysicalPixelBoundary(ui::Layer* snapped_layer,
+                                      ui::Layer* layer_to_snap) {
+  DCHECK_NE(snapped_layer, layer_to_snap);
+  DCHECK(snapped_layer);
+  DCHECK(snapped_layer->Contains(layer_to_snap));
+
+  gfx::Point view_offset_dips = layer_to_snap->GetTargetBounds().origin();
+  ui::Layer::ConvertPointToLayer(
+      layer_to_snap->parent(), snapped_layer, &view_offset_dips);
+  gfx::PointF view_offset = view_offset_dips;
+
+  float scale_factor = GetDeviceScaleFactor(layer_to_snap);
+  view_offset.Scale(scale_factor);
+  gfx::PointF view_offset_snapped(cc::MathUtil::Round(view_offset.x()),
+                                  cc::MathUtil::Round(view_offset.y()));
+
+  gfx::Vector2dF fudge = view_offset_snapped - view_offset;
+  fudge.Scale(1.0 / scale_factor);
+  layer_to_snap->SetSubpixelPositionOffset(fudge);
+#if !defined(NDEBUG)
+  gfx::Point p;
+  Layer::ConvertPointToLayer(layer_to_snap->parent(), snapped_layer, &p);
+  cc::Layer* cc_layer = layer_to_snap->cc_layer();
+  gfx::PointF origin = cc_layer->position();
+  CheckSnapped((p.x() + origin.x()) * scale_factor);
+  CheckSnapped((p.y() + origin.y()) * scale_factor);
+#endif
 }
 
 }  // namespace ui

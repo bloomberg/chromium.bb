@@ -380,6 +380,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   LayoutManager* GetLayoutManager() const;
   void SetLayoutManager(LayoutManager* layout);
 
+  // Adjust the layer's offset so that it snaps to the physical pixel boundary.
+  // This has no effect if the view does not have an associated layer.
+  void SnapLayerToPixelBoundary();
+
   // Attributes ----------------------------------------------------------------
 
   // The view class name.
@@ -1523,6 +1527,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // The View's LayoutManager defines the sizing heuristics applied to child
   // Views. The default is absolute positioning according to bounds_.
   scoped_ptr<LayoutManager> layout_manager_;
+
+  // Whether this View's layer should be snapped to the pixel boundary.
+  bool snap_layer_to_pixel_boundary_;
 
   // Painting ------------------------------------------------------------------
 

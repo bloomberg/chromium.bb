@@ -23,6 +23,7 @@
 #include "cc/test/pixel_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor_observer.h"
+#include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
@@ -1552,6 +1553,46 @@ TEST_F(LayerWithDelegateTest, DestroyingLayerRemovesTheAnimatorFromCollection) {
 
   child.reset();
   EXPECT_FALSE(compositor()->layer_animator_collection()->HasActiveAnimators());
+}
+
+namespace {
+
+std::string Vector2dFTo100thPercisionString(const gfx::Vector2dF& vector) {
+  return base::StringPrintf("%.2f %0.2f", vector.x(), vector.y());
+}
+
+}  // namespace
+
+TEST_F(LayerWithRealCompositorTest, SnapLayerToPixels) {
+  scoped_ptr<Layer> root(CreateLayer(LAYER_TEXTURED));
+  scoped_ptr<Layer> c1(CreateLayer(LAYER_TEXTURED));
+  scoped_ptr<Layer> c11(CreateLayer(LAYER_TEXTURED));
+
+  GetCompositor()->SetScaleAndSize(1.25f, gfx::Size(100, 100));
+  GetCompositor()->SetRootLayer(root.get());
+  root->Add(c1.get());
+  c1->Add(c11.get());
+
+  root->SetBounds(gfx::Rect(0, 0, 100, 100));
+  c1->SetBounds(gfx::Rect(1, 1, 10, 10));
+  c11->SetBounds(gfx::Rect(1, 1, 10, 10));
+  SnapLayerToPhysicalPixelBoundary(root.get(), c11.get());
+  // 0.5 at 1.25 scale : (1 - 0.25 + 0.25) / 1.25 = 0.4
+  EXPECT_EQ("0.40 0.40",
+            Vector2dFTo100thPercisionString(c11->subpixel_position_offset()));
+
+  GetCompositor()->SetScaleAndSize(1.5f, gfx::Size(100, 100));
+  SnapLayerToPhysicalPixelBoundary(root.get(), c11.get());
+  // c11 must already be aligned at 1.5 scale.
+  EXPECT_EQ("0.00 0.00",
+            Vector2dFTo100thPercisionString(c11->subpixel_position_offset()));
+
+  c11->SetBounds(gfx::Rect(2, 2, 10, 10));
+  SnapLayerToPhysicalPixelBoundary(root.get(), c11.get());
+  // c11 is now off the pixel.
+  // 0.5 / 1.5 = 0.333...
+  EXPECT_EQ("0.33 0.33",
+            Vector2dFTo100thPercisionString(c11->subpixel_position_offset()));
 }
 
 }  // namespace ui

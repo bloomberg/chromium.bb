@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ui_strings.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -3792,6 +3793,54 @@ TEST_F(ViewLayerTest, BoundsTreeMoveViewMovesBounds) {
   EXPECT_EQ(1U, widget_view->last_cull_set_.count(widget_view));
   EXPECT_EQ(1U, widget_view->last_cull_set_.count(v2));
   EXPECT_EQ(1U, widget_view->last_cull_set_.count(v3));
+}
+
+namespace {
+
+std::string ToString(const gfx::Vector2dF& vector) {
+  return base::StringPrintf("%.2f %0.2f", vector.x(), vector.y());
+}
+
+}  // namespace
+
+TEST_F(ViewLayerTest, SnapLayerToPixel) {
+  View* v1 = new View;
+
+  View* v11 = new View;
+  v1->AddChildView(v11);
+
+  widget()->SetContentsView(v1);
+
+  const gfx::Size& size = GetRootLayer()->GetCompositor()->size();
+  GetRootLayer()->GetCompositor()->SetScaleAndSize(1.25f, size);
+
+  v11->SetBoundsRect(gfx::Rect(1, 1, 10, 10));
+  v1->SetBoundsRect(gfx::Rect(1, 1, 10, 10));
+  v11->SetPaintToLayer(true);
+
+  EXPECT_EQ("0.40 0.40", ToString(v11->layer()->subpixel_position_offset()));
+
+  // Creating a layer in parent should update the child view's layer offset.
+  v1->SetPaintToLayer(true);
+  EXPECT_EQ("-0.20 -0.20", ToString(v1->layer()->subpixel_position_offset()));
+  EXPECT_EQ("-0.20 -0.20", ToString(v11->layer()->subpixel_position_offset()));
+
+  // DSF change should get propagated and update offsets.
+  GetRootLayer()->GetCompositor()->SetScaleAndSize(1.5f, size);
+  EXPECT_EQ("0.33 0.33", ToString(v1->layer()->subpixel_position_offset()));
+  EXPECT_EQ("0.33 0.33", ToString(v11->layer()->subpixel_position_offset()));
+
+  // Deleting parent's layer should update the child view's layer's offset.
+  v1->SetPaintToLayer(false);
+  EXPECT_EQ("0.00 0.00", ToString(v11->layer()->subpixel_position_offset()));
+
+  // Setting parent view should update the child view's layer's offset.
+  v1->SetBoundsRect(gfx::Rect(2, 2, 10, 10));
+  EXPECT_EQ("0.33 0.33", ToString(v11->layer()->subpixel_position_offset()));
+
+  // Setting integral DSF should reset the offset.
+  GetRootLayer()->GetCompositor()->SetScaleAndSize(2.0f, size);
+  EXPECT_EQ("0.00 0.00", ToString(v11->layer()->subpixel_position_offset()));
 }
 
 TEST_F(ViewTest, FocusableAssertions) {
