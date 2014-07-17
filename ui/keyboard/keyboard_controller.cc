@@ -11,6 +11,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
@@ -141,6 +142,17 @@ void ToggleTouchEventLogging(bool enable) {
 #endif
 }
 
+aura::Window *GetFrameWindow(aura::Window *window) {
+  // Each container window has a non-negative id.  Stop traversing at the child
+  // of a container window.
+  if (!window)
+    return NULL;
+  while(window->parent() && window->parent()->id() < 0) {
+    window = window->parent();
+  }
+  return window;
+}
+
 }  // namespace
 
 namespace keyboard {
@@ -189,6 +201,20 @@ void CallbackAnimationObserver::OnLayerAnimationAborted(
   animator_->RemoveObserver(this);
 }
 
+class WindowBoundsChangeObserver : public aura::WindowObserver {
+ public:
+  virtual void OnWindowBoundsChanged(aura::Window* window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
+};
+
+void WindowBoundsChangeObserver::OnWindowBoundsChanged(aura::Window* window,
+    const gfx::Rect& old_bounds, const gfx::Rect& new_bounds) {
+  KeyboardController* controller =  KeyboardController::GetInstance();
+  if (controller)
+    controller->UpdateWindowInsets(window);
+}
+
 // static
 KeyboardController* KeyboardController::instance_ = NULL;
 
@@ -202,6 +228,7 @@ KeyboardController::KeyboardController(KeyboardControllerProxy* proxy)
   CHECK(proxy);
   input_method_ = proxy_->GetInputMethod();
   input_method_->AddObserver(this);
+  window_bounds_observer_.reset(new WindowBoundsChangeObserver());
 }
 
 KeyboardController::~KeyboardController() {
@@ -270,9 +297,8 @@ void KeyboardController::NotifyKeyboardBoundsChanging(
             if (overlap > 0 && overlap < window_bounds.height())
               view->SetInsets(gfx::Insets(0, 0, overlap, 0));
             else
-              view->SetInsets(gfx::Insets(0, 0, 0, 0));
-            // TODO(kevers): Add window observer to native window to update
-            // insets on a window move or resize.
+              view->SetInsets(gfx::Insets());
+            AddBoundsChangedObserver(window);
           }
         }
       }
@@ -384,6 +410,33 @@ void KeyboardController::OnShowImeIfNeeded() {
   ShowKeyboardInternal();
 }
 
+void KeyboardController::UpdateWindowInsets(aura::Window* window) {
+  aura::Window *keyboard_window = proxy_->GetKeyboardWindow();
+  if (window == keyboard_window)
+    return;
+
+  bool enableInsets = (keyboard_window->GetRootWindow() ==
+      window->GetRootWindow()) && keyboard::IsKeyboardOverscrollEnabled() &&
+      proxy_->GetKeyboardWindow()->IsVisible();
+
+  scoped_ptr<content::RenderWidgetHostIterator> widgets(
+      content::RenderWidgetHost::GetRenderWidgetHosts());
+  while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
+    content::RenderWidgetHostView* view = widget->GetView();
+    if (view && window->Contains(view->GetNativeView())) {
+      gfx::Rect window_bounds = view->GetNativeView()->GetBoundsInScreen();
+      gfx::Rect intersect = gfx::IntersectRects(window_bounds,
+          proxy_->GetKeyboardWindow()->bounds());
+      int overlap = enableInsets ? intersect.height() : 0;
+      if (overlap > 0 && overlap < window_bounds.height())
+        view->SetInsets(gfx::Insets(0, 0, overlap, 0));
+      else
+        view->SetInsets(gfx::Insets());
+      return;
+    }
+  }
+}
+
 void KeyboardController::ShowKeyboardInternal() {
   if (!container_.get())
     return;
@@ -460,8 +513,11 @@ void KeyboardController::ResetWindowInsets() {
       content::RenderWidgetHost::GetRenderWidgetHosts());
   while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
     content::RenderWidgetHostView* view = widget->GetView();
-    if (view)
+    if (view) {
       view->SetInsets(insets);
+      aura::Window *window = view->GetNativeView();
+      RemoveBoundsChangedObserver(window);
+    }
   }
 }
 
@@ -478,6 +534,22 @@ void KeyboardController::ShowAnimationFinished() {
 
 void KeyboardController::HideAnimationFinished() {
   proxy_->HideKeyboardContainer(container_.get());
+}
+
+void KeyboardController::AddBoundsChangedObserver(aura::Window* window) {
+  aura::Window* target_window = GetFrameWindow(window);
+  if (target_window &&
+      !target_window->HasObserver(window_bounds_observer_.get())) {
+    target_window->AddObserver(window_bounds_observer_.get());
+  }
+}
+
+void KeyboardController::RemoveBoundsChangedObserver(aura::Window* window) {
+  aura::Window* target_window = GetFrameWindow(window);
+  if (target_window &&
+      target_window->HasObserver(window_bounds_observer_.get())) {
+    target_window->RemoveObserver(window_bounds_observer_.get());
+  }
 }
 
 }  // namespace keyboard

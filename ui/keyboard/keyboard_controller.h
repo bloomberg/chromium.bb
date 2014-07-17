@@ -27,6 +27,7 @@ class TextInputClient;
 namespace keyboard {
 
 class CallbackAnimationObserver;
+class WindowBoundsChangeObserver;
 class KeyboardControllerObserver;
 class KeyboardControllerProxy;
 
@@ -98,6 +99,9 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
     return current_keyboard_bounds_;
   }
 
+  // Updates insets on web content window
+  void UpdateWindowInsets(aura::Window* window);
+
  private:
   // For access to Observer methods for simulation.
   friend class KeyboardControllerTest;
@@ -133,11 +137,19 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   void ShowAnimationFinished();
   void HideAnimationFinished();
 
+  // Adds or removes an observer for tracking changes to a window size or
+  // position while the keyboard is displayed. Any window repositioning
+  // invalidates insets for overscrolling.
+  void AddBoundsChangedObserver(aura::Window* window);
+  void RemoveBoundsChangedObserver(aura::Window* window);
+
   scoped_ptr<KeyboardControllerProxy> proxy_;
   scoped_ptr<aura::Window> container_;
   // CallbackAnimationObserver should destructed before container_ because it
   // uses container_'s animator.
   scoped_ptr<CallbackAnimationObserver> animation_observer_;
+
+  scoped_ptr<WindowBoundsChangeObserver> window_bounds_observer_;
 
   ui::InputMethod* input_method_;
   bool keyboard_visible_;
