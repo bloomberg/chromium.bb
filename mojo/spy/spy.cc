@@ -46,8 +46,7 @@ class MessageProcessor :
   MessageProcessor(base::MessageLoopProxy* control_loop_proxy)
       : last_result_(MOJO_RESULT_OK),
         bytes_transfered_(0),
-        control_loop_proxy_(control_loop_proxy),
-        service_vendor_message_pipe_received_(false) {
+        control_loop_proxy_(control_loop_proxy) {
     message_count_[0] = 0;
     message_count_[1] = 0;
     handle_count_[0] = 0;
@@ -96,15 +95,16 @@ class MessageProcessor :
       if (handles_read) {
         handle_count_[r] += handles_read;
 
-        // Intercept the first set of handles to message pipes with the
-        // assumption that these would be used for vending mojo services.
-        // TODO(ananta)
-        // The above approach is hacky and could cause us to miss other message
-        // pipes which could be exchanged between the client and the server.
-        // Look into a cleaner way of identifying message pipe handles.
-        if (!service_vendor_message_pipe_received_) {
-          service_vendor_message_pipe_received_ = true;
-          for (uint32_t i = 0; i < handles_read; i++) {
+        // Intercept message pipes which are returned via the ReadMessageRaw
+        // call
+        for (uint32_t i = 0; i < handles_read; i++) {
+          // Hack to determine if a handle is a message pipe.
+          // TODO(ananta)
+          // We should have an API which given a handle returns additional
+          // information about the handle which includes its type, etc.
+          if (MojoReadMessage(hbuf[i], NULL, NULL, NULL, NULL,
+                              MOJO_READ_MESSAGE_FLAG_NONE) !=
+                  MOJO_RESULT_INVALID_ARGUMENT) {
             mojo::ScopedMessagePipeHandle message_pipe_handle;
             message_pipe_handle.reset(mojo::MessagePipeHandle(hbuf[i]));
 
@@ -219,9 +219,6 @@ class MessageProcessor :
   uint32_t message_count_[2];
   uint32_t handle_count_[2];
   scoped_refptr<base::MessageLoopProxy> control_loop_proxy_;
-  // This flag helps us intercept the first message pipe exchanged between
-  // the client and the service vendor.
-  bool service_vendor_message_pipe_received_;
 };
 
 // In charge of intercepting access to the service manager.
