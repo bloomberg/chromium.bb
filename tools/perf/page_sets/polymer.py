@@ -140,9 +140,17 @@ class PolymerSampler(PolymerPage):
     interaction.End()
 
   def TouchEverything(self, action_runner):
-    tappable_types = ['paper-toggle-button', 'paper-button', 'paper-checkbox',
-        'paper-icon-button', 'paper-radio-button', 'paper-tab', 'paper-fab',
-        'x-shadow']
+    tappable_types = [
+        'paper-button',
+        'paper-checkbox',
+        'paper-fab',
+        'paper-icon-button',
+        # crbug.com/394756
+        # 'paper-radio-button',
+        'paper-tab',
+        'paper-toggle-button',
+        'x-shadow',
+        ]
     for tappable_type in tappable_types:
       self.DoActionOnWidgetType(action_runner, tappable_type, self.TapWidget)
     swipeable_types = ['paper-slider']
@@ -193,9 +201,17 @@ class PolymerPageSet(page_set_module.PageSet):
     self.AddPage(PolymerShadowPage(self))
 
     # Polymer Sampler subpages that are interesting to tap / swipe elements on
-    TAPPABLE_PAGES = ['paper-toggle-button', 'paper-button', 'paper-checkbox',
-      'paper-icon-button', 'paper-radio-button', 'paper-tabs', 'paper-fab',
-      'paper-shadow']
+    TAPPABLE_PAGES = [
+        'paper-button',
+        'paper-checkbox',
+        'paper-fab',
+        'paper-icon-button',
+        # crbug.com/394756
+        # 'paper-radio-button',
+        'paper-shadow',
+        'paper-tabs',
+        'paper-toggle-button',
+        ]
     for p in TAPPABLE_PAGES:
       self.AddPage(PolymerSampler(self, p))
 
