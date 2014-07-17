@@ -1703,7 +1703,7 @@ HistoryView.prototype.updateFocusableElements_ = function() {
       this.currentVisits_.length > 0) {
     var firstVisit = this.currentVisits_[0];
     firstVisit.setIsLead(true);
-    if (firstVisit.checkBox) firstVisit.checkBox.tabIndex = 0;
+    (firstVisit.checkBox || firstVisit.titleLink).tabIndex = 0;
   }
 };
 

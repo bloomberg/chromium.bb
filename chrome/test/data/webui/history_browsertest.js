@@ -777,6 +777,11 @@ TEST_F('HistoryWebUIRealBackendTest', 'basic', function() {
   testDone();
 });
 
+TEST_F('HistoryWebUIRealBackendTest', 'atLeastOneFocusable', function() {
+  assertEquals(1, document.querySelectorAll('[tabindex="0"]').length);
+  testDone();
+});
+
 /**
  * Test individual deletion of history entries.
  */
@@ -860,6 +865,11 @@ TEST_F('HistoryWebUIDeleteProhibitedTest', 'deleteProhibited', function() {
     testDone([false, 'Delete succeeded even though it was prohibited.']);
   });
   waitForCallback('deleteFailed', testDone);
+});
+
+TEST_F('HistoryWebUIDeleteProhibitedTest', 'atLeastOneFocusable', function() {
+  assertEquals(1, document.querySelectorAll('[tabindex="0"]').length);
+  testDone();
 });
 
 /**
