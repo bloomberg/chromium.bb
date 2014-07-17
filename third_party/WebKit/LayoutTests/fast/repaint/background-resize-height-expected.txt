@@ -15,8 +15,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
+            [0, 40, 60, 4]
           ]
         },
         {
@@ -45,8 +44,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
+            [0, 40, 60, 4]
           ]
         },
         {
@@ -65,8 +63,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
+            [0, 40, 60, 4]
           ]
         },
         {
@@ -95,8 +92,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
+            [0, 40, 60, 4]
           ]
         },
         {
@@ -155,8 +151,7 @@
           "drawsContent": true,
           "backfaceVisibility": "hidden",
           "repaintRects": [
-            [0, 0, 60, 44],
-            [0, 0, 60, 40]
+            [0, 40, 60, 4]
           ]
         },
         {
