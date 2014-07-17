@@ -157,8 +157,8 @@ ash::MediaCaptureState MediaDelegateChromeOS::GetMediaCaptureState(
 
 void MediaDelegateChromeOS::OnRequestUpdate(
     int render_process_id,
-    int render_view_id,
-    const content::MediaStreamDevice& device,
+    int render_frame_id,
+    content::MediaStreamType stream_type,
     const content::MediaRequestState state) {
   base::MessageLoopForUI::current()->PostTask(
       FROM_HERE,

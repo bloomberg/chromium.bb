@@ -53,7 +53,7 @@ struct DeviceRequestMessageFilter::DeviceRequest {
 };
 
 void DeviceRequestMessageFilter::DevicesEnumerated(
-    int render_view_id,
+    int render_frame_id,
     int page_request_id,
     const std::string& label,
     const StreamDeviceInfoArray& new_devices) {

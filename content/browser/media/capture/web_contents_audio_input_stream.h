@@ -75,7 +75,7 @@ class CONTENT_EXPORT WebContentsAudioInputStream
   class Impl;
 
   WebContentsAudioInputStream(
-      int render_process_id, int render_view_id,
+      int render_process_id, int main_render_frame_id,
       AudioMirroringManager* mirroring_manager,
       const scoped_refptr<WebContentsTracker>& tracker,
       media::VirtualAudioInputStream* mixer_stream);

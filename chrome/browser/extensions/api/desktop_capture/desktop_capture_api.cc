@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/tabs.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -52,9 +53,7 @@ void DesktopCaptureChooseDesktopMediaFunction::SetPickerFactoryForTests(
 }
 
 DesktopCaptureChooseDesktopMediaFunction::
-    DesktopCaptureChooseDesktopMediaFunction()
-    : render_process_id_(0),
-      render_view_id_(0) {
+    DesktopCaptureChooseDesktopMediaFunction() {
 }
 
 DesktopCaptureChooseDesktopMediaFunction::
@@ -90,8 +89,8 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
   DesktopCaptureRequestsRegistry::GetInstance()->AddRequest(
       render_view_host()->GetProcess()->GetID(), request_id_, this);
 
-  gfx::NativeWindow parent_window = NULL;
-  content::RenderViewHost* render_view = NULL;
+  // |web_contents| is the WebContents for which the stream is created, and will
+  // also be used to determine where to show the picker's UI.
   content::WebContents* web_contents = NULL;
   base::string16 target_name;
   if (params->target_tab) {
@@ -120,37 +119,21 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
       error_ = kInvalidTabIdError;
       return false;
     }
+    DCHECK(web_contents);
 
-    GURL current_origin_ =
-        web_contents->GetLastCommittedURL().GetOrigin();
-    if (current_origin_ != origin_) {
+    if (origin_ != web_contents->GetLastCommittedURL().GetOrigin()) {
       error_ = kTabUrlChangedError;
       return false;
     }
-
-    // Register to be notified when the tab is closed.
-    Observe(web_contents);
-
-    render_view = web_contents->GetRenderViewHost();
-    parent_window = web_contents->GetTopLevelNativeWindow();
   } else {
     origin_ = GetExtension()->url();
     target_name = base::UTF8ToUTF16(GetExtension()->name());
-    render_view = render_view_host();
-
-    web_contents = GetAssociatedWebContents();
-    if (web_contents) {
-      parent_window = web_contents->GetTopLevelNativeWindow();
-    } else {
-#if defined(USE_ASH)
-      if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
-        parent_window = ash::Shell::GetPrimaryRootWindow();
-#endif
-    }
+    web_contents = content::WebContents::FromRenderViewHost(render_view_host());
+    DCHECK(web_contents);
   }
 
-  render_process_id_ = render_view->GetProcess()->GetID();
-  render_view_id_ = render_view->GetRoutingID();
+  // Register to be notified when the tab is closed.
+  Observe(web_contents);
 
   bool show_screens = false;
   bool show_windows = false;
@@ -181,6 +164,8 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
     return false;
   }
 
+  const gfx::NativeWindow parent_window =
+      web_contents->GetTopLevelNativeWindow();
   scoped_ptr<DesktopMediaList> media_list;
   if (g_picker_factory) {
     media_list = g_picker_factory->CreateModel(
@@ -234,13 +219,20 @@ void DesktopCaptureChooseDesktopMediaFunction::WebContentsDestroyed() {
 void DesktopCaptureChooseDesktopMediaFunction::OnPickerDialogResults(
     content::DesktopMediaID source) {
   std::string result;
-  if (source.type != content::DesktopMediaID::TYPE_NONE) {
+  if (source.type != content::DesktopMediaID::TYPE_NONE &&
+      web_contents()) {
     DesktopStreamsRegistry* registry =
         MediaCaptureDevicesDispatcher::GetInstance()->
         GetDesktopStreamsRegistry();
+    // TODO(miu): Once render_frame_host() is being set, we should register the
+    // exact RenderFrame requesting the stream, not the main RenderFrame.  With
+    // that change, also update
+    // MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest().
+    // http://crbug.com/304341
+    content::RenderFrameHost* const main_frame = web_contents()->GetMainFrame();
     result = registry->RegisterStream(
-        render_process_id_,
-        render_view_id_,
+        main_frame->GetProcess()->GetID(),
+        main_frame->GetRoutingID(),
         origin_,
         source,
         GetExtension()->name());

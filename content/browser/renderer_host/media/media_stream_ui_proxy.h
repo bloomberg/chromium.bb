@@ -13,11 +13,11 @@
 
 namespace content {
 
-class RenderViewHostDelegate;
+class RenderFrameHostDelegate;
 
 // MediaStreamUIProxy proxies calls to media stream UI between IO thread and UI
 // thread. One instance of this class is create per MediaStream object. It must
-// be create, used and destroyed on IO thread.
+// be created, used and destroyed on IO thread.
 class CONTENT_EXPORT MediaStreamUIProxy {
  public:
   typedef base::Callback<
@@ -29,7 +29,7 @@ class CONTENT_EXPORT MediaStreamUIProxy {
 
   static scoped_ptr<MediaStreamUIProxy> Create();
   static scoped_ptr<MediaStreamUIProxy> CreateForTests(
-      RenderViewHostDelegate* render_delegate);
+      RenderFrameHostDelegate* render_delegate);
 
   virtual ~MediaStreamUIProxy();
 
@@ -48,10 +48,10 @@ class CONTENT_EXPORT MediaStreamUIProxy {
   virtual void OnStarted(const base::Closure& stop_callback,
                          const WindowIdCallback& window_id_callback);
 
-  void SetRenderViewHostDelegateForTests(RenderViewHostDelegate* delegate);
+  void SetRenderFrameHostDelegateForTests(RenderFrameHostDelegate* delegate);
 
  protected:
-  MediaStreamUIProxy(RenderViewHostDelegate* test_render_delegate);
+  explicit MediaStreamUIProxy(RenderFrameHostDelegate* test_render_delegate);
 
  private:
   class Core;

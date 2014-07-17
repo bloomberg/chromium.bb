@@ -19,22 +19,21 @@ class ContentVideoCaptureDeviceCore;
 // tab (accessed via its associated WebContents instance), producing a stream of
 // video frames.
 //
-// An instance is created by providing a device_id.  The device_id contains the
-// routing ID for a RenderViewHost, and from the RenderViewHost instance, a
-// reference to its associated WebContents instance is acquired.  From then on,
+// An instance is created by providing a device_id.  The device_id contains
+// information necessary for finding a WebContents instance.  From then on,
 // WebContentsVideoCaptureDevice will capture from whatever render view is
 // currently associated with that WebContents instance.  This allows the
 // underlying render view to be swapped out (e.g., due to navigation or
 // crashes/reloads), without any interruption in capturing.
+//
+// TODO(miu): In a soon upcoming change, the cross-site isolation migration of
+// this code will be completed such that the main RenderFrameHost is tracked
+// instead of the RenderViewHost.
 class CONTENT_EXPORT WebContentsVideoCaptureDevice
     : public media::VideoCaptureDevice {
  public:
-  // Construct from a |device_id| string of the form:
-  //   "virtual-media-stream://render_process_id:render_view_id", where
-  // |render_process_id| and |render_view_id| are decimal integers.
-  // |destroy_cb| is invoked on an outside thread once all outstanding objects
-  // are completely destroyed -- this will be some time after the
-  // WebContentsVideoCaptureDevice is itself deleted.
+  // Create a WebContentsVideoCaptureDevice instance from the given
+  // |device_id|.  Returns NULL if |device_id| is invalid.
   static media::VideoCaptureDevice* Create(const std::string& device_id);
 
   virtual ~WebContentsVideoCaptureDevice();
@@ -45,7 +44,8 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
   virtual void StopAndDeAllocate() OVERRIDE;
 
  private:
-  WebContentsVideoCaptureDevice(int render_process_id, int render_view_id);
+  WebContentsVideoCaptureDevice(
+      int render_process_id, int main_render_frame_id);
 
   const scoped_ptr<ContentVideoCaptureDeviceCore> core_;
 

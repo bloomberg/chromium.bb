@@ -58,9 +58,7 @@ class DesktopCaptureChooseDesktopMediaFunction
 
   int request_id_;
 
-  // Parameters of the tab the stream is requested for.
-  int render_process_id_;
-  int render_view_id_;
+  // URL of page that desktop capture was requested for.
   GURL origin_;
 
   scoped_ptr<DesktopMediaPicker> picker_;

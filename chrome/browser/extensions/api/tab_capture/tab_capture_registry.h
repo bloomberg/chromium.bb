@@ -14,31 +14,28 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/common/extensions/api/tab_capture.h"
 #include "content/public/browser/media_request_state.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
 
+namespace base {
+class ListValue;
+}
+
 namespace content {
 class BrowserContext;
+class WebContents;
 }
 
 namespace extensions {
 
-struct TabCaptureRequest;
 class ExtensionRegistry;
-class FullscreenObserver;
 
 namespace tab_capture = api::tab_capture;
 
 class TabCaptureRegistry : public BrowserContextKeyedAPI,
-                           public content::NotificationObserver,
                            public ExtensionRegistryObserver,
                            public MediaCaptureDevicesDispatcher::Observer {
  public:
-  typedef std::vector<std::pair<int, tab_capture::TabCaptureState> >
-      RegistryCaptureInfo;
-
   static TabCaptureRegistry* Get(content::BrowserContext* context);
 
   // Used by BrowserContextKeyedAPI.
@@ -46,24 +43,29 @@ class TabCaptureRegistry : public BrowserContextKeyedAPI,
       GetFactoryInstance();
 
   // List all pending, active and stopped capture requests.
-  const RegistryCaptureInfo GetCapturedTabs(
-      const std::string& extension_id) const;
+  void GetCapturedTabs(const std::string& extension_id,
+                       base::ListValue* list_of_capture_info) const;
 
   // Add a tab capture request to the registry when a stream is requested
-  // through the API.
-  bool AddRequest(int render_process_id,
-                  int render_view_id,
-                  const std::string& extension_id,
-                  int tab_id,
-                  tab_capture::TabCaptureState status);
+  // through the API.  |target_contents| refers to the WebContents associated
+  // with the tab to be captured.  |extension_id| refers to the Extension
+  // initiating the request.
+  bool AddRequest(content::WebContents* target_contents,
+                  const std::string& extension_id);
 
-  // The MediaStreamDevicesController will verify the request before creating
-  // the stream by checking the registry here.
-  bool VerifyRequest(int render_process_id, int render_view_id);
+  // Called by MediaStreamDevicesController to verify the request before
+  // creating the stream.  |render_process_id| and |render_frame_id| are used to
+  // look-up a WebContents instance, which should match the |target_contents|
+  // from the prior call to AddRequest().  In addition, a request is not
+  // verified unless the |extension_id| also matches AND the request itself is
+  // in the PENDING state.
+  bool VerifyRequest(int render_process_id,
+                     int render_frame_id,
+                     const std::string& extension_id);
 
  private:
   friend class BrowserContextKeyedAPIFactory<TabCaptureRegistry>;
-  friend class FullscreenObserver;
+  class LiveRequest;
 
   explicit TabCaptureRegistry(content::BrowserContext* context);
   virtual ~TabCaptureRegistry();
@@ -76,11 +78,6 @@ class TabCaptureRegistry : public BrowserContextKeyedAPI,
   static const bool kServiceIsCreatedWithBrowserContext = false;
   static const bool kServiceRedirectedInIncognito = true;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // ExtensionRegistryObserver implementation.
   virtual void OnExtensionUnloaded(
       content::BrowserContext* browser_context,
@@ -89,21 +86,25 @@ class TabCaptureRegistry : public BrowserContextKeyedAPI,
 
   // MediaCaptureDevicesDispatcher::Observer implementation.
   virtual void OnRequestUpdate(
-      int render_process_id,
-      int render_view_id,
-      const content::MediaStreamDevice& device,
+      int original_target_render_process_id,
+      int original_target_render_frame_id,
+      content::MediaStreamType stream_type,
       const content::MediaRequestState state) OVERRIDE;
 
-  void DispatchStatusChangeEvent(const TabCaptureRequest* request) const;
+  // Send a StatusChanged event containing the current state of |request|.
+  void DispatchStatusChangeEvent(const LiveRequest* request) const;
 
-  TabCaptureRequest* FindCaptureRequest(int render_process_id,
-                                        int render_view_id) const;
+  // Look-up a LiveRequest associated with the given |target_contents| (or
+  // the originally targetted RenderFrameHost), if any.
+  LiveRequest* FindRequest(const content::WebContents* target_contents) const;
+  LiveRequest* FindRequest(int original_target_render_process_id,
+                           int original_target_render_frame_id) const;
 
-  void DeleteCaptureRequest(int render_process_id, int render_view_id);
+  // Removes the |request| from |requests_|, thus causing its destruction.
+  void KillRequest(LiveRequest* request);
 
-  content::NotificationRegistrar registrar_;
   content::BrowserContext* const browser_context_;
-  ScopedVector<TabCaptureRequest> requests_;
+  ScopedVector<LiveRequest> requests_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;

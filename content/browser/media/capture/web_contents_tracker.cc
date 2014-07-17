@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -18,7 +19,7 @@ WebContentsTracker::~WebContentsTracker() {
   DCHECK(!web_contents()) << "BUG: Still observering!";
 }
 
-void WebContentsTracker::Start(int render_process_id, int render_view_id,
+void WebContentsTracker::Start(int render_process_id, int main_render_frame_id,
                                const ChangeCallback& callback) {
   DCHECK(!message_loop_.get() || message_loop_->BelongsToCurrentThread());
 
@@ -29,7 +30,7 @@ void WebContentsTracker::Start(int render_process_id, int render_view_id,
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&WebContentsTracker::LookUpAndObserveWebContents, this,
-                 render_process_id, render_view_id));
+                 render_process_id, main_render_frame_id));
 }
 
 void WebContentsTracker::Stop() {
@@ -67,17 +68,15 @@ void WebContentsTracker::MaybeDoCallback(int render_process_id,
 }
 
 void WebContentsTracker::LookUpAndObserveWebContents(int render_process_id,
-                                                     int render_view_id) {
+                                                     int main_render_frame_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  RenderViewHost* const rvh =
-      RenderViewHost::FromID(render_process_id, render_view_id);
-  DVLOG_IF(1, !rvh) << "RenderViewHost::FromID("
-                    << render_process_id << ", " << render_view_id
-                    << ") returned NULL.";
-  Observe(rvh ? WebContents::FromRenderViewHost(rvh) : NULL);
+  Observe(WebContents::FromRenderFrameHost(RenderFrameHost::FromID(
+      render_process_id, main_render_frame_id)));
   DVLOG_IF(1, !web_contents())
-      << "WebContents::FromRenderViewHost(" << rvh << ") returned NULL.";
+      << "Could not find WebContents associated with main RenderFrameHost "
+      << "referenced by render_process_id=" << render_process_id
+      << ", routing_id=" << main_render_frame_id;
 
   OnWebContentsChangeEvent();
 }

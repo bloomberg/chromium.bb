@@ -133,7 +133,6 @@ class FaviconHelper;
 class HistoryController;
 class HistoryEntry;
 class ImageResourceFetcher;
-class MediaStreamDispatcher;
 class MouseLockDispatcher;
 class NavigationState;
 class PepperPluginInstanceImpl;
@@ -220,11 +219,6 @@ class CONTENT_EXPORT RenderViewImpl
   }
 
   RenderFrameImpl* main_render_frame() { return main_render_frame_.get(); }
-
-  // TODO(jam): move to RenderFrameImpl
-  MediaStreamDispatcher* media_stream_dispatcher() {
-    return media_stream_dispatcher_;
-  }
 
   AccessibilityMode accessibility_mode() {
     return accessibility_mode_;
@@ -1045,9 +1039,6 @@ class CONTENT_EXPORT RenderViewImpl
   // The speech recognition dispatcher attached to this view, lazily
   // initialized.
   SpeechRecognitionDispatcher* speech_recognition_dispatcher_;
-
-  // MediaStream dispatcher attached to this view; lazily initialized.
-  MediaStreamDispatcher* media_stream_dispatcher_;
 
   // BrowserPluginManager attached to this view; lazily initialized.
   scoped_refptr<BrowserPluginManager> browser_plugin_manager_;

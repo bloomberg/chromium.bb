@@ -10,7 +10,7 @@
 #include "content/renderer/pepper/pepper_platform_audio_input.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
-#include "content/renderer/render_view_impl.h"
+#include "content/renderer/render_frame_impl.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -46,8 +46,8 @@ PepperAudioInputHost::PepperAudioInputHost(RendererPpapiHostImpl* host,
       renderer_ppapi_host_(host),
       audio_input_(NULL),
       enumeration_helper_(this,
-                          PepperMediaDeviceManager::GetForRenderView(
-                              host->GetRenderViewForInstance(pp_instance())),
+                          PepperMediaDeviceManager::GetForRenderFrame(
+                              host->GetRenderFrameForInstance(pp_instance())),
                           PP_DEVICETYPE_DEV_AUDIOCAPTURE,
                           host->GetDocumentURL(instance)) {}
 
@@ -98,16 +98,14 @@ int32_t PepperAudioInputHost::OnOpen(ppapi::host::HostMessageContext* context,
 
   // When it is done, we'll get called back on StreamCreated() or
   // StreamCreationFailed().
-  RenderViewImpl* render_view = static_cast<RenderViewImpl*>(
-      renderer_ppapi_host_->GetRenderViewForInstance(pp_instance()));
-
-  audio_input_ =
-      PepperPlatformAudioInput::Create(render_view->AsWeakPtr(),
-                                       device_id,
-                                       document_url,
-                                       static_cast<int>(sample_rate),
-                                       static_cast<int>(sample_frame_count),
-                                       this);
+  audio_input_ = PepperPlatformAudioInput::Create(
+      renderer_ppapi_host_->GetRenderFrameForInstance(pp_instance())->
+          GetRoutingID(),
+      device_id,
+      document_url,
+      static_cast<int>(sample_rate),
+      static_cast<int>(sample_frame_count),
+      this);
   if (audio_input_) {
     open_context_ = context->MakeReplyMessageContext();
     return PP_OK_COMPLETIONPENDING;

@@ -5,7 +5,7 @@
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 
 #include "base/message_loop/message_loop.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,22 +19,11 @@ using testing::SaveArg;
 namespace content {
 namespace {
 
-class MockRenderViewHostDelegate : public RenderViewHostDelegate {
+class MockRenderFrameHostDelegate : public RenderFrameHostDelegate {
  public:
   MOCK_METHOD2(RequestMediaAccessPermission,
                void(const MediaStreamRequest& request,
                     const MediaResponseCallback& callback));
-
-  // Stubs for pure virtual methods we don't care about.
-  virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE {
-    NOTREACHED();
-    return gfx::Rect();
-  }
-  virtual RendererPreferences GetRendererPrefs(
-      BrowserContext* browser_context) const OVERRIDE {
-    NOTREACHED();
-    return RendererPreferences();
-  }
 };
 
 class MockResponseCallback {
@@ -76,7 +65,7 @@ class MediaStreamUIProxyTest : public testing::Test {
   TestBrowserThread ui_thread_;
   TestBrowserThread io_thread_;
 
-  MockRenderViewHostDelegate delegate_;
+  MockRenderFrameHostDelegate delegate_;
   MockResponseCallback response_callback_;
   scoped_ptr<MediaStreamUIProxy> proxy_;
 };
@@ -84,7 +73,7 @@ class MediaStreamUIProxyTest : public testing::Test {
 MATCHER_P(SameRequest, expected, "") {
   return
     expected.render_process_id == arg.render_process_id &&
-    expected.render_view_id == arg.render_view_id &&
+    expected.render_frame_id == arg.render_frame_id &&
     expected.tab_capture_device_id == arg.tab_capture_device_id &&
     expected.security_origin == arg.security_origin &&
     expected.request_type == arg.request_type &&

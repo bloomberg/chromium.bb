@@ -11,6 +11,7 @@ namespace content {
 SpeechRecognitionSessionContext::SpeechRecognitionSessionContext()
     : render_process_id(0),
       render_view_id(0),
+      render_frame_id(0),
       guest_render_view_id(MSG_ROUTING_NONE),
       embedder_render_process_id(0),
       embedder_render_view_id(MSG_ROUTING_NONE),

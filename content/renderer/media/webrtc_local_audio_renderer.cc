@@ -12,7 +12,7 @@
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
-#include "content/renderer/render_view_impl.h"
+#include "content/renderer/render_frame_impl.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_fifo.h"
@@ -266,11 +266,11 @@ void WebRtcLocalAudioRenderer::ReconfigureSink(
   DVLOG(1) << "WebRtcLocalAudioRenderer::ReconfigureSink()";
 
   int implicit_ducking_effect = 0;
-  RenderViewImpl* render_view =
-      RenderViewImpl::FromRoutingID(source_render_view_id_);
-  if (render_view &&
-      render_view->media_stream_dispatcher() &&
-      render_view->media_stream_dispatcher()->IsAudioDuckingActive()) {
+  RenderFrameImpl* const frame =
+      RenderFrameImpl::FromRoutingID(source_render_frame_id_);
+  MediaStreamDispatcher* const dispatcher = frame ?
+      frame->GetMediaStreamDispatcher() : NULL;
+  if (dispatcher && dispatcher->IsAudioDuckingActive()) {
     DVLOG(1) << "Forcing DUCKING to be ON for output";
     implicit_ducking_effect = media::AudioParameters::DUCKING;
   } else {

@@ -29,7 +29,6 @@ namespace content {
 
 class PepperAudioInputHost;
 class PepperMediaDeviceManager;
-class RenderViewImpl;
 
 // PepperPlatformAudioInput is operated on two threads: the main thread (the
 // thread on which objects are created) and the I/O thread. All public methods,
@@ -45,7 +44,7 @@ class PepperPlatformAudioInput
   // Factory function, returns NULL on failure. StreamCreated() will be called
   // when the stream is created.
   static PepperPlatformAudioInput* Create(
-      const base::WeakPtr<RenderViewImpl>& render_view,
+      int render_frame_id,
       const std::string& device_id,
       const GURL& document_url,
       int sample_rate,
@@ -76,7 +75,7 @@ class PepperPlatformAudioInput
 
   PepperPlatformAudioInput();
 
-  bool Initialize(const base::WeakPtr<RenderViewImpl>& render_view,
+  bool Initialize(int render_frame_id,
                   const std::string& device_id,
                   const GURL& document_url,
                   int sample_rate,
@@ -93,6 +92,8 @@ class PepperPlatformAudioInput
   void CloseDevice();
   void NotifyStreamCreationFailed();
 
+  // Can return NULL if the RenderFrame referenced by |render_frame_id_| has
+  // gone away.
   PepperMediaDeviceManager* GetMediaDeviceManager();
 
   // The client to notify when the stream is created. THIS MUST ONLY BE
@@ -106,8 +107,8 @@ class PepperPlatformAudioInput
   scoped_refptr<base::MessageLoopProxy> main_message_loop_proxy_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
 
-  // THIS MUST ONLY BE ACCESSED ON THE MAIN THREAD.
-  base::WeakPtr<RenderViewImpl> render_view_;
+  // The frame containing the Pepper widget.
+  int render_frame_id_;
 
   // The unique ID to identify the opened device. THIS MUST ONLY BE ACCESSED ON
   // THE MAIN THREAD.

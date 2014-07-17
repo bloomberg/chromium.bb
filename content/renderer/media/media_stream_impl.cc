@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
@@ -82,15 +83,22 @@ struct MediaStreamImpl::MediaDevicesRequestInfo {
 };
 
 MediaStreamImpl::MediaStreamImpl(
-    RenderView* render_view,
-    MediaStreamDispatcher* media_stream_dispatcher,
-    PeerConnectionDependencyFactory* dependency_factory)
-    : RenderViewObserver(render_view),
+    RenderFrame* render_frame,
+    PeerConnectionDependencyFactory* dependency_factory,
+    scoped_ptr<MediaStreamDispatcher> media_stream_dispatcher)
+    : RenderFrameObserver(render_frame),
       dependency_factory_(dependency_factory),
-      media_stream_dispatcher_(media_stream_dispatcher) {
+      media_stream_dispatcher_(media_stream_dispatcher.Pass()),
+      weak_factory_(this) {
+  DCHECK(dependency_factory_);
+  DCHECK(media_stream_dispatcher_.get());
 }
 
 MediaStreamImpl::~MediaStreamImpl() {
+  // Force-close all outstanding user media requests and local sources here,
+  // before the outstanding WeakPtrs are invalidated, to ensure a clean
+  // shutdown.
+  FrameWillClose();
 }
 
 void MediaStreamImpl::requestUserMedia(
@@ -108,7 +116,6 @@ void MediaStreamImpl::requestUserMedia(
 
   int request_id = g_next_request_id++;
   StreamOptions options;
-  blink::WebLocalFrame* frame = NULL;
   GURL security_origin;
   bool enable_automatic_output_device_selection = false;
 
@@ -142,11 +149,9 @@ void MediaStreamImpl::requestUserMedia(
     }
 
     security_origin = GURL(user_media_request.securityOrigin().toString());
-    // Get the WebFrame that requested a MediaStream.
-    // The frame is needed to tell the MediaStreamDispatcher when a stream goes
-    // out of scope.
-    frame = user_media_request.ownerDocument().frame();
-    DCHECK(frame);
+    DCHECK(render_frame()->GetWebFrame() ==
+               static_cast<blink::WebFrame*>(
+                   user_media_request.ownerDocument().frame()));
   }
 
   DVLOG(1) << "MediaStreamImpl::requestUserMedia(" << request_id << ", [ "
@@ -176,12 +181,12 @@ void MediaStreamImpl::requestUserMedia(
       mandatory_video ? "true":"false"));
 
   user_media_requests_.push_back(
-      new UserMediaRequestInfo(request_id, frame, user_media_request,
-          enable_automatic_output_device_selection));
+      new UserMediaRequestInfo(request_id, user_media_request,
+                               enable_automatic_output_device_selection));
 
   media_stream_dispatcher_->GenerateStream(
       request_id,
-      AsWeakPtr(),
+      weak_factory_.GetWeakPtr(),
       options,
       security_origin);
 }
@@ -226,21 +231,21 @@ void MediaStreamImpl::requestMediaDevices(
 
   media_stream_dispatcher_->EnumerateDevices(
       audio_input_request_id,
-      AsWeakPtr(),
+      weak_factory_.GetWeakPtr(),
       MEDIA_DEVICE_AUDIO_CAPTURE,
       security_origin,
       true);
 
   media_stream_dispatcher_->EnumerateDevices(
       video_input_request_id,
-      AsWeakPtr(),
+      weak_factory_.GetWeakPtr(),
       MEDIA_DEVICE_VIDEO_CAPTURE,
       security_origin,
       true);
 
   media_stream_dispatcher_->EnumerateDevices(
       audio_output_request_id,
-      AsWeakPtr(),
+      weak_factory_.GetWeakPtr(),
       MEDIA_DEVICE_AUDIO_OUTPUT,
       security_origin,
       true);
@@ -253,18 +258,7 @@ void MediaStreamImpl::cancelMediaDevicesRequest(
       FindMediaDevicesRequestInfo(media_devices_request);
   if (!request)
     return;
-
-  // Cancel device enumeration.
-  media_stream_dispatcher_->StopEnumerateDevices(
-      request->audio_input_request_id,
-      AsWeakPtr());
-  media_stream_dispatcher_->StopEnumerateDevices(
-      request->video_input_request_id,
-      AsWeakPtr());
-  media_stream_dispatcher_->StopEnumerateDevices(
-      request->audio_output_request_id,
-      AsWeakPtr());
-  DeleteMediaDevicesRequestInfo(request);
+  CancelAndDeleteMediaDevicesRequest(request);
 }
 
 // Callback from MediaStreamDispatcher.
@@ -334,7 +328,8 @@ void MediaStreamImpl::OnStreamGenerated(
 
   // Wait for the tracks to be started successfully or to fail.
   request_info->CallbackOnTracksStarted(
-      base::Bind(&MediaStreamImpl::OnCreateNativeTracksCompleted, AsWeakPtr()));
+      base::Bind(&MediaStreamImpl::OnCreateNativeTracksCompleted,
+                 weak_factory_.GetWeakPtr()));
 }
 
 // Callback from MediaStreamDispatcher.
@@ -380,7 +375,7 @@ void MediaStreamImpl::OnDeviceStopped(
 
   for (LocalStreamSources::iterator device_it = local_sources_.begin();
        device_it != local_sources_.end(); ++device_it) {
-    if (device_it->source.id() == source.id()) {
+    if (device_it->id() == source.id()) {
       local_sources_.erase(device_it);
       break;
     }
@@ -391,7 +386,6 @@ void MediaStreamImpl::InitializeSourceObject(
     const StreamDeviceInfo& device,
     blink::WebMediaStreamSource::Type type,
     const blink::WebMediaConstraints& constraints,
-    blink::WebFrame* frame,
     blink::WebMediaStreamSource* webkit_source) {
   const blink::WebMediaStreamSource* existing_source =
       FindLocalSource(device);
@@ -415,18 +409,20 @@ void MediaStreamImpl::InitializeSourceObject(
     webkit_source->setExtraData(
         CreateVideoSource(
             device,
-            base::Bind(&MediaStreamImpl::OnLocalSourceStopped, AsWeakPtr())));
+            base::Bind(&MediaStreamImpl::OnLocalSourceStopped,
+                       weak_factory_.GetWeakPtr())));
   } else {
     DCHECK_EQ(blink::WebMediaStreamSource::TypeAudio, type);
     MediaStreamAudioSource* audio_source(
         new MediaStreamAudioSource(
-            RenderViewObserver::routing_id(),
+            RenderFrameObserver::routing_id(),
             device,
-            base::Bind(&MediaStreamImpl::OnLocalSourceStopped, AsWeakPtr()),
+            base::Bind(&MediaStreamImpl::OnLocalSourceStopped,
+                       weak_factory_.GetWeakPtr()),
             dependency_factory_));
     webkit_source->setExtraData(audio_source);
   }
-  local_sources_.push_back(LocalStreamSource(frame, *webkit_source));
+  local_sources_.push_back(*webkit_source);
 }
 
 MediaStreamVideoSource* MediaStreamImpl::CreateVideoSource(
@@ -450,7 +446,6 @@ void MediaStreamImpl::CreateVideoTracks(
     InitializeSourceObject(devices[i],
                            blink::WebMediaStreamSource::TypeVideo,
                            constraints,
-                           request->frame,
                            &webkit_source);
     (*webkit_tracks)[i] =
         request->CreateAndStartVideoTrack(webkit_source, constraints);
@@ -491,7 +486,6 @@ void MediaStreamImpl::CreateAudioTracks(
     InitializeSourceObject(overridden_audio_array[i],
                            blink::WebMediaStreamSource::TypeAudio,
                            constraints,
-                           request->frame,
                            &webkit_source);
     (*webkit_tracks)[i].initialize(webkit_source);
     request->StartAudioTrack((*webkit_tracks)[i], constraints);
@@ -585,19 +579,7 @@ void MediaStreamImpl::OnDevicesEnumerated(
   }
 
   EnumerateDevicesSucceded(&request->request, devices);
-
-  // Cancel device enumeration.
-  media_stream_dispatcher_->StopEnumerateDevices(
-      request->audio_input_request_id,
-      AsWeakPtr());
-  media_stream_dispatcher_->StopEnumerateDevices(
-      request->video_input_request_id,
-      AsWeakPtr());
-  media_stream_dispatcher_->StopEnumerateDevices(
-      request->audio_output_request_id,
-      AsWeakPtr());
-
-  DeleteMediaDevicesRequestInfo(request);
+  CancelAndDeleteMediaDevicesRequest(request);
 }
 
 void MediaStreamImpl::OnDeviceOpened(
@@ -672,13 +654,13 @@ const blink::WebMediaStreamSource* MediaStreamImpl::FindLocalSource(
     const StreamDeviceInfo& device) const {
   for (LocalStreamSources::const_iterator it = local_sources_.begin();
        it != local_sources_.end(); ++it) {
-    MediaStreamSource* source =
-        static_cast<MediaStreamSource*>(it->source.extraData());
+    MediaStreamSource* const source =
+        static_cast<MediaStreamSource*>(it->extraData());
     const StreamDeviceInfo& active_device = source->device_info();
     if (active_device.device.id == device.device.id &&
         active_device.device.type == device.device.type &&
         active_device.session_id == device.session_id) {
-      return &it->source;
+      return &(*it);
     }
   }
   return NULL;
@@ -742,11 +724,19 @@ MediaStreamImpl::FindMediaDevicesRequestInfo(
   return NULL;
 }
 
-void MediaStreamImpl::DeleteMediaDevicesRequestInfo(
+void MediaStreamImpl::CancelAndDeleteMediaDevicesRequest(
     MediaDevicesRequestInfo* request) {
   MediaDevicesRequests::iterator it = media_devices_requests_.begin();
   for (; it != media_devices_requests_.end(); ++it) {
     if ((*it) == request) {
+      // Cancel device enumeration.
+      media_stream_dispatcher_->StopEnumerateDevices(
+          request->audio_input_request_id, weak_factory_.GetWeakPtr());
+      media_stream_dispatcher_->StopEnumerateDevices(
+          request->video_input_request_id, weak_factory_.GetWeakPtr());
+      media_stream_dispatcher_->StopEnumerateDevices(
+          request->audio_output_request_id, weak_factory_.GetWeakPtr());
+
       media_devices_requests_.erase(it);
       return;
     }
@@ -754,43 +744,28 @@ void MediaStreamImpl::DeleteMediaDevicesRequestInfo(
   NOTREACHED();
 }
 
-void MediaStreamImpl::FrameDetached(blink::WebFrame* frame) {
-  // Do same thing as FrameWillClose.
-  FrameWillClose(frame);
-}
-
-void MediaStreamImpl::FrameWillClose(blink::WebFrame* frame) {
-  // Loop through all UserMediaRequests and find the requests that belong to the
-  // frame that is being closed.
+void MediaStreamImpl::FrameWillClose() {
+  // Cancel all outstanding UserMediaRequests.
   UserMediaRequests::iterator request_it = user_media_requests_.begin();
   while (request_it != user_media_requests_.end()) {
-    if ((*request_it)->frame == frame) {
-      DVLOG(1) << "MediaStreamImpl::FrameWillClose: "
-               << "Cancel user media request " << (*request_it)->request_id;
-      // If the request is not generated, it means that a request
-      // has been sent to the MediaStreamDispatcher to generate a stream
-      // but MediaStreamDispatcher has not yet responded and we need to cancel
-      // the request.
-      if (!(*request_it)->generated) {
-        media_stream_dispatcher_->CancelGenerateStream(
-            (*request_it)->request_id, AsWeakPtr());
-      }
-      request_it = user_media_requests_.erase(request_it);
-    } else {
-      ++request_it;
+    DVLOG(1) << "MediaStreamImpl@" << this << "::FrameWillClose: "
+             << "Cancel user media request " << (*request_it)->request_id;
+    // If the request is not generated, it means that a request
+    // has been sent to the MediaStreamDispatcher to generate a stream
+    // but MediaStreamDispatcher has not yet responded and we need to cancel
+    // the request.
+    if (!(*request_it)->generated) {
+      media_stream_dispatcher_->CancelGenerateStream(
+          (*request_it)->request_id, weak_factory_.GetWeakPtr());
     }
+    request_it = user_media_requests_.erase(request_it);
   }
 
-  // Loop through all current local sources and stop the sources that were
-  // created by the frame that will be closed.
+  // Loop through all current local sources and stop the sources.
   LocalStreamSources::iterator sources_it = local_sources_.begin();
   while (sources_it != local_sources_.end()) {
-    if (sources_it->frame == frame) {
-      StopLocalSource(sources_it->source, true);
-      sources_it = local_sources_.erase(sources_it);
-    } else {
-      ++sources_it;
-    }
+    StopLocalSource(*sources_it, true);
+    sources_it = local_sources_.erase(sources_it);
   }
 }
 
@@ -802,7 +777,7 @@ void MediaStreamImpl::OnLocalSourceStopped(
   bool device_found = false;
   for (LocalStreamSources::iterator device_it = local_sources_.begin();
        device_it != local_sources_.end(); ++device_it) {
-    if (device_it->source.id()  == source.id()) {
+    if (device_it->id()  == source.id()) {
       device_found = true;
       local_sources_.erase(device_it);
       break;
@@ -811,7 +786,7 @@ void MediaStreamImpl::OnLocalSourceStopped(
   CHECK(device_found);
 
   MediaStreamSource* source_impl =
-      static_cast<MediaStreamSource*> (source.extraData());
+      static_cast<MediaStreamSource*>(source.extraData());
   media_stream_dispatcher_->StopStreamDevice(source_impl->device_info());
 }
 
@@ -819,7 +794,7 @@ void MediaStreamImpl::StopLocalSource(
     const blink::WebMediaStreamSource& source,
     bool notify_dispatcher) {
   MediaStreamSource* source_impl =
-      static_cast<MediaStreamSource*> (source.extraData());
+      static_cast<MediaStreamSource*>(source.extraData());
   DVLOG(1) << "MediaStreamImpl::StopLocalSource("
            << "{device_id = " << source_impl->device_info().device.id << "})";
 
@@ -832,14 +807,12 @@ void MediaStreamImpl::StopLocalSource(
 
 MediaStreamImpl::UserMediaRequestInfo::UserMediaRequestInfo(
     int request_id,
-    blink::WebFrame* frame,
     const blink::WebUserMediaRequest& request,
     bool enable_automatic_output_device_selection)
     : request_id(request_id),
       generated(false),
       enable_automatic_output_device_selection(
           enable_automatic_output_device_selection),
-      frame(frame),
       request(request),
       request_failed_(false) {
 }

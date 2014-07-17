@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/callback.h"
 #include "base/strings/string16.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "url/gurl.h"
@@ -32,6 +33,14 @@ bool RenderFrameHostDelegate::AddMessageToConsole(
 
 WebContents* RenderFrameHostDelegate::GetAsWebContents() {
   return NULL;
+}
+
+void RenderFrameHostDelegate::RequestMediaAccessPermission(
+    const MediaStreamRequest& request,
+    const MediaResponseCallback& callback) {
+  callback.Run(MediaStreamDevices(),
+               MEDIA_DEVICE_INVALID_STATE,
+               scoped_ptr<MediaStreamUI>());
 }
 
 }  // namespace content

@@ -109,7 +109,7 @@ class MediaStreamDispatcherUnderTest : public MediaStreamDispatcher {
   MediaStreamDispatcherUnderTest() : MediaStreamDispatcher(NULL) {}
 
   using MediaStreamDispatcher::GetNextIpcIdForTest;
-  using RenderViewObserver::OnMessageReceived;
+  using RenderFrameObserver::OnMessageReceived;
 };
 
 class MediaStreamDispatcherTest : public ::testing::Test {

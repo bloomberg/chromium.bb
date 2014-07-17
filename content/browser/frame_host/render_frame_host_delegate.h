@@ -9,6 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "content/common/content_export.h"
 #include "content/public/common/javascript_message_type.h"
+#include "content/public/common/media_stream_request.h"
 
 class GURL;
 
@@ -110,6 +111,13 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Return this object cast to a WebContents, if it is one. If the object is
   // not a WebContents, returns NULL.
   virtual WebContents* GetAsWebContents();
+
+  // The render frame has requested access to media devices listed in
+  // |request|, and the client should grant or deny that permission by
+  // calling |callback|.
+  virtual void RequestMediaAccessPermission(
+      const MediaStreamRequest& request,
+      const MediaResponseCallback& callback);
 
  protected:
   virtual ~RenderFrameHostDelegate() {}

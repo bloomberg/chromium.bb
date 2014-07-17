@@ -499,17 +499,11 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
         render_process_host_factory_.get());
     web_contents_.reset(
         TestWebContents::Create(browser_context_.get(), site_instance.get()));
-
-    // This is actually a CaptureTestRenderViewHost.
-    RenderWidgetHostImpl* rwh =
-        RenderWidgetHostImpl::From(web_contents_->GetRenderViewHost());
-
-    std::string device_id =
-        WebContentsCaptureUtil::AppendWebContentsDeviceScheme(
-            base::StringPrintf("%d:%d", rwh->GetProcess()->GetID(),
-                               rwh->GetRoutingID()));
-
-    device_.reset(WebContentsVideoCaptureDevice::Create(device_id));
+    RenderFrameHost* const main_frame = web_contents_->GetMainFrame();
+    device_.reset(WebContentsVideoCaptureDevice::Create(
+        base::StringPrintf("web-contents-media-stream://%d:%d",
+                           main_frame->GetProcess()->GetID(),
+                           main_frame->GetRoutingID())));
 
     base::RunLoop().RunUntilIdle();
   }

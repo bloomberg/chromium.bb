@@ -58,6 +58,8 @@ namespace content {
 
 class ChildFrameCompositingHelper;
 class GeolocationDispatcher;
+class MediaStreamDispatcher;
+class MediaStreamImpl;
 class MediaStreamRendererFactory;
 class MidiDispatcher;
 class NotificationProvider;
@@ -200,6 +202,10 @@ class CONTENT_EXPORT RenderFrameImpl
     const gfx::Range& replacement_range,
     bool keep_selection);
 #endif  // ENABLE_PLUGINS
+
+  // May return NULL in some cases, especially if userMediaClient() returns
+  // NULL.
+  MediaStreamDispatcher* GetMediaStreamDispatcher();
 
   // IPC::Sender
   virtual bool Send(IPC::Message* msg) OVERRIDE;
@@ -526,10 +532,10 @@ class CONTENT_EXPORT RenderFrameImpl
                                const blink::WebURLError& error,
                                bool replace);
 
-  // Initializes |web_user_media_client_|, returning true if successful. Returns
-  // false if it wasn't possible to create a MediaStreamClient (e.g., WebRTC is
-  // disabled) in which case |web_user_media_client_| is NULL.
-  bool InitializeUserMediaClient();
+  // Initializes |web_user_media_client_|. If this fails, because it wasn't
+  // possible to create a MediaStreamClient (e.g., WebRTC is disabled), then
+  // |web_user_media_client_| will remain NULL.
+  void InitializeUserMediaClient();
 
   blink::WebMediaPlayer* CreateWebMediaPlayerForMediaStream(
       const blink::WebURL& url,
@@ -617,7 +623,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // Holds a reference to the service which provides desktop notifications.
   NotificationProvider* notification_provider_;
 
-  blink::WebUserMediaClient* web_user_media_client_;
+  // Destroyed via the RenderFrameObserver::OnDestruct() mechanism.
+  MediaStreamImpl* web_user_media_client_;
 
   // MidiClient attached to this frame; lazily initialized.
   MidiDispatcher* midi_dispatcher_;

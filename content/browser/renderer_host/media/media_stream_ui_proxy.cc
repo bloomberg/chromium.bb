@@ -5,8 +5,8 @@
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 
 #include "base/command_line.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/frame_host/render_frame_host_delegate.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "media/video/capture/fake_video_capture_device.h"
@@ -16,7 +16,7 @@ namespace content {
 class MediaStreamUIProxy::Core {
  public:
   explicit Core(const base::WeakPtr<MediaStreamUIProxy>& proxy,
-                RenderViewHostDelegate* test_render_delegate);
+                RenderFrameHostDelegate* test_render_delegate);
   ~Core();
 
   void RequestAccess(const MediaStreamRequest& request);
@@ -31,7 +31,7 @@ class MediaStreamUIProxy::Core {
   base::WeakPtr<MediaStreamUIProxy> proxy_;
   scoped_ptr<MediaStreamUI> ui_;
 
-  RenderViewHostDelegate* const test_render_delegate_;
+  RenderFrameHostDelegate* const test_render_delegate_;
 
   // WeakPtr<> is used to RequestMediaAccessPermission() because there is no way
   // cancel media requests.
@@ -41,7 +41,7 @@ class MediaStreamUIProxy::Core {
 };
 
 MediaStreamUIProxy::Core::Core(const base::WeakPtr<MediaStreamUIProxy>& proxy,
-                               RenderViewHostDelegate* test_render_delegate)
+                               RenderFrameHostDelegate* test_render_delegate)
     : proxy_(proxy),
       test_render_delegate_(test_render_delegate),
       weak_factory_(this) {
@@ -55,24 +55,22 @@ void MediaStreamUIProxy::Core::RequestAccess(
     const MediaStreamRequest& request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  RenderViewHostDelegate* render_delegate;
-
+  RenderFrameHostDelegate* render_delegate;
   if (test_render_delegate_) {
     render_delegate = test_render_delegate_;
   } else {
-    RenderViewHostImpl* host = RenderViewHostImpl::FromID(
-        request.render_process_id, request.render_view_id);
+    RenderFrameHostImpl* const host = RenderFrameHostImpl::FromID(
+        request.render_process_id, request.render_frame_id);
+    render_delegate = host ? host->delegate() : NULL;
+  }
 
-    // Tab may have gone away.
-    if (!host || !host->GetDelegate()) {
-      ProcessAccessRequestResponse(
-          MediaStreamDevices(),
-          MEDIA_DEVICE_INVALID_STATE,
-          scoped_ptr<MediaStreamUI>());
-      return;
-    }
-
-    render_delegate = host->GetDelegate();
+  // Tab may have gone away, or has no delegate from which to request access.
+  if (!render_delegate) {
+    ProcessAccessRequestResponse(
+        MediaStreamDevices(),
+        MEDIA_DEVICE_INVALID_STATE,
+        scoped_ptr<MediaStreamUI>());
+    return;
   }
 
   render_delegate->RequestMediaAccessPermission(
@@ -116,13 +114,13 @@ scoped_ptr<MediaStreamUIProxy> MediaStreamUIProxy::Create() {
 
 // static
 scoped_ptr<MediaStreamUIProxy> MediaStreamUIProxy::CreateForTests(
-    RenderViewHostDelegate* render_delegate) {
+    RenderFrameHostDelegate* render_delegate) {
   return scoped_ptr<MediaStreamUIProxy>(
       new MediaStreamUIProxy(render_delegate));
 }
 
 MediaStreamUIProxy::MediaStreamUIProxy(
-    RenderViewHostDelegate* test_render_delegate)
+    RenderFrameHostDelegate* test_render_delegate)
     : weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   core_.reset(new Core(weak_factory_.GetWeakPtr(), test_render_delegate));

@@ -70,22 +70,22 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   MOCK_METHOD2(OnDeviceOpened, void(int routing_id, int request_id));
 
   // Accessor to private functions.
-  void OnGenerateStream(int render_view_id,
+  void OnGenerateStream(int render_frame_id,
                         int page_request_id,
                         const StreamOptions& components,
                         const GURL& security_origin,
                         const base::Closure& quit_closure) {
     quit_closures_.push(quit_closure);
     MediaStreamDispatcherHost::OnGenerateStream(
-        render_view_id, page_request_id, components, security_origin, false);
+        render_frame_id, page_request_id, components, security_origin, false);
   }
 
-  void OnStopStreamDevice(int render_view_id,
+  void OnStopStreamDevice(int render_frame_id,
                           const std::string& device_id) {
-    MediaStreamDispatcherHost::OnStopStreamDevice(render_view_id, device_id);
+    MediaStreamDispatcherHost::OnStopStreamDevice(render_frame_id, device_id);
   }
 
-  void OnOpenDevice(int render_view_id,
+  void OnOpenDevice(int render_frame_id,
                     int page_request_id,
                     const std::string& device_id,
                     MediaStreamType type,
@@ -93,10 +93,10 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                     const base::Closure& quit_closure) {
     quit_closures_.push(quit_closure);
     MediaStreamDispatcherHost::OnOpenDevice(
-        render_view_id, page_request_id, device_id, type, security_origin);
+        render_frame_id, page_request_id, device_id, type, security_origin);
   }
 
-  void OnEnumerateDevices(int render_view_id,
+  void OnEnumerateDevices(int render_frame_id,
                           int page_request_id,
                           MediaStreamType type,
                           const GURL& security_origin,
@@ -104,7 +104,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                           const base::Closure& quit_closure) {
     quit_closures_.push(quit_closure);
     MediaStreamDispatcherHost::OnEnumerateDevices(
-        render_view_id, page_request_id, type, security_origin,
+        render_frame_id, page_request_id, type, security_origin,
         hide_labels_if_no_access);
   }
 
@@ -279,7 +279,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
         stream_ui.PassAs<FakeMediaStreamUIProxy>());
   }
 
-  void GenerateStreamAndWaitForResult(int render_view_id,
+  void GenerateStreamAndWaitForResult(int render_frame_id,
                                       int page_request_id,
                                       const StreamOptions& options) {
     base::RunLoop run_loop;
@@ -289,10 +289,11 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     int expected_video_array_size =
         (options.video_requested &&
          physical_video_devices_.size() > 0) ? 1 : 0;
-    EXPECT_CALL(*host_.get(), OnStreamGenerated(render_view_id, page_request_id,
+    EXPECT_CALL(*host_.get(), OnStreamGenerated(render_frame_id,
+                                                page_request_id,
                                                 expected_audio_array_size,
                                                 expected_video_array_size));
-    host_->OnGenerateStream(render_view_id, page_request_id, options, origin_,
+    host_->OnGenerateStream(render_frame_id, page_request_id, options, origin_,
                             run_loop.QuitClosure());
     run_loop.Run();
     EXPECT_FALSE(DoesContainRawIds(host_->audio_devices_));
@@ -302,25 +303,25 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   }
 
   void GenerateStreamAndWaitForFailure(
-    int render_view_id,
+    int render_frame_id,
     int page_request_id,
     const StreamOptions& options,
     MediaStreamRequestResult expected_result) {
       base::RunLoop run_loop;
       EXPECT_CALL(*host_.get(),
-                  OnStreamGenerationFailed(render_view_id,
+                  OnStreamGenerationFailed(render_frame_id,
                                            page_request_id,
                                            expected_result));
-      host_->OnGenerateStream(render_view_id, page_request_id, options, origin_,
-                              run_loop.QuitClosure());
+      host_->OnGenerateStream(render_frame_id, page_request_id, options,
+                              origin_, run_loop.QuitClosure());
       run_loop.Run();
   }
 
-  void OpenVideoDeviceAndWaitForResult(int render_view_id,
+  void OpenVideoDeviceAndWaitForResult(int render_frame_id,
                                        int page_request_id,
                                        const std::string& device_id) {
     base::RunLoop run_loop;
-    host_->OnOpenDevice(render_view_id, page_request_id, device_id,
+    host_->OnOpenDevice(render_frame_id, page_request_id, device_id,
                         MEDIA_DEVICE_VIDEO_CAPTURE, origin_,
                         run_loop.QuitClosure());
     run_loop.Run();
@@ -328,12 +329,12 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     EXPECT_TRUE(DoesEveryDeviceMapToRawId(host_->video_devices_, origin_));
   }
 
-  void EnumerateDevicesAndWaitForResult(int render_view_id,
+  void EnumerateDevicesAndWaitForResult(int render_frame_id,
                                         int page_request_id,
                                         MediaStreamType type,
                                         bool hide_labels_if_no_access) {
     base::RunLoop run_loop;
-    host_->OnEnumerateDevices(render_view_id, page_request_id, type, origin_,
+    host_->OnEnumerateDevices(render_frame_id, page_request_id, type, origin_,
                               hide_labels_if_no_access, run_loop.QuitClosure());
     run_loop.Run();
     ASSERT_FALSE(host_->enumerated_devices_.empty());
@@ -470,8 +471,8 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithAudioAndVideo) {
   EXPECT_EQ(host_->video_devices_.size(), 1u);
 }
 
-// This test generates two streams with video only using the same render view
-// id. The same capture device  with the same device and session id is expected
+// This test generates two streams with video only using the same render frame
+// id. The same capture device with the same device and session id is expected
 // to be used.
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsFromSameRenderId) {
   StreamOptions options(false, true);
@@ -530,7 +531,7 @@ TEST_F(MediaStreamDispatcherHostTest,
 
 
 // This test generates two streams with video only using two separate render
-// view ids. The same device id but different session ids are expected.
+// frame ids. The same device id but different session ids are expected.
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsDifferentRenderId) {
   StreamOptions options(false, true);
 
@@ -545,7 +546,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsDifferentRenderId) {
   const std::string device_id1 = host_->video_devices_.front().device.id;
   const int session_id1 = host_->video_devices_.front().session_id;
 
-  // Generate second stream from another render view.
+  // Generate second stream from another render frame.
   SetupFakeUI(true);
   GenerateStreamAndWaitForResult(kRenderId+1, kPageRequestId + 1, options);
 

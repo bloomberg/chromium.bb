@@ -108,6 +108,12 @@ void SpeechRecognitionDispatcherHost::OnStartRequest(
       SpeechRecognitionManagerImpl::GetInstance()->delegate()->
           FilterProfanities(render_process_id_);
 
+  // TODO(miu): This is a hack to allow SpeechRecognition to operate with the
+  // MediaStreamManager, which partitions requests per RenderFrame, not per
+  // RenderView.  http://crbug.com/390749
+  const int params_render_frame_id = render_view_host ?
+      render_view_host->GetMainFrame()->GetRoutingID() : MSG_ROUTING_NONE;
+
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -116,6 +122,7 @@ void SpeechRecognitionDispatcherHost::OnStartRequest(
                  embedder_render_process_id,
                  embedder_render_view_id,
                  input_params,
+                 params_render_frame_id,
                  filter_profanities));
 }
 
@@ -123,11 +130,13 @@ void SpeechRecognitionDispatcherHost::OnStartRequestOnIO(
     int embedder_render_process_id,
     int embedder_render_view_id,
     const SpeechRecognitionHostMsg_StartRequest_Params& params,
+    int params_render_frame_id,
     bool filter_profanities) {
   SpeechRecognitionSessionContext context;
   context.context_name = params.origin_url;
   context.render_process_id = render_process_id_;
   context.render_view_id = params.render_view_id;
+  context.render_frame_id = params_render_frame_id;
   context.embedder_render_process_id = embedder_render_process_id;
   context.embedder_render_view_id = embedder_render_view_id;
   if (embedder_render_process_id)

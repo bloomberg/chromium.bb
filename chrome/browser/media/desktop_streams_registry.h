@@ -22,19 +22,21 @@ class DesktopStreamsRegistry {
   // Adds new stream to the registry. Called by the implementation of
   // desktopCapture.chooseDesktopMedia() API after user has approved access to
   // |source| for the |origin|. Returns identifier of the new stream.
+  // |render_frame_id| refers to the RenderFrame requesting the stream.
   std::string RegisterStream(int render_process_id,
-                             int render_view_id,
+                             int render_frame_id,
                              const GURL& origin,
                              const content::DesktopMediaID& source,
                              const std::string& extension_name);
 
   // Validates stream identifier specified in getUserMedia(). Returns null
   // DesktopMediaID if the specified |id| is invalid, i.e. wasn't generated
-  // using RegisterStream() or if it was generated for a different origin.
-  // Otherwise returns ID of the source and removes it from the registry.
+  // using RegisterStream() or if it was generated for a different
+  // RenderFrame/origin. Otherwise returns ID of the source and removes it from
+  // the registry.
   content::DesktopMediaID RequestMediaForStreamId(const std::string& id,
                                                   int render_process_id,
-                                                  int render_view_id,
+                                                  int render_frame_id,
                                                   const GURL& origin,
                                                   std::string* extension_name);
 
@@ -44,7 +46,7 @@ class DesktopStreamsRegistry {
     ApprovedDesktopMediaStream();
 
     int render_process_id;
-    int render_view_id;
+    int render_frame_id;
     GURL origin;
     content::DesktopMediaID source;
     std::string extension_name;

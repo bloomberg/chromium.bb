@@ -12,7 +12,7 @@
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_logging.h"
-#include "content/renderer/render_view_impl.h"
+#include "content/renderer/render_frame_impl.h"
 #include "media/audio/audio_output_device.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/sample_rates.h"
@@ -186,10 +186,12 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
 // Returns either AudioParameters::NO_EFFECTS or AudioParameters::DUCKING
 // depending on whether or not an input element is currently open with
 // ducking enabled.
-int GetCurrentDuckingFlag(int render_view_id) {
-  RenderViewImpl* render_view = RenderViewImpl::FromRoutingID(render_view_id);
-  if (render_view && render_view->media_stream_dispatcher() &&
-      render_view->media_stream_dispatcher()->IsAudioDuckingActive()) {
+int GetCurrentDuckingFlag(int render_frame_id) {
+  RenderFrameImpl* const frame =
+      RenderFrameImpl::FromRoutingID(render_frame_id);
+  MediaStreamDispatcher* const dispatcher = frame ?
+      frame->GetMediaStreamDispatcher() : NULL;
+  if (dispatcher && dispatcher->IsAudioDuckingActive()) {
     return media::AudioParameters::DUCKING;
   }
 
@@ -218,7 +220,7 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       sink_params_(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                    media::CHANNEL_LAYOUT_STEREO, 0, sample_rate, 16,
                    frames_per_buffer,
-                   GetCurrentDuckingFlag(source_render_view_id)) {
+                   GetCurrentDuckingFlag(source_render_frame_id)) {
   WebRtcLogMessage(base::StringPrintf(
       "WAR::WAR. source_render_view_id=%d"
       ", session_id=%d, sample_rate=%d, frames_per_buffer=%d, effects=%i",

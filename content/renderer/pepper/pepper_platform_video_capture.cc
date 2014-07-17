@@ -10,19 +10,19 @@
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/pepper/pepper_video_capture_host.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view_impl.h"
 #include "media/base/bind_to_current_loop.h"
 #include "url/gurl.h"
 
 namespace content {
 
 PepperPlatformVideoCapture::PepperPlatformVideoCapture(
-    const base::WeakPtr<RenderViewImpl>& render_view,
+    int render_frame_id,
     const std::string& device_id,
     const GURL& document_url,
     PepperVideoCaptureHost* handler)
-    : render_view_(render_view),
+    : render_frame_id_(render_frame_id),
       device_id_(device_id),
       session_id_(0),
       handler_(handler),
@@ -31,8 +31,9 @@ PepperPlatformVideoCapture::PepperPlatformVideoCapture(
       weak_factory_(this) {
   // We need to open the device and obtain the label and session ID before
   // initializing.
-  if (render_view_.get()) {
-    pending_open_device_id_ = GetMediaDeviceManager()->OpenDevice(
+  PepperMediaDeviceManager* const device_manager = GetMediaDeviceManager();
+  if (device_manager) {
+    pending_open_device_id_ = device_manager->OpenDevice(
         PP_DEVICETYPE_DEV_VIDEOCAPTURE,
         device_id,
         document_url,
@@ -75,16 +76,18 @@ void PepperPlatformVideoCapture::DetachEventHandler() {
     release_device_cb_.Run();
     release_device_cb_.Reset();
   }
-  if (render_view_.get()) {
-    if (!label_.empty()) {
-      GetMediaDeviceManager()->CloseDevice(label_);
-      label_.clear();
-    }
-    if (pending_open_device_) {
-      GetMediaDeviceManager()->CancelOpenDevice(pending_open_device_id_);
-      pending_open_device_ = false;
-      pending_open_device_id_ = -1;
-    }
+  if (!label_.empty()) {
+    PepperMediaDeviceManager* const device_manager = GetMediaDeviceManager();
+    if (device_manager)
+      device_manager->CloseDevice(label_);
+    label_.clear();
+  }
+  if (pending_open_device_) {
+    PepperMediaDeviceManager* const device_manager = GetMediaDeviceManager();
+    if (device_manager)
+      device_manager->CancelOpenDevice(pending_open_device_id_);
+    pending_open_device_ = false;
+    pending_open_device_id_ = -1;
   }
 }
 
@@ -101,10 +104,11 @@ void PepperPlatformVideoCapture::OnDeviceOpened(int request_id,
   pending_open_device_ = false;
   pending_open_device_id_ = -1;
 
-  succeeded = succeeded && render_view_.get();
+  PepperMediaDeviceManager* const device_manager = GetMediaDeviceManager();
+  succeeded = succeeded && device_manager;
   if (succeeded) {
     label_ = label;
-    session_id_ = GetMediaDeviceManager()->GetSessionID(
+    session_id_ = device_manager->GetSessionID(
         PP_DEVICETYPE_DEV_VIDEOCAPTURE, label);
     VideoCaptureImplManager* manager =
         RenderThreadImpl::current()->video_capture_impl_manager();
@@ -145,7 +149,10 @@ void PepperPlatformVideoCapture::OnFrameReady(
 }
 
 PepperMediaDeviceManager* PepperPlatformVideoCapture::GetMediaDeviceManager() {
-  return PepperMediaDeviceManager::GetForRenderView(render_view_.get());
+  RenderFrameImpl* const render_frame =
+      RenderFrameImpl::FromRoutingID(render_frame_id_);
+  return render_frame ?
+      PepperMediaDeviceManager::GetForRenderFrame(render_frame) : NULL;
 }
 
 }  // namespace content

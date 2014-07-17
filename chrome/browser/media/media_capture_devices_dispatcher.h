@@ -51,8 +51,8 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
     // Handle an information update related to a media stream request.
     virtual void OnRequestUpdate(
         int render_process_id,
-        int render_view_id,
-        const content::MediaStreamDevice& device,
+        int render_frame_id,
+        content::MediaStreamType stream_type,
         const content::MediaRequestState state) {}
 
     // Handle an information update that a new stream is being created.
@@ -116,10 +116,10 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   virtual void OnVideoCaptureDevicesChanged() OVERRIDE;
   virtual void OnMediaRequestStateChanged(
       int render_process_id,
-      int render_view_id,
+      int render_frame_id,
       int page_request_id,
       const GURL& security_origin,
-      const content::MediaStreamDevice& device,
+      content::MediaStreamType stream_type,
       content::MediaRequestState state) OVERRIDE;
   virtual void OnCreatingAudioStream(int render_process_id,
                                      int render_frame_id) OVERRIDE;
@@ -203,10 +203,10 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   void NotifyVideoDevicesChangedOnUIThread();
   void UpdateMediaRequestStateOnUIThread(
       int render_process_id,
-      int render_view_id,
+      int render_frame_id,
       int page_request_id,
       const GURL& security_origin,
-      const content::MediaStreamDevice& device,
+      content::MediaStreamType stream_type,
       content::MediaRequestState state);
   void OnCreatingAudioStreamOnUIThread(int render_process_id,
                                        int render_frame_id);
@@ -236,7 +236,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   // MEDIA_REQUEST_STATE_CLOSING is encountered.
   struct DesktopCaptureSession {
     int render_process_id;
-    int render_view_id;
+    int render_frame_id;
     int page_request_id;
   };
   typedef std::list<DesktopCaptureSession> DesktopCaptureSessions;

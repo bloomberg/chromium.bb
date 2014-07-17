@@ -225,7 +225,7 @@ class WebContentsCaptureMachine
     : public VideoCaptureMachine,
       public WebContentsObserver {
  public:
-  WebContentsCaptureMachine(int render_process_id, int render_view_id);
+  WebContentsCaptureMachine(int render_process_id, int main_render_frame_id);
   virtual ~WebContentsCaptureMachine();
 
   // VideoCaptureMachine overrides.
@@ -301,7 +301,7 @@ class WebContentsCaptureMachine
 
   // Parameters saved in constructor.
   const int initial_render_process_id_;
-  const int initial_render_view_id_;
+  const int initial_main_render_frame_id_;
 
   // A dedicated worker thread on which SkBitmap->VideoFrame conversion will
   // occur. Only used when this activity cannot be done on the GPU.
@@ -558,9 +558,9 @@ void VideoFrameDeliveryLog::ChronicleFrameDelivery(base::TimeTicks frame_time) {
 }
 
 WebContentsCaptureMachine::WebContentsCaptureMachine(int render_process_id,
-                                                     int render_view_id)
+                                                     int main_render_frame_id)
     : initial_render_process_id_(render_process_id),
-      initial_render_view_id_(render_view_id),
+      initial_main_render_frame_id_(main_render_frame_id),
       fullscreen_widget_id_(MSG_ROUTING_NONE),
       weak_ptr_factory_(this) {}
 
@@ -672,22 +672,21 @@ void WebContentsCaptureMachine::Capture(
 }
 
 bool WebContentsCaptureMachine::StartObservingWebContents() {
-  // Look-up the RenderViewHost and, from that, the WebContents that wraps it.
+  // Look-up the RenderFrameHost and, from that, the WebContents that wraps it.
   // If successful, begin observing the WebContents instance.
   //
   // Why this can be unsuccessful: The request for mirroring originates in a
-  // render process, and this request is based on the current RenderView
+  // render process, and this request is based on the current main RenderFrame
   // associated with a tab.  However, by the time we get up-and-running here,
   // there have been multiple back-and-forth IPCs between processes, as well as
   // a bit of indirection across threads.  It's easily possible that, in the
-  // meantime, the original RenderView may have gone away.
-  RenderViewHost* const rvh =
-      RenderViewHost::FromID(initial_render_process_id_,
-                             initial_render_view_id_);
-  DVLOG_IF(1, !rvh) << "RenderViewHost::FromID("
-                    << initial_render_process_id_ << ", "
-                    << initial_render_view_id_ << ") returned NULL.";
-  Observe(rvh ? WebContents::FromRenderViewHost(rvh) : NULL);
+  // meantime, the original RenderFrame may have gone away.
+  Observe(WebContents::FromRenderFrameHost(RenderFrameHost::FromID(
+      initial_render_process_id_, initial_main_render_frame_id_)));
+  DVLOG_IF(1, !web_contents())
+      << "Could not find WebContents associated with main RenderFrameHost "
+      << "referenced by render_process_id=" << initial_render_process_id_
+      << ", routing_id=" << initial_main_render_frame_id_;
 
   WebContentsImpl* contents = static_cast<WebContentsImpl*>(web_contents());
   if (contents) {
@@ -696,8 +695,6 @@ bool WebContentsCaptureMachine::StartObservingWebContents() {
     RenewFrameSubscription();
     return true;
   }
-
-  DVLOG(1) << "WebContents::FromRenderViewHost(" << rvh << ") returned NULL.";
   return false;
 }
 
@@ -786,9 +783,10 @@ void WebContentsCaptureMachine::RenewFrameSubscription() {
 }  // namespace
 
 WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice(
-    int render_process_id, int render_view_id)
+    int render_process_id, int main_render_frame_id)
     : core_(new ContentVideoCaptureDeviceCore(scoped_ptr<VideoCaptureMachine>(
-        new WebContentsCaptureMachine(render_process_id, render_view_id)))) {}
+        new WebContentsCaptureMachine(
+            render_process_id, main_render_frame_id)))) {}
 
 WebContentsVideoCaptureDevice::~WebContentsVideoCaptureDevice() {
   DVLOG(2) << "WebContentsVideoCaptureDevice@" << this << " destroying.";
@@ -799,13 +797,14 @@ media::VideoCaptureDevice* WebContentsVideoCaptureDevice::Create(
     const std::string& device_id) {
   // Parse device_id into render_process_id and render_view_id.
   int render_process_id = -1;
-  int render_view_id = -1;
+  int main_render_frame_id = -1;
   if (!WebContentsCaptureUtil::ExtractTabCaptureTarget(
-           device_id, &render_process_id, &render_view_id)) {
+           device_id, &render_process_id, &main_render_frame_id)) {
     return NULL;
   }
 
-  return new WebContentsVideoCaptureDevice(render_process_id, render_view_id);
+  return new WebContentsVideoCaptureDevice(
+      render_process_id, main_render_frame_id);
 }
 
 void WebContentsVideoCaptureDevice::AllocateAndStart(

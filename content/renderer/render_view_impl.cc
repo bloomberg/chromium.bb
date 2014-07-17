@@ -87,7 +87,6 @@
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/memory_benchmarking_extension.h"
@@ -726,7 +725,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
 #endif
       has_scrolled_focused_editable_node_into_rect_(false),
       speech_recognition_dispatcher_(NULL),
-      media_stream_dispatcher_(NULL),
       browser_plugin_manager_(NULL),
       devtools_agent_(NULL),
       accessibility_mode_(AccessibilityModeOff),
@@ -848,11 +846,6 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
     webview()->setOpenedByDOM();
 
   OnSetRendererPrefs(params->renderer_prefs);
-
-#if defined(ENABLE_WEBRTC)
-  if (!media_stream_dispatcher_)
-    media_stream_dispatcher_ = new MediaStreamDispatcher(this);
-#endif
 
   new MHTMLGenerator(this);
 #if defined(OS_MACOSX)

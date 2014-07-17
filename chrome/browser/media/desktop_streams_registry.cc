@@ -32,16 +32,17 @@ DesktopStreamsRegistry::~DesktopStreamsRegistry() {}
 
 std::string DesktopStreamsRegistry::RegisterStream(
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const GURL& origin,
     const content::DesktopMediaID& source,
     const std::string& extension_name) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   std::string id = GenerateRandomStreamId();
+  DCHECK(approved_streams_.find(id) == approved_streams_.end());
   ApprovedDesktopMediaStream& stream = approved_streams_[id];
   stream.render_process_id = render_process_id;
-  stream.render_view_id = render_view_id;
+  stream.render_frame_id = render_frame_id;
   stream.origin = origin;
   stream.source = source;
   stream.extension_name = extension_name;
@@ -58,7 +59,7 @@ std::string DesktopStreamsRegistry::RegisterStream(
 content::DesktopMediaID DesktopStreamsRegistry::RequestMediaForStreamId(
     const std::string& id,
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const GURL& origin,
     std::string* extension_name) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -69,7 +70,7 @@ content::DesktopMediaID DesktopStreamsRegistry::RequestMediaForStreamId(
   // the same origin and the same renderer.
   if (it == approved_streams_.end() ||
       render_process_id != it->second.render_process_id ||
-      render_view_id != it->second.render_view_id ||
+      render_frame_id != it->second.render_frame_id ||
       origin != it->second.origin) {
     return content::DesktopMediaID();
   }
@@ -86,4 +87,4 @@ void DesktopStreamsRegistry::CleanupStream(const std::string& id) {
 }
 
 DesktopStreamsRegistry::ApprovedDesktopMediaStream::ApprovedDesktopMediaStream()
-    : render_process_id(-1), render_view_id(-1) {}
+    : render_process_id(-1), render_frame_id(-1) {}

@@ -29,25 +29,53 @@ chrome.test.runTests([
   },
 
   function getCapturedTabs() {
-    var activeStream = null;
+    chrome.tabs.create({active:true}, function(secondTab) {
+      // chrome.tabCapture.capture() will only capture the active tab.
+      chrome.test.assertTrue(secondTab.active);
 
-    var capturedTabsAfterClose = function(infos) {
-      chrome.test.assertEq(1, infos.length);
-      chrome.test.assertEq('stopped', infos[0].status);
-      chrome.test.succeed();
-    };
+      function checkInfoForSecondTabHasStatus(infos, status) {
+        for (var i = 0; i < infos.length; ++i) {
+          if (infos[i].tabId == secondTab) {
+            chrome.test.assertNe(null, status);
+            chrome.test.assertEq(status, infos[i].status);
+            chrome.test.assertEq(false, infos[i].fullscreen);
+            return;
+          }
+        }
+      }
 
-    var capturedTabsAfterOpen = function(infos) {
-      chrome.test.assertEq(1, infos.length);
-      chrome.test.assertEq('active', infos[0].status);
-      activeStream.stop();
-      tabCapture.getCapturedTabs(capturedTabsAfterClose);
-    };
+      // Step 4: After the second tab is closed, check that getCapturedTabs()
+      // returns no info at all about the second tab.  http://crbug.com/338445
+      chrome.tabs.onRemoved.addListener(function() {
+        tabCapture.getCapturedTabs(function checkNoInfos(infos) {
+          checkInfoForSecondTabHasStatus(infos, null);
+          chrome.test.succeed();
+        });
+      });
 
-    tabCapture.capture({audio: true, video: true}, function(stream) {
-      chrome.test.assertTrue(!!stream);
-      activeStream = stream;
-      tabCapture.getCapturedTabs(capturedTabsAfterOpen);
+      var activeStream = null;
+
+      // Step 3: After the stream is stopped, check that getCapturedTabs()
+      // returns 'stopped' capturing status for the second tab.
+      var capturedTabsAfterStopCapture = function(infos) {
+        checkInfoForSecondTabHasStatus(infos, 'stopped');
+        chrome.tabs.remove(secondTab.id);
+      };
+
+      // Step 2: After the stream is started, check that getCapturedTabs()
+      // returns 'active' capturing status for the second tab.
+      var capturedTabsAfterStartCapture = function(infos) {
+        checkInfoForSecondTabHasStatus(infos, 'active');
+        activeStream.stop();
+        tabCapture.getCapturedTabs(capturedTabsAfterStopCapture);
+      };
+
+      // Step 1: Start capturing the second tab (the currently active tab).
+      tabCapture.capture({audio: true, video: true}, function(stream) {
+        chrome.test.assertTrue(!!stream);
+        activeStream = stream;
+        tabCapture.getCapturedTabs(capturedTabsAfterStartCapture);
+      });
     });
   },
 

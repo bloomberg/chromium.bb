@@ -17,7 +17,7 @@ namespace content {
 class CONTENT_EXPORT MediaStreamAudioSource
     : NON_EXPORTED_BASE(public MediaStreamSource) {
  public:
-  MediaStreamAudioSource(int render_view_id,
+  MediaStreamAudioSource(int render_frame_id,
                          const StreamDeviceInfo& device_info,
                          const SourceStoppedCallback& stop_callback,
                          PeerConnectionDependencyFactory* factory);
@@ -49,14 +49,14 @@ class CONTENT_EXPORT MediaStreamAudioSource
   virtual void DoStopSource() OVERRIDE;
 
  private:
-  int render_view_id_;  // Render view ID that created this source.
+  const int render_view_id_;  // Render view ID that created this source.
+  PeerConnectionDependencyFactory* const factory_;
+
   // This member holds an instance of webrtc::LocalAudioSource. This is used
   // as a container for audio options.
   scoped_refptr<webrtc::AudioSourceInterface> local_audio_source_;
 
   scoped_refptr<WebRtcAudioCapturer> audio_capturer_;
-
-  PeerConnectionDependencyFactory* factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamAudioSource);
 };

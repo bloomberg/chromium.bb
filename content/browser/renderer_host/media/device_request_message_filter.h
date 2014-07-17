@@ -32,22 +32,22 @@ class CONTENT_EXPORT DeviceRequestMessageFilter : public BrowserMessageFilter,
   // we don't have to override all these callbacks we don't care about.
   // (crbug.com/249476)
   virtual void StreamGenerated(
-      int render_view_id, int page_request_id, const std::string& label,
+      int render_frame_id, int page_request_id, const std::string& label,
       const StreamDeviceInfoArray& audio_devices,
       const StreamDeviceInfoArray& video_devices) OVERRIDE {}
   virtual void StreamGenerationFailed(
-      int render_view_id,
+      int render_frame_id,
       int page_request_id,
       content::MediaStreamRequestResult result) OVERRIDE {}
-  virtual void DeviceStopped(int render_view_id,
+  virtual void DeviceStopped(int render_frame_id,
                              const std::string& label,
                              const StreamDeviceInfo& device) OVERRIDE {}
-  virtual void DeviceOpened(int render_view_id,
+  virtual void DeviceOpened(int render_frame_id,
                             int page_request_id,
                             const std::string& label,
                             const StreamDeviceInfo& video_device) OVERRIDE {}
   // DevicesEnumerated() is the only callback we're interested in.
-  virtual void DevicesEnumerated(int render_view_id,
+  virtual void DevicesEnumerated(int render_frame_id,
                                  int page_request_id,
                                  const std::string& label,
                                  const StreamDeviceInfoArray& devices) OVERRIDE;

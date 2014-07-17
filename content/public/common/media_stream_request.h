@@ -192,7 +192,7 @@ typedef std::map<MediaStreamType, MediaStreamDevices> MediaStreamDeviceMap;
 struct CONTENT_EXPORT MediaStreamRequest {
   MediaStreamRequest(
       int render_process_id,
-      int render_view_id,
+      int render_frame_id,
       int page_request_id,
       const GURL& security_origin,
       bool user_gesture,
@@ -209,12 +209,12 @@ struct CONTENT_EXPORT MediaStreamRequest {
   // displayed for this renderer.
   int render_process_id;
 
-  // This is the render view id for the renderer associated with generating
+  // This is the render frame id for the renderer associated with generating
   // frames for a MediaStream. Any indicators associated with a capture will be
   // displayed for this renderer.
-  int render_view_id;
+  int render_frame_id;
 
-  // The unique id combined with render_process_id and render_view_id for
+  // The unique id combined with render_process_id and render_frame_id for
   // identifying this request. This is used for cancelling request.
   int page_request_id;
 

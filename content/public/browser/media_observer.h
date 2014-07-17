@@ -24,10 +24,10 @@ class MediaObserver {
   // Called when a media request changes state.
   virtual void OnMediaRequestStateChanged(
       int render_process_id,
-      int render_view_id,
+      int render_frame_id,
       int page_request_id,
       const GURL& security_origin,
-      const MediaStreamDevice& device,
+      MediaStreamType stream_type,
       MediaRequestState state) = 0;
 
   // Called when an audio stream is being created.

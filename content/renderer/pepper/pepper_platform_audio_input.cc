@@ -12,6 +12,7 @@
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/pepper/pepper_audio_input_host.h"
 #include "content/renderer/pepper/pepper_media_device_manager.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "media/audio/audio_manager_base.h"
@@ -22,7 +23,7 @@ namespace content {
 
 // static
 PepperPlatformAudioInput* PepperPlatformAudioInput::Create(
-    const base::WeakPtr<RenderViewImpl>& render_view,
+    int render_frame_id,
     const std::string& device_id,
     const GURL& document_url,
     int sample_rate,
@@ -30,7 +31,7 @@ PepperPlatformAudioInput* PepperPlatformAudioInput::Create(
     PepperAudioInputHost* client) {
   scoped_refptr<PepperPlatformAudioInput> audio_input(
       new PepperPlatformAudioInput());
-  if (audio_input->Initialize(render_view,
+  if (audio_input->Initialize(render_frame_id,
                               device_id,
                               document_url,
                               sample_rate,
@@ -139,12 +140,13 @@ PepperPlatformAudioInput::PepperPlatformAudioInput()
     : client_(NULL),
       main_message_loop_proxy_(base::MessageLoopProxy::current()),
       io_message_loop_proxy_(ChildProcess::current()->io_message_loop_proxy()),
+      render_frame_id_(MSG_ROUTING_NONE),
       create_stream_sent_(false),
       pending_open_device_(false),
       pending_open_device_id_(-1) {}
 
 bool PepperPlatformAudioInput::Initialize(
-    const base::WeakPtr<RenderViewImpl>& render_view,
+    int render_frame_id,
     const std::string& device_id,
     const GURL& document_url,
     int sample_rate,
@@ -152,15 +154,20 @@ bool PepperPlatformAudioInput::Initialize(
     PepperAudioInputHost* client) {
   DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
 
-  if (!render_view.get() || !client)
+  RenderFrameImpl* const render_frame =
+      RenderFrameImpl::FromRoutingID(render_frame_id);
+  if (!render_frame || !client)
+    return false;
+
+  render_frame_id_ = render_frame_id;
+  client_ = client;
+
+  if (!GetMediaDeviceManager())
     return false;
 
   ipc_ = RenderThreadImpl::current()
              ->audio_input_message_filter()
-             ->CreateAudioInputIPC(render_view->GetRoutingID());
-
-  render_view_ = render_view;
-  client_ = client;
+             ->CreateAudioInputIPC(render_frame->render_view()->GetRoutingID());
 
   params_.Reset(media::AudioParameters::AUDIO_PCM_LINEAR,
                 media::CHANNEL_LAYOUT_MONO,
@@ -230,12 +237,13 @@ void PepperPlatformAudioInput::OnDeviceOpened(int request_id,
   pending_open_device_ = false;
   pending_open_device_id_ = -1;
 
-  if (succeeded && render_view_.get()) {
+  PepperMediaDeviceManager* const device_manager = GetMediaDeviceManager();
+  if (succeeded && device_manager) {
     DCHECK(!label.empty());
     label_ = label;
 
     if (client_) {
-      int session_id = GetMediaDeviceManager()->GetSessionID(
+      int session_id = device_manager->GetSessionID(
           PP_DEVICETYPE_DEV_AUDIOCAPTURE, label);
       io_message_loop_proxy_->PostTask(
           FROM_HERE,
@@ -254,16 +262,18 @@ void PepperPlatformAudioInput::OnDeviceOpened(int request_id,
 void PepperPlatformAudioInput::CloseDevice() {
   DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
 
-  if (render_view_.get()) {
-    if (!label_.empty()) {
-      GetMediaDeviceManager()->CloseDevice(label_);
-      label_.clear();
-    }
-    if (pending_open_device_) {
-      GetMediaDeviceManager()->CancelOpenDevice(pending_open_device_id_);
-      pending_open_device_ = false;
-      pending_open_device_id_ = -1;
-    }
+  if (!label_.empty()) {
+    PepperMediaDeviceManager* const device_manager = GetMediaDeviceManager();
+    if (device_manager)
+      device_manager->CloseDevice(label_);
+    label_.clear();
+  }
+  if (pending_open_device_) {
+    PepperMediaDeviceManager* const device_manager = GetMediaDeviceManager();
+    if (device_manager)
+      device_manager->CancelOpenDevice(pending_open_device_id_);
+    pending_open_device_ = false;
+    pending_open_device_id_ = -1;
   }
 }
 
@@ -275,7 +285,12 @@ void PepperPlatformAudioInput::NotifyStreamCreationFailed() {
 }
 
 PepperMediaDeviceManager* PepperPlatformAudioInput::GetMediaDeviceManager() {
-  return PepperMediaDeviceManager::GetForRenderView(render_view_.get());
+  DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
+
+  RenderFrameImpl* const render_frame =
+      RenderFrameImpl::FromRoutingID(render_frame_id_);
+  return render_frame ?
+      PepperMediaDeviceManager::GetForRenderFrame(render_frame) : NULL;
 }
 
 }  // namespace content

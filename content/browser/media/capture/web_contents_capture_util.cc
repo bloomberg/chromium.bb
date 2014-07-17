@@ -9,40 +9,24 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 
-namespace {
-
-const char kVirtualDeviceScheme[] = "virtual-media-stream://";
-
-}  // namespace
-
 namespace content {
-
-std::string WebContentsCaptureUtil::AppendWebContentsDeviceScheme(
-    const std::string& device_id) {
-  return kVirtualDeviceScheme + device_id;
-}
-
-std::string WebContentsCaptureUtil::StripWebContentsDeviceScheme(
-    const std::string& device_id) {
-  return (IsWebContentsDeviceId(device_id) ?
-              device_id.substr(arraysize(kVirtualDeviceScheme) - 1) :
-              device_id);
-}
 
 bool WebContentsCaptureUtil::IsWebContentsDeviceId(
     const std::string& device_id) {
-  return StartsWithASCII(device_id, kVirtualDeviceScheme, true);
+  int ignored;
+  return ExtractTabCaptureTarget(device_id, &ignored, &ignored);
 }
 
 bool WebContentsCaptureUtil::ExtractTabCaptureTarget(
     const std::string& device_id_param,
     int* render_process_id,
-    int* render_view_id) {
-  if (!IsWebContentsDeviceId(device_id_param))
+    int* main_render_frame_id) {
+  static const char kDeviceScheme[] = "web-contents-media-stream://";
+  if (!StartsWithASCII(device_id_param, kDeviceScheme, true))
     return false;
 
   const std::string device_id = device_id_param.substr(
-      arraysize(kVirtualDeviceScheme) - 1);
+      arraysize(kDeviceScheme) - 1);
 
   const size_t sep_pos = device_id.find(':');
   if (sep_pos == std::string::npos)
@@ -53,7 +37,7 @@ bool WebContentsCaptureUtil::ExtractTabCaptureTarget(
                                      device_id.length() - sep_pos - 1);
 
   return (base::StringToInt(component1, render_process_id) &&
-          base::StringToInt(component2, render_view_id));
+          base::StringToInt(component2, main_render_frame_id));
 }
 
 }  // namespace content

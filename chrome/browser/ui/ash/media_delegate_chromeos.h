@@ -24,8 +24,8 @@ class MediaDelegateChromeOS : public ash::MediaDelegate,
 
   // MediaCaptureDevicesDispatcher::Observer:
   virtual void OnRequestUpdate(int render_process_id,
-                               int render_view_id,
-                               const content::MediaStreamDevice& device,
+                               int render_frame_id,
+                               content::MediaStreamType stream_type,
                                const content::MediaRequestState state) OVERRIDE;
 
  private:

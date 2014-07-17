@@ -42,13 +42,13 @@ bool GetFirstConstraintByName(const StreamOptions::Constraints& mandatory,
                               std::string* value,
                               bool* is_mandatory) {
   if (GetFirstConstraintByName(mandatory, name, value)) {
-      if (is_mandatory)
-        *is_mandatory = true;
-      return true;
-    }
     if (is_mandatory)
-      *is_mandatory = false;
-    return GetFirstConstraintByName(optional, name, value);
+      *is_mandatory = true;
+    return true;
+  }
+  if (is_mandatory)
+    *is_mandatory = false;
+  return GetFirstConstraintByName(optional, name, value);
 }
 
 } // namespace

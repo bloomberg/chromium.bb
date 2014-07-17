@@ -85,7 +85,7 @@ const MediaStreamDevice* MediaStreamDevices::FindById(
 
 MediaStreamRequest::MediaStreamRequest(
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     int page_request_id,
     const GURL& security_origin,
     bool user_gesture,
@@ -95,7 +95,7 @@ MediaStreamRequest::MediaStreamRequest(
     MediaStreamType audio_type,
     MediaStreamType video_type)
     : render_process_id(render_process_id),
-      render_view_id(render_view_id),
+      render_frame_id(render_frame_id),
       page_request_id(page_request_id),
       security_origin(security_origin),
       user_gesture(user_gesture),

@@ -16,12 +16,12 @@
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/features/simple_feature.h"
@@ -85,12 +85,11 @@ bool TabCaptureCaptureFunction::RunSync() {
   const Extension* extension = GetExtension();
   const std::string& extension_id = extension->id();
 
-  const int tab_id = SessionID::IdForTab(target_contents);
-
   // Make sure either we have been granted permission to capture through an
   // extension icon click or our extension is whitelisted.
   if (!extension->permissions_data()->HasAPIPermissionForTab(
-          tab_id, APIPermission::kTabCaptureForTab) &&
+          SessionID::IdForTab(target_contents),
+          APIPermission::kTabCaptureForTab) &&
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWhitelistedExtensionID) != extension_id &&
       !SimpleFeature::IsIdInList(
@@ -101,10 +100,6 @@ bool TabCaptureCaptureFunction::RunSync() {
     error_ = kGrantError;
     return false;
   }
-
-  content::RenderViewHost* const rvh = target_contents->GetRenderViewHost();
-  int render_process_id = rvh->GetProcess()->GetID();
-  int routing_id = rvh->GetRoutingID();
 
   // Create a constraints vector. We will modify all the constraints in this
   // vector to append our chrome specific constraints.
@@ -131,8 +126,13 @@ bool TabCaptureCaptureFunction::RunSync() {
   }
 
   // Device id we use for Tab Capture.
-  std::string device_id =
-      base::StringPrintf("%i:%i", render_process_id, routing_id);
+  content::RenderFrameHost* const main_frame = target_contents->GetMainFrame();
+  // TODO(miu): We should instead use a "randomly generated device ID" scheme,
+  // like that employed by the desktop capture API.  http://crbug.com/163100
+  const std::string device_id = base::StringPrintf(
+      "web-contents-media-stream://%i:%i",
+      main_frame->GetProcess()->GetID(),
+      main_frame->GetRoutingID());
 
   // Append chrome specific tab constraints.
   for (std::vector<MediaStreamConstraint*>::iterator it = constraints.begin();
@@ -144,11 +144,7 @@ bool TabCaptureCaptureFunction::RunSync() {
 
   extensions::TabCaptureRegistry* registry =
       extensions::TabCaptureRegistry::Get(GetProfile());
-  if (!registry->AddRequest(render_process_id,
-                            routing_id,
-                            extension_id,
-                            tab_id,
-                            tab_capture::TAB_CAPTURE_STATE_NONE)) {
+  if (!registry->AddRequest(target_contents, extension_id)) {
     error_ = kCapturingSameTab;
     return false;
   }
@@ -166,19 +162,9 @@ bool TabCaptureCaptureFunction::RunSync() {
 bool TabCaptureGetCapturedTabsFunction::RunSync() {
   extensions::TabCaptureRegistry* registry =
       extensions::TabCaptureRegistry::Get(GetProfile());
-
-  const TabCaptureRegistry::RegistryCaptureInfo& captured_tabs =
-      registry->GetCapturedTabs(GetExtension()->id());
-
-  base::ListValue *list = new base::ListValue();
-  for (TabCaptureRegistry::RegistryCaptureInfo::const_iterator it =
-       captured_tabs.begin(); it != captured_tabs.end(); ++it) {
-    scoped_ptr<tab_capture::CaptureInfo> info(new tab_capture::CaptureInfo());
-    info->tab_id = it->first;
-    info->status = it->second;
-    list->Append(info->ToValue().release());
-  }
-
+  base::ListValue* const list = new base::ListValue();
+  if (registry)
+    registry->GetCapturedTabs(GetExtension()->id(), list);
   SetResult(list);
   return true;
 }

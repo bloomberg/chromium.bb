@@ -13,9 +13,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 
 namespace base {
@@ -24,18 +25,16 @@ class MessageLoopProxy;
 
 namespace content {
 
-class RenderViewImpl;
-
 // MediaStreamDispatcher is a delegate for the Media Stream API messages.
 // MediaStreams are used by WebKit to open media devices such as Video Capture
 // and Audio input devices.
 // It's the complement of MediaStreamDispatcherHost (owned by
 // BrowserRenderProcessHost).
 class CONTENT_EXPORT MediaStreamDispatcher
-    : public RenderViewObserver,
+    : public RenderFrameObserver,
       public base::SupportsWeakPtr<MediaStreamDispatcher> {
  public:
-  explicit MediaStreamDispatcher(RenderViewImpl* render_view);
+  explicit MediaStreamDispatcher(RenderFrame* render_frame);
   virtual ~MediaStreamDispatcher();
 
   // Request a new media stream to be created.
@@ -115,11 +114,12 @@ class CONTENT_EXPORT MediaStreamDispatcher
   // opened it.
   struct Stream;
 
-  // RenderViewObserver OVERRIDE.
+  // RenderFrameObserver OVERRIDE.
+  virtual void OnDestruct() OVERRIDE;
   virtual bool Send(IPC::Message* message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Messages from the browser.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   void OnStreamGenerated(
       int request_id,
       const std::string& label,
@@ -140,7 +140,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
   void OnDeviceOpenFailed(int request_id);
 
   // Used for DCHECKs so methods calls won't execute in the wrong thread.
-  scoped_refptr<base::MessageLoopProxy> main_loop_;
+  base::ThreadChecker thread_checker_;
 
   int next_ipc_id_;
   typedef std::map<std::string, Stream> LabelStreamMap;

@@ -28,7 +28,7 @@ class MockMediaStreamManager : public MediaStreamManager {
   MOCK_METHOD8(EnumerateDevices,
                std::string(MediaStreamRequester* requester,
                            int render_process_id,
-                           int render_view_id,
+                           int render_frame_id,
                            const ResourceContext::SaltCallback& rc,
                            int page_request_id,
                            MediaStreamType type,
@@ -37,7 +37,7 @@ class MockMediaStreamManager : public MediaStreamManager {
 
   std::string DoEnumerateDevices(MediaStreamRequester* requester,
                                  int render_process_id,
-                                 int render_view_id,
+                                 int render_frame_id,
                                  const ResourceContext::SaltCallback& rc,
                                  int page_request_id,
                                  MediaStreamType type,

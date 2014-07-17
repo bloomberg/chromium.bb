@@ -21,9 +21,9 @@ class MockMediaObserver : public MediaObserver {
   virtual ~MockMediaObserver();
 
   MOCK_METHOD6(OnMediaRequestStateChanged,
-               void(int render_process_id, int render_view_id,
+               void(int render_process_id, int render_frame_id,
                     int page_request_id, const GURL& security_origin,
-                    const MediaStreamDevice& device,
+                    MediaStreamType stream_type,
                     const MediaRequestState state));
 };
 

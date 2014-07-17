@@ -22,12 +22,11 @@ class GURL;
 namespace content {
 class PepperMediaDeviceManager;
 class PepperVideoCaptureHost;
-class RenderViewImpl;
 
 // This object must only be used on the thread it's constructed on.
 class PepperPlatformVideoCapture {
  public:
-  PepperPlatformVideoCapture(const base::WeakPtr<RenderViewImpl>& render_view,
+  PepperPlatformVideoCapture(int render_frame_id,
                              const std::string& device_id,
                              const GURL& document_url,
                              PepperVideoCaptureHost* handler);
@@ -46,11 +45,13 @@ class PepperPlatformVideoCapture {
                     const media::VideoCaptureFormat& format,
                     const base::TimeTicks& estimated_capture_time);
 
+  // Can return NULL if the RenderFrame referenced by |render_frame_id_| has
+  // gone away.
   PepperMediaDeviceManager* GetMediaDeviceManager();
 
-  base::WeakPtr<RenderViewImpl> render_view_;
+  const int render_frame_id_;
+  const std::string device_id_;
 
-  std::string device_id_;
   std::string label_;
   int session_id_;
   base::Closure release_device_cb_;

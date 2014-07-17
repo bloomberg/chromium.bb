@@ -81,13 +81,13 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Creates a new media access request which is identified by a unique string
   // that's returned to the caller. This will trigger the infobar and ask users
-  // for access to the device. |render_process_id| and |render_view_id| refer
-  // to the view where the infobar will appear to the user. |callback| is
+  // for access to the device. |render_process_id| and |render_frame_id| are
+  // used to determine where the infobar will appear to the user. |callback| is
   // used to send the selected device to the clients. An empty list of device
   // will be returned if the users deny the access.
   std::string MakeMediaAccessRequest(
       int render_process_id,
-      int render_view_id,
+      int render_frame_id,
       int page_request_id,
       const StreamOptions& options,
       const GURL& security_origin,
@@ -95,11 +95,11 @@ class CONTENT_EXPORT MediaStreamManager
 
   // GenerateStream opens new media devices according to |components|.  It
   // creates a new request which is identified by a unique string that's
-  // returned to the caller.  |render_process_id| and |render_view_id| refer to
-  // the view where the infobar will appear to the user.
+  // returned to the caller.  |render_process_id| and |render_frame_id| are used
+  // to determine where the infobar will appear to the user.
   void GenerateStream(MediaStreamRequester* requester,
                       int render_process_id,
-                      int render_view_id,
+                      int render_frame_id,
                       const ResourceContext::SaltCallback& sc,
                       int page_request_id,
                       const StreamOptions& components,
@@ -107,7 +107,7 @@ class CONTENT_EXPORT MediaStreamManager
                       bool user_gesture);
 
   void CancelRequest(int render_process_id,
-                     int render_view_id,
+                     int render_frame_id,
                      int page_request_id);
 
   // Cancel an open request identified by |label|.
@@ -116,10 +116,10 @@ class CONTENT_EXPORT MediaStreamManager
   // Cancel all requests for the given |render_process_id|.
   void CancelAllRequests(int render_process_id);
 
-  // Closes the stream device for a certain render view. The stream must have
+  // Closes the stream device for a certain render frame. The stream must have
   // been opened by a call to GenerateStream.
   void StopStreamDevice(int render_process_id,
-                        int render_view_id,
+                        int render_frame_id,
                         const std::string& device_id);
 
   // Gets a list of devices of |type|, which must be MEDIA_DEVICE_AUDIO_CAPTURE
@@ -132,7 +132,7 @@ class CONTENT_EXPORT MediaStreamManager
   // If |have_permission| is false, we remove the device label from the result.
   virtual std::string EnumerateDevices(MediaStreamRequester* requester,
                                        int render_process_id,
-                                       int render_view_id,
+                                       int render_frame_id,
                                        const ResourceContext::SaltCallback& sc,
                                        int page_request_id,
                                        MediaStreamType type,
@@ -144,7 +144,7 @@ class CONTENT_EXPORT MediaStreamManager
   // The request is identified using string returned to the caller.
   void OpenDevice(MediaStreamRequester* requester,
                   int render_process_id,
-                  int render_view_id,
+                  int render_frame_id,
                   const ResourceContext::SaltCallback& sc,
                   int page_request_id,
                   const std::string& device_id,
@@ -301,7 +301,7 @@ class CONTENT_EXPORT MediaStreamManager
   // needed.
   void PostRequestToUI(const std::string& label, DeviceRequest* request);
   // Returns true if a device with |device_id| has already been requested with
-  // a render procecss_id and render_view_id and type equal to the the values
+  // a render procecss_id and render_frame_id and type equal to the the values
   // in |request|. If it has been requested, |device_info| contain information
   // about the device.
   bool FindExistingRequestedDeviceInfo(

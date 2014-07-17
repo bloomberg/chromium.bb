@@ -11,8 +11,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/common/chrome_version_info.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/switches.h"
 
@@ -119,11 +119,11 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GetUserMediaTest) {
                                 content::PAGE_TRANSITION_LINK, false);
   content::WebContents* web_contents = browser()->OpenURL(params);
 
-  content::RenderViewHost* const rvh = web_contents->GetRenderViewHost();
-  int render_process_id = rvh->GetProcess()->GetID();
-  int routing_id = rvh->GetRoutingID();
-
-  listener.Reply(base::StringPrintf("%i:%i", render_process_id, routing_id));
+  content::RenderFrameHost* const main_frame = web_contents->GetMainFrame();
+  ASSERT_TRUE(main_frame);
+  listener.Reply(base::StringPrintf("web-contents-media-stream://%i:%i",
+                                    main_frame->GetProcess()->GetID(),
+                                    main_frame->GetRoutingID()));
 
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());

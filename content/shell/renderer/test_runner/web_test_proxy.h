@@ -347,9 +347,6 @@ class WebTestProxy : public Base, public WebTestProxyBase {
     WebTestProxyBase::SetStatusText(text);
     Base::setStatusText(text);
   }
-  virtual blink::WebUserMediaClient* userMediaClient() {
-    return WebTestProxyBase::GetUserMediaClient();
-  }
   virtual void printPage(blink::WebLocalFrame* frame) {
     WebTestProxyBase::PrintPage(frame);
   }

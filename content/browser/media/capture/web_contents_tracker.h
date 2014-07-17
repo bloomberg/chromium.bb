@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Given a starting render_process_id and render_view_id, the WebContentsTracker
-// tracks RenderViewHost instance swapping during the lifetime of a WebContents
-// instance.  This is used when mirroring tab video and audio so that user
-// navigations, crashes, etc., during a tab's lifetime allow the capturing code
-// to remain active on the current/latest RenderView.
+// Given a starting render_process_id and main_render_frame_id, the
+// WebContentsTracker tracks RenderViewHost instance swapping during the
+// lifetime of a WebContents instance.  This is used when mirroring tab video
+// and audio so that user navigations, crashes, etc., during a tab's lifetime
+// allow the capturing code to remain active on the current/latest RenderView.
+//
+// TODO(miu): In a soon upcoming change, the cross-site isolation migration of
+// this code will be completed such that the main RenderFrameHost is tracked
+// instead of the RenderViewHost.
 //
 // Threading issues: Start(), Stop() and the ChangeCallback are invoked on the
 // same thread.  This can be any thread, and the decision is locked-in by
@@ -39,10 +43,11 @@ class CONTENT_EXPORT WebContentsTracker
   typedef base::Callback<void(int render_process_id, int render_view_id)>
       ChangeCallback;
 
-  // Start tracking.  The last-known |render_process_id| and |render_view_id|
-  // are provided, and the given callback is invoked asynchronously one or more
-  // times.  The callback will be invoked on the same thread calling Start().
-  virtual void Start(int render_process_id, int render_view_id,
+  // Start tracking.  The last-known |render_process_id| and
+  // |main_render_frame_id| are provided, and the given callback is invoked
+  // asynchronously one or more times.  The callback will be invoked on the same
+  // thread calling Start().
+  virtual void Start(int render_process_id, int main_render_frame_id,
                      const ChangeCallback& callback);
 
   // Stop tracking.  Once this method returns, the callback is guaranteed not to
@@ -63,9 +68,9 @@ class CONTENT_EXPORT WebContentsTracker
   void MaybeDoCallback(int render_process_id, int render_view_id);
 
   // Look-up the current WebContents instance associated with the given
-  // |render_process_id| and |render_view_id| and begin observing it.
+  // |render_process_id| and |main_render_frame_id| and begin observing it.
   void LookUpAndObserveWebContents(int render_process_id,
-                                   int render_view_id);
+                                   int main_render_frame_id);
 
   // WebContentsObserver overrides to react to events of interest.
   virtual void RenderViewReady() OVERRIDE;

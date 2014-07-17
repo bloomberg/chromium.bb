@@ -68,6 +68,7 @@ class CONTENT_EXPORT SpeechRecognitionDispatcherHost
       int embedder_render_process_id,
       int embedder_render_view_id,
       const SpeechRecognitionHostMsg_StartRequest_Params& params,
+      int params_render_frame_id,
       bool filter_profanities);
   void OnAbortRequest(int render_view_id, int request_id);
   void OnStopCaptureRequest(int render_view_id, int request_id);

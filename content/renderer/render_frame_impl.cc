@@ -652,6 +652,13 @@ void RenderFrameImpl::OnImeConfirmComposition(
 
 #endif  // ENABLE_PLUGINS
 
+MediaStreamDispatcher* RenderFrameImpl::GetMediaStreamDispatcher() {
+  if (!web_user_media_client_)
+    InitializeUserMediaClient();
+  return web_user_media_client_ ?
+      web_user_media_client_->media_stream_dispatcher() : NULL;
+}
+
 bool RenderFrameImpl::Send(IPC::Message* message) {
   if (is_detaching_) {
     delete message;
@@ -1569,6 +1576,7 @@ void RenderFrameImpl::frameFocused() {
 void RenderFrameImpl::willClose(blink::WebFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
 
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, FrameWillClose());
   FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
                     FrameWillClose(frame));
 }
@@ -2757,10 +2765,8 @@ void RenderFrameImpl::willStartUsingPeerConnectionHandler(
 }
 
 blink::WebUserMediaClient* RenderFrameImpl::userMediaClient() {
-  // This can happen in tests, in which case it's OK to return NULL.
-  if (!InitializeUserMediaClient())
-    return NULL;
-
+  if (!web_user_media_client_)
+    InitializeUserMediaClient();
   return web_user_media_client_;
 }
 
@@ -3443,32 +3449,21 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
   GetRenderWidget()->UpdateSelectionBounds();
 }
 
-bool RenderFrameImpl::InitializeUserMediaClient() {
-  if (web_user_media_client_)
-    return true;
-
+void RenderFrameImpl::InitializeUserMediaClient() {
   if (!RenderThreadImpl::current())  // Will be NULL during unit tests.
-    return false;
+    return;
 
 #if defined(OS_ANDROID)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableWebRTC))
-    return false;
+    return;
 #endif
 
 #if defined(ENABLE_WEBRTC)
-  if (!render_view_->media_stream_dispatcher_) {
-    render_view_->media_stream_dispatcher_ =
-        new MediaStreamDispatcher(render_view_.get());
-  }
-
-  MediaStreamImpl* media_stream_impl = new MediaStreamImpl(
-      render_view_.get(),
-      render_view_->media_stream_dispatcher_,
-      RenderThreadImpl::current()->GetPeerConnectionDependencyFactory());
-  web_user_media_client_ = media_stream_impl;
-  return true;
-#else
-  return false;
+  DCHECK(!web_user_media_client_);
+  web_user_media_client_ = new MediaStreamImpl(
+      this,
+      RenderThreadImpl::current()->GetPeerConnectionDependencyFactory(),
+      make_scoped_ptr(new MediaStreamDispatcher(this)).Pass());
 #endif
 }
 

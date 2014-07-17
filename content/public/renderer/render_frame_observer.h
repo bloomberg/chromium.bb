@@ -54,6 +54,10 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void DidClearWindowObject() {}
   virtual void DidChangeName(const base::string16& name) {}
 
+  // Called when the frame will soon be closed. This is the last opportunity to
+  // send messages to the host (e.g., for clean-up, shutdown, etc.).
+  virtual void FrameWillClose() {}
+
   // Called when we receive a console message from Blink for which we requested
   // extra details (like the stack trace). |message| is the error message,
   // |source| is the Blink-reported source of the error (either external or
