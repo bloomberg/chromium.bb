@@ -1,13 +1,29 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x131
-  RenderBlock {HTML} at (0,0) size 800x131
-    RenderBody {BODY} at (8,8) size 784x115
+layer at (0,0) size 800x139
+  RenderBlock {HTML} at (0,0) size 800x139
+    RenderBody {BODY} at (8,8) size 784x123
       RenderBlock (anonymous) at (0,0) size 784x18
         RenderInline {SPAN} at (0,0) size 644x17
           RenderText {#text} at (0,0) size 644x17
             text run at (0,0) width 644: "Test for crbug.com/335285: On OS Mac, Options of a multiple select are shifted right in RTL mode."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {DIV} at (0,18) size 784x97
-        RenderListBox {SELECT} at (584,0) size 200x97 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+      RenderBlock {DIV} at (0,18) size 784x105
         RenderText {#text} at (0,0) size 0x0
+layer at (592,26) size 200x104 clip at (608,27) size 183x102
+  RenderListBox {SELECT} at (584,0) size 200x104 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (16,1) size 183x17
+      RenderText {#text} at (143,0) size 38x15
+        text run at (143,0) width 38: "Test 1"
+    RenderBlock {OPTION} at (16,18) size 183x17
+      RenderText {#text} at (143,0) size 38x15
+        text run at (143,0) width 38: "Test 2"
+    RenderBlock {OPTION} at (16,35) size 183x17
+      RenderText {#text} at (143,0) size 38x15
+        text run at (143,0) width 38: "Test 3"
+    RenderBlock {OPTION} at (16,52) size 183x17
+      RenderText {#text} at (143,0) size 38x15
+        text run at (143,0) width 38: "Test 4"
+    RenderBlock {OPTION} at (16,69) size 183x17
+      RenderText {#text} at (143,0) size 38x15
+        text run at (143,0) width 38: "Test 5"

@@ -1,0 +1,11 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x126
+  RenderBlock {HTML} at (0,0) size 800x126
+    RenderBody {BODY} at (8,8) size 784x110
+      RenderText {#text} at (0,0) size 0x0
+layer at (8,7) size 34x112 clip at (9,8) size 21x110 scrollHeight 109
+  RenderListBox {SELECT} at (0,-0.69) size 33.94x111.69 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (1,1) size 20.94x12.19
+      RenderText {#text} at (2,0) size 17x11
+        text run at (2,0) width 17: "test"

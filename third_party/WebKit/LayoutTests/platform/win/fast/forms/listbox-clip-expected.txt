@@ -3,5 +3,21 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-      RenderListBox {SELECT} at (0,0) size 100x85 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
       RenderText {#text} at (0,0) size 0x0
+layer at (8,8) size 100x102 clip at (9,9) size 83x100 scrollWidth 122 scrollHeight 125
+  RenderListBox {SELECT} at (0,0) size 100x102 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 83x25
+      RenderText {#text} at (2,0) size 120x20
+        text run at (2,0) width 120: "aaaaaa"
+    RenderBlock {OPTION} at (1,26) size 83x25
+      RenderText {#text} at (2,0) size 120x20
+        text run at (2,0) width 120: "aaaaaa"
+    RenderBlock {OPTION} at (1,51) size 83x25
+      RenderText {#text} at (2,0) size 120x20
+        text run at (2,0) width 120: "aaaaaa"
+    RenderBlock {OPTION} at (1,76) size 83x25
+      RenderText {#text} at (2,0) size 120x20
+        text run at (2,0) width 120: "aaaaaa"
+    RenderBlock {OPTION} at (1,101) size 83x25
+      RenderText {#text} at (2,0) size 120x20
+        text run at (2,0) width 120: "aaaaaa"

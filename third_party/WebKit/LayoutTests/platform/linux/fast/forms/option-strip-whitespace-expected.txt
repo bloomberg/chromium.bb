@@ -6,37 +6,45 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,0) size 784x20
         RenderText {#text} at (0,0) size 383x19
           text run at (0,0) width 383: "All of these selects should have the same amount of whitespace."
-      RenderBlock (anonymous) at (0,36) size 784x278
-        RenderText {#text} at (0,47) size 67x19
-          text run at (0,47) width 67: "Five Tabs: "
-        RenderListBox {SELECT} at (67,0) size 76x69 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        RenderBR {BR} at (143,62) size 0x0
-        RenderBR {BR} at (0,69) size 0x19
-        RenderText {#text} at (0,136) size 81x19
-          text run at (0,136) width 81: "Five Spaces: "
-        RenderListBox {SELECT} at (81,89) size 76x69 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        RenderBR {BR} at (157,151) size 0x0
-        RenderBR {BR} at (0,158) size 0x19
-        RenderText {#text} at (0,178) size 280x19
-          text run at (0,178) width 280: "Five Spaces (with leading/trailing whitespace): "
-        RenderMenuList {SELECT} at (280,178) size 96x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
+      RenderBlock (anonymous) at (0,36) size 784x282
+        RenderText {#text} at (0,51) size 67x19
+          text run at (0,51) width 67: "Five Tabs: "
+        RenderBR {BR} at (143,66) size 0x0
+        RenderBR {BR} at (0,71) size 0x19
+        RenderText {#text} at (0,142) size 81x19
+          text run at (0,142) width 81: "Five Spaces: "
+        RenderBR {BR} at (157,157) size 0x0
+        RenderBR {BR} at (0,162) size 0x19
+        RenderText {#text} at (0,182) size 280x19
+          text run at (0,182) width 280: "Five Spaces (with leading/trailing whitespace): "
+        RenderMenuList {SELECT} at (280,182) size 96x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
           RenderBlock (anonymous) at (1,1) size 94x18
             RenderText at (4,1) size 71x16
               text run at (4,1) width 71: "Five Spaces"
-        RenderBR {BR} at (376,193) size 0x0
-        RenderBR {BR} at (0,198) size 0x19
-        RenderText {#text} at (0,218) size 266x19
-          text run at (0,218) width 266: "Five Tabs (with leading/trailing whitespace): "
-        RenderMenuList {SELECT} at (266,218) size 80x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
+        RenderBR {BR} at (376,197) size 0x0
+        RenderBR {BR} at (0,202) size 0x19
+        RenderText {#text} at (0,222) size 266x19
+          text run at (0,222) width 266: "Five Tabs (with leading/trailing whitespace): "
+        RenderMenuList {SELECT} at (266,222) size 80x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
           RenderBlock (anonymous) at (1,1) size 78x18
             RenderText at (4,1) size 55x16
               text run at (4,1) width 55: "Five Tabs"
-        RenderBR {BR} at (346,233) size 0x0
-        RenderBR {BR} at (0,238) size 0x19
-        RenderText {#text} at (0,258) size 121x19
-          text run at (0,258) width 121: "Mixed Whitespace: "
-        RenderMenuList {SELECT} at (121,258) size 80x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
+        RenderBR {BR} at (346,237) size 0x0
+        RenderBR {BR} at (0,242) size 0x19
+        RenderText {#text} at (0,262) size 121x19
+          text run at (0,262) width 121: "Mixed Whitespace: "
+        RenderMenuList {SELECT} at (121,262) size 80x20 [bgcolor=#C0C0C0] [border: (1px solid #A9A9A9)]
           RenderBlock (anonymous) at (1,1) size 78x18
             RenderText at (4,1) size 55x16
               text run at (4,1) width 55: "Five Tabs"
         RenderText {#text} at (0,0) size 0x0
+layer at (75,44) size 76x70 clip at (76,45) size 59x68
+  RenderListBox {SELECT} at (67,0) size 76x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 59x17
+      RenderText {#text} at (2,0) size 55x16
+        text run at (2,0) width 55: "Five Tabs"
+layer at (89,135) size 76x70 clip at (90,136) size 59x68
+  RenderListBox {SELECT} at (81,91) size 76x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    RenderBlock {OPTION} at (1,1) size 59x17
+      RenderText {#text} at (2,0) size 55x16
+        text run at (2,0) width 55: "Five Tabs"
