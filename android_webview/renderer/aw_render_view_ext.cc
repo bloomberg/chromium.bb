@@ -58,7 +58,8 @@ blink::WebElement GetImgChild(const blink::WebElement& element) {
   // This implementation is incomplete (for example if is an area tag) but
   // matches the original WebViewClassic implementation.
 
-  blink::WebElementCollection collection = element.getElementsByTagName("img");
+  blink::WebElementCollection collection =
+      element.getElementsByHTMLTagName("img");
   DCHECK(!collection.isNull());
   return collection.firstItem();
 }
