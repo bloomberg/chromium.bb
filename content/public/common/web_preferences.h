@@ -111,7 +111,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool accelerated_filters_enabled;
   bool deferred_filters_enabled;
   bool container_culling_enabled;
-  bool gesture_tap_highlight_enabled;
   bool allow_displaying_insecure_content;
   bool allow_running_insecure_content;
   bool password_echo_enabled;

@@ -152,8 +152,6 @@ const char kDisableFlash3d[]                = "disable-flash-3d";
 // Disable Stage3D inside of flapper.
 const char kDisableFlashStage3d[]           = "disable-flash-stage3d";
 
-const char kDisableGestureTapHighlight[]    = "disable-gesture-tap-highlight";
-
 // Disables GPU hardware acceleration.  If software renderer is not in place,
 // then the GPU process won't launch.
 const char kDisableGpu[]                    = "disable-gpu";
@@ -375,9 +373,6 @@ const char kEnableFileCookies[]             = "enable-file-cookies";
 
 // Enable the fast text autosizing implementation.
 const char kEnableFastTextAutosizing[]      = "enable-fast-text-autosizing";
-
-// Enable Gesture Tap Highlight
-const char kEnableGestureTapHighlight[]     = "enable-gesture-tap-highlight";
 
 // Enables TRACE for GL calls in the renderer.
 const char kEnableGpuClientTracing[]        = "enable-gpu-client-tracing";

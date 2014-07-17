@@ -460,9 +460,6 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
   prefs.is_online =
       prefs.connection_type != net::NetworkChangeNotifier::CONNECTION_NONE;
 
-  prefs.gesture_tap_highlight_enabled = !command_line.HasSwitch(
-      switches::kDisableGestureTapHighlight);
-
   prefs.number_of_cpu_cores = base::SysInfo::NumberOfProcessors();
 
   prefs.viewport_meta_enabled =

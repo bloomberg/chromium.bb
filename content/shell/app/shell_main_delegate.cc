@@ -142,7 +142,6 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     command_line.AppendSwitch(switches::kSkipGpuDataLoading);
     command_line.AppendSwitchASCII(switches::kTouchEvents,
                                    switches::kTouchEventsEnabled);
-    command_line.AppendSwitch(switches::kEnableGestureTapHighlight);
     command_line.AppendSwitchASCII(switches::kForceDeviceScaleFactor, "1.0");
 #if defined(OS_ANDROID)
     command_line.AppendSwitch(

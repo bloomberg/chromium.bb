@@ -755,14 +755,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(autofill::switches::kShowAutofillTypePredictions)
   },
   {
-    "enable-gesture-tap-highlight",
-    IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_NAME,
-    IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_DESCRIPTION,
-    kOsLinux | kOsCrOS | kOsWin | kOsAndroid,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableGestureTapHighlight,
-                              switches::kDisableGestureTapHighlight)
-  },
-  {
     "enable-smooth-scrolling",  // FLAGS:RECORD_UMA
     IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_NAME,
     IDS_FLAGS_ENABLE_SMOOTH_SCROLLING_DESCRIPTION,

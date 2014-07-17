@@ -1081,9 +1081,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   // Enable container culling if requested on the command line.
   settings->setContainerCullingEnabled(prefs.container_culling_enabled);
 
-  // Enable gesture tap highlight if requested on the command line.
-  settings->setGestureTapHighlightEnabled(prefs.gesture_tap_highlight_enabled);
-
   // Enabling accelerated layers from the command line enabled accelerated
   // Video.
   settings->setAcceleratedCompositingForVideoEnabled(

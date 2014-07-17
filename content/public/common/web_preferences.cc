@@ -86,7 +86,6 @@ WebPreferences::WebPreferences()
       accelerated_filters_enabled(false),
       deferred_filters_enabled(false),
       container_culling_enabled(false),
-      gesture_tap_highlight_enabled(false),
       allow_displaying_insecure_content(true),
       allow_running_insecure_content(false),
       password_echo_enabled(false),
