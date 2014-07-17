@@ -25,8 +25,6 @@ class WindowManagerImpl : public WindowManager,
   WindowManagerImpl();
   virtual ~WindowManagerImpl();
 
-  void Init() { InstallAccelerators(); }
-
   void Layout();
 
   // WindowManager:
@@ -49,7 +47,7 @@ class WindowManagerImpl : public WindowManager,
 
   void InstallAccelerators() {
     const AcceleratorData accelerator_data[] = {
-        {TRIGGER_ON_PRESS, ui::VKEY_6, ui::EF_NONE, COMMAND_TOGGLE_OVERVIEW,
+        {TRIGGER_ON_PRESS, ui::VKEY_F6, ui::EF_NONE, COMMAND_TOGGLE_OVERVIEW,
          AF_NONE},
     };
     AcceleratorManager::Get()->RegisterAccelerators(
@@ -135,6 +133,7 @@ WindowManagerImpl::WindowManagerImpl()
   container_->SetLayoutManager(new AthenaContainerLayoutManager);
   container_->AddObserver(this);
   instance = this;
+  InstallAccelerators();
 }
 
 WindowManagerImpl::~WindowManagerImpl() {
