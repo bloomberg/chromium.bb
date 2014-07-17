@@ -451,10 +451,10 @@ void PerformanceMonitorHandler::HandleGetFlagEnabled(
     const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK_EQ(0u, args->GetSize());
-  scoped_ptr<base::Value> value(base::Value::CreateBooleanValue(
+  base::FundamentalValue value(
       CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kPerformanceMonitorGathering)));
-  ReturnResults("PerformanceMonitor.getFlagEnabledCallback", value.get());
+          switches::kPerformanceMonitorGathering));
+  ReturnResults("PerformanceMonitor.getFlagEnabledCallback", &value);
 }
 
 void PerformanceMonitorHandler::HandleGetAggregationTypes(

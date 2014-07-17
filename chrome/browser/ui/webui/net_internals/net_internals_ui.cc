@@ -1368,18 +1368,15 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyStatus(
   net::HttpNetworkSession* http_network_session =
       GetHttpNetworkSession(GetMainContext());
 
-  status_dict->Set("spdy_enabled",
-                   base::Value::CreateBooleanValue(
-                       net::HttpStreamFactory::spdy_enabled()));
-  status_dict->Set("use_alternate_protocols",
-                   base::Value::CreateBooleanValue(
-                       http_network_session->params().use_alternate_protocols));
-  status_dict->Set("force_spdy_over_ssl",
-                   base::Value::CreateBooleanValue(
-                       http_network_session->params().force_spdy_over_ssl));
-  status_dict->Set("force_spdy_always",
-                   base::Value::CreateBooleanValue(
-                       http_network_session->params().force_spdy_always));
+  status_dict->SetBoolean("spdy_enabled",
+                          net::HttpStreamFactory::spdy_enabled());
+  status_dict->SetBoolean(
+      "use_alternate_protocols",
+      http_network_session->params().use_alternate_protocols);
+  status_dict->SetBoolean("force_spdy_over_ssl",
+                          http_network_session->params().force_spdy_over_ssl);
+  status_dict->SetBoolean("force_spdy_always",
+                          http_network_session->params().force_spdy_always);
 
   std::vector<std::string> next_protos;
   http_network_session->GetNextProtos(&next_protos);

@@ -535,7 +535,7 @@ bool WebViewInternalSetPermissionFunction::RunAsyncSafe(WebViewGuest* guest) {
   EXTENSION_FUNCTION_VALIDATE(
       result != WebViewPermissionHelper::SET_PERMISSION_INVALID);
 
-  SetResult(base::Value::CreateBooleanValue(
+  SetResult(new base::FundamentalValue(
       result == WebViewPermissionHelper::SET_PERMISSION_ALLOWED));
   SendResponse(true);
   return true;

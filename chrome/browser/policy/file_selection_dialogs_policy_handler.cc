@@ -24,13 +24,10 @@ void FileSelectionDialogsPolicyHandler::ApplyPolicySettings(
   bool allow_dialogs;
   const base::Value* value = policies.GetValue(policy_name());
   if (value && value->GetAsBoolean(&allow_dialogs)) {
-    prefs->SetValue(prefs::kAllowFileSelectionDialogs,
-                    base::Value::CreateBooleanValue(allow_dialogs));
+    prefs->SetBoolean(prefs::kAllowFileSelectionDialogs, allow_dialogs);
     // Disallow selecting the download location if file dialogs are disabled.
-    if (!allow_dialogs) {
-      prefs->SetValue(prefs::kPromptForDownload,
-                      base::Value::CreateBooleanValue(false));
-    }
+    if (!allow_dialogs)
+      prefs->SetBoolean(prefs::kPromptForDownload, false);
   }
 }
 

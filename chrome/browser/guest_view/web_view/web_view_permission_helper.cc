@@ -263,8 +263,7 @@ void WebViewPermissionHelper::RequestMediaAccessPermission(
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
   base::DictionaryValue request_info;
-  request_info.Set(guestview::kUrl,
-                   new base::StringValue(request.security_origin.spec()));
+  request_info.SetString(guestview::kUrl, request.security_origin.spec());
   RequestPermission(WEB_VIEW_PERMISSION_TYPE_MEDIA,
                     request_info,
                     base::Bind(&WebViewPermissionHelper::
@@ -302,7 +301,7 @@ void WebViewPermissionHelper::CanDownload(
     const std::string& request_method,
     const base::Callback<void(bool)>& callback) {
   base::DictionaryValue request_info;
-  request_info.Set(guestview::kUrl, new base::StringValue(url.spec()));
+  request_info.SetString(guestview::kUrl, url.spec());
   RequestPermission(
       WEB_VIEW_PERMISSION_TYPE_DOWNLOAD,
       request_info,
@@ -324,13 +323,11 @@ void WebViewPermissionHelper::RequestPointerLockPermission(
     bool last_unlocked_by_target,
     const base::Callback<void(bool)>& callback) {
   base::DictionaryValue request_info;
-  request_info.Set(guestview::kUserGesture,
-                   base::Value::CreateBooleanValue(user_gesture));
-  request_info.Set(webview::kLastUnlockedBySelf,
-                   base::Value::CreateBooleanValue(last_unlocked_by_target));
-  request_info.Set(guestview::kUrl,
-                   new base::StringValue(
-                       web_contents()->GetLastCommittedURL().spec()));
+  request_info.SetBoolean(guestview::kUserGesture, user_gesture);
+  request_info.SetBoolean(webview::kLastUnlockedBySelf,
+                          last_unlocked_by_target);
+  request_info.SetString(guestview::kUrl,
+                         web_contents()->GetLastCommittedURL().spec());
 
   RequestPermission(
       WEB_VIEW_PERMISSION_TYPE_POINTER_LOCK,
@@ -355,10 +352,8 @@ void WebViewPermissionHelper::RequestGeolocationPermission(
     bool user_gesture,
     const base::Callback<void(bool)>& callback) {
   base::DictionaryValue request_info;
-  request_info.Set(guestview::kUrl,
-                   new base::StringValue(requesting_frame.spec()));
-  request_info.Set(guestview::kUserGesture,
-                   base::Value::CreateBooleanValue(user_gesture));
+  request_info.SetString(guestview::kUrl, requesting_frame.spec());
+  request_info.SetBoolean(guestview::kUserGesture, user_gesture);
 
   // It is safe to hold an unretained pointer to WebViewPermissionHelper because
   // this callback is called from WebViewPermissionHelper::SetPermission.
@@ -436,7 +431,7 @@ void WebViewPermissionHelper::RequestFileSystemPermission(
     bool allowed_by_default,
     const base::Callback<void(bool)>& callback) {
   base::DictionaryValue request_info;
-  request_info.Set(guestview::kUrl, new base::StringValue(url.spec()));
+  request_info.SetString(guestview::kUrl, url.spec());
   RequestPermission(
       WEB_VIEW_PERMISSION_TYPE_FILESYSTEM,
       request_info,

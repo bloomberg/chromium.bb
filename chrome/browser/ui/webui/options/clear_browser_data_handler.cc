@@ -73,7 +73,7 @@ void ClearBrowserDataHandler::UpdateInfoBannerVisibility() {
       base::TimeDelta::FromHours(kHoursPerDay);
 
   base::ListValue args;
-  args.Append(base::Value::CreateBooleanValue(visible));
+  args.AppendBoolean(visible);
   web_ui()->CallJavascriptFunction(
       "ClearBrowserDataOverlay.setBannerVisibility", args);
 }

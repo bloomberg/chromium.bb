@@ -384,7 +384,7 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
       base::Time::Now().LocalMidnight()
   };
   wallpaper_manager->SetUserWallpaperInfo(user_id_, info, is_persistent);
-  SetResult(base::Value::CreateBooleanValue(true));
+  SetResult(new base::FundamentalValue(true));
   Profile* profile = Profile::FromBrowserContext(browser_context());
   // This API is only available to the component wallpaper picker. We do not
   // need to show the app's name if it is the component wallpaper picker. So set
@@ -396,7 +396,7 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
 
 void WallpaperPrivateSetWallpaperIfExistsFunction::OnFileNotExists(
     const std::string& error) {
-  SetResult(base::Value::CreateBooleanValue(false));
+  SetResult(new base::FundamentalValue(false));
   OnFailure(error);
 }
 

@@ -828,8 +828,7 @@ void DeviceSettingsProvider::ApplyMetricsSetting(bool use_file,
   if (use_file) {
     new_value = HasOldMetricsFile();
     // Make sure the values will get eventually written to the policy file.
-    migration_values_.SetValue(kStatsReportingPref,
-                               base::Value::CreateBooleanValue(new_value));
+    migration_values_.SetBoolean(kStatsReportingPref, new_value);
     AttemptMigration();
     VLOG(1) << "No metrics policy set will revert to checking "
             << "consent file which is "

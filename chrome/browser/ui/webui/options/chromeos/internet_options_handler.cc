@@ -1151,8 +1151,9 @@ void InternetOptionsHandler::SetAutoConnectCallback(
   }
   content::RecordAction(base::UserMetricsAction("Options_NetworkAutoConnect"));
   bool auto_connect = auto_connect_str == kTagTrue;
-  SetNetworkProperty(service_path, shill::kAutoConnectProperty,
-                     base::Value::CreateBooleanValue(auto_connect));
+  SetNetworkProperty(service_path,
+                     shill::kAutoConnectProperty,
+                     new base::FundamentalValue(auto_connect));
 }
 
 void InternetOptionsHandler::SetIPConfigCallback(const base::ListValue* args) {

@@ -270,13 +270,11 @@ void AppLauncherHandler::Observe(int type,
 
         ExtensionPrefs* prefs =
             ExtensionPrefs::Get(extension_service_->profile());
-        scoped_ptr<base::FundamentalValue> highlight(
-            base::Value::CreateBooleanValue(
-                prefs->IsFromBookmark(extension->id()) &&
-                attempted_bookmark_app_install_));
+        base::FundamentalValue highlight(
+            prefs->IsFromBookmark(extension->id()) &&
+            attempted_bookmark_app_install_);
         attempted_bookmark_app_install_ = false;
-        web_ui()->CallJavascriptFunction(
-            "ntp.appAdded", *app_info, *highlight);
+        web_ui()->CallJavascriptFunction("ntp.appAdded", *app_info, highlight);
       }
 
       break;
@@ -312,12 +310,11 @@ void AppLauncherHandler::Observe(int type,
         if (uninstalled)
           visible_apps_.erase(extension->id());
 
-        scoped_ptr<base::FundamentalValue> uninstall_value(
-            base::Value::CreateBooleanValue(uninstalled));
-        scoped_ptr<base::FundamentalValue> from_page(
-            base::Value::CreateBooleanValue(!extension_id_prompting_.empty()));
         web_ui()->CallJavascriptFunction(
-            "ntp.appRemoved", *app_info, *uninstall_value, *from_page);
+            "ntp.appRemoved",
+            *app_info,
+            base::FundamentalValue(uninstalled),
+            base::FundamentalValue(!extension_id_prompting_.empty()));
       }
       break;
     }

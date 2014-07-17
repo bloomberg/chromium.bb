@@ -181,7 +181,7 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
   } else if (property_name == kPropertyBoard) {
     return new base::StringValue(base::SysInfo::GetLsbReleaseBoard());
   } else if (property_name == kPropertyOwner) {
-    return base::Value::CreateBooleanValue(
+    return new base::FundamentalValue(
         chromeos::UserManager::Get()->IsCurrentUserOwner());
   } else if (property_name == kPropertyClientId) {
     return new base::StringValue(GetClientId());
@@ -195,7 +195,7 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
     const char* pref_name =
         GetBoolPrefNameForApiProperty(property_name.c_str());
     if (pref_name) {
-      return base::Value::CreateBooleanValue(
+      return new base::FundamentalValue(
           Profile::FromBrowserContext(context_)->GetPrefs()->GetBoolean(
               pref_name));
     }

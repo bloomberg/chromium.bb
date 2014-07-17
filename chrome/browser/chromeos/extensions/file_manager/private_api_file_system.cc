@@ -342,7 +342,7 @@ void FileBrowserPrivateRequestFileSystemFunction::OnEntryDefinition(
 void FileWatchFunctionBase::Respond(bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  SetResult(base::Value::CreateBooleanValue(success));
+  SetResult(new base::FundamentalValue(success));
   SendResponse(success);
 }
 

@@ -739,12 +739,11 @@ void ProtocolHandlerRegistry::Save() {
   scoped_ptr<base::Value> registered_protocol_handlers(
       EncodeRegisteredHandlers());
   scoped_ptr<base::Value> ignored_protocol_handlers(EncodeIgnoredHandlers());
-  scoped_ptr<base::Value> enabled(base::Value::CreateBooleanValue(enabled_));
   profile_->GetPrefs()->Set(prefs::kRegisteredProtocolHandlers,
       *registered_protocol_handlers);
   profile_->GetPrefs()->Set(prefs::kIgnoredProtocolHandlers,
       *ignored_protocol_handlers);
-  profile_->GetPrefs()->Set(prefs::kCustomHandlersEnabled, *enabled);
+  profile_->GetPrefs()->SetBoolean(prefs::kCustomHandlersEnabled, enabled_);
 }
 
 const ProtocolHandlerRegistry::ProtocolHandlerList*
@@ -800,7 +799,7 @@ base::Value* ProtocolHandlerRegistry::EncodeRegisteredHandlers() {
          j != i->second.end(); ++j) {
       base::DictionaryValue* encoded = j->Encode();
       if (IsDefault(*j)) {
-        encoded->Set("default", base::Value::CreateBooleanValue(true));
+        encoded->Set("default", new base::FundamentalValue(true));
       }
       protocol_handlers->Append(encoded);
     }

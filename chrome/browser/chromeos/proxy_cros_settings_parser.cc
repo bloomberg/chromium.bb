@@ -333,11 +333,11 @@ bool GetProxyPrefValue(const UIProxyConfigService& config_service,
         break;
     }
   } else if (path == kProxySingle) {
-    data = base::Value::CreateBooleanValue(
-        config.mode == UIProxyConfig::MODE_SINGLE_PROXY);
+    data = new base::FundamentalValue(config.mode ==
+                                      UIProxyConfig::MODE_SINGLE_PROXY);
   } else if (path == kProxyUsePacUrl) {
-    data = base::Value::CreateBooleanValue(
-        config.mode == UIProxyConfig::MODE_PAC_SCRIPT);
+    data = new base::FundamentalValue(config.mode ==
+                                      UIProxyConfig::MODE_PAC_SCRIPT);
   } else if (path == kProxyFtpUrl) {
     data = CreateServerHostValue(config.ftp_proxy);
   } else if (path == kProxySocks) {

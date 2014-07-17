@@ -122,9 +122,8 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
 
   for (size_t i = 0; i < arraysize(boolean_switch_map_); ++i) {
     if (command_line_->HasSwitch(boolean_switch_map_[i].switch_name)) {
-      base::Value* value = base::Value::CreateBooleanValue(
-          boolean_switch_map_[i].set_value);
-      SetValue(boolean_switch_map_[i].preference_path, value);
+      SetValue(boolean_switch_map_[i].preference_path,
+               new base::FundamentalValue(boolean_switch_map_[i].set_value));
     }
   }
 }
@@ -168,8 +167,6 @@ void CommandLinePrefStore::ApplySSLSwitches() {
 }
 
 void CommandLinePrefStore::ApplyBackgroundModeSwitches() {
-  if (command_line_->HasSwitch(switches::kDisableExtensions)) {
-    base::Value* value = base::Value::CreateBooleanValue(false);
-    SetValue(prefs::kBackgroundModeEnabled, value);
-  }
+  if (command_line_->HasSwitch(switches::kDisableExtensions))
+    SetValue(prefs::kBackgroundModeEnabled, new base::FundamentalValue(false));
 }

@@ -302,8 +302,8 @@ bool TtsResumeFunction::RunSync() {
 }
 
 bool TtsIsSpeakingFunction::RunSync() {
-  SetResult(base::Value::CreateBooleanValue(
-      TtsController::GetInstance()->IsSpeaking()));
+  SetResult(
+      new base::FundamentalValue(TtsController::GetInstance()->IsSpeaking()));
   return true;
 }
 

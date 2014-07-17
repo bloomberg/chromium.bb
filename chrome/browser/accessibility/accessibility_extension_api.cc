@@ -194,8 +194,8 @@ void ExtensionAccessibilityEventRouter::OnChromeVoxLoadStateChanged(
     bool loading,
     bool make_announcements) {
   scoped_ptr<base::ListValue> event_args(new base::ListValue());
-  event_args->Append(base::Value::CreateBooleanValue(loading));
-  event_args->Append(base::Value::CreateBooleanValue(make_announcements));
+  event_args->AppendBoolean(loading);
+  event_args->AppendBoolean(make_announcements);
   ExtensionAccessibilityEventRouter::DispatchEventToChromeVox(
       profile,
       accessibility_private::OnChromeVoxLoadStateChanged::kEventName,
