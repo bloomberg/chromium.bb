@@ -35,6 +35,8 @@ class PluginManager : public BrowserContextKeyedAPI,
  private:
   friend class BrowserContextKeyedAPIFactory<PluginManager>;
 
+#if !defined(DISABLE_NACL)
+
   // We implement some Pepper plug-ins using NaCl to take advantage of NaCl's
   // strong sandbox. Typically, these NaCl modules are stored in extensions
   // and registered here. Not all NaCl modules need to register for a MIME
@@ -49,6 +51,8 @@ class PluginManager : public BrowserContextKeyedAPI,
   void UpdatePluginListWithNaClModules();
 
   extensions::NaClModuleInfo::List::iterator FindNaClModule(const GURL& url);
+
+#endif  // !defined(DISABLE_NACL)
 
   // ExtensionRegistryObserver implementation.
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,

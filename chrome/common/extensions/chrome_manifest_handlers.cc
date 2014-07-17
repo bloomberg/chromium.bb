@@ -61,7 +61,9 @@ void RegisterChromeManifestHandlers() {
 #endif
   (new MimeTypesHandlerParser)->Register();
   (new MinimumChromeVersionChecker)->Register();
+#if !defined(DISABLE_NACL)
   (new NaClModulesHandler)->Register();
+#endif
   (new OAuth2ManifestHandler)->Register();
   (new OmniboxHandler)->Register();
   (new OptionsPageHandler)->Register();

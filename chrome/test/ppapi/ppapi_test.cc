@@ -426,8 +426,10 @@ void PPAPIPrivateNaClPNaClTest::SetUpCommandLine(
 
 void PPAPINaClPNaClNonSfiTest::SetUpCommandLine(
     base::CommandLine* command_line) {
+#if !defined(DISABLE_NACL)
   PPAPINaClTest::SetUpCommandLine(command_line);
   command_line->AppendSwitch(switches::kEnableNaClNonSfiMode);
+#endif
 }
 
 std::string PPAPINaClPNaClNonSfiTest::BuildQuery(

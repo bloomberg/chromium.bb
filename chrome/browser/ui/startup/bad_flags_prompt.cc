@@ -43,7 +43,9 @@ void ShowBadFlagsPrompt(Browser* browser) {
     switches::kDisableSeccompFilterSandbox,
     switches::kDisableSetuidSandbox,
     switches::kDisableWebSecurity,
+#if !defined(DISABLE_NACL)
     switches::kNaClDangerousNoSandboxNonSfi,
+#endif
     switches::kNoSandbox,
     switches::kSingleProcess,
 

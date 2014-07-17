@@ -21,7 +21,9 @@
 
 using content::PluginService;
 
+#if !defined(DISABLE_NACL)
 static const char kNaClPluginMimeType[] = "application/x-nacl";
+#endif
 
 namespace extensions {
 
@@ -67,6 +69,7 @@ void PluginManager::OnExtensionLoaded(content::BrowserContext* browser_context,
     }
   }
 
+#if !defined(DISABLE_NACL)
   const NaClModuleInfo::List* nacl_modules =
       NaClModuleInfo::GetNaClModules(extension);
   if (nacl_modules) {
@@ -78,6 +81,7 @@ void PluginManager::OnExtensionLoaded(content::BrowserContext* browser_context,
     }
     UpdatePluginListWithNaClModules();
   }
+#endif
 
   const MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension);
   if (handler && !handler->handler_url().empty()) {
@@ -122,6 +126,7 @@ void PluginManager::OnExtensionUnloaded(
     }
   }
 
+#if !defined(DISABLE_NACL)
   const NaClModuleInfo::List* nacl_modules =
       NaClModuleInfo::GetNaClModules(extension);
   if (nacl_modules) {
@@ -133,6 +138,7 @@ void PluginManager::OnExtensionUnloaded(
     }
     UpdatePluginListWithNaClModules();
   }
+#endif
 
   const MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension);
   if (handler && !handler->handler_url().empty()) {
@@ -147,6 +153,8 @@ void PluginManager::OnExtensionUnloaded(
   if (plugins_or_nacl_changed)
     PluginService::GetInstance()->PurgePluginListCache(profile_, false);
 }
+
+#if !defined(DISABLE_NACL)
 
 void PluginManager::RegisterNaClModule(const NaClModuleInfo& info) {
   DCHECK(FindNaClModule(info.url) == nacl_module_list_.end());
@@ -215,5 +223,7 @@ NaClModuleInfo::List::iterator PluginManager::FindNaClModule(const GURL& url) {
   }
   return nacl_module_list_.end();
 }
+
+#endif  // !defined(DISABLE_NACL)
 
 }  // namespace extensions
