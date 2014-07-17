@@ -37,7 +37,7 @@ inline RenderStyle* Node::renderStyle() const
 {
     if (RenderObject* renderer = this->renderer())
         return renderer->style();
-    // <option> and <optgroup> can be styled even though they never get renderers,
+    // <option> and <optgroup> can be styled even if they don't get renderers,
     // so they store their style internally and return it through nonRendererStyle().
     // We check here explicitly to avoid the virtual call in the common case.
     if (isHTMLOptGroupElement(*this) || isHTMLOptionElement(this))

@@ -71,8 +71,15 @@ instead of "initial value".
 |   id="select"
 |   <option>
 |     "CA"
+|     <shadow:root>
+|       "CA"
 |   <option>
 |     "TX"
+|     <shadow:root>
+|       "TX"
+|   <shadow:root>
+|     <content>
+|       select="option,optgroup"
 | "input.value: initial value"
 | "internals.suggestedValue(input): suggested value"
 | "input.selectionStart: 0"

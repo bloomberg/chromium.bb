@@ -37,18 +37,21 @@
                 document.body.removeChild(textElement);
                 return textWidth;
             }
-            
+
+            var optionPaddingStart = 3;
+            var optionPaddingEnd = 2;
+
             function testListbox(id)
             {
                 var element = document.getElementById(id);
                 var emptyWidth = widthForEmptySelect(element.size);
                 var textWidth = widthForText(element.firstElementChild.textContent);
                 var dropdownWidth = element.getBoundingClientRect().width;
-                
-                if (Math.abs(dropdownWidth - (emptyWidth + textWidth)) <= 1)
+                var expectedWidth = emptyWidth + textWidth + optionPaddingStart + optionPaddingEnd;
+                if (Math.abs(dropdownWidth - expectedWidth) <= 1)
                     testPassed('Width of ' + id + ' matches width of text plus width of empty ' + id + '.');
                 else
-                    testFailed('Width ' + id + ' was ' + dropdownWidth + 'px wide, expected ' + (emptyWidth + textWidth) + 'px (' + emptyWidth + 'px for empty ' + id + ' and ' + textWidth + 'px for text).');
+                    testFailed('Width ' + id + ' was ' + dropdownWidth + 'px wide, expected ' + expectedWidth + 'px (' + emptyWidth + 'px for empty ' + id + ' and ' + textWidth + 'px for text).');
             }
             
             testListbox('list');

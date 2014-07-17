@@ -116,9 +116,7 @@ form.innerHTML = '<select id="select-multiple" multiple required size="4">' +
 mouseDownOnSelect('select-multiple', 0);
 mouseDownOnSelect('select-size4', 0);
 shouldBe('backgroundOf("select-multiple")', 'validColor');
-shouldBe('backgroundOf("multiple-empty")', 'transparentColor');
 shouldBe('backgroundOf("select-size4")', 'validColor');
-shouldBe('backgroundOf("size4-empty")', 'transparentColor');
 
 debug('Change the value with a placeholder label option:');
 el = makeInvalid();

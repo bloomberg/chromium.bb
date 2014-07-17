@@ -119,6 +119,12 @@ const AtomicString& textFieldContainer()
     return name;
 }
 
+const AtomicString& optGroupLabel()
+{
+    DEFINE_STATIC_LOCAL(AtomicString, name, ("optgroup-label", AtomicString::ConstructFromLiteral));
+    return name;
+}
+
 }
 
 }

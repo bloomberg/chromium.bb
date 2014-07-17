@@ -321,7 +321,6 @@ bool RenderTheme::paint(RenderObject* o, const PaintInfo& paintInfo, const IntRe
     case MenulistButtonPart:
     case TextFieldPart:
     case TextAreaPart:
-    case ListboxPart:
         return true;
     case SearchFieldPart:
         return paintSearchField(o, paintInfo, r);
@@ -344,11 +343,11 @@ bool RenderTheme::paintBorderOnly(RenderObject* o, const PaintInfo& paintInfo, c
     switch (o->style()->appearance()) {
     case TextFieldPart:
         return paintTextField(o, paintInfo, r);
-    case ListboxPart:
     case TextAreaPart:
         return paintTextArea(o, paintInfo, r);
     case MenulistButtonPart:
     case SearchFieldPart:
+    case ListboxPart:
         return true;
     case CheckboxPart:
     case RadioPart:
@@ -384,7 +383,6 @@ bool RenderTheme::paintDecorations(RenderObject* o, const PaintInfo& paintInfo, 
         return paintMenuListButton(o, paintInfo, r);
     case TextFieldPart:
     case TextAreaPart:
-    case ListboxPart:
     case CheckboxPart:
     case RadioPart:
     case PushButtonPart:
@@ -584,7 +582,6 @@ bool RenderTheme::isControlStyled(const RenderStyle* style, const CachedUAStyle*
     case RatingLevelIndicatorPart:
         return isBackgroundOrBorderStyled(*style, *uaStyle);
 
-    case ListboxPart:
     case MenulistPart:
     case SearchFieldPart:
     case TextAreaPart:

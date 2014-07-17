@@ -42,12 +42,6 @@ public:
     virtual ~AXListBox();
 
     virtual AccessibilityRole roleValue() const OVERRIDE { return ListBoxRole; }
-
-    virtual void addChildren() OVERRIDE;
-
-private:
-    AXObject* listBoxOptionAXObject(HTMLElement*) const;
-    virtual AXObject* elementAccessibilityHitTest(const IntPoint&) const OVERRIDE;
 };
 
 } // namespace WebCore

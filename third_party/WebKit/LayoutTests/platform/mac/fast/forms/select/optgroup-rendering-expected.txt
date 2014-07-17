@@ -1,15 +1,64 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x316
-  RenderBlock {HTML} at (0,0) size 800x316
-    RenderBody {BODY} at (8,8) size 784x300
-      RenderBlock {FORM} at (0,0) size 784x300
-        RenderListBox {SELECT} at (0,0) size 70x281 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-        RenderText {#text} at (70,260) size 4x18
-          text run at (70,260) width 4: " "
-        RenderBR {BR} at (74,260) size 0x18
-        RenderMenuList {SELECT} at (0,282) size 76x18 [bgcolor=#FFFFFF]
+layer at (0,0) size 800x317
+  RenderBlock {HTML} at (0,0) size 800x317
+    RenderBody {BODY} at (8,8) size 784x301
+      RenderBlock {FORM} at (0,0) size 784x301
+        RenderText {#text} at (69,264) size 5x18
+          text run at (69,264) width 5: " "
+        RenderBR {BR} at (73,264) size 1x18
+        RenderMenuList {SELECT} at (0,283) size 76x18 [bgcolor=#F8F8F8]
           RenderBlock (anonymous) at (0,0) size 76x18
             RenderText at (8,2) size 31x13
               text run at (8,2) width 31: "Three"
         RenderText {#text} at (0,0) size 0x0
+layer at (8,8) size 69x282 clip at (9,9) size 56x280
+  RenderListBox {SELECT} at (0,0) size 69.16x282 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTGROUP} at (1,1) size 56.16x70 [color=#008000]
+      RenderBlock {DIV} at (0,0) size 56.16x14
+        RenderText {#text} at (2,0) size 45x13
+          text run at (2,0) width 45: "Enabled"
+      RenderBlock {OPTION} at (0,14) size 56.16x14 [color=#0000FF]
+        RenderText {#text} at (2,0) size 36x13
+          text run at (2,0) width 36: "    One"
+      RenderBlock {OPTION} at (0,28) size 56.16x14 [color=#0000FF]
+        RenderText {#text} at (2,0) size 37x13
+          text run at (2,0) width 37: "    Two"
+      RenderBlock {OPTION} at (0,42) size 56.16x14 [color=#0000FF]
+        RenderText {#text} at (2,0) size 45x13
+          text run at (2,0) width 45: "    Three"
+      RenderBlock {OPTION} at (0,56) size 56.16x14 [color=#0000FF]
+        RenderText {#text} at (2,0) size 38x13
+          text run at (2,0) width 38: "    Four"
+    RenderBlock {OPTGROUP} at (1,71) size 56.16x70 [color=#FFC0CB]
+      RenderBlock {DIV} at (0,0) size 56.16x14
+        RenderText {#text} at (2,0) size 50x13
+          text run at (2,0) width 50: "Disabled"
+      RenderBlock {OPTION} at (0,14) size 56.16x14 [color=#FF0000]
+        RenderText {#text} at (2,0) size 36x13
+          text run at (2,0) width 36: "    One"
+      RenderBlock {OPTION} at (0,28) size 56.16x14 [color=#FF0000]
+        RenderText {#text} at (2,0) size 37x13
+          text run at (2,0) width 37: "    Two"
+      RenderBlock {OPTION} at (0,42) size 56.16x14 [color=#FF0000]
+        RenderText {#text} at (2,0) size 45x13
+          text run at (2,0) width 45: "    Three"
+      RenderBlock {OPTION} at (0,56) size 56.16x14 [color=#FF0000]
+        RenderText {#text} at (2,0) size 38x13
+          text run at (2,0) width 38: "    Four"
+    RenderBlock {OPTGROUP} at (1,141) size 56.16x70 [color=#008000]
+      RenderBlock {DIV} at (0,0) size 56.16x14
+        RenderText {#text} at (2,0) size 53x13
+          text run at (2,0) width 53: "Enabled2"
+      RenderBlock {OPTION} at (0,14) size 56.16x14 [color=#0000FF]
+        RenderText {#text} at (2,0) size 36x13
+          text run at (2,0) width 36: "    One"
+      RenderBlock {OPTION} at (0,28) size 56.16x14 [color=#FF0000]
+        RenderText {#text} at (2,0) size 37x13
+          text run at (2,0) width 37: "    Two"
+      RenderBlock {OPTION} at (0,42) size 56.16x14 [color=#0000FF] [bgcolor=#D4D4D4]
+        RenderText {#text} at (2,0) size 45x13
+          text run at (2,0) width 45: "    Three"
+      RenderBlock {OPTION} at (0,56) size 56.16x14 [color=#0000FF]
+        RenderText {#text} at (2,0) size 38x13
+          text run at (2,0) width 38: "    Four"

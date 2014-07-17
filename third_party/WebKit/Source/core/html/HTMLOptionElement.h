@@ -65,22 +65,18 @@ public:
     void setSelectedState(bool);
 
     HTMLFormElement* form() const;
-
-    bool isDisplayNone() const;
+    bool spatialNavigationFocused() const;
 
 private:
     explicit HTMLOptionElement(Document&);
 
-    virtual bool rendererIsFocusable() const OVERRIDE;
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
+    virtual bool rendererIsFocusable() const OVERRIDE { return true; }
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
-
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
+    virtual void removedFrom(ContainerNode*) OVERRIDE;
     virtual void accessKeyAction(bool) OVERRIDE;
-
     virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
 
     // <option> never has a renderer so we manually manage a cached style.
@@ -88,8 +84,11 @@ private:
     virtual RenderStyle* nonRendererStyle() const OVERRIDE;
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
     virtual void didRecalcStyle(StyleRecalcChange) OVERRIDE;
+    virtual void didAddUserAgentShadowRoot(ShadowRoot&) OVERRIDE;
 
     String collectOptionInnerText() const;
+
+    void updateLabel();
 
     bool m_disabled;
     bool m_isSelected;

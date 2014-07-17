@@ -34,7 +34,9 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ScriptLoader.h"
 #include "core/dom/Text.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDataListElement.h"
+#include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/rendering/RenderTheme.h"
@@ -56,13 +58,16 @@ HTMLOptionElement::HTMLOptionElement(Document& document)
 
 PassRefPtrWillBeRawPtr<HTMLOptionElement> HTMLOptionElement::create(Document& document)
 {
-    return adoptRefWillBeNoop(new HTMLOptionElement(document));
+    RefPtrWillBeRawPtr<HTMLOptionElement> option = adoptRefWillBeNoop(new HTMLOptionElement(document));
+    option->ensureUserAgentShadowRoot();
+    return option.release();
 }
 
 PassRefPtrWillBeRawPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document& document, const String& data, const AtomicString& value,
     bool defaultSelected, bool selected, ExceptionState& exceptionState)
 {
     RefPtrWillBeRawPtr<HTMLOptionElement> element = adoptRefWillBeNoop(new HTMLOptionElement(document));
+    element->ensureUserAgentShadowRoot();
     element->appendChild(Text::create(document, data.isNull() ? "" : data), exceptionState);
     if (exceptionState.hadException())
         return nullptr;
@@ -93,12 +98,6 @@ void HTMLOptionElement::detach(const AttachContext& context)
 {
     m_style.clear();
     HTMLElement::detach(context);
-}
-
-bool HTMLOptionElement::rendererIsFocusable() const
-{
-    // Option elements do not have a renderer so we check the renderStyle instead.
-    return renderStyle() && renderStyle()->display() != NONE;
 }
 
 String HTMLOptionElement::text() const
@@ -188,6 +187,8 @@ void HTMLOptionElement::parseAttribute(const QualifiedName& name, const AtomicSt
     } else if (name == selectedAttr) {
         if (bool willBeSelected = !value.isNull())
             setSelected(willBeSelected);
+    } else if (name == labelAttr) {
+        updateLabel();
     } else
         HTMLElement::parseAttribute(name, value);
 }
@@ -251,6 +252,7 @@ void HTMLOptionElement::childrenChanged(const ChildrenChange& change)
         dataList->optionElementChildrenChanged();
     else if (HTMLSelectElement* select = ownerSelectElement())
         select->optionElementChildrenChanged();
+    updateLabel();
     HTMLElement::childrenChanged(change);
 }
 
@@ -279,12 +281,9 @@ void HTMLOptionElement::setLabel(const AtomicString& label)
 
 void HTMLOptionElement::updateNonRenderStyle()
 {
-    bool oldDisplayNoneStatus = isDisplayNone();
     m_style = originalStyleForRenderer();
-    if (oldDisplayNoneStatus != isDisplayNone()) {
-        if (HTMLSelectElement* select = ownerSelectElement())
-            select->updateListOnRenderer();
-    }
+    if (HTMLSelectElement* select = ownerSelectElement())
+        select->updateListOnRenderer();
 }
 
 RenderStyle* HTMLOptionElement::nonRendererStyle() const
@@ -343,6 +342,13 @@ Node::InsertionNotificationRequest HTMLOptionElement::insertedInto(ContainerNode
     return HTMLElement::insertedInto(insertionPoint);
 }
 
+void HTMLOptionElement::removedFrom(ContainerNode* insertionPoint)
+{
+    if (HTMLSelectElement* select = Traversal<HTMLSelectElement>::firstAncestorOrSelf(*insertionPoint))
+        select->optionRemoved(*this);
+    HTMLElement::removedFrom(insertionPoint);
+}
+
 String HTMLOptionElement::collectOptionInnerText() const
 {
     StringBuilder text;
@@ -366,16 +372,23 @@ HTMLFormElement* HTMLOptionElement::form() const
     return 0;
 }
 
-bool HTMLOptionElement::isDisplayNone() const
+void HTMLOptionElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
-    ContainerNode* parent = parentNode();
-    // Check for parent optgroup having display NONE
-    if (parent && isHTMLOptGroupElement(*parent)) {
-        if (toHTMLOptGroupElement(*parent).isDisplayNone())
-            return true;
-    }
-    RenderStyle* style = nonRendererStyle();
-    return style && style->display() == NONE;
+    updateLabel();
+}
+
+void HTMLOptionElement::updateLabel()
+{
+    if (ShadowRoot* root = userAgentShadowRoot())
+        root->setTextContent(textIndentedToRespectGroupLabel());
+}
+
+bool HTMLOptionElement::spatialNavigationFocused() const
+{
+    HTMLSelectElement* select = ownerSelectElement();
+    if (!select || !select->focused())
+        return false;
+    return select->spatialNavigationFocusedOption() == this;
 }
 
 } // namespace WebCore

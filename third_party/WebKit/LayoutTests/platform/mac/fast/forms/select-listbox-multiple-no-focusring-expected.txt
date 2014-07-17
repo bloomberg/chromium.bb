@@ -1,8 +1,15 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x73
-  RenderBlock {HTML} at (0,0) size 800x73
-    RenderBody {BODY} at (8,8) size 784x57
-      RenderListBox {SELECT} at (0,0) size 377x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
+layer at (0,0) size 800x74
+  RenderBlock {HTML} at (0,0) size 800x74
+    RenderBody {BODY} at (8,8) size 784x58
       RenderText {#text} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0
+layer at (8,8) size 376x58 clip at (9,9) size 363x56
+  RenderListBox {SELECT} at (0,0) size 376.05x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (1,1) size 363.05x14 [color=#FFFFFF] [bgcolor=#3875D7]
+      RenderText {#text} at (2,0) size 360x13
+        text run at (2,0) width 360: "make-the-item-long-enough-to-make-a-difference-in-pixel-test"
+    RenderBlock {OPTION} at (1,15) size 363.05x14
+      RenderText {#text} at (2,0) size 7x13
+        text run at (2,0) width 7: "b"

@@ -17,6 +17,5 @@ shouldBeEqualToString('keygen.getAttribute("KeyType")', 'bar');
 if (window.internals) {
   var shadow = internals.shadowRoot(keygen);
   shouldBe('shadow.firstChild.tagName', '"SELECT"');
-  shouldBe('internals.shadowRoot(shadow.firstChild)', 'null');
 }
 </script>

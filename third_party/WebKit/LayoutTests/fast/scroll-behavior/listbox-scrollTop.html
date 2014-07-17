@@ -51,8 +51,7 @@ function doTest()
     {
       var element = document.getElementById("listbox");
       initializeContents(element);
-      var itemHeight = (listbox.scrollHeight - listbox.clientHeight) / (numItems - listbox.size);
-
+      var itemHeight = Math.floor(listbox.clientHeight / listbox.size);
       var testCases = [];
       for (var i = 0; i < testScrolls.length; i++) {
         // Convert from list box item index to a scroll offset.

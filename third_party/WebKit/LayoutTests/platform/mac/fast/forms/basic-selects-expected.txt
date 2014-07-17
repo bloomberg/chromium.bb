@@ -135,7 +135,7 @@ layer at (0,0) size 800x446
         RenderText {#text} at (1,292) size 168x18
           text run at (1,292) width 168: "select control with size=0: "
         RenderBR {BR} at (169,292) size 0x18
-        RenderMenuList {SELECT} at (1,309) size 198x18 [bgcolor=#FFFFFF]
+        RenderMenuList {SELECT} at (1,309) size 198x18 [bgcolor=#F8F8F8]
           RenderBlock (anonymous) at (0,0) size 198x18
             RenderText at (8,2) size 70x13
               text run at (8,2) width 70: "Future Series"
@@ -145,7 +145,7 @@ layer at (0,0) size 800x446
         RenderText {#text} at (1,326) size 168x18
           text run at (1,326) width 168: "select control with size=1: "
         RenderBR {BR} at (169,326) size 0x18
-        RenderMenuList {SELECT} at (1,343) size 198x18 [bgcolor=#FFFFFF]
+        RenderMenuList {SELECT} at (1,343) size 198x18 [bgcolor=#F8F8F8]
           RenderBlock (anonymous) at (0,0) size 198x18
             RenderText at (8,2) size 70x13
               text run at (8,2) width 70: "Future Series"

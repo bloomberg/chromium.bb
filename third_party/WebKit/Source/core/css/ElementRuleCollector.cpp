@@ -266,6 +266,7 @@ inline bool ElementRuleCollector::ruleMatches(const RuleData& ruleData, const Co
     context.pseudoId = m_pseudoStyleRequest.pseudoId;
     context.scrollbar = m_pseudoStyleRequest.scrollbar;
     context.scrollbarPart = m_pseudoStyleRequest.scrollbarPart;
+    context.isUARule = m_matchingUARules;
     context.contextFlags = contextFlags;
     SelectorChecker::Match match = selectorChecker.match(context, DOMSiblingTraversalStrategy(), result);
     if (match != SelectorChecker::SelectorMatches)

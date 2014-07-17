@@ -55,7 +55,7 @@ public:
     virtual Color platformInactiveListBoxSelectionForegroundColor() const OVERRIDE;
     virtual Color platformFocusRingColor() const OVERRIDE;
 
-    virtual ScrollbarControlSize scrollbarControlSizeForPart(ControlPart) OVERRIDE { return SmallScrollbar; }
+    virtual ScrollbarControlSize scrollbarControlSizeForPart(ControlPart part) OVERRIDE { return part == ListboxPart ? SmallScrollbar : RegularScrollbar; }
 
     virtual void platformColorsDidChange() OVERRIDE;
 

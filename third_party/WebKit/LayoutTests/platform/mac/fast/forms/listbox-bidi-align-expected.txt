@@ -1,74 +1,274 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x480
-  RenderBlock {HTML} at (0,0) size 800x480
-    RenderBody {BODY} at (8,8) size 784x464
+layer at (0,0) size 800x486
+  RenderBlock {HTML} at (0,0) size 800x486
+    RenderBody {BODY} at (8,8) size 784x470
       RenderBlock (anonymous) at (0,0) size 784x36
         RenderText {#text} at (0,0) size 597x18
           text run at (0,0) width 597: "This test verifies the visual alignment of items in a select element while changing text direction."
         RenderBR {BR} at (597,0) size 0x18
         RenderText {#text} at (0,18) size 426x18
           text run at (0,18) width 426: "All the items in the following select elements should be left-aligned."
-      RenderTable {TABLE} at (0,36) size 650x124
-        RenderTableSection {TBODY} at (0,0) size 650x124
-          RenderTableRow {TR} at (0,2) size 650x59
-            RenderTableCell {TD} at (2,2) size 156x59 [r=0 c=0 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 154x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-            RenderTableCell {TD} at (160,2) size 164x59 [r=0 c=1 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 162x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-            RenderTableCell {TD} at (326,2) size 156x59 [r=0 c=2 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 154x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-            RenderTableCell {TD} at (484,2) size 164x59 [r=0 c=3 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 162x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-          RenderTableRow {TR} at (0,63) size 650x59
-            RenderTableCell {TD} at (2,63) size 156x59 [r=1 c=0 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 154x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-            RenderTableCell {TD} at (160,63) size 164x59 [r=1 c=1 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 162x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-      RenderBlock (anonymous) at (0,160) size 784x18
+      RenderTable {TABLE} at (0,36) size 650x126
+        RenderTableSection {TBODY} at (0,0) size 650x126
+          RenderTableRow {TR} at (0,2) size 650x60
+            RenderTableCell {TD} at (2,2) size 156x60 [r=0 c=0 rs=1 cs=1]
+            RenderTableCell {TD} at (160,2) size 164x60 [r=0 c=1 rs=1 cs=1]
+            RenderTableCell {TD} at (326,2) size 156x60 [r=0 c=2 rs=1 cs=1]
+            RenderTableCell {TD} at (484,2) size 164x60 [r=0 c=3 rs=1 cs=1]
+          RenderTableRow {TR} at (0,64) size 650x60
+            RenderTableCell {TD} at (2,64) size 156x60 [r=1 c=0 rs=1 cs=1]
+            RenderTableCell {TD} at (160,64) size 164x60 [r=1 c=1 rs=1 cs=1]
+      RenderBlock (anonymous) at (0,162) size 784x18
         RenderText {#text} at (0,0) size 435x18
           text run at (0,0) width 435: "All the items in the following select elements should be right-aligned."
-      RenderTable {TABLE} at (0,178) size 644x124
-        RenderTableSection {TBODY} at (0,0) size 644x124
-          RenderTableRow {TR} at (0,2) size 644x59
-            RenderTableCell {TD} at (2,2) size 164x59 [r=0 c=0 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 162x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-            RenderTableCell {TD} at (168,2) size 153x59 [r=0 c=1 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 151x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-            RenderTableCell {TD} at (323,2) size 164x59 [r=0 c=2 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 162x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-            RenderTableCell {TD} at (489,2) size 153x59 [r=0 c=3 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 151x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-          RenderTableRow {TR} at (0,63) size 644x59
-            RenderTableCell {TD} at (2,63) size 164x59 [r=1 c=0 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 162x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-            RenderTableCell {TD} at (168,63) size 153x59 [r=1 c=1 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 151x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-      RenderBlock (anonymous) at (0,302) size 784x18
+      RenderTable {TABLE} at (0,180) size 644x126
+        RenderTableSection {TBODY} at (0,0) size 644x126
+          RenderTableRow {TR} at (0,2) size 644x60
+            RenderTableCell {TD} at (2,2) size 164x60 [r=0 c=0 rs=1 cs=1]
+            RenderTableCell {TD} at (168,2) size 153x60 [r=0 c=1 rs=1 cs=1]
+            RenderTableCell {TD} at (323,2) size 164x60 [r=0 c=2 rs=1 cs=1]
+            RenderTableCell {TD} at (489,2) size 153x60 [r=0 c=3 rs=1 cs=1]
+          RenderTableRow {TR} at (0,64) size 644x60
+            RenderTableCell {TD} at (2,64) size 164x60 [r=1 c=0 rs=1 cs=1]
+            RenderTableCell {TD} at (168,64) size 153x60 [r=1 c=1 rs=1 cs=1]
+      RenderBlock (anonymous) at (0,306) size 784x18
         RenderText {#text} at (0,0) size 444x18
           text run at (0,0) width 444: "All the items in the following select elements should be center-aligned."
-      RenderTable {TABLE} at (0,320) size 680x63
-        RenderTableSection {TBODY} at (0,0) size 680x63
-          RenderTableRow {TR} at (0,2) size 680x59
-            RenderTableCell {TD} at (2,2) size 172x59 [r=0 c=0 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 170x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-            RenderTableCell {TD} at (176,2) size 163x59 [r=0 c=1 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 161x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-            RenderTableCell {TD} at (341,2) size 172x59 [r=0 c=2 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 170x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-            RenderTableCell {TD} at (515,2) size 163x59 [r=0 c=3 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 161x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-      RenderBlock (anonymous) at (0,383) size 784x18
+      RenderTable {TABLE} at (0,324) size 680x64
+        RenderTableSection {TBODY} at (0,0) size 680x64
+          RenderTableRow {TR} at (0,2) size 680x60
+            RenderTableCell {TD} at (2,2) size 172x60 [r=0 c=0 rs=1 cs=1]
+            RenderTableCell {TD} at (176,2) size 163x60 [r=0 c=1 rs=1 cs=1]
+            RenderTableCell {TD} at (341,2) size 172x60 [r=0 c=2 rs=1 cs=1]
+            RenderTableCell {TD} at (515,2) size 163x60 [r=0 c=3 rs=1 cs=1]
+      RenderBlock (anonymous) at (0,388) size 784x18
         RenderText {#text} at (0,0) size 290x18
           text run at (0,0) width 290: "The following tables check mixed alignments."
-      RenderTable {TABLE} at (0,401) size 728x63
-        RenderTableSection {TBODY} at (0,0) size 728x63
-          RenderTableRow {TR} at (0,2) size 728x59
-            RenderTableCell {TD} at (2,2) size 170x59 [r=0 c=0 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 168x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-            RenderTableCell {TD} at (174,2) size 170x59 [r=0 c=1 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 168x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-            RenderTableCell {TD} at (346,2) size 189x59 [r=0 c=2 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 187x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
-            RenderTableCell {TD} at (537,2) size 189x59 [r=0 c=3 rs=1 cs=1]
-              RenderListBox {SELECT} at (1,1) size 187x57 [bgcolor=#FFFFFF] [border: (1px inset #808080)]
+      RenderTable {TABLE} at (0,406) size 728x64
+        RenderTableSection {TBODY} at (0,0) size 728x64
+          RenderTableRow {TR} at (0,2) size 728x60
+            RenderTableCell {TD} at (2,2) size 170x60 [r=0 c=0 rs=1 cs=1]
+            RenderTableCell {TD} at (174,2) size 170x60 [r=0 c=1 rs=1 cs=1]
+            RenderTableCell {TD} at (346,2) size 189x60 [r=0 c=2 rs=1 cs=1]
+            RenderTableCell {TD} at (537,2) size 189x60 [r=0 c=3 rs=1 cs=1]
+layer at (11,47) size 154x58 clip at (12,48) size 141x56
+  RenderListBox {SELECT} at (1,1) size 153.88x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (1,1) size 140.88x14
+      RenderText {#text} at (2,0) size 118x13
+        text run at (2,0) width 118: "This is an English text"
+    RenderBlock {OPTION} at (1,15) size 140.88x14
+      RenderText {#text} at (2,0) size 137x13
+        text run at (2,0) width 137: "It needs to be left aligned"
+    RenderBlock {OPTION} at (1,29) size 140.88x14
+      RenderText {#text} at (2,0) size 85x13
+        text run at (2,0) width 85: "Some more text"
+layer at (169,47) size 161x58 clip at (170,48) size 148x56
+  RenderListBox {SELECT} at (1,1) size 161.36x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (1,1) size 148.36x14
+      RenderText {#text} at (2,0) size 84x13
+        text run at (2,0) width 84 RTL: "\x{5D6}\x{5D4} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D1}\x{5E2}\x{5D1}\x{5E8}\x{5D9}\x{5EA}"
+    RenderBlock {OPTION} at (1,15) size 148.36x14
+      RenderText {#text} at (2,0) size 145x13
+        text run at (2,0) width 145 RTL: "\x{5D4}\x{5D5}\x{5D0} \x{5E6}\x{5E8}\x{5D9}\x{5DA} \x{5DC}\x{5D4}\x{5D9}\x{5D5}\x{5EA} \x{5DE}\x{5D9}\x{5D5}\x{5E9}\x{5E8} \x{5DC}\x{5E9}\x{5DE}\x{5D0}\x{5DC}"
+    RenderBlock {OPTION} at (1,29) size 148.36x14
+      RenderText {#text} at (2,0) size 78x13
+        text run at (2,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
+layer at (335,47) size 154x58 clip at (347,48) size 141x56
+  RenderListBox {SELECT} at (1,1) size 153.88x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (12,1) size 140.88x14
+      RenderText {#text} at (2,0) size 118x13
+        text run at (2,0) width 118: "This is an English text"
+    RenderBlock {OPTION} at (12,15) size 140.88x14
+      RenderText {#text} at (2,0) size 137x13
+        text run at (2,0) width 137: "It needs to be left aligned"
+    RenderBlock {OPTION} at (12,29) size 140.88x14
+      RenderText {#text} at (2,0) size 85x13
+        text run at (2,0) width 85: "Some more text"
+layer at (493,47) size 161x58 clip at (505,48) size 148x56
+  RenderListBox {SELECT} at (1,1) size 161.36x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (12,1) size 148.36x14
+      RenderText {#text} at (2,0) size 84x13
+        text run at (2,0) width 84 RTL: "\x{5D6}\x{5D4} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D1}\x{5E2}\x{5D1}\x{5E8}\x{5D9}\x{5EA}"
+    RenderBlock {OPTION} at (12,15) size 148.36x14
+      RenderText {#text} at (2,0) size 145x13
+        text run at (2,0) width 145 RTL: "\x{5D4}\x{5D5}\x{5D0} \x{5E6}\x{5E8}\x{5D9}\x{5DA} \x{5DC}\x{5D4}\x{5D9}\x{5D5}\x{5EA} \x{5DE}\x{5D9}\x{5D5}\x{5E9}\x{5E8} \x{5DC}\x{5E9}\x{5DE}\x{5D0}\x{5DC}"
+    RenderBlock {OPTION} at (12,29) size 148.36x14
+      RenderText {#text} at (2,0) size 78x13
+        text run at (2,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
+layer at (11,109) size 154x58 clip at (12,110) size 141x56
+  RenderListBox {SELECT} at (1,1) size 153.88x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (1,1) size 140.88x14
+      RenderText {#text} at (2,0) size 118x13
+        text run at (2,0) width 118: "This is an English text"
+    RenderBlock {OPTION} at (1,15) size 140.88x14
+      RenderText {#text} at (2,0) size 137x13
+        text run at (2,0) width 137: "It needs to be left aligned"
+    RenderBlock {OPTION} at (1,29) size 140.88x14
+      RenderText {#text} at (2,0) size 85x13
+        text run at (2,0) width 85: "Some more text"
+layer at (169,109) size 161x58 clip at (170,110) size 148x56
+  RenderListBox {SELECT} at (1,1) size 161.36x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (1,1) size 148.36x14
+      RenderText {#text} at (2,0) size 84x13
+        text run at (2,0) width 84 RTL: "\x{5D6}\x{5D4} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D1}\x{5E2}\x{5D1}\x{5E8}\x{5D9}\x{5EA}"
+    RenderBlock {OPTION} at (1,15) size 148.36x14
+      RenderText {#text} at (2,0) size 145x13
+        text run at (2,0) width 145 RTL: "\x{5D4}\x{5D5}\x{5D0} \x{5E6}\x{5E8}\x{5D9}\x{5DA} \x{5DC}\x{5D4}\x{5D9}\x{5D5}\x{5EA} \x{5DE}\x{5D9}\x{5D5}\x{5E9}\x{5E8} \x{5DC}\x{5E9}\x{5DE}\x{5D0}\x{5DC}"
+    RenderBlock {OPTION} at (1,29) size 148.36x14
+      RenderText {#text} at (2,0) size 78x13
+        text run at (2,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
+layer at (11,191) size 162x58 clip at (23,192) size 149x56
+  RenderListBox {SELECT} at (1,1) size 161.88x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (12,1) size 148.88x14
+      RenderText {#text} at (29,0) size 118x13
+        text run at (29,0) width 118: "This is an English text"
+    RenderBlock {OPTION} at (12,15) size 148.88x14
+      RenderText {#text} at (2,0) size 145x13
+        text run at (2,0) width 145: "It needs to be right aligned"
+    RenderBlock {OPTION} at (12,29) size 148.88x14
+      RenderText {#text} at (62,0) size 85x13
+        text run at (62,0) width 85: "Some more text"
+layer at (177,191) size 151x58 clip at (189,192) size 138x56
+  RenderListBox {SELECT} at (1,1) size 150.94x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (12,1) size 137.94x14
+      RenderText {#text} at (52,0) size 84x13
+        text run at (52,0) width 84 RTL: "\x{5D6}\x{5D4} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D1}\x{5E2}\x{5D1}\x{5E8}\x{5D9}\x{5EA}"
+    RenderBlock {OPTION} at (12,15) size 137.94x14
+      RenderText {#text} at (2,0) size 134x13
+        text run at (2,0) width 134 RTL: "\x{5D4}\x{5D5}\x{5D0} \x{5E6}\x{5E8}\x{5D9}\x{5DA} \x{5DC}\x{5D4}\x{5D9}\x{5D5}\x{5EA} \x{5DE}\x{5D9}\x{5D5}\x{5E9}\x{5E8} \x{5DC}\x{5D9}\x{5DE}\x{5D9}\x{5DF}"
+    RenderBlock {OPTION} at (12,29) size 137.94x14
+      RenderText {#text} at (58,0) size 78x13
+        text run at (58,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
+layer at (332,191) size 162x58 clip at (344,192) size 149x56
+  RenderListBox {SELECT} at (1,1) size 161.88x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (12,1) size 148.88x14
+      RenderText {#text} at (29,0) size 118x13
+        text run at (29,0) width 118: "This is an English text"
+    RenderBlock {OPTION} at (12,15) size 148.88x14
+      RenderText {#text} at (2,0) size 145x13
+        text run at (2,0) width 145: "It needs to be right aligned"
+    RenderBlock {OPTION} at (12,29) size 148.88x14
+      RenderText {#text} at (62,0) size 85x13
+        text run at (62,0) width 85: "Some more text"
+layer at (498,191) size 151x58 clip at (510,192) size 138x56
+  RenderListBox {SELECT} at (1,1) size 150.94x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (12,1) size 137.94x14
+      RenderText {#text} at (52,0) size 84x13
+        text run at (52,0) width 84 RTL: "\x{5D6}\x{5D4} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D1}\x{5E2}\x{5D1}\x{5E8}\x{5D9}\x{5EA}"
+    RenderBlock {OPTION} at (12,15) size 137.94x14
+      RenderText {#text} at (2,0) size 134x13
+        text run at (2,0) width 134 RTL: "\x{5D4}\x{5D5}\x{5D0} \x{5E6}\x{5E8}\x{5D9}\x{5DA} \x{5DC}\x{5D4}\x{5D9}\x{5D5}\x{5EA} \x{5DE}\x{5D9}\x{5D5}\x{5E9}\x{5E8} \x{5DC}\x{5D9}\x{5DE}\x{5D9}\x{5DF}"
+    RenderBlock {OPTION} at (12,29) size 137.94x14
+      RenderText {#text} at (58,0) size 78x13
+        text run at (58,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
+layer at (11,253) size 162x58 clip at (12,254) size 149x56
+  RenderListBox {SELECT} at (1,1) size 161.88x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (1,1) size 148.88x14
+      RenderText {#text} at (29,0) size 118x13
+        text run at (29,0) width 118: "This is an English text"
+    RenderBlock {OPTION} at (1,15) size 148.88x14
+      RenderText {#text} at (2,0) size 145x13
+        text run at (2,0) width 145: "It needs to be right aligned"
+    RenderBlock {OPTION} at (1,29) size 148.88x14
+      RenderText {#text} at (62,0) size 85x13
+        text run at (62,0) width 85: "Some more text"
+layer at (177,253) size 151x58 clip at (178,254) size 138x56
+  RenderListBox {SELECT} at (1,1) size 150.94x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (1,1) size 137.94x14
+      RenderText {#text} at (52,0) size 84x13
+        text run at (52,0) width 84 RTL: "\x{5D6}\x{5D4} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D1}\x{5E2}\x{5D1}\x{5E8}\x{5D9}\x{5EA}"
+    RenderBlock {OPTION} at (1,15) size 137.94x14
+      RenderText {#text} at (2,0) size 134x13
+        text run at (2,0) width 134 RTL: "\x{5D4}\x{5D5}\x{5D0} \x{5E6}\x{5E8}\x{5D9}\x{5DA} \x{5DC}\x{5D4}\x{5D9}\x{5D5}\x{5EA} \x{5DE}\x{5D9}\x{5D5}\x{5E9}\x{5E8} \x{5DC}\x{5D9}\x{5DE}\x{5D9}\x{5DF}"
+    RenderBlock {OPTION} at (1,29) size 137.94x14
+      RenderText {#text} at (58,0) size 78x13
+        text run at (58,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
+layer at (11,335) size 170x58 clip at (23,336) size 157x56
+  RenderListBox {SELECT} at (1,1) size 169.73x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (12,1) size 156.73x14
+      RenderText {#text} at (19,0) size 119x13
+        text run at (19,0) width 119: "This is an English text"
+    RenderBlock {OPTION} at (12,15) size 156.73x14
+      RenderText {#text} at (2,0) size 153x13
+        text run at (2,0) width 153: "It needs to be center aligned"
+    RenderBlock {OPTION} at (12,29) size 156.73x14
+      RenderText {#text} at (35,0) size 86x13
+        text run at (35,0) width 86: "Some more text"
+layer at (185,335) size 161x58 clip at (197,336) size 148x56
+  RenderListBox {SELECT} at (1,1) size 160.55x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (12,1) size 147.55x14
+      RenderText {#text} at (32,0) size 84x13
+        text run at (32,0) width 84 RTL: "\x{5D6}\x{5D4} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D1}\x{5E2}\x{5D1}\x{5E8}\x{5D9}\x{5EA}"
+    RenderBlock {OPTION} at (12,15) size 147.55x14
+      RenderText {#text} at (2,0) size 144x13
+        text run at (2,0) width 144 RTL: "\x{5D4}\x{5D5}\x{5D0} \x{5E6}\x{5E8}\x{5D9}\x{5DA} \x{5DC}\x{5D4}\x{5D9}\x{5D5}\x{5EA} \x{5DE}\x{5D9}\x{5D5}\x{5E9}\x{5E8} \x{5DC}\x{5D0}\x{5DE}\x{5E6}\x{5E2}"
+    RenderBlock {OPTION} at (12,29) size 147.55x14
+      RenderText {#text} at (35,0) size 78x13
+        text run at (35,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
+layer at (350,335) size 170x58 clip at (351,336) size 157x56
+  RenderListBox {SELECT} at (1,1) size 169.73x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (1,1) size 156.73x14
+      RenderText {#text} at (19,0) size 119x13
+        text run at (19,0) width 119: "This is an English text"
+    RenderBlock {OPTION} at (1,15) size 156.73x14
+      RenderText {#text} at (2,0) size 153x13
+        text run at (2,0) width 153: "It needs to be center aligned"
+    RenderBlock {OPTION} at (1,29) size 156.73x14
+      RenderText {#text} at (35,0) size 86x13
+        text run at (35,0) width 86: "Some more text"
+layer at (524,335) size 161x58 clip at (525,336) size 148x56
+  RenderListBox {SELECT} at (1,1) size 160.55x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (1,1) size 147.55x14
+      RenderText {#text} at (32,0) size 84x13
+        text run at (32,0) width 84 RTL: "\x{5D6}\x{5D4} \x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D1}\x{5E2}\x{5D1}\x{5E8}\x{5D9}\x{5EA}"
+    RenderBlock {OPTION} at (1,15) size 147.55x14
+      RenderText {#text} at (2,0) size 144x13
+        text run at (2,0) width 144 RTL: "\x{5D4}\x{5D5}\x{5D0} \x{5E6}\x{5E8}\x{5D9}\x{5DA} \x{5DC}\x{5D4}\x{5D9}\x{5D5}\x{5EA} \x{5DE}\x{5D9}\x{5D5}\x{5E9}\x{5E8} \x{5DC}\x{5D0}\x{5DE}\x{5E6}\x{5E2}"
+    RenderBlock {OPTION} at (1,29) size 147.55x14
+      RenderText {#text} at (35,0) size 78x13
+        text run at (35,0) width 78 RTL: "\x{5D9}\x{5E9}\x{5E8}\x{5D0}\x{5DC} \x{5DE}\x{5EA}\x{5D9}\x{5D9}\x{5D1}\x{5E9}\x{5EA}"
+layer at (11,417) size 167x58 clip at (23,418) size 154x56
+  RenderListBox {SELECT} at (1,1) size 167.33x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (12,1) size 154.33x14
+      RenderText {#text} at (2,0) size 151x13
+        text run at (2,0) width 151: "This should be right aligned"
+    RenderBlock {OPTION} at (12,15) size 154.33x14
+      RenderText {#text} at (2,0) size 143x13
+        text run at (2,0) width 143: "This should be left aligned"
+    RenderBlock {OPTION} at (12,29) size 154.33x14
+      RenderText {#text} at (38,0) size 79x13
+        text run at (38,0) width 79: "Center aligned"
+layer at (183,417) size 167x58 clip at (184,418) size 154x56
+  RenderListBox {SELECT} at (1,1) size 167.33x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (1,1) size 154.33x14
+      RenderText {#text} at (2,0) size 143x13
+        text run at (2,0) width 143: "This should be left aligned"
+    RenderBlock {OPTION} at (1,15) size 154.33x14
+      RenderText {#text} at (2,0) size 151x13
+        text run at (2,0) width 151: "This should be right aligned"
+    RenderBlock {OPTION} at (1,29) size 154.33x14
+      RenderText {#text} at (38,0) size 79x13
+        text run at (38,0) width 79: "Center aligned"
+layer at (355,417) size 187x58 clip at (367,418) size 174x56
+  RenderListBox {SELECT} at (1,1) size 186.78x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (12,1) size 173.78x14
+      RenderText {#text} at (12,0) size 160x13
+        text run at (12,0) width 160 RTL: "\x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D6}\x{5D4} \x{5E6}\x{5E8}\x{5D9}\x{5DA} \x{5DC}\x{5D4}\x{5D9}\x{5D5}\x{5EA} \x{5DE}\x{5D9}\x{5D5}\x{5E9}\x{5E8} \x{5DC}\x{5D9}\x{5DE}\x{5D9}\x{5DF}"
+    RenderBlock {OPTION} at (12,15) size 173.78x14
+      RenderText {#text} at (2,0) size 170x13
+        text run at (2,0) width 170 RTL: "\x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D6}\x{5D4} \x{5E6}\x{5E8}\x{5D9}\x{5DA} \x{5DC}\x{5D4}\x{5D9}\x{5D5}\x{5EA} \x{5DE}\x{5D9}\x{5D5}\x{5E9}\x{5E8} \x{5DC}\x{5E9}\x{5DE}\x{5D0}\x{5DC}"
+    RenderBlock {OPTION} at (12,29) size 173.78x14
+      RenderText {#text} at (53,0) size 68x13
+        text run at (53,0) width 68 RTL: "\x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5DE}\x{5DE}\x{5D5}\x{5E8}\x{5DB}\x{5D6}"
+layer at (546,417) size 187x58 clip at (547,418) size 174x56
+  RenderListBox {SELECT} at (1,1) size 186.78x58 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    RenderBlock {OPTION} at (1,1) size 173.78x14
+      RenderText {#text} at (2,0) size 170x13
+        text run at (2,0) width 170 RTL: "\x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D6}\x{5D4} \x{5E6}\x{5E8}\x{5D9}\x{5DA} \x{5DC}\x{5D4}\x{5D9}\x{5D5}\x{5EA} \x{5DE}\x{5D9}\x{5D5}\x{5E9}\x{5E8} \x{5DC}\x{5E9}\x{5DE}\x{5D0}\x{5DC}"
+    RenderBlock {OPTION} at (1,15) size 173.78x14
+      RenderText {#text} at (12,0) size 160x13
+        text run at (12,0) width 160 RTL: "\x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D6}\x{5D4} \x{5E6}\x{5E8}\x{5D9}\x{5DA} \x{5DC}\x{5D4}\x{5D9}\x{5D5}\x{5EA} \x{5DE}\x{5D9}\x{5D5}\x{5E9}\x{5E8} \x{5DC}\x{5D9}\x{5DE}\x{5D9}\x{5DF}"
+    RenderBlock {OPTION} at (1,29) size 173.78x14
+      RenderText {#text} at (53,0) size 68x13
+        text run at (53,0) width 68 RTL: "\x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5DE}\x{5DE}\x{5D5}\x{5E8}\x{5DB}\x{5D6}"

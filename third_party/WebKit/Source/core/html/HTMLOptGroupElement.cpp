@@ -27,8 +27,14 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/NodeRenderStyle.h"
+#include "core/dom/Text.h"
+#include "core/editing/htmlediting.h"
+#include "core/html/HTMLContentElement.h"
+#include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLSelectElement.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/unicode/CharacterNames.h"
 
 namespace WebCore {
 
@@ -37,21 +43,19 @@ using namespace HTMLNames;
 inline HTMLOptGroupElement::HTMLOptGroupElement(Document& document)
     : HTMLElement(optgroupTag, document)
 {
-    setHasCustomStyleCallbacks();
     ScriptWrappable::init(this);
 }
 
-DEFINE_NODE_FACTORY(HTMLOptGroupElement)
+PassRefPtrWillBeRawPtr<HTMLOptGroupElement> HTMLOptGroupElement::create(Document& document)
+{
+    RefPtrWillBeRawPtr<HTMLOptGroupElement> optGroupElement = adoptRefWillBeNoop(new HTMLOptGroupElement(document));
+    optGroupElement->ensureUserAgentShadowRoot();
+    return optGroupElement.release();
+}
 
 bool HTMLOptGroupElement::isDisabledFormControl() const
 {
     return fastHasAttribute(disabledAttr);
-}
-
-bool HTMLOptGroupElement::rendererIsFocusable() const
-{
-    // Optgroup elements do not have a renderer so we check the renderStyle instead.
-    return renderStyle() && renderStyle()->display() != NONE;
 }
 
 void HTMLOptGroupElement::childrenChanged(const ChildrenChange& change)
@@ -67,48 +71,14 @@ void HTMLOptGroupElement::parseAttribute(const QualifiedName& name, const Atomic
 
     if (name == disabledAttr)
         didAffectSelector(AffectedSelectorDisabled | AffectedSelectorEnabled);
+    else if (name == labelAttr)
+        updateGroupLabel();
 }
 
 void HTMLOptGroupElement::recalcSelectOptions()
 {
     if (HTMLSelectElement* select = Traversal<HTMLSelectElement>::firstAncestor(*this))
         select->setRecalcListItems();
-}
-
-void HTMLOptGroupElement::attach(const AttachContext& context)
-{
-    if (context.resolvedStyle) {
-        ASSERT(!m_style || m_style == context.resolvedStyle);
-        m_style = context.resolvedStyle;
-    }
-    HTMLElement::attach(context);
-}
-
-void HTMLOptGroupElement::detach(const AttachContext& context)
-{
-    m_style.clear();
-    HTMLElement::detach(context);
-}
-
-void HTMLOptGroupElement::updateNonRenderStyle()
-{
-    bool oldDisplayNoneStatus = isDisplayNone();
-    m_style = originalStyleForRenderer();
-    if (oldDisplayNoneStatus != isDisplayNone()) {
-        if (HTMLSelectElement* select = ownerSelectElement())
-            select->updateListOnRenderer();
-    }
-}
-
-RenderStyle* HTMLOptGroupElement::nonRendererStyle() const
-{
-    return m_style.get();
-}
-
-PassRefPtr<RenderStyle> HTMLOptGroupElement::customStyleForRenderer()
-{
-    updateNonRenderStyle();
-    return m_style;
 }
 
 String HTMLOptGroupElement::groupLabelText() const
@@ -136,10 +106,34 @@ void HTMLOptGroupElement::accessKeyAction(bool)
         select->accessKeyAction(false);
 }
 
-bool HTMLOptGroupElement::isDisplayNone() const
+void HTMLOptGroupElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
-    RenderStyle* style = nonRendererStyle();
-    return style && style->display() == NONE;
+    DEFINE_STATIC_LOCAL(AtomicString, labelPadding, ("0 2px 1px 2px", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, labelMinHeight, ("1.2em", AtomicString::ConstructFromLiteral));
+    RefPtrWillBeRawPtr<HTMLDivElement> label = HTMLDivElement::create(document());
+    label->setAttribute(roleAttr, AtomicString("group", AtomicString::ConstructFromLiteral));
+    label->setAttribute(aria_labelAttr, AtomicString());
+    label->setInlineStyleProperty(CSSPropertyPadding, labelPadding);
+    label->setInlineStyleProperty(CSSPropertyMinHeight, labelMinHeight);
+    label->setIdAttribute(ShadowElementNames::optGroupLabel());
+    root.appendChild(label);
+
+    RefPtrWillBeRawPtr<HTMLContentElement> content = HTMLContentElement::create(document());
+    content->setAttribute(selectAttr, "option,optgroup");
+    root.appendChild(content);
+}
+
+void HTMLOptGroupElement::updateGroupLabel()
+{
+    const String& labelText = groupLabelText();
+    HTMLDivElement& label = optGroupLabelElement();
+    label.setTextContent(labelText);
+    label.setAttribute(aria_labelAttr, AtomicString(labelText));
+}
+
+HTMLDivElement& HTMLOptGroupElement::optGroupLabelElement() const
+{
+    return *toHTMLDivElement(userAgentShadowRoot()->getElementById(ShadowElementNames::optGroupLabel()));
 }
 
 } // namespace

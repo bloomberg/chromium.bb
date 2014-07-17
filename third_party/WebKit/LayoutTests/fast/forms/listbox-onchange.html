@@ -131,12 +131,9 @@
                         ctrl = true;
                 }
                 var sl = document.getElementById(selId);
-                var itemHeight = 14;
-                var border = 1;
-                var y = border + index * itemHeight - window.pageYOffset;
                 var event = document.createEvent("MouseEvent");
-                event.initMouseEvent("mousedown", true, true, document.defaultView, 1, sl.offsetLeft + border, sl.offsetTop + y, sl.offsetLeft + border, sl.offsetTop + y, ctrl, false, shift, meta, 0, document);
-                sl.dispatchEvent(event);
+                event.initMouseEvent("mousedown", true, true, document.defaultView, 1, 0, 0, 0, 0, ctrl, false, shift, meta, 0, document);
+                sl.options[index].dispatchEvent(event);
             }
 
             function mouseUpOnSelect(selId, index, shift, metaOrCtrl)
@@ -150,12 +147,9 @@
                         ctrl = true;
                 }
                 var sl = document.getElementById(selId);
-                var itemHeight = 14;
-                var border = 1;
-                var y = border + index * itemHeight - window.pageYOffset;
                 var event = document.createEvent("MouseEvent");
-                event.initMouseEvent("mouseup", true, true, document.defaultView, 1, sl.offsetLeft + border, sl.offsetTop + y, sl.offsetLeft + border, sl.offsetTop + y, ctrl, false, shift, meta, 0, document);
-                sl.dispatchEvent(event);
+                event.initMouseEvent("mouseup", true, true, document.defaultView, 1, 0, 0, 0, 0, ctrl, false, shift, meta, 0, document);
+                sl.options[index].dispatchEvent(event);
             }
 
             function keyDownOnSelect(selId, identifier, shift, metaOrCtrl)

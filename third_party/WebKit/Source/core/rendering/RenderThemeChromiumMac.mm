@@ -511,7 +511,7 @@ Color RenderThemeChromiumMac::systemColor(CSSValueID cssValueId) const
 bool RenderThemeChromiumMac::isControlStyled(const RenderStyle* style, const CachedUAStyle* uaStyle) const
 {
     ASSERT(uaStyle);
-    if (style->appearance() == TextFieldPart || style->appearance() == TextAreaPart || style->appearance() == ListboxPart)
+    if (style->appearance() == TextFieldPart || style->appearance() == TextAreaPart)
         return style->border() != uaStyle->border || style->boxShadow();
 
     // FIXME: This is horrible, but there is not much else that can be done.  Menu lists cannot draw properly when

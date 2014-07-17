@@ -49,10 +49,10 @@ function mouseDownOnSelect(selId, index)
     var sl = document.getElementById(selId);
     var borderPaddingTop = 15;
     var borderPaddingLeft = 15;
-    var y = index * itemHeight + itemHeight / 3 - window.pageYOffset + borderPaddingTop;
-    var event = document.createEvent("MouseEvent");
-    event.initMouseEvent("mousedown", true, true, document.defaultView, 1, sl.offsetLeft +  borderPaddingLeft, sl.offsetTop + y, sl.offsetLeft + borderPaddingLeft, sl.offsetTop + y, false, false, false, false, 0, document);
-    sl.dispatchEvent(event);
+    var y = index * itemHeight + itemHeight / 2 - window.pageYOffset + borderPaddingTop;
+    eventSender.mouseMoveTo(sl.offsetLeft +  borderPaddingLeft, sl.offsetTop + y);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
 }
 
 function selectionPattern(selectId)

@@ -29,39 +29,29 @@
 namespace WebCore {
 
 class HTMLSelectElement;
+class HTMLDivElement;
 
 class HTMLOptGroupElement FINAL : public HTMLElement {
 public:
-    DECLARE_NODE_FACTORY(HTMLOptGroupElement);
+    static PassRefPtrWillBeRawPtr<HTMLOptGroupElement> create(Document&);
 
     virtual bool isDisabledFormControl() const OVERRIDE;
     HTMLSelectElement* ownerSelectElement() const;
 
     String groupLabelText() const;
 
-    bool isDisplayNone() const;
-
 private:
     explicit HTMLOptGroupElement(Document&);
 
-    virtual bool rendererIsFocusable() const OVERRIDE;
+    virtual bool rendererIsFocusable() const OVERRIDE { return true; }
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
-    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
-
     virtual void childrenChanged(const ChildrenChange&) OVERRIDE;
-
     virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE;
+    virtual void didAddUserAgentShadowRoot(ShadowRoot&) OVERRIDE;
 
-    // <optgroup> never has a renderer so we manually manage a cached style.
-    void updateNonRenderStyle();
-    virtual RenderStyle* nonRendererStyle() const OVERRIDE;
-    virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
-
+    void updateGroupLabel();
     void recalcSelectOptions();
-
-    RefPtr<RenderStyle> m_style;
+    HTMLDivElement& optGroupLabelElement() const;
 };
 
 } //namespace

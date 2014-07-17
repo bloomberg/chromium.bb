@@ -47,7 +47,6 @@ ScrollBehaviorTest.prototype.startNextTestCase = function() {
         this.allTestCasesComplete();
         return;
     }
-
     var testCase = this.testCases[this.currentTestCase];
     var isSmoothTest = (testCase.js == "smooth" || (testCase.css == "smooth" && testCase.js != "instant"));
 

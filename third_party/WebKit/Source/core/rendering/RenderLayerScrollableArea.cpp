@@ -60,6 +60,7 @@
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
+#include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
@@ -574,10 +575,6 @@ void RenderLayerScrollableArea::scrollToOffset(const IntSize& scrollOffset, Scro
 
 void RenderLayerScrollableArea::updateAfterLayout()
 {
-    // List box parts handle the scrollbars by themselves so we have nothing to do.
-    if (box().style()->appearance() == ListboxPart)
-        return;
-
     m_scrollDimensionsDirty = true;
     IntSize originalScrollOffset = adjustedScrollOffset();
 
@@ -699,10 +696,6 @@ static bool overflowDefinesAutomaticScrollbar(EOverflow overflow)
 
 void RenderLayerScrollableArea::updateAfterStyleChange(const RenderStyle* oldStyle)
 {
-    // List box parts handle the scrollbars by themselves so we have nothing to do.
-    if (box().style()->appearance() == ListboxPart)
-        return;
-
     // RenderView shouldn't provide scrollbars on its own.
     if (box().isRenderView())
         return;
@@ -854,7 +847,10 @@ PassRefPtr<Scrollbar> RenderLayerScrollableArea::createScrollbar(ScrollbarOrient
     if (hasCustomScrollbarStyle) {
         widget = RenderScrollbar::createCustomScrollbar(this, orientation, actualRenderer->node());
     } else {
-        widget = Scrollbar::create(this, orientation, RegularScrollbar);
+        ScrollbarControlSize scrollbarSize = RegularScrollbar;
+        if (actualRenderer->style()->hasAppearance())
+            scrollbarSize = RenderTheme::theme().scrollbarControlSizeForPart(actualRenderer->style()->appearance());
+        widget = Scrollbar::create(this, orientation, scrollbarSize);
         if (orientation == HorizontalScrollbar)
             didAddScrollbar(widget.get(), HorizontalScrollbar);
         else

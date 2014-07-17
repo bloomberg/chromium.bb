@@ -12,7 +12,6 @@ PASS keygen.getAttribute("KEYtype") is "foo"
 PASS keygen.setAttribute("keytype", "bar"); keygen.keytype is ""
 PASS keygen.getAttribute("KeyType") is "bar"
 PASS shadow.firstChild.tagName is "SELECT"
-PASS internals.shadowRoot(shadow.firstChild) is null
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -58,7 +58,7 @@
             eventSender.gestureScrollEnd(0, 0);
 
             debug("Flinging the list box should scroll the list, the scrolls should be locked to item boundaries");
-            shouldBe('box.scrollTop', '2*itemHeight');
+            shouldBe('box.scrollTop', '2*itemHeight+10');
             shouldBe('container.scrollTop', '0');
 
             resetScroll();
@@ -103,7 +103,7 @@
             eventSender.gestureScrollEnd(0, 0);
 
             debug("Gesture scrolling list should scroll the list, the scrolls should lock to item boundaries");
-            shouldBe('box.scrollTop', '3*itemHeight');
+            shouldBe('box.scrollTop', '3*itemHeight+6');
             shouldBe('container.scrollTop', '0');
 
             resetScroll();
@@ -145,7 +145,7 @@
         {
             box = document.getElementById("box");
             container = document.getElementById("container");
-            itemHeight = (box.clientHeight + 1) / box.size;
+            itemHeight = box.clientHeight / box.size;
 
             fullyScrolled = box.scrollHeight - box.clientHeight;
 

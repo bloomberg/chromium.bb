@@ -641,6 +641,11 @@ input[type="button"]:active:disabled, input[type="submit"]:active:disabled, inpu
     border-style: outset
 }
 
+option:-internal-spatial-navigation-focus {
+    outline: black dashed 1px;
+    outline-offset: -1px;
+}
+
 datalist {
     display: none
 }
@@ -759,24 +764,54 @@ select[size][multiple] {
     align-items: flex-start;
     border: 1px inset gray;
     border-radius: initial;
-    white-space: initial;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    vertical-align: text-bottom;
+    -webkit-user-select: none;
+    white-space: nowrap;
 }
 
 select[size="0"],
 select[size="1"] {
     -webkit-appearance: menulist;
     align-items: center;
-    border: 1px solid;
+    border-width: 1px;
+    border-style: solid;
+    border-color: initial;
     border-radius: 5px;
+    overflow-x: initial;
+    overflow-y: initial;
+    vertical-align: initial;
+    -webkit-user-select: initial;
     white-space: pre;
 }
 
 optgroup {
     font-weight: bolder;
+    display: block;
 }
 
 option {
     font-weight: normal;
+    display: block;
+    padding: 0 2px 1px 2px;
+    white-space: pre;
+    min-height: 1.2em;
+}
+
+option:checked {
+    background-color: -internal-inactive-list-box-selection;
+    color: -internal-inactive-list-box-selection-text;
+}
+
+select:focus option:checked {
+    background-color: -internal-active-list-box-selection;
+    color: -internal-active-list-box-selection-text;
+}
+
+select:disabled option:checked,
+option:checked:disabled {
+    color: gray;
 }
 
 output {

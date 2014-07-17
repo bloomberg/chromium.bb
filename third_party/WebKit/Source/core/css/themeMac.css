@@ -11,8 +11,14 @@ select, input[type="color"][list] {
 select[size],
 select[multiple],
 select[size][multiple] {
-    background: white;
-    border: 1px inset gray;
+    background-color: white;
+    border: 1px solid #999999;
+}
+
+select[size="0"],
+select[size="1"] {
+    background-color: #f8f8f8;
+    border: 1px solid #a6a6a6;
 }
 
 input::-webkit-inner-spin-button {

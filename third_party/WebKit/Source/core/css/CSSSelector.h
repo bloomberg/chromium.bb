@@ -216,7 +216,8 @@ namespace WebCore {
             PseudoContent,
             PseudoHost,
             PseudoHostContext,
-            PseudoShadow
+            PseudoShadow,
+            PseudoSpatialNavigationFocus
         };
 
         enum MarginBoxType {

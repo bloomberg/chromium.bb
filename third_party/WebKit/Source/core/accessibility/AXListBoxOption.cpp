@@ -30,7 +30,6 @@
 #include "core/accessibility/AXListBoxOption.h"
 
 #include "core/accessibility/AXObjectCache.h"
-#include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/rendering/RenderListBox.h"
@@ -40,8 +39,8 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-AXListBoxOption::AXListBoxOption()
-    : m_optionElement(0)
+AXListBoxOption::AXListBoxOption(RenderObject* renderer)
+    : AXRenderObject(renderer)
 {
 }
 
@@ -49,23 +48,20 @@ AXListBoxOption::~AXListBoxOption()
 {
 }
 
-PassRefPtr<AXListBoxOption> AXListBoxOption::create()
+PassRefPtr<AXListBoxOption> AXListBoxOption::create(RenderObject* renderer)
 {
-    return adoptRef(new AXListBoxOption());
+    return adoptRef(new AXListBoxOption(renderer));
 }
 
 bool AXListBoxOption::isEnabled() const
 {
-    if (!m_optionElement)
-        return false;
-
-    if (isHTMLOptGroupElement(*m_optionElement))
+    if (!node())
         return false;
 
     if (equalIgnoringCase(getAttribute(aria_disabledAttr), "true"))
         return false;
 
-    if (m_optionElement->hasAttribute(disabledAttr))
+    if (toElement(node())->hasAttribute(disabledAttr))
         return false;
 
     return true;
@@ -73,10 +69,7 @@ bool AXListBoxOption::isEnabled() const
 
 bool AXListBoxOption::isSelected() const
 {
-    if (!isHTMLOptionElement(m_optionElement))
-        return false;
-
-    return toHTMLOptionElement(m_optionElement)->selected();
+    return isHTMLOptionElement(node()) && toHTMLOptionElement(node())->selected();
 }
 
 bool AXListBoxOption::isSelectedOptionActive() const
@@ -88,45 +81,23 @@ bool AXListBoxOption::isSelectedOptionActive() const
     return listBoxParentNode->activeSelectionEndListIndex() == listBoxOptionIndex();
 }
 
-LayoutRect AXListBoxOption::elementRect() const
-{
-    LayoutRect rect;
-    if (!m_optionElement)
-        return rect;
-
-    HTMLSelectElement* listBoxParentNode = listBoxOptionParentNode();
-    if (!listBoxParentNode)
-        return rect;
-
-    RenderObject* listBoxRenderer = listBoxParentNode->renderer();
-    if (!listBoxRenderer)
-        return rect;
-
-    LayoutRect parentRect = listBoxRenderer->document().axObjectCache()->getOrCreate(listBoxRenderer)->elementRect();
-    int index = listBoxOptionIndex();
-    if (index != -1)
-        rect = toRenderListBox(listBoxRenderer)->itemBoundingBoxRect(parentRect.location(), index);
-
-    return rect;
-}
-
 bool AXListBoxOption::computeAccessibilityIsIgnored() const
 {
-    if (!m_optionElement)
+    if (!node())
         return true;
 
     if (accessibilityIsIgnoredByDefault())
         return true;
 
-    return parentObject()->accessibilityIsIgnored();
+    return false;
 }
 
 bool AXListBoxOption::canSetSelectedAttribute() const
 {
-    if (!isHTMLOptionElement(m_optionElement))
+    if (!isHTMLOptionElement(node()))
         return false;
 
-    if (m_optionElement->isDisabledFormControl())
+    if (toHTMLOptionElement(node())->isDisabledFormControl())
         return false;
 
     HTMLSelectElement* selectElement = listBoxOptionParentNode();
@@ -138,34 +109,17 @@ bool AXListBoxOption::canSetSelectedAttribute() const
 
 String AXListBoxOption::stringValue() const
 {
-    if (!m_optionElement)
+    if (!node())
         return String();
 
     const AtomicString& ariaLabel = getAttribute(aria_labelAttr);
     if (!ariaLabel.isNull())
         return ariaLabel;
 
-    if (isHTMLOptionElement(*m_optionElement))
-        return toHTMLOptionElement(m_optionElement)->text();
-
-    if (isHTMLOptGroupElement(*m_optionElement))
-        return toHTMLOptGroupElement(m_optionElement)->groupLabelText();
+    if (isHTMLOptionElement(node()))
+        return toHTMLOptionElement(node())->text();
 
     return String();
-}
-
-Element* AXListBoxOption::actionElement() const
-{
-    return m_optionElement;
-}
-
-AXObject* AXListBoxOption::parentObject() const
-{
-    HTMLSelectElement* parentNode = listBoxOptionParentNode();
-    if (!parentNode)
-        return 0;
-
-    return m_optionElement->document().axObjectCache()->getOrCreate(parentNode);
 }
 
 void AXListBoxOption::setSelected(bool selected)
@@ -188,23 +142,17 @@ void AXListBoxOption::setSelected(bool selected)
 
 HTMLSelectElement* AXListBoxOption::listBoxOptionParentNode() const
 {
-    if (!m_optionElement)
+    if (!node())
         return 0;
 
-    if (isHTMLOptionElement(*m_optionElement))
-        return toHTMLOptionElement(m_optionElement)->ownerSelectElement();
-
-    if (isHTMLOptGroupElement(*m_optionElement))
-        return toHTMLOptGroupElement(m_optionElement)->ownerSelectElement();
+    if (isHTMLOptionElement(node()))
+        return toHTMLOptionElement(node())->ownerSelectElement();
 
     return 0;
 }
 
 int AXListBoxOption::listBoxOptionIndex() const
 {
-    if (!m_optionElement)
-        return -1;
-
     HTMLSelectElement* selectElement = listBoxOptionParentNode();
     if (!selectElement)
         return -1;
@@ -212,7 +160,7 @@ int AXListBoxOption::listBoxOptionIndex() const
     const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement->listItems();
     unsigned length = listItems.size();
     for (unsigned i = 0; i < length; i++) {
-        if (listItems[i] == m_optionElement)
+        if (listItems[i] == node())
             return i;
     }
 

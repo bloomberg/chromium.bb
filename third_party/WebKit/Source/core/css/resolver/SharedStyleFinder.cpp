@@ -241,6 +241,11 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
     if (isControl && !canShareStyleWithControl(candidate))
         return false;
 
+    if (isHTMLOptionElement(candidate) && isHTMLOptionElement(element())
+        && (toHTMLOptionElement(candidate).selected() != toHTMLOptionElement(element()).selected()
+        || toHTMLOptionElement(candidate).spatialNavigationFocused() != toHTMLOptionElement(element()).spatialNavigationFocused()))
+        return false;
+
     // FIXME: This line is surprisingly hot, we may wish to inline hasDirectionAuto into StyleResolver.
     if (candidate.isHTMLElement() && toHTMLElement(candidate).hasDirectionAuto())
         return false;

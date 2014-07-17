@@ -13,7 +13,7 @@
     }
 
     function multipleOfElement(elemId, multiple) {
-        return clientHeight(elemId) * multiple + (multiple - 1);
+        return clientHeight(elemId) * multiple;
     }
 
     function addSelect(id, numOptions)
@@ -31,7 +31,7 @@
     shouldBe("clientHeight('select2')", "clientHeight('select1')");
     shouldBeTrue("getElemById('select2').setAttribute('size', '4'); clientHeight('select2') == clientHeight('select1')");
     shouldBeTrue("getElemById('select2').setAttribute('size', '5'); clientHeight('select2') > clientHeight('select1')");
-    shouldBeTrue("getElemById('select2').setAttribute('size', '8'); clientHeight('select2') == multipleOfElement('select1', 2)");
-    shouldBeTrue("getElemById('select2').setAttribute('size', '12'); clientHeight('select2') == multipleOfElement('select1', 3)");
-    shouldBeTrue("getElemById('select2').setAttribute('size', '16'); clientHeight('select2') == multipleOfElement('select1', 4)");
+    shouldBeCloseTo("getElemById('select2').setAttribute('size', '8'); clientHeight('select2')", multipleOfElement('select1', 2), 1);
+    shouldBeCloseTo("getElemById('select2').setAttribute('size', '12'); clientHeight('select2')", multipleOfElement('select1', 3), 1);
+    shouldBeCloseTo("getElemById('select2').setAttribute('size', '16'); clientHeight('select2')", multipleOfElement('select1', 4), 1);
 </script>

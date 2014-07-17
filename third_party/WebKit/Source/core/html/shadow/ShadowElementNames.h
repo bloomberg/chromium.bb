@@ -51,6 +51,7 @@ const AtomicString& sliderThumb();
 const AtomicString& sliderTrack();
 const AtomicString& speechButton();
 const AtomicString& textFieldContainer();
+const AtomicString& optGroupLabel();
 
 }
 

@@ -69,6 +69,7 @@ public:
             , isSubSelector(false)
             , hasScrollbarPseudo(false)
             , hasSelectionPseudo(false)
+            , isUARule(false)
             , contextFlags(DefaultBehavior)
         { }
 
@@ -84,6 +85,7 @@ public:
         bool isSubSelector;
         bool hasScrollbarPseudo;
         bool hasSelectionPseudo;
+        bool isUARule;
         ContextFlags contextFlags;
     };
 
@@ -109,6 +111,7 @@ public:
     static bool tagMatches(const Element&, const QualifiedName&);
     static bool isCommonPseudoClassSelector(const CSSSelector&);
     static bool matchesFocusPseudoClass(const Element&);
+    static bool matchesSpatialNavigationFocusPseudoClass(const Element&);
     static bool checkExactAttribute(const Element&, const QualifiedName& selectorAttributeName, const StringImpl* value);
 
     enum LinkMatchMask { MatchLink = 1, MatchVisited = 2, MatchAll = MatchLink | MatchVisited };

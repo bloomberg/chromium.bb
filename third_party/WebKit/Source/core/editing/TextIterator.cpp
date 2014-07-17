@@ -905,6 +905,11 @@ static bool shouldEmitNewlinesBeforeAndAfterNode(Node& node)
             || node.hasTagName(ulTag));
     }
 
+    // Need to make an exception for option and optgroup, because we want to
+    // keep the legacy behavior before we added renderers to them.
+    if (isHTMLOptionElement(node) || isHTMLOptGroupElement(node))
+        return false;
+
     // Need to make an exception for table cells, because they are blocks, but we
     // want them tab-delimited rather than having newlines before and after.
     if (isTableCell(&node))

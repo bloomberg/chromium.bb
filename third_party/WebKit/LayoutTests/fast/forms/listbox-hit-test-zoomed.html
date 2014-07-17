@@ -16,27 +16,27 @@
             function test() {
                 setup();
                 
-                mouseDownOnSelect("sl1", 1, false, false);                
+                mouseDownOnSelect("sl1", 1);
                 var expectedSelectionResults = new Array(false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false);
                 testResults("sl1", expectedSelectionResults, 1);
 
-                mouseDownOnSelect("sl1", 6, false, false);                
+                mouseDownOnSelect("sl1", 6);
                 expectedSelectionResults = new Array(false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false);
                 testResults("sl1", expectedSelectionResults, 2);
             }
             
-            function mouseDownOnSelect(selId, index, shift, meta) {
+            function mouseDownOnSelect(selId, index) {
                 var sl = document.getElementById(selId);
                 var itemHeight = 14 * 1.2;
                 var borderPaddingTop = 20 * 1.2;
                 var borderPaddingLeft = 20 * 1.2;
                 var y = index * itemHeight - window.pageYOffset + borderPaddingTop + itemHeight / 2;
-                
+
                 var clickX = sl.offsetLeft + borderPaddingLeft + 5;
                 var clickY = sl.offsetTop + y;
-                var event = document.createEvent("MouseEvent");
-                event.initMouseEvent("mousedown", true, true, document.defaultView, 1, clickX, clickY, clickX, clickY, false, false, shift, meta, 0, document);
-                sl.dispatchEvent(event);
+                eventSender.mouseMoveTo(clickX, clickY);
+                eventSender.mouseDown();
+                eventSender.mouseUp();
             }
             
             function testResults(selId, expectedArr, testNum) {

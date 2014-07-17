@@ -290,6 +290,9 @@ static PassRefPtr<AXObject> createFromRenderer(RenderObject* renderer)
     if (node && node->isMediaControlElement())
         return AccessibilityMediaControl::create(renderer);
 
+    if (isHTMLOptionElement(node))
+        return AXListBoxOption::create(renderer);
+
     if (renderer->isSVGRoot())
         return AXSVGRoot::create(renderer);
 
@@ -460,9 +463,6 @@ AXObject* AXObjectCache::getOrCreate(AccessibilityRole role)
 
     // will be filled in...
     switch (role) {
-    case ListBoxOptionRole:
-        obj = AXListBoxOption::create();
-        break;
     case ImageMapLinkRole:
         obj = AXImageMapLink::create();
         break;

@@ -950,6 +950,8 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                 }
             }
             break;
+        case CSSSelector::PseudoSpatialNavigationFocus:
+            return context.isUARule && matchesSpatialNavigationFocusPseudoClass(element);
 
         case CSSSelector::PseudoHorizontal:
         case CSSSelector::PseudoVertical:
@@ -1120,6 +1122,11 @@ bool SelectorChecker::matchesFocusPseudoClass(const Element& element)
     if (InspectorInstrumentation::forcePseudoState(const_cast<Element*>(&element), CSSSelector::PseudoFocus))
         return true;
     return element.focused() && isFrameFocused(element);
+}
+
+bool SelectorChecker::matchesSpatialNavigationFocusPseudoClass(const Element& element)
+{
+    return isHTMLOptionElement(element) && toHTMLOptionElement(element).spatialNavigationFocused() && isFrameFocused(element);
 }
 
 template
