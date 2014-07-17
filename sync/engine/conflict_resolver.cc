@@ -30,6 +30,39 @@ using syncable::Id;
 using syncable::MutableEntry;
 using syncable::WriteTransaction;
 
+namespace {
+
+// Returns true iff the set of attachment ids contained in attachment_metadata
+// matches the set of ids contained in server_attachment_metadata.
+bool AttachmentMetadataMatches(const MutableEntry& entity) {
+  const sync_pb::AttachmentMetadata& local = entity.GetAttachmentMetadata();
+  const sync_pb::AttachmentMetadata& server =
+      entity.GetServerAttachmentMetadata();
+  if (local.record_size() != server.record_size()) {
+    return false;
+  }
+
+  // The order of records in local and server may be different so use a std::set
+  // to determine if they are equivalent.
+  std::set<std::string> local_ids;
+  for (int i = 0; i < local.record_size(); ++i) {
+    const sync_pb::AttachmentMetadataRecord& record = local.record(i);
+    DCHECK(record.is_on_server());
+    local_ids.insert(record.id().SerializeAsString());
+  }
+  for (int i = 0; i < server.record_size(); ++i) {
+    const sync_pb::AttachmentMetadataRecord& record = server.record(i);
+    DCHECK(record.is_on_server());
+    if (local_ids.find(record.id().SerializeAsString()) == local_ids.end()) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+}  // namespace
+
 ConflictResolver::ConflictResolver() {
 }
 
@@ -148,8 +181,9 @@ void ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
           base_server_specifics_match = true;
     }
 
+    bool attachment_metadata_matches = AttachmentMetadataMatches(entry);
     if (!entry_deleted && name_matches && parent_matches && specifics_match &&
-        position_matches) {
+        position_matches && attachment_metadata_matches) {
       DVLOG(1) << "Resolving simple conflict, everything matches, ignoring "
                << "changes for: " << entry;
       conflict_util::IgnoreConflict(&entry);

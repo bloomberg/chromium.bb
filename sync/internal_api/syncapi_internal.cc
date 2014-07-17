@@ -5,6 +5,7 @@
 #include "sync/internal_api/syncapi_internal.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "sync/protocol/attachments.pb.h"
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/util/cryptographer.h"
@@ -99,6 +100,14 @@ bool AreSpecificsEqual(const Cryptographer* cryptographer,
     right_plaintext = right.SerializeAsString();
   }
   if (left_plaintext == right_plaintext) {
+    return true;
+  }
+  return false;
+}
+
+bool AreAttachmentMetadataEqual(const sync_pb::AttachmentMetadata& left,
+                                const sync_pb::AttachmentMetadata& right) {
+  if (left.SerializeAsString() == right.SerializeAsString()) {
     return true;
   }
   return false;

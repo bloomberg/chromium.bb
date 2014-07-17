@@ -15,6 +15,14 @@ namespace syncer {
 // Creates a unique AttachmentIdProto.
 SYNC_EXPORT_PRIVATE sync_pb::AttachmentIdProto CreateAttachmentIdProto();
 
+// Creates an AttachmentMetadata object from a repeated field of
+// AttachmentIdProto objects.
+//
+// Note: each record in the AttachmentMetadata will be marked as "on the
+// server".
+SYNC_EXPORT_PRIVATE sync_pb::AttachmentMetadata CreateAttachmentMetadata(
+    const google::protobuf::RepeatedPtrField<sync_pb::AttachmentIdProto>& ids);
+
 }  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_BASE_ATTACHMENT_ID_PROTO_H_

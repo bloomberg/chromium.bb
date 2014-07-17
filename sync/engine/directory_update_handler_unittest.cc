@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "sync/engine/syncer_proto_util.h"
+#include "sync/internal_api/public/base/attachment_id_proto.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/test/test_entry_factory.h"
 #include "sync/protocol/sync.pb.h"
@@ -396,6 +397,69 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ContextVersion) {
   }
 }
 
+// See that updates containing attachment metadata are applied
+// (i.e. server_attachment_metadata is copied to attachment_metadata).
+TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
+       ProcessAndApplyUpdatesWithAttachments) {
+  DirectoryTypeDebugInfoEmitter emitter(ARTICLES, &type_observers_);
+  DirectoryUpdateHandler handler(dir(), ARTICLES, ui_worker(), &emitter);
+  sessions::StatusController status;
+
+  sync_pb::DataTypeProgressMarker progress;
+  progress.set_data_type_id(GetSpecificsFieldNumberFromModelType(ARTICLES));
+  progress.set_token("token");
+  progress.mutable_gc_directive()->set_version_watermark(kDefaultVersion + 10);
+
+  sync_pb::DataTypeContext context;
+  context.set_data_type_id(GetSpecificsFieldNumberFromModelType(ARTICLES));
+  context.set_context("context");
+  context.set_version(1);
+
+  scoped_ptr<sync_pb::SyncEntity> type_root =
+      CreateUpdate(SyncableIdToProto(syncable::Id::CreateFromServerId("root")),
+                   syncable::GetNullId().GetServerId(),
+                   ARTICLES);
+  type_root->set_server_defined_unique_tag(ModelTypeToRootTag(ARTICLES));
+  type_root->set_folder(true);
+
+  scoped_ptr<sync_pb::SyncEntity> e1 =
+      CreateUpdate(SyncableIdToProto(syncable::Id::CreateFromServerId("e1")),
+                   type_root->id_string(),
+                   ARTICLES);
+  sync_pb::AttachmentIdProto* attachment_id = e1->add_attachment_id();
+  *attachment_id = CreateAttachmentIdProto();
+
+  SyncEntityList updates;
+  updates.push_back(type_root.get());
+  updates.push_back(e1.get());
+
+  // Process and apply updates.
+  EXPECT_EQ(
+      SYNCER_OK,
+      handler.ProcessGetUpdatesResponse(progress, context, updates, &status));
+  handler.ApplyUpdates(&status);
+
+  ASSERT_TRUE(EntryExists(type_root->id_string()));
+  ASSERT_TRUE(EntryExists(e1->id_string()));
+  {
+    syncable::ReadTransaction trans(FROM_HERE, dir());
+    syncable::Entry e(&trans,
+                      syncable::GET_BY_ID,
+                      syncable::Id::CreateFromServerId(e1->id_string()));
+
+    // See that the attachment_metadata is correct.
+    sync_pb::AttachmentMetadata attachment_metadata = e.GetAttachmentMetadata();
+    ASSERT_EQ(1, attachment_metadata.record_size());
+    ASSERT_EQ(attachment_id->SerializeAsString(),
+              attachment_metadata.record(0).id().SerializeAsString());
+    ASSERT_TRUE(attachment_metadata.record(0).is_on_server());
+
+    // See that attachment_metadata and server_attachment_metadata are equal.
+    ASSERT_EQ(attachment_metadata.SerializeAsString(),
+              e.GetServerAttachmentMetadata().SerializeAsString());
+  }
+}
+
 // A test harness for tests that focus on applying updates.
 //
 // Update application is performed when we want to take updates that were
@@ -419,6 +483,7 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
         passive_worker_(new FakeModelWorker(GROUP_PASSIVE)),
         bookmarks_emitter_(BOOKMARKS, &type_observers_),
         passwords_emitter_(PASSWORDS, &type_observers_),
+        articles_emitter_(ARTICLES, &type_observers_),
         update_handler_map_deleter_(&update_handler_map_) {}
 
   virtual void SetUp() OVERRIDE {
@@ -435,6 +500,10 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
                                    PASSWORDS,
                                    password_worker_,
                                    &passwords_emitter_)));
+    update_handler_map_.insert(std::make_pair(
+        ARTICLES,
+        new DirectoryUpdateHandler(
+            directory(), ARTICLES, ui_worker_, &articles_emitter_)));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -449,6 +518,10 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
     return passwords_emitter_.GetUpdateCounters();
   }
 
+  const UpdateCounters& GetArticlesUpdateCounters() {
+    return articles_emitter_.GetUpdateCounters();
+  }
+
  protected:
   void ApplyBookmarkUpdates(sessions::StatusController* status) {
     update_handler_map_[BOOKMARKS]->ApplyUpdates(status);
@@ -456,6 +529,10 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
 
   void ApplyPasswordUpdates(sessions::StatusController* status) {
     update_handler_map_[PASSWORDS]->ApplyUpdates(status);
+  }
+
+  void ApplyArticlesUpdates(sessions::StatusController* status) {
+    update_handler_map_[ARTICLES]->ApplyUpdates(status);
   }
 
   TestEntryFactory* entry_factory() {
@@ -480,6 +557,7 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
   ObserverList<TypeDebugInfoObserver> type_observers_;
   DirectoryTypeDebugInfoEmitter bookmarks_emitter_;
   DirectoryTypeDebugInfoEmitter passwords_emitter_;
+  DirectoryTypeDebugInfoEmitter articles_emitter_;
 
   UpdateHandlerMap update_handler_map_;
   STLValueDeleter<UpdateHandlerMap> update_handler_map_deleter_;
@@ -1022,6 +1100,93 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SomeUndecryptablePassword) {
     EXPECT_FALSE(e1.GetIsUnappliedUpdate());
     EXPECT_TRUE(e2.GetIsUnappliedUpdate());
   }
+}
+
+TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
+       SimpleConflictDifferentAttachmentMetadata) {
+  const bool is_folder = false;
+  sync_pb::EntitySpecifics specifics;
+  *specifics.mutable_article() = sync_pb::ArticleSpecifics();
+  int64 handle = entry_factory()->CreateSyncedItem("art1", ARTICLES, is_folder);
+
+  sync_pb::AttachmentIdProto local_attachment_id = CreateAttachmentIdProto();
+  sync_pb::AttachmentIdProto server_attachment_id = CreateAttachmentIdProto();
+
+  // Add an attachment to the local attachment metadata.
+  sync_pb::AttachmentMetadata local_metadata;
+  sync_pb::AttachmentMetadataRecord* local_record = local_metadata.add_record();
+  *local_record->mutable_id() = local_attachment_id;
+  local_record->set_is_on_server(true);
+  entry_factory()->SetLocalAttachmentMetadataForItem(handle, local_metadata);
+
+  // Add a different attachment to the server attachment metadata.
+  sync_pb::AttachmentMetadata server_metadata;
+  sync_pb::AttachmentMetadataRecord* server_record =
+      server_metadata.add_record();
+  *server_record->mutable_id() = server_attachment_id;
+  server_record->set_is_on_server(true);
+  entry_factory()->SetServerAttachmentMetadataForItem(handle, server_metadata);
+
+  // At this point we have a simple conflict.  The server says art1 should have
+  // server_attachment_id, but the local sync engine says it should have
+  // local_attachment_id.
+
+  sessions::StatusController status;
+  ApplyArticlesUpdates(&status);
+
+  // See that the server won.
+  const UpdateCounters& counters = GetArticlesUpdateCounters();
+  EXPECT_EQ(1, counters.num_updates_applied);
+  EXPECT_EQ(1, counters.num_local_overwrites);
+  EXPECT_EQ(0, counters.num_server_overwrites);
+  local_metadata = entry_factory()->GetLocalAttachmentMetadataForItem(handle);
+  EXPECT_EQ(server_metadata.SerializeAsString(),
+            local_metadata.SerializeAsString());
+}
+
+TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
+       SimpleConflictSameAttachmentMetadataDifferentOrder) {
+  const bool is_folder = false;
+  sync_pb::EntitySpecifics specifics;
+  *specifics.mutable_article() = sync_pb::ArticleSpecifics();
+  int64 handle = entry_factory()->CreateSyncedItem("art1", ARTICLES, is_folder);
+
+  sync_pb::AttachmentIdProto id1 = CreateAttachmentIdProto();
+  sync_pb::AttachmentIdProto id2 = CreateAttachmentIdProto();
+
+  // Add id1, then id2 to the local attachment metadata.
+  sync_pb::AttachmentMetadata local_metadata;
+  sync_pb::AttachmentMetadataRecord* record = local_metadata.add_record();
+  *record->mutable_id() = id1;
+  record->set_is_on_server(true);
+  record = local_metadata.add_record();
+  *record->mutable_id() = id2;
+  record->set_is_on_server(true);
+  entry_factory()->SetLocalAttachmentMetadataForItem(handle, local_metadata);
+
+  // Add id1 and id2 to the server attachment metadata, but in reverse order.
+  sync_pb::AttachmentMetadata server_metadata;
+  record = server_metadata.add_record();
+  *record->mutable_id() = id2;
+  record->set_is_on_server(true);
+  record = local_metadata.add_record();
+  *record->mutable_id() = id1;
+  record->set_is_on_server(true);
+  entry_factory()->SetServerAttachmentMetadataForItem(handle, server_metadata);
+
+  // At this point we have a (false) conflict.
+
+  sessions::StatusController status;
+  ApplyArticlesUpdates(&status);
+
+  // See that the server won.
+  const UpdateCounters& counters = GetArticlesUpdateCounters();
+  EXPECT_EQ(1, counters.num_updates_applied);
+  EXPECT_EQ(1, counters.num_local_overwrites);
+  EXPECT_EQ(0, counters.num_server_overwrites);
+  local_metadata = entry_factory()->GetLocalAttachmentMetadataForItem(handle);
+  EXPECT_EQ(server_metadata.SerializeAsString(),
+            local_metadata.SerializeAsString());
 }
 
 }  // namespace syncer

@@ -850,6 +850,7 @@ base::DictionaryValue* SyncEntityToValue(const sync_pb::SyncEntity& proto,
     SET(specifics, EntitySpecificsToValue);
   SET_BOOL(folder);
   SET_STR(client_defined_unique_tag);
+  SET_REP(attachment_id, AttachmentIdProtoToValue);
   return value;
 }
 

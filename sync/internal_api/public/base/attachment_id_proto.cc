@@ -20,4 +20,15 @@ sync_pb::AttachmentIdProto CreateAttachmentIdProto() {
   return proto;
 }
 
+sync_pb::AttachmentMetadata CreateAttachmentMetadata(
+    const google::protobuf::RepeatedPtrField<sync_pb::AttachmentIdProto>& ids) {
+  sync_pb::AttachmentMetadata result;
+  for (int i = 0; i < ids.size(); ++i) {
+    sync_pb::AttachmentMetadataRecord* record = result.add_record();
+    *record->mutable_id() = ids.Get(i);
+    record->set_is_on_server(true);
+  }
+  return result;
+}
+
 }  // namespace syncer

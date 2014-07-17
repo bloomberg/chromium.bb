@@ -71,6 +71,7 @@ class SYNC_EXPORT_PRIVATE ModelNeutralMutableEntry : public Entry {
   void PutServerSpecifics(const sync_pb::EntitySpecifics& value);
   void PutBaseServerSpecifics(const sync_pb::EntitySpecifics& value);
   void PutServerUniquePosition(const UniquePosition& value);
+  void PutServerAttachmentMetadata(const sync_pb::AttachmentMetadata& value);
   void PutSyncing(bool value);
 
   // Do a simple property-only update of the PARENT_ID field.  Use with caution.

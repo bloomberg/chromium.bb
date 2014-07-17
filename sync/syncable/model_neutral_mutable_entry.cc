@@ -353,6 +353,18 @@ void ModelNeutralMutableEntry::PutServerUniquePosition(
   }
 }
 
+void ModelNeutralMutableEntry::PutServerAttachmentMetadata(
+    const sync_pb::AttachmentMetadata& value) {
+  DCHECK(kernel_);
+  base_write_transaction_->TrackChangesTo(kernel_);
+
+  if (kernel_->ref(SERVER_ATTACHMENT_METADATA).SerializeAsString() !=
+      value.SerializeAsString()) {
+    kernel_->put(SERVER_ATTACHMENT_METADATA, value);
+    kernel_->mark_dirty(&dir()->kernel_->dirty_metahandles);
+  }
+}
+
 void ModelNeutralMutableEntry::PutSyncing(bool value) {
   kernel_->put(SYNCING, value);
 }

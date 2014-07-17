@@ -239,6 +239,49 @@ const sync_pb::EntitySpecifics& TestEntryFactory::GetLocalSpecificsForItem(
   return entry.GetSpecifics();
 }
 
+bool TestEntryFactory::SetServerAttachmentMetadataForItem(
+    int64 meta_handle,
+    const sync_pb::AttachmentMetadata metadata) {
+  WriteTransaction trans(FROM_HERE, UNITTEST, directory_);
+  MutableEntry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
+  if (!entry.good()) {
+    return false;
+  }
+  entry.PutServerAttachmentMetadata(metadata);
+  entry.PutIsUnappliedUpdate(true);
+  return true;
+
+}
+
+bool TestEntryFactory::SetLocalAttachmentMetadataForItem(
+    int64 meta_handle,
+    const sync_pb::AttachmentMetadata metadata) {
+  WriteTransaction trans(FROM_HERE, UNITTEST, directory_);
+  MutableEntry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
+  if (!entry.good()) {
+    return false;
+  }
+  entry.PutAttachmentMetadata(metadata);
+  entry.PutIsUnsynced(true);
+  return true;
+}
+
+const sync_pb::AttachmentMetadata&
+TestEntryFactory::GetServerAttachmentMetadataForItem(int64 meta_handle) const {
+  syncable::ReadTransaction trans(FROM_HERE, directory_);
+  syncable::Entry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
+  DCHECK(entry.good());
+  return entry.GetServerAttachmentMetadata();
+}
+
+const sync_pb::AttachmentMetadata&
+TestEntryFactory::GetLocalAttachmentMetadataForItem(int64 meta_handle) const {
+  syncable::ReadTransaction trans(FROM_HERE, directory_);
+  syncable::Entry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);
+  DCHECK(entry.good());
+  return entry.GetAttachmentMetadata();
+}
+
 bool TestEntryFactory::GetIsUnsyncedForItem(int64 meta_handle) const {
   syncable::ReadTransaction trans(FROM_HERE, directory_);
   syncable::Entry entry(&trans, syncable::GET_BY_HANDLE, meta_handle);

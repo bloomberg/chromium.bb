@@ -17,6 +17,7 @@
 #include "sync/engine/conflict_resolver.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/syncer_types.h"
+#include "sync/internal_api/public/base/attachment_id_proto.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/unique_position.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
@@ -407,6 +408,8 @@ void UpdateServerFieldsFromUpdate(
                             bookmark.bookmark_favicon(),
                             target);
   }
+  target->PutServerAttachmentMetadata(
+      CreateAttachmentMetadata(update.attachment_id()));
   if (SyncerProtoUtil::ShouldMaintainPosition(update)) {
     UpdateBookmarkPositioning(update, target);
   }
@@ -463,6 +466,7 @@ void UpdateLocalDataFromServerData(
   entry->PutBaseVersion(entry->GetServerVersion());
   entry->PutIsDel(entry->GetServerIsDel());
   entry->PutIsUnappliedUpdate(false);
+  entry->PutAttachmentMetadata(entry->GetServerAttachmentMetadata());
 }
 
 VerifyCommitResult ValidateCommitEntry(syncable::Entry* entry) {

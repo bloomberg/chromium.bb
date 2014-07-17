@@ -5,6 +5,7 @@
 #include "sync/engine/directory_commit_contribution.h"
 
 #include "base/message_loop/message_loop.h"
+#include "sync/internal_api/public/base/attachment_id_proto.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/mutable_entry.h"
@@ -25,6 +26,7 @@ class DirectoryCommitContributionTest : public ::testing::Test {
     syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir());
     CreateTypeRoot(&trans, dir(), PREFERENCES);
     CreateTypeRoot(&trans, dir(), EXTENSIONS);
+    CreateTypeRoot(&trans, dir(), ARTICLES);
     CreateTypeRoot(&trans, dir(), BOOKMARKS);
   }
 
@@ -33,9 +35,11 @@ class DirectoryCommitContributionTest : public ::testing::Test {
   }
 
  protected:
-  int64 CreateUnsyncedItem(syncable::WriteTransaction* trans,
-                           ModelType type,
-                           const std::string& tag) {
+  int64 CreateUnsyncedItemWithAttachments(
+      syncable::WriteTransaction* trans,
+      ModelType type,
+      const std::string& tag,
+      const sync_pb::AttachmentMetadata& attachment_metadata) {
     syncable::Entry parent_entry(trans, syncable::GET_TYPE_ROOT, type);
     syncable::MutableEntry entry(
         trans,
@@ -43,8 +47,18 @@ class DirectoryCommitContributionTest : public ::testing::Test {
         type,
         parent_entry.GetId(),
         tag);
+    if (attachment_metadata.record_size() > 0) {
+      entry.PutAttachmentMetadata(attachment_metadata);
+    }
     entry.PutIsUnsynced(true);
     return entry.GetMetahandle();
+  }
+
+  int64 CreateUnsyncedItem(syncable::WriteTransaction* trans,
+                           ModelType type,
+                           const std::string& tag) {
+    return CreateUnsyncedItemWithAttachments(
+        trans, type, tag, sync_pb::AttachmentMetadata());
   }
 
   int64 CreateSyncedItem(syncable::WriteTransaction* trans,
@@ -336,6 +350,13 @@ TEST_F(DirectoryCommitContributionTest, HierarchySupport_Preferences) {
   EXPECT_TRUE(commit_message.entries(0).parent_id_string().empty());
 }
 
+void AddAttachment(sync_pb::AttachmentMetadata* metadata, bool is_on_server) {
+  sync_pb::AttachmentMetadataRecord record;
+  *record.mutable_id() = CreateAttachmentIdProto();
+  record.set_is_on_server(is_on_server);
+  *metadata->add_record() = record;
+}
+
 // Creates some unsynced items, pretends to commit them, and hands back a
 // specially crafted response to the syncer in order to test commit response
 // processing.  The response simulates a succesful commit scenario.
@@ -398,6 +419,86 @@ TEST_F(DirectoryCommitContributionTest, ProcessCommitResponse) {
 
   pref_cc->CleanUp();
   ext_cc->CleanUp();
+}
+
+// Creates some unsynced items with attachments and verifies that only items
+// where all attachments have been uploaded to the server are eligible to be
+// committed.
+TEST_F(DirectoryCommitContributionTest, ProcessCommitResponseWithAttachments) {
+  int64 art1_handle;
+  int64 art2_handle;
+  int64 art3_handle;
+  {
+    syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir());
+
+    // art1 has two attachments, both have been uploaded to the server.  art1 is
+    // eligible to be committed.
+    sync_pb::AttachmentMetadata art1_attachments;
+    AddAttachment(&art1_attachments, true /* is_on_server */);
+    AddAttachment(&art1_attachments, true /* is_on_server */);
+    art1_handle = CreateUnsyncedItemWithAttachments(
+        &trans, ARTICLES, "art1", art1_attachments);
+
+    // art2 has two attachments, one of which has been uploaded to the
+    // server. art2 is not eligible to be committed.
+    sync_pb::AttachmentMetadata art2_attachments;
+    AddAttachment(&art2_attachments, false /* is_on_server */);
+    AddAttachment(&art2_attachments, true /* is_on_server */);
+    art2_handle = CreateUnsyncedItemWithAttachments(
+        &trans, ARTICLES, "art2", art2_attachments);
+
+    // art3 has two attachments, neither of which have been uploaded to the
+    // server. art2 is not eligible to be committed.
+    sync_pb::AttachmentMetadata art3_attachments;
+    AddAttachment(&art3_attachments, false /* is_on_server */);
+    AddAttachment(&art3_attachments, false /* is_on_server */);
+    art3_handle = CreateUnsyncedItemWithAttachments(
+        &trans, ARTICLES, "art3", art3_attachments);
+  }
+
+  DirectoryTypeDebugInfoEmitter emitter(ARTICLES, &type_observers_);
+  scoped_ptr<DirectoryCommitContribution> art_cc(
+      DirectoryCommitContribution::Build(dir(), ARTICLES, 25, &emitter));
+
+  // Only art1 is ready.
+  EXPECT_EQ(1U, art_cc->GetNumEntries());
+
+  sync_pb::ClientToServerMessage message;
+  art_cc->AddToCommitMessage(&message);
+
+  const sync_pb::CommitMessage& commit_message = message.commit();
+  ASSERT_EQ(1, commit_message.entries_size());
+
+  sync_pb::ClientToServerResponse response;
+  for (int i = 0; i < commit_message.entries_size(); ++i) {
+    sync_pb::SyncEntity entity = commit_message.entries(i);
+    sync_pb::CommitResponse_EntryResponse* entry_response =
+        response.mutable_commit()->add_entryresponse();
+    CreateSuccessfulCommitResponse(entity, entry_response);
+  }
+
+  sessions::StatusController status;
+  art_cc->ProcessCommitResponse(response, &status);
+  {
+    syncable::ReadTransaction trans(FROM_HERE, dir());
+
+    syncable::Entry a1(&trans, syncable::GET_BY_HANDLE, art1_handle);
+    EXPECT_TRUE(a1.GetId().ServerKnows());
+    EXPECT_FALSE(a1.GetSyncing());
+    EXPECT_LT(0, a1.GetServerVersion());
+
+    syncable::Entry a2(&trans, syncable::GET_BY_HANDLE, art2_handle);
+    EXPECT_FALSE(a2.GetId().ServerKnows());
+    EXPECT_FALSE(a2.GetSyncing());
+    EXPECT_EQ(0, a2.GetServerVersion());
+
+    syncable::Entry a3(&trans, syncable::GET_BY_HANDLE, art3_handle);
+    EXPECT_FALSE(a3.GetId().ServerKnows());
+    EXPECT_FALSE(a3.GetSyncing());
+    EXPECT_EQ(0, a3.GetServerVersion());
+  }
+
+  art_cc->CleanUp();
 }
 
 }  // namespace syncer

@@ -61,7 +61,7 @@ class TestEntryFactory {
   int64 CreateSyncedItem(const std::string& name,
                          ModelType model_type, bool is_folder);
 
-  // Creates a root node that IS_UNAPPLIED. Smiilar to what one would find in
+  // Creates a root node that IS_UNAPPLIED. Similar to what one would find in
   // the database between the ProcessUpdates of an initial datatype configure
   // cycle and the ApplyUpdates step of the same sync cycle.
   int64 CreateUnappliedRootNode(ModelType model_type);
@@ -80,14 +80,39 @@ class TestEntryFactory {
   bool SetLocalSpecificsForItem(int64 meta_handle,
                                 const sync_pb::EntitySpecifics specifics);
 
-  // Looks up the item referenced by |meta_handle|. If successful, stores
-  // the server specifics into |specifics| and returns true. Else, return false.
+  // Looks up the item referenced by |meta_handle| and returns its server
+  // specifics.
   const sync_pb::EntitySpecifics& GetServerSpecificsForItem(
       int64 meta_handle) const;
 
-  // Looks up the item referenced by |meta_handle|. If successful, stores
-  // the local specifics into |specifics| and returns true. Else, return false.
+  // Looks up the item referenced by |meta_handle| and returns its specifics.
   const sync_pb::EntitySpecifics& GetLocalSpecificsForItem(
+      int64 meta_handle) const;
+
+  // Looks up the item referenced by |meta_handle|. If successful, overwrites
+  // the server attachment metadata with |metadata|, sets
+  // IS_UNAPPLIED_UPDATES/IS_UNSYNCED appropriately, and returns true.
+  // Else, return false.
+  bool SetServerAttachmentMetadataForItem(
+      int64 meta_handle,
+      const sync_pb::AttachmentMetadata metadata);
+
+  // Looks up the item referenced by |meta_handle|. If successful, overwrites
+  // the local attachment metadata with |metadata|, sets
+  // IS_UNAPPLIED_UPDATES/IS_UNSYNCED appropriately, and returns true.
+  // Else, return false.
+  bool SetLocalAttachmentMetadataForItem(
+      int64 meta_handle,
+      const sync_pb::AttachmentMetadata metadata);
+
+  // Looks up the item referenced by |meta_handle| and returns its server
+  // attachment metadata.
+  const sync_pb::AttachmentMetadata& GetServerAttachmentMetadataForItem(
+      int64 meta_handle) const;
+
+  // Looks up the item referenced by |meta_handle| and returns its attachment
+  // metadata.
+  const sync_pb::AttachmentMetadata& GetLocalAttachmentMetadataForItem(
       int64 meta_handle) const;
 
   // Getters for IS_UNSYNCED and IS_UNAPPLIED_UPDATE bit fields.

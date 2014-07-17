@@ -226,6 +226,10 @@ bool SyncManagerImpl::VisiblePropertiesDiffer(
                          b.ref(syncable::SPECIFICS))) {
     return true;
   }
+  if (!AreAttachmentMetadataEqual(a.ref(syncable::ATTACHMENT_METADATA),
+                                  b.ref(syncable::ATTACHMENT_METADATA))) {
+    return true;
+  }
   // We only care if the name has changed if neither specifics is encrypted
   // (encrypted nodes blow away the NON_UNIQUE_NAME).
   if (!a_specifics.has_encrypted() && !b_specifics.has_encrypted() &&

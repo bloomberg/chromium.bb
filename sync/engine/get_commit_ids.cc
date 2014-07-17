@@ -108,7 +108,6 @@ bool IsEntryInConflict(const syncable::Entry& entry) {
 // Return true if this entry has any attachments that haven't yet been uploaded
 // to the server.
 bool HasAttachmentNotOnServer(const syncable::Entry& entry) {
-  // TODO(maniscalco): Add test case (bug 356266).
   const sync_pb::AttachmentMetadata& metadata = entry.GetAttachmentMetadata();
   for (int i = 0; i < metadata.record_size(); ++i) {
     if (!metadata.record(i).is_on_server()) {

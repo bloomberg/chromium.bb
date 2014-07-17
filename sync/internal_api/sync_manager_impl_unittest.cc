@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "sync/engine/sync_scheduler.h"
+#include "sync/internal_api/public/base/attachment_id_proto.h"
 #include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/internal_api/public/change_record.h"
@@ -866,6 +867,7 @@ class SyncManagerTest : public testing::Test,
     (*out)[PASSWORDS] = GROUP_PASSIVE;
     (*out)[PREFERENCES] = GROUP_PASSIVE;
     (*out)[PRIORITY_PREFERENCES] = GROUP_PASSIVE;
+    (*out)[ARTICLES] = GROUP_PASSIVE;
   }
 
   ModelTypeSet GetEnabledTypes() {
@@ -2872,6 +2874,8 @@ class SyncManagerChangeProcessingTest : public SyncManagerTest {
     return last_changes_.Get().size();
   }
 
+  void ClearChangeList() { last_changes_ = ImmutableChangeRecordList(); }
+
  protected:
   ImmutableChangeRecordList last_changes_;
   TestIdFactory id_factory_;
@@ -3105,6 +3109,66 @@ TEST_F(SyncManagerChangeProcessingTest, DeletionsAndChanges) {
   // Deletes should appear before updates.
   EXPECT_LT(child_pos, folder_a_pos);
   EXPECT_LT(folder_b_pos, folder_a_pos);
+}
+
+// See that attachment metadata changes are not filtered out by
+// SyncManagerImpl::VisiblePropertiesDiffer.
+TEST_F(SyncManagerChangeProcessingTest, AttachmentMetadataOnlyChanges) {
+  // Create an article with no attachments.  See that a change is generated.
+  int64 article_id = kInvalidId;
+  {
+    syncable::WriteTransaction trans(
+        FROM_HERE, syncable::SYNCER, share()->directory.get());
+    int64 type_root = GetIdForDataType(ARTICLES);
+    syncable::Entry root(&trans, syncable::GET_BY_HANDLE, type_root);
+    ASSERT_TRUE(root.good());
+    syncable::MutableEntry article(
+        &trans, syncable::CREATE, ARTICLES, root.GetId(), "article");
+    ASSERT_TRUE(article.good());
+    SetNodeProperties(&article);
+    article_id = article.GetMetahandle();
+  }
+  ASSERT_EQ(1UL, GetChangeListSize());
+  FindChangeInList(article_id, ChangeRecord::ACTION_ADD);
+  ClearChangeList();
+
+  // Modify the article by adding one attachment.  Don't touch anything else.
+  // See that a change is generated.
+  {
+    syncable::WriteTransaction trans(
+        FROM_HERE, syncable::SYNCER, share()->directory.get());
+    syncable::MutableEntry article(&trans, syncable::GET_BY_HANDLE, article_id);
+    sync_pb::AttachmentMetadata metadata;
+    *metadata.add_record()->mutable_id() = CreateAttachmentIdProto();
+    article.PutAttachmentMetadata(metadata);
+  }
+  ASSERT_EQ(1UL, GetChangeListSize());
+  FindChangeInList(article_id, ChangeRecord::ACTION_UPDATE);
+  ClearChangeList();
+
+  // Modify the article by replacing its attachment with a different one.  See
+  // that a change is generated.
+  {
+    syncable::WriteTransaction trans(
+        FROM_HERE, syncable::SYNCER, share()->directory.get());
+    syncable::MutableEntry article(&trans, syncable::GET_BY_HANDLE, article_id);
+    sync_pb::AttachmentMetadata metadata = article.GetAttachmentMetadata();
+    *metadata.add_record()->mutable_id() = CreateAttachmentIdProto();
+    article.PutAttachmentMetadata(metadata);
+  }
+  ASSERT_EQ(1UL, GetChangeListSize());
+  FindChangeInList(article_id, ChangeRecord::ACTION_UPDATE);
+  ClearChangeList();
+
+  // Modify the article by replacing its attachment metadata with the same
+  // attachment metadata.  No change should be generated.
+  {
+    syncable::WriteTransaction trans(
+        FROM_HERE, syncable::SYNCER, share()->directory.get());
+    syncable::MutableEntry article(&trans, syncable::GET_BY_HANDLE, article_id);
+    article.PutAttachmentMetadata(article.GetAttachmentMetadata());
+  }
+  ASSERT_EQ(0UL, GetChangeListSize());
 }
 
 // During initialization SyncManagerImpl loads sqlite database. If it fails to

@@ -26,4 +26,24 @@ TEST(AttachmentIdProtoTest, UniqueIdFormat) {
   EXPECT_EQ(StringToLowerASCII(id_proto.unique_id()), id_proto.unique_id());
 }
 
+TEST(AttachmentIdProtoTest, CreateAttachmentMetadata_Empty) {
+  google::protobuf::RepeatedPtrField<sync_pb::AttachmentIdProto> ids;
+  sync_pb::AttachmentMetadata metadata = CreateAttachmentMetadata(ids);
+  EXPECT_EQ(0, metadata.record_size());
+}
+
+TEST(AttachmentIdProtoTest, CreateAttachmentMetadata_NonEmpty) {
+  google::protobuf::RepeatedPtrField<sync_pb::AttachmentIdProto> ids;
+  *ids.Add() = CreateAttachmentIdProto();
+  *ids.Add() = CreateAttachmentIdProto();
+  *ids.Add() = CreateAttachmentIdProto();
+  sync_pb::AttachmentMetadata metadata = CreateAttachmentMetadata(ids);
+  ASSERT_EQ(3, metadata.record_size());
+  for (int i = 0; i < metadata.record_size(); ++i) {
+    EXPECT_EQ(ids.Get(i).SerializeAsString(),
+              metadata.record(i).id().SerializeAsString());
+    EXPECT_TRUE(metadata.record(i).is_on_server());
+  }
+}
+
 }  // namespace syncer
