@@ -69,6 +69,10 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
       return message_ids_.count(connection_id) > 0;
     }
 
+    // Sends OnServerChangeIdAdvanced() to all connections that have not yet
+    // been messaged.
+    void SendServerChangeIdAdvanced();
+
    private:
     RootNodeManager* root_;
     const ConnectionSpecificId connection_id_;
@@ -133,6 +137,9 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
       ConnectionSpecificId creator_id,
       const std::string& url) const;
 
+  // Returns the ViewManagerServiceImpl that has |id| as a root.
+  ViewManagerServiceImpl* GetConnectionWithRoot(const NodeId& id);
+
   void DispatchViewInputEventToWindowManager(const View* view,
                                              const ui::Event* event);
 
@@ -177,6 +184,9 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager
 
   // Balances a call to PrepareForChange().
   void FinishChange();
+
+  // See description in ScopedChange.
+  void SendServerChangeIdAdvanced();
 
   // Returns true if the specified connection originated the current change.
   bool IsChangeSource(ConnectionSpecificId connection_id) const {

@@ -68,6 +68,9 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   }
   const View* GetView(const ViewId& id) const;
 
+  // Returns true if this has |id| as a root.
+  bool HasRoot(const NodeId& id) const;
+
   // Invoked when a connection is destroyed.
   void OnViewManagerServiceImplDestroyed(ConnectionSpecificId id);
 
@@ -141,13 +144,16 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerServiceImpl
   void GetUnknownNodesFrom(const Node* node, std::vector<const Node*>* nodes);
 
   // Removes |node| and all its descendants from |known_nodes_|. This does not
-  // recurse through nodes that were created by this connection.
-  void RemoveFromKnown(const Node* node);
+  // recurse through nodes that were created by this connection. All nodes owned
+  // by this connection are added to |local_nodes|.
+  void RemoveFromKnown(const Node* node, std::vector<Node*>* local_nodes);
 
-  // Adds |transport_node_id| to the set of roots this connection knows about.
-  // Returns true if |transport_node_id| was not already a root for this
-  // connection.
-  bool AddRoot(Id transport_node_id);
+  // Adds |node_id| to the set of roots this connection knows about. The caller
+  // should have verified |node_id| is not among the roots of this connection.
+  void AddRoot(const NodeId& node_id);
+
+  // Removes |node_id| from the set of roots this connection knows about.
+  void RemoveRoot(const NodeId& node_id);
 
   // Returns true if |node| is a non-null and a descendant of |roots_| (or
   // |roots_| is empty).

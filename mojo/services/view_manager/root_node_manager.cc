@@ -33,6 +33,10 @@ RootNodeManager::ScopedChange::~ScopedChange() {
   root_->FinishChange();
 }
 
+void RootNodeManager::ScopedChange::SendServerChangeIdAdvanced() {
+  root_->SendServerChangeIdAdvanced();
+}
+
 RootNodeManager::Context::Context() {
   // Pass in false as native viewport creates the PlatformEventSource.
   aura::Env::CreateInstance(false);
@@ -141,6 +145,16 @@ ViewManagerServiceImpl* RootNodeManager::GetConnectionByCreator(
   return NULL;
 }
 
+ViewManagerServiceImpl* RootNodeManager::GetConnectionWithRoot(
+    const NodeId& id) {
+  for (ConnectionMap::const_iterator i = connection_map_.begin();
+       i != connection_map_.end(); ++i) {
+    if (i->second->HasRoot(id))
+      return i->second;
+  }
+  return NULL;
+}
+
 void RootNodeManager::DispatchViewInputEventToWindowManager(
     const View* view,
     const ui::Event* event) {
@@ -236,6 +250,15 @@ void RootNodeManager::FinishChange() {
   current_change_ = NULL;
 }
 
+void RootNodeManager::SendServerChangeIdAdvanced() {
+  CHECK(current_change_);
+  for (ConnectionMap::iterator i = connection_map_.begin();
+       i != connection_map_.end(); ++i) {
+    if (!DidConnectionMessageClient(i->first))
+      i->second->client()->OnServerChangeIdAdvanced(next_server_change_id_ + 1);
+  }
+}
+
 ViewManagerServiceImpl* RootNodeManager::EmbedImpl(
     const ConnectionSpecificId creator_id,
     const String& url,
@@ -261,6 +284,7 @@ ViewManagerServiceImpl* RootNodeManager::EmbedImpl(
                                  root_id);
   BindToPipe(connection, pipe.handle0.Pass());
   connections_created_by_connect_.insert(connection);
+  OnConnectionMessagedClient(connection->id());
   return connection;
 }
 

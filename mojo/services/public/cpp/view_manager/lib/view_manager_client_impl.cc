@@ -478,6 +478,7 @@ class EmbedTransaction : public ViewManagerTransaction {
  private:
   // Overridden from ViewManagerTransaction:
   virtual void DoCommit() OVERRIDE {
+    GetAndAdvanceNextServerChangeId();
     service()->Embed(url_, node_id_, ActionCompletedCallback());
   }
   virtual void DoActionCompleted(bool success) OVERRIDE {

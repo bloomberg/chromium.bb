@@ -86,6 +86,10 @@ const View* ViewManagerServiceImpl::GetView(const ViewId& id) const {
   return root_node_manager_->GetView(id);
 }
 
+bool ViewManagerServiceImpl::HasRoot(const NodeId& id) const {
+  return roots_.find(NodeIdToTransportId(id)) != roots_.end();
+}
+
 void ViewManagerServiceImpl::OnViewManagerServiceImplDestroyed(
     ConnectionSpecificId id) {
   if (creator_id_ == id)
@@ -119,7 +123,7 @@ void ViewManagerServiceImpl::ProcessNodeHierarchyChanged(
     if (node->id().connection_id != id_ && !IsNodeDescendantOfRoots(node)) {
       // Node was a descendant of roots and is no longer, treat it as though the
       // node was deleted.
-      RemoveFromKnown(node);
+      RemoveFromKnown(node, NULL);
       client()->OnNodeDeleted(NodeIdToTransportId(node->id()),
                               server_change_id);
       root_node_manager_->OnConnectionMessagedClient(id_);
@@ -407,21 +411,24 @@ void ViewManagerServiceImpl::GetUnknownNodesFrom(
     GetUnknownNodesFrom(children[i], nodes);
 }
 
-void ViewManagerServiceImpl::RemoveFromKnown(const Node* node) {
-  if (node->id().connection_id == id_)
+void ViewManagerServiceImpl::RemoveFromKnown(const Node* node,
+                                             std::vector<Node*>* local_nodes) {
+  if (node->id().connection_id == id_) {
+    if (local_nodes)
+      local_nodes->push_back(GetNode(node->id()));
     return;
+  }
   known_nodes_.erase(NodeIdToTransportId(node->id()));
   std::vector<const Node*> children = node->GetChildren();
   for (size_t i = 0; i < children.size(); ++i)
-    RemoveFromKnown(children[i]);
+    RemoveFromKnown(children[i], local_nodes);
 }
 
-bool ViewManagerServiceImpl::AddRoot(Id transport_node_id) {
-  if (roots_.count(transport_node_id) > 0)
-    return false;
+void ViewManagerServiceImpl::AddRoot(const NodeId& node_id) {
+  const Id transport_node_id(NodeIdToTransportId(node_id));
+  CHECK(roots_.count(transport_node_id) == 0);
 
   std::vector<const Node*> to_send;
-  const NodeId node_id(NodeIdFromTransportId(transport_node_id));
   CHECK_EQ(creator_id_, node_id.connection_id);
   roots_.insert(transport_node_id);
   Node* node = GetNode(node_id);
@@ -435,7 +442,31 @@ bool ViewManagerServiceImpl::AddRoot(Id transport_node_id) {
   }
 
   client()->OnRootAdded(NodesToNodeDatas(to_send));
-  return true;
+  root_node_manager_->OnConnectionMessagedClient(id_);
+}
+
+void ViewManagerServiceImpl::RemoveRoot(const NodeId& node_id) {
+  const Id transport_node_id(NodeIdToTransportId(node_id));
+  CHECK(roots_.count(transport_node_id) > 0);
+
+  roots_.erase(transport_node_id);
+  if (roots_.empty())
+    roots_.insert(NodeIdToTransportId(InvalidNodeId()));
+
+  // No need to do anything if we created the node.
+  if (node_id.connection_id == id_)
+    return;
+
+  client()->OnNodeDeleted(transport_node_id,
+                          root_node_manager_->next_server_change_id());
+  root_node_manager_->OnConnectionMessagedClient(id_);
+
+  // This connection no longer knows about the node. Unparent any nodes that
+  // were parented to nodes in the root.
+  std::vector<Node*> local_nodes;
+  RemoveFromKnown(GetNode(node_id), &local_nodes);
+  for (size_t i = 0; i < local_nodes.size(); ++i)
+    local_nodes[i]->GetParent()->Remove(local_nodes[i]);
 }
 
 bool ViewManagerServiceImpl::IsNodeDescendantOfRoots(const Node* node) const {
@@ -737,13 +768,30 @@ void ViewManagerServiceImpl::Embed(const String& url,
                                    const Callback<void(bool)>& callback) {
   bool success = CanEmbed(transport_node_id);
   if (success) {
-    // We may already have this connection, if so reuse it.
-    ViewManagerServiceImpl* existing_connection =
+    // Only allow a node to be the root for one connection.
+    const NodeId node_id(NodeIdFromTransportId(transport_node_id));
+    ViewManagerServiceImpl* connection_by_url =
         root_node_manager_->GetConnectionByCreator(id_, url.To<std::string>());
-    if (existing_connection)
-      success = existing_connection->AddRoot(transport_node_id);
-    else
-      root_node_manager_->Embed(id_, url, transport_node_id);
+    ViewManagerServiceImpl* connection_with_node_as_root =
+        root_node_manager_->GetConnectionWithRoot(node_id);
+    if ((connection_by_url != connection_with_node_as_root ||
+         (!connection_by_url && !connection_with_node_as_root)) &&
+        (!connection_by_url || !connection_by_url->HasRoot(node_id))) {
+      RootNodeManager::ScopedChange change(
+          this, root_node_manager_,
+          RootNodeManager::CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID, true);
+      // Never message the originating connection.
+      root_node_manager_->OnConnectionMessagedClient(id_);
+      if (connection_with_node_as_root)
+        connection_with_node_as_root->RemoveRoot(node_id);
+      if (connection_by_url)
+        connection_by_url->AddRoot(node_id);
+      else
+        root_node_manager_->Embed(id_, url, transport_node_id);
+      change.SendServerChangeIdAdvanced();
+    } else {
+      success = false;
+    }
   }
   callback.Run(success);
 }

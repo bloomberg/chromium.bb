@@ -127,12 +127,20 @@ interface ViewManagerService {
   SetFocus(uint32 node_id) => (bool success);
 
   // Embeds the app for |url| in the specified node. More specifically this
-  // creates a new connection to the specified url, expecting to get an
+  // creates a new connection to the specified url, expecting to get a
   // ViewManagerClient and configures it with the root node |node|. Fails
   // if |node| was not created by this connection.
+  //
   // If a particular client invokes Embed() multiple times with the same url,
   // the connection is reused. When this happens the ViewManagerClient is
   // notified of the additional roots by way of OnRootAdded().
+  //
+  // A node may only be a root of one connection at a time. Subsequent calls to
+  // Embed() for the same node result in the node being removed from the
+  // current connection. The current connection is told this by way of
+  // OnNodeDeleted().
+  //
+  // This advances the server change id.
   Embed(string url, uint32 node_id) => (bool success);
 
   // TODO(sky): move these to a separate interface when FIFO works.
