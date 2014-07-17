@@ -5,11 +5,6 @@
 #ifndef UI_BASE_X_SELECTION_OWNER_H_
 #define UI_BASE_X_SELECTION_OWNER_H_
 
-#include <X11/Xlib.h>
-
-// Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
-#undef RootWindow
-
 #include <vector>
 
 #include "base/basictypes.h"
@@ -17,6 +12,7 @@
 #include "ui/base/ui_base_export.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/x11_types.h"
 
 namespace ui {
 
@@ -27,16 +23,16 @@ namespace ui {
 // processes.
 class UI_BASE_EXPORT SelectionOwner {
  public:
-  SelectionOwner(Display* xdisplay,
-                 ::Window xwindow,
-                 ::Atom selection_name);
+  SelectionOwner(XDisplay* xdisplay,
+                 XID xwindow,
+                 XAtom selection_name);
   ~SelectionOwner();
 
   // Returns the current selection data. Useful for fast paths.
   const SelectionFormatMap& selection_format_map() { return format_map_; }
 
   // Appends a list of types we're offering to |targets|.
-  void RetrieveTargets(std::vector<Atom>* targets);
+  void RetrieveTargets(std::vector<XAtom>* targets);
 
   // Attempts to take ownership of the selection. If we're successful, present
   // |data| to other windows.
@@ -47,8 +43,8 @@ class UI_BASE_EXPORT SelectionOwner {
   void ClearSelectionOwner();
 
   // It is our owner's responsibility to plumb X11 events on |xwindow_| to us.
-  void OnSelectionRequest(const XSelectionRequestEvent& event);
-  void OnSelectionClear(const XSelectionClearEvent& event);
+  void OnSelectionRequest(const XEvent& event);
+  void OnSelectionClear(const XEvent& event);
   // TODO(erg): Do we also need to follow PropertyNotify events? We currently
   // don't, but there were open todos in the previous implementation.
 
@@ -56,14 +52,14 @@ class UI_BASE_EXPORT SelectionOwner {
   // Attempts to convert the selection to |target|. If the conversion is
   // successful, true is returned and the result is stored in the |property|
   // of |requestor|.
-  bool ProcessTarget(::Atom target, ::Window requestor, ::Atom property);
+  bool ProcessTarget(XAtom target, XID requestor, XAtom property);
 
   // Our X11 state.
-  Display* x_display_;
-  ::Window x_window_;
+  XDisplay* x_display_;
+  XID x_window_;
 
   // The X11 selection that this instance communicates on.
-  ::Atom selection_name_;
+  XAtom selection_name_;
 
   // The data we are currently serving.
   SelectionFormatMap format_map_;

@@ -517,7 +517,7 @@ uint32_t OSExchangeDataProviderAuraX11::DispatchEvent(
   XEvent* xev = event;
   switch (xev->type) {
     case SelectionRequest:
-      selection_owner_.OnSelectionRequest(xev->xselectionrequest);
+      selection_owner_.OnSelectionRequest(*xev);
       return ui::POST_DISPATCH_STOP_PROPAGATION;
     default:
       NOTIMPLEMENTED();

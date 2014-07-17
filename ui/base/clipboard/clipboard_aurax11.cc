@@ -534,12 +534,12 @@ uint32_t Clipboard::AuraX11Details::DispatchEvent(const PlatformEvent& xev) {
   switch (xev->type) {
     case SelectionRequest: {
       if (xev->xselectionrequest.selection == XA_PRIMARY) {
-        primary_owner_.OnSelectionRequest(xev->xselectionrequest);
+        primary_owner_.OnSelectionRequest(*xev);
       } else {
         // We should not get requests for the CLIPBOARD_MANAGER selection
         // because we never take ownership of it.
         DCHECK_EQ(GetCopyPasteSelection(), xev->xselectionrequest.selection);
-        clipboard_owner_.OnSelectionRequest(xev->xselectionrequest);
+        clipboard_owner_.OnSelectionRequest(*xev);
       }
       break;
     }
@@ -555,12 +555,12 @@ uint32_t Clipboard::AuraX11Details::DispatchEvent(const PlatformEvent& xev) {
     }
     case SelectionClear: {
       if (xev->xselectionclear.selection == XA_PRIMARY) {
-        primary_owner_.OnSelectionClear(xev->xselectionclear);
+        primary_owner_.OnSelectionClear(*xev);
       } else {
         // We should not get requests for the CLIPBOARD_MANAGER selection
         // because we never take ownership of it.
         DCHECK_EQ(GetCopyPasteSelection(), xev->xselection.selection);
-        clipboard_owner_.OnSelectionClear(xev->xselectionclear);
+        clipboard_owner_.OnSelectionClear(*xev);
         }
       break;
     }

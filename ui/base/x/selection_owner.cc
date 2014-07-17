@@ -31,9 +31,9 @@ const char* kAtomsToCache[] = {
 // Gets the value of an atom pair array property. On success, true is returned
 // and the value is stored in |value|.
 bool GetAtomPairArrayProperty(XID window,
-                              Atom property,
-                              std::vector<std::pair<Atom,Atom> >* value) {
-  Atom type = None;
+                              XAtom property,
+                              std::vector<std::pair<XAtom,XAtom> >* value) {
+  XAtom type = None;
   int format = 0;  // size in bits of each item in 'property'
   unsigned long num_items = 0;
   unsigned char* properties = NULL;
@@ -62,7 +62,7 @@ bool GetAtomPairArrayProperty(XID window,
     return false;
   }
 
-  Atom* atom_properties = reinterpret_cast<Atom*>(properties);
+  XAtom* atom_properties = reinterpret_cast<XAtom*>(properties);
   value->clear();
   for (size_t i = 0; i < num_items; i+=2)
     value->push_back(std::make_pair(atom_properties[i], atom_properties[i+1]));
@@ -72,9 +72,9 @@ bool GetAtomPairArrayProperty(XID window,
 
 }  // namespace
 
-SelectionOwner::SelectionOwner(Display* x_display,
-                               Window x_window,
-                               Atom selection_name)
+SelectionOwner::SelectionOwner(XDisplay* x_display,
+                               XID x_window,
+                               XAtom selection_name)
     : x_display_(x_display),
       x_window_(x_window),
       selection_name_(selection_name),
@@ -89,7 +89,7 @@ SelectionOwner::~SelectionOwner() {
     XSetSelectionOwner(x_display_, selection_name_, None, CurrentTime);
 }
 
-void SelectionOwner::RetrieveTargets(std::vector<Atom>* targets) {
+void SelectionOwner::RetrieveTargets(std::vector<XAtom>* targets) {
   for (SelectionFormatMap::const_iterator it = format_map_.begin();
        it != format_map_.end(); ++it) {
     targets->push_back(it->first);
@@ -111,28 +111,32 @@ void SelectionOwner::ClearSelectionOwner() {
   format_map_ = SelectionFormatMap();
 }
 
-void SelectionOwner::OnSelectionRequest(const XSelectionRequestEvent& event) {
+void SelectionOwner::OnSelectionRequest(const XEvent& event) {
+  XID requestor = event.xselectionrequest.requestor;
+  XAtom requested_target = event.xselectionrequest.target;
+  XAtom requested_property = event.xselectionrequest.property;
+
   // Incrementally build our selection. By default this is a refusal, and we'll
   // override the parts indicating success in the different cases.
   XEvent reply;
   reply.xselection.type = SelectionNotify;
-  reply.xselection.requestor = event.requestor;
-  reply.xselection.selection = event.selection;
-  reply.xselection.target = event.target;
+  reply.xselection.requestor = requestor;
+  reply.xselection.selection = event.xselectionrequest.selection;
+  reply.xselection.target = requested_target;
   reply.xselection.property = None;  // Indicates failure
-  reply.xselection.time = event.time;
+  reply.xselection.time = event.xselectionrequest.time;
 
-  if (event.target == atom_cache_.GetAtom(kMultiple)) {
-    // The contents of |event.property| should be a list of
+  if (requested_target == atom_cache_.GetAtom(kMultiple)) {
+    // The contents of |requested_property| should be a list of
     // <target,property> pairs.
-    std::vector<std::pair<Atom,Atom> > conversions;
-    if (GetAtomPairArrayProperty(event.requestor,
-                                 event.property,
+    std::vector<std::pair<XAtom,XAtom> > conversions;
+    if (GetAtomPairArrayProperty(requestor,
+                                 requested_property,
                                  &conversions)) {
-      std::vector<Atom> conversion_results;
+      std::vector<XAtom> conversion_results;
       for (size_t i = 0; i < conversions.size(); ++i) {
         bool conversion_successful = ProcessTarget(conversions[i].first,
-                                                   event.requestor,
+                                                   requestor,
                                                    conversions[i].second);
         conversion_results.push_back(conversions[i].first);
         conversion_results.push_back(
@@ -143,38 +147,38 @@ void SelectionOwner::OnSelectionRequest(const XSelectionRequestEvent& event) {
       // what GTK does.
       XChangeProperty(
           x_display_,
-          event.requestor,
-          event.property,
+          requestor,
+          requested_property,
           atom_cache_.GetAtom(kAtomPair),
           32,
           PropModeReplace,
           reinterpret_cast<const unsigned char*>(&conversion_results.front()),
           conversion_results.size());
 
-      reply.xselection.property = event.property;
+      reply.xselection.property = requested_property;
     }
   } else {
-    if (ProcessTarget(event.target, event.requestor, event.property))
-      reply.xselection.property = event.property;
+    if (ProcessTarget(requested_target, requestor, requested_property))
+      reply.xselection.property = requested_property;
   }
 
   // Send off the reply.
-  XSendEvent(x_display_, event.requestor, False, 0, &reply);
+  XSendEvent(x_display_, requestor, False, 0, &reply);
 }
 
-void SelectionOwner::OnSelectionClear(const XSelectionClearEvent& event) {
+void SelectionOwner::OnSelectionClear(const XEvent& event) {
   DLOG(ERROR) << "SelectionClear";
 
   // TODO(erg): If we receive a SelectionClear event while we're handling data,
   // we need to delay clearing.
 }
 
-bool SelectionOwner::ProcessTarget(Atom target,
-                                   ::Window requestor,
-                                   ::Atom property) {
-  Atom multiple_atom = atom_cache_.GetAtom(kMultiple);
-  Atom save_targets_atom = atom_cache_.GetAtom(kSaveTargets);
-  Atom targets_atom = atom_cache_.GetAtom(kTargets);
+bool SelectionOwner::ProcessTarget(XAtom target,
+                                   XID requestor,
+                                   XAtom property) {
+  XAtom multiple_atom = atom_cache_.GetAtom(kMultiple);
+  XAtom save_targets_atom = atom_cache_.GetAtom(kSaveTargets);
+  XAtom targets_atom = atom_cache_.GetAtom(kTargets);
 
   if (target == multiple_atom || target == save_targets_atom)
     return false;
@@ -182,7 +186,7 @@ bool SelectionOwner::ProcessTarget(Atom target,
   if (target == targets_atom) {
     // We have been asked for TARGETS. Send an atom array back with the data
     // types we support.
-    std::vector<Atom> targets;
+    std::vector<XAtom> targets;
     targets.push_back(targets_atom);
     targets.push_back(save_targets_atom);
     targets.push_back(multiple_atom);
@@ -212,4 +216,3 @@ bool SelectionOwner::ProcessTarget(Atom target,
 }
 
 }  // namespace ui
-
