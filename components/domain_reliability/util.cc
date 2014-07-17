@@ -7,7 +7,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/net_errors.h"
@@ -84,7 +83,7 @@ bool GetDomainReliabilityBeaconStatus(
     std::string* beacon_status_out) {
   if (net_error == net::OK) {
     if (http_response_code >= 400 && http_response_code < 600)
-      *beacon_status_out = base::StringPrintf("http.%d", http_response_code);
+      *beacon_status_out = "http.error";
     else
       *beacon_status_out = "ok";
     return true;
