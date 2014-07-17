@@ -16,7 +16,7 @@ class CustomElementAsyncImportMicrotaskQueue;
 class CustomElementMicrotaskStep;
 class HTMLImportLoader;
 
-class CustomElementMicrotaskRunQueue : public RefCountedWillBeGarbageCollected<CustomElementMicrotaskRunQueue> {
+class CustomElementMicrotaskRunQueue : public RefCountedWillBeGarbageCollectedFinalized<CustomElementMicrotaskRunQueue> {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CustomElementMicrotaskRunQueue)
 public:
     static PassRefPtrWillBeRawPtr<CustomElementMicrotaskRunQueue> create() { return adoptRefWillBeNoop(new CustomElementMicrotaskRunQueue()); }
