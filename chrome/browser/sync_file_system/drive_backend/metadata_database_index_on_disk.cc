@@ -556,6 +556,27 @@ MetadataDatabaseIndexOnDisk::GetAllMetadataIDs() const {
   return file_ids;
 }
 
+void MetadataDatabaseIndexOnDisk::BuildTrackerIndexes(
+    leveldb::WriteBatch* batch) {
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+  for (itr->Seek(kFileTrackerKeyPrefix); itr->Valid(); itr->Next()) {
+    if (!RemovePrefix(itr->key().ToString(), kFileTrackerKeyPrefix, NULL))
+      break;
+
+    FileTracker tracker;
+    if (!tracker.ParseFromString(itr->value().ToString())) {
+      util::Log(logging::LOG_WARNING, FROM_HERE,
+                "Failed to parse a Tracker");
+      continue;
+    }
+
+    AddToAppIDIndex(tracker, batch);
+    AddToFileIDIndexes(tracker, batch);
+    AddToPathIndexes(tracker, batch);
+    AddToDirtyTrackerIndexes(tracker, batch);
+  }
+}
+
 MetadataDatabaseIndexOnDisk::MetadataDatabaseIndexOnDisk(leveldb::DB* db)
     : db_(db) {
   // TODO(peria): Add UMA to measure the number of FileMetadata, FileTracker,

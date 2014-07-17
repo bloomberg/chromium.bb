@@ -183,6 +183,35 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, SetEntryTest) {
   EXPECT_FALSE(index()->GetFileTracker(tracker_id, NULL));
 }
 
+TEST_F(MetadataDatabaseIndexOnDiskTest, BuildIndexTest) {
+  CreateTestDatabase(false);
+
+  TrackerIDSet tracker_ids;
+  // Before building indexes, no references exist.
+  EXPECT_EQ(kInvalidTrackerID, index()->GetAppRootTracker("app_id"));
+  tracker_ids = index()->GetFileTrackerIDsByFileID("file_id");
+  EXPECT_TRUE(tracker_ids.empty());
+  tracker_ids = index()->GetFileTrackerIDsByParentAndTitle(
+      kAppRootTrackerID, "file");
+  EXPECT_TRUE(tracker_ids.empty());
+  EXPECT_EQ(0U, index()->CountDirtyTracker());
+
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  index()->BuildTrackerIndexes(batch.get());
+  WriteToDB(batch.Pass());
+
+  // After building indexes, we should have correct indexes.
+  EXPECT_EQ(kAppRootTrackerID, index()->GetAppRootTracker("app_id"));
+  tracker_ids = index()->GetFileTrackerIDsByFileID("file_id");
+  EXPECT_EQ(1U, tracker_ids.size());
+  EXPECT_EQ(kFileTrackerID, tracker_ids.active_tracker());
+  tracker_ids = index()->GetFileTrackerIDsByParentAndTitle(
+      kAppRootTrackerID, "file");
+  EXPECT_EQ(1U, tracker_ids.size());
+  EXPECT_EQ(kFileTrackerID, tracker_ids.active_tracker());
+  EXPECT_EQ(1U, index()->CountDirtyTracker());
+}
+
 TEST_F(MetadataDatabaseIndexOnDiskTest, AllEntriesTest) {
   CreateTestDatabase(true);
 
@@ -352,7 +381,7 @@ TEST_F(MetadataDatabaseIndexOnDiskTest, TrackerIDSetByParentIDAndTitleTest) {
 
   tracker_ids = index()->GetFileTrackerIDsByParentAndTitle(
       kAppRootTrackerID, "file2");
-  EXPECT_EQ(0U, tracker_ids.size());
+  EXPECT_TRUE(tracker_ids.empty());
 
   const int64 tracker_id = 72;
   // Testing AddToFileIDIndexes

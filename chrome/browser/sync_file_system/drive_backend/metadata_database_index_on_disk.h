@@ -79,6 +79,9 @@ class MetadataDatabaseIndexOnDisk : public MetadataDatabaseIndexInterface {
   virtual std::vector<int64> GetAllTrackerIDs() const OVERRIDE;
   virtual std::vector<std::string> GetAllMetadataIDs() const OVERRIDE;
 
+  // Builds on-disk indexes from FileTracker entries on disk.
+  void BuildTrackerIndexes(leveldb::WriteBatch* batch);
+
  private:
   enum NumEntries {
     NONE,      // No entries are found.
