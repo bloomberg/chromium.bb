@@ -4,6 +4,12 @@
 
 #include "base/process/memory.h"
 
+// AddressSanitizer handles heap corruption, and on 64 bit Macs, the malloc
+// system automatically abort()s on heap corruption.
+#if !defined(ADDRESS_SANITIZER) && ARCH_CPU_32_BITS
+#define HANDLE_MEMORY_CORRUPTION_MANUALLY
+#endif
+
 #include <CoreFoundation/CoreFoundation.h>
 #include <errno.h>
 #include <mach/mach.h>
@@ -21,19 +27,19 @@
 #include "third_party/apple_apsl/CFBase.h"
 #include "third_party/apple_apsl/malloc.h"
 
-#if ARCH_CPU_32_BITS
+#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
 #include <dlfcn.h>
 #include <mach-o/nlist.h>
 
 #include "base/threading/thread_local.h"
 #include "third_party/mach_override/mach_override.h"
-#endif  // ARCH_CPU_32_BITS
+#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
 
 namespace base {
 
 // These are helpers for EnableTerminationOnHeapCorruption, which is a no-op
 // on 64 bit Macs.
-#if ARCH_CPU_32_BITS
+#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
 namespace {
 
 // Finds the library path for malloc() and thus the libC part of libSystem,
@@ -162,14 +168,10 @@ void CrMallocErrorBreak() {
 }
 
 }  // namespace
-#endif  // ARCH_CPU_32_BITS
+#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
 
 void EnableTerminationOnHeapCorruption() {
-#if defined(ADDRESS_SANITIZER) || ARCH_CPU_64_BITS
-  // AddressSanitizer handles heap corruption, and on 64 bit Macs, the malloc
-  // system automatically abort()s on heap corruption.
-  return;
-#else
+#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   // Only override once, otherwise CrMallocErrorBreak() will recurse
   // to itself.
   if (g_original_malloc_error_break)
@@ -188,7 +190,7 @@ void EnableTerminationOnHeapCorruption() {
 
   if (err != err_none)
     DLOG(WARNING) << "Could not override malloc_error_break; error = " << err;
-#endif  // defined(ADDRESS_SANITIZER) || ARCH_CPU_64_BITS
+#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
 }
 
 // ------------------------------------------------------------------------
@@ -196,6 +198,8 @@ void EnableTerminationOnHeapCorruption() {
 namespace {
 
 bool g_oom_killer_enabled;
+
+#if !defined(ADDRESS_SANITIZER)
 
 // Starting with Mac OS X 10.7, the zone allocators set up by the system are
 // read-only, to prevent them from being overwritten in an attack. However,
@@ -289,9 +293,9 @@ memalign_type g_old_memalign_purgeable;
 
 void* oom_killer_malloc(struct _malloc_zone_t* zone,
                         size_t size) {
-#if ARCH_CPU_32_BITS
+#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   ScopedClearErrno clear_errno;
-#endif  // ARCH_CPU_32_BITS
+#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_malloc(zone, size);
   if (!result && size)
     debug::BreakDebugger();
@@ -301,9 +305,9 @@ void* oom_killer_malloc(struct _malloc_zone_t* zone,
 void* oom_killer_calloc(struct _malloc_zone_t* zone,
                         size_t num_items,
                         size_t size) {
-#if ARCH_CPU_32_BITS
+#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   ScopedClearErrno clear_errno;
-#endif  // ARCH_CPU_32_BITS
+#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_calloc(zone, num_items, size);
   if (!result && num_items && size)
     debug::BreakDebugger();
@@ -312,9 +316,9 @@ void* oom_killer_calloc(struct _malloc_zone_t* zone,
 
 void* oom_killer_valloc(struct _malloc_zone_t* zone,
                         size_t size) {
-#if ARCH_CPU_32_BITS
+#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   ScopedClearErrno clear_errno;
-#endif  // ARCH_CPU_32_BITS
+#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_valloc(zone, size);
   if (!result && size)
     debug::BreakDebugger();
@@ -323,18 +327,18 @@ void* oom_killer_valloc(struct _malloc_zone_t* zone,
 
 void oom_killer_free(struct _malloc_zone_t* zone,
                      void* ptr) {
-#if ARCH_CPU_32_BITS
+#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   ScopedClearErrno clear_errno;
-#endif  // ARCH_CPU_32_BITS
+#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   g_old_free(zone, ptr);
 }
 
 void* oom_killer_realloc(struct _malloc_zone_t* zone,
                          void* ptr,
                          size_t size) {
-#if ARCH_CPU_32_BITS
+#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   ScopedClearErrno clear_errno;
-#endif  // ARCH_CPU_32_BITS
+#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_realloc(zone, ptr, size);
   if (!result && size)
     debug::BreakDebugger();
@@ -344,9 +348,9 @@ void* oom_killer_realloc(struct _malloc_zone_t* zone,
 void* oom_killer_memalign(struct _malloc_zone_t* zone,
                           size_t alignment,
                           size_t size) {
-#if ARCH_CPU_32_BITS
+#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   ScopedClearErrno clear_errno;
-#endif  // ARCH_CPU_32_BITS
+#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_memalign(zone, alignment, size);
   // Only die if posix_memalign would have returned ENOMEM, since there are
   // other reasons why NULL might be returned (see
@@ -360,9 +364,9 @@ void* oom_killer_memalign(struct _malloc_zone_t* zone,
 
 void* oom_killer_malloc_purgeable(struct _malloc_zone_t* zone,
                                   size_t size) {
-#if ARCH_CPU_32_BITS
+#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   ScopedClearErrno clear_errno;
-#endif  // ARCH_CPU_32_BITS
+#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_malloc_purgeable(zone, size);
   if (!result && size)
     debug::BreakDebugger();
@@ -372,9 +376,9 @@ void* oom_killer_malloc_purgeable(struct _malloc_zone_t* zone,
 void* oom_killer_calloc_purgeable(struct _malloc_zone_t* zone,
                                   size_t num_items,
                                   size_t size) {
-#if ARCH_CPU_32_BITS
+#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   ScopedClearErrno clear_errno;
-#endif  // ARCH_CPU_32_BITS
+#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_calloc_purgeable(zone, num_items, size);
   if (!result && num_items && size)
     debug::BreakDebugger();
@@ -383,9 +387,9 @@ void* oom_killer_calloc_purgeable(struct _malloc_zone_t* zone,
 
 void* oom_killer_valloc_purgeable(struct _malloc_zone_t* zone,
                                   size_t size) {
-#if ARCH_CPU_32_BITS
+#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   ScopedClearErrno clear_errno;
-#endif  // ARCH_CPU_32_BITS
+#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_valloc_purgeable(zone, size);
   if (!result && size)
     debug::BreakDebugger();
@@ -394,18 +398,18 @@ void* oom_killer_valloc_purgeable(struct _malloc_zone_t* zone,
 
 void oom_killer_free_purgeable(struct _malloc_zone_t* zone,
                                void* ptr) {
-#if ARCH_CPU_32_BITS
+#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   ScopedClearErrno clear_errno;
-#endif  // ARCH_CPU_32_BITS
+#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   g_old_free_purgeable(zone, ptr);
 }
 
 void* oom_killer_realloc_purgeable(struct _malloc_zone_t* zone,
                                    void* ptr,
                                    size_t size) {
-#if ARCH_CPU_32_BITS
+#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   ScopedClearErrno clear_errno;
-#endif  // ARCH_CPU_32_BITS
+#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_realloc_purgeable(zone, ptr, size);
   if (!result && size)
     debug::BreakDebugger();
@@ -415,9 +419,9 @@ void* oom_killer_realloc_purgeable(struct _malloc_zone_t* zone,
 void* oom_killer_memalign_purgeable(struct _malloc_zone_t* zone,
                                     size_t alignment,
                                     size_t size) {
-#if ARCH_CPU_32_BITS
+#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   ScopedClearErrno clear_errno;
-#endif  // ARCH_CPU_32_BITS
+#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
   void* result = g_old_memalign_purgeable(zone, alignment, size);
   // Only die if posix_memalign would have returned ENOMEM, since there are
   // other reasons why NULL might be returned (see
@@ -429,11 +433,15 @@ void* oom_killer_memalign_purgeable(struct _malloc_zone_t* zone,
   return result;
 }
 
+#endif  // !defined(ADDRESS_SANITIZER)
+
 // === C++ operator new ===
 
 void oom_killer_new() {
   debug::BreakDebugger();
 }
+
+#if !defined(ADDRESS_SANITIZER)
 
 // === Core Foundation CFAllocators ===
 
@@ -491,6 +499,8 @@ void* oom_killer_cfallocator_malloc_zone(CFIndex alloc_size,
   return result;
 }
 
+#endif  // !defined(ADDRESS_SANITIZER)
+
 // === Cocoa NSObject allocation ===
 
 typedef id (*allocWithZone_t)(id, SEL, NSZone*);
@@ -507,29 +517,37 @@ id oom_killer_allocWithZone(id self, SEL _cmd, NSZone* zone)
 }  // namespace
 
 bool UncheckedMalloc(size_t size, void** result) {
+#if defined(ADDRESS_SANITIZER)
+  *result = malloc(size);
+#else
   if (g_old_malloc) {
-#if ARCH_CPU_32_BITS
+#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
     ScopedClearErrno clear_errno;
     ThreadLocalBooleanAutoReset flag(g_unchecked_alloc.Pointer(), true);
-#endif  // ARCH_CPU_32_BITS
+#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
     *result = g_old_malloc(malloc_default_zone(), size);
   } else {
     *result = malloc(size);
   }
+#endif  // defined(ADDRESS_SANITIZER)
 
   return *result != NULL;
 }
 
 bool UncheckedCalloc(size_t num_items, size_t size, void** result) {
+#if defined(ADDRESS_SANITIZER)
+  *result = calloc(num_items, size);
+#else
   if (g_old_calloc) {
-#if ARCH_CPU_32_BITS
+#if defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
     ScopedClearErrno clear_errno;
     ThreadLocalBooleanAutoReset flag(g_unchecked_alloc.Pointer(), true);
-#endif  // ARCH_CPU_32_BITS
+#endif  // defined(HANDLE_MEMORY_CORRUPTION_MANUALLY)
     *result = g_old_calloc(malloc_default_zone(), num_items, size);
   } else {
     *result = calloc(num_items, size);
   }
+#endif  // defined(ADDRESS_SANITIZER)
 
   return *result != NULL;
 }
@@ -559,16 +577,16 @@ void EnableTerminationOnOutOfMemory() {
   // Unfortunately, it's the best we can do. Also note that this does not affect
   // allocations from non-default zones.
 
+#if !defined(ADDRESS_SANITIZER)
+  // Don't do anything special on OOM for the malloc zones replaced by
+  // AddressSanitizer, as modifying or protecting them may not work correctly.
+
   CHECK(!g_old_malloc && !g_old_calloc && !g_old_valloc && !g_old_realloc &&
         !g_old_memalign) << "Old allocators unexpectedly non-null";
 
   CHECK(!g_old_malloc_purgeable && !g_old_calloc_purgeable &&
         !g_old_valloc_purgeable && !g_old_realloc_purgeable &&
         !g_old_memalign_purgeable) << "Old allocators unexpectedly non-null";
-
-#if !defined(ADDRESS_SANITIZER)
-  // Don't do anything special on OOM for the malloc zones replaced by
-  // AddressSanitizer, as modifying or protecting them may not work correctly.
 
   ChromeMallocZone* default_zone =
       reinterpret_cast<ChromeMallocZone*>(malloc_default_zone());
