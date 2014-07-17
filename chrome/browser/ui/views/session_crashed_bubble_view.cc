@@ -74,6 +74,7 @@ enum SessionCrashedBubbleHistogramValue {
   SESSION_CRASHED_BUBBLE_UMA_OPTIN,
   SESSION_CRASHED_BUBBLE_HELP,
   SESSION_CRASHED_BUBBLE_IGNORED,
+  SESSION_CRASHED_BUBBLE_OPTIN_BAR_SHOWN,
   SESSION_CRASHED_BUBBLE_MAX,
 };
 
@@ -159,9 +160,7 @@ void SessionCrashedBubbleView::ShowForReal(
   bool offer_uma_optin = false;
 
 #if defined(GOOGLE_CHROME_BUILD)
-  if (uma_opted_in_already) {
-    RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_ALREADY_UMA_OPTIN);
-  } else {
+  if (!uma_opted_in_already) {
     offer_uma_optin = g_browser_process->local_state()->FindPreference(
         prefs::kMetricsReportingEnabled)->IsUserModifiable();
   }
@@ -188,7 +187,10 @@ void SessionCrashedBubbleView::ShowForReal(
       new SessionCrashedBubbleView(anchor_view, browser, web_contents,
                                    offer_uma_optin);
   views::BubbleDelegateView::CreateBubble(crash_bubble)->Show();
+
   RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_SHOWN);
+  if (uma_opted_in_already)
+    RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_ALREADY_UMA_OPTIN);
 }
 
 SessionCrashedBubbleView::SessionCrashedBubbleView(
@@ -282,8 +284,10 @@ void SessionCrashedBubbleView::Init() {
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Metrics reporting option.
-  if (offer_uma_optin_)
+  if (offer_uma_optin_) {
     CreateUmaOptinView(layout);
+    RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_OPTIN_BAR_SHOWN);
+  }
 
   set_margins(gfx::Insets());
   Layout();
