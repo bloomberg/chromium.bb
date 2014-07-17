@@ -131,6 +131,10 @@ int MenuDelegate::GetDragOperations(MenuItemView* sender) {
   return 0;
 }
 
+bool MenuDelegate::ShouldCloseOnDragComplete() {
+  return true;
+}
+
 MenuItemView* MenuDelegate::GetSiblingMenu(MenuItemView* menu,
                                            const gfx::Point& screen_point,
                                            MenuAnchorPosition* anchor,

@@ -93,6 +93,7 @@ class WrenchMenu : public views::MenuDelegate,
                               ui::Accelerator* accelerator) const OVERRIDE;
   virtual void WillShowMenu(views::MenuItemView* menu) OVERRIDE;
   virtual void WillHideMenu(views::MenuItemView* menu) OVERRIDE;
+  virtual bool ShouldCloseOnDragComplete() OVERRIDE;
 
   // BaseBookmarkModelObserver overrides:
   virtual void BookmarkModelChanged() OVERRIDE;

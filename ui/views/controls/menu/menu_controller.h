@@ -92,6 +92,10 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // Whether or not drag operation is in progress.
   bool drag_in_progress() const { return drag_in_progress_; }
 
+  // Whether the MenuController initiated the drag in progress. False if there
+  // is no drag in progress.
+  bool did_initiate_drag() const { return did_initiate_drag_; }
+
   // Returns the owner of child windows.
   // WARNING: this may be NULL.
   Widget* owner() { return owner_; }
@@ -141,6 +145,15 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // Invoked from the scroll buttons of the MenuScrollViewContainer.
   void OnDragEnteredScrollButton(SubmenuView* source, bool is_up);
   void OnDragExitedScrollButton(SubmenuView* source);
+
+  // Called by the Widget when a drag is about to start on a child view. This
+  // could be initiated by one of our MenuItemViews, or could be through another
+  // child View.
+  void OnDragWillStart();
+
+  // Called by the Widget when the drag has completed. |should_close|
+  // corresponds to whether or not the menu should close.
+  void OnDragComplete(bool should_close);
 
   // Update the submenu's selection based on the current mouse location
   void UpdateSubmenuSelection(SubmenuView* source);
@@ -555,6 +568,11 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
 
   // True when drag operation is in progress.
   bool drag_in_progress_;
+
+  // True when the drag operation in progress was initiated by the
+  // MenuController for a child MenuItemView (as opposed to initiated separately
+  // by a child View).
+  bool did_initiate_drag_;
 
   // Location the mouse was pressed at. Used to detect d&d.
   gfx::Point press_pt_;

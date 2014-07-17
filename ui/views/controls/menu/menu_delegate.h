@@ -208,6 +208,11 @@ class VIEWS_EXPORT MenuDelegate {
   virtual void DropMenuClosed(MenuItemView* menu) {
   }
 
+  // Returns true if the menu should close upon a drag completing. Defaults to
+  // true. This is only invoked for drag and drop operations performed on child
+  // Views that are not MenuItemViews.
+  virtual bool ShouldCloseOnDragComplete();
+
   // Notification that the user has highlighted the specified item.
   virtual void SelectionChanged(MenuItemView* menu) {
   }

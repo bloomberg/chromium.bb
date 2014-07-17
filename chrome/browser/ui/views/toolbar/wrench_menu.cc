@@ -1221,6 +1221,10 @@ void WrenchMenu::WillHideMenu(MenuItemView* menu) {
   }
 }
 
+bool WrenchMenu::ShouldCloseOnDragComplete() {
+  return false;
+}
+
 void WrenchMenu::BookmarkModelChanged() {
   DCHECK(bookmark_menu_delegate_.get());
   if (!bookmark_menu_delegate_->is_mutating_model())

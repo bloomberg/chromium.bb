@@ -207,7 +207,7 @@ class TestingPageNavigator : public PageNavigator {
   GURL url_;
 };
 
-// TODO(erg): Fix bookmark DBD tests on linux_aura. crbug.com/163931
+// TODO(erg): Fix bookmark DND tests on linux_aura. crbug.com/163931
 #if defined(OS_LINUX) && defined(USE_AURA)
 #define MAYBE(x) DISABLED_##x
 #else

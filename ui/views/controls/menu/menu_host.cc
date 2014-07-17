@@ -135,4 +135,34 @@ void MenuHost::OnOwnerClosing() {
     menu_controller->CancelAll();
 }
 
+void MenuHost::OnDragWillStart() {
+  MenuController* menu_controller =
+      submenu_->GetMenuItem()->GetMenuController();
+  DCHECK(menu_controller);
+  menu_controller->OnDragWillStart();
+}
+
+void MenuHost::OnDragComplete() {
+  MenuController* menu_controller =
+      submenu_->GetMenuItem()->GetMenuController();
+  if (destroying_ || !menu_controller)
+    return;
+
+  bool should_close = true;
+  // If the view came from outside menu code (i.e., not a MenuItemView), we
+  // should consult the MenuDelegate to determine whether or not to close on
+  // exit.
+  if (!menu_controller->did_initiate_drag()) {
+    MenuDelegate* menu_delegate = submenu_->GetMenuItem()->GetDelegate();
+    should_close =
+      menu_delegate ? menu_delegate->ShouldCloseOnDragComplete() : should_close;
+  }
+  menu_controller->OnDragComplete(should_close);
+
+  // We may have lost capture in the drag and drop, but are remaining open.
+  // Return capture so we get MouseCaptureLost events.
+  if (!should_close)
+    native_widget_private()->SetCapture();
+}
+
 }  // namespace views

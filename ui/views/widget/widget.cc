@@ -787,6 +787,7 @@ void Widget::RunShellDrag(View* view,
                           int operation,
                           ui::DragDropTypes::DragEventSource source) {
   dragged_view_ = view;
+  OnDragWillStart();
   native_widget_->RunShellDrag(view, data, location, operation, source);
   // If the view is removed during the drag operation, dragged_view_ is set to
   // NULL.
@@ -794,6 +795,7 @@ void Widget::RunShellDrag(View* view,
     dragged_view_ = NULL;
     view->OnDragDone();
   }
+  OnDragComplete();
 }
 
 void Widget::SchedulePaintInRect(const gfx::Rect& rect) {
@@ -1386,6 +1388,12 @@ void Widget::DestroyRootView() {
   root_view_.reset();
   // Input method has to be destroyed before focus manager.
   input_method_.reset();
+}
+
+void Widget::OnDragWillStart() {
+}
+
+void Widget::OnDragComplete() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

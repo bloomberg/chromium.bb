@@ -294,6 +294,7 @@ MenuItemView* MenuController::Run(Widget* parent,
   exit_type_ = EXIT_NONE;
   possible_drag_ = false;
   drag_in_progress_ = false;
+  did_initiate_drag_ = false;
   closing_event_time_ = base::TimeDelta();
   menu_start_time_ = base::TimeTicks::Now();
   menu_start_mouse_press_loc_ = gfx::Point();
@@ -782,6 +783,20 @@ void MenuController::OnDragExitedScrollButton(SubmenuView* source) {
   StopScrolling();
 }
 
+void MenuController::OnDragWillStart() {
+  DCHECK(!drag_in_progress_);
+  drag_in_progress_ = true;
+}
+
+void MenuController::OnDragComplete(bool should_close) {
+  DCHECK(drag_in_progress_);
+  drag_in_progress_ = false;
+  if (showing_ && should_close && GetActiveInstance() == this) {
+    CloseAllNestedMenus();
+    Cancel(EXIT_ALL);
+  }
+}
+
 void MenuController::UpdateSubmenuSelection(SubmenuView* submenu) {
   if (submenu->IsShowing()) {
     gfx::Point point = GetScreen()->GetCursorScreenPoint();
@@ -970,19 +985,11 @@ void MenuController::StartDrag(SubmenuView* source,
                                        &data);
   StopScrolling();
   int drag_ops = item->GetDelegate()->GetDragOperations(item);
-  drag_in_progress_ = true;
+  did_initiate_drag_ = true;
   // TODO(varunjain): Properly determine and send DRAG_EVENT_SOURCE below.
   item->GetWidget()->RunShellDrag(NULL, data, widget_loc, drag_ops,
       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
-  drag_in_progress_ = false;
-
-  if (GetActiveInstance() == this) {
-    if (showing_) {
-      // We're still showing, close all menus.
-      CloseAllNestedMenus();
-      Cancel(EXIT_ALL);
-    }  // else case, drop was on us.
-  }  // else case, someone canceled us, don't do anything
+  did_initiate_drag_ = false;
 }
 
 bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
@@ -1071,6 +1078,7 @@ MenuController::MenuController(ui::NativeTheme* theme,
       owner_(NULL),
       possible_drag_(false),
       drag_in_progress_(false),
+      did_initiate_drag_(false),
       valid_drop_coordinates_(false),
       last_drop_operation_(MenuDelegate::DROP_UNKNOWN),
       showing_submenu_(false),

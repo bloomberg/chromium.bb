@@ -60,6 +60,8 @@ class MenuHost : public Widget {
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual void OnNativeWidgetDestroyed() OVERRIDE;
   virtual void OnOwnerClosing() OVERRIDE;
+  virtual void OnDragWillStart() OVERRIDE;
+  virtual void OnDragComplete() OVERRIDE;
 
   // The view we contain.
   SubmenuView* submenu_;

@@ -793,6 +793,12 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // TODO(beng): remove once we fold those objects onto this one.
   void DestroyRootView();
 
+  // Notification that a drag will start. Default implementation does nothing.
+  virtual void OnDragWillStart();
+
+  // Notification that the drag performed by RunShellDrag() has completed.
+  virtual void OnDragComplete();
+
  private:
   friend class ComboboxTest;
   friend class TextfieldTest;

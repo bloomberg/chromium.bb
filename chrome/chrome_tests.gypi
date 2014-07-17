@@ -129,6 +129,7 @@
         'browser/ui/views/menu_test_base.cc',
         'browser/ui/views/menu_test_base.h',
         'browser/ui/views/menu_model_adapter_test.cc',
+        'browser/ui/views/menu_view_drag_and_drop_test.cc',
         'browser/ui/views/message_center/web_notification_tray_browsertest.cc',
         'browser/ui/views/omnibox/omnibox_view_views_browsertest.cc',
         'browser/ui/views/panels/panel_view_browsertest.cc',
