@@ -537,8 +537,9 @@ void ScriptDebugServer::dispatchDidParseSource(ScriptDebugListener* listener, v8
 
     ScriptDebugListener::Script script;
     script.url = toCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "name")));
-    script.source = toCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "source")));
+    script.sourceURL = toCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "sourceURL")));
     script.sourceMappingURL = toCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "sourceMappingURL")));
+    script.source = toCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "source")));
     script.startLine = object->Get(v8AtomicString(m_isolate, "startLine"))->ToInteger()->Value();
     script.startColumn = object->Get(v8AtomicString(m_isolate, "startColumn"))->ToInteger()->Value();
     script.endLine = object->Get(v8AtomicString(m_isolate, "endLine"))->ToInteger()->Value();

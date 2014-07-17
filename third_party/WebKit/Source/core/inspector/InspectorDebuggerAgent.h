@@ -226,7 +226,7 @@ private:
     bool assertPaused(ErrorString*);
     void clearBreakDetails();
 
-    String sourceMapURLForScript(const Script&);
+    String sourceMapURLForScript(const Script&, CompileResult);
 
     String scriptURL(JavaScriptCallFrame*);
 

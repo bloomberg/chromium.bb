@@ -1175,14 +1175,18 @@ PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> InspectorDebuggerAgent::currentAsyn
     return result.release();
 }
 
-String InspectorDebuggerAgent::sourceMapURLForScript(const Script& script)
+String InspectorDebuggerAgent::sourceMapURLForScript(const Script& script, CompileResult compileResult)
 {
-    bool deprecated;
-    String sourceMapURL = ContentSearchUtils::findSourceMapURL(script.source, ContentSearchUtils::JavaScriptMagicComment, &deprecated);
-    if (!sourceMapURL.isEmpty()) {
-        // FIXME: add deprecated console message here.
-        return sourceMapURL;
+    bool hasSyntaxError = compileResult != CompileSuccess;
+    if (hasSyntaxError) {
+        bool deprecated;
+        String sourceMapURL = ContentSearchUtils::findSourceMapURL(script.source, ContentSearchUtils::JavaScriptMagicComment, &deprecated);
+        if (!sourceMapURL.isEmpty())
+            return sourceMapURL;
     }
+
+    if (!script.sourceMappingURL.isEmpty())
+        return script.sourceMappingURL;
 
     if (script.url.isEmpty())
         return String();
@@ -1193,24 +1197,30 @@ String InspectorDebuggerAgent::sourceMapURLForScript(const Script& script)
     return pageAgent->resourceSourceMapURL(script.url);
 }
 
-// JavaScriptDebugListener functions
+// ScriptDebugListener functions
 
-void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script& script, CompileResult compileResult)
+void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script& parsedScript, CompileResult compileResult)
 {
-    // Don't send script content to the front end until it's really needed.
+    Script script = parsedScript;
     const bool* isContentScript = script.isContentScript ? &script.isContentScript : 0;
-    String sourceMapURL = sourceMapURLForScript(script);
-    String* sourceMapURLParam = sourceMapURL.isNull() ? 0 : &sourceMapURL;
-    String sourceURL;
-    if (!script.startLine && !script.startColumn) {
-        bool deprecated;
-        sourceURL = ContentSearchUtils::findSourceURL(script.source, ContentSearchUtils::JavaScriptMagicComment, &deprecated);
-        // FIXME: add deprecated console message here.
-    }
-    bool hasSourceURL = !sourceURL.isEmpty();
-    String scriptURL = hasSourceURL ? sourceURL : script.url;
-    bool* hasSourceURLParam = hasSourceURL ? &hasSourceURL : 0;
+
     bool hasSyntaxError = compileResult != CompileSuccess;
+    if (!script.startLine && !script.startColumn) {
+        if (hasSyntaxError) {
+            bool deprecated;
+            script.sourceURL = ContentSearchUtils::findSourceURL(script.source, ContentSearchUtils::JavaScriptMagicComment, &deprecated);
+        }
+    } else {
+        script.sourceURL = String();
+    }
+
+    bool hasSourceURL = !script.sourceURL.isEmpty();
+    String scriptURL = hasSourceURL ? script.sourceURL : script.url;
+
+    String sourceMapURL = sourceMapURLForScript(script, compileResult);
+    String* sourceMapURLParam = sourceMapURL.isNull() ? 0 : &sourceMapURL;
+
+    bool* hasSourceURLParam = hasSourceURL ? &hasSourceURL : 0;
     if (!hasSyntaxError)
         m_frontend->scriptParsed(scriptId, scriptURL, script.startLine, script.startColumn, script.endLine, script.endColumn, isContentScript, sourceMapURLParam, hasSourceURLParam);
     else

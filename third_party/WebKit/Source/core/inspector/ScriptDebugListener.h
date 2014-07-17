@@ -57,8 +57,9 @@ public:
         }
 
         String url;
-        String source;
+        String sourceURL;
         String sourceMappingURL;
+        String source;
         int startLine;
         int startColumn;
         int endLine;

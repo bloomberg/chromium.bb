@@ -158,6 +158,8 @@ DebuggerScript._formatScript = function(script)
     return {
         id: script.id,
         name: script.nameOrSourceURL(),
+        sourceURL: script.source_url,
+        sourceMappingURL: script.source_mapping_url,
         source: script.source,
         startLine: script.line_offset,
         startColumn: script.column_offset,
