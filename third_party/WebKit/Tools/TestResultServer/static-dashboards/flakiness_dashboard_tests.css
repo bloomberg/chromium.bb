@@ -82,6 +82,10 @@
     padding: 0 1px;
     font-size: 10px;
     text-align: center;
+    min-width: .75em;
+}
+.interpolatedResult {
+    opacity: 0.2;
 }
 #legend {
     position: fixed;
@@ -108,6 +112,7 @@
 }
 .NODATA, .NOTRUN {
     background-color: #fff;
+    color: #bbb;
 }
 .SKIP {
     background-color: lightgray;

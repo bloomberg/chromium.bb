@@ -32,7 +32,7 @@ var history = history || {};
 (function() {
 
 history.DEFAULT_CROSS_DASHBOARD_STATE_VALUES = {
-    group: null,
+    group: '@ToT Blink',
     showAllRuns: false,
     testType: 'layout-tests',
     useTestData: false,
@@ -149,6 +149,11 @@ history.History.prototype = {
     {
         window.onhashchange = this._handleLocationChange.bind(this);
         this._handleLocationChange();
+    },
+    isBlinkGroup: function()
+    {
+        var group = this.crossDashboardState.group;
+        return group && group.indexOf('@ToT Blink') >= 0;
     },
     isLayoutTestResults: function()
     {

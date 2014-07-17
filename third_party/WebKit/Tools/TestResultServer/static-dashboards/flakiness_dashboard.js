@@ -537,12 +537,18 @@ function showPopupForBuild(e, builder, index, opt_testName)
     ui.popup.show(e.target, html);
 }
 
+function showPopupForInterpolatedResult(e, revision)
+{
+    var html = 'This bot did not run the test for r' + revision + '.';
+    ui.popup.show(e.target, html);
+}
+
 function classNameForFailureString(failure)
 {
     return failure.replace(/(\+|\ )/, '');
 }
 
-function htmlForTestResults(test)
+function htmlForTestResults(test, revisions)
 {
     var html = '';
     var testResults = test.rawResults.concat();
@@ -551,10 +557,18 @@ function htmlForTestResults(test)
     var master = builders.master(builder);
     var buildNumbers = g_resultsByBuilder[builder].buildNumbers;
 
+    // FIXME: Support other revision types instead of just chrome/blink.
+    var revisionType = g_history.isBlinkGroup() ?
+        results.BLINK_REVISIONS : results.CHROME_REVISIONS;
+
+    var cells = [];
+    for (var index = 0; index < revisions.length; index++)
+        cells.push({revision: revisions[index]});
+
     var indexToReplaceCurrentResult = -1;
     var indexToReplaceCurrentTime = -1;
     for (var i = 0; i < buildNumbers.length; i++) {
-        var currentResultArray, currentTimeArray, innerHTML, resultString;
+        var currentResultArray, currentTimeArray, currentTime, resultString;
 
         if (i > indexToReplaceCurrentResult) {
             currentResultArray = testResults.shift();
@@ -569,20 +583,74 @@ function htmlForTestResults(test)
 
         if (i > indexToReplaceCurrentTime) {
             currentTimeArray = times.shift();
-            var currentTime = 0;
+            currentTime = 0;
             if (currentResultArray) {
               currentTime = currentTimeArray[results.RLE.VALUE];
               indexToReplaceCurrentTime += currentTimeArray[results.RLE.LENGTH];
             } else
               indexToReplaceCurrentTime += buildNumbers.length;
-
-            innerHTML = currentTime || '&nbsp;';
         }
 
-        html += '<td title="' + resultString + '. Click for more info." class="results ' + classNameForFailureString(resultString) +
-          '" onclick=\'showPopupForBuild(event, "' + builder + '",' + i + ',"' + test.test + '")\'>' + innerHTML;
+        var revision = parseInt(
+            g_resultsByBuilder[builder][revisionType][i], 10);
+
+        // Locate the empty cell corresponding to this blink revision.
+        var cell = undefined;
+        for (var index = 0; index < cells.length; index++) {
+            if (cells[index].revision == revision && !cells[index].html) {
+                cell = cells[index];
+                break;
+            }
+        }
+
+        cell.className = classNameForFailureString(resultString);
+        cell.hasResult =
+            resultString !== results.NO_DATA && resultString !== results.NOTRUN;
+        cell.html = '<td'
+            + ' title="' + resultString + '. Click for more info."'
+            + ' class="results ' + cell.className + '"'
+            + ' onclick=\'showPopupForBuild(event,'
+            + ' "' + builder + '",' + i + ',"' + test.test + '")\'>'
+            + (currentTime || (cell.hasResult ? '' : '?')) + '</td>';
     }
+
+    populateEmptyCells(cells);
+
+    for (var index = 0; index < cells.length; index++)
+        html += cells[index].html;
+
     return html;
+}
+
+// Fill in cells where no test data is available with a question mark.
+// If the next and previous runs were equal, an "interpolated" result is shown.
+function populateEmptyCells(cells)
+{
+    for (var index = 1; index < cells.length; index++) {
+        var prevCell = cells[index - 1];
+        cells[index].nextClassName =
+            prevCell.hasResult ? prevCell.className : prevCell.nextClassName;
+    }
+
+    for (var index = cells.length - 2; index >= 0; --index) {
+        var nextCell = cells[index + 1];
+        cells[index].prevClassName =
+            nextCell.hasResult ? nextCell.className : nextCell.prevClassName;
+    }
+
+    cells.forEach(function(cell) {
+        if (!cell.html) {
+            var interpolateResult =
+                cell.nextClassName && cell.nextClassName == cell.prevClassName;
+            cell.className = interpolateResult ? cell.nextClassName : "NODATA";
+            cell.html = '<td'
+                + ' title="Unknown result. Did not run tests."'
+                + ' onclick=\'showPopupForInterpolatedResult(event,'
+                + ' ' + cell.revision + ')\''
+                + ' class="results interpolatedResult ' + cell.className + '"'
+                + ' >?</td>';
+        }
+    });
 }
 
 function shouldShowTest(testResult)
@@ -649,7 +717,7 @@ function linkifyBugs(bugs)
     return html;
 }
 
-function htmlForSingleTestRow(test, showBuilderNames)
+function htmlForSingleTestRow(test, showBuilderNames, revisions)
 {
     var headers = tableHeaders();
     var html = '';
@@ -667,7 +735,7 @@ function htmlForSingleTestRow(test, showBuilderNames)
         else if (string.startsWith(header, 'slowest'))
             html += '<td>' + (test.slowestTime ? test.slowestTime + 's' : '');
         else if (string.startsWith(header, 'flakiness'))
-            html += htmlForTestResults(test);
+            html += htmlForTestResults(test, revisions);
     }
     return html;
 }
@@ -783,6 +851,47 @@ function sortTests(tests, column, order)
     tests.sort(sortFunctionGetter(resultsProperty, order == BACKWARD));
 }
 
+// Return an array of revisions across all builders such that all of a builder's
+// builds have a unique entry in the list. The currently selected group
+// (e.g., @ToT Chromium) determines which revision type is not collapsed.
+// Note that revisions may not be unique: a single builder can have two runs at
+// the same blink revision but different chrome revisions which will result in
+// multiple entries of the same blink revision.
+function collapsedRevisionList(testResults)
+{
+    // FIXME: Support other revision types instead of just chrome/blink.
+    var revisionType = g_history.isBlinkGroup() ?
+        results.BLINK_REVISIONS : results.CHROME_REVISIONS;
+
+    var revisionsCountedSet = {};
+    for (var resultIndex = 0; resultIndex < testResults.length; resultIndex++) {
+        var builder = testResults[resultIndex].builder;
+        var build = g_resultsByBuilder[builder];
+        var buildNumbers = build.buildNumbers;
+        var builderRevisionsCountedSet = {};
+        for (var i = 0; i < buildNumbers.length; i++) {
+            var revision = build[revisionType][i];
+            builderRevisionsCountedSet[revision] =
+                (builderRevisionsCountedSet[revision] || 0) + 1;
+        }
+
+        // Join builder's revisions with the total revisions for all builders.
+        for (var revision in builderRevisionsCountedSet)
+            revisionsCountedSet[revision] = Math.max(revisionsCountedSet[revision] || 0, builderRevisionsCountedSet[revision]);
+    }
+
+    var revisionsArray = [];
+    for (var revision in revisionsCountedSet) {
+        for (var i = revisionsCountedSet[revision] - 1; i >= 0; --i)
+            revisionsArray.push(revision);
+    }
+
+    revisionsArray.sort(function(a, b) {
+        return (b - a);
+    });
+    return revisionsArray;
+}
+
 function htmlForIndividualTestOnAllBuilders(test)
 {
     processTestRunsForAllBuilders();
@@ -793,10 +902,11 @@ function htmlForIndividualTestOnAllBuilders(test)
 
     var html = '';
     var shownBuilders = [];
+    var revisions = collapsedRevisionList(testResults);
     for (var j = 0; j < testResults.length; j++) {
         shownBuilders.push(testResults[j].builder);
         var showBuilderNames = true;
-        html += htmlForSingleTestRow(testResults[j], showBuilderNames);
+        html += htmlForSingleTestRow(testResults[j], showBuilderNames, revisions);
     }
 
     var skippedBuilders = []
@@ -1260,8 +1370,9 @@ function generatePageForBuilder(builderName)
     if (filteredResults.length) {
         var tableRowsHTML = '';
         var showBuilderNames = false;
+        var revisions = collapsedRevisionList(filteredResults);
         for (var i = 0; i < filteredResults.length; i++)
-            tableRowsHTML += htmlForSingleTestRow(filteredResults[i], showBuilderNames)
+            tableRowsHTML += htmlForSingleTestRow(filteredResults[i], showBuilderNames, revisions);
         testsHTML = htmlForTestTable(tableRowsHTML);
     } else {
         if (g_history.isLayoutTestResults())
