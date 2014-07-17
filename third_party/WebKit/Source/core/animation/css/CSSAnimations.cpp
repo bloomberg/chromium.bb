@@ -836,11 +836,13 @@ void CSSAnimations::trace(Visitor* visitor)
 
 void CSSAnimationUpdate::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_newTransitions);
     visitor->trace(m_activeInterpolationsForAnimations);
     visitor->trace(m_activeInterpolationsForTransitions);
     visitor->trace(m_newAnimations);
     visitor->trace(m_cancelledAnimationPlayers);
+#endif
 }
 
 } // namespace WebCore

@@ -5793,6 +5793,7 @@ void Document::clearWeakMembers(Visitor* visitor)
 
 void Document::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_importsController);
     visitor->trace(m_docType);
     visitor->trace(m_implementation);
@@ -5808,10 +5809,8 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_scriptRunner);
     visitor->trace(m_transformSourceDocument);
     visitor->trace(m_listsInvalidatedAtDocument);
-#if ENABLE(OILPAN)
     for (int i = 0; i < numNodeListInvalidationTypes; ++i)
         visitor->trace(m_nodeLists[i]);
-#endif
     visitor->trace(m_cssCanvasElements);
     visitor->trace(m_topLayerElements);
     visitor->trace(m_elemSheet);
@@ -5841,6 +5840,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_compositorPendingAnimations);
     visitor->trace(m_contextDocument);
     visitor->registerWeakMembers<Document, &Document::clearWeakMembers>(this);
+#endif
     DocumentSupplementable::trace(visitor);
     TreeScope::trace(visitor);
     ContainerNode::trace(visitor);

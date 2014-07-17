@@ -118,8 +118,10 @@ DatabaseContext::~DatabaseContext()
 
 void DatabaseContext::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_databaseThread);
     visitor->trace(m_openSyncDatabases);
+#endif
 }
 
 // This is called if the associated ExecutionContext is destructing while

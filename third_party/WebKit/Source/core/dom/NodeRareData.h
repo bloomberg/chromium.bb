@@ -45,8 +45,10 @@ public:
 
     void trace(Visitor* visitor)
     {
+#if ENABLE(OILPAN)
         visitor->trace(registry);
         visitor->trace(transientRegistry);
+#endif
     }
 
 private:

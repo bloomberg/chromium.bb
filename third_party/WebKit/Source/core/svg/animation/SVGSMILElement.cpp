@@ -1343,10 +1343,12 @@ void SVGSMILElement::Condition::trace(Visitor* visitor)
 
 void SVGSMILElement::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_targetElement);
     visitor->trace(m_timeContainer);
     visitor->trace(m_conditions);
     visitor->trace(m_syncBaseDependents);
+#endif
     SVGElement::trace(visitor);
 }
 

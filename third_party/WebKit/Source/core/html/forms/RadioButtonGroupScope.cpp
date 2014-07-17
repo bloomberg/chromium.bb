@@ -175,8 +175,10 @@ bool RadioButtonGroup::contains(HTMLInputElement* button) const
 
 void RadioButtonGroup::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_members);
     visitor->trace(m_checkedButton);
+#endif
 }
 
 // ----------------------------------------------------------------

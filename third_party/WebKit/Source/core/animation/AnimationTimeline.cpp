@@ -246,10 +246,12 @@ void AnimationTimeline::detachFromDocument()
 
 void AnimationTimeline::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_document);
     visitor->trace(m_timing);
     visitor->trace(m_playersNeedingUpdate);
     visitor->trace(m_players);
+#endif
 }
 
 } // namespace

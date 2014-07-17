@@ -276,8 +276,10 @@ void MutationObserver::deliverMutations()
 
 void MutationObserver::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_records);
     visitor->trace(m_registrations);
+#endif
 }
 
 } // namespace WebCore

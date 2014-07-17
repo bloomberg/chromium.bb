@@ -61,9 +61,11 @@ private:
 
         void trace(Visitor* visitor)
         {
+#if ENABLE(OILPAN)
             visitor->trace(pendingTransactions);
             visitor->trace(activeReadTransactions);
             visitor->trace(activeWriteTransaction);
+#endif
         }
         ALLOW_ONLY_INLINE_ALLOCATION();
     };

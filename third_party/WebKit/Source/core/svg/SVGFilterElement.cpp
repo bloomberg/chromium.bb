@@ -64,7 +64,9 @@ DEFINE_NODE_FACTORY(SVGFilterElement)
 
 void SVGFilterElement::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_clientsToAdd);
+#endif
     SVGElement::trace(visitor);
 }
 

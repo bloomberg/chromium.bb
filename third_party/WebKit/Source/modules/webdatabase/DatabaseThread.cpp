@@ -62,8 +62,10 @@ DatabaseThread::~DatabaseThread()
 
 void DatabaseThread::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_openDatabaseSet);
     visitor->trace(m_transactionCoordinator);
+#endif
 }
 
 void DatabaseThread::start()

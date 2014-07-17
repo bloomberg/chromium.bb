@@ -401,6 +401,7 @@ SVGSVGElement* SVGDocumentExtensions::rootElement() const
 
 void SVGDocumentExtensions::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_document);
     visitor->trace(m_timeContainers);
 #if ENABLE(SVG_FONTS)
@@ -410,6 +411,7 @@ void SVGDocumentExtensions::trace(Visitor* visitor)
     visitor->trace(m_relativeLengthSVGRoots);
     visitor->trace(m_pendingResources);
     visitor->trace(m_pendingResourcesForRemoval);
+#endif
 }
 
 }

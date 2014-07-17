@@ -37,11 +37,8 @@
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
 #include "wtf/HashTraits.h"
 #include "wtf/InstanceCounter.h"
-#include "wtf/LinkedHashSet.h"
-#include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/TypeTraits.h"
@@ -298,12 +295,6 @@ public:
         OffHeapCollectionTraceTrait<Vector<T, inlineCapacity, WTF::DefaultAllocator> >::trace(this, vector);
     }
 
-    template<typename T, typename U, typename V>
-    void trace(const HashSet<T, U, V>& hashSet)
-    {
-        OffHeapCollectionTraceTrait<HashSet<T, U, V> >::trace(this, hashSet);
-    }
-
     template<typename T, size_t N>
     void trace(const Deque<T, N>& deque)
     {
@@ -442,25 +433,6 @@ private:
         T** cell = reinterpret_cast<T**>(obj);
         if (*cell && !self->isAlive(*cell))
             *cell = 0;
-    }
-};
-
-template<typename T, typename HashFunctions, typename Traits>
-struct OffHeapCollectionTraceTrait<WTF::HashSet<T, HashFunctions, Traits, WTF::DefaultAllocator> > {
-    typedef WTF::HashSet<T, HashFunctions, Traits, WTF::DefaultAllocator> HashSet;
-
-    static void trace(Visitor* visitor, const HashSet& set)
-    {
-        if (set.isEmpty())
-            return;
-        if (WTF::ShouldBeTraced<Traits>::value) {
-            HashSet& iterSet = const_cast<HashSet&>(set);
-            for (typename HashSet::iterator it = iterSet.begin(), end = iterSet.end(); it != end; ++it) {
-                const T& t = *it;
-                CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WTF::WeakPointersActWeak, T, Traits>::trace(visitor, const_cast<T&>(t));
-            }
-        }
-        COMPILE_ASSERT(Traits::weakHandlingFlag == WTF::NoWeakHandlingInCollections, WeakOffHeapCollectionsConsideredDangerous0);
     }
 };
 

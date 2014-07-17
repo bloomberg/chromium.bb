@@ -149,8 +149,8 @@ public:
     {
 #if ENABLE(OILPAN)
         visitor->trace(m_pendingReaders);
-#endif
         visitor->trace(m_runningReaders);
+#endif
         WillBeHeapSupplement<LocalFrame>::trace(visitor);
         WillBeHeapSupplement<WorkerClients>::trace(visitor);
     }

@@ -55,9 +55,11 @@ PassOwnPtrWillBeRawPtr<AudioNodeOutput> AudioNodeOutput::create(AudioNode* node,
 
 void AudioNodeOutput::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_node);
     visitor->trace(m_inputs);
     visitor->trace(m_params);
+#endif
 }
 
 void AudioNodeOutput::setNumberOfChannels(unsigned numberOfChannels)
