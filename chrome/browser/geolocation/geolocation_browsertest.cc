@@ -8,6 +8,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/simple_test_clock.h"
+#include "base/time/clock.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/content_settings_usages_state.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -768,4 +770,49 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TabDestroyed) {
   bool result = content::ExecuteScript(
       current_browser()->tab_strip_model()->GetActiveWebContents(), script);
   EXPECT_EQ(result, true);
+}
+
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, LastUsageUpdated) {
+  ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
+  base::SimpleTestClock* clock_ = new base::SimpleTestClock();
+  current_browser()
+      ->profile()
+      ->GetHostContentSettingsMap()
+      ->SetPrefClockForTesting(scoped_ptr<base::Clock>(clock_));
+  clock_->SetNow(base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(10));
+
+  // Setting the permission should trigger the last usage.
+  current_browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
+      ContentSettingsPattern::FromURLNoWildcard(current_url()),
+      ContentSettingsPattern::FromURLNoWildcard(current_url()),
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      std::string(),
+      CONTENT_SETTING_ALLOW);
+
+  // Permission has been used at the starting time.
+  EXPECT_EQ(current_browser()
+                ->profile()
+                ->GetHostContentSettingsMap()
+                ->GetLastUsage(current_url().GetOrigin(),
+                               current_url().GetOrigin(),
+                               CONTENT_SETTINGS_TYPE_GEOLOCATION)
+                .ToDoubleT(),
+            10);
+
+  clock_->Advance(base::TimeDelta::FromSeconds(3));
+
+  // Watching should trigger the last usage update.
+  SetFrameHost("");
+  AddGeolocationWatch(false);
+  CheckGeoposition(fake_latitude(), fake_longitude());
+
+  // Last usage has been updated.
+  EXPECT_EQ(current_browser()
+                ->profile()
+                ->GetHostContentSettingsMap()
+                ->GetLastUsage(current_url().GetOrigin(),
+                               current_url().GetOrigin(),
+                               CONTENT_SETTINGS_TYPE_GEOLOCATION)
+                .ToDoubleT(),
+            13);
 }

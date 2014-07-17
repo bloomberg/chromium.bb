@@ -453,6 +453,11 @@ class CONTENT_EXPORT ContentBrowserClient {
       base::Callback<void(bool)> result_callback,
       base::Closure* cancel_callback);
 
+  // Invoked when the Geolocation API uses its permission.
+  virtual void DidUseGeolocationPermission(WebContents* web_contents,
+                                           const GURL& frame_url,
+                                           const GURL& main_frame_url) {}
+
   // Requests a permission to use system exclusive messages in MIDI events.
   // |result_callback| will be invoked when the request is resolved. If
   // |cancel_callback| is non-null, it's set to a callback which can be used to

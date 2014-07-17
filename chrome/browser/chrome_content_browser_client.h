@@ -12,12 +12,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/content_browser_client.h"
-
-#if defined(OS_ANDROID)
-#include "base/memory/scoped_ptr.h"
-#endif
 
 namespace base {
 class CommandLine;
@@ -213,6 +210,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool user_gesture,
       base::Callback<void(bool)> result_callback,
       base::Closure* cancel_callback) OVERRIDE;
+  virtual void DidUseGeolocationPermission(content::WebContents* web_contents,
+                                           const GURL& frame_url,
+                                           const GURL& main_frame_url) OVERRIDE;
   virtual void RequestProtectedMediaIdentifierPermission(
       content::WebContents* web_contents,
       const GURL& origin,
@@ -295,6 +295,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #endif
 
  private:
+  friend class DisableWebRtcEncryptionFlagTest;
+
 #if defined(ENABLE_WEBRTC)
   // Copies disable WebRTC encryption switch depending on the channel.
   static void MaybeCopyDisableWebRtcEncryptionSwitch(
@@ -304,24 +306,24 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #endif
 
   void FileSystemAccessed(
-    const GURL& url,
-    const std::vector<std::pair<int, int> >& render_frames,
-    base::Callback<void(bool)> callback,
-    bool allow);
+      const GURL& url,
+      const std::vector<std::pair<int, int> >& render_frames,
+      base::Callback<void(bool)> callback,
+      bool allow);
 
 #if defined(ENABLE_EXTENSIONS)
-void GuestPermissionRequestHelper(
-    const GURL& url,
-    const std::vector<std::pair<int, int> >& render_frames,
-    base::Callback<void(bool)> callback,
-    bool allow);
+  void GuestPermissionRequestHelper(
+      const GURL& url,
+      const std::vector<std::pair<int, int> >& render_frames,
+      base::Callback<void(bool)> callback,
+      bool allow);
 
-static void RequestFileSystemPermissionOnUIThread(
-    int render_process_id,
-    int render_frame_id,
-    const GURL& url,
-    bool allowed_by_default,
-    const base::Callback<void(bool)>& callback);
+  static void RequestFileSystemPermissionOnUIThread(
+      int render_process_id,
+      int render_frame_id,
+      const GURL& url,
+      bool allowed_by_default,
+      const base::Callback<void(bool)>& callback);
 #endif
 
 #if defined(ENABLE_PLUGINS)
@@ -344,9 +346,7 @@ static void RequestFileSystemPermissionOnUIThread(
   // created. It is used only the IO thread.
   prerender::PrerenderTracker* prerender_tracker_;
 
-   base::WeakPtrFactory<ChromeContentBrowserClient> weak_factory_;
-
-  friend class DisableWebRtcEncryptionFlagTest;
+  base::WeakPtrFactory<ChromeContentBrowserClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClient);
 };

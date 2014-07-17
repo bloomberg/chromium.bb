@@ -119,6 +119,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_descriptors.h"
+#include "content/public/common/show_desktop_notification_params.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
 #include "extensions/browser/extension_host.h"
@@ -2193,6 +2194,9 @@ void ChromeContentBrowserClient::ShowDesktopNotification(
       DesktopNotificationServiceFactory::GetForProfile(profile);
   service->ShowDesktopNotification(
       params, render_frame_host, delegate, cancel_callback);
+
+  profile->GetHostContentSettingsMap()->UpdateLastUsage(
+      params.origin, params.origin, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 #else
   NOTIMPLEMENTED();
 #endif
@@ -2228,6 +2232,16 @@ void ChromeContentBrowserClient::RequestMidiSysExPermission(
 
   context->RequestPermission(web_contents, id, requesting_frame,
                              user_gesture, result_callback);
+}
+
+void ChromeContentBrowserClient::DidUseGeolocationPermission(
+    content::WebContents* web_contents,
+    const GURL& frame_url,
+    const GURL& main_frame_url) {
+  Profile::FromBrowserContext(web_contents->GetBrowserContext())
+      ->GetHostContentSettingsMap()
+      ->UpdateLastUsage(
+          frame_url, main_frame_url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
 }
 
 void ChromeContentBrowserClient::RequestProtectedMediaIdentifierPermission(

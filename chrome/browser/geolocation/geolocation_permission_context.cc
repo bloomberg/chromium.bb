@@ -209,9 +209,12 @@ void GeolocationPermissionContext::DecidePermission(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   ContentSetting content_setting =
-     profile_->GetHostContentSettingsMap()->GetContentSetting(
-          requesting_frame, embedder, CONTENT_SETTINGS_TYPE_GEOLOCATION,
-          std::string());
+      profile_->GetHostContentSettingsMap()
+          ->GetContentSettingAndMaybeUpdateLastUsage(
+              requesting_frame,
+              embedder,
+              CONTENT_SETTINGS_TYPE_GEOLOCATION,
+              std::string());
   switch (content_setting) {
     case CONTENT_SETTING_BLOCK:
       PermissionDecided(id, requesting_frame, embedder, callback, false);

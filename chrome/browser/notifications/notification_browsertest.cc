@@ -13,8 +13,11 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/simple_test_clock.h"
+#include "base/time/clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -777,4 +780,38 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, MAYBE_TestNotificationReplacement) {
   EXPECT_EQ(base::ASCIIToUTF16("Title2"), (*notifications.rbegin())->title());
   EXPECT_EQ(base::ASCIIToUTF16("Body2"),
             (*notifications.rbegin())->message());
+}
+
+IN_PROC_BROWSER_TEST_F(NotificationsTest, TestLastUsage) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  HostContentSettingsMap* settings_map =
+      browser()->profile()->GetHostContentSettingsMap();
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  settings_map->SetPrefClockForTesting(scoped_ptr<base::Clock>(clock));
+  clock->SetNow(base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(10));
+
+  // Creates a simple notification.
+  AllowAllOrigins();
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
+
+  std::string result = CreateSimpleNotification(browser(), true);
+  EXPECT_NE("-1", result);
+
+  EXPECT_EQ(settings_map->GetLastUsage(GetTestPageURL().GetOrigin(),
+                                       GetTestPageURL().GetOrigin(),
+                                       CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+                .ToDoubleT(),
+            10);
+
+  clock->Advance(base::TimeDelta::FromSeconds(3));
+
+  result = CreateSimpleNotification(browser(), true);
+  EXPECT_NE("-1", result);
+
+  EXPECT_EQ(settings_map->GetLastUsage(GetTestPageURL().GetOrigin(),
+                                       GetTestPageURL().GetOrigin(),
+                                       CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+                .ToDoubleT(),
+            13);
 }

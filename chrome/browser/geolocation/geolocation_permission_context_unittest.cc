@@ -13,6 +13,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/simple_test_clock.h"
+#include "base/time/clock.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/permission_request_id.h"
@@ -695,4 +697,140 @@ TEST_F(GeolocationPermissionContextTests, InfoBarUsesCommittedEntry) {
 
   // Delete the tab contents.
   DeleteContents();
+}
+
+TEST_F(GeolocationPermissionContextTests, LastUsageAudited) {
+  GURL requesting_frame("http://www.example.com/geolocation");
+  NavigateAndCommit(requesting_frame);
+
+  base::SimpleTestClock* test_clock = new base::SimpleTestClock;
+  test_clock->SetNow(base::Time::UnixEpoch() +
+                     base::TimeDelta::FromSeconds(10));
+
+  HostContentSettingsMap* map = profile()->GetHostContentSettingsMap();
+  map->SetPrefClockForTesting(scoped_ptr<base::Clock>(test_clock));
+
+  // The permission shouldn't have been used yet.
+  EXPECT_EQ(map->GetLastUsage(requesting_frame.GetOrigin(),
+                              requesting_frame.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION).ToDoubleT(),
+            0);
+
+  EXPECT_EQ(0U, infobar_service()->infobar_count());
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
+  ASSERT_EQ(1U, infobar_service()->infobar_count());
+  infobars::InfoBar* infobar = infobar_service()->infobar_at(0);
+  ConfirmInfoBarDelegate* infobar_delegate =
+      infobar->delegate()->AsConfirmInfoBarDelegate();
+  ASSERT_TRUE(infobar_delegate);
+  infobar_delegate->Accept();
+  CheckTabContentsState(requesting_frame, CONTENT_SETTING_ALLOW);
+  CheckPermissionMessageSent(0, true);
+
+  // Permission has been used at the starting time.
+  EXPECT_EQ(map->GetLastUsage(requesting_frame.GetOrigin(),
+                              requesting_frame.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION).ToDoubleT(),
+            10);
+
+  test_clock->Advance(base::TimeDelta::FromSeconds(3));
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
+
+  // Permission has been used three seconds later.
+  EXPECT_EQ(map->GetLastUsage(requesting_frame.GetOrigin(),
+                              requesting_frame.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION).ToDoubleT(),
+            13);
+}
+
+TEST_F(GeolocationPermissionContextTests, LastUsageAuditedMultipleFrames) {
+  base::SimpleTestClock* test_clock = new base::SimpleTestClock;
+  test_clock->SetNow(base::Time::UnixEpoch() +
+                     base::TimeDelta::FromSeconds(10));
+
+  HostContentSettingsMap* map = profile()->GetHostContentSettingsMap();
+  map->SetPrefClockForTesting(scoped_ptr<base::Clock>(test_clock));
+
+  GURL requesting_frame_0("http://www.example.com/geolocation");
+  GURL requesting_frame_1("http://www.example-2.com/geolocation");
+
+  // The permission shouldn't have been used yet.
+  EXPECT_EQ(map->GetLastUsage(requesting_frame_0.GetOrigin(),
+                              requesting_frame_0.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION).ToDoubleT(),
+            0);
+  EXPECT_EQ(map->GetLastUsage(requesting_frame_1.GetOrigin(),
+                              requesting_frame_0.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION).ToDoubleT(),
+            0);
+
+  NavigateAndCommit(requesting_frame_0);
+  EXPECT_EQ(0U, infobar_service()->infobar_count());
+
+  // Request permission for two frames.
+  RequestGeolocationPermission(
+      web_contents(), RequestID(0), requesting_frame_0);
+  RequestGeolocationPermission(
+      web_contents(), RequestID(1), requesting_frame_1);
+
+  // Ensure only one infobar is created.
+  ASSERT_EQ(1U, infobar_service()->infobar_count());
+  infobars::InfoBar* infobar_0 = infobar_service()->infobar_at(0);
+  ConfirmInfoBarDelegate* infobar_delegate_0 =
+      infobar_0->delegate()->AsConfirmInfoBarDelegate();
+
+  // Accept the first frame.
+  infobar_delegate_0->Accept();
+  CheckTabContentsState(requesting_frame_0, CONTENT_SETTING_ALLOW);
+  CheckPermissionMessageSent(0, true);
+  infobar_service()->RemoveInfoBar(infobar_0);
+
+  // Verify that accepting the first didn't accept because it's embedder
+  // in the other.
+  EXPECT_EQ(map->GetLastUsage(requesting_frame_0.GetOrigin(),
+                              requesting_frame_0.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION).ToDoubleT(),
+            10);
+  EXPECT_EQ(map->GetLastUsage(requesting_frame_1.GetOrigin(),
+                              requesting_frame_0.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION).ToDoubleT(),
+            0);
+
+  ASSERT_EQ(1U, infobar_service()->infobar_count());
+  infobars::InfoBar* infobar_1 = infobar_service()->infobar_at(0);
+  ConfirmInfoBarDelegate* infobar_delegate_1 =
+      infobar_1->delegate()->AsConfirmInfoBarDelegate();
+
+  test_clock->Advance(base::TimeDelta::FromSeconds(1));
+
+  // Allow the second frame.
+  infobar_delegate_1->Accept();
+  CheckTabContentsState(requesting_frame_1, CONTENT_SETTING_ALLOW);
+  CheckPermissionMessageSent(1, true);
+  infobar_service()->RemoveInfoBar(infobar_1);
+
+  // Verify that the times are different.
+  EXPECT_EQ(map->GetLastUsage(requesting_frame_0.GetOrigin(),
+                              requesting_frame_0.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION).ToDoubleT(),
+            10);
+  EXPECT_EQ(map->GetLastUsage(requesting_frame_1.GetOrigin(),
+                              requesting_frame_0.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION).ToDoubleT(),
+            11);
+
+  test_clock->Advance(base::TimeDelta::FromSeconds(2));
+  RequestGeolocationPermission(
+      web_contents(), RequestID(0), requesting_frame_0);
+
+  // Verify that requesting permission in one frame doesn't update other where
+  // it is the embedder.
+  EXPECT_EQ(map->GetLastUsage(requesting_frame_0.GetOrigin(),
+                              requesting_frame_0.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION).ToDoubleT(),
+            13);
+  EXPECT_EQ(map->GetLastUsage(requesting_frame_1.GetOrigin(),
+                              requesting_frame_0.GetOrigin(),
+                              CONTENT_SETTINGS_TYPE_GEOLOCATION).ToDoubleT(),
+            11);
 }

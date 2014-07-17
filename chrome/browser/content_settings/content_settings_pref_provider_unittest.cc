@@ -14,6 +14,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/prefs/testing_pref_store.h"
+#include "base/test/simple_test_clock.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
@@ -442,6 +443,41 @@ TEST_F(PrefProviderTest, Deadlock) {
   EXPECT_TRUE(observer.notification_received());
 
   provider.ShutdownOnUIThread();
+}
+
+TEST_F(PrefProviderTest, LastUsage) {
+  TestingProfile testing_profile;
+  PrefProvider pref_content_settings_provider(testing_profile.GetPrefs(),
+                                              false);
+  base::SimpleTestClock* test_clock = new base::SimpleTestClock;
+  test_clock->SetNow(base::Time::Now());
+
+  pref_content_settings_provider.SetClockForTesting(
+      scoped_ptr<base::Clock>(test_clock));
+  GURL host("http://example.com/");
+  ContentSettingsPattern pattern =
+      ContentSettingsPattern::FromString("[*.]example.com");
+
+  base::Time no_usage = pref_content_settings_provider.GetLastUsage(
+      pattern, pattern, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  EXPECT_EQ(no_usage.ToDoubleT(), 0);
+
+  pref_content_settings_provider.UpdateLastUsage(
+      pattern, pattern, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  base::Time first = pref_content_settings_provider.GetLastUsage(
+      pattern, pattern, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+
+  test_clock->Advance(base::TimeDelta::FromSeconds(10));
+
+  pref_content_settings_provider.UpdateLastUsage(
+      pattern, pattern, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  base::Time second = pref_content_settings_provider.GetLastUsage(
+      pattern, pattern, CONTENT_SETTINGS_TYPE_GEOLOCATION);
+
+  base::TimeDelta delta = second - first;
+  EXPECT_EQ(delta.InSeconds(), 10);
+
+  pref_content_settings_provider.ShutdownOnUIThread();
 }
 
 }  // namespace content_settings

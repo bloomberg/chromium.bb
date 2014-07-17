@@ -130,6 +130,15 @@ void GeolocationDispatcherHost::OnLocationUpdate(
 
   for (std::map<RenderFrameHost*, bool>::iterator i = updating_frames_.begin();
        i != updating_frames_.end(); ++i) {
+    RenderFrameHost* top_frame = i->first;
+    while (top_frame->GetParent()) {
+      top_frame = top_frame->GetParent();
+    }
+    GetContentClient()->browser()->DidUseGeolocationPermission(
+        web_contents(),
+        i->first->GetLastCommittedURL().GetOrigin(),
+        top_frame->GetLastCommittedURL().GetOrigin());
+
     i->first->Send(new GeolocationMsg_PositionUpdated(
         i->first->GetRoutingID(), geoposition));
   }

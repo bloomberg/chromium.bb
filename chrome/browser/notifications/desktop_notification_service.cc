@@ -481,11 +481,12 @@ void DesktopNotificationService::ResetAllOrigins() {
 
 ContentSetting DesktopNotificationService::GetContentSetting(
     const GURL& origin) {
-  return profile_->GetHostContentSettingsMap()->GetContentSetting(
-      origin,
-      origin,
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      NO_RESOURCE_IDENTIFIER);
+  return profile_->GetHostContentSettingsMap()
+      ->GetContentSettingAndMaybeUpdateLastUsage(
+          origin,
+          origin,
+          CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+          NO_RESOURCE_IDENTIFIER);
 }
 
 void DesktopNotificationService::RequestPermission(
