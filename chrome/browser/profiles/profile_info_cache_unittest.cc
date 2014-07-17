@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/stringprintf.h"
@@ -18,7 +19,9 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -505,6 +508,8 @@ TEST_F(ProfileInfoCacheTest, AddStubProfile) {
 }
 
 TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kNewAvatarMenu);
+
   EXPECT_EQ(0U, GetCache()->GetNumberOfProfiles());
   base::FilePath path_1 = GetProfilePath("path_1");
   GetCache()->AddProfileToCache(path_1, ASCIIToUTF16("name_1"),
@@ -513,7 +518,12 @@ TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
 
   // We haven't downloaded any high-res avatars yet.
   EXPECT_EQ(0U, GetCache()->cached_avatar_images_.size());
-  EXPECT_EQ(0U, GetCache()->avatar_images_downloads_in_progress_.size());
+
+  // After adding a new profile, the download of high-res avatar will be
+  // triggered if the flag kNewAvatarMenu has been set. But the downloader
+  // won't ever call OnFetchComplete in the test.
+  EXPECT_EQ(1U, GetCache()->avatar_images_downloads_in_progress_.size());
+
   EXPECT_FALSE(GetCache()->GetHighResAvatarOfProfileAtIndex(0));
 
   // Simulate downloading a high-res avatar.
@@ -533,7 +543,7 @@ TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
       profiles::GetDefaultAvatarIconFileNameAtIndex(kIconIndex);
 
   // The file should have been cached and saved.
-  EXPECT_EQ(0U, GetCache()->avatar_images_downloads_in_progress_.size());
+  EXPECT_EQ(1U, GetCache()->avatar_images_downloads_in_progress_.size());
   EXPECT_EQ(1U, GetCache()->cached_avatar_images_.size());
   EXPECT_TRUE(GetCache()->GetHighResAvatarOfProfileAtIndex(0));
   EXPECT_EQ(GetCache()->cached_avatar_images_[file_name],

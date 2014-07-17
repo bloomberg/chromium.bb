@@ -229,6 +229,9 @@ void ProfileInfoCache::AddProfileToCache(
 
   sorted_keys_.insert(FindPositionForProfile(key, name), key);
 
+  if (switches::IsNewAvatarMenu())
+    DownloadHighResAvatar(icon_index, profile_path);
+
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
                     observer_list_,
                     OnProfileAdded(profile_path));
