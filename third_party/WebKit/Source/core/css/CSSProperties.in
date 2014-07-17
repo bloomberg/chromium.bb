@@ -19,10 +19,10 @@ background-repeat-x custom_all
 background-repeat-y custom_all
 background-size custom_all
 border-bottom-color custom_all
-border-bottom-left-radius type_name=LengthSize, initial=initialBorderRadius, converter=convertRadius
-border-bottom-right-radius type_name=LengthSize, initial=initialBorderRadius, converter=convertRadius
+border-bottom-left-radius initial=initialBorderRadius, converter=convertRadius
+border-bottom-right-radius initial=initialBorderRadius, converter=convertRadius
 border-bottom-style type_name=EBorderStyle, initial=initialBorderStyle
-border-bottom-width type_name=unsigned, initial=initialBorderWidth, converter=convertLineWidth<unsigned>
+border-bottom-width initial=initialBorderWidth, converter=convertLineWidth<unsigned>
 border-collapse
 border-image-outset custom_all
 border-image-repeat custom_all
@@ -31,16 +31,16 @@ border-image-source custom_value
 border-image-width custom_all
 border-left-color custom_all
 border-left-style type_name=EBorderStyle, initial=initialBorderStyle
-border-left-width type_name=unsigned, initial=initialBorderWidth, converter=convertLineWidth<unsigned>
+border-left-width initial=initialBorderWidth, converter=convertLineWidth<unsigned>
 border-right-color custom_all
 border-right-style type_name=EBorderStyle, initial=initialBorderStyle
-border-right-width type_name=unsigned, initial=initialBorderWidth, converter=convertLineWidth<unsigned>
+border-right-width initial=initialBorderWidth, converter=convertLineWidth<unsigned>
 border-top-color custom_all
-border-top-left-radius type_name=LengthSize, initial=initialBorderRadius, converter=convertRadius
-border-top-right-radius type_name=LengthSize, initial=initialBorderRadius, converter=convertRadius
+border-top-left-radius initial=initialBorderRadius, converter=convertRadius
+border-top-right-radius initial=initialBorderRadius, converter=convertRadius
 border-top-style type_name=EBorderStyle, initial=initialBorderStyle
-border-top-width type_name=unsigned, initial=initialBorderWidth, converter=convertLineWidth<unsigned>
-bottom type_name=Length, initial=initialOffset, converter=convertLengthOrAuto
+border-top-width initial=initialBorderWidth, converter=convertLineWidth<unsigned>
+bottom initial=initialOffset, converter=convertLengthOrAuto
 box-shadow converter=convertShadow
 box-sizing
 caption-side
@@ -52,9 +52,9 @@ counter-increment custom_all
 counter-reset custom_all
 cursor custom_all
 direction custom_value
-display type_name=EDisplay
+display
 empty-cells type_name=EEmptyCell
-flex-basis type_name=Length, converter=convertLengthOrAuto
+flex-basis converter=convertLengthOrAuto
 flex-direction
 flex-grow type_name=float
 flex-shrink type_name=float
@@ -78,45 +78,45 @@ grid-row-end converter=convertGridPosition
 grid-template-columns custom_all
 grid-template-rows custom_all
 grid-template-areas custom_all
-height type_name=Length, initial=initialSize, converter=convertLengthSizing
+height initial=initialSize, converter=convertLengthSizing
 justify-content
 image-rendering
 internal-callback custom_all
 isolation
 justify-items custom_all
 justify-self custom_all
-left type_name=Length, initial=initialOffset, converter=convertLengthOrAuto
-letter-spacing type_name=float, initial=initialLetterWordSpacing, converter=convertSpacing
+left initial=initialOffset, converter=convertLengthOrAuto
+letter-spacing initial=initialLetterWordSpacing, converter=convertSpacing
 line-height getter=specifiedLineHeight, custom_value
-list-style-image type_name=StyleImage*, custom_value
+list-style-image custom_value
 list-style-position
 list-style-type
-margin-bottom type_name=Length, initial=initialMargin, converter=convertLengthOrAuto
-margin-left type_name=Length, initial=initialMargin, converter=convertLengthOrAuto
-margin-right type_name=Length, initial=initialMargin, converter=convertLengthOrAuto
-margin-top type_name=Length, initial=initialMargin, converter=convertLengthOrAuto
+margin-bottom initial=initialMargin, converter=convertLengthOrAuto
+margin-left initial=initialMargin, converter=convertLengthOrAuto
+margin-right initial=initialMargin, converter=convertLengthOrAuto
+margin-top initial=initialMargin, converter=convertLengthOrAuto
 mask-source-type custom_all
-max-height type_name=Length, initial=initialMaxSize, converter=convertLengthMaxSizing
-max-width type_name=Length, initial=initialMaxSize, converter=convertLengthMaxSizing
-min-height type_name=Length, initial=initialMinSize, converter=convertLengthSizing
-min-width type_name=Length, initial=initialMinSize, converter=convertLengthSizing
+max-height initial=initialMaxSize, converter=convertLengthMaxSizing
+max-width initial=initialMaxSize, converter=convertLengthMaxSizing
+min-height initial=initialMinSize, converter=convertLengthSizing
+min-width initial=initialMinSize, converter=convertLengthSizing
 mix-blend-mode type_name=blink::WebBlendMode, name_for_methods=BlendMode
 object-fit type_name=ObjectFit
-object-position type_name=LengthPoint, initial=initialObjectPosition, converter=convertLengthPoint
+object-position converter=convertLengthPoint
 opacity type_name=float
 order type_name=int
 orphans type_name=short, custom_all
 outline-color custom_all
-outline-offset type_name=int, converter=convertComputedLength<int>
+outline-offset converter=convertComputedLength<int>
 outline-style custom_all
-outline-width type_name=unsigned short, converter=convertLineWidth<unsigned short>
+outline-width converter=convertLineWidth<unsigned short>
 overflow-wrap
 overflow-x type_name=EOverflow
 overflow-y type_name=EOverflow
-padding-bottom type_name=Length, initial=initialPadding, converter=convertLength
-padding-left type_name=Length, initial=initialPadding, converter=convertLength
-padding-right type_name=Length, initial=initialPadding, converter=convertLength
-padding-top type_name=Length, initial=initialPadding, converter=convertLength
+padding-bottom initial=initialPadding, converter=convertLength
+padding-left initial=initialPadding, converter=convertLength
+padding-right initial=initialPadding, converter=convertLength
+padding-top initial=initialPadding, converter=convertLength
 page-break-after type_name=EPageBreak, initial=initialPageBreak
 page-break-before type_name=EPageBreak, initial=initialPageBreak
 page-break-inside type_name=EPageBreak, initial=initialPageBreak
@@ -125,11 +125,11 @@ pointer-events
 position
 quotes converter=convertQuotes
 resize custom_value
-right type_name=Length, initial=initialOffset, converter=convertLengthOrAuto
+right initial=initialOffset, converter=convertLengthOrAuto
 scroll-behavior type_name=ScrollBehavior
 shape-image-threshold type_name=float
-shape-margin type_name=Length, converter=convertLength
-shape-outside type_name=ShapeValue*, custom_value
+shape-margin converter=convertLength
+shape-outside custom_value
 size custom_all
 speak
 table-layout
@@ -146,18 +146,18 @@ text-overflow type_name=TextOverflow
 text-rendering font, type_name=TextRenderingMode
 text-shadow converter=convertShadow
 text-transform
-top type_name=Length, initial=initialOffset, converter=convertLengthOrAuto
-touch-action type_name=TouchAction, custom_value
-touch-action-delay type_name=TouchActionDelay, initial=initialTouchActionDelay
+top initial=initialOffset, converter=convertLengthOrAuto
+touch-action custom_value
+touch-action-delay type_name=TouchActionDelay
 unicode-bidi
 vertical-align custom_inherit, custom_value
 visibility
 white-space
 widows type_name=short, custom_all
-width type_name=Length, initial=initialSize, converter=convertLengthSizing
+width initial=initialSize, converter=convertLengthSizing
 will-change custom_all
 word-break
-word-spacing type_name=float, initial=initialLetterWordSpacing, converter=convertSpacing
+word-spacing initial=initialLetterWordSpacing, converter=convertSpacing
 // UAs must treat 'word-wrap' as an alternate name for the 'overflow-wrap' property. So using the same handlers.
 word-wrap name_for_methods=OverflowWrap
 zoom custom_all
@@ -181,9 +181,9 @@ backface-visibility
 -webkit-background-origin use_handlers_for=CSSPropertyBackgroundOrigin
 -webkit-background-size use_handlers_for=CSSPropertyBackgroundSize
 -webkit-border-fit
--webkit-border-horizontal-spacing type_name=short, name_for_methods=HorizontalBorderSpacing, converter=convertComputedLength<short>
+-webkit-border-horizontal-spacing name_for_methods=HorizontalBorderSpacing, converter=convertComputedLength<short>
 -webkit-border-image initial=initialNinePieceImage, custom_value
--webkit-border-vertical-spacing type_name=short, name_for_methods=VerticalBorderSpacing, converter=convertComputedLength<short>
+-webkit-border-vertical-spacing name_for_methods=VerticalBorderSpacing, converter=convertComputedLength<short>
 -webkit-box-align type_name=EBoxAlignment
 -webkit-box-decoration-break
 -webkit-box-direction
@@ -204,14 +204,14 @@ column-fill type_name=ColumnFill
 -webkit-column-gap type_name=float, custom_all
 -webkit-column-rule-color custom_all
 -webkit-column-rule-style type_name=EBorderStyle, initial=initialBorderStyle
--webkit-column-rule-width type_name=unsigned short, converter=convertLineWidth<unsigned short>
+-webkit-column-rule-width converter=convertLineWidth<unsigned short>
 -webkit-column-span type_name=ColumnSpan
 -webkit-column-width type_name=float, custom_all
 -webkit-filter custom_value
 -webkit-font-feature-settings custom_all
 -webkit-font-smoothing font, type_name=FontSmoothingMode
--webkit-highlight type_name=AtomicString, converter=convertString<CSSValueNone>
--webkit-hyphenate-character type_name=AtomicString, name_for_methods=HyphenationString, converter=convertString<CSSValueAuto>
+-webkit-highlight converter=convertString<CSSValueNone>
+-webkit-hyphenate-character name_for_methods=HyphenationString, converter=convertString<CSSValueAuto>
 -webkit-line-box-contain converter=convertLineBoxContain
 -webkit-line-break type_name=LineBreak
 -webkit-line-clamp type_name=LineClampValue
@@ -220,7 +220,7 @@ column-fill type_name=ColumnFill
 -webkit-margin-before-collapse type_name=EMarginCollapse
 -webkit-margin-bottom-collapse type_name=EMarginCollapse, name_for_methods=MarginAfterCollapse
 -webkit-margin-top-collapse type_name=EMarginCollapse, name_for_methods=MarginBeforeCollapse
--internal-marquee-direction type_name=EMarqueeDirection, name_for_methods=MarqueeDirection
+-internal-marquee-direction name_for_methods=MarqueeDirection
 -internal-marquee-increment custom_value, name_for_methods=MarqueeIncrement
 -internal-marquee-repetition type_name=int, name_for_methods=MarqueeLoopCount, custom_value
 -internal-marquee-speed custom_value, name_for_methods=MarqueeSpeed
@@ -242,10 +242,10 @@ column-fill type_name=ColumnFill
 -webkit-perspective custom_all
 perspective-origin custom_all
 -webkit-perspective-origin custom_all
--webkit-perspective-origin-x type_name=Length, converter=convertLength
--webkit-perspective-origin-y type_name=Length, converter=convertLength
+-webkit-perspective-origin-x converter=convertLength
+-webkit-perspective-origin-y converter=convertLength
 -webkit-print-color-adjust type_name=PrintColorAdjust
--webkit-rtl-ordering type_name=Order, getter=rtlOrdering, setter=setRTLOrdering, initial=initialRTLOrdering
+-webkit-rtl-ordering type_name=Order, setter=setRTLOrdering, initial=initialRTLOrdering
 -webkit-ruby-position type_name=RubyPosition
 -webkit-tap-highlight-color custom_value
 -webkit-text-combine type_name=TextCombine
@@ -261,9 +261,9 @@ text-underline-position custom_value
 transform custom_value
 -webkit-transform use_handlers_for=CSSPropertyTransform
 transform-origin custom_all
--webkit-transform-origin-x type_name=Length, converter=convertLength
--webkit-transform-origin-y type_name=Length, converter=convertLength
--webkit-transform-origin-z type_name=float, converter=convertComputedLength<float>
+-webkit-transform-origin-x converter=convertLength
+-webkit-transform-origin-y converter=convertLength
+-webkit-transform-origin-z converter=convertComputedLength<float>
 transform-style name_for_methods=TransformStyle3D
 -webkit-transform-style name_for_methods=TransformStyle3D
 -webkit-transition-delay custom_all
@@ -278,38 +278,38 @@ transform-style name_for_methods=TransformStyle3D
 alignment-baseline svg
 baseline-shift svg, custom_inherit, custom_value
 buffered-rendering svg
-clip-path svg, type_name=String, name_for_methods=ClipperResource, converter=convertFragmentIdentifier
+clip-path svg, name_for_methods=ClipperResource, converter=convertFragmentIdentifier
 clip-rule svg, type_name=WindRule
 color-interpolation svg
 color-interpolation-filters svg, type_name=EColorInterpolation
 color-rendering svg
 dominant-baseline svg
 fill svg, setter=setFillPaint, custom_all
-fill-opacity svg, type_name=float, converter=convertNumberOrPercentage
+fill-opacity svg, converter=convertNumberOrPercentage
 fill-rule svg, type_name=WindRule
-filter svg, type_name=String, name_for_methods=FilterResource, converter=convertFragmentIdentifier
+filter svg, name_for_methods=FilterResource, converter=convertFragmentIdentifier
 flood-color svg, converter=convertSVGColor
-flood-opacity svg, type_name=float, converter=convertNumberOrPercentage
+flood-opacity svg, converter=convertNumberOrPercentage
 glyph-orientation-horizontal svg, converter=convertGlyphOrientation
 glyph-orientation-vertical svg, custom_value
 lighting-color svg, converter=convertSVGColor
-marker-start svg, type_name=String, name_for_methods=MarkerStartResource, converter=convertFragmentIdentifier
-marker-mid svg, type_name=String, name_for_methods=MarkerMidResource, converter=convertFragmentIdentifier
-marker-end svg, type_name=String, name_for_methods=MarkerEndResource, converter=convertFragmentIdentifier
-mask svg, type_name=String, name_for_methods=MaskerResource, converter=convertFragmentIdentifier
+marker-start svg, name_for_methods=MarkerStartResource, converter=convertFragmentIdentifier
+marker-mid svg, name_for_methods=MarkerMidResource, converter=convertFragmentIdentifier
+marker-end svg, name_for_methods=MarkerEndResource, converter=convertFragmentIdentifier
+mask svg, name_for_methods=MaskerResource, converter=convertFragmentIdentifier
 mask-type svg
 paint-order svg, converter=convertPaintOrder
 shape-rendering svg
 stop-color svg, converter=convertSVGColor
-stop-opacity svg, type_name=float, converter=convertNumberOrPercentage
+stop-opacity svg, converter=convertNumberOrPercentage
 stroke svg, setter=setStrokePaint, custom_all
 stroke-dasharray svg, name_for_methods=StrokeDashArray, converter=convertStrokeDasharray
-stroke-dashoffset svg, type_name=SVGLength, name_for_methods=StrokeDashOffset, converter=convertSVGLength
+stroke-dashoffset svg, name_for_methods=StrokeDashOffset, converter=convertSVGLength
 stroke-linecap svg, type_name=LineCap, name_for_methods=CapStyle
 stroke-linejoin svg, type_name=LineJoin, name_for_methods=JoinStyle
 stroke-miterlimit svg, type_name=float, name_for_methods=StrokeMiterLimit
-stroke-opacity svg, type_name=float, converter=convertNumberOrPercentage
-stroke-width svg, type_name=SVGLength, converter=convertSVGLength
+stroke-opacity svg, converter=convertNumberOrPercentage
+stroke-width svg, converter=convertSVGLength
 text-anchor svg
 vector-effect svg
 writing-mode svg, type_name=SVGWritingMode
