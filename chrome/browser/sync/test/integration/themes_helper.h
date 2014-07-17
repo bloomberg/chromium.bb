@@ -35,11 +35,6 @@ bool UsingSystemTheme(Profile* profile) WARN_UNUSED_RESULT;
 bool ThemeIsPendingInstall(
     Profile* profile, const std::string& id) WARN_UNUSED_RESULT;
 
-// Returns true iff |profile|'s current theme is the given
-// custom theme or if the given theme is pending install.
-bool HasOrWillHaveCustomTheme(
-    Profile* profile, const std::string& id) WARN_UNUSED_RESULT;
-
 // Sets |profile| to use the custom theme with the given index.
 void UseCustomTheme(Profile* profile, int index);
 
@@ -48,6 +43,18 @@ void UseDefaultTheme(Profile* profile);
 
 // Sets |profile| to use the system theme.
 void UseSystemTheme(Profile* profile);
+
+// Waits until |theme| is pending for install on |profile|.
+// Returns false in case of timeout.
+bool AwaitThemeIsPendingInstall(Profile* profile, const std::string& theme);
+
+// Waits until |profile| is using the system theme.
+// Returns false in case of timeout.
+bool AwaitUsingSystemTheme(Profile* profile);
+
+// Waits until |profile| is using the default theme.
+// Returns false in case of timeout.
+bool AwaitUsingDefaultTheme(Profile* profile);
 
 }  // namespace themes_helper
 
