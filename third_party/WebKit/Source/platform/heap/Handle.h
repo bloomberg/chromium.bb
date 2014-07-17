@@ -1154,6 +1154,11 @@ template<typename T> inline T* getPtr(const WebCore::Member<T>& p)
     return p.get();
 }
 
+template<typename T> inline T* getPtr(const WebCore::Persistent<T>& p)
+{
+    return p.get();
+}
+
 template<typename T, size_t inlineCapacity>
 struct NeedsTracing<ListHashSetNode<T, WebCore::HeapListHashSetAllocator<T, inlineCapacity> > *> {
     // All heap allocated node pointers need visiting to keep the nodes alive,

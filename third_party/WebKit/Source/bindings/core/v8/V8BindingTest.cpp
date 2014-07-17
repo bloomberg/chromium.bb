@@ -65,6 +65,15 @@ public:
     Member<GarbageCollectedScriptWrappable> m_scriptWrappable;
 };
 
+class OffHeapGarbageCollectedHolder {
+public:
+    OffHeapGarbageCollectedHolder(GarbageCollectedScriptWrappable* scriptWrappable)
+        : m_scriptWrappable(scriptWrappable) { }
+
+    // This should be public in order to access a Persistent<X> object.
+    Persistent<GarbageCollectedScriptWrappable> m_scriptWrappable;
+};
+
 TEST_F(V8ValueTraitsTest, numeric)
 {
     CHECK_TOV8VALUE("0", static_cast<int>(0));
@@ -132,17 +141,21 @@ TEST_F(V8ValueTraitsTest, garbageCollectedScriptWrappable)
 {
     GarbageCollectedScriptWrappable* object = new GarbageCollectedScriptWrappable("world");
     GarbageCollectedHolder holder(object);
+    OffHeapGarbageCollectedHolder offHeapHolder(object);
 
     CHECK_TOV8VALUE("world", object);
     CHECK_TOV8VALUE("world", RawPtr<GarbageCollectedScriptWrappable>(object));
     CHECK_TOV8VALUE("world", holder.m_scriptWrappable);
+    CHECK_TOV8VALUE("world", offHeapHolder.m_scriptWrappable);
 
     object = nullptr;
     holder.m_scriptWrappable = nullptr;
+    offHeapHolder.m_scriptWrappable = nullptr;
 
     CHECK_TOV8VALUE("null", object);
     CHECK_TOV8VALUE("null", RawPtr<GarbageCollectedScriptWrappable>(object));
     CHECK_TOV8VALUE("null", holder.m_scriptWrappable);
+    CHECK_TOV8VALUE("null", offHeapHolder.m_scriptWrappable);
 }
 
 TEST_F(V8ValueTraitsTest, vector)
