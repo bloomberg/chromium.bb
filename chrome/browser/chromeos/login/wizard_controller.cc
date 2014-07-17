@@ -55,6 +55,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/timezone/timezone_provider.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/options/options_util.h"
@@ -204,6 +205,7 @@ WizardController::WizardController(chromeos::LoginDisplayHost* host,
       oobe_display_(oobe_display),
       usage_statistics_reporting_(true),
       skip_update_enroll_after_eula_(false),
+      enrollment_recovery_(ShouldRecoverEnrollment()),
       login_screen_started_(false),
       user_image_screen_return_to_previous_hack_(false),
       timezone_resolved_(false),
@@ -491,18 +493,20 @@ void WizardController::ShowEnrollmentScreen() {
     screen_parameters_->GetString("user", &user);
   }
 
-  EnrollmentScreenActor::EnrollmentMode mode;
-  if (is_auto_enrollment)
-    mode = EnrollmentScreenActor::ENROLLMENT_MODE_AUTO;
-  else if (ShouldRecoverEnrollment())
-    mode = EnrollmentScreenActor::ENROLLMENT_MODE_RECOVERY;
-  else if (ShouldAutoStartEnrollment() && !CanExitEnrollment())
-    mode = EnrollmentScreenActor::ENROLLMENT_MODE_FORCED;
-  else
-    mode = EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL;
-
+  EnrollmentScreenActor::EnrollmentMode mode =
+      EnrollmentScreenActor::ENROLLMENT_MODE_MANUAL;
   EnrollmentScreen* screen = GetEnrollmentScreen();
-  screen->SetParameters(mode, GetForcedEnrollmentDomain(), user);
+  std::string enrollment_domain = GetForcedEnrollmentDomain();
+  if (is_auto_enrollment) {
+    mode = EnrollmentScreenActor::ENROLLMENT_MODE_AUTO;
+  } else if (enrollment_recovery_) {
+    mode = EnrollmentScreenActor::ENROLLMENT_MODE_RECOVERY;
+    enrollment_domain = GetEnrollmentRecoveryDomain();
+  } else if (ShouldAutoStartEnrollment() && !CanExitEnrollment()) {
+    mode = EnrollmentScreenActor::ENROLLMENT_MODE_FORCED;
+  }
+
+  screen->SetParameters(mode, enrollment_domain, user);
   SetCurrentScreen(screen);
 }
 
@@ -732,7 +736,7 @@ void WizardController::OnUserImageSkipped() {
 void WizardController::OnEnrollmentDone() {
   // Mark OOBE as completed only if enterprise enrollment was part of the
   // forced flow (i.e. app kiosk).
-  if (ShouldAutoStartEnrollment() || ShouldRecoverEnrollment())
+  if (ShouldAutoStartEnrollment() || enrollment_recovery_)
     PerformOOBECompletedActions();
 
   // TODO(mnissler): Unify the logic for auto-login for Public Sessions and
@@ -777,7 +781,7 @@ void WizardController::OnAutoEnrollmentDone() {
 }
 
 void WizardController::OnOOBECompleted() {
-  if (ShouldAutoStartEnrollment() || ShouldRecoverEnrollment()) {
+  if (ShouldAutoStartEnrollment() || enrollment_recovery_) {
     ShowEnrollmentScreen();
   } else {
     PerformOOBECompletedActions();
@@ -845,6 +849,9 @@ void WizardController::PerformOOBECompletedActions() {
       GetLocalState()->GetInteger(prefs::kTimesHIDDialogShown));
   GetLocalState()->ClearPref(prefs::kTimesHIDDialogShown);
   StartupUtils::MarkOobeCompleted();
+
+  if (enrollment_recovery_)
+    chrome::AttemptRestart();
 }
 
 void WizardController::SetCurrentScreen(WizardScreen* new_current) {
@@ -1140,6 +1147,17 @@ bool WizardController::ShouldRecoverEnrollment() {
   policy::DeviceCloudPolicyInitializer* dcp_initializer =
       connector->GetDeviceCloudPolicyInitializer();
   return dcp_initializer && dcp_initializer->ShouldRecoverEnrollment();
+}
+
+// static
+std::string WizardController::GetEnrollmentRecoveryDomain() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::DeviceCloudPolicyInitializer* dcp_initializer =
+      connector->GetDeviceCloudPolicyInitializer();
+  if (!dcp_initializer)
+    return std::string();
+  return dcp_initializer->GetEnrollmentRecoveryDomain();
 }
 
 // static

@@ -140,6 +140,10 @@ bool DeviceCloudPolicyInitializer::ShouldRecoverEnrollment() const {
   return false;
 }
 
+std::string DeviceCloudPolicyInitializer::GetEnrollmentRecoveryDomain() const {
+  return install_attributes_->GetDomain();
+}
+
 bool DeviceCloudPolicyInitializer::CanExitEnrollment() const {
   if (GetRestoreMode() == kDeviceStateRestoreModeReEnrollmentEnforced)
     return false;

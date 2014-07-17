@@ -101,8 +101,12 @@ class WizardController : public ScreenObserver {
   // Checks whether OOBE should start enrollment automatically.
   static bool ShouldAutoStartEnrollment();
 
-  // Checks whether OOBE should recover enrollment.
+  // Checks whether OOBE should recover enrollment.  Note that this flips to
+  // false once device policy has been restored as a part of recovery.
   static bool ShouldRecoverEnrollment();
+
+  // Obtains domain the device used to be enrolled to from install attributes.
+  static std::string GetEnrollmentRecoveryDomain();
 
   // Shows the first screen defined by |first_screen_name| or by default
   // if the parameter is empty. Takes ownership of |screen_parameters|.
@@ -372,6 +376,10 @@ class WizardController : public ScreenObserver {
   // If true then update check is cancelled and enrollment is started after
   // EULA is accepted.
   bool skip_update_enroll_after_eula_;
+
+  // Whether enrollment will be or has been recovered in the current wizard
+  // instance.
+  bool enrollment_recovery_;
 
   // Time when the EULA was accepted. Used to measure the duration from the EULA
   // acceptance until the Sign-In screen is displayed.
