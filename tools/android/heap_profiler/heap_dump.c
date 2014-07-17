@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 #include <sys/stat.h>
 
@@ -45,12 +46,22 @@
 
 
 static void lseek_abs(int fd, size_t off);
+static void read_proc_cmdline(char* cmdline, int size);
 
 static int pid;
 
 
-static int dump_process_heap(int mem_fd, FILE* fmaps, bool dump_also_allocs) {
+static int dump_process_heap(
+    int mem_fd,
+    FILE* fmaps,
+    bool dump_also_allocs,
+    char* comment) {
   HeapStats stats;
+  time_t tm;
+  char cmdline[512];
+
+  tm = time(NULL);
+  read_proc_cmdline(cmdline, sizeof(cmdline));
 
   // Look for the mmap which contains the HeapStats in the target process vmem.
   // On Linux/Android, the libheap_profiler mmaps explicitly /dev/zero. The
@@ -89,6 +100,11 @@ static int dump_process_heap(int mem_fd, FILE* fmaps, bool dump_also_allocs) {
 
   // Print JSON-formatted output.
   printf("{\n");
+  printf("  \"pid\":             %d,\n", pid);
+  printf("  \"time\":            %ld,\n", tm);
+  printf("  \"comment\":         \"%s\",\n", comment);
+  printf("  \"cmdline\":         \"%s\",\n", cmdline);
+  printf("  \"pagesize\":        %d,\n", getpagesize());
   printf("  \"total_allocated\": %zu,\n", stats.total_alloc_bytes);
   printf("  \"num_allocs\":      %"PRIu32",\n", stats.num_allocs);
   printf("  \"num_stacks\":      %"PRIu32",\n", stats.num_stack_traces);
@@ -248,14 +264,34 @@ static FILE* open_proc_maps() {
   return fmaps;
 }
 
+static void read_proc_cmdline(char* cmdline, int size) {
+  char path[64];
+  snprintf(path, sizeof(path), "/proc/%d/cmdline", pid);
+  int cmdline_fd = open(path, O_RDONLY);
+  if (cmdline_fd < 0) {
+    fprintf(stderr, "Could not open %s.\n", path);
+    perror("open");
+    cmdline[0] = '\0';
+    return;
+  }
+  int length = read(cmdline_fd, cmdline, size);
+  if (length < 0) {
+    fprintf(stderr, "Could not read %s.\n", path);
+    perror("read");
+    length = 0;
+  }
+  close(cmdline_fd);
+  cmdline[length] = '\0';
+}
+
 int main(int argc, char** argv) {
   char c;
   int ret = 0;
   bool should_freeze_process = true;
   bool dump_also_allocs = false;
+  char comment[1024] = { '\0' };
 
-
-  while (((c = getopt(argc, argv, "nx")) & 0x80) == 0) {
+  while (((c = getopt(argc, argv, "nxc:")) & 0x80) == 0) {
    switch (c) {
       case 'n':
         should_freeze_process = false;
@@ -263,11 +299,14 @@ int main(int argc, char** argv) {
       case 'x':
         dump_also_allocs = true;
         break;
+      case 'c':
+        strlcpy(comment, optarg, sizeof(comment));
+        break;
      }
   }
 
   if (optind >= argc) {
-    printf("Usage: %s [-n] [-x] pid\n", argv[0]);
+    printf("Usage: %s [-n] [-x] [-c comment] pid\n", argv[0]);
     return -1;
   }
 
@@ -288,7 +327,7 @@ int main(int argc, char** argv) {
     ret = -1;
 
   if (ret == 0)
-    ret = dump_process_heap(mem_fd, fmaps, dump_also_allocs);
+    ret = dump_process_heap(mem_fd, fmaps, dump_also_allocs, comment);
 
   if (should_freeze_process)
     kill(pid, SIGCONT);
