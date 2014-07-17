@@ -513,13 +513,24 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
   cocoa_view_ = [[[RenderWidgetHostViewCocoa alloc]
                   initWithRenderWidgetHostViewMac:this] autorelease];
 
+  // Make this view host a solid white layer when there is no content ready to
+  // draw.
   background_layer_.reset([[CALayer alloc] init]);
   [background_layer_
       setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
-  [background_layer_ setGeometryFlipped:YES];
-  [background_layer_ setContentsGravity:kCAGravityTopLeft];
   [cocoa_view_ setLayer:background_layer_];
   [cocoa_view_ setWantsLayer:YES];
+
+  if (!IsDelegatedRendererEnabled()) {
+    // Add a flipped transparent layer as a child, so that we don't need to
+    // fiddle with the position of sub-layers -- they will always be at the
+    // origin.
+    flipped_layer_.reset([[CALayer alloc] init]);
+    [flipped_layer_ setGeometryFlipped:YES];
+    [flipped_layer_
+        setAutoresizingMask:kCALayerWidthSizable|kCALayerHeightSizable];
+    [background_layer_ addSublayer:flipped_layer_];
+  }
 
   if (IsDelegatedRendererEnabled()) {
     root_layer_.reset(new ui::Layer(ui::LAYER_TEXTURED));
@@ -653,7 +664,7 @@ void RenderWidgetHostViewMac::EnsureSoftwareLayer() {
 
   // Disable the fade-in animation as the layer is added.
   ScopedCAActionDisabler disabler;
-  [background_layer_ addSublayer:software_layer_];
+  [flipped_layer_ addSublayer:software_layer_];
 }
 
 void RenderWidgetHostViewMac::DestroySoftwareLayer() {
@@ -681,7 +692,7 @@ void RenderWidgetHostViewMac::EnsureCompositedIOSurfaceLayer() {
 
   // Disable the fade-in animation as the layer is added.
   ScopedCAActionDisabler disabler;
-  [background_layer_ addSublayer:compositing_iosurface_layer_];
+  [flipped_layer_ addSublayer:compositing_iosurface_layer_];
 }
 
 void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceLayer(
@@ -1754,7 +1765,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
         [remote_layer_host_ setContextId:context_id];
         [remote_layer_host_
             setAutoresizingMask:kCALayerMaxXMargin|kCALayerMaxYMargin];
-        [background_layer_ addSublayer:remote_layer_host_];
+        [flipped_layer_ addSublayer:remote_layer_host_];
       }
 
       // Ack the frame immediately. Any GPU back pressure will be applied by
@@ -2192,7 +2203,7 @@ void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
 
   // Synchronized resizing does not yet work with browser compositor.
   // http://crbug.com/388005
-  if (delegated_frame_host_)
+  if (IsDelegatedRendererEnabled())
     return;
 
   // Pausing for one view prevents others from receiving frames.

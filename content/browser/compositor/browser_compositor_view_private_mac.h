@@ -17,10 +17,19 @@ class BrowserCompositorViewCocoaHelper;
 @interface BrowserCompositorViewCocoa : NSView {
   scoped_ptr<ui::Compositor> compositor_;
 
-  base::scoped_nsobject<CALayer> background_layer_;
+  // A flipped layer, which acts as the parent of the compositing and software
+  // layers. This layer is flipped so that the we don't need to recompute the
+  // origin for sub-layers when their position changes (this is impossible when
+  // using remote layers, as their size change cannot be synchronized with the
+  // window). This indirection is needed because flipping hosted layers (like
+  // |background_layer_| of RenderWidgetHostViewCocoa) leads to unpredictable
+  // behavior.
+  base::scoped_nsobject<CALayer> flipped_layer_;
+
   base::scoped_nsobject<CompositingIOSurfaceLayer> accelerated_layer_;
   int accelerated_layer_output_surface_id_;
   std::vector<ui::LatencyInfo> accelerated_latency_info_;
+
   base::scoped_nsobject<SoftwareLayer> software_layer_;
 
   content::BrowserCompositorViewMacClient* client_;

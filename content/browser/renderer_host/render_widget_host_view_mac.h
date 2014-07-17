@@ -411,8 +411,15 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   bool can_compose_inline_;
 
   // The background CoreAnimation layer which is hosted by |cocoa_view_|.
-  // The compositing or software layers will be added as sublayers to this.
   base::scoped_nsobject<CALayer> background_layer_;
+
+  // A flipped layer, which acts as the parent of the compositing and software
+  // layers. This layer is flipped so that the we don't need to recompute the
+  // origin for sub-layers when their position changes (this is impossible when
+  // using remote layers, as their size change cannot be synchronized with the
+  // window). This indirection is needed because flipping hosted layers (like
+  // |background_layer_|) leads to unpredictable behavior.
+  base::scoped_nsobject<CALayer> flipped_layer_;
 
   // The CoreAnimation layer hosted by the GPU process.
   base::scoped_nsobject<CALayerHost> remote_layer_host_;

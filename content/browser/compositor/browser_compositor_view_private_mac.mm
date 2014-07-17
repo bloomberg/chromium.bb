@@ -27,11 +27,14 @@
     // Disable the fade-in animation as the layer and view are added.
     ScopedCAActionDisabler disabler;
 
-    // Make this view host a transparent layer.
-    background_layer_.reset([[CALayer alloc] init]);
-    [background_layer_ setContentsGravity:kCAGravityTopLeft];
-    [self setLayer:background_layer_];
-    [self setWantsLayer:YES];
+    // Add a flipped transparent layer as a child, so that we don't need to
+    // fiddle with the position of sub-layers -- they will always be at the
+    // origin.
+    flipped_layer_.reset([[CALayer alloc] init]);
+    [flipped_layer_ setGeometryFlipped:YES];
+    [flipped_layer_ setAnchorPoint:CGPointMake(0, 0)];
+    [flipped_layer_
+        setAutoresizingMask:kCALayerWidthSizable|kCALayerHeightSizable];
 
     compositor_.reset(new ui::Compositor(self, content::GetContextFactory()));
   }
@@ -41,9 +44,9 @@
 - (void)setClient:(content::BrowserCompositorViewMacClient*)client {
   // Disable the fade-out as layers are removed.
   ScopedCAActionDisabler disabler;
-  [self removeFromSuperview];
 
   // Reset all state.
+  [flipped_layer_ removeFromSuperlayer];
   [accelerated_layer_ removeFromSuperlayer];
   [accelerated_layer_ resetClient];
   accelerated_layer_.reset();
@@ -56,7 +59,10 @@
   if (client_) {
     DCHECK(compositor_);
     compositor_->SetRootLayer(client_->BrowserCompositorRootLayer());
-    [client_->BrowserCompositorSuperview() addSubview:self];
+    CALayer* background_layer = [client_->BrowserCompositorSuperview() layer];
+    DCHECK(background_layer);
+    [flipped_layer_ setBounds:[background_layer bounds]];
+    [background_layer addSublayer:flipped_layer_];
   } else {
     compositor_->SetRootLayer(NULL);
   }
@@ -111,7 +117,7 @@
         initWithIOSurface:iosurface
           withScaleFactor:scale_factor
                withClient:helper_.get()]);
-    [[self layer] addSublayer:accelerated_layer_];
+    [flipped_layer_ addSublayer:accelerated_layer_];
   }
 
   {
@@ -163,7 +169,7 @@
     // Disable the fade-in animation as the layer is added.
     ScopedCAActionDisabler disabler;
     software_layer_.reset([[SoftwareLayer alloc] init]);
-    [[self layer] addSublayer:software_layer_];
+    [flipped_layer_ addSublayer:software_layer_];
   }
 
   SkImageInfo info;
