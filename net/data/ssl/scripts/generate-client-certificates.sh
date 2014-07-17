@@ -113,6 +113,12 @@ do
     -key out/$id.key \
     -out out/$id.csr \
     -config client-certs.cnf
+  # Store the private key also in PKCS#8 format.
+  try openssl pkcs8 \
+    -topk8 -nocrypt \
+    -in out/$id.key \
+    -outform DER \
+    -out out/$id.pk8
 done
 
 echo B signs A
@@ -157,8 +163,10 @@ try openssl pkcs12 \
 echo Package the client certs for unit tests
 try cp out/A.pem ../certificates/client_1.pem
 try cp out/A.key ../certificates/client_1.key
+try cp out/A.pk8 ../certificates/client_1.pk8
 try cp out/B.pem ../certificates/client_1_ca.pem
 
 try cp out/D.pem ../certificates/client_2.pem
 try cp out/D.key ../certificates/client_2.key
+try cp out/D.pk8 ../certificates/client_2.pk8
 try cp out/E.pem ../certificates/client_2_ca.pem
