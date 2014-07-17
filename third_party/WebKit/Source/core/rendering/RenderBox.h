@@ -716,6 +716,7 @@ private:
     }
 
     void savePreviousBorderBoxSizeIfNeeded();
+    bool logicalHeightComputesAsNone(SizeType) const;
 
 private:
     // The width/height of the contents + borders + padding.  The x/y location is relative to our container (which is not always our parent).
