@@ -251,6 +251,9 @@ class RemoteSyncRunner : public SyncProcessRunner,
 void SyncFileSystemService::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  local_sync_runners_.clear();
+  remote_sync_runners_.clear();
+
   local_service_->Shutdown();
   local_service_.reset();
 

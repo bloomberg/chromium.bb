@@ -1,2 +1,0 @@
-# Flaky, see http://crbug.com/394460
-SyncFileSystemServiceTest.SimpleLocalSyncFlow
