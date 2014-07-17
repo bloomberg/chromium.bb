@@ -45,8 +45,6 @@
       'browser/extensions/chrome_extensions_browser_client.h',
       'browser/extensions/chrome_notification_observer.cc',
       'browser/extensions/chrome_notification_observer.h',
-      'browser/extensions/chrome_process_manager_delegate.cc',
-      'browser/extensions/chrome_process_manager_delegate.h',
       'browser/extensions/component_loader.cc',
       'browser/extensions/component_loader.h',
       'browser/extensions/context_menu_matcher.cc',

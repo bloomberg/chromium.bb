@@ -59,7 +59,10 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
   virtual void GetEarlyExtensionPrefsObservers(
       content::BrowserContext* context,
       std::vector<ExtensionPrefsObserver*>* observers) const OVERRIDE;
-  virtual ProcessManagerDelegate* GetProcessManagerDelegate() const OVERRIDE;
+  virtual bool DeferLoadingBackgroundHosts(content::BrowserContext* context)
+      const OVERRIDE;
+  virtual bool IsBackgroundPageAllowed(content::BrowserContext* context)
+      const OVERRIDE;
   virtual scoped_ptr<ExtensionHostDelegate> CreateExtensionHostDelegate()
       OVERRIDE;
   virtual bool DidVersionUpdate(content::BrowserContext* context) OVERRIDE;

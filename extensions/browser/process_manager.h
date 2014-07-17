@@ -33,7 +33,6 @@ namespace extensions {
 
 class Extension;
 class ExtensionHost;
-class ProcessManagerDelegate;
 class ProcessManagerObserver;
 
 // Manages dynamic state of running Chromium extensions. There is one instance
@@ -123,9 +122,8 @@ class ProcessManager : public content::NotificationObserver {
   // onSuspendCanceled() event to it.
   void CancelSuspend(const Extension* extension);
 
-  // Creates background hosts if the embedder is ready and they are not already
-  // loaded.
-  void MaybeCreateStartupBackgroundHosts();
+  // Ensures background hosts are loaded for a new browser window.
+  void OnBrowserWindowReady();
 
   // Gets the BrowserContext associated with site_instance_ and all other
   // related SiteInstances.
@@ -146,10 +144,6 @@ class ProcessManager : public content::NotificationObserver {
       content::BrowserContext* original_context,
       ProcessManager* original_manager);
 
-  bool startup_background_hosts_created_for_test() const {
-    return startup_background_hosts_created_;
-  }
-
  protected:
   // If |context| is incognito pass the master context as |original_context|.
   // Otherwise pass the same context for both.
@@ -163,6 +157,10 @@ class ProcessManager : public content::NotificationObserver {
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Load all background pages once the profile data is ready and the pages
+  // should be loaded.
+  void CreateBackgroundHostsForProfileStartup();
 
   content::NotificationRegistrar registrar_;
 
@@ -183,10 +181,6 @@ class ProcessManager : public content::NotificationObserver {
   typedef std::map<ExtensionId, BackgroundPageData> BackgroundPageDataMap;
   typedef std::map<content::RenderViewHost*,
       extensions::ViewType> ExtensionRenderViews;
-
-  // Load all background pages once the profile data is ready and the pages
-  // should be loaded.
-  void CreateStartupBackgroundHosts();
 
   // Called just after |host| is created so it can be registered in our lists.
   void OnBackgroundHostCreated(ExtensionHost* host);
@@ -221,6 +215,9 @@ class ProcessManager : public content::NotificationObserver {
 
   // Clears background page data for this extension.
   void ClearBackgroundPageData(const std::string& extension_id);
+
+  // Returns true if loading background pages should be deferred.
+  bool DeferLoadingBackgroundHosts() const;
 
   void OnDevToolsStateChanged(content::DevToolsAgentHost*, bool attached);
 

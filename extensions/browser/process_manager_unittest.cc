@@ -5,12 +5,10 @@
 #include "extensions/browser/process_manager.h"
 
 #include "chrome/browser/chrome_notification_types.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/test/test_browser_context.h"
-#include "extensions/browser/process_manager_delegate.h"
 #include "extensions/browser/test_extensions_browser_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,35 +33,12 @@ class TestBrowserContextIncognito : public TestBrowserContext {
   DISALLOW_COPY_AND_ASSIGN(TestBrowserContextIncognito);
 };
 
-// A trivial ProcessManagerDelegate.
-class TestProcessManagerDelegate : public ProcessManagerDelegate {
- public:
-  TestProcessManagerDelegate()
-      : is_background_page_allowed_(true),
-        defer_creating_startup_background_hosts_(false) {}
-  virtual ~TestProcessManagerDelegate() {}
-
-  // ProcessManagerDelegate implementation.
-  virtual bool IsBackgroundPageAllowed(BrowserContext* context) const OVERRIDE {
-    return is_background_page_allowed_;
-  }
-  virtual bool DeferCreatingStartupBackgroundHosts(
-      BrowserContext* context) const OVERRIDE {
-    return defer_creating_startup_background_hosts_;
-  }
-
-  bool is_background_page_allowed_;
-  bool defer_creating_startup_background_hosts_;
-};
-
 }  // namespace
 
 class ProcessManagerTest : public testing::Test {
  public:
   ProcessManagerTest() : extensions_browser_client_(&original_context_) {
     extensions_browser_client_.SetIncognitoContext(&incognito_context_);
-    extensions_browser_client_.set_process_manager_delegate(
-        &process_manager_delegate_);
     ExtensionsBrowserClient::Set(&extensions_browser_client_);
   }
 
@@ -74,23 +49,6 @@ class ProcessManagerTest : public testing::Test {
   BrowserContext* original_context() { return &original_context_; }
   BrowserContext* incognito_context() { return &incognito_context_; }
 
-  // testing::Test implementation.
-  virtual void SetUp() OVERRIDE {
-    // Needed for ExtensionRegistry.
-    BrowserContextDependencyManager::GetInstance()
-        ->CreateBrowserContextServicesForTest(&original_context_);
-    BrowserContextDependencyManager::GetInstance()
-        ->CreateBrowserContextServicesForTest(&incognito_context_);
-  }
-
-  virtual void TearDown() OVERRIDE {
-    // Needed to clean up ExtensionRegistry.
-    BrowserContextDependencyManager::GetInstance()
-        ->DestroyBrowserContextServices(&incognito_context_);
-    BrowserContextDependencyManager::GetInstance()
-        ->DestroyBrowserContextServices(&original_context_);
-  }
-
   // Returns true if the notification |type| is registered for |manager| with
   // source |context|. Pass NULL for |context| for all sources.
   static bool IsRegistered(ProcessManager* manager,
@@ -100,10 +58,9 @@ class ProcessManagerTest : public testing::Test {
         manager, type, content::Source<BrowserContext>(context));
   }
 
- protected:
+ private:
   TestBrowserContext original_context_;
   TestBrowserContextIncognito incognito_context_;
-  TestProcessManagerDelegate process_manager_delegate_;
   TestExtensionsBrowserClient extensions_browser_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessManagerTest);
@@ -166,83 +123,6 @@ TEST_F(ProcessManagerTest, ExtensionNotificationRegistration) {
   EXPECT_TRUE(IsRegistered(manager2.get(),
                            chrome::NOTIFICATION_PROFILE_DESTROYED,
                            incognito_context()));
-}
-
-// Test that startup background hosts are created when the extension system
-// becomes ready.
-//
-// NOTE: This test and those that follow do not try to create ExtensionsHosts
-// because ExtensionHost is tightly coupled to WebContents and can't be
-// constructed in unit tests.
-TEST_F(ProcessManagerTest, CreateBackgroundHostsOnExtensionsReady) {
-  scoped_ptr<ProcessManager> manager(
-      ProcessManager::Create(original_context()));
-  ASSERT_FALSE(manager->startup_background_hosts_created_for_test());
-
-  // Simulate the extension system becoming ready.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSIONS_READY,
-      content::Source<BrowserContext>(original_context()),
-      content::NotificationService::NoDetails());
-  EXPECT_TRUE(manager->startup_background_hosts_created_for_test());
-}
-
-// Test that startup background hosts can be created explicitly before the
-// extension system is ready (this is the normal pattern in Chrome).
-TEST_F(ProcessManagerTest, CreateBackgroundHostsExplicitly) {
-  scoped_ptr<ProcessManager> manager(
-      ProcessManager::Create(original_context()));
-  ASSERT_FALSE(manager->startup_background_hosts_created_for_test());
-
-  // Embedder explicitly asks for hosts to be created. Chrome does this on
-  // normal startup.
-  manager->MaybeCreateStartupBackgroundHosts();
-  EXPECT_TRUE(manager->startup_background_hosts_created_for_test());
-}
-
-// Test that the embedder can defer background host creation. Chrome does this
-// when the profile is created asynchronously, which may take a while.
-TEST_F(ProcessManagerTest, CreateBackgroundHostsDeferred) {
-  scoped_ptr<ProcessManager> manager(
-      ProcessManager::Create(original_context()));
-  ASSERT_FALSE(manager->startup_background_hosts_created_for_test());
-
-  // Don't create background hosts if the delegate says to defer them.
-  process_manager_delegate_.defer_creating_startup_background_hosts_ = true;
-  manager->MaybeCreateStartupBackgroundHosts();
-  EXPECT_FALSE(manager->startup_background_hosts_created_for_test());
-
-  // The extension system becoming ready still doesn't create the hosts.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSIONS_READY,
-      content::Source<BrowserContext>(original_context()),
-      content::NotificationService::NoDetails());
-  EXPECT_FALSE(manager->startup_background_hosts_created_for_test());
-
-  // Once the embedder is ready the background hosts can be created.
-  process_manager_delegate_.defer_creating_startup_background_hosts_ = false;
-  manager->MaybeCreateStartupBackgroundHosts();
-  EXPECT_TRUE(manager->startup_background_hosts_created_for_test());
-}
-
-// Test that the embedder can disallow background host creation.
-// Chrome OS does this in guest mode.
-TEST_F(ProcessManagerTest, IsBackgroundHostAllowed) {
-  scoped_ptr<ProcessManager> manager(
-      ProcessManager::Create(original_context()));
-  ASSERT_FALSE(manager->startup_background_hosts_created_for_test());
-
-  // Don't create background hosts if the delegate disallows them.
-  process_manager_delegate_.is_background_page_allowed_ = false;
-  manager->MaybeCreateStartupBackgroundHosts();
-  EXPECT_FALSE(manager->startup_background_hosts_created_for_test());
-
-  // The extension system becoming ready still doesn't create the hosts.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSIONS_READY,
-      content::Source<BrowserContext>(original_context()),
-      content::NotificationService::NoDetails());
-  EXPECT_FALSE(manager->startup_background_hosts_created_for_test());
 }
 
 // Test that extensions get grouped in the right SiteInstance (and therefore

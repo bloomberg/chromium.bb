@@ -33,7 +33,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/process_manager_delegate.h"
 #include "extensions/browser/process_manager_observer.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
@@ -246,6 +245,8 @@ ProcessManager::ProcessManager(BrowserContext* context,
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
                  content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
+                 content::Source<BrowserContext>(original_context));
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::Source<BrowserContext>(context));
   if (context->IsOffTheRecord()) {
@@ -306,14 +307,11 @@ bool ProcessManager::CreateBackgroundHost(const Extension* extension,
                                           const GURL& url) {
   // Hosted apps are taken care of from BackgroundContentsService. Ignore them
   // here.
-  if (extension->is_hosted_app())
+  if (extension->is_hosted_app() ||
+      !ExtensionsBrowserClient::Get()->
+          IsBackgroundPageAllowed(GetBrowserContext())) {
     return false;
-
-  // Don't create hosts if the embedder doesn't allow it.
-  ProcessManagerDelegate* delegate =
-      ExtensionsBrowserClient::Get()->GetProcessManagerDelegate();
-  if (delegate && !delegate->IsBackgroundPageAllowed(GetBrowserContext()))
-    return false;
+  }
 
   // Don't create multiple background hosts for an extension.
   if (GetBackgroundHostForExtension(extension->id()))
@@ -622,6 +620,16 @@ void ProcessManager::CancelSuspend(const Extension* extension) {
   }
 }
 
+void ProcessManager::OnBrowserWindowReady() {
+  // If the extension system isn't ready yet the background hosts will be
+  // created via NOTIFICATION_EXTENSIONS_READY below.
+  ExtensionSystem* system = ExtensionSystem::Get(GetBrowserContext());
+  if (!system->ready().is_signaled())
+    return;
+
+  CreateBackgroundHostsForProfileStartup();
+}
+
 content::BrowserContext* ProcessManager::GetBrowserContext() const {
   return site_instance_->GetBrowserContext();
 }
@@ -640,10 +648,15 @@ void ProcessManager::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSIONS_READY: {
-      // TODO(jamescook): Convert this to use ExtensionSystem::ready() instead
-      // of a notification.
-      MaybeCreateStartupBackgroundHosts();
+    case chrome::NOTIFICATION_EXTENSIONS_READY:
+    case chrome::NOTIFICATION_PROFILE_CREATED: {
+       // Don't load background hosts now if the loading should be deferred.
+       // Instead they will be loaded when a browser window for this profile
+       // (or an incognito profile from this profile) is ready.
+       if (DeferLoadingBackgroundHosts())
+         break;
+
+      CreateBackgroundHostsForProfileStartup();
       break;
     }
 
@@ -771,42 +784,13 @@ void ProcessManager::OnDevToolsStateChanged(
   }
 }
 
-void ProcessManager::MaybeCreateStartupBackgroundHosts() {
-  if (startup_background_hosts_created_)
+void ProcessManager::CreateBackgroundHostsForProfileStartup() {
+  if (startup_background_hosts_created_ ||
+      !ExtensionsBrowserClient::Get()->
+          IsBackgroundPageAllowed(GetBrowserContext())) {
     return;
-
-  // The embedder might disallow background pages entirely.
-  ProcessManagerDelegate* delegate =
-      ExtensionsBrowserClient::Get()->GetProcessManagerDelegate();
-  if (delegate && !delegate->IsBackgroundPageAllowed(GetBrowserContext()))
-    return;
-
-  // The embedder might want to defer background page loading. For example,
-  // Chrome defers background page loading when it is launched to show the app
-  // list, then triggers a load later when a browser window opens.
-  if (delegate &&
-      delegate->DeferCreatingStartupBackgroundHosts(GetBrowserContext()))
-    return;
-
-  CreateStartupBackgroundHosts();
-  startup_background_hosts_created_ = true;
-
-  // Background pages should only be loaded once. To prevent any further loads
-  // occurring, we remove the notification listeners.
-  BrowserContext* original_context =
-      ExtensionsBrowserClient::Get()->GetOriginalContext(GetBrowserContext());
-  if (registrar_.IsRegistered(
-          this,
-          chrome::NOTIFICATION_EXTENSIONS_READY,
-          content::Source<BrowserContext>(original_context))) {
-    registrar_.Remove(this,
-                      chrome::NOTIFICATION_EXTENSIONS_READY,
-                      content::Source<BrowserContext>(original_context));
   }
-}
 
-void ProcessManager::CreateStartupBackgroundHosts() {
-  DCHECK(!startup_background_hosts_created_);
   const ExtensionSet& enabled_extensions =
       ExtensionRegistry::Get(GetBrowserContext())->enabled_extensions();
   for (ExtensionSet::const_iterator extension = enabled_extensions.begin();
@@ -817,6 +801,28 @@ void ProcessManager::CreateStartupBackgroundHosts() {
     FOR_EACH_OBSERVER(ProcessManagerObserver,
                       observer_list_,
                       OnBackgroundHostStartup(*extension));
+  }
+  startup_background_hosts_created_ = true;
+
+  // Background pages should only be loaded once. To prevent any further loads
+  // occurring, we remove the notification listeners.
+  BrowserContext* original_context =
+      ExtensionsBrowserClient::Get()->GetOriginalContext(GetBrowserContext());
+  if (registrar_.IsRegistered(
+          this,
+          chrome::NOTIFICATION_PROFILE_CREATED,
+          content::Source<BrowserContext>(original_context))) {
+    registrar_.Remove(this,
+                      chrome::NOTIFICATION_PROFILE_CREATED,
+                      content::Source<BrowserContext>(original_context));
+  }
+  if (registrar_.IsRegistered(
+          this,
+          chrome::NOTIFICATION_EXTENSIONS_READY,
+          content::Source<BrowserContext>(original_context))) {
+    registrar_.Remove(this,
+                      chrome::NOTIFICATION_EXTENSIONS_READY,
+                      content::Source<BrowserContext>(original_context));
   }
 }
 
@@ -884,6 +890,12 @@ void ProcessManager::ClearBackgroundPageData(const std::string& extension_id) {
   }
 }
 
+bool ProcessManager::DeferLoadingBackgroundHosts() const {
+  // The extensions embedder may have special rules about background hosts.
+  return ExtensionsBrowserClient::Get()->DeferLoadingBackgroundHosts(
+      GetBrowserContext());
+}
+
 //
 // IncognitoProcessManager
 //
@@ -901,6 +913,8 @@ IncognitoProcessManager::IncognitoProcessManager(
   // manager need only worry about the split mode extensions, which is handled
   // in the NOTIFICATION_BROWSER_WINDOW_READY notification handler.
   registrar_.Remove(this, chrome::NOTIFICATION_EXTENSIONS_READY,
+                    content::Source<BrowserContext>(original_context));
+  registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_CREATED,
                     content::Source<BrowserContext>(original_context));
 }
 

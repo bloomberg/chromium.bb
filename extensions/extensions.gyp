@@ -435,7 +435,6 @@
         'browser/pref_names.h',
         'browser/process_manager.cc',
         'browser/process_manager.h',
-        'browser/process_manager_delegate.h',
         'browser/process_manager_observer.h',
         'browser/process_map.cc',
         'browser/process_map.h',

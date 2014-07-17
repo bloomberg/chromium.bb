@@ -1,5 +1,4 @@
 include_rules = [
-  # Do not add Chrome dependencies. Much work went into removing them.
   "+components/url_matcher",
   "+content/public/common",
   "+content/public/test",
@@ -14,7 +13,7 @@ include_rules = [
   # NOTE: Please do not add includes without talking to the app shell team;
   # see OWNERS for this directory.
   #
-  # TODO(jamescook): Remove this. http://crbug.com/392622
+  # TODO(jamescook): Remove these. http://crbug.com/162530
   "!chrome/browser/chrome_notification_types.h",
 ]
 

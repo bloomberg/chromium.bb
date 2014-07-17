@@ -15,9 +15,7 @@ namespace extensions {
 
 TestExtensionsBrowserClient::TestExtensionsBrowserClient(
     BrowserContext* main_context)
-    : main_context_(main_context),
-      incognito_context_(NULL),
-      process_manager_delegate_(NULL) {
+    : main_context_(main_context), incognito_context_(NULL) {
   DCHECK(main_context_);
   DCHECK(!main_context_->IsOffTheRecord());
 }
@@ -118,9 +116,14 @@ void TestExtensionsBrowserClient::GetEarlyExtensionPrefsObservers(
     content::BrowserContext* context,
     std::vector<ExtensionPrefsObserver*>* observers) const {}
 
-ProcessManagerDelegate* TestExtensionsBrowserClient::GetProcessManagerDelegate()
-    const {
-  return process_manager_delegate_;
+bool TestExtensionsBrowserClient::DeferLoadingBackgroundHosts(
+    BrowserContext* context) const {
+  return false;
+}
+
+bool TestExtensionsBrowserClient::IsBackgroundPageAllowed(
+    BrowserContext* context) const {
+  return true;
 }
 
 scoped_ptr<ExtensionHostDelegate>

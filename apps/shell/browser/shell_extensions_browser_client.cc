@@ -183,9 +183,14 @@ void ShellExtensionsBrowserClient::GetEarlyExtensionPrefsObservers(
     content::BrowserContext* context,
     std::vector<ExtensionPrefsObserver*>* observers) const {}
 
-ProcessManagerDelegate*
-ShellExtensionsBrowserClient::GetProcessManagerDelegate() const {
-  return NULL;
+bool ShellExtensionsBrowserClient::DeferLoadingBackgroundHosts(
+    BrowserContext* context) const {
+  return false;
+}
+
+bool ShellExtensionsBrowserClient::IsBackgroundPageAllowed(
+    BrowserContext* context) const {
+  return true;
 }
 
 scoped_ptr<ExtensionHostDelegate>

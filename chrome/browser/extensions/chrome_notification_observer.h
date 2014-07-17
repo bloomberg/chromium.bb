@@ -25,7 +25,8 @@ class ChromeNotificationObserver : public content::NotificationObserver {
   ChromeNotificationObserver();
   virtual ~ChromeNotificationObserver();
 
-  // Notification handlers:
+  // IPC message handlers:
+  void OnBrowserWindowReady(Browser* browser);
   void OnRendererProcessCreated(content::RenderProcessHost* process);
 
   // content::NotificationObserver overrides:
