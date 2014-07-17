@@ -38,7 +38,14 @@ def CreateBuildFailureMessage(overlays, builder_name, dashboard_url):
   details = []
   tracebacks = tuple(results_lib.Results.GetTracebacks())
   for x in tracebacks:
-    details.append('The %s stage failed: %s' % (x.failed_stage, x.exception))
+    if isinstance(x.exception, failures_lib.CompoundFailure):
+      # We do not want the textual tracebacks included in the
+      # stringified CompoundFailure instance because this will be
+      # printed on the waterfall.
+      ex_str = x.exception.ToSummaryString()
+    else:
+      ex_str = str(x.exception)
+    details.append('The %s stage failed: %s' % (x.failed_stage, ex_str))
   if not details:
     details = ['cbuildbot failed']
 

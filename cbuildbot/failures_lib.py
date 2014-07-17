@@ -75,20 +75,25 @@ class CompoundFailure(StepFailure):
     """
     self.exc_infos = exc_infos if exc_infos else []
     if not message:
-      # By default, print the type and string of each ExceptInfo object.
-      message = '\n'.join(['%s: %s' % (e.type, e.str) for e in self.exc_infos])
+      # By default, print all stored ExceptInfo objects. This is the
+      # preferred behavior because we'd always have the full
+      # tracebacks to debug the failure.
+      self.message = '\n'.join(['{e.type}: {e.str}\n{e.traceback}'.format(e=ex)
+                                for ex in self.exc_infos])
 
     super(CompoundFailure, self).__init__(message=message)
 
-  def ToFullMessage(self):
-    """Returns a string with all information in self.exc_infos."""
+  def ToSummaryString(self):
+    """Returns a string with type and string of each ExceptInfo object.
+
+    This does not include the textual tracebacks on purpose, so the
+    message is more readable on the waterfall.
+    """
     if self.HasEmptyList():
       # Fall back to return self.message if list is empty.
       return self.message
     else:
-      # This includes the textual traceback(s).
-      return '\n'.join(['{e.type}: {e.str}\n{e.traceback}'.format(e=ex) for
-                        ex in self.exc_infos])
+      return '\n'.join(['%s: %s' % (e.type, e.str) for e in self.exc_infos])
 
   def HasEmptyList(self):
     """Returns True if self.exc_infos is empty."""

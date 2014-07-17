@@ -74,8 +74,8 @@ class CompoundFailureTest(cros_test_lib.TestCase):
     self.assertTrue('bar2' in str(exc))
     self.assertTrue('KeyError' in str(exc))
     self.assertTrue('ValueError' in str(exc))
-    self.assertTrue('foo1' in exc.ToFullMessage())
-    self.assertTrue('foo2' in exc.ToFullMessage())
+    self.assertTrue('foo1' in str(exc))
+    self.assertTrue('foo2' in str(exc))
 
 
 class SetFailureTypeTest(cros_test_lib.TestCase):
@@ -144,12 +144,16 @@ class SetFailureTypeTest(cros_test_lib.TestCase):
       self.assertEqual(e.exc_infos, org_infos)
       # All essential inforamtion should be included in the message of
       # the new excpetion.
-      self.assertTrue(tb1 in e.ToFullMessage())
-      self.assertTrue(tb2 in e.ToFullMessage())
+      self.assertTrue(tb1 in str(e))
+      self.assertTrue(tb2 in str(e))
       self.assertTrue(str(ValueError) in str(e))
       self.assertTrue(str(OSError) in str(e))
       self.assertTrue(str('No taco') in str(e))
       self.assertTrue(str('No salsa') in str(e))
+
+      # Assert that summary does not contain the textual tracebacks.
+      self.assertFalse(tb1 in e.ToSummaryString())
+      self.assertFalse(tb2 in e.ToSummaryString())
 
   def testReraiseACompoundFailureWithEmptyList(self):
     """Tests that a CompoundFailure with empty list is handled correctly."""

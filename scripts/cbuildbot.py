@@ -397,7 +397,7 @@ class Builder(object):
         # If the build is marked as successful, but threw exceptions, that's a
         # problem. Print the traceback for debugging.
         if isinstance(ex, failures_lib.CompoundFailure):
-          print ex.ToFullMessage()
+          print str(ex)
 
         traceback.print_exc(file=sys.stdout)
         raise

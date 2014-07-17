@@ -265,9 +265,7 @@ class BuilderStage(object):
       A string description of the exception.
     """
     exc_type, exc_value = exc_info[:2]
-    if issubclass(exc_type, failures_lib.CompoundFailure):
-      return exc_value.ToFullMessage()
-    elif issubclass(exc_type, failures_lib.StepFailure):
+    if issubclass(exc_type, failures_lib.StepFailure):
       return str(exc_value)
     else:
       return ''.join(traceback.format_exception(*exc_info))
