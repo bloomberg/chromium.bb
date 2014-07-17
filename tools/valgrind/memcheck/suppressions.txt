@@ -2086,7 +2086,7 @@
    fun:_Znw*
    ...
    fun:_ZN3net17URLRequestHttpJob14SaveNextCookieEv
-   fun:_ZN3net17URLRequestHttpJob35SaveCookiesAndNotifyHeadersCompleteEv
+   fun:_ZN3net17URLRequestHttpJob35SaveCookiesAndNotifyHeadersCompleteEi
    fun:_ZN3net17URLRequestHttpJob16OnStartCompletedEi
 }
 {
