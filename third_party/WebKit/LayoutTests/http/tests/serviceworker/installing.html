@@ -20,19 +20,12 @@ async_test(function(t) {
         return navigator.serviceWorker.register(url, {scope: scope});
     }))
     .then(step(function(serviceWorker) {
-        // FIXME: Replace this with .ready when that supports the in-waiting
-        // Service Worker.
-        return new Promise(step(function(resolve, reject) {
-            serviceWorker.onstatechange = step(function() {
-                if (serviceWorker.state == 'installing') {
-                    resolve();
-                }
-            });
-        }));
+        return wait_for_state(t, serviceWorker, 'installing');
     }), unreached_rejection(t, 'Registration should not fail'))
     .then(step(function() {
         var container = frame.contentWindow.navigator.serviceWorker;
         assert_equals(container.controller, null);
+        assert_equals(container.active, null);
         assert_equals(container.waiting, null);
         assert_equals(container.installing.url, normalizeURL(url));
 
