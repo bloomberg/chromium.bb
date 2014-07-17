@@ -664,7 +664,7 @@ class GclientTest(trial_dir.TestCase):
     """Verifies gclient respects the |recursedeps| var syntax.
 
     This is what we mean to check here:
-    - |recursedeps| = {...} on 2 levels means we pull exactly 3 deps
+    - |recursedeps| = [...] on 2 levels means we pull exactly 3 deps
       (up to /fizz, but not /fuzz)
     - pulling foo/bar with no recursion (in .gclient) is overriden by
       a later pull of foo/bar with recursion (in the dep tree)
@@ -683,13 +683,13 @@ class GclientTest(trial_dir.TestCase):
         'deps = {\n'
         '  "bar": "/bar",\n'
         '}\n'
-        'recursedeps = {"bar"}')
+        'recursedeps = ["bar"]')
     write(
         os.path.join('bar', 'DEPS'),
         'deps = {\n'
         '  "baz": "/baz",\n'
         '}\n'
-        'recursedeps = {"baz"}')
+        'recursedeps = ["baz"]')
     write(
         os.path.join('baz', 'DEPS'),
         'deps = {\n'
@@ -734,7 +734,7 @@ class GclientTest(trial_dir.TestCase):
         'deps = {\n'
         '  "bar": "/bar",\n'
         '}\n'
-        'recursedeps = {"bar"}')
+        'recursedeps = ["bar"]')
     write(
         os.path.join('bar', 'DEPS'),
         'deps = {\n'
@@ -806,7 +806,7 @@ class GclientTest(trial_dir.TestCase):
         '  "bar": "/bar",\n'
         '}\n'
         'recursion = 3\n'
-        'recursedeps = {"bar"}')
+        'recursedeps = ["bar"]')
     write(
         os.path.join('bar', 'DEPS'),
         'deps = {\n'
@@ -822,7 +822,7 @@ class GclientTest(trial_dir.TestCase):
         'deps = {\n'
         '  "fuzz": "/fuzz",\n'
         '}\n'
-        'recursedeps = {"fuzz"}')
+        'recursedeps = ["fuzz"]')
     write(
         os.path.join('fuzz', 'DEPS'),
         'deps = {\n'
