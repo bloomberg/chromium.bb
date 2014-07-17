@@ -95,7 +95,7 @@ public:
     virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false);
     bool removeEventListener() { return false; }
     bool removeEventListener(const AtomicString& eventType) { return false; }
-    virtual bool removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture = false);
+    virtual bool removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false);
     virtual void removeAllEventListeners();
     virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>);
     bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>, ExceptionState&); // DOM API

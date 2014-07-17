@@ -258,11 +258,6 @@ def cpp_value(interface, method, number_of_arguments):
     def cpp_argument(argument):
         idl_type = argument.idl_type
         if idl_type.name == 'EventListener':
-            if (interface.name == 'EventTarget' and
-                method.name == 'removeEventListener'):
-                # FIXME: remove this special case by moving get() into
-                # EventTarget::removeEventListener
-                return '%s.get()' % argument.name
             return argument.name
         if (idl_type.is_callback_interface or
             idl_type.name in ['NodeFilter', 'NodeFilterOrNull',

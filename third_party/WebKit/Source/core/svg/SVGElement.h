@@ -141,7 +141,7 @@ public:
     virtual bool haveLoadedRequiredResources();
 
     virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) OVERRIDE FINAL;
-    virtual bool removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture = false) OVERRIDE FINAL;
+    virtual bool removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) OVERRIDE FINAL;
 
     void invalidateRelativeLengthClients(SubtreeLayoutScope* = 0);
 

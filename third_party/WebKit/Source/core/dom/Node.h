@@ -613,7 +613,7 @@ public:
     virtual ExecutionContext* executionContext() const OVERRIDE FINAL;
 
     virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) OVERRIDE;
-    virtual bool removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture = false) OVERRIDE;
+    virtual bool removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) OVERRIDE;
     virtual void removeAllEventListeners() OVERRIDE;
     void removeAllEventListenersRecursively();
 

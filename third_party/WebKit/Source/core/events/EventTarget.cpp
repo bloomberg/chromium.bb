@@ -106,7 +106,7 @@ bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtr<Eve
     return ensureEventTargetData().eventListenerMap.add(eventType, listener, useCapture);
 }
 
-bool EventTarget::removeEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
+bool EventTarget::removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
 {
     EventTargetData* d = eventTargetData();
     if (!d)
@@ -114,7 +114,7 @@ bool EventTarget::removeEventListener(const AtomicString& eventType, EventListen
 
     size_t indexOfRemovedListener;
 
-    if (!d->eventListenerMap.remove(eventType, listener, useCapture, indexOfRemovedListener))
+    if (!d->eventListenerMap.remove(eventType, listener.get(), useCapture, indexOfRemovedListener))
         return false;
 
     // Notify firing events planning to invoke the listener at 'index' that

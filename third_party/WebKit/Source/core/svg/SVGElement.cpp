@@ -740,22 +740,23 @@ bool SVGElement::addEventListener(const AtomicString& eventType, PassRefPtr<Even
     return true;
 }
 
-bool SVGElement::removeEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
+bool SVGElement::removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
 {
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > instances;
     collectInstancesForSVGElement(this, instances);
     if (instances.isEmpty())
-        return Node::removeEventListener(eventType, listener, useCapture);
+        return Node::removeEventListener(eventType, listener.get(), useCapture);
 
     // EventTarget::removeEventListener creates a PassRefPtr around the given EventListener
     // object when creating a temporary RegisteredEventListener object used to look up the
     // event listener in a cache. If we want to be able to call removeEventListener() multiple
     // times on different nodes, we have to delay its immediate destruction, which would happen
     // after the first call below.
+    // XXX is that true?
     RefPtr<EventListener> protector(listener);
 
     // Remove event listener from regular DOM element
-    if (!Node::removeEventListener(eventType, listener, useCapture))
+    if (!Node::removeEventListener(eventType, listener.get(), useCapture))
         return false;
 
     // Remove event listener from all shadow tree DOM element instances
@@ -764,7 +765,7 @@ bool SVGElement::removeEventListener(const AtomicString& eventType, EventListene
         SVGElement* shadowTreeElement = *it;
         ASSERT(shadowTreeElement);
 
-        shadowTreeElement->Node::removeEventListener(eventType, listener, useCapture);
+        shadowTreeElement->Node::removeEventListener(eventType, listener.get(), useCapture);
     }
 
     return true;

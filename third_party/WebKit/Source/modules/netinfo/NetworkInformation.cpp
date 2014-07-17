@@ -93,7 +93,7 @@ bool NetworkInformation::addEventListener(const AtomicString& eventType, PassRef
     return true;
 }
 
-bool NetworkInformation::removeEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
+bool NetworkInformation::removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
 {
     if (!EventTargetWithInlineData::removeEventListener(eventType, listener, useCapture))
         return false;

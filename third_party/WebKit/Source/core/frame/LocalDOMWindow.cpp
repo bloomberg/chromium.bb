@@ -1568,7 +1568,7 @@ bool LocalDOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<
     return true;
 }
 
-bool LocalDOMWindow::removeEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
+bool LocalDOMWindow::removeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
 {
     if (!EventTarget::removeEventListener(eventType, listener, useCapture))
         return false;
