@@ -218,6 +218,7 @@
             'host/register_support_host_request.h',
             'host/remote_input_filter.cc',
             'host/remote_input_filter.h',
+            'host/remoting_me2me_host.cc',
             'host/resizing_host_observer.cc',
             'host/resizing_host_observer.h',
             'host/sas_injector.h',
@@ -425,6 +426,8 @@
             'host/setup/daemon_controller_delegate_win.h',
             'host/setup/daemon_installer_win.cc',
             'host/setup/daemon_installer_win.h',
+            'host/setup/me2me_native_messaging_host.cc',
+            'host/setup/me2me_native_messaging_host.h',
             'host/setup/oauth_client.cc',
             'host/setup/oauth_client.h',
             'host/setup/oauth_helper.cc',
@@ -593,7 +596,6 @@
           'sources': [
             'host/host_main.cc',
             'host/host_main.h',
-            'host/remoting_me2me_host.cc',
           ],
           'conditions': [
             ['OS=="mac"', {
@@ -679,8 +681,6 @@
             'VERSION=<(version_full)',
           ],
           'sources': [
-            'host/setup/me2me_native_messaging_host.cc',
-            'host/setup/me2me_native_messaging_host.h',
             'host/setup/me2me_native_messaging_host_entry_point.cc',
             'host/setup/me2me_native_messaging_host_main.cc',
             'host/setup/me2me_native_messaging_host_main.h',

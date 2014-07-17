@@ -176,10 +176,6 @@ class Me2MeNativeMessagingHost {
   DISALLOW_COPY_AND_ASSIGN(Me2MeNativeMessagingHost);
 };
 
-// Creates a Me2MeNativeMessagingHost instance, attaches it to stdin/stdout and
-// runs the message loop until Me2MeNativeMessagingHost signals shutdown.
-int Me2MeNativeMessagingHostMain();
-
 }  // namespace remoting
 
 #endif  // REMOTING_HOST_SETUP_ME2ME_NATIVE_MESSAGING_HOST_H_
