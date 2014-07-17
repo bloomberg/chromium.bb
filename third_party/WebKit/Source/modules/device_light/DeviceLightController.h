@@ -10,7 +10,6 @@
 
 namespace WebCore {
 
-class LocalDOMWindow;
 class Event;
 
 class DeviceLightController FINAL : public NoBaseWillBeGarbageCollectedFinalized<DeviceLightController>, public DeviceSingleWindowEventController, public DocumentSupplement {
