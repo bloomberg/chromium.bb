@@ -56,5 +56,5 @@
     DOMString getSelectionForegroundColor();
 
     boolean isUnderTest();
-    boolean isStub();
+    boolean isHostedMode();
 };

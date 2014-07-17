@@ -245,7 +245,7 @@ bool InspectorFrontendHost::isUnderTest()
     return m_client && m_client->isUnderTest();
 }
 
-bool InspectorFrontendHost::isStub()
+bool InspectorFrontendHost::isHostedMode()
 {
     return false;
 }
