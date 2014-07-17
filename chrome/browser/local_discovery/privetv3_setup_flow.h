@@ -11,11 +11,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/local_discovery/gcd_api_flow.h"
 #include "chrome/browser/local_discovery/privet_http.h"
+#include "chrome/browser/local_discovery/privetv3_session.h"
 
 namespace local_discovery {
 
 // Provides complete flow for Privet v3 device setup.
-class PrivetV3SetupFlow {
+class PrivetV3SetupFlow : public PrivetV3Session::Delegate {
  public:
   // Delegate to be implemented by client code.
   class Delegate {
@@ -61,7 +62,7 @@ class PrivetV3SetupFlow {
   };
 
   explicit PrivetV3SetupFlow(Delegate* delegate);
-  ~PrivetV3SetupFlow();
+  virtual ~PrivetV3SetupFlow();
 
   // Starts registration.
   void Register(const std::string& service_name);
@@ -70,9 +71,25 @@ class PrivetV3SetupFlow {
   void SetupWifiAndRegister(const std::string& device_ssid);
 #endif  // ENABLE_WIFI_BOOTSTRAPPING
 
+  // PrivetV3Session::Delegate implementation.
+  virtual void OnSetupConfirmationNeeded(
+      const std::string& confirmation_code) OVERRIDE;
+  virtual void OnSessionEstablished() OVERRIDE;
+  virtual void OnCannotEstablishSession() OVERRIDE;
+
+  void OnSetupError();
+  void OnDeviceRegistered();
+
  private:
+  void OnTicketCreated(const std::string& ticket_id);
+  void OnPrivetClientCreated(scoped_ptr<PrivetHTTPClient> privet_http_client);
+  void OnCodeConfirmed(bool success);
+
   Delegate* delegate_;
   std::string service_name_;
+  scoped_ptr<GCDApiFlow> ticket_request_;
+  scoped_ptr<PrivetV3Session> session_;
+  scoped_ptr<PrivetV3Session::Request> setup_request_;
   base::WeakPtrFactory<PrivetV3SetupFlow> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrivetV3SetupFlow);

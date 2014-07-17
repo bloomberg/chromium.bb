@@ -345,6 +345,7 @@ void PrivetURLFetcher::RefreshToken(const std::string& token) {
 
 bool PrivetURLFetcher::PrivetErrorTransient(const std::string& error) {
   return (error == kPrivetErrorDeviceBusy) ||
+         (error == kPrivetV3ErrorDeviceBusy) ||
          (error == kPrivetErrorPendingUserAction) ||
          (error == kPrivetErrorPrinterBusy);
 }

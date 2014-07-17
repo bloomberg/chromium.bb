@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/local_discovery/privet_url_fetcher.h"
 
 namespace base {
 class DictionaryValue;
@@ -20,22 +21,18 @@ class PrivetHTTPClient;
 
 // Manages secure communication between browser and local Privet device.
 class PrivetV3Session {
- public:
-  typedef base::Callback<
-      void(bool success, const base::DictionaryValue& response)>
-      RequestCallback;
+ private:
+  class FetcherDelegate;
 
+ public:
   // Delegate to be implemented by client code.
   class Delegate {
    public:
-    typedef base::Callback<void(bool confirm)> ConfirmationCallback;
-
     virtual ~Delegate();
 
     // Called when client code should prompt user to check |confirmation_code|.
     virtual void OnSetupConfirmationNeeded(
-        const std::string& confirmation_code,
-        const ConfirmationCallback& callback) = 0;
+        const std::string& confirmation_code) = 0;
 
     // Called when session successfully establish and client code my call
     // |CreateRequest| method.
@@ -48,8 +45,18 @@ class PrivetV3Session {
   // Represents request in progress using secure session.
   class Request {
    public:
+    Request();
     virtual ~Request();
-    virtual void Start() = 0;
+
+    virtual std::string GetName() = 0;
+    virtual const base::DictionaryValue& GetInput() = 0;
+    virtual void OnError(PrivetURLFetcher::ErrorType error) = 0;
+    virtual void OnParsedJson(const base::DictionaryValue& value,
+                              bool has_error) = 0;
+
+   private:
+    friend class PrivetV3Session;
+    scoped_ptr<FetcherDelegate> fetcher_delegate_;
   };
 
   PrivetV3Session(scoped_ptr<PrivetHTTPClient> client, Delegate* delegate);
@@ -59,13 +66,16 @@ class PrivetV3Session {
   // |OnSessionEstablished|.
   void Start();
 
+  void ConfirmCode();
+
   // Create a single /privet/v3/session/call request.
-  // Must be called only after receiving |OnSessionEstablished|.
-  scoped_ptr<Request> CreateRequest(const std::string& api_name,
-                                    const base::DictionaryValue& request,
-                                    const RequestCallback& callback);
+  void StartRequest(Request* request);
 
  private:
+  Delegate* delegate_;
+  scoped_ptr<PrivetHTTPClient> client_;
+  bool code_confirmed_;
+  base::WeakPtrFactory<PrivetV3Session> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(PrivetV3Session);
 };
 
