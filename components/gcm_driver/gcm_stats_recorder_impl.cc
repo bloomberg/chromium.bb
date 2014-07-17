@@ -16,6 +16,7 @@
 namespace gcm {
 
 const uint32 MAX_LOGGED_ACTIVITY_COUNT = 100;
+const int64 RECEIVED_DATA_MESSAGE_BURST_LENGTH_SECONDS = 2;
 
 namespace {
 
@@ -362,6 +363,20 @@ void GCMStatsRecorderImpl::RecordDataMessageReceived(
     ReceivedMessageType message_type) {
   if (to_registered_app)
     UMA_HISTOGRAM_COUNTS("GCM.DataMessageReceived", 1);
+
+  base::Time new_timestamp = base::Time::Now();
+  if (last_received_data_message_burst_start_time_.is_null()) {
+    last_received_data_message_burst_start_time_ = new_timestamp;
+  } else if ((new_timestamp - last_received_data_message_burst_start_time_) >=
+             base::TimeDelta::FromSeconds(
+                 RECEIVED_DATA_MESSAGE_BURST_LENGTH_SECONDS)) {
+    UMA_HISTOGRAM_COUNTS(
+        "GCM.DataMessageBurstReceivedIntervalSeconds",
+        (new_timestamp - last_received_data_message_burst_start_time_)
+            .InSeconds());
+    last_received_data_message_burst_start_time_ = new_timestamp;
+  }
+
   if (!is_recording_)
     return;
   if (!to_registered_app) {

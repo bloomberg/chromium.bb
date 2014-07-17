@@ -147,6 +147,8 @@ class GCMStatsRecorderImpl : public GCMStatsRecorder {
   std::deque<ReceivingActivity> receiving_activities_;
   std::deque<SendingActivity> sending_activities_;
 
+  base::Time last_received_data_message_burst_start_time_;
+
   DISALLOW_COPY_AND_ASSIGN(GCMStatsRecorderImpl);
 };
 
