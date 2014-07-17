@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "crypto/nss_crypto_module_delegate.h"
 #include "crypto/nss_util.h"
-#include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
 #include "net/third_party/mozilla_security_manager/nsKeygenHandler.h"
 
@@ -17,26 +16,21 @@ namespace psm = mozilla_security_manager;
 namespace net {
 
 std::string KeygenHandler::GenKeyAndSignChallenge() {
-  // Ensure NSS is initialized.
   crypto::EnsureNSSInit();
 
   crypto::ScopedPK11Slot slot;
-  if (crypto_module_delegate_)
+  if (crypto_module_delegate_) {
     slot = crypto_module_delegate_->RequestSlot().Pass();
-  else
-    slot.reset(crypto::GetPersistentNSSKeySlot());
-  if (!slot.get()) {
-    LOG(ERROR) << "Couldn't get private key slot from NSS!";
+  } else {
+    LOG(ERROR) << "Could not get an NSS key slot.";
     return std::string();
   }
 
   // Authenticate to the token.
-  if (SECSuccess !=
-      PK11_Authenticate(
-          slot.get(),
-          PR_TRUE,
-          crypto_module_delegate_ ? crypto_module_delegate_->wincx() : NULL)) {
-    LOG(ERROR) << "Couldn't authenticate to private key slot!";
+  if (SECSuccess != PK11_Authenticate(slot.get(),
+                                      PR_TRUE,
+                                      crypto_module_delegate_->wincx())) {
+    LOG(ERROR) << "Could not authenticate to the key slot.";
     return std::string();
   }
 
