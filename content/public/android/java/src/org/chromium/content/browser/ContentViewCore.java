@@ -2191,6 +2191,7 @@ public class ContentViewCore
             public void onDestroyActionMode() {
                 mActionMode = null;
                 if (mUnselectAllOnActionModeDismiss) {
+                    hideHandles();
                     if (isSelectionEditable()) {
                         int selectionEnd = Selection.getSelectionEnd(mEditable);
                         mInputConnection.setSelection(selectionEnd, selectionEnd);
