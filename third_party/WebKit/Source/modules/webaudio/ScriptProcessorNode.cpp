@@ -226,7 +226,7 @@ void ScriptProcessorNode::process(size_t framesToProcess)
             // We're late in handling the previous request. The main thread must be very busy.
             // The best we can do is clear out the buffer ourself here.
             outputBuffer->zero();
-        } else {
+        } else if (context()->executionContext()) {
             // Fire the event on the main thread, not this one (which is the realtime audio thread).
             m_doubleBufferIndexForEvent = m_doubleBufferIndex;
             context()->executionContext()->postTask(createCrossThreadTask(&ScriptProcessorNode::fireProcessEvent, PassRefPtrWillBeRawPtr<ScriptProcessorNode>(this)));

@@ -1,0 +1,11 @@
+main frame - has 1 onunload handler(s)
+Tests that ScriptProcessorNode event dispatch doesn't fail when detached from document.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Successfully created ScriptProcessorNode.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

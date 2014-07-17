@@ -1,0 +1,61 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="resources/compatibility.js"></script>
+<script src="resources/audio-testing.js"></script>
+<script src="../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Tests that ScriptProcessorNode event dispatch doesn't fail when detached from document.");
+
+window.jsTestIsAsync = true;
+
+var sampleRate = 44100.0;
+var renderLengthInFrames = 512;
+var bufferSize = 512;
+var context;
+function runTest()
+{
+    var node;
+
+    try {
+        node = context.createScriptProcessor(bufferSize, 0, 1);
+        testPassed("Successfully created ScriptProcessorNode.");
+    } catch (e) {
+        testFailed("Failed to create ScriptProcessorNode.");
+    }
+
+    var source = context.createBufferSource();
+    source.buffer = createImpulseBuffer(context, bufferSize);
+
+    node.onaudioprocess = function(e) { };
+    source.connect(node);
+    node.connect(context.destination);
+    source.start(0);
+
+    context.startRendering();
+}
+
+var w;
+function processMessage(event) {
+    if (event.data == "opened") {
+        context = new w.OfflineAudioContext(1, renderLengthInFrames, sampleRate);
+        w.close();
+    } else if (event.data == "closed") {
+        runTest();
+        finishJSTest();
+    }
+}
+
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+    testRunner.setCanOpenWindows();
+}
+
+w = window.open('resources/scriptprocessornode-detached-no-crash-new-window.html');
+window.addEventListener("message", processMessage, false);
+</script>
+</body>
+</html>
