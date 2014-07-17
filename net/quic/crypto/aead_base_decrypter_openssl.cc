@@ -86,18 +86,21 @@ bool AeadBaseDecrypter::Decrypt(StringPiece nonce,
     return false;
   }
 
-  if (!EVP_AEAD_CTX_open(
-      ctx_.get(), output, output_length, ciphertext.size(),
+  ssize_t len = EVP_AEAD_CTX_open(
+      ctx_.get(), output, ciphertext.size(),
       reinterpret_cast<const uint8_t*>(nonce.data()), nonce.size(),
       reinterpret_cast<const uint8_t*>(ciphertext.data()), ciphertext.size(),
       reinterpret_cast<const uint8_t*>(associated_data.data()),
-      associated_data.size())) {
+      associated_data.size());
+
+  if (len < 0) {
     // Because QuicFramer does trial decryption, decryption errors are expected
     // when encryption level changes. So we don't log decryption errors.
     ClearOpenSslErrors();
     return false;
   }
 
+  *output_length = len;
   return true;
 }
 

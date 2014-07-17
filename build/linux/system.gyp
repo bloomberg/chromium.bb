@@ -985,7 +985,7 @@
           'conditions': [
             ['use_openssl==1', {
               'dependencies': [
-                '../../third_party/boringssl/boringssl.gyp:boringssl',
+                '../../third_party/openssl/openssl.gyp:openssl',
               ],
             }],
             ['use_openssl==0', {

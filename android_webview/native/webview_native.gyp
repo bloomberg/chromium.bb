@@ -24,7 +24,7 @@
         '../../webkit/common/webkit_common.gyp:webkit_common',
         '../../webkit/storage_browser.gyp:webkit_storage_browser',
         '../../webkit/storage_common.gyp:webkit_storage_common',
-        '../../third_party/boringssl/boringssl.gyp:boringssl',
+        '../../third_party/openssl/openssl.gyp:openssl',
         'android_webview_native_jni',
       ],
       'include_dirs': [

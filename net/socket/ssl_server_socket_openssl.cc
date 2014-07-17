@@ -305,7 +305,7 @@ int SSLServerSocketOpenSSL::BufferSend() {
 
   if (!send_buffer_.get()) {
     // Get a fresh send buffer out of the send BIO.
-    size_t max_read = BIO_pending(transport_bio_);
+    size_t max_read = BIO_ctrl_pending(transport_bio_);
     if (!max_read)
       return 0;  // Nothing pending in the OpenSSL write BIO.
     send_buffer_ = new DrainableIOBuffer(new IOBuffer(max_read), max_read);

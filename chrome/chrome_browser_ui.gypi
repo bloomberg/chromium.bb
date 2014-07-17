@@ -2773,7 +2773,7 @@
         ['OS=="android"', {
           'dependencies': [
             '../components/components.gyp:web_contents_delegate_android',
-            '../third_party/boringssl/boringssl.gyp:boringssl',
+            '../third_party/openssl/openssl.gyp:openssl',
             'chrome_browser_jni_headers',
           ],
           'dependencies!': [
