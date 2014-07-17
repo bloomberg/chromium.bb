@@ -123,10 +123,63 @@ enum CallbacksUnregisterMode {
   DO_NOT_UNREGISTER_CALLBACKS,
 };
 
+// Bridging functions that convert the arguments into Blink objects
+// (e.g. WebFileInfo, WebString, WebVector<WebFileSystemEntry>)
+// and call WebFileSystemCallbacks's methods.
+// These are called by RunCallbacks after crossing threads to ensure
+// thread safety, because the Blink objects cannot be passed across
+// threads by base::Bind().
+void DidSucceed(WebFileSystemCallbacks* callbacks) {
+  callbacks->didSucceed();
+}
+
+void DidReadMetadata(const base::File::Info& file_info,
+                     WebFileSystemCallbacks* callbacks) {
+  WebFileInfo web_file_info;
+  FileInfoToWebFileInfo(file_info, &web_file_info);
+  callbacks->didReadMetadata(web_file_info);
+}
+
+void DidReadDirectory(const std::vector<fileapi::DirectoryEntry>& entries,
+                      bool has_more, WebFileSystemCallbacks* callbacks) {
+  WebVector<WebFileSystemEntry> file_system_entries(entries.size());
+  for (size_t i = 0; i < entries.size(); ++i) {
+    file_system_entries[i].name =
+        base::FilePath(entries[i].name).AsUTF16Unsafe();
+    file_system_entries[i].isDirectory = entries[i].is_directory;
+  }
+  callbacks->didReadDirectory(file_system_entries, has_more);
+}
+
+void DidOpenFileSystem(const base::string16& name, const GURL& root,
+                       WebFileSystemCallbacks* callbacks) {
+  callbacks->didOpenFileSystem(name, root);
+}
+
+void DidResolveURL(
+    const base::string16& name,
+    const GURL& root_url,
+    fileapi::FileSystemType mount_type,
+    const base::string16& file_path,
+    bool is_directory,
+    WebFileSystemCallbacks* callbacks) {
+  callbacks->didResolveURL(
+      name,
+      root_url,
+      static_cast<blink::WebFileSystemType>(mount_type),
+      file_path,
+      is_directory);
+}
+
+void DidFail(base::File::Error error, WebFileSystemCallbacks* callbacks) {
+  callbacks->didFail(fileapi::FileErrorToWebFileError(error));
+}
+
 // Run WebFileSystemCallbacks's |method| with |params|.
-template <typename Method, typename Params>
-void RunCallbacks(int callbacks_id, Method method, const Params& params,
-                  CallbacksUnregisterMode callbacks_unregister_mode) {
+void RunCallbacks(
+    int callbacks_id,
+    const base::Callback<void(WebFileSystemCallbacks*)>& callback,
+    CallbacksUnregisterMode callbacks_unregister_mode) {
   WebFileSystemImpl* filesystem =
       WebFileSystemImpl::ThreadSpecificInstance(NULL);
   if (!filesystem)
@@ -134,7 +187,7 @@ void RunCallbacks(int callbacks_id, Method method, const Params& params,
   WebFileSystemCallbacks callbacks = filesystem->GetCallbacks(callbacks_id);
   if (callbacks_unregister_mode == UNREGISTER_CALLBACKS)
     filesystem->UnregisterCallbacks(callbacks_id);
-  DispatchToMethod(&callbacks, method, params);
+  callback.Run(&callbacks);
 }
 
 void DispatchResultsClosure(int thread_id, int callbacks_id,
@@ -157,16 +210,15 @@ void DispatchResultsClosure(int thread_id, int callbacks_id,
   results_closure.Run();
 }
 
-template <typename Method, typename Params>
 void CallbackFileSystemCallbacks(
     int thread_id, int callbacks_id,
     WaitableCallbackResults* waitable_results,
-    Method method, const Params& params,
-    CallbacksUnregisterMode callbacks_unregister_mode) {
+    const base::Callback<void(WebFileSystemCallbacks*)>& callback,
+    CallbacksUnregisterMode callbacksunregister_mode) {
   DispatchResultsClosure(
       thread_id, callbacks_id, waitable_results,
-      base::Bind(&RunCallbacks<Method, Params>, callbacks_id, method, params,
-                 callbacks_unregister_mode));
+      base::Bind(&RunCallbacks, callbacks_id, callback,
+                 callbacksunregister_mode));
 }
 
 //-----------------------------------------------------------------------------
@@ -180,8 +232,7 @@ void OpenFileSystemCallbackAdapter(
     const std::string& name, const GURL& root) {
   CallbackFileSystemCallbacks(
       thread_id, callbacks_id, waitable_results,
-      &WebFileSystemCallbacks::didOpenFileSystem,
-      MakeTuple(base::UTF8ToUTF16(name), root),
+      base::Bind(&DidOpenFileSystem, base::UTF8ToUTF16(name), root),
       UNREGISTER_CALLBACKS);
 }
 
@@ -194,10 +245,9 @@ void ResolveURLCallbackAdapter(
       fileapi::VirtualPath::GetNormalizedFilePath(file_path));
   CallbackFileSystemCallbacks(
       thread_id, callbacks_id, waitable_results,
-      &WebFileSystemCallbacks::didResolveURL,
-      MakeTuple(base::UTF8ToUTF16(info.name), info.root_url,
-                static_cast<blink::WebFileSystemType>(info.mount_type),
-                normalized_path.AsUTF16Unsafe(), is_directory),
+      base::Bind(&DidResolveURL, base::UTF8ToUTF16(info.name), info.root_url,
+                 info.mount_type,
+                 normalized_path.AsUTF16Unsafe(), is_directory),
       UNREGISTER_CALLBACKS);
 }
 
@@ -207,13 +257,12 @@ void StatusCallbackAdapter(int thread_id, int callbacks_id,
   if (error == base::File::FILE_OK) {
     CallbackFileSystemCallbacks(
         thread_id, callbacks_id, waitable_results,
-        &WebFileSystemCallbacks::didSucceed, MakeTuple(),
+        base::Bind(&DidSucceed),
         UNREGISTER_CALLBACKS);
   } else {
     CallbackFileSystemCallbacks(
         thread_id, callbacks_id, waitable_results,
-        &WebFileSystemCallbacks::didFail,
-        MakeTuple(fileapi::FileErrorToWebFileError(error)),
+        base::Bind(&DidFail, error),
         UNREGISTER_CALLBACKS);
   }
 }
@@ -221,12 +270,9 @@ void StatusCallbackAdapter(int thread_id, int callbacks_id,
 void ReadMetadataCallbackAdapter(int thread_id, int callbacks_id,
                                  WaitableCallbackResults* waitable_results,
                                  const base::File::Info& file_info) {
-  WebFileInfo web_file_info;
-  FileInfoToWebFileInfo(file_info, &web_file_info);
   CallbackFileSystemCallbacks(
       thread_id, callbacks_id, waitable_results,
-      &WebFileSystemCallbacks::didReadMetadata,
-      MakeTuple(web_file_info),
+      base::Bind(&DidReadMetadata, file_info),
       UNREGISTER_CALLBACKS);
 }
 
@@ -234,16 +280,9 @@ void ReadDirectoryCallbackAdapter(
     int thread_id, int callbacks_id, WaitableCallbackResults* waitable_results,
     const std::vector<fileapi::DirectoryEntry>& entries,
     bool has_more) {
-  WebVector<WebFileSystemEntry> file_system_entries(entries.size());
-  for (size_t i = 0; i < entries.size(); i++) {
-    file_system_entries[i].name =
-        base::FilePath(entries[i].name).AsUTF16Unsafe();
-    file_system_entries[i].isDirectory = entries[i].is_directory;
-  }
   CallbackFileSystemCallbacks(
       thread_id, callbacks_id, waitable_results,
-      &WebFileSystemCallbacks::didReadDirectory,
-      MakeTuple(file_system_entries, has_more),
+      base::Bind(&DidReadDirectory, entries, has_more),
       has_more ? DO_NOT_UNREGISTER_CALLBACKS : UNREGISTER_CALLBACKS);
 }
 
