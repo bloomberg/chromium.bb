@@ -875,30 +875,30 @@ syncer::StringOrdinal AppListSyncableService::GetOemFolderPos() {
     return last.CreateAfter();
   }
 
-  // Place the OEM folder just before the last unremovable default item.
-  // Since positions are relative, anywhere else is unstable. TODO(stevenjb):
-  // consider explicitly setting the OEM folder location along with the name in
-  // ServicesCustomizationDocument::SetOemFolderName().
+  // Place the OEM folder just after the web store, which should always be
+  // followed by a pre-installed app (e.g. Search), so the poosition should be
+  // stable. TODO(stevenjb): consider explicitly setting the OEM folder location
+  // along with the name in ServicesCustomizationDocument::SetOemFolderName().
   AppListItemList* item_list = model_->top_level_item_list();
+  if (item_list->item_count() == 0)
+    return syncer::StringOrdinal();
+
   size_t oem_index = 0;
-  for (int i = static_cast<int>(item_list->item_count()) - 1; i >= 0; --i) {
-    AppListItem* cur_item = item_list->item_at(i);
-    const std::string& id = cur_item->id();
-    if (IsUnRemovableDefaultApp(id)) {
-      oem_index = i;
+  for (; oem_index < item_list->item_count() - 1; ++oem_index) {
+    AppListItem* cur_item = item_list->item_at(oem_index);
+    if (cur_item->id() == extension_misc::kWebStoreAppId)
       break;
-    }
   }
   syncer::StringOrdinal oem_ordinal;
-  AppListItem* next = item_list->item_at(oem_index);
-  if (oem_index > 0) {
-    AppListItem* prev = item_list->item_at(oem_index - 1);
+  AppListItem* prev = item_list->item_at(oem_index);
+  if (oem_index + 1 < item_list->item_count()) {
+    AppListItem* next = item_list->item_at(oem_index + 1);
     oem_ordinal = prev->position().CreateBetween(next->position());
   } else {
-    oem_ordinal = next->position().CreateBefore();
+    oem_ordinal = prev->position().CreateAfter();
   }
-  DVLOG(1) << "Placing OEM Folder at: " << oem_index
-           << " position: " << oem_ordinal.ToDebugString();
+  VLOG(1) << "Placing OEM Folder at: " << oem_index
+          << " position: " << oem_ordinal.ToDebugString();
   return oem_ordinal;
 }
 
