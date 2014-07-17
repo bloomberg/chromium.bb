@@ -279,8 +279,6 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // time if the file doesn't have an association to Time.
   base::Time timeline_offset_;
 
-  VideoRotation video_rotation_;
-
   // Liveness of the stream.
   Liveness liveness_;
 
