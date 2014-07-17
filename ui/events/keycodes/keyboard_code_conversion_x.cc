@@ -55,7 +55,7 @@ namespace {
 // Please refer to crbug.com/386066.
 //
 const struct MAP0 {
-  uint16 ch0;
+  KeySym ch0;
   uint8 vk;
   bool operator()(const MAP0& m1, const MAP0& m2) const {
     return m1.ch0 < m2.ch0;
@@ -115,8 +115,8 @@ const struct MAP0 {
 };
 
 const struct MAP1 {
-  uint16 ch0;
-  uint8 sc;
+  KeySym ch0;
+  unsigned sc;
   uint8 vk;
   bool operator()(const MAP1& m1, const MAP1& m2) const {
     if (m1.ch0 == m2.ch0)
@@ -300,9 +300,9 @@ const struct MAP1 {
 };
 
 const struct MAP2 {
-  uint16 ch0;
-  uint8 sc;
-  uint16 ch1;
+  KeySym ch0;
+  unsigned sc;
+  KeySym ch1;
   uint8 vk;
   bool operator()(const MAP2& m1, const MAP2& m2) const {
     if (m1.ch0 == m2.ch0 && m1.sc == m2.sc)
@@ -344,10 +344,10 @@ const struct MAP2 {
 };
 
 const struct MAP3 {
-  uint16 ch0;
-  uint8 sc;
-  uint16 ch1;
-  uint16 ch2;
+  KeySym ch0;
+  unsigned sc;
+  KeySym ch1;
+  KeySym ch2;
   uint8 vk;
   bool operator()(const MAP3& m1, const MAP3& m2) const {
     if (m1.ch0 == m2.ch0 && m1.sc == m2.sc && m1.ch1 == m2.ch1)
