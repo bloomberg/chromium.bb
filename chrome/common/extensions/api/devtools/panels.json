@@ -256,6 +256,10 @@
       "elements": {
         "$ref": "ElementsPanel",
         "description": "Elements panel."
+      },
+      "sources": {
+        "$ref": "SourcesPanel",
+        "description": "Sources panel."
       }
     },
     "functions": [
@@ -311,6 +315,29 @@
                 "description": "A $(ref:devtools.inspectedWindow.Resource) object for the resource that was clicked."
               }
             ]
+          }
+        ]
+      },
+      {
+        "name": "openResource",
+        "type": "function",
+        "description": "Requests DevTools to open a URL in a Developer Tools panel.",
+        "parameters": [
+          {
+            "name": "url",
+            "type": "string",
+            "description": "The URL of the resource to open."
+          },
+          {
+            "name": "lineNumber",
+            "type": "integer",
+            "description": "Specifies the line number to scroll to when the resource is loaded."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "description": "A function that is called when the resource has been successfully loaded."
           }
         ]
       }
