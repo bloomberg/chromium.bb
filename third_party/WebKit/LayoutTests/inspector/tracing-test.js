@@ -6,10 +6,13 @@ WebInspector.inspectorView.showPanel("timeline");
 InspectorTest.tracingModel = new WebInspector.TracingModel(WebInspector.targetManager.activeTarget());
 InspectorTest.tracingTimelineModel = new WebInspector.TracingTimelineModel(InspectorTest.tracingModel, new WebInspector.TimelineRecordHiddenTypeFilter([]));
 
-InspectorTest.invokeWithTracing = function(categoryFilter, functionName, callback)
+InspectorTest.invokeWithTracing = function(functionName, callback, additionalCategories)
 {
     InspectorTest.tracingTimelineModel.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onTracingStarted, this);
-    InspectorTest.tracingTimelineModel._startRecordingWithCategories(categoryFilter);
+    var categories = "-*,disabled-by-default-devtools.timeline*";
+    if (additionalCategories)
+        categories += "," + additionalCategories;
+    InspectorTest.tracingTimelineModel._startRecordingWithCategories(categories);
 
     function onTracingStarted(event)
     {

@@ -57,7 +57,7 @@ function test()
 {
     var imageCount = 0;
 
-    InspectorTest.invokeWithTracing("-*,devtools,disabled-by-default-devtools.timeline*", "showImages", onTracingComplete);
+    InspectorTest.invokeWithTracing("showImages", onTracingComplete);
     function onTracingComplete()
     {
         var events = InspectorTest.tracingTimelineModel.inspectedTargetEvents();

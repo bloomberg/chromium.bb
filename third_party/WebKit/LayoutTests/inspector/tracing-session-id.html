@@ -7,7 +7,7 @@
 function test()
 {
     WebInspector.inspectorView.showPanel("timeline");
-    InspectorTest.invokeWithTracing("-*," + WebInspector.TracingModel.DevToolsMetadataEventCategory, "(function(callback) { callback(); })", processTracingEvents);
+    InspectorTest.invokeWithTracing("(function(callback) { callback(); })", processTracingEvents);
 
     function processTracingEvents()
     {

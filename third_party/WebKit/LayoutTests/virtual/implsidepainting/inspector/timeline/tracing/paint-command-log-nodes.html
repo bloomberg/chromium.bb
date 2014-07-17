@@ -19,7 +19,7 @@ function test()
 {
     var imageCount = 0;
 
-    InspectorTest.invokeWithTracing("-*,disabled-by-default-devtools.timeline*,disabled-by-default-blink.graphics_context_annotations", "doActions", onTracingComplete);
+    InspectorTest.invokeWithTracing("doActions", onTracingComplete, "disabled-by-default-blink.graphics_context_annotations");
 
     var inFlightPictures = 0;
     function onTracingComplete()

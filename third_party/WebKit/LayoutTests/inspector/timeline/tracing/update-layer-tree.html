@@ -24,7 +24,7 @@ function doActions(callback)
 
 function test()
 {
-    InspectorTest.invokeWithTracing("-*,disabled-by-default-devtools.timeline*", "doActions", onTracingComplete);
+    InspectorTest.invokeWithTracing("doActions", onTracingComplete);
     function onTracingComplete()
     {
         var events = InspectorTest.tracingTimelineModel.inspectedTargetEvents();
