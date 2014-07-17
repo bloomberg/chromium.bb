@@ -30,8 +30,6 @@
 #include "base/mac/scoped_cftyperef.h"
 #endif
 
-struct ViewHostMsg_CompositorSurfaceBuffersSwapped_Params;
-
 namespace base {
 class CommandLine;
 class MessageLoop;
@@ -99,9 +97,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual void RemoveRoute(int32 routing_id) OVERRIDE;
   virtual void AddObserver(RenderProcessHostObserver* observer) OVERRIDE;
   virtual void RemoveObserver(RenderProcessHostObserver* observer) OVERRIDE;
-  virtual bool WaitForBackingStoreMsg(int render_widget_id,
-                                      const base::TimeDelta& max_delay,
-                                      IPC::Message* msg) OVERRIDE;
   virtual void ReceivedBadMessage() OVERRIDE;
   virtual void WidgetRestored() OVERRIDE;
   virtual void WidgetHidden() OVERRIDE;
@@ -294,10 +289,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void OnUserMetricsRecordAction(const std::string& action);
   void OnSavedPageAsMHTML(int job_id, int64 mhtml_file_size);
   void OnCloseACK(int old_route_id);
-
-  // CompositorSurfaceBuffersSwapped handler when there's no RWH.
-  void OnCompositorSurfaceBuffersSwappedNoHost(
-      const ViewHostMsg_CompositorSurfaceBuffersSwapped_Params& params);
 
   // Generates a command line to be used to spawn a renderer and appends the
   // results to |*command_line|.

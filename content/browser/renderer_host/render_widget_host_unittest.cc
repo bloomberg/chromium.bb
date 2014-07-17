@@ -202,15 +202,11 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
  public:
   explicit RenderWidgetHostProcess(BrowserContext* browser_context)
       : MockRenderProcessHost(browser_context),
-        update_msg_should_reply_(false),
         update_msg_reply_flags_(0) {
   }
   virtual ~RenderWidgetHostProcess() {
   }
 
-  void set_update_msg_should_reply(bool reply) {
-    update_msg_should_reply_ = reply;
-  }
   void set_update_msg_reply_flags(int flags) {
     update_msg_reply_flags_ = flags;
   }
@@ -221,14 +217,6 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
   virtual bool HasConnection() const OVERRIDE { return true; }
 
  protected:
-  virtual bool WaitForBackingStoreMsg(int render_widget_id,
-                                      const base::TimeDelta& max_delay,
-                                      IPC::Message* msg) OVERRIDE;
-
-  // Set to true when WaitForBackingStoreMsg should return a successful update
-  // message reply. False implies timeout.
-  bool update_msg_should_reply_;
-
   // Indicates the flags that should be sent with a repaint request. This
   // only has an effect when update_msg_should_reply_ is true.
   int update_msg_reply_flags_;
@@ -242,22 +230,6 @@ void RenderWidgetHostProcess::InitUpdateRectParams(
 
   params->view_size = gfx::Size(w, h);
   params->flags = update_msg_reply_flags_;
-}
-
-bool RenderWidgetHostProcess::WaitForBackingStoreMsg(
-    int render_widget_id,
-    const base::TimeDelta& max_delay,
-    IPC::Message* msg) {
-  if (!update_msg_should_reply_)
-    return false;
-
-  // Construct a fake update reply.
-  ViewHostMsg_UpdateRect_Params params;
-  InitUpdateRectParams(&params);
-
-  ViewHostMsg_UpdateRect message(render_widget_id, params);
-  *msg = message;
-  return true;
 }
 
 // TestView --------------------------------------------------------------------

@@ -17,11 +17,12 @@
 #include "base/sha1.h"
 #include "base/threading/thread.h"
 #include "content/browser/browser_child_process_host_impl.h"
+#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/shader_disk_cache.h"
-#include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_resize_helper.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
@@ -42,6 +43,11 @@
 #include "ui/events/latency_info.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(OS_MACOSX)
+#include <IOSurface/IOSurfaceAPI.h>
+#include "base/mac/scoped_cftyperef.h"
+#include "content/common/gpu/surface_handle_types_mac.h"
+#endif
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -576,8 +582,8 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_GpuMemoryUmaStats,
                         OnGpuMemoryUmaStatsReceived)
 #if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
-                        OnAcceleratedSurfaceBuffersSwapped)
+    IPC_MESSAGE_HANDLER_GENERIC(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
+                                OnAcceleratedSurfaceBuffersSwapped(message))
 #endif
     IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyChannel,
                         OnDestroyChannel)
@@ -844,68 +850,46 @@ void GpuProcessHost::OnGpuMemoryUmaStatsReceived(
 }
 
 #if defined(OS_MACOSX)
+namespace {
+void HoldIOSurfaceReference(base::ScopedCFTypeRef<IOSurfaceRef> io_surface) {}
+}  // namespace
+
 void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
-    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
-  TRACE_EVENT0("gpu", "GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped");
+    const IPC::Message& message) {
+  RenderWidgetResizeHelper::Get()->PostGpuProcessMsg(host_id_, message);
 
-  if (!ui::LatencyInfo::Verify(params.latency_info,
-                               "GpuHostMsg_AcceleratedSurfaceBuffersSwapped"))
+  if (!IsDelegatedRendererEnabled())
     return;
 
-  gfx::AcceleratedWidget native_widget =
-      GpuSurfaceTracker::Get()->AcquireNativeWidget(params.surface_id);
-  if (native_widget) {
-    RenderWidgetHelper::OnNativeSurfaceBuffersSwappedOnIOThread(this, params);
+  GpuHostMsg_AcceleratedSurfaceBuffersSwapped::Param param;
+  if (!GpuHostMsg_AcceleratedSurfaceBuffersSwapped::Read(&message, &param))
     return;
+  const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params = param.a;
+
+  if (GetSurfaceHandleType(params.surface_handle) ==
+          kSurfaceHandleTypeIOSurface) {
+    // As soon as the frame is acked, the IOSurface may be thrown away by the
+    // GPU process. Open the IOSurface and post a task referencing it to the UI
+    // thread. This will keep the IOSurface from being thrown away until the UI
+    // thread can open another reference to it, if needed.
+    base::ScopedCFTypeRef<IOSurfaceRef> io_surface(IOSurfaceLookup(
+        IOSurfaceIDFromSurfaceHandle(params.surface_handle)));
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(HoldIOSurfaceReference, io_surface));
   }
 
-  gfx::GLSurfaceHandle surface_handle =
-      GpuSurfaceTracker::Get()->GetSurfaceHandle(params.surface_id);
-  // Compositor window is always gfx::kNullPluginWindow.
-  // TODO(jbates) http://crbug.com/105344 This will be removed when there are no
-  // plugin windows.
-  if (surface_handle.handle != gfx::kNullPluginWindow ||
-      surface_handle.transport_type == gfx::TEXTURE_TRANSPORT) {
-    RouteOnUIThread(GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
-    return;
-  }
-
+  // If delegated rendering is enabled, then immediately acknowledge this frame
+  // on the IO thread instead of the UI thread. The UI thread will wait on the
+  // GPU process. If the UI thread were to be responsible for acking swaps,
+  // then there would be a cycle and a potential deadlock. Back-pressure from
+  // the GPU is provided through the compositor's output surface.
   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
   ack_params.sync_point = 0;
-
-  int render_process_id = 0;
-  int render_widget_id = 0;
-  if (!GpuSurfaceTracker::Get()->GetRenderWidgetIDForSurface(
-      params.surface_id, &render_process_id, &render_widget_id)) {
-    Send(new AcceleratedSurfaceMsg_BufferPresented(params.route_id,
-                                                   ack_params));
-    return;
-  }
-  RenderWidgetHelper* helper =
-      RenderWidgetHelper::FromProcessHostID(render_process_id);
-  if (!helper) {
-    Send(new AcceleratedSurfaceMsg_BufferPresented(params.route_id,
-                                                   ack_params));
-    return;
-  }
-
-  // Pass the SwapBuffers on to the RenderWidgetHelper to wake up the UI thread
-  // if the browser is waiting for a new frame. Otherwise the RenderWidgetHelper
-  // will forward to the RenderWidgetHostView via RenderProcessHostImpl and
-  // RenderWidgetHostImpl.
-  ViewHostMsg_CompositorSurfaceBuffersSwapped_Params view_params;
-  view_params.surface_id = params.surface_id;
-  view_params.surface_handle = params.surface_handle;
-  view_params.route_id = params.route_id;
-  view_params.size = params.size;
-  view_params.scale_factor = params.scale_factor;
-  view_params.gpu_process_host_id = host_id_;
-  view_params.latency_info = params.latency_info;
-  helper->DidReceiveBackingStoreMsg(ViewHostMsg_CompositorSurfaceBuffersSwapped(
-      render_widget_id,
-      view_params));
+  ack_params.renderer_id = 0;
+  Send(new AcceleratedSurfaceMsg_BufferPresented(params.route_id, ack_params));
 }
-#endif  // OS_MACOSX
+#endif
 
 void GpuProcessHost::OnProcessLaunched() {
   UMA_HISTOGRAM_TIMES("GPU.GPUProcessLaunchTime",

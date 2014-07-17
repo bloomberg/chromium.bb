@@ -47,7 +47,7 @@ class BrowserTestBase;
 class GLHelper;
 class GpuChannelHost;
 class NestedMessagePumpAndroid;
-class RenderWidgetHelper;
+class RenderWidgetResizeHelper;
 class ScopedAllowWaitForAndroidLayoutTests;
 class TextInputClientMac;
 }
@@ -180,7 +180,7 @@ class BASE_EXPORT ThreadRestrictions {
   friend class content::BrowserShutdownProfileDumper;
   friend class content::BrowserTestBase;
   friend class content::NestedMessagePumpAndroid;
-  friend class content::RenderWidgetHelper;
+  friend class content::RenderWidgetResizeHelper;
   friend class content::ScopedAllowWaitForAndroidLayoutTests;
   friend class ::HistogramSynchronizer;
   friend class ::ScopedAllowWaitForLegacyWebViewApi;

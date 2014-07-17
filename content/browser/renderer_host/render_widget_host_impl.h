@@ -43,7 +43,6 @@
 
 struct AcceleratedSurfaceMsg_BufferPresented_Params;
 struct ViewHostMsg_BeginSmoothScroll_Params;
-struct ViewHostMsg_CompositorSurfaceBuffersSwapped_Params;
 struct ViewHostMsg_SelectionBounds_Params;
 struct ViewHostMsg_TextInputState_Params;
 struct ViewHostMsg_UpdateRect_Params;
@@ -253,6 +252,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Indicates if the page has finished loading.
   void SetIsLoading(bool is_loading);
 
+#if defined(OS_MACOSX)
   // Pause for a moment to wait for pending repaint or resize messages sent to
   // the renderer to arrive. If pending resize messages are for an old window
   // size, then also pump through a new resize message if there is time.
@@ -261,11 +261,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Whether pausing may be useful.
   bool CanPauseForPendingResizeOrRepaints();
 
-  bool resize_ack_pending_for_testing() { return resize_ack_pending_; }
-
   // Wait for a surface matching the size of the widget's view, possibly
   // blocking until the renderer sends a new frame.
   void WaitForSurface();
+#endif
+
+  bool resize_ack_pending_for_testing() { return resize_ack_pending_; }
 
   // GPU accelerated version of GetBackingStore function. This will
   // trigger a re-composite to the view. It may fail if a resize is pending, or
@@ -622,10 +623,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnRequestMove(const gfx::Rect& pos);
   void OnSetTooltipText(const base::string16& tooltip_text,
                         blink::WebTextDirection text_direction_hint);
-#if defined(OS_MACOSX)
-  void OnCompositorSurfaceBuffersSwapped(
-      const ViewHostMsg_CompositorSurfaceBuffersSwapped_Params& params);
-#endif
   bool OnSwapCompositorFrame(const IPC::Message& message);
   void OnFlingingStopped();
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);

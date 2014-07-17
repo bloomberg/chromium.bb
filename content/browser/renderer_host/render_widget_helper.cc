@@ -10,6 +10,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -34,53 +35,8 @@ void AddWidgetHelper(int render_process_id,
 
 }  // namespace
 
-// A helper used with DidReceiveBackingStoreMsg that we hold a pointer to in
-// pending_paints_.
-class RenderWidgetHelper::BackingStoreMsgProxy {
- public:
-  BackingStoreMsgProxy(RenderWidgetHelper* h, const IPC::Message& m);
-  ~BackingStoreMsgProxy();
-  void Run();
-  void Cancel() { cancelled_ = true; }
-
-  const IPC::Message& message() const { return message_; }
-
- private:
-  scoped_refptr<RenderWidgetHelper> helper_;
-  IPC::Message message_;
-  bool cancelled_;  // If true, then the message will not be dispatched.
-
-  DISALLOW_COPY_AND_ASSIGN(BackingStoreMsgProxy);
-};
-
-RenderWidgetHelper::BackingStoreMsgProxy::BackingStoreMsgProxy(
-    RenderWidgetHelper* h, const IPC::Message& m)
-    : helper_(h),
-      message_(m),
-      cancelled_(false) {
-}
-
-RenderWidgetHelper::BackingStoreMsgProxy::~BackingStoreMsgProxy() {
-  // If the paint message was never dispatched, then we need to let the
-  // helper know that we are going away.
-  if (!cancelled_ && helper_.get())
-    helper_->OnDiscardBackingStoreMsg(this);
-}
-
-void RenderWidgetHelper::BackingStoreMsgProxy::Run() {
-  if (!cancelled_) {
-    helper_->OnDispatchBackingStoreMsg(this);
-    helper_ = NULL;
-  }
-}
-
 RenderWidgetHelper::RenderWidgetHelper()
     : render_process_id_(-1),
-#if defined(OS_WIN)
-      event_(CreateEvent(NULL, FALSE /* auto-reset */, FALSE, NULL)),
-#elif defined(OS_POSIX)
-      event_(false /* auto-reset */, false),
-#endif
       resource_dispatcher_host_(NULL) {
 }
 
@@ -92,10 +48,6 @@ RenderWidgetHelper::~RenderWidgetHelper() {
   WidgetHelperMap::iterator it = widget_map.find(render_process_id_);
   if (it != widget_map.end() && it->second == this)
     widget_map.erase(it);
-
-  // The elements of pending_paints_ each hold an owning reference back to this
-  // object, so we should not be destroyed unless pending_paints_ is empty!
-  DCHECK(pending_paints_.empty());
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
   ClearAllocatedDIBs();
@@ -146,51 +98,6 @@ void RenderWidgetHelper::ResumeResponseDeferredAtStart(
                  request_id));
 }
 
-bool RenderWidgetHelper::WaitForBackingStoreMsg(
-    int render_widget_id, const base::TimeDelta& max_delay, IPC::Message* msg) {
-  base::TimeTicks time_start = base::TimeTicks::Now();
-
-  for (;;) {
-    BackingStoreMsgProxy* proxy = NULL;
-    {
-      base::AutoLock lock(pending_paints_lock_);
-
-      BackingStoreMsgProxyMap::iterator it =
-          pending_paints_.find(render_widget_id);
-      if (it != pending_paints_.end()) {
-        BackingStoreMsgProxyQueue &queue = it->second;
-        DCHECK(!queue.empty());
-        proxy = queue.front();
-
-        // Flag the proxy as cancelled so that when it is run as a task it will
-        // do nothing.
-        proxy->Cancel();
-
-        queue.pop_front();
-        if (queue.empty())
-          pending_paints_.erase(it);
-      }
-    }
-
-    if (proxy) {
-      *msg = proxy->message();
-      DCHECK(msg->routing_id() == render_widget_id);
-      return true;
-    }
-
-    // Calculate the maximum amount of time that we are willing to sleep.
-    base::TimeDelta max_sleep_time =
-        max_delay - (base::TimeTicks::Now() - time_start);
-    if (max_sleep_time <= base::TimeDelta::FromMilliseconds(0))
-      break;
-
-    base::ThreadRestrictions::ScopedAllowWait allow_wait;
-    event_.TimedWait(max_sleep_time);
-  }
-
-  return false;
-}
-
 void RenderWidgetHelper::ResumeRequestsForView(int route_id) {
   // We only need to resume blocked requests if we used a valid route_id.
   // See CreateNewWindow.
@@ -200,54 +107,6 @@ void RenderWidgetHelper::ResumeRequestsForView(int route_id) {
         base::Bind(&RenderWidgetHelper::OnResumeRequestsForView,
             this, route_id));
   }
-}
-
-void RenderWidgetHelper::DidReceiveBackingStoreMsg(const IPC::Message& msg) {
-  int render_widget_id = msg.routing_id();
-
-  BackingStoreMsgProxy* proxy = new BackingStoreMsgProxy(this, msg);
-  {
-    base::AutoLock lock(pending_paints_lock_);
-
-    pending_paints_[render_widget_id].push_back(proxy);
-  }
-
-  // Notify anyone waiting on the UI thread that there is a new entry in the
-  // proxy map.  If they don't find the entry they are looking for, then they
-  // will just continue waiting.
-  event_.Signal();
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&BackingStoreMsgProxy::Run, base::Owned(proxy)));
-}
-
-void RenderWidgetHelper::OnDiscardBackingStoreMsg(BackingStoreMsgProxy* proxy) {
-  const IPC::Message& msg = proxy->message();
-
-  // Remove the proxy from the map now that we are going to handle it normally.
-  {
-    base::AutoLock lock(pending_paints_lock_);
-
-    BackingStoreMsgProxyMap::iterator it =
-        pending_paints_.find(msg.routing_id());
-    DCHECK(it != pending_paints_.end());
-    BackingStoreMsgProxyQueue &queue = it->second;
-    DCHECK(queue.front() == proxy);
-
-    queue.pop_front();
-    if (queue.empty())
-      pending_paints_.erase(it);
-  }
-}
-
-void RenderWidgetHelper::OnDispatchBackingStoreMsg(
-    BackingStoreMsgProxy* proxy) {
-  OnDiscardBackingStoreMsg(proxy);
-
-  // It is reasonable for the host to no longer exist.
-  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id_);
-  if (host)
-    host->OnMessageReceived(proxy->message());
 }
 
 void RenderWidgetHelper::OnResumeDeferredNavigation(

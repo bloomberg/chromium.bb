@@ -11,11 +11,13 @@
 #include "base/id_map.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -254,6 +256,16 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
   if (!ui::LatencyInfo::Verify(params.latency_info,
                                "GpuHostMsg_AcceleratedSurfaceBuffersSwapped"))
     return;
+
+#if defined(OS_MACOSX)
+  // On Mac with delegated rendering, accelerated surfaces are swapped by
+  // calling a method on their NSView.
+  if (IsDelegatedRendererEnabled()) {
+    RenderWidgetHelper::OnNativeSurfaceBuffersSwappedOnUIThread(params);
+    return;
+  }
+#endif
+
   AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
   ack_params.mailbox = params.mailbox;
   ack_params.sync_point = 0;

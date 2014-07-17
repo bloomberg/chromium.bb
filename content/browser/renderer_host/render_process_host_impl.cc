@@ -950,19 +950,6 @@ void RenderProcessHostImpl::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-bool RenderProcessHostImpl::WaitForBackingStoreMsg(
-    int render_widget_id,
-    const base::TimeDelta& max_delay,
-    IPC::Message* msg) {
-  // The post task to this thread with the process id could be in queue, and we
-  // don't want to dispatch a message before then since it will need the handle.
-  if (child_process_launcher_.get() && child_process_launcher_->IsStarting())
-    return false;
-
-  return widget_helper_->WaitForBackingStoreMsg(render_widget_id,
-                                                max_delay, msg);
-}
-
 void RenderProcessHostImpl::ReceivedBadMessage() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableKillAfterBadIPC))
@@ -1405,13 +1392,6 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
       reply->set_reply_error();
       Send(reply);
     }
-
-    // If this is a SwapBuffers, we need to ack it if we're not going to handle
-    // it so that the GPU process doesn't get stuck in unscheduled state.
-    IPC_BEGIN_MESSAGE_MAP(RenderProcessHostImpl, msg)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_CompositorSurfaceBuffersSwapped,
-                          OnCompositorSurfaceBuffersSwappedNoHost)
-    IPC_END_MESSAGE_MAP()
     return true;
   }
   return listener->OnMessageReceived(msg);
@@ -2140,20 +2120,6 @@ void RenderProcessHostImpl::OnCloseACK(int old_route_id) {
 
 void RenderProcessHostImpl::OnSavedPageAsMHTML(int job_id, int64 data_size) {
   MHTMLGenerationManager::GetInstance()->MHTMLGenerated(job_id, data_size);
-}
-
-void RenderProcessHostImpl::OnCompositorSurfaceBuffersSwappedNoHost(
-      const ViewHostMsg_CompositorSurfaceBuffersSwapped_Params& params) {
-  TRACE_EVENT0("renderer_host",
-               "RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwappedNoHost");
-  if (!ui::LatencyInfo::Verify(params.latency_info,
-                               "ViewHostMsg_CompositorSurfaceBuffersSwapped"))
-    return;
-  AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-  ack_params.sync_point = 0;
-  RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id,
-                                                 params.gpu_process_host_id,
-                                                 ack_params);
 }
 
 void RenderProcessHostImpl::OnGpuSwitching() {

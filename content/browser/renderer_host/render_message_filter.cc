@@ -29,6 +29,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
+#include "content/browser/renderer_host/render_widget_resize_helper.h"
 #include "content/browser/transition_request_manager.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
@@ -404,10 +405,14 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToPpapiBroker,
                         OnOpenChannelToPpapiBroker)
 #endif
+#if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
-        render_widget_helper_->DidReceiveBackingStoreMsg(message))
+        RenderWidgetResizeHelper::Get()->PostRendererProcessMsg(
+            render_process_id_, message))
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_UpdateRect,
-        render_widget_helper_->DidReceiveBackingStoreMsg(message))
+        RenderWidgetResizeHelper::Get()->PostRendererProcessMsg(
+            render_process_id_, message))
+#endif
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_CheckPermission,
                         OnCheckNotificationPermission)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateSharedMemory,

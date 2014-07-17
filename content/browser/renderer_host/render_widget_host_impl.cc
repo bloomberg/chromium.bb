@@ -44,6 +44,7 @@
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/render_widget_resize_helper.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/cursors/webcursor.h"
@@ -88,12 +89,6 @@ namespace content {
 namespace {
 
 bool g_check_for_pending_resize_ack = true;
-
-// How long to (synchronously) wait for the renderer to respond with a
-// PaintRect message, when our backing-store is invalid, before giving up and
-// returning a null or incorrectly sized backing-store from GetBackingStore.
-// This timeout impacts the "choppiness" of our window resize perf.
-const int kPaintMsgTimeoutMS = 50;
 
 typedef std::pair<int32, int32> RenderWidgetHostID;
 typedef base::hash_map<RenderWidgetHostID, RenderWidgetHostImpl*>
@@ -476,10 +471,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_WindowlessPluginDummyWindowDestroyed,
                         OnWindowlessPluginDummyWindowDestroyed)
 #endif
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CompositorSurfaceBuffersSwapped,
-                        OnCompositorSurfaceBuffersSwapped)
-#endif
 #if defined(OS_MACOSX) || defined(USE_AURA)
     IPC_MESSAGE_HANDLER(InputHostMsg_ImeCompositionRangeChanged,
                         OnImeCompositionRangeChanged)
@@ -710,6 +701,7 @@ void RenderWidgetHostImpl::UnlockBackingStore() {
 }
 #endif
 
+#if defined(OS_MACOSX)
 void RenderWidgetHostImpl::PauseForPendingResizeOrRepaints() {
   TRACE_EVENT0("browser",
       "RenderWidgetHostImpl::PauseForPendingResizeOrRepaints");
@@ -734,6 +726,11 @@ bool RenderWidgetHostImpl::CanPauseForPendingResizeOrRepaints() {
 
 void RenderWidgetHostImpl::WaitForSurface() {
   TRACE_EVENT0("browser", "RenderWidgetHostImpl::WaitForSurface");
+
+  // How long to (synchronously) wait for the renderer to respond with a
+  // new frame when our current frame doesn't exist or is the wrong size.
+  // This timeout impacts the "choppiness" of our window resize.
+  const int kPaintMsgTimeoutMS = 50;
 
   if (!view_)
     return;
@@ -792,8 +789,7 @@ void RenderWidgetHostImpl::WaitForSurface() {
     // on a response, block for a little while to see if we can't get a response
     // before returning the old (incorrectly sized) backing store.
     IPC::Message msg;
-    if (process_->WaitForBackingStoreMsg(routing_id_, max_delay, &msg)) {
-      OnMessageReceived(msg);
+    if (RenderWidgetResizeHelper::Get()->WaitForSingleTaskToRun(max_delay)) {
 
       // For auto-resized views, current_size_ determines the view_size and it
       // may have changed during the handling of an UpdateRect message.
@@ -816,6 +812,7 @@ void RenderWidgetHostImpl::WaitForSurface() {
     max_delay = end_time - TimeTicks::Now();
   } while (max_delay > TimeDelta::FromSeconds(0));
 }
+#endif
 
 bool RenderWidgetHostImpl::ScheduleComposite() {
   if (is_hidden_ || current_size_.IsEmpty() || repaint_ack_pending_ ||
@@ -1412,43 +1409,6 @@ void RenderWidgetHostImpl::OnRequestMove(const gfx::Rect& pos) {
     Send(new ViewMsg_Move_ACK(routing_id_));
   }
 }
-
-#if defined(OS_MACOSX)
-void RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped(
-      const ViewHostMsg_CompositorSurfaceBuffersSwapped_Params& params) {
-  // This trace event is used in
-  // chrome/browser/extensions/api/cast_streaming/performance_test.cc
-  TRACE_EVENT0("renderer_host",
-               "RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped");
-  // This trace event is used in
-  // chrome/browser/extensions/api/cast_streaming/performance_test.cc
-  UNSHIPPED_TRACE_EVENT0("test_fps",
-                         TRACE_DISABLED_BY_DEFAULT("OnSwapCompositorFrame"));
-  if (!ui::LatencyInfo::Verify(params.latency_info,
-                               "ViewHostMsg_CompositorSurfaceBuffersSwapped"))
-    return;
-  if (!view_) {
-    AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-    ack_params.sync_point = 0;
-    RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id,
-                                                   params.gpu_process_host_id,
-                                                   ack_params);
-    return;
-  }
-  GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params gpu_params;
-  gpu_params.surface_id = params.surface_id;
-  gpu_params.surface_handle = params.surface_handle;
-  gpu_params.route_id = params.route_id;
-  gpu_params.size = params.size;
-  gpu_params.scale_factor = params.scale_factor;
-  gpu_params.latency_info = params.latency_info;
-  for (size_t i = 0; i < gpu_params.latency_info.size(); i++)
-    AddLatencyInfoComponentIds(&gpu_params.latency_info[i]);
-  view_->AcceleratedSurfaceBuffersSwapped(gpu_params,
-                                          params.gpu_process_host_id);
-  view_->DidReceiveRendererFrame();
-}
-#endif  // OS_MACOSX
 
 bool RenderWidgetHostImpl::OnSwapCompositorFrame(
     const IPC::Message& message) {

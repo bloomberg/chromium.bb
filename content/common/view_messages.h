@@ -1441,23 +1441,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateZoomLimits,
 IPC_MESSAGE_CONTROL1(ViewHostMsg_SuddenTerminationChanged,
                      bool /* enabled */)
 
-IPC_STRUCT_BEGIN(ViewHostMsg_CompositorSurfaceBuffersSwapped_Params)
-  IPC_STRUCT_MEMBER(int32, surface_id)
-  IPC_STRUCT_MEMBER(uint64, surface_handle)
-  IPC_STRUCT_MEMBER(int32, route_id)
-  IPC_STRUCT_MEMBER(gfx::Size, size)
-  IPC_STRUCT_MEMBER(float, scale_factor)
-  IPC_STRUCT_MEMBER(int32, gpu_process_host_id)
-  IPC_STRUCT_MEMBER(std::vector<ui::LatencyInfo>, latency_info)
-IPC_STRUCT_END()
-
-// This message is synthesized by GpuProcessHost to pass through a swap message
-// to the RenderWidgetHelper. This allows GetBackingStore to block for either a
-// software or GPU frame.
-IPC_MESSAGE_ROUTED1(
-    ViewHostMsg_CompositorSurfaceBuffersSwapped,
-    ViewHostMsg_CompositorSurfaceBuffersSwapped_Params /* params */)
-
 IPC_MESSAGE_ROUTED2(ViewHostMsg_SwapCompositorFrame,
                     uint32 /* output_surface_id */,
                     cc::CompositorFrame /* frame */)

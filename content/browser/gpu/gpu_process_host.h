@@ -31,9 +31,6 @@
 #include "url/gurl.h"
 
 struct GPUCreateCommandBufferConfig;
-struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
-struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
-struct GpuHostMsg_AcceleratedSurfaceRelease_Params;
 
 namespace gfx {
 struct GpuMemoryBufferHandle;
@@ -185,8 +182,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void OnDidDestroyOffscreenContext(const GURL& url);
   void OnGpuMemoryUmaStatsReceived(const GPUMemoryUmaStats& stats);
 #if defined(OS_MACOSX)
-  void OnAcceleratedSurfaceBuffersSwapped(
-      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
+  void OnAcceleratedSurfaceBuffersSwapped(const IPC::Message& message);
 #endif
 
   void CreateChannelCache(int32 client_id);

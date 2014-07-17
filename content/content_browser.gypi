@@ -1060,6 +1060,8 @@
       'browser/renderer_host/render_widget_host_view_mac_editcommand_helper.mm',
       'browser/renderer_host/render_widget_host_view_mac.h',
       'browser/renderer_host/render_widget_host_view_mac.mm',
+      'browser/renderer_host/render_widget_resize_helper.cc',
+      'browser/renderer_host/render_widget_resize_helper.h',
       'browser/renderer_host/renderer_frame_manager.cc',
       'browser/renderer_host/renderer_frame_manager.h',
       'browser/renderer_host/sandbox_ipc_linux.cc',
