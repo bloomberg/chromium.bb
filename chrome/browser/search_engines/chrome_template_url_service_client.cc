@@ -5,6 +5,7 @@
 #include "chrome/browser/search_engines/chrome_template_url_service_client.h"
 
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
