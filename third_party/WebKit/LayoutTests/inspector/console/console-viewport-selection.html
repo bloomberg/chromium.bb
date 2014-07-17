@@ -226,7 +226,7 @@ function test()
             InspectorTest.completeTest();
             return;
         }
-        viewport.forceScrollItemToBeLast(Math.max(fromMessage, toMessage));
+        viewport.forceScrollItemToBeFirst(Math.min(fromMessage, toMessage));
 
         var from = selectionContainerAndOffset(consoleView.itemElement(fromMessage).element(), fromTextOffset);
         var to = selectionContainerAndOffset(consoleView.itemElement(toMessage).element(), toTextOffset);
