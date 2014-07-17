@@ -48,7 +48,8 @@ class Graphics2DInstance : public pp::Instance {
       : pp::Instance(instance),
         callback_factory_(this),
         mouse_down_(false),
-        buffer_(NULL) {}
+        buffer_(NULL),
+        device_scale_(1.0f) {}
 
   ~Graphics2DInstance() { delete[] buffer_; }
 
@@ -62,7 +63,9 @@ class Graphics2DInstance : public pp::Instance {
   }
 
   virtual void DidChangeView(const pp::View& view) {
-    pp::Size new_size = view.GetRect().size();
+    device_scale_ = view.GetDeviceScale();
+    pp::Size new_size = pp::Size(view.GetRect().width() * device_scale_,
+                                 view.GetRect().height() * device_scale_);
 
     if (!CreateContext(new_size))
       return;
@@ -86,7 +89,8 @@ class Graphics2DInstance : public pp::Instance {
       if (mouse_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_NONE)
         return true;
 
-      mouse_ = mouse_event.GetPosition();
+      mouse_ = pp::Point(mouse_event.GetPosition().x() * device_scale_,
+                         mouse_event.GetPosition().y() * device_scale_);
       mouse_down_ = true;
     }
 
@@ -112,6 +116,9 @@ class Graphics2DInstance : public pp::Instance {
   bool CreateContext(const pp::Size& new_size) {
     const bool kIsAlwaysOpaque = true;
     context_ = pp::Graphics2D(this, new_size, kIsAlwaysOpaque);
+    // Call SetScale before BindGraphics so the image is scaled correctly on
+    // HiDPI displays.
+    context_.SetScale(1.0f / device_scale_);
     if (!BindGraphics(context_)) {
       fprintf(stderr, "Unable to bind 2d context!\n");
       context_ = pp::Graphics2D();
@@ -182,7 +189,7 @@ class Graphics2DInstance : public pp::Instance {
     int height = size_.height();
 
     // Draw a circle at the mouse position.
-    int radius = kMouseRadius;
+    int radius = kMouseRadius * device_scale_;
     int cx = mouse_.x();
     int cy = mouse_.y();
     int minx = cx - radius <= 0 ? 1 : cx - radius;
@@ -261,6 +268,7 @@ class Graphics2DInstance : public pp::Instance {
   bool mouse_down_;
   uint8_t* buffer_;
   uint32_t palette_[256];
+  float device_scale_;
 };
 
 class Graphics2DModule : public pp::Module {
