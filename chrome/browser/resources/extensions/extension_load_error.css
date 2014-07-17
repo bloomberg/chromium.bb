@@ -38,3 +38,13 @@
 #extension-load-error-controls {
   align-self: flex-end;
 }
+
+#extension-load-error-additional > span {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+#extension-load-error-additional > li {
+  -webkit-margin-after: 0;
+  -webkit-margin-before: 3px;
+}

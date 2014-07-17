@@ -64,10 +64,6 @@ class UnpackedInstaller
     require_modern_manifest_version_ = val;
   }
 
-  void set_on_failure_callback(const OnFailureCallback& callback) {
-    on_failure_callback_ = callback;
-  }
-
   void set_be_noisy_on_failure(bool be_noisy_on_failure) {
     be_noisy_on_failure_ = be_noisy_on_failure;
   }
@@ -129,9 +125,6 @@ class UnpackedInstaller
   // Whether to require the extension installed to have a modern manifest
   // version.
   bool require_modern_manifest_version_;
-
-  // An optional callback to set in order to be notified of failure.
-  OnFailureCallback on_failure_callback_;
 
   // Whether or not to be noisy (show a dialog) on failure. Defaults to true.
   bool be_noisy_on_failure_;

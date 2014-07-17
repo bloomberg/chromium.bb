@@ -255,7 +255,11 @@ class ExtensionService
 
   // Reloads the specified extension, sending the onLaunched() event to it if it
   // currently has any window showing.
+  // Allows noisy failures.
   void ReloadExtension(const std::string& extension_id);
+
+  // Suppresses noisy failures.
+  void ReloadExtensionWithQuietFailure(const std::string& extension_id);
 
   // Uninstalls the specified extension. Callers should only call this method
   // with extensions that exist. |reason| lets the caller specify why the
@@ -449,6 +453,11 @@ class ExtensionService
 
 
  private:
+  // Reloads the specified extension, sending the onLaunched() event to it if it
+  // currently has any window showing. |be_noisy| determines whether noisy
+  // failures are allowed for unpacked extension installs.
+  void ReloadExtensionImpl(const std::string& extension_id, bool be_noisy);
+
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,

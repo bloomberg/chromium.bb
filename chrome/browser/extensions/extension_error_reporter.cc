@@ -55,6 +55,9 @@ void ExtensionErrorReporter::ReportLoadError(
                          path_str.c_str(),
                          error.c_str()));
   ReportError(message, be_noisy);
+  FOR_EACH_OBSERVER(Observer,
+                    observers_,
+                    OnLoadFailure(extension_path, error));
 }
 
 void ExtensionErrorReporter::ReportError(const base::string16& message,
@@ -85,4 +88,12 @@ const std::vector<base::string16>* ExtensionErrorReporter::GetErrors() {
 
 void ExtensionErrorReporter::ClearErrors() {
   errors_.clear();
+}
+
+void ExtensionErrorReporter::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ExtensionErrorReporter::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }

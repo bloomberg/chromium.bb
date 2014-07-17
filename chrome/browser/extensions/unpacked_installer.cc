@@ -299,8 +299,6 @@ void UnpackedInstaller::LoadWithFileAccess(int flags) {
 
 void UnpackedInstaller::ReportExtensionLoadError(const std::string &error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!on_failure_callback_.is_null())
-    on_failure_callback_.Run(extension_path_, error);
 
   if (service_weak_.get()) {
     ExtensionErrorReporter::GetInstance()->ReportLoadError(

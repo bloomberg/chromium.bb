@@ -12,7 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
+#include "chrome/browser/extensions/path_util.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -131,8 +131,11 @@ void ExtensionLoaderHandler::FileHelper::MultiFilesSelected(
 ExtensionLoaderHandler::ExtensionLoaderHandler(Profile* profile)
     : profile_(profile),
       file_helper_(new FileHelper(this)),
+      extension_error_reporter_observer_(this),
+      ui_ready_(false),
       weak_ptr_factory_(this) {
   DCHECK(profile_);
+  extension_error_reporter_observer_.Add(ExtensionErrorReporter::GetInstance());
 }
 
 ExtensionLoaderHandler::~ExtensionLoaderHandler() {
@@ -155,9 +158,18 @@ void ExtensionLoaderHandler::GetLocalizedValues(
   source->AddString(
       "extensionLoadCouldNotLoadManifest",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOAD_COULD_NOT_LOAD_MANIFEST));
+  source->AddString(
+      "extensionLoadAdditionalFailures",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOAD_ADDITIONAL_FAILURES));
 }
 
 void ExtensionLoaderHandler::RegisterMessages() {
+  // We observe WebContents in order to detect page refreshes, since notifying
+  // the frontend of load failures must be delayed until the page finishes
+  // loading. We never call Observe(NULL) because this object is constructed
+  // on page load and persists between refreshes.
+  content::WebContentsObserver::Observe(web_ui()->GetWebContents());
+
   web_ui()->RegisterMessageCallback(
       "extensionLoaderLoadUnpacked",
       base::Bind(&ExtensionLoaderHandler::HandleLoadUnpacked,
@@ -165,6 +177,14 @@ void ExtensionLoaderHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "extensionLoaderRetry",
       base::Bind(&ExtensionLoaderHandler::HandleRetry,
+                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "extensionLoaderIgnoreFailure",
+      base::Bind(&ExtensionLoaderHandler::HandleIgnoreFailure,
+                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "extensionLoaderDisplayFailures",
+      base::Bind(&ExtensionLoaderHandler::HandleDisplayFailures,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -175,16 +195,31 @@ void ExtensionLoaderHandler::HandleLoadUnpacked(const base::ListValue* args) {
 
 void ExtensionLoaderHandler::HandleRetry(const base::ListValue* args) {
   DCHECK(args->empty());
-  LoadUnpackedExtensionImpl(failed_path_);
+  const base::FilePath file_path = failed_paths_.back();
+  failed_paths_.pop_back();
+  LoadUnpackedExtensionImpl(file_path);
+}
+
+void ExtensionLoaderHandler::HandleIgnoreFailure(const base::ListValue* args) {
+  DCHECK(args->empty());
+  failed_paths_.pop_back();
+}
+
+void ExtensionLoaderHandler::HandleDisplayFailures(
+    const base::ListValue* args) {
+  DCHECK(args->empty());
+  ui_ready_ = true;
+
+  // Notify the frontend of any load failures that were triggered while the
+  // chrome://extensions page was loading.
+  if (!failures_.empty())
+    NotifyFrontendOfFailure();
 }
 
 void ExtensionLoaderHandler::LoadUnpackedExtensionImpl(
     const base::FilePath& file_path) {
   scoped_refptr<UnpackedInstaller> installer = UnpackedInstaller::Create(
       ExtensionSystem::Get(profile_)->extension_service());
-  installer->set_on_failure_callback(
-      base::Bind(&ExtensionLoaderHandler::OnLoadFailure,
-                 weak_ptr_factory_.GetWeakPtr()));
 
   // We do our own error handling, so we don't want a load failure to trigger
   // a dialog.
@@ -195,7 +230,6 @@ void ExtensionLoaderHandler::LoadUnpackedExtensionImpl(
 
 void ExtensionLoaderHandler::OnLoadFailure(const base::FilePath& file_path,
                                            const std::string& error) {
-  failed_path_ = file_path;
   size_t line = 0u;
   size_t column = 0u;
   std::string regex =
@@ -209,38 +243,61 @@ void ExtensionLoaderHandler::OnLoadFailure(const base::FilePath& file_path,
   // This regex call can fail, but if it does, we just don't highlight anything.
   re2::RE2::FullMatch(error, regex, &line, &column);
 
-  // This will read the manifest and call NotifyFrontendOfFailure with the read
-  // manifest contents.
+  // This will read the manifest and call AddFailure with the read manifest
+  // contents.
   base::PostTaskAndReplyWithResult(
       content::BrowserThread::GetBlockingPool(),
       FROM_HERE,
       base::Bind(&ReadFileToString, file_path.Append(kManifestFilename)),
-      base::Bind(&ExtensionLoaderHandler::NotifyFrontendOfFailure,
+      base::Bind(&ExtensionLoaderHandler::AddFailure,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  error,
                  line));
 }
 
-void ExtensionLoaderHandler::NotifyFrontendOfFailure(
+void ExtensionLoaderHandler::DidStartNavigationToPendingEntry(
+    const GURL& url,
+    content::NavigationController::ReloadType reload_type) {
+  // In the event of a page reload, we ensure that the frontend is not notified
+  // until the UI finishes loading, so we set |ui_ready_| to false. This is
+  // balanced in HandleDisplayFailures, which is called when the frontend is
+  // ready to receive failure notifications.
+  if (reload_type != content::NavigationController::NO_RELOAD)
+    ui_ready_ = false;
+}
+
+void ExtensionLoaderHandler::AddFailure(
     const base::FilePath& file_path,
     const std::string& error,
     size_t line_number,
     const std::string& manifest) {
-  base::StringValue file_value(file_path.LossyDisplayName());
-  base::StringValue error_value(base::UTF8ToUTF16(error));
+  failed_paths_.push_back(file_path);
+  base::FilePath prettified_path = path_util::PrettifyPath(file_path);
 
-  base::DictionaryValue manifest_value;
+  scoped_ptr<base::DictionaryValue> manifest_value(new base::DictionaryValue());
   SourceHighlighter highlighter(manifest, line_number);
   // If the line number is 0, this highlights no regions, but still adds the
   // full manifest.
-  highlighter.SetHighlightedRegions(&manifest_value);
+  highlighter.SetHighlightedRegions(manifest_value.get());
 
+  scoped_ptr<base::DictionaryValue> failure(new base::DictionaryValue());
+  failure->Set("path",
+               new base::StringValue(prettified_path.LossyDisplayName()));
+  failure->Set("error", new base::StringValue(base::UTF8ToUTF16(error)));
+  failure->Set("manifest", manifest_value.release());
+  failures_.Append(failure.release());
+
+  // Only notify the frontend if the frontend UI is ready.
+  if (ui_ready_)
+    NotifyFrontendOfFailure();
+}
+
+void ExtensionLoaderHandler::NotifyFrontendOfFailure() {
   web_ui()->CallJavascriptFunction(
       "extensions.ExtensionLoader.notifyLoadFailed",
-      file_value,
-      error_value,
-      manifest_value);
+      failures_);
+  failures_.Clear();
 }
 
 }  // namespace extensions

@@ -599,10 +599,11 @@ bool ExtensionService::UpdateExtension(const std::string& id,
 #endif
 }
 
-void ExtensionService::ReloadExtension(
+void ExtensionService::ReloadExtensionImpl(
     // "transient" because the process of reloading may cause the reference
     // to become invalid. Instead, use |extension_id|, a copy.
-    const std::string& transient_extension_id) {
+    const std::string& transient_extension_id,
+    bool be_noisy) {
 #if defined(ENABLE_EXTENSIONS)
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -686,11 +687,23 @@ void ExtensionService::ReloadExtension(
     // We should always be able to remember the extension's path. If it's not in
     // the map, someone failed to update |unloaded_extension_paths_|.
     CHECK(!path.empty());
-    extensions::UnpackedInstaller::Create(this)->Load(path);
+    scoped_refptr<extensions::UnpackedInstaller> unpacked_installer =
+        extensions::UnpackedInstaller::Create(this);
+    unpacked_installer->set_be_noisy_on_failure(be_noisy);
+    unpacked_installer->Load(path);
   }
   // When reloading is done, mark this extension as done reloading.
   SetBeingReloaded(extension_id, false);
 #endif  // defined(ENABLE_EXTENSIONS)
+}
+
+void ExtensionService::ReloadExtension(const std::string& extension_id) {
+  ReloadExtensionImpl(extension_id, true); // be_noisy
+}
+
+void ExtensionService::ReloadExtensionWithQuietFailure(
+    const std::string& extension_id) {
+  ReloadExtensionImpl(extension_id, false); // be_noisy
 }
 
 bool ExtensionService::UninstallExtension(

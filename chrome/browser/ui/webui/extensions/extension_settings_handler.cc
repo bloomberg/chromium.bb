@@ -781,7 +781,7 @@ void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
 
   for (std::vector<const Extension*>::iterator iter =
        unpacked_extensions.begin(); iter != unpacked_extensions.end(); ++iter) {
-    extension_service_->ReloadExtension((*iter)->id());
+    extension_service_->ReloadExtensionWithQuietFailure((*iter)->id());
   }
 }
 
@@ -933,7 +933,7 @@ void ExtensionSettingsHandler::HandleReloadMessage(
     const base::ListValue* args) {
   std::string extension_id = base::UTF16ToUTF8(ExtractStringValue(args));
   CHECK(!extension_id.empty());
-  extension_service_->ReloadExtension(extension_id);
+  extension_service_->ReloadExtensionWithQuietFailure(extension_id);
 }
 
 void ExtensionSettingsHandler::HandleEnableMessage(
