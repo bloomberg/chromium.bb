@@ -354,7 +354,7 @@ TEST_F(BindingsSampleTest, DefaultValues) {
   EXPECT_EQ(34567U, defaults->a3);
   EXPECT_EQ(123456, defaults->a4);
   EXPECT_EQ(3456789012U, defaults->a5);
-  EXPECT_EQ(111111111111LL, defaults->a6);
+  EXPECT_EQ(-111111111111LL, defaults->a6);
   EXPECT_EQ(9999999999999999999ULL, defaults->a7);
   EXPECT_EQ(0x12345, defaults->a8);
   EXPECT_EQ(-0x12345, defaults->a9);
@@ -373,6 +373,9 @@ TEST_F(BindingsSampleTest, DefaultValues) {
   ASSERT_FALSE(defaults->a22.is_null());
   EXPECT_EQ(imported::SHAPE_RECTANGLE, defaults->a22->shape);
   EXPECT_EQ(imported::COLOR_BLACK, defaults->a22->color);
+  EXPECT_EQ(0xFFFFFFFFFFFFFFFFULL, defaults->a23);
+  EXPECT_EQ(0x123456789, defaults->a24);
+  EXPECT_EQ(-0x123456789, defaults->a25);
 }
 
 }  // namespace

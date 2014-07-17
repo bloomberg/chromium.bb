@@ -1,6 +1,6 @@
 {%- macro enum_value(enum, field, index) -%}
 {%- if field.value -%}
-(int) ({{field.value|expression_to_text}})
+(int) ({{field.value|expression_to_text('i32')}})
 {%- elif index == 0 -%}
 0
 {%- else -%}

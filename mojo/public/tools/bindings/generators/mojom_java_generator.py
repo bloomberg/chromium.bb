@@ -5,6 +5,7 @@
 """Generates java source files from a mojom.Module."""
 
 import argparse
+import ast
 import os
 import re
 
@@ -208,8 +209,15 @@ def DefaultValue(context, field):
   if isinstance(field.kind, mojom.Struct):
     assert field.default == "default"
     return "new %s()" % GetJavaType(context, field.kind)
-  return "(%s) %s" % (GetJavaType(context, field.kind),
-                      ExpressionToText(context, field.default))
+  return "(%s) %s" % (
+      GetJavaType(context, field.kind),
+      ExpressionToText(context, field.default, kind_spec=field.kind.spec))
+
+@contextfilter
+def ConstantValue(context, constant):
+  return "(%s) %s" % (
+      GetJavaType(context, constant.kind),
+      ExpressionToText(context, constant.value, kind_spec=constant.kind.spec))
 
 @contextfilter
 def NewArray(context, kind, size):
@@ -218,7 +226,7 @@ def NewArray(context, kind, size):
   return 'new %s[%s]' % (GetJavaType(context, kind.kind), size)
 
 @contextfilter
-def ExpressionToText(context, token):
+def ExpressionToText(context, token, kind_spec=''):
   def _TranslateNamedValue(named_value):
     entity_name = GetNameForElement(named_value)
     if named_value.parent_kind:
@@ -233,9 +241,12 @@ def ExpressionToText(context, token):
 
   if isinstance(token, mojom.NamedValue):
     return _TranslateNamedValue(token)
-  # Add Long suffix to all number literals.
-  if re.match('^[0-9]+$', token):
-    number = int(token)
+  if kind_spec.startswith('i') or kind_spec.startswith('u'):
+    # Add Long suffix to all integer literals.
+    number = ast.literal_eval(token.lstrip('+ '))
+    if not isinstance(number, (int, long)):
+      raise ValueError('got unexpected type %r for int literal %r' % (
+          type(number), token))
     # If the literal is too large to fit a signed long, convert it to the
     # equivalent signed long.
     if number >= 2 ** 63:
@@ -261,6 +272,7 @@ class Generator(generator.Generator):
 
   java_filters = {
     "interface_response_name": GetInterfaceResponseName,
+    "constant_value": ConstantValue,
     "default_value": DefaultValue,
     "decode_method": DecodeMethod,
     "expression_to_text": ExpressionToText,

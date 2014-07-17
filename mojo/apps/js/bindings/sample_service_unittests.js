@@ -105,7 +105,7 @@ define([
     expect(defaults.a3).toBe(34567);
     expect(defaults.a4).toBe(123456);
     expect(defaults.a5).toBe(3456789012);
-    expect(defaults.a6).toBe(111111111111);
+    expect(defaults.a6).toBe(-111111111111);
     // JS doesn't have a 64 bit integer type so this is just checking that the
     // expected and actual values have the same closest double value.
     expect(defaults.a7).toBe(9999999999999999999);
@@ -125,6 +125,9 @@ define([
     expect(defaults.a22.shape).toBe(imported.Shape.RECTANGLE);
     expect(defaults.a22.color).toBe(imported2.Color.BLACK);
     expect(defaults.a21).toBeNull();
+    expect(defaults.a23).toBe(0xFFFFFFFFFFFFFFFF);
+    expect(defaults.a24).toBe(0x123456789);
+    expect(defaults.a25).toBe(-0x123456789);
   }
 
   function ServiceImpl() {

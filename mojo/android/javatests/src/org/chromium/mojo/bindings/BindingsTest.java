@@ -180,7 +180,7 @@ public class BindingsTest extends TestCase {
         checkField(DefaultsTest.class.getField("a3"), short.class, test, (short) 34567);
         checkField(DefaultsTest.class.getField("a4"), int.class, test, 123456);
         checkField(DefaultsTest.class.getField("a5"), int.class, test, (int) 3456789012L);
-        checkField(DefaultsTest.class.getField("a6"), long.class, test, 111111111111L);
+        checkField(DefaultsTest.class.getField("a6"), long.class, test, -111111111111L);
         // -8446744073709551617 == 9999999999999999999 - 2 ^ 64.
         checkField(DefaultsTest.class.getField("a7"), long.class, test, -8446744073709551617L);
         checkField(DefaultsTest.class.getField("a8"), int.class, test, 0x12345);
@@ -200,6 +200,9 @@ public class BindingsTest extends TestCase {
 
         assertNotNull(test.a22);
         checkField(DefaultsTest.class.getField("a22"), Thing.class, test, test.a22);
+        checkField(DefaultsTest.class.getField("a23"), long.class, test, -1L);
+        checkField(DefaultsTest.class.getField("a24"), long.class, test, 0x123456789L);
+        checkField(DefaultsTest.class.getField("a25"), long.class, test, -0x123456789L);
     }
 
     /**

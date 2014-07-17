@@ -51,7 +51,7 @@ struct DefaultsTest {
   uint16 a3@3 = 34567;
   int32 a4@4 = 123456;
   uint32 a5@5 = 3456789012;
-  int64 a6@6 = 111111111111;
+  int64 a6@6 = -111111111111;
   uint64 a7@7 = 9999999999999999999;
   int32 a8@8 = 0x12345;
   int32 a9@9 = -0x12345;
@@ -72,6 +72,10 @@ struct DefaultsTest {
   Bar.Type a20@20 = BOTH;
   imported.Point a21@21;
   imported.Thing a22@22 = default;
+
+  uint64 a23@23 = 0xFFFFFFFFFFFFFFFF;
+  int64 a24@24 = 0x123456789;
+  int64 a25@25 = -0x123456789;
 };
 
 struct StructWithHoleV1 {
