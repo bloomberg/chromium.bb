@@ -77,7 +77,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 
   browser_context_.reset(new CastBrowserContext(url_request_context_factory_));
 
-  cast_service_.reset(new CastService(browser_context_.get()));
+  cast_service_.reset(CastService::Create(browser_context_.get()));
   cast_service_->Start();
 }
 

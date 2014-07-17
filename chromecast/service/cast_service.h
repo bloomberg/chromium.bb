@@ -8,39 +8,38 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
-namespace aura {
-class WindowTreeHost;
-}
-
 namespace base {
 class ThreadChecker;
 }
 
 namespace content{
 class BrowserContext;
-class WebContents;
 }
 
 namespace chromecast {
 
 class CastService {
  public:
-  explicit CastService(content::BrowserContext* browser_context);
+  static CastService* Create(content::BrowserContext* browser_context);
+
   virtual ~CastService();
 
   // Start/stop the cast service.
   void Start();
   void Stop();
 
+ protected:
+  explicit CastService(content::BrowserContext* browser_context);
+  virtual void Initialize() = 0;
+
+  // Implementation-specific start/stop behavior.
+  virtual void StartInternal() = 0;
+  virtual void StopInternal() = 0;
+
+  content::BrowserContext* browser_context() const { return browser_context_; }
+
  private:
-  // Platform specific initialization if any.
-  static void PlatformInitialize();
-
-  void Initialize();
-
   content::BrowserContext* const browser_context_;
-  scoped_ptr<aura::WindowTreeHost> window_tree_host_;
-  scoped_ptr<content::WebContents> web_contents_;
   bool stopped_;
 
   const scoped_ptr<base::ThreadChecker> thread_checker_;

@@ -47,8 +47,13 @@
             'internal/chromecast_internal.gyp:cast_service_internal',
           ],
         }, {
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../content/content.gyp:content',
+          ],
           'sources': [
-            'service/cast_platform_init_stub.cc',
+            'service/cast_service_simple.cc',
+            'service/cast_service_simple.h',
           ],
         }],
       ],
