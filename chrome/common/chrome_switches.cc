@@ -409,11 +409,6 @@ const char kDumpBrowserHistograms[]         = "dump-browser-histograms";
 // Overrides the path of Easy Unlock component app.
 extern const char kEasyUnlockAppPath[]      = "easy-unlock-app-path";
 
-// Enables the notifications for the custodian of a supervised user when the
-// supervised user sends an access request.
-extern const char kEnableAccessRequestNotifications[] =
-    "enable-access-request-notifications";
-
 // Enables the experimental Answers in Suggest feature.
 const char kEnableAnswersInSuggest[]        = "enable-answers-in-suggest";
 
