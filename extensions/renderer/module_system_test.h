@@ -9,7 +9,6 @@
 #include "extensions/renderer/scoped_persistent.h"
 #include "extensions/renderer/script_context.h"
 #include "gin/public/context_holder.h"
-#include "gin/public/isolate_holder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
@@ -20,7 +19,7 @@ class ModuleSystemTestEnvironment {
   class AssertNatives;
   class StringSourceMap;
 
-  explicit ModuleSystemTestEnvironment(gin::IsolateHolder* isolate_holder);
+  explicit ModuleSystemTestEnvironment(v8::Isolate* isolate);
   ~ModuleSystemTestEnvironment();
 
   // Register a named JS module in the module system.
@@ -50,12 +49,12 @@ class ModuleSystemTestEnvironment {
 
   ScriptContext* context() { return context_.get(); }
 
-  v8::Isolate* isolate() { return isolate_holder_->isolate(); }
+  v8::Isolate* isolate() { return isolate_; }
 
   AssertNatives* assert_natives() { return assert_natives_; }
 
  private:
-  gin::IsolateHolder* isolate_holder_;
+  v8::Isolate* isolate_;
   scoped_ptr<gin::ContextHolder> context_holder_;
   v8::HandleScope handle_scope_;
   scoped_ptr<ScriptContext> context_;
@@ -98,7 +97,7 @@ class ModuleSystemTest : public testing::Test {
   void RunResolvedPromises();
 
  private:
-  gin::IsolateHolder isolate_holder_;
+  v8::Isolate* isolate_;
   scoped_ptr<ModuleSystemTestEnvironment> env_;
   bool should_assertions_be_made_;
 

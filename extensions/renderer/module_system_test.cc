@@ -121,15 +121,13 @@ class ModuleSystemTestEnvironment::StringSourceMap
   std::map<std::string, std::string> source_map_;
 };
 
-ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(
-    gin::IsolateHolder* isolate_holder)
-    : isolate_holder_(isolate_holder),
-      context_holder_(new gin::ContextHolder(isolate_holder_->isolate())),
-      handle_scope_(isolate_holder_->isolate()),
+ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(v8::Isolate* isolate)
+    : isolate_(isolate),
+      context_holder_(new gin::ContextHolder(isolate_)),
+      handle_scope_(isolate_),
       source_map_(new StringSourceMap()) {
-  context_holder_->SetContext(
-      v8::Context::New(isolate_holder->isolate(),
-                       g_v8_extension_configurator.Get().GetConfiguration()));
+  context_holder_->SetContext(v8::Context::New(
+      isolate, g_v8_extension_configurator.Get().GetConfiguration()));
   context_.reset(new ScriptContext(context_holder_->context(),
                                    NULL,  // WebFrame
                                    NULL,  // Extension
@@ -202,16 +200,15 @@ void ModuleSystemTestEnvironment::ShutdownModuleSystem() {
 
 v8::Handle<v8::Object> ModuleSystemTestEnvironment::CreateGlobal(
     const std::string& name) {
-  v8::Isolate* isolate = isolate_holder_->isolate();
-  v8::EscapableHandleScope handle_scope(isolate);
-  v8::Local<v8::Object> object = v8::Object::New(isolate);
-  isolate->GetCurrentContext()->Global()->Set(
-      v8::String::NewFromUtf8(isolate, name.c_str()), object);
+  v8::EscapableHandleScope handle_scope(isolate_);
+  v8::Local<v8::Object> object = v8::Object::New(isolate_);
+  isolate_->GetCurrentContext()->Global()->Set(
+      v8::String::NewFromUtf8(isolate_, name.c_str()), object);
   return handle_scope.Escape(object);
 }
 
 ModuleSystemTest::ModuleSystemTest()
-    : isolate_holder_(v8::Isolate::GetCurrent(), NULL),
+    : isolate_(v8::Isolate::GetCurrent()),
       env_(CreateEnvironment()),
       should_assertions_be_made_(true) {
 }
@@ -227,7 +224,7 @@ void ModuleSystemTest::TearDown() {
 }
 
 scoped_ptr<ModuleSystemTestEnvironment> ModuleSystemTest::CreateEnvironment() {
-  return make_scoped_ptr(new ModuleSystemTestEnvironment(&isolate_holder_));
+  return make_scoped_ptr(new ModuleSystemTestEnvironment(isolate_));
 }
 
 void ModuleSystemTest::ExpectNoAssertionsMade() {
@@ -235,7 +232,7 @@ void ModuleSystemTest::ExpectNoAssertionsMade() {
 }
 
 void ModuleSystemTest::RunResolvedPromises() {
-  isolate_holder_.isolate()->RunMicrotasks();
+  isolate_->RunMicrotasks();
 }
 
 }  // namespace extensions

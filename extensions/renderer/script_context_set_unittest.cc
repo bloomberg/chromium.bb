@@ -8,7 +8,6 @@
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "gin/public/context_holder.h"
-#include "gin/public/isolate_holder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "v8/include/v8.h"
@@ -21,7 +20,6 @@ TEST(ScriptContextSet, Lifecycle) {
   ScriptContextSet context_set;
 
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  gin::IsolateHolder isolate_holder(isolate, NULL);
   v8::HandleScope handle_scope(isolate);
   gin::ContextHolder context_holder(isolate);
   context_holder.SetContext(v8::Context::New(isolate));
