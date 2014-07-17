@@ -1780,6 +1780,7 @@
         'browser/ui/views/confirm_bubble_views_unittest.cc',
         'browser/ui/views/constrained_window_views_unittest.cc',
         'browser/ui/views/crypto_module_password_dialog_view_unittest.cc',
+        'browser/ui/views/desktop_media_picker_views_unittest.cc',
         'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
         'browser/ui/views/extensions/media_galleries_dialog_views_unittest.cc',
         'browser/ui/views/first_run_bubble_unittest.cc',

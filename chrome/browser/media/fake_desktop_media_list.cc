@@ -21,7 +21,7 @@ void FakeDesktopMediaList::AddSource(int id) {
 
 void FakeDesktopMediaList::RemoveSource(int index) {
   sources_.erase(sources_.begin() + index);
-  observer_->OnSourceRemoved(sources_.size() - 1);
+  observer_->OnSourceRemoved(index);
 }
 
 void FakeDesktopMediaList::MoveSource(int old_index, int new_index) {
