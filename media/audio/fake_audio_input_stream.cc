@@ -26,11 +26,31 @@ const int kAutomaticBeepIntervalInMs = 500;
 
 // Automatic beep will be triggered every |kAutomaticBeepIntervalInMs| unless
 // users explicitly call BeepOnce(), which will disable the automatic beep.
-struct BeepContext {
-  BeepContext() : beep_once(false), automatic(true) {}
-  base::Lock beep_lock;
-  bool beep_once;
-  bool automatic;
+class BeepContext {
+ public:
+  BeepContext() : beep_once_(false), automatic_beep_(true) {}
+
+  void SetBeepOnce(bool enable) {
+    base::AutoLock auto_lock(lock_);
+    beep_once_ = enable;
+
+    // Disable the automatic beep if users explicit set |beep_once_| to true.
+    if (enable)
+      automatic_beep_ = false;
+  }
+  bool beep_once() const {
+    base::AutoLock auto_lock(lock_);
+    return beep_once_;
+  }
+  bool automatic_beep() const {
+    base::AutoLock auto_lock(lock_);
+    return automatic_beep_;
+  }
+
+ private:
+  mutable base::Lock lock_;
+  bool beep_once_;
+  bool automatic_beep_;
 };
 
 static base::LazyInstance<BeepContext> g_beep_context =
@@ -52,7 +72,7 @@ FakeAudioInputStream::FakeAudioInputStream(AudioManagerBase* manager,
                     params.frames_per_buffer()) /
                    8),
       params_(params),
-      thread_("FakeAudioRecordingThread"),
+      task_runner_(manager->GetTaskRunner()),
       callback_interval_(base::TimeDelta::FromMilliseconds(
           (params.frames_per_buffer() * 1000) / params.sample_rate())),
       beep_duration_in_buffers_(kBeepDurationMilliseconds *
@@ -62,12 +82,15 @@ FakeAudioInputStream::FakeAudioInputStream(AudioManagerBase* manager,
       beep_generated_in_buffers_(0),
       beep_period_in_frames_(params.sample_rate() / kBeepFrequency),
       frames_elapsed_(0),
-      audio_bus_(AudioBus::Create(params)) {
+      audio_bus_(AudioBus::Create(params)),
+      weak_factory_(this) {
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
 }
 
 FakeAudioInputStream::~FakeAudioInputStream() {}
 
 bool FakeAudioInputStream::Open() {
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   buffer_.reset(new uint8[buffer_size_]);
   memset(buffer_.get(), 0, buffer_size_);
   audio_bus_->Zero();
@@ -75,14 +98,13 @@ bool FakeAudioInputStream::Open() {
 }
 
 void FakeAudioInputStream::Start(AudioInputCallback* callback)  {
-  DCHECK(!thread_.IsRunning());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   DCHECK(!callback_);
   callback_ = callback;
   last_callback_time_ = TimeTicks::Now();
-  thread_.Start();
-  thread_.message_loop()->PostDelayedTask(
+  task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&FakeAudioInputStream::DoCallback, base::Unretained(this)),
+      base::Bind(&FakeAudioInputStream::DoCallback, weak_factory_.GetWeakPtr()),
       callback_interval_);
 }
 
@@ -108,8 +130,7 @@ void FakeAudioInputStream::DoCallback() {
   bool should_beep = false;
   {
     BeepContext* beep_context = g_beep_context.Pointer();
-    base::AutoLock auto_lock(beep_context->beep_lock);
-    if (beep_context->automatic) {
+    if (beep_context->automatic_beep()) {
       base::TimeDelta delta = interval_from_last_beep_ -
           TimeDelta::FromMilliseconds(kAutomaticBeepIntervalInMs);
       if (delta > base::TimeDelta()) {
@@ -117,8 +138,8 @@ void FakeAudioInputStream::DoCallback() {
         interval_from_last_beep_ = delta;
       }
     } else {
-      should_beep = beep_context->beep_once;
-      beep_context->beep_once = false;
+      should_beep = beep_context->beep_once();
+      beep_context->SetBeepOnce(false);
     }
   }
 
@@ -151,29 +172,34 @@ void FakeAudioInputStream::DoCallback() {
   callback_->OnData(this, audio_bus_.get(), buffer_size_, 1.0);
   frames_elapsed_ += params_.frames_per_buffer();
 
-  thread_.message_loop()->PostDelayedTask(
+  task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&FakeAudioInputStream::DoCallback, base::Unretained(this)),
+      base::Bind(&FakeAudioInputStream::DoCallback, weak_factory_.GetWeakPtr()),
       next_callback_time);
 }
 
 void FakeAudioInputStream::Stop() {
-  thread_.Stop();
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+  weak_factory_.InvalidateWeakPtrs();
   callback_ = NULL;
 }
 
 void FakeAudioInputStream::Close() {
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   audio_manager_->ReleaseInputStream(this);
 }
 
 double FakeAudioInputStream::GetMaxVolume() {
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   return 1.0;
 }
 
 void FakeAudioInputStream::SetVolume(double volume) {
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
 }
 
 double FakeAudioInputStream::GetVolume() {
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   return 1.0;
 }
 
@@ -186,9 +212,7 @@ bool FakeAudioInputStream::GetAutomaticGainControl() {
 // static
 void FakeAudioInputStream::BeepOnce() {
   BeepContext* beep_context = g_beep_context.Pointer();
-  base::AutoLock auto_lock(beep_context->beep_lock);
-  beep_context->beep_once = true;
-  beep_context->automatic = false;
+  beep_context->SetBeepOnce(true);
 }
 
 }  // namespace media

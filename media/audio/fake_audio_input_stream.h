@@ -61,7 +61,7 @@ class MEDIA_EXPORT FakeAudioInputStream
   scoped_ptr<uint8[]> buffer_;
   int buffer_size_;
   AudioParameters params_;
-  base::Thread thread_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::TimeTicks last_callback_time_;
   base::TimeDelta callback_interval_;
   base::TimeDelta interval_from_last_beep_;
@@ -70,6 +70,10 @@ class MEDIA_EXPORT FakeAudioInputStream
   int beep_period_in_frames_;
   int frames_elapsed_;
   scoped_ptr<media::AudioBus> audio_bus_;
+
+  // Allows us to run tasks on the FakeAudioInputStream instance which are
+  // bound by its lifetime.
+  base::WeakPtrFactory<FakeAudioInputStream> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAudioInputStream);
 };
