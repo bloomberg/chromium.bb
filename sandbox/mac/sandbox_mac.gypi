@@ -10,6 +10,8 @@
       'sources': [
         'bootstrap_sandbox.cc',
         'bootstrap_sandbox.h',
+        'dispatch_source_mach.cc',
+        'dispatch_source_mach.h',
         'launchd_interception_server.cc',
         'launchd_interception_server.h',
         'mach_message_server.cc',
@@ -79,6 +81,7 @@
       'type': 'executable',
       'sources': [
         'bootstrap_sandbox_unittest.mm',
+        'dispatch_source_mach_unittest.cc',
         'policy_unittest.cc',
       ],
       'dependencies': [

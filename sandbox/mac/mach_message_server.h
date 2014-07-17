@@ -5,14 +5,16 @@
 #ifndef SANDBOX_MAC_MACH_MESSAGE_SERVER_H_
 #define SANDBOX_MAC_MACH_MESSAGE_SERVER_H_
 
-#include <dispatch/dispatch.h>
 #include <mach/mach.h>
 
 #include "base/mac/scoped_mach_port.h"
 #include "base/mac/scoped_mach_vm.h"
+#include "base/memory/scoped_ptr.h"
 #include "sandbox/mac/message_server.h"
 
 namespace sandbox {
+
+class DispatchSourceMach;
 
 // A Mach message server that operates a receive port. Messages are received
 // and then passed to the MessageDemuxer for handling. The Demuxer
@@ -53,22 +55,15 @@ class MachMessageServer : public MessageServer {
   // The Mach port on which the server is receiving requests.
   base::mac::ScopedMachReceiveRight server_port_;
 
-  // The dispatch queue used to service the server_source_.
-  dispatch_queue_t server_queue_;
-
-  // A MACH_RECV dispatch source for the server_port_.
-  dispatch_source_t server_source_;
-
-  // Semaphore used to wait on the |server_source_|'s cancellation in the
-  // destructor.
-  dispatch_semaphore_t source_canceled_;
-
   // The size of the two message buffers below.
   const mach_msg_size_t buffer_size_;
 
   // Request and reply buffers used in ReceiveMessage.
   base::mac::ScopedMachVM request_buffer_;
   base::mac::ScopedMachVM reply_buffer_;
+
+  // MACH_RECV dispatch source that handles the |server_port_|.
+  scoped_ptr<DispatchSourceMach> dispatch_source_;
 
   // Whether or not ForwardMessage() was called during ReceiveMessage().
   bool did_forward_message_;

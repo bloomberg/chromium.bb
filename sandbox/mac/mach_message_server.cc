@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/mac/mach_logging.h"
 #include "base/strings/stringprintf.h"
+#include "sandbox/mac/dispatch_source_mach.h"
 
 namespace sandbox {
 
@@ -21,9 +22,6 @@ MachMessageServer::MachMessageServer(
     mach_msg_size_t buffer_size)
     : demuxer_(demuxer),
       server_port_(server_receive_right),
-      server_queue_(NULL),
-      server_source_(NULL),
-      source_canceled_(dispatch_semaphore_create(0)),
       buffer_size_(
           mach_vm_round_page(buffer_size + sizeof(mach_msg_audit_trailer_t))),
       did_forward_message_(false) {
@@ -31,15 +29,6 @@ MachMessageServer::MachMessageServer(
 }
 
 MachMessageServer::~MachMessageServer() {
-  if (server_source_) {
-    dispatch_source_cancel(server_source_);
-    dispatch_release(server_source_);
-
-    dispatch_semaphore_wait(source_canceled_, DISPATCH_TIME_FOREVER);
-    dispatch_release(source_canceled_);
-  }
-  if (server_queue_)
-    dispatch_release(server_queue_);
 }
 
 bool MachMessageServer::Initialize() {
@@ -78,18 +67,11 @@ bool MachMessageServer::Initialize() {
   reply_buffer_.reset(buffer, buffer_size_);
 
   // Set up the dispatch queue to service the bootstrap port.
-  // TODO(rsesek): Specify DISPATCH_QUEUE_SERIAL, in the 10.7 SDK. NULL means
-  // the same thing but is not symbolically clear.
   std::string label = base::StringPrintf(
       "org.chromium.sandbox.MachMessageServer.%p", demuxer_);
-  server_queue_ = dispatch_queue_create(label.c_str(), NULL);
-  server_source_ = dispatch_source_create(DISPATCH_SOURCE_TYPE_MACH_RECV,
-      server_port_.get(), 0, server_queue_);
-  dispatch_source_set_event_handler(server_source_, ^{ ReceiveMessage(); });
-  dispatch_source_set_cancel_handler(server_source_, ^{
-      dispatch_semaphore_signal(source_canceled_);
-  });
-  dispatch_resume(server_source_);
+  dispatch_source_.reset(new DispatchSourceMach(
+      label.c_str(), server_port_.get(), ^{ ReceiveMessage(); }));
+  dispatch_source_->Resume();
 
   return true;
 }
