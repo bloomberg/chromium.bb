@@ -52,11 +52,17 @@ bool DataReductionProxyParams::IsIncludedInCriticalPathBypassFieldTrial() {
           "DataCompressionProxyCriticalBypass") == kEnabled;
 }
 
+bool DataReductionProxyParams::IsIncludedInHoldbackFieldTrial() {
+  return FieldTrialList::FindFullName(
+      "DataCompressionProxyHoldback") == kEnabled;
+}
+
 DataReductionProxyParams::DataReductionProxyParams(int flags)
     : allowed_((flags & kAllowed) == kAllowed),
       fallback_allowed_((flags & kFallbackAllowed) == kFallbackAllowed),
       alt_allowed_((flags & kAlternativeAllowed) == kAlternativeAllowed),
       promo_allowed_((flags & kPromoAllowed) == kPromoAllowed),
+      holdback_((flags & kHoldback) == kHoldback),
       configured_on_command_line_(false) {
   bool result = Init(allowed_, fallback_allowed_, alt_allowed_);
   DCHECK(result);
@@ -92,6 +98,7 @@ DataReductionProxyParams::DataReductionProxyParams(int flags,
       fallback_allowed_((flags & kFallbackAllowed) == kFallbackAllowed),
       alt_allowed_((flags & kAlternativeAllowed) == kAlternativeAllowed),
       promo_allowed_((flags & kPromoAllowed) == kPromoAllowed),
+      holdback_((flags & kHoldback) == kHoldback),
       configured_on_command_line_(false) {
   if (should_call_init) {
     bool result = Init(allowed_, fallback_allowed_, alt_allowed_);

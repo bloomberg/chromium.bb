@@ -93,7 +93,7 @@ void DataReductionProxySettingsTestBase::SetUp() {
   registry->RegisterBooleanPref(prefs::kDataReductionProxyWasEnabledBefore,
                                 false);
   //AddProxyToCommandLine();
-  ResetSettings(true, true, false, true);
+  ResetSettings(true, true, false, true, false);
 
   ListPrefUpdate original_update(&pref_service_,
                                  prefs::kDailyHttpOriginalContentLength);
@@ -120,7 +120,8 @@ template <class C>
 void DataReductionProxySettingsTestBase::ResetSettings(bool allowed,
                                                        bool fallback_allowed,
                                                        bool alt_allowed,
-                                                       bool promo_allowed) {
+                                                       bool promo_allowed,
+                                                       bool holdback) {
   int flags = 0;
   if (allowed)
     flags |= DataReductionProxyParams::kAllowed;
@@ -130,6 +131,8 @@ void DataReductionProxySettingsTestBase::ResetSettings(bool allowed,
     flags |= DataReductionProxyParams::kAlternativeAllowed;
   if (promo_allowed)
     flags |= DataReductionProxyParams::kPromoAllowed;
+  if (holdback)
+    flags |= DataReductionProxyParams::kHoldback;
   MockDataReductionProxySettings<C>* settings =
       new MockDataReductionProxySettings<C>(flags);
   EXPECT_CALL(*settings, GetOriginalProfilePrefs())
@@ -148,7 +151,11 @@ void DataReductionProxySettingsTestBase::ResetSettings(bool allowed,
 // Explicitly generate required instantiations.
 template void
 DataReductionProxySettingsTestBase::ResetSettings<DataReductionProxySettings>(
-    bool allowed, bool fallback_allowed, bool alt_allowed, bool promo_allowed);
+    bool allowed,
+    bool fallback_allowed,
+    bool alt_allowed,
+    bool promo_allowed,
+    bool holdback);
 
 template <class C>
 void DataReductionProxySettingsTestBase::SetProbeResult(

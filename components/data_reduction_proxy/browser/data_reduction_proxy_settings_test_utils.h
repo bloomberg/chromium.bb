@@ -116,11 +116,13 @@ class DataReductionProxySettingsTestBase : public testing::Test {
   template <class C> void ResetSettings(bool allowed,
                                         bool fallback_allowed,
                                         bool alt_allowed,
-                                        bool promo_allowed);
+                                        bool promo_allowed,
+                                        bool holdback);
   virtual void ResetSettings(bool allowed,
                              bool fallback_allowed,
                              bool alt_allowed,
-                             bool promo_allowed) = 0;
+                             bool promo_allowed,
+                             bool holdback) = 0;
 
   template <class C> void SetProbeResult(
       const std::string& test_url,
@@ -173,9 +175,10 @@ class ConcreteDataReductionProxySettingsTest
   virtual void ResetSettings(bool allowed,
                              bool fallback_allowed,
                              bool alt_allowed,
-                             bool promo_allowed) OVERRIDE {
+                             bool promo_allowed,
+                             bool holdback) OVERRIDE {
     return DataReductionProxySettingsTestBase::ResetSettings<C>(
-        allowed, fallback_allowed, alt_allowed, promo_allowed);
+        allowed, fallback_allowed, alt_allowed, promo_allowed, holdback);
   }
 
   virtual void SetProbeResult(const std::string& test_url,

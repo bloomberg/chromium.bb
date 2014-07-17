@@ -44,7 +44,7 @@ TEST_F(DataReductionProxySettingsTest, TestGetDataReductionProxyOrigin) {
 TEST_F(DataReductionProxySettingsTest, TestGetDataReductionProxyDevOrigin) {
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyDev, expected_params_->DefaultDevOrigin());
-  ResetSettings(true, true, false, true);
+  ResetSettings(true, true, false, true, false);
   std::string result =
       settings_->params()->origin().spec();
   EXPECT_EQ(GURL(expected_params_->DefaultDevOrigin()), GURL(result));
@@ -83,7 +83,7 @@ TEST_F(DataReductionProxySettingsTest, TestSetProxyConfigs) {
       drp_params.DefaultAltFallbackOrigin());
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionSSLProxy, drp_params.DefaultSSLOrigin());
-  ResetSettings(true, true, true, true);
+  ResetSettings(true, true, true, true, false);
   TestDataReductionProxyConfig* config =
       static_cast<TestDataReductionProxyConfig*>(
           settings_->configurator());
@@ -116,6 +116,20 @@ TEST_F(DataReductionProxySettingsTest, TestSetProxyConfigs) {
   EXPECT_EQ("", config->ssl_origin_);
 
   settings_->SetProxyConfigs(false, false, false, false);
+  EXPECT_FALSE(config->enabled_);
+  EXPECT_EQ("", config->origin_);
+  EXPECT_EQ("", config->fallback_origin_);
+  EXPECT_EQ("", config->ssl_origin_);
+}
+
+TEST_F(DataReductionProxySettingsTest, TestSetProxyConfigsHoldback) {
+  ResetSettings(true, true, true, true, true);
+  TestDataReductionProxyConfig* config =
+      static_cast<TestDataReductionProxyConfig*>(
+          settings_->configurator());
+
+   // Holdback.
+  settings_->SetProxyConfigs(true, true, false, false);
   EXPECT_FALSE(config->enabled_);
   EXPECT_EQ("", config->origin_);
   EXPECT_EQ("", config->fallback_origin_);
@@ -396,7 +410,7 @@ TEST_F(DataReductionProxySettingsTest, CheckInitMetricsWhenNotAllowed) {
   // Clear the command line. Setting flags can force the proxy to be allowed.
   CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
 
-  ResetSettings(false, false, false, false);
+  ResetSettings(false, false, false, false, false);
   MockSettings* settings = static_cast<MockSettings*>(settings_.get());
   EXPECT_FALSE(settings->params()->allowed());
   EXPECT_CALL(*settings, RecordStartupState(PROXY_NOT_AVAILABLE));

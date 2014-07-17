@@ -127,7 +127,6 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
   url_request_context_getter_ = url_request_context_getter;
   InitPrefMembers();
   RecordDataReductionInit();
-
   // Disable the proxy if it is not allowed to be used.
   if (!params_->allowed())
     return;
@@ -376,7 +375,6 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
     prefs->SetBoolean(prefs::kDataReductionProxyWasEnabledBefore, true);
     ResetDataReductionStatistics();
   }
-
   // Configure use of the data reduction proxy if it is enabled.
   enabled_by_user_= IsDataReductionProxyEnabled();
   SetProxyConfigs(enabled_by_user_ && !disabled_on_vpn_,
@@ -399,7 +397,7 @@ void DataReductionProxySettings::SetProxyConfigs(bool enabled,
   LogProxyState(enabled, restricted, at_startup);
   // The alternative is only configured if the standard configuration is
   // is enabled.
-  if (enabled) {
+  if (enabled & !params_->holdback()) {
     if (alternative_enabled) {
       configurator_->Enable(restricted,
                             !params_->fallback_allowed(),

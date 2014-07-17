@@ -263,6 +263,8 @@ class DataReductionProxySettings
                            CheckInitMetricsWhenNotAllowed);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
                            TestSetProxyConfigs);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
+                           TestSetProxyConfigsHoldback);
 
   // NetworkChangeNotifier::IPAddressObserver:
   virtual void OnIPAddressChanged() OVERRIDE;

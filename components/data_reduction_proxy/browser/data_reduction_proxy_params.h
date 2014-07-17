@@ -24,10 +24,15 @@ namespace data_reduction_proxy {
 // the necessary DNS names to configure use of the data reduction proxy.
 class DataReductionProxyParams {
  public:
+  // Flags used during construction that specify if the data reduction proxy
+  // is allowed to be used, if the fallback proxy is allowed to be used, if
+  // an alternative set of proxies is allowed to be used, if the promotion is
+  // allowed to be shown, and if this instance is part of a holdback experiment.
   static const unsigned int kAllowed = (1 << 0);
   static const unsigned int kFallbackAllowed = (1 << 1);
   static const unsigned int kAlternativeAllowed = (1 << 2);
   static const unsigned int kPromoAllowed = (1 << 3);
+  static const unsigned int kHoldback = (1 << 4);
 
   typedef std::vector<GURL> DataReductionProxyList;
 
@@ -50,6 +55,13 @@ class DataReductionProxyParams {
   // Returns true if this client is part of a field trial that bypasses the
   // proxy if the request resource type is on the critical path (e.g. HTML).
   static bool IsIncludedInCriticalPathBypassFieldTrial();
+
+  // Returns true if this client is part of a field trial that runs a holdback
+  // experiment. A holdback experiment is one in which a fraction of browser
+  // instances will not be configured to use the data reduction proxy even if
+  // users have enabled it to be used. The UI will not indicate that a holdback
+  // is in effect.
+  static bool IsIncludedInHoldbackFieldTrial();
 
   // Constructs configuration parameters. If |kAllowed|, then the standard
   // data reduction proxy configuration is allowed to be used. If
@@ -151,6 +163,12 @@ class DataReductionProxyParams {
     return promo_allowed_;
   }
 
+  // Returns true if the data reduction proxy should not actually use the
+  // proxy if enabled.
+  bool holdback() const {
+    return holdback_;
+  }
+
   // Given |allowed_|, |fallback_allowed_|, and |alt_allowed_|, returns the
   // list of data reduction proxies that may be used.
   DataReductionProxyList GetAllowedProxies() const;
@@ -198,6 +216,7 @@ class DataReductionProxyParams {
   const bool fallback_allowed_;
   bool alt_allowed_;
   const bool promo_allowed_;
+  bool holdback_;
 
   bool configured_on_command_line_;
 

@@ -53,6 +53,8 @@ KeyedService* DataReductionProxySettingsFactoryAndroid::BuildServiceInstanceFor(
     flags |= DataReductionProxyParams::kAlternativeAllowed;
   if (DataReductionProxyParams::IsIncludedInPromoFieldTrial())
     flags |= DataReductionProxyParams::kPromoAllowed;
+  if (DataReductionProxyParams::IsIncludedInHoldbackFieldTrial())
+    flags |= DataReductionProxyParams::kHoldback;
 
   DataReductionProxySettingsAndroid* settings =
       new DataReductionProxySettingsAndroid(

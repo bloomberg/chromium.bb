@@ -195,7 +195,7 @@ void DataReductionProxySettingsAndroid::SetProxyConfigs(
 
   LogProxyState(enabled, restricted, at_startup);
 
-  if (enabled) {
+  if (enabled && !params()->holdback()) {
     if (alternative_enabled) {
       configurator()->Enable(restricted,
                        !params()->fallback_allowed(),
