@@ -431,9 +431,13 @@ remoting.HostController.prototype.updatePin = function(newPin, onDone,
  *     callback.
  */
 remoting.HostController.prototype.getLocalHostState = function(onDone) {
-  this.hostDaemonFacade_.getDaemonState(onDone, function(error) {
-    onDone(remoting.HostController.State.UNKNOWN);
-  });
+  /** @param {remoting.Error} error */
+  function onError(error) {
+    onDone((error == remoting.Error.MISSING_PLUGIN) ?
+               remoting.HostController.State.NOT_INSTALLED :
+               remoting.HostController.State.UNKNOWN);
+  }
+  this.hostDaemonFacade_.getDaemonState(onDone, onError);
 };
 
 /**

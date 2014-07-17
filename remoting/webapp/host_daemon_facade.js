@@ -43,6 +43,9 @@ remoting.HostDaemonFacade = function() {
   /** @private */
   this.initializationFinished_ = false;
 
+  /** @type {remoting.Error} @private */
+  this.error_ = remoting.Error.NONE;
+
   try {
     this.port_ = chrome.runtime.connectNative(
         'com.google.chrome.remote_desktop');
@@ -80,10 +83,6 @@ remoting.HostDaemonFacade.PendingReply = function(type, onDone, onError) {
  */
 remoting.HostDaemonFacade.prototype.onInitialized_ = function(success) {
   this.initializationFinished_ = true;
-  if (!success) {
-    this.port_ = null;
-  }
-
   var afterInitializationTasks = this.afterInitializationTasks_;
   this.afterInitializationTasks_ = [];
   for (var id in afterInitializationTasks) {
@@ -128,7 +127,7 @@ remoting.HostDaemonFacade.prototype.hasFeature = function(feature, onDone) {
 remoting.HostDaemonFacade.prototype.postMessage_ =
     function(message, onDone, onError) {
   if (!this.port_) {
-    onError(remoting.Error.UNEXPECTED);
+    onError(this.error_);
     return;
   }
   var id = this.nextId_++;
@@ -280,13 +279,18 @@ remoting.HostDaemonFacade.prototype.handleIncomingMessage_ =
 remoting.HostDaemonFacade.prototype.onDisconnect_ = function() {
   console.error('Native Message port disconnected');
 
+  this.port_ = null;
+
+  // If initialization hasn't finished then assume that the port was
+  // disconnected because Native Messaging host is not installed.
+  this.error_ = this.initializationFinished_ ? remoting.Error.UNEXPECTED :
+                                               remoting.Error.MISSING_PLUGIN;
+
   // Notify the error-handlers of any requests that are still outstanding.
   var pendingReplies = this.pendingReplies_;
   this.pendingReplies_ = {};
-
   for (var id in pendingReplies) {
-    pendingReplies[/** @type {number} */(id)].onError(
-        remoting.Error.UNEXPECTED);
+    pendingReplies[/** @type {number} */(id)].onError(this.error_);
   }
 }
 
@@ -392,7 +396,7 @@ remoting.HostDaemonFacade.prototype.getDaemonVersion =
           if (success) {
             onDone(that.version_);
           } else {
-            onError(remoting.Error.UNEXPECTED);
+            onError(that.error_);
           }
         });
   }
