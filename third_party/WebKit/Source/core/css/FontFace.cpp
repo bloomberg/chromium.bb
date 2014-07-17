@@ -195,7 +195,7 @@ PassRefPtrWillBeRawPtr<FontFace> FontFace::create(Document* document, const Styl
         && fontFace->setPropertyFromStyle(properties, CSSPropertyFontVariant)
         && fontFace->setPropertyFromStyle(properties, CSSPropertyWebkitFontFeatureSettings)
         && !fontFace->family().isEmpty()
-        && fontFace->traits().mask()) {
+        && fontFace->traits().bitfield()) {
         fontFace->initCSSFontFace(document, src);
         return fontFace.release();
     }

@@ -69,26 +69,29 @@ enum FontVariant {
     FontVariantSmallCaps = 1
 };
 
-typedef unsigned FontTraitsMask;
+typedef unsigned FontTraitsBitfield;
 
 struct FontTraits {
     FontTraits(FontStyle style, FontVariant variant, FontWeight weight, FontStretch stretch)
-        : m_style(style), m_variant(variant), m_weight(weight), m_stretch(stretch), m_filler(0)
     {
-        ASSERT(!m_filler);
-        ASSERT(!(m_mask >> 10));
+        m_traits.m_style = style;
+        m_traits.m_variant = variant;
+        m_traits.m_weight = weight;
+        m_traits.m_stretch = stretch;
+        m_traits.m_filler = 0;
+        ASSERT(!(m_bitfield >> 10));
     }
-    FontTraits(FontTraitsMask mask)
-        : m_mask(mask)
+    FontTraits(FontTraitsBitfield bitfield)
+        : m_bitfield(bitfield)
     {
-        ASSERT(!m_filler);
-        ASSERT(!(m_mask >> 10));
+        ASSERT(!m_traits.m_filler);
+        ASSERT(!(m_bitfield >> 10));
     }
-    FontStyle style() const { return static_cast<FontStyle>(m_style); }
-    FontVariant variant() const { return static_cast<FontVariant>(m_variant); }
-    FontWeight weight() const { return static_cast<FontWeight>(m_weight); }
-    FontStretch stretch() const { return static_cast<FontStretch>(m_stretch); }
-    FontTraitsMask mask() const { return m_mask; }
+    FontStyle style() const { return static_cast<FontStyle>(m_traits.m_style); }
+    FontVariant variant() const { return static_cast<FontVariant>(m_traits.m_variant); }
+    FontWeight weight() const { return static_cast<FontWeight>(m_traits.m_weight); }
+    FontStretch stretch() const { return static_cast<FontStretch>(m_traits.m_stretch); }
+    FontTraitsBitfield bitfield() const { return m_bitfield; }
 
     union {
         struct {
@@ -97,8 +100,8 @@ struct FontTraits {
             unsigned m_weight : 4;
             unsigned m_stretch : 4;
             unsigned m_filler : 22;
-        };
-        unsigned m_mask;
+        } m_traits;
+        FontTraitsBitfield m_bitfield;
     };
 };
 

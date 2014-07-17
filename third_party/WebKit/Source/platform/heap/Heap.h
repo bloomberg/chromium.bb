@@ -76,7 +76,7 @@ const size_t freeListMask = 2;
 // tracing of already finalized objects in another thread's heap which is a
 // use-after-free situation.
 const size_t deadBitMask = 4;
-const size_t sizeMask = ~7;
+const size_t sizeMask = ~static_cast<size_t>(7);
 const uint8_t freelistZapValue = 42;
 const uint8_t finalizedZapValue = 24;
 // The orphaned zap value must be zero in the lowest bits to allow for using

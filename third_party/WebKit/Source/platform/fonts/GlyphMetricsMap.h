@@ -110,7 +110,8 @@ template<class T> typename GlyphMetricsMap<T>::GlyphMetricsPage* GlyphMetricsMap
         m_filledPrimaryPage = true;
     } else {
         if (m_pages) {
-            if ((page = m_pages->get(pageNumber)))
+            page = m_pages->get(pageNumber);
+            if (page)
                 return page;
         } else
             m_pages = adoptPtr(new HashMap<int, OwnPtr<GlyphMetricsPage> >);
