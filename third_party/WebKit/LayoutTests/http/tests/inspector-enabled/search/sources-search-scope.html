@@ -4,6 +4,7 @@
 <script src="../../inspector/inspector-test.js"></script>
 <script src="../../inspector/resources-test.js"></script>
 <script src="../../inspector/network-test.js"></script>
+<script src="../../inspector/debugger-test.js"></script>
 <script>
 function onload()
 {
@@ -177,6 +178,19 @@ function test()
                     runSearchAndDumpResults(searchConfig, next);
                 }
             },
+
+            function testDirtyFiles(next)
+            {
+                InspectorTest.showScriptSource("search.js", step2);
+
+                function step2(sourceFrame)
+                {
+                    sourceFrame.uiSourceCode().setWorkingCopy("FOO " + "searchTest" + "UniqueString" + " BAR");
+                    var query = "searchTest" + "UniqueString";
+                    var searchConfig = new WebInspector.SearchConfig(query, true, false);
+                    runSearchAndDumpResults(searchConfig, next);
+                }
+            }
         ]);
     }
 }
