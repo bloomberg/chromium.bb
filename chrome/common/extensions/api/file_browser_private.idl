@@ -533,8 +533,8 @@ callback RequestAccessTokenCallback = void(DOMString accessToken);
 // |accessToken| OAuth2 access token, or an empty string if failed to fetch.
 callback RequestWebStoreAccessTokenCallback = void(DOMString accessToken);
 
-// |shareUrl| Share Url for the sharing dialog.
-callback GetShareUrlCallback = void(DOMString shareUrl);
+// |url| Result url.
+callback GetUrlCallback = void(DOMString url);
 
 // |profiles| List of profile information.
 // |runningProfile| ID of the profile that runs the application instance.
@@ -769,7 +769,12 @@ interface Functions {
   // Requests a share dialog url for the specified file.
   // |url| Url for the file.
   // |callback|
-  static void getShareUrl(DOMString url, GetShareUrlCallback callback);
+  static void getShareUrl(DOMString url, GetUrlCallback callback);
+
+  // Requests a download url to download the file contents.
+  // |url| Url for the file.
+  // |callback|
+  static void getDownloadUrl(DOMString url, GetUrlCallback callback);
 
   // Requests to share drive files.
   // |url| URL of a file to be shared.

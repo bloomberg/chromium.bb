@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_drive.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
@@ -16,8 +17,13 @@
 #include "chrome/browser/drive/event_logger.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/extensions/api/file_browser_private.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chromeos/chromeos_switches.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/drive/auth_service.h"
 #include "webkit/common/fileapi/file_system_info.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -885,6 +891,98 @@ bool FileBrowserPrivateRequestDriveShareFunction::RunAsync() {
 void FileBrowserPrivateRequestDriveShareFunction::OnAddPermission(
     drive::FileError error) {
   SendResponse(error == drive::FILE_ERROR_OK);
+}
+
+FileBrowserPrivateGetDownloadUrlFunction::
+    FileBrowserPrivateGetDownloadUrlFunction() {
+}
+
+FileBrowserPrivateGetDownloadUrlFunction::
+    ~FileBrowserPrivateGetDownloadUrlFunction() {
+}
+
+bool FileBrowserPrivateGetDownloadUrlFunction::RunAsync() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(
+          chromeos::switches::kEnableVideoPlayerChromecastSupport)) {
+    SetError("Cast support is disabled.");
+    SetResult(new base::StringValue(""));  // Intentionally returns a blank.
+    return false;
+  }
+
+  using extensions::api::file_browser_private::GetShareUrl::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  // Start getting the file info.
+  drive::FileSystemInterface* const file_system =
+      drive::util::GetFileSystemByProfile(GetProfile());
+  if (!file_system) {
+    // |file_system| is NULL if Drive is disabled or not mounted.
+    SetError("Drive is disabled or not mounted.");
+    SetResult(new base::StringValue(""));  // Intentionally returns a blank.
+    return false;
+  }
+
+  const base::FilePath path = file_manager::util::GetLocalPathFromURL(
+      render_view_host(), GetProfile(), GURL(params->url));
+  DCHECK(drive::util::IsUnderDriveMountPoint(path));
+  base::FilePath file_path = drive::util::ExtractDrivePath(path);
+
+  file_system->GetResourceEntry(
+      file_path,
+      base::Bind(&FileBrowserPrivateGetDownloadUrlFunction::OnGetResourceEntry,
+                 this));
+  return true;
+}
+
+void FileBrowserPrivateGetDownloadUrlFunction::OnGetResourceEntry(
+    drive::FileError error,
+    scoped_ptr<drive::ResourceEntry> entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != drive::FILE_ERROR_OK) {
+    SetError("Download Url for this item is not available.");
+    SetResult(new base::StringValue(""));  // Intentionally returns a blank.
+    SendResponse(false);
+    return;
+  }
+
+  download_url_ =
+      google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction +
+      entry->resource_id();
+
+  ProfileOAuth2TokenService* oauth2_token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(GetProfile());
+  const std::string& account_id = signin_manager->GetAuthenticatedAccountId();
+  std::vector<std::string> scopes;
+  scopes.push_back("https://www.googleapis.com/auth/drive.readonly");
+
+  auth_service_.reset(
+      new google_apis::AuthService(oauth2_token_service,
+                                   account_id,
+                                   GetProfile()->GetRequestContext(),
+                                   scopes));
+  auth_service_->StartAuthentication(base::Bind(
+      &FileBrowserPrivateGetDownloadUrlFunction::OnTokenFetched, this));
+}
+
+void FileBrowserPrivateGetDownloadUrlFunction::OnTokenFetched(
+    google_apis::GDataErrorCode code,
+    const std::string& access_token) {
+  if (code != google_apis::HTTP_SUCCESS) {
+    SetError("Not able to fetch the token.");
+    SetResult(new base::StringValue(""));  // Intentionally returns a blank.
+    SendResponse(false);
+    return;
+  }
+
+  const std::string url = download_url_ + "?access_token=" + access_token;
+  SetResult(new base::StringValue(url));
+
+  SendResponse(true);
 }
 
 }  // namespace extensions

@@ -18,6 +18,10 @@ class ResourceEntry;
 struct SearchResultInfo;
 }
 
+namespace google_apis {
+class AuthService;
+}
+
 namespace extensions {
 
 namespace api {
@@ -238,6 +242,34 @@ class FileBrowserPrivateRequestDriveShareFunction
  private:
   // Called back after the drive file system operation is finished.
   void OnAddPermission(drive::FileError error);
+};
+
+// Implements the chrome.fileBrowserPrivate.getDownloadUrl method.
+class FileBrowserPrivateGetDownloadUrlFunction
+    : public LoggedAsyncExtensionFunction {
+ public:
+  FileBrowserPrivateGetDownloadUrlFunction();
+
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getDownloadUrl",
+                             FILEBROWSERPRIVATE_GETDOWNLOADURL)
+
+ protected:
+  virtual ~FileBrowserPrivateGetDownloadUrlFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunAsync() OVERRIDE;
+
+  void OnGetResourceEntry(drive::FileError error,
+                          scoped_ptr<drive::ResourceEntry> entry);
+
+  // Callback with an |access_token|, called by
+  // drive::DriveReadonlyTokenFetcher.
+  void OnTokenFetched(google_apis::GDataErrorCode code,
+                      const std::string& access_token);
+
+ private:
+  std::string download_url_;
+  scoped_ptr<google_apis::AuthService> auth_service_;
 };
 
 }  // namespace extensions
