@@ -119,8 +119,7 @@ ImageView.prototype.draw = function() {
     this.displayedContentGeneration_ = this.contentGeneration_;
 
     ImageUtil.trace.resetTimer('paint');
-    this.paintDeviceRect(this.viewport_.getDeviceClipped(),
-        this.contentCanvas_, this.viewport_.getImageClipped());
+    this.paintDeviceRect(this.contentCanvas_, new Rect(this.contentCanvas_));
     ImageUtil.trace.reportTimer('paint');
   }
 };
@@ -178,22 +177,29 @@ ImageView.prototype.getContentRevision = function() {
  * Copies an image fragment from a full resolution canvas to a device resolution
  * canvas.
  *
- * @param {Rect} deviceRect Rectangle in the device coordinates.
- * @param {HTMLCanvasElement} canvas Full resolution canvas.
- * @param {Rect} imageRect Rectangle in the full resolution canvas.
+ * @param {HTMLCanvasElement} canvas Canvas containing whole image. The canvas
+ *     may not be full resolution (scaled).
+ * @param {Rect} imageRect Rectangle region of the canvas to be rendered.
  */
-ImageView.prototype.paintDeviceRect = function(deviceRect, canvas, imageRect) {
-  // Map screen canvas (0,0) to (deviceBounds.left, deviceBounds.top)
-  var deviceBounds = this.viewport_.getDeviceClipped();
-  deviceRect = deviceRect.shift(-deviceBounds.left, -deviceBounds.top);
+ImageView.prototype.paintDeviceRect = function(canvas, imageRect) {
+  // Check canvas size.
+  var deviceBounds = this.viewport_.getDeviceBounds();
+  if (this.screenImage_.width != deviceBounds.width ||
+      this.screenImage_.height != deviceBounds.height) {
+    console.error('The size of canvas is invalid.', (new Error).stack);
+    return;
+  }
 
-  // The source canvas may have different physical size than the image size
-  // set at the viewport. Adjust imageRect accordingly.
-  var bounds = this.viewport_.getImageBounds();
-  var scaleX = canvas.width / bounds.width;
-  var scaleY = canvas.height / bounds.height;
-  imageRect = new Rect(imageRect.left * scaleX, imageRect.top * scaleY,
-                       imageRect.width * scaleX, imageRect.height * scaleY);
+  // Map the rectangle in full resolution image to the rectangle in the device
+  // canvas.
+  var scaleX = deviceBounds.width / canvas.width;
+  var scaleY = deviceBounds.height / canvas.height;
+  var deviceRect = new Rect(
+      imageRect.left * scaleX,
+      imageRect.top * scaleY,
+      imageRect.width * scaleX,
+      imageRect.height * scaleY);
+
   Rect.drawImage(
       this.screenImage_.getContext('2d'), canvas, deviceRect, imageRect);
 };
@@ -217,17 +223,17 @@ ImageView.prototype.createOverlayCanvas = function() {
  * @param {HTMLCanvasElement} canvas The buffer canvas.
  */
 ImageView.prototype.setupDeviceBuffer = function(canvas) {
-  var deviceRect = this.viewport_.getDeviceClipped();
-
   // Set the canvas position and size in device pixels.
+  var deviceRect = this.viewport_.getDeviceBounds();
   if (canvas.width !== deviceRect.width)
     canvas.width = deviceRect.width;
-
   if (canvas.height !== deviceRect.height)
     canvas.height = deviceRect.height;
 
-  canvas.style.left = deviceRect.left + 'px';
-  canvas.style.top = deviceRect.top + 'px';
+  // Center the image.
+  var imageBoudns = this.viewport_.getImageElementBoundsOnScreen();
+  canvas.style.left = imageBoudns.left + 'px';
+  canvas.style.top = imageBoudns.top + 'px';
 
   // Scale the canvas down to screen pixels.
   this.setTransform(canvas);

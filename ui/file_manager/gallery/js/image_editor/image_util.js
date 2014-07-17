@@ -139,6 +139,28 @@ function Rect() {
        Array.apply(null, arguments));
 }
 
+Rect.prototype = {
+  /**
+   * Obtains the x coordinate of right edge. The most right pixels in the
+   * rectangle are (x = right - 1) and the pixels (x = right) are not included
+   * in the rectangle.
+   * @return {number}
+   */
+  get right() {
+    return this.left + this.width;
+  },
+
+  /**
+   * Obtains the y coordinate of bottom edge. The most bottom pixels in the
+   * rectanlge are (y = buttom - 1) and the pixels (y = bottom) are not included
+   * in the rectangle.
+   * @return {number}
+   */
+  get bottom() {
+    return this.top + this.height;
+  }
+};
+
 /**
  * @param {number} factor Factor to scale.
  * @return {Rect} A rectangle with every dimension scaled.

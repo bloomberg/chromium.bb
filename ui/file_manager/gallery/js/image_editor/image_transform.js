@@ -128,7 +128,7 @@ ImageEditor.Mode.Crop.prototype.reset = function() {
  * Updates the position of DOM elements.
  */
 ImageEditor.Mode.Crop.prototype.positionDOM = function() {
-  var screenClipped = this.viewport_.getScreenClipped();
+  var screenClipped = this.viewport_.getImageBoundsOnScreenClipped();
 
   var screenCrop = this.viewport_.imageToScreenRect(this.cropRect_.getRect());
   var delta = ImageEditor.Mode.Crop.MOUSE_GRAB_RADIUS;
@@ -190,7 +190,8 @@ ImageEditor.Mode.Crop.prototype.getCommand = function() {
  * Creates default (initial) crop.
  */
 ImageEditor.Mode.Crop.prototype.createDefaultCrop = function() {
-  var rect = new Rect(this.getViewport().getImageClipped());
+  var rect = this.getViewport().screenToImageRect(
+      new Rect(this.getViewport().getImageBoundsOnScreenClipped()));
   rect = rect.inflate(
       -Math.round(rect.width / 6), -Math.round(rect.height / 6));
   this.cropRect_ = new DraggableRect(rect, this.getViewport());
@@ -465,7 +466,8 @@ DraggableRect.prototype.getDragHandler = function(
   var initialY = this.viewport_.screenToImageY(initialScreenY);
   var initialWidth = this.bounds_.right - this.bounds_.left;
   var initialHeight = this.bounds_.bottom - this.bounds_.top;
-  var clipRect = this.viewport_.getImageClipped();
+  var clipRect = this.viewport_.screenToImageRect(
+      this.viewport_.getImageBoundsOnScreenClipped());
   if (!clipRect.inside(initialX, initialY))
     return null;
 
@@ -557,10 +559,7 @@ DraggableRect.prototype.getDragHandler = function(
  * @return {ImageBuffer.DoubleTapAction} Double tap action.
  */
 DraggableRect.prototype.getDoubleTapAction = function(x, y, touch) {
-  x = this.viewport_.screenToImageX(x);
-  y = this.viewport_.screenToImageY(y);
-
-  var clipRect = this.viewport_.getImageClipped();
+  var clipRect = this.viewport_.getImageBoundsOnScreenClipped();
   if (clipRect.inside(x, y))
     return ImageBuffer.DoubleTapAction.COMMIT;
   else

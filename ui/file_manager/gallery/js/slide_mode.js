@@ -394,7 +394,7 @@ SlideMode.prototype.getSelectedImageRect = function() {
   if (this.getSelectedIndex() < 0)
     return null;
   else
-    return this.viewport_.getScreenClipped();
+    return this.viewport_.getImageBoundsOnScreen();
 };
 
 /**
@@ -889,8 +889,8 @@ SlideMode.prototype.onKeyDown = function(event) {
  * @private
  */
 SlideMode.prototype.onResize_ = function() {
-  this.viewport_.sizeByFrameAndFit(this.container_);
-  this.viewport_.update();
+  this.viewport_.setScreenSize(
+      this.container_.clientWidth, this.container_.clientHeight);
   this.editor_.getBuffer().draw();
 };
 
@@ -1047,7 +1047,7 @@ SlideMode.prototype.isSlideshowOn_ = function() {
 SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
   // Reset zoom.
   this.viewport_.setZoomIndex(0);
-  this.imageView_.draw();
+  this.imageView_.applyViewportChange();
 
   // Set the attribute early to prevent the toolbar from flashing when
   // the slideshow is being started from the mosaic view.
@@ -1202,7 +1202,7 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
   if (this.isEditing()) { // isEditing has just been flipped to a new value.
     // Reset zoom.
     this.viewport_.setZoomIndex(0);
-    this.imageView_.draw();
+    this.imageView_.applyViewportChange();
     if (this.context_.readonlyDirName) {
       this.editor_.getPrompt().showAt(
           'top', 'GALLERY_READONLY_WARNING', 0, this.context_.readonlyDirName);

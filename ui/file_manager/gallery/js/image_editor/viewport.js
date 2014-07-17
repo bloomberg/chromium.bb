@@ -24,6 +24,27 @@ function Viewport() {
   this.screenBounds_ = new Rect();
 
   /**
+   * Bounds of the image element on screen without zoom and offset.
+   * @type {Rect}
+   * @private
+   */
+  this.imageElementBoundsOnScreen_ = null;
+
+  /**
+   * Bounds of the image with zoom and offset.
+   * @type {Rect}
+   * @private
+   */
+  this.imageBoundsOnScreen_ = null;
+
+  /**
+   * Image bounds that is clipped with the screen bounds.
+   * @type {Rect}
+   * @private
+   */
+  this.imageBoundsOnScreenClipped_ = null;
+
+  /**
    * Scale from the full resolution image to the screen displayed image. This is
    * not zoom operated by users.
    * @type {number}
@@ -45,12 +66,28 @@ function Viewport() {
    */
   this.zoom_ = 1;
 
+  /**
+   * Offset specified by user operations.
+   * @type {number}
+   */
   this.offsetX_ = 0;
+
+  /**
+   * Offset specified by user operations.
+   * @type {number}
+   */
   this.offsetY_ = 0;
 
+  /**
+   * Generation of the screen size image cache.
+   * This is incremented every time when the size of image cache is changed.
+   * @type {number}
+   * @private
+   */
   this.generation_ = 0;
 
   this.update();
+  Object.seal(this);
 }
 
 /**
@@ -75,6 +112,7 @@ Viewport.ZOOM_RATIOS = Object.freeze({
  */
 Viewport.prototype.setImageSize = function(width, height) {
   this.imageBounds_ = new Rect(width, height);
+  this.update();
   this.invalidateCaches();
 };
 
@@ -84,6 +122,7 @@ Viewport.prototype.setImageSize = function(width, height) {
  */
 Viewport.prototype.setScreenSize = function(width, height) {
   this.screenBounds_ = new Rect(width, height);
+  this.update();
   this.invalidateCaches();
 };
 
@@ -95,9 +134,9 @@ Viewport.prototype.setZoomIndex = function(zoomIndex) {
   // Ignore the invalid zoomIndex.
   if (!Viewport.ZOOM_RATIOS[zoomIndex.toString()])
     return;
-
   this.zoomIndex_ = zoomIndex;
   this.zoom_ = Viewport.ZOOM_RATIOS[zoomIndex];
+  this.update();
 };
 
 /**
@@ -109,40 +148,18 @@ Viewport.prototype.getZoomIndex = function() {
 };
 
 /**
- * Set the size by an HTML element.
- *
- * @param {HTMLElement} frame The element acting as the "screen".
- */
-Viewport.prototype.sizeByFrame = function(frame) {
-  this.setScreenSize(frame.clientWidth, frame.clientHeight);
-};
-
-/**
- * Set the size and scale to fit an HTML element.
- *
- * @param {HTMLElement} frame The element acting as the "screen".
- */
-Viewport.prototype.sizeByFrameAndFit = function(frame) {
-  var wasFitting = this.getScale() == this.getFittingScale();
-  this.sizeByFrame(frame);
-  var minScale = this.getFittingScale();
-  if (wasFitting || (this.getScale() < minScale)) {
-    this.setScale(minScale, true);
-  }
-};
-
-/**
  * @return {number} Scale.
  */
 Viewport.prototype.getScale = function() { return this.scale_; };
 
 /**
  * @param {number} scale The new scale.
- * @param {boolean} notify True if the change should be reflected in the UI.
  */
-Viewport.prototype.setScale = function(scale, notify) {
-  if (this.scale_ == scale) return;
+Viewport.prototype.setScale = function(scale) {
+  if (this.scale_ == scale)
+    return;
   this.scale_ = scale;
+  this.update();
   this.invalidateCaches();
 };
 
@@ -174,8 +191,7 @@ Viewport.prototype.getFittingScaleForImageSize_ = function(width, height) {
  * Set the scale to fit the image into the screen.
  */
 Viewport.prototype.fitImage = function() {
-  var scale = this.getFittingScale();
-  this.setScale(scale, true);
+  this.setScale(this.getFittingScale());
 };
 
 /**
@@ -216,15 +232,13 @@ Viewport.prototype.getImageBounds = function() { return this.imageBounds_; };
 Viewport.prototype.getScreenBounds = function() { return this.screenBounds_; };
 
 /**
- * @return {Rect} The visible part of the image, in image coordinates.
+ * @return {Rect} The size of screen cache canvas.
  */
-Viewport.prototype.getImageClipped = function() { return this.imageClipped_; };
-
-/**
- * @return {Rect} The visible part of the image, in screen coordinates.
- */
-Viewport.prototype.getScreenClipped = function() {
-  return this.screenClipped_;
+Viewport.prototype.getDeviceBounds = function() {
+  var size = this.getImageElementBoundsOnScreen();
+  return new Rect(
+      size.width * window.devicePixelRatio,
+      size.height * window.devicePixelRatio);
 };
 
 /**
@@ -244,7 +258,24 @@ Viewport.prototype.invalidateCaches = function() { this.generation_++; };
  * @return {Rect} The image bounds in screen coordinates.
  */
 Viewport.prototype.getImageBoundsOnScreen = function() {
-  return this.imageOnScreen_;
+  return this.imageBoundsOnScreen_;
+};
+
+/**
+ * The image bounds in screen coordinates.
+ * This returns the bounds of element before applying zoom and offset.
+ * @return {Rect}
+ */
+Viewport.prototype.getImageElementBoundsOnScreen = function() {
+  return this.imageElementBoundsOnScreen_;
+};
+
+/**
+ * The image bounds on screen, which is clipped with the screen size.
+ * @return {Rect}
+ */
+Viewport.prototype.getImageBoundsOnScreenClipped = function() {
+  return this.imageBoundsOnScreenClipped_;
 };
 
 /**
@@ -260,7 +291,7 @@ Viewport.prototype.screenToImageSize = function(size) {
  * @return {number} X in image coordinates.
  */
 Viewport.prototype.screenToImageX = function(x) {
-  return Math.round((x - this.imageOnScreen_.left) / this.getScale());
+  return Math.round((x - this.imageBoundsOnScreen_.left) / this.getScale());
 };
 
 /**
@@ -268,7 +299,7 @@ Viewport.prototype.screenToImageX = function(x) {
  * @return {number} Y in image coordinates.
  */
 Viewport.prototype.screenToImageY = function(y) {
-  return Math.round((y - this.imageOnScreen_.top) / this.getScale());
+  return Math.round((y - this.imageBoundsOnScreen_.top) / this.getScale());
 };
 
 /**
@@ -296,7 +327,7 @@ Viewport.prototype.imageToScreenSize = function(size) {
  * @return {number} X in screen coordinates.
  */
 Viewport.prototype.imageToScreenX = function(x) {
-  return Math.round(this.imageOnScreen_.left + x * this.getScale());
+  return Math.round(this.imageBoundsOnScreen_.left + x * this.getScale());
 };
 
 /**
@@ -304,7 +335,7 @@ Viewport.prototype.imageToScreenX = function(x) {
  * @return {number} Y in screen coordinates.
  */
 Viewport.prototype.imageToScreenY = function(y) {
-  return Math.round(this.imageOnScreen_.top + y * this.getScale());
+  return Math.round(this.imageBoundsOnScreen_.top + y * this.getScale());
 };
 
 /**
@@ -317,34 +348,6 @@ Viewport.prototype.imageToScreenRect = function(rect) {
       this.imageToScreenY(rect.top),
       Math.round(this.imageToScreenSize(rect.width)),
       Math.round(this.imageToScreenSize(rect.height)));
-};
-
-/**
- * Convert a rectangle from screen coordinates to 'device' coordinates.
- *
- * This conversion enlarges the original rectangle devicePixelRatio times
- * with the screen center as a fixed point.
- *
- * @param {Rect} rect Rectangle in screen coordinates.
- * @return {Rect} Rectangle in device coordinates.
- */
-Viewport.prototype.screenToDeviceRect = function(rect) {
-  var ratio = window.devicePixelRatio;
-  var screenCenterX = Math.round(
-      this.screenBounds_.left + this.screenBounds_.width / 2);
-  var screenCenterY = Math.round(
-      this.screenBounds_.top + this.screenBounds_.height / 2);
-  return new Rect(screenCenterX + (rect.left - screenCenterX) * ratio,
-                  screenCenterY + (rect.top - screenCenterY) * ratio,
-                  rect.width * ratio,
-                  rect.height * ratio);
-};
-
-/**
- * @return {Rect} The visible part of the image, in device coordinates.
- */
-Viewport.prototype.getDeviceClipped = function() {
-  return this.screenToDeviceRect(this.getScreenClipped());
 };
 
 /**
@@ -395,44 +398,46 @@ Viewport.prototype.clampOffsetY_ = function(y) {
 };
 
 /**
+ * @private
+ */
+Viewport.prototype.getCenteredRect_ = function(
+    width, height, offsetX, offsetY) {
+  return new Rect(
+      ~~((this.screenBounds_.width - width) / 2) + offsetX,
+      ~~((this.screenBounds_.height - height) / 2) + offsetY,
+      width,
+      height);
+};
+
+/**
  * Recalculate the viewport parameters.
  */
 Viewport.prototype.update = function() {
   var scale = this.getScale();
 
-  // Image bounds in screen coordinates.
-  this.imageOnScreen_ = new Rect(
-      this.getMarginX_(),
-      this.getMarginY_(),
-      Math.round(this.imageBounds_.width * scale),
-      Math.round(this.imageBounds_.height * scale));
+  // Image bounds on screen.
+  this.imageBoundsOnScreen_ = this.getCenteredRect_(
+      ~~(this.imageBounds_.width * scale * this.zoom_),
+      ~~(this.imageBounds_.height * scale * this.zoom_),
+      this.offsetX_,
+      this.offsetY_);
 
-  // A visible part of the image in image coordinates.
-  this.imageClipped_ = new Rect(this.imageBounds_);
+  // Image bounds of element (that is not applied zoom and offset) on screen.
+  this.imageElementBoundsOnScreen_ = this.getCenteredRect_(
+      ~~(this.imageBounds_.width * scale),
+      ~~(this.imageBounds_.height * scale),
+      0,
+      0);
 
-  // A visible part of the image in screen coordinates.
-  this.screenClipped_ = new Rect(this.screenBounds_);
-
-  // Adjust for the offset.
-  if (this.imageOnScreen_.left < 0) {
-    this.imageOnScreen_.left +=
-        Math.round(this.clampOffsetX_(this.offsetX_) * scale);
-    this.imageClipped_.left = Math.round(-this.imageOnScreen_.left / scale);
-    this.imageClipped_.width = Math.round(this.screenBounds_.width / scale);
-  } else {
-    this.screenClipped_.left = this.imageOnScreen_.left;
-    this.screenClipped_.width = this.imageOnScreen_.width;
-  }
-
-  if (this.imageOnScreen_.top < 0) {
-    this.imageOnScreen_.top +=
-        Math.round(this.clampOffsetY_(this.offsetY_) * scale);
-    this.imageClipped_.top = Math.round(-this.imageOnScreen_.top / scale);
-    this.imageClipped_.height = Math.round(this.screenBounds_.height / scale);
-  } else {
-    this.screenClipped_.top = this.imageOnScreen_.top;
-    this.screenClipped_.height = this.imageOnScreen_.height;
-  }
+  // Image bounds on screen cliped with the screen bounds.
+  var left = Math.max(this.imageBoundsOnScreen_.left, 0);
+  var top = Math.max(this.imageBoundsOnScreen_.top, 0);
+  var right = Math.min(
+      this.imageBoundsOnScreen_.right, this.screenBounds_.width);
+  var bottom = Math.min(
+      this.imageBoundsOnScreen_.bottom, this.screenBounds_.height);
+  this.imageBoundsOnScreenClipped_ = new Rect(
+      left, top, right - left, bottom - top);
 };
 
 /**
@@ -512,10 +517,9 @@ Viewport.prototype.getInverseTransformForCroppedImage =
  * @return {string} Transformation description.
  */
 Viewport.prototype.getScreenRectTransformForImage = function(screenRect) {
-  var screenImageWidth = this.imageBounds_.width * this.getScale();
-  var screenImageHeight = this.imageBounds_.height * this.getScale();
-  var scaleX = screenRect.width / screenImageWidth;
-  var scaleY = screenRect.height / screenImageHeight;
+  var imageBounds = this.getImageElementBoundsOnScreen();
+  var scaleX = screenRect.width / imageBounds.width;
+  var scaleY = screenRect.height / imageBounds.height;
   var screenWidth = this.screenBounds_.width;
   var screenHeight = this.screenBounds_.height;
   var dx = screenRect.left + screenRect.width / 2 - screenWidth / 2;

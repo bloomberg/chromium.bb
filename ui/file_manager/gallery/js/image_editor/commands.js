@@ -415,9 +415,7 @@ Command.Filter.prototype = { __proto__: Command.prototype };
 Command.Filter.prototype.execute = function(
     document, srcCanvas, callback, uiContext) {
   var result = this.createCanvas_(document, srcCanvas);
-
   var self = this;
-
   var previousRow = 0;
 
   function onProgressVisible(updatedRow, rowCount) {
@@ -438,8 +436,7 @@ Command.Filter.prototype.execute = function(
       screenStrip.height =
           Math.round(viewport.imageToScreenY(updatedRow)) - screenStrip.top;
 
-      uiContext.imageView.paintDeviceRect(
-          viewport.screenToDeviceRect(screenStrip), result, imageStrip);
+      uiContext.imageView.paintDeviceRect(result, imageStrip);
       previousRow = updatedRow;
     }
   }

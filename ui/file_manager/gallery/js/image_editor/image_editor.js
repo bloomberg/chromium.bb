@@ -30,7 +30,8 @@ function ImageEditor(
   ImageUtil.removeChildren(this.container_);
 
   this.viewport_ = viewport;
-  this.viewport_.sizeByFrame(this.container_);
+  this.viewport_.setScreenSize(
+      this.container_.clientWidth, this.container_.clientHeight);
 
   this.imageView_ = imageView;
   this.imageView_.addContentCallback(this.onContentUpdate_.bind(this));
