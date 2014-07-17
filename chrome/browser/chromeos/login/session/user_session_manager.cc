@@ -760,7 +760,7 @@ void UserSessionManager::RestoreAuthSessionImpl(Profile* profile,
 
   if (chrome::IsRunningInForcedAppMode() ||
       CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kOobeSkipPostLogin)) {
+          chromeos::switches::kDisableGaiaServices)) {
     return;
   }
 

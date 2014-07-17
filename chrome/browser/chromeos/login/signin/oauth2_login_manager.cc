@@ -40,10 +40,11 @@ OAuth2LoginManager::OAuth2LoginManager(Profile* user_profile)
       restore_strategy_(RESTORE_FROM_COOKIE_JAR),
       state_(SESSION_RESTORE_NOT_STARTED) {
   GetTokenService()->AddObserver(this);
+
+  // For telemetry, we mark session restore completed to avoid warnings from
+  // MergeSessionThrottle.
   if (CommandLine::ForCurrentProcess()->
-          HasSwitch(chromeos::switches::kOobeSkipPostLogin)) {
-    // For telemetry we should mark session restore completed to avoid
-    // warnings from MergeSessionThrottle.
+          HasSwitch(chromeos::switches::kDisableGaiaServices)) {
     SetSessionRestoreState(SESSION_RESTORE_DONE);
   }
 }

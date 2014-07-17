@@ -92,12 +92,12 @@ void AutoEnrollmentController::Start() {
   // accepted, or right after a reboot if the EULA has already been accepted.
 
   // Do not communicate auto-enrollment data to the server if
-  // 1. we are running integration or perf tests with telemetry.
+  // 1. we are running telemetry tests.
   // 2. modulus configuration is not present.
   // 3. Auto-enrollment is disabled via the command line.
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(chromeos::switches::kOobeSkipPostLogin) ||
+  if (command_line->HasSwitch(chromeos::switches::kDisableGaiaServices) ||
       (!command_line->HasSwitch(
            chromeos::switches::kEnterpriseEnrollmentInitialModulus) &&
        !command_line->HasSwitch(

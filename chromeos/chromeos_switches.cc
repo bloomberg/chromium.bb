@@ -185,6 +185,10 @@ const char kNaturalScrollDefault[] = "enable-natural-scroll-default";
 // Skips all other OOBE pages after user login.
 const char kOobeSkipPostLogin[] = "oobe-skip-postlogin";
 
+// Disable GAIA services such as enrollment and OAuth session restore. Used by
+// 'fake' telemetry login.
+const char kDisableGaiaServices[] = "disable-gaia-services";
+
 // Interval at which we check for total time on OOBE.
 const char kOobeTimerInterval[] = "oobe-timer-interval";
 
