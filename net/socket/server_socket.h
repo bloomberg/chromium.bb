@@ -23,7 +23,7 @@ class NET_EXPORT ServerSocket {
 
   // Binds the socket and starts listening. Destroy the socket to stop
   // listening.
-  virtual int Listen(const net::IPEndPoint& address, int backlog) = 0;
+  virtual int Listen(const IPEndPoint& address, int backlog) = 0;
 
   // Binds the socket with address and port, and starts listening. It expects
   // a valid IPv4 or IPv6 address. Otherwise, it returns ERR_ADDRESS_INVALID.

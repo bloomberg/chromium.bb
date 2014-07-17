@@ -32,7 +32,7 @@ namespace {
 
 const int kMaxSockets = 32;
 const int kMaxSocketsPerGroup = 6;
-const net::RequestPriority kDefaultPriority = LOW;
+const RequestPriority kDefaultPriority = LOW;
 
 class TransportClientSocketPoolTest : public testing::Test {
  protected:

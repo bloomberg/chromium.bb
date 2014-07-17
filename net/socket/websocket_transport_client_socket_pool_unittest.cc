@@ -37,7 +37,7 @@ namespace {
 
 const int kMaxSockets = 32;
 const int kMaxSocketsPerGroup = 6;
-const net::RequestPriority kDefaultPriority = LOW;
+const RequestPriority kDefaultPriority = LOW;
 
 // RunLoop doesn't support this natively but it is easy to emulate.
 void RunLoopForTimePeriod(base::TimeDelta period) {

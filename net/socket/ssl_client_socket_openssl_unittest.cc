@@ -85,13 +85,13 @@ bool LoadPrivateKeyOpenSSL(
 class SSLClientSocketOpenSSLClientAuthTest : public PlatformTest {
  public:
   SSLClientSocketOpenSSLClientAuthTest()
-      : socket_factory_(net::ClientSocketFactory::GetDefaultFactory()),
-        cert_verifier_(new net::MockCertVerifier),
-        transport_security_state_(new net::TransportSecurityState) {
-    cert_verifier_->set_default_result(net::OK);
+      : socket_factory_(ClientSocketFactory::GetDefaultFactory()),
+        cert_verifier_(new MockCertVerifier),
+        transport_security_state_(new TransportSecurityState) {
+    cert_verifier_->set_default_result(OK);
     context_.cert_verifier = cert_verifier_.get();
     context_.transport_security_state = transport_security_state_.get();
-    key_store_ = net::OpenSSLClientKeyStore::GetInstance();
+    key_store_ = OpenSSLClientKeyStore::GetInstance();
   }
 
   virtual ~SSLClientSocketOpenSSLClientAuthTest() {

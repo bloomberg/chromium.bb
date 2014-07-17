@@ -1801,7 +1801,7 @@ int SSLClientSocketNSS::Core::DoWriteLoop(int result) {
 int SSLClientSocketNSS::Core::DoHandshake() {
   DCHECK(OnNSSTaskRunner());
 
-  int net_error = net::OK;
+  int net_error = OK;
   SECStatus rv = SSL_ForceHandshake(nss_fd_);
 
   // Note: this function may be called multiple times during the handshake, so

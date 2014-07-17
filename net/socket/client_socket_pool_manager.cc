@@ -132,7 +132,7 @@ int InitSocketPoolHelper(const GURL& request_url,
     // should be the same for all connections, whereas version_max may
     // change for version fallbacks.
     std::string prefix = "ssl/";
-    if (ssl_config_for_origin.version_max != net::kDefaultSSLVersionMax) {
+    if (ssl_config_for_origin.version_max != kDefaultSSLVersionMax) {
       switch (ssl_config_for_origin.version_max) {
         case SSL_PROTOCOL_VERSION_TLS1_2:
           prefix = "ssl(max:3.3)/";
