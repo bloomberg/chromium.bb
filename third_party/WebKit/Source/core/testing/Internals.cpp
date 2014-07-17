@@ -1900,34 +1900,6 @@ void Internals::setIsCursorVisible(Document* document, bool isVisible, Exception
     document->page()->setIsCursorVisible(isVisible);
 }
 
-void Internals::webkitWillEnterFullScreenForElement(Document* document, Element* element)
-{
-    if (!document)
-        return;
-    FullscreenElementStack::from(*document).webkitWillEnterFullScreenForElement(element);
-}
-
-void Internals::webkitDidEnterFullScreenForElement(Document* document, Element* element)
-{
-    if (!document)
-        return;
-    FullscreenElementStack::from(*document).webkitDidEnterFullScreenForElement(element);
-}
-
-void Internals::webkitWillExitFullScreenForElement(Document* document, Element* element)
-{
-    if (!document)
-        return;
-    FullscreenElementStack::from(*document).webkitWillExitFullScreenForElement(element);
-}
-
-void Internals::webkitDidExitFullScreenForElement(Document* document, Element* element)
-{
-    if (!document)
-        return;
-    FullscreenElementStack::from(*document).webkitDidExitFullScreenForElement(element);
-}
-
 void Internals::mediaPlayerRequestFullscreen(HTMLMediaElement* mediaElement)
 {
     mediaElement->mediaPlayerRequestFullscreen();

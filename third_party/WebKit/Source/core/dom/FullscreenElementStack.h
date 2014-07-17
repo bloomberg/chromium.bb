@@ -69,20 +69,19 @@ public:
     void fullyExitFullscreen();
     void exitFullscreen();
 
-    void webkitWillEnterFullScreenForElement(Element*);
-    void webkitDidEnterFullScreenForElement(Element*);
-    void webkitWillExitFullScreenForElement(Element*);
-    void webkitDidExitFullScreenForElement(Element*);
+    static bool fullscreenEnabled(Document&);
+    Element* fullscreenElement() const { return !m_fullScreenElementStack.isEmpty() ? m_fullScreenElementStack.last().get() : 0; }
+
+    void willEnterFullScreenForElement(Element*);
+    void didEnterFullScreenForElement(Element*);
+    void willExitFullScreenForElement(Element*);
+    void didExitFullScreenForElement(Element*);
 
     void setFullScreenRenderer(RenderFullScreen*);
     RenderFullScreen* fullScreenRenderer() const { return m_fullScreenRenderer; }
     void fullScreenRendererDestroyed();
 
     void removeFullScreenElementOfSubtree(Node*, bool amongChildrenOnly = false);
-
-    // W3C API
-    static bool webkitFullscreenEnabled(Document&);
-    Element* webkitFullscreenElement() const { return !m_fullScreenElementStack.isEmpty() ? m_fullScreenElementStack.last().get() : 0; }
 
     // Mozilla API
     bool webkitIsFullScreen() const { return m_fullScreenElement.get(); }

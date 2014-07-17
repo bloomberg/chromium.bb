@@ -253,11 +253,6 @@ public:
 
     void setIsCursorVisible(Document*, bool, ExceptionState&);
 
-    void webkitWillEnterFullScreenForElement(Document*, Element*);
-    void webkitDidEnterFullScreenForElement(Document*, Element*);
-    void webkitWillExitFullScreenForElement(Document*, Element*);
-    void webkitDidExitFullScreenForElement(Document*, Element*);
-
     void mediaPlayerRequestFullscreen(HTMLMediaElement*);
 
     void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme);

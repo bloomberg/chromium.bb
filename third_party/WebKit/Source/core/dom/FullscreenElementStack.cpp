@@ -86,7 +86,7 @@ FullscreenElementStack* FullscreenElementStack::fromIfExistsSlow(Document& docum
 Element* FullscreenElementStack::fullscreenElementFrom(Document& document)
 {
     if (FullscreenElementStack* found = fromIfExists(document))
-        return found->webkitFullscreenElement();
+        return found->fullscreenElement();
     return 0;
 }
 
@@ -366,7 +366,7 @@ void FullscreenElementStack::exitFullscreen()
     host->chrome().client().enterFullScreenForElement(newTop);
 }
 
-bool FullscreenElementStack::webkitFullscreenEnabled(Document& document)
+bool FullscreenElementStack::fullscreenEnabled(Document& document)
 {
     // 4. The fullscreenEnabled attribute must return true if the context object and all ancestor
     // browsing context's documents have their fullscreen enabled flag set, or false otherwise.
@@ -375,7 +375,7 @@ bool FullscreenElementStack::webkitFullscreenEnabled(Document& document)
     return fullscreenIsAllowedForAllOwners(document);
 }
 
-void FullscreenElementStack::webkitWillEnterFullScreenForElement(Element* element)
+void FullscreenElementStack::willEnterFullScreenForElement(Element* element)
 {
     ASSERT(element);
     if (!document()->isActive())
@@ -407,7 +407,7 @@ void FullscreenElementStack::webkitWillEnterFullScreenForElement(Element* elemen
     document()->updateRenderTreeIfNeeded();
 }
 
-void FullscreenElementStack::webkitDidEnterFullScreenForElement(Element*)
+void FullscreenElementStack::didEnterFullScreenForElement(Element*)
 {
     if (!m_fullScreenElement)
         return;
@@ -420,7 +420,7 @@ void FullscreenElementStack::webkitDidEnterFullScreenForElement(Element*)
     m_eventQueueTimer.startOneShot(0, FROM_HERE);
 }
 
-void FullscreenElementStack::webkitWillExitFullScreenForElement(Element*)
+void FullscreenElementStack::willExitFullScreenForElement(Element*)
 {
     if (!m_fullScreenElement)
         return;
@@ -431,7 +431,7 @@ void FullscreenElementStack::webkitWillExitFullScreenForElement(Element*)
     m_fullScreenElement->willStopBeingFullscreenElement();
 }
 
-void FullscreenElementStack::webkitDidExitFullScreenForElement(Element*)
+void FullscreenElementStack::didExitFullScreenForElement(Element*)
 {
     if (!m_fullScreenElement)
         return;
@@ -488,13 +488,13 @@ void FullscreenElementStack::enqueueChangeEvent(Document& document)
     ASSERT(document.hasFullscreenElementStack());
     FullscreenElementStack& fullscreen = from(document);
 
-    EventTarget* target = fullscreen.webkitFullscreenElement();
+    EventTarget* target = fullscreen.fullscreenElement();
     if (!target)
         target = fullscreen.webkitCurrentFullScreenElement();
     if (!target)
         target = &document;
     m_eventQueue.append(createEvent(EventTypeNames::webkitfullscreenchange, *target));
-    // NOTE: The timer is started in webkitDidEnterFullScreenForElement/webkitDidExitFullScreenForElement.
+    // NOTE: The timer is started in didEnterFullScreenForElement/didExitFullScreenForElement.
 }
 
 void FullscreenElementStack::enqueueErrorEvent(Element& element)

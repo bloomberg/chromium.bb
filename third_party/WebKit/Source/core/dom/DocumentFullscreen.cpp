@@ -58,13 +58,13 @@ void DocumentFullscreen::webkitCancelFullScreen(Document& document)
 
 bool DocumentFullscreen::webkitFullscreenEnabled(Document& document)
 {
-    return FullscreenElementStack::webkitFullscreenEnabled(document);
+    return FullscreenElementStack::fullscreenEnabled(document);
 }
 
 Element* DocumentFullscreen::webkitFullscreenElement(Document& document)
 {
     if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(document))
-        return fullscreen->webkitFullscreenElement();
+        return fullscreen->fullscreenElement();
     return 0;
 }
 

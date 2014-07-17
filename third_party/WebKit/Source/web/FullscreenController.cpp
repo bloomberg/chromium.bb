@@ -66,7 +66,7 @@ void FullscreenController::willEnterFullScreen()
     // Ensure that this element's document is still attached.
     Document& doc = m_provisionalFullScreenElement->document();
     if (doc.frame()) {
-        FullscreenElementStack::from(doc).webkitWillEnterFullScreenForElement(m_provisionalFullScreenElement.get());
+        FullscreenElementStack::from(doc).willEnterFullScreenForElement(m_provisionalFullScreenElement.get());
         m_fullScreenFrame = doc.frame();
     }
     m_provisionalFullScreenElement.clear();
@@ -88,7 +88,7 @@ void FullscreenController::didEnterFullScreen()
                 m_webViewImpl->setPinchViewportOffset(FloatPoint());
             }
 
-            FullscreenElementStack::from(*doc).webkitDidEnterFullScreenForElement(0);
+            FullscreenElementStack::from(*doc).didEnterFullScreenForElement(0);
             if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()) {
                 Element* element = FullscreenElementStack::currentFullScreenElementFrom(*doc);
                 ASSERT(element);
@@ -122,7 +122,7 @@ void FullscreenController::willExitFullScreen()
             m_isCancelingFullScreen = true;
             fullscreen->fullyExitFullscreen();
             m_isCancelingFullScreen = false;
-            fullscreen->webkitWillExitFullScreenForElement(0);
+            fullscreen->willExitFullScreenForElement(0);
             if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && m_webViewImpl->layerTreeView())
                 m_webViewImpl->layerTreeView()->setHasTransparentBackground(m_webViewImpl->isTransparent());
         }
@@ -145,7 +145,7 @@ void FullscreenController::didExitFullScreen()
                     m_exitFullscreenScrollOffset = IntSize();
                 }
 
-                fullscreen->webkitDidExitFullScreenForElement(0);
+                fullscreen->didExitFullScreenForElement(0);
             }
         }
     }
