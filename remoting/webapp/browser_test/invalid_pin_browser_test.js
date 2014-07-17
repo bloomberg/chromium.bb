@@ -21,9 +21,7 @@ browserTest.Invalid_PIN.prototype.run = function(data) {
   browserTest.expect(typeof data.pin == 'string');
 
   // Connect to me2me Host.
-  browserTest.clickOnControl('this-host-connect');
-
-  browserTest.onUIMode(remoting.AppMode.CLIENT_PIN_PROMPT).then(
+  browserTest.connectMe2Me().then(
     this.enterPIN_.bind(this, data.pin)
   ).then(
     // Sleep for two seconds to allow the host backoff timer to reset.

@@ -156,6 +156,21 @@ browserTest.onUIMode = function(expectedMode, opt_timeout) {
   });
 };
 
+browserTest.connectMe2Me = function() {
+  var AppMode = remoting.AppMode;
+  browserTest.clickOnControl('this-host-connect');
+  return browserTest.onUIMode(AppMode.CLIENT_HOST_NEEDS_UPGRADE).then(
+    function() {
+      // On fulfilled.
+      browserTest.clickOnControl('host-needs-update-connect-button');
+    }, function() {
+      // On time out.
+      return Promise.resolve();
+    }).then(function() {
+      return browserTest.onUIMode(AppMode.CLIENT_PIN_PROMPT);
+    });
+}
+
 browserTest.expectMe2MeError = function(errorTag) {
   var AppMode = remoting.AppMode;
   var Timeout = browserTest.Timeout;

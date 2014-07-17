@@ -21,13 +21,11 @@ browserTest.Cancel_PIN.prototype.run = function(data) {
   browserTest.expect(typeof data.pin == 'string');
 
   var AppMode = remoting.AppMode;
-  browserTest.clickOnControl('this-host-connect');
-  browserTest.onUIMode(AppMode.CLIENT_PIN_PROMPT).then(function() {
+  browserTest.connectMe2Me().then(function() {
     browserTest.clickOnControl('cancel-pin-entry-button');
     return browserTest.onUIMode(AppMode.HOME);
   }).then(function() {
-    browserTest.clickOnControl('this-host-connect');
-    return browserTest.onUIMode(AppMode.CLIENT_PIN_PROMPT);
+    return browserTest.connectMe2Me()
   }).then(
     this.enterPin_.bind(this, data.pin)
   ).then(function() {

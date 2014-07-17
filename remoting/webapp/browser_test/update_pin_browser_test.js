@@ -27,14 +27,14 @@ browserTest.Update_PIN.prototype.run = function(data) {
                      'The new PIN and the old PIN cannot be the same');
 
   this.changePIN_(data.new_pin).then(
-    this.connect_.bind(this)
+    browserTest.connectMe2Me
   ).then(
     this.enterPIN_.bind(this, data.old_pin, true /* expectError*/)
   ).then(
     // Sleep for two seconds to allow for the login backoff logic to reset.
     base.Promise.sleep.bind(null, LOGIN_BACKOFF_WAIT)
   ).then(
-    this.connect_.bind(this)
+    browserTest.connectMe2Me
   ).then(
     this.enterPIN_.bind(this, data.new_pin, false /* expectError*/)
   ).then(
@@ -70,11 +70,6 @@ browserTest.Update_PIN.prototype.changePIN_ = function(newPin) {
     // for ten seconds before the host is ready for connection.
     return base.Promise.sleep(HOST_RESTART_WAIT);
   });
-};
-
-browserTest.Update_PIN.prototype.connect_ = function() {
-  browserTest.clickOnControl('this-host-connect');
-  return browserTest.onUIMode(remoting.AppMode.CLIENT_PIN_PROMPT);
 };
 
 browserTest.Update_PIN.prototype.disconnect_ = function() {
