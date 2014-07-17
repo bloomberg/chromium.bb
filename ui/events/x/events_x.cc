@@ -579,8 +579,36 @@ const char* CodeFromNative(const base::NativeEvent& native_event) {
 }
 
 uint32 PlatformKeycodeFromNative(const base::NativeEvent& native_event) {
-  KeySym keysym;
-  XLookupString(&native_event->xkey, NULL, 0, &keysym, NULL);
+  XKeyEvent* xkey = NULL;
+  XEvent xkey_from_xi2;
+  switch (native_event->type) {
+    case KeyPress:
+    case KeyRelease:
+      xkey = &native_event->xkey;
+      break;
+    case GenericEvent: {
+      XIDeviceEvent* xievent =
+          static_cast<XIDeviceEvent*>(native_event->xcookie.data);
+      switch (xievent->evtype) {
+        case XI_KeyPress:
+        case XI_KeyRelease:
+          // Build an XKeyEvent corresponding to the XI2 event,
+          // so that we can call XLookupString on it.
+          InitXKeyEventFromXIDeviceEvent(*native_event, &xkey_from_xi2);
+          xkey = &xkey_from_xi2.xkey;
+          break;
+        default:
+          NOTREACHED();
+          break;
+      }
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
+  KeySym keysym = XK_VoidSymbol;
+  if (xkey)
+    XLookupString(xkey, NULL, 0, &keysym, NULL);
   return keysym;
 }
 
