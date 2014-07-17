@@ -56,11 +56,6 @@ void GeoNotifier::setUseCachedPosition()
 
 void GeoNotifier::runSuccessCallback(Geoposition* position)
 {
-    // If we are here and the Geolocation permission is not approved, something has
-    // gone horribly wrong.
-    if (!m_geolocation->isAllowed())
-        CRASH();
-
     m_successCallback->handleEvent(position);
 }
 
