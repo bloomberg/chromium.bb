@@ -291,5 +291,7 @@ ALWAYS_INLINE float SimpleFontData::widthForGlyph(Glyph glyph) const
     return width;
 }
 
+DEFINE_FONT_DATA_TYPE_CASTS(SimpleFontData, false);
+
 } // namespace WebCore
 #endif // SimpleFontData_h

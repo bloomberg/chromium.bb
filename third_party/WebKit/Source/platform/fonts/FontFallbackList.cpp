@@ -71,7 +71,7 @@ void FontFallbackList::releaseFontData()
     for (unsigned i = 0; i < numFonts; ++i) {
         if (!m_fontList[i]->isCustomFont()) {
             ASSERT(!m_fontList[i]->isSegmented());
-            FontCache::fontCache()->releaseFontData(static_cast<const SimpleFontData*>(m_fontList[i].get()));
+            FontCache::fontCache()->releaseFontData(toSimpleFontData(m_fontList[i]));
         }
     }
 }
@@ -95,7 +95,7 @@ void FontFallbackList::determinePitch(const FontDescription& fontDescription) co
             }
             simpleFontData = segmentedFontData->rangeAt(0).fontData().get();
         } else {
-            simpleFontData = static_cast<const SimpleFontData*>(fontData);
+            simpleFontData = toSimpleFontData(fontData);
         }
         if (!fontData->isLoadingFallback()) {
             m_pitch = simpleFontData->pitch();

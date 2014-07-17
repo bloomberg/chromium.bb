@@ -67,6 +67,10 @@ private:
     mutable unsigned m_maxGlyphPageTreeLevel;
 };
 
+#define DEFINE_FONT_DATA_TYPE_CASTS(thisType, predicate) \
+    template<typename T> inline thisType* to##thisType(const RefPtr<T>& fontData) { return to##thisType(fontData.get()); } \
+    DEFINE_TYPE_CASTS(thisType, FontData, fontData, fontData->isSegmented() == predicate, fontData.isSegmented() == predicate)
+
 } // namespace WebCore
 
 #endif // FontData_h
