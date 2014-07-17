@@ -101,7 +101,7 @@ static bool gModifyRenderTreeStructureAnyState = false;
 
 using namespace HTMLNames;
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 
 RenderObject::SetLayoutNeededForbiddenScope::SetLayoutNeededForbiddenScope(RenderObject& renderObject)
     : m_renderObject(renderObject)
@@ -119,7 +119,7 @@ RenderObject::SetLayoutNeededForbiddenScope::~SetLayoutNeededForbiddenScope()
 struct SameSizeAsRenderObject {
     virtual ~SameSizeAsRenderObject() { } // Allocate vtable pointer.
     void* pointers[5];
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     unsigned m_debugBitfields : 2;
 #endif
     unsigned m_bitfields;
@@ -216,7 +216,7 @@ RenderObject::RenderObject(Node* node)
     , m_parent(0)
     , m_previous(0)
     , m_next(0)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     , m_hasAXObject(false)
     , m_setNeedsLayoutForbidden(false)
 #endif
@@ -230,8 +230,8 @@ RenderObject::RenderObject(Node* node)
 RenderObject::~RenderObject()
 {
     ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->removeRenderObject(this);
-#ifndef NDEBUG
     ASSERT(!m_hasAXObject);
+#ifndef NDEBUG
     renderObjectCounter.decrement();
 #endif
 }
@@ -717,7 +717,7 @@ void RenderObject::markContainingBlocksForLayout(bool scheduleRelayout, RenderOb
         last->scheduleRelayout();
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 void RenderObject::checkBlockPositionedObjectsNeedLayout()
 {
     ASSERT(!needsLayout());

@@ -118,7 +118,7 @@ private:
 
     SVGSVGElement& m_ownerSVGElement;
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool m_preventScheduledAnimationsChanges;
 #endif
 };

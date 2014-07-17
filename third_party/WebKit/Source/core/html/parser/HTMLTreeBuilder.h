@@ -214,7 +214,7 @@ private:
     };
 
     bool m_framesetOk;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool m_isAttached;
 #endif
     FragmentParsingContext m_fragmentContext;

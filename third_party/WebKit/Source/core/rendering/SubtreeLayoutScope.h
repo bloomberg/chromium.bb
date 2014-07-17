@@ -60,7 +60,7 @@ public:
 private:
     RenderObject& m_root;
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     HashSet<RenderObject*> m_renderersToLayout;
 #endif
 };

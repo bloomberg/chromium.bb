@@ -147,7 +147,7 @@ void ChildListMutationAccumulator::enqueueMutationRecord()
 bool ChildListMutationAccumulator::isEmpty()
 {
     bool result = m_removedNodes.isEmpty() && m_addedNodes.isEmpty();
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     if (result) {
         ASSERT(!m_previousSibling);
         ASSERT(!m_nextSibling);

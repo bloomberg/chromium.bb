@@ -291,7 +291,7 @@ public:
         ASSERT(m_type == StartTag || m_type == EndTag);
         m_attributes.grow(m_attributes.size() + 1);
         m_currentAttribute = &m_attributes.last();
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         m_currentAttribute->nameRange.start = 0;
         m_currentAttribute->nameRange.end = 0;
         m_currentAttribute->valueRange.start = 0;
@@ -315,7 +315,7 @@ public:
     void beginAttributeValue(int offset)
     {
         m_currentAttribute->valueRange.start = offset - m_baseOffset;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         m_currentAttribute->valueRange.end = 0;
 #endif
     }

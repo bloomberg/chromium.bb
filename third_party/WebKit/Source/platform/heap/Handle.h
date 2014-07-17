@@ -203,7 +203,7 @@ public:
 protected:
     inline PersistentBase()
         : PersistentNode(TraceMethodDelegate<Owner, &Owner::trace>::trampoline)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         , m_roots(RootsAccessor::roots())
 #endif
     {
@@ -216,7 +216,7 @@ protected:
 
     inline explicit PersistentBase(const PersistentBase& otherref)
         : PersistentNode(otherref.m_trace)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         , m_roots(RootsAccessor::roots())
 #endif
     {
@@ -234,7 +234,7 @@ protected:
 
     inline PersistentBase& operator=(const PersistentBase& otherref) { return *this; }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 private:
     PersistentNode* m_roots;
 #endif
@@ -276,7 +276,7 @@ private:
     friend class ThreadState;
 };
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // For global persistent handles we cannot check that the
     // pointer is in the heap because that would involve
     // inspecting the heap of running threads.

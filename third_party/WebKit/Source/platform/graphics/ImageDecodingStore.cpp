@@ -51,7 +51,7 @@ ImageDecodingStore::ImageDecodingStore()
 
 ImageDecodingStore::~ImageDecodingStore()
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     setCacheLimitInBytes(0);
     ASSERT(!m_imageCacheMap.size());
     ASSERT(!m_decoderCacheMap.size());

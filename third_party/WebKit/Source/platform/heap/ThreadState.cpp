@@ -752,7 +752,7 @@ void ThreadState::setupHeapsForTermination()
 BaseHeapPage* ThreadState::heapPageFromAddress(Address address)
 {
     BaseHeapPage* cachedPage = heapContainsCache()->lookup(address);
-#ifdef NDEBUG
+#if !ENABLE(ASSERT)
     if (cachedPage)
         return cachedPage;
 #endif
@@ -779,7 +779,7 @@ BaseHeapPage* ThreadState::heapPageFromAddress(Address address)
 void ThreadState::getStats(HeapStats& stats)
 {
     stats = m_stats;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     if (isConsistentForGC()) {
         HeapStats scannedStats;
         scannedStats.clear();

@@ -78,7 +78,7 @@ public:
     bool performingMicrotaskCheckpoint() const { return m_performingMicrotaskCheckpoint; }
     void setPerformingMicrotaskCheckpoint(bool performingMicrotaskCheckpoint) { m_performingMicrotaskCheckpoint = performingMicrotaskCheckpoint; }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     int internalScriptRecursionLevel() const { return m_internalScriptRecursionLevel; }
     int incrementInternalScriptRecursionLevel() { return ++m_internalScriptRecursionLevel; }
     int decrementInternalScriptRecursionLevel() { return --m_internalScriptRecursionLevel; }
@@ -126,7 +126,7 @@ private:
     int m_recursionLevel;
     bool m_isHandlingRecursionLevelError;
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     int m_internalScriptRecursionLevel;
 #endif
     OwnPtr<GCEventData> m_gcEventData;

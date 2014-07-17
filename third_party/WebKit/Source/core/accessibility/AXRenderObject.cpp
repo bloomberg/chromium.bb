@@ -169,7 +169,7 @@ AXRenderObject::AXRenderObject(RenderObject* renderer)
     , m_renderer(renderer)
     , m_cachedElementRectDirty(true)
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     m_renderer->setHasAXObject(true);
 #endif
 }
@@ -419,7 +419,7 @@ void AXRenderObject::detach()
 
     detachRemoteSVGRoot();
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     if (m_renderer)
         m_renderer->setHasAXObject(false);
 #endif
@@ -576,7 +576,7 @@ AXObjectInclusion AXRenderObject::defaultObjectInclusion() const
 
 bool AXRenderObject::computeAccessibilityIsIgnored() const
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     ASSERT(m_initialized);
 #endif
 

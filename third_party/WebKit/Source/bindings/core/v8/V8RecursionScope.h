@@ -81,7 +81,7 @@ public:
         return V8PerIsolateData::from(isolate)->recursionLevel();
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     static bool properlyUsed(v8::Isolate* isolate)
     {
         return recursionLevel(isolate) > 0 || V8PerIsolateData::from(isolate)->internalScriptRecursionLevel() > 0;
@@ -91,25 +91,25 @@ public:
     class MicrotaskSuppression {
     public:
         MicrotaskSuppression(v8::Isolate* isolate)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
             : m_isolate(isolate)
 #endif
         {
             ASSERT(!ScriptForbiddenScope::isScriptForbidden());
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
             V8PerIsolateData::from(m_isolate)->incrementInternalScriptRecursionLevel();
 #endif
         }
 
         ~MicrotaskSuppression()
         {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
             V8PerIsolateData::from(m_isolate)->decrementInternalScriptRecursionLevel();
 #endif
         }
 
     private:
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         v8::Isolate* m_isolate;
 #endif
     };

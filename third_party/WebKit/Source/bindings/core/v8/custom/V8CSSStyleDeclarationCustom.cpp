@@ -59,7 +59,7 @@ namespace WebCore {
 // The prefix within the property name must be followed by a capital letter.
 static bool hasCSSPropertyNamePrefix(const String& propertyName, const char* prefix)
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     ASSERT(*prefix);
     for (const char* p = prefix; *p; ++p)
         ASSERT(isASCIILower(*p));

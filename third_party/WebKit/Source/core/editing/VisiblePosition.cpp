@@ -96,7 +96,7 @@ VisiblePosition VisiblePosition::previous(EditingBoundaryCrossingRule rule) cons
     VisiblePosition prev = VisiblePosition(pos, DOWNSTREAM);
     ASSERT(prev != *this);
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // we should always be able to make the affinity DOWNSTREAM, because going previous from an
     // UPSTREAM position can never yield another UPSTREAM position (unless line wrap length is 0!).
     if (prev.isNotNull() && m_affinity == UPSTREAM) {

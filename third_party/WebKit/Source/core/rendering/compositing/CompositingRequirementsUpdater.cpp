@@ -139,7 +139,7 @@ public:
 
 static bool requiresCompositingOrSquashing(CompositingReasons reasons)
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool fastAnswer = reasons != CompositingReasonNone;
     bool slowAnswer = requiresCompositing(reasons) || requiresSquashing(reasons);
     ASSERT(fastAnswer == slowAnswer);

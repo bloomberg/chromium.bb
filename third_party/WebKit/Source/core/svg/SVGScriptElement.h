@@ -41,7 +41,7 @@ public:
 
     ScriptLoader* loader() const { return m_loader.get(); }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     virtual bool isAnimatableAttribute(const QualifiedName&) const OVERRIDE;
 #endif
 

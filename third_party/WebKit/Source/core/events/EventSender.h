@@ -42,7 +42,7 @@ public:
     void cancelEvent(T*);
     void dispatchPendingEvents();
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool hasPendingEvents(T* sender) const
     {
         return m_dispatchSoonList.find(sender) != kNotFound || m_dispatchingList.find(sender) != kNotFound;

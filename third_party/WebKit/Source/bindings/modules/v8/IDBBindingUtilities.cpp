@@ -440,7 +440,7 @@ ScriptValue deserializeScriptValue(ScriptState* scriptState, SerializedScriptVal
     return ScriptValue(scriptState, v8::Null(isolate));
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState, PassRefPtr<SharedBuffer> buffer, const Vector<blink::WebBlobInfo>* blobInfo, IDBKey* key, const IDBKeyPath& keyPath)
 {
     ScriptState::Scope scope(scriptState);

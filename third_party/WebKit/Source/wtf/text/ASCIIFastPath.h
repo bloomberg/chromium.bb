@@ -119,7 +119,7 @@ inline void copyLCharsFromUCharSource(LChar* destination, const UChar* source, s
     if (length > ucharsPerLoop) {
         const size_t endLength = length - ucharsPerLoop + 1;
         for (; i < endLength; i += ucharsPerLoop) {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
             for (unsigned checkIndex = 0; checkIndex < ucharsPerLoop; ++checkIndex)
                 ASSERT(!(source[i+checkIndex] & 0xff00));
 #endif

@@ -39,10 +39,10 @@ public:
     void execute() const { moveTreeToNewScope(m_toAdopt); }
     bool needsScopeChange() const { return m_oldScope != m_newScope; }
 
-#ifdef NDEBUG
-    static void ensureDidMoveToNewDocumentWasCalled(Document&) { }
-#else
+#if ENABLE(ASSERT)
     static void ensureDidMoveToNewDocumentWasCalled(Document&);
+#else
+    static void ensureDidMoveToNewDocumentWasCalled(Document&) { }
 #endif
 
 private:

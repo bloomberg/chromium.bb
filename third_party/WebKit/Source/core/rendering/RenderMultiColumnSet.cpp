@@ -131,11 +131,11 @@ unsigned RenderMultiColumnSet::findRunWithTallestColumns() const
 
 void RenderMultiColumnSet::distributeImplicitBreaks()
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // There should be no implicit breaks assumed at this point.
     for (unsigned i = 0; i < m_contentRuns.size(); i++)
         ASSERT(!m_contentRuns[i].assumedImplicitBreaks());
-#endif // NDEBUG
+#endif // ENABLE(ASSERT)
 
     // Insert a final content run to encompass all content. This will include overflow if this is
     // the last set.

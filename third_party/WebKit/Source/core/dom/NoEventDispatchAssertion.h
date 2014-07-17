@@ -10,7 +10,7 @@
 
 namespace WebCore {
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 
 class NoEventDispatchAssertion {
 public:
@@ -69,7 +69,7 @@ public:
     };
 };
 
-#endif // NDEBUG
+#endif // ENABLE(ASSERT)
 
 } // namespace WebCore
 

@@ -265,7 +265,7 @@ private:
 
 HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, HTMLDocument* document, ParserContentPolicy parserContentPolicy, bool, const HTMLParserOptions& options)
     : m_framesetOk(true)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     , m_isAttached(true)
 #endif
     , m_tree(document, parserContentPolicy)
@@ -282,7 +282,7 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, HTMLDocument* docum
 // minimize code duplication between these constructors.
 HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, DocumentFragment* fragment, Element* contextElement, ParserContentPolicy parserContentPolicy, const HTMLParserOptions& options)
     : m_framesetOk(true)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     , m_isAttached(true)
 #endif
     , m_fragmentContext(fragment, contextElement)
@@ -324,7 +324,7 @@ void HTMLTreeBuilder::trace(Visitor* visitor)
 
 void HTMLTreeBuilder::detach()
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // This call makes little sense in fragment mode, but for consistency
     // DocumentParser expects detach() to always be called before it's destroyed.
     m_isAttached = false;

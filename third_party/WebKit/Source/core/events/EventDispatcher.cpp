@@ -53,7 +53,7 @@ bool EventDispatcher::dispatchEvent(Node* node, PassRefPtrWillBeRawPtr<EventDisp
 EventDispatcher::EventDispatcher(Node* node, PassRefPtrWillBeRawPtr<Event> event)
     : m_node(node)
     , m_event(event)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     , m_eventDispatched(false)
 #endif
 {
@@ -108,7 +108,7 @@ bool EventDispatcher::dispatch()
 {
     TRACE_EVENT0("blink", "EventDispatcher::dispatch");
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     ASSERT(!m_eventDispatched);
     m_eventDispatched = true;
 #endif

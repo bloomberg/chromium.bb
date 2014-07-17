@@ -744,7 +744,7 @@ void RenderGrid::distributeSpaceToTracks(Vector<GridTrack*>& tracks, Vector<Grid
     }
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 bool RenderGrid::tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection direction, const Vector<GridTrack>& tracks)
 {
     for (size_t i = 0; i < tracks.size(); ++i) {
@@ -1020,7 +1020,7 @@ void RenderGrid::layoutGridItems()
         // now, just size as if we were a regular child.
         child->layoutIfNeeded();
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         const GridCoordinate& coordinate = cachedGridCoordinate(child);
         ASSERT(coordinate.columns.resolvedInitialPosition.toInt() < sizingData.columnTracks.size());
         ASSERT(coordinate.rows.resolvedInitialPosition.toInt() < sizingData.rowTracks.size());

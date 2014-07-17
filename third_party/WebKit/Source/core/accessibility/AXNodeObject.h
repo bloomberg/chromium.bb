@@ -67,7 +67,7 @@ protected:
     // Protected data.
     AccessibilityRole m_ariaRole;
     bool m_childrenDirty;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool m_initialized;
 #endif
 

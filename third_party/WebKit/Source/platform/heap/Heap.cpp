@@ -444,7 +444,7 @@ void HeapObjectHeader::setDeadMark()
     m_size |= deadBitMask;
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 NO_SANITIZE_ADDRESS
 void HeapObjectHeader::zapMagic()
 {
@@ -467,7 +467,7 @@ void HeapObjectHeader::finalize(const GCInfo* gcInfo, Address object, size_t obj
         gcInfo->m_finalize(object);
     }
 
-#if !defined(NDEBUG) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
+#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
     // In Debug builds, memory is zapped when it's freed, and the zapped memory is
     // zeroed out when the memory is reused. Memory is also zapped when using Leak
     // Sanitizer because the heap is used as a root region for LSan and therefore
@@ -855,7 +855,7 @@ void OrphanedPagePool::addOrphanedPage(int index, BaseHeapPage* page)
 NO_SANITIZE_ADDRESS
 void OrphanedPagePool::decommitOrphanedPages()
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // No locking needed as all threads are at safepoints at this point in time.
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
     for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
@@ -919,7 +919,7 @@ void OrphanedPagePool::clearMemory(PageMemory* memory)
 #endif
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 bool OrphanedPagePool::contains(void* object)
 {
     for (int index = 0; index < NumberOfHeaps; ++index) {
@@ -1009,7 +1009,7 @@ void ThreadHeap<Header>::allocatePage(const GCInfo* gcInfo)
     addToFreeList(page->payload(), HeapPage<Header>::payloadSize());
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 template<typename Header>
 void ThreadHeap<Header>::getScannedStats(HeapStats& scannedStats)
 {
@@ -1180,7 +1180,7 @@ void HeapPage<Header>::sweep()
 
         if (basicHeader->isFree()) {
             size_t size = basicHeader->size();
-#if defined(NDEBUG) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
+#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
             // Zero the memory in the free list header to maintain the
             // invariant that memory on the free list is zero filled.
             // The rest of the memory is already on the free list and is
@@ -1203,7 +1203,7 @@ void HeapPage<Header>::sweep()
             ASAN_UNPOISON_MEMORY_REGION(header->payload(), header->payloadSize());
             finalize(header);
             size_t size = header->size();
-#if defined(NDEBUG) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
+#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
             // This memory will be added to the freelist. Maintain the invariant
             // that memory on the freelist is zero filled.
             memset(headerAddress, 0, size);
@@ -1491,7 +1491,7 @@ void CallbackStack::shutdown(CallbackStack** first)
 
 CallbackStack::~CallbackStack()
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     clearUnused();
 #endif
 }
@@ -1512,7 +1512,7 @@ bool CallbackStack::popAndInvokeCallback(CallbackStack** first, Visitor* visitor
 {
     if (m_current == &(m_buffer[0])) {
         if (!m_next) {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
             clearUnused();
 #endif
             return false;
@@ -1605,7 +1605,7 @@ void CallbackStack::invokeOldestCallbacks(Visitor* visitor)
     }
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 bool CallbackStack::hasCallbackForObject(const void* object)
 {
     for (unsigned i = 0; m_buffer + i < m_current; i++) {
@@ -1716,7 +1716,7 @@ public:
         Heap::registerWeakTable(const_cast<void*>(closure), iterationCallback, iterationDoneCallback);
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     virtual bool weakTableRegistered(const void* closure)
     {
         return Heap::weakTableRegistered(closure);
@@ -1901,7 +1901,7 @@ BaseHeapPage* Heap::contains(Address address)
     return 0;
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 bool Heap::containedInHeapOrOrphanedPage(void* object)
 {
     return contains(object) || orphanedPagePool()->contains(object);
@@ -1912,7 +1912,7 @@ Address Heap::checkAndMarkPointer(Visitor* visitor, Address address)
 {
     ASSERT(ThreadState::isAnyThreadInGC());
 
-#ifdef NDEBUG
+#if !ENABLE(ASSERT)
     if (s_heapDoesNotContainCache->lookup(address))
         return 0;
 #endif
@@ -1928,7 +1928,7 @@ Address Heap::checkAndMarkPointer(Visitor* visitor, Address address)
         }
     }
 
-#ifdef NDEBUG
+#if !ENABLE(ASSERT)
     s_heapDoesNotContainCache->addEntry(address, true);
 #else
     if (!s_heapDoesNotContainCache->lookup(address))
@@ -2034,7 +2034,7 @@ void Heap::registerWeakTable(void* table, EphemeronCallback iterationCallback, E
     pushWeakCellPointerCallback(static_cast<void**>(table), iterationDoneCallback);
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 bool Heap::weakTableRegistered(const void* table)
 {
     ASSERT(s_ephemeronStack);

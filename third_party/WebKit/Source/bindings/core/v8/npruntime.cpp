@@ -421,7 +421,7 @@ void _NPN_UnregisterObject(NPObject* npObject)
         ASSERT_WITH_SECURITY_IMPLICATION(rootObjectMap().find(npObject) != rootObjectMap().end());
         NPObjectSet* set = rootObjectMap().get(npObject);
         while (set->size() > 0) {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
             unsigned size = set->size();
 #endif
             NPObject* sub_object = *(set->begin());

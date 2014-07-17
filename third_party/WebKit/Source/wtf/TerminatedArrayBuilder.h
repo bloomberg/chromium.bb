@@ -55,7 +55,7 @@ public:
     }
 
 private:
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     void assertValid()
     {
         for (size_t i = 0; i < m_count; ++i) {

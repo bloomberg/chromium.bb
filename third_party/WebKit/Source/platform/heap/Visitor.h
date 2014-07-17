@@ -47,7 +47,7 @@
 #include "wtf/text/WTFString.h"
 #endif
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 #define DEBUG_ONLY(x) x
 #else
 #define DEBUG_ONLY(x)
@@ -173,7 +173,7 @@ public:
         DefaultTraceTrait<T>::mark(visitor, t);
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     static void checkGCInfo(Visitor* visitor, const T* t)
     {
         DefaultTraceTrait<T>::checkGCInfo(visitor, t);
@@ -224,7 +224,7 @@ public:
     {
         if (!t)
             return;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         TraceTrait<T>::checkGCInfo(this, t);
 #endif
         TraceTrait<T>::mark(this, t);
@@ -377,7 +377,7 @@ public:
     }
 
     virtual void registerWeakTable(const void*, EphemeronCallback, EphemeronCallback) = 0;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     virtual bool weakTableRegistered(const void*) = 0;
 #endif
 
@@ -398,7 +398,7 @@ public:
         return isAlive(ptr.get());
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     void checkGCInfo(const void*, const GCInfo*);
 #endif
 
@@ -506,7 +506,7 @@ public:
         visitor->mark(const_cast<T*>(t), &TraceTrait<T>::trace);
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     static void checkGCInfo(Visitor* visitor, const T* t)
     {
         visitor->checkGCInfo(const_cast<T*>(t), GCInfoTrait<T>::get());
@@ -533,7 +533,7 @@ public:
         self->adjustAndMark(visitor);
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     static void checkGCInfo(Visitor*, const T*) { }
 #endif
 };

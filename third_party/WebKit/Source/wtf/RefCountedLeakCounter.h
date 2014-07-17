@@ -21,6 +21,7 @@
 #ifndef RefCountedLeakCounter_h
 #define RefCountedLeakCounter_h
 
+#include "wtf/Assertions.h"
 #include "wtf/WTFExport.h"
 
 namespace WTF {
@@ -35,7 +36,7 @@ namespace WTF {
         void increment();
         void decrement();
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     private:
         volatile int m_count;
         const char* m_description;

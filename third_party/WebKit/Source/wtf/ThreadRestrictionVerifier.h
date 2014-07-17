@@ -31,9 +31,10 @@
 #ifndef ThreadRestrictionVerifier_h
 #define ThreadRestrictionVerifier_h
 
-#ifndef NDEBUG
-
 #include "wtf/Assertions.h"
+
+#if ENABLE(ASSERT)
+
 #include "wtf/Threading.h"
 
 namespace WTF {
@@ -53,9 +54,7 @@ public:
     // Indicates that the object may (or may not) be owned by more than one place.
     void setShared(bool shared)
     {
-#if ENABLE(ASSERT)
         bool previouslyShared = m_shared;
-#endif
         m_shared = shared;
 
         if (!m_shared)
@@ -84,5 +83,5 @@ private:
 
 }
 
-#endif // !NDEBUG
+#endif // ENABLE(ASSERT)
 #endif // ThreadRestrictionVerifier_h

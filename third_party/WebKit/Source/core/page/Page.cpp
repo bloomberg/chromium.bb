@@ -137,7 +137,7 @@ Page::Page(PageClients& pageClients)
     , m_timerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval())
     , m_visibilityState(PageVisibilityStateVisible)
     , m_isCursorVisible(true)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     , m_isPainting(false)
 #endif
     , m_frameHost(FrameHost::create(*this))

@@ -76,9 +76,9 @@ private:
     bool m_hasFileProperties;
 
     double m_lastModified;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool m_hasLastModified;
-#endif // NDEBUG
+#endif // ENABLE(ASSERT)
 };
 
 // Appends the blobParts passed to a Blob or File constructor into a BlobData.

@@ -60,7 +60,7 @@ using namespace HTMLNames;
 static void dispatchChildInsertionEvents(Node&);
 static void dispatchChildRemovalEvents(Node&);
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 unsigned NoEventDispatchAssertion::s_count = 0;
 #endif
 
@@ -1377,7 +1377,7 @@ Element* ContainerNode::getElementById(const AtomicString& id) const
     return 0;
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 bool childAttachedAllowedWhenAttachingChildren(ContainerNode* node)
 {
     if (node->isShadowRoot())

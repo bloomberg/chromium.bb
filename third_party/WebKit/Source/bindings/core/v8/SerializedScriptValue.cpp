@@ -543,7 +543,7 @@ public:
     void writeArrayBufferView(const ArrayBufferView& arrayBufferView)
     {
         append(ArrayBufferViewTag);
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         const ArrayBuffer& arrayBuffer = *arrayBufferView.buffer();
         ASSERT(static_cast<const uint8_t*>(arrayBuffer.data()) + arrayBufferView.byteOffset() ==
                static_cast<const uint8_t*>(arrayBufferView.baseAddress()));

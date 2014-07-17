@@ -42,7 +42,7 @@ public:
     explicit WebCoreStringResourceBase(const String& string)
         : m_plainString(string)
     {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         m_threadId = WTF::currentThread();
 #endif
         ASSERT(!string.isNull());
@@ -53,7 +53,7 @@ public:
         : m_plainString(string.string())
         , m_atomicString(string)
     {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         m_threadId = WTF::currentThread();
 #endif
         ASSERT(!string.isNull());
@@ -62,7 +62,7 @@ public:
 
     virtual ~WebCoreStringResourceBase()
     {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         ASSERT(m_threadId == WTF::currentThread());
 #endif
         int reducedExternalMemory = -memoryConsumption(m_plainString);
@@ -75,7 +75,7 @@ public:
 
     const AtomicString& atomicString()
     {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         ASSERT(m_threadId == WTF::currentThread());
 #endif
         if (m_atomicString.isNull()) {
@@ -102,7 +102,7 @@ private:
     {
         return string.length() * (string.is8Bit() ? sizeof(LChar) : sizeof(UChar));
     }
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     WTF::ThreadIdentifier m_threadId;
 #endif
 };

@@ -42,7 +42,7 @@ public:
     {
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     ~RenderLineBoxList();
 #endif
 
@@ -79,7 +79,7 @@ private:
 };
 
 
-#ifdef NDEBUG
+#if !ENABLE(ASSERT)
 inline void RenderLineBoxList::checkConsistency() const
 {
 }

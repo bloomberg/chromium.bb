@@ -987,7 +987,7 @@ SVGElement::InstanceUpdateBlocker::~InstanceUpdateBlocker()
         m_targetElement->setInstanceUpdatesBlocked(false);
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 bool SVGElement::isAnimatableAttribute(const QualifiedName& name) const
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, animatableAttributes, ());

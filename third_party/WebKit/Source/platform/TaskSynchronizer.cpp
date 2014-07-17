@@ -35,7 +35,7 @@ namespace WebCore {
 
 TaskSynchronizer::TaskSynchronizer()
     : m_taskCompleted(false)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     , m_hasCheckedForTermination(false)
 #endif
 {

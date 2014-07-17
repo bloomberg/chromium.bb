@@ -20,16 +20,16 @@
 
 #include "config.h"
 #include "RefCountedLeakCounter.h"
-
-#ifndef NDEBUG
 #include "wtf/Assertions.h"
+
+#if ENABLE(ASSERT)
 #include "wtf/Atomics.h"
 #include "wtf/HashCountedSet.h"
 #endif
 
 namespace WTF {
 
-#ifdef NDEBUG
+#if !ENABLE(ASSERT)
 
 void RefCountedLeakCounter::suppressMessages(const char*) { }
 void RefCountedLeakCounter::cancelMessageSuppression(const char*) { }

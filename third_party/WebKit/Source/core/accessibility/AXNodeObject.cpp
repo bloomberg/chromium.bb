@@ -52,7 +52,7 @@ AXNodeObject::AXNodeObject(Node* node)
     : AXObject()
     , m_ariaRole(UnknownRole)
     , m_childrenDirty(false)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     , m_initialized(false)
 #endif
     , m_node(node)
@@ -154,7 +154,7 @@ void AXNodeObject::changeValueByStep(bool increase)
 
 bool AXNodeObject::computeAccessibilityIsIgnored() const
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // Double-check that an AXObject is never accessed before
     // it's been initialized.
     ASSERT(m_initialized);
@@ -446,7 +446,7 @@ AccessibilityRole AXNodeObject::remapAriaRoleDueToParent(AccessibilityRole role)
 
 void AXNodeObject::init()
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     ASSERT(!m_initialized);
     m_initialized = true;
 #endif

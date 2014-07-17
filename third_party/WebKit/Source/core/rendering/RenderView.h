@@ -169,7 +169,7 @@ private:
     bool rootFillsViewportBackground(RenderBox* rootBox) const;
 
     void layoutContent();
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     void checkLayoutState();
 #endif
 

@@ -47,7 +47,7 @@ static const int invalidPortNumber = 0xFFFF;
 
 static void assertProtocolIsGood(const char* protocol)
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     const char* p = protocol;
     while (*p) {
         ASSERT(*p > ' ' && *p < 0x7F && !(*p >= 'A' && *p <= 'Z'));

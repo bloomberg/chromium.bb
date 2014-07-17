@@ -121,7 +121,7 @@ void DOMWrapperWorld::dispose()
     m_domDataStore.clear();
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 static bool isIsolatedWorldId(int worldId)
 {
     return MainWorldId < worldId  && worldId < IsolatedWorldIdLimit;

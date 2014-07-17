@@ -220,7 +220,7 @@ public:
         return locateFlowThreadContainingBlock();
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     void setHasAXObject(bool flag) { m_hasAXObject = flag; }
     bool hasAXObject() const { return m_hasAXObject; }
 
@@ -236,8 +236,10 @@ public:
 
     void assertRendererLaidOut() const
     {
+#ifndef NDEBUG
         if (needsLayout())
             showRenderTreeForThis();
+#endif
         ASSERT_WITH_SECURITY_IMPLICATION(!needsLayout());
     }
 
@@ -296,7 +298,7 @@ protected:
 
     //////////////////////////////////////////
 private:
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool isSetNeedsLayoutForbidden() const { return m_setNeedsLayoutForbidden; }
     void setNeedsLayoutIsForbidden(bool flag) { m_setNeedsLayoutForbidden = flag; }
 #endif
@@ -1111,7 +1113,7 @@ private:
 
     void removeShapeImageClient(ShapeValue*);
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     void checkBlockPositionedObjectsNeedLayout();
 #endif
     const char* invalidationReasonToString(InvalidationReason) const;
@@ -1126,7 +1128,7 @@ private:
     RenderObject* m_previous;
     RenderObject* m_next;
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     unsigned m_hasAXObject             : 1;
     unsigned m_setNeedsLayoutForbidden : 1;
 #endif
@@ -1363,7 +1365,7 @@ inline void RenderObject::clearNeedsLayout()
     setNormalChildNeedsLayout(false);
     setNeedsPositionedMovementLayout(false);
     setAncestorLineBoxDirty(false);
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     checkBlockPositionedObjectsNeedLayout();
 #endif
 }

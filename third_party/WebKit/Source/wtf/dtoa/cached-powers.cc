@@ -140,10 +140,8 @@ namespace double_conversion {
     const int PowersOfTenCache::kMinDecimalExponent = -348; // kCachedPowers[0].decimal_exponent
     const int PowersOfTenCache::kMaxDecimalExponent = 340; // kCachedPowers[kCachedPowersLength - 1].decimal_exponent
 
-#ifndef NDEBUG
 #if ENABLE(ASSERT)
     static const int kCachedPowersLength = ARRAY_SIZE(kCachedPowers);
-#endif
 
     // Check that the static constants match the values in kCachedPowers.
     static void validateStaticConstants() {
@@ -159,7 +157,7 @@ namespace double_conversion {
                                                                 int max_exponent,
                                                                 DiyFp* power,
                                                                 int* decimal_exponent) {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         validateStaticConstants();
 #endif
         int kQ = DiyFp::kSignificandSize;
@@ -181,7 +179,7 @@ namespace double_conversion {
                                                             int* found_exponent) {
         ASSERT(kMinDecimalExponent <= requested_exponent);
         ASSERT(requested_exponent < kMaxDecimalExponent + kDecimalExponentDistance);
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         validateStaticConstants();
 #endif
         int index =

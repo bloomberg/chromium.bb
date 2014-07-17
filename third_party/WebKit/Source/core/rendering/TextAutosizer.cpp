@@ -453,7 +453,7 @@ void TextAutosizer::setMultiplier(RenderObject* renderer, float multiplier)
 
 void TextAutosizer::setMultiplierForList(RenderObject* renderer, float multiplier)
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     Node* parentNode = renderer->generatingNode();
     ASSERT(parentNode);
     ASSERT(isHTMLOListElement(parentNode) || isHTMLUListElement(parentNode));

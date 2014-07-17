@@ -63,10 +63,12 @@ private:
     BLINK_EXPORT void initialize();
     BLINK_EXPORT void reset();
 
-#ifndef NDEBUG
+    // Always declare this data member. When assertions are on in
+    // Release builds of Blink, this header may be included from
+    // Chromium with different preprocessor options than used when
+    // building Blink itself.
     class Impl;
     WebPrivateOwnPtr<Impl> m_impl;
-#endif
 };
 
 } // WebKit

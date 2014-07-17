@@ -132,7 +132,7 @@ public:
     // attribute or one of the SVG animatable attributes.
     bool fastHasAttribute(const QualifiedName&) const;
     const AtomicString& fastGetAttribute(const QualifiedName&) const;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool fastAttributeLookupAllowed(const QualifiedName&) const;
 #endif
 

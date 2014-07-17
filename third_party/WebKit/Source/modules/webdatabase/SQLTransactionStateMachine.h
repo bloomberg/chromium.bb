@@ -48,7 +48,7 @@ protected:
     SQLTransactionState m_nextState;
     SQLTransactionState m_requestedState;
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // The state audit trail (i.e. bread crumbs) keeps track of up to the last
     // s_sizeOfStateAuditTrail states that the state machine enters. The audit
     // trail is updated before entering each state. This is for debugging use
@@ -67,11 +67,11 @@ template<typename T>
 SQLTransactionStateMachine<T>::SQLTransactionStateMachine()
     : m_nextState(SQLTransactionState::Idle)
     , m_requestedState(SQLTransactionState::Idle)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     , m_nextStateAuditEntry(0)
 #endif
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     for (int i = 0; i < s_sizeOfStateAuditTrail; i++)
         m_stateAuditTrail[i] = SQLTransactionState::NumberOfStates;
 #endif
@@ -95,7 +95,7 @@ void SQLTransactionStateMachine<T>::runStateMachine()
         StateFunction stateFunction = stateFunctionFor(m_nextState);
         ASSERT(stateFunction);
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         m_stateAuditTrail[m_nextStateAuditEntry] = m_nextState;
         m_nextStateAuditEntry = (m_nextStateAuditEntry + 1) % s_sizeOfStateAuditTrail;
 #endif

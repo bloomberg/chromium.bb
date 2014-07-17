@@ -21,17 +21,17 @@
 #ifndef RefCounted_h
 #define RefCounted_h
 
+#include "wtf/Assertions.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/InstanceCounter.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/WTFExport.h"
 
-#ifdef NDEBUG
-#define CHECK_REF_COUNTED_LIFECYCLE 0
-#else
+#if ENABLE(ASSERT)
 #define CHECK_REF_COUNTED_LIFECYCLE 1
-#include "wtf/Assertions.h"
 #include "wtf/ThreadRestrictionVerifier.h"
+#else
+#define CHECK_REF_COUNTED_LIFECYCLE 0
 #endif
 
 namespace WTF {

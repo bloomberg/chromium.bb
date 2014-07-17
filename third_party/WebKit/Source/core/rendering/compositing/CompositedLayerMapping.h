@@ -175,7 +175,7 @@ public:
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& clip) OVERRIDE;
     virtual bool isTrackingRepaints() const OVERRIDE;
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     virtual void verifyNotPainting() OVERRIDE;
 #endif
 

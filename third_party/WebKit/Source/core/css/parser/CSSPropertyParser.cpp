@@ -2631,7 +2631,7 @@ void CSSPropertyParser::parse3ValuesFillPosition(CSSParserValueList* valueList, 
     if (ident1 == CSSValueTop || ident1 == CSSValueBottom || swapNeeded)
         value1.swap(value2);
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     CSSPrimitiveValue* first = toCSSPrimitiveValue(value1.get());
     CSSPrimitiveValue* second = toCSSPrimitiveValue(value2.get());
     ident1 = first->getPairValue()->first()->getValueID();

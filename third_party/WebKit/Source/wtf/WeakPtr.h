@@ -57,7 +57,7 @@ public:
     void bindTo(T* ptr)
     {
         ASSERT(!m_ptr);
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         m_boundThread = currentThread();
 #endif
         m_ptr = ptr;
@@ -68,14 +68,14 @@ private:
 
     explicit WeakReference(T* ptr)
         : m_ptr(ptr)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         , m_boundThread(currentThread())
 #endif
     {
     }
 
     T* m_ptr;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     ThreadIdentifier m_boundThread;
 #endif
 };

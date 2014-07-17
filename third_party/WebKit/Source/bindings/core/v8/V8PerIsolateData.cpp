@@ -43,7 +43,7 @@ namespace WebCore {
 
 static V8PerIsolateData* mainThreadPerIsolateData = 0;
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 static void assertV8RecursionScope()
 {
     ASSERT(V8RecursionScope::properlyUsed(v8::Isolate::GetCurrent()));
@@ -69,13 +69,13 @@ V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     , m_constructorMode(ConstructorMode::CreateNewObject)
     , m_recursionLevel(0)
     , m_isHandlingRecursionLevelError(false)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     , m_internalScriptRecursionLevel(0)
 #endif
     , m_gcEventData(adoptPtr(new GCEventData()))
     , m_performingMicrotaskCheckpoint(false)
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // currentThread will always be non-null in production, but can be null in Chromium unit tests.
     if (blink::Platform::current()->currentThread())
         isolate->AddCallCompletedCallback(&assertV8RecursionScope);
@@ -120,7 +120,7 @@ v8::Persistent<v8::Value>& V8PerIsolateData::ensureLiveRoot()
 
 void V8PerIsolateData::dispose(v8::Isolate* isolate)
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     if (blink::Platform::current()->currentThread())
         isolate->RemoveCallCompletedCallback(&assertV8RecursionScope);
 #endif

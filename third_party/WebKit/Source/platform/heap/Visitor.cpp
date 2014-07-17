@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 void Visitor::checkGCInfo(const void* payload, const GCInfo* gcInfo)
 {
     FinalizedHeapObjectHeader::fromPayload(payload)->checkHeader();

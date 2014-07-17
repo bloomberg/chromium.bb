@@ -102,7 +102,7 @@ private:
         , m_level(0)
         , m_isSystemFallback(false)
         , m_customFontCount(0)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         , m_pageNumber(0)
 #endif
     {
@@ -128,9 +128,10 @@ private:
     unsigned m_customFontCount;
     OwnPtr<GlyphPageTreeNode> m_systemFallbackChild;
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     unsigned m_pageNumber;
-
+#endif
+#ifndef NDEBUG
     friend void ::showGlyphPageTrees();
     friend void ::showGlyphPageTree(unsigned pageNumber);
 #endif

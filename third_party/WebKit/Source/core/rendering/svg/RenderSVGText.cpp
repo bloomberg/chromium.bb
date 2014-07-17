@@ -196,7 +196,7 @@ void RenderSVGText::subtreeChildWasAdded(RenderObject* child)
         }
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // Verify that m_layoutAttributes only differs by a maximum of one entry.
     for (size_t i = 0; i < size; ++i)
         ASSERT(m_layoutAttributes.find(newLayoutAttributes[i]) != kNotFound || newLayoutAttributes[i] == attributes);
@@ -207,7 +207,7 @@ void RenderSVGText::subtreeChildWasAdded(RenderObject* child)
 
 static inline void checkLayoutAttributesConsistency(RenderSVGText* text, Vector<SVGTextLayoutAttributes*>& expectedLayoutAttributes)
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     Vector<SVGTextLayoutAttributes*> newLayoutAttributes;
     collectLayoutAttributes(text, newLayoutAttributes);
     ASSERT(newLayoutAttributes == expectedLayoutAttributes);

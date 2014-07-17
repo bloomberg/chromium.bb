@@ -129,7 +129,7 @@ bool portAllowed(const KURL& url)
     };
     const unsigned short* const blockedPortListEnd = blockedPortList + WTF_ARRAY_LENGTH(blockedPortList);
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // The port list must be sorted for binary_search to work.
     static bool checkedPortList = false;
     if (!checkedPortList) {

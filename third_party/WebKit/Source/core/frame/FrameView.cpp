@@ -991,7 +991,7 @@ void FrameView::layout(bool allowSubtree)
     if (m_nestedLayoutCount)
         return;
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // Post-layout assert that nobody was re-marked as needing layout during layout.
     document->renderView()->assertSubtreeIsLaidOut();
 #endif
@@ -2736,7 +2736,7 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
     RenderObject* renderer = m_nodeToDraw ? m_nodeToDraw->renderer() : 0;
     RenderLayer* rootLayer = renderView->layer();
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     renderView->assertSubtreeIsLaidOut();
     RenderObject::SetLayoutNeededForbiddenScope forbidSetNeedsLayout(*rootLayer->renderer());
 #endif
@@ -2873,7 +2873,7 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     // These asserts ensure that parent frames are clean, when child frames finished updating layout and style.
     ASSERT(!needsLayout());
     ASSERT(!m_frame->document()->hasSVGFilterElementsRequiringLayerUpdate());
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     m_frame->document()->renderView()->assertRendererLaidOut();
 #endif
 

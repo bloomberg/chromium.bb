@@ -131,7 +131,7 @@ inline Address blinkPageAddress(Address address)
     return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address) & blinkPageBaseMask);
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 
 // Sanity check for a page header address: the address of the page
 // header should be OS page size away from being Blink page size
@@ -283,7 +283,7 @@ public:
     NO_SANITIZE_ADDRESS
     explicit HeapObjectHeader(size_t encodedSize)
         : BasicObjectHeader(encodedSize)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         , m_magic(magic)
 #endif
     { }
@@ -291,7 +291,7 @@ public:
     NO_SANITIZE_ADDRESS
     HeapObjectHeader(size_t encodedSize, const GCInfo*)
         : BasicObjectHeader(encodedSize)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         , m_magic(magic)
 #endif
     { }
@@ -327,7 +327,7 @@ public:
     static const intptr_t zappedVTable = 0xd0d;
 
 private:
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     intptr_t m_magic;
 #endif
 };
@@ -377,7 +377,7 @@ public:
         : HeapObjectHeader(freeListEncodedSize(size))
         , m_next(0)
     {
-#if !defined(NDEBUG) && !defined(ADDRESS_SANITIZER)
+#if ENABLE(ASSERT) && !defined(ADDRESS_SANITIZER)
         // Zap free area with asterisks, aka 0x2a2a2a2a.
         // For ASan don't zap since we keep accounting in the freelist entry.
         for (size_t i = sizeof(*this); i < size; i++)
@@ -714,7 +714,7 @@ public:
     ~OrphanedPagePool();
     void addOrphanedPage(int, BaseHeapPage*);
     void decommitOrphanedPages();
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool contains(void*);
 #endif
 private:
@@ -735,7 +735,7 @@ public:
         , m_current(&(m_buffer[0]))
         , m_next(*first)
     {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         clearUnused();
 #endif
         *first = this;
@@ -781,7 +781,7 @@ public:
         return (new CallbackStack(first))->allocateEntry(first);
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool hasCallbackForObject(const void*);
 #endif
 
@@ -816,7 +816,7 @@ public:
 
     virtual void clearFreeLists() = 0;
     virtual void clearLiveAndMarkDead() = 0;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     virtual void getScannedStats(HeapStats&) = 0;
 #endif
 
@@ -855,7 +855,7 @@ public:
     virtual void sweep();
     virtual void clearFreeLists();
     virtual void clearLiveAndMarkDead();
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     virtual void getScannedStats(HeapStats&);
 #endif
 
@@ -926,7 +926,7 @@ public:
     static BaseHeapPage* contains(Address);
     static BaseHeapPage* contains(void* pointer) { return contains(reinterpret_cast<Address>(pointer)); }
     static BaseHeapPage* contains(const void* pointer) { return contains(const_cast<void*>(pointer)); }
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     static bool containedInHeapOrOrphanedPage(void*);
 #endif
 
@@ -959,7 +959,7 @@ public:
 
     // Register an ephemeron table for fixed-point iteration.
     static void registerWeakTable(void* containerObject, EphemeronCallback, EphemeronCallback);
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     static bool weakTableRegistered(const void*);
 #endif
 
@@ -1327,7 +1327,7 @@ T* adoptRefCountedGarbageCollected(T* ptr)
 NO_SANITIZE_ADDRESS
 void HeapObjectHeader::checkHeader() const
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     BaseHeapPage* page = pageHeaderFromObject(this);
     ASSERT(page->orphaned() || m_magic == magic);
 #endif
@@ -1400,7 +1400,7 @@ Address ThreadHeap<Header>::allocate(size_t size, const GCInfo* gcInfo)
     ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
     // Unpoison the memory used for the object (payload).
     ASAN_UNPOISON_MEMORY_REGION(result, payloadSize);
-#if !defined(NDEBUG) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
+#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
     memset(result, 0, payloadSize);
 #endif
     ASSERT(heapPageFromAddress(headerAddress + allocationSize - 1));
@@ -1524,7 +1524,7 @@ public:
         visitor->registerWeakTable(closure, iterationCallback, iterationDoneCallback);
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     static bool weakTableRegistered(Visitor* visitor, const void* closure)
     {
         return visitor->weakTableRegistered(closure);
@@ -2298,7 +2298,7 @@ struct TraceTrait<HeapVectorBacking<T, Traits> > {
     }
     static void checkGCInfo(Visitor* visitor, const Backing* backing)
     {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         visitor->checkGCInfo(const_cast<Backing*>(backing), GCInfoTrait<Backing>::get());
 #endif
     }
@@ -2328,7 +2328,7 @@ struct TraceTrait<HeapHashTableBacking<Table> > {
     }
     static void checkGCInfo(Visitor* visitor, const Backing* backing)
     {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         visitor->checkGCInfo(const_cast<Backing*>(backing), GCInfoTrait<Backing>::get());
 #endif
     }

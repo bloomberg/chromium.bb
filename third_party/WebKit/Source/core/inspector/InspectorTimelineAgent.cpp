@@ -163,7 +163,7 @@ private:
         Entry(PassRefPtr<TimelineEvent> record, const String& type)
             : record(record)
             , children(TypeBuilder::Array<TimelineEvent>::create())
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
             , type(type)
 #endif
         {
@@ -171,7 +171,7 @@ private:
 
         RefPtr<TimelineEvent> record;
         RefPtr<TypeBuilder::Array<TimelineEvent> > children;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         String type;
 #endif
     };
@@ -184,7 +184,7 @@ public:
     void closeScopedRecord(double endTime);
     void addInstantRecord(PassRefPtr<TimelineEvent> record);
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool isOpenRecordOfType(const String& type);
 #endif
 
@@ -1304,7 +1304,7 @@ void TimelineRecordStack::addInstantRecord(PassRefPtr<TimelineEvent> record)
         m_stack.last().children->addItem(record);
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 bool TimelineRecordStack::isOpenRecordOfType(const String& type)
 {
     return !m_stack.isEmpty() && m_stack.last().type == type;

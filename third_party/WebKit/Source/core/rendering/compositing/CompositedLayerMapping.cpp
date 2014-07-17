@@ -2028,7 +2028,7 @@ void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Grap
         dirtyRect.move(roundedIntSize(paintInfo.renderLayer->subpixelAccumulation()));
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     paintInfo.renderLayer->renderer()->assertSubtreeIsLaidOut();
 #endif
 
@@ -2080,7 +2080,7 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
 {
     // https://code.google.com/p/chromium/issues/detail?id=343772
     DisableCompositingQueryAsserts disabler;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // FIXME: once the state machine is ready, this can be removed and we can refer to that instead.
     if (Page* page = renderer()->frame()->page())
         page->setIsPainting(true);
@@ -2126,7 +2126,7 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         context.restore();
     }
     InspectorInstrumentation::didPaint(m_owningLayer.renderer(), graphicsLayer, &context, clip);
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     if (Page* page = renderer()->frame()->page())
         page->setIsPainting(false);
 #endif
@@ -2138,7 +2138,7 @@ bool CompositedLayerMapping::isTrackingRepaints() const
     return client ? client->isTrackingRepaints() : false;
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 void CompositedLayerMapping::verifyNotPainting()
 {
     ASSERT(!renderer()->frame()->page() || !renderer()->frame()->page()->isPainting());

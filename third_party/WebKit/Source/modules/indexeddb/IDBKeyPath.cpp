@@ -204,7 +204,7 @@ IDBKeyPath::IDBKeyPath(const Vector<String>& array)
     : m_type(ArrayType)
     , m_array(array)
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     for (size_t i = 0; i < m_array.size(); ++i)
         ASSERT(!m_array[i].isNull());
 #endif

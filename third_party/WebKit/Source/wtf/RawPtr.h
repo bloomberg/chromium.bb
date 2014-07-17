@@ -52,7 +52,7 @@ class RawPtr {
 public:
     RawPtr()
     {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         m_ptr = reinterpret_cast<T*>(rawPtrZapValue);
 #endif
     }

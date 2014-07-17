@@ -1013,7 +1013,7 @@ void RenderBlock::makeChildrenNonInline(RenderObject *insertionPoint)
         moveChildrenTo(block, inlineRunStart, child);
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     for (RenderObject *c = firstChild(); c; c = c->nextSibling())
         ASSERT(!c->isInline());
 #endif
@@ -4917,7 +4917,7 @@ bool RenderBlock::recalcOverflowAfterStyleChange()
     return !hasOverflowClip();
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 void RenderBlock::checkPositionedObjectsNeedLayout()
 {
     if (!gPositionedDescendantsMap)
@@ -4931,6 +4931,10 @@ void RenderBlock::checkPositionedObjectsNeedLayout()
         }
     }
 }
+
+#endif
+
+#ifndef NDEBUG
 
 void RenderBlock::showLineTreeAndMark(const InlineBox* markedBox1, const char* markedLabel1, const InlineBox* markedBox2, const char* markedLabel2, const RenderObject* obj) const
 {

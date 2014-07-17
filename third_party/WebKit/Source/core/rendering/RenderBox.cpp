@@ -906,7 +906,7 @@ void RenderBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Layou
 LayoutUnit RenderBox::minPreferredLogicalWidth() const
 {
     if (preferredLogicalWidthsDirty()) {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         SetLayoutNeededForbiddenScope layoutForbiddenScope(const_cast<RenderBox&>(*this));
 #endif
         const_cast<RenderBox*>(this)->computePreferredLogicalWidths();
@@ -918,7 +918,7 @@ LayoutUnit RenderBox::minPreferredLogicalWidth() const
 LayoutUnit RenderBox::maxPreferredLogicalWidth() const
 {
     if (preferredLogicalWidthsDirty()) {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         SetLayoutNeededForbiddenScope layoutForbiddenScope(const_cast<RenderBox&>(*this));
 #endif
         const_cast<RenderBox*>(this)->computePreferredLogicalWidths();
@@ -2079,7 +2079,7 @@ void RenderBox::updateLogicalWidth()
 
 static float getMaxWidthListMarker(const RenderBox* renderer)
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     ASSERT(renderer);
     Node* parentNode = renderer->generatingNode();
     ASSERT(parentNode);

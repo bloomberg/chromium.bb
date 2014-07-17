@@ -303,7 +303,7 @@ void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> valueBuffer, PassOwnPtr<Vect
     onSuccessInternal(IDBAny::create(valueBuffer, m_blobInfo.get()));
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 static IDBObjectStore* effectiveObjectStore(IDBAny* source)
 {
     if (source->type() == IDBAny::IDBObjectStoreType)
@@ -322,16 +322,14 @@ void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> prpValueBuffer, PassOwnPtr<V
     if (!shouldEnqueueEvent())
         return;
 
-#ifndef NDEBUG
     ASSERT(keyPath == effectiveObjectStore(m_source)->metadata().keyPath);
-#endif
 
     RefPtr<SharedBuffer> valueBuffer = prpValueBuffer;
     IDBKey* primaryKey = prpPrimaryKey;
     ASSERT(!m_blobInfo.get());
     m_blobInfo = blobInfo;
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     assertPrimaryKeyValidOrInjectable(m_scriptState.get(), valueBuffer, m_blobInfo.get(), primaryKey, keyPath);
 #endif
 

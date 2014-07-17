@@ -999,7 +999,7 @@ void Node::attach(const AttachContext&)
         cache->updateCacheAfterNodeIsAttached(this);
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 static Node* detachingNode;
 
 bool Node::inDetach() const
@@ -1013,7 +1013,7 @@ void Node::detach(const AttachContext& context)
     ASSERT(document().lifecycle().stateAllowsDetach());
     DocumentLifecycle::DetachScope willDetach(document().lifecycle());
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     ASSERT(!detachingNode);
     detachingNode = this;
 #endif
@@ -1043,7 +1043,7 @@ void Node::detach(const AttachContext& context)
     clearChildNeedsStyleInvalidation();
     clearNeedsStyleInvalidation();
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     detachingNode = 0;
 #endif
 }

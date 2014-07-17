@@ -531,7 +531,7 @@ public:
     // the node's rendering object from the rendering tree and delete it.
     virtual void detach(const AttachContext& = AttachContext());
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool inDetach() const;
 #endif
 

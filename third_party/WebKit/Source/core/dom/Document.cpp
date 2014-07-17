@@ -499,9 +499,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_taskRunner(MainThreadTaskRunner::create(this))
     , m_registrationContext(initializer.registrationContext(this))
     , m_elementDataCacheClearTimer(this, &Document::elementDataCacheClearTimerFired)
-#ifndef NDEBUG
-    , m_didDispatchViewportPropertiesChanged(false)
-#endif
     , m_timeline(AnimationTimeline::create(this))
     , m_templateDocumentHost(nullptr)
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
@@ -3159,9 +3156,6 @@ void Document::setViewportDescription(const ViewportDescription& viewportDescrip
 void Document::updateViewportDescription()
 {
     if (frame() && frame()->isMainFrame()) {
-#ifndef NDEBUG
-        m_didDispatchViewportPropertiesChanged = true;
-#endif
         frameHost()->chrome().dispatchViewportPropertiesDidChange(m_viewportDescription);
     }
 }

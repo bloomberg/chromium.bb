@@ -201,7 +201,7 @@ public:
     {
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     ~BidiResolver();
 #endif
 
@@ -315,7 +315,7 @@ private:
     HashMap<Run *, MidpointState<Iterator> > m_midpointStateForIsolatedRun;
 };
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 template <class Iterator, class Run>
 BidiResolver<Iterator, Run>::~BidiResolver()
 {

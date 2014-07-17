@@ -43,22 +43,19 @@
 #include "wtf/Compiler.h"
 #include "wtf/WTFExport.h"
 
-#ifdef NDEBUG
-/* Disable ASSERT* macros in release mode. */
-#define ASSERTIONS_DISABLED_DEFAULT 1
-#else
-#define ASSERTIONS_DISABLED_DEFAULT 0
-#endif
-
-#ifndef BACKTRACE_DISABLED
-#define BACKTRACE_DISABLED ASSERTIONS_DISABLED_DEFAULT
-#endif
-
 // Users must test "#if ENABLE(ASSERT)", which helps ensure that code
 // testing this macro has included this header.
 #ifndef ENABLE_ASSERT
-// Notice the not below:
-#define ENABLE_ASSERT !ASSERTIONS_DISABLED_DEFAULT
+#ifdef NDEBUG
+/* Disable ASSERT* macros in release mode by default. */
+#define ENABLE_ASSERT 0
+#else
+#define ENABLE_ASSERT 1
+#endif /* NDEBUG */
+#endif
+
+#ifndef BACKTRACE_DISABLED
+#define BACKTRACE_DISABLED !ENABLE(ASSERT)
 #endif
 
 #ifndef ASSERT_MSG_DISABLED

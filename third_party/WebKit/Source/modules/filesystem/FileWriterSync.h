@@ -65,7 +65,7 @@ private:
     void prepareForWrite();
 
     FileError::ErrorCode m_error;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool m_complete;
 #endif
 };

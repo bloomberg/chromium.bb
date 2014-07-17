@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-#ifdef NDEBUG
+#if !ERROR_DISABLED
 
 #define REPORT_OVERFLOW(doesOverflow) ((void)0)
 

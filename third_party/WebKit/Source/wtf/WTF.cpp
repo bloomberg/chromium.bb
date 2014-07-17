@@ -34,10 +34,6 @@
 #include "wtf/DefaultAllocator.h"
 #include "wtf/FastMalloc.h"
 
-#ifndef NDEBUG
-#include "wtf/MainThread.h"
-#endif
-
 namespace WTF {
 
 extern void initializeThreading();

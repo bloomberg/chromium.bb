@@ -40,7 +40,7 @@ public:
     // not the content of the Text node, updating text-transform property
     // doesn't re-transform the string.
     RenderText(Node*, PassRefPtr<StringImpl>);
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     virtual ~RenderText();
 #endif
 
@@ -225,7 +225,7 @@ inline UChar RenderText::characterAt(unsigned i) const
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderText, isText());
 
-#ifdef NDEBUG
+#if !ENABLE(ASSERT)
 inline void RenderText::checkConsistency() const
 {
 }

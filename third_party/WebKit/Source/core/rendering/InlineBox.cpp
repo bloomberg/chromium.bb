@@ -40,14 +40,14 @@ struct SameSizeAsInlineBox {
     FloatPoint b;
     float c;
     uint32_t d : 32;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool f;
 #endif
 };
 
 COMPILE_ASSERT(sizeof(InlineBox) == sizeof(SameSizeAsInlineBox), InlineBox_size_guard);
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 
 InlineBox::~InlineBox()
 {

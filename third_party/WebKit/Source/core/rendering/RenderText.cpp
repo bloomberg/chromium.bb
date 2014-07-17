@@ -162,7 +162,7 @@ RenderText::RenderText(Node* node, PassRefPtr<StringImpl> str)
     view()->frameView()->incrementVisuallyNonEmptyCharacterCount(m_text.length());
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 
 RenderText::~RenderText()
 {
@@ -1839,7 +1839,7 @@ bool RenderText::computeCanUseSimpleFontCodePath() const
     return Character::characterRangeCodePath(characters16(), length()) == SimplePath;
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 
 void RenderText::checkConsistency() const
 {

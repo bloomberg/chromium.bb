@@ -46,9 +46,9 @@ namespace V8BlobCustomHelpers {
 ParsedProperties::ParsedProperties(bool hasFileProperties)
     : m_normalizeLineEndingsToNative(false)
     , m_hasFileProperties(hasFileProperties)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     , m_hasLastModified(false)
-#endif // NDEBUG
+#endif // ENABLE(ASSERT)
 {
 }
 
@@ -57,9 +57,9 @@ void ParsedProperties::setLastModified(double lastModified)
     ASSERT(m_hasFileProperties);
     ASSERT(!m_hasLastModified);
     m_lastModified = lastModified;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     m_hasLastModified = true;
-#endif // NDEBUG
+#endif // ENABLE(ASSERT)
 }
 
 void ParsedProperties::setDefaultLastModified()

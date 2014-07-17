@@ -43,7 +43,8 @@
     'variables': {
       # Enables the Oilpan garbage-collection infrastructure.
       'enable_oilpan%': 0,
-      'gc_tracing%': 0
+      'gc_tracing%': 0,
+      'blink_asserts_always_on%': 0,
     },
     'conditions': [
       ['use_concatenated_impulse_responses==1', {
@@ -89,6 +90,11 @@
       ['gc_tracing==1', {
         'feature_defines': [
           'ENABLE_GC_TRACING=1',
+        ],
+      }],
+      ['blink_asserts_always_on==1', {
+        'feature_defines': [
+          'ENABLE_ASSERT=1',
         ],
       }],
     ],

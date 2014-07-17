@@ -105,7 +105,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_scrollableArea(0)
     , m_3dRenderingContext(0)
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     if (m_client)
         m_client->verifyNotPainting();
 #endif
@@ -123,7 +123,7 @@ GraphicsLayer::~GraphicsLayer()
         m_linkHighlights[i]->clearCurrentGraphicsLayer();
     m_linkHighlights.clear();
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     if (m_client)
         m_client->verifyNotPainting();
 #endif

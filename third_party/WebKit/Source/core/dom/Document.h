@@ -277,9 +277,6 @@ public:
     const ViewportDescription& viewportDescription() const { return m_viewportDescription; }
     Length viewportDefaultMinWidth() const { return m_viewportDefaultMinWidth; }
 
-#ifndef NDEBUG
-    bool didDispatchViewportPropertiesChanged() const { return m_didDispatchViewportPropertiesChanged; }
-#endif
     bool hasLegacyViewportTag() const { return m_legacyViewportDescription.isLegacyViewportType(); }
 
     void setReferrerPolicy(ReferrerPolicy);
@@ -1368,10 +1365,6 @@ private:
     Timer<Document> m_elementDataCacheClearTimer;
 
     OwnPtrWillBeMember<ElementDataCache> m_elementDataCache;
-
-#ifndef NDEBUG
-    bool m_didDispatchViewportPropertiesChanged;
-#endif
 
     typedef HashMap<AtomicString, OwnPtr<Locale> > LocaleIdentifierToLocaleMap;
     LocaleIdentifierToLocaleMap m_localeCache;

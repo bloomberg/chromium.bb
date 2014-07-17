@@ -190,7 +190,7 @@ void SVGScriptElement::dispatchLoadEvent()
     dispatchEvent(Event::create(EventTypeNames::load));
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 bool SVGScriptElement::isAnimatableAttribute(const QualifiedName& name) const
 {
     if (name == SVGNames::typeAttr)

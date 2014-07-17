@@ -60,7 +60,7 @@ private:
         size_t numberOfSegmentsAlreadyAppended;
         size_t tokensExtractedSincePreviousCheckpoint;
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         bool isNull() const { return input.isEmpty() && !numberOfSegmentsAlreadyAppended; }
 #endif
         void clear() { input.clear(); numberOfSegmentsAlreadyAppended = 0; tokensExtractedSincePreviousCheckpoint = 0;}

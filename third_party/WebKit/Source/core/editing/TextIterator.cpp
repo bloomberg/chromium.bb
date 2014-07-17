@@ -1282,7 +1282,7 @@ SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Range* r,
     m_endNode = endNode;
     m_endOffset = endOffset;
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // Need this just because of the assert.
     m_positionNode = endNode;
 #endif
@@ -1756,7 +1756,7 @@ UChar WordAwareIterator::characterAt(unsigned index) const
 
 static const size_t minimumSearchBufferSize = 8192;
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 static bool searcherInUse;
 #endif
 
@@ -1780,7 +1780,7 @@ static UStringSearch* searcher()
 
 static inline void lockSearcher()
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     ASSERT(!searcherInUse);
     searcherInUse = true;
 #endif
@@ -1788,7 +1788,7 @@ static inline void lockSearcher()
 
 static inline void unlockSearcher()
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     ASSERT(searcherInUse);
     searcherInUse = false;
 #endif

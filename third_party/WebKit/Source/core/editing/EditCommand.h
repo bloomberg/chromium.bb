@@ -30,10 +30,6 @@
 #include "core/editing/VisibleSelection.h"
 #include "platform/heap/Handle.h"
 
-#ifndef NDEBUG
-#include "wtf/HashSet.h"
-#endif
-
 namespace WebCore {
 
 class CompositeEditCommand;

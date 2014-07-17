@@ -320,7 +320,7 @@ ScriptValue IDBCursor::value(ScriptState* scriptState)
     IDBAny* value;
     if (metadata.autoIncrement && !metadata.keyPath.isNull()) {
         value = IDBAny::create(m_value, m_blobInfo.get(), m_primaryKey, metadata.keyPath);
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         assertPrimaryKeyValidOrInjectable(scriptState, m_value, m_blobInfo.get(), m_primaryKey, metadata.keyPath);
 #endif
     } else {

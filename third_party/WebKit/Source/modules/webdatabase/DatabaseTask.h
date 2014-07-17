@@ -54,7 +54,7 @@ public:
     virtual void run() OVERRIDE FINAL;
 
     DatabaseBackend* database() const { return m_database.get(); }
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool hasSynchronizer() const { return m_synchronizer; }
     bool hasCheckedForTermination() const { return m_synchronizer->hasCheckedForTermination(); }
 #endif

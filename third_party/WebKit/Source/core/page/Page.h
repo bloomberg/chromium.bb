@@ -203,7 +203,7 @@ public:
     bool isCursorVisible() const;
     void setIsCursorVisible(bool isVisible) { m_isCursorVisible = isVisible; }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     void setIsPainting(bool painting) { m_isPainting = painting; }
     bool isPainting() const { return m_isPainting; }
 #endif
@@ -299,7 +299,7 @@ private:
 
     bool m_isCursorVisible;
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool m_isPainting;
 #endif
 

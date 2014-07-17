@@ -279,7 +279,7 @@ static bool hasExplicitWidth(const RenderBlock* block)
 FastTextAutosizer::FastTextAutosizer(const Document* document)
     : m_document(document)
     , m_firstBlockToBeginLayout(0)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     , m_blocksThatHaveBegunLayout()
 #endif
     , m_superclusters()
@@ -323,7 +323,7 @@ void FastTextAutosizer::destroy(const RenderBlock* block)
 
 FastTextAutosizer::BeginLayoutBehavior FastTextAutosizer::prepareForLayout(const RenderBlock* block)
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     m_blocksThatHaveBegunLayout.add(block);
 #endif
 
@@ -347,7 +347,7 @@ void FastTextAutosizer::prepareClusterStack(const RenderObject* renderer)
 
     if (renderer->isRenderBlock()) {
         const RenderBlock* block = toRenderBlock(renderer);
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         m_blocksThatHaveBegunLayout.add(block);
 #endif
         if (Cluster* cluster = maybeCreateCluster(block))
@@ -426,7 +426,7 @@ void FastTextAutosizer::endLayout(RenderBlock* block)
         m_clusterStack.clear();
         m_superclusters.clear();
         m_stylesRetainedDuringLayout.clear();
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         m_blocksThatHaveBegunLayout.clear();
 #endif
     // Tables can create two layout scopes for the same block so the isEmpty
@@ -1009,7 +1009,7 @@ FastTextAutosizer::Cluster* FastTextAutosizer::currentCluster() const
     return m_clusterStack.last().get();
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 void FastTextAutosizer::FingerprintMapper::assertMapsAreConsistent()
 {
     // For each fingerprint -> block mapping in m_blocksForFingerprint we should have an associated
@@ -1031,7 +1031,7 @@ void FastTextAutosizer::FingerprintMapper::add(const RenderObject* renderer, Fin
     remove(renderer);
 
     m_fingerprints.set(renderer, fingerprint);
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     assertMapsAreConsistent();
 #endif
 }
@@ -1044,7 +1044,7 @@ void FastTextAutosizer::FingerprintMapper::addTentativeClusterRoot(const RenderB
     if (addResult.isNewEntry)
         addResult.storedValue->value = adoptPtr(new BlockSet);
     addResult.storedValue->value->add(block);
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     assertMapsAreConsistent();
 #endif
 }
@@ -1063,7 +1063,7 @@ bool FastTextAutosizer::FingerprintMapper::remove(const RenderObject* renderer)
     blocks.remove(toRenderBlock(renderer));
     if (blocks.isEmpty())
         m_blocksForFingerprint.remove(blocksIter);
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     assertMapsAreConsistent();
 #endif
     return true;

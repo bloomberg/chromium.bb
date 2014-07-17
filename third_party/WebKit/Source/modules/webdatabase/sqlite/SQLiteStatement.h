@@ -71,7 +71,7 @@ private:
     SQLiteDatabase& m_database;
     String m_query;
     sqlite3_stmt* m_statement;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool m_isPrepared;
 #endif
 };

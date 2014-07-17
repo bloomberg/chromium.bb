@@ -59,7 +59,7 @@ SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
     , m_documentOrderIndexesDirty(false)
     , m_wakeupTimer(this, &SMILTimeContainer::wakeupTimerFired)
     , m_ownerSVGElement(owner)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     , m_preventScheduledAnimationsChanges(false)
 #endif
 {
@@ -69,7 +69,7 @@ SMILTimeContainer::~SMILTimeContainer()
 {
     cancelAnimationFrame();
     ASSERT(!m_wakeupTimer.isActive());
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     ASSERT(!m_preventScheduledAnimationsChanges);
 #endif
 }
@@ -80,7 +80,7 @@ void SMILTimeContainer::schedule(SVGSMILElement* animation, SVGElement* target, 
     ASSERT(target);
     ASSERT(animation->hasValidAttributeName());
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     ASSERT(!m_preventScheduledAnimationsChanges);
 #endif
 
@@ -100,7 +100,7 @@ void SMILTimeContainer::unschedule(SVGSMILElement* animation, SVGElement* target
 {
     ASSERT(animation->timeContainer() == this);
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     ASSERT(!m_preventScheduledAnimationsChanges);
 #endif
 
@@ -233,7 +233,7 @@ void SMILTimeContainer::setElapsed(SMILTime time)
         m_accumulatedActiveTime = 0;
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     m_preventScheduledAnimationsChanges = true;
 #endif
     GroupedAnimationsMap::iterator end = m_scheduledAnimations.end();
@@ -245,7 +245,7 @@ void SMILTimeContainer::setElapsed(SMILTime time)
         for (AnimationsLinkedHashSet::const_iterator itAnimation = scheduled->begin(), itAnimationEnd = scheduled->end(); itAnimation != itAnimationEnd; ++itAnimation)
             (*itAnimation)->reset();
     }
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     m_preventScheduledAnimationsChanges = false;
 #endif
 
@@ -372,7 +372,7 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
 {
     SMILTime earliestFireTime = SMILTime::unresolved();
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // This boolean will catch any attempts to schedule/unschedule scheduledAnimations during this critical section.
     // Similarly, any elements removed will unschedule themselves, so this will catch modification of animationsToApply.
     m_preventScheduledAnimationsChanges = true;
@@ -433,7 +433,7 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
 
     unsigned animationsToApplySize = animationsToApply.size();
     if (!animationsToApplySize) {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         m_preventScheduledAnimationsChanges = false;
 #endif
         return earliestFireTime;
@@ -443,7 +443,7 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
     for (unsigned i = 0; i < animationsToApplySize; ++i)
         animationsToApply[i]->applyResultsToTarget();
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     m_preventScheduledAnimationsChanges = false;
 #endif
 

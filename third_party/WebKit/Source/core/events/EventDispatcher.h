@@ -70,7 +70,7 @@ private:
     RefPtrWillBeMember<Node> m_node;
     RefPtrWillBeMember<Event> m_event;
     RefPtr<FrameView> m_view;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool m_eventDispatched;
 #endif
 };

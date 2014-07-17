@@ -93,7 +93,7 @@ void TreeScopeAdopter::moveTreeToNewDocument(Node& root, Document& oldDocument, 
     }
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 static bool didMoveToNewDocumentWasCalled = false;
 static Document* oldDocumentDidMoveToNewDocumentWasCalledWith = 0;
 
@@ -131,7 +131,7 @@ inline void TreeScopeAdopter::moveNodeToNewDocument(Node& node, Document& oldDoc
     if (node.isShadowRoot())
         toShadowRoot(node).setDocument(newDocument);
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     didMoveToNewDocumentWasCalled = false;
     oldDocumentDidMoveToNewDocumentWasCalledWith = &oldDocument;
 #endif

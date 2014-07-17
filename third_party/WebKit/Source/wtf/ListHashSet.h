@@ -217,7 +217,7 @@ namespace WTF {
             : m_value(value)
             , m_prev(0)
             , m_next(0)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
             , m_isAllocated(true)
 #endif
         {
@@ -228,7 +228,7 @@ namespace WTF {
             : m_value(value)
             , m_prev(0)
             , m_next(0)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
             , m_isAllocated(true)
 #endif
         {
@@ -238,7 +238,7 @@ namespace WTF {
         ValueArg m_value;
         ListHashSetNodeBase* m_prev;
         ListHashSetNodeBase* m_next;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         bool m_isAllocated;
 #endif
     };
@@ -314,7 +314,7 @@ namespace WTF {
         void deallocate(Node* node)
         {
             if (inPool(node)) {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
                 node->m_isAllocated = false;
 #endif
                 node->m_next = m_freeList;

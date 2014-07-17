@@ -211,7 +211,7 @@ public:
         return style()->borderEnd();
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool isFirstOrLastCellInRow() const
     {
         return !table()->cellAfter(this) || !table()->cellBefore(this);

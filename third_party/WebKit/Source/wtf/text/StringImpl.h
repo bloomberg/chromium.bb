@@ -427,7 +427,7 @@ private:
 
     static unsigned m_highestStaticStringLength;
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     void assertHashIsCorrect()
     {
         ASSERT(hasHash());

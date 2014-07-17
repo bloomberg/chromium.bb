@@ -48,7 +48,7 @@ FloatingObject::FloatingObject(RenderBox* renderer)
     , m_shouldPaint(true)
     , m_isDescendant(false)
     , m_isPlaced(false)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     , m_isInPlacedTree(false)
 #endif
 {
@@ -69,7 +69,7 @@ FloatingObject::FloatingObject(RenderBox* renderer, Type type, const LayoutRect&
     , m_shouldPaint(shouldPaint)
     , m_isDescendant(isDescendant)
     , m_isPlaced(true)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     , m_isInPlacedTree(false)
 #endif
 {
@@ -310,7 +310,7 @@ void FloatingObjects::addPlacedObject(FloatingObject* floatingObject)
     if (m_placedFloatsTree.isInitialized())
         m_placedFloatsTree.add(intervalForFloatingObject(floatingObject));
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     floatingObject->setIsInPlacedTree(true);
 #endif
     markLowestFloatLogicalBottomCacheAsDirty();
@@ -326,7 +326,7 @@ void FloatingObjects::removePlacedObject(FloatingObject* floatingObject)
     }
 
     floatingObject->setIsPlaced(false);
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     floatingObject->setIsInPlacedTree(false);
 #endif
     markLowestFloatLogicalBottomCacheAsDirty();

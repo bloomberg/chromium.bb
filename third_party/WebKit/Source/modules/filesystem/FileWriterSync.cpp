@@ -92,7 +92,7 @@ void FileWriterSync::didWrite(long long bytes, bool complete)
 {
     ASSERT(m_error == FileError::OK);
     ASSERT(!m_complete);
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     m_complete = complete;
 #else
     ASSERT_UNUSED(complete, complete);
@@ -103,7 +103,7 @@ void FileWriterSync::didTruncate()
 {
     ASSERT(m_error == FileError::OK);
     ASSERT(!m_complete);
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     m_complete = true;
 #endif
 }
@@ -113,14 +113,14 @@ void FileWriterSync::didFail(blink::WebFileError error)
     ASSERT(m_error == FileError::OK);
     m_error = static_cast<FileError::ErrorCode>(error);
     ASSERT(!m_complete);
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     m_complete = true;
 #endif
 }
 
 FileWriterSync::FileWriterSync()
     : m_error(FileError::OK)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     , m_complete(true)
 #endif
 {
@@ -131,7 +131,7 @@ void FileWriterSync::prepareForWrite()
 {
     ASSERT(m_complete);
     m_error = FileError::OK;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     m_complete = false;
 #endif
 }

@@ -218,7 +218,7 @@ private:
     RawPtrWillBeMember<Node> m_lastChild;
 };
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 bool childAttachedAllowedWhenAttachingChildren(ContainerNode*);
 #endif
 

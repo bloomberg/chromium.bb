@@ -130,7 +130,7 @@ public:
     virtual void synchronizeRequiredExtensions() { }
     virtual void synchronizeSystemLanguage() { }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     virtual bool isAnimatableAttribute(const QualifiedName&) const;
 #endif
 

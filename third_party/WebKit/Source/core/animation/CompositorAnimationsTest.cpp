@@ -340,9 +340,8 @@ TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorIterationCou
     m_timing.iterationCount = 5.5;
     EXPECT_FALSE(convertTimingForCompositor(m_timing, m_compositorTiming));
 
-    // Asserts will only trigger on DEBUG build.
     // EXPECT_DEATH tests are flaky on Android.
-#if !defined(NDEBUG) && !OS(ANDROID)
+#if ENABLE(ASSERT) && !OS(ANDROID)
     m_timing.iterationCount = -1;
     EXPECT_DEATH(convertTimingForCompositor(m_timing, m_compositorTiming), "");
 #endif

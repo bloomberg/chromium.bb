@@ -341,7 +341,7 @@ static StaticStringsTable& staticStrings()
     return staticStrings;
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 static bool s_allowCreationOfStaticStrings = true;
 #endif
 
@@ -354,7 +354,7 @@ void StringImpl::freezeStaticStrings()
 {
     ASSERT(isMainThread());
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     s_allowCreationOfStaticStrings = false;
 #endif
 }
@@ -385,7 +385,7 @@ StringImpl* StringImpl::createStatic(const char* string, unsigned length, unsign
     LChar* data = reinterpret_cast<LChar*>(impl + 1);
     impl = new (impl) StringImpl(length, hash, StaticString);
     memcpy(data, string, length * sizeof(LChar));
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     impl->assertHashIsCorrect();
 #endif
 

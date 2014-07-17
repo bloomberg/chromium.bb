@@ -2785,7 +2785,7 @@ bool Element::isSpellCheckingEnabled() const
     return true;
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 bool Element::fastAttributeLookupAllowed(const QualifiedName& name) const
 {
     if (name == HTMLNames::styleAttr)

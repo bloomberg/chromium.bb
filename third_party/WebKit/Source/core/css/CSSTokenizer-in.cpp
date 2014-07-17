@@ -1130,7 +1130,7 @@ int CSSTokenizer::realLex(void* yylvalWithoutType)
 
     // The input buffer is terminated by a \0 character, so
     // it is safe to read one character ahead of a known non-null.
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // In debug we check with an ASSERT that the length is > 0 for string types.
     yylval->string.clear();
 #endif

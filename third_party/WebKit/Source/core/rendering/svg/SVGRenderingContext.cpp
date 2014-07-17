@@ -90,7 +90,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
 {
     ASSERT(object);
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // This function must not be called twice!
     ASSERT(!(m_renderingFlags & PrepareToRenderSVGContentWasCalled));
     m_renderingFlags |= PrepareToRenderSVGContentWasCalled;

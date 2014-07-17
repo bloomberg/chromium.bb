@@ -118,7 +118,7 @@ public:
         ASSERT_NOT_REACHED();
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     static bool weakTableRegistered(...)
     {
         ASSERT_NOT_REACHED();

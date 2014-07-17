@@ -48,7 +48,7 @@ public:
     // Called from a thread that executes the task.
     void taskCompleted();
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool hasCheckedForTermination() const { return m_hasCheckedForTermination; }
     void setHasCheckedForTermination() { m_hasCheckedForTermination = true; }
 #endif
@@ -59,7 +59,7 @@ private:
     bool m_taskCompleted;
     Mutex m_synchronousMutex;
     ThreadCondition m_synchronousCondition;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool m_hasCheckedForTermination;
 #endif
 };

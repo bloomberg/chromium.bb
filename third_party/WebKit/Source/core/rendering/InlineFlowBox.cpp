@@ -48,7 +48,7 @@ struct SameSizeAsInlineFlowBox : public InlineBox {
 
 COMPILE_ASSERT(sizeof(InlineFlowBox) == sizeof(SameSizeAsInlineFlowBox), InlineFlowBox_should_stay_small);
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 
 InlineFlowBox::~InlineFlowBox()
 {
@@ -206,13 +206,13 @@ void InlineFlowBox::deleteLine()
     while (child) {
         ASSERT(this == child->parent());
         next = child->nextOnLine();
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         child->setParent(0);
 #endif
         child->deleteLine();
         child = next;
     }
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     m_firstChild = 0;
     m_lastChild = 0;
 #endif
@@ -1651,6 +1651,9 @@ void InlineFlowBox::showLineTreeAndMark(const InlineBox* markedBox1, const char*
         box->showLineTreeAndMark(markedBox1, markedLabel1, markedBox2, markedLabel2, obj, depth + 1);
 }
 
+#endif
+
+#if ENABLE(ASSERT)
 void InlineFlowBox::checkConsistency() const
 {
 #ifdef CHECK_CONSISTENCY

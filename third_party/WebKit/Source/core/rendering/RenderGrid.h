@@ -124,7 +124,7 @@ private:
 
     bool gridIsDirty() const { return m_gridIsDirty; }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection, const Vector<GridTrack>&);
 #endif
 

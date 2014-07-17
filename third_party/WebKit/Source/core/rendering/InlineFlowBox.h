@@ -56,7 +56,7 @@ public:
         , m_lineBreakBidiStatusEor(WTF::Unicode::LeftToRight)
         , m_lineBreakBidiStatusLastStrong(WTF::Unicode::LeftToRight)
         , m_lineBreakBidiStatusLast(WTF::Unicode::LeftToRight)
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         , m_hasBadChildList(false)
 #endif
     {
@@ -69,9 +69,11 @@ public:
         m_hasTextDescendants = m_hasTextChildren;
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     virtual ~InlineFlowBox();
+#endif
 
+#ifndef NDEBUG
     virtual void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const RenderObject* = 0, int = 0) const OVERRIDE;
     virtual const char* boxName() const OVERRIDE;
 #endif
@@ -351,7 +353,7 @@ protected:
 
     // End of RootInlineBox-specific members.
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 private:
     unsigned m_hasBadChildList : 1;
 #endif
@@ -359,7 +361,7 @@ private:
 
 DEFINE_INLINE_BOX_TYPE_CASTS(InlineFlowBox);
 
-#ifdef NDEBUG
+#if !ENABLE(ASSERT)
 inline void InlineFlowBox::checkConsistency() const
 {
 }
@@ -367,7 +369,7 @@ inline void InlineFlowBox::checkConsistency() const
 
 inline void InlineFlowBox::setHasBadChildList()
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     m_hasBadChildList = true;
 #endif
 }

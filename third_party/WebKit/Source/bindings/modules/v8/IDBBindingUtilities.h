@@ -58,7 +58,7 @@ IDBKey* scriptValueToIDBKey(v8::Isolate*, const ScriptValue&);
 IDBKeyRange* scriptValueToIDBKeyRange(v8::Isolate*, const ScriptValue&);
 ScriptValue deserializeScriptValue(ScriptState*, SerializedScriptValue*, const Vector<blink::WebBlobInfo>*);
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 void assertPrimaryKeyValidOrInjectable(ScriptState*, PassRefPtr<SharedBuffer>, const Vector<blink::WebBlobInfo>*, IDBKey*, const IDBKeyPath&);
 #endif
 

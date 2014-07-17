@@ -144,7 +144,7 @@ static void sortBlock(unsigned from, unsigned to, WillBeHeapVector<NodeSetVector
 
             ASSERT(previousGroupEnd != groupEnd);
             previousGroupEnd = groupEnd;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
             parentNodes.remove(n);
 #endif
         }

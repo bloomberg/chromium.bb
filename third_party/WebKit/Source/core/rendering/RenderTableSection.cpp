@@ -632,7 +632,7 @@ void RenderTableSection::updateBaselineForCell(RenderTableCell* cell, unsigned r
 
 int RenderTableSection::calcRowLogicalHeight()
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     SetLayoutNeededForbiddenScope layoutForbiddenScope(*this);
 #endif
 
@@ -652,7 +652,7 @@ int RenderTableSection::calcRowLogicalHeight()
         m_rowPos[0] = 0;
 
     SpanningRenderTableCells rowSpanCells;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     HashSet<const RenderTableCell*> uniqueCells;
 #endif
 
@@ -677,7 +677,7 @@ int RenderTableSection::calcRowLogicalHeight()
                 if (cell->rowSpan() > 1) {
                     // For row spanning cells, we only handle them for the first row they span. This ensures we take their baseline into account.
                     if (lastRowSpanCell != cell && cell->rowIndex() == r) {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
                         ASSERT(!uniqueCells.contains(cell));
                         uniqueCells.add(cell);
 #endif
@@ -867,7 +867,7 @@ static bool shouldFlexCellChild(RenderObject* cellDescendant)
 
 void RenderTableSection::layoutRows()
 {
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     SetLayoutNeededForbiddenScope layoutForbiddenScope(*this);
 #endif
 
@@ -1030,7 +1030,7 @@ void RenderTableSection::computeOverflowFromCells(unsigned totalRows, unsigned n
     unsigned totalCellsCount = nEffCols * totalRows;
     unsigned maxAllowedOverflowingCellsCount = totalCellsCount < gMinTableSizeToUseFastPaintPathWithOverflowingCell ? 0 : gMaxAllowedOverflowingCellRatioForFastPaintPath * totalCellsCount;
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     bool hasOverflowingCell = false;
 #endif
     // Now that our height has been determined, add in overflow from cells.
@@ -1043,7 +1043,7 @@ void RenderTableSection::computeOverflowFromCells(unsigned totalRows, unsigned n
             if (r < totalRows - 1 && cell == primaryCellAt(r + 1, c))
                 continue;
             addOverflowFromChild(cell);
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
             hasOverflowingCell |= cell->hasVisualOverflow();
 #endif
             if (cell->hasVisualOverflow() && !m_forceSlowPaintPathWithOverflowingCell) {
@@ -1417,7 +1417,7 @@ void RenderTableSection::paintObject(PaintInfo& paintInfo, const LayoutPoint& pa
             }
         } else {
             // The overflowing cells should be scarce to avoid adding a lot of cells to the HashSet.
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
             unsigned totalRows = m_grid.size();
             unsigned totalCols = table()->columns().size();
             ASSERT(m_overflowingCells.size() < totalRows * totalCols * gMaxAllowedOverflowingCellRatioForFastPaintPath);

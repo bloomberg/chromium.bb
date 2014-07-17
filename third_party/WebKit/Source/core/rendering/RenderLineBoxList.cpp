@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 RenderLineBoxList::~RenderLineBoxList()
 {
     ASSERT(!m_firstLineBox);
@@ -356,7 +356,7 @@ void RenderLineBoxList::dirtyLinesFromChangedChild(RenderObject* container, Rend
     }
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 
 void RenderLineBoxList::checkConsistency() const
 {

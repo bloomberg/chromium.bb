@@ -852,7 +852,7 @@ bool partitionReallocDirectMappedInPlace(PartitionRootGeneric* root, PartitionPa
         setSystemPagesAccessible(charPtr + currentSize, recommitSize);
         partitionRecommitSystemPages(root, charPtr + currentSize, recommitSize);
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
         memset(charPtr + currentSize, kUninitializedByte, recommitSize);
 #endif
     } else {
@@ -861,7 +861,7 @@ bool partitionReallocDirectMappedInPlace(PartitionRootGeneric* root, PartitionPa
         return false;
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     // Write a new trailing cookie.
     partitionCookieWriteValue(charPtr + newSize - kCookieSize);
 #endif

@@ -172,12 +172,12 @@ void RenderView::layoutContent()
     if (RuntimeEnabledFeatures::dialogElementEnabled())
         positionDialogs();
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     checkLayoutState();
 #endif
 }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
 void RenderView::checkLayoutState()
 {
     ASSERT(!m_layoutState->next());
@@ -254,7 +254,7 @@ void RenderView::layout()
 
     layoutContent();
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     checkLayoutState();
 #endif
     clearNeedsLayout();

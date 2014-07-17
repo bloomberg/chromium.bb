@@ -61,7 +61,7 @@ GlyphPageTreeNode* GlyphPageTreeNode::getRoot(unsigned pageNumber)
         return foundNode;
 
     GlyphPageTreeNode* node = new GlyphPageTreeNode;
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     node->m_pageNumber = pageNumber;
 #endif
     roots->set(pageNumber, node);
@@ -322,7 +322,7 @@ GlyphPageTreeNode* GlyphPageTreeNode::getChild(const FontData* fontData, unsigne
             curr->m_customFontCount++;
     }
 
-#ifndef NDEBUG
+#if ENABLE(ASSERT)
     child->m_pageNumber = m_pageNumber;
 #endif
     if (fontData) {
