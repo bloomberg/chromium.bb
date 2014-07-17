@@ -64,7 +64,7 @@ public:
         , m_executionContext(*context)
     {
         V8PerIsolateData::from(m_isolate)->incrementRecursionLevel();
-        ASSERT(!ScriptForbiddenScope::isScriptForbidden());
+        RELEASE_ASSERT(!ScriptForbiddenScope::isScriptForbidden());
         // If you want V8 to autorun microtasks, this class needs to have a
         // v8::Isolate::SuppressMicrotaskExecutionScope member.
         ASSERT(!isolate->WillAutorunMicrotasks());

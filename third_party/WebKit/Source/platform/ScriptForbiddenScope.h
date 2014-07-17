@@ -11,8 +11,6 @@
 
 namespace WebCore {
 
-#if ENABLE(ASSERT)
-
 class PLATFORM_EXPORT ScriptForbiddenScope {
 public:
     ScriptForbiddenScope();
@@ -28,20 +26,6 @@ public:
 
     static bool isScriptForbidden();
 };
-
-#else
-
-class PLATFORM_EXPORT ScriptForbiddenScope {
-public:
-    ScriptForbiddenScope() { }
-    class AllowUserAgentScript {
-    public:
-        AllowUserAgentScript() { }
-    };
-    static bool isScriptForbidden() { return false; }
-};
-
-#endif
 
 } // namespace WebCore
 

@@ -10,8 +10,6 @@
 
 namespace WebCore {
 
-#if ENABLE(ASSERT)
-
 static unsigned s_scriptForbiddenCount = 0;
 
 ScriptForbiddenScope::ScriptForbiddenScope()
@@ -41,7 +39,5 @@ ScriptForbiddenScope::AllowUserAgentScript::~AllowUserAgentScript()
 {
     ASSERT(!s_scriptForbiddenCount);
 }
-
-#endif
 
 } // namespace WebCore
