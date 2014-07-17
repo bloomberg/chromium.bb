@@ -66,7 +66,8 @@ class SmoothnessFastPathKeySilkCases(benchmark.Benchmark):
     silk_flags.CustomizeBrowserOptionsForFastPath(options)
 
 
-@benchmark.Disabled('j')  # crbug.com/363783
+# GPU rasterization does not work on J devices
+@benchmark.Disabled('j')
 class SmoothnessGpuRasterizationTop25(benchmark.Benchmark):
   """Measures rendering statistics for the top 25 with GPU rasterization
   """
@@ -77,7 +78,8 @@ class SmoothnessGpuRasterizationTop25(benchmark.Benchmark):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
 
-@benchmark.Disabled('j')  # crbug.com/363783
+# GPU rasterization does not work on J devices
+@benchmark.Disabled('j')
 class SmoothnessGpuRasterizationKeyMobileSites(benchmark.Benchmark):
   """Measures rendering statistics for the key mobile sites with GPU
   rasterization
@@ -122,7 +124,6 @@ class SmoothnessToughPinchZoomCases(benchmark.Benchmark):
   page_set = page_sets.ToughPinchZoomCasesPageSet
 
 
-@benchmark.Disabled  # crbug.com/370725
 class SmoothnessPolymer(benchmark.Benchmark):
   """Measures rendering statistics for Polymer cases.
   """
@@ -130,7 +131,6 @@ class SmoothnessPolymer(benchmark.Benchmark):
   page_set = page_sets.PolymerPageSet
 
 
-@benchmark.Disabled  # crbug.com/370725
 class SmoothnessFastPathPolymer(benchmark.Benchmark):
   """Measures rendering statistics for the Polymer cases without GPU
   rasterization using bleeding edge rendering fast paths.
@@ -141,8 +141,8 @@ class SmoothnessFastPathPolymer(benchmark.Benchmark):
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForFastPath(options)
 
-
-@benchmark.Disabled  # crbug.com/370725
+# GPU rasterization does not work on J devices
+@benchmark.Disabled('j')
 class SmoothnessGpuRasterizationPolymer(benchmark.Benchmark):
   """Measures rendering statistics for the Polymer cases with GPU rasterization
   """
@@ -153,7 +153,6 @@ class SmoothnessGpuRasterizationPolymer(benchmark.Benchmark):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
 
-@benchmark.Disabled  # crbug.com/370725
 class SmoothnessFastPathGpuRasterizationPolymer(
     SmoothnessGpuRasterizationPolymer):
   """Measures rendering statistics for the Polymer cases with GPU rasterization
