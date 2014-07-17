@@ -63,7 +63,7 @@ public:
     static PassRefPtrWillBeRawPtr<MessagePort> create(ExecutionContext&);
     virtual ~MessagePort();
 
-    void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
+    void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 
     void start();
     void close();

@@ -31,35 +31,15 @@
 #include "config.h"
 #include "bindings/core/v8/V8DedicatedWorkerGlobalScope.h"
 
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/PostMessage.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8WorkerGlobalScopeEventListener.h"
-#include "core/workers/DedicatedWorkerGlobalScope.h"
-#include "wtf/ArrayBuffer.h"
 
 namespace WebCore {
 
+// FIXME: This stub should be replaced by generated code.
 void V8DedicatedWorkerGlobalScope::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "postMessage", "WorkerGlobalScope", info.Holder(), info.GetIsolate());
-    DedicatedWorkerGlobalScope* workerGlobalScope = V8DedicatedWorkerGlobalScope::toNative(info.Holder());
-    MessagePortArray ports;
-    ArrayBufferArray arrayBuffers;
-    if (info.Length() > 1) {
-        const int transferablesArgIndex = 1;
-        if (!SerializedScriptValue::extractTransferables(info[transferablesArgIndex], transferablesArgIndex, ports, arrayBuffers, exceptionState, info.GetIsolate())) {
-            exceptionState.throwIfNeeded();
-            return;
-        }
-    }
-    RefPtr<SerializedScriptValue> message = SerializedScriptValue::create(info[0], &ports, &arrayBuffers, exceptionState, info.GetIsolate());
-    if (exceptionState.throwIfNeeded())
-        return;
-
-    workerGlobalScope->postMessage(message.release(), &ports, exceptionState);
-    exceptionState.throwIfNeeded();
+    postMessageMethodCommon("WorkerGlobalScope", V8DedicatedWorkerGlobalScope::toNative(info.Holder()), info);
 }
 
 } // namespace WebCore

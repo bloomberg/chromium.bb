@@ -46,6 +46,7 @@
             'Nullable.h',
             'PageScriptDebugServer.cpp',
             'PageScriptDebugServer.h',
+            'PostMessage.h',
             'PrivateScriptRunner.cpp',
             'PrivateScriptRunner.h',
             'RetainedDOMInfo.cpp',

@@ -53,7 +53,7 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
-    void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
+    void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 
     void terminate();
 

@@ -57,7 +57,7 @@ public:
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
-    void postMessage(PassRefPtr<SerializedScriptValue>, const MessagePortArray*, ExceptionState&);
+    void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue>, const MessagePortArray*, ExceptionState&);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 

@@ -90,7 +90,7 @@ const AtomicString& Worker::interfaceName() const
     return EventTargetNames::Worker;
 }
 
-void Worker::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
+void Worker::postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& exceptionState)
 {
     ASSERT(m_contextProxy);
     // Disentangle the port in preparation for sending it to the remote context.
