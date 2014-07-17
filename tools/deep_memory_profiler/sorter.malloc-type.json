@@ -24,7 +24,7 @@
     },
     {
       "name": "tc-WebCore-Style",
-      "typeinfo": "WebCore::Style.*"
+      "typeinfo": "(WebCore|blink)::Style.*"
     },
     {
       "name": "tc-no-typeinfo-other",

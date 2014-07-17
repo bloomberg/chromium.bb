@@ -49,7 +49,7 @@ mmap-v8-heap-largeobj          mmap    .*v8::.*::LargeObjectChunk::New.*
 mmap-v8-heap-other             mmap    .*VirtualMemory.*
 mmap-v8-heap-other             mmap    .*v8::internal::OS::Allocate.*
 mmap-v8-nonheap                        mmap    .*v8::.*
-mmap-webkit                    mmap    .*(WTF::|WebCore::|WebKit::).*
+mmap-webkit                    mmap    .*(WTF::|WebCore::|blink::|WebKit::).*
 mmap-sqlite                    mmap    .*sqlite3MemMalloc.*
 mmap-pl-arena                  mmap    .*PL_ArenaAllocate.*
 mmap-sk                        mmap    .*sk_malloc_flags.*

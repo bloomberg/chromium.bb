@@ -35,7 +35,7 @@
     },
     {
       "name": "WebCore-Style",
-      "typeinfo": "WebCore::Style.*"
+      "typeinfo": "(WebCore|blink)::Style.*"
     },
     {
       "name": "STL-string",

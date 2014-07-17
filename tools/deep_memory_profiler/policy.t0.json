@@ -140,7 +140,7 @@
     {
       "name": "tc-WebCore-Style",
       "stacktrace": ".*",
-      "typeinfo": "WebCore::Style.*",
+      "typeinfo": "(WebCore|blink)::Style.*",
       "allocator": "malloc"
     },
     {
