@@ -45,7 +45,7 @@
         }],
         ['OS=="android"', {
           'dependencies': [
-            '../third_party/boringssl/boringssl.gyp:boringssl',
+            '../third_party/openssl/openssl.gyp:openssl',
           ],
           'sources/': [
             ['exclude', 'cup/client_update_protocol_nss\.cc$'],

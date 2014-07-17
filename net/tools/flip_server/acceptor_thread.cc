@@ -4,7 +4,6 @@
 
 #include "net/tools/flip_server/acceptor_thread.h"
 
-#include <errno.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>  // For TCP_NODELAY
 #include <sys/socket.h>

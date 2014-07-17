@@ -523,6 +523,10 @@ component("net") {
 
     if (!is_android_webview_build) {
       deps += [ ":net_jni_headers" ]
+
+      # The net/android/keystore_openssl.cc source file needs to access an
+      # OpenSSL-internal header.
+      include_dirs = [ "//third_party/openssl" ]
     }
   }
 
@@ -913,7 +917,7 @@ if (is_linux) {
       ":epoll_server",
       ":net",
       "//base",
-      "//third_party/boringssl",
+      "//third_party/openssl",
     ]
   }
 
@@ -932,7 +936,7 @@ if (is_linux) {
       ":test_support",
       "//testing/gtest",
       "//testing/gmock",
-      "//third_party/boringssl",
+      "//third_party/openssl",
     ]
   }
 
@@ -983,7 +987,7 @@ if (is_linux) {
       "//base",
       "//base/third_party/dynamic_annotations",
       "//crypto",
-      "//third_party/boringssl",
+      "//third_party/openssl",
       "//url",
     ]
   }
@@ -994,7 +998,7 @@ if (is_linux) {
       ":quic_base",
       ":net",
       "//base",
-      "//third_party/boringssl",
+      "//third_party/openssl",
     ]
   }
 }
@@ -1323,7 +1327,7 @@ executable("quic_server") {
     ":quic_tools",
     ":net",
     "//base",
-    "//third_party/boringssl",
+    "//third_party/openssl",
   ]
 }
 
