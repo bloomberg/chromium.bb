@@ -317,7 +317,7 @@ public:
 
     // FIXME: Temporary method to accommodate out-of-process frame ancestors;
     // will be removed when there can be multiple WebWidgets for a single page.
-    WebLocalFrameImpl* localFrameRootTemporary();
+    WebLocalFrameImpl* localFrameRootTemporary() const;
 
     // Event related methods:
     void mouseContextMenu(const WebMouseEvent&);

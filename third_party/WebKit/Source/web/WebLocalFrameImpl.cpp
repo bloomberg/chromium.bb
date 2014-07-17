@@ -1622,17 +1622,17 @@ void WebLocalFrameImpl::createFrameView()
     ASSERT(frame()); // If frame() doesn't exist, we probably didn't init properly.
 
     WebViewImpl* webView = viewImpl();
-    bool isMainFrame = webView->mainFrameImpl()->frame() == frame();
-    if (isMainFrame)
+    bool isLocalRoot = frame()->isLocalRoot();
+    if (isLocalRoot)
         webView->suppressInvalidations(true);
 
     frame()->createView(webView->size(), webView->baseBackgroundColor(), webView->isTransparent());
-    if (webView->shouldAutoResize() && isMainFrame)
+    if (webView->shouldAutoResize() && isLocalRoot)
         frame()->view()->enableAutoSizeMode(true, webView->minAutoSize(), webView->maxAutoSize());
 
     frame()->view()->setInputEventsTransformForEmulation(m_inputEventsOffsetForEmulation, m_inputEventsScaleFactorForEmulation);
 
-    if (isMainFrame)
+    if (isLocalRoot)
         webView->suppressInvalidations(false);
 }
 

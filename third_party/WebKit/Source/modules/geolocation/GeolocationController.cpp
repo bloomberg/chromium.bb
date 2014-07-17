@@ -50,13 +50,14 @@ GeolocationController::GeolocationController(LocalFrame& frame, GeolocationClien
         OwnPtr<GeolocationInspectorAgent> geolocationAgent(GeolocationInspectorAgent::create());
         m_inspectorAgent = geolocationAgent.get();
         frame.page()->inspectorController().registerModuleAgent(geolocationAgent.release());
-    } else {
+    } else if (frame.page()->mainFrame()->isLocalFrame()) {
         m_inspectorAgent = GeolocationController::from(frame.page()->deprecatedLocalMainFrame())->m_inspectorAgent;
     }
 
-    m_inspectorAgent->AddController(this);
+    if (m_inspectorAgent)
+        m_inspectorAgent->AddController(this);
 
-    if (!frame.isMainFrame()) {
+    if (!frame.isMainFrame() && frame.page()->mainFrame()->isLocalFrame()) {
         // internals.setGeolocationClientMock is per page.
         GeolocationController* mainController = GeolocationController::from(frame.page()->deprecatedLocalMainFrame());
         if (mainController->hasClientForTest())

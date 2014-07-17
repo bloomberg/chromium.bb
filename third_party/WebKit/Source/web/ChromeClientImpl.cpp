@@ -358,7 +358,7 @@ void ChromeClientImpl::setResizable(bool value)
 
 bool ChromeClientImpl::shouldReportDetailedMessageForSource(const String& url)
 {
-    WebLocalFrameImpl* webframe = m_webView->mainFrameImpl();
+    WebLocalFrameImpl* webframe = m_webView->localFrameRootTemporary();
     return webframe->client() && webframe->client()->shouldReportDetailedMessageForSource(url);
 }
 
@@ -835,7 +835,12 @@ void ChromeClientImpl::handleKeyboardEventOnTextField(HTMLInputElement& inputEle
 void ChromeClientImpl::forwardInputEvent(
     WebCore::Frame* frame, WebCore::Event* event)
 {
-    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(toLocalFrameTemporary(frame));
+    // FIXME: Input event forwarding to out-of-process frames is broken until
+    // WebRemoteFrameImpl has a WebFrameClient.
+    if (frame->isRemoteFrame())
+        return;
+
+    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(toLocalFrame(frame));
 
     // This is only called when we have out-of-process iframes, which
     // need to forward input events across processes.

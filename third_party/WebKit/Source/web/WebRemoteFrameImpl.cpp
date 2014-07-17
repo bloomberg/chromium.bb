@@ -161,12 +161,12 @@ void WebRemoteFrameImpl::setIsRemote(bool)
     ASSERT_NOT_REACHED();
 }
 
-void WebRemoteFrameImpl::setRemoteWebLayer(WebLayer* layer)
+void WebRemoteFrameImpl::setRemoteWebLayer(WebLayer* webLayer)
 {
     if (!frame())
         return;
 
-    frame()->setRemotePlatformLayer(layer);
+    frame()->setRemotePlatformLayer(webLayer);
 }
 
 void WebRemoteFrameImpl::setPermissionClient(WebPermissionClient*)
@@ -239,8 +239,9 @@ bool WebRemoteFrameImpl::hasVerticalScrollbar() const
 
 WebView* WebRemoteFrameImpl::view() const
 {
-    ASSERT_NOT_REACHED();
-    return 0;
+    if (!frame())
+        return 0;
+    return WebViewImpl::fromPage(frame()->page());
 }
 
 void WebRemoteFrameImpl::removeChild(WebFrame* frame)
@@ -251,7 +252,6 @@ void WebRemoteFrameImpl::removeChild(WebFrame* frame)
 
 WebDocument WebRemoteFrameImpl::document() const
 {
-    ASSERT_NOT_REACHED();
     return WebDocument();
 }
 
@@ -510,12 +510,10 @@ bool WebRemoteFrameImpl::isCommandEnabled(const WebString&) const
 
 void WebRemoteFrameImpl::enableContinuousSpellChecking(bool)
 {
-    ASSERT_NOT_REACHED();
 }
 
 bool WebRemoteFrameImpl::isContinuousSpellCheckingEnabled() const
 {
-    ASSERT_NOT_REACHED();
     return false;
 }
 

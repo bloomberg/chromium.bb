@@ -304,6 +304,14 @@ Frame* FocusController::focusedOrMainFrame() const
 {
     if (Frame* frame = focusedFrame())
         return frame;
+
+    // FIXME: This is a temporary hack to ensure that we return a LocalFrame, even when the mainFrame is remote.
+    // FocusController needs to be refactored to deal with RemoteFrames cross-process focus transfers.
+    for (Frame* frame = m_page->mainFrame()->tree().top(); frame; frame = frame->tree().traverseNext()) {
+        if (frame->isLocalRoot())
+            return frame;
+    }
+
     return m_page->mainFrame();
 }
 
@@ -730,7 +738,9 @@ void FocusController::setActive(bool active)
             view->updateControlTints();
     }
 
-    toLocalFrame(focusedOrMainFrame())->selection().pageActivationChanged();
+    Frame* frame = focusedOrMainFrame();
+    if (frame->isLocalFrame())
+        toLocalFrame(frame)->selection().pageActivationChanged();
 }
 
 static void updateFocusCandidateIfNeeded(FocusType type, const FocusCandidate& current, FocusCandidate& candidate, FocusCandidate& closest)

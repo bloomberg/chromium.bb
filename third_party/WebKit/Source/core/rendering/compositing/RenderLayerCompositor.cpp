@@ -139,7 +139,7 @@ bool RenderLayerCompositor::rootShouldAlwaysComposite() const
 {
     if (!m_hasAcceleratedCompositing)
         return false;
-    return m_renderView.frame()->isMainFrame() || m_compositingReasonFinder.requiresCompositingForScrollableFrame();
+    return m_renderView.frame()->isLocalRoot() || m_compositingReasonFinder.requiresCompositingForScrollableFrame();
 }
 
 void RenderLayerCompositor::updateAcceleratedCompositingSettings()
@@ -251,10 +251,10 @@ void RenderLayerCompositor::applyOverlayFullscreenVideoAdjustment()
     if (!m_rootContentLayer)
         return;
 
-    bool isMainFrame = m_renderView.frame()->isMainFrame();
+    bool isLocalRoot = m_renderView.frame()->isLocalRoot();
     RenderVideo* video = findFullscreenVideoRenderer(m_renderView.document());
     if (!video || !video->layer()->hasCompositedLayerMapping()) {
-        if (isMainFrame) {
+        if (isLocalRoot) {
             GraphicsLayer* backgroundLayer = fixedRootBackgroundLayer();
             if (backgroundLayer && !backgroundLayer->parent())
                 rootFixedBackgroundsChanged();
@@ -269,7 +269,7 @@ void RenderLayerCompositor::applyOverlayFullscreenVideoAdjustment()
     videoLayer->setPosition(IntPoint());
 
     // Only steal fullscreen video layer and clear all other layers if we are the main frame.
-    if (!isMainFrame)
+    if (!isLocalRoot)
         return;
 
     m_rootContentLayer->removeAllChildren();
@@ -393,7 +393,7 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
         compositedLayerMappingChanged = true;
 
         // At this time, the ScrollingCooridnator only supports the top-level frame.
-        if (layer->isRootLayer() && m_renderView.frame()->isMainFrame()) {
+        if (layer->isRootLayer() && m_renderView.frame()->isLocalRoot()) {
             if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
                 scrollingCoordinator->frameViewRootLayerDidChange(m_renderView.frameView());
         }
@@ -503,7 +503,7 @@ void RenderLayerCompositor::frameViewDidScroll()
     bool scrollingCoordinatorHandlesOffset = false;
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator()) {
         if (Settings* settings = m_renderView.document().settings()) {
-            if (m_renderView.frame()->isMainFrame() || settings->compositedScrollingForFramesEnabled())
+            if (m_renderView.frame()->isLocalRoot() || settings->compositedScrollingForFramesEnabled())
                 scrollingCoordinatorHandlesOffset = scrollingCoordinator->scrollableAreaScrollLayerDidChange(frameView);
         }
     }
@@ -689,7 +689,7 @@ void RenderLayerCompositor::setIsInWindow(bool isInWindow)
         if (m_rootLayerAttachment != RootLayerUnattached)
             return;
 
-        RootLayerAttachment attachment = m_renderView.frame()->isMainFrame() ? RootLayerAttachedViaChromeClient : RootLayerAttachedViaEnclosingFrame;
+        RootLayerAttachment attachment = m_renderView.frame()->isLocalRoot() ? RootLayerAttachedViaChromeClient : RootLayerAttachedViaEnclosingFrame;
         attachRootLayer(attachment);
     } else {
         if (m_rootLayerAttachment == RootLayerUnattached)
@@ -887,7 +887,7 @@ bool RenderLayerCompositor::requiresScrollCornerLayer() const
 void RenderLayerCompositor::updateOverflowControlsLayers()
 {
 #if USE(RUBBER_BANDING)
-    if (m_renderView.frame()->isMainFrame()) {
+    if (m_renderView.frame()->isLocalRoot()) {
         if (!m_layerForOverhangShadow) {
             m_layerForOverhangShadow = GraphicsLayer::create(graphicsLayerFactory(), this);
             OverscrollTheme::theme()->setUpOverhangShadowLayer(m_layerForOverhangShadow.get());
@@ -953,7 +953,7 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
 
 void RenderLayerCompositor::ensureRootLayer()
 {
-    RootLayerAttachment expectedAttachment = m_renderView.frame()->isMainFrame() ? RootLayerAttachedViaChromeClient : RootLayerAttachedViaEnclosingFrame;
+    RootLayerAttachment expectedAttachment = m_renderView.frame()->isLocalRoot() ? RootLayerAttachedViaChromeClient : RootLayerAttachedViaEnclosingFrame;
     if (expectedAttachment == m_rootLayerAttachment)
          return;
 
@@ -977,7 +977,7 @@ void RenderLayerCompositor::ensureRootLayer()
 
         // Create a clipping layer if this is an iframe or settings require to clip.
         m_containerLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
-        bool containerMasksToBounds = !m_renderView.frame()->isMainFrame();
+        bool containerMasksToBounds = !m_renderView.frame()->isLocalRoot();
         if (Settings* settings = m_renderView.document().settings()) {
             if (settings->mainFrameClipsContent())
                 containerMasksToBounds = true;

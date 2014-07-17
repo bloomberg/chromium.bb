@@ -51,6 +51,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/PinchViewport.h"
+#include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/SmartClip.h"
 #include "core/html/HTMLInputElement.h"
@@ -1590,7 +1591,7 @@ void WebViewImpl::resizePinchViewport(const WebSize& newSize)
     page()->frameHost().pinchViewport().setSize(newSize);
 }
 
-WebLocalFrameImpl* WebViewImpl::localFrameRootTemporary()
+WebLocalFrameImpl* WebViewImpl::localFrameRootTemporary() const
 {
     // FIXME: This is a temporary method that finds the first localFrame in a traversal.
     // This is equivalent to mainFrame() if the mainFrame is in-process. We need to create
@@ -1648,14 +1649,14 @@ void WebViewImpl::resize(const WebSize& newSize)
     bool shouldAnchorAndRescaleViewport = settings()->mainFrameResizesAreOrientationChanges()
         && oldSize.width && oldContentsWidth && newSize.width != oldSize.width && !m_fullscreenController->isFullscreen();
 
-    ViewportAnchor viewportAnchor(&mainFrameImpl()->frame()->eventHandler());
+    ViewportAnchor viewportAnchor(&localFrameRootTemporary()->frame()->eventHandler());
     if (shouldAnchorAndRescaleViewport) {
         viewportAnchor.setAnchor(view->visibleContentRect(),
                                  FloatSize(viewportAnchorXCoord, viewportAnchorYCoord));
     }
 
     // FIXME: FastTextAutosizer does not yet support out-of-process frames.
-    if (mainFrameImpl()->frame()->isLocalFrame())
+    if (mainFrameImpl() && mainFrameImpl()->frame()->isLocalFrame())
     {
         // Avoids unnecessary invalidations while various bits of state in FastTextAutosizer are updated.
         FastTextAutosizer::DeferUpdatePageInfo deferUpdatePageInfo(page());
@@ -2158,7 +2159,11 @@ WebTextInputInfo WebViewImpl::textInputInfo()
 {
     WebTextInputInfo info;
 
-    LocalFrame* focused = toLocalFrame(focusedWebCoreFrame());
+    Frame* focusedFrame = focusedWebCoreFrame();
+    if (!focusedFrame->isLocalFrame())
+        return info;
+
+    LocalFrame* focused = toLocalFrame(focusedFrame);
     if (!focused)
         return info;
 
@@ -2286,10 +2291,14 @@ WebString WebViewImpl::inputModeOfFocusedElement()
 
 bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
 {
-    const LocalFrame* frame = toLocalFrame(focusedWebCoreFrame());
-    if (!frame)
+    const Frame* frame = focusedWebCoreFrame();
+    if (!frame || !frame->isLocalFrame())
         return false;
-    FrameSelection& selection = frame->selection();
+
+    const LocalFrame* localFrame = toLocalFrame(frame);
+    if (!localFrame)
+        return false;
+    FrameSelection& selection = localFrame->selection();
 
     if (selection.isCaret()) {
         anchor = focus = selection.absoluteCaretBounds();
@@ -2303,18 +2312,18 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
             selectedRange->startOffset(),
             selectedRange->startContainer(),
             selectedRange->startOffset()));
-        anchor = frame->editor().firstRectForRange(range.get());
+        anchor = localFrame->editor().firstRectForRange(range.get());
 
         range = Range::create(selectedRange->endContainer()->document(),
             selectedRange->endContainer(),
             selectedRange->endOffset(),
             selectedRange->endContainer(),
             selectedRange->endOffset());
-        focus = frame->editor().firstRectForRange(range.get());
+        focus = localFrame->editor().firstRectForRange(range.get());
     }
 
-    IntRect scaledAnchor(frame->view()->contentsToWindow(anchor));
-    IntRect scaledFocus(frame->view()->contentsToWindow(focus));
+    IntRect scaledAnchor(localFrame->view()->contentsToWindow(anchor));
+    IntRect scaledFocus(localFrame->view()->contentsToWindow(focus));
 
     if (pinchVirtualViewportEnabled()) {
         // FIXME(http://crbug.com/371902) - We shouldn't have to do this
@@ -2576,7 +2585,7 @@ WebFrame* WebViewImpl::findFrameByName(
 
 WebFrame* WebViewImpl::focusedFrame()
 {
-    return WebLocalFrameImpl::fromFrame(toLocalFrame(focusedWebCoreFrame()));
+    return WebFrame::fromFrame(focusedWebCoreFrame());
 }
 
 void WebViewImpl::setFocusedFrame(WebFrame* frame)
@@ -3414,9 +3423,9 @@ void WebViewImpl::sendResizeEventAndRepaint()
     // FIXME: This is wrong. The FrameView is responsible sending a resizeEvent
     // as part of layout. Layout is also responsible for sending invalidations
     // to the embedder. This method and all callers may be wrong. -- eseidel.
-    if (mainFrameImpl()->frameView()) {
+    if (localFrameRootTemporary()->frameView()) {
         // Enqueues the resize event.
-        mainFrameImpl()->frame()->document()->enqueueResizeEvent();
+        localFrameRootTemporary()->frame()->document()->enqueueResizeEvent();
     }
 
     if (m_client) {
@@ -3719,15 +3728,15 @@ void WebViewImpl::resumeTreeViewCommits()
 
 void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe)
 {
-    if (!m_client || webframe != mainFrameImpl())
+    if (!m_client || !webframe->frame()->isLocalRoot())
         return;
 
     // If we finished a layout while in deferred commit mode,
     // that means it's time to start producing frames again so un-defer.
     resumeTreeViewCommits();
 
-    if (m_shouldAutoResize && mainFrameImpl()->frame() && mainFrameImpl()->frame()->view()) {
-        WebSize frameSize = mainFrameImpl()->frame()->view()->frameRect().size();
+    if (m_shouldAutoResize && webframe->frame() && webframe->frame()->view()) {
+        WebSize frameSize = webframe->frame()->view()->frameRect().size();
         if (frameSize != m_size) {
             m_size = frameSize;
 
@@ -3944,12 +3953,15 @@ WebCore::GraphicsLayerFactory* WebViewImpl::graphicsLayerFactory() const
 
 WebCore::RenderLayerCompositor* WebViewImpl::compositor() const
 {
-    if (!page()
-        || !page()->mainFrame()
-        || !page()->mainFrame()->isLocalFrame()
-        || !page()->deprecatedLocalMainFrame()->document()
-        || !page()->deprecatedLocalMainFrame()->document()->renderView())
+    if (!page() || !page()->mainFrame())
         return 0;
+
+    if (!page()->mainFrame()->isLocalFrame())
+        return localFrameRootTemporary()->frame()->document()->renderView()->compositor();
+
+    if (!page()->deprecatedLocalMainFrame()->document() || !page()->deprecatedLocalMainFrame()->document()->renderView())
+        return 0;
+
     return page()->deprecatedLocalMainFrame()->document()->renderView()->compositor();
 }
 
