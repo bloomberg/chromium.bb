@@ -27,7 +27,6 @@ namespace device {
 
 namespace {
 
-const char kHIDSubSystem[] = "hid";
 const char kHidrawSubsystem[] = "hidraw";
 const char kHIDID[] = "HID_ID";
 const char kHIDName[] = "HID_NAME";
@@ -53,11 +52,7 @@ scoped_refptr<HidConnection> HidServiceLinux::Connect(
           device_info.device_id);
 
   if (device) {
-    std::string dev_node;
-    if (!FindHidrawDevNode(device.get(), &dev_node)) {
-      LOG(ERROR) << "Cannot open HID device as hidraw device.";
-      return NULL;
-    }
+    std::string dev_node = udev_device_get_devnode(device.get());
     return new HidConnectionLinux(device_info, dev_node);
   }
 
@@ -77,7 +72,7 @@ void HidServiceLinux::OnDeviceAdded(udev_device* device) {
   if (!device_path)
     return;
   const char* subsystem = udev_device_get_subsystem(device);
-  if (!subsystem || strcmp(subsystem, kHIDSubSystem) != 0)
+  if (!subsystem || strcmp(subsystem, kHidrawSubsystem) != 0)
     return;
 
   HidDeviceInfo device_info;
@@ -86,7 +81,12 @@ void HidServiceLinux::OnDeviceAdded(udev_device* device) {
   uint32_t int_property = 0;
   const char* str_property = NULL;
 
-  const char* hid_id = udev_device_get_property_value(device, kHIDID);
+  udev_device *parent = udev_device_get_parent(device);
+  if (!parent) {
+    return;
+  }
+
+  const char* hid_id = udev_device_get_property_value(parent, kHIDID);
   if (!hid_id)
     return;
 
@@ -104,21 +104,16 @@ void HidServiceLinux::OnDeviceAdded(udev_device* device) {
     device_info.product_id = int_property;
   }
 
-  str_property = udev_device_get_property_value(device, kHIDUnique);
+  str_property = udev_device_get_property_value(parent, kHIDUnique);
   if (str_property != NULL)
     device_info.serial_number = str_property;
 
-  str_property = udev_device_get_property_value(device, kHIDName);
+  str_property = udev_device_get_property_value(parent, kHIDName);
   if (str_property != NULL)
     device_info.product_name = str_property;
 
-  std::string dev_node;
-  if (!FindHidrawDevNode(device, &dev_node)) {
-    LOG(ERROR) << "Cannot find device node for HID device.";
-    return;
-  }
-
-  int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
+  const std::string dev_node = udev_device_get_devnode(device);
+  const int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
 
   base::File device_file(base::FilePath(dev_node), flags);
   if (!device_file.IsValid()) {
@@ -160,46 +155,6 @@ void HidServiceLinux::OnDeviceRemoved(udev_device* device) {
   const char* device_path = udev_device_get_syspath(device);;
   if (device_path)
     RemoveDevice(device_path);
-}
-
-bool HidServiceLinux::FindHidrawDevNode(udev_device* parent,
-                                        std::string* result) {
-  udev* udev = udev_device_get_udev(parent);
-  if (!udev) {
-    return false;
-  }
-  ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev));
-  if (!enumerate) {
-    return false;
-  }
-  if (udev_enumerate_add_match_subsystem(enumerate.get(), kHidrawSubsystem)) {
-    return false;
-  }
-  if (udev_enumerate_scan_devices(enumerate.get())) {
-    return false;
-  }
-  std::string parent_path(udev_device_get_devpath(parent));
-  if (parent_path.length() == 0 || *parent_path.rbegin() != '/')
-    parent_path += '/';
-  udev_list_entry* devices = udev_enumerate_get_list_entry(enumerate.get());
-  for (udev_list_entry* i = devices; i != NULL;
-       i = udev_list_entry_get_next(i)) {
-    ScopedUdevDevicePtr hid_dev(
-        udev_device_new_from_syspath(udev, udev_list_entry_get_name(i)));
-    const char* raw_path = udev_device_get_devnode(hid_dev.get());
-    std::string device_path = udev_device_get_devpath(hid_dev.get());
-    if (raw_path &&
-        !device_path.compare(0, parent_path.length(), parent_path)) {
-      std::string sub_path = device_path.substr(parent_path.length());
-      if (sub_path.substr(0, sizeof(kHidrawSubsystem) - 1) ==
-          kHidrawSubsystem) {
-        *result = raw_path;
-        return true;
-      }
-    }
-  }
-
-  return false;
 }
 
 }  // namespace device

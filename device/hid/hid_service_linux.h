@@ -32,8 +32,6 @@ class HidServiceLinux : public HidService,
  private:
   virtual ~HidServiceLinux();
 
-  static bool FindHidrawDevNode(udev_device* parent, std::string* result);
-
   DISALLOW_COPY_AND_ASSIGN(HidServiceLinux);
 };
 
