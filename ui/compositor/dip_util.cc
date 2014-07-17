@@ -5,12 +5,12 @@
 #include "ui/compositor/dip_util.h"
 
 #include "base/command_line.h"
-#include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect.h"
@@ -97,8 +97,8 @@ void SnapLayerToPhysicalPixelBoundary(ui::Layer* snapped_layer,
 
   float scale_factor = GetDeviceScaleFactor(layer_to_snap);
   view_offset.Scale(scale_factor);
-  gfx::PointF view_offset_snapped(cc::MathUtil::Round(view_offset.x()),
-                                  cc::MathUtil::Round(view_offset.y()));
+  gfx::PointF view_offset_snapped(gfx::ToRoundedInt(view_offset.x()),
+                                  gfx::ToRoundedInt(view_offset.y()));
 
   gfx::Vector2dF fudge = view_offset_snapped - view_offset;
   fudge.Scale(1.0 / scale_factor);
