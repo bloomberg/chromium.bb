@@ -183,6 +183,8 @@ DirectoryModel.prototype.onWatcherDirectoryChanged_ = function(event) {
         this.currentDirContents_.prefetchMetadata(entries, true, function() {
           this.rescanSoon(false);
         }.bind(this));
+      } else {
+        this.rescanSoon(false);
       }
     }.bind(this)).catch(function(error) {
       console.error('Error in proceeding the changed event.', error,
