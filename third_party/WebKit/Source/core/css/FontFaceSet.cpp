@@ -186,8 +186,7 @@ AtomicString FontFaceSet::status() const
 
 void FontFaceSet::handlePendingEventsAndPromisesSoon()
 {
-    // setPendingActivity() is unnecessary because m_asyncRunner will be
-    // automatically stopped on destruction.
+    // m_asyncRunner will be automatically stopped on destruction.
     m_asyncRunner.runAsync();
 }
 

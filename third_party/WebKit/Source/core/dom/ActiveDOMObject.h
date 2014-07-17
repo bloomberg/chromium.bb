@@ -45,9 +45,6 @@ public:
 
     // Should return true if there's any pending asynchronous activity, and so
     // this object must not be garbage collected.
-    //
-    // Default implementation is that it returns true iff
-    // m_pendingActivityCount is non-zero.
     virtual bool hasPendingActivity() const;
 
     // These methods have an empty default implementation so that subclasses
@@ -61,22 +58,7 @@ public:
 protected:
     virtual ~ActiveDOMObject();
 
-    template<class T> void setPendingActivity(T* thisObject)
-    {
-        ASSERT(thisObject == this);
-        thisObject->ref();
-        m_pendingActivityCount++;
-    }
-
-    template<class T> void unsetPendingActivity(T* thisObject)
-    {
-        ASSERT(m_pendingActivityCount > 0);
-        --m_pendingActivityCount;
-        thisObject->deref();
-    }
-
 private:
-    unsigned m_pendingActivityCount;
 #if ENABLE(ASSERT)
     bool m_suspendIfNeededCalled;
 #endif
