@@ -32507,6 +32507,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Translate.LanguageDetectionTiming"
+    enum="TranslateLanguageDetectionTiming">
+  <owner>andrewhayden@chromium.org</owner>
+  <summary>
+    For each page load, records whether language detection occurs on time or
+    gets deferred. If deferred language detection later completes, this is also
+    recorded. This allows measuring the UX impact of using a non-static CLD data
+    source.
+  </summary>
+</histogram>
+
 <histogram name="Translate.LanguageVerification"
     enum="TranslateLanguageVerification">
   <owner>kenjibaheux@google.com</owner>
@@ -47554,6 +47565,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="No language code"/>
   <int value="1" label="Valid language code"/>
   <int value="2" label="Invalid language code"/>
+</enum>
+
+<enum name="TranslateLanguageDetectionTiming" type="int">
+  <int value="0" label="On time"/>
+  <int value="1" label="Deferred"/>
+  <int value="2" label="Resumed"/>
 </enum>
 
 <enum name="TranslateLanguageVerification" type="int">

@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,6 +18,8 @@
 #include "components/translate/core/common/translate_metrics.h"
 #include "components/translate/core/common/translate_util.h"
 #include "components/translate/core/language_detection/language_detection_util.h"
+#include "content/public/common/content_constants.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
 #include "extensions/renderer/extension_groups.h"
@@ -140,15 +143,23 @@ void TranslateHelper::PageCapturedImpl(int page_seq_no,
   if (!main_frame || page_seq_no_ != page_seq_no)
     return;
 
-  // TODO(andrewhayden): UMA insertion point here: Track if data is available.
-  // TODO(andrewhayden): Retry insertion point here, retry till data available.
   if (!cld_data_provider_->IsCldDataAvailable()) {
     // We're in dynamic mode and CLD data isn't loaded. Retry when CLD data
     // is loaded, if ever.
     deferred_page_capture_ = true;
     deferred_page_seq_no_ = page_seq_no;
     deferred_contents_ = contents;
+    RecordLanguageDetectionTiming(DEFERRED);
     return;
+  }
+
+  if (deferred_page_seq_no_ == -1) {
+    // CLD data was available before language detection was requested.
+    RecordLanguageDetectionTiming(ON_TIME);
+  } else {
+    // This is a request that was triggered because CLD data is now available
+    // and was previously deferred.
+    RecordLanguageDetectionTiming(RESUMED);
   }
 
   WebDocument document = main_frame->document();
@@ -607,4 +618,31 @@ void TranslateHelper::OnCldDataAvailable() {
     deferred_page_seq_no_ = -1; // Clean up for sanity
     deferred_contents_.clear(); // Clean up for sanity
   }
+}
+
+void TranslateHelper::RecordLanguageDetectionTiming(
+    LanguageDetectionTiming timing) {
+  // The following comment is copied from page_load_histograms.cc, and applies
+  // just as equally here:
+  //
+  // Since there are currently no guarantees that renderer histograms will be
+  // sent to the browser, we initiate a PostTask here to be sure that we send
+  // the histograms we generated.  Without this call, pages that don't have an
+  // on-close-handler might generate data that is lost when the renderer is
+  // shutdown abruptly (perchance because the user closed the tab).
+  DVLOG(1) << "Language detection timing: " << timing;
+  UMA_HISTOGRAM_ENUMERATION("Translate.LanguageDetectionTiming", timing,
+                            LANGUAGE_DETECTION_TIMING_MAX_VALUE);
+
+  // Note on performance: Under normal circumstances, this should get called
+  // once per page load. The code will either manage to do it ON_TIME or will
+  // be DEFERRED until CLD is ready. In the latter case, CLD is in dynamic mode
+  // and may eventually become available, triggering the RESUMED event; after
+  // this, everything should start being ON_TIME. This should never run more
+  // than twice in a page load, under any conditions.
+  // Also note that language detection is triggered off of a delay AFTER the
+  // page load completed event has fired, making this very much off the critical
+  // path.
+  content::RenderThread::Get()->UpdateHistograms(
+      content::kHistogramSynchronizerReservedSequenceNumber);
 }
