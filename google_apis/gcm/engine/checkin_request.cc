@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
@@ -146,6 +147,8 @@ void CheckinRequest::Start() {
       net::URLFetcher::Create(checkin_url_, net::URLFetcher::POST, this));
   url_fetcher_->SetRequestContext(request_context_getter_);
   url_fetcher_->SetUploadData(kRequestContentType, upload_data);
+  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                             net::LOAD_DO_NOT_SAVE_COOKIES);
   recorder_->RecordCheckinInitiated(request_info_.android_id);
   request_start_time_ = base::TimeTicks::Now();
   url_fetcher_->Start();

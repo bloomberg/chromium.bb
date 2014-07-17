@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "net/base/escape.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -128,6 +129,8 @@ void RegistrationRequest::Start() {
   url_fetcher_.reset(net::URLFetcher::Create(
       registration_url_, net::URLFetcher::POST, this));
   url_fetcher_->SetRequestContext(request_context_getter_);
+  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                             net::LOAD_DO_NOT_SAVE_COOKIES);
 
   std::string android_id = base::Uint64ToString(request_info_.android_id);
   std::string auth_header =
