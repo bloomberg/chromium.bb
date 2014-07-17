@@ -2179,7 +2179,7 @@ Even if you have downloaded files from this website before, the website might ha
           Summary
         </message>
         <message name="IDS_APPLICATION_INFO_ACTIVE_PERMISSIONS_TEXT" desc="Heading above the current permissions for the app (the permissions that the user has granted the app upon installation).">
-          It can:
+          Permissions
         </message>
         <message name="IDS_APPLICATION_INFO_RETAINED_FILE_PERMISSIONS_TEXT" desc="Heading above the current retained files for the app, which are files the app has permanent access to (the app can read and write to these files).">
           Files
@@ -2205,7 +2205,7 @@ Even if you have downloaded files from this website before, the website might ha
           Summary
         </message>
         <message name="IDS_APPLICATION_INFO_ACTIVE_PERMISSIONS_TEXT" desc="In Title Case: Heading above the current permissions for the app (the permissions that the user has granted the app upon installation).">
-          It Can:
+          Permissions
         </message>
         <message name="IDS_APPLICATION_INFO_RETAINED_FILE_PERMISSIONS_TEXT" desc="In Title Case: Heading above the current retained files for the app, which are files the app has permanent access to (the app can read and write to these files).">
           Files
