@@ -200,7 +200,7 @@ InspectorTest.captureStackTraceIntoString = function(callFrames, asyncStackTrace
 
     while (asyncStackTrace) {
         results.push("    [" + (asyncStackTrace.description || "Async Call") + "]");
-        var printed = printCallFrames(WebInspector.DebuggerModel.CallFrame.fromPayloadArray(WebInspector.targetManager.activeTarget(), asyncStackTrace.callFrames));
+        var printed = printCallFrames(WebInspector.DebuggerModel.CallFrame.fromPayloadArray(WebInspector.targetManager.mainTarget(), asyncStackTrace.callFrames));
         if (!printed)
             results.pop();
         if (asyncStackTrace.callFrames.peekLast().functionName === "testFunction")
@@ -223,7 +223,7 @@ InspectorTest._pausedScript = function(callFrames, reason, auxData, breakpointId
 {
     if (!InspectorTest._quiet)
         InspectorTest.addResult("Script execution paused.");
-    InspectorTest._pausedScriptArguments = [WebInspector.DebuggerModel.CallFrame.fromPayloadArray(WebInspector.targetManager.activeTarget(), callFrames), reason, breakpointIds, asyncStackTrace, auxData];
+    InspectorTest._pausedScriptArguments = [WebInspector.DebuggerModel.CallFrame.fromPayloadArray(WebInspector.targetManager.mainTarget(), callFrames), reason, breakpointIds, asyncStackTrace, auxData];
     if (InspectorTest._waitUntilPausedCallback) {
         var callback = InspectorTest._waitUntilPausedCallback;
         delete InspectorTest._waitUntilPausedCallback;
@@ -378,7 +378,7 @@ InspectorTest.createScriptMock = function(url, startLine, startColumn, isContent
     var endLine = startLine + lineCount - 1;
     var endColumn = lineCount === 1 ? startColumn + source.length : source.length - source.lineEndings()[lineCount - 2];
     var hasSourceURL = !!source.match(/\/\/#\ssourceURL=\s*(\S*?)\s*$/m) || !!source.match(/\/\/@\ssourceURL=\s*(\S*?)\s*$/m);
-    var script = new WebInspector.Script(WebInspector.targetManager.activeTarget(), scriptId, url, startLine, startColumn, endLine, endColumn, isContentScript, null, hasSourceURL);
+    var script = new WebInspector.Script(WebInspector.targetManager.mainTarget(), scriptId, url, startLine, startColumn, endLine, endColumn, isContentScript, null, hasSourceURL);
     script.requestContent = function(callback)
     {
         var trimmedSource = WebInspector.Script._trimSourceURLComment(source);

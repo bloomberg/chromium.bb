@@ -212,7 +212,7 @@ function test()
         ]
     };
 
-    var frameModel = new WebInspector.TracingTimelineFrameModel(WebInspector.targetManager.activeTarget());
+    var frameModel = new WebInspector.TracingTimelineFrameModel(WebInspector.targetManager.mainTarget());
 
     function loadEvents(events)
     {

@@ -7,7 +7,7 @@ function test() {
 
     function checkURL(url)
     {
-        var request = new WebInspector.NetworkRequest(WebInspector.targetManager.activeTarget(), url, url, "", "", "");
+        var request = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), url, url, "", "", "");
         var result = WebInspector.NetworkLogView.HTTPRequestsFilter(request);
         InspectorTest.addResult((result ? "" : "Non-") + "HTTP request URL: " + url);
     }

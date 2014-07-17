@@ -54,7 +54,7 @@ function test()
         if (!record.data["layerTree"])
             return;
         ++pendingEventCount;
-        var layerTree = new WebInspector.AgentLayerTree(WebInspector.targetManager.activeTarget());
+        var layerTree = new WebInspector.AgentLayerTree(WebInspector.targetManager.mainTarget());
         layerTree.setLayers(record.data["layerTree"], onLayersSet.bind(null, layerTree));
     }
 

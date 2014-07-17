@@ -11,8 +11,8 @@ function test()
     var contentReceived;
     var finalMappedLocation;
     InspectorTest.createWorkspace();
-    var cssModel = new WebInspector.CSSStyleModel(WebInspector.targetManager.activeTarget(), InspectorTest.testWorkspace);
-    WebInspector.targetManager.activeTarget().cssModel = cssModel;
+    var cssModel = new WebInspector.CSSStyleModel(WebInspector.targetManager.mainTarget(), InspectorTest.testWorkspace);
+    WebInspector.targetManager.mainTarget().cssModel = cssModel;
     var mapping = new WebInspector.CSSStyleSheetMapping(cssModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceBinding);
 
     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(cssUISourceCodeAdded);
@@ -25,7 +25,7 @@ function test()
 
     function locationsUpdated()
     {
-        var uiLocation = new WebInspector.CSSLocation(WebInspector.targetManager.activeTarget(), "http://localhost:8000/inspector/resources/example.css", 2, 3).toUILocation();
+        var uiLocation = new WebInspector.CSSLocation(WebInspector.targetManager.mainTarget(), "http://localhost:8000/inspector/resources/example.css", 2, 3).toUILocation();
         if (uiLocation.uiSourceCode.url.indexOf(".scss") === -1)
             return;
         finalMappedLocation = uiLocation.uiSourceCode.url + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber;
@@ -72,7 +72,7 @@ function test()
 
     function rawLocationToUILocation(line, column)
     {
-        return new WebInspector.CSSLocation(WebInspector.targetManager.activeTarget(), "http://localhost:8000/inspector/resources/example.css", line, column).toUILocation();
+        return new WebInspector.CSSLocation(WebInspector.targetManager.mainTarget(), "http://localhost:8000/inspector/resources/example.css", line, column).toUILocation();
     }
 
     function afterStyleSheetAdded()

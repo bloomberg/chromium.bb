@@ -14,7 +14,7 @@ function test() {
         InspectorTest.addResult((toggle ? "Toggled '" : "Clicked '") + buttonName + "' button.");
         target._resourceTypeFilterUI._toggleTypeFilter(buttonName, toggle);
         var results = [];
-        var request = new WebInspector.NetworkRequest(WebInspector.targetManager.activeTarget(), "", "", "", "", "");
+        var request = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), "", "", "", "", "");
         for (var typeId in types) {
             var type = WebInspector.resourceTypes[typeId];
             results.push(type.name() + ": " + target._resourceTypeFilterUI.accept(type.name()));

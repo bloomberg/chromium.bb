@@ -66,9 +66,9 @@ var test = function()
         InspectorTest.addResult("Set timer for test function.");
         InspectorTest.waitUntilMessageReceived(didReceive);
 
-        function didReceive(message, isFromBackend)
+        function didReceive(message)
         {
-            if (!isFromBackend) {
+            if (message.type === WebInspector.ConsoleMessage.MessageType.Result) {
                 InspectorTest.waitUntilMessageReceived(didReceive);
                 return;
             }

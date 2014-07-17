@@ -59,15 +59,15 @@ function test()
                 seenNodes[nodeId] = true;
         }
         var requestedNodes = Object.keys(seenNodes).map(function(value) { return Number(value); });
-        var domModel = WebInspector.targetManager.activeTarget().domModel;
-        WebInspector.targetManager.activeTarget().domModel.pushNodesByBackendIdsToFrontend(requestedNodes, onNodesResolved.bind(this, log, requestedNodes));
+        var domModel = WebInspector.targetManager.mainTarget().domModel;
+        WebInspector.targetManager.mainTarget().domModel.pushNodesByBackendIdsToFrontend(requestedNodes, onNodesResolved.bind(this, log, requestedNodes));
     }
 
     function onNodesResolved(log, requestedNodes, resolvedNodes)
     {
         InspectorTest.assertEquals(requestedNodes.length, resolvedNodes.length);
         var nodeMap = {};
-        var domModel = WebInspector.targetManager.activeTarget().domModel;
+        var domModel = WebInspector.targetManager.mainTarget().domModel;
         for (var i = 0; i < requestedNodes.length; ++i) {
             if (resolvedNodes[i])
                 nodeMap[requestedNodes[i]] = domModel.nodeForId(resolvedNodes[i]);

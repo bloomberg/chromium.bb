@@ -34,7 +34,7 @@ var test = function()
     }
 
     WebInspector.inspectorView.showPanel("network");
-    var testRequest = new WebInspector.NetworkRequest(WebInspector.targetManager.activeTarget(), "testRequest", "http://example.com/inspector-test.js", 1); 
+    var testRequest = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), "testRequest", "http://example.com/inspector-test.js", 1); 
     setRequestValues(testRequest);
     var headersText = testRequest.requestHeadersText();
     var requestResults = {

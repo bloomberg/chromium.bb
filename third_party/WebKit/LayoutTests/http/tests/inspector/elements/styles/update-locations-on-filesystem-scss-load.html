@@ -61,15 +61,15 @@ function test()
 
     InspectorTest.createWorkspace();
     manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);
-    cssModel = new WebInspector.CSSStyleModel(WebInspector.targetManager.activeTarget(), InspectorTest.testWorkspace);
-    WebInspector.targetManager.activeTarget().cssModel = cssModel;
+    cssModel = new WebInspector.CSSStyleModel(WebInspector.targetManager.mainTarget(), InspectorTest.testWorkspace);
+    WebInspector.targetManager.mainTarget().cssModel = cssModel;
     new WebInspector.CSSStyleSheetMapping(cssModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceBinding);
 
     var resourcesURL = WebInspector.ParsedURL.completeURL(WebInspector.resourceTreeModel.inspectedPageURL(), "resources/");
     var namePrefix = "update-locations-on-filesystem-scss-load."
     var cssURL = resourcesURL + namePrefix + "css";
     var scssURL = resourcesURL + namePrefix + "scss";
-    var cssLocation = new WebInspector.CSSLocation(WebInspector.targetManager.activeTarget(), cssURL, 0, 1);
+    var cssLocation = new WebInspector.CSSLocation(WebInspector.targetManager.mainTarget(), cssURL, 0, 1);
     var scssContent =
         ["a {",
         "  foo: bar;",

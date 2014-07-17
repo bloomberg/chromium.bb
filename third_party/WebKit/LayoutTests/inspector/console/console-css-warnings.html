@@ -182,7 +182,7 @@ function test()
     style.textContent = "x{y:*}";
     document.head.appendChild(style);
 
-    var messages = WebInspector.consoleModel.messages;
+    var messages = WebInspector.consoleModel.messages();
     for (var i = 0; i < messages.length; i++) {
         if (messages[i].source === WebInspector.ConsoleMessage.MessageSource.CSS)
             InspectorTest.addResult(messages[i].message + " (line: " + messages[i].line + ")");

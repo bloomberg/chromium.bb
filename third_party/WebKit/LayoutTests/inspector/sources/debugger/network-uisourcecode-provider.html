@@ -64,7 +64,7 @@ function test()
     function createNetworkUISourceCodeProvider()
     {
         InspectorTest.createWorkspace();
-        var target = WebInspector.targetManager.activeTarget();
+        var target = WebInspector.targetManager.mainTarget();
         target.resourceTreeModel = new WebInspector.Object();
         target.resourceTreeModel.target = function()
         {

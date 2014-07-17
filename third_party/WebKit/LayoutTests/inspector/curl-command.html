@@ -9,7 +9,7 @@ var test = function()
 
     function newRequest(headers, data, opt_url)
     {
-        var request = new WebInspector.NetworkRequest(WebInspector.targetManager.activeTarget(), 0, opt_url || 'http://example.org/path', 0, 0, 0);
+        var request = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), 0, opt_url || 'http://example.org/path', 0, 0, 0);
         request.requestMethod = data ? "POST" : "GET";
         var headerList = [];
         if (headers) {
