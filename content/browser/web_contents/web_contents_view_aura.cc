@@ -1493,9 +1493,9 @@ void WebContentsViewAura::OnDragEntered(const ui::DropTargetEvent& event) {
   blink::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
 
   // Give the delegate an opportunity to cancel the drag.
-  if (!web_contents_->GetDelegate()->CanDragEnter(web_contents_,
-                                                  *current_drop_data_.get(),
-                                                  op)) {
+  if (web_contents_->GetDelegate() &&
+      !web_contents_->GetDelegate()->CanDragEnter(
+          web_contents_, *current_drop_data_.get(), op)) {
     current_drop_data_.reset(NULL);
     return;
   }
