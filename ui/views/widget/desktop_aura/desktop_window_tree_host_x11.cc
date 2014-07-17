@@ -1301,7 +1301,6 @@ void DesktopWindowTreeHostX11::OnCaptureReleased() {
   x11_capture_.reset();
   g_current_capture = NULL;
   OnHostLostWindowCapture();
-  native_widget_delegate_->OnMouseCaptureLost();
 }
 
 void DesktopWindowTreeHostX11::DispatchMouseEvent(ui::MouseEvent* event) {

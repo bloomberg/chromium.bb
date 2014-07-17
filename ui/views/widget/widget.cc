@@ -938,11 +938,17 @@ NativeWidget* Widget::native_widget() {
 }
 
 void Widget::SetCapture(View* view) {
+  if (!native_widget_->HasCapture()) {
+    native_widget_->SetCapture();
+
+    // Early return if setting capture was unsuccessful.
+    if (!native_widget_->HasCapture())
+      return;
+  }
+
   if (internal::NativeWidgetPrivate::IsMouseButtonDown())
     is_mouse_button_pressed_ = true;
   root_view_->SetMouseHandler(view);
-  if (!native_widget_->HasCapture())
-    native_widget_->SetCapture();
 }
 
 void Widget::ReleaseCapture() {

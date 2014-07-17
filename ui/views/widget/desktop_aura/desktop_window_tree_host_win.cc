@@ -685,7 +685,6 @@ void DesktopWindowTreeHostWin::HandleCancelMode() {
 
 void DesktopWindowTreeHostWin::HandleCaptureLost() {
   OnHostLostWindowCapture();
-  native_widget_delegate_->OnMouseCaptureLost();
 }
 
 void DesktopWindowTreeHostWin::HandleClose() {

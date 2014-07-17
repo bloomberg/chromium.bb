@@ -893,6 +893,39 @@ TEST_F(WidgetCaptureTest, CaptureDesktopNativeWidget) {
 }
 #endif
 
+// Test that no state is set if capture fails.
+TEST_F(WidgetCaptureTest, FailedCaptureRequestIsNoop) {
+  Widget widget;
+  Widget::InitParams params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(400, 400);
+  widget.Init(params);
+
+  MouseView* mouse_view1 = new MouseView;
+  MouseView* mouse_view2 = new MouseView;
+  View* contents_view = new View;
+  contents_view->AddChildView(mouse_view1);
+  contents_view->AddChildView(mouse_view2);
+  widget.SetContentsView(contents_view);
+
+  mouse_view1->SetBounds(0, 0, 200, 400);
+  mouse_view2->SetBounds(200, 0, 200, 400);
+
+  // Setting capture should fail because |widget| is not visible.
+  widget.SetCapture(mouse_view1);
+  EXPECT_FALSE(widget.HasCapture());
+
+  widget.Show();
+  ui::MouseEvent mouse_press_event(ui::ET_MOUSE_PRESSED, gfx::Point(300, 10),
+      gfx::Point(300, 10), ui::EF_NONE, ui::EF_NONE);
+  ui::EventDispatchDetails details = widget.GetNativeWindow()->GetHost()->
+      event_processor()->OnEventFromSource(&mouse_press_event);
+  ASSERT_FALSE(details.dispatcher_destroyed);
+  EXPECT_FALSE(mouse_view1->pressed());
+  EXPECT_TRUE(mouse_view2->pressed());
+}
+
 #if !defined(OS_CHROMEOS)
 // Test that a synthetic mouse exit is sent to the widget which was handling
 // mouse events when a different widget grabs capture.

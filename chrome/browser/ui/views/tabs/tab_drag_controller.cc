@@ -915,12 +915,6 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
   // drag isn't prematurely canceled.
   attached_tabstrip_->GetWidget()->SetCapture(attached_tabstrip_);
   attached_tabstrip_->OwnDragController(this);
-
-  // Redirect all mouse events to the TabStrip so that the tab that originated
-  // the drag can safely be deleted.
-  static_cast<views::internal::RootView*>(
-      attached_tabstrip_->GetWidget()->GetRootView())->SetMouseHandler(
-          attached_tabstrip_);
 }
 
 void TabDragController::Detach(ReleaseCapture release_capture) {
