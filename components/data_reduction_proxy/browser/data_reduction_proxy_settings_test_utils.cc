@@ -269,7 +269,7 @@ void DataReductionProxySettingsTestBase::CheckOnPrefChange(
                  expected_enabled ? 1 : 0);
   if (managed) {
     pref_service_.SetManagedPref(prefs::kDataReductionProxyEnabled,
-                                 base::Value::CreateBooleanValue(enabled));
+                                 new base::FundamentalValue(enabled));
   } else {
     pref_service_.SetBoolean(prefs::kDataReductionProxyEnabled, enabled);
   }

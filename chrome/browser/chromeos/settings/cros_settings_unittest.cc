@@ -106,8 +106,7 @@ class CrosSettingsTest : public testing::Test {
 
 TEST_F(CrosSettingsTest, SetPref) {
   // Change to something that is not the default.
-  AddExpectation(kAccountsPrefAllowGuest,
-                 base::Value::CreateBooleanValue(false));
+  AddExpectation(kAccountsPrefAllowGuest, new base::FundamentalValue(false));
   SetPref(kAccountsPrefAllowGuest, expected_props_[kAccountsPrefAllowGuest]);
   FetchPref(kAccountsPrefAllowGuest);
   ASSERT_TRUE(expected_props_.empty());
@@ -115,8 +114,7 @@ TEST_F(CrosSettingsTest, SetPref) {
 
 TEST_F(CrosSettingsTest, GetPref) {
   // We didn't change the default so look for it.
-  AddExpectation(kAccountsPrefAllowGuest,
-                 base::Value::CreateBooleanValue(true));
+  AddExpectation(kAccountsPrefAllowGuest, new base::FundamentalValue(true));
   FetchPref(kAccountsPrefAllowGuest);
 }
 
@@ -125,8 +123,7 @@ TEST_F(CrosSettingsTest, SetWhitelist) {
   // kAccountsPrefAllowNewUser to false.
   base::ListValue whitelist;
   whitelist.Append(new base::StringValue("me@owner"));
-  AddExpectation(kAccountsPrefAllowNewUser,
-                 base::Value::CreateBooleanValue(false));
+  AddExpectation(kAccountsPrefAllowNewUser, new base::FundamentalValue(false));
   AddExpectation(kAccountsPrefUsers, whitelist.DeepCopy());
   SetPref(kAccountsPrefUsers, &whitelist);
   FetchPref(kAccountsPrefAllowNewUser);
@@ -137,8 +134,7 @@ TEST_F(CrosSettingsTest, SetWhitelistWithListOps) {
   base::ListValue* whitelist = new base::ListValue();
   base::StringValue hacky_user("h@xxor");
   whitelist->Append(hacky_user.DeepCopy());
-  AddExpectation(kAccountsPrefAllowNewUser,
-                 base::Value::CreateBooleanValue(false));
+  AddExpectation(kAccountsPrefAllowNewUser, new base::FundamentalValue(false));
   AddExpectation(kAccountsPrefUsers, whitelist);
   // Add some user to the whitelist.
   settings_.AppendToList(kAccountsPrefUsers, &hacky_user);
@@ -153,8 +149,7 @@ TEST_F(CrosSettingsTest, SetWhitelistWithListOps2) {
   whitelist.Append(hacky_user.DeepCopy());
   base::ListValue* expected_list = whitelist.DeepCopy();
   whitelist.Append(lamy_user.DeepCopy());
-  AddExpectation(kAccountsPrefAllowNewUser,
-                 base::Value::CreateBooleanValue(false));
+  AddExpectation(kAccountsPrefAllowNewUser, new base::FundamentalValue(false));
   AddExpectation(kAccountsPrefUsers, whitelist.DeepCopy());
   SetPref(kAccountsPrefUsers, &whitelist);
   FetchPref(kAccountsPrefAllowNewUser);
@@ -171,8 +166,7 @@ TEST_F(CrosSettingsTest, SetEmptyWhitelist) {
   // Setting the whitelist empty should switch the value of
   // kAccountsPrefAllowNewUser to true.
   base::ListValue whitelist;
-  AddExpectation(kAccountsPrefAllowNewUser,
-                 base::Value::CreateBooleanValue(true));
+  AddExpectation(kAccountsPrefAllowNewUser, new base::FundamentalValue(true));
   SetPref(kAccountsPrefUsers, &whitelist);
   FetchPref(kAccountsPrefAllowNewUser);
   FetchPref(kAccountsPrefUsers);
@@ -184,8 +178,7 @@ TEST_F(CrosSettingsTest, SetEmptyWhitelistAndNoNewUsers) {
   base::ListValue whitelist;
   base::FundamentalValue disallow_new(false);
   AddExpectation(kAccountsPrefUsers, whitelist.DeepCopy());
-  AddExpectation(kAccountsPrefAllowNewUser,
-                 base::Value::CreateBooleanValue(false));
+  AddExpectation(kAccountsPrefAllowNewUser, new base::FundamentalValue(false));
   SetPref(kAccountsPrefUsers, &whitelist);
   SetPref(kAccountsPrefAllowNewUser, &disallow_new);
   FetchPref(kAccountsPrefAllowNewUser);
@@ -198,8 +191,7 @@ TEST_F(CrosSettingsTest, SetWhitelistAndNoNewUsers) {
   base::ListValue whitelist;
   whitelist.Append(new base::StringValue("me@owner"));
   AddExpectation(kAccountsPrefUsers, whitelist.DeepCopy());
-  AddExpectation(kAccountsPrefAllowNewUser,
-                 base::Value::CreateBooleanValue(false));
+  AddExpectation(kAccountsPrefAllowNewUser, new base::FundamentalValue(false));
   SetPref(kAccountsPrefUsers, &whitelist);
   SetPref(kAccountsPrefAllowNewUser,
           expected_props_[kAccountsPrefAllowNewUser]);
@@ -209,8 +201,7 @@ TEST_F(CrosSettingsTest, SetWhitelistAndNoNewUsers) {
 
 TEST_F(CrosSettingsTest, SetAllowNewUsers) {
   // Setting kAccountsPrefAllowNewUser to true with no whitelist should be ok.
-  AddExpectation(kAccountsPrefAllowNewUser,
-                 base::Value::CreateBooleanValue(true));
+  AddExpectation(kAccountsPrefAllowNewUser, new base::FundamentalValue(true));
   SetPref(kAccountsPrefAllowNewUser,
           expected_props_[kAccountsPrefAllowNewUser]);
   FetchPref(kAccountsPrefAllowNewUser);
@@ -219,7 +210,7 @@ TEST_F(CrosSettingsTest, SetAllowNewUsers) {
 TEST_F(CrosSettingsTest, SetEphemeralUsersEnabled) {
   base::FundamentalValue ephemeral_users_enabled(true);
   AddExpectation(kAccountsPrefEphemeralUsersEnabled,
-                 base::Value::CreateBooleanValue(true));
+                 new base::FundamentalValue(true));
   SetPref(kAccountsPrefEphemeralUsersEnabled, &ephemeral_users_enabled);
   FetchPref(kAccountsPrefEphemeralUsersEnabled);
 }

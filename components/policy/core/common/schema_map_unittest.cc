@@ -163,8 +163,11 @@ TEST_F(SchemaMapTest, FilterBundle) {
   list.AppendString("b");
   map.Set("list", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
           list.DeepCopy(), NULL);
-  map.Set("boolean", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          base::Value::CreateBooleanValue(true), NULL);
+  map.Set("boolean",
+          POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_USER,
+          new base::FundamentalValue(true),
+          NULL);
   map.Set("integer",
           POLICY_LEVEL_MANDATORY,
           POLICY_SCOPE_USER,
@@ -195,21 +198,36 @@ TEST_F(SchemaMapTest, FilterBundle) {
   // Mismatched types are also removed.
   bundle.Clear();
   PolicyMap& badmap = bundle.Get(extension_ns);
-  badmap.Set("list", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(false), NULL);
+  badmap.Set("list",
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER,
+             new base::FundamentalValue(false),
+             NULL);
   badmap.Set("boolean",
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
              new base::FundamentalValue(0),
              NULL);
-  badmap.Set("integer", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(false), NULL);
-  badmap.Set("null", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(false), NULL);
-  badmap.Set("double", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(false), NULL);
-  badmap.Set("object", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(false), NULL);
+  badmap.Set("integer",
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER,
+             new base::FundamentalValue(false),
+             NULL);
+  badmap.Set("null",
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER,
+             new base::FundamentalValue(false),
+             NULL);
+  badmap.Set("double",
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER,
+             new base::FundamentalValue(false),
+             NULL);
+  badmap.Set("object",
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER,
+             new base::FundamentalValue(false),
+             NULL);
   badmap.Set("string", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              NULL,
              new ExternalDataFetcher(base::WeakPtr<ExternalDataManager>(),

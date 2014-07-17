@@ -145,8 +145,11 @@ void GetExpectedDefaultPolicy(PolicyMap* policy_map) {
 }
 
 void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
-  expected->Set(key::kShowHomeButton, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                base::Value::CreateBooleanValue(true), NULL);
+  expected->Set(key::kShowHomeButton,
+                POLICY_LEVEL_MANDATORY,
+                POLICY_SCOPE_USER,
+                new base::FundamentalValue(true),
+                NULL);
   expected->Set(key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY,
                 POLICY_SCOPE_USER, base::Value::CreateIntegerValue(4), NULL);
   base::ListValue list;

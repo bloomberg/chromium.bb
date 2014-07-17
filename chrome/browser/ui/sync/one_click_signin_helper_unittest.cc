@@ -633,7 +633,7 @@ TEST_F(OneClickSigninHelperTest, CanOfferDisabledByPolicy) {
 
   // Simulate a policy disabling signin by writing kSigninAllowed directly.
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kSigninAllowed, base::Value::CreateBooleanValue(false));
+      prefs::kSigninAllowed, new base::FundamentalValue(false));
 
   EXPECT_FALSE(OneClickSigninHelper::CanOffer(
       web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
@@ -641,11 +641,11 @@ TEST_F(OneClickSigninHelperTest, CanOfferDisabledByPolicy) {
 
   // Reset the preference value to true.
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kSigninAllowed, base::Value::CreateBooleanValue(true));
+      prefs::kSigninAllowed, new base::FundamentalValue(true));
 
   // Simulate a policy disabling sync by writing kSyncManaged directly.
   profile()->GetTestingPrefService()->SetManagedPref(
-      sync_driver::prefs::kSyncManaged, base::Value::CreateBooleanValue(true));
+      sync_driver::prefs::kSyncManaged, new base::FundamentalValue(true));
 
   // Should still offer even if sync is disabled by policy.
   EXPECT_TRUE(OneClickSigninHelper::CanOffer(
@@ -853,19 +853,19 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadDisabledByPolicy) {
   // Simulate a policy disabling signin by writing kSigninAllowed directly.
   // We should not offer to sign in the browser.
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kSigninAllowed, base::Value::CreateBooleanValue(false));
+      prefs::kSigninAllowed, new base::FundamentalValue(false));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
                 valid_gaia_url_, &request_, io_data.get()));
 
   // Reset the preference.
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kSigninAllowed, base::Value::CreateBooleanValue(true));
+      prefs::kSigninAllowed, new base::FundamentalValue(true));
 
   // Simulate a policy disabling sync by writing kSyncManaged directly.
   // We should still offer to sign in the browser.
   profile()->GetTestingPrefService()->SetManagedPref(
-      sync_driver::prefs::kSyncManaged, base::Value::CreateBooleanValue(true));
+      sync_driver::prefs::kSyncManaged, new base::FundamentalValue(true));
   EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
                 valid_gaia_url_, &request_, io_data.get()));

@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(SyncedPrefChangeRegistrarTest,
   policies.Set(policy::key::kShowHomeButton,
                policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER,
-               base::Value::CreateBooleanValue(true),
+               new base::FundamentalValue(true),
                NULL);
   UpdateChromePolicy(policies);
 
@@ -213,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(SyncedPrefChangeRegistrarTest,
   policies.Set(policy::key::kShowHomeButton,
                policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER,
-               base::Value::CreateBooleanValue(true),
+               new base::FundamentalValue(true),
                NULL);
   UpdateChromePolicy(policies);
 

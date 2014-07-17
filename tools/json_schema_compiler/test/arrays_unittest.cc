@@ -24,8 +24,8 @@ static scoped_ptr<base::DictionaryValue> CreateBasicArrayTypeDictionary() {
   integers_value->Append(new base::FundamentalValue(2));
   integers_value->Append(new base::FundamentalValue(3));
   base::ListValue* booleans_value = new base::ListValue();
-  booleans_value->Append(base::Value::CreateBooleanValue(false));
-  booleans_value->Append(base::Value::CreateBooleanValue(true));
+  booleans_value->Append(new base::FundamentalValue(false));
+  booleans_value->Append(new base::FundamentalValue(true));
   base::ListValue* numbers_value = new base::ListValue();
   numbers_value->Append(base::Value::CreateDoubleValue(6.1));
   value->Set("numbers", numbers_value);

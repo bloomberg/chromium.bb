@@ -18,8 +18,8 @@ using json_schema_compiler::test_util::Vector;
 
 TEST(JsonSchemaCompilerChoicesTest, TakesIntegersParamsCreate) {
   {
-    scoped_ptr<TakesIntegers::Params> params(TakesIntegers::Params::Create(
-        *List(base::Value::CreateBooleanValue(true))));
+    scoped_ptr<TakesIntegers::Params> params(
+        TakesIntegers::Params::Create(*List(new base::FundamentalValue(true))));
     EXPECT_FALSE(params);
   }
   {

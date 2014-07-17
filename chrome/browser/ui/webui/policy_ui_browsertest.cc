@@ -222,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
   values.Set(policy::key::kShowHomeButton,
              policy::POLICY_LEVEL_RECOMMENDED,
              policy::POLICY_SCOPE_MACHINE,
-             base::Value::CreateBooleanValue(true),
+             new base::FundamentalValue(true),
              NULL);
   expected_values[policy::key::kShowHomeButton] = "true";
   // Set the value of a policy that does not exist.
@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
   values.Set(kUnknownPolicy,
              policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(true),
+             new base::FundamentalValue(true),
              NULL);
   expected_values[kUnknownPolicy] = "true";
   UpdateProviderPolicy(values);

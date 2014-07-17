@@ -27,14 +27,14 @@ TEST_F(JavascriptPolicyHandlerTest, JavascriptEnabled) {
   policy.Set(key::kJavascriptEnabled,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(true),
+             new base::FundamentalValue(true),
              NULL);
   UpdateProviderPolicy(policy);
   EXPECT_FALSE(store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, NULL));
   policy.Set(key::kJavascriptEnabled,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(false),
+             new base::FundamentalValue(false),
              NULL);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
@@ -49,7 +49,7 @@ TEST_F(JavascriptPolicyHandlerTest, JavascriptEnabledOverridden) {
   policy.Set(key::kJavascriptEnabled,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(false),
+             new base::FundamentalValue(false),
              NULL);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;

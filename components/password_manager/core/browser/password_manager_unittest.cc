@@ -547,10 +547,10 @@ TEST_F(PasswordManagerTest, SavingDependsOnManagerEnabledPreference) {
   // Test that saving passwords depends on the password manager enabled
   // preference.
   prefs_.SetUserPref(prefs::kPasswordManagerSavingEnabled,
-                     base::Value::CreateBooleanValue(true));
+                     new base::FundamentalValue(true));
   EXPECT_TRUE(manager()->IsSavingEnabledForCurrentPage());
   prefs_.SetUserPref(prefs::kPasswordManagerSavingEnabled,
-                     base::Value::CreateBooleanValue(false));
+                     new base::FundamentalValue(false));
   EXPECT_FALSE(manager()->IsSavingEnabledForCurrentPage());
 }
 
@@ -561,7 +561,7 @@ TEST_F(PasswordManagerTest, FillPasswordsOnDisabledManager) {
   PasswordForm* existing = new PasswordForm(MakeSimpleForm());
   result.push_back(existing);
   prefs_.SetUserPref(prefs::kPasswordManagerSavingEnabled,
-                     base::Value::CreateBooleanValue(false));
+                     new base::FundamentalValue(false));
   EXPECT_CALL(driver_, FillPasswordForm(_));
   EXPECT_CALL(*store_.get(),
               GetLogins(_, testing::Eq(PasswordStore::DISALLOW_PROMPT), _))

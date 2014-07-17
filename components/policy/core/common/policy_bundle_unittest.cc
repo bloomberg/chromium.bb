@@ -34,8 +34,11 @@ void AddTestPolicies(PolicyMap* policy) {
               NULL);
   policy->Set("mandatory-machine", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
               base::Value::CreateStringValue("omg"), NULL);
-  policy->Set("recommended-user", POLICY_LEVEL_RECOMMENDED,
-              POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
+  policy->Set("recommended-user",
+              POLICY_LEVEL_RECOMMENDED,
+              POLICY_SCOPE_USER,
+              new base::FundamentalValue(true),
+              NULL);
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetBoolean("false", false);
   dict->SetInteger("int", 456);

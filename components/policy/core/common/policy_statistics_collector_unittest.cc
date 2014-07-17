@@ -106,8 +106,11 @@ class PolicyStatisticsCollectorTest : public testing::Test {
   }
 
   void SetPolicy(const std::string& name) {
-    policy_map_.Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    base::Value::CreateBooleanValue(true), NULL);
+    policy_map_.Set(name,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_USER,
+                    new base::FundamentalValue(true),
+                    NULL);
   }
 
   base::TimeDelta GetFirstDelay() const {

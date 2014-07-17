@@ -44,7 +44,7 @@ Status ExecuteGetAlert(
     WebView* web_view,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  value->reset(base::Value::CreateBooleanValue(
+  value->reset(new base::FundamentalValue(
       web_view->GetJavaScriptDialogManager()->IsDialogOpen()));
   return Status(kOk);
 }

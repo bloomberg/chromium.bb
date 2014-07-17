@@ -604,7 +604,7 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithPolicy) {
                      base::Value::CreateStringValue(
                          MockServiceIPCServer::EnabledUserId()));
   prefs->SetManagedPref(prefs::kCloudPrintProxyEnabled,
-                        base::Value::CreateBooleanValue(false));
+                        new base::FundamentalValue(false));
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(switches::kCheckCloudPrintConnectorPolicy);

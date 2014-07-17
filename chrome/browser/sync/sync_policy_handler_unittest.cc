@@ -28,7 +28,7 @@ TEST_F(SyncPolicyHandlerTest, Enabled) {
   policy.Set(policy::key::kSyncDisabled,
              policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(false),
+             new base::FundamentalValue(false),
              NULL);
   SyncPolicyHandler handler;
   PrefValueMap prefs;
@@ -43,7 +43,7 @@ TEST_F(SyncPolicyHandlerTest, Disabled) {
   policy.Set(policy::key::kSyncDisabled,
              policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(true),
+             new base::FundamentalValue(true),
              NULL);
   SyncPolicyHandler handler;
   PrefValueMap prefs;

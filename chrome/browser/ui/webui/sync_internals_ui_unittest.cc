@@ -123,7 +123,7 @@ TEST_F(SyncInternalsUITestWithService, HandleJsReply) {
 
   base::ListValue args;
   args.Append(base::Value::CreateIntegerValue(5));
-  args.Append(base::Value::CreateBooleanValue(true));
+  args.Append(new base::FundamentalValue(true));
   sync_internals_ui_->HandleJsReply("testMessage", JsArgList(&args));
 }
 
@@ -189,7 +189,7 @@ TEST_F(SyncInternalsUITestWithoutService, HandleJsReply) {
 
   base::ListValue args;
   args.Append(base::Value::CreateIntegerValue(5));
-  args.Append(base::Value::CreateBooleanValue(true));
+  args.Append(new base::FundamentalValue(true));
   sync_internals_ui_->HandleJsReply(
       "testMessage", JsArgList(&args));
 }

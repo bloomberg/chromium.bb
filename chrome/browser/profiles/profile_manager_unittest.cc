@@ -440,7 +440,7 @@ TEST_F(ProfileManagerTest, AutoloadProfilesWithBackgroundApps) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
   local_state_.Get()->SetUserPref(prefs::kBackgroundModeEnabled,
-                                  base::Value::CreateBooleanValue(true));
+                                  new base::FundamentalValue(true));
 
   // Setting a pref which is not applicable to a system (i.e., Android in this
   // case) does not necessarily create it. Don't bother continuing with the
@@ -472,7 +472,7 @@ TEST_F(ProfileManagerTest, DoNotAutoloadProfilesIfBackgroundModeOff) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
   local_state_.Get()->SetUserPref(prefs::kBackgroundModeEnabled,
-                                  base::Value::CreateBooleanValue(false));
+                                  new base::FundamentalValue(false));
 
   EXPECT_EQ(0u, cache.GetNumberOfProfiles());
   cache.AddProfileToCache(cache.GetUserDataDir().AppendASCII("path_1"),

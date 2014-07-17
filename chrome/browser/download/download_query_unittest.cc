@@ -100,7 +100,7 @@ class DownloadQueryTest : public testing::Test {
 
 template<> void DownloadQueryTest::AddFilter(
     DownloadQuery::FilterType name, bool cpp_value) {
-  scoped_ptr<base::Value> value(base::Value::CreateBooleanValue(cpp_value));
+  scoped_ptr<base::Value> value(new base::FundamentalValue(cpp_value));
   CHECK(query_.AddFilter(name, *value.get()));
 }
 

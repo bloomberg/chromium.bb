@@ -28,7 +28,7 @@ TEST_F(AutofillPolicyHandlerTest, Enabled) {
   policy.Set(key::kAutoFillEnabled,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(true),
+             new base::FundamentalValue(true),
              NULL);
   PrefValueMap prefs;
   AutofillPolicyHandler handler;
@@ -43,7 +43,7 @@ TEST_F(AutofillPolicyHandlerTest, Disabled) {
   policy.Set(key::kAutoFillEnabled,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(false),
+             new base::FundamentalValue(false),
              NULL);
   PrefValueMap prefs;
   AutofillPolicyHandler handler;

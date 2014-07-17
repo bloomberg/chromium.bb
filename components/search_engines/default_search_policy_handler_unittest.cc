@@ -82,8 +82,11 @@ void DefaultSearchPolicyHandlerTest::
   base::ListValue* encodings = new base::ListValue();
   encodings->AppendString("UTF-16");
   encodings->AppendString("UTF-8");
-  policy->Set(key::kDefaultSearchProviderEnabled, POLICY_LEVEL_MANDATORY,
-              POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
+  policy->Set(key::kDefaultSearchProviderEnabled,
+              POLICY_LEVEL_MANDATORY,
+              POLICY_SCOPE_USER,
+              new base::FundamentalValue(true),
+              NULL);
   policy->Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, base::Value::CreateStringValue(kSearchURL),
               NULL);
@@ -120,8 +123,11 @@ void DefaultSearchPolicyHandlerTest::
 // search URL, that all the elements have been given proper defaults.
 TEST_F(DefaultSearchPolicyHandlerTest, MinimallyDefined) {
   PolicyMap policy;
-  policy.Set(key::kDefaultSearchProviderEnabled, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
+  policy.Set(key::kDefaultSearchProviderEnabled,
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER,
+             new base::FundamentalValue(true),
+             NULL);
   policy.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER, base::Value::CreateStringValue(kSearchURL),
              NULL);
@@ -297,8 +303,11 @@ TEST_F(DefaultSearchPolicyHandlerTest, Invalid) {
 // default search policy will be present.
 TEST_F(DefaultSearchPolicyHandlerTest, Disabled) {
   PolicyMap policy;
-  policy.Set(key::kDefaultSearchProviderEnabled, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);
+  policy.Set(key::kDefaultSearchProviderEnabled,
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER,
+             new base::FundamentalValue(false),
+             NULL);
   UpdateProviderPolicy(policy);
 
   const base::Value* value = NULL;
@@ -380,7 +389,7 @@ TEST_F(DefaultSearchPolicyHandlerTest, DictionaryPrefDSEDisabled) {
   policy.Set(key::kDefaultSearchProviderEnabled,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(false),
+             new base::FundamentalValue(false),
              NULL);
   UpdateProviderPolicy(policy);
   const base::Value* temp = NULL;
@@ -400,7 +409,7 @@ TEST_F(DefaultSearchPolicyHandlerTest, DictionaryPrefMinimallyDefined) {
   policy.Set(key::kDefaultSearchProviderEnabled,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(true),
+             new base::FundamentalValue(true),
              NULL);
   policy.Set(key::kDefaultSearchProviderSearchURL,
              POLICY_LEVEL_MANDATORY,
@@ -462,7 +471,7 @@ TEST_F(DefaultSearchPolicyHandlerTest, DictionaryPrefFileURL) {
   policy.Set(key::kDefaultSearchProviderEnabled,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             base::Value::CreateBooleanValue(true),
+             new base::FundamentalValue(true),
              NULL);
   policy.Set(key::kDefaultSearchProviderSearchURL,
              POLICY_LEVEL_MANDATORY,

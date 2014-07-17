@@ -295,7 +295,7 @@ TEST_F(ProfileSyncServiceTest, InitialState) {
 // Verify a successful initialization.
 TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
   profile()->GetTestingPrefService()->SetManagedPref(
-      sync_driver::prefs::kSyncManaged, base::Value::CreateBooleanValue(false));
+      sync_driver::prefs::kSyncManaged, new base::FundamentalValue(false));
   IssueTestTokens();
   CreateService(browser_sync::AUTO_START);
   ExpectDataTypeManagerCreation(1);
@@ -327,7 +327,7 @@ TEST_F(ProfileSyncServiceTest, SetupInProgress) {
 // Verify that disable by enterprise policy works.
 TEST_F(ProfileSyncServiceTest, DisabledByPolicyBeforeInit) {
   profile()->GetTestingPrefService()->SetManagedPref(
-      sync_driver::prefs::kSyncManaged, base::Value::CreateBooleanValue(true));
+      sync_driver::prefs::kSyncManaged, new base::FundamentalValue(true));
   IssueTestTokens();
   CreateService(browser_sync::AUTO_START);
   Initialize();
@@ -348,7 +348,7 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyAfterInit) {
   EXPECT_TRUE(service()->sync_initialized());
 
   profile()->GetTestingPrefService()->SetManagedPref(
-      sync_driver::prefs::kSyncManaged, base::Value::CreateBooleanValue(true));
+      sync_driver::prefs::kSyncManaged, new base::FundamentalValue(true));
 
   EXPECT_TRUE(service()->IsManaged());
   EXPECT_FALSE(service()->sync_initialized());

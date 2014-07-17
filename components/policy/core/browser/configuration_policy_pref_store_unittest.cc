@@ -106,8 +106,11 @@ TEST_F(ConfigurationPolicyPrefStoreBooleanTest, GetDefault) {
 
 TEST_F(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   PolicyMap policy;
-  policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);
+  policy.Set(kTestPolicy,
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER,
+             new base::FundamentalValue(false),
+             NULL);
   UpdateProviderPolicy(policy);
   const base::Value* value = NULL;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
@@ -117,8 +120,11 @@ TEST_F(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   ASSERT_TRUE(result);
   EXPECT_FALSE(boolean_value);
 
-  policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true), NULL);
+  policy.Set(kTestPolicy,
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER,
+             new base::FundamentalValue(true),
+             NULL);
   UpdateProviderPolicy(policy);
   value = NULL;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));

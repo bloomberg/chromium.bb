@@ -30,7 +30,7 @@ TEST_F(FileSelectionDialogsPolicyTest, EnableFileSelectionDialogs) {
   policy_.Set(key::kAllowFileSelectionDialogs,
               POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER,
-              base::Value::CreateBooleanValue(true),
+              new base::FundamentalValue(true),
               NULL);
   handler_.ApplyPolicySettings(policy_, &prefs_);
 
@@ -43,7 +43,7 @@ TEST_F(FileSelectionDialogsPolicyTest, DisableFileSelectionDialogs) {
   policy_.Set(key::kAllowFileSelectionDialogs,
               POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER,
-              base::Value::CreateBooleanValue(false),
+              new base::FundamentalValue(false),
               NULL);
   handler_.ApplyPolicySettings(policy_, &prefs_);
 

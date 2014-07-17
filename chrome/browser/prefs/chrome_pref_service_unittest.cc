@@ -105,9 +105,9 @@ class ChromePrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
     pref_services->SetUserPref(prefs::kWebKitDefaultFontSize,
                                base::Value::CreateIntegerValue(20));
     pref_services->SetUserPref(prefs::kWebKitTextAreasAreResizable,
-                               base::Value::CreateBooleanValue(false));
+                               new base::FundamentalValue(false));
     pref_services->SetUserPref(prefs::kWebKitUsesUniversalDetector,
-                               base::Value::CreateBooleanValue(true));
+                               new base::FundamentalValue(true));
     pref_services->SetUserPref("webkit.webprefs.foo",
                                base::Value::CreateStringValue("bar"));
   }

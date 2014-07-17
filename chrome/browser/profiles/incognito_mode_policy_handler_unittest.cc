@@ -33,10 +33,11 @@ class IncognitoModePolicyHandlerTest
                    int availability) {
     PolicyMap policy;
     if (incognito_enabled != INCOGNITO_ENABLED_UNKNOWN) {
-      policy.Set(key::kIncognitoEnabled, POLICY_LEVEL_MANDATORY,
+      policy.Set(key::kIncognitoEnabled,
+                 POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
-                 base::Value::CreateBooleanValue(
-                     incognito_enabled == INCOGNITO_ENABLED_TRUE),
+                 new base::FundamentalValue(incognito_enabled ==
+                                            INCOGNITO_ENABLED_TRUE),
                  NULL);
     }
     if (availability >= 0) {

@@ -569,7 +569,7 @@ TEST_P(PrefHashFilterTest, MultiplePrefsFilterSerializeData) {
   base::Value* int_value3 = base::Value::CreateIntegerValue(3);
   base::Value* int_value4 = base::Value::CreateIntegerValue(4);
   base::DictionaryValue* dict_value = new base::DictionaryValue;
-  dict_value->Set("a", base::Value::CreateBooleanValue(true));
+  dict_value->Set("a", new base::FundamentalValue(true));
   root_dict.Set(kAtomicPref, int_value1);
   root_dict.Set(kAtomicPref2, int_value2);
   root_dict.Set(kAtomicPref3, int_value3);

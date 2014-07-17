@@ -17,8 +17,7 @@ static scoped_ptr<base::DictionaryValue> CreateTestTypeDictionary() {
   value->SetWithoutPathExpansion("integer", new base::FundamentalValue(4));
   value->SetWithoutPathExpansion("string",
                                  base::Value::CreateStringValue("bling"));
-  value->SetWithoutPathExpansion("boolean",
-                                 base::Value::CreateBooleanValue(true));
+  value->SetWithoutPathExpansion("boolean", new base::FundamentalValue(true));
   return value.Pass();
 }
 
