@@ -258,6 +258,7 @@ class GLHelperTest : public testing::Test {
   void ValidateScalerStages(
       content::GLHelper::ScalerQuality quality,
       const std::vector<GLHelperScaling::ScalerStage>& scaler_stages,
+      const gfx::Size& dst_size,
       const std::string& message) {
     bool previous_error = HasFailure();
     // First, check that the input size for each stage is equal to
@@ -274,6 +275,12 @@ class GLHelperTest : public testing::Test {
       EXPECT_EQ(scaler_stages[i].src_subrect.height(),
                 scaler_stages[i].src_size.height());
     }
+
+    // Check the output size matches the destination of the last stage
+    EXPECT_EQ(scaler_stages[scaler_stages.size() - 1].dst_size.width(),
+              dst_size.width());
+    EXPECT_EQ(scaler_stages[scaler_stages.size() - 1].dst_size.height(),
+              dst_size.height());
 
     // Used to verify that up-scales are not attempted after some
     // other scale.
@@ -637,7 +644,10 @@ class GLHelperTest : public testing::Test {
                                          flip,
                                          false,
                                          &stages);
-    ValidateScalerStages(kQualities[quality], stages, message);
+    ValidateScalerStages(kQualities[quality],
+                         stages,
+                         gfx::Size(scaled_xsize, scaled_ysize),
+                         message);
 
     WebGLId dst_texture =
         helper_->CopyAndScaleTexture(src_texture,
@@ -699,6 +709,7 @@ class GLHelperTest : public testing::Test {
                                          &stages);
     ValidateScalerStages(kQualities[quality],
                          stages,
+                         gfx::Size(dst_xsize, dst_ysize),
                          base::StringPrintf(
                              "input size: %dx%d "
                              "output size: %dx%d "
@@ -726,7 +737,10 @@ class GLHelperTest : public testing::Test {
                                          false,
                                          false,
                                          &stages);
-    ValidateScalerStages(content::GLHelper::SCALER_QUALITY_GOOD, stages, "");
+    ValidateScalerStages(content::GLHelper::SCALER_QUALITY_GOOD,
+                         stages,
+                         gfx::Size(dst_xsize, dst_ysize),
+                         "");
     EXPECT_EQ(PrintStages(stages), description);
   }
 
@@ -1285,7 +1299,10 @@ class GLHelperTest : public testing::Test {
         &stages);
     EXPECT_EQ(x_ops_.size(), 0U);
     EXPECT_EQ(y_ops_.size(), 0U);
-    ValidateScalerStages(content::GLHelper::SCALER_QUALITY_GOOD, stages, "");
+    ValidateScalerStages(content::GLHelper::SCALER_QUALITY_GOOD,
+                         stages,
+                         gfx::Size(dst_xsize, dst_ysize),
+                         "");
     EXPECT_EQ(PrintStages(stages), description);
   }
 
@@ -1308,7 +1325,7 @@ class GLHelperTest : public testing::Test {
     // X scaled 1/2, Y scaled 1/2, one bilinear pass
     x_ops_.push_back(GLHelperScaling::ScaleOp(2, true, 512));
     y_ops_.push_back(GLHelperScaling::ScaleOp(2, false, 384));
-    CheckPipeline2(1024, 768, 2000, 384, "1024x768 -> 512x384 bilinear\n");
+    CheckPipeline2(1024, 768, 512, 384, "1024x768 -> 512x384 bilinear\n");
 
     // X scaled 1/2, Y scaled to 60%, one bilinear2 pass.
     x_ops_.push_back(GLHelperScaling::ScaleOp(2, true, 50));
@@ -1320,7 +1337,7 @@ class GLHelperTest : public testing::Test {
     x_ops_.push_back(GLHelperScaling::ScaleOp(0, true, 120));
     x_ops_.push_back(GLHelperScaling::ScaleOp(2, true, 60));
     y_ops_.push_back(GLHelperScaling::ScaleOp(2, false, 50));
-    CheckPipeline2(100, 100, 50, 60, "100x100 -> 60x50 bilinear2 X\n");
+    CheckPipeline2(100, 100, 60, 50, "100x100 -> 60x50 bilinear2 X\n");
 
     // X scaled to 60%, Y scaled 60%, one bilinear2x2 pass.
     x_ops_.push_back(GLHelperScaling::ScaleOp(0, true, 120));
@@ -1415,8 +1432,8 @@ class GLHelperTest : public testing::Test {
     y_ops_.push_back(GLHelperScaling::ScaleOp(2, false, 1));
     CheckPipeline2(100,
                    100,
-                   30,
-                   30,
+                   1,
+                   1,
                    "100x100 -> 100x32 bilinear4 Y\n"
                    "100x32 -> 100x4 bilinear4 Y\n"
                    "100x4 -> 64x1 bilinear2x2\n"
