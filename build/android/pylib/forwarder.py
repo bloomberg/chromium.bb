@@ -341,9 +341,7 @@ class Forwarder(object):
     # 'kill-server') is not running on the bots anymore.
     timeout_sec = 5
     try:
-      device.KillAll(
-          'device_forwarder', blocking=True, timeout=timeout_sec)
+      device.KillAll('device_forwarder', blocking=True, timeout=timeout_sec)
     except device_errors.CommandFailedError:
-      pids = device.old_interface.ExtractPid('device_forwarder')
-      if pids:
+      if device.GetPids('device_forwarder'):
         raise

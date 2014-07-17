@@ -58,22 +58,22 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
     # Chrome crashes are not always caught by Monkey test runner.
     # Verify Chrome has the same PID before and after the test.
-    before_pids = self.device.old_interface.ExtractPid(self._package)
+    before_pids = self.device.GetPids(self._package)
 
     # Run the test.
     output = ''
     if before_pids:
       output = '\n'.join(self._LaunchMonkeyTest())
-      after_pids = self.device.old_interface.ExtractPid(self._package)
+      after_pids = self.device.GetPids(self._package)
 
     crashed = True
-    if not before_pids:
+    if not self._package in before_pids:
       logging.error('Failed to start the process.')
-    elif not after_pids:
-      logging.error('Process %s has died.', before_pids[0])
-    elif before_pids[0] != after_pids[0]:
+    elif not self._package in after_pids:
+      logging.error('Process %s has died.', before_pids[self._package])
+    elif before_pids[self._package] != after_pids[self._package]:
       logging.error('Detected process restart %s -> %s',
-                    before_pids[0], after_pids[0])
+                    before_pids[self._package], after_pids[self._package])
     else:
       crashed = False
 

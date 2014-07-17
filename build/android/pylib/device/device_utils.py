@@ -81,12 +81,12 @@ class DeviceUtils(object):
     """Checks whether the device is online.
 
     Args:
-      timeout: An integer containing the number of seconds to wait for the
-               operation to complete.
-      retries: An integer containing the number of times the operation should
-               be retried if it fails.
+      timeout: timeout in seconds
+      retries: number of retries
     Returns:
       True if the device is online, False otherwise.
+    Raises:
+      CommandTimeoutError on timeout.
     """
     return self.old_interface.IsOnline()
 
@@ -95,20 +95,25 @@ class DeviceUtils(object):
     """Checks whether or not adbd has root privileges.
 
     Args:
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
     Returns:
       True if adbd has root privileges, False otherwise.
+    Raises:
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
     """
     return self._HasRootImpl()
 
   def _HasRootImpl(self):
-    """ Implementation of HasRoot.
+    """Implementation of HasRoot.
 
     This is split from HasRoot to allow other DeviceUtils methods to call
     HasRoot without spawning a new timeout thread.
 
     Returns:
+      Same as for |HasRoot|.
+    Raises:
       Same as for |HasRoot|.
     """
     return self.old_interface.IsRootEnabled()
@@ -118,10 +123,11 @@ class DeviceUtils(object):
     """Restarts adbd with root privileges.
 
     Args:
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
     Raises:
       CommandFailedError if root could not be enabled.
+      CommandTimeoutError on timeout.
     """
     if not self.old_interface.EnableAdbRoot():
       raise device_errors.CommandFailedError(
@@ -132,10 +138,14 @@ class DeviceUtils(object):
     """Get the device's path to its SD card.
 
     Args:
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
     Returns:
       The device's path to its SD card.
+    Raises:
+      CommandFailedError if the external storage path could not be determined.
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
     """
     try:
       return self.old_interface.GetExternalStorage()
@@ -153,16 +163,17 @@ class DeviceUtils(object):
 
     Args:
       wifi: A boolean indicating if we should wait for wifi to come up or not.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
     Raises:
+      CommandFailedError on failure.
       CommandTimeoutError if one of the component waits times out.
       DeviceUnreachableError if the device becomes unresponsive.
     """
     self._WaitUntilFullyBootedImpl(wifi=wifi, timeout=timeout)
 
   def _WaitUntilFullyBootedImpl(self, wifi=False, timeout=None):
-    """ Implementation of WaitUntilFullyBooted.
+    """Implementation of WaitUntilFullyBooted.
 
     This is split from WaitUntilFullyBooted to allow other DeviceUtils methods
     to call WaitUntilFullyBooted without spawning a new timeout thread.
@@ -172,7 +183,7 @@ class DeviceUtils(object):
 
     Args:
       wifi: Same as for |WaitUntilFullyBooted|.
-      timeout: Same as for |IsOnline|.
+      timeout: timeout in seconds
     Raises:
       Same as for |WaitUntilFullyBooted|.
     """
@@ -197,8 +208,11 @@ class DeviceUtils(object):
 
     Args:
       block: A boolean indicating if we should wait for the reboot to complete.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
+    Raises:
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
     """
     self.old_interface.Reboot()
     if block:
@@ -218,11 +232,12 @@ class DeviceUtils(object):
     Args:
       apk_path: A string containing the path to the APK to install.
       reinstall: A boolean indicating if we should keep any existing app data.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
     Raises:
       CommandFailedError if the installation fails.
       CommandTimeoutError if the installation times out.
+      DeviceUnreachableError on missing device.
     """
     package_name = apk_helper.GetPackageName(apk_path)
     device_path = self.old_interface.GetApplicationPath(package_name)
@@ -266,12 +281,14 @@ class DeviceUtils(object):
                     be checked.
       as_root: A boolean indicating whether the shell command should be run
                with root privileges.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
-    Raises:
-      CommandFailedError if check_return is True and the return code is nozero.
+      timeout: timeout in seconds
+      retries: number of retries
     Returns:
       The output of the command.
+    Raises:
+      CommandFailedError if check_return is True and the return code is nozero.
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
     """
     return self._RunShellCommandImpl(cmd, check_return=check_return,
                                      as_root=as_root, timeout=timeout)
@@ -290,7 +307,7 @@ class DeviceUtils(object):
       cmd: Same as for |RunShellCommand|.
       check_return: Same as for |RunShellCommand|.
       as_root: Same as for |RunShellCommand|.
-      timeout: Same as for |IsOnline|.
+      timeout: timeout in seconds
     Raises:
       Same as for |RunShellCommand|.
     Returns:
@@ -323,10 +340,12 @@ class DeviceUtils(object):
                root privileges.
       blocking: A boolean indicating whether we should wait until all processes
                 with the given |process_name| are dead.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
     Raises:
       CommandFailedError if no process was killed.
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
     """
     pids = self.old_interface.ExtractPid(process_name)
     if len(pids) == 0:
@@ -357,10 +376,12 @@ class DeviceUtils(object):
                        trace should be saved.
       force_stop: A boolean indicating whether we should stop the activity
                   before starting it.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
     Raises:
       CommandFailedError if the activity could not be started.
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
     """
     single_category = (intent.category[0] if isinstance(intent.category, list)
                                           else intent.category)
@@ -379,8 +400,11 @@ class DeviceUtils(object):
 
     Args:
       intent: An Intent to broadcast.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
+    Raises:
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
     """
     package, old_intent = intent.action.rsplit('.', 1)
     if intent.extras is None:
@@ -395,8 +419,11 @@ class DeviceUtils(object):
     """Return to the home screen.
 
     Args:
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
+    Raises:
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
     """
     self.old_interface.GoHome()
 
@@ -406,8 +433,11 @@ class DeviceUtils(object):
 
     Args:
       package: A string containing the name of the package to stop.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
+    Raises:
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
     """
     self.old_interface.CloseApplication(package)
 
@@ -417,8 +447,11 @@ class DeviceUtils(object):
 
     Args:
       package: A string containing the name of the package to stop.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
+    Raises:
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
     """
     self.old_interface.ClearApplicationState(package)
 
@@ -430,8 +463,11 @@ class DeviceUtils(object):
 
     Args:
       keycode: A integer keycode to send to the device.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
+    Raises:
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
     """
     self.old_interface.SendKeyEvent(keycode)
 
@@ -450,8 +486,12 @@ class DeviceUtils(object):
                  on the host that should be minimally pushed to the device.
       device_path: A string containing the absolute path of the destination on
                    the device.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
+    Raises:
+      CommandFailedError on failure.
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
     """
     self.old_interface.PushIfNeeded(host_path, device_path)
 
@@ -462,10 +502,13 @@ class DeviceUtils(object):
     Args:
       device_path: A string containing the absolute path to the file on the
                    device.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
     Returns:
       True if the file exists on the device, False otherwise.
+    Raises:
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
     """
     return self._FileExistsImpl(device_path)
 
@@ -479,6 +522,8 @@ class DeviceUtils(object):
       device_path: Same as for |FileExists|.
     Returns:
       True if the file exists on the device, False otherwise.
+    Raises:
+      Same as for |FileExists|.
     """
     return self.old_interface.FileExistsOnDevice(device_path)
 
@@ -491,10 +536,17 @@ class DeviceUtils(object):
                    from the device.
       host_path: A string containing the absolute path of the destination on
                  the host.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
+    Raises:
+      CommandFailedError on failure.
+      CommandTimeoutError on timeout.
     """
-    self.old_interface.PullFileFromDevice(device_path, host_path)
+    try:
+      self.old_interface.PullFileFromDevice(device_path, host_path)
+    except AssertionError as e:
+      raise device_errors.CommandFailedError(
+          str(e), device=str(self)), None, sys.exc_info()[2]
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def ReadFile(self, device_path, as_root=False, timeout=None, retries=None):
@@ -505,12 +557,14 @@ class DeviceUtils(object):
                    from the device.
       as_root: A boolean indicating whether the read should be executed with
                root privileges.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
     Returns:
       The contents of the file at |device_path| as a list of lines.
     Raises:
       CommandFailedError if the file can't be read.
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
     """
     # TODO(jbudorick) Evaluate whether we actually want to return a list of
     # lines after the implementation switch.
@@ -533,10 +587,12 @@ class DeviceUtils(object):
       contents: A string containing the data to write to the device.
       as_root: A boolean indicating whether the write should be executed with
                root privileges.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
     Raises:
       CommandFailedError if the file could not be written on the device.
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
     """
     if as_root:
       if not self.old_interface.CanAccessProtectedFileContents():
@@ -553,10 +609,13 @@ class DeviceUtils(object):
     Args:
       device_path: A string containing the path of the directory on the device
                    to list.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
     Returns:
       The contents of the directory specified by |device_path|.
+    Raises:
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
     """
     return self.old_interface.ListPathContents(device_path)
 
@@ -567,8 +626,10 @@ class DeviceUtils(object):
     Args:
       enabled: A boolean indicating whether Java asserts should be enabled
                or disabled.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
+    Raises:
+      CommandTimeoutError on timeout.
     """
     self.old_interface.SetJavaAssertsEnabled(enabled)
 
@@ -579,10 +640,12 @@ class DeviceUtils(object):
     Args:
       property_name: A string containing the name of the property to get from
                      the device.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
     Returns:
       The value of the device's |property_name| property.
+    Raises:
+      CommandTimeoutError on timeout.
     """
     return self.old_interface.system_properties[property_name]
 
@@ -595,10 +658,72 @@ class DeviceUtils(object):
                      the device.
       value: A string containing the value to set to the property on the
              device.
-      timeout: Same as for |IsOnline|.
-      retries: Same as for |IsOnline|.
+      timeout: timeout in seconds
+      retries: number of retries
+    Raises:
+      CommandTimeoutError on timeout.
     """
     self.old_interface.system_properties[property_name] = value
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def GetPids(self, process_name, timeout=None, retries=None):
+    """Returns the PIDs of processes with the given name.
+
+    Note that the |process_name| is often the package name.
+
+    Args:
+      process_name: A string containing the process name to get the PIDs for.
+      timeout: timeout in seconds
+      retries: number of retries
+    Returns:
+      A dict mapping process name to PID for each process that contained the
+      provided |process_name|.
+    Raises:
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
+    """
+    procs_pids = {}
+    for line in self._RunShellCommandImpl('ps'):
+      try:
+        ps_data = line.split()
+        if process_name in ps_data[-1]:
+          procs_pids[ps_data[-1]] = ps_data[1]
+      except IndexError:
+        pass
+    return procs_pids
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def TakeScreenshot(self, host_path=None, timeout=None, retries=None):
+    """Takes a screenshot of the device.
+
+    Args:
+      host_path: A string containing the path on the host to save the
+                 screenshot to. If None, a file name will be generated.
+      timeout: timeout in seconds
+      retries: number of retries
+    Returns:
+      The name of the file on the host to which the screenshot was saved.
+    Raises:
+      CommandFailedError on failure.
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
+    """
+    return self.old_interface.TakeScreenshot(host_path)
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def GetIOStats(self, timeout=None, retries=None):
+    """Gets cumulative disk IO stats since boot for all processes.
+
+    Args:
+      timeout: timeout in seconds
+      retries: number of retries
+    Returns:
+      A dict containing |num_reads|, |num_writes|, |read_ms|, and |write_ms|.
+    Raises:
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
+    """
+    return self.old_interface.GetIoStats()
 
   def __str__(self):
     """Returns the device serial."""

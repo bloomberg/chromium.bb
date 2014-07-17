@@ -64,8 +64,7 @@ class _PerfProfiler(object):
                                           stderr=subprocess.STDOUT)
 
   def SignalAndWait(self):
-    perf_pids = self._device.old_interface.ExtractPid('perf')
-    self._device.RunShellCommand('kill -SIGINT ' + ' '.join(perf_pids))
+    self._device.KillAll('perf', signum=signal.SIGINT)
     self._perf_process.wait()
     self._perf_control.SetDefaultPerfMode()
 

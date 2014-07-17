@@ -21,7 +21,7 @@ def _PrintMessage(heading, eol='\n'):
 
 
 def _CaptureScreenshot(device, host_file):
-  host_file = device.old_interface.TakeScreenshot(host_file)
+  host_file = device.TakeScreenshot(host_file)
   _PrintMessage('Screenshot written to %s' % os.path.abspath(host_file))
 
 
@@ -37,7 +37,7 @@ def _CaptureVideo(device, host_file, options):
     raw_input()
   finally:
     recorder.Stop()
-  recorder.Pull(host_file)
+  host_file = recorder.Pull(host_file)
   _PrintMessage('Video written to %s' % os.path.abspath(host_file))
 
 

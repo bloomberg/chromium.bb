@@ -142,7 +142,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     """Takes a screenshot from the device."""
     screenshot_name = os.path.join(constants.SCREENSHOTS_DIR, '%s.png' % test)
     logging.info('Taking screenshot named %s', screenshot_name)
-    self.device.old_interface.TakeScreenshot(screenshot_name)
+    self.device.TakeScreenshot(screenshot_name)
 
   def SetUp(self):
     """Sets up the test harness and device before all tests are run."""

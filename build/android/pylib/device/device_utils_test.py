@@ -72,6 +72,75 @@ class _PatchedFunction(object):
     self.mocked = mocked
 
 
+class MockFileSystem(object):
+
+  @staticmethod
+  def osStatResult(
+      st_mode=None, st_ino=None, st_dev=None, st_nlink=None, st_uid=None,
+      st_gid=None, st_size=None, st_atime=None, st_mtime=None, st_ctime=None):
+    MockOSStatResult = collections.namedtuple('MockOSStatResult', [
+        'st_mode', 'st_ino', 'st_dev', 'st_nlink', 'st_uid', 'st_gid',
+        'st_size', 'st_atime', 'st_mtime', 'st_ctime'])
+    return MockOSStatResult(st_mode, st_ino, st_dev, st_nlink, st_uid, st_gid,
+                            st_size, st_atime, st_mtime, st_ctime)
+
+  MOCKED_FUNCTIONS = [
+    ('os.path.abspath', ''),
+    ('os.path.dirname', ''),
+    ('os.path.exists', False),
+    ('os.path.getsize', 0),
+    ('os.path.isdir', False),
+    ('os.stat', osStatResult.__func__()),
+    ('os.walk', []),
+  ]
+
+  def _get(self, mocked, path, default_val):
+    if self._verbose:
+      logging.debug('%s(%s)' % (mocked, path))
+    return (self.mock_file_info[path][mocked]
+            if path in self.mock_file_info
+            else default_val)
+
+  def _patched(self, target, default_val=None):
+    r = lambda f: self._get(target, f, default_val)
+    return _PatchedFunction(patched=mock.patch(target, side_effect=r))
+
+  def __init__(self, verbose=False):
+    self.mock_file_info = {}
+    self._patched_functions = [
+        self._patched(m, d) for m, d in type(self).MOCKED_FUNCTIONS]
+    self._verbose = verbose
+
+  def addMockFile(self, path, **kw):
+    self._addMockThing(path, False, **kw)
+
+  def addMockDirectory(self, path, **kw):
+    self._addMockThing(path, True, **kw)
+
+  def _addMockThing(self, path, is_dir, size=0, stat=None, walk=None):
+    if stat is None:
+      stat = self.osStatResult()
+    if walk is None:
+      walk = []
+    self.mock_file_info[path] = {
+      'os.path.abspath': path,
+      'os.path.dirname': '/' + '/'.join(path.strip('/').split('/')[:-1]),
+      'os.path.exists': True,
+      'os.path.isdir': is_dir,
+      'os.path.getsize': size,
+      'os.stat': stat,
+      'os.walk': walk,
+    }
+
+  def __enter__(self):
+    for p in self._patched_functions:
+      p.mocked = p.patched.__enter__()
+
+  def __exit__(self, exc_type, exc_val, exc_tb):
+    for p in self._patched_functions:
+      p.patched.__exit__()
+
+
 class DeviceUtilsOldImplTest(unittest.TestCase):
 
   class AndroidCommandsCalls(object):
@@ -787,68 +856,6 @@ class DeviceUtilsSendKeyEventTest(DeviceUtilsOldImplTest):
 
 class DeviceUtilsPushChangedFilesTest(DeviceUtilsOldImplTest):
 
-  class MockFileSystem(object):
-
-    @staticmethod
-    def osStatResult(
-        st_mode=None, st_ino=None, st_dev=None, st_nlink=None, st_uid=None,
-        st_gid=None, st_size=None, st_atime=None, st_mtime=None, st_ctime=None):
-      MockOSStatResult = collections.namedtuple('MockOSStatResult', [
-          'st_mode', 'st_ino', 'st_dev', 'st_nlink', 'st_uid', 'st_gid',
-          'st_size', 'st_atime', 'st_mtime', 'st_ctime'])
-      return MockOSStatResult(st_mode, st_ino, st_dev, st_nlink, st_uid, st_gid,
-                              st_size, st_atime, st_mtime, st_ctime)
-
-    def _get(self, mocked, path, default_val):
-      return (self.mock_file_info[path][mocked]
-              if path in self.mock_file_info
-              else default_val)
-
-    def _patched(self, target, default_val=None):
-      r = lambda f: self._get(target, f, default_val)
-      return _PatchedFunction(patched=mock.patch(target, side_effect=r))
-
-    def __init__(self):
-      self.mock_file_info = {}
-      self._os_path_exists = self._patched('os.path.exists', default_val=False)
-      self._os_path_getsize = self._patched('os.path.getsize', default_val=0)
-      self._os_path_isdir = self._patched('os.path.isdir', default_val=False)
-      self._os_stat = self._patched('os.stat', default_val=self.osStatResult())
-      self._os_walk = self._patched('os.walk', default_val=[])
-
-    def addMockFile(self, path, size, **kw):
-      self._addMockThing(path, size, False, **kw)
-
-    def addMockDirectory(self, path, size, **kw):
-      self._addMockThing(path, size, True, **kw)
-
-    def _addMockThing(self, path, size, is_dir, stat=None, walk=None):
-      if stat is None:
-        stat = self.osStatResult()
-      if walk is None:
-        walk = []
-      self.mock_file_info[path] = {
-        'os.path.exists': True,
-        'os.path.isdir': is_dir,
-        'os.path.getsize': size,
-        'os.stat': stat,
-        'os.walk': walk,
-      }
-
-    def __enter__(self):
-      self._os_path_exists.mocked = self._os_path_exists.patched.__enter__()
-      self._os_path_getsize.mocked = self._os_path_getsize.patched.__enter__()
-      self._os_path_isdir.mocked = self._os_path_isdir.patched.__enter__()
-      self._os_stat.mocked = self._os_stat.patched.__enter__()
-      self._os_walk.mocked = self._os_walk.patched.__enter__()
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-      self._os_walk.patched.__exit__()
-      self._os_stat.patched.__exit__()
-      self._os_path_isdir.patched.__exit__(exc_type, exc_val, exc_tb)
-      self._os_path_getsize.patched.__exit__(exc_type, exc_val, exc_tb)
-      self._os_path_exists.patched.__exit__(exc_type, exc_val, exc_tb)
-
 
   def testPushChangedFiles_noHostPath(self):
     with mock.patch('os.path.exists', return_value=False):
@@ -861,8 +868,8 @@ class DeviceUtilsPushChangedFilesTest(DeviceUtilsOldImplTest):
     host_file_path = '/test/host/path'
     device_file_path = '/test/device/path'
 
-    mock_fs = self.MockFileSystem()
-    mock_fs.addMockFile(host_file_path, 100)
+    mock_fs = MockFileSystem()
+    mock_fs.addMockFile(host_file_path, size=100)
 
     self.device.old_interface.GetFilesChanged = mock.Mock(return_value=[])
 
@@ -877,10 +884,10 @@ class DeviceUtilsPushChangedFilesTest(DeviceUtilsOldImplTest):
     host_file_path = '/test/host/path'
     device_file_path = '/test/device/path'
 
-    mock_fs = self.MockFileSystem()
+    mock_fs = MockFileSystem()
     mock_fs.addMockFile(
-        host_file_path, 100,
-        stat=self.MockFileSystem.osStatResult(st_mtime=1000000000))
+        host_file_path, size=100,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000000))
 
     self.device.old_interface.GetFilesChanged = mock.Mock(
         return_value=[('/test/host/path', '/test/device/path')])
@@ -896,16 +903,16 @@ class DeviceUtilsPushChangedFilesTest(DeviceUtilsOldImplTest):
     host_file_path = '/test/host/path'
     device_file_path = '/test/device/path'
 
-    mock_fs = self.MockFileSystem()
+    mock_fs = MockFileSystem()
     mock_fs.addMockDirectory(
-        host_file_path, 256,
-        stat=self.MockFileSystem.osStatResult(st_mtime=1000000000))
+        host_file_path, size=256,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000000))
     mock_fs.addMockFile(
-        host_file_path + '/file1', 251,
-        stat=self.MockFileSystem.osStatResult(st_mtime=1000000001))
+        host_file_path + '/file1', size=251,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000001))
     mock_fs.addMockFile(
-        host_file_path + '/file2', 252,
-        stat=self.MockFileSystem.osStatResult(st_mtime=1000000002))
+        host_file_path + '/file2', size=252,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000002))
 
     self.device.old_interface.GetFilesChanged = mock.Mock(return_value=[])
 
@@ -921,17 +928,17 @@ class DeviceUtilsPushChangedFilesTest(DeviceUtilsOldImplTest):
     host_file_path = '/test/host/path'
     device_file_path = '/test/device/path'
 
-    mock_fs = self.MockFileSystem()
+    mock_fs = MockFileSystem()
     mock_fs.addMockDirectory(
-        host_file_path, 256,
-        stat=self.MockFileSystem.osStatResult(st_mtime=1000000000),
+        host_file_path, size=256,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000000),
         walk=[('/test/host/path', [], ['file1', 'file2'])])
     mock_fs.addMockFile(
-        host_file_path + '/file1', 256,
-        stat=self.MockFileSystem.osStatResult(st_mtime=1000000001))
+        host_file_path + '/file1', size=256,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000001))
     mock_fs.addMockFile(
-        host_file_path + '/file2', 256,
-        stat=self.MockFileSystem.osStatResult(st_mtime=1000000002))
+        host_file_path + '/file2', size=256,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000002))
 
     self.device.old_interface.GetFilesChanged = mock.Mock(
         return_value=[('/test/host/path/file1', '/test/device/path/file1')])
@@ -951,16 +958,16 @@ class DeviceUtilsPushChangedFilesTest(DeviceUtilsOldImplTest):
     host_file_path = '/test/host/path'
     device_file_path = '/test/device/path'
 
-    mock_fs = self.MockFileSystem()
+    mock_fs = MockFileSystem()
     mock_fs.addMockDirectory(
-        host_file_path, 256,
-        stat=self.MockFileSystem.osStatResult(st_mtime=1000000000))
+        host_file_path, size=256,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000000))
     mock_fs.addMockFile(
-        host_file_path + '/file1', 256,
-        stat=self.MockFileSystem.osStatResult(st_mtime=1000000001))
+        host_file_path + '/file1', size=256,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000001))
     mock_fs.addMockFile(
-        host_file_path + '/file2', 256,
-        stat=self.MockFileSystem.osStatResult(st_mtime=1000000002))
+        host_file_path + '/file2', size=256,
+        stat=MockFileSystem.osStatResult(st_mtime=1000000002))
 
     self.device.old_interface.GetFilesChanged = mock.Mock(
         return_value=[('/test/host/path/file1', '/test/device/path/file1'),
@@ -1354,6 +1361,86 @@ class DeviceUtilsSetPropTest(DeviceUtilsOldImplTest):
             'setprop this.is.a.test.property "test_property_value"',
         ''):
       self.device.SetProp('this.is.a.test.property', 'test_property_value')
+
+
+class DeviceUtilsGetPidsTest(DeviceUtilsOldImplTest):
+
+  def testGetPids_noMatches(self):
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'ps'",
+        'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
+        'user  1000    100   1024 1024   ffffffff 00000000 no.match\r\n'):
+      self.assertEqual({}, self.device.GetPids('does.not.match'))
+
+  def testGetPids_oneMatch(self):
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'ps'",
+        'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
+        'user  1000    100   1024 1024   ffffffff 00000000 not.a.match\r\n'
+        'user  1001    100   1024 1024   ffffffff 00000000 one.match\r\n'):
+      self.assertEqual({'one.match': '1001'}, self.device.GetPids('one.match'))
+
+  def testGetPids_mutlipleMatches(self):
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'ps'",
+        'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
+        'user  1000    100   1024 1024   ffffffff 00000000 not\r\n'
+        'user  1001    100   1024 1024   ffffffff 00000000 one.match\r\n'
+        'user  1002    100   1024 1024   ffffffff 00000000 two.match\r\n'
+        'user  1003    100   1024 1024   ffffffff 00000000 three.match\r\n'):
+      self.assertEqual(
+          {'one.match': '1001', 'two.match': '1002', 'three.match': '1003'},
+          self.device.GetPids('match'))
+
+  def testGetPids_exactMatch(self):
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'ps'",
+        'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
+        'user  1000    100   1024 1024   ffffffff 00000000 not.exact.match\r\n'
+        'user  1234    100   1024 1024   ffffffff 00000000 exact.match\r\n'):
+      self.assertEqual(
+          {'not.exact.match': '1000', 'exact.match': '1234'},
+          self.device.GetPids('exact.match'))
+
+
+class DeviceUtilsTakeScreenshotTest(DeviceUtilsOldImplTest):
+
+  def testTakeScreenshot_fileNameProvided(self):
+    mock_fs = MockFileSystem()
+    mock_fs.addMockDirectory('/test/host')
+    mock_fs.addMockFile('/test/host/screenshot.png')
+
+    with mock_fs:
+      with self.assertCallsSequence(
+          cmd_ret=[
+              (r"adb -s 0123456789abcdef shell 'echo \$EXTERNAL_STORAGE'",
+               '/test/external/storage\r\n'),
+              (r"adb -s 0123456789abcdef shell '/system/bin/screencap -p \S+'",
+               ''),
+              (r"adb -s 0123456789abcdef shell ls \S+",
+               '/test/external/storage/screenshot.png\r\n'),
+              (r'adb -s 0123456789abcdef pull \S+ /test/host/screenshot.png',
+               '100 B/s (100 B in 1.000s)\r\n'),
+              (r"adb -s 0123456789abcdef shell 'rm -f \S+'", '')
+          ],
+          comp=re.match):
+        self.device.TakeScreenshot('/test/host/screenshot.png')
+
+
+class DeviceUtilsGetIOStatsTest(DeviceUtilsOldImplTest):
+
+  def testGetIOStats(self):
+    with self.assertCalls(
+        "adb -s 0123456789abcdef shell 'cat \"/proc/diskstats\" 2>/dev/null'",
+        '179 0 mmcblk0 1 2 3 4 5 6 7 8 9 10 11\r\n'):
+      self.assertEqual(
+          {
+            'num_reads': 1,
+            'num_writes': 5,
+            'read_ms': 4,
+            'write_ms': 8,
+          },
+          self.device.GetIOStats())
 
 
 if __name__ == '__main__':

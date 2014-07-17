@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import os
+import signal
 import tempfile
 
 from pylib import cmd_helper
@@ -33,7 +34,6 @@ class VideoRecorder(object):
     self._device_file = (
         '%s/screen-recording.mp4' % device.GetExternalStoragePath())
     self._recorder = None
-    self._recorder_pids = None
     self._recorder_stdout = None
     self._is_started = False
 
@@ -53,8 +53,7 @@ class VideoRecorder(object):
     self._recorder_stdout = tempfile.mkstemp()[1]
     self._recorder = cmd_helper.Popen(
         self._args, stdout=open(self._recorder_stdout, 'w'))
-    self._recorder_pids = self._device.old_interface.ExtractPid('screenrecord')
-    if not self._recorder_pids:
+    if not self._device.GetPids('screenrecord'):
       raise RuntimeError('Recording failed. Is your device running Android '
                          'KitKat or later?')
 
@@ -70,17 +69,18 @@ class VideoRecorder(object):
     """Stop recording video."""
     os.remove(self._recorder_stdout)
     self._is_started = False
-    if not self._recorder or not self._recorder_pids:
+    if not self._recorder:
       return
-    self._device.RunShellCommand(
-        'kill -SIGINT ' + ' '.join(self._recorder_pids))
+    self._device.KillAll('screenrecord', signum=signal.SIGINT)
     self._recorder.wait()
 
-  def Pull(self, host_file):
+  def Pull(self, host_file=None):
     """Pull resulting video file from the device.
 
     Args:
       host_file: Path to the video file to store on the host.
+    Returns:
+      Output video file name on the host.
     """
     host_file_name = host_file or ('screen-recording-%s.mp4' %
                                    self._device.old_interface.GetTimestamp())
@@ -88,3 +88,4 @@ class VideoRecorder(object):
     self._device.old_interface.EnsureHostDirectory(host_file_name)
     self._device.PullFile(self._device_file, host_file_name)
     self._device.RunShellCommand('rm -f "%s"' % self._device_file)
+    return host_file_name
