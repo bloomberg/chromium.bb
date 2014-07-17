@@ -1,6 +1,0 @@
-This test that target doesn't leak when it is removed
-
-Worker target added
-error: "Some arguments of method 'Page.getResourceTree' can't be processed"
-Worker target was collected: true
-
