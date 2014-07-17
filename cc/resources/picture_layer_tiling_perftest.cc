@@ -112,9 +112,32 @@ class PictureLayerTilingPerfTest : public testing::Test {
                            true);
   }
 
-  void RunTilingRasterTileIteratorTest(const std::string& test_name,
-                                       int num_tiles,
-                                       const gfx::Rect& viewport) {
+  void RunRasterIteratorConstructTest(const std::string& test_name,
+                                      const gfx::Rect& viewport) {
+    gfx::Size bounds(viewport.size());
+    picture_layer_tiling_ =
+        PictureLayerTiling::Create(1, bounds, &picture_layer_tiling_client_);
+    picture_layer_tiling_->UpdateTilePriorities(
+        ACTIVE_TREE, viewport, 1.0f, 1.0, NULL, NULL, gfx::Transform());
+
+    timer_.Reset();
+    do {
+      PictureLayerTiling::TilingRasterTileIterator it(
+          picture_layer_tiling_.get(), ACTIVE_TREE);
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
+
+    perf_test::PrintResult("tiling_raster_tile_iterator_construct",
+                           "",
+                           test_name,
+                           timer_.LapsPerSecond(),
+                           "runs/s",
+                           true);
+  }
+
+  void RunRasterIteratorConstructAndIterateTest(const std::string& test_name,
+                                                int num_tiles,
+                                                const gfx::Rect& viewport) {
     gfx::Size bounds(10000, 10000);
     picture_layer_tiling_ =
         PictureLayerTiling::Create(1, bounds, &picture_layer_tiling_client_);
@@ -124,16 +147,17 @@ class PictureLayerTilingPerfTest : public testing::Test {
     timer_.Reset();
     do {
       int count = num_tiles;
-      for (PictureLayerTiling::TilingRasterTileIterator it(
-               picture_layer_tiling_.get(), ACTIVE_TREE);
-           it && count;
-           ++it) {
-        --count;
+      PictureLayerTiling::TilingRasterTileIterator it(
+          picture_layer_tiling_.get(), ACTIVE_TREE);
+      while (count--) {
+        ASSERT_TRUE(it) << "count: " << count;
+        ASSERT_TRUE(*it != NULL) << "count: " << count;
+        ++it;
       }
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("tiling_raster_tile_iterator",
+    perf_test::PrintResult("tiling_raster_tile_iterator_construct_and_iterate",
                            "",
                            test_name,
                            timer_.LapsPerSecond(),
@@ -179,11 +203,23 @@ TEST_F(PictureLayerTilingPerfTest, UpdateTilePriorities) {
   RunUpdateTilePrioritiesScrollingTest("perspective", transform);
 }
 
-TEST_F(PictureLayerTilingPerfTest, TilingRasterTileIterator) {
-  RunTilingRasterTileIteratorTest("32_100x100", 32, gfx::Rect(0, 0, 100, 100));
-  RunTilingRasterTileIteratorTest("32_500x500", 32, gfx::Rect(0, 0, 500, 500));
-  RunTilingRasterTileIteratorTest("64_100x100", 64, gfx::Rect(0, 0, 100, 100));
-  RunTilingRasterTileIteratorTest("64_500x500", 64, gfx::Rect(0, 0, 500, 500));
+TEST_F(PictureLayerTilingPerfTest, TilingRasterTileIteratorConstruct) {
+  RunRasterIteratorConstructTest("0_0_100x100", gfx::Rect(0, 0, 100, 100));
+  RunRasterIteratorConstructTest("50_0_100x100", gfx::Rect(50, 0, 100, 100));
+  RunRasterIteratorConstructTest("100_0_100x100", gfx::Rect(100, 0, 100, 100));
+  RunRasterIteratorConstructTest("150_0_100x100", gfx::Rect(150, 0, 100, 100));
+}
+
+TEST_F(PictureLayerTilingPerfTest,
+       TilingRasterTileIteratorConstructAndIterate) {
+  RunRasterIteratorConstructAndIterateTest(
+      "32_100x100", 32, gfx::Rect(0, 0, 100, 100));
+  RunRasterIteratorConstructAndIterateTest(
+      "32_500x500", 32, gfx::Rect(0, 0, 500, 500));
+  RunRasterIteratorConstructAndIterateTest(
+      "64_100x100", 64, gfx::Rect(0, 0, 100, 100));
+  RunRasterIteratorConstructAndIterateTest(
+      "64_500x500", 64, gfx::Rect(0, 0, 500, 500));
 }
 
 }  // namespace
