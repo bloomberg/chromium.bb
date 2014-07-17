@@ -47,9 +47,9 @@ void SetDragImage(const GURL& url,
   const ui::NativeTheme* theme =
       widget ? widget->GetNativeTheme() : ui::NativeTheme::instance();
   button.SetTextColor(views::Button::STATE_NORMAL,
-      theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonEnabledColor));
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor));
   gfx::ShadowValues shadows(10, gfx::ShadowValue(gfx::Point(0,0), 1.0f,
-      theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonBackgroundColor)));
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelBackgroundColor)));
   button.SetTextShadows(shadows);
   button.set_max_size(gfx::Size(kLinkDragImageMaxWidth, 0));
   if (icon.isNull()) {
