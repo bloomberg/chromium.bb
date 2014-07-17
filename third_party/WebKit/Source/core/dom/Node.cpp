@@ -330,9 +330,10 @@ void Node::willBeDeletedFromDocument()
     if (hasEventTargetData()) {
         clearEventTargetData();
         document.didClearTouchEventHandlers(this);
-        if (document.frameHost())
-            document.frameHost()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
     }
+
+    if (document.frameHost())
+        document.frameHost()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
 
     if (AXObjectCache* cache = document.existingAXObjectCache())
         cache->remove(this);

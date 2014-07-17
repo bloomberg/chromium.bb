@@ -33,6 +33,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -1796,6 +1797,28 @@ TEST_F(WebViewTest, HasTouchEventHandlers)
 
     // Free the webView before the TouchEventHandlerWebViewClient gets freed.
     m_webViewHelper.reset();
+}
+
+// This test checks that deleting nodes which have only non-JS-registered touch
+// handlers also removes them from the event handler registry. Note that this
+// is different from detaching and re-attaching the same node, which is covered
+// by layout tests under fast/events/.
+TEST_F(WebViewTest, DeleteElementWithRegisteredHandler)
+{
+    std::string url = m_baseURL + "simple_div.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "simple_div.html");
+    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(url, true);
+
+    WebCore::Document* document = webViewImpl->mainFrameImpl()->frame()->document();
+    WebCore::Element* div = document->getElementById("div");
+    WebCore::EventHandlerRegistry& registry = document->frameHost()->eventHandlerRegistry();
+
+    registry.didAddEventHandler(*div, WebCore::EventHandlerRegistry::ScrollEvent);
+    EXPECT_TRUE(registry.hasEventHandlers(WebCore::EventHandlerRegistry::ScrollEvent));
+
+    WebCore::TrackExceptionState exceptionState;
+    div->remove(exceptionState);
+    EXPECT_FALSE(registry.hasEventHandlers(WebCore::EventHandlerRegistry::ScrollEvent));
 }
 
 static WebRect ExpectedRootBounds(WebCore::Document* document, float scaleFactor)
