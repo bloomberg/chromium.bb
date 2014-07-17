@@ -123,6 +123,12 @@ void ImageBuffer::notifySurfaceInvalid()
         m_client->notifySurfaceInvalid();
 }
 
+void ImageBuffer::didPresent()
+{
+    if (m_client)
+        m_client->didPresent();
+}
+
 static SkBitmap deepSkBitmapCopy(const SkBitmap& bitmap)
 {
     SkBitmap tmp;

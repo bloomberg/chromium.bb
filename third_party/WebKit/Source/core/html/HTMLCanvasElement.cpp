@@ -195,17 +195,24 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect)
     clearCopiedImage();
 
     if (RenderBox* ro = renderBox()) {
-        FloatRect destRect = ro->contentBoxRect();
-        FloatRect r = mapRect(rect, FloatRect(0, 0, size().width(), size().height()), destRect);
-        r.intersect(destRect);
+        FloatRect srcRect(0, 0, size().width(), size().height());
+        FloatRect r = rect;
+        r.intersect(srcRect);
         if (r.isEmpty() || m_dirtyRect.contains(r))
             return;
-
         m_dirtyRect.unite(r);
-        ro->invalidatePaintRectangle(enclosingIntRect(m_dirtyRect));
+        FloatRect mappedDirtyRect = mapRect(r, srcRect, ro->contentBoxRect());
+
+        ro->invalidatePaintRectangle(enclosingIntRect(mappedDirtyRect));
     }
 
     notifyObserversCanvasChanged(rect);
+}
+
+void HTMLCanvasElement::didPresent()
+{
+    // Canvas was presented externally (without going through paint())
+    m_dirtyRect = FloatRect();
 }
 
 void HTMLCanvasElement::notifyObserversCanvasChanged(const FloatRect& rect)
@@ -219,6 +226,8 @@ void HTMLCanvasElement::reset()
 {
     if (m_ignoreReset)
         return;
+
+    m_dirtyRect = FloatRect();
 
     bool ok;
     bool hadImageBuffer = hasImageBuffer();

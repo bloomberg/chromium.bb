@@ -458,6 +458,10 @@ bool Canvas2DLayerBridge::prepareMailbox(blink::WebExternalTextureMailbox* outMa
     ASSERT(!mailboxInfo->m_parentLayerBridge);
     mailboxInfo->m_parentLayerBridge = this;
     *outMailbox = mailboxInfo->m_mailbox;
+
+    if (m_imageBuffer)
+        m_imageBuffer->didPresent();
+
     return true;
 }
 

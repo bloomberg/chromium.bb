@@ -122,6 +122,7 @@ public:
     void flush();
 
     void notifySurfaceInvalid();
+    void didPresent();
 
 private:
     ImageBuffer(PassOwnPtr<ImageBufferSurface>);

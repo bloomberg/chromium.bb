@@ -151,6 +151,7 @@ public:
 
     // ImageBufferClient implementation
     virtual void notifySurfaceInvalid() OVERRIDE;
+    virtual void didPresent() OVERRIDE;
 
     virtual void trace(Visitor*) OVERRIDE;
 
