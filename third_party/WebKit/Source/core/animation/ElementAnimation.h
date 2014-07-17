@@ -31,6 +31,7 @@
 #ifndef ElementAnimation_h
 #define ElementAnimation_h
 
+#include "core/animation/ActiveAnimations.h"
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/EffectInput.h"
@@ -38,6 +39,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "platform/RuntimeEnabledFeatures.h"
+
 
 namespace WebCore {
 
@@ -85,6 +87,19 @@ public:
             return 0;
         ASSERT(effect);
         return animateInternal(element, effect.release(), Timing());
+    }
+
+    static WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > getAnimationPlayers(Element& element)
+    {
+        WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > animationPlayers = WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> >();
+        const AnimationPlayerCountedSet& players = element.activeAnimations()->players();
+
+        for (AnimationPlayerCountedSet::const_iterator it = players.begin(); it != players.end(); ++it) {
+            ASSERT(it->key->source());
+            if (it->key->source()->isCurrent())
+                animationPlayers.append(it->key);
+        }
+        return animationPlayers;
     }
 
 private:

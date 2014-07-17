@@ -8,4 +8,5 @@
 ] interface AnimationTimeline {
     readonly attribute double? currentTime;
     AnimationPlayer play(AnimationNode source);
+    sequence<AnimationPlayer> getAnimationPlayers();
 };

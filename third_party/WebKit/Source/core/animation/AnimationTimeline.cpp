@@ -40,6 +40,15 @@
 
 namespace WebCore {
 
+namespace {
+
+bool compareAnimationPlayers(const RefPtrWillBeMember<WebCore::AnimationPlayer>& left, const RefPtrWillBeMember<WebCore::AnimationPlayer>& right)
+{
+    return left->sortInfo().hasLowerSequenceNumber(right->sortInfo());
+}
+
+}
+
 // This value represents 1 frame at 30Hz plus a little bit of wiggle room.
 // TODO: Plumb a nominal framerate through and derive this value from that.
 const double AnimationTimeline::s_minimumDelay = 0.04;
@@ -85,6 +94,18 @@ AnimationPlayer* AnimationTimeline::play(AnimationNode* child)
     AnimationPlayer* player = createAnimationPlayer(child);
     m_document->compositorPendingAnimations().add(player);
     return player;
+}
+
+WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > AnimationTimeline::getAnimationPlayers()
+{
+    WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > animationPlayers;
+    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<AnimationPlayer> >::iterator it = m_players.begin(); it != m_players.end(); ++it) {
+        if ((*it)->source() && (*it)->source()->isCurrent()) {
+            animationPlayers.append(*it);
+        }
+    }
+    std::sort(animationPlayers.begin(), animationPlayers.end(), compareAnimationPlayers);
+    return animationPlayers;
 }
 
 void AnimationTimeline::wake()

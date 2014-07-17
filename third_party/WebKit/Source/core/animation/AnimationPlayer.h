@@ -128,6 +128,10 @@ public:
         friend class AnimationPlayer;
         bool operator<(const SortInfo& other) const;
         double startTime() const { return m_startTime; }
+        bool hasLowerSequenceNumber(const SortInfo& other) const
+        {
+            return m_sequenceNumber < other.m_sequenceNumber;
+        }
     private:
         SortInfo(unsigned sequenceNumber, double startTime)
             : m_sequenceNumber(sequenceNumber)

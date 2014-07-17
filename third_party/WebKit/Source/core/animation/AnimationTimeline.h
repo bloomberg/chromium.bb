@@ -67,6 +67,7 @@ public:
     // Creates a player attached to this timeline, but without a start time.
     AnimationPlayer* createAnimationPlayer(AnimationNode*);
     AnimationPlayer* play(AnimationNode*);
+    Vector<RefPtrWillBeRawPtr<AnimationPlayer> > getAnimationPlayers();
 
 #if !ENABLE(OILPAN)
     void playerDestroyed(AnimationPlayer* player)

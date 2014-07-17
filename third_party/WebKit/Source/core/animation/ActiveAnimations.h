@@ -44,6 +44,8 @@ class CSSAnimations;
 class RenderObject;
 class Element;
 
+typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<AnimationPlayer>, int> AnimationPlayerCountedSet;
+
 class ActiveAnimations : public NoBaseWillBeGarbageCollectedFinalized<ActiveAnimations> {
     WTF_MAKE_NONCOPYABLE(ActiveAnimations);
 public:
@@ -64,7 +66,6 @@ public:
     CSSAnimations& cssAnimations() { return m_cssAnimations; }
     const CSSAnimations& cssAnimations() const { return m_cssAnimations; }
 
-    typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<AnimationPlayer>, int> AnimationPlayerCountedSet;
     // AnimationPlayers which have animations targeting this element.
     const AnimationPlayerCountedSet& players() const { return m_players; }
     void addPlayer(AnimationPlayer*);
