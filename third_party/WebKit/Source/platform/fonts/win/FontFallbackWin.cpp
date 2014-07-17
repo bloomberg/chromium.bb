@@ -69,6 +69,22 @@ static inline bool isFontPresent(const UChar* fontName, SkFontMgr* fontManager)
 // which works well since the range of UScriptCode values is small.
 typedef const UChar* ScriptToFontMap[USCRIPT_CODE_LIMIT];
 
+void initializeScriptMonospaceFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontManager)
+{
+    struct FontMap {
+        UScriptCode script;
+        const UChar* family;
+    };
+
+    static const FontMap fontMap[] = {
+        { USCRIPT_HEBREW, L"courier new" },
+        { USCRIPT_ARABIC, L"courier new" },
+    };
+
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(fontMap); ++i)
+        scriptFontMap[fontMap[i].script] = fontMap[i].family;
+}
+
 void initializeScriptFontMap(ScriptToFontMap& scriptFontMap, SkFontMgr* fontManager)
 {
     struct FontMap {
@@ -259,14 +275,18 @@ const UChar* getFontFamilyForScript(UScriptCode script,
     SkFontMgr* fontManager)
 {
     static ScriptToFontMap scriptFontMap;
+    static ScriptToFontMap scriptMonospaceFontMap;
     static bool initialized = false;
     if (!initialized) {
         initializeScriptFontMap(scriptFontMap, fontManager);
+        initializeScriptMonospaceFontMap(scriptMonospaceFontMap, fontManager);
         initialized = true;
     }
     if (script == USCRIPT_INVALID_CODE)
         return 0;
     ASSERT(script < USCRIPT_CODE_LIMIT);
+    if (generic == FontDescription::MonospaceFamily && scriptMonospaceFontMap[script])
+        return scriptMonospaceFontMap[script];
     return scriptFontMap[script];
 }
 
