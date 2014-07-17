@@ -49,6 +49,8 @@ GL_APICALL const struct PPB_OpenGLES2ChromiumMapSub* GL_APIENTRY
     glGetChromiumMapSubInterfacePPAPI(void);
 GL_APICALL const struct PPB_OpenGLES2Query* GL_APIENTRY
     glGetQueryInterfacePPAPI(void);
+GL_APICALL const struct PPB_OpenGLES2VertexArrayObject* GL_APIENTRY
+    glGetVertexArrayObjectInterfacePPAPI(void);
 GL_APICALL const struct PPB_OpenGLES2DrawBuffers_Dev* GL_APIENTRY
     glGetDrawBuffersInterfacePPAPI(void);
 

@@ -1476,6 +1476,38 @@ void GetQueryObjectuivEXT(PP_Resource context_id,
   }
 }
 
+void GenVertexArraysOES(PP_Resource context_id, GLsizei n, GLuint* arrays) {
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->GenVertexArraysOES(n, arrays);
+  }
+}
+
+void DeleteVertexArraysOES(PP_Resource context_id,
+                           GLsizei n,
+                           const GLuint* arrays) {
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->DeleteVertexArraysOES(n, arrays);
+  }
+}
+
+GLboolean IsVertexArrayOES(PP_Resource context_id, GLuint array) {
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    return ToGles2Impl(&enter)->IsVertexArrayOES(array);
+  } else {
+    return GL_FALSE;
+  }
+}
+
+void BindVertexArrayOES(PP_Resource context_id, GLuint array) {
+  Enter3D enter(context_id, true);
+  if (enter.succeeded()) {
+    ToGles2Impl(&enter)->BindVertexArrayOES(array);
+  }
+}
+
 GLboolean EnableFeatureCHROMIUM(PP_Resource context_id, const char* feature) {
   Enter3D enter(context_id, true);
   if (enter.succeeded()) {
@@ -1685,6 +1717,13 @@ const PPB_OpenGLES2Query* PPB_OpenGLES2_Shared::GetQueryInterface() {
   static const struct PPB_OpenGLES2Query ppb_opengles2 = {
       &GenQueriesEXT, &DeleteQueriesEXT, &IsQueryEXT,          &BeginQueryEXT,
       &EndQueryEXT,   &GetQueryivEXT,    &GetQueryObjectuivEXT};
+  return &ppb_opengles2;
+}
+const PPB_OpenGLES2VertexArrayObject*
+PPB_OpenGLES2_Shared::GetVertexArrayObjectInterface() {
+  static const struct PPB_OpenGLES2VertexArrayObject ppb_opengles2 = {
+      &GenVertexArraysOES, &DeleteVertexArraysOES, &IsVertexArrayOES,
+      &BindVertexArrayOES};
   return &ppb_opengles2;
 }
 const PPB_OpenGLES2DrawBuffers_Dev*

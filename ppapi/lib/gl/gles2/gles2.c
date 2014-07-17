@@ -967,6 +967,35 @@ glGetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) {
     ext->GetQueryObjectuivEXT(glGetCurrentContextPPAPI(), id, pname, params);
 }
 
+void GL_APIENTRY glGenVertexArraysOES(GLsizei n, GLuint* arrays) {
+  const struct PPB_OpenGLES2VertexArrayObject* ext =
+      glGetVertexArrayObjectInterfacePPAPI();
+  if (ext)
+    ext->GenVertexArraysOES(glGetCurrentContextPPAPI(), n, arrays);
+}
+
+void GL_APIENTRY glDeleteVertexArraysOES(GLsizei n, const GLuint* arrays) {
+  const struct PPB_OpenGLES2VertexArrayObject* ext =
+      glGetVertexArrayObjectInterfacePPAPI();
+  if (ext)
+    ext->DeleteVertexArraysOES(glGetCurrentContextPPAPI(), n, arrays);
+}
+
+GLboolean GL_APIENTRY glIsVertexArrayOES(GLuint array) {
+  const struct PPB_OpenGLES2VertexArrayObject* ext =
+      glGetVertexArrayObjectInterfacePPAPI();
+  if (ext)
+    return ext->IsVertexArrayOES(glGetCurrentContextPPAPI(), array);
+  return 0;
+}
+
+void GL_APIENTRY glBindVertexArrayOES(GLuint array) {
+  const struct PPB_OpenGLES2VertexArrayObject* ext =
+      glGetVertexArrayObjectInterfacePPAPI();
+  if (ext)
+    ext->BindVertexArrayOES(glGetCurrentContextPPAPI(), array);
+}
+
 GLboolean GL_APIENTRY glEnableFeatureCHROMIUM(const char* feature) {
   const struct PPB_OpenGLES2ChromiumEnableFeature* ext =
       glGetChromiumEnableFeatureInterfacePPAPI();

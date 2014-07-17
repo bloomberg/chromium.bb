@@ -38,6 +38,8 @@ static const struct PPB_OpenGLES2ChromiumMapSub*
     g_gles2_chromium_map_sub_interface = NULL;
 static const struct PPB_OpenGLES2Query*
     g_gles2_query_interface = NULL;
+static const struct PPB_OpenGLES2VertexArrayObject*
+    g_gles2_vertex_array_object_interface = NULL;
 static const struct PPB_OpenGLES2DrawBuffers_Dev*
     g_gles2_draw_buffers_interface = NULL;
 
@@ -74,6 +76,10 @@ GLboolean GL_APIENTRY glInitializePPAPI(
   if (!g_gles2_query_interface) {
     g_gles2_query_interface =
         get_browser_interface(PPB_OPENGLES2_QUERY_INTERFACE);
+  }
+  if (!g_gles2_vertex_array_object_interface) {
+    g_gles2_vertex_array_object_interface =
+        get_browser_interface(PPB_OPENGLES2_VERTEXARRAYOBJECT_INTERFACE);
   }
   if (!g_gles2_draw_buffers_interface) {
     g_gles2_draw_buffers_interface =
@@ -127,6 +133,11 @@ const struct PPB_OpenGLES2ChromiumMapSub* GL_APIENTRY
 const struct PPB_OpenGLES2Query* GL_APIENTRY
     glGetQueryInterfacePPAPI(void) {
   return g_gles2_query_interface;
+}
+
+const struct PPB_OpenGLES2VertexArrayObject* GL_APIENTRY
+    glGetVertexArrayObjectInterfacePPAPI(void) {
+  return g_gles2_vertex_array_object_interface;
 }
 
 const struct PPB_OpenGLES2DrawBuffers_Dev* GL_APIENTRY

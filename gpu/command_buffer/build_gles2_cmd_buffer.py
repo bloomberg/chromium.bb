@@ -1220,6 +1220,7 @@ _PEPPER_INTERFACES = [
   {'name': 'ChromiumEnableFeature', 'dev': False},
   {'name': 'ChromiumMapSub', 'dev': False},
   {'name': 'Query', 'dev': False},
+  {'name': 'VertexArrayObject', 'dev': False},
   {'name': 'DrawBuffers', 'dev': True},
 ]
 
@@ -2426,6 +2427,7 @@ _FUNCTION_INFO = {
     'resource_type': 'VertexArray',
     'resource_types': 'VertexArrays',
     'unit_test': False,
+    'pepper_interface': 'VertexArrayObject',
   },
   'BindVertexArrayOES': {
     'type': 'Bind',
@@ -2435,6 +2437,7 @@ _FUNCTION_INFO = {
     'gen_func': 'GenVertexArraysOES',
     'unit_test': False,
     'client_test': False,
+    'pepper_interface': 'VertexArrayObject',
   },
   'DeleteVertexArraysOES': {
     'type': 'DELn',
@@ -2443,6 +2446,7 @@ _FUNCTION_INFO = {
     'resource_type': 'VertexArray',
     'resource_types': 'VertexArrays',
     'unit_test': False,
+    'pepper_interface': 'VertexArrayObject',
   },
   'IsVertexArrayOES': {
     'type': 'Is',
@@ -2451,6 +2455,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoIsVertexArrayOES',
     'expectation': False,
     'unit_test': False,
+    'pepper_interface': 'VertexArrayObject',
   },
   'BindTexImage2DCHROMIUM': {
     'decoder_func': 'DoBindTexImage2DCHROMIUM',

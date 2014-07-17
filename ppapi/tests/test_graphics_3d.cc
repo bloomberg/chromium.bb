@@ -114,18 +114,27 @@ std::string TestGraphics3D::TestExtensionsGL() {
   ASSERT_NE(NULL, glGetString(GL_VERSION));
   const char* ext = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
   if (strstr(ext, "GL_EXT_occlusion_query_boolean")) {
-    GLuint a_query;
-    GLboolean is_a_query;
+    GLuint a_query = 0;
     glGenQueriesEXT(1, &a_query);
     ASSERT_NE(0, a_query);
     glBeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, a_query);
-    is_a_query = glIsQueryEXT(a_query);
+    GLboolean is_a_query = glIsQueryEXT(a_query);
     ASSERT_EQ(is_a_query, GL_TRUE);
     glEndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT);
     glDeleteQueriesEXT(1, &a_query);
   }
   if (strstr(ext, "GL_ANGLE_instanced_arrays")) {
     glDrawArraysInstancedANGLE(GL_TRIANGLE_STRIP, 0, 0, 0);
+  }
+  if (strstr(ext, "GL_OES_vertex_array_object")) {
+    GLuint a_vertex_array = 0;
+    glGenVertexArraysOES(1, &a_vertex_array);
+    ASSERT_NE(0, a_vertex_array);
+    glBindVertexArrayOES(a_vertex_array);
+    GLboolean is_a_vertex_array = glIsVertexArrayOES(a_vertex_array);
+    ASSERT_EQ(is_a_vertex_array, GL_TRUE);
+    glBindVertexArrayOES(0);
+    glDeleteVertexArraysOES(1, &a_vertex_array);
   }
   glSetCurrentContextPPAPI(kInvalidContext);
 

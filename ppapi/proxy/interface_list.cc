@@ -241,6 +241,9 @@ InterfaceList::InterfaceList() {
          PPB_OpenGLES2_Shared::GetChromiumMapSubInterface(), PERMISSION_NONE);
   AddPPB(PPB_OPENGLES2_QUERY_INTERFACE_1_0,
          PPB_OpenGLES2_Shared::GetQueryInterface(), PERMISSION_NONE);
+  AddPPB(PPB_OPENGLES2_VERTEXARRAYOBJECT_INTERFACE_1_0,
+         PPB_OpenGLES2_Shared::GetVertexArrayObjectInterface(),
+         PERMISSION_NONE);
   AddPPB(PPB_OPENGLES2_DRAWBUFFERS_DEV_INTERFACE_1_0,
          PPB_OpenGLES2_Shared::GetDrawBuffersInterface(),
          PERMISSION_DEV);
