@@ -593,9 +593,8 @@ std::string TestURLLoader::TestUntrustedHttpRequests() {
     ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Content-Length:\n"));
     ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Cookie:\n"));
     ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Cookie2:\n"));
-    ASSERT_EQ(PP_ERROR_NOACCESS,
-              OpenUntrusted("GET", "Content-Transfer-Encoding:\n"));
     ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Date:\n"));
+    ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Dnt:\n"));
     ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Expect:\n"));
     ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Host:\n"));
     ASSERT_EQ(PP_ERROR_NOACCESS, OpenUntrusted("GET", "Keep-Alive:\n"));
