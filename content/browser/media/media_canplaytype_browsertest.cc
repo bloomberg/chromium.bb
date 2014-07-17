@@ -345,8 +345,12 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp3) {
   EXPECT_EQ(kNot, CanPlay("'video/mpeg'"));
   EXPECT_EQ(kNot, CanPlay("'video/x-mp3'"));
 
-  // audio/mpeg does not allow any codecs parameter
+  // audio/mpeg without a codecs parameter (RFC 3003 compliant)
   EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg'"));
+
+  // audio/mpeg with mp3 in codecs parameter. (Not RFC compliant, but
+  // very common in the wild so it is a defacto standard).
+  EXPECT_EQ(kPropProbably, CanPlay("'audio/mpeg; codecs=\"mp3\"'"));
 
   EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"avc1\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/mpeg; codecs=\"avc3\"'"));

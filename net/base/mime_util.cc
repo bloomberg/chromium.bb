@@ -473,7 +473,12 @@ static const MediaFormatStrict format_codec_mappings[] = {
   { "video/ogg", "opus,theora,vorbis" },
   { "audio/ogg", "opus,vorbis" },
   { "application/ogg", "opus,theora,vorbis" },
-  { "audio/mpeg", "" },
+  { "audio/mpeg", ",mp3" }, // Note: The comma before the 'mp3'results in an
+                            // empty string codec ID and indicates
+                            // a missing codecs= parameter is also valid.
+                            // The presense of 'mp3' is not RFC compliant,
+                            // but is common in the wild so it is a defacto
+                            // standard.
   { "audio/mp3", "" },
   { "audio/x-mp3", "" }
 };
@@ -519,11 +524,19 @@ bool MimeUtil::AreSupportedCodecs(const MimeMappings& supported_codecs,
   if (supported_codecs.empty())
     return codecs.empty();
 
+  // If no codecs are specified in the mimetype, check to see if a missing
+  // codecs parameter is allowed.
+  if (codecs.empty())
+    return supported_codecs.find(std::string()) != supported_codecs.end();
+
   for (size_t i = 0; i < codecs.size(); ++i) {
-    if (supported_codecs.find(codecs[i]) == supported_codecs.end())
+    if (codecs[i].empty() ||
+        supported_codecs.find(codecs[i]) == supported_codecs.end()) {
       return false;
+    }
   }
-  return !codecs.empty();
+
+  return true;
 }
 
 // Checks all the codecs present in the |codecs| against the entries in
