@@ -7,6 +7,7 @@
 
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
+#include "wtf/WeakPtr.h"
 
 namespace WebCore {
 
@@ -31,10 +32,13 @@ public:
 #endif
 
 private:
+    static void dispatchIfAlive(WeakPtr<CustomElementMicrotaskRunQueue> self);
+
     CustomElementMicrotaskRunQueue();
 
     void dispatch();
 
+    WeakPtrFactory<CustomElementMicrotaskRunQueue> m_weakFactory;
     RefPtrWillBeMember<CustomElementSyncMicrotaskQueue> m_syncQueue;
     RefPtrWillBeMember<CustomElementAsyncImportMicrotaskQueue> m_asyncQueue;
     bool m_dispatchIsPending;

@@ -17,7 +17,8 @@ namespace WebCore {
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CustomElementMicrotaskRunQueue)
 
 CustomElementMicrotaskRunQueue::CustomElementMicrotaskRunQueue()
-    : m_syncQueue(CustomElementSyncMicrotaskQueue::create())
+    : m_weakFactory(this)
+    , m_syncQueue(CustomElementSyncMicrotaskQueue::create())
     , m_asyncQueue(CustomElementAsyncImportMicrotaskQueue::create())
     , m_dispatchIsPending(false)
 {
@@ -37,11 +38,17 @@ void CustomElementMicrotaskRunQueue::enqueue(HTMLImportLoader* parentLoader, Pas
     requestDispatchIfNeeded();
 }
 
+void CustomElementMicrotaskRunQueue::dispatchIfAlive(WeakPtr<CustomElementMicrotaskRunQueue> self)
+{
+    if (self.get())
+        self->dispatch();
+}
+
 void CustomElementMicrotaskRunQueue::requestDispatchIfNeeded()
 {
     if (m_dispatchIsPending || isEmpty())
         return;
-    Microtask::enqueueMicrotask(WTF::bind(&CustomElementMicrotaskRunQueue::dispatch, this));
+    Microtask::enqueueMicrotask(WTF::bind(&CustomElementMicrotaskRunQueue::dispatchIfAlive, m_weakFactory.createWeakPtr()));
     m_dispatchIsPending = true;
 }
 
