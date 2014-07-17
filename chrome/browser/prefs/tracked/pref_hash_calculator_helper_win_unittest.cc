@@ -17,8 +17,11 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/hmac.h"
-#include "rlz/lib/machine_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(ENABLE_RLZ)
+#include "rlz/lib/machine_id.h"
+#endif
 
 namespace {
 
@@ -70,6 +73,7 @@ std::string GetDeviceIdFromRawDeviceId(const std::string& raw_device_id) {
   return StringToLowerASCII(base::HexEncode(digest.data(), digest.size()));
 }
 
+#if defined(ENABLE_RLZ)
 std::string GetLegacyIdBasedOnRlzId() {
   std::string rlz_machine_id;
   rlz_lib::GetMachineId(&rlz_machine_id);
@@ -88,6 +92,7 @@ std::string GetLegacyIdBasedOnRlzId() {
 
   return legacy_device_id;
 }
+#endif  // ENABLE_RLZ
 
 // Simulate browser threads (required by extensions::api::DeviceId) off of the
 // main message loop.
@@ -104,14 +109,18 @@ class PrefHashCalculatorHelperTest : public testing::Test {
 // results in the mean time (it will be okay for the extension API's
 // implementation to diverge on M34+ and this test can be removed once M34 ships
 // to stable).
+#if defined(ENABLE_RLZ)
 TEST_F(PrefHashCalculatorHelperTest, ResultMatchesMediaId) {
   EXPECT_EQ(GetMediaDeviceIdSynchronously(), GetLegacyIdBasedOnRlzId());
 }
+#endif  // ENABLE_RLZ
 
 TEST_F(PrefHashCalculatorHelperTest, MediaIdIsDeterministic) {
   EXPECT_EQ(GetMediaDeviceIdSynchronously(), GetMediaDeviceIdSynchronously());
 }
 
+#if defined(ENABLE_RLZ)
 TEST_F(PrefHashCalculatorHelperTest, RlzBasedIdIsDeterministic) {
   EXPECT_EQ(GetLegacyIdBasedOnRlzId(), GetLegacyIdBasedOnRlzId());
 }
+#endif  // ENABLE_RLZ

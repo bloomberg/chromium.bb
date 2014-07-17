@@ -492,7 +492,6 @@
         '../content/content.gyp:content_app_both',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
-        '../rlz/rlz.gyp:test_support_rlz',
         '../sync/sync.gyp:test_support_sync_api',
         '../sync/sync.gyp:test_support_sync_core',
         '../sync/sync.gyp:test_support_sync_internal_api',
@@ -2484,7 +2483,11 @@
             'utility/media_galleries/iphoto_library_parser_unittest.cc',
           ],
         }],
-        ['enable_rlz==0', {
+        ['enable_rlz!=0', {
+          'dependencies': [
+            '../rlz/rlz.gyp:test_support_rlz',
+          ],
+        }, {  # enable_rlz==0
           'sources!': [
             'browser/rlz/rlz_unittest.cc',
           ],
