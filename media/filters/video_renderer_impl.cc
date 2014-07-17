@@ -25,7 +25,9 @@ VideoRendererImpl::VideoRendererImpl(
     const PaintCB& paint_cb,
     bool drop_frames)
     : task_runner_(task_runner),
-      video_frame_stream_(task_runner, decoders.Pass(), set_decryptor_ready_cb),
+      video_frame_stream_(new VideoFrameStream(task_runner,
+                                               decoders.Pass(),
+                                               set_decryptor_ready_cb)),
       low_delay_(false),
       received_end_of_stream_(false),
       rendered_end_of_stream_(false),
@@ -66,7 +68,7 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
   received_end_of_stream_ = false;
   rendered_end_of_stream_ = false;
 
-  video_frame_stream_.Reset(
+  video_frame_stream_->Reset(
       base::Bind(&VideoRendererImpl::OnVideoFrameStreamResetDone,
                  weak_factory_.GetWeakPtr()));
 }
@@ -75,7 +77,7 @@ void VideoRendererImpl::Stop(const base::Closure& callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   if (state_ == kUninitialized || state_ == kStopped) {
-    callback.Run();
+    task_runner_->PostTask(FROM_HERE, callback);
     return;
   }
 
@@ -102,7 +104,8 @@ void VideoRendererImpl::Stop(const base::Closure& callback) {
     base::PlatformThread::Join(thread_to_join);
   }
 
-  video_frame_stream_.Stop(callback);
+  video_frame_stream_.reset();
+  task_runner_->PostTask(FROM_HERE, callback);
 }
 
 void VideoRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
@@ -153,7 +156,7 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
   get_duration_cb_ = get_duration_cb;
   state_ = kInitializing;
 
-  video_frame_stream_.Initialize(
+  video_frame_stream_->Initialize(
       stream,
       low_delay,
       statistics_cb,
@@ -360,7 +363,7 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
 bool VideoRendererImpl::HaveEnoughData_Locked() {
   DCHECK_EQ(state_, kPlaying);
   return received_end_of_stream_ ||
-      !video_frame_stream_.CanReadWithoutStalling() ||
+      !video_frame_stream_->CanReadWithoutStalling() ||
       ready_frames_.size() >= static_cast<size_t>(limits::kMaxVideoFrames) ||
       (low_delay_ && ready_frames_.size() > 0);
 }
@@ -440,8 +443,8 @@ void VideoRendererImpl::AttemptRead_Locked() {
   switch (state_) {
     case kPlaying:
       pending_read_ = true;
-      video_frame_stream_.Read(base::Bind(&VideoRendererImpl::FrameReady,
-                                          weak_factory_.GetWeakPtr()));
+      video_frame_stream_->Read(base::Bind(&VideoRendererImpl::FrameReady,
+                                           weak_factory_.GetWeakPtr()));
       return;
 
     case kUninitialized:

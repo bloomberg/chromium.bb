@@ -22,6 +22,7 @@
 #include <deque>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/audio_decoder.h"
@@ -197,7 +198,7 @@ class MEDIA_EXPORT AudioRendererImpl
   // may deadlock between |task_runner_| and the audio callback thread.
   scoped_refptr<media::AudioRendererSink> sink_;
 
-  AudioBufferStream audio_buffer_stream_;
+  scoped_ptr<AudioBufferStream> audio_buffer_stream_;
 
   // Interface to the hardware audio params.
   const AudioHardwareConfig* const hardware_config_;

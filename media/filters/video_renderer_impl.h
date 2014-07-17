@@ -8,6 +8,7 @@
 #include <deque>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/condition_variable.h"
@@ -123,7 +124,7 @@ class MEDIA_EXPORT VideoRendererImpl
   base::Lock lock_;
 
   // Provides video frames to VideoRendererImpl.
-  VideoFrameStream video_frame_stream_;
+  scoped_ptr<VideoFrameStream> video_frame_stream_;
 
   // Flag indicating low-delay mode.
   bool low_delay_;

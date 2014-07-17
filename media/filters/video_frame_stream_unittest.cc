@@ -76,14 +76,19 @@ class VideoFrameStreamTest
   }
 
   ~VideoFrameStreamTest() {
+    // Check that the pipeline statistics callback was fired correctly.
+    if (decoder_)
+      EXPECT_EQ(decoder_->total_bytes_decoded(), total_bytes_decoded_);
+
+    is_initialized_ = false;
+    decoder_ = NULL;
+    video_frame_stream_.reset();
+    message_loop_.RunUntilIdle();
+
     DCHECK(!pending_initialize_);
     DCHECK(!pending_read_);
     DCHECK(!pending_reset_);
     DCHECK(!pending_stop_);
-
-    if (is_initialized_)
-      Stop();
-    EXPECT_FALSE(is_initialized_);
   }
 
   MOCK_METHOD1(OnNewSpliceBuffer, void(base::TimeDelta));
@@ -155,16 +160,6 @@ class VideoFrameStreamTest
     DCHECK(!pending_read_);
     DCHECK(pending_reset_);
     pending_reset_ = false;
-  }
-
-  void OnStopped() {
-    DCHECK(!pending_initialize_);
-    DCHECK(!pending_read_);
-    DCHECK(!pending_reset_);
-    DCHECK(pending_stop_);
-    pending_stop_ = false;
-    is_initialized_ = false;
-    decoder_ = NULL;
   }
 
   void ReadOneFrame() {
@@ -270,7 +265,7 @@ class VideoFrameStreamTest
         break;
 
       // These two cases are only interesting to test during
-      // VideoFrameStream::Stop().  There's no need to satisfy a callback.
+      // VideoFrameStream destruction.  There's no need to satisfy a callback.
       case SET_DECRYPTOR:
       case DECRYPTOR_NO_KEY:
         NOTREACHED();
@@ -313,15 +308,6 @@ class VideoFrameStreamTest
   void Reset() {
     EnterPendingState(DECODER_RESET);
     SatisfyPendingCallback(DECODER_RESET);
-  }
-
-  void Stop() {
-    // Check that the pipeline statistics callback was fired correctly.
-    EXPECT_EQ(decoder_->total_bytes_decoded(), total_bytes_decoded_);
-    pending_stop_ = true;
-    video_frame_stream_->Stop(base::Bind(&VideoFrameStreamTest::OnStopped,
-                                         base::Unretained(this)));
-    message_loop_.RunUntilIdle();
   }
 
   base::MessageLoop message_loop_;
@@ -577,118 +563,98 @@ TEST_P(VideoFrameStreamTest, Reset_DuringNoKeyRead) {
   Reset();
 }
 
-TEST_P(VideoFrameStreamTest, Stop_BeforeInitialization) {
-  pending_stop_ = true;
-  video_frame_stream_->Stop(
-      base::Bind(&VideoFrameStreamTest::OnStopped, base::Unretained(this)));
-  message_loop_.RunUntilIdle();
+// In the following Destroy_* tests, |video_frame_stream_| is destroyed in
+// VideoFrameStreamTest dtor.
+
+TEST_P(VideoFrameStreamTest, Destroy_BeforeInitialization) {
 }
 
-TEST_P(VideoFrameStreamTest, Stop_DuringSetDecryptor) {
+TEST_P(VideoFrameStreamTest, Destroy_DuringSetDecryptor) {
   if (!GetParam().is_encrypted) {
     DVLOG(1) << "SetDecryptor test only runs when the stream is encrytped.";
     return;
   }
 
   EnterPendingState(SET_DECRYPTOR);
-  pending_stop_ = true;
-  video_frame_stream_->Stop(
-      base::Bind(&VideoFrameStreamTest::OnStopped, base::Unretained(this)));
-  message_loop_.RunUntilIdle();
 }
 
-TEST_P(VideoFrameStreamTest, Stop_DuringInitialization) {
+TEST_P(VideoFrameStreamTest, Destroy_DuringInitialization) {
   EnterPendingState(DECODER_INIT);
-  Stop();
 }
 
-TEST_P(VideoFrameStreamTest, Stop_AfterInitialization) {
+TEST_P(VideoFrameStreamTest, Destroy_AfterInitialization) {
   Initialize();
-  Stop();
 }
 
-TEST_P(VideoFrameStreamTest, Stop_DuringReinitialization) {
+TEST_P(VideoFrameStreamTest, Destroy_DuringReinitialization) {
   Initialize();
   EnterPendingState(DECODER_REINIT);
-  Stop();
 }
 
-TEST_P(VideoFrameStreamTest, Stop_AfterReinitialization) {
+TEST_P(VideoFrameStreamTest, Destroy_AfterReinitialization) {
   Initialize();
   EnterPendingState(DECODER_REINIT);
   SatisfyPendingCallback(DECODER_REINIT);
-  Stop();
 }
 
-TEST_P(VideoFrameStreamTest, Stop_DuringDemuxerRead_Normal) {
+TEST_P(VideoFrameStreamTest, Destroy_DuringDemuxerRead_Normal) {
   Initialize();
   EnterPendingState(DEMUXER_READ_NORMAL);
-  Stop();
 }
 
-TEST_P(VideoFrameStreamTest, Stop_DuringDemuxerRead_ConfigChange) {
+TEST_P(VideoFrameStreamTest, Destroy_DuringDemuxerRead_ConfigChange) {
   Initialize();
   EnterPendingState(DEMUXER_READ_CONFIG_CHANGE);
-  Stop();
 }
 
-TEST_P(VideoFrameStreamTest, Stop_DuringNormalDecoderDecode) {
+TEST_P(VideoFrameStreamTest, Destroy_DuringNormalDecoderDecode) {
   Initialize();
   EnterPendingState(DECODER_DECODE);
-  Stop();
 }
 
-TEST_P(VideoFrameStreamTest, Stop_AfterNormalRead) {
+TEST_P(VideoFrameStreamTest, Destroy_AfterNormalRead) {
   Initialize();
   Read();
-  Stop();
 }
 
-TEST_P(VideoFrameStreamTest, Stop_AfterConfigChangeRead) {
+TEST_P(VideoFrameStreamTest, Destroy_AfterConfigChangeRead) {
   Initialize();
   EnterPendingState(DEMUXER_READ_CONFIG_CHANGE);
   SatisfyPendingCallback(DEMUXER_READ_CONFIG_CHANGE);
-  Stop();
 }
 
-TEST_P(VideoFrameStreamTest, Stop_DuringNoKeyRead) {
+TEST_P(VideoFrameStreamTest, Destroy_DuringNoKeyRead) {
   Initialize();
   EnterPendingState(DECRYPTOR_NO_KEY);
-  Stop();
 }
 
-TEST_P(VideoFrameStreamTest, Stop_DuringReset) {
+TEST_P(VideoFrameStreamTest, Destroy_DuringReset) {
   Initialize();
   EnterPendingState(DECODER_RESET);
-  Stop();
 }
 
-TEST_P(VideoFrameStreamTest, Stop_AfterReset) {
+TEST_P(VideoFrameStreamTest, Destroy_AfterReset) {
   Initialize();
   Reset();
-  Stop();
 }
 
-TEST_P(VideoFrameStreamTest, Stop_DuringRead_DuringReset) {
+TEST_P(VideoFrameStreamTest, Destroy_DuringRead_DuringReset) {
   Initialize();
   EnterPendingState(DECODER_DECODE);
   EnterPendingState(DECODER_RESET);
-  Stop();
 }
 
-TEST_P(VideoFrameStreamTest, Stop_AfterRead_DuringReset) {
+TEST_P(VideoFrameStreamTest, Destroy_AfterRead_DuringReset) {
   Initialize();
   EnterPendingState(DECODER_DECODE);
   EnterPendingState(DECODER_RESET);
   SatisfyPendingCallback(DECODER_DECODE);
-  Stop();
 }
 
-TEST_P(VideoFrameStreamTest, Stop_AfterRead_AfterReset) {
+TEST_P(VideoFrameStreamTest, Destroy_AfterRead_AfterReset) {
   Initialize();
   Read();
   Reset();
-  Stop();
 }
 
 TEST_P(VideoFrameStreamTest, DecoderErrorWhenReading) {

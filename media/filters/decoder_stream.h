@@ -65,22 +65,15 @@ class MEDIA_EXPORT DecoderStream {
   // Reads a decoded Output and returns it via the |read_cb|. Note that
   // |read_cb| is always called asynchronously. This method should only be
   // called after initialization has succeeded and must not be called during
-  // any pending Reset() and/or Stop().
+  // pending Reset().
   void Read(const ReadCB& read_cb);
 
   // Resets the decoder, flushes all decoded outputs and/or internal buffers,
   // fires any existing pending read callback and calls |closure| on completion.
   // Note that |closure| is always called asynchronously. This method should
   // only be called after initialization has succeeded and must not be called
-  // during any pending Reset() and/or Stop().
+  // during pending Reset().
   void Reset(const base::Closure& closure);
-
-  // Stops the decoder, fires any existing pending read callback or reset
-  // callback and calls |closure| on completion. Note that |closure| is always
-  // called asynchronously. The DecoderStream cannot be used anymore after
-  // it is stopped. This method can be called at any time but not during another
-  // pending Stop().
-  void Stop(const base::Closure& closure);
 
   // Returns true if the decoder currently has the ability to decode and return
   // an Output.
@@ -117,12 +110,11 @@ class MEDIA_EXPORT DecoderStream {
   enum State {
     STATE_UNINITIALIZED,
     STATE_INITIALIZING,
-    STATE_NORMAL,  // Includes idle, pending decoder decode/reset/stop.
+    STATE_NORMAL,  // Includes idle, pending decoder decode/reset.
     STATE_FLUSHING_DECODER,
     STATE_PENDING_DEMUXER_READ,
     STATE_REINITIALIZING_DECODER,
     STATE_END_OF_STREAM,  // End of stream reached; returns EOS on all reads.
-    STATE_STOPPED,
     STATE_ERROR
   };
 
@@ -174,7 +166,6 @@ class MEDIA_EXPORT DecoderStream {
 
   ReadCB read_cb_;
   base::Closure reset_cb_;
-  base::Closure stop_cb_;
 
   DemuxerStream* stream_;
   bool low_delay_;

@@ -48,9 +48,9 @@ AudioRendererImpl::AudioRendererImpl(
     AudioHardwareConfig* hardware_config)
     : task_runner_(task_runner),
       sink_(sink),
-      audio_buffer_stream_(task_runner,
-                           decoders.Pass(),
-                           set_decryptor_ready_cb),
+      audio_buffer_stream_(new AudioBufferStream(task_runner,
+                                                 decoders.Pass(),
+                                                 set_decryptor_ready_cb)),
       hardware_config_(hardware_config),
       state_(kUninitialized),
       buffering_state_(BUFFERING_HAVE_NOTHING),
@@ -60,9 +60,9 @@ AudioRendererImpl::AudioRendererImpl(
       received_end_of_stream_(false),
       rendered_end_of_stream_(false),
       weak_factory_(this) {
-  audio_buffer_stream_.set_splice_observer(base::Bind(
+  audio_buffer_stream_->set_splice_observer(base::Bind(
       &AudioRendererImpl::OnNewSpliceBuffer, weak_factory_.GetWeakPtr()));
-  audio_buffer_stream_.set_config_change_observer(base::Bind(
+  audio_buffer_stream_->set_config_change_observer(base::Bind(
       &AudioRendererImpl::OnConfigChange, weak_factory_.GetWeakPtr()));
 }
 
@@ -155,8 +155,8 @@ void AudioRendererImpl::DoFlush_Locked() {
   DCHECK(!pending_read_);
   DCHECK_EQ(state_, kFlushed);
 
-  audio_buffer_stream_.Reset(base::Bind(&AudioRendererImpl::ResetDecoderDone,
-                                        weak_factory_.GetWeakPtr()));
+  audio_buffer_stream_->Reset(base::Bind(&AudioRendererImpl::ResetDecoderDone,
+                                         weak_factory_.GetWeakPtr()));
 }
 
 void AudioRendererImpl::ResetDecoderDone() {
@@ -215,7 +215,8 @@ void AudioRendererImpl::Stop(const base::Closure& callback) {
     sink_ = NULL;
   }
 
-  audio_buffer_stream_.Stop(callback);
+  audio_buffer_stream_.reset();
+  task_runner_->PostTask(FROM_HERE, callback);
 }
 
 void AudioRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
@@ -296,7 +297,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
 
   audio_clock_.reset(new AudioClock(audio_parameters_.sample_rate()));
 
-  audio_buffer_stream_.Initialize(
+  audio_buffer_stream_->Initialize(
       stream,
       false,
       statistics_cb,
@@ -486,8 +487,8 @@ void AudioRendererImpl::AttemptRead_Locked() {
     return;
 
   pending_read_ = true;
-  audio_buffer_stream_.Read(base::Bind(&AudioRendererImpl::DecodedAudioReady,
-                                       weak_factory_.GetWeakPtr()));
+  audio_buffer_stream_->Read(base::Bind(&AudioRendererImpl::DecodedAudioReady,
+                                        weak_factory_.GetWeakPtr()));
 }
 
 bool AudioRendererImpl::CanRead_Locked() {
