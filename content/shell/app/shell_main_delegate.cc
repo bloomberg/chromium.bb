@@ -156,6 +156,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     if (!command_line.HasSwitch(switches::kEnableThreadedCompositing)) {
       command_line.AppendSwitch(switches::kDisableThreadedCompositing);
       command_line.AppendSwitch(cc::switches::kDisableThreadedAnimation);
+      command_line.AppendSwitch(switches::kDisableImplSidePainting);
     }
 
     command_line.AppendSwitch(switches::kEnableInbandTextTracks);

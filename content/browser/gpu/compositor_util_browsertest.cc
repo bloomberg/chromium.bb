@@ -15,37 +15,19 @@ namespace content {
 
 typedef ContentBrowserTest CompositorUtilTest;
 
-// Test that threaded compositing and FCM are in the expected mode on the bots
-// for all platforms.
+// Test that compositing is in the expected mode on the bots for all platforms.
 IN_PROC_BROWSER_TEST_F(CompositorUtilTest, CompositingModeAsExpected) {
   enum CompositingMode {
-    DISABLED,
-    ENABLED,
-    THREADED,  // Implies FCM
-    DELEGATED,  // Implies threaded
-  } expected_mode = DISABLED;
-#if defined(USE_AURA)
-  expected_mode = DELEGATED;
-#elif defined(OS_ANDROID)
+    DIRECT,
+    DELEGATED,
+  } expected_mode = DIRECT;
+#if defined(USE_AURA) || defined(OS_ANDROID)
   expected_mode = DELEGATED;
 #elif defined(OS_MACOSX)
   expected_mode = DELEGATED;
-  // Lion and SnowLeopard have compositing blacklisted when using the Apple
-  // software renderer, so results will vary depending if this test is being
-  // run in a VM versus actual hardware.
-  // http://crbug.com/230931
-  if (base::mac::IsOSLionOrEarlier())
-    return;
-#elif defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
-    expected_mode = THREADED;
 #endif
 
-  EXPECT_EQ(expected_mode == THREADED ||
-            expected_mode == DELEGATED,
-            IsThreadedCompositingEnabled());
-  EXPECT_EQ(expected_mode == DELEGATED,
-            IsDelegatedRendererEnabled());
+  EXPECT_EQ(expected_mode == DELEGATED, IsDelegatedRendererEnabled());
 }
 
 }

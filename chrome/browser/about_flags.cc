@@ -536,18 +536,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kIgnoreGpuBlacklist)
   },
   {
-    "threaded-compositing-mode",
-    IDS_FLAGS_THREADED_COMPOSITING_MODE_NAME,
-    IDS_FLAGS_THREADED_COMPOSITING_MODE_DESCRIPTION,
-#if !defined(USE_AURA)
-    kOsLinux,
-#else
-    0,
-#endif
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableThreadedCompositing,
-                              switches::kDisableThreadedCompositing)
-  },
-  {
     "force-accelerated-composited-scrolling",
      IDS_FLAGS_FORCE_ACCELERATED_OVERFLOW_SCROLL_MODE_NAME,
      IDS_FLAGS_FORCE_ACCELERATED_OVERFLOW_SCROLL_MODE_DESCRIPTION,

@@ -101,10 +101,6 @@ cr.define('gpu', function() {
           'label': 'Software only. Hardware acceleration disabled',
           'class': 'feature-yellow'
         },
-        'disabled_software_threaded': {
-          'label': 'Software only, threaded. Hardware acceleration disabled',
-          'class': 'feature-yellow'
-        },
         'disabled_off': {
           'label': 'Disabled',
           'class': 'feature-red'
@@ -115,10 +111,6 @@ cr.define('gpu', function() {
         },
         'unavailable_software': {
           'label': 'Software only, hardware acceleration unavailable',
-          'class': 'feature-yellow'
-        },
-        'unavailable_software_threaded': {
-          'label': 'Software only, threaded. Hardware acceleration unavailable',
           'class': 'feature-yellow'
         },
         'unavailable_off': {
@@ -135,10 +127,6 @@ cr.define('gpu', function() {
         },
         'enabled_force': {
           'label': 'Hardware accelerated on all pages',
-          'class': 'feature-green'
-        },
-        'enabled_threaded': {
-          'label': 'Hardware accelerated and threaded',
           'class': 'feature-green'
         },
         'enabled': {

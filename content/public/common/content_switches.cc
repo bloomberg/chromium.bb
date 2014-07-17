@@ -479,8 +479,8 @@ const char kEnableServiceWorkerSync[]       = "enable-service-worker-sync";
 // SYN packet.
 const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";
 
-// Enable multithreaded GPU compositing of web content.
-const char kEnableThreadedCompositing[]     = "enable-threaded-compositing";
+// Enabled threaded compositing for layout tests.
+const char kEnableThreadedCompositing[] = "enable-threaded-compositing";
 
 // Enable screen capturing support for MediaStream API.
 const char kEnableUserMediaScreenCapturing[] =

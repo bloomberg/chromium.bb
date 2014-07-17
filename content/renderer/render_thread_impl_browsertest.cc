@@ -43,9 +43,6 @@ void CheckRenderThreadInputHandlerManager(RenderThreadImpl* thread) {
 #endif
 TEST_F(RenderThreadImplBrowserTest,
     MAYBE_InputHandlerManagerDestroyedAfterCompositorThread) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableThreadedCompositing);
-
   ContentClient content_client;
   ContentBrowserClient content_browser_client;
   ContentRendererClient content_renderer_client;

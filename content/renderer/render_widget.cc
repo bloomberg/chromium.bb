@@ -149,6 +149,11 @@ ui::TextInputMode ConvertInputMode(const blink::WebString& input_mode) {
   return it->second;
 }
 
+bool IsThreadedCompositingEnabled() {
+  content::RenderThreadImpl* impl = content::RenderThreadImpl::current();
+  return impl && !!impl->compositor_message_loop_proxy().get();
+}
+
 // TODO(brianderson): Replace the hard-coded threshold with a fraction of
 // the BeginMainFrame interval.
 // 4166us will allow 1/4 of a 60Hz interval or 1/2 of a 120Hz interval to
@@ -396,7 +401,6 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       suppress_next_char_events_(false),
       screen_info_(screen_info),
       device_scale_factor_(screen_info_.deviceScaleFactor),
-      is_threaded_compositing_enabled_(false),
       current_event_latency_info_(NULL),
       next_output_surface_id_(0),
 #if defined(OS_ANDROID)
@@ -410,9 +414,6 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
   DCHECK(RenderThread::Get());
-  is_threaded_compositing_enabled_ =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableThreadedCompositing);
   device_color_profile_.push_back('0');
 }
 
@@ -840,7 +841,7 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
 
   uint32 output_surface_id = next_output_surface_id_++;
   if (command_line.HasSwitch(switches::kEnableDelegatedRenderer)) {
-    DCHECK(is_threaded_compositing_enabled_);
+    DCHECK(IsThreadedCompositingEnabled());
     return scoped_ptr<cc::OutputSurface>(
         new DelegatedCompositorOutputSurface(
             routing_id(),
@@ -863,7 +864,7 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
     // Composite-to-mailbox is currently used for layout tests in order to cause
     // them to draw inside in the renderer to do the readback there. This should
     // no longer be the case when crbug.com/311404 is fixed.
-    DCHECK(is_threaded_compositing_enabled_ ||
+    DCHECK(IsThreadedCompositingEnabled() ||
            RenderThreadImpl::current()->layout_test_mode());
     cc::ResourceFormat format = cc::RGBA_8888;
     if (base::SysInfo::IsLowEndDevice())
@@ -1172,8 +1173,8 @@ void RenderWidget::AutoResizeCompositor()  {
 }
 
 void RenderWidget::initializeLayerTreeView() {
-  compositor_ = RenderWidgetCompositor::Create(
-      this, is_threaded_compositing_enabled_);
+  compositor_ =
+      RenderWidgetCompositor::Create(this, IsThreadedCompositingEnabled());
   compositor_->setViewportSize(size_, physical_backing_size_);
   if (init_complete_)
     StartCompositor();

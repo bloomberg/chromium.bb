@@ -660,9 +660,6 @@ class CONTENT_EXPORT RenderWidget
   std::queue<SyntheticGestureCompletionCallback>
       pending_synthetic_gesture_callbacks_;
 
-  // Specified whether the compositor will run in its own thread.
-  bool is_threaded_compositing_enabled_;
-
   const ui::LatencyInfo* current_event_latency_info_;
 
   uint32 next_output_surface_id_;
