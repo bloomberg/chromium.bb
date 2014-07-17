@@ -8,7 +8,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
@@ -27,18 +26,16 @@ class TemplateURLFetcherTest : public testing::Test {
   TemplateURLFetcherTest();
 
   virtual void SetUp() OVERRIDE {
-    test_util_.SetUp();
     TestingProfile* profile = test_util_.profile();
-    ASSERT_TRUE(profile);
-    ASSERT_TRUE(TemplateURLFetcherFactory::GetForProfile(profile));
-
     ASSERT_TRUE(profile->GetRequestContext());
+    template_url_fetcher_.reset(new TemplateURLFetcher(
+        test_util_.model(), profile->GetRequestContext()));
+
     ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
   }
 
   virtual void TearDown() OVERRIDE {
     ASSERT_TRUE(test_server_.ShutdownAndWaitUntilComplete());
-    test_util_.TearDown();
   }
 
   // Called when the callback is destroyed.
@@ -61,6 +58,7 @@ class TemplateURLFetcherTest : public testing::Test {
   void WaitForDownloadToFinish();
 
   TemplateURLServiceTestUtil test_util_;
+  scoped_ptr<TemplateURLFetcher> template_url_fetcher_;
   net::test_server::EmbeddedTestServer test_server_;
 
   // The last TemplateURL to come from a callback.
@@ -125,14 +123,13 @@ void TemplateURLFetcherTest::StartDownload(
           base::Bind(&TemplateURLFetcherTest::DestroyedCallback,
                      base::Unretained(this)));
 
-  TemplateURLFetcherFactory::GetForProfile(
-      test_util_.profile())->ScheduleDownload(
-          keyword, osdd_url, favicon_url,
-          TemplateURLFetcher::URLFetcherCustomizeCallback(),
-          base::Bind(&TemplateURLFetcherTest::ConfirmAddSearchProvider,
-                     base::Unretained(this),
-                     base::Owned(callback_destruction_notifier)),
-          provider_type);
+  template_url_fetcher_->ScheduleDownload(
+      keyword, osdd_url, favicon_url,
+      TemplateURLFetcher::URLFetcherCustomizeCallback(),
+      base::Bind(&TemplateURLFetcherTest::ConfirmAddSearchProvider,
+                 base::Unretained(this),
+                 base::Owned(callback_destruction_notifier)),
+      provider_type);
 }
 
 void TemplateURLFetcherTest::WaitForDownloadToFinish() {
@@ -197,11 +194,8 @@ TEST_F(TemplateURLFetcherTest, DuplicatesThrownAway) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     StartDownload(test_cases[i].keyword, test_cases[i].osdd_file_name,
                   test_cases[i].provider_type, false);
-    ASSERT_EQ(
-        1,
-        TemplateURLFetcherFactory::GetForProfile(
-            test_util_.profile())->requests_count()) <<
-        test_cases[i].description;
+    ASSERT_EQ(1, template_url_fetcher_->requests_count())
+        << test_cases[i].description;
     ASSERT_EQ(i + 1, static_cast<size_t>(callbacks_destroyed_));
   }
 

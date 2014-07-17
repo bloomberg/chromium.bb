@@ -14,11 +14,9 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "chrome/browser/google/google_url_tracker_factory.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/search_engines/search_host_to_urls_map.h"
+#include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/util.h"
@@ -181,14 +179,14 @@ static bool IsSameOrigin(const GURL& requested_origin,
 }  // namespace
 
 SearchProviderInstallData::SearchProviderInstallData(
-    Profile* profile,
+    TemplateURLService* template_url_service,
+    const std::string& google_base_url,
+    GoogleURLTracker* google_url_tracker,
     content::RenderProcessHost* host)
-    : template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)),
-      google_base_url_(UIThreadSearchTermsData(profile).GoogleBaseURLValue()),
+    : template_url_service_(template_url_service),
+      google_base_url_(google_base_url),
       weak_factory_(this) {
   // GoogleURLTracker is not created in tests.
-  GoogleURLTracker* google_url_tracker =
-      GoogleURLTrackerFactory::GetForProfile(profile);
   if (google_url_tracker) {
     // GoogleURLObserver is responsible for killing itself when
     // the given notification occurs.

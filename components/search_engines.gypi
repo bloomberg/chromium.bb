@@ -69,5 +69,20 @@
         'search_engines/util.h',
       ],
     },
+    {
+      'target_name': 'search_engines_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../testing/gtest.gyp:gtest',
+        'search_engines',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'search_engines/default_search_pref_test_util.cc',
+        'search_engines/default_search_pref_test_util.h',
+      ],
+    },
   ],
 }

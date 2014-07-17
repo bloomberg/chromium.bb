@@ -96,12 +96,7 @@ class AutocompleteResultTest : public testing::Test  {
     TemplateURLPrepopulateData::InitCountryCode(
         std::string() /* unknown country code */);
 #endif
-    test_util_.SetUp();
     test_util_.VerifyLoad();
-  }
-
-  virtual void TearDown() OVERRIDE {
-    test_util_.TearDown();
   }
 
   // Configures |match| from |data|.

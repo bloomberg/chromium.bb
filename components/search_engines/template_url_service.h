@@ -399,7 +399,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, MergeInSyncTemplateURL);
 
   friend class InstantUnitTestBase;
-  friend class TemplateURLServiceTestUtilBase;
+  friend class TemplateURLServiceTestUtil;
 
   typedef std::map<base::string16, TemplateURL*> KeywordToTemplateMap;
   typedef std::map<std::string, TemplateURL*> GUIDToTemplateMap;

@@ -15,6 +15,7 @@
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
@@ -152,10 +153,10 @@ void SearchProviderInstallDataTest::SetUp() {
   TemplateURLPrepopulateData::InitCountryCode(
       std::string() /* unknown country code */);
 #endif
-  util_.SetUp();
   process_.reset(new content::MockRenderProcessHost(util_.profile()));
-  install_data_ =
-      new SearchProviderInstallData(util_.profile(), process_.get());
+  install_data_ = new SearchProviderInstallData(
+      util_.model(), SearchTermsData().GoogleBaseURLValue(), NULL,
+      process_.get());
 }
 
 void SearchProviderInstallDataTest::TearDown() {
@@ -166,7 +167,6 @@ void SearchProviderInstallDataTest::TearDown() {
   // It doesn't matter that this happens after install_data_ is deleted.
   process_.reset();
 
-  util_.TearDown();
   testing::Test::TearDown();
 }
 

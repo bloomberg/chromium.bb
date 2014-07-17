@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 
 class GURL;
-class Profile;
+class GoogleURLTracker;
 class SearchHostToURLsMap;
 class TemplateURL;
 class TemplateURLService;
@@ -45,7 +45,10 @@ class SearchProviderInstallData {
   // signal to this class that it no longer needs to be kept up to date. (Note
   // that this class may be deleted before or after that death occurs. It
   // doesn't matter.)
-  SearchProviderInstallData(Profile* profile, content::RenderProcessHost* host);
+  SearchProviderInstallData(TemplateURLService* template_url_service,
+                            const std::string& google_base_url,
+                            GoogleURLTracker* google_url_tracker,
+                            content::RenderProcessHost* host);
   virtual ~SearchProviderInstallData();
 
   // Use to determine when the search provider information is loaded. The

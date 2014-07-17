@@ -26,7 +26,7 @@
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "chrome/browser/profile_resetter/profile_reset_global_error.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/search_engines/template_url_service_test_util.h"
+#include "chrome/browser/search_engines/template_url_service_factory_test_util.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
@@ -162,8 +162,7 @@ void ServicePendingBrancodedConfigFetch(net::TestURLFetcher* fetcher,
 // ExtensionServiceTestBase sets up a TestingProfile with the ExtensionService,
 // we then add the TemplateURLService, so the ProfileResetter can be exercised.
 class AutomaticProfileResetterDelegateTest
-    : public extensions::ExtensionServiceTestBase,
-      public TemplateURLServiceTestUtilBase {
+    : public extensions::ExtensionServiceTestBase {
  protected:
   AutomaticProfileResetterDelegateTest() {}
   virtual ~AutomaticProfileResetterDelegateTest() {}
@@ -173,13 +172,15 @@ class AutomaticProfileResetterDelegateTest
     ExtensionServiceInitParams params = CreateDefaultInitParams();
     params.pref_file.clear();  // Prescribes a TestingPrefService to be created.
     InitializeExtensionService(params);
-    TemplateURLServiceTestUtilBase::CreateTemplateUrlService();
+    template_url_service_test_util_.reset(
+        new TemplateURLServiceFactoryTestUtil(profile_.get()));
     resetter_delegate_.reset(
         new AutomaticProfileResetterDelegateUnderTest(profile()));
   }
 
   virtual void TearDown() OVERRIDE {
     resetter_delegate_.reset();
+    template_url_service_test_util_.reset();
     extensions::ExtensionServiceTestBase::TearDown();
   }
 
@@ -233,10 +234,12 @@ class AutomaticProfileResetterDelegateTest
     return resetter_delegate_.get();
   }
 
-  // TemplateURLServiceTestUtilBase:
-  virtual TestingProfile* profile() const OVERRIDE { return profile_.get(); }
+  TemplateURLServiceFactoryTestUtil* template_url_service_test_util() {
+    return template_url_service_test_util_.get();
+  }
 
  private:
+  scoped_ptr<TemplateURLServiceFactoryTestUtil> template_url_service_test_util_;
   net::TestURLFetcherFactory test_url_fetcher_factory_;
   scoped_ptr<AutomaticProfileResetterDelegateUnderTest> resetter_delegate_;
 
@@ -346,7 +349,7 @@ TEST_F(AutomaticProfileResetterDelegateTest,
        DefaultSearchProviderDataWhenNotManaged) {
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile());
-  TemplateURLServiceTestUtilBase::VerifyLoad();
+  template_url_service_test_util()->VerifyLoad();
 
   // Check that the "managed state" and the details returned by the delegate are
   // correct. We verify the details against the data stored by
@@ -373,12 +376,12 @@ TEST_F(AutomaticProfileResetterDelegateTest,
   const char kTestName[] = "name";
   const char kTestKeyword[] = "keyword";
 
-  TemplateURLServiceTestUtilBase::VerifyLoad();
+  template_url_service_test_util()->VerifyLoad();
 
   EXPECT_FALSE(resetter_delegate()->IsDefaultSearchProviderManaged());
 
   // Set managed preferences to emulate a default search provider set by policy.
-  SetManagedDefaultSearchPreferences(
+  template_url_service_test_util()->SetManagedDefaultSearchPreferences(
       true, kTestName, kTestKeyword, kTestSearchURL, std::string(),
       std::string(), std::string(), std::string(), std::string());
 
@@ -391,8 +394,8 @@ TEST_F(AutomaticProfileResetterDelegateTest,
 
   // Set managed preferences to emulate that having a default search provider is
   // disabled by policy.
-  RemoveManagedDefaultSearchPreferences();
-  SetManagedDefaultSearchPreferences(
+  template_url_service_test_util()->RemoveManagedDefaultSearchPreferences();
+  template_url_service_test_util()->SetManagedDefaultSearchPreferences(
       false, std::string(), std::string(), std::string(), std::string(),
       std::string(), std::string(), std::string(), std::string());
 
@@ -405,7 +408,7 @@ TEST_F(AutomaticProfileResetterDelegateTest,
        GetPrepopulatedSearchProvidersDetails) {
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile());
-  TemplateURLServiceTestUtilBase::VerifyLoad();
+  template_url_service_test_util()->VerifyLoad();
 
   scoped_ptr<base::ListValue> search_engines_details(
       resetter_delegate()->GetPrepopulatedSearchProvidersDetails());

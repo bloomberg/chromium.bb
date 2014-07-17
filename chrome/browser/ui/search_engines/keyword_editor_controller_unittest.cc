@@ -6,12 +6,14 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_service_test_util.h"
+#include "chrome/browser/search_engines/template_url_service_factory_test_util.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
+#include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/table_model_observer.h"
 
@@ -28,34 +30,33 @@ class KeywordEditorControllerTest : public testing::Test,
                                     public ui::TableModelObserver {
  public:
   KeywordEditorControllerTest()
-      : simulate_load_failure_(false),
+      : util_(&profile_),
+        simulate_load_failure_(false),
         model_changed_count_(0),
         items_changed_count_(0),
         added_count_(0),
         removed_count_(0) {}
 
   explicit KeywordEditorControllerTest(bool simulate_load_failure)
-      : simulate_load_failure_(simulate_load_failure),
+      : util_(&profile_),
+        simulate_load_failure_(simulate_load_failure),
         model_changed_count_(0),
         items_changed_count_(0),
         added_count_(0),
         removed_count_(0) {}
 
   virtual void SetUp() OVERRIDE {
-    util_.SetUp();
-
     if (simulate_load_failure_)
       util_.model()->OnWebDataServiceRequestDone(0, NULL);
     else
-      util_.ChangeModelToLoadState();
+      util_.VerifyLoad();
 
-    controller_.reset(new KeywordEditorController(util_.profile()));
+    controller_.reset(new KeywordEditorController(&profile_));
     controller_->table_model()->SetObserver(this);
   }
 
   virtual void TearDown() OVERRIDE {
     controller_.reset();
-    util_.TearDown();
   }
 
   virtual void OnModelChanged() OVERRIDE {
@@ -102,15 +103,17 @@ class KeywordEditorControllerTest : public testing::Test,
 
   TemplateURLTableModel* table_model() { return controller_->table_model(); }
   KeywordEditorController* controller() { return controller_.get(); }
-  const TemplateURLServiceTestUtil* util() const { return &util_; }
+  const TemplateURLServiceFactoryTestUtil* util() const { return &util_; }
 
   int items_changed_count() const { return items_changed_count_; }
   int added_count() const { return added_count_; }
   int removed_count() const { return removed_count_; }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfile profile_;
   scoped_ptr<KeywordEditorController> controller_;
-  TemplateURLServiceTestUtil util_;
+  TemplateURLServiceFactoryTestUtil util_;
   bool simulate_load_failure_;
 
   int model_changed_count_;

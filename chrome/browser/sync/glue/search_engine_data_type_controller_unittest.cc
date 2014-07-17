@@ -9,13 +9,14 @@
 #include "base/run_loop.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/search_engines/template_url_service_test_util.h"
+#include "chrome/browser/search_engines/template_url_service_factory_test_util.h"
 #include "chrome/browser/sync/glue/search_engine_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/fake_generic_change_processor.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/fake_syncable_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,18 +31,16 @@ namespace {
 
 class SyncSearchEngineDataTypeControllerTest : public testing::Test {
  public:
-  SyncSearchEngineDataTypeControllerTest() { }
+  SyncSearchEngineDataTypeControllerTest() : test_util_(&profile_) { }
 
   virtual void SetUp() {
-    test_util_.SetUp();
-    service_.reset(new ProfileSyncServiceMock(test_util_.profile()));
+    service_.reset(new ProfileSyncServiceMock(&profile_));
     profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock());
-    // Feed the DTC test_util_'s profile so it is reused later.
+    // Feed the DTC the profile so it is reused later.
     // This allows us to control the associated TemplateURLService.
-    search_engine_dtc_ =
-        new SearchEngineDataTypeController(
-            profile_sync_factory_.get(), test_util_.profile(),
-            DataTypeController::DisableTypeCallback());
+    search_engine_dtc_ = new SearchEngineDataTypeController(
+        profile_sync_factory_.get(), &profile_,
+        DataTypeController::DisableTypeCallback());
   }
 
   virtual void TearDown() {
@@ -49,7 +48,6 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
     syncable_service_.StopSyncing(syncer::SEARCH_ENGINES);
     search_engine_dtc_ = NULL;
     service_.reset();
-    test_util_.TearDown();
   }
 
  protected:
@@ -78,10 +76,9 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
                    base::Unretained(&start_callback_)));
   }
 
-  // This also manages a BrowserThread and MessageLoop for us. Note that this
-  // must be declared here as the destruction order of the BrowserThread
-  // matters - we could leak if this is declared below.
-  TemplateURLServiceTestUtil test_util_;
+  content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfile profile_;
+  TemplateURLServiceFactoryTestUtil test_util_;
   scoped_refptr<SearchEngineDataTypeController> search_engine_dtc_;
   scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
   scoped_ptr<ProfileSyncServiceMock> service_;

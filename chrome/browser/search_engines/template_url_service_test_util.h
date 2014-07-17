@@ -9,9 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -20,16 +18,11 @@ class GURL;
 class TemplateURLService;
 class TestingProfile;
 class TestingTemplateURLService;
-class TestingProfile;
 
-// TemplateURLServiceTestUtilBase contains basic API to ease testing of
-// TemplateURLService. User should take care of the infrastructure separately.
-class TemplateURLServiceTestUtilBase : public TemplateURLServiceObserver {
+class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
  public:
-  TemplateURLServiceTestUtilBase();
-  virtual ~TemplateURLServiceTestUtilBase();
-
-  void CreateTemplateUrlService();
+  TemplateURLServiceTestUtil();
+  virtual ~TemplateURLServiceTestUtil();
 
   // TemplateURLServiceObserver implemementation.
   virtual void OnTemplateURLServiceChanged() OVERRIDE;
@@ -59,7 +52,7 @@ class TemplateURLServiceTestUtilBase : public TemplateURLServiceObserver {
   base::string16 GetAndClearSearchTerm();
 
   // Set the google base url.  |base_url| must be valid.
-  void SetGoogleBaseURL(const GURL& base_url) const;
+  void SetGoogleBaseURL(const GURL& base_url);
 
   // Set the managed preferences for the default search provider and trigger
   // notification. If |alternate_url| is empty, uses an empty list of alternate
@@ -80,41 +73,17 @@ class TemplateURLServiceTestUtilBase : public TemplateURLServiceObserver {
   void RemoveManagedDefaultSearchPreferences();
 
   // Returns the TemplateURLService.
-  TemplateURLService* model() const;
+  TemplateURLService* model();
 
   // Returns the TestingProfile.
-  virtual TestingProfile* profile() const = 0;
+  TestingProfile* profile() { return profile_.get(); }
 
  private:
-  int changed_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceTestUtilBase);
-};
-
-// TemplateURLServiceTestUtil sets up TestingProfile, TemplateURLService and
-// required threads.
-class TemplateURLServiceTestUtil : public TemplateURLServiceTestUtilBase {
- public:
-  TemplateURLServiceTestUtil();
-  virtual ~TemplateURLServiceTestUtil();
-
-  // Sets up the data structures for this class (mirroring gtest standard
-  // methods).
-  void SetUp();
-
-  // Cleans up data structures for this class  (mirroring gtest standard
-  // methods).
-  void TearDown();
-
-  // Returns the TestingProfile.
-  virtual TestingProfile* profile() const OVERRIDE;
-
- private:
-  // Needed to make the DeleteOnUIThread trait of WebDataService work
-  // properly.
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   base::ScopedTempDir temp_dir_;
+  int changed_count_;
+  scoped_ptr<TestingTemplateURLService> model_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceTestUtil);
 };
