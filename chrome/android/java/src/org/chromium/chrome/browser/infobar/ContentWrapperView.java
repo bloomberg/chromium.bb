@@ -35,7 +35,6 @@ public class ContentWrapperView extends FrameLayout {
     private static final int CONTENT_INDEX = 0;
 
     private final int mGravity;
-    private final boolean mInfoBarsFromTop;
     private final InfoBar mInfoBar;
 
     private View mViewToHide;
@@ -45,13 +44,11 @@ public class ContentWrapperView extends FrameLayout {
      * Constructs a ContentWrapperView object.
      * @param context The context to create this View with.
      */
-    public ContentWrapperView(Context context, InfoBar infoBar, View panel,
-            boolean infoBarsFromTop) {
+    public ContentWrapperView(Context context, InfoBar infoBar, View panel) {
         // Set up this ViewGroup.
         super(context);
         mInfoBar = infoBar;
-        mGravity = infoBarsFromTop ? Gravity.BOTTOM : Gravity.TOP;
-        mInfoBarsFromTop = infoBarsFromTop;
+        mGravity = Gravity.TOP;
 
         // Set up this view.
         Resources resources = context.getResources();
@@ -152,20 +149,6 @@ public class ContentWrapperView extends FrameLayout {
 
             // We're transitioning between two views; set the alpha so it doesn't pop in.
             if (mViewToHide != null) mViewToShow.setAlpha(0.0f);
-
-            // Because of layout scheduling, we need to move the child Views downward before it
-            // occurs.  Failure to do so results in the Views being located incorrectly during the
-            // first few frames of the animation.
-            if (mInfoBarsFromTop && getViewToShowHeight() > getViewToHideHeight()) {
-                getLayoutParams().height = getViewToShowHeight();
-
-                int translation = getTransitionHeightDifference();
-                for (int i = 0; i < getChildCount(); ++i) {
-                    View v = getChildAt(i);
-                    v.setTop(v.getTop() + translation);
-                    v.setBottom(v.getBottom() + translation);
-                }
-            }
         }
     }
 

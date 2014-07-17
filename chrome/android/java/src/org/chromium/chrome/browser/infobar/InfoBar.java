@@ -186,8 +186,7 @@ public abstract class InfoBar implements InfoBarView {
 
     protected ContentWrapperView getContentWrapper(boolean createIfNotFound) {
         if (mContentView == null && createIfNotFound) {
-            mContentView = new ContentWrapperView(getContext(), this, createView(),
-                    getInfoBarContainer().areInfoBarsOnTop());
+            mContentView = new ContentWrapperView(getContext(), this, createView());
             mContentView.setFocusable(false);
         }
         return mContentView;

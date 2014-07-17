@@ -16,11 +16,9 @@ import android.widget.LinearLayout;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
-import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -77,9 +75,6 @@ public class InfoBarContainer extends LinearLayout {
 
     private final AutoLoginDelegate mAutoLoginDelegate;
 
-    // Whether the infobar are shown on top (below the location bar) or at the bottom of the screen.
-    private final boolean mInfoBarsOnTop;
-
     // The list of all infobars in this container, regardless of whether they've been shown yet.
     private final ArrayList<InfoBar> mInfoBars = new ArrayList<InfoBar>();
 
@@ -114,9 +109,7 @@ public class InfoBarContainer extends LinearLayout {
         mAnimationSizer = new FrameLayout(activity);
         mAnimationSizer.setVisibility(INVISIBLE);
 
-        // The tablet has the infobars below the location bar. On the phone they are at the bottom.
-        mInfoBarsOnTop = DeviceFormFactor.isTablet(activity);
-        setGravity(determineGravity());
+        setGravity(Gravity.BOTTOM);
 
         // Chromium's InfoBarContainer may add an InfoBar immediately during this initialization
         // call, so make sure everything in the InfoBarContainer is completely ready beforehand.
@@ -132,9 +125,8 @@ public class InfoBarContainer extends LinearLayout {
         return mAnimationListener;
     }
 
-
     public boolean areInfoBarsOnTop() {
-        return mInfoBarsOnTop;
+        return false;
     }
 
     @Override
@@ -155,13 +147,9 @@ public class InfoBarContainer extends LinearLayout {
         }
     }
 
-    private int determineGravity() {
-        return mInfoBarsOnTop ? Gravity.TOP : Gravity.BOTTOM;
-    }
-
     private FrameLayout.LayoutParams createLayoutParams() {
         return new FrameLayout.LayoutParams(
-                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, determineGravity());
+                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, Gravity.BOTTOM);
     }
 
     public void removeFromParentView() {
@@ -357,7 +345,7 @@ public class InfoBarContainer extends LinearLayout {
             targetView = info.target.getContentWrapper(true);
             assert mInfoBars.contains(info.target);
             toShow = targetView.detachCurrentView();
-            addView(targetView, mInfoBarsOnTop ? getChildCount() : 0,
+            addView(targetView, 0,
                     new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
         } else {
             targetView = info.target.getContentWrapper(false);
@@ -442,14 +430,6 @@ public class InfoBarContainer extends LinearLayout {
             mAnimationSizer.addView(toShow, 0,
                     new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
             mAnimationSizer.requestLayout();
-        }
-    }
-
-    public void startTransition() {
-        if (mInfoBarsOnTop) {
-            // We need to clip this view to its bounds while it is animated because the layout's
-            // z-ordering puts it on top of other infobars as it's being animated.
-            ApiCompatibilityUtils.postInvalidateOnAnimation(this);
         }
     }
 

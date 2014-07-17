@@ -124,7 +124,6 @@ public class AnimationHelper implements ViewTreeObserver.OnGlobalLayoutListener 
         if (mAnimationStarted) return;
         mAnimationStarted = true;
 
-        boolean infoBarsOnTop = mContainer.areInfoBarsOnTop();
         int indexOfWrapperView = mContainer.indexOfChild(mTargetWrapperView);
         assert indexOfWrapperView != -1;
 
@@ -136,16 +135,14 @@ public class AnimationHelper implements ViewTreeObserver.OnGlobalLayoutListener 
         int cumulativeTopStart = 0;
         int cumulativeTopEnd = 0;
         int cumulativeEndHeight = 0;
-        if (!infoBarsOnTop) {
-            if (heightDifference >= 0) {
-                // The current container is smaller than the final container, so the current 0
-                // coordinate will be >= 0 in the final container.
-                cumulativeTopStart = heightDifference;
-            } else {
-                // The current container is bigger than the final container, so the current 0
-                // coordinate will be < 0 in the final container.
-                cumulativeTopEnd = -heightDifference;
-            }
+        if (heightDifference >= 0) {
+            // The current container is smaller than the final container, so the current 0
+            // coordinate will be >= 0 in the final container.
+            cumulativeTopStart = heightDifference;
+        } else {
+            // The current container is bigger than the final container, so the current 0
+            // coordinate will be < 0 in the final container.
+            cumulativeTopEnd = -heightDifference;
         }
 
         for (int i = 0; i < mContainer.getChildCount(); ++i) {
@@ -169,13 +166,12 @@ public class AnimationHelper implements ViewTreeObserver.OnGlobalLayoutListener 
             } else {
                 // A translation is required to move the View into place.
                 int translation = heightDifference;
-                if (infoBarsOnTop) translation *= -1;
 
-                boolean translateDownward = false;
+                boolean translateDownward;
                 if (topStart < topEnd) {
-                    translateDownward = infoBarsOnTop;
+                    translateDownward = false;
                 } else if (topStart > topEnd) {
-                    translateDownward = !infoBarsOnTop;
+                    translateDownward = true;
                 } else {
                     translateDownward = bottomEnd > bottomStart;
                 }
@@ -204,28 +200,16 @@ public class AnimationHelper implements ViewTreeObserver.OnGlobalLayoutListener 
 
         // Lock the InfoBarContainer's size at its largest during the animation to avoid
         // clipping issues.
-        final int oldContainerTop = mContainer.getTop();
-        final int oldContainerBottom = mContainer.getBottom();
-        final int newContainerTop;
-        final int newContainerBottom;
-        if (infoBarsOnTop) {
-            newContainerTop = oldContainerTop;
-            newContainerBottom = newContainerTop + cumulativeEndHeight;
-        } else {
-            newContainerBottom = oldContainerBottom;
-            newContainerTop = newContainerBottom - cumulativeEndHeight;
-        }
-        final int biggestContainerTop = Math.min(oldContainerTop, newContainerTop);
-        final int biggestContainerBottom = Math.max(oldContainerBottom, newContainerBottom);
+        int oldContainerTop = mContainer.getTop();
+        int newContainerTop = mContainer.getBottom() - cumulativeEndHeight;
+        int biggestContainerTop = Math.min(oldContainerTop, newContainerTop);
         mContainer.setTop(biggestContainerTop);
-        mContainer.setBottom(biggestContainerBottom);
 
         // Set up and run all of the animations.
         mAnimatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
                 mTargetWrapperView.startTransition();
-                mContainer.startTransition();
             }
 
             @Override
