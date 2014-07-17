@@ -60,6 +60,7 @@ public:
     virtual void layoutBlock(bool relayoutChildren) OVERRIDE;
 
     virtual void computeOverflow(LayoutUnit oldClientAfterEdge, bool recomputeFloats = false) OVERRIDE;
+
     virtual void deleteLineBoxTree() OVERRIDE FINAL;
 
     LayoutUnit availableLogicalWidthForLine(LayoutUnit position, bool shouldIndentText, LayoutUnit logicalHeight = 0) const

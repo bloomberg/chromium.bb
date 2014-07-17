@@ -21,7 +21,7 @@
 #include "core/rendering/svg/SVGTextQuery.h"
 
 #include "core/rendering/InlineFlowBox.h"
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"
@@ -55,11 +55,11 @@ static inline InlineFlowBox* flowBoxForRenderer(RenderObject* renderer)
     if (renderer->isRenderBlock()) {
         // If we're given a block element, it has to be a RenderSVGText.
         ASSERT(renderer->isSVGText());
-        RenderBlock* renderBlock = toRenderBlock(renderer);
+        RenderBlockFlow* renderBlockFlow = toRenderBlockFlow(renderer);
 
         // RenderSVGText only ever contains a single line box.
-        InlineFlowBox* flowBox = renderBlock->firstLineBox();
-        ASSERT(flowBox == renderBlock->lastLineBox());
+        InlineFlowBox* flowBox = renderBlockFlow->firstLineBox();
+        ASSERT(flowBox == renderBlockFlow->lastLineBox());
         return flowBox;
     }
 

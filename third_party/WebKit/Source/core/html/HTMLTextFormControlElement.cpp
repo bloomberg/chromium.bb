@@ -41,7 +41,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextBoundaries.h"
@@ -574,7 +574,7 @@ String HTMLTextFormControlElement::valueWithHardLineBreaks() const
     if (!innerText || !isTextFormControl())
         return value();
 
-    RenderBlock* renderer = toRenderBlock(innerText->renderer());
+    RenderBlockFlow* renderer = toRenderBlockFlow(innerText->renderer());
     if (!renderer)
         return value();
 

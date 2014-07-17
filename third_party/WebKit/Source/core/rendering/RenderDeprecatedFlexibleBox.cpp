@@ -121,7 +121,7 @@ private:
 RenderDeprecatedFlexibleBox::RenderDeprecatedFlexibleBox(Element* element)
     : RenderBlock(element)
 {
-    setChildrenInline(false); // All of our children must be block-level
+    ASSERT(!childrenInline());
     m_stretchingChildren = false;
     if (!isAnonymous()) {
         const KURL& url = document().url();

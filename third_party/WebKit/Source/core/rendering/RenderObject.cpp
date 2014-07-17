@@ -621,7 +621,7 @@ bool RenderObject::skipInvalidationWhenLaidOutChildren() const
 
     // SVG renderers need to be invalidated when their children are laid out.
     // RenderBlocks with line boxes are responsible to invalidate them so we can't ignore them.
-    if (isSVG() || (isRenderBlock() && toRenderBlock(this)->firstLineBox()))
+    if (isSVG() || (isRenderBlockFlow() && toRenderBlockFlow(this)->firstLineBox()))
         return false;
 
     return rendererHasNoBoxEffect();

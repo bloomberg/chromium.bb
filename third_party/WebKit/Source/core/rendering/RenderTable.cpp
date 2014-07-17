@@ -66,9 +66,8 @@ RenderTable::RenderTable(Element* element)
     , m_borderStart(0)
     , m_borderEnd(0)
 {
-    setChildrenInline(false);
+    ASSERT(!childrenInline());
     m_columnPos.fill(0, 1);
-
 }
 
 RenderTable::~RenderTable()

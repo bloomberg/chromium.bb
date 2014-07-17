@@ -191,8 +191,7 @@ RenderGrid::RenderGrid(Element* element)
     , m_gridIsDirty(true)
     , m_orderIterator(this)
 {
-    // All of our children must be block level.
-    setChildrenInline(false);
+    ASSERT(!childrenInline());
 }
 
 RenderGrid::~RenderGrid()

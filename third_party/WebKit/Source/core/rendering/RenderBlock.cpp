@@ -162,7 +162,8 @@ RenderBlock::RenderBlock(ContainerNode* node)
     , m_hasOnlySelfCollapsingChildren(false)
     , m_descendantsWithFloatsMarkedForLayout(false)
 {
-    setChildrenInline(true);
+    // RenderBlockFlow calls setChildrenInline(true).
+    // By default, subclasses do not have inline children.
 }
 
 static void removeBlockFromDescendantAndContainerMaps(RenderBlock* block, TrackedDescendantsMap*& descendantMap, TrackedContainerMap*& containerMap)

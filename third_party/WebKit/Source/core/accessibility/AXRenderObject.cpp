@@ -689,7 +689,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
         return true;
 
     if (m_renderer->isRenderBlockFlow() && m_renderer->childrenInline() && !canSetFocusAttribute())
-        return !toRenderBlock(m_renderer)->firstLineBox() && !mouseButtonListener();
+        return !toRenderBlockFlow(m_renderer)->firstLineBox() && !mouseButtonListener();
 
     // ignore images seemingly used as spacers
     if (isImage()) {

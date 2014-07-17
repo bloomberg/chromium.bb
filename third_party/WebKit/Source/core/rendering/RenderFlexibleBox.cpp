@@ -73,7 +73,7 @@ RenderFlexibleBox::RenderFlexibleBox(Element* element)
     , m_orderIterator(this)
     , m_numberOfInFlowChildrenOnFirstLine(-1)
 {
-    setChildrenInline(false); // All of our children must be block-level.
+    ASSERT(!childrenInline());
 }
 
 RenderFlexibleBox::~RenderFlexibleBox()
