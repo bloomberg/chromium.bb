@@ -1557,6 +1557,7 @@ bool StyleResolver::mediaQueryAffectedByViewportChange() const
 
 void StyleResolver::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_keyframesRuleMap);
     visitor->trace(m_matchedPropertiesCache);
     visitor->trace(m_viewportDependentMediaQueryResults);
@@ -1567,6 +1568,7 @@ void StyleResolver::trace(Visitor* visitor)
     visitor->trace(m_watchedSelectorsRules);
     visitor->trace(m_treeBoundaryCrossingRules);
     visitor->trace(m_pendingStyleSheets);
+#endif
 }
 
 } // namespace WebCore

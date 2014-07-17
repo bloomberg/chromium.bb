@@ -66,8 +66,10 @@ DOMWindowEventQueue::~DOMWindowEventQueue()
 
 void DOMWindowEventQueue::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_pendingEventTimer);
     visitor->trace(m_queuedEvents);
+#endif
     EventQueue::trace(visitor);
 }
 

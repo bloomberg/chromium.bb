@@ -114,9 +114,11 @@ bool MediaQueryList::matches()
 
 void MediaQueryList::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_matcher);
     visitor->trace(m_media);
     visitor->trace(m_listeners);
+#endif
 }
 
 }

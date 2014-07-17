@@ -386,7 +386,9 @@ DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DocumentState)
 
 void DocumentState::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_formControls);
+#endif
 }
 
 void DocumentState::addControl(HTMLFormControlElementWithState* control)

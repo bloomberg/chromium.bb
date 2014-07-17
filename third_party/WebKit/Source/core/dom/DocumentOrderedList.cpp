@@ -71,7 +71,9 @@ void DocumentOrderedList::remove(const Node* node)
 
 void DocumentOrderedList::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_nodes);
+#endif
 }
 
 }

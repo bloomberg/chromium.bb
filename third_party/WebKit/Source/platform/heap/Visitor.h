@@ -304,12 +304,6 @@ public:
         OffHeapCollectionTraceTrait<HashSet<T, U, V> >::trace(this, hashSet);
     }
 
-    template<typename T, size_t inlineCapacity, typename U>
-    void trace(const ListHashSet<T, inlineCapacity, U>& hashSet)
-    {
-        OffHeapCollectionTraceTrait<ListHashSet<T, inlineCapacity, U> >::trace(this, hashSet);
-    }
-
     template<typename T, size_t N>
     void trace(const Deque<T, N>& deque)
     {
@@ -467,20 +461,6 @@ struct OffHeapCollectionTraceTrait<WTF::HashSet<T, HashFunctions, Traits, WTF::D
             }
         }
         COMPILE_ASSERT(Traits::weakHandlingFlag == WTF::NoWeakHandlingInCollections, WeakOffHeapCollectionsConsideredDangerous0);
-    }
-};
-
-template<typename T, size_t inlineCapacity, typename HashFunctions>
-struct OffHeapCollectionTraceTrait<ListHashSet<T, inlineCapacity, HashFunctions> > {
-    typedef WTF::ListHashSet<T, inlineCapacity, HashFunctions> ListHashSet;
-
-    static void trace(Visitor* visitor, const ListHashSet& set)
-    {
-        if (set.isEmpty())
-            return;
-        ListHashSet& iterSet = const_cast<ListHashSet&>(set);
-        for (typename ListHashSet::iterator it = iterSet.begin(), end = iterSet.end(); it != end; ++it)
-            visitor->trace(*it);
     }
 };
 

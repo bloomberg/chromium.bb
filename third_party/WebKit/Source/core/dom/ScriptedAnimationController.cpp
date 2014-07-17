@@ -56,10 +56,10 @@ ScriptedAnimationController::~ScriptedAnimationController()
 
 void ScriptedAnimationController::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_document);
     visitor->trace(m_eventQueue);
     visitor->trace(m_mediaQueryListListeners);
-#if ENABLE(OILPAN)
     visitor->trace(m_perFrameEvents);
 #endif
 }
