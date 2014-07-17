@@ -78,7 +78,6 @@ per-file invalidation.gypi=pavely@chromium.org
 per-file json_schema.gypi=asargent@chromium.org
 per-file json_schema.gypi=calamity@chromium.org
 per-file json_schema.gypi=kalman@chromium.org
-per-file json_schema.gypi=koz@chromium.org
 per-file json_schema.gypi=mpcomplete@chromium.org
 
 per-file leveldb_proto*=cjhopman@chromium.org
