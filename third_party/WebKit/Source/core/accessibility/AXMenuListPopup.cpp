@@ -113,6 +113,8 @@ void AXMenuListPopup::addChildren()
 void AXMenuListPopup::childrenChanged()
 {
     AXObjectCache* cache = axObjectCache();
+    if (!cache)
+        return;
     for (size_t i = m_children.size(); i > 0 ; --i) {
         AXObject* child = m_children[i - 1].get();
         // FIXME: How could children end up in here that have no actionElement(), the check
