@@ -349,6 +349,10 @@ bool Instance::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     // For PDFs embedded in a frame, we don't get the data automatically like we
     // do for full-frame loads.  Start loading the data manually.
     LoadUrl(url);
+  } else {
+    DCHECK(!did_call_start_loading_);
+    pp::PDF::DidStartLoading(this);
+    did_call_start_loading_ = true;
   }
 
   ZoomLimitsChanged(kMinZoom, kMaxZoom);

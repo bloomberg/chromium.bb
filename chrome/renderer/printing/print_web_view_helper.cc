@@ -1703,13 +1703,10 @@ void PrintWebViewHelper::RequestPrintPreview(PrintPreviewRequestType type) {
         // |is_modifiable| value until they are fully loaded, which occurs when
         // DidStopLoading() is called. Defer showing the preview until then.
       } else {
-        // TODO(japhet): This delay is a terrible hack. See crbug.com/376969
-        // for the motivation.
-        base::MessageLoop::current()->PostDelayedTask(
+        base::MessageLoop::current()->PostTask(
             FROM_HERE,
             base::Bind(&PrintWebViewHelper::ShowScriptedPrintPreview,
-                       weak_ptr_factory_.GetWeakPtr()),
-            base::TimeDelta::FromMilliseconds(100));
+                       weak_ptr_factory_.GetWeakPtr()));
       }
       IPC::SyncMessage* msg =
           new PrintHostMsg_SetupScriptedPrintPreview(routing_id());
