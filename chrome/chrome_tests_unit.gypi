@@ -709,6 +709,7 @@
         'browser/chromeos/drive/file_system/truncate_operation_unittest.cc',
         'browser/chromeos/drive/file_system_unittest.cc',
         'browser/chromeos/drive/file_system_util_unittest.cc',
+        'browser/chromeos/drive/file_task_executor_unittest.cc',
         'browser/chromeos/drive/file_write_watcher_unittest.cc',
         'browser/chromeos/drive/fileapi/fileapi_worker_unittest.cc',
         'browser/chromeos/drive/fileapi/webkit_file_stream_reader_impl_unittest.cc',

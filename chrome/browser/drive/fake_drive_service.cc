@@ -1168,6 +1168,16 @@ CancelCallback FakeDriveService::AuthorizeApp(
     const AuthorizeAppCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  if (entries_.count(resource_id) == 0) {
+    callback.Run(google_apis::HTTP_NOT_FOUND, GURL());
+    return CancelCallback();
+  }
+
+  callback.Run(HTTP_SUCCESS,
+               GURL(base::StringPrintf(open_url_format_.c_str(),
+                                       resource_id.c_str(),
+                                       app_id.c_str())));
   return CancelCallback();
 }
 

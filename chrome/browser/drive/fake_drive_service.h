@@ -113,6 +113,13 @@ class FakeDriveService : public DriveServiceInterface {
   // Returns the (fake) URL for the link.
   static GURL GetFakeLinkUrl(const std::string& resource_id);
 
+  // Sets the printf format for constructing the response of AuthorizeApp().
+  // The format string must include two %s that are to be filled with
+  // resource_id and app_id.
+  void set_open_url_format(const std::string& url_format) {
+    open_url_format_ = url_format;
+  }
+
   // DriveServiceInterface Overrides
   virtual void Initialize(const std::string& account_id) OVERRIDE;
   virtual void AddObserver(DriveServiceObserver* observer) OVERRIDE;
@@ -348,6 +355,7 @@ class FakeDriveService : public DriveServiceInterface {
   base::FilePath last_cancelled_file_;
   GURL share_url_base_;
   std::string app_json_template_;
+  std::string open_url_format_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDriveService);
 };
