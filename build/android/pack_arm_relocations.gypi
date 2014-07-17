@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # This file is meant to be included into an action to provide a rule that
-# packs ARM relative relocations in native libraries.
+# packs ARM relative relocations in Release builds of native libraries.
 #
 # To use this, create a gyp target with the following form:
 #  {
@@ -46,6 +46,7 @@
       ],
       'action': [
         'python', '<(DEPTH)/build/android/gyp/pack_arm_relocations.py',
+        '--configuration-name=<(CONFIGURATION_NAME)',
         '--enable-packing=1',
         '--exclude-packing-list=<@(exclude_packing_list)',
         '--android-pack-relocations=<(PRODUCT_DIR)/relocation_packer',
@@ -59,6 +60,7 @@
       'message': 'Copying libraries (no relocation packing) for <(_target_name)',
       'action': [
         'python', '<(DEPTH)/build/android/gyp/pack_arm_relocations.py',
+        '--configuration-name=<(CONFIGURATION_NAME)',
         '--enable-packing=0',
         '--stripped-libraries-dir=<(stripped_libraries_dir)',
         '--packed-libraries-dir=<(packed_libraries_dir)',

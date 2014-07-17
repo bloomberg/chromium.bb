@@ -6,10 +6,11 @@
 
 """Pack ARM relative relocations in a library (or copy unchanged).
 
-If --enable-packing, invoke the relocation_packer tool to pack the .rel.dyn
-section in the given library files.  This step is inserted after the libraries
-are stripped.  Packing adds a new .android.rel.dyn section to the file and
-reduces the size of .rel.dyn accordingly.
+If --enable-packing and --configuration-name=='Release', invoke the
+relocation_packer tool to pack the .rel.dyn section in the given library
+files.  This step is inserted after the libraries are stripped.  Packing
+adds a new .android.rel.dyn section to the file and reduces the size of
+.rel.dyn accordingly.
 
 Currently packing only understands ARM32 shared libraries.  For all other
 architectures --enable-packing should be set to zero.  In this case the
@@ -61,9 +62,13 @@ def CopyArmLibraryUnchanged(library_path, output_path):
 def main():
   parser = optparse.OptionParser()
 
+  parser.add_option('--configuration-name',
+      default='Release',
+      help='Gyp configuration name (i.e. Debug, Release)')
   parser.add_option('--enable-packing',
       choices=['0', '1'],
-      help='Pack relocations if 1, otherwise plain file copy')
+      help=('Pack relocations if 1 and configuration name is \'Release\','
+            ' otherwise plain file copy'))
   parser.add_option('--exclude-packing-list',
       default='',
       help='Names of any libraries explicitly not packed')
@@ -80,7 +85,8 @@ def main():
   parser.add_option('--stamp', help='Path to touch on success')
 
   options, _ = parser.parse_args()
-  enable_packing = options.enable_packing == '1'
+  enable_packing = (options.enable_packing == '1' and
+                    options.configuration_name == 'Release')
   exclude_packing_set = set(shlex.split(options.exclude_packing_list))
 
   with open(options.libraries_file, 'r') as libfile:
