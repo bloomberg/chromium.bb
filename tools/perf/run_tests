@@ -5,7 +5,7 @@
 
 """This script runs unit tests of the code in the perf directory.
 
-This script DOES NOT run benchmarks. run_benchmark and run_measurement do that.
+This script DOES NOT run benchmarks. run_benchmark does that.
 """
 
 import os
@@ -13,10 +13,13 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'telemetry'))
 
+from telemetry.unittest import gtest_output_formatter
 from telemetry.unittest import run_tests
 
 
 if __name__ == '__main__':
   base_dir = os.path.dirname(os.path.realpath(__file__))
-  run_tests.environment = run_tests.Environment(base_dir, [base_dir])
+  output_formatters = [
+      gtest_output_formatter.GTestOutputFormatter(sys.stdout)]
+  run_tests.config = run_tests.Config(base_dir, [base_dir], output_formatters)
   sys.exit(run_tests.RunTestsCommand.main())

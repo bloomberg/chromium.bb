@@ -3,22 +3,25 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
-import sys
-
 """This script runs unit tests for code in gpu_tests/ that does telemetry
 performance measurement.
 
 This script DOES NOT run benchmarks. run_gpu_tests does that.
 """
 
+import os
+import sys
+
 sys.path.append(os.path.join(os.path.dirname(__file__),
     os.pardir, os.pardir, os.pardir, 'tools', 'telemetry'))
 
+from telemetry.unittest import gtest_output_formatter
 from telemetry.unittest import run_tests
 
 
 if __name__ == '__main__':
   base_dir = os.path.dirname(os.path.realpath(__file__))
-  run_tests.environment = run_tests.Environment(base_dir, [base_dir])
+  output_formatters = [
+      gtest_output_formatter.GTestOutputFormatter(sys.stdout)]
+  run_tests.config = run_tests.Config(base_dir, [base_dir], output_formatters)
   sys.exit(run_tests.RunTestsCommand.main())
