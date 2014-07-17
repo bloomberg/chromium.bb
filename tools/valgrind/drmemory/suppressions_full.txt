@@ -1957,9 +1957,9 @@ osmesa.dll!_tnl_generic_interp
 UNINITIALIZED READ
 name=bug_340752
 ...
-*!WebCore::ThreadState::visitStack
-*!WebCore::ThreadState::trace
-*!WebCore::ThreadState::visitRoots
+*!*::ThreadState::visitStack
+*!*::ThreadState::trace
+*!*::ThreadState::visitRoots
 
 UNINITIALIZED READ
 name=bug_343663
