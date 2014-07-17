@@ -32,6 +32,8 @@
             tools:ignore="MenuTitle" />
         <item android:id="@+id/contextmenu_copy_image"
             android:title="@string/contextmenu_copy_image"/>
+        <item android:id="@+id/contextmenu_copy_image_url"
+            android:title="@string/contextmenu_copy_image_url"/>
     </group>
     <group android:id="@+id/contextmenu_group_video">
         <item android:id="@+id/contextmenu_save_video"

@@ -123,6 +123,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             mDelegate.onSearchByImageInNewTab();
         } else if (itemId == R.id.contextmenu_copy_image) {
             mDelegate.onSaveImageToClipboard(params.getSrcUrl());
+        } else if (itemId == R.id.contextmenu_copy_image_url) {
+            mDelegate.onSaveToClipboard(params.getSrcUrl(), true);
         } else {
             assert false;
         }

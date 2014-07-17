@@ -302,6 +302,9 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_CONTEXTMENU_COPY_IMAGE" desc="Context sensitive menu item for copying an image to the clipboard. [CHAR-LIMIT=30]">
         Copy image
       </message>
+      <message name="IDS_CONTEXTMENU_COPY_IMAGE_URL" desc="Context sensitive menu item for copying an image url to the clipboard. [CHAR-LIMIT=30]">
+        Copy image URL
+      </message>
       <message name="IDS_CONTEXTMENU_SAVE_VIDEO" desc="Context sensitive menu item for saving the selected video. [CHAR-LIMIT=30]">
         Save video
      </message>
