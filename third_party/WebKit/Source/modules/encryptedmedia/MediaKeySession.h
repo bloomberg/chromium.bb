@@ -94,9 +94,8 @@ private:
     class PendingAction;
     friend class MediaKeySessionInitializer;
 
-    MediaKeySession(ExecutionContext*, MediaKeys*);
+    MediaKeySession(ExecutionContext*, MediaKeys*, PassOwnPtr<blink::WebContentDecryptionModuleSession>);
     void actionTimerFired(Timer<MediaKeySession>*);
-    void finishInitialization(PassOwnPtr<blink::WebContentDecryptionModuleSession>);
 
     // blink::WebContentDecryptionModuleSession::Client
     virtual void message(const unsigned char* message, size_t messageLength, const blink::WebURL& destinationURL) OVERRIDE;

@@ -40,7 +40,7 @@ public:
     virtual ~WebContentDecryptionModule();
 
     // Must return non-null.
-    virtual WebContentDecryptionModuleSession* createSession(WebContentDecryptionModuleSession::Client*) = 0;
+    virtual WebContentDecryptionModuleSession* createSession() = 0;
 };
 
 } // namespace blink

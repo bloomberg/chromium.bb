@@ -113,7 +113,6 @@ private:
     void timerFired(Timer<MediaKeySessionInitializer>*);
 
     Persistent<MediaKeys> m_mediaKeys;
-    Persistent<MediaKeySession> m_session;
     OwnPtr<blink::WebContentDecryptionModuleSession> m_cdmSession;
 
     // The next 3 values are simply the initialization data saved so that the
@@ -206,17 +205,7 @@ void MediaKeySessionInitializer::timerFired(Timer<MediaKeySessionInitializer>*)
     //       the request is for a persistable license.
     // 7.4.4 If the init data indicates a default URL, let default URL be
     //       that URL. The URL may be validated and/or normalized.
-
-    // Currently the client callback interface is passed to Chromium when
-    // creating the session on the Chromium side. As a result, we need to
-    // create the session now.
-    // FIXME: Add an API to allow the client interface to be specified later
-    // to WebContentDecryptionModuleSession, and then creating the
-    // MediaKeySession object can be done in completeWithSession().
-    m_session = adoptRefCountedGarbageCollectedWillBeNoop(new MediaKeySession(executionContext(), m_mediaKeys));
-    m_session->suspendIfNeeded();
-
-    m_cdmSession = adoptPtr(cdm->createSession(m_session));
+    m_cdmSession = adoptPtr(cdm->createSession());
     NewMediaKeySessionResult* result = new NewMediaKeySessionResult(this);
     m_cdmSession->initializeNewSession(m_initDataType, m_initData->data(), m_initData->length(), m_sessionType, result->result());
 
@@ -231,13 +220,14 @@ void MediaKeySessionInitializer::completeWithSession(blink::WebContentDecryption
     WTF_LOG(Media, "MediaKeySessionInitializer::completeWithSession");
 
     switch (status) {
-    case blink::WebContentDecryptionModuleResult::NewSession:
+    case blink::WebContentDecryptionModuleResult::NewSession: {
         // Resume MediaKeys::createSession().
         // 7.5 Let the session ID be a unique Session ID string. It may be
         //     obtained from cdm (it is).
         // 7.6 Let session be a new MediaKeySession object, and initialize it.
         //     (Object was created previously, complete the steps for 7.6).
-        m_session->finishInitialization(m_cdmSession.release());
+        RefPtrWillBeRawPtr<MediaKeySession> session = adoptRefCountedGarbageCollectedWillBeNoop(new MediaKeySession(executionContext(), m_mediaKeys, m_cdmSession.release()));
+        session->suspendIfNeeded();
 
         // 7.7 If any of the preceding steps failed, reject promise with a
         //     new DOMException whose name is the appropriate error name
@@ -253,9 +243,10 @@ void MediaKeySessionInitializer::completeWithSession(blink::WebContentDecryption
         //     (Done by the CDM).
 
         // 7.10 Resolve promise with session.
-        resolve(m_session.get());
+        resolve(session.release());
         WTF_LOG(Media, "MediaKeySessionInitializer::completeWithSession done w/session");
         return;
+    }
 
     case blink::WebContentDecryptionModuleResult::SessionNotFound:
         // Step 4.7.1 of MediaKeys::loadSession(): If there is no data
@@ -287,16 +278,30 @@ ScriptPromise MediaKeySession::create(ScriptState* scriptState, MediaKeys* media
     return MediaKeySessionInitializer::create(scriptState, mediaKeys, initDataType, initData, sessionType);
 }
 
-MediaKeySession::MediaKeySession(ExecutionContext* context, MediaKeys* keys)
+MediaKeySession::MediaKeySession(ExecutionContext* context, MediaKeys* keys, PassOwnPtr<blink::WebContentDecryptionModuleSession> cdmSession)
     : ActiveDOMObject(context)
     , m_keySystem(keys->keySystem())
     , m_asyncEventQueue(GenericEventQueue::create(this))
+    , m_session(cdmSession)
     , m_keys(keys)
     , m_isClosed(false)
     , m_actionTimer(this, &MediaKeySession::actionTimerFired)
 {
     WTF_LOG(Media, "MediaKeySession(%p)::MediaKeySession", this);
     ScriptWrappable::init(this);
+    m_session->setClientInterface(this);
+
+    // Resume MediaKeys::createSession() at step 7.6.
+    // 7.6.1 Set the error attribute to null.
+    ASSERT(!m_error);
+
+    // 7.6.2 Set the sessionId attribute to session ID.
+    ASSERT(!sessionId().isEmpty());
+
+    // 7.6.3 Let expiration be NaN.
+    // 7.6.4 Let closed be a new promise.
+    // 7.6.5 Let the session type be sessionType.
+    // FIXME: Implement the previous 3 values.
 }
 
 MediaKeySession::~MediaKeySession()
@@ -422,24 +427,6 @@ void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)
             break;
         }
     }
-}
-
-void MediaKeySession::finishInitialization(PassOwnPtr<blink::WebContentDecryptionModuleSession> cdmSession)
-{
-    ASSERT(cdmSession);
-    m_session = cdmSession;
-
-    // Resume MediaKeys::createSession() at step 7.6.
-    // 7.6.1 Set the error attribute to null.
-    ASSERT(!m_error);
-
-    // 7.6.2 Set the sessionId attribute to session ID.
-    ASSERT(!sessionId().isEmpty());
-
-    // 7.6.3 Let expiration be NaN..
-    // 7.6.4 Let closed be a new promise.
-    // 7.6.5 Let the session type be sessionType.
-    // FIXME: Implement the previous 3 values.
 }
 
 // Queue a task to fire a simple event named keymessage at the new object

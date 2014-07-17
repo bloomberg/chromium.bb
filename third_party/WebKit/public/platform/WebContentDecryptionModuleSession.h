@@ -62,6 +62,7 @@ public:
 
     virtual ~WebContentDecryptionModuleSession();
 
+    virtual void setClientInterface(Client*) = 0;
     virtual WebString sessionId() const = 0;
 
     // FIXME: Remove these methods once the new methods are implemented in Chromium.
