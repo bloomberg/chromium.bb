@@ -50,11 +50,6 @@ public:
     const Dictionary& dictionary() const { return m_dictionary; }
 
 private:
-    v8::Local<v8::String> createString(const char* utf8CString)
-    {
-        return v8::String::NewFromUtf8(m_isolate, utf8CString);
-    }
-
     v8::Handle<v8::Object> m_holder;
     v8::Isolate* m_isolate;
     Dictionary m_dictionary;
