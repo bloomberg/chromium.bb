@@ -608,7 +608,6 @@ process_in_files("make_core_generated_css_property_names") {
     "$blink_core_output_dir/CSSPropertyNames.cpp",
     "$blink_core_output_dir/CSSPropertyNames.h",
   ]
-  other_args = [ "--defines", feature_defines_string ]
 }
 
 # "MediaFeatures" in make_core_generated from GYP.
@@ -624,7 +623,6 @@ process_in_files("make_core_generated_media_features") {
   outputs = [
     "$blink_core_output_dir/MediaFeatures.h",
   ]
-  other_args = [ "--defines", feature_defines_string ]
 }
 
 # "StylePropertyShorthand" in make_core_generated from GYP.
@@ -676,7 +674,6 @@ process_in_files("make_core_generated_css_value_keywords") {
   ]
   other_args = [
     "--gperf", gperf_exe,
-    "--defines", feature_defines_string
   ]
 }
 
@@ -784,7 +781,6 @@ process_in_files("make_core_generated_media_feature_names") {
     "$blink_core_output_dir/MediaFeatureNames.cpp",
     "$blink_core_output_dir/MediaFeatureNames.h",
   ]
-  other_args = [ "--defines", feature_defines_string ]
 }
 
 # make_names -------------------------------------------------------------------
@@ -1045,7 +1041,6 @@ action("make_core_generated_media_query_tokenizer_codepoints") {
 
   args = [
     "--output_dir", rel_blink_core_gen_dir,
-    "--defines", feature_defines_string
   ]
 
   deps = make_core_generated_deps

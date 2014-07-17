@@ -124,7 +124,6 @@ template("make_names") {
     in_files = invoker.in_files
     other_inputs = make_names_files
     outputs = invoker.outputs
-    other_args = [ "--defines", feature_defines_string ]
   }
 }
 
@@ -138,7 +137,6 @@ template("make_qualified_names") {
     in_files = invoker.in_files
     other_inputs = make_qualified_names_files
     outputs = invoker.outputs
-    other_args = [ "--defines", feature_defines_string ]
   }
 }
 

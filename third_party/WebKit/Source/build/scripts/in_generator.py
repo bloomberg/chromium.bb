@@ -94,7 +94,6 @@ class Maker(object):
             exit(1)
 
         parser = optparse.OptionParser()
-        parser.add_option("--defines")
         parser.add_option("--gperf", default="gperf")
         parser.add_option("--output_dir", default=os.getcwd())
         options, args = parser.parse_args()

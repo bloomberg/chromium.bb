@@ -258,7 +258,6 @@
             '--output_dir',
             '<(blink_core_output_dir)',
             '--gperf', '<(gperf_exe)',
-            '--defines', '<(feature_defines)',
           ],
         },
         {
@@ -283,7 +282,6 @@
             '<@(in_files)',
             '--output_dir',
             '<(blink_core_output_dir)',
-            '--defines', '<(feature_defines)',
           ],
         },
         {
@@ -308,7 +306,6 @@
             '<@(in_files)',
             '--output_dir',
             '<(blink_core_output_dir)',
-            '--defines', '<(feature_defines)',
           ],
         },
         {
@@ -332,7 +329,6 @@
             '<@(in_files)',
             '--output_dir',
             '<(blink_core_output_dir)',
-            '--defines', '<(feature_defines)',
           ],
         },
         {
@@ -348,7 +344,6 @@
             '../build/scripts/make_mediaquery_tokenizer_codepoints.py',
             '--output_dir',
             '<(blink_core_output_dir)',
-            '--defines', '<(feature_defines)',
           ],
         },
         {
@@ -419,7 +414,6 @@
              '--output_dir',
              '<(blink_core_output_dir)',
             '--gperf', '<(gperf_exe)',
-            '--defines', '<(feature_defines)',
           ],
         },
         {
@@ -597,7 +591,6 @@
             'html/parser/MathMLAttributeNames.in',
             '--output_dir',
             '<(blink_core_output_dir)',
-            '--defines', '<(feature_defines)'
           ],
         },
         {
