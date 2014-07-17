@@ -19,12 +19,6 @@
 #include "net/cert/x509_certificate.h"
 #include "policy/policy_constants.h"
 
-namespace {
-
-bool skip_certificate_importer_creation_for_test = false;
-
-}  // namespace
-
 namespace policy {
 
 UserNetworkConfigurationUpdater::~UserNetworkConfigurationUpdater() {}
@@ -74,23 +68,15 @@ UserNetworkConfigurationUpdater::UserNetworkConfigurationUpdater(
   // responsible for creating it. This requires |GetNSSCertDatabaseForProfile|
   // call, which is not safe before the profile initialization is finalized.
   // Thus, listen for PROFILE_ADDED notification, on which |cert_importer_|
-  // creation should start. This behaviour can be disabled in tests.
-  if (!skip_certificate_importer_creation_for_test) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_PROFILE_ADDED,
-                   content::Source<Profile>(profile));
-  }
+  // creation should start.
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_PROFILE_ADDED,
+                 content::Source<Profile>(profile));
 }
 
 void UserNetworkConfigurationUpdater::SetCertificateImporterForTest(
     scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer) {
   SetCertificateImporter(certificate_importer.Pass());
-}
-
-// static
-void UserNetworkConfigurationUpdater::
-SetSkipCertificateImporterCreationForTest(bool skip) {
-  skip_certificate_importer_creation_for_test = skip;
 }
 
 void UserNetworkConfigurationUpdater::GetWebTrustedCertificates(
@@ -134,9 +120,6 @@ void UserNetworkConfigurationUpdater::Observe(
     const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_ADDED);
   Profile* profile = content::Source<Profile>(source).ptr();
-
-  if (skip_certificate_importer_creation_for_test)
-    return;
 
   GetNSSCertDatabaseForProfile(
       profile,

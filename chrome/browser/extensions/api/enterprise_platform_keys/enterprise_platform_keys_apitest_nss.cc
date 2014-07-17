@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/net/nss_context.h"
@@ -18,9 +17,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
-#include "content/public/test/test_utils.h"
 #include "content/test/net/url_request_mock_http_job.h"
-#include "crypto/nss_util.h"
 #include "net/base/net_errors.h"
 #include "net/cert/nss_cert_database.h"
 #include "policy/policy_constants.h"
@@ -101,12 +98,6 @@ void DidGetCertDatabase(base::RunLoop* loop, net::NSSCertDatabase* cert_db) {
 
 class EnterprisePlatformKeysTest : public ExtensionApiTest {
  public:
-  virtual void SetUp() {
-    policy::UserNetworkConfigurationUpdater::
-        SetSkipCertificateImporterCreationForTest(true /*skip*/);
-    ExtensionApiTest::SetUp();
-  }
-
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
 
@@ -135,16 +126,6 @@ class EnterprisePlatformKeysTest : public ExtensionApiTest {
         FROM_HERE,
         base::Bind(chrome_browser_net::SetUrlRequestMocksEnabled, true));
 
-    {
-      base::RunLoop loop;
-      content::BrowserThread::PostTask(
-          content::BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(&EnterprisePlatformKeysTest::SetupTestNSSDBOnIOThread,
-                     base::Unretained(this),
-                     &loop));
-      loop.Run();
-    }
 
     {
       base::RunLoop loop;
@@ -156,31 +137,7 @@ class EnterprisePlatformKeysTest : public ExtensionApiTest {
     SetPolicy();
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
-    base::RunLoop loop;
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&EnterprisePlatformKeysTest::DeleteTestNSSDBOnIOThread,
-                   base::Unretained(this),
-                   &loop));
-    loop.Run();
-    ExtensionApiTest::CleanUpOnMainThread();
-  }
-
  private:
-  void SetupTestNSSDBOnIOThread(base::RunLoop* loop) {
-    test_nssdb_.reset(new crypto::ScopedTestNSSDB);
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE, loop->QuitClosure());
-  }
-
-  void DeleteTestNSSDBOnIOThread(base::RunLoop* loop) {
-    test_nssdb_.reset();
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE, loop->QuitClosure());
-  }
-
   void SetPolicy() {
     // Extensions that are force-installed come from an update URL, which
     // defaults to the webstore. Use a mock URL for this test with an update
@@ -209,7 +166,6 @@ class EnterprisePlatformKeysTest : public ExtensionApiTest {
     observer.Wait();
   }
 
-  scoped_ptr<crypto::ScopedTestNSSDB> test_nssdb_;
   policy::MockConfigurationPolicyProvider policy_provider_;
 };
 

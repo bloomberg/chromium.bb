@@ -82,12 +82,6 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
   void SetCertificateImporterForTest(
       scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer);
 
-  // Used in test to delay CertificateImporter creation until the NSSDatabase is
-  // ready. This is needed in some tests as the user's certificate database may
-  // not get initialized in time.
-  // TODO(tbarzic): Remove this when it's not needed.
-  static void SetSkipCertificateImporterCreationForTest(bool skip);
-
  private:
   class CrosTrustAnchorProvider;
 
