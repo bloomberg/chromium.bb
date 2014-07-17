@@ -450,27 +450,10 @@ if (env.Bit('linux') and not env.Bit('built_elsewhere')):
        bootstrap_env.File('linux/nacl_bootstrap.x')),
       )
 
-  # The bootstrap program is used as an intermediate program so it
-  # must be built in the current build environment.
-  munge_env = env['BUILD_ENV'].Clone()
-  if env.Bit('msan'):
-    # This doesn't currently work with MSan because of the dependency on libelf
-    # (which is not instrumented). Let's just disable MSan for this binary.
-    munge_env.FilterOut(CLANG_OPTS=['-fsanitize=memory',
-                                    '-fsanitize-memory-track-origins',
-                                    '-fsanitize-memory-track-origins=0',
-                                    '-fsanitize-memory-track-origins=1',
-                                    '-fsanitize-memory-track-origins=2',
-                                    '-DMEMORY_SANITIZER'])
-  bootstrap_munge = munge_env.Program(
-      'nacl_bootstrap_munge_phdr',
-      ['linux/nacl_bootstrap_munge_phdr.c'],
-      LIBS=['elf'])
-
   bootstrap_prog = bootstrap_env.Command(
       'nacl_helper_bootstrap',
       [bootstrap_env.File('linux/nacl_bootstrap_munge_phdr.py'),
-       bootstrap_munge, bootstrap_raw],
+       bootstrap_raw],
       '${PYTHON} ${SOURCES} ${TARGET}'
       )
   bootstrap_out = bootstrap_env.Install('${STAGING_DIR}', bootstrap_prog)

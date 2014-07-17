@@ -34,35 +34,6 @@
   ],
   'targets': [
     {
-      'target_name': 'nacl_bootstrap_munge_phdr',
-      'type': 'executable',
-      'toolsets': ['host'],
-      'sources': [
-        'nacl_bootstrap_munge_phdr.c',
-      ],
-      'libraries': [
-        '-lelf',
-      ],
-      # Drop flags such as -fsanitize-memory-track-origins=. See
-      # the comment below.
-      'cflags/': [['exclude', '^-fsanitize-memory']],
-
-      'cflags!': [
-        # MemorySanitizer reports an error in this binary unless instrumented
-        # libelf is supplied. Because libelf source code uses gcc extensions,
-        # building it with MemorySanitizer (which implies clang) is challenging,
-        # and it's much simpler to just disable MSan for this target.
-        '-fsanitize=memory',
-        '-fsanitize-memory-track-origins',
-        # This causes an "unused argument" warning in C targets.
-        '-stdlib=libc++',
-      ],
-      'ldflags!': [
-        '-fsanitize=memory',
-        '-stdlib=libc++',
-      ],
-    },
-    {
       'target_name': 'nacl_bootstrap_lib',
       'type': 'static_library',
       'product_dir': '<(SHARED_INTERMEDIATE_DIR)/nacl_bootstrap',
@@ -222,7 +193,6 @@
       'target_name': 'nacl_helper_bootstrap',
       'dependencies': [
         'nacl_bootstrap_raw',
-        'nacl_bootstrap_munge_phdr#host',
       ],
       'type': 'none',
       # See above about this magical flag.
@@ -233,7 +203,6 @@
       'actions': [{
         'action_name': 'munge_phdr',
         'inputs': ['nacl_bootstrap_munge_phdr.py',
-                   '<(PRODUCT_DIR)/nacl_bootstrap_munge_phdr',
                    '<(PRODUCT_DIR)/nacl_bootstrap_raw'],
         'outputs': ['<(PRODUCT_DIR)/nacl_helper_bootstrap'],
         'message': 'Munging ELF program header',
