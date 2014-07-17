@@ -11,8 +11,6 @@
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/x/x11_types.h"
 
-typedef unsigned long Atom;
-
 // A process wide singleton cache for X menus.
 template <typename T> struct DefaultSingletonTraits;
 
@@ -39,7 +37,7 @@ class UI_BASE_EXPORT XMenuList {
   ~XMenuList();
 
   std::vector<XID> menus_;
-  ::Atom menu_type_atom_;
+  XAtom menu_type_atom_;
   DISALLOW_COPY_AND_ASSIGN(XMenuList);
 };
 

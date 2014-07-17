@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "ui/gfx/gfx_export.h"
 
+typedef unsigned long XAtom;
 typedef unsigned long XID;
 typedef struct _XImage XImage;
 typedef struct _XGC *GC;

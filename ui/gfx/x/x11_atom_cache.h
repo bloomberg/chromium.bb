@@ -10,9 +10,7 @@
 
 #include "base/basictypes.h"
 #include "ui/gfx/gfx_export.h"
-
-typedef unsigned long Atom;
-typedef struct _XDisplay XDisplay;
+#include "ui/gfx/x/x11_types.h"
 
 namespace ui {
 
@@ -27,7 +25,7 @@ class GFX_EXPORT X11AtomCache {
   ~X11AtomCache();
 
   // Returns the pre-interned Atom without having to go to the x server.
-  Atom GetAtom(const char*) const;
+  XAtom GetAtom(const char*) const;
 
   // When an Atom isn't in the list of items we've cached, we should look it
   // up, cache it locally, and then return the result.
@@ -38,7 +36,7 @@ class GFX_EXPORT X11AtomCache {
 
   bool uncached_atoms_allowed_;
 
-  mutable std::map<std::string, Atom> cached_atoms_;
+  mutable std::map<std::string, XAtom> cached_atoms_;
 
   DISALLOW_COPY_AND_ASSIGN(X11AtomCache);
 };

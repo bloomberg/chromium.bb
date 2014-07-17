@@ -23,7 +23,6 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/x/x11_types.h"
 
-typedef unsigned long Atom;
 typedef unsigned long XSharedMemoryId;  // ShmSeg in the X headers.
 typedef unsigned long Cursor;
 typedef struct _XcursorImage XcursorImage;
@@ -136,16 +135,16 @@ UI_BASE_EXPORT bool PropertyExists(XID window,
 // interpretation. |out_data| should be freed by XFree() after use.
 UI_BASE_EXPORT bool GetRawBytesOfProperty(
     XID window,
-    Atom property,
+    XAtom property,
     scoped_refptr<base::RefCountedMemory>* out_data,
     size_t* out_data_items,
-    Atom* out_type);
+    XAtom* out_type);
 
 // Get the value of an int, int array, atom array or string property.  On
 // success, true is returned and the value is stored in |value|.
 //
 // TODO(erg): Once we remove the gtk port and are 100% aura, all of these
-// should accept an Atom instead of a string.
+// should accept an XAtom instead of a string.
 UI_BASE_EXPORT bool GetIntProperty(XID window,
                                    const std::string& property_name,
                                    int* value);
@@ -157,7 +156,7 @@ UI_BASE_EXPORT bool GetIntArrayProperty(XID window,
                                         std::vector<int>* value);
 UI_BASE_EXPORT bool GetAtomArrayProperty(XID window,
                                          const std::string& property_name,
-                                         std::vector<Atom>* value);
+                                         std::vector<XAtom>* value);
 UI_BASE_EXPORT bool GetStringProperty(XID window,
                                       const std::string& property_name,
                                       std::string* value);
@@ -174,18 +173,18 @@ UI_BASE_EXPORT bool SetIntArrayProperty(XID window,
 UI_BASE_EXPORT bool SetAtomProperty(XID window,
                                     const std::string& name,
                                     const std::string& type,
-                                    Atom value);
+                                    XAtom value);
 UI_BASE_EXPORT bool SetAtomArrayProperty(XID window,
                                          const std::string& name,
                                          const std::string& type,
-                                         const std::vector<Atom>& value);
+                                         const std::vector<XAtom>& value);
 UI_BASE_EXPORT bool SetStringProperty(XID window,
-                                      Atom property,
-                                      Atom type,
+                                      XAtom property,
+                                      XAtom type,
                                       const std::string& value);
 
 // Gets the X atom for default display corresponding to atom_name.
-UI_BASE_EXPORT Atom GetAtom(const char* atom_name);
+UI_BASE_EXPORT XAtom GetAtom(const char* atom_name);
 
 // Sets the WM_CLASS attribute for a given X11 window.
 UI_BASE_EXPORT void SetWindowClassHint(XDisplay* display,
@@ -272,7 +271,7 @@ UI_BASE_EXPORT void SetDefaultX11ErrorHandlers();
 UI_BASE_EXPORT bool IsX11WindowFullScreen(XID window);
 
 // Returns true if the window manager supports the given hint.
-UI_BASE_EXPORT bool WmSupportsHint(Atom atom);
+UI_BASE_EXPORT bool WmSupportsHint(XAtom atom);
 
 // Manages a piece of X11 allocated memory as a RefCountedMemory segment. This
 // object takes ownership over the passed in memory and will free it with the

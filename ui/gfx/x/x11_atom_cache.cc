@@ -19,7 +19,7 @@ X11AtomCache::X11AtomCache(XDisplay* xdisplay, const char** to_cache)
   for (const char** i = to_cache; *i != NULL; i++)
     cache_count++;
 
-  scoped_ptr<Atom[]> cached_atoms(new Atom[cache_count]);
+  scoped_ptr<XAtom[]> cached_atoms(new XAtom[cache_count]);
 
   // Grab all the atoms we need now to minimize roundtrips to the X11 server.
   XInternAtoms(xdisplay_,
@@ -32,11 +32,11 @@ X11AtomCache::X11AtomCache(XDisplay* xdisplay, const char** to_cache)
 
 X11AtomCache::~X11AtomCache() {}
 
-Atom X11AtomCache::GetAtom(const char* name) const {
+XAtom X11AtomCache::GetAtom(const char* name) const {
   std::map<std::string, Atom>::const_iterator it = cached_atoms_.find(name);
 
   if (uncached_atoms_allowed_ && it == cached_atoms_.end()) {
-    Atom atom = XInternAtom(xdisplay_, name, false);
+    XAtom atom = XInternAtom(xdisplay_, name, false);
     cached_atoms_.insert(std::make_pair(name, atom));
     return atom;
   }

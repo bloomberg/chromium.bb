@@ -546,11 +546,11 @@ uint32_t Clipboard::AuraX11Details::DispatchEvent(const PlatformEvent& xev) {
     case SelectionNotify: {
       ::Atom selection = xev->xselection.selection;
       if (selection == XA_PRIMARY)
-        primary_requestor_.OnSelectionNotify(xev->xselection);
+        primary_requestor_.OnSelectionNotify(*xev);
       else if (selection == GetCopyPasteSelection())
-        clipboard_requestor_.OnSelectionNotify(xev->xselection);
+        clipboard_requestor_.OnSelectionNotify(*xev);
       else if (selection == atom_cache_.GetAtom(kClipboardManager))
-        clipboard_manager_requestor_.OnSelectionNotify(xev->xselection);
+        clipboard_manager_requestor_.OnSelectionNotify(*xev);
       break;
     }
     case SelectionClear: {

@@ -84,9 +84,9 @@ int DefaultX11IOErrorHandler(XDisplay* d) {
 
 // Note: The caller should free the resulting value data.
 bool GetProperty(XID window, const std::string& property_name, long max_length,
-                 Atom* type, int* format, unsigned long* num_items,
+                 XAtom* type, int* format, unsigned long* num_items,
                  unsigned char** property) {
-  Atom property_atom = GetAtom(property_name.c_str());
+  XAtom property_atom = GetAtom(property_name.c_str());
   unsigned long remaining_bytes = 0;
   return XGetWindowProperty(gfx::GetXDisplay(),
                             window,
@@ -483,7 +483,7 @@ void SetUseOSWindowFrame(XID window, bool use_os_window_frame) {
   motif_hints.flags = (1L << 1);
   motif_hints.decorations = use_os_window_frame ? 1 : 0;
 
-  ::Atom hint_atom = GetAtom("_MOTIF_WM_HINTS");
+  XAtom hint_atom = GetAtom("_MOTIF_WM_HINTS");
   XChangeProperty(gfx::GetXDisplay(),
                   window,
                   hint_atom,
@@ -553,9 +553,9 @@ bool IsWindowVisible(XID window) {
     return false;
 
   // Minimized windows are not visible.
-  std::vector<Atom> wm_states;
+  std::vector<XAtom> wm_states;
   if (GetAtomArrayProperty(window, "_NET_WM_STATE", &wm_states)) {
-    Atom hidden_atom = GetAtom("_NET_WM_STATE_HIDDEN");
+    XAtom hidden_atom = GetAtom("_NET_WM_STATE_HIDDEN");
     if (std::find(wm_states.begin(), wm_states.end(), hidden_atom) !=
             wm_states.end()) {
       return false;
@@ -663,7 +663,7 @@ bool WindowContainsPoint(XID window, gfx::Point screen_loc) {
 
 
 bool PropertyExists(XID window, const std::string& property_name) {
-  Atom type = None;
+  XAtom type = None;
   int format = 0;  // size in bits of each item in 'property'
   unsigned long num_items = 0;
   unsigned char* property = NULL;
@@ -678,14 +678,14 @@ bool PropertyExists(XID window, const std::string& property_name) {
 }
 
 bool GetRawBytesOfProperty(XID window,
-                           Atom property,
+                           XAtom property,
                            scoped_refptr<base::RefCountedMemory>* out_data,
                            size_t* out_data_items,
-                           Atom* out_type) {
+                           XAtom* out_type) {
   // Retrieve the data from our window.
   unsigned long nitems = 0;
   unsigned long nbytes = 0;
-  Atom prop_type = None;
+  XAtom prop_type = None;
   int prop_format = 0;
   unsigned char* property_data = NULL;
   if (XGetWindowProperty(gfx::GetXDisplay(), window, property,
@@ -732,7 +732,7 @@ bool GetRawBytesOfProperty(XID window,
 }
 
 bool GetIntProperty(XID window, const std::string& property_name, int* value) {
-  Atom type = None;
+  XAtom type = None;
   int format = 0;  // size in bits of each item in 'property'
   unsigned long num_items = 0;
   unsigned char* property = NULL;
@@ -753,7 +753,7 @@ bool GetIntProperty(XID window, const std::string& property_name, int* value) {
 }
 
 bool GetXIDProperty(XID window, const std::string& property_name, XID* value) {
-  Atom type = None;
+  XAtom type = None;
   int format = 0;  // size in bits of each item in 'property'
   unsigned long num_items = 0;
   unsigned char* property = NULL;
@@ -776,7 +776,7 @@ bool GetXIDProperty(XID window, const std::string& property_name, XID* value) {
 bool GetIntArrayProperty(XID window,
                          const std::string& property_name,
                          std::vector<int>* value) {
-  Atom type = None;
+  XAtom type = None;
   int format = 0;  // size in bits of each item in 'property'
   unsigned long num_items = 0;
   unsigned char* properties = NULL;
@@ -803,8 +803,8 @@ bool GetIntArrayProperty(XID window,
 
 bool GetAtomArrayProperty(XID window,
                           const std::string& property_name,
-                          std::vector<Atom>* value) {
-  Atom type = None;
+                          std::vector<XAtom>* value) {
+  XAtom type = None;
   int format = 0;  // size in bits of each item in 'property'
   unsigned long num_items = 0;
   unsigned char* properties = NULL;
@@ -820,7 +820,7 @@ bool GetAtomArrayProperty(XID window,
     return false;
   }
 
-  Atom* atom_properties = reinterpret_cast<Atom*>(properties);
+  XAtom* atom_properties = reinterpret_cast<XAtom*>(properties);
   value->clear();
   value->insert(value->begin(), atom_properties, atom_properties + num_items);
   XFree(properties);
@@ -829,7 +829,7 @@ bool GetAtomArrayProperty(XID window,
 
 bool GetStringProperty(
     XID window, const std::string& property_name, std::string* value) {
-  Atom type = None;
+  XAtom type = None;
   int format = 0;  // size in bits of each item in 'property'
   unsigned long num_items = 0;
   unsigned char* property = NULL;
@@ -862,8 +862,8 @@ bool SetIntArrayProperty(XID window,
                          const std::string& type,
                          const std::vector<int>& value) {
   DCHECK(!value.empty());
-  Atom name_atom = GetAtom(name.c_str());
-  Atom type_atom = GetAtom(type.c_str());
+  XAtom name_atom = GetAtom(name.c_str());
+  XAtom type_atom = GetAtom(type.c_str());
 
   // XChangeProperty() expects values of type 32 to be longs.
   scoped_ptr<long[]> data(new long[value.size()]);
@@ -885,21 +885,21 @@ bool SetIntArrayProperty(XID window,
 bool SetAtomProperty(XID window,
                      const std::string& name,
                      const std::string& type,
-                     Atom value) {
-  std::vector<Atom> values(1, value);
+                     XAtom value) {
+  std::vector<XAtom> values(1, value);
   return SetAtomArrayProperty(window, name, type, values);
 }
 
 bool SetAtomArrayProperty(XID window,
                           const std::string& name,
                           const std::string& type,
-                          const std::vector<Atom>& value) {
+                          const std::vector<XAtom>& value) {
   DCHECK(!value.empty());
-  Atom name_atom = GetAtom(name.c_str());
-  Atom type_atom = GetAtom(type.c_str());
+  XAtom name_atom = GetAtom(name.c_str());
+  XAtom type_atom = GetAtom(type.c_str());
 
   // XChangeProperty() expects values of type 32 to be longs.
-  scoped_ptr<Atom[]> data(new Atom[value.size()]);
+  scoped_ptr<XAtom[]> data(new XAtom[value.size()]);
   for (size_t i = 0; i < value.size(); ++i)
     data[i] = value[i];
 
@@ -916,8 +916,8 @@ bool SetAtomArrayProperty(XID window,
 }
 
 bool SetStringProperty(XID window,
-                       Atom property,
-                       Atom type,
+                       XAtom property,
+                       XAtom type,
                        const std::string& value) {
   gfx::X11ErrorTracker err_tracker;
   XChangeProperty(gfx::GetXDisplay(),
@@ -931,7 +931,7 @@ bool SetStringProperty(XID window,
   return !err_tracker.FoundNewError();
 }
 
-Atom GetAtom(const char* name) {
+XAtom GetAtom(const char* name) {
   // TODO(derat): Cache atoms to avoid round-trips to the server.
   return XInternAtom(gfx::GetXDisplay(), name, false);
 }
@@ -1227,9 +1227,9 @@ bool IsX11WindowFullScreen(XID window) {
   // If _NET_WM_STATE_FULLSCREEN is in _NET_SUPPORTED, use the presence or
   // absence of _NET_WM_STATE_FULLSCREEN in _NET_WM_STATE to determine
   // whether we're fullscreen.
-  Atom fullscreen_atom = GetAtom("_NET_WM_STATE_FULLSCREEN");
+  XAtom fullscreen_atom = GetAtom("_NET_WM_STATE_FULLSCREEN");
   if (WmSupportsHint(fullscreen_atom)) {
-    std::vector<Atom> atom_properties;
+    std::vector<XAtom> atom_properties;
     if (GetAtomArrayProperty(window,
                              "_NET_WM_STATE",
                              &atom_properties)) {
@@ -1256,8 +1256,8 @@ bool IsX11WindowFullScreen(XID window) {
   return window_rect.size() == gfx::Size(width, height);
 }
 
-bool WmSupportsHint(Atom atom) {
-  std::vector<Atom> supported_atoms;
+bool WmSupportsHint(XAtom atom) {
+  std::vector<XAtom> supported_atoms;
   if (!GetAtomArrayProperty(GetX11RootWindow(),
                             "_NET_SUPPORTED",
                             &supported_atoms)) {

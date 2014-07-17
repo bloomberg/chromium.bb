@@ -4,6 +4,8 @@
 
 #include "ui/base/x/selection_requestor.h"
 
+#include <X11/Xlib.h>
+
 #include "base/run_loop.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
@@ -24,9 +26,9 @@ const char* kAtomsToCache[] = {
 
 }  // namespace
 
-SelectionRequestor::SelectionRequestor(Display* x_display,
-                                       Window x_window,
-                                       Atom selection_name,
+SelectionRequestor::SelectionRequestor(XDisplay* x_display,
+                                       XID x_window,
+                                       XAtom selection_name,
                                        PlatformEventDispatcher* dispatcher)
     : x_display_(x_display),
       x_window_(x_window),
@@ -38,15 +40,15 @@ SelectionRequestor::SelectionRequestor(Display* x_display,
 SelectionRequestor::~SelectionRequestor() {}
 
 bool SelectionRequestor::PerformBlockingConvertSelection(
-    Atom target,
+    XAtom target,
     scoped_refptr<base::RefCountedMemory>* out_data,
     size_t* out_data_items,
-    Atom* out_type) {
+    XAtom* out_type) {
   // The name of the property that we are either:
   // - Passing as a parameter with the XConvertSelection() request.
   // OR
   // - Asking the selection owner to set on |x_window_|.
-  Atom property = atom_cache_.GetAtom(kChromeSelection);
+  XAtom property = atom_cache_.GetAtom(kChromeSelection);
 
   XConvertSelection(x_display_,
                     selection_name_,
@@ -72,18 +74,18 @@ bool SelectionRequestor::PerformBlockingConvertSelection(
 }
 
 void SelectionRequestor::PerformBlockingConvertSelectionWithParameter(
-    Atom target,
-    const std::vector< ::Atom>& parameter) {
+    XAtom target,
+    const std::vector<XAtom>& parameter) {
   SetAtomArrayProperty(x_window_, kChromeSelection, "ATOM", parameter);
   PerformBlockingConvertSelection(target, NULL, NULL, NULL);
 }
 
 SelectionData SelectionRequestor::RequestAndWaitForTypes(
-    const std::vector< ::Atom>& types) {
-  for (std::vector< ::Atom>::const_iterator it = types.begin();
+    const std::vector<XAtom>& types) {
+  for (std::vector<XAtom>::const_iterator it = types.begin();
        it != types.end(); ++it) {
     scoped_refptr<base::RefCountedMemory> data;
-    ::Atom type = None;
+    XAtom type = None;
     if (PerformBlockingConvertSelection(*it,
                                         &data,
                                         NULL,
@@ -96,18 +98,18 @@ SelectionData SelectionRequestor::RequestAndWaitForTypes(
   return SelectionData();
 }
 
-void SelectionRequestor::OnSelectionNotify(const XSelectionEvent& event) {
+void SelectionRequestor::OnSelectionNotify(const XEvent& event) {
   // Find the PendingRequest for the corresponding XConvertSelection call. If
   // there are multiple pending requests on the same target, satisfy them in
   // FIFO order.
   PendingRequest* request_notified = NULL;
-  if (selection_name_ == event.selection) {
+  if (selection_name_ == event.xselection.selection) {
     for (std::list<PendingRequest*>::iterator iter = pending_requests_.begin();
          iter != pending_requests_.end(); ++iter) {
       PendingRequest* request = *iter;
       if (request->returned)
         continue;
-      if (request->target != event.target)
+      if (request->target != event.xselection.target)
         continue;
       request_notified = request;
       break;
@@ -117,16 +119,17 @@ void SelectionRequestor::OnSelectionNotify(const XSelectionEvent& event) {
   // This event doesn't correspond to any XConvertSelection calls that we
   // issued in PerformBlockingConvertSelection. This shouldn't happen, but any
   // client can send any message, so it can happen.
+  XAtom returned_property = event.xselection.property;
   if (!request_notified) {
     // ICCCM requires us to delete the property passed into SelectionNotify. If
     // |request_notified| is true, the property will be deleted when the run
     // loop has quit.
-    if (event.property != None)
-      XDeleteProperty(x_display_, x_window_, event.property);
+    if (returned_property != None)
+      XDeleteProperty(x_display_, x_window_, returned_property);
     return;
   }
 
-  request_notified->returned_property = event.property;
+  request_notified->returned_property = returned_property;
   request_notified->returned = true;
 
   if (!request_notified->quit_closure.is_null())
@@ -171,7 +174,7 @@ void SelectionRequestor::BlockTillSelectionNotifyForRequest(
   pending_requests_.pop_back();
 }
 
-SelectionRequestor::PendingRequest::PendingRequest(Atom target)
+SelectionRequestor::PendingRequest::PendingRequest(XAtom target)
     : target(target),
       returned_property(None),
       returned(false) {
