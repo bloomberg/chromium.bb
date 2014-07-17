@@ -1519,9 +1519,13 @@ void Node::setTextContent(const String& text)
         case DOCUMENT_FRAGMENT_NODE: {
             // FIXME: Merge this logic into replaceChildrenWithText.
             RefPtrWillBeRawPtr<ContainerNode> container = toContainerNode(this);
+
+            // Note: This is an intentional optimization.
+            // See crbug.com/352836 also.
             // No need to do anything if the text is identical.
             if (container->hasOneTextChild() && toText(container->firstChild())->data() == text)
                 return;
+
             ChildListMutationScope mutation(*this);
             container->removeChildren();
             // Note: This API will not insert empty text nodes:
