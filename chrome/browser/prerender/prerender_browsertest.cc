@@ -4380,8 +4380,18 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest, PrerenderOmniboxCancel) {
   prerender->WaitForStop();
 }
 
+// Crashes on windows.  The failure seems to be that the PrerenderOmniboxAbandon
+// test is setting up a call to the windows API RegisterApplicationRestart with
+// a command line that is too long (> 1024 characters).
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_PrerenderOmniboxAbandon DISABLED_PrerenderOmniboxAbandon
+#else
+#define MAYBE_PrerenderOmniboxAbandon PrerenderOmniboxAbandon
+#endif
+
 // Checks that accepting omnibox input abandons an omnibox prerender.
-IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest, PrerenderOmniboxAbandon) {
+IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
+                       MAYBE_PrerenderOmniboxAbandon) {
   // Set the abandon timeout to something high so it does not introduce
   // flakiness if the prerender times out before the test completes.
   GetPrerenderManager()->mutable_config().abandon_time_to_live =
