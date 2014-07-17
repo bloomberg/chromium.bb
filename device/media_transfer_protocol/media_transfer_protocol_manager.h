@@ -39,19 +39,19 @@ class MediaTransferProtocolManager {
   // The argument is true if there was an error.
   typedef base::Callback<void(bool error)> CloseStorageCallback;
 
-  // A callback to handle the result of ReadDirectoryByPath/Id.
+  // A callback to handle the result of ReadDirectoryById.
   // The first argument is a vector of file entries.
   // The second argument is true if there was an error.
   typedef base::Callback<void(const std::vector<MtpFileEntry>& file_entries,
                               bool error)> ReadDirectoryCallback;
 
-  // A callback to handle the result of ReadFileChunkByPath/Id.
+  // A callback to handle the result of ReadFileChunkById.
   // The first argument is a string containing the file data.
   // The second argument is true if there was an error.
   typedef base::Callback<void(const std::string& data,
                               bool error)> ReadFileCallback;
 
-  // A callback to handle the result of GetFileInfoByPath/Id.
+  // A callback to handle the result of GetFileInfoById.
   // The first argument is a file entry.
   // The second argument is true if there was an error.
   typedef base::Callback<void(const MtpFileEntry& file_entry,
@@ -93,25 +93,11 @@ class MediaTransferProtocolManager {
   virtual void CloseStorage(const std::string& storage_handle,
                             const CloseStorageCallback& callback) = 0;
 
-  // Reads directory entries from |path| on |storage_handle| and runs
-  // |callback|.
-  virtual void ReadDirectoryByPath(const std::string& storage_handle,
-                                   const std::string& path,
-                                   const ReadDirectoryCallback& callback) = 0;
-
   // Reads directory entries from |file_id| on |storage_handle| and runs
   // |callback|.
   virtual void ReadDirectoryById(const std::string& storage_handle,
                                  uint32 file_id,
                                  const ReadDirectoryCallback& callback) = 0;
-
-  // Reads file data from |path| on |storage_handle| and runs |callback|.
-  // Reads |count| bytes of data starting at |offset|.
-  virtual void ReadFileChunkByPath(const std::string& storage_handle,
-                                   const std::string& path,
-                                   uint32 offset,
-                                   uint32 count,
-                                   const ReadFileCallback& callback) = 0;
 
   // Reads file data from |file_id| on |storage_handle| and runs |callback|.
   // Reads |count| bytes of data starting at |offset|.
@@ -120,11 +106,6 @@ class MediaTransferProtocolManager {
                                  uint32 offset,
                                  uint32 count,
                                  const ReadFileCallback& callback) = 0;
-
-  // Gets the file metadata for |path| on |storage_handle| and runs |callback|.
-  virtual void GetFileInfoByPath(const std::string& storage_handle,
-                                 const std::string& path,
-                                 const GetFileInfoCallback& callback) = 0;
 
   // Gets the file metadata for |file_id| on |storage_handle| and runs
   // |callback|.

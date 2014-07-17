@@ -149,26 +149,6 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   // MediaTransferProtocolManager override.
-  virtual void ReadDirectoryByPath(
-      const std::string& storage_handle,
-      const std::string& path,
-      const ReadDirectoryCallback& callback) OVERRIDE {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
-      callback.Run(std::vector<MtpFileEntry>(), true);
-      return;
-    }
-    read_directory_callbacks_.push(callback);
-    mtp_client_->ReadDirectoryByPath(
-        storage_handle,
-        path,
-        base::Bind(&MediaTransferProtocolManagerImpl::OnReadDirectory,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&MediaTransferProtocolManagerImpl::OnReadDirectoryError,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  // MediaTransferProtocolManager override.
   virtual void ReadDirectoryById(
       const std::string& storage_handle,
       uint32 file_id,
@@ -189,26 +169,6 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   // MediaTransferProtocolManager override.
-  virtual void ReadFileChunkByPath(const std::string& storage_handle,
-                                   const std::string& path,
-                                   uint32 offset,
-                                   uint32 count,
-                                   const ReadFileCallback& callback) OVERRIDE {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
-      callback.Run(std::string(), true);
-      return;
-    }
-    read_file_callbacks_.push(callback);
-    mtp_client_->ReadFileChunkByPath(
-        storage_handle, path, offset, count,
-        base::Bind(&MediaTransferProtocolManagerImpl::OnReadFile,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&MediaTransferProtocolManagerImpl::OnReadFileError,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  // MediaTransferProtocolManager override.
   virtual void ReadFileChunkById(const std::string& storage_handle,
                                  uint32 file_id,
                                  uint32 offset,
@@ -225,24 +185,6 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
         base::Bind(&MediaTransferProtocolManagerImpl::OnReadFile,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&MediaTransferProtocolManagerImpl::OnReadFileError,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  virtual void GetFileInfoByPath(const std::string& storage_handle,
-                                 const std::string& path,
-                                 const GetFileInfoCallback& callback) OVERRIDE {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
-      callback.Run(MtpFileEntry(), true);
-      return;
-    }
-    get_file_info_callbacks_.push(callback);
-    mtp_client_->GetFileInfoByPath(
-        storage_handle,
-        path,
-        base::Bind(&MediaTransferProtocolManagerImpl::OnGetFileInfo,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&MediaTransferProtocolManagerImpl::OnGetFileInfoError,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
