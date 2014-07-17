@@ -84,8 +84,7 @@ testCases.push({
                                'background_xhr', function response() { });
   },
   expected_activity: [
-    'XMLHttpRequest.open',
-    'XMLHttpRequest.setRequestHeader'
+    'blinkRequestResource XMLHttpRequest',
   ]
 });
 testCases.push({
@@ -176,7 +175,6 @@ testCases.push({
     'tabs.sendMessage',
     'tabs.executeScript',
     'tabs.executeScript',
-    'HTMLDocument.write',
     'tabs.remove'
   ]
 });
@@ -195,7 +193,6 @@ testCases.push({
     'tabs.sendMessage',
     'tabs.executeScript',
     'tabs.executeScript',
-    'HTMLDocument.write',
     'tabs.remove'
   ]
 });
@@ -217,21 +214,11 @@ var domExpectedActivity = [
     'tabs.onUpdated',
     'tabs.executeScript',
      // Location access
-    'Window.location',
-    'Document.location',
-    'Window.location',
-    'Location.assign',
-    'Location.replace',
-     // Dom mutations
-    'Document.createElement',
-    'Document.createElement',
-    'Node.appendChild',
-    'Node.insertBefore',
-    'Node.replaceChild',
-    //'Document.location',
-    'HTMLDocument.write',
-    'HTMLDocument.writeln',
-    'Element.innerHTML',
+    'blinkSetAttribute LocalDOMWindow url',
+    'blinkSetAttribute LocalDOMWindow url',
+    'blinkSetAttribute LocalDOMWindow url',
+    'blinkSetAttribute LocalDOMWindow url',
+    // Dom mutations
     // Navigator access
     'Window.navigator',
     'Geolocation.getCurrentPosition',
@@ -253,25 +240,22 @@ var domExpectedActivity = [
     // Web database access
     'Window.openDatabase',
     // Canvas access
-    'Document.createElement',
-    'HTMLCanvasElement.getContext',
     // XHR from content script.
-    'XMLHttpRequest.open',
-    'XMLHttpRequest.setRequestHeader',
-    'HTMLDocument.write'
+    'blinkRequestResource XMLHttpRequest',
 ];
 
 // add the hook activity
-hookNames = ['onclick', 'ondblclick', 'ondrag', 'ondragend', 'ondragenter',
-             'ondragleave', 'ondragover', 'ondragstart', 'ondrop', 'oninput',
-             'onkeydown', 'onkeypress', 'onkeyup', 'onmousedown',
-             'onmouseenter', 'onmouseleave', 'onmousemove', 'onmouseout',
-             'onmouseover', 'onmouseup', 'onmousewheel'];
+hookNames = ['click', 'dblclick', 'drag', 'dragend', 'dragenter',
+             'dragleave', 'dragover', 'dragstart', 'drop', 'input',
+             'keydown', 'keypress', 'keyup', 'mousedown',
+             'mouseenter', 'mouseleave', 'mousemove', 'mouseout',
+             'mouseover', 'mouseup', 'mousewheel'];
 
 for (var i = 0; i < hookNames.length; i++) {
-  domExpectedActivity.push('HTMLElement.' + hookNames[i]);
-  domExpectedActivity.push('Document.' + hookNames[i]);
-  domExpectedActivity.push('Window.' + hookNames[i]);
+  domExpectedActivity.push('blinkAddEventListener BODY ' + hookNames[i]);
+  domExpectedActivity.push('blinkAddEventListener #document ' + hookNames[i]);
+  domExpectedActivity.push('blinkAddEventListener LocalDOMWindow ' +
+                           hookNames[i]);
 }
 
 // Close the tab.
@@ -334,15 +318,15 @@ testCases.push({
     var filter = new Object();
     filter.extensionId = FRIEND_EXTENSION_ID;
     filter.activityType = 'dom_access';
-    filter.apiCall = 'Document.location';
+    filter.apiCall = 'blinkSetAttribute';
     chrome.activityLogPrivate.getExtensionActivities(
         filter,
         function(result) {
           chrome.test.assertEq(FRIEND_EXTENSION_ID,
               result['activities'][0]['extensionId']);
-          chrome.test.assertEq('Document.location',
+          chrome.test.assertEq('blinkSetAttribute',
               result['activities'][0]['apiCall']);
-          chrome.test.assertEq('setter',
+          chrome.test.assertEq('method',
               result['activities'][0]['other']['domVerb']);
           chrome.test.succeed();
         });
@@ -466,6 +450,10 @@ function checkIncognito(url, incognitoExpected) {
 var testCaseIndx = 0;
 var callIndx = -1;
 var enabledTestCases = [];
+var blinkArgs = {
+  'blinkRequestResource': 2,
+  'blinkSetAttribute': 3
+};
 
 chrome.activityLogPrivate.onExtensionActivity.addListener(
     function(activity) {
@@ -474,6 +462,12 @@ chrome.activityLogPrivate.onExtensionActivity.addListener(
 
       // Check the api call is the one we expected next.
       var apiCall = activity['apiCall'];
+      if (apiCall.indexOf('blink') == 0) {
+        var args = JSON.parse(activity['args']);
+        if (blinkArgs[apiCall])
+          args = args.splice(0, blinkArgs[apiCall] - 1);
+        apiCall += ' ' + args.join(' ');
+      }
       expectedCall = 'runtime.onMessageExternal';
       var testCase = enabledTestCases[testCaseIndx];
       if (callIndx > -1) {

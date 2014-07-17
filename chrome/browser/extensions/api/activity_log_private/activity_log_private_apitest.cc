@@ -46,11 +46,16 @@ class ActivityLogApiTest : public ExtensionApiTest {
   CommandLine saved_cmdline_;
 };
 
+#if defined(OS_WIN) && !defined(NDEBUG)
+// TODO(pmarch): fix flakiness on win debug - crbug.com/299393
+#define MAYBE_TriggerEvent DISABLED_TriggerEvent
+#else
+#define MAYBE_TriggerEvent TriggerEvent
+#endif
+
 // The test extension sends a message to its 'friend'. The test completes
 // if it successfully sees the 'friend' receive the message.
-// TODO(pmarch): Enable this test once modifications to Blink are done,
-// crbug.com/388287.
-IN_PROC_BROWSER_TEST_F(ActivityLogApiTest, DISABLED_TriggerEvent) {
+IN_PROC_BROWSER_TEST_F(ActivityLogApiTest, MAYBE_TriggerEvent) {
   ActivityLog::GetInstance(profile())->SetWatchdogAppActiveForTesting(true);
 
   host_resolver()->AddRule("*", "127.0.0.1");
