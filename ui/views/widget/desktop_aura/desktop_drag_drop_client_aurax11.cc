@@ -126,7 +126,7 @@ class DesktopDragDropClientAuraX11::X11DragContext
  private:
   // Masks the X11 atom |xdnd_operation|'s views representation onto
   // |drag_operation|.
-  void MaskOpeartion(::Atom xdnd_operation, int* drag_operation) const;
+  void MaskOperation(::Atom xdnd_operation, int* drag_operation) const;
 
   // ui::PlatformEventDispatcher:
   virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
@@ -306,15 +306,15 @@ int DesktopDragDropClientAuraX11::X11DragContext::GetDragOperation() const {
   int drag_operation = ui::DragDropTypes::DRAG_NONE;
   for (std::vector<Atom>::const_iterator it = actions_.begin();
        it != actions_.end(); ++it) {
-    MaskOpeartion(*it, &drag_operation);
+    MaskOperation(*it, &drag_operation);
   }
 
-  MaskOpeartion(suggested_action_, &drag_operation);
+  MaskOperation(suggested_action_, &drag_operation);
 
   return drag_operation;
 }
 
-void DesktopDragDropClientAuraX11::X11DragContext::MaskOpeartion(
+void DesktopDragDropClientAuraX11::X11DragContext::MaskOperation(
     ::Atom xdnd_operation,
     int* drag_operation) const {
   if (xdnd_operation == atom_cache_->GetAtom(kXdndActionCopy))
