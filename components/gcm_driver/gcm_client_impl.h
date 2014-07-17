@@ -6,6 +6,7 @@
 #define COMPONENTS_GCM_DRIVER_GCM_CLIENT_IMPL_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -101,6 +102,8 @@ class GCMClientImpl
   virtual void SetRecording(bool recording) OVERRIDE;
   virtual void ClearActivityLogs() OVERRIDE;
   virtual GCMStatistics GetStatistics() const OVERRIDE;
+  virtual void SetAccountsForCheckin(
+      const std::map<std::string, std::string>& account_tokens) OVERRIDE;
 
   // GCMStatsRecorder::Delegate implemenation.
   virtual void OnActivityRecorded() OVERRIDE;
@@ -127,17 +130,27 @@ class GCMClientImpl
     READY,
   };
 
-  // The check-in info for the user. Returned by the server.
+  // The check-in info for the device.
+  // TODO(fgorski): Convert to a class with explicit getters/setters.
   struct CheckinInfo {
-    CheckinInfo() : android_id(0), secret(0) {}
+    CheckinInfo();
+    ~CheckinInfo();
     bool IsValid() const { return android_id != 0 && secret != 0; }
-    void Reset() {
-      android_id = 0;
-      secret = 0;
-    }
+    void SnapshotCheckinAccounts();
+    void Reset();
 
+    // Android ID of the device as assigned by the server.
     uint64 android_id;
+    // Security token of the device as assigned by the server.
     uint64 secret;
+    // True if accounts were already provided through SetAccountsForCheckin(),
+    // or when |last_checkin_accounts| was loaded as empty.
+    bool accounts_set;
+    // Map of account email addresses and OAuth2 tokens that will be sent to the
+    // checkin server on a next checkin.
+    std::map<std::string, std::string> account_tokens;
+    // As set of accounts last checkin was completed with.
+    std::set<std::string> last_checkin_accounts;
   };
 
   // Collection of pending registration requests. Keys are app IDs, while values
@@ -199,8 +212,8 @@ class GCMClientImpl
   void SchedulePeriodicCheckin();
   // Gets the time until next checkin.
   base::TimeDelta GetTimeToNextCheckin() const;
-  // Callback for setting last checkin time in the |gcm_store_|.
-  void SetLastCheckinTimeCallback(bool success);
+  // Callback for setting last checkin information in the |gcm_store_|.
+  void SetLastCheckinInfoCallback(bool success);
 
   // Callback for persisting device credentials in the |gcm_store_|.
   void SetDeviceCredentialsCallback(bool success);

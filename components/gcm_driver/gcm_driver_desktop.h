@@ -55,8 +55,6 @@ class GCMDriverDesktop : public GCMDriver {
   virtual void AddAppHandler(const std::string& app_id,
                              GCMAppHandler* handler) OVERRIDE;
   virtual void RemoveAppHandler(const std::string& app_id) OVERRIDE;
-
-  // GCMDriver implementation:
   virtual void Enable() OVERRIDE;
   virtual void Disable() OVERRIDE;
   virtual GCMClient* GetGCMClientForTesting() const OVERRIDE;
@@ -66,6 +64,15 @@ class GCMDriverDesktop : public GCMDriver {
                                 bool clear_logs) OVERRIDE;
   virtual void SetGCMRecording(const GetGCMStatisticsCallback& callback,
                                bool recording) OVERRIDE;
+
+  // GCMDriverDesktop specific implementation.
+  // Sets a list of accounts with OAuth2 tokens for the next checkin.
+  // |account_tokens| maps email addresses to OAuth2 access tokens.
+  // |account_removed| indicates that an account has been removed since the
+  //     last time the callback was called, which triggers an immediate checkin,
+  //     to ensure that association between device and account is removed.
+  void SetAccountsForCheckin(
+      const std::map<std::string, std::string>& account_tokens);
 
  protected:
   // GCMDriver implementation:

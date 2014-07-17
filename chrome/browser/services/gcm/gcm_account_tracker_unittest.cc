@@ -45,8 +45,7 @@ class GCMAccountTrackerTest : public testing::Test {
   virtual ~GCMAccountTrackerTest();
 
   // Callback for the account tracker.
-  void UpdateAccounts(const std::map<std::string, std::string>& accounts,
-                      bool account_removed);
+  void UpdateAccounts(const std::map<std::string, std::string>& accounts);
 
   // Helpers to pass fake events to the tracker. Tests should have either a pair
   // of Start/FinishAccountSignIn or SignInAccount per account. Don't mix.
@@ -63,7 +62,6 @@ class GCMAccountTrackerTest : public testing::Test {
   // Test results and helpers.
   void ResetResults();
   bool update_accounts_called() const { return update_accounts_called_; }
-  bool account_removed() const { return account_removed_; }
   const std::map<std::string, std::string>& accounts() const {
     return accounts_;
   }
@@ -74,7 +72,6 @@ class GCMAccountTrackerTest : public testing::Test {
  private:
   std::map<std::string, std::string> accounts_;
   bool update_accounts_called_;
-  bool account_removed_;
 
   base::MessageLoop message_loop_;
   net::TestURLFetcherFactory test_fetcher_factory_;
@@ -84,7 +81,7 @@ class GCMAccountTrackerTest : public testing::Test {
 };
 
 GCMAccountTrackerTest::GCMAccountTrackerTest()
-    : update_accounts_called_(false), account_removed_(false) {
+    : update_accounts_called_(false) {
   fake_token_service_.reset(new FakeOAuth2TokenService());
 
   fake_identity_provider_.reset(
@@ -107,17 +104,14 @@ GCMAccountTrackerTest::~GCMAccountTrackerTest() {
 }
 
 void GCMAccountTrackerTest::UpdateAccounts(
-    const std::map<std::string, std::string>& accounts,
-    bool account_removed) {
+    const std::map<std::string, std::string>& accounts) {
   update_accounts_called_ = true;
   accounts_ = accounts;
-  account_removed_ = account_removed;
 }
 
 void GCMAccountTrackerTest::ResetResults() {
   accounts_.clear();
   update_accounts_called_ = false;
-  account_removed_ = false;
 }
 
 void GCMAccountTrackerTest::StartAccountSignIn(const std::string& account_key) {
@@ -159,10 +153,9 @@ void GCMAccountTrackerTest::IssueError(const std::string& account_key) {
 
 TEST_F(GCMAccountTrackerTest, NoAccounts) {
   EXPECT_FALSE(update_accounts_called());
-  EXPECT_FALSE(account_removed());
   tracker()->Start();
-  EXPECT_TRUE(update_accounts_called());
-  EXPECT_FALSE(account_removed());
+  // Callback should not be called if there where no accounts provided.
+  EXPECT_FALSE(update_accounts_called());
   EXPECT_TRUE(accounts().empty());
   tracker()->Stop();
 }
@@ -183,7 +176,6 @@ TEST_F(GCMAccountTrackerTest, SingleAccount) {
   IssueAccessToken(kAccountId1);
 
   EXPECT_TRUE(update_accounts_called());
-  EXPECT_FALSE(account_removed());
 
   std::map<std::string, std::string> expected_accounts;
   expected_accounts[kAccountId1] = MakeAccessToken(kAccountId1);
@@ -201,12 +193,10 @@ TEST_F(GCMAccountTrackerTest, MultipleAccounts) {
   FinishAccountSignIn(kAccountId1);
   IssueAccessToken(kAccountId1);
   EXPECT_FALSE(update_accounts_called());
-  EXPECT_FALSE(account_removed());
 
   FinishAccountSignIn(kAccountId2);
   IssueAccessToken(kAccountId2);
   EXPECT_TRUE(update_accounts_called());
-  EXPECT_FALSE(account_removed());
 
   std::map<std::string, std::string> expected_accounts;
   expected_accounts[kAccountId1] = MakeAccessToken(kAccountId1);
@@ -225,7 +215,6 @@ TEST_F(GCMAccountTrackerTest, AccountAdded) {
 
   IssueAccessToken(kAccountId1);
   EXPECT_TRUE(update_accounts_called());
-  EXPECT_FALSE(account_removed());
 
   std::map<std::string, std::string> expected_accounts;
   expected_accounts[kAccountId1] = MakeAccessToken(kAccountId1);
@@ -248,7 +237,6 @@ TEST_F(GCMAccountTrackerTest, AccountRemoved) {
 
   SignOutAccount(kAccountId2);
   EXPECT_TRUE(update_accounts_called());
-  EXPECT_TRUE(account_removed());
 
   std::map<std::string, std::string> expected_accounts;
   expected_accounts[kAccountId1] = MakeAccessToken(kAccountId1);
@@ -267,7 +255,6 @@ TEST_F(GCMAccountTrackerTest, GetTokenFailed) {
 
   IssueError(kAccountId2);
   EXPECT_TRUE(update_accounts_called());
-  EXPECT_FALSE(account_removed());
 
   std::map<std::string, std::string> expected_accounts;
   expected_accounts[kAccountId1] = MakeAccessToken(kAccountId1);
@@ -287,7 +274,6 @@ TEST_F(GCMAccountTrackerTest, GetTokenFailedAccountRemoved) {
   ResetResults();
   SignOutAccount(kAccountId2);
   EXPECT_TRUE(update_accounts_called());
-  EXPECT_TRUE(account_removed());
 
   std::map<std::string, std::string> expected_accounts;
   expected_accounts[kAccountId1] = MakeAccessToken(kAccountId1);
@@ -307,7 +293,6 @@ TEST_F(GCMAccountTrackerTest, AccountRemovedWhileRequestsPending) {
   SignOutAccount(kAccountId2);
   IssueAccessToken(kAccountId2);
   EXPECT_TRUE(update_accounts_called());
-  EXPECT_TRUE(account_removed());
 
   std::map<std::string, std::string> expected_accounts;
   expected_accounts[kAccountId1] = MakeAccessToken(kAccountId1);

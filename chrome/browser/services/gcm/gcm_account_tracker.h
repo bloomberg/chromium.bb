@@ -50,11 +50,9 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
   };
 
   // Callback for the GetAccountsForCheckin call. |account_tokens| maps email
-  // addresses to OAuth2 access tokens. |account_removed| indicates whether an
-  // account has been removed since the last time the callback was called.
-  typedef base::Callback<
-      void(const std::map<std::string, std::string>& account_tokens,
-           bool account_removed)> UpdateAccountsCallback;
+  // addresses to OAuth2 access tokens.
+  typedef base::Callback<void(const std::map<std::string, std::string>&
+                                  account_tokens)> UpdateAccountsCallback;
 
   // Creates an instance of GCMAccountTracker. |account_tracker| is used to
   // deliver information about the account, while |callback| will be called

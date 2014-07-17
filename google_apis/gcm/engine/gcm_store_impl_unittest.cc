@@ -142,7 +142,7 @@ TEST_F(GCMStoreImplTest, DeviceCredentials) {
   ASSERT_EQ(kDeviceToken, load_result->device_security_token);
 }
 
-TEST_F(GCMStoreImplTest, LastCheckinTime) {
+TEST_F(GCMStoreImplTest, LastCheckinInfo) {
   scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
   scoped_ptr<GCMStore::LoadResult> load_result;
   gcm_store->Load(base::Bind(
@@ -150,9 +150,13 @@ TEST_F(GCMStoreImplTest, LastCheckinTime) {
   PumpLoop();
 
   base::Time last_checkin_time = base::Time::Now();
+  std::set<std::string> accounts;
+  accounts.insert("test_user1@gmail.com");
+  accounts.insert("test_user2@gmail.com");
 
-  gcm_store->SetLastCheckinTime(
+  gcm_store->SetLastCheckinInfo(
       last_checkin_time,
+      accounts,
       base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
   PumpLoop();
 
@@ -161,6 +165,7 @@ TEST_F(GCMStoreImplTest, LastCheckinTime) {
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
   ASSERT_EQ(last_checkin_time, load_result->last_checkin_time);
+  ASSERT_EQ(accounts, load_result->last_checkin_accounts);
 }
 
 TEST_F(GCMStoreImplTest, GServicesSettings_ProtocolV2) {

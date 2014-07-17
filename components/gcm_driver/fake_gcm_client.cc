@@ -115,6 +115,10 @@ GCMClient::GCMStatistics FakeGCMClient::GetStatistics() const {
   return GCMClient::GCMStatistics();
 }
 
+void FakeGCMClient::SetAccountsForCheckin(
+    const std::map<std::string, std::string>& account_tokens) {
+}
+
 void FakeGCMClient::PerformDelayedLoading() {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 

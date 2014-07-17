@@ -13,8 +13,7 @@
 namespace gcm {
 
 namespace {
-const char kGCMGroupServerScope[] =
-    "oauth2:https://www.googleapis.com/auth/gcm";
+const char kGCMGroupServerScope[] = "https://www.googleapis.com/auth/gcm";
 const char kGCMAccountTrackerName[] = "gcm_account_tracker";
 }  // namespace
 
@@ -75,10 +74,12 @@ void GCMAccountTracker::Stop() {
 }
 
 void GCMAccountTracker::OnAccountAdded(const gaia::AccountIds& ids) {
+  DVLOG(1) << "Account added: " << ids.email;
   // We listen for the account signing in, which happens after account is added.
 }
 
 void GCMAccountTracker::OnAccountRemoved(const gaia::AccountIds& ids) {
+  DVLOG(1) << "Account removed: " << ids.email;
   // We listen for the account signing out, which happens before account is
   // removed.
 }
@@ -97,6 +98,7 @@ void GCMAccountTracker::OnGetTokenSuccess(
     const base::Time& expiration_time) {
   DCHECK(request);
   DCHECK(!request->GetAccountId().empty());
+  DVLOG(1) << "Get token success: " << request->GetAccountId();
 
   AccountInfos::iterator iter = account_infos_.find(request->GetAccountId());
   DCHECK(iter != account_infos_.end());
@@ -120,6 +122,7 @@ void GCMAccountTracker::OnGetTokenFailure(
     const GoogleServiceAuthError& error) {
   DCHECK(request);
   DCHECK(!request->GetAccountId().empty());
+  DVLOG(1) << "Get token failure: " << request->GetAccountId();
 
   AccountInfos::iterator iter = account_infos_.find(request->GetAccountId());
   DCHECK(iter != account_infos_.end());
@@ -181,7 +184,13 @@ void GCMAccountTracker::CompleteCollectingTokens() {
     }
   }
 
-  callback_.Run(account_tokens, account_removed);
+  // Make sure that there is something to report, otherwise bail out.
+  if (!account_tokens.empty() || account_removed) {
+    DVLOG(1) << "Calling callback: " << account_tokens.size();
+    callback_.Run(account_tokens);
+  } else {
+    DVLOG(1) << "No tokens and nothing removed. Skipping callback.";
+  }
 }
 
 void GCMAccountTracker::DeleteTokenRequest(
@@ -215,6 +224,7 @@ void GCMAccountTracker::GetToken(AccountInfos::iterator& account_iter) {
 }
 
 void GCMAccountTracker::OnAccountSignedIn(const gaia::AccountIds& ids) {
+  DVLOG(1) << "Account signed in: " << ids.email;
   AccountInfos::iterator iter = account_infos_.find(ids.account_key);
   if (iter == account_infos_.end()) {
     DCHECK(!ids.email.empty());
@@ -228,6 +238,7 @@ void GCMAccountTracker::OnAccountSignedIn(const gaia::AccountIds& ids) {
 }
 
 void GCMAccountTracker::OnAccountSignedOut(const gaia::AccountIds& ids) {
+  DVLOG(1) << "Account signed out: " << ids.email;
   AccountInfos::iterator iter = account_infos_.find(ids.account_key);
   if (iter == account_infos_.end())
     return;

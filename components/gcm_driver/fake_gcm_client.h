@@ -56,6 +56,8 @@ class FakeGCMClient : public GCMClient {
   virtual void SetRecording(bool recording) OVERRIDE;
   virtual void ClearActivityLogs() OVERRIDE;
   virtual GCMStatistics GetStatistics() const OVERRIDE;
+  virtual void SetAccountsForCheckin(
+      const std::map<std::string, std::string>& account_tokens) OVERRIDE;
 
   // Initiate the loading that has been delayed.
   // Called on UI thread.

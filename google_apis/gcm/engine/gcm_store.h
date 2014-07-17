@@ -6,6 +6,7 @@
 #define GOOGLE_APIS_GCM_ENGINE_GCM_STORE_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -46,6 +47,7 @@ class GCM_EXPORT GCMStore {
     std::map<std::string, std::string> gservices_settings;
     std::string gservices_digest;
     base::Time last_checkin_time;
+    std::set<std::string> last_checkin_accounts;
   };
 
   typedef std::vector<std::string> PersistentIdList;
@@ -101,7 +103,8 @@ class GCM_EXPORT GCMStore {
                                       const UpdateCallback& callback) = 0;
 
   // Sets last device's checkin time.
-  virtual void SetLastCheckinTime(const base::Time& last_checkin_time,
+  virtual void SetLastCheckinInfo(const base::Time& time,
+                                  const std::set<std::string>& accounts,
                                   const UpdateCallback& callback) = 0;
 
   // G-service settings handling.

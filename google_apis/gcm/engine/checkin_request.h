@@ -41,6 +41,7 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
   struct GCM_EXPORT RequestInfo {
     RequestInfo(uint64 android_id,
                 uint64 security_token,
+                const std::map<std::string, std::string>& account_tokens,
                 const std::string& settings_digest,
                 const checkin_proto::ChromeBuildProto& chrome_build_proto);
     ~RequestInfo();
@@ -49,6 +50,8 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
     uint64 android_id;
     // Security token of the device.
     uint64 security_token;
+    // Map of account OAuth2 tokens keyed by emails.
+    std::map<std::string, std::string> account_tokens;
     // Digest of GServices settings on the device.
     std::string settings_digest;
     // Information of the Chrome build of this device.

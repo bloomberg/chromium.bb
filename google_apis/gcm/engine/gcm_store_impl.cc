@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
 #include "google_apis/gcm/base/encryptor.h"
@@ -63,6 +64,8 @@ const char kGServiceSettingKeyStart[] = "gservice1-";
 const char kGServiceSettingKeyEnd[] = "gservice2-";
 // Key for digest of the last G-services settings update.
 const char kGServiceSettingsDigestKey[] = "gservices_digest";
+// Key used to indicate how many accounts were last checked in with this device.
+const char kLastCheckinAccountsKey[] = "last_checkin_accounts_count";
 // Key used to timestamp last checkin (marked with G services settings update).
 const char kLastCheckinTimeKey[] = "last_checkin_time";
 
@@ -138,7 +141,8 @@ class GCMStoreImpl::Backend
                            const UpdateCallback& callback);
   void RemoveUserSerialNumber(const std::string& username,
                               const UpdateCallback& callback);
-  void SetLastCheckinTime(const base::Time& last_checkin_time,
+  void SetLastCheckinInfo(const base::Time& time,
+                          const std::set<std::string>& accounts,
                           const UpdateCallback& callback);
   void SetGServicesSettings(
       const std::map<std::string, std::string>& settings,
@@ -153,7 +157,8 @@ class GCMStoreImpl::Backend
   bool LoadRegistrations(RegistrationInfoMap* registrations);
   bool LoadIncomingMessages(std::vector<std::string>* incoming_messages);
   bool LoadOutgoingMessages(OutgoingMessageMap* outgoing_messages);
-  bool LoadLastCheckinTime(base::Time* last_checkin_time);
+  bool LoadLastCheckinInfo(base::Time* last_checkin_time,
+                           std::set<std::string>* accounts);
   bool LoadGServicesSettings(std::map<std::string, std::string>* settings,
                              std::string* digest);
 
@@ -206,7 +211,8 @@ void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
       !LoadRegistrations(&result->registrations) ||
       !LoadIncomingMessages(&result->incoming_messages) ||
       !LoadOutgoingMessages(&result->outgoing_messages) ||
-      !LoadLastCheckinTime(&result->last_checkin_time) ||
+      !LoadLastCheckinInfo(&result->last_checkin_time,
+                           &result->last_checkin_accounts) ||
       !LoadGServicesSettings(&result->gservices_settings,
                              &result->gservices_digest)) {
     result->device_android_id = 0;
@@ -485,20 +491,35 @@ void GCMStoreImpl::Backend::RemoveOutgoingMessages(
                                                AppIdToMessageCountMap()));
 }
 
-void GCMStoreImpl::Backend::SetLastCheckinTime(
-    const base::Time& last_checkin_time,
+void GCMStoreImpl::Backend::SetLastCheckinInfo(
+    const base::Time& time,
+    const std::set<std::string>& accounts,
     const UpdateCallback& callback) {
+  leveldb::WriteBatch write_batch;
+
+  int64 last_checkin_time_internal = time.ToInternalValue();
+  write_batch.Put(MakeSlice(kLastCheckinTimeKey),
+                  MakeSlice(base::Int64ToString(last_checkin_time_internal)));
+
+  std::string serialized_accounts;
+  for (std::set<std::string>::iterator iter = accounts.begin();
+       iter != accounts.end();
+       ++iter) {
+    serialized_accounts += *iter;
+    serialized_accounts += ",";
+  }
+  if (!serialized_accounts.empty())
+    serialized_accounts.erase(serialized_accounts.length() - 1);
+
+  write_batch.Put(MakeSlice(kLastCheckinAccountsKey),
+                  MakeSlice(serialized_accounts));
+
   leveldb::WriteOptions write_options;
   write_options.sync = true;
-
-  int64 last_checkin_time_internal = last_checkin_time.ToInternalValue();
-  const leveldb::Status s =
-      db_->Put(write_options,
-               MakeSlice(kLastCheckinTimeKey),
-               MakeSlice(base::Int64ToString(last_checkin_time_internal)));
+  const leveldb::Status s = db_->Write(write_options, &write_batch);
 
   if (!s.ok())
-    LOG(ERROR) << "LevelDB set last checkin time failed: " << s.ToString();
+    LOG(ERROR) << "LevelDB set last checkin info failed: " << s.ToString();
   foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, s.ok()));
 }
 
@@ -655,8 +676,9 @@ bool GCMStoreImpl::Backend::LoadOutgoingMessages(
   return true;
 }
 
-bool GCMStoreImpl::Backend::LoadLastCheckinTime(
-    base::Time* last_checkin_time) {
+bool GCMStoreImpl::Backend::LoadLastCheckinInfo(
+    base::Time* last_checkin_time,
+    std::set<std::string>* accounts) {
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
 
@@ -671,6 +693,15 @@ bool GCMStoreImpl::Backend::LoadLastCheckinTime(
   // In case we cannot read last checkin time, we default it to 0, as we don't
   // want that situation to cause the whole load to fail.
   *last_checkin_time = base::Time::FromInternalValue(time_internal);
+
+  accounts->clear();
+  s = db_->Get(read_options, MakeSlice(kLastCheckinAccountsKey), &result);
+  if (!s.ok())
+    DVLOG(1) << "No accounts where stored during last run.";
+
+  base::StringTokenizer t(result, ",");
+  while (t.GetNext())
+    accounts->insert(t.token());
 
   return true;
 }
@@ -877,13 +908,15 @@ void GCMStoreImpl::RemoveOutgoingMessages(
                             callback)));
 }
 
-void GCMStoreImpl::SetLastCheckinTime(const base::Time& last_checkin_time,
+void GCMStoreImpl::SetLastCheckinInfo(const base::Time& time,
+                                      const std::set<std::string>& accounts,
                                       const UpdateCallback& callback) {
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&GCMStoreImpl::Backend::SetLastCheckinTime,
+      base::Bind(&GCMStoreImpl::Backend::SetLastCheckinInfo,
                  backend_,
-                 last_checkin_time,
+                 time,
+                 accounts,
                  callback));
 }
 

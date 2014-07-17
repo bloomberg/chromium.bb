@@ -132,6 +132,9 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
   void GetGCMStatistics(bool clear_logs);
   void SetGCMRecording(bool recording);
 
+  void SetAccountsForCheckin(
+      const std::map<std::string, std::string>& account_tokens);
+
   // For testing purpose. Can be called from UI thread. Use with care.
   GCMClient* gcm_client_for_testing() const { return gcm_client_.get(); }
 
@@ -343,6 +346,14 @@ void GCMDriverDesktop::IOWorker::SetGCMRecording(bool recording) {
   ui_thread_->PostTask(
       FROM_HERE,
       base::Bind(&GCMDriverDesktop::GetGCMStatisticsFinished, service_, stats));
+}
+
+void GCMDriverDesktop::IOWorker::SetAccountsForCheckin(
+    const std::map<std::string, std::string>& account_tokens) {
+  DCHECK(io_thread_->RunsTasksOnCurrentThread());
+
+  if (gcm_client_.get())
+    gcm_client_->SetAccountsForCheckin(account_tokens);
 }
 
 GCMDriverDesktop::GCMDriverDesktop(
@@ -579,6 +590,17 @@ void GCMDriverDesktop::SetGCMRecording(const GetGCMStatisticsCallback& callback,
       base::Bind(&GCMDriverDesktop::IOWorker::SetGCMRecording,
                  base::Unretained(io_worker_.get()),
                  recording));
+}
+
+void GCMDriverDesktop::SetAccountsForCheckin(
+    const std::map<std::string, std::string>& account_tokens) {
+  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
+
+  io_thread_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMDriverDesktop::IOWorker::SetAccountsForCheckin,
+                 base::Unretained(io_worker_.get()),
+                 account_tokens));
 }
 
 GCMClient::Result GCMDriverDesktop::EnsureStarted() {

@@ -265,6 +265,11 @@ class GCMClient {
 
   // Gets internal states and statistics.
   virtual GCMStatistics GetStatistics() const = 0;
+
+  // Sets a list of accounts with OAuth2 tokens for the next checkin.
+  // |account_tokens| maps email addresses to OAuth2 access tokens.
+  virtual void SetAccountsForCheckin(
+      const std::map<std::string, std::string>& account_tokens) = 0;
 };
 
 }  // namespace gcm
