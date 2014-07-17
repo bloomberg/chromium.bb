@@ -9,13 +9,6 @@ import ast
 import re
 
 
-def _MapTreeForName(func, tree, name):
-  assert isinstance(name, str)
-  if not tree:
-    return []
-  return [func(subtree) for subtree in tree \
-              if isinstance(subtree, tuple) and subtree[0] == name]
-
 def _MapTreeForType(func, tree, type_to_map):
   assert isinstance(type_to_map, type)
   if not tree:

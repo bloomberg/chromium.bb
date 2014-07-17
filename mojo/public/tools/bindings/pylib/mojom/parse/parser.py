@@ -37,20 +37,6 @@ _MAX_ORDINAL_VALUE = 0xffffffff
 _MAX_ARRAY_SIZE = 0xffffffff
 
 
-def _ListFromConcat(*items):
-  """Generate list by concatenating inputs (note: only concatenates lists, not
-  tuples or other iterables)."""
-  itemsout = []
-  for item in items:
-    if item is None:
-      continue
-    if type(item) is not type([]):
-      itemsout.append(item)
-    else:
-      itemsout.extend(item)
-  return itemsout
-
-
 # Disable lint check for exceptions deriving from Exception:
 # pylint: disable=W0710
 class ParseError(Error):
