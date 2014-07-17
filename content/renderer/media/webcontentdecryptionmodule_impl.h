@@ -59,6 +59,8 @@ class WebContentDecryptionModuleImpl
 #endif  // defined(ENABLE_BROWSER_CDMS)
 
   // blink::WebContentDecryptionModule implementation.
+  virtual blink::WebContentDecryptionModuleSession* createSession();
+  // TODO(jrummell): Remove this method once blink updated.
   virtual blink::WebContentDecryptionModuleSession* createSession(
       blink::WebContentDecryptionModuleSession::Client* client);
 

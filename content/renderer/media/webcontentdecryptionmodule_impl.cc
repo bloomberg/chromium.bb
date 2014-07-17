@@ -85,9 +85,16 @@ WebContentDecryptionModuleImpl::~WebContentDecryptionModuleImpl() {
 
 // The caller owns the created session.
 blink::WebContentDecryptionModuleSession*
+WebContentDecryptionModuleImpl::createSession() {
+  return adapter_->CreateSession();
+}
+
+blink::WebContentDecryptionModuleSession*
 WebContentDecryptionModuleImpl::createSession(
     blink::WebContentDecryptionModuleSession::Client* client) {
-  return adapter_->CreateSession(client);
+  WebContentDecryptionModuleSessionImpl* session = adapter_->CreateSession();
+  session->setClientInterface(client);
+  return session;
 }
 
 media::Decryptor* WebContentDecryptionModuleImpl::GetDecryptor() {

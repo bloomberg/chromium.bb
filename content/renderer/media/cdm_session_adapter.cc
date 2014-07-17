@@ -51,9 +51,8 @@ bool CdmSessionAdapter::Initialize(
   return media_keys_;
 }
 
-WebContentDecryptionModuleSessionImpl* CdmSessionAdapter::CreateSession(
-    blink::WebContentDecryptionModuleSession::Client* client) {
-  return new WebContentDecryptionModuleSessionImpl(client, this);
+WebContentDecryptionModuleSessionImpl* CdmSessionAdapter::CreateSession() {
+  return new WebContentDecryptionModuleSessionImpl(this);
 }
 
 bool CdmSessionAdapter::RegisterSession(

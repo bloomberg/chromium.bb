@@ -28,11 +28,11 @@ class WebContentDecryptionModuleSessionImpl
     : public blink::WebContentDecryptionModuleSession {
  public:
   WebContentDecryptionModuleSessionImpl(
-      Client* client,
       const scoped_refptr<CdmSessionAdapter>& adapter);
   virtual ~WebContentDecryptionModuleSessionImpl();
 
   // blink::WebContentDecryptionModuleSession implementation.
+  virtual void setClientInterface(Client* client);
   virtual blink::WebString sessionId() const;
   // TODO(jrummell): Remove the next 3 methods once blink updated.
   virtual void initializeNewSession(const blink::WebString& mime_type,

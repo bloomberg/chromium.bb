@@ -46,10 +46,8 @@ static blink::WebContentDecryptionModuleException ConvertException(
 }
 
 WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
-    Client* client,
     const scoped_refptr<CdmSessionAdapter>& adapter)
     : adapter_(adapter),
-      client_(client),
       is_closed_(false),
       next_available_result_index_(1),
       weak_ptr_factory_(this) {
@@ -73,6 +71,10 @@ WebContentDecryptionModuleSessionImpl::
         "Outstanding request being cancelled.");
   }
   outstanding_results_.clear();
+}
+
+void WebContentDecryptionModuleSessionImpl::setClientInterface(Client* client) {
+  client_ = client;
 }
 
 blink::WebString WebContentDecryptionModuleSessionImpl::sessionId() const {
@@ -209,6 +211,7 @@ void WebContentDecryptionModuleSessionImpl::release(
 void WebContentDecryptionModuleSessionImpl::OnSessionMessage(
     const std::vector<uint8>& message,
     const GURL& destination_url) {
+  DCHECK(client_) << "Client not set before message event";
   client_->message(
       message.empty() ? NULL : &message[0], message.size(), destination_url);
 }
