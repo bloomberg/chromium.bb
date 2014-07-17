@@ -414,7 +414,7 @@ def ProvisionDevices(options):
     provision_cmd.append('--auto-reconnect')
   if options.skip_wipe:
     provision_cmd.append('--skip-wipe')
-  RunCmd(provision_cmd)
+  RunCmd(provision_cmd, halt_on_failure=True)
 
 
 def DeviceStatusCheck(options):
