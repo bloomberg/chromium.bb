@@ -914,6 +914,8 @@ int main(int argc, char* const argv[]) {
                simHomePath);
       exit(kExitInitializationFailure);
     }
+  } else {
+    simHomePath = NSHomeDirectory();
   }
 
   // Create the config and simulator session.
