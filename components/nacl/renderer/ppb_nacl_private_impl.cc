@@ -28,9 +28,9 @@
 #include "components/nacl/renderer/manifest_downloader.h"
 #include "components/nacl/renderer/manifest_service_channel.h"
 #include "components/nacl/renderer/nexe_load_manager.h"
+#include "components/nacl/renderer/platform_info.h"
 #include "components/nacl/renderer/pnacl_translation_resource_host.h"
 #include "components/nacl/renderer/progress_event.h"
-#include "components/nacl/renderer/sandbox_arch.h"
 #include "components/nacl/renderer/trusted_plugin_channel.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -1219,54 +1219,8 @@ PP_Bool GetPNaClResourceInfo(PP_Instance instance,
   return PP_TRUE;
 }
 
-// Helper to std::accumulate that creates a comma-separated list from the input.
-std::string CommaAccumulator(const std::string &lhs, const std::string &rhs) {
-  if (lhs.empty())
-    return rhs;
-  return lhs + "," + rhs;
-}
-
 PP_Var GetCpuFeatureAttrs() {
-  // PNaCl's translator from pexe to nexe can be told exactly what
-  // capabilities the user's machine has because the pexe to nexe
-  // translation is specific to the machine, and CPU information goes
-  // into the translation cache. This allows the translator to generate
-  // faster code.
-  //
-  // Care must be taken to avoid instructions which aren't supported by
-  // the NaCl sandbox. Ideally the translator would do this, but there's
-  // no point in not doing the whitelist here.
-  //
-  // TODO(jfb) Some features are missing, either because the NaCl
-  //           sandbox doesn't support them, because base::CPU doesn't
-  //           detect them, or because they don't help vector shuffles
-  //           (and we omit them because it simplifies testing). Add the
-  //           other features.
-  //
-  // TODO(jfb) The following is x86-specific. The base::CPU class
-  //           doesn't handle other architectures very well, and we
-  //           should at least detect the presence of ARM's integer
-  //           divide.
-  std::vector<std::string> attrs;
-  base::CPU cpu;
-
-  // On x86, SSE features are ordered: the most recent one implies the
-  // others. Care is taken here to only specify the latest SSE version,
-  // whereas non-SSE features don't follow this model: POPCNT is
-  // effectively always implied by SSE4.2 but has to be specified
-  // separately.
-  //
-  // TODO: AVX2, AVX, SSE 4.2.
-  if (cpu.has_sse41()) attrs.push_back("+sse4.1");
-  // TODO: SSE 4A, SSE 4.
-  else if (cpu.has_ssse3()) attrs.push_back("+ssse3");
-  // TODO: SSE 3
-  else if (cpu.has_sse2()) attrs.push_back("+sse2");
-
-  // TODO: AES, POPCNT, LZCNT, ...
-
-  return ppapi::StringVar::StringToPPVar(std::accumulate(
-      attrs.begin(), attrs.end(), std::string(), CommaAccumulator));
+  return ppapi::StringVar::StringToPPVar(GetCpuFeatures());
 }
 
 void PostMessageToJavaScriptMainThread(PP_Instance instance,
