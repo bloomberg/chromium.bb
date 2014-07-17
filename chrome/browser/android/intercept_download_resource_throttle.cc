@@ -30,10 +30,6 @@ InterceptDownloadResourceThrottle::InterceptDownloadResourceThrottle(
 InterceptDownloadResourceThrottle::~InterceptDownloadResourceThrottle() {
 }
 
-void InterceptDownloadResourceThrottle::WillStartRequest(bool* defer) {
-  ProcessDownloadRequest();
-}
-
 void InterceptDownloadResourceThrottle::WillProcessResponse(bool* defer) {
   ProcessDownloadRequest();
 }
@@ -53,14 +49,16 @@ void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
   if (request_->method() != net::HttpRequestHeaders::kGetMethod)
     return;
 
+  net::HttpRequestHeaders headers;
+  if (!request_->GetFullRequestHeaders(&headers))
+    return;
+
   // In general, if the request uses HTTP authorization, either with the origin
   // or a proxy, then the network stack should handle the download. The one
   // exception is a request that is fetched via the Chrome Proxy and does not
   // authenticate with the origin.
   if (request_->response_info().did_use_http_auth) {
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
-    net::HttpRequestHeaders headers;
-    request_->GetFullRequestHeaders(&headers);
     if (headers.HasHeader(net::HttpRequestHeaders::kAuthorization) ||
         !(request_->response_info().headers &&
             data_reduction_proxy::HasDataReductionProxyViaHeader(
@@ -75,7 +73,7 @@ void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
   // For OMA DRM downloads, Android Download Manager doesn't handle them
   // correctly. Use chromium network stack instead. http://crbug.com/382698.
   std::string mime;
-  const_cast<net::URLRequest*>(request_)->GetMimeType(&mime);
+  request_->GetMimeType(&mime);
   if (!mime.compare(kOmaDrmContentMime) || !mime.compare(kOmaDrmMessageMime))
     return;
 

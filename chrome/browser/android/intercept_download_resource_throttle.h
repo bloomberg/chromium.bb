@@ -25,7 +25,6 @@ class InterceptDownloadResourceThrottle : public content::ResourceThrottle {
                                     int request_id);
 
   // content::ResourceThrottle implementation:
-  virtual void WillStartRequest(bool* defer) OVERRIDE;
   virtual void WillProcessResponse(bool* defer) OVERRIDE;
   virtual const char* GetNameForLogging() const OVERRIDE;
 
