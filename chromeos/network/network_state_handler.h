@@ -348,8 +348,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // Notifies observers when the default network or its properties change.
   void NotifyDefaultNetworkChanged(const NetworkState* default_network);
 
-  // Notifies observers about changes to |network|.
+  // Notifies observers about changes to |network|, including IPConfg.
   void NotifyNetworkPropertiesUpdated(const NetworkState* network);
+
+  // Notifies observers about changes to |device|, including IPConfigs.
+  void NotifyDevicePropertiesUpdated(const DeviceState* device);
 
   // Called whenever Device.Scanning state transitions to false.
   void ScanCompleted(const std::string& type);
