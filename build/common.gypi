@@ -1787,7 +1787,7 @@
         # the class names, so the JNI generator needs to know this.
         'jni_generator_jarjar_file': '../android_webview/build/jarjar-rules.txt',
       }],
-      ['OS=="linux"', {
+      ['OS=="linux" and target_arch!="mipsel"', {
         # TODO(thakis): This is here to measure perf for a while.
         'clang%': 1,
       }],  # OS=="mac"
