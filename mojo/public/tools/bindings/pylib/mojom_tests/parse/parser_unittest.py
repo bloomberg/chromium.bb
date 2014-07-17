@@ -949,6 +949,7 @@ class ParserTest(unittest.TestCase):
         ast.ImportList([ast.Import("somedir/my1.mojom"),
                         ast.Import("somedir/my2.mojom")]),
         [])
+    self.assertEquals(parser.Parse(source3, "my_file.mojom"), expected3)
 
   def testInvalidImports(self):
     """Tests that invalid import statements are correctly detected."""
