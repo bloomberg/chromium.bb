@@ -1228,11 +1228,6 @@ body {
   outline-color: rgb(51, 153, 255);
 }
 
-.mosaic[visible='normal'].hover-visible .mosaic-tile:hover {
-  -webkit-transform: scale(1.05);
-  z-index: 50;
-}
-
 .mosaic[visible='normal'].hover-visible
     .mosaic-tile:hover:not([selected]) .img-border {
   outline-color: rgb(182, 212, 252);
