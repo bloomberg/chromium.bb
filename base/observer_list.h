@@ -79,30 +79,9 @@ class ObserverListBase
   // also the FOR_EACH_OBSERVER macro defined below.
   class Iterator {
    public:
-    Iterator(ObserverListBase<ObserverType>& list)
-        : list_(list.AsWeakPtr()),
-          index_(0),
-          max_index_(list.type_ == NOTIFY_ALL ?
-                     std::numeric_limits<size_t>::max() :
-                     list.observers_.size()) {
-      ++list_->notify_depth_;
-    }
-
-    ~Iterator() {
-      if (list_.get() && --list_->notify_depth_ == 0)
-        list_->Compact();
-    }
-
-    ObserverType* GetNext() {
-      if (!list_.get())
-        return NULL;
-      ListType& observers = list_->observers_;
-      // Advance if the current element is null
-      size_t max_index = std::min(max_index_, observers.size());
-      while (index_ < max_index && !observers[index_])
-        ++index_;
-      return index_ < max_index ? observers[index_++] : NULL;
-    }
+    Iterator(ObserverListBase<ObserverType>& list);
+    ~Iterator();
+    ObserverType* GetNext();
 
    private:
     base::WeakPtr<ObserverListBase<ObserverType> > list_;
@@ -116,55 +95,19 @@ class ObserverListBase
 
   // Add an observer to the list.  An observer should not be added to
   // the same list more than once.
-  void AddObserver(ObserverType* obs) {
-    if (std::find(observers_.begin(), observers_.end(), obs)
-        != observers_.end()) {
-      NOTREACHED() << "Observers can only be added once!";
-      return;
-    }
-    observers_.push_back(obs);
-  }
+  void AddObserver(ObserverType* obs);
 
   // Remove an observer from the list if it is in the list.
-  void RemoveObserver(ObserverType* obs) {
-    typename ListType::iterator it =
-      std::find(observers_.begin(), observers_.end(), obs);
-    if (it != observers_.end()) {
-      if (notify_depth_) {
-        *it = 0;
-      } else {
-        observers_.erase(it);
-      }
-    }
-  }
+  void RemoveObserver(ObserverType* obs);
 
-  bool HasObserver(ObserverType* observer) const {
-    for (size_t i = 0; i < observers_.size(); ++i) {
-      if (observers_[i] == observer)
-        return true;
-    }
-    return false;
-  }
+  bool HasObserver(ObserverType* observer) const;
 
-  void Clear() {
-    if (notify_depth_) {
-      for (typename ListType::iterator it = observers_.begin();
-           it != observers_.end(); ++it) {
-        *it = 0;
-      }
-    } else {
-      observers_.clear();
-    }
-  }
+  void Clear();
 
  protected:
   size_t size() const { return observers_.size(); }
 
-  void Compact() {
-    observers_.erase(
-        std::remove(observers_.begin(), observers_.end(),
-                    static_cast<ObserverType*>(NULL)), observers_.end());
-  }
+  void Compact();
 
  private:
   friend class ObserverListThreadSafe<ObserverType>;
@@ -179,6 +122,86 @@ class ObserverListBase
 
   DISALLOW_COPY_AND_ASSIGN(ObserverListBase);
 };
+
+template <class ObserverType>
+ObserverListBase<ObserverType>::Iterator::Iterator(
+  ObserverListBase<ObserverType>& list)
+    : list_(list.AsWeakPtr()),
+      index_(0),
+      max_index_(list.type_ == NOTIFY_ALL ?
+                 std::numeric_limits<size_t>::max() :
+                 list.observers_.size()) {
+  ++list_->notify_depth_;
+}
+
+template <class ObserverType>
+ObserverListBase<ObserverType>::Iterator::~Iterator() {
+  if (list_.get() && --list_->notify_depth_ == 0)
+    list_->Compact();
+}
+
+template <class ObserverType>
+ObserverType* ObserverListBase<ObserverType>::Iterator::GetNext() {
+  if (!list_.get())
+    return NULL;
+  ListType& observers = list_->observers_;
+  // Advance if the current element is null
+  size_t max_index = std::min(max_index_, observers.size());
+  while (index_ < max_index && !observers[index_])
+    ++index_;
+  return index_ < max_index ? observers[index_++] : NULL;
+}
+
+template <class ObserverType>
+void ObserverListBase<ObserverType>::AddObserver(ObserverType* obs) {
+  if (std::find(observers_.begin(), observers_.end(), obs)
+      != observers_.end()) {
+    NOTREACHED() << "Observers can only be added once!";
+    return;
+  }
+  observers_.push_back(obs);
+}
+
+template <class ObserverType>
+void ObserverListBase<ObserverType>::RemoveObserver(ObserverType* obs) {
+  typename ListType::iterator it =
+    std::find(observers_.begin(), observers_.end(), obs);
+  if (it != observers_.end()) {
+    if (notify_depth_) {
+      *it = 0;
+    } else {
+      observers_.erase(it);
+    }
+  }
+}
+
+template <class ObserverType>
+bool ObserverListBase<ObserverType>::HasObserver(ObserverType* observer) const {
+  for (size_t i = 0; i < observers_.size(); ++i) {
+    if (observers_[i] == observer)
+      return true;
+  }
+  return false;
+}
+
+template <class ObserverType>
+void ObserverListBase<ObserverType>::Clear() {
+  if (notify_depth_) {
+    for (typename ListType::iterator it = observers_.begin();
+      it != observers_.end(); ++it) {
+      *it = 0;
+    }
+  } else {
+    observers_.clear();
+  }
+}
+
+template <class ObserverType>
+void ObserverListBase<ObserverType>::Compact() {
+  observers_.erase(
+      std::remove(observers_.begin(), observers_.end(),
+                  static_cast<ObserverType*>(NULL)), observers_.end());
+}
 
 template <class ObserverType, bool check_empty = false>
 class ObserverList : public ObserverListBase<ObserverType> {
