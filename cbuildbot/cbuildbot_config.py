@@ -1114,6 +1114,9 @@ paladin.add_config('mipsel-o32-generic-paladin',
   boards=['mipsel-o32-generic'],
   important=False,
   paladin_builder_name='mipsel-o32-generic paladin',
+  # TODO(benchan): Re-enable 'usepkg_setup_board' when the pre-built toolchain
+  # for MIPS is available (crbug.com/380329).
+  usepkg_setup_board=False,
 )
 
 incremental.add_config('amd64-generic-asan-paladin',
