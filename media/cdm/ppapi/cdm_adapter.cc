@@ -255,7 +255,6 @@ CdmAdapter::CdmAdapter(PP_Instance instance, pp::Module* module)
 #if defined(OS_CHROMEOS)
       output_protection_(this),
       platform_verification_(this),
-      challenge_in_progress_(false),
       output_link_mask_(0),
       output_protection_mask_(0),
       query_output_protection_in_progress_(false),
@@ -1009,34 +1008,33 @@ void CdmAdapter::SendPlatformChallenge(
     const char* service_id, uint32_t service_id_length,
     const char* challenge, uint32_t challenge_length) {
 #if defined(OS_CHROMEOS)
-  PP_DCHECK(!challenge_in_progress_);
-
-  // Ensure member variables set by the callback are in a clean state.
-  signed_data_output_ = pp::Var();
-  signed_data_signature_output_ = pp::Var();
-  platform_key_certificate_output_ = pp::Var();
-
   pp::VarArrayBuffer challenge_var(challenge_length);
   uint8_t* var_data = static_cast<uint8_t*>(challenge_var.Map());
   memcpy(var_data, challenge, challenge_length);
 
   std::string service_id_str(service_id, service_id_length);
+
+  linked_ptr<PepperPlatformChallengeResponse> response(
+      new PepperPlatformChallengeResponse());
+
   int32_t result = platform_verification_.ChallengePlatform(
-      pp::Var(service_id_str), challenge_var, &signed_data_output_,
-      &signed_data_signature_output_, &platform_key_certificate_output_,
-      callback_factory_.NewCallback(&CdmAdapter::SendPlatformChallengeDone));
+      pp::Var(service_id_str),
+      challenge_var,
+      &response->signed_data,
+      &response->signed_data_signature,
+      &response->platform_key_certificate,
+      callback_factory_.NewCallback(&CdmAdapter::SendPlatformChallengeDone,
+                                    response));
   challenge_var.Unmap();
-  if (result == PP_OK_COMPLETIONPENDING) {
-    challenge_in_progress_ = true;
+  if (result == PP_OK_COMPLETIONPENDING)
     return;
-  }
 
   // Fall through on error and issue an empty OnPlatformChallengeResponse().
   PP_DCHECK(result != PP_OK);
 #endif
 
-  cdm::PlatformChallengeResponse response = {};
-  cdm_->OnPlatformChallengeResponse(response);
+  cdm::PlatformChallengeResponse platform_challenge_response = {};
+  cdm_->OnPlatformChallengeResponse(platform_challenge_response);
 }
 
 void CdmAdapter::EnableOutputProtection(uint32_t desired_protection_mask) {
@@ -1154,29 +1152,29 @@ void CdmAdapter::ReportOutputProtectionQueryResult() {
   // queries and success results.
 }
 
-void CdmAdapter::SendPlatformChallengeDone(int32_t result) {
-  challenge_in_progress_ = false;
-
+void CdmAdapter::SendPlatformChallengeDone(
+    int32_t result,
+    const linked_ptr<PepperPlatformChallengeResponse>& response) {
   if (result != PP_OK) {
     CDM_DLOG() << __FUNCTION__ << ": Platform challenge failed!";
-    cdm::PlatformChallengeResponse response = {};
-    cdm_->OnPlatformChallengeResponse(response);
+    cdm::PlatformChallengeResponse platform_challenge_response = {};
+    cdm_->OnPlatformChallengeResponse(platform_challenge_response);
     return;
   }
 
-  pp::VarArrayBuffer signed_data_var(signed_data_output_);
-  pp::VarArrayBuffer signed_data_signature_var(signed_data_signature_output_);
+  pp::VarArrayBuffer signed_data_var(response->signed_data);
+  pp::VarArrayBuffer signed_data_signature_var(response->signed_data_signature);
   std::string platform_key_certificate_string =
-      platform_key_certificate_output_.AsString();
+      response->platform_key_certificate.AsString();
 
-  cdm::PlatformChallengeResponse response = {
+  cdm::PlatformChallengeResponse platform_challenge_response = {
       static_cast<uint8_t*>(signed_data_var.Map()),
       signed_data_var.ByteLength(),
       static_cast<uint8_t*>(signed_data_signature_var.Map()),
       signed_data_signature_var.ByteLength(),
       reinterpret_cast<const uint8_t*>(platform_key_certificate_string.data()),
       static_cast<uint32_t>(platform_key_certificate_string.length())};
-  cdm_->OnPlatformChallengeResponse(response);
+  cdm_->OnPlatformChallengeResponse(platform_challenge_response);
 
   signed_data_var.Unmap();
   signed_data_signature_var.Unmap();

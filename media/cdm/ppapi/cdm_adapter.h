@@ -245,20 +245,20 @@ class CdmAdapter : public pp::Instance,
   void ReportOutputProtectionQuery();
   void ReportOutputProtectionQueryResult();
 
-  void SendPlatformChallengeDone(int32_t result);
+  struct PepperPlatformChallengeResponse {
+    pp::Var signed_data;
+    pp::Var signed_data_signature;
+    pp::Var platform_key_certificate;
+  };
+
+  void SendPlatformChallengeDone(
+      int32_t result,
+      const linked_ptr<PepperPlatformChallengeResponse>& response);
   void EnableProtectionDone(int32_t result);
   void QueryOutputProtectionStatusDone(int32_t result);
 
   pp::OutputProtection_Private output_protection_;
   pp::PlatformVerification platform_verification_;
-
-  // Since PPAPI doesn't provide handlers for CompletionCallbacks with more than
-  // one output we need to manage our own.  These values are only read by
-  // SendPlatformChallengeDone().
-  pp::Var signed_data_output_;
-  pp::Var signed_data_signature_output_;
-  pp::Var platform_key_certificate_output_;
-  bool challenge_in_progress_;
 
   // Same as above, these are only read by QueryOutputProtectionStatusDone().
   uint32_t output_link_mask_;
