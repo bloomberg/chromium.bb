@@ -54,17 +54,17 @@ def ToolPath(tool, toolchain_info=None):
     toolchain_prefix = "arm-linux-androideabi"
     ndk = "ndk"
   elif ARCH == "arm64":
-    toolchain_source = "aarch64-linux-android-4.8"
+    toolchain_source = "aarch64-linux-android-4.9"
     toolchain_prefix = "aarch64-linux-android"
-    ndk = "ndk_experimental"
+    ndk = "ndk"
   elif ARCH == "x86":
     toolchain_source = "x86-4.6"
     toolchain_prefix = "i686-android-linux"
     ndk = "ndk"
   elif ARCH == "x86_64":
-    toolchain_source = "x86_64-4.8"
+    toolchain_source = "x86_64-4.9"
     toolchain_prefix = "x86_64-linux-android"
-    ndk = "ndk_experimental"
+    ndk = "ndk"
   elif ARCH == "mips":
     toolchain_source = "mipsel-linux-android-4.6"
     toolchain_prefix = "mipsel-linux-android"
@@ -95,7 +95,7 @@ def FindToolchain():
 
   ## Known toolchains, newer ones in the front.
   if ARCH == "arm64":
-    gcc_version = "4.8"
+    gcc_version = "4.9"
     known_toolchains = [
       ("aarch64-linux-android-" + gcc_version, "aarch64", "aarch64-linux-android")
     ]
@@ -110,7 +110,7 @@ def FindToolchain():
     ]
   elif ARCH =="x86_64":
     known_toolchains = [
-      ("x86_64-linux-android-4.8", "x86_64", "x86_64-linux-android")
+      ("x86_64-linux-android-4.9", "x86_64", "x86_64-linux-android")
     ]
   elif ARCH == "mips":
     gcc_version = "4.6"
