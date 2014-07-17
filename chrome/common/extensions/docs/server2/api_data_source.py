@@ -171,7 +171,7 @@ class _APINodeCursor(object):
     return None
 
   def _LookupAvailability(self, lookup_path):
-    '''Runs all the lookup checks on self._lookup_path and
+    '''Runs all the lookup checks on |lookup_path| and
     returns the node availability if found, None otherwise.
     '''
     for lookup in (self._LookupNodeAvailability,
@@ -209,6 +209,20 @@ class _APINodeCursor(object):
       # such as 'webviewTag > events > consolemessage > level'.
       return 'properties'
     raise AssertionError('Could not classify node %s' % self)
+
+  def GetDeprecated(self):
+    '''Returns when this node became deprecated, or None if it
+    is not deprecated.
+    '''
+    deprecated_path = self._lookup_path + ['deprecated']
+    for lookup in (self._LookupNodeAvailability,
+                   self._CheckNamespacePrefix):
+      node_availability = lookup(deprecated_path)
+      if node_availability is not None:
+        return node_availability
+    if 'callback' in self._lookup_path:
+      return self._CheckEventCallback(deprecated_path)
+    return None
 
   def GetAvailability(self):
     '''Returns availability information for this node.
@@ -555,22 +569,35 @@ class _JSCModel(object):
 
     return intro_rows
 
-  def _GetAvailabilityTemplate(self, status=None, version=None, scheduled=None):
-    '''Returns an object that the templates use to display availability
+  def _CreateAvailabilityTemplate(self, status, scheduled, version):
+    '''Returns an object suitable for use in templates to display availability
     information.
     '''
-    if status is None:
-      availability_info = self._current_node.GetAvailability()
-      if availability_info is None:
-        return None
-      status = availability_info.channel
-      version = availability_info.version
     return {
       'partial': self._template_cache.GetFromFile(
           '%sintro_tables/%s_message.html' % (PRIVATE_TEMPLATES, status)).Get(),
       'scheduled': scheduled,
       'version': version
     }
+
+  def _GetAvailabilityTemplate(self):
+    '''Gets availability for the current node and returns an appropriate
+    template object.
+    '''
+    # Displaying deprecated status takes precedence over when the API
+    # became stable.
+    availability_info = self._current_node.GetDeprecated()
+    if availability_info is not None:
+      status = 'deprecated'
+    else:
+      availability_info = self._current_node.GetAvailability()
+      if availability_info is None:
+        return None
+      status = availability_info.channel_info.channel
+    return self._CreateAvailabilityTemplate(
+        status,
+        availability_info.scheduled,
+        availability_info.channel_info.version)
 
   def _GetIntroDescriptionRow(self):
     ''' Generates the 'Description' row data for an API intro table.
@@ -587,18 +614,16 @@ class _JSCModel(object):
     '''
     if self._IsExperimental():
       status = 'experimental'
-      version = None
       scheduled = None
+      version = None
     else:
       status = self._availability.channel_info.channel
-      version = self._availability.channel_info.version
       scheduled = self._availability.scheduled
+      version = self._availability.channel_info.version
     return {
       'title': 'Availability',
       'content': [
-        self._GetAvailabilityTemplate(status=status,
-                                      version=version,
-                                      scheduled=scheduled)
+        self._CreateAvailabilityTemplate(status, scheduled, version)
       ]
     }
 

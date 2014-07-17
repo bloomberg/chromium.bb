@@ -202,7 +202,7 @@ class AvailabilityFinder(object):
       # The _api_features.json file first appears in version 28 and should be
       # the most reliable for finding API availability.
       available_channel = _GetChannelFromAPIFeatures(api_name,
-                                                          features_bundle)
+                                                     features_bundle)
     if version >= _ORIGINAL_FEATURES_MIN_VERSION:
       # The _permission_features.json and _manifest_features.json files are
       # present in Chrome 20 and onwards. Use these if no information could be
@@ -365,7 +365,7 @@ class AvailabilityFinder(object):
                                                           file_system,
                                                           channel_info.version))
         availability_graph.Update(version_graph.Subtract(availability_graph),
-                                  annotation=channel_info)
+                                  annotation=AvailabilityInfo(channel_info))
 
       previous.stat = version_stat
       previous.graph = version_graph

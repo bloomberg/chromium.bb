@@ -369,6 +369,13 @@ class APIDataSourceWithNodeAvailabilityTest(unittest.TestCase):
     assertEquals('tabs.onActivated',
                  model_dict['events'][0]['availability']['version'])
 
+    # Test a node that became deprecated.
+    self.assertEquals({
+      'scheduled': None,
+      'version': 26,
+      'partial': 'handlebar chrome/common/extensions/docs/templates/' +
+          'private/intro_tables/deprecated_message.html'
+      }, model_dict['types'][2]['availability'])
 
 if __name__ == '__main__':
   unittest.main()
