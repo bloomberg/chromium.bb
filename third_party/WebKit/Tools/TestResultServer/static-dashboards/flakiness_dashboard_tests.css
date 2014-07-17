@@ -50,6 +50,9 @@
 .test-table tr > td:nth-child(2) {
     white-space: normal;
 }
+.test-table .file-new-bug {
+    white-space: nowrap;
+}
 .test-table {
     width: 100%;
 }

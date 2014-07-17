@@ -679,7 +679,7 @@ function createBugHTML(test)
         '[insert probable cause]');
 
     url = 'https://code.google.com/p/chromium/issues/entry?template=Layout%20Test%20Failure&summary=' + title + '&comment=' + description;
-    return '<a href="' + url + '">File new bug</a>';
+    return '<a class="file-new-bug" href="' + url + '">File new bug</a>';
 }
 
 function isCrossBuilderView()
