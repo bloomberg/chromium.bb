@@ -43,7 +43,13 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTestSanityTest, Basic) {
   Test();
 }
 
-IN_PROC_BROWSER_TEST_F(ContentBrowserTestSanityTest, SingleProcess) {
+#if defined(OS_MACOSX)
+// This is failing on Mac ASan: http://crbug.com/394775
+#define MAYBE_SingleProcess DISABLED_SingleProcess
+#else
+#define MAYBE_SingleProcess SingleProcess
+#endif
+IN_PROC_BROWSER_TEST_F(ContentBrowserTestSanityTest, MAYBE_SingleProcess) {
   Test();
 }
 
