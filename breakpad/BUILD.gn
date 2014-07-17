@@ -420,6 +420,8 @@ if (is_linux && current_toolchain == host_toolchain) {
       "src/common/string_conversion.h",
     ]
 
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
     direct_dependent_configs = [ ":breakpad_client_config" ]
 
     # Android NDK toolchain doesn't support -mimplicit-it=always
@@ -551,7 +553,8 @@ if (is_linux && current_toolchain == host_toolchain) {
     ]
 
     # This file has an unused variable warning.
-    cflags = [ "-Wno-unused-variable" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
 
     deps = [ ":breakpad_client" ]
 

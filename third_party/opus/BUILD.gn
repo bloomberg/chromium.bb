@@ -53,6 +53,8 @@ source_set("opus") {
     "src/silk",
   ]
 
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
   direct_dependent_configs = [ ":opus_config" ]
 
   if (is_win) {
@@ -140,6 +142,9 @@ executable("opus_demo") {
   sources = [
     "src/src/opus_demo.c",
   ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 
   include_dirs = [
     "src/celt",

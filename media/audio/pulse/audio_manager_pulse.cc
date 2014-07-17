@@ -42,8 +42,10 @@ static const int kMaximumOutputBufferSize = 8192;
 // Default input buffer size.
 static const int kDefaultInputBufferSize = 1024;
 
+#if defined(DLOPEN_PULSEAUDIO)
 static const base::FilePath::CharType kPulseLib[] =
     FILE_PATH_LITERAL("libpulse.so.0");
+#endif
 
 // static
 AudioManager* AudioManagerPulse::Create(AudioLogFactory* audio_log_factory) {
