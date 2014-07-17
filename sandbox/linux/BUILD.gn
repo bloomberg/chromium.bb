@@ -92,6 +92,8 @@ test("sandbox_linux_unittests") {
   }
   if (use_seccomp_bpf) {
     sources += [
+      "bpf_dsl/bpf_dsl_unittest.cc",
+      "bpf_dsl/cons_unittest.cc",
       "seccomp-bpf-helpers/baseline_policy_unittest.cc",
       "seccomp-bpf/bpf_tests_unittest.cc",
       "seccomp-bpf/codegen_unittest.cc",
@@ -129,6 +131,9 @@ test("sandbox_linux_unittests") {
 
 component("seccomp_bpf") {
   sources = [
+    "bpf_dsl/bpf_dsl.cc",
+    "bpf_dsl/bpf_dsl.h",
+    "bpf_dsl/cons.h",
     "seccomp-bpf/basicblock.cc",
     "seccomp-bpf/basicblock.h",
     "seccomp-bpf/codegen.cc",
