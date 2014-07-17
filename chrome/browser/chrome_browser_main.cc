@@ -380,7 +380,7 @@ OSStatus KeychainCallback(SecKeychainEvent keychain_event,
 }
 #endif
 
-void RegisterComponentsForUpdate(const CommandLine& command_line) {
+void RegisterComponentsForUpdate() {
   component_updater::ComponentUpdateService* cus =
       g_browser_process->component_updater();
 
@@ -391,8 +391,7 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
   RegisterRecoveryComponent(cus, g_browser_process->local_state());
   RegisterPepperFlashComponent(cus);
   RegisterSwiftShaderComponent(cus);
-  g_browser_process->pnacl_component_installer()->RegisterPnaclComponent(
-      cus, command_line);
+  g_browser_process->pnacl_component_installer()->RegisterPnaclComponent(cus);
   RegisterWidevineCdmComponent(cus);
 #endif
 
@@ -1445,7 +1444,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   browser_process_->notification_ui_manager();
 
   if (!parsed_command_line().HasSwitch(switches::kDisableComponentUpdate))
-    RegisterComponentsForUpdate(parsed_command_line());
+    RegisterComponentsForUpdate();
 
 #if defined(OS_ANDROID)
   chrome_variations::VariationsService* variations_service =

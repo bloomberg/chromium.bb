@@ -11,7 +11,6 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
@@ -203,8 +202,7 @@ bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
 
 }  // namespace
 
-PnaclComponentInstaller::PnaclComponentInstaller()
-    : updates_disabled_(false), cus_(NULL) {
+PnaclComponentInstaller::PnaclComponentInstaller() : cus_(NULL) {
 }
 
 PnaclComponentInstaller::~PnaclComponentInstaller() {
@@ -345,13 +343,6 @@ void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
     }
   }
 
-  // If updates are disabled, only discover the current version
-  // and OverrideDirPnaclComponent. That way, developers can use
-  // a pinned version. Do not actually finish registration with
-  // the component update service.
-  if (pci->updates_disabled())
-    return;
-
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
                           base::Bind(&FinishPnaclUpdateRegistration,
@@ -370,10 +361,7 @@ void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
 }  // namespace
 
 void PnaclComponentInstaller::RegisterPnaclComponent(
-    ComponentUpdateService* cus,
-    const CommandLine& command_line) {
-  // Register PNaCl by default (can be disabled).
-  updates_disabled_ = command_line.HasSwitch(switches::kDisablePnaclInstall);
+    ComponentUpdateService* cus) {
   cus_ = cus;
   BrowserThread::PostTask(BrowserThread::FILE,
                           FROM_HERE,

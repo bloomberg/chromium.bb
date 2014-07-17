@@ -16,7 +16,6 @@
 #include "chrome/browser/component_updater/component_updater_service.h"
 
 namespace base {
-class CommandLine;
 class DictionaryValue;
 }
 
@@ -50,13 +49,9 @@ class PnaclComponentInstaller : public ComponentInstaller {
                                 base::FilePath* installed_file) OVERRIDE;
 
   // Register a PNaCl component for the first time.
-  void RegisterPnaclComponent(ComponentUpdateService* cus,
-                              const base::CommandLine& command_line);
+  void RegisterPnaclComponent(ComponentUpdateService* cus);
 
   CrxComponent GetCrxComponent();
-
-  // Return true if PNaCl updates are disabled.
-  bool updates_disabled() const { return updates_disabled_; }
 
   // Determine the base directory for storing each version of PNaCl.
   base::FilePath GetPnaclBaseDirectory();
@@ -76,7 +71,6 @@ class PnaclComponentInstaller : public ComponentInstaller {
   ComponentUpdateService* cus() const { return cus_; }
 
  private:
-  bool updates_disabled_;
   base::Version current_version_;
   std::string current_fingerprint_;
   ComponentUpdateService* cus_;
