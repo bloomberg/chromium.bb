@@ -35,8 +35,39 @@ TouchExplorationController::TouchExplorationController(
   root_window->GetHost()->GetEventSource()->AddEventRewriter(this);
 }
 
+
 TouchExplorationController::~TouchExplorationController() {
   root_window_->GetHost()->GetEventSource()->RemoveEventRewriter(this);
+}
+
+void TouchExplorationController::CallTapTimerNowForTesting() {
+  DCHECK(tap_timer_.IsRunning());
+  tap_timer_.Stop();
+  OnTapTimerFired();
+}
+
+void TouchExplorationController::CallTapTimerNowIfRunningForTesting() {
+  if (tap_timer_.IsRunning()) {
+    tap_timer_.Stop();
+    OnTapTimerFired();
+  }
+}
+
+void TouchExplorationController::SetEventHandlerForTesting(
+    ui::EventHandler* event_handler_for_testing) {
+  event_handler_for_testing_ = event_handler_for_testing;
+}
+
+bool TouchExplorationController::IsInNoFingersDownStateForTesting() const {
+  return state_ == NO_FINGERS_DOWN;
+}
+
+bool TouchExplorationController::IsInGestureInProgressStateForTesting() const {
+  return state_ == GESTURE_IN_PROGRESS;
+}
+
+void TouchExplorationController::SuppressVLOGsForTesting(bool suppress) {
+    VLOG_on_ = !suppress;
 }
 
 ui::EventRewriteStatus TouchExplorationController::RewriteEvent(

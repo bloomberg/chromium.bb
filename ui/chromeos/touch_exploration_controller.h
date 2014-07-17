@@ -103,9 +103,16 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   explicit TouchExplorationController(aura::Window* root_window);
   virtual ~TouchExplorationController();
 
- private:
-  friend class TouchExplorationControllerTestApi;
+  void CallTapTimerNowForTesting();
+  void CallTapTimerNowIfRunningForTesting();
+  void SetEventHandlerForTesting(ui::EventHandler* event_handler_for_testing);
+  bool IsInNoFingersDownStateForTesting() const;
+  bool IsInGestureInProgressStateForTesting() const;
+  // VLOGs should be suppressed in tests that generate a lot of logs,
+  // for example permutations of nine touch events.
+  void SuppressVLOGsForTesting(bool suppress);
 
+ private:
   // Overridden from ui::EventRewriter
   virtual ui::EventRewriteStatus RewriteEvent(
       const ui::Event& event,
