@@ -146,9 +146,10 @@ scoped_ptr<base::DictionaryValue> ComponentExtensionIMEManagerImpl::GetManifest(
     LOG(ERROR) << "Failed at getting manifest";
   if (!extension_l10n_util::LocalizeExtension(file_path,
                                               manifest.get(),
-                                              &error))
-    LOG(ERROR) << "Localization failed";
-
+                                              &error)) {
+    LOG(ERROR) << "Localization failed for: " << file_path.value()
+               << " Error: " << error;
+  }
   return manifest.Pass();
 }
 

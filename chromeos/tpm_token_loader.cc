@@ -212,7 +212,7 @@ void TPMTokenLoader::ContinueTokenInitialization() {
 
 void TPMTokenLoader::RetryTokenInitializationLater() {
   CHECK(thread_checker_.CalledOnValidThread());
-  LOG(WARNING) << "Retry token initialization later.";
+  VLOG(1) << "Retry token initialization later.";
   base::MessageLoopProxy::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&TPMTokenLoader::ContinueTokenInitialization,

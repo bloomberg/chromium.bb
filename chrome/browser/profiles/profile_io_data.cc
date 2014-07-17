@@ -367,6 +367,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
     // user.
     if (user && !user->username_hash().empty()) {
       params->username_hash = user->username_hash();
+      DCHECK(!params->username_hash.empty());
       BrowserThread::PostTask(BrowserThread::IO,
                               FROM_HERE,
                               base::Bind(&StartNSSInitOnIOThread,
@@ -375,8 +376,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
                                          profile->GetPath()));
     }
   }
-  if (params->username_hash.empty())
-    LOG(WARNING) << "No username_hash; skipped NSS initialization.";
 #endif
 
   params->profile = profile;

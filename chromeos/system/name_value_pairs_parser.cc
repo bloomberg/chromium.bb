@@ -126,7 +126,7 @@ bool NameValuePairsParser::GetNameValuePairsFromFile(
     return ParseNameValuePairs(contents, eq, delim);
   } else {
     if (base::SysInfo::IsRunningOnChromeOS())
-      LOG(WARNING) << "Unable to read statistics file: " << file_path.value();
+      VLOG(1) << "Statistics file not present: " << file_path.value();
     return false;
   }
 }

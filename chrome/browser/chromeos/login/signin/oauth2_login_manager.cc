@@ -100,10 +100,10 @@ void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
   ProfileOAuth2TokenService* token_service = GetTokenService();
   const std::string& primary_account_id = GetPrimaryAccountId();
   if (token_service->RefreshTokenIsAvailable(primary_account_id)) {
-    LOG(WARNING) << "OAuth2 refresh token is already loaded.";
+    VLOG(1) << "OAuth2 refresh token is already loaded.";
     VerifySessionCookies();
   } else {
-    LOG(WARNING) << "Loading OAuth2 refresh token from database.";
+    VLOG(1) << "Loading OAuth2 refresh token from database.";
 
     // Flag user with unknown token status in case there are no saved tokens
     // and OnRefreshTokenAvailable is not called. Flagging it here would
@@ -128,7 +128,7 @@ bool OAuth2LoginManager::ShouldBlockTabLoading() {
 
 void OAuth2LoginManager::OnRefreshTokenAvailable(
     const std::string& account_id) {
-  LOG(WARNING) << "OnRefreshTokenAvailable";
+  VLOG(1) << "OnRefreshTokenAvailable";
 
   if (state_ == SESSION_RESTORE_NOT_STARTED)
     return;
@@ -139,7 +139,7 @@ void OAuth2LoginManager::OnRefreshTokenAvailable(
   // Do not validate tokens for supervised users, as they don't actually have
   // oauth2 token.
   if (UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
-    LOG(WARNING) << "Logged in as managed user, skip token validation.";
+    VLOG(1) << "Logged in as managed user, skip token validation.";
     return;
   }
   // Only restore session cookies for the primary account in the profile.

@@ -416,7 +416,7 @@ void SigninScreenHandler::SetNativeWindowDelegate(
 }
 
 void SigninScreenHandler::OnNetworkReady() {
-  LOG(WARNING) << "OnNetworkReady() call.";
+  VLOG(1) << "OnNetworkReady() call.";
   DCHECK(gaia_screen_handler_);
   gaia_screen_handler_->MaybePreloadAuthExtension();
 }
@@ -1156,8 +1156,8 @@ void SigninScreenHandler::HandleOpenProxySettings() {
 }
 
 void SigninScreenHandler::HandleLoginVisible(const std::string& source) {
-  LOG(WARNING) << "Login WebUI >> loginVisible, src: " << source << ", "
-               << "webui_visible_: " << webui_visible_;
+  VLOG(1) << "Login WebUI >> loginVisible, src: " << source << ", "
+          << "webui_visible_: " << webui_visible_;
   if (!webui_visible_) {
     // There might be multiple messages from OOBE UI so send notifications after
     // the first one only.

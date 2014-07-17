@@ -93,7 +93,7 @@ class SystemClockClientImpl : public SystemClockClient {
   // Callback for CanSetTime method.
   void OnGetCanSet(dbus::Response* response) {
     if (!response) {
-      LOG(WARNING) << "CanSetTime request failed.";
+      VLOG(1) << "CanSetTime request failed.";
       return;
     }
 

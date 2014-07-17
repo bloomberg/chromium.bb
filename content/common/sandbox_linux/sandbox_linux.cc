@@ -58,11 +58,7 @@ void LogSandboxStarted(const std::string& sandbox_name) {
   const std::string activated_sandbox =
       "Activated " + sandbox_name + " sandbox for process type: " +
       process_type + ".";
-#if defined(OS_CHROMEOS)
-  LOG(WARNING) << activated_sandbox;
-#else
   VLOG(1) << activated_sandbox;
-#endif
 }
 
 #if !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER)

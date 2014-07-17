@@ -187,12 +187,11 @@ void GaiaScreenHandler::ReloadGaia() {
     return;
   NetworkStateInformer::State state = network_state_informer_->state();
   if (state != NetworkStateInformer::ONLINE) {
-    LOG(WARNING) << "Skipping reloading of Gaia since "
-                 << "network state="
-                 << NetworkStateInformer::StatusString(state);
+    VLOG(1) << "Skipping reloading of Gaia since network state="
+            << NetworkStateInformer::StatusString(state);
     return;
   }
-  LOG(WARNING) << "Reloading Gaia.";
+  VLOG(1) << "Reloading Gaia.";
   frame_state_ = FRAME_STATE_LOADING;
   CallJS("doReload");
 }
@@ -497,7 +496,7 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
 }
 
 void GaiaScreenHandler::MaybePreloadAuthExtension() {
-  LOG(WARNING) << "MaybePreloadAuthExtension() call.";
+  VLOG(1) << "MaybePreloadAuthExtension() call.";
 
   // If cookies clearing was initiated or |dns_clear_task_running_| then auth
   // extension showing has already been initiated and preloading is senseless.

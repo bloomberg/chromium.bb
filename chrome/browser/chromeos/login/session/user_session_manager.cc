@@ -368,14 +368,14 @@ bool UserSessionManager::RespectLocalePreference(
   if (pref_locale.empty())
     pref_locale = global_app_locale;
   DCHECK(!pref_locale.empty());
-  LOG(WARNING) << "RespectLocalePreference: "
-               << "app_locale='" << pref_app_locale << "', "
-               << "bkup_locale='" << pref_bkup_locale << "', "
-               << (account_locale != NULL
-                       ? (std::string("account_locale='") + (*account_locale) +
-                          "'. ")
-                       : (std::string("account_locale - unused. ")))
-               << " Selected '" << pref_locale << "'";
+  VLOG(1) << "RespectLocalePreference: "
+          << "app_locale='" << pref_app_locale << "', "
+          << "bkup_locale='" << pref_bkup_locale << "', "
+          << (account_locale != NULL
+              ? (std::string("account_locale='") + (*account_locale) +
+                 "'. ")
+              : (std::string("account_locale - unused. ")))
+          << " Selected '" << pref_locale << "'";
   profile->ChangeAppLocale(pref_locale, Profile::APP_LOCALE_CHANGED_VIA_LOGIN);
 
   // Here we don't enable keyboard layouts for normal users. Input methods
@@ -458,7 +458,7 @@ void UserSessionManager::OnNewRefreshTokenAvaiable(Profile* user_profile) {
       UserManager::Get()->GetLoggedInUser()->email(),
       User::OAUTH2_TOKEN_STATUS_VALID);
 
-  LOG(WARNING) << "Exiting after new refresh token fetched";
+  VLOG(1) << "Exiting after new refresh token fetched";
 
   // We need to restart cleanly in this case to make sure OAuth2 RT is actually
   // saved.

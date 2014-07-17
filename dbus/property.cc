@@ -136,7 +136,7 @@ void PropertySet::GetAll() {
 
 void PropertySet::OnGetAll(Response* response) {
   if (!response) {
-    LOG(WARNING) << "GetAll request failed.";
+    LOG(WARNING) << "GetAll request failed for: " << interface_;
     return;
   }
 
@@ -163,7 +163,8 @@ void PropertySet::Set(PropertyBase* property, SetCallback callback) {
                                        callback));
 }
 
-void PropertySet::OnSet(PropertyBase* property, SetCallback callback,
+void PropertySet::OnSet(PropertyBase* property,
+                        SetCallback callback,
                         Response* response) {
   LOG_IF(WARNING, !response) << property->name() << ": Set: failed.";
   if (!callback.is_null())
