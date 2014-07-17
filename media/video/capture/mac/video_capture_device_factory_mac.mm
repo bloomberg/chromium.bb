@@ -118,7 +118,7 @@ void VideoCaptureDeviceFactoryMac::GetDeviceNames(
           device_transport_type);
       device_names->push_back(name);
       for (size_t i = 0; i < arraysize(kBlacklistedCameras); ++i) {
-        is_any_device_blacklisted = EndsWith(name.id(),
+        is_any_device_blacklisted |= EndsWith(name.id(),
             kBlacklistedCameras[i].unique_id_signature, false);
         if (is_any_device_blacklisted)
           break;
