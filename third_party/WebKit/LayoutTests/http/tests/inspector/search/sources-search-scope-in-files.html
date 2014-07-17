@@ -49,7 +49,7 @@ function test()
     manager.addFiles(fileSystemPath, files);
 
     var scope = new WebInspector.SourcesSearchScope();
-    scope._workspace = InspectorTest.testWorkspace;
+    WebInspector.workspace = InspectorTest.testWorkspace;
 
     function runSearchAndDumpResults(searchConfig, callback)
     {
