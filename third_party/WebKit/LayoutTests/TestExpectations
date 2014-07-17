@@ -852,6 +852,28 @@ crbug.com/354791 [ Mac ] virtual/threaded/transitions/webkit-clip-path-equality.
 
 crbug.com/356957 [ Win Debug ] editing/spelling/spellcheck-editable-on-focus.html [ Pass Timeout ]
 
+crbug.com/390587 css3/flexbox/repaint-during-resize-no-flex.html [ NeedsRebaseline ]
+crbug.com/390587 css3/flexbox/repaint-rtl-column.html [ NeedsRebaseline ]
+crbug.com/390587 css3/flexbox/repaint.html [ NeedsRebaseline ]
+crbug.com/390587 fast/repaint/background-resize-height.html [ NeedsRebaseline ]
+crbug.com/390587 fast/repaint/background-resize-width.html [ NeedsRebaseline ]
+crbug.com/390587 fast/repaint/backgroundSizeRepaint.html [ NeedsRebaseline ]
+crbug.com/390587 fast/repaint/border-radius-repaint.html [ NeedsRebaseline ]
+crbug.com/390587 fast/repaint/border-repaint-glitch.html [ NeedsRebaseline ]
+crbug.com/390587 fast/repaint/intermediate-layout-position.html [ NeedsRebaseline ]
+crbug.com/390587 fast/repaint/line-flow-with-floats-1.html [ NeedsRebaseline ]
+crbug.com/390587 fast/repaint/line-flow-with-floats-4.html [ NeedsRebaseline ]
+crbug.com/390587 fast/repaint/line-flow-with-floats-5.html [ NeedsRebaseline ]
+crbug.com/390587 fast/repaint/outline-inset.html [ NeedsRebaseline ]
+crbug.com/390587 fast/repaint/outline-repaint-glitch.html [ NeedsRebaseline ]
+crbug.com/390587 fast/repaint/padding-keeping-content-size.html [ NeedsRebaseline ]
+crbug.com/390587 fast/repaint/table-two-pass-layout-overpaint.html [ NeedsRebaseline ]
+crbug.com/390587 fast/repaint/transform-disable-layoutstate.html [ NeedsRebaseline ]
+crbug.com/390587 fast/repaint/window-resize-percent-html.html [ NeedsRebaseline ]
+crbug.com/390587 fast/repaint/window-resize-percent-width-height.html [ NeedsRebaseline ]
+crbug.com/390587 fast/repaint/window-resize-viewport-percent.html [ NeedsRebaseline ]
+crbug.com/390587 svg/custom/object-sizing-no-width-height-change-content-box-size.xhtml [ NeedsRebaseline ]
+
 crbug.com/344238 [ Mac Win Debug ] virtual/deferred/inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
 crbug.com/359960 compositing/iframes/scrolling-iframe.html [ Pass Failure ]

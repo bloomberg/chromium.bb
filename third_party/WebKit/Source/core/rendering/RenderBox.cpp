@@ -4048,9 +4048,24 @@ InvalidationReason RenderBox::getPaintInvalidationReason(const RenderLayerModelO
         oldBorderBoxSize = oldBounds.size();
     }
 
+    LayoutSize newBorderBoxSize = size();
+
+    if (oldBorderBoxSize == newBorderBoxSize)
+        return invalidationReason;
+
+    if (oldBorderBoxSize.width() != newBorderBoxSize.width() && mustInvalidateBackgroundOrBorderPaintOnWidthChange())
+        return InvalidationBorderBoxChange;
+    if (oldBorderBoxSize.height() != newBorderBoxSize.height() && mustInvalidateBackgroundOrBorderPaintOnHeightChange())
+        return InvalidationBorderBoxChange;
+
+    // If size of repaint rect equals to size of border box, RenderObject::incrementallyInvalidatePaint()
+    // is good for boxes having background without box decorations.
+    if (oldBorderBoxSize == oldBounds.size() && newBorderBoxSize == newBounds.size() && !style()->hasBoxDecorations())
+        return invalidationReason;
+
     // FIXME: Since we have accurate old border box size, we could do more accurate
     // incremental invalidation instead of full invalidation.
-    return oldBorderBoxSize == size() ? invalidationReason : InvalidationBorderBoxChange;
+    return InvalidationBorderBoxChange;
 }
 
 void RenderBox::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutScope)
