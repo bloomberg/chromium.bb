@@ -10,7 +10,7 @@ leak:libfontconfig
 leak:libGL.so
 
 # A small string is leaked here (57 bytes per process). http://crbug.com/46571#c9
-leak:WebCore::V8GCController::collectGarbage
+leak:blink::V8GCController::collectGarbage
 
 # http://crbug.com/270180
 leak:net::ProxyResolverV8::Context::ResolveProxy
@@ -51,11 +51,11 @@ leak:v8::internal::Genesis::Genesis
 # http://crbug.com/328552
 leak:WTF::StringImpl::createUninitialized
 leak:WTF::StringImpl::create8BitIfPossible
-leak:WebCore::MouseEvent::create
-leak:WebCore::V8WindowShell::initializeIfNeeded
-leak:WebCore::*::*GetterCallback
-leak:WebCore::CSSComputedStyleDeclaration::create
-leak:WebCore::V8PerIsolateData::ensureDomInJSContext
+leak:blink::MouseEvent::create
+leak:blink::V8WindowShell::initializeIfNeeded
+leak:blink::*::*GetterCallback
+leak:blink::CSSComputedStyleDeclaration::create
+leak:blink::V8PerIsolateData::ensureDomInJSContext
 
 # http://crbug.com/356785
 leak:content::RenderViewImplTest_DecideNavigationPolicyForWebUI_Test::TestBody
