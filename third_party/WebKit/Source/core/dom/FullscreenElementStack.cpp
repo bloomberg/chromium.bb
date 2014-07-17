@@ -173,9 +173,8 @@ void FullscreenElementStack::requestFullScreenForElement(Element& element, Reque
         // The context object's node document fullscreen element stack is not empty and its top element
         // is not an ancestor of the context object. (NOTE: Ignore this requirement if the request was
         // made via the legacy Mozilla-style API.)
-        if (!m_fullScreenElementStack.isEmpty()) {
-            Element* lastElementOnStack = m_fullScreenElementStack.last().get();
-            if (lastElementOnStack == &element || !lastElementOnStack->contains(&element)) {
+        if (Element* lastElementOnStack = fullscreenElement()) {
+            if (!element.isDescendantOf(lastElementOnStack)) {
                 if (inLegacyMozillaMode)
                     UseCounter::count(element.document(), UseCounter::LegacyFullScreenErrorExemption);
                 else
