@@ -1795,9 +1795,10 @@ void Document::updateRenderTree(StyleRecalcChange change)
     // UpdateSuspendScope::performDeferredWidgetTreeOperations() ?
     RefPtr<LocalFrame> protect(m_frame);
 
-    TRACE_EVENT0("blink", "Document::updateRenderTree");
+    TRACE_EVENT_BEGIN0("blink", "Document::updateRenderTree");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "UpdateRenderTree");
 
+    // FIXME: Remove m_styleRecalcElementCounter, we should just use the accessCount() on the resolver.
     m_styleRecalcElementCounter = 0;
     TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RecalculateStyles", "frame", frame());
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.stack"), "CallStack", "stack", InspectorCallStackEvent::currentCallStack());
@@ -1839,6 +1840,7 @@ void Document::updateRenderTree(StyleRecalcChange change)
     ASSERT(!m_timeline->hasOutdatedAnimationPlayer());
 
     TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "RecalculateStyles", "elementCount", m_styleRecalcElementCounter);
+    TRACE_EVENT_END1("blink", "Document::updateRenderTree", "elementCount", m_styleRecalcElementCounter);
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::didRecalculateStyle(cookie, m_styleRecalcElementCounter);
 }
