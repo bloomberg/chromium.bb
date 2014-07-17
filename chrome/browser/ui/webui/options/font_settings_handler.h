@@ -7,9 +7,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace base {
 class ListValue;
@@ -17,13 +17,14 @@ class ListValue;
 
 namespace extensions {
 class Extension;
+class ExtensionRegistry;
 }
 
 namespace options {
 
 // Font settings overlay page UI handler.
 class FontSettingsHandler : public OptionsPageUIHandler,
-                            public content::NotificationObserver {
+                            public extensions::ExtensionRegistryObserver {
  public:
   FontSettingsHandler();
   virtual ~FontSettingsHandler();
@@ -37,12 +38,16 @@ class FontSettingsHandler : public OptionsPageUIHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
- private:
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
+ private:
   void HandleFetchFontsData(const base::ListValue* args);
 
   void FontsListHasLoaded(scoped_ptr<base::ListValue> list);
@@ -73,7 +78,9 @@ class FontSettingsHandler : public OptionsPageUIHandler,
   IntegerPrefMember default_fixed_font_size_;
   IntegerPrefMember minimum_font_size_;
 
-  content::NotificationRegistrar registrar_;
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(FontSettingsHandler);
 };
