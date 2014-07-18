@@ -2,7 +2,7 @@
 <html>
 
 <head>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <style>
 
 .compositedBehind {
@@ -34,32 +34,13 @@
 </style>
 
 <script>
-        if (window.testRunner) {
-            testRunner.dumpAsText();
-            testRunner.waitUntilDone();
-        }
-
         if (window.internals) {
             /* Note carefully, compositing for fixed position is _disabled_ here */
             internals.settings.setAcceleratedCompositingForFixedPositionEnabled(false);
         }
 
-        function test()
-        {
-            runAfterDisplay(function() {
-                if (window.internals)
-                    window.internals.startTrackingRepaints(document);
-
-                window.scrollTo(0, 100);
-
-                runAfterDisplay(function() {
-                  if (window.internals)
-                      document.getElementById('layers').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
-
-                  if (window.testRunner)
-                      testRunner.notifyDone();
-                });
-            });
+        function repaintTest() {
+             window.scrollTo(0, 100);
         }
 </script>
 
@@ -67,7 +48,7 @@
 
 
 
-<body onload="test()">
+<body onload="runRepaintTest()">
   <!--
        Among other duplicate bugs: https://code.google.com/p/chromium/issues/detail?id=128375
        A non-composited fixed-position element can get grouped into a composited container.
@@ -80,8 +61,6 @@
   <div class="containerOverlapsComposited">
     <div class="fixed"></div>
   </div>
-
-  <pre id="layers"></pre>
 </body>
 
 </html>

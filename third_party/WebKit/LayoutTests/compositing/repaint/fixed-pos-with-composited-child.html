@@ -2,7 +2,7 @@
 <html>
 
 <head>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <style>
 
 .fixedContainer {
@@ -24,37 +24,19 @@
 </style>
 
 <script>
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
-
     if (window.internals) {
         /* Note carefully, compositing for fixed position is _disabled_ here */
         internals.settings.setAcceleratedCompositingForFixedPositionEnabled(false);
     }
 
-    function test()
+    function repaintTest()
     {
-        runAfterDisplay(function() {
-            if (window.internals)
-                window.internals.startTrackingRepaints(document);
-
-            window.scrollTo(0, 100);
-
-            runAfterDisplay(function() {
-              if (window.internals)
-                  document.getElementById('layers').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
-
-              if (window.testRunner)
-                  testRunner.notifyDone();
-              });
-          });
+        window.scrollTo(0, 100);
     }
 </script>
 </head>
 
-<body style="height:4000px;" onload="test()">
+<body style="height:4000px;" onload="runRepaintTest()">
   <!--
        Among other duplicate bugs: https://code.google.com/p/chromium/issues/detail?id=151734
 
@@ -75,8 +57,6 @@
   <div class="fixedContainer">
     <div id="foo"></div>
   </div>
-
-  <pre id="layers"></pre>
 </body>
 
 </html>

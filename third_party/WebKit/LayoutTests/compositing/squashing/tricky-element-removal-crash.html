@@ -1,29 +1,16 @@
 <!DOCTYPE html>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <div style="width: 200px; height: 200px; transform: translateZ(0); background-color: salmon;"></div>
 <div style="position: absolute; z-index: 0; top: 8px; width: 100px; height: 100px">
   <div id="target" style="width: 100px; height: 100px; transform: translateZ(0); background-color: blue">
 </div>
-<pre></pre>
 <script>
 if (window.internals)
     internals.settings.setLayerSquashingEnabled(true);
 
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
+function repaintTest() {
+    document.querySelector('#target').remove();
 }
 
-window.addEventListener('load', function() {
-    runAfterDisplay(function() {
-        window.internals.startTrackingRepaints(document);
-        document.querySelector('#target').remove();
-        document.querySelector('pre').textContent =
-            window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
-        window.internals.stopTrackingRepaints(document);
-
-        if (window.testRunner)
-            testRunner.notifyDone();
-  });
-});
+runRepaintTest();
 </script>

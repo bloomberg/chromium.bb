@@ -14,29 +14,16 @@
     <div class="mv-tile" style="background-color: lightblue;"></div>
 </div>
 <div class="mv-tile" style="width: 1000px"></div>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <script>
 // This test verifies that a paint invalidation is correctly issued for both the old and new location of
 // the mv-tile element which is *not* removed from the DOM, but nevertheless moves to the left as the other one
 // is removed.
 
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-}
-runAfterDisplay(function() {
-    if (window.internals)
-        window.internals.startTrackingRepaints(document);
-
+function repaintTest() {
     document.querySelector("#foo").remove();
-    
-    if (window.internals) {
-        testRunner.setCustomTextOutput(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS));
-        window.internals.stopTrackingRepaints(document);
-    }
+}
 
-    if (window.testRunner)
-        testRunner.notifyDone();
-});
+runRepaintTest();
 
 </script>

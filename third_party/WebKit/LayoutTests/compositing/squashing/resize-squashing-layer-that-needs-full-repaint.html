@@ -1,37 +1,20 @@
 <!doctype html>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 
 <!-- The second two divs form a combined squashing layer. display:none'ing the first of them will resize the squashing layer. -->
 <div style="width: 500px; height: 500px; -webkit-transform: translateZ(0)"></div>
 <div style="position: absolute; top: 55px; left: 55px; width: 500px; height: 500px; background-color: lightblue"></div>
 <div id="to-be-removed" style="position: absolute; top: 0px; left: 0px; width: 50px; height: 50px; background-color: lightgray"></div>
 
-<pre id="output" style="display: none"></pre>
 <script>
 // This test checks that resizing a squashing layer such that the offset of content squashed into it relative to the squashing
 // container causes a repaint of its bounds within the updated squashing layer geometry.
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-}
-
 if (window.internals)
     internals.settings.setLayerSquashingEnabled(true);
 
-runAfterDisplay(function() {
-    if (window.internals)
-        window.internals.startTrackingRepaints(document);
+function repaintTest() {
     document.querySelector("#to-be-removed").style.display = 'none';
+}
 
-    var output = document.querySelector("#output");
-    if (window.internals) {
-        output.textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
-        window.internals.stopTrackingRepaints(document);
-    }
-    output.style.display = 'block';
-
-    if (window.testRunner)
-        testRunner.notifyDone();
-
-});
+runRepaintTest();
 </script>

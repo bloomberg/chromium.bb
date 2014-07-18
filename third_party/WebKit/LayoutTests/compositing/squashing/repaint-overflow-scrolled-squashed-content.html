@@ -3,30 +3,15 @@
   <div id="foo2" style="height: 1000px; width: 150px;  background: lightblue; transform: translateZ(0) "></div>
   <div id="foo" style="height: 1000px; width: 100px; position: absolute; top: 0px; left: 0px; background: lightgray"></div>
 </div>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <script>
 // This test verifies that a repaint request for a squashed layer that is inside of a scrolling container and much taller
 // than the viewport does not receive an incorrect paint invalidation rect when it is invalidated. In particular, the invalidation
 // rect should not be clipped to the visible viewport.
 
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-}
-runAfterDisplay(function() {
-    if (window.internals)
-        window.internals.startTrackingRepaints(document);
-    
+function repaintTest() {
     document.querySelector("#foo").style.background = 'red';
-    
-    if (window.testRunner)
-        testRunner.setCustomTextOutput(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS));
+}
 
-    if (window.internals)
-        window.internals.stopTrackingRepaints(document);
-
-    if (window.testRunner)
-        testRunner.notifyDone();
-});
-
+runRepaintTest();
 </script>

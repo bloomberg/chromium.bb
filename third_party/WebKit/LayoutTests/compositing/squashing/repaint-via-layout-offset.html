@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <style>
 #container {
   position: absolute;
@@ -26,29 +26,9 @@
   <span class="child"></span>
   <span class="child"></span>
 </div>
-<pre></pre>
 <script>
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
+function repaintTest() {
+    document.querySelectorAll('.child')[1].classList.add('embiggen');
 }
-
-runAfterDisplay(function() {
-    document.querySelectorAll('.child')[0].classList.add('embiggen')
-    runAfterDisplay(function() {
-        if (window.internals)
-            window.internals.startTrackingRepaints(document);
-
-        document.querySelectorAll('.child')[1].classList.add('embiggen')
-
-        if (window.internals) {
-            var layerTree = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
-            window.internals.stopTrackingRepaints(document);
-            document.querySelector('pre').textContent = layerTree;
-        }
-
-        if (window.testRunner)
-            testRunner.notifyDone();
-    });
-});
+runRepaintTest();
 </script>
