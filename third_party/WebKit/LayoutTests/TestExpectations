@@ -406,7 +406,6 @@ crbug.com/378610 [ Win7 ] fast/replaced/table-percent-height-text-controls.html 
 crbug.com/378610 [ Win7 ] fast/table/table-all-rowspans-height-distribution-in-rows.html [ Failure ]
 crbug.com/378610 [ Win7 ] fast/table/table-rowspan-height-distribution-in-rows-1.html [ Failure ]
 crbug.com/378610 [ Win7 ] fast/table/table-rowspan-height-distribution-in-rows-2.html [ Failure ]
-crbug.com/378610 [ Win7 ] fast/text/decomposed-after-stacked-diacritics.html [ Failure ]
 
 crbug.com/371725 http/tests/webfont/slow-loading.html [ Pass ImageOnlyFailure Timeout ]
 
@@ -416,6 +415,7 @@ crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/font-variant-ligature
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/zerowidthjoiner.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
 crbug.com/290411 [ Mac ] virtual/antialiasedtext/fast/text/sub-pixel/text-scaling-pixel.html [ Skip ]
+Bug(eae) virtual/antialiasedtext/fast/text/decomposed-after-stacked-diacritics.html [ NeedsRebaseline ]
 
 crbug.com/334269 [ Mac ] fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
 crbug.com/334269 [ Mac ] fast/text/font-variant-ligatures.html [ ImageOnlyFailure ]

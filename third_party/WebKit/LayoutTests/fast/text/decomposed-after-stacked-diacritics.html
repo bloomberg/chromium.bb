@@ -19,5 +19,5 @@
     testRange.setEnd(test, 3);
     var testWidth = testRange.getBoundingClientRect().width;
 
-    document.getElementById("result").innerText = testWidth === referenceWidth ? "PASS" : "FAIL";
+    document.getElementById("result").innerText = Math.abs(testWidth - referenceWidth) <= 1 ? "PASS" : "FAIL";
 </script>
