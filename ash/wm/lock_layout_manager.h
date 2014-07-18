@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shell_delegate.h"
+#include "ash/snap_to_pixel_layout_manager.h"
 #include "ash/wm/wm_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -44,7 +45,7 @@ class WMEvent;
 // For all windows in LockScreenContainer default wm::WindowState is replaced
 // with LockWindowState.
 class ASH_EXPORT LockLayoutManager
-    : public aura::LayoutManager,
+    : public SnapToPixelLayoutManager,
       public aura::WindowObserver,
       public VirtualKeyboardStateObserver,
       public keyboard::KeyboardControllerObserver {

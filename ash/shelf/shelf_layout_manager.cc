@@ -187,7 +187,8 @@ class ShelfLayoutManager::UpdateShelfObserver
 // ShelfLayoutManager ----------------------------------------------------------
 
 ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf)
-    : root_window_(shelf->GetNativeView()->GetRootWindow()),
+    : SnapToPixelLayoutManager(shelf->GetNativeView()->parent()),
+      root_window_(shelf->GetNativeView()->GetRootWindow()),
       updating_bounds_(false),
       auto_hide_behavior_(SHELF_AUTO_HIDE_BEHAVIOR_NEVER),
       alignment_(SHELF_ALIGNMENT_BOTTOM),
@@ -515,22 +516,9 @@ void ShelfLayoutManager::OnWindowResized() {
   LayoutShelf();
 }
 
-void ShelfLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
-}
-
-void ShelfLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
-}
-
-void ShelfLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
-}
-
-void ShelfLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
-                                                        bool visible) {
-}
-
 void ShelfLayoutManager::SetChildBounds(aura::Window* child,
                                         const gfx::Rect& requested_bounds) {
-  SetChildBoundsDirect(child, requested_bounds);
+  SnapToPixelLayoutManager::SetChildBounds(child, requested_bounds);
   // We may contain other widgets (such as frame maximize bubble) but they don't
   // effect the layout in anyway.
   if (!updating_bounds_ &&

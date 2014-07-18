@@ -37,6 +37,10 @@ ASH_EXPORT extern const aura::WindowProperty<gfx::Rect*>* const
 ASH_EXPORT extern const aura::WindowProperty<ui::WindowShowState>* const
     kRestoreShowStateOverrideKey;
 
+// Containers with this property (true) are aligned with physical pixel
+// boundary.
+extern const aura::WindowProperty<bool>* const kSnapChildrenToPixelBoundary;
+
 // If this is set to true, the window stays in the same root window
 // even if the bounds outside of its root window is set.
 // This is exported as it's used in the tests.

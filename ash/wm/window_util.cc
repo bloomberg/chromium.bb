@@ -9,6 +9,7 @@
 #include "ash/ash_constants.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/snap_to_pixel_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
@@ -16,6 +17,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/compositor/dip_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
@@ -166,6 +168,41 @@ void ReparentTransientChildrenOfChild(aura::Window* child,
         ::wm::GetTransientChildren(child)[i],
         old_parent,
         new_parent);
+  }
+}
+
+void SnapWindowToPixelBoundary(aura::Window* window) {
+  aura::Window* snapped_ancestor = window->parent();
+  while (snapped_ancestor) {
+    if (snapped_ancestor->GetProperty(kSnapChildrenToPixelBoundary)) {
+      ui::SnapLayerToPhysicalPixelBoundary(snapped_ancestor->layer(),
+                                           window->layer());
+      return;
+    }
+    snapped_ancestor = snapped_ancestor->parent();
+  }
+}
+
+void SetSnapsChildrenToPhysicalPixelBoundary(aura::Window* container) {
+  DCHECK(!container->GetProperty(kSnapChildrenToPixelBoundary))
+      << container->name();
+  container->SetProperty(kSnapChildrenToPixelBoundary, true);
+}
+
+void InstallSnapLayoutManagerToContainers(aura::Window* parent) {
+  aura::Window::Windows children = parent->children();
+  for (aura::Window::Windows::iterator iter = children.begin();
+       iter != children.end();
+       ++iter) {
+    aura::Window* container = *iter;
+    if (container->id() < 0)  // not a container
+      continue;
+    if (container->GetProperty(kSnapChildrenToPixelBoundary)) {
+      if (!container->layout_manager())
+        container->SetLayoutManager(new SnapToPixelLayoutManager(container));
+    } else {
+      InstallSnapLayoutManagerToContainers(container);
+    }
   }
 }
 

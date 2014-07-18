@@ -402,8 +402,10 @@ class DockedWindowLayoutManager::ShelfWindowObserver : public WindowObserver {
 ////////////////////////////////////////////////////////////////////////////////
 // DockedWindowLayoutManager public implementation:
 DockedWindowLayoutManager::DockedWindowLayoutManager(
-    aura::Window* dock_container, WorkspaceController* workspace_controller)
-    : dock_container_(dock_container),
+    aura::Window* dock_container,
+    WorkspaceController* workspace_controller)
+    : SnapToPixelLayoutManager(dock_container),
+      dock_container_(dock_container),
       in_layout_(false),
       dragged_window_(NULL),
       is_dragged_window_docked_(false),
@@ -411,7 +413,7 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(
       shelf_(NULL),
       workspace_controller_(workspace_controller),
       in_fullscreen_(workspace_controller_->GetWindowState() ==
-          WORKSPACE_WINDOW_STATE_FULL_SCREEN),
+                     WORKSPACE_WINDOW_STATE_FULL_SCREEN),
       docked_width_(0),
       alignment_(DOCKED_ALIGNMENT_NONE),
       last_active_window_(NULL),
@@ -716,10 +718,10 @@ void DockedWindowLayoutManager::SetChildBounds(
     actual_new_bounds.set_height(
         std::max(min_size.height(), actual_new_bounds.height()));
   }
-  // Whenever one of our windows is moved or resized enforce layout.
-  SetChildBoundsDirect(child, actual_new_bounds);
+  SnapToPixelLayoutManager::SetChildBounds(child, actual_new_bounds);
   if (IsPopupOrTransient(child))
     return;
+  // Whenever one of our windows is moved or resized enforce layout.
   ShelfLayoutManager* shelf_layout =
       ShelfLayoutManager::ForShelf(dock_container_);
   if (shelf_layout)

@@ -249,6 +249,8 @@
       'shell_init_params.cc',
       'shell_init_params.h',
       'shell_window_ids.h',
+      'snap_to_pixel_layout_manager.cc',
+      'snap_to_pixel_layout_manager.h',
       'sticky_keys/sticky_keys_state.h',
       'sticky_keys/sticky_keys_controller.cc',
       'sticky_keys/sticky_keys_controller.h',

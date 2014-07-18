@@ -21,8 +21,12 @@ DEFINE_WINDOW_PROPERTY_KEY(ui::WindowShowState,
                            kRestoreShowStateOverrideKey,
                            ui::SHOW_STATE_DEFAULT);
 
+DEFINE_WINDOW_PROPERTY_KEY(bool, kSnapChildrenToPixelBoundary, false);
+
 DEFINE_WINDOW_PROPERTY_KEY(bool, kStayInSameRootWindowKey, false);
+
 DEFINE_WINDOW_PROPERTY_KEY(bool, kUsesScreenCoordinatesKey, false);
+
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(wm::WindowState,
                                  kWindowStateKey, NULL);
 

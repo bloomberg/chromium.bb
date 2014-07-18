@@ -18,7 +18,8 @@
 namespace ash {
 
 LockLayoutManager::LockLayoutManager(aura::Window* window)
-    : window_(window),
+    : SnapToPixelLayoutManager(window),
+      window_(window),
       root_window_(window->GetRootWindow()),
       is_observing_keyboard_(false) {
   Shell::GetInstance()->delegate()->AddVirtualKeyboardStateObserver(this);

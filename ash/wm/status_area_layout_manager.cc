@@ -16,9 +16,9 @@ namespace ash {
 ////////////////////////////////////////////////////////////////////////////////
 // StatusAreaLayoutManager, public:
 
-StatusAreaLayoutManager::StatusAreaLayoutManager(ShelfWidget* shelf)
-    : in_layout_(false),
-      shelf_(shelf) {
+StatusAreaLayoutManager::StatusAreaLayoutManager(aura::Window* container,
+                                                 ShelfWidget* shelf)
+    : SnapToPixelLayoutManager(container), in_layout_(false), shelf_(shelf) {
 }
 
 StatusAreaLayoutManager::~StatusAreaLayoutManager() {
@@ -31,27 +31,13 @@ void StatusAreaLayoutManager::OnWindowResized() {
   LayoutStatusArea();
 }
 
-void StatusAreaLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
-}
-
-void StatusAreaLayoutManager::OnWillRemoveWindowFromLayout(
-    aura::Window* child) {
-}
-
-void StatusAreaLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
-}
-
-void StatusAreaLayoutManager::OnChildWindowVisibilityChanged(
-    aura::Window* child, bool visible) {
-}
-
 void StatusAreaLayoutManager::SetChildBounds(
     aura::Window* child,
     const gfx::Rect& requested_bounds) {
   // Only need to have the shelf do a layout if the child changing is the status
   // area and the shelf isn't in the process of doing a layout.
   if (child != shelf_->status_area_widget()->GetNativeView() || in_layout_) {
-    SetChildBoundsDirect(child, requested_bounds);
+    SnapToPixelLayoutManager::SetChildBounds(child, requested_bounds);
     return;
   }
 
@@ -60,7 +46,7 @@ void StatusAreaLayoutManager::SetChildBounds(
   if (requested_bounds == child->GetTargetBounds())
     return;
 
-  SetChildBoundsDirect(child, requested_bounds);
+  SnapToPixelLayoutManager::SetChildBounds(child, requested_bounds);
   LayoutStatusArea();
 }
 

@@ -630,7 +630,8 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container,
   shelf_layout_manager_->set_workspace_controller(workspace_controller);
   workspace_controller->SetShelf(shelf_layout_manager_);
 
-  status_container->SetLayoutManager(new StatusAreaLayoutManager(this));
+  status_container->SetLayoutManager(
+      new StatusAreaLayoutManager(status_container, this));
 
   shelf_container->SetEventTargeter(scoped_ptr<ui::EventTargeter>(new
       ShelfWindowTargeter(shelf_container, shelf_layout_manager_)));

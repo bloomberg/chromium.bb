@@ -49,6 +49,7 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
   Shell::GetInstance()->activation_client()->AddObserver(this);
   Shell::GetInstance()->AddShellObserver(this);
   root_window_->AddObserver(this);
+  DCHECK(window->GetProperty(kSnapChildrenToPixelBoundary));
 }
 
 WorkspaceLayoutManager::~WorkspaceLayoutManager() {

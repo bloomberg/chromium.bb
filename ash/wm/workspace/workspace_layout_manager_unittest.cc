@@ -523,23 +523,13 @@ TEST_F(WorkspaceLayoutManagerTest, NotifyFullscreenChanges) {
   EXPECT_FALSE(observer.is_fullscreen());
 }
 
-// Following tests were originally written for BaseLayoutManager.
-
+// Following "Solo" tests were originally written for BaseLayoutManager.
 namespace {
 
 class WorkspaceLayoutManagerSoloTest : public test::AshTestBase {
  public:
   WorkspaceLayoutManagerSoloTest() {}
   virtual ~WorkspaceLayoutManagerSoloTest() {}
-
-  virtual void SetUp() OVERRIDE {
-    test::AshTestBase::SetUp();
-    UpdateDisplay("800x600");
-    aura::Window* default_container = Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(), kShellWindowId_DefaultContainer);
-    default_container->SetLayoutManager(
-        new WorkspaceLayoutManager(Shell::GetPrimaryRootWindow()));
-  }
 
   aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
     return CreateTestWindowInShellWithBounds(bounds);
@@ -993,8 +983,8 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
     UpdateDisplay("800x600");
     aura::Window* default_container = Shell::GetContainer(
         Shell::GetPrimaryRootWindow(), kShellWindowId_DefaultContainer);
-    layout_manager_ = new WorkspaceLayoutManager(Shell::GetPrimaryRootWindow());
-    default_container->SetLayoutManager(layout_manager_);
+    layout_manager_ = static_cast<WorkspaceLayoutManager*>(
+        default_container->layout_manager());
   }
 
   aura::Window* CreateTestWindow(const gfx::Rect& bounds) {

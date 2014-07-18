@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/snap_to_pixel_layout_manager.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 
@@ -32,7 +32,7 @@ namespace ash {
 // System modal windows which are centered on the screen will be kept centered
 // when the container size changes.
 class ASH_EXPORT SystemModalContainerLayoutManager
-    : public aura::LayoutManager,
+    : public SnapToPixelLayoutManager,
       public aura::WindowObserver,
       public keyboard::KeyboardControllerObserver {
  public:
@@ -41,13 +41,10 @@ class ASH_EXPORT SystemModalContainerLayoutManager
 
   bool has_modal_background() const { return modal_background_ != NULL; }
 
-  // Overridden from aura::LayoutManager:
+  // Overridden from SnapToPixelLayoutManager:
   virtual void OnWindowResized() OVERRIDE;
   virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
   virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE;
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE;
-  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visibile) OVERRIDE;
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE;
 

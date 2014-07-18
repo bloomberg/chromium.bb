@@ -14,6 +14,7 @@ class Window;
 }
 
 namespace gfx {
+class Point;
 class Rect;
 class Size;
 }
@@ -95,6 +96,17 @@ void ReparentChildWithTransientChildren(aura::Window* child,
 void ReparentTransientChildrenOfChild(aura::Window* child,
                                       aura::Window* old_parent,
                                       aura::Window* new_parent);
+
+// Snap the window's layer to physical pixel boundary.
+void SnapWindowToPixelBoundary(aura::Window* window);
+
+// Mark the container window so that InstallSnapLayoutManagerToContainers
+// installs the SnapToPixelLayoutManager.
+ASH_EXPORT void SetSnapsChildrenToPhysicalPixelBoundary(
+    aura::Window* container);
+
+// Traverse the |container| tree and installs SnapToPixelLayoutManager.
+void InstallSnapLayoutManagerToContainers(aura::Window* container);
 
 }  // namespace wm
 }  // namespace ash

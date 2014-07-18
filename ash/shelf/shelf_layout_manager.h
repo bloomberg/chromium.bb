@@ -13,6 +13,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell_observer.h"
+#include "ash/snap_to_pixel_layout_manager.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/dock/docked_window_layout_manager_observer.h"
 #include "ash/wm/lock_state_observer.h"
@@ -22,7 +23,6 @@
 #include "base/logging.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "ui/aura/layout_manager.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -56,14 +56,14 @@ FORWARD_DECLARE_TEST(WebNotificationTrayTest, PopupAndFullscreen);
 // layout to the status area.
 // To respond to bounds changes in the status area StatusAreaLayoutManager works
 // closely with ShelfLayoutManager.
-class ASH_EXPORT ShelfLayoutManager :
-    public aura::LayoutManager,
-    public ash::ShellObserver,
-    public aura::client::ActivationChangeObserver,
-    public DockedWindowLayoutManagerObserver,
-    public keyboard::KeyboardControllerObserver,
-    public LockStateObserver,
-    public SessionStateObserver {
+class ASH_EXPORT ShelfLayoutManager
+    : public ash::ShellObserver,
+      public aura::client::ActivationChangeObserver,
+      public DockedWindowLayoutManagerObserver,
+      public keyboard::KeyboardControllerObserver,
+      public LockStateObserver,
+      public SnapToPixelLayoutManager,
+      public SessionStateObserver {
  public:
 
   // We reserve a small area on the edge of the workspace area to ensure that
@@ -164,13 +164,8 @@ class ASH_EXPORT ShelfLayoutManager :
   // shelf. Specifying 0 leads to use the default.
   void SetAnimationDurationOverride(int duration_override_in_ms);
 
-  // Overridden from aura::LayoutManager:
+  // Overridden from SnapLayoutManager:
   virtual void OnWindowResized() OVERRIDE;
-  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
-  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE;
-  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE;
-  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
-                                              bool visible) OVERRIDE;
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE;
 

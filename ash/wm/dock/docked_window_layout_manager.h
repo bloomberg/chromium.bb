@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shell_observer.h"
+#include "ash/snap_to_pixel_layout_manager.h"
 #include "ash/wm/dock/dock_types.h"
 #include "ash/wm/dock/docked_window_layout_manager_observer.h"
 #include "ash/wm/window_state_observer.h"
@@ -17,7 +18,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/rect.h"
@@ -67,7 +67,7 @@ struct WindowWithHeight {
 // TODO(varkha): extend BaseLayoutManager instead of LayoutManager to inherit
 // common functionality.
 class ASH_EXPORT DockedWindowLayoutManager
-    : public aura::LayoutManager,
+    : public SnapToPixelLayoutManager,
       public ash::ShellObserver,
       public aura::WindowObserver,
       public aura::client::ActivationChangeObserver,
@@ -134,7 +134,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   // Updates docked layout when shelf bounds change.
   void OnShelfBoundsChanged();
 
-  // aura::LayoutManager:
+  // SnapLayoutManager:
   virtual void OnWindowResized() OVERRIDE;
   virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
   virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {}

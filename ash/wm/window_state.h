@@ -330,7 +330,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   void NotifyPreStateTypeChange(WindowStateType old_window_state_type);
   void NotifyPostStateTypeChange(WindowStateType old_window_state_type);
 
-  // Sets |bounds| as is.
+  // Sets |bounds| as is and ensure the layer is aligned with pixel boundary.
   void SetBoundsDirect(const gfx::Rect& bounds);
 
   // Sets the window's |bounds| with constraint where the size of the

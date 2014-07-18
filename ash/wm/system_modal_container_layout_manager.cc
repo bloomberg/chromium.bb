@@ -46,7 +46,8 @@ const int kCenterPixelDelta = 32;
 
 SystemModalContainerLayoutManager::SystemModalContainerLayoutManager(
     aura::Window* container)
-    : container_(container),
+    : SnapToPixelLayoutManager(container),
+      container_(container),
       modal_background_(NULL) {
 }
 
@@ -86,19 +87,10 @@ void SystemModalContainerLayoutManager::OnWillRemoveWindowFromLayout(
     RemoveModalWindow(child);
 }
 
-void SystemModalContainerLayoutManager::OnWindowRemovedFromLayout(
-    aura::Window* child) {
-}
-
-void SystemModalContainerLayoutManager::OnChildWindowVisibilityChanged(
-    aura::Window* child,
-    bool visible) {
-}
-
 void SystemModalContainerLayoutManager::SetChildBounds(
     aura::Window* child,
     const gfx::Rect& requested_bounds) {
-  SetChildBoundsDirect(child, requested_bounds);
+  SnapToPixelLayoutManager::SetChildBounds(child, requested_bounds);
   child->SetProperty(kCenteredKey, DialogIsCentered(requested_bounds));
 }
 
