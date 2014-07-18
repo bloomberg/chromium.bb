@@ -610,3 +610,7 @@ void PrintPreviewUI::OnPrintPreviewScalingDisabled() {
 void PrintPreviewUI::SetDelegateForTesting(TestingDelegate* delegate) {
   g_testing_delegate = delegate;
 }
+
+void PrintPreviewUI::SetSelectedFileForTesting(const base::FilePath& path) {
+  handler_->FileSelected(path, 0, NULL);
+}

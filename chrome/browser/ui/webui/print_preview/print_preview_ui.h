@@ -18,6 +18,7 @@ struct PrintHostMsg_DidGetPreviewPageCount_Params;
 struct PrintHostMsg_RequestPrintPreview_Params;
 
 namespace base {
+class FilePath;
 class RefCountedBytes;
 }
 
@@ -153,6 +154,10 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   };
 
   static void SetDelegateForTesting(TestingDelegate* delegate);
+
+  // Allows for tests to set a file path to print a PDF to. This also initiates
+  // the printing without having to click a button on the print preview dialog.
+  void SetSelectedFileForTesting(const base::FilePath& path);
 
  private:
   friend class PrintPreviewHandlerTest;

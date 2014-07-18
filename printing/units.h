@@ -59,7 +59,7 @@ PRINTING_EXPORT int ConvertPixelsToPoint(int pixels);
 PRINTING_EXPORT double ConvertPixelsToPointDouble(double pixels);
 
 // Converts from 1 point to 1 pixel using doubles.
-double ConvertPointsToPixelDouble(double points);
+PRINTING_EXPORT double ConvertPointsToPixelDouble(double points);
 
 }  // namespace printing
 

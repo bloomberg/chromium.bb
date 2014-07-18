@@ -106,6 +106,9 @@ class PrintPreviewHandler
   }
 
  private:
+  friend class PrintPreviewPdfGeneratedBrowserTest;
+  FRIEND_TEST_ALL_PREFIXES(PrintPreviewPdfGeneratedBrowserTest,
+                           MANUAL_DummyTest);
   class AccessTokenService;
 
   static bool PrivetPrintingEnabled();
