@@ -37,7 +37,7 @@
 
 #include "public/platform/Platform.h"
 #include "public/web/WebKit.h"
-#include <content/test/webkit_unit_test_support.h>
+#include <content/test/webkit_support.h>
 
 #if defined(BLINK_DLL_UNITTEST)
 #include "web/tests/WebUnitTests.h"
@@ -51,15 +51,15 @@ int main(int argc, char** argv)
 {
 #if defined(BLINK_DLL_UNITTEST)
     blink::InitTestSuite(argc, argv);
-    content::SetUpTestEnvironmentForWebKitUnitTests();
+    content::SetUpTestEnvironmentForUnitTests();
     int result = blink::RunAllUnitTests();
-    content::TearDownEnvironmentForWebKitUnitTests();
+    content::TearDownTestEnvironment();
     blink::DeleteTestSuite();
 #else
     TestSuite testSuite(argc, argv);
-    content::SetUpTestEnvironmentForWebKitUnitTests();
+    content::SetUpTestEnvironmentForUnitTests();
     int result = testSuite.Run();
-    content::TearDownEnvironmentForWebKitUnitTests();
+    content::TearDownTestEnvironment();
 #endif
 
     return result;
