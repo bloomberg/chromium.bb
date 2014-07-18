@@ -371,6 +371,14 @@ void AndroidProfileOAuth2TokenService::RevokeAllCredentials() {
        it != accounts.end(); it++) {
     FireRefreshTokenRevoked(*it);
   }
+
+  // Clear everything on the Java side as well.
+  std::vector<std::string> empty;
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobjectArray> java_accounts(
+      base::android::ToJavaArrayOfStrings(env, empty));
+  Java_OAuth2TokenService_saveStoredAccounts(
+      env, base::android::GetApplicationContext(), java_accounts.obj());
 }
 
 // Called from Java when fetching of an OAuth2 token is finished. The
