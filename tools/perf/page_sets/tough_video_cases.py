@@ -426,6 +426,17 @@ class Page29(ToughVideoCasesPage):
   def RunMediaMetrics(self, action_runner):
     self.LoopMixedAudio(action_runner)
 
+class Page30(ToughVideoCasesPage):
+
+  def __init__(self, page_set):
+    super(Page30, self).__init__(
+      url='file://tough_video_cases/video.html?src=tulip2.vp9.webm',
+      page_set=page_set)
+
+    self.add_browser_metrics = True
+
+  def RunMediaMetrics(self, action_runner):
+    self.PlayAction(action_runner)
 
 class ToughVideoCasesPageSet(page_set_module.PageSet):
 
@@ -465,3 +476,4 @@ class ToughVideoCasesPageSet(page_set_module.PageSet):
     self.AddPage(Page27(self))
     self.AddPage(Page28(self))
     self.AddPage(Page29(self))
+    self.AddPage(Page30(self))
