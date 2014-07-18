@@ -20,7 +20,6 @@ function ImageView(container, viewport) {
   this.document_ = container.ownerDocument;
   this.contentGeneration_ = 0;
   this.displayedContentGeneration_ = 0;
-  this.displayedViewportGeneration_ = 0;
 
   this.imageLoader_ = new ImageUtil.ImageLoader(this.document_);
   // We have a separate image loader for prefetch which does not get cancelled
@@ -104,20 +103,16 @@ ImageView.prototype.draw = function() {
     return;
 
   var forceRepaint = false;
-
-  if (this.displayedViewportGeneration_ !==
-      this.viewport_.getCacheGeneration()) {
-    this.displayedViewportGeneration_ = this.viewport_.getCacheGeneration();
-
+  var deviceBounds = this.viewport_.getDeviceBounds();
+  if (deviceBounds.width != this.screenImage_.width ||
+      deviceBounds.height != this.screenImage_.height) {
     this.setupDeviceBuffer(this.screenImage_);
-
     forceRepaint = true;
   }
 
   if (forceRepaint ||
       this.displayedContentGeneration_ !== this.contentGeneration_) {
     this.displayedContentGeneration_ = this.contentGeneration_;
-
     ImageUtil.trace.resetTimer('paint');
     this.paintDeviceRect(this.contentCanvas_, new Rect(this.contentCanvas_));
     ImageUtil.trace.reportTimer('paint');
@@ -184,16 +179,9 @@ ImageView.prototype.getContentRevision = function() {
  * @param {Rect} imageRect Rectangle region of the canvas to be rendered.
  */
 ImageView.prototype.paintDeviceRect = function(canvas, imageRect) {
-  // Check canvas size.
-  var deviceBounds = this.viewport_.getDeviceBounds();
-  if (this.screenImage_.width != deviceBounds.width ||
-      this.screenImage_.height != deviceBounds.height) {
-    console.error('The size of canvas is invalid.', (new Error).stack);
-    return;
-  }
-
   // Map the rectangle in full resolution image to the rectangle in the device
   // canvas.
+  var deviceBounds = this.viewport_.getDeviceBounds();
   var scaleX = deviceBounds.width / canvas.width;
   var scaleY = deviceBounds.height / canvas.height;
   var deviceRect = new Rect(
