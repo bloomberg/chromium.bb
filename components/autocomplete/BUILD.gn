@@ -18,6 +18,10 @@ static_library("autocomplete") {
     "//net",
     "//url",
   ]
+
+  forward_dependent_configs_from = [
+    "//components/metrics/proto",
+  ]
 }
 
 static_library("test_support") {
@@ -30,5 +34,17 @@ static_library("test_support") {
     ":autocomplete",
     "//base",
     "//components/metrics/proto",
+  ]
+}
+
+source_set("unit_tests") {
+  sources = [
+    "autocomplete_input_unittest.cc",
+  ]
+
+  deps = [
+    ":autocomplete",
+    ":test_support",
+    "//testing/gtest",
   ]
 }

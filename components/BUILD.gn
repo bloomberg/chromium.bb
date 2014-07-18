@@ -146,8 +146,32 @@ group("all_components") {
   }
 }
 
-# TODO(GYP) components_unittests
-#test("components_unittests") {
-##  # Precache tests need these defines.
-#  configs += [ "//components/precache/core:precache_config" ]
-#}
+# TODO(GYP) enable when it links.
+if (false) {
+
+# To add a unit test to this target, make a "unit_test" source_set in your
+# component (it's important to use a source_set instead of a static library or
+# no tests will run) and add a reference here. You can add more than one unit
+# test target if convenient.
+test("components_unittests") {
+  sources = [
+    "test/run_all_unittests.cc",
+  ]
+
+  # Add only ":unit_tests" dependencies here. If your tests have dependencies
+  # (this would at least include the component itself), they should be on the
+  # test source set and not here.
+  deps = [
+    "//components/auto_login_parser:unit_tests",
+    "//components/autocomplete:unit_tests",
+    "//components/autofill/content/browser:unit_tests",
+    "//components/autofill/core/browser:unit_tests",
+    "//components/autofill/core/common:unit_tests",
+  ]
+
+
+  # Precache tests need these defines.
+  #configs += [ "//components/precache/core:precache_config" ]
+}
+
+}

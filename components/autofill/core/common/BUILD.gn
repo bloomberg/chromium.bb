@@ -53,3 +53,18 @@ static_library("common") {
     # deps += [ 'autofill_jni_headers' ]  TODO(GYP)
   }
 }
+
+source_set("unit_tests") {
+  sources = [
+    "form_data_unittest.cc",
+    "form_field_data_unittest.cc",
+    "password_form_fill_data_unittest.cc",
+    "save_password_progress_logger_unittest.cc",
+  ]
+
+  deps = [
+    ":common",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

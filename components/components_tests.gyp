@@ -14,9 +14,13 @@
     ['android_webview_build == 0', {
       'targets': [
         {
+          # GN version: //components/components_unittests
           'target_name': 'components_unittests',
           'type': '<(gtest_target_type)',
           'sources': [
+            # Note: sources list duplicated in GN build. In the GN build,
+            # each component has its own unit tests target defined in its
+            # directory that are then linked into the final content_unittests.
             'auto_login_parser/auto_login_parser_unittest.cc',
             'autocomplete/autocomplete_input_unittest.cc',
             'autofill/content/browser/content_autofill_driver_unittest.cc',
@@ -64,6 +68,7 @@
             'autofill/core/common/form_field_data_unittest.cc',
             'autofill/core/common/password_form_fill_data_unittest.cc',
             'autofill/core/common/save_password_progress_logger_unittest.cc',
+            # Note: GN tests converted to here, need to do the rest.
             'bookmarks/browser/bookmark_codec_unittest.cc',
             'bookmarks/browser/bookmark_expanded_state_tracker_unittest.cc',
             'bookmarks/browser/bookmark_index_unittest.cc',

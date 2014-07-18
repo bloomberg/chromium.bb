@@ -13,3 +13,14 @@ source_set("auto_login_parser") {
     "//net",
   ]
 }
+
+source_set("unit_tests") {
+  sources = [
+    "auto_login_parser_unittest.cc",
+  ]
+
+  deps = [
+    ":auto_login_parser",
+    "//testing/gtest",
+  ]
+}

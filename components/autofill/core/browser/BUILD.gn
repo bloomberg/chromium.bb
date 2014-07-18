@@ -194,9 +194,59 @@ static_library("test_support") {
   ]
 
   deps = [
+    ":browser",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//skia",
     "//testing/gtest",
+  ]
+}
+
+source_set("unit_tests") {
+  sources = [
+    "address_field_unittest.cc",
+    "address_unittest.cc",
+    "android/auxiliary_profile_unittest_android.cc",
+    "autocomplete_history_manager_unittest.cc",
+    "autofill_country_unittest.cc",
+    "autofill_data_model_unittest.cc",
+    "autofill_download_unittest.cc",
+    "autofill_external_delegate_unittest.cc",
+    "autofill_field_unittest.cc",
+    "autofill_ie_toolbar_import_win_unittest.cc",
+    "autofill_manager_unittest.cc",
+    "autofill_merge_unittest.cc",
+    "autofill_metrics_unittest.cc",
+    "autofill_profile_unittest.cc",
+    "autofill_regexes_unittest.cc",
+    "autofill_type_unittest.cc",
+    "autofill_xml_parser_unittest.cc",
+    "contact_info_unittest.cc",
+    "credit_card_field_unittest.cc",
+    "credit_card_unittest.cc",
+    "form_field_unittest.cc",
+    "form_structure_unittest.cc",
+    "name_field_unittest.cc",
+    "password_generator_unittest.cc",
+    "personal_data_manager_unittest.cc",
+    "phone_field_unittest.cc",
+    "phone_number_i18n_unittest.cc",
+    "phone_number_unittest.cc",
+    "validation_unittest.cc",
+    "webdata/autofill_profile_syncable_service_unittest.cc",
+    "webdata/autofill_table_unittest.cc",
+    "webdata/web_data_service_unittest.cc",
+  ]
+
+  configs += [ "//content:libjingle_stub_config" ]
+
+  deps = [
+    ":browser",
+    ":test_support",
+    "//components/resources",
+    "//components/strings",
+    "//testing/gmock",
+    "//third_party/libphonenumber",
+    #'../third_party/libjingle/libjingle.gyp:libjingle',  TODO(GYP)
   ]
 }

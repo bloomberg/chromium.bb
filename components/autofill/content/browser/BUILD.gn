@@ -64,6 +64,10 @@ static_library("browser") {
     #"../third_party/libjingle/libjingle.gyp:libjingle",  TODO(GYP)
     #"user_prefs",  TODO(GYP)
   ]
+
+  forward_dependent_configs_from = [
+    "//skia",
+  ]
 }
 
 proto_library("risk_proto") {
@@ -83,5 +87,26 @@ static_library("test_support") {
 
   deps = [
     "//testing/gmock",
+  ]
+}
+
+source_set("unit_tests") {
+  sources = [
+    "content_autofill_driver_unittest.cc",
+    "request_autocomplete_manager_unittest.cc",
+    "wallet/full_wallet_unittest.cc",
+    "wallet/instrument_unittest.cc",
+    "wallet/wallet_address_unittest.cc",
+    "wallet/wallet_client_unittest.cc",
+    "wallet/wallet_items_unittest.cc",
+    "wallet/wallet_service_url_unittest.cc",
+    "wallet/wallet_signin_helper_unittest.cc",
+  ]
+
+  deps = [
+    ":browser",
+    ":test_support",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }
