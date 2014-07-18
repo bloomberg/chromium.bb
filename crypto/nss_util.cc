@@ -57,7 +57,7 @@ namespace crypto {
 namespace {
 
 #if defined(OS_CHROMEOS)
-const char kNSSDatabaseName[] = "Real NSS database";
+const char kUserNSSDatabaseName[] = "UserNSSDB";
 
 // Constants for loading the Chrome OS TPM-backed PKCS #11 library.
 const char kChapsModuleName[] = "Chaps";
@@ -287,7 +287,8 @@ class NSSInitSingleton {
     PK11SlotInfo* tpm_slot;
   };
 
-  PK11SlotInfo* OpenPersistentNSSDBForPath(const base::FilePath& path) {
+  PK11SlotInfo* OpenPersistentNSSDBForPath(const std::string& db_name,
+                                           const base::FilePath& path) {
     DCHECK(thread_checker_.CalledOnValidThread());
     // NSS is allowed to do IO on the current thread since dispatching
     // to a dedicated thread would still have the affect of blocking
@@ -299,7 +300,7 @@ class NSSInitSingleton {
       LOG(ERROR) << "Failed to create " << nssdb_path.value() << " directory.";
       return NULL;
     }
-    return OpenUserDB(nssdb_path, kNSSDatabaseName);
+    return OpenUserDB(nssdb_path, db_name);
   }
 
   void EnableTPMTokenForNSS() {
@@ -469,7 +470,9 @@ class NSSInitSingleton {
       return false;
 
     DVLOG(2) << "Opening NSS DB " << path.value();
-    ScopedPK11Slot public_slot(OpenPersistentNSSDBForPath(path));
+    std::string db_name = base::StringPrintf(
+        "%s %s", kUserNSSDatabaseName, username_hash.c_str());
+    ScopedPK11Slot public_slot(OpenPersistentNSSDBForPath(db_name, path));
     chromeos_user_map_[username_hash] =
         new ChromeOSUserData(public_slot.Pass());
     return true;
@@ -861,10 +864,11 @@ class NSSInitSingleton {
 #endif
 
   static PK11SlotInfo* OpenUserDB(const base::FilePath& path,
-                                  const char* description) {
+                                  const std::string& description) {
     const std::string modspec =
         base::StringPrintf("configDir='sql:%s' tokenDescription='%s'",
-                           path.value().c_str(), description);
+                           path.value().c_str(),
+                           description.c_str());
     PK11SlotInfo* db_slot = SECMOD_OpenUserDB(modspec.c_str());
     if (db_slot) {
       if (PK11_NeedUserInit(db_slot))

@@ -67,28 +67,4 @@ void ClientCertStoreChromeOS::DidGetPrivateSlot(
   ClientCertStoreNSS::GetClientCerts(*request, selected_certs, callback);
 }
 
-void ClientCertStoreChromeOS::InitForTesting(
-    crypto::ScopedPK11Slot public_slot,
-    crypto::ScopedPK11Slot private_slot) {
-  profile_filter_.Init(public_slot.Pass(), private_slot.Pass());
-}
-
-bool ClientCertStoreChromeOS::SelectClientCertsForTesting(
-    const CertificateList& input_certs,
-    const SSLCertRequestInfo& request,
-    CertificateList* selected_certs) {
-  CERTCertList* cert_list = CERT_NewCertList();
-  if (!cert_list)
-    return false;
-  for (size_t i = 0; i < input_certs.size(); ++i) {
-    CERT_AddCertToListTail(
-        cert_list, CERT_DupCertificate(input_certs[i]->os_cert_handle()));
-  }
-
-  GetClientCertsImpl(cert_list, request, false, selected_certs);
-  CERT_DestroyCertList(cert_list);
-  return true;
-}
-
-
 }  // namespace net

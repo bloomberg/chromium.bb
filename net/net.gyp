@@ -938,6 +938,7 @@
         'socket/socket_test_util.h',
         'test/cert_test_util.cc',
         'test/cert_test_util.h',
+        'test/cert_test_util_nss.cc',
         'test/ct_test_util.cc',
         'test/ct_test_util.h',
         'test/embedded_test_server/embedded_test_server.cc',
@@ -1020,6 +1021,11 @@
               'dns/mock_mdns_socket_factory.cc',
               'dns/mock_mdns_socket_factory.h'
             ]
+        }],
+        [ 'use_nss != 1', {
+            'sources!': [
+              'test/cert_test_util_nss.cc',
+            ],
         }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

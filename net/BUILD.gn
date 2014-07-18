@@ -639,6 +639,7 @@ source_set("test_support") {
     "socket/socket_test_util.h",
     "test/cert_test_util.cc",
     "test/cert_test_util.h",
+    "test/cert_test_util_nss.cc",
     "test/ct_test_util.cc",
     "test/ct_test_util.h",
     "test/embedded_test_server/embedded_test_server.cc",
@@ -704,6 +705,12 @@ source_set("test_support") {
     sources -= [
       "dns/mock_mdns_socket_factory.cc",
       "dns/mock_mdns_socket_factory.h",
+    ]
+  }
+
+  if (!use_nss_certs) {
+    sources -= [
+      "test/cert_test_util_nss.cc",
     ]
   }
 
