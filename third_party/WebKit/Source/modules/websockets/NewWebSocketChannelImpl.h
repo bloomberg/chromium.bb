@@ -162,6 +162,7 @@ private:
         ASSERT(!m_handle);
         ASSERT(!m_client);
         ASSERT(!m_identifier);
+        ContextLifecycleObserver::contextDestroyed();
 #else
         // This object must be destroyed before the context.
         ASSERT_NOT_REACHED();
