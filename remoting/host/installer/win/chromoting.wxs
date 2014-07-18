@@ -18,6 +18,12 @@
     <?define Manufacturer = "The Chromium Authors" ?>
   <?endif?>
 
+  <?if $(sys.BUILDARCH) = "x64" ?>
+    <?define ProgramFilesFolderForPlatform = "ProgramFiles64Folder" ?>
+  <?else?>
+    <?define ProgramFilesFolderForPlatform = "ProgramFilesFolder" ?>
+  <?endif?>
+
   <?if $(var.OfficialBuild) != 0 ?>
     <?define ChromotingKeyPath = "Google\Chrome Remote Desktop" ?>
   <?else?>
@@ -134,7 +140,7 @@
     <Media Id="1" Cabinet="chromoting.cab" EmbedCab="yes"/>
 
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="ProgramFilesFolder">
+      <Directory Id="$(var.ProgramFilesFolderForPlatform)">
         <?if $(var.OfficialBuild) != 0 ?>
           <Directory Id="program_files_google" Name="Google">
             <Directory Id="chromoting" Name="Chrome Remote Desktop">
@@ -567,8 +573,24 @@
         <CreateFolder/>
       </Component>
 
-      <!-- Register with Sawbuck. See http://code.google.com/p/sawbuck/. -->
-      <Component Id="sawbuck_provider" Guid="*">
+      <!-- Delete the usagestats flag to reset the crash dump reporting settings
+           for existing users. -->
+      <Component Id="delete_usagestats"
+                 Guid="5c73f2b9-b865-426f-81cc-90a27ebb54aa"
+                 KeyPath="yes">
+        <Condition>BROKENUSAGESTATSVERSION</Condition>
+        <RemoveRegistryValue
+            Id="usagestats"
+            Key="SOFTWARE\Google\Update\ClientStateMedium\$(var.OmahaAppid)"
+            Name="usagestats"
+            Root="HKLM" />
+      </Component>
+
+    </DirectoryRef>
+
+    <!-- Register with Sawbuck. See http://code.google.com/p/sawbuck/. -->
+    <DirectoryRef Id="TARGETDIR">
+      <Component Id="sawbuck_provider" Guid="*" Win64="no">
         <RegistryKey Root="HKLM"
                      Key="SOFTWARE\Google\Sawbuck\Providers">
           <RegistryKey Key="{2db51ca1-4fd8-4b88-b5a2-fb8606b66b02}"
@@ -587,20 +609,6 @@
           </RegistryKey>
         </RegistryKey>
       </Component>
-
-      <!-- Delete the usagestats flag to reset the crash dump reporting settings
-           for existing users. -->
-      <Component Id="delete_usagestats"
-                 Guid="5c73f2b9-b865-426f-81cc-90a27ebb54aa"
-                 KeyPath="yes">
-        <Condition>BROKENUSAGESTATSVERSION</Condition>
-        <RemoveRegistryValue
-            Id="usagestats"
-            Key="SOFTWARE\Google\Update\ClientStateMedium\$(var.OmahaAppid)"
-            Name="usagestats"
-            Root="HKLM" />
-      </Component>
-
     </DirectoryRef>
 
     <DirectoryRef Id="config_files">

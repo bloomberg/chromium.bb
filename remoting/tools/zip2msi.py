@@ -227,6 +227,19 @@ def GenerateMsi(target, source, parameters):
   bind_path = os.path.join(source_dir, parameters['bind_path'])
   parameters = Merge(parameters, {'light': {'switches': ['-b', bind_path]}})
 
+  target_arch = parameters['target_arch']
+  if target_arch == 'ia32':
+    arch_param = 'x86'
+  elif target_arch == 'x64':
+    arch_param = 'x64'
+  else:
+    print 'Invalid target_arch parameter value'
+    return 1
+
+  # Add the architecture to candle-specific parameters.
+  parameters = Merge(
+      parameters, {'candle': {'switches': ['-arch', arch_param]}})
+
   # Run candle and light to generate the installation.
   wixobj = '%(intermediate_dir)s\\%(basename)s.wixobj' % parameters
   args = GenerateCommandLine('candle', wxs, wixobj, parameters)
@@ -247,6 +260,7 @@ def main():
   parser = OptionParser(usage=usage)
   parser.add_option('--intermediate_dir', dest='intermediate_dir', default='.')
   parser.add_option('--wix_path', dest='wix_path', default='.')
+  parser.add_option('--target_arch', dest='target_arch', default='x86')
   options, args = parser.parse_args()
   if len(args) != 2:
     parser.error('two positional arguments expected')

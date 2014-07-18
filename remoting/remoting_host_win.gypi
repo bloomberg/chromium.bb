@@ -502,6 +502,7 @@
                 'python', 'tools/zip2msi.py',
                 '--wix_path', '<(wix_path)',
                 '--intermediate_dir', '<(INTERMEDIATE_DIR)/installation',
+                '--target_arch', '<(target_arch)',
                 '<(RULE_INPUT_PATH)',
                 '<@(_outputs)',
               ],

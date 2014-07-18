@@ -563,7 +563,6 @@
       # that are missing.
       'test_isolation_fail_on_missing': 0,
 
-      'sas_dll_path%': '<(DEPTH)/third_party/platformsdk_win7/files/redist/x86',
       'wix_path%': '<(DEPTH)/third_party/wix',
 
       # Managed users are enabled by default.
@@ -956,6 +955,14 @@
         }],
         ['OS=="win" or OS=="mac"', {
             'enable_wifi_bootstrapping%' : 1,
+        }],
+
+        # Path to sas.dll, which provides the SendSAS function.
+        # http://msdn.microsoft.com/en-us/library/windows/desktop/dd979761(v=vs.85).aspx
+        ['target_arch=="x64"', {
+          'sas_dll_path%': '<(DEPTH)/third_party/platformsdk_win7/files/redist/amd64',
+        }, {
+          'sas_dll_path%': '<(DEPTH)/third_party/platformsdk_win7/files/redist/x86',
         }],
       ],
 
