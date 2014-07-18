@@ -34,6 +34,9 @@ class RenderWidgetResizeHelper::EnqueuedTask {
   int process_id_;
   IPC::Message message_;
   bool has_run_;
+
+  // Back-pointer to the ResizeHelper which has this task in its queue. Set
+  // to NULL when this task is removed from the queue.
   RenderWidgetResizeHelper* helper_;
 
   DISALLOW_COPY_AND_ASSIGN(EnqueuedTask);
@@ -51,6 +54,12 @@ RenderWidgetResizeHelper::EnqueuedTask::EnqueuedTask(
 }
 
 RenderWidgetResizeHelper::EnqueuedTask::~EnqueuedTask() {
+  // Note that if the MessageLoop into which this task was posted is destroyed
+  // before the RenderWidgetResizeHelper, then the helper's list of tasks will
+  // point to freed data. Avoid this by removing tasks when they are freed, if
+  // they weren't already removed when they were run.
+  if (helper_)
+    helper_->RemoveEnqueuedTaskFromQueue(this);
 }
 
 void RenderWidgetResizeHelper::EnqueuedTask::Run() {
@@ -58,7 +67,7 @@ void RenderWidgetResizeHelper::EnqueuedTask::Run() {
     return;
 
   if (helper_)
-    helper_->WillRunEnqueuedTask(this);
+    helper_->RemoveEnqueuedTaskFromQueue(this);
   has_run_ = true;
 
   switch (type_) {
@@ -133,10 +142,11 @@ void RenderWidgetResizeHelper::PostEnqueuedTask(EnqueuedTask* task) {
       base::Bind(&EnqueuedTask::Run, base::Owned(task)));
 }
 
-void RenderWidgetResizeHelper::WillRunEnqueuedTask(EnqueuedTask* task) {
+void RenderWidgetResizeHelper::RemoveEnqueuedTaskFromQueue(EnqueuedTask* task) {
   base::AutoLock lock(task_queue_lock_);
   DCHECK(task_queue_.front() == task);
   task_queue_.pop_front();
+  task->InvalidateHelper();
 }
 
 void RenderWidgetResizeHelper::PostRendererProcessMsg(

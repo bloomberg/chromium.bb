@@ -82,12 +82,13 @@ class RenderWidgetResizeHelper {
   void PostEnqueuedTask(EnqueuedTask* proxy);
 
   // Called on the UI to remove the task from the queue when it is run.
-  void WillRunEnqueuedTask(EnqueuedTask* proxy);
+  void RemoveEnqueuedTaskFromQueue(EnqueuedTask* proxy);
 
-  // A queue of live messages.  Must hold |task_queue_lock_| to access.
-  // The EnqueuedTask objects are removed from the front of the queue when
-  // they are run (either by TaskRunner they were posted to or by a call to
-  // WaitForSingleTaskToRun pulling them off of the queue).
+  // A queue of live messages.  Must hold |task_queue_lock_| to access. Tasks
+  // are added only on the IO thread and removed only on the UI thread.  The
+  // EnqueuedTask objects are removed from the front of the queue when they are
+  // run (by TaskRunner they were posted to, by a call to WaitForSingleTaskToRun
+  // pulling them off of the queue, or by TaskRunner when it is destroyed).
   typedef std::deque<EnqueuedTask*> EnqueuedTaskQueue;
   EnqueuedTaskQueue task_queue_;
   base::Lock task_queue_lock_;
