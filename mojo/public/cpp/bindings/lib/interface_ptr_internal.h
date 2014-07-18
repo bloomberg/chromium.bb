@@ -7,6 +7,8 @@
 
 #include <assert.h>
 
+#include <algorithm>  // For |std::swap()|.
+
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/message_header_validator.h"
 #include "mojo/public/cpp/bindings/lib/router.h"

@@ -5,8 +5,6 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_PTR_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_INTERFACE_PTR_H_
 
-#include <assert.h>
-
 #include <algorithm>
 
 #include "mojo/public/cpp/bindings/error_handler.h"
