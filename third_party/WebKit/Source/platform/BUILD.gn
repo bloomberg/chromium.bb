@@ -299,7 +299,7 @@ component("platform") {
     set_sources_assignment_filter([])
     sources += [
       "exported/linux/WebFontRenderStyle.cpp",
-      "fonts/linux/FontPlatformDataLinuxHarfBuzz.cpp",
+      "fonts/linux/FontPlatformDataLinux.cpp",
     ]
     set_sources_assignment_filter(sources_assignment_filter)
   } else {

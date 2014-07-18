@@ -270,11 +270,11 @@
       }],
       ['OS=="linux" or OS=="android"', {
         'sources/': [
-          ['include', 'fonts/linux/FontPlatformDataLinuxHarfBuzz\\.cpp$'],
+          ['include', 'fonts/linux/FontPlatformDataLinux\\.cpp$'],
         ]
       }, { # OS!="linux" and OS!="android"
         'sources/': [
-          ['exclude', 'fonts/linux/FontPlatformDataLinuxHarfBuzz\\.cpp$'],
+          ['exclude', 'fonts/linux/FontPlatformDataLinux\\.cpp$'],
         ]
       }],
       ['OS=="mac"', {
@@ -452,7 +452,7 @@
       ['OS=="android"', {
         'sources/': [
             ['include', 'exported/linux/WebFontRenderStyle\\.cpp$'],
-            ['include', 'fonts/linux/FontPlatformDataLinuxHarfBuzz\\.cpp$'],
+            ['include', 'fonts/linux/FontPlatformDataLinux\\.cpp$'],
         ],
       }],
     ],
