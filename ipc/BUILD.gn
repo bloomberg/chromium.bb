@@ -9,8 +9,6 @@ component("ipc") {
     "ipc_channel.cc",
     "ipc_channel.h",
     "ipc_channel_common.cc",
-    "ipc_channel_factory.cc",
-    "ipc_channel_factory.h",
     "ipc_channel_handle.h",
     "ipc_channel_nacl.cc",
     "ipc_channel_nacl.h",
@@ -70,7 +68,7 @@ component("ipc") {
 
   if (is_win || is_ios) {
     sources -= [
-      "ipc_channel_factory.cc",
+      "unix_domain_socket_acceptor.cc",
       "unix_domain_socket_util.cc",
     ]
   }

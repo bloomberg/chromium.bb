@@ -205,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest,
                        PRE_ReCreate) {
   test::AppShimHostManagerTestApi test_api(
       g_browser_process->platform_part()->app_shim_host_manager());
-  EXPECT_TRUE(test_api.factory());
+  EXPECT_TRUE(test_api.acceptor());
 }
 
 // Ensure the domain socket can be re-created after a prior browser process has
@@ -214,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest,
                        ReCreate) {
   test::AppShimHostManagerTestApi test_api(
       g_browser_process->platform_part()->app_shim_host_manager());
-  EXPECT_TRUE(test_api.factory());
+  EXPECT_TRUE(test_api.acceptor());
 }
 
 // Tests for the files created by AppShimHostManager.

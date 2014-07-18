@@ -64,7 +64,7 @@ void AppShimHostManager::Init() {
 }
 
 AppShimHostManager::~AppShimHostManager() {
-  factory_.reset();
+  acceptor_.reset();
   if (!did_init_)
     return;
 
@@ -105,10 +105,10 @@ void AppShimHostManager::InitOnFileThread() {
     return;
   }
 
-  // IPC::ChannelFactory creates the socket immediately.
+  // UnixDomainSocketAcceptor creates the socket immediately.
   base::FilePath socket_path =
       directory_in_tmp_.Append(app_mode::kAppShimSocketShortName);
-  factory_.reset(new IPC::ChannelFactory(socket_path, this));
+  acceptor_.reset(new apps::UnixDomainSocketAcceptor(socket_path, this));
 
   // Create a symlink to the socket in the user data dir. This lets the shim
   // process started from Finder find the actual socket path by following the
@@ -125,7 +125,7 @@ void AppShimHostManager::InitOnFileThread() {
 
 void AppShimHostManager::ListenOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!factory_->Listen()) {
+  if (!acceptor_->Listen()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&AppShimHostManager::OnListenError, this));
@@ -142,7 +142,7 @@ void AppShimHostManager::OnClientConnected(
 
 void AppShimHostManager::OnListenError() {
   // TODO(tapted): Set a timeout and attempt to reconstruct the channel. Until
-  // cases where the error could occur are better known, just reset the factory
+  // cases where the error could occur are better known, just reset the acceptor
   // to allow failure to be communicated via the test API.
-  factory_.reset();
+  acceptor_.reset();
 }

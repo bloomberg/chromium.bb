@@ -15,8 +15,8 @@ AppShimHostManagerTestApi::AppShimHostManagerTestApi(
   DCHECK(host_manager_);
 }
 
-IPC::ChannelFactory* AppShimHostManagerTestApi::factory() {
-  return host_manager_->factory_.get();
+apps::UnixDomainSocketAcceptor* AppShimHostManagerTestApi::acceptor() {
+  return host_manager_->acceptor_.get();
 }
 
 const base::FilePath& AppShimHostManagerTestApi::directory_in_tmp() {

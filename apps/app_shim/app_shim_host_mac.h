@@ -34,8 +34,8 @@ class AppShimHost : public IPC::Listener,
   virtual ~AppShimHost();
 
   // Creates a new server-side IPC channel at |handle|, which should contain a
-  // file descriptor of a channel created by an IPC::ChannelFactory, and begins
-  // listening for messages on it.
+  // file descriptor of a channel created by an UnixDomainSocketAcceptor,
+  // and begins listening for messages on it.
   void ServeChannel(const IPC::ChannelHandle& handle);
 
  protected:

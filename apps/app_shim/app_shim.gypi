@@ -28,6 +28,8 @@
         'chrome_main_app_mode_mac.mm',
         'extension_app_shim_handler_mac.cc',
         'extension_app_shim_handler_mac.h',
+        'unix_domain_socket_acceptor.cc',
+        'unix_domain_socket_acceptor.h',
       ],
     },
   ],  # targets

@@ -13,8 +13,8 @@ namespace base {
 class FilePath;
 }
 
-namespace IPC {
-class ChannelFactory;
+namespace apps {
+class UnixDomainSocketAcceptor;
 }
 
 namespace test {
@@ -23,7 +23,7 @@ class AppShimHostManagerTestApi {
  public:
   explicit AppShimHostManagerTestApi(AppShimHostManager* host_manager);
 
-  IPC::ChannelFactory* factory();
+  apps::UnixDomainSocketAcceptor* acceptor();
 
   const base::FilePath& directory_in_tmp();
 

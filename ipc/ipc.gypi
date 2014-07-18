@@ -16,8 +16,6 @@
           'ipc_channel.cc',
           'ipc_channel.h',
           'ipc_channel_common.cc',
-          'ipc_channel_factory.cc',
-          'ipc_channel_factory.h',
           'ipc_channel_handle.h',
           'ipc_channel_nacl.cc',
           'ipc_channel_nacl.h',
@@ -77,14 +75,12 @@
           ['>(nacl_untrusted_build)==1', {
             'sources!': [
               'ipc_channel.cc',
-              'ipc_channel_factory.cc',
               'ipc_channel_posix.cc',
               'unix_domain_socket_util.cc',
             ],
           }],
           ['OS == "win" or OS == "ios"', {
             'sources!': [
-              'ipc_channel_factory.cc',
               'unix_domain_socket_util.cc',
             ],
           }],

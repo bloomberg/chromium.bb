@@ -1,34 +1,35 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ipc/ipc_channel_factory.h"
+#include "apps/app_shim/unix_domain_socket_acceptor.h"
 
 #include "base/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "ipc/unix_domain_socket_util.h"
 
-namespace IPC {
+namespace apps {
 
-ChannelFactory::ChannelFactory(const base::FilePath& path, Delegate* delegate)
+UnixDomainSocketAcceptor::UnixDomainSocketAcceptor(const base::FilePath& path,
+                                                   Delegate* delegate)
     : path_(path), delegate_(delegate), listen_fd_(-1) {
   DCHECK(delegate_);
   CreateSocket();
 }
 
-ChannelFactory::~ChannelFactory() {
+UnixDomainSocketAcceptor::~UnixDomainSocketAcceptor() {
   Close();
 }
 
-bool ChannelFactory::CreateSocket() {
+bool UnixDomainSocketAcceptor::CreateSocket() {
   DCHECK(listen_fd_ < 0);
 
   // Create the socket.
-  return CreateServerUnixDomainSocket(path_, &listen_fd_);
+  return IPC::CreateServerUnixDomainSocket(path_, &listen_fd_);
 }
 
-bool ChannelFactory::Listen() {
+bool UnixDomainSocketAcceptor::Listen() {
   if (listen_fd_ < 0)
     return false;
 
@@ -44,10 +45,10 @@ bool ChannelFactory::Listen() {
 }
 
 // Called by libevent when we can read from the fd without blocking.
-void ChannelFactory::OnFileCanReadWithoutBlocking(int fd) {
+void UnixDomainSocketAcceptor::OnFileCanReadWithoutBlocking(int fd) {
   DCHECK(fd == listen_fd_);
   int new_fd = -1;
-  if (!ServerAcceptConnection(listen_fd_, &new_fd)) {
+  if (!IPC::ServerAcceptConnection(listen_fd_, &new_fd)) {
     Close();
     delegate_->OnListenError();
     return;
@@ -61,19 +62,19 @@ void ChannelFactory::OnFileCanReadWithoutBlocking(int fd) {
   }
 
   // Verify that the IPC channel peer is running as the same user.
-  if (!IsPeerAuthorized(scoped_fd.get()))
+  if (!IPC::IsPeerAuthorized(scoped_fd.get()))
     return;
 
-  ChannelHandle handle(std::string(),
-                       base::FileDescriptor(scoped_fd.release(), true));
+  IPC::ChannelHandle handle(std::string(),
+                            base::FileDescriptor(scoped_fd.release(), true));
   delegate_->OnClientConnected(handle);
 }
 
-void ChannelFactory::OnFileCanWriteWithoutBlocking(int fd) {
+void UnixDomainSocketAcceptor::OnFileCanWriteWithoutBlocking(int fd) {
   NOTREACHED() << "Listen fd should never be writable.";
 }
 
-void ChannelFactory::Close() {
+void UnixDomainSocketAcceptor::Close() {
   if (listen_fd_ < 0)
     return;
   if (IGNORE_EINTR(close(listen_fd_)) < 0)
@@ -86,4 +87,4 @@ void ChannelFactory::Close() {
   server_listen_connection_watcher_.StopWatchingFileDescriptor();
 }
 
-}  // namespace IPC
+}  // namespace apps

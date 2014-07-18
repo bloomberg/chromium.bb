@@ -6,9 +6,9 @@
 #define APPS_APP_SHIM_APP_SHIM_HOST_MANAGER_MAC_H_
 
 #include "apps/app_shim/extension_app_shim_handler_mac.h"
+#include "apps/app_shim/unix_domain_socket_acceptor.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_thread.h"
-#include "ipc/ipc_channel_factory.h"
 
 namespace base {
 class FilePath;
@@ -19,11 +19,11 @@ class AppShimHostManagerTestApi;
 }
 
 // The AppShimHostManager receives connections from app shims on a UNIX
-// socket (|factory_|) and creates a helper object to manage the connection.
-class AppShimHostManager
-    : public IPC::ChannelFactory::Delegate,
-      public base::RefCountedThreadSafe<
-          AppShimHostManager, content::BrowserThread::DeleteOnUIThread> {
+// socket (|acceptor_|) and creates a helper object to manage the connection.
+class AppShimHostManager : public apps::UnixDomainSocketAcceptor::Delegate,
+                           public base::RefCountedThreadSafe<
+                               AppShimHostManager,
+                               content::BrowserThread::DeleteOnUIThread> {
  public:
   AppShimHostManager();
 
@@ -44,11 +44,11 @@ class AppShimHostManager
   friend class test::AppShimHostManagerTestApi;
   virtual ~AppShimHostManager();
 
-  // IPC::ChannelFactory::Delegate implementation.
+  // UnixDomainSocketAcceptor::Delegate implementation.
   virtual void OnClientConnected(const IPC::ChannelHandle& handle) OVERRIDE;
   virtual void OnListenError() OVERRIDE;
 
-  // The |factory_| must be created on a thread which allows blocking I/O, so
+  // The |acceptor_| must be created on a thread which allows blocking I/O, so
   // part of the initialization of this class must be carried out on the file
   // thread.
   void InitOnFileThread();
@@ -63,7 +63,7 @@ class AppShimHostManager
 
   base::FilePath directory_in_tmp_;
 
-  scoped_ptr<IPC::ChannelFactory> factory_;
+  scoped_ptr<apps::UnixDomainSocketAcceptor> acceptor_;
 
   apps::ExtensionAppShimHandler extension_app_shim_handler_;
 
