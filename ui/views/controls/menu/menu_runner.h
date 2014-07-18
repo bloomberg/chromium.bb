@@ -34,7 +34,7 @@ class Widget;
 
 namespace internal {
 class DisplayChangeListener;
-class MenuRunnerImpl;
+class MenuRunnerImplInterface;
 }
 
 namespace test {
@@ -126,9 +126,9 @@ class VIEWS_EXPORT MenuRunner {
   void SetRunnerHandler(scoped_ptr<MenuRunnerHandler> runner_handler);
 
   const int32 run_types_;
-  scoped_ptr<MenuModelAdapter> menu_model_adapter_;
 
-  internal::MenuRunnerImpl* holder_;
+  // We own this. No scoped_ptr because it is destroyed by calling Release().
+  internal::MenuRunnerImplInterface* impl_;
 
   // An implementation of RunMenuAt. This is usually NULL and ignored. If this
   // is not NULL, this implementation will be used.

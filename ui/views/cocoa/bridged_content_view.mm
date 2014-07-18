@@ -158,6 +158,50 @@
   [self doCommandByID:IDS_MOVE_RIGHT];
 }
 
+- (void)insertText:(id)text {
+  if (textInputClient_)
+    textInputClient_->InsertText(base::SysNSStringToUTF16(text));
+}
+
+// Support for Services in context menus.
+// Currently we only support reading and writing plain strings.
+- (id)validRequestorForSendType:(NSString*)sendType
+                     returnType:(NSString*)returnType {
+  BOOL canWrite = [sendType isEqualToString:NSStringPboardType] &&
+                  [self selectedRange].length > 0;
+  BOOL canRead = [returnType isEqualToString:NSStringPboardType];
+  // Valid if (sendType, returnType) is either (string, nil), (nil, string),
+  // or (string, string).
+  BOOL valid = textInputClient_ && ((canWrite && (canRead || !returnType)) ||
+                                    (canRead && (canWrite || !sendType)));
+  return valid ? self : [super validRequestorForSendType:sendType
+                                              returnType:returnType];
+}
+
+// NSServicesRequests informal protocol.
+
+- (BOOL)writeSelectionToPasteboard:(NSPasteboard*)pboard types:(NSArray*)types {
+  DCHECK([types containsObject:NSStringPboardType]);
+  if (!textInputClient_)
+    return NO;
+
+  gfx::Range selectionRange;
+  if (!textInputClient_->GetSelectionRange(&selectionRange))
+    return NO;
+
+  base::string16 text;
+  textInputClient_->GetTextFromRange(selectionRange, &text);
+  return [pboard writeObjects:@[ base::SysUTF16ToNSString(text) ]];
+}
+
+- (BOOL)readSelectionFromPasteboard:(NSPasteboard*)pboard {
+  NSArray* objects =
+      [pboard readObjectsForClasses:@[ [NSString class] ] options:0];
+  DCHECK([objects count] == 1);
+  [self insertText:[objects lastObject]];
+  return YES;
+}
+
 // NSTextInputClient protocol implementation.
 
 - (NSAttributedString*)
