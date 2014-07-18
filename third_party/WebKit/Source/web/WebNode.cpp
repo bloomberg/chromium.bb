@@ -194,11 +194,6 @@ void WebNode::simulateClick()
     m_private->dispatchSimulatedClick(0);
 }
 
-WebElementCollection WebNode::getElementsByTagName(const WebString& tag) const
-{
-    return getElementsByHTMLTagName(tag);
-}
-
 WebElementCollection WebNode::getElementsByHTMLTagName(const WebString& tag) const
 {
     if (m_private->isContainerNode())

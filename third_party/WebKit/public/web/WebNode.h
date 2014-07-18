@@ -113,8 +113,6 @@ public:
     BLINK_EXPORT void addEventListener(const WebString& eventType, WebDOMEventListener* listener, bool useCapture);
     BLINK_EXPORT bool dispatchEvent(const WebDOMEvent&);
     BLINK_EXPORT void simulateClick();
-    // Deprecated. Use getElementsByHTMLTagName.
-    BLINK_EXPORT WebElementCollection getElementsByTagName(const WebString&) const;
     // The argument should be lower-cased.
     BLINK_EXPORT WebElementCollection getElementsByHTMLTagName(const WebString&) const;
     BLINK_EXPORT WebElement querySelector(const WebString&, WebExceptionCode&) const;
