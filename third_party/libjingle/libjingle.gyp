@@ -158,7 +158,7 @@
           'HAVE_OPENSSL_SSL_H',
         ],
         'dependencies': [
-          '../../third_party/boringssl/boringssl.gyp:boringssl',
+          '../../third_party/openssl/openssl.gyp:openssl',
         ],
       }, {
         'defines': [

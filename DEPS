@@ -55,7 +55,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling WebRTC
   # and V8 without interference from each other.
-  "webrtc_revision": "6683",
+  "webrtc_revision": "6680",
   "jsoncpp_revision": "248",
   "nss_revision": "277057",
   # Three lines of non-changing comments so that
@@ -65,7 +65,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling openssl
   # and whatever else without interference from each other.
-  "openssl_revision": "283115",
+  "openssl_revision": "275836",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -85,7 +85,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
-  "boringssl_revision": "e77dff61bd47e2d7ed8072f7fba001681914a817",
+  "boringssl_revision": "09020c2f08df11179b93e6548117806a4c0d0d45",
 }
 
 deps = {
