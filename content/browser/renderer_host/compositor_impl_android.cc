@@ -341,9 +341,14 @@ UIResourceProvider& CompositorImpl::GetUIResourceProvider() {
 }
 
 void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
-  root_layer_->RemoveAllChildren();
-  if (root_layer)
+  if (subroot_layer_) {
+    subroot_layer_->RemoveFromParent();
+    subroot_layer_ = NULL;
+  }
+  if (root_layer) {
+    subroot_layer_ = root_layer;
     root_layer_->AddChild(root_layer);
+  }
 }
 
 void CompositorImpl::SetWindowSurface(ANativeWindow* window) {

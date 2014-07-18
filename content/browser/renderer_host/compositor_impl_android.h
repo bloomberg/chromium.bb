@@ -132,7 +132,11 @@ class CONTENT_EXPORT CompositorImpl
       bool is_transient);
   void OnGpuChannelEstablished();
 
+  // root_layer_ is the persistent internal root layer, while subroot_layer_
+  // is the one attached by the compositor client.
   scoped_refptr<cc::Layer> root_layer_;
+  scoped_refptr<cc::Layer> subroot_layer_;
+
   scoped_ptr<cc::LayerTreeHost> host_;
   content::UIResourceProviderImpl ui_resource_provider_;
 
