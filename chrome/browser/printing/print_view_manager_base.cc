@@ -134,6 +134,9 @@ void PrintViewManagerBase::OnPdfToEmfConverted(
     const PrintHostMsg_DidPrintPage_Params& params,
     double scale_factor,
     const std::vector<base::FilePath>& emf_files) {
+  if (!print_job_.get())
+    return;
+
   PrintedDocument* document = print_job_->document();
   if (!document)
     return;
