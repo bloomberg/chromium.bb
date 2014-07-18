@@ -5712,7 +5712,7 @@ void Document::getTransitionElementData(Vector<TransitionElementData>& elementDa
 
         TrackExceptionState exceptionState;
         AtomicString selector(metaElementContents.substring(0, firstSemicolon));
-        RefPtr<StaticNodeList> nodeList = querySelectorAll(selector, exceptionState);
+        RefPtrWillBeRawPtr<StaticNodeList> nodeList = querySelectorAll(selector, exceptionState);
         if (!nodeList || exceptionState.hadException())
             continue;
 
