@@ -79,6 +79,10 @@ class GIN_EXPORT Arguments {
 
   v8::Isolate* isolate() const { return isolate_; }
 
+  // Allows the function handler to distinguish between normal invocation
+  // and object construction.
+  bool IsConstructCall() const;
+
  private:
   v8::Isolate* isolate_;
   const v8::FunctionCallbackInfo<v8::Value>* info_;

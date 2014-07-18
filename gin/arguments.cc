@@ -45,4 +45,8 @@ void Arguments::ThrowTypeError(const std::string& message) const {
       StringToV8(isolate_, message)));
 }
 
+bool Arguments::IsConstructCall() const {
+  return info_->IsConstructCall();
+}
+
 }  // namespace gin
