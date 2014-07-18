@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 
-#include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
@@ -13,8 +12,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/api/messaging/message.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_urls.h"
 
 using content::BrowserContext;
@@ -34,16 +31,6 @@ void ChromeExtensionWebContentsObserver::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
   ReloadIfTerminated(render_view_host);
   ExtensionWebContentsObserver::RenderViewCreated(render_view_host);
-}
-
-bool ChromeExtensionWebContentsObserver::OnMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ChromeExtensionWebContentsObserver, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_PostMessage, OnPostMessage)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 bool ChromeExtensionWebContentsObserver::OnMessageReceived(
@@ -89,14 +76,6 @@ void ChromeExtensionWebContentsObserver::OnDetailedConsoleMessageAdded(
                            render_view_host->GetRoutingID(),
                            render_view_host->GetProcess()->GetID())));
 #endif
-}
-
-void ChromeExtensionWebContentsObserver::OnPostMessage(int port_id,
-                                                       const Message& message) {
-  MessageService* message_service = MessageService::Get(browser_context());
-  if (message_service) {
-    message_service->PostMessage(port_id, message);
-  }
 }
 
 void ChromeExtensionWebContentsObserver::ReloadIfTerminated(

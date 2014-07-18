@@ -16,7 +16,6 @@ class RenderFrameHost;
 }
 
 namespace extensions {
-struct Message;
 
 // An ExtensionWebContentsObserver that adds support for the extension error
 // console, reloading crashed extensions and routing extension messages between
@@ -34,13 +33,9 @@ class ChromeExtensionWebContentsObserver
   // content::WebContentsObserver overrides.
   virtual void RenderViewCreated(content::RenderViewHost* render_view_host)
       OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual bool OnMessageReceived(
       const IPC::Message& message,
       content::RenderFrameHost* render_frame_host) OVERRIDE;
-
-  // Routes a message to the extensions MessageService.
-  void OnPostMessage(int port_id, const Message& message);
 
   // Adds a message to the extensions ErrorConsole.
   void OnDetailedConsoleMessageAdded(const base::string16& message,

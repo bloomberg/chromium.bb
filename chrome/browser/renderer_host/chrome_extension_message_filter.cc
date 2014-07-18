@@ -22,6 +22,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/api/messaging/message.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/file_util.h"
@@ -96,6 +97,7 @@ bool ChromeExtensionMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToTab, OnOpenChannelToTab)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToNativeApp,
                         OnOpenChannelToNativeApp)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_PostMessage, OnPostMessage)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ExtensionHostMsg_GetMessageBundle,
                                     OnGetExtMessageBundle)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_CloseChannel, OnExtensionCloseChannel)
@@ -114,6 +116,7 @@ bool ChromeExtensionMessageFilter::OnMessageReceived(
 void ChromeExtensionMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   switch (message.type()) {
+    case ExtensionHostMsg_PostMessage::ID:
     case ExtensionHostMsg_CloseChannel::ID:
       *thread = BrowserThread::UI;
       break;
@@ -168,7 +171,7 @@ void ChromeExtensionMessageFilter::OpenChannelToExtensionOnUIThread(
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& channel_name,
     bool include_tls_channel_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (profile_) {
     extensions::MessageService::Get(profile_)
         ->OpenChannelToExtension(source_process_id,
@@ -202,7 +205,7 @@ void ChromeExtensionMessageFilter::OpenChannelToNativeAppOnUIThread(
     int receiver_port_id,
     const std::string& source_extension_id,
     const std::string& native_app_name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (profile_) {
     extensions::MessageService::Get(profile_)
         ->OpenChannelToNativeApp(render_process_id_,
@@ -232,7 +235,7 @@ void ChromeExtensionMessageFilter::OpenChannelToTabOnUIThread(
     int tab_id,
     const std::string& extension_id,
     const std::string& channel_name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (profile_) {
     extensions::MessageService::Get(profile_)
         ->OpenChannelToTab(source_process_id,
@@ -242,6 +245,12 @@ void ChromeExtensionMessageFilter::OpenChannelToTabOnUIThread(
                            extension_id,
                            channel_name);
   }
+}
+
+void ChromeExtensionMessageFilter::OnPostMessage(
+    int port_id,
+    const extensions::Message& message) {
+  extensions::MessageService::Get(profile_)->PostMessage(port_id, message);
 }
 
 void ChromeExtensionMessageFilter::OnGetExtMessageBundle(
