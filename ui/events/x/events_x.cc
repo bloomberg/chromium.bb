@@ -601,6 +601,7 @@ uint32 PlatformKeycodeFromNative(const base::NativeEvent& native_event) {
           NOTREACHED();
           break;
       }
+      break;
     }
     default:
       NOTREACHED();
