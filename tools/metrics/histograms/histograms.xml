@@ -34692,6 +34692,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="WebFont.Resource.StyleRecalcToDownloadLatency"
     units="milliseconds">
+  <obsolete>
+    Deprecated 11/2013. No longer tracked.
+  </obsolete>
   <owner>kenjibaheux@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
@@ -34703,6 +34706,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="WebFont.Resource.UsageType" enum="WebFontUsageType">
+  <obsolete>
+    Deprecated 11/2013. No longer tracked.
+  </obsolete>
   <owner>kenjibaheux@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
