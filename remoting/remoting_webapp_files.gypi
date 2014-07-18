@@ -135,7 +135,7 @@
     ],
     # The unit test cases for the webapp
     'remoting_webapp_unittest_cases': [
-      'webapp/unittests/test_eventSource.js',
+      'webapp/unittests/base_unittest.js',
     ],
     'remoting_webapp_unittest_template_main':
       'webapp/html/template_unittest.html',
