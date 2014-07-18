@@ -38,36 +38,36 @@
 
 namespace WebCore {
 
-    class MessageEvent;
-    class SharedWorkerThread;
+class MessageEvent;
+class SharedWorkerThread;
 
-    class SharedWorkerGlobalScope FINAL : public WorkerGlobalScope {
-    public:
-        typedef WorkerGlobalScope Base;
-        static PassRefPtrWillBeRawPtr<SharedWorkerGlobalScope> create(const String& name, SharedWorkerThread*, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
-        virtual ~SharedWorkerGlobalScope();
+class SharedWorkerGlobalScope FINAL : public WorkerGlobalScope {
+public:
+    typedef WorkerGlobalScope Base;
+    static PassRefPtrWillBeRawPtr<SharedWorkerGlobalScope> create(const String& name, SharedWorkerThread*, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
+    virtual ~SharedWorkerGlobalScope();
 
-        virtual bool isSharedWorkerGlobalScope() const OVERRIDE { return true; }
+    virtual bool isSharedWorkerGlobalScope() const OVERRIDE { return true; }
 
-        // EventTarget
-        virtual const AtomicString& interfaceName() const OVERRIDE;
+    // EventTarget
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
-        // Setters/Getters for attributes in SharedWorkerGlobalScope.idl
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
-        String name() const { return m_name; }
+    // Setters/Getters for attributes in SharedWorkerGlobalScope.idl
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
+    String name() const { return m_name; }
 
-        SharedWorkerThread* thread();
+    SharedWorkerThread* thread();
 
-        virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor*) OVERRIDE;
 
-    private:
-        SharedWorkerGlobalScope(const String& name, const KURL&, const String& userAgent, SharedWorkerThread*, PassOwnPtrWillBeRawPtr<WorkerClients>);
-        virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) OVERRIDE;
+private:
+    SharedWorkerGlobalScope(const String& name, const KURL&, const String& userAgent, SharedWorkerThread*, PassOwnPtrWillBeRawPtr<WorkerClients>);
+    virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) OVERRIDE;
 
-        String m_name;
-    };
+    String m_name;
+};
 
-    PassRefPtrWillBeRawPtr<MessageEvent> createConnectEvent(PassRefPtrWillBeRawPtr<MessagePort>);
+PassRefPtrWillBeRawPtr<MessageEvent> createConnectEvent(PassRefPtrWillBeRawPtr<MessagePort>);
 
 } // namespace WebCore
 
