@@ -104,12 +104,11 @@ class DriWrapper {
   // cursor size pointed by |handle|.
   virtual bool SetCursor(uint32_t crtc_id,
                          uint32_t handle,
-                         uint32_t width,
-                         uint32_t height);
+                         const gfx::Size& size);
 
 
   // Move the cursor on CRTC |crtc_id| to (x, y);
-  virtual bool MoveCursor(uint32_t crtc_id, int x, int y);
+  virtual bool MoveCursor(uint32_t crtc_id, const gfx::Point& point);
 
   virtual void HandleEvent(drmEventContext& event);
 

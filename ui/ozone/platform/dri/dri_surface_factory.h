@@ -14,7 +14,7 @@
 
 namespace ui {
 
-class DriSurface;
+class DriBuffer;
 class DriWrapper;
 class HardwareDisplayController;
 class ScreenManager;
@@ -57,8 +57,6 @@ class DriSurfaceFactory : public ui::SurfaceFactoryOzone,
   // Draw the last set cursor & update the cursor plane.
   void ResetCursor(gfx::AcceleratedWidget w);
 
-  virtual DriSurface* CreateSurface(const gfx::Size& size);
-
   DriWrapper* drm_;  // Not owned.
   ScreenManager* screen_manager_;  // Not owned.
   HardwareState state_;
@@ -66,7 +64,8 @@ class DriSurfaceFactory : public ui::SurfaceFactoryOzone,
   // Active outputs.
   int allocated_widgets_;
 
-  scoped_ptr<DriSurface> cursor_surface_;
+  scoped_refptr<DriBuffer> cursor_buffers_[2];
+  int cursor_frontbuffer_;
 
   SkBitmap cursor_bitmap_;
   gfx::Point cursor_location_;

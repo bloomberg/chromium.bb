@@ -22,6 +22,7 @@ class Point;
 namespace ui {
 
 class NativePixmap;
+class ScanoutBuffer;
 class ScanoutSurface;
 
 typedef std::vector<scoped_refptr<NativePixmap> > NativePixmapList;
@@ -150,7 +151,7 @@ class HardwareDisplayController
                        unsigned int useconds);
 
   // Set the hardware cursor to show the contents of |surface|.
-  bool SetCursor(ScanoutSurface* surface);
+  bool SetCursor(scoped_refptr<ScanoutBuffer> buffer);
 
   bool UnsetCursor();
 
@@ -186,6 +187,8 @@ class HardwareDisplayController
   drmModeModeInfo mode_;
 
   scoped_ptr<ScanoutSurface> surface_;
+
+  scoped_refptr<ScanoutBuffer> cursor_buffer_;
 
   uint64_t time_of_last_flip_;
 

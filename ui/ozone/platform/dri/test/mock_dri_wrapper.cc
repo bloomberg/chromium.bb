@@ -110,12 +110,11 @@ ScopedDrmPropertyBlobPtr MockDriWrapper::GetPropertyBlob(
 
 bool MockDriWrapper::SetCursor(uint32_t crtc_id,
                                uint32_t handle,
-                               uint32_t width,
-                               uint32_t height) {
+                               const gfx::Size& size) {
   return true;
 }
 
-bool MockDriWrapper::MoveCursor(uint32_t crtc_id, int x, int y) {
+bool MockDriWrapper::MoveCursor(uint32_t crtc_id, const gfx::Point& point) {
   return true;
 }
 

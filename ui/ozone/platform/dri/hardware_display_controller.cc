@@ -202,24 +202,24 @@ void HardwareDisplayController::OnPageFlipEvent(unsigned int frame,
   surface_->SwapBuffers();
 }
 
-bool HardwareDisplayController::SetCursor(ScanoutSurface* surface) {
+bool HardwareDisplayController::SetCursor(scoped_refptr<ScanoutBuffer> buffer) {
   bool ret = drm_->SetCursor(crtc_id_,
-                             surface->GetHandle(),
-                             surface->Size().width(),
-                             surface->Size().height());
-  surface->SwapBuffers();
+                             buffer->GetHandle(),
+                             buffer->GetSize());
+  cursor_buffer_ = buffer;
   return ret;
 }
 
 bool HardwareDisplayController::UnsetCursor() {
-  return drm_->SetCursor(crtc_id_, 0, 0, 0);
+  cursor_buffer_ = NULL;
+  return drm_->SetCursor(crtc_id_, 0, gfx::Size());
 }
 
 bool HardwareDisplayController::MoveCursor(const gfx::Point& location) {
   if (is_disabled_)
     return true;
 
-  return drm_->MoveCursor(crtc_id_, location.x(), location.y());
+  return drm_->MoveCursor(crtc_id_, location);
 }
 
 }  // namespace ui

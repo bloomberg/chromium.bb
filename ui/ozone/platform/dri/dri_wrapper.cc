@@ -198,15 +198,14 @@ ScopedDrmPropertyBlobPtr DriWrapper::GetPropertyBlob(
 
 bool DriWrapper::SetCursor(uint32_t crtc_id,
                            uint32_t handle,
-                           uint32_t width,
-                           uint32_t height) {
+                           const gfx::Size& size) {
   CHECK(fd_ >= 0);
-  return !drmModeSetCursor(fd_, crtc_id, handle, width, height);
+  return !drmModeSetCursor(fd_, crtc_id, handle, size.width(), size.height());
 }
 
-bool DriWrapper::MoveCursor(uint32_t crtc_id, int x, int y) {
+bool DriWrapper::MoveCursor(uint32_t crtc_id, const gfx::Point& point) {
   CHECK(fd_ >= 0);
-  return !drmModeMoveCursor(fd_, crtc_id, x, y);
+  return !drmModeMoveCursor(fd_, crtc_id, point.x(), point.y());
 }
 
 void DriWrapper::HandleEvent(drmEventContext& event) {

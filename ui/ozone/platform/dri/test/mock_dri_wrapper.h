@@ -75,9 +75,8 @@ class MockDriWrapper : public ui::DriWrapper {
                                                    const char* name) OVERRIDE;
   virtual bool SetCursor(uint32_t crtc_id,
                          uint32_t handle,
-                         uint32_t width,
-                         uint32_t height) OVERRIDE;
-  virtual bool MoveCursor(uint32_t crtc_id, int x, int y) OVERRIDE;
+                         const gfx::Size& size) OVERRIDE;
+  virtual bool MoveCursor(uint32_t crtc_id, const gfx::Point& point) OVERRIDE;
   virtual void HandleEvent(drmEventContext& event) OVERRIDE;
   virtual bool CreateDumbBuffer(const SkImageInfo& info,
                                 uint32_t* handle,

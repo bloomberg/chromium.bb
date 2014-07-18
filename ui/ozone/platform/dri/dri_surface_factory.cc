@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_vsync_provider.h"
@@ -27,12 +28,12 @@ namespace {
 // TODO(dnicoara) Read the cursor plane size from the hardware.
 const gfx::Size kCursorSize(64, 64);
 
-void UpdateCursorImage(DriSurface* cursor, const SkBitmap& image) {
+void UpdateCursorImage(DriBuffer* cursor, const SkBitmap& image) {
   SkRect damage;
   image.getBounds(&damage);
 
   // Clear to transparent in case |image| is smaller than the canvas.
-  SkCanvas* canvas = cursor->GetDrawableForWidget();
+  SkCanvas* canvas = cursor->GetCanvas();
   canvas->clear(SK_ColorTRANSPARENT);
 
   SkRect clip;
@@ -120,7 +121,8 @@ DriSurfaceFactory::DriSurfaceFactory(DriWrapper* drm,
     : drm_(drm),
       screen_manager_(screen_manager),
       state_(UNINITIALIZED),
-      allocated_widgets_(0) {
+      allocated_widgets_(0),
+      cursor_frontbuffer_(0) {
 }
 
 DriSurfaceFactory::~DriSurfaceFactory() {
@@ -138,11 +140,15 @@ ui::SurfaceFactoryOzone::HardwareState DriSurfaceFactory::InitializeHardware() {
     return state_;
   }
 
-  cursor_surface_.reset(CreateSurface(kCursorSize));
-  if (!cursor_surface_->Initialize()) {
-    LOG(ERROR) << "Failed to initialize cursor surface";
-    state_ = FAILED;
-    return state_;
+  SkImageInfo info = SkImageInfo::MakeN32Premul(kCursorSize.width(),
+                                                kCursorSize.height());
+  for (size_t i = 0; i < arraysize(cursor_buffers_); ++i) {
+    cursor_buffers_[i] = new DriBuffer(drm_);
+    if (!cursor_buffers_[i]->Initialize(info)) {
+      LOG(ERROR) << "Failed to initialize cursor buffer";
+      state_ = FAILED;
+      return state_;
+    }
   }
 
   state_ = INITIALIZED;
@@ -216,22 +222,20 @@ void DriSurfaceFactory::MoveHardwareCursor(gfx::AcceleratedWidget window,
 ////////////////////////////////////////////////////////////////////////////////
 // DriSurfaceFactory private
 
-DriSurface* DriSurfaceFactory::CreateSurface(const gfx::Size& size) {
-  return new DriSurface(drm_, size);
-}
-
 void DriSurfaceFactory::ResetCursor(gfx::AcceleratedWidget w) {
   base::WeakPtr<HardwareDisplayController> controller =
       screen_manager_->GetDisplayController(w);
 
   if (!cursor_bitmap_.empty()) {
     // Draw new cursor into backbuffer.
-    UpdateCursorImage(cursor_surface_.get(), cursor_bitmap_);
+    UpdateCursorImage(cursor_buffers_[cursor_frontbuffer_ ^ 1].get(),
+                      cursor_bitmap_);
 
     // Reset location & buffer.
     if (controller) {
       controller->MoveCursor(cursor_location_);
-      controller->SetCursor(cursor_surface_.get());
+      controller->SetCursor(cursor_buffers_[cursor_frontbuffer_ ^ 1]);
+      cursor_frontbuffer_ ^= 1;
     }
   } else {
     // No cursor set.
