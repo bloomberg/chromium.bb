@@ -36,6 +36,11 @@ void PictureLayerTilingSet::SetClient(PictureLayerTilingClient* client) {
     tilings_[i]->SetClient(client_);
 }
 
+void PictureLayerTilingSet::RemoveTilesInRegion(const Region& region) {
+  for (size_t i = 0; i < tilings_.size(); ++i)
+    tilings_[i]->RemoveTilesInRegion(region);
+}
+
 bool PictureLayerTilingSet::SyncTilings(const PictureLayerTilingSet& other,
                                         const gfx::Size& new_layer_bounds,
                                         const Region& layer_invalidation,

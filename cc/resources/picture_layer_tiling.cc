@@ -180,7 +180,18 @@ void PictureLayerTiling::UpdateTilesToCurrentPile(
     it->second->set_picture_pile(pile);
 }
 
+void PictureLayerTiling::RemoveTilesInRegion(const Region& layer_region) {
+  bool recreate_invalidated_tiles = false;
+  DoInvalidate(layer_region, recreate_invalidated_tiles);
+}
+
 void PictureLayerTiling::Invalidate(const Region& layer_region) {
+  bool recreate_invalidated_tiles = true;
+  DoInvalidate(layer_region, recreate_invalidated_tiles);
+}
+
+void PictureLayerTiling::DoInvalidate(const Region& layer_region,
+                                      bool recreate_invalidated_tiles) {
   std::vector<TileMapKey> new_tile_keys;
   gfx::Rect expanded_live_tiles_rect =
       tiling_data_.ExpandRectIgnoringBordersToTileBoundsWithBorders(
@@ -208,14 +219,11 @@ void PictureLayerTiling::Invalidate(const Region& layer_region) {
     }
   }
 
-  if (!new_tile_keys.empty()) {
-    const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
+  if (recreate_invalidated_tiles && !new_tile_keys.empty()) {
     for (size_t i = 0; i < new_tile_keys.size(); ++i) {
       // Don't try to share a tile with the twin layer, it's been invalidated so
       // we have to make our own tile here.
-      // TODO(danakj): Because we have two frames of invalidation during sync
-      // this isn't always true. When sync is gone we can do this again.
-      // PictureLayerTiling* twin_tiling = NULL;
+      const PictureLayerTiling* twin_tiling = NULL;
       CreateTile(new_tile_keys[i].first, new_tile_keys[i].second, twin_tiling);
     }
   }

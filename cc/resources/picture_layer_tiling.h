@@ -130,6 +130,7 @@ class CC_EXPORT PictureLayerTiling {
   void UpdateTilesToCurrentPile(const Region& layer_invalidation,
                                 const gfx::Size& new_layer_bounds);
   void CreateMissingTilesInLiveTilesRect();
+  void RemoveTilesInRegion(const Region& layer_region);
 
   void SetClient(PictureLayerTilingClient* client);
   void set_resolution(TileResolution resolution) { resolution_ = resolution; }
@@ -282,6 +283,9 @@ class CC_EXPORT PictureLayerTiling {
 
   void UpdateEvictionCacheIfNeeded(TreePriority tree_priority);
   void Invalidate(const Region& layer_region);
+
+  void DoInvalidate(const Region& layer_region,
+                    bool recreate_invalidated_tiles);
 
   // Given properties.
   float contents_scale_;

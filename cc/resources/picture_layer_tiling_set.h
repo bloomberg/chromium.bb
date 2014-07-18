@@ -21,6 +21,8 @@ class CC_EXPORT PictureLayerTilingSet {
   void SetClient(PictureLayerTilingClient* client);
   const PictureLayerTilingClient* client() const { return client_; }
 
+  void RemoveTilesInRegion(const Region& region);
+
   // Make this set of tilings match the same set of content scales from |other|.
   // Delete any tilings that don't meet |minimum_contents_scale|.  Recreate
   // any tiles that intersect |layer_invalidation|.  Update the size of all
