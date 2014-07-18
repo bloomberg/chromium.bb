@@ -170,9 +170,13 @@ class ProfileIOData {
     return &safe_browsing_enabled_;
   }
 
+#if defined(OS_ANDROID)
+  // TODO(feng): move the function to protected area.
+  // IsDataReductionProxyEnabled() should be used as public API.
   BooleanPrefMember* data_reduction_proxy_enabled() const {
     return &data_reduction_proxy_enabled_;
   }
+#endif
 
   BooleanPrefMember* printing_enabled() const {
     return &printing_enabled_;
@@ -241,6 +245,12 @@ class ProfileIOData {
   // on which this profile resides. This is safe for use from the IO thread, and
   // should only be called from there.
   bool GetMetricsEnabledStateOnIOThread() const;
+
+#if defined(OS_ANDROID)
+  // Returns whether or not data reduction proxy is enabled in the browser
+  // instance on which this profile resides.
+  bool IsDataReductionProxyEnabled() const;
+#endif
 
   void set_client_cert_store_factory_for_testing(
     const base::Callback<scoped_ptr<net::ClientCertStore>()>& factory) {
@@ -534,7 +544,9 @@ class ProfileIOData {
   mutable BooleanPrefMember enable_do_not_track_;
   mutable BooleanPrefMember force_safesearch_;
   mutable BooleanPrefMember safe_browsing_enabled_;
+#if defined(OS_ANDROID)
   mutable BooleanPrefMember data_reduction_proxy_enabled_;
+#endif
   mutable BooleanPrefMember printing_enabled_;
   mutable BooleanPrefMember sync_disabled_;
   mutable BooleanPrefMember signin_allowed_;

@@ -490,7 +490,7 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
   // policies first.
   if (io_data->safe_browsing_enabled()->GetValue()
 #if defined(OS_ANDROID)
-      || io_data->data_reduction_proxy_enabled()->GetValue()
+      || io_data->IsDataReductionProxyEnabled()
 #endif
   ) {
     bool is_subresource_request = resource_type != ResourceType::MAIN_FRAME;

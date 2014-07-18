@@ -97,6 +97,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_factory_android.h"
+#include "components/data_reduction_proxy/common/data_reduction_proxy_switches.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -839,6 +840,14 @@ bool ProfileIOData::GetMetricsEnabledStateOnIOThread() const {
 #endif  // defined(OS_CHROMEOS)
 }
 
+#if defined(OS_ANDROID)
+bool ProfileIOData::IsDataReductionProxyEnabled() const {
+  return data_reduction_proxy_enabled_.GetValue() ||
+         CommandLine::ForCurrentProcess()->HasSwitch(
+            data_reduction_proxy::switches::kEnableDataReductionProxy);
+}
+#endif
+
 base::WeakPtr<net::HttpServerProperties>
 ProfileIOData::http_server_properties() const {
   return http_server_properties_->GetWeakPtr();
@@ -1175,7 +1184,9 @@ void ProfileIOData::ShutdownOnUIThread() {
   enable_metrics_.Destroy();
 #endif
   safe_browsing_enabled_.Destroy();
+#if defined(OS_ANDROID)
   data_reduction_proxy_enabled_.Destroy();
+#endif
   printing_enabled_.Destroy();
   sync_disabled_.Destroy();
   signin_allowed_.Destroy();
