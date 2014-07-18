@@ -617,7 +617,7 @@ InjectedScript.prototype = {
                      result: this._wrapObject(func.apply(object, resolvedArgs), objectGroup, returnByValue),
                      __proto__: null };
         } catch (e) {
-            return this._createThrownValue(e, objectGroup);
+            return this._createThrownValue(e, objectGroup, false);
         }
     },
 
@@ -670,18 +670,19 @@ InjectedScript.prototype = {
                      result: this._wrapObject(wrappedResult.result, objectGroup, returnByValue, generatePreview),
                      __proto__: null };
         }
-        return this._createThrownValue(wrappedResult.result, objectGroup, wrappedResult.exceptionDetails);
+        return this._createThrownValue(wrappedResult.result, objectGroup, generatePreview, wrappedResult.exceptionDetails);
     },
 
     /**
      * @param {*} value
      * @param {string} objectGroup
+     * @param {boolean} generatePreview
      * @param {!DebuggerAgent.ExceptionDetails=} exceptionDetails
      * @return {!Object}
      */
-    _createThrownValue: function(value, objectGroup, exceptionDetails)
+    _createThrownValue: function(value, objectGroup, generatePreview, exceptionDetails)
     {
-        var remoteObject = this._wrapObject(value, objectGroup);
+        var remoteObject = this._wrapObject(value, objectGroup, false, generatePreview && !(value instanceof Error));
         if (!remoteObject.description){
             try {
                 remoteObject.description = toStringDescription(value);

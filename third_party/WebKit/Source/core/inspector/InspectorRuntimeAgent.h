@@ -64,7 +64,8 @@ public:
         const bool* returnByValue,
         const bool* generatePreview,
         RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
-        TypeBuilder::OptOutput<bool>* wasThrown) OVERRIDE FINAL;
+        TypeBuilder::OptOutput<bool>* wasThrown,
+        RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) OVERRIDE FINAL;
     virtual void callFunctionOn(ErrorString*,
                         const String& objectId,
                         const String& expression,

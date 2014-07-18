@@ -58,7 +58,8 @@ public:
         bool returnByValue,
         bool generatePreview,
         RefPtr<TypeBuilder::Runtime::RemoteObject>* result,
-        TypeBuilder::OptOutput<bool>* wasThrown);
+        TypeBuilder::OptOutput<bool>* wasThrown,
+        RefPtr<TypeBuilder::Debugger::ExceptionDetails>*);
     void callFunctionOn(
         ErrorString*,
         const String& objectId,
@@ -79,7 +80,8 @@ public:
         bool returnByValue,
         bool generatePreview,
         RefPtr<TypeBuilder::Runtime::RemoteObject>* result,
-        TypeBuilder::OptOutput<bool>* wasThrown);
+        TypeBuilder::OptOutput<bool>* wasThrown,
+        RefPtr<TypeBuilder::Debugger::ExceptionDetails>*);
     void restartFrame(ErrorString*, const ScriptValue& callFrames, const String& callFrameId, RefPtr<JSONObject>* result);
     void getStepInPositions(ErrorString*, const ScriptValue& callFrames, const String& callFrameId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::Location> >& positions);
     void setVariableValue(ErrorString*, const ScriptValue& callFrames, const String* callFrameIdOpt, const String* functionObjectIdOpt, int scopeNumber, const String& variableName, const String& newValueStr);

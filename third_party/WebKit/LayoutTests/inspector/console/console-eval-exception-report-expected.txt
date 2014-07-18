@@ -1,0 +1,16 @@
+Tests that evaluating an expression with an exception in the console provide correct exception information.
+
+        function foo()
+        {
+            throw {a:239};
+        }
+        function boo()
+        {
+            foo();
+        }
+        boo();
+Uncaught Object {a: 239} VM:4
+call frame:foo at :4
+call frame:boo at :8
+call frame: at :10
+

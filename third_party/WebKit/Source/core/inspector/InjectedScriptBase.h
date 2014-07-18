@@ -66,7 +66,7 @@ protected:
     const ScriptValue& injectedScriptObject() const;
     ScriptValue callFunctionWithEvalEnabled(ScriptFunctionCall&, bool& hadException) const;
     void makeCall(ScriptFunctionCall&, RefPtr<JSONValue>* result);
-    void makeEvalCall(ErrorString*, ScriptFunctionCall&, RefPtr<TypeBuilder::Runtime::RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown);
+    void makeEvalCall(ErrorString*, ScriptFunctionCall&, RefPtr<TypeBuilder::Runtime::RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* = 0);
 
 private:
     String m_name;

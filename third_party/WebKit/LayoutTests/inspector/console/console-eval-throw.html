@@ -1,0 +1,56 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+function test()
+{
+    function dumpMessages(next, message)
+    {
+        InspectorTest.dumpConsoleMessages();
+        WebInspector.consoleModel.requestClearMessages();
+        
+        WebInspector.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, afterCleared);
+
+        function afterCleared() {
+            WebInspector.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, afterCleared);
+            next();
+        }
+    }
+
+    InspectorTest.runTestSuite([
+        function testThrowUndefined(next)
+        {
+            InspectorTest.evaluateInConsole('throw undefined', dumpMessages.bind(null, next));
+        },
+
+        function testThrowNumber(next)
+        {
+            InspectorTest.evaluateInConsole('throw 1', dumpMessages.bind(null, next));
+        },
+
+        function testThrowString(next)
+        {
+            InspectorTest.evaluateInConsole('throw \'asdf\'', dumpMessages.bind(null, next));
+        },
+
+        function testThrowObject(next)
+        {
+            InspectorTest.evaluateInConsole('throw {a:42}', dumpMessages.bind(null, next));
+        },
+
+        function testThrowError(next)
+        {
+            InspectorTest.evaluateInConsole('throw new Error(\'asdf\')', dumpMessages.bind(null, next));
+        }
+    ]);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests that evaluating 'throw undefined|1|string|object|Error' in the console won't crash the browser and correctly reported.
+<a href="https://bugs.webkit.org/show_bug.cgi?id=59611">Bug 59611.</a>
+</p>
+</body>
+</html>
