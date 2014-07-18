@@ -9,18 +9,33 @@ if (window.testRunner) {
 
 var theMediaQueryList = window.matchMedia("print");
 
+var callCount = 0;
 theMediaQueryList.addListener(function(aMediaQueryList) {
+    ++callCount;
+    if (callCount == 1) {
+        // This needs to use setTimeout because we want to test
+        // uncaught exceptions.
+        setTimeout("evaluateInFrontend('InspectorTest.sendPageDisable()')", 0);
+    }
+    if (callCount == 2) {
+        // This needs to use setTimeout because we want to test
+        // uncaught exceptions.
+        setTimeout("evaluateInFrontend('InspectorTest.completeTest()')", 0);
+    }
     objectThatDoesNotExist.produceError();
 });
 
 function test()
 {
+    InspectorTest.sendPageDisable = function()
+    {
+        InspectorTest.sendCommand("Page.disable", {});
+    }
+
     function didSetEmulatedMedia(messageObject)
     {
         if (messageObject.error)
             InspectorTest.log("FAILED: " + messageObject.error.message);
-        InspectorTest.sendCommand("Page.disable", {});
-        setTimeout("InspectorTest.completeTest();", 20);
     }
 
     InspectorTest.sendCommand("Page.enable", {});
