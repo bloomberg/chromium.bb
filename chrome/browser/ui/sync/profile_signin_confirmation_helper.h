@@ -21,10 +21,12 @@ SkColor GetSigninConfirmationPromptBarColor(SkAlpha alpha);
 
 // Determines whether the browser has ever been shutdown since the
 // profile was created.
+// Exposed for testing.
 bool HasBeenShutdown(Profile* profile);
 
 // Determines whether there are any synced extensions installed (that
 // shouldn't be ignored).
+// Exposed for testing.
 bool HasSyncedExtensions(Profile* profile);
 
 // Determines whether the user should be prompted to create a new
