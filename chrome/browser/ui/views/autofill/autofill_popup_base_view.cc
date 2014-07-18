@@ -63,7 +63,7 @@ void AutofillPopupBaseView::DoShow() {
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.delegate = this;
-    params.context = container_view();
+    params.parent = container_view();
     widget->Init(params);
     widget->SetContentsView(this);
 
@@ -102,10 +102,8 @@ void AutofillPopupBaseView::DoHide() {
 }
 
 void AutofillPopupBaseView::RemoveObserver() {
-  if (observing_widget_) {
-    observing_widget_->GetFocusManager()->UnregisterAccelerators(this);
-    observing_widget_->RemoveObserver(this);
-  }
+  observing_widget_->GetFocusManager()->UnregisterAccelerators(this);
+  observing_widget_->RemoveObserver(this);
   views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 }
 
@@ -119,11 +117,6 @@ void AutofillPopupBaseView::OnNativeFocusChange(
     gfx::NativeView focused_now) {
   if (GetWidget() && GetWidget()->GetNativeView() != focused_now)
     HideController();
-}
-
-void AutofillPopupBaseView::OnWidgetDestroying(views::Widget* widget) {
-  DCHECK_EQ(widget, observing_widget_);
-  observing_widget_ = NULL;
 }
 
 void AutofillPopupBaseView::OnWidgetBoundsChanged(views::Widget* widget,

@@ -66,7 +66,6 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
                                    gfx::NativeView focused_now) OVERRIDE;
 
   // views::WidgetObserver implementation.
-  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
   virtual void OnWidgetBoundsChanged(views::Widget* widget,
                                      const gfx::Rect& new_bounds) OVERRIDE;
 
