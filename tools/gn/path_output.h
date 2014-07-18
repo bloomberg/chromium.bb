@@ -49,8 +49,14 @@ class PathOutput {
   void WriteFile(std::ostream& out, const SourceFile& file) const;
   void WriteFile(std::ostream& out, const OutputFile& file) const;
   void WriteFile(std::ostream& out, const base::FilePath& file) const;
+
+  // This variant assumes the dir ends in a trailing slash or is empty.
   void WriteDir(std::ostream& out,
                 const SourceDir& dir,
+                DirSlashEnding slash_ending) const;
+
+  void WriteDir(std::ostream& out,
+                const OutputFile& file,
                 DirSlashEnding slash_ending) const;
 
   // Backend for WriteFile and WriteDir. This appends the given file or

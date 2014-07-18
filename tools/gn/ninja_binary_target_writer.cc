@@ -125,7 +125,16 @@ void NinjaBinaryTargetWriter::WriteCompilerVars() {
 
 #undef WRITE_FLAGS
 
+  // Write some variables about the target for the toolchain definition to use.
+  out_ << "target_name = " << target_->label().name() << std::endl;
+  out_ << "target_out_dir = ";
+  path_output_.WriteDir(out_, helper_.GetTargetOutputDir(target_),
+                        PathOutput::DIR_NO_LAST_SLASH);
   out_ << std::endl;
+  out_ << "root_out_dir = ";
+  path_output_.WriteDir(out_, target_->settings()->toolchain_output_subdir(),
+                        PathOutput::DIR_NO_LAST_SLASH);
+  out_ << std::endl << std::endl;
 }
 
 void NinjaBinaryTargetWriter::WriteSources(

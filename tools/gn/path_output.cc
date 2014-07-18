@@ -75,6 +75,32 @@ void PathOutput::WriteFile(std::ostream& out, const OutputFile& file) const {
   EscapeStringToStream(out, file.value(), options_);
 }
 
+void PathOutput::WriteDir(std::ostream& out,
+                          const OutputFile& file,
+                          DirSlashEnding slash_ending) const {
+  DCHECK(file.value().empty() ||
+         file.value()[file.value().size() - 1] == '/');
+
+  switch (slash_ending) {
+    case DIR_INCLUDE_LAST_SLASH:
+      EscapeStringToStream(out, file.value(), options_);
+      break;
+    case DIR_NO_LAST_SLASH:
+      if (!file.value().empty() &&
+          file.value()[file.value().size() - 1] == '/') {
+        // Trim trailing slash.
+        EscapeStringToStream(
+            out,
+            base::StringPiece(file.value().data(), file.value().size() - 1),
+            options_);
+      } else {
+        // Doesn't end with a slash, write the whole thing.
+        EscapeStringToStream(out, file.value(), options_);
+      }
+      break;
+  }
+}
+
 void PathOutput::WriteFile(std::ostream& out,
                            const base::FilePath& file) const {
   // Assume native file paths are always absolute.

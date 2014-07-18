@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "tools/gn/output_file.h"
 #include "tools/gn/path_output.h"
 #include "tools/gn/source_dir.h"
 #include "tools/gn/source_file.h"
@@ -213,8 +214,6 @@ TEST(PathOutput, WriteDir) {
     // Output inside current dir.
     {
       std::ostringstream out;
-
-
       writer.WriteDir(out, SourceDir("//out/Debug/"),
                       PathOutput::DIR_INCLUDE_LAST_SLASH);
       EXPECT_EQ("./", out.str());
@@ -236,6 +235,26 @@ TEST(PathOutput, WriteDir) {
       writer.WriteDir(out, SourceDir("//out/Debug/foo/"),
                       PathOutput::DIR_NO_LAST_SLASH);
       EXPECT_EQ("foo", out.str());
+    }
+
+    // WriteDir using an OutputFile.
+    {
+      std::ostringstream out;
+      writer.WriteDir(out, OutputFile("foo/"),
+                      PathOutput::DIR_INCLUDE_LAST_SLASH);
+      EXPECT_EQ("foo/", out.str());
+    }
+    {
+      std::ostringstream out;
+      writer.WriteDir(out, OutputFile("foo/"),
+                      PathOutput::DIR_NO_LAST_SLASH);
+      EXPECT_EQ("foo", out.str());
+    }
+    {
+      std::ostringstream out;
+      writer.WriteDir(out, OutputFile(),
+                      PathOutput::DIR_INCLUDE_LAST_SLASH);
+      EXPECT_EQ("", out.str());
     }
   }
   {

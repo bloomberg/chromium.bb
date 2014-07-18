@@ -216,7 +216,7 @@ const char kTargetOutDir[] = "target_out_dir";
 const char kTargetOutDir_HelpShort[] =
     "target_out_dir: [string] Directory for target output files.";
 const char kTargetOutDir_Help[] =
-    "target_out_dir: [string] Directory for target output files."
+    "target_out_dir: [string] Directory for target output files.\n"
     "\n"
     "  Absolute path to the target's generated file directory. If your\n"
     "  current target is in \"//tools/doom_melon\" then this value might be\n"
