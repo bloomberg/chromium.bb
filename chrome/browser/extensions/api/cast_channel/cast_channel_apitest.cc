@@ -8,7 +8,9 @@
 #include "chrome/browser/extensions/api/cast_channel/cast_channel_api.h"
 #include "chrome/browser/extensions/api/cast_channel/cast_socket.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/api/cast_channel.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/switches.h"
@@ -23,6 +25,9 @@ using cast_channel::CastSocket;
 using cast_channel::ChannelError;
 using cast_channel::MessageInfo;
 using cast_channel::ReadyState;
+using extensions::Extension;
+
+namespace utils = extension_function_test_utils;
 
 using ::testing::_;
 using ::testing::A;
@@ -128,6 +133,22 @@ class CastChannelAPITest : public ExtensionApiTest {
     MessageInfo message_info;
     FillMessageInfo(&message_info, message);
     api->OnMessage(cast_socket, message_info);
+  }
+
+  extensions::CastChannelOpenFunction* CreateOpenFunction(
+        scoped_refptr<Extension> extension) {
+    extensions::CastChannelOpenFunction* cast_channel_open_function =
+      new extensions::CastChannelOpenFunction;
+    cast_channel_open_function->set_extension(extension.get());
+    return cast_channel_open_function;
+  }
+
+  extensions::CastChannelSendFunction* CreateSendFunction(
+        scoped_refptr<Extension> extension) {
+    extensions::CastChannelSendFunction* cast_channel_send_function =
+      new extensions::CastChannelSendFunction;
+    cast_channel_send_function->set_extension(extension.get());
+    return cast_channel_send_function;
   }
 
   MockCastSocket* mock_cast_socket_;
@@ -259,3 +280,103 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenError) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
+IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestOpenInvalidConnectInfo) {
+  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
+  scoped_refptr<extensions::CastChannelOpenFunction> cast_channel_open_function;
+
+  // Invalid URL
+  // TODO(mfoltz): Remove this test case when fixing crbug.com/331905
+  cast_channel_open_function = CreateOpenFunction(empty_extension);
+  std::string error(utils::RunFunctionAndReturnError(
+      cast_channel_open_function.get(), "[\"blargh\"]", browser()));
+  EXPECT_EQ(error, "Invalid connect_info (invalid Cast URL blargh)");
+
+  // Wrong type
+  // TODO(mfoltz): Remove this test case when fixing crbug.com/331905
+  cast_channel_open_function = CreateOpenFunction(empty_extension);
+  error = utils::RunFunctionAndReturnError(
+      cast_channel_open_function.get(),
+      "[123]", browser());
+  EXPECT_EQ(error, "Invalid connect_info (unknown type)");
+
+  // Invalid IP address
+  cast_channel_open_function = CreateOpenFunction(empty_extension);
+  error = utils::RunFunctionAndReturnError(
+      cast_channel_open_function.get(),
+      "[{\"ipAddress\": \"invalid_ip\", \"port\": 8009, \"auth\": \"ssl\"}]",
+      browser());
+  EXPECT_EQ(error, "Invalid connect_info (invalid IP address)");
+
+  // Invalid port
+  cast_channel_open_function = CreateOpenFunction(empty_extension);
+  error = utils::RunFunctionAndReturnError(
+      cast_channel_open_function.get(),
+      "[{\"ipAddress\": \"127.0.0.1\", \"port\": -200, \"auth\": \"ssl\"}]",
+      browser());
+  EXPECT_EQ(error, "Invalid connect_info (invalid port)");
+
+  // Auth not set
+  cast_channel_open_function = CreateOpenFunction(empty_extension);
+  error = utils::RunFunctionAndReturnError(
+      cast_channel_open_function.get(),
+      "[{\"ipAddress\": \"127.0.0.1\", \"port\": 8009}]",
+      browser());
+  EXPECT_EQ(error, "connect_info.auth is required");
+}
+
+IN_PROC_BROWSER_TEST_F(CastChannelAPITest, TestSendInvalidMessageInfo) {
+  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
+  scoped_refptr<extensions::CastChannelSendFunction> cast_channel_send_function;
+
+  // Numbers are not supported
+  cast_channel_send_function = CreateSendFunction(empty_extension);
+  std::string error(utils::RunFunctionAndReturnError(
+      cast_channel_send_function.get(),
+      "[{\"channelId\": 1, \"url\": \"cast://127.0.0.1:8009\", "
+      "\"connectInfo\": "
+      "{\"ipAddress\": \"127.0.0.1\", \"port\": 8009, "
+      "\"auth\": \"ssl\"}, \"readyState\": \"open\"}, "
+      "{\"namespace_\": \"foo\", \"sourceId\": \"src\", "
+      "\"destinationId\": \"dest\", \"data\": 1235}]",
+      browser()));
+  EXPECT_EQ(error, "Invalid type of message_info.data");
+
+  // Missing namespace_
+  cast_channel_send_function = CreateSendFunction(empty_extension);
+  error = utils::RunFunctionAndReturnError(
+      cast_channel_send_function.get(),
+      "[{\"channelId\": 1, \"url\": \"cast://127.0.0.1:8009\", "
+      "\"connectInfo\": "
+      "{\"ipAddress\": \"127.0.0.1\", \"port\": 8009, "
+      "\"auth\": \"ssl\"}, \"readyState\": \"open\"}, "
+      "{\"namespace_\": \"\", \"sourceId\": \"src\", "
+      "\"destinationId\": \"dest\", \"data\": \"data\"}]",
+      browser());
+  EXPECT_EQ(error, "message_info.namespace_ is required");
+
+  // Missing source_id
+  cast_channel_send_function = CreateSendFunction(empty_extension);
+  error = utils::RunFunctionAndReturnError(
+      cast_channel_send_function.get(),
+      "[{\"channelId\": 1, \"url\": \"cast://127.0.0.1:8009\", "
+      "\"connectInfo\": "
+      "{\"ipAddress\": \"127.0.0.1\", \"port\": 8009, "
+      "\"auth\": \"ssl\"}, \"readyState\": \"open\"}, "
+      "{\"namespace_\": \"foo\", \"sourceId\": \"\", "
+      "\"destinationId\": \"dest\", \"data\": \"data\"}]",
+      browser());
+  EXPECT_EQ(error, "message_info.source_id is required");
+
+  // Missing destination_id
+  cast_channel_send_function = CreateSendFunction(empty_extension);
+  error = utils::RunFunctionAndReturnError(
+      cast_channel_send_function.get(),
+      "[{\"channelId\": 1, \"url\": \"cast://127.0.0.1:8009\", "
+      "\"connectInfo\": "
+      "{\"ipAddress\": \"127.0.0.1\", \"port\": 8009, "
+      "\"auth\": \"ssl\"}, \"readyState\": \"open\"}, "
+      "{\"namespace_\": \"foo\", \"sourceId\": \"src\", "
+      "\"destinationId\": \"\", \"data\": \"data\"}]",
+      browser());
+  EXPECT_EQ(error, "message_info.destination_id is required");
+}

@@ -46,7 +46,7 @@ TEST(CastChannelOpenFunctionTest, TestParseChannelUrl) {
   EXPECT_FALSE(ccof::ParseChannelUrl(GURL("cast://192.0.0.1:"), &connect_info));
 }
 
-// Tests validation of ConnectInfo.
+// Tests parsing of ConnectInfo.
 TEST(CastChannelOpenFunctionTest, TestParseConnectInfo) {
   typedef CastChannelOpenFunction ccof;
   scoped_ptr<net::IPEndPoint> ip_endpoint;
@@ -60,30 +60,6 @@ TEST(CastChannelOpenFunctionTest, TestParseConnectInfo) {
   ip_endpoint.reset(ccof::ParseConnectInfo(connect_info));
   EXPECT_TRUE(ip_endpoint.get() != NULL);
   EXPECT_EQ(ip_endpoint->ToString(), "192.0.0.1:8009");
-
-  // Invalid IP
-  ConnectInfo invalid_ip_connect_info;
-  invalid_ip_connect_info.ip_address = "blargh";
-  invalid_ip_connect_info.port = 8009;
-  invalid_ip_connect_info.auth = CHANNEL_AUTH_TYPE_SSL;
-  ip_endpoint.reset(ccof::ParseConnectInfo(invalid_ip_connect_info));
-  EXPECT_TRUE(ip_endpoint.get() == NULL);
-
-  // Invalid port
-  ConnectInfo invalid_port_connect_info;
-  invalid_port_connect_info.ip_address = "192.0.0.1";
-  invalid_port_connect_info.port = -1;
-  invalid_port_connect_info.auth = CHANNEL_AUTH_TYPE_SSL;
-  ip_endpoint.reset(ccof::ParseConnectInfo(invalid_port_connect_info));
-  EXPECT_TRUE(ip_endpoint.get() == NULL);
-
-  // Invalid auth
-  ConnectInfo invalid_auth_connect_info;
-  invalid_auth_connect_info.ip_address = "192.0.0.1";
-  invalid_auth_connect_info.port = 8009;
-  invalid_auth_connect_info.auth = CHANNEL_AUTH_TYPE_NONE;
-  ip_endpoint.reset(ccof::ParseConnectInfo(invalid_auth_connect_info));
-  EXPECT_TRUE(ip_endpoint.get() == NULL);
 }
 
 }  // namespace cast_channel

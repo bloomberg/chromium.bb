@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_CAST_CHANNEL_CAST_CHANNEL_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_CAST_CHANNEL_CAST_CHANNEL_API_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -31,7 +33,6 @@ namespace cast_channel = api::cast_channel;
 
 class CastChannelAPI : public BrowserContextKeyedAPI,
                        public cast_channel::CastSocket::Delegate {
-
  public:
   explicit CastChannelAPI(content::BrowserContext* context);
 
@@ -137,12 +138,12 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
   // corresponding details, and returns true. Returns false if |url| is not a
   // valid Cast URL.
   static bool ParseChannelUrl(const GURL& url,
-                              api::cast_channel::ConnectInfo* connect_info);
+                              cast_channel::ConnectInfo* connect_info);
 
   // Validates that |connect_info| represents a valid IP end point and returns a
   // new IPEndPoint if so.  Otherwise returns NULL.
   static net::IPEndPoint* ParseConnectInfo(
-      const api::cast_channel::ConnectInfo& connect_info);
+      const cast_channel::ConnectInfo& connect_info);
 
   void OnOpen(int result);
 
@@ -150,9 +151,9 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
   // The id of the newly opened socket.
   int new_channel_id_;
   CastChannelAPI* api_;
-  scoped_ptr<api::cast_channel::ConnectInfo> connect_info_;
+  scoped_ptr<cast_channel::ConnectInfo> connect_info_;
   scoped_ptr<net::IPEndPoint> ip_endpoint_;
-  api::cast_channel::ChannelAuthType channel_auth_;
+  cast_channel::ChannelAuthType channel_auth_;
 
   FRIEND_TEST_ALL_PREFIXES(CastChannelOpenFunctionTest, TestParseChannelUrl);
   FRIEND_TEST_ALL_PREFIXES(CastChannelOpenFunctionTest, TestParseConnectInfo);

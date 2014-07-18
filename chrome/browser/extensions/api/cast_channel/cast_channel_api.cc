@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/cast_channel/cast_channel_api.h"
 
 #include <limits>
+#include <string>
 
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
@@ -58,6 +59,21 @@ void FillChannelInfo(const CastSocket& socket, ChannelInfo* channel_info) {
   channel_info->connect_info.auth = socket.channel_auth();
   channel_info->ready_state = socket.ready_state();
   channel_info->error_state = socket.error_state();
+}
+
+bool IsValidConnectInfoPort(const ConnectInfo& connect_info) {
+  return connect_info.port > 0 && connect_info.port <
+    std::numeric_limits<unsigned short>::max();
+}
+
+bool IsValidConnectInfoAuth(const ConnectInfo& connect_info) {
+  return connect_info.auth == cast_channel::CHANNEL_AUTH_TYPE_SSL_VERIFIED ||
+    connect_info.auth == cast_channel::CHANNEL_AUTH_TYPE_SSL;
+}
+
+bool IsValidConnectInfoIpAddress(const ConnectInfo& connect_info) {
+  net::IPAddressNumber ip_address;
+  return net::ParseIPLiteralToNumber(connect_info.ip_address, &ip_address);
 }
 
 }  // namespace
@@ -244,22 +260,12 @@ bool CastChannelOpenFunction::ParseChannelUrl(const GURL& url,
     cast_channel::CHANNEL_AUTH_TYPE_SSL_VERIFIED :
     cast_channel::CHANNEL_AUTH_TYPE_SSL;
   return true;
-};
+}
 
 net::IPEndPoint* CastChannelOpenFunction::ParseConnectInfo(
     const ConnectInfo& connect_info) {
   net::IPAddressNumber ip_address;
-  if (!net::ParseIPLiteralToNumber(connect_info.ip_address, &ip_address)) {
-    return NULL;
-  }
-  if (connect_info.port < 0 || connect_info.port >
-      std::numeric_limits<unsigned short>::max()) {
-    return NULL;
-  }
-  if (connect_info.auth != cast_channel::CHANNEL_AUTH_TYPE_SSL_VERIFIED &&
-      connect_info.auth != cast_channel::CHANNEL_AUTH_TYPE_SSL) {
-    return NULL;
-  }
+  CHECK(net::ParseIPLiteralToNumber(connect_info.ip_address, &ip_address));
   return new net::IPEndPoint(ip_address, connect_info.port);
 }
 
@@ -280,20 +286,35 @@ bool CastChannelOpenFunction::Prepare() {
       connect_info_.reset(new ConnectInfo);
       if (!ParseChannelUrl(GURL(cast_url), connect_info_.get())) {
         connect_info_.reset();
+        SetError("Invalid connect_info (invalid Cast URL " + cast_url + ")");
       }
       break;
     case base::Value::TYPE_DICTIONARY:
       connect_info_ = ConnectInfo::FromValue(*(params_->connect_info));
+      if (!connect_info_.get()) {
+        SetError("connect_info.auth is required");
+      }
       break;
     default:
+      SetError("Invalid connect_info (unknown type)");
       break;
   }
-  if (connect_info_.get()) {
-    channel_auth_ = connect_info_->auth;
-    ip_endpoint_.reset(ParseConnectInfo(*connect_info_));
-    return ip_endpoint_.get() != NULL;
+  if (!connect_info_.get()) {
+    return false;
   }
-  return false;
+  if (!IsValidConnectInfoPort(*connect_info_)) {
+    SetError("Invalid connect_info (invalid port)");
+  } else if (!IsValidConnectInfoAuth(*connect_info_)) {
+    SetError("Invalid connect_info (invalid auth)");
+  } else if (!IsValidConnectInfoIpAddress(*connect_info_)) {
+    SetError("Invalid connect_info (invalid IP address)");
+  }
+  if (!GetError().empty()) {
+    return false;
+  }
+  channel_auth_ = connect_info_->auth;
+  ip_endpoint_.reset(ParseConnectInfo(*connect_info_));
+  return true;
 }
 
 void CastChannelOpenFunction::AsyncWorkStart() {
@@ -319,6 +340,26 @@ CastChannelSendFunction::~CastChannelSendFunction() { }
 bool CastChannelSendFunction::Prepare() {
   params_ = Send::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
+  if (params_->message.namespace_.empty()) {
+    SetError("message_info.namespace_ is required");
+    return false;
+  }
+  if (params_->message.source_id.empty()) {
+    SetError("message_info.source_id is required");
+    return false;
+  }
+  if (params_->message.destination_id.empty()) {
+    SetError("message_info.destination_id is required");
+    return false;
+  }
+  switch (params_->message.data->GetType()) {
+    case base::Value::TYPE_STRING:
+    case base::Value::TYPE_BINARY:
+      break;
+    default:
+      SetError("Invalid type of message_info.data");
+      return false;
+  }
   return true;
 }
 
