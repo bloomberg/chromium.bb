@@ -35,6 +35,7 @@ def main(argv):
     Log.Fatal("No input files given")
 
   for infile in inputs:
+    driver_tools.CheckPathLength(infile)
     env.push()
     env.set('input', infile)
 

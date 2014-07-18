@@ -11,7 +11,7 @@
 
 from driver_env import env
 from driver_log import Log
-from driver_tools import ParseArgs, Run
+import driver_tools
 import filetype
 
 EXTRA_ENV = {
@@ -26,12 +26,13 @@ PATTERNS = [
 
 def main(argv):
   env.update(EXTRA_ENV)
-  ParseArgs(argv, PATTERNS)
+  driver_tools.ParseArgs(argv, PATTERNS)
   inputs = env.get('INPUTS')
   if len(inputs) == 0:
     Log.Fatal("No input files given")
 
   for infile in inputs:
+    driver_tools.CheckPathLength(infile)
     env.push()
     env.set('input', infile)
     if filetype.IsLLVMBitcode(infile):
@@ -48,7 +49,7 @@ def main(argv):
         return 0
       Log.Fatal('Cannot handle pnacl-readelf %s' % str(argv))
       return 1
-    Run('"${READELF}" ${FLAGS} ${input}')
+    driver_tools.Run('"${READELF}" ${FLAGS} ${input}')
     env.pop()
 
   # only reached in case of no errors

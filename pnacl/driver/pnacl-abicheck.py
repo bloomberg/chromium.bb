@@ -30,6 +30,7 @@ def main(argv):
   input = pathtools.normalize(args[-1])
   if filetype.IsPNaClBitcode(input):
     env.append('ARGS', '--bitcode-format=pnacl')
+  driver_tools.CheckPathLength(input)
   driver_tools.Run('"${PNACL_ABICHECK}" ${ARGS}')
   return 0;
 

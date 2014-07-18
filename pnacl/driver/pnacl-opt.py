@@ -41,6 +41,9 @@ def main(argv):
   env.update(EXTRA_ENV)
   driver_tools.ParseArgs(argv, PATTERNS)
 
+  driver_tools.CheckPathLength(env.getone('INPUT'))
+  driver_tools.CheckPathLength(env.getone('OUTPUT'))
+
   driver_tools.Run(
       '"${LLVM_OPT}" ${ARGS} ' +
       '${DISABLE_SIMPLIFY_LIBCALLS ? -disable-simplify-libcalls} ' +

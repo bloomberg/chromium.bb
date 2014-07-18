@@ -58,6 +58,8 @@ def main(argv):
   driver_tools.ParseArgs(argv, StripPatterns)
   inputs = env.get('INPUTS')
   output = env.getone('OUTPUT')
+  for path in inputs + [output]:
+    driver_tools.CheckPathLength(path)
 
   if len(inputs) > 1 and output != '':
     Log.Fatal('Cannot have -o with multiple inputs')

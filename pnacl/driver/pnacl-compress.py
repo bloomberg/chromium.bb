@@ -150,6 +150,9 @@ def main(argv):
   inputs = env.get('INPUTS')
   output = env.getone('OUTPUT')
 
+  for path in inputs + [output]:
+    driver_tools.CheckPathLength(path)
+
   if len(inputs) != 1:
     Log.Fatal('Can only have one input')
   f_input = inputs[0]

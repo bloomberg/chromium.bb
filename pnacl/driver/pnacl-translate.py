@@ -14,7 +14,6 @@ import filetype
 import ldtools
 import multiprocessing
 import os
-import pathtools
 from driver_env import env
 from driver_log import Log
 from driver_temps import TempFiles
@@ -309,6 +308,8 @@ def main(argv):
 
   if len(inputs) == 0:
     Log.Fatal("No input files")
+  for path in inputs:
+    driver_tools.CheckPathLength(path)
 
   if output == '':
     Log.Fatal("Please specify output file with -o")

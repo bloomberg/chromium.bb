@@ -35,6 +35,9 @@ def main(argv):
   inputs = env.get('INPUTS')
   output = env.getone('OUTPUT')
 
+  for path in inputs + [output]:
+    driver_tools.CheckPathLength(path)
+
   if len(inputs) == 0:
     Log.Fatal("No input files given")
 
