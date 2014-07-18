@@ -32,8 +32,6 @@ config("config") {
   cflags = []
   defines = []
 
-  configs = [ ":non_test_config" ]
-
   if (is_win) {
     cflags += [
       "/wd4305",  # Truncation from 'type1' to 'type2'.
