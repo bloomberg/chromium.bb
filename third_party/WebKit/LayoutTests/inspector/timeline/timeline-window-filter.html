@@ -78,9 +78,10 @@ function test()
     timeline._overviewModeSetting.set(WebInspector.TimelinePanel.OverviewMode.Frames);
     timeline._flameChartEnabledSetting.set(true);
     timeline._onModeChanged();
-    dumpFlameChartRecordsCountForRange(0, 1);
-    dumpFlameChartRecordsCountForRange(0.25, 0.5);
-    dumpFlameChartRecordsCountForRange(0.33, 0.4);
+    // FIXME(394762): uncomment once we support loading tracing events.
+//     dumpFlameChartRecordsCountForRange(0, 1);
+//     dumpFlameChartRecordsCountForRange(0.25, 0.5);
+//     dumpFlameChartRecordsCountForRange(0.33, 0.4);
 
     overviewPane._overviewGrid.setWindow(0.1, 0.9);
 

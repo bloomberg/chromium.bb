@@ -1264,6 +1264,9 @@ crbug.com/390204 [ Release ] inspector/console/console-viewport-selection.html [
 crbug.com/390204 [ Debug ] inspector/console/console-viewport-selection.html [ Pass Failure Slow ]
 crbug.com/394208 [ Win ] http/tests/security/link-crossorigin-stylesheet-use-credentials.html [ Timeout Pass ]
 crbug.com/394210 [ Win ] inspector/profiler/webgl/webgl-profiler-api-changes.html [ Timeout Pass ]
+crbug.com/394762 inspector/timeline/timeline-flame-chart-automatically-size-window.html [ Skip ]
+crbug.com/394762 virtual/deferred/inspector/timeline/timeline-flame-chart-automatically-size-window.html [ Skip ]
+crbug.com/394762 virtual/implsidepainting/inspector/timeline/timeline-flame-chart-automatically-size-window.html [ Skip ]
 
 # Assertion failures seen only on Slow Leopard.
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-skip-step-in.html [ Crash ]

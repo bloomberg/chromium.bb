@@ -43,21 +43,6 @@ time range = 1390988669535.377 - 1390988670098.158
 records count: 38
 divider offsets: [500, 600, 700, 800, 900, 1000]. We are expecting round numbers.
 
-mode = Frames
-range = 0 - 1
-time range = 1390988669115.4338 - 1390988670116.917
-divider offsets: [200, 400, 600, 800, 1000]. We are expecting round numbers.
-
-mode = Frames
-range = 0.25 - 0.5
-time range = 1390988669438.409 - 1390988669752.828
-divider offsets: [350, 400, 450, 500, 550, 600]. We are expecting round numbers.
-
-mode = Frames
-range = 0.33 - 0.4
-time range = 1390988669535.377 - 1390988669648.884
-divider offsets: [440, 460, 480, 500, 520]. We are expecting round numbers.
-
 --------------------------------------------------------
 mode = Frames
 time range = 1390988669264.497 - 1390988670098.158
