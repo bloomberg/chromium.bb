@@ -3,38 +3,30 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'chromium_code': 1,
-    'grit_base_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui',
-  },
   'targets': [
     {
       'target_name': 'ui_strings',
       'type': 'none',
+      'variables': {
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ui/strings',
+      },
       'actions': [
         {
-          'action_name': 'ui_strings',
+          'action_name': 'generate_ui_strings',
           'variables': {
             'grit_grd_file': 'ui_strings.grd',
-            'grit_out_dir': '<(grit_base_out_dir)/strings',
           },
           'includes': [ '../../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'app_locale_settings',
+          'action_name': 'generate_app_locale_settings',
           'variables': {
             'grit_grd_file': 'app_locale_settings.grd',
-            'grit_out_dir': '<(grit_base_out_dir)/app_locale_settings',
           },
           'includes': [ '../../build/grit_action.gypi' ],
         },
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(grit_base_out_dir)/app_locale_settings',
-          '<(grit_base_out_dir)/strings',
-        ],
-      },
+      'includes': [ '../../build/grit_target.gypi' ],
     },
   ],
 }

@@ -105,8 +105,8 @@ def calc_inputs(locale):
     inputs.append(os.path.join(SHARE_INT_DIR, 'device', 'bluetooth', 'strings',
                   'device_bluetooth_strings_%s.pak' % locale))
 
-    #e.g. '<(SHARED_INTERMEDIATE_DIR)/ui/app_locale_settings_da.pak',
-    inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'app_locale_settings',
+    #e.g. '<(SHARED_INTERMEDIATE_DIR)/ui/strings/app_locale_settings_da.pak',
+    inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'strings',
                   'app_locale_settings_%s.pak' % locale))
 
     # For example:
