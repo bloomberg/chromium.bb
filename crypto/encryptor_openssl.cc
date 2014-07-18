@@ -19,7 +19,6 @@ namespace {
 const EVP_CIPHER* GetCipherForKey(SymmetricKey* key) {
   switch (key->key().length()) {
     case 16: return EVP_aes_128_cbc();
-    case 24: return EVP_aes_192_cbc();
     case 32: return EVP_aes_256_cbc();
     default: return NULL;
   }
@@ -100,8 +99,8 @@ bool Encryptor::Crypt(bool do_encrypt,
   DCHECK(cipher);  // Already handled in Init();
 
   const std::string& key = key_->key();
-  DCHECK_EQ(EVP_CIPHER_iv_length(cipher), static_cast<int>(iv_.length()));
-  DCHECK_EQ(EVP_CIPHER_key_length(cipher), static_cast<int>(key.length()));
+  DCHECK_EQ(EVP_CIPHER_iv_length(cipher), iv_.length());
+  DCHECK_EQ(EVP_CIPHER_key_length(cipher), key.length());
 
   ScopedCipherCTX ctx;
   if (!EVP_CipherInit_ex(ctx.get(), cipher, NULL,

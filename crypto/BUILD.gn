@@ -242,7 +242,7 @@ test("crypto_unittests") {
 # on the current SSL library should just depend on this.
 group("platform") {
   if (use_openssl) {
-    deps = [ "//third_party/openssl" ]
+    deps = [ "//third_party/boringssl" ]
   } else {
     deps = [ "//net/third_party/nss/ssl:libssl" ]
     if (is_linux) {

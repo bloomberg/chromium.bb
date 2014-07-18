@@ -32,6 +32,7 @@ class DepsWhitelist(object):
     # in the Android tree.
     self._compile_but_not_snapshot_dependencies = [
       'third_party/libaddressinput/src/cpp',
+      'third_party/boringssl/src',
     ]
 
     # Dependencies that need to be merged into the Android tree.

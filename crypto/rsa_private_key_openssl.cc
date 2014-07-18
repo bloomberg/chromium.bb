@@ -4,6 +4,8 @@
 
 #include "crypto/rsa_private_key.h"
 
+#include <openssl/bio.h>
+#include <openssl/bn.h>
 #include <openssl/evp.h>
 #include <openssl/pkcs12.h>
 #include <openssl/rsa.h>

@@ -5,6 +5,7 @@
 #ifndef CRYPTO_SCOPED_OPENSSL_TYPES_H_
 #define CRYPTO_SCOPED_OPENSSL_TYPES_H_
 
+#include <openssl/bio.h>
 #include <openssl/bn.h>
 #include <openssl/dsa.h>
 #include <openssl/ec.h>

@@ -100,7 +100,7 @@
         }],
         [ 'use_openssl==1', {
             'dependencies': [
-              '../third_party/openssl/openssl.gyp:openssl',
+              '../third_party/boringssl/boringssl.gyp:boringssl',
             ],
             # TODO(joth): Use a glob to match exclude patterns once the
             #             OpenSSL file set is complete.
@@ -209,7 +209,7 @@
         }],
         [ 'use_openssl==1', {
           'dependencies': [
-            '../third_party/openssl/openssl.gyp:openssl',
+            '../third_party/boringssl/boringssl.gyp:boringssl',
           ],
           'sources!': [
             'nss_util_unittest.cc',

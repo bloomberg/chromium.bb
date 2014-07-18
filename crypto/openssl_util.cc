@@ -6,6 +6,7 @@
 
 #include <openssl/err.h>
 #include <openssl/ssl.h>
+#include <openssl/cpu.h>
 
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
@@ -22,8 +23,9 @@ namespace crypto {
 
 namespace {
 
-unsigned long CurrentThreadId() {
-  return static_cast<unsigned long>(base::PlatformThread::CurrentId());
+void CurrentThreadId(CRYPTO_THREADID* id) {
+  CRYPTO_THREADID_set_numeric(
+      id, static_cast<unsigned long>(base::PlatformThread::CurrentId()));
 }
 
 // Singleton for initializing and cleaning up the OpenSSL library.
@@ -53,7 +55,7 @@ class OpenSSLInitSingleton {
     for (int i = 0; i < num_locks; ++i)
       locks_.push_back(new base::Lock());
     CRYPTO_set_locking_callback(LockingCallback);
-    CRYPTO_set_id_callback(CurrentThreadId);
+    CRYPTO_THREADID_set_callback(CurrentThreadId);
 
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
     const bool has_neon =
