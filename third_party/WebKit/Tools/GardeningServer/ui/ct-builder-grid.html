@@ -27,11 +27,8 @@ found in the LICENSE file.
 
       tbody td {
         padding: 2px;
-        width: 40%;
-      }
-
-      tbody tr td:first-child {
         vertical-align: top;
+        width: 40%;
       }
 
       tr :first-child span {
@@ -79,7 +76,7 @@ found in the LICENSE file.
         </tr>
       </thead>
       <tbody>
-        <template repeat="{{ type in resultTypes|keys }}">
+        <template repeat="{{ type in resultTypes|resultTypeKeys }}">
           <tr>
             <td class="{{ type }}">
               <span>{{ type }}</span>
@@ -112,6 +109,17 @@ found in the LICENSE file.
         return Object.keys(obj).sort();
       },
 
+      resultTypeKeys: function(obj) {
+        // Get the keys, but the BUILDING type should be last.
+        var keys = this.keys(obj);
+        var index = keys.indexOf('BUILDING');
+        if (index != -1) {
+          var buildingResult = keys.splice(index, 1);
+          keys.push(buildingResult[0]);
+        }
+        return keys;
+      },
+
       failuresChanged: function() {
         // Create a set of builders for each result type (e.g., text, crash).
         this.resultTypes = {};
@@ -131,7 +139,6 @@ found in the LICENSE file.
           }).bind(this));
         }, this);
 
-        // BUILDING builders should appear last.
         var buildingType = this._getBuilding(passingRevisions);
         if (!Object.isEmpty(buildingType))
             this.resultTypes['BUILDING'] = buildingType;

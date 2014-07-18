@@ -58,29 +58,44 @@ var kExampleFailures = [{
 
 module("ct-builder-grid");
 
-asyncTest("basic", 7, function() {
-  var grid = document.createElement('ct-builder-grid');
-  grid.failures = kExampleFailures;
+asyncTest("basic", 11, function() {
+  var oldBuildersInFlightForRevision = model.buildersInFlightForRevision;
+  var reset = function() {
+    model.buildersInFlightForRevision = oldBuildersInFlightForRevision;
+  }
 
-  Platform.endOfMicrotask(function() {
-    var rows = grid.shadowRoot.querySelectorAll('tbody tr');
-    equal(rows.length, 2);
+  try {
+    model.buildersInFlightForRevision = function(revision) {
+      return {'WebKit Mac10.7': {}};
+    };
 
-    var row1 = grid.shadowRoot.querySelector('tbody td.CRASH').parentNode;
-    equal(row1.children.length, 3);
-    equal(row1.children[1].querySelectorAll('ct-builder').length, 1);
-    equal(row1.children[1].querySelectorAll('ct-builder')[0].builderName, 'WebKit Mac10.7');
+    var grid = document.createElement('ct-builder-grid');
+    grid.failures = kExampleFailures;
+    requestAnimationFrame(function() {
+      reset();
+      var rows = grid.shadowRoot.querySelectorAll('tbody tr');
+      equal(rows.length, 3);
 
-    equal(row1.children[2].querySelectorAll('ct-builder').length, 2);
-    equal(row1.children[2].querySelectorAll('ct-builder')[0].builderName, 'WebKit Mac10.6 (dbg)');
-    equal(row1.children[2].querySelectorAll('ct-builder')[1].builderName, 'WebKit Win7 (dbg)');
+      var row1 = grid.shadowRoot.querySelector('tbody td.CRASH').parentNode;
+      equal(row1.children.length, 3);
+      equal(row1.children[1].querySelectorAll('ct-builder').length, 1);
+      equal(row1.children[1].querySelectorAll('ct-builder')[0].builderName, 'WebKit Mac10.7');
 
-    var row2 = grid.shadowRoot.querySelector('tbody td.TEXT').parentNode;
-    equal(row2.children.length, 3);
-    equal(row2.children[1].querySelectorAll('ct-builder').length, 1);
-    equal(row2.children[2].querySelectorAll('ct-builder').length, 1);
-    start();
-  });
+      equal(row1.children[2].querySelectorAll('ct-builder').length, 2);
+      equal(row1.children[2].querySelectorAll('ct-builder')[0].builderName, 'WebKit Mac10.6 (dbg)');
+     equal(row1.children[2].querySelectorAll('ct-builder')[1].builderName, 'WebKit Win7 (dbg)');
+
+      var row2 = grid.shadowRoot.querySelector('tbody td.TEXT').parentNode;
+      equal(row2.children.length, 3);
+      equal(row2.children[1].querySelectorAll('ct-builder').length, 1);
+      equal(row2.children[2].querySelectorAll('ct-builder').length, 1);
+
+      notEqual(rows[2].children[0].className.indexOf('BUILDING'), -1);
+      start();
+    });
+  } catch(e) {
+    reset();
+  }
 });
 
 })()
