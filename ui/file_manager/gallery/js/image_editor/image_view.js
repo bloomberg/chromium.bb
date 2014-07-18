@@ -129,10 +129,12 @@ ImageView.prototype.draw = function() {
  * change or offset change) with animation.
  */
 ImageView.prototype.applyViewportChange = function() {
-  this.setTransform(
-      this.screenImage_,
-      new ImageView.Effect.None(),
-      ImageView.Effect.DEFAULT_DURATION);
+  if (this.screenImage_) {
+    this.setTransform(
+        this.screenImage_,
+        new ImageView.Effect.None(),
+        ImageView.Effect.DEFAULT_DURATION);
+  }
 };
 
 /**
