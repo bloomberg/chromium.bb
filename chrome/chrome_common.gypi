@@ -211,8 +211,6 @@
       'common/spellcheck_result.h',
       'common/switch_utils.cc',
       'common/switch_utils.h',
-      'common/terminate_on_heap_corruption_experiment_win.cc',
-      'common/terminate_on_heap_corruption_experiment_win.h',
       'common/tts_messages.h',
       'common/tts_utterance_request.cc',
       'common/tts_utterance_request.h',

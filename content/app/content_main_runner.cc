@@ -557,8 +557,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     is_initialized_ = true;
     delegate_ = params.delegate;
 
-    if (params.enable_termination_on_heap_corruption)
-      base::EnableTerminationOnHeapCorruption();
+    base::EnableTerminationOnHeapCorruption();
     base::EnableTerminationOnOutOfMemory();
 
     // The exit manager is in charge of calling the dtors of singleton objects.
