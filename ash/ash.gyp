@@ -916,6 +916,7 @@
         ['OS=="win"', {
           'sources!': [
             # Note: sources list duplicated in GN build.
+            "host/window_tree_host_factory.cc",
             "sticky_keys/sticky_keys_controller.cc",
             "sticky_keys/sticky_keys_controller.h",
           ],

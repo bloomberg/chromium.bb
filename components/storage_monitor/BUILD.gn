@@ -66,8 +66,7 @@ static_library("storage_monitor") {
     deps += [
       "//device/udev_linux",
     ]
-  } else if (is_linux) {
-    # These were already removed for non-Linux.
+  } else {
     sources -= [
       "storage_monitor_linux.cc",
       "storage_monitor_linux.h",
