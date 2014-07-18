@@ -23,7 +23,7 @@
                       "drawsContent": true,
                       "children": [
                         {
-
+                          "shouldFlattenTransform": false
                         }
                       ]
                     }
@@ -88,7 +88,7 @@
                   "drawsContent": true,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }
@@ -147,7 +147,7 @@
                       "shouldFlattenTransform": false,
                       "children": [
                         {
-
+                          "shouldFlattenTransform": false
                         }
                       ]
                     }
@@ -214,7 +214,7 @@
                       "drawsContent": true,
                       "children": [
                         {
-
+                          "shouldFlattenTransform": false
                         }
                       ]
                     }
@@ -279,7 +279,7 @@
                   "drawsContent": true,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }
@@ -338,7 +338,7 @@
                       "shouldFlattenTransform": false,
                       "children": [
                         {
-
+                          "shouldFlattenTransform": false
                         }
                       ]
                     }
@@ -402,7 +402,7 @@
                   "shouldFlattenTransform": false,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }
@@ -459,7 +459,7 @@
                   "shouldFlattenTransform": false,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }
@@ -517,7 +517,7 @@
                   "drawsContent": true,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }
@@ -581,7 +581,7 @@
                   "shouldFlattenTransform": false,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }
@@ -646,7 +646,7 @@
                   "drawsContent": true,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }
@@ -710,7 +710,7 @@
                   "shouldFlattenTransform": false,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }

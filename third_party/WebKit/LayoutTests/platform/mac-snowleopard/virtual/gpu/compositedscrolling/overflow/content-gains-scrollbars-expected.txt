@@ -18,6 +18,7 @@
                   "shouldFlattenTransform": false,
                   "children": [
                     {
+                      "shouldFlattenTransform": false,
                       "children": [
                         {
                           "bounds": [10, 200]
@@ -51,6 +52,7 @@
                   "shouldFlattenTransform": false,
                   "children": [
                     {
+                      "shouldFlattenTransform": false,
                       "children": [
                         {
                           "bounds": [200, 10]
@@ -84,6 +86,7 @@
                   "shouldFlattenTransform": false,
                   "children": [
                     {
+                      "shouldFlattenTransform": false,
                       "children": [
                         {
                           "bounds": [200, 200]

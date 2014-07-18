@@ -17,7 +17,7 @@
                   "shouldFlattenTransform": false,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }

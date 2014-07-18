@@ -23,7 +23,7 @@
                   ],
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }

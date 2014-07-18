@@ -21,7 +21,7 @@
                   "drawsContent": true,
                   "children": [
                     {
-
+                      "shouldFlattenTransform": false
                     }
                   ]
                 }
