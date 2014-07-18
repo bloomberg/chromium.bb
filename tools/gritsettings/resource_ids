@@ -102,9 +102,6 @@
     "structures": [12000],
     "messages": [12500],
   },
-  "webkit/glue/inspector_strings.grd": {
-    "messages": [17500],
-  },
   "webkit/glue/webkit_strings.grd": {
     "messages": [18500],
   },
