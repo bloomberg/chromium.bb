@@ -288,4 +288,21 @@ TEST_F(WindowAnimationsTest, NotifyHideCompleted) {
   EXPECT_TRUE(animation_host.hide_completed());
 }
 
+// The rotation animation for hiding a window should not leak the animation
+// observer.
+TEST_F(WindowAnimationsTest, RotateHideNoLeak) {
+  ui::ScopedAnimationDurationScaleMode scale_mode(
+      ui::ScopedAnimationDurationScaleMode::FAST_DURATION);
+
+  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithId(0, NULL));
+  ui::Layer* animating_layer = window->layer();
+  wm::SetWindowVisibilityAnimationType(window.get(),
+                                       WINDOW_VISIBILITY_ANIMATION_TYPE_ROTATE);
+
+  AnimateOnChildWindowVisibilityChanged(window.get(), true);
+  AnimateOnChildWindowVisibilityChanged(window.get(), false);
+
+  animating_layer->GetAnimator()->StopAnimating();
+}
+
 }  // namespace wm
