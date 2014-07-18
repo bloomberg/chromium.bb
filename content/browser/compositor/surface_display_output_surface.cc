@@ -27,6 +27,10 @@ SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
 }
 
 SurfaceDisplayOutputSurface::~SurfaceDisplayOutputSurface() {
+  client_ = NULL;
+  if (!surface_id_.is_null()) {
+    factory_.Destroy(surface_id_);
+  }
 }
 
 void SurfaceDisplayOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
@@ -57,7 +61,8 @@ void SurfaceDisplayOutputSurface::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
   cc::CompositorFrameAck ack;
   ack.resources = resources;
-  client_->ReclaimResources(&ack);
+  if (client_)
+    client_->ReclaimResources(&ack);
 }
 
 }  // namespace content
