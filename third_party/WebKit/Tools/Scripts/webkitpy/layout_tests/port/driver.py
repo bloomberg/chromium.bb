@@ -150,8 +150,7 @@ class Driver(object):
         Returns a DriverOutput object.
         """
         start_time = time.time()
-        stdin_deadline = start_time + int(driver_input.timeout) / 2000.0
-        self.start(driver_input.should_run_pixel_test, driver_input.args, stdin_deadline)
+        self.start(driver_input.should_run_pixel_test, driver_input.args)
         test_begin_time = time.time()
         self.error_from_test = str()
         self.err_seen_eof = False
@@ -266,7 +265,7 @@ class Driver(object):
             return True
         return False
 
-    def start(self, pixel_tests, per_test_args, deadline):
+    def start(self, pixel_tests, per_test_args):
         new_cmd_line = self.cmd_line(pixel_tests, per_test_args)
         if not self._server_process or new_cmd_line != self._current_cmd_line:
             self._start(pixel_tests, per_test_args)
@@ -431,8 +430,7 @@ class Driver(object):
             or self._read_header(block, line, 'Content-Length: ', '_content_length', int)
             or self._read_header(block, line, 'ActualHash: ', 'content_hash')
             or self._read_header(block, line, 'DumpMalloc: ', 'malloc')
-            or self._read_header(block, line, 'DumpJSHeap: ', 'js_heap')
-            or self._read_header(block, line, 'StdinPath', 'stdin_path')):
+            or self._read_header(block, line, 'DumpJSHeap: ', 'js_heap')):
             return
         # Note, we're not reading ExpectedHash: here, but we could.
         # If the line wasn't a header, we just append it to the content.
@@ -509,7 +507,6 @@ class ContentBlock(object):
         self.decoded_content = None
         self.malloc = None
         self.js_heap = None
-        self.stdin_path = None
 
     def decode_content(self):
         if self.encoding == 'base64' and self.content is not None:

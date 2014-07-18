@@ -220,7 +220,7 @@ class DriverTest(unittest.TestCase):
         port = TestWebKitPort()
         port._server_process_constructor = MockServerProcess
         driver = Driver(port, 0, pixel_tests=True)
-        driver.start(True, [], None)
+        driver.start(True, [])
         last_tmpdir = port._filesystem.last_tmpdir
         self.assertNotEquals(last_tmpdir, None)
         driver.stop()
@@ -230,7 +230,7 @@ class DriverTest(unittest.TestCase):
         port = TestWebKitPort()
         port._server_process_constructor = MockServerProcess
         driver = Driver(port, 0, pixel_tests=True)
-        driver.start(True, [], None)
+        driver.start(True, [])
         last_tmpdir = port._filesystem.last_tmpdir
         driver._start(True, [])
         self.assertFalse(port._filesystem.isdir(last_tmpdir))
@@ -239,5 +239,5 @@ class DriverTest(unittest.TestCase):
         port = TestWebKitPort()
         port._server_process_constructor = MockServerProcess
         driver = Driver(port, 0, pixel_tests=True)
-        driver.start(True, [], None)
+        driver.start(True, [])
         self.assertTrue(driver._server_process.started)

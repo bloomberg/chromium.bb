@@ -729,7 +729,7 @@ class Port(object):
 
     # When collecting test cases, we include any file with these extensions.
     _supported_file_extensions = set(['.html', '.xml', '.xhtml', '.xht', '.pl',
-                                      '.htm', '.php', '.svg', '.mht', '.pdf'])
+                                      '.htm', '.php', '.svg', '.mht'])
 
     @staticmethod
     # If any changes are made here be sure to update the isUsedInReftest method in old-run-webkit-tests as well.
