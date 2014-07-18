@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_VERSION_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_VERSION_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -70,20 +71,20 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   class Listener {
    public:
-    virtual void OnWorkerStarted(ServiceWorkerVersion* version) {};
-    virtual void OnWorkerStopped(ServiceWorkerVersion* version) {};
-    virtual void OnVersionStateChanged(ServiceWorkerVersion* version) {};
+    virtual void OnWorkerStarted(ServiceWorkerVersion* version) {}
+    virtual void OnWorkerStopped(ServiceWorkerVersion* version) {}
+    virtual void OnVersionStateChanged(ServiceWorkerVersion* version) {}
     virtual void OnErrorReported(ServiceWorkerVersion* version,
                                  const base::string16& error_message,
                                  int line_number,
                                  int column_number,
-                                 const GURL& source_url) {};
+                                 const GURL& source_url) {}
     virtual void OnReportConsoleMessage(ServiceWorkerVersion* version,
                                         int source_identifier,
                                         int message_level,
                                         const base::string16& message,
                                         int line_number,
-                                        const GURL& source_url) {};
+                                        const GURL& source_url) {}
   };
 
   ServiceWorkerVersion(

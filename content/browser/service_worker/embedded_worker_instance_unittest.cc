@@ -44,6 +44,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test {
   TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceTest);
 };
 

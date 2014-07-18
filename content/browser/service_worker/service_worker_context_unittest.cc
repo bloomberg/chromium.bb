@@ -85,7 +85,7 @@ void ExpectRegisteredWorkers(
 
 class RejectInstallTestHelper : public EmbeddedWorkerTestHelper {
  public:
-  RejectInstallTestHelper(int mock_render_process_id)
+  explicit RejectInstallTestHelper(int mock_render_process_id)
       : EmbeddedWorkerTestHelper(mock_render_process_id) {}
 
   virtual void OnInstallEvent(int embedded_worker_id,
@@ -100,7 +100,7 @@ class RejectInstallTestHelper : public EmbeddedWorkerTestHelper {
 
 class RejectActivateTestHelper : public EmbeddedWorkerTestHelper {
  public:
-  RejectActivateTestHelper(int mock_render_process_id)
+  explicit RejectActivateTestHelper(int mock_render_process_id)
       : EmbeddedWorkerTestHelper(mock_render_process_id) {}
 
   virtual void OnActivateEvent(int embedded_worker_id,

@@ -4,6 +4,9 @@
 
 #include "content/renderer/service_worker/embedded_worker_context_client.h"
 
+#include <map>
+#include <string>
+
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/pickle.h"

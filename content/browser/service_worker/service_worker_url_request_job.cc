@@ -4,6 +4,10 @@
 
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"

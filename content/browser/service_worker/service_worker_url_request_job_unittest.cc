@@ -179,6 +179,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
 
   scoped_refptr<webkit_blob::BlobData> blob_data_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerURLRequestJobTest);
 };
 
@@ -210,6 +211,8 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
   }
 
   std::string blob_uuid_;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(BlobResponder);
 };
 

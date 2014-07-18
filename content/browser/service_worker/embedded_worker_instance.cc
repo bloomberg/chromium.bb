@@ -4,6 +4,9 @@
 
 #include "content/browser/service_worker/embedded_worker_instance.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/bind_helpers.h"
 #include "content/browser/devtools/embedded_worker_devtools_manager.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"

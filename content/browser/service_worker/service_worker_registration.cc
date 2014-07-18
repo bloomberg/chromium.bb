@@ -106,9 +106,9 @@ void ServiceWorkerRegistration::SetVersionInternal(
                     OnVersionAttributesChanged(this, mask, info));
 }
 
- void ServiceWorkerRegistration::UnsetVersionInternal(
-      ServiceWorkerVersion* version,
-      ChangedVersionAttributesMask* mask) {
+void ServiceWorkerRegistration::UnsetVersionInternal(
+    ServiceWorkerVersion* version,
+    ChangedVersionAttributesMask* mask) {
   DCHECK(version);
   if (installing_version_ == version) {
     installing_version_ = NULL;

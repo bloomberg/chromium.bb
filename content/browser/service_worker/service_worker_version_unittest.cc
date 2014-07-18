@@ -143,6 +143,8 @@ class ServiceWorkerVersionTest : public testing::Test {
   scoped_ptr<MessageReceiver> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersionTest);
 };
 

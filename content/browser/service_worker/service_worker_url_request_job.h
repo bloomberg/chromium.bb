@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_URL_REQUEST_JOB_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_URL_REQUEST_JOB_H_
 
+#include <map>
+#include <string>
+
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"

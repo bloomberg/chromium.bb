@@ -4,6 +4,9 @@
 
 #include "content/browser/service_worker/service_worker_read_from_cache_job.h"
 
+#include <string>
+#include <vector>
+
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
@@ -134,13 +137,13 @@ const net::HttpResponseInfo* ServiceWorkerReadFromCacheJob::http_info() const {
 void ServiceWorkerReadFromCacheJob::OnReadInfoComplete(int result) {
   scoped_refptr<ServiceWorkerReadFromCacheJob> protect(this);
   if (!http_info_io_buffer_->http_info) {
-    DCHECK(result < 0);
+    DCHECK_LT(result, 0);
     ServiceWorkerMetrics::CountReadResponseResult(
         ServiceWorkerMetrics::READ_HEADERS_ERROR);
     NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED, result));
     return;
   }
-  DCHECK(result >= 0);
+  DCHECK_GE(result, 0);
   SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status
   http_info_.reset(http_info_io_buffer_->http_info.release());
   if (is_range_request())

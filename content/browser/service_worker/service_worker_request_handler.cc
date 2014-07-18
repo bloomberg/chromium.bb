@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_request_handler.h"
 
+#include <string>
+
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"

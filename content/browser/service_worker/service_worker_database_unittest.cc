@@ -628,7 +628,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
                                         &newly_purgeable_resources));
   EXPECT_EQ(data.version_id, deleted_version_id);
   ASSERT_EQ(resources1.size(), newly_purgeable_resources.size());
-  for(size_t i = 0; i < resources1.size(); ++i)
+  for (size_t i = 0; i < resources1.size(); ++i)
     EXPECT_EQ(newly_purgeable_resources[i], resources1[i].resource_id);
 
   // Make sure that |updated_data| is stored and resources referred from |data|

@@ -395,7 +395,7 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
 
 class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
  public:
-  FailToStartWorkerTestHelper(int mock_render_process_id)
+  explicit FailToStartWorkerTestHelper(int mock_render_process_id)
       : EmbeddedWorkerTestHelper(mock_render_process_id) {}
 
   virtual void OnStartWorker(int embedded_worker_id,

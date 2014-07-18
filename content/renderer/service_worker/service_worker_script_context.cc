@@ -4,6 +4,8 @@
 
 #include "content/renderer/service_worker/service_worker_script_context.h"
 
+#include <map>
+
 #include "base/logging.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"

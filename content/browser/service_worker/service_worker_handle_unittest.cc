@@ -71,6 +71,8 @@ class ServiceWorkerHandleTest : public testing::Test {
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHandleTest);
 };
 

@@ -20,6 +20,7 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 
@@ -56,8 +57,6 @@ const base::FilePath::CharType kDiskCacheName[] =
 
 const int kMaxMemDiskCacheSize = 10 * 1024 * 1024;
 const int kMaxDiskCacheSize = 250 * 1024 * 1024;
-
-void EmptyCompletionCallback(int) {}
 
 ServiceWorkerStatusCode DatabaseStatusToStatusCode(
     ServiceWorkerDatabase::Status status) {
@@ -823,9 +822,8 @@ ServiceWorkerDiskCache* ServiceWorkerStorage::disk_cache() {
 
   base::FilePath path = GetDiskCachePath();
   if (path.empty()) {
-    int rv = disk_cache_->InitWithMemBackend(
-        kMaxMemDiskCacheSize,
-        base::Bind(&EmptyCompletionCallback));
+    int rv = disk_cache_->InitWithMemBackend(kMaxMemDiskCacheSize,
+                                             net::CompletionCallback());
     DCHECK_EQ(net::OK, rv);
     return disk_cache_.get();
   }

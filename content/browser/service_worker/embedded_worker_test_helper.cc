@@ -4,6 +4,9 @@
 
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 
+#include <map>
+#include <string>
+
 #include "base/bind.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"

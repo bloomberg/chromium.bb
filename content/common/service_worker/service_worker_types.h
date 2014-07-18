@@ -21,15 +21,15 @@ namespace content {
 // Indicates invalid request ID (i.e. the sender does not expect it gets
 // response for the message) for messaging between browser process
 // and embedded worker.
-const static int kInvalidServiceWorkerRequestId = -1;
+static const int kInvalidServiceWorkerRequestId = -1;
 
 // Constants for invalid identifiers.
-const static int kInvalidServiceWorkerHandleId = -1;
-const static int kInvalidServiceWorkerProviderId = -1;
-const static int64 kInvalidServiceWorkerRegistrationId = -1;
-const static int64 kInvalidServiceWorkerVersionId = -1;
-const static int64 kInvalidServiceWorkerResourceId = -1;
-const static int64 kInvalidServiceWorkerResponseId = -1;
+static const int kInvalidServiceWorkerHandleId = -1;
+static const int kInvalidServiceWorkerProviderId = -1;
+static const int64 kInvalidServiceWorkerRegistrationId = -1;
+static const int64 kInvalidServiceWorkerVersionId = -1;
+static const int64 kInvalidServiceWorkerResourceId = -1;
+static const int64 kInvalidServiceWorkerResponseId = -1;
 
 // Indicates how the service worker handled a fetch event.
 enum ServiceWorkerFetchEventResult {

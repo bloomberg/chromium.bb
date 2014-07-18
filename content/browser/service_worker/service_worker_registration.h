@@ -36,7 +36,6 @@ class ServiceWorkerVersion;
 class CONTENT_EXPORT ServiceWorkerRegistration
     : NON_EXPORTED_BASE(public base::RefCounted<ServiceWorkerRegistration>) {
  public:
-
   class Listener {
    public:
     virtual void OnVersionAttributesChanged(

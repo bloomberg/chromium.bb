@@ -75,6 +75,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   base::WeakPtr<webkit_blob::BlobStorageContext> blob_storage_context_;
   ResourceType::Type resource_type_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRequestHandler);
 };
 

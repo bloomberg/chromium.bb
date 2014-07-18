@@ -45,7 +45,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
  public:
   // Initialize this helper for |context|, and enable this as an IPC
   // sender for |mock_render_process_id|.
-  EmbeddedWorkerTestHelper(int mock_render_process_id);
+  explicit EmbeddedWorkerTestHelper(int mock_render_process_id);
   virtual ~EmbeddedWorkerTestHelper();
 
   // Call this to simulate add/associate a process to a worker.
