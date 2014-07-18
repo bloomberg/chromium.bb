@@ -3311,6 +3311,7 @@ void RenderViewImpl::OnMoveOrResizeStarted() {
 }
 
 void RenderViewImpl::OnResize(const ViewMsg_Resize_Params& params) {
+  TRACE_EVENT0("renderer", "RenderViewImpl::OnResize");
   if (webview()) {
     webview()->hidePopups();
     if (send_preferred_size_changes_) {
