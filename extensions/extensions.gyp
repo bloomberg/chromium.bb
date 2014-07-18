@@ -33,8 +33,6 @@
         '<(INTERMEDIATE_DIR)',
       ],
       'sources': [
-        'common/ad_injection_constants.cc',
-        'common/ad_injection_constants.h',
         'common/api/messaging/message.h',
         'common/api/sockets/sockets_manifest_data.cc',
         'common/api/sockets/sockets_manifest_data.h',

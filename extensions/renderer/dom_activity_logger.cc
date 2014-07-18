@@ -6,7 +6,6 @@
 
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/v8_value_converter.h"
-#include "extensions/common/ad_injection_constants.h"
 #include "extensions/common/dom_action_types.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/activity_log_converter_strategy.h"
@@ -29,8 +28,6 @@ void AppendV8Value(const std::string& api_name,
   DCHECK(list);
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
   ActivityLogConverterStrategy strategy;
-  strategy.set_enable_detailed_parsing(
-      ad_injection_constants::ApiCanInjectAds(api_name));
   converter->SetFunctionAllowed(true);
   converter->SetStrategy(&strategy);
   scoped_ptr<base::Value> value(converter->FromV8Value(

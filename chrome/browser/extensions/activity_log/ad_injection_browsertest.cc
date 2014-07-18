@@ -352,9 +352,7 @@ testing::AssertionResult AdInjectionBrowserTest::HandleJSError(
 // content script cleans up after itself. For significantly more detailed
 // comments, see
 // chrome/test/data/extensions/activity_log/ad_injection/content_script.js.
-// TODO(pmarch): Enable this test once modifications to Blink are done,
-// crbug.com/388287.
-IN_PROC_BROWSER_TEST_F(AdInjectionBrowserTest, DISABLED_DetectAdInjections) {
+IN_PROC_BROWSER_TEST_F(AdInjectionBrowserTest, DetectAdInjections) {
   const Extension* extension = LoadExtension(test_data_dir_);
   ASSERT_TRUE(extension);
 

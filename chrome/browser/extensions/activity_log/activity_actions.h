@@ -185,17 +185,11 @@ class Action : public base::RefCountedThreadSafe<Action> {
   // ad injection.
   void MaybeUploadUrl(rappor::RapporService* rappor_service) const;
 
-  // Checks an action that modified the src of an element for ad injection.
-  InjectionType CheckSrcModification() const;
-  // Checks an action with the appendChild API for ad injection.
-  // |ad_type_out| is populated with the type of ad which was injected, if there
-  // was an injection.
-  InjectionType CheckAppendChild(AdType* ad_type_out) const;
-  // Checks a DOM object (e.g. an appended child) for ad injection.
-  // |ad_type_out| is populated with the type of ad which was injected, if there
-  // was an injection.
-  InjectionType CheckDomObject(const base::DictionaryValue* object,
-                               AdType* ad_type_out) const;
+  // Checks an action that modified the src or href of an element for ad
+  // injection.
+  InjectionType CheckAttrModification() const;
+  // Checks an action that adds an element for ad injection.
+  InjectionType CheckElementAddition() const;
 
   std::string extension_id_;
   base::Time time_;

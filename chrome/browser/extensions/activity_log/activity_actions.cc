@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/rappor/rappor_service.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/common/ad_injection_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/dom_action_types.h"
 #include "sql/statement.h"
@@ -37,24 +36,19 @@ namespace extensions {
 
 namespace {
 
-namespace keys = ad_injection_constants::keys;
-
-// The list of APIs for which we upload the URL to RAPPOR.
-const char* kApisForRapporMetric[] = {
-  ad_injection_constants::kHtmlIframeSrcApiName,
-  ad_injection_constants::kHtmlEmbedSrcApiName,
-  ad_injection_constants::kHtmlAnchorHrefApiName
-};
-
 // The "Extensions.PossibleAdInjection2" metric uses different Rappor
 // parameters than the original metric.
 const char* kExtensionAdInjectionRapporMetricName =
     "Extensions.PossibleAdInjection2";
 
-// The names of different types of HTML elements we check for ad injection.
-const char* kIframeElementType = "HTMLIFrameElement";
-const char* kEmbedElementType = "HTMLEmbedElement";
-const char* kAnchorElementType = "HTMLAnchorElement";
+const char kBlinkSetAttributeEvent[] = "blinkSetAttribute";
+const char kBlinkAddElementEvent[] = "blinkAddElement";
+
+const char kIframe[] = "iframe";
+const char kAnchor[] = "a";
+
+const char kSrc[] = "src";
+const char kHref[] = "href";
 
 std::string Serialize(const base::Value* value) {
   std::string value_as_text;
@@ -120,21 +114,31 @@ Action::InjectionType Action::DidInjectAd(
   AdType ad_type = AD_TYPE_NONE;
   InjectionType injection_type = NO_AD_INJECTION;
 
-  if (EndsWith(api_name_,
-               ad_injection_constants::kAppendChildApiSuffix,
-               true /* case senstive */)) {
-    injection_type = CheckAppendChild(&ad_type);
-  } else {
-    // Check if the action modified an element's src/href.
-    if (api_name_ == ad_injection_constants::kHtmlIframeSrcApiName)
+  if (api_name_ == kBlinkSetAttributeEvent) {
+    std::string element_name;
+    std::string attr_name;
+    if (args_.get()) {
+      args_->GetString(0u, &element_name);
+      args_->GetString(1u, &attr_name);
+    }
+    if (element_name == kIframe && attr_name == kSrc)
       ad_type = AD_TYPE_IFRAME;
-    else if (api_name_ == ad_injection_constants::kHtmlEmbedSrcApiName)
-      ad_type = AD_TYPE_EMBED;
-    else if (api_name_ == ad_injection_constants::kHtmlAnchorHrefApiName)
+    else if (element_name == kAnchor && attr_name == kHref)
       ad_type = AD_TYPE_ANCHOR;
 
     if (ad_type != AD_TYPE_NONE)
-      injection_type = CheckSrcModification();
+      injection_type = CheckAttrModification();
+  } else if (api_name_ == kBlinkAddElementEvent) {
+    std::string element_name;
+    if (args_.get())
+      args_->GetString(0u, &element_name);
+    if (element_name == kIframe)
+      ad_type = AD_TYPE_IFRAME;
+    else if (element_name == kAnchor)
+      ad_type = AD_TYPE_ANCHOR;
+
+    if (ad_type != AD_TYPE_NONE)
+      injection_type = CheckElementAddition();
   }
 
   if (injection_type != NO_AD_INJECTION) {
@@ -373,39 +377,69 @@ bool Action::UrlCouldBeAd(const GURL& url) const {
 
 void Action::MaybeUploadUrl(rappor::RapporService* rappor_service) const {
   // Don't bother recording if the url is innocuous (or no |rappor_service|).
-  if (!rappor_service || !UrlCouldBeAd(arg_url_))
+  if (!rappor_service)
     return;
 
-  bool can_inject_ads = false;
-  for (size_t i = 0; i < arraysize(kApisForRapporMetric); ++i) {
-    if (api_name_ == kApisForRapporMetric[i]) {
-      can_inject_ads = true;
-      break;
+  GURL url;
+
+  if (api_name_ == kBlinkSetAttributeEvent) {
+    std::string element_name;
+    std::string attr_name;
+    std::string url_string;
+    if (args_.get()) {
+      args_->GetString(0u, &element_name);
+      args_->GetString(1u, &attr_name);
+    }
+    if (element_name == kIframe && attr_name == kSrc) {
+      args_->GetString(3u, &url_string);
+      url = GURL(url_string);
+    } else if (element_name == kAnchor && attr_name == kHref) {
+      args_->GetString(3u, &url_string);
+      url = GURL(url_string);
+    }
+  } else if (api_name_ == kBlinkAddElementEvent) {
+    std::string element_name;
+    std::string url_string;
+    if (args_.get())
+      args_->GetString(0u, &element_name);
+    if (element_name == kIframe) {
+      args_->GetString(1u, &url_string);
+      url = GURL(url_string);
+    } else if (element_name == kAnchor) {
+      args_->GetString(1u, &url_string);
+      url = GURL(url_string);
     }
   }
 
-  if (!can_inject_ads)
+  if (!UrlCouldBeAd(url))
     return;
 
   // Record the URL - an ad *may* have been injected.
   rappor_service->RecordSample(kExtensionAdInjectionRapporMetricName,
                                rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
-                               arg_url_.host());
+                               url.host());
 }
 
-Action::InjectionType Action::CheckSrcModification() const {
-  const AdNetworkDatabase* database = AdNetworkDatabase::Get();
+Action::InjectionType Action::CheckAttrModification() const {
+  if (api_name_ != kBlinkSetAttributeEvent)
+    return NO_AD_INJECTION;
 
-  bool arg_url_could_be_ad = UrlCouldBeAd(arg_url_);
+  const AdNetworkDatabase* database = AdNetworkDatabase::Get();
 
   GURL prev_url;
   std::string prev_url_string;
-  if (args_.get() && args_->GetString(1u, &prev_url_string))
+  if (args_.get() && args_->GetString(2u, &prev_url_string))
     prev_url = GURL(prev_url_string);
 
+  GURL new_url;
+  std::string new_url_string;
+  if (args_.get() && args_->GetString(3u, &new_url_string))
+    new_url = GURL(new_url_string);
+
+  bool new_url_could_be_ad = UrlCouldBeAd(new_url);
   bool prev_url_valid = prev_url.is_valid() && !prev_url.is_empty();
 
-  bool injected_ad = arg_url_could_be_ad && database->IsAdNetwork(arg_url_);
+  bool injected_ad = new_url_could_be_ad && database->IsAdNetwork(new_url);
   bool replaced_ad = prev_url_valid && database->IsAdNetwork(prev_url);
 
   if (injected_ad && replaced_ad)
@@ -418,7 +452,7 @@ Action::InjectionType Action::CheckSrcModification() const {
   // If the extension modified the URL with an external, valid URL then there's
   // a good chance it's ad injection. Log it as a likely one, which also helps
   // us determine the effectiveness of our IsAdNetwork() recognition.
-  if (arg_url_could_be_ad) {
+  if (new_url_could_be_ad) {
     if (prev_url_valid)
       return INJECTION_LIKELY_REPLACED_AD;
     return INJECTION_LIKELY_NEW_AD;
@@ -427,65 +461,23 @@ Action::InjectionType Action::CheckSrcModification() const {
   return NO_AD_INJECTION;
 }
 
-Action::InjectionType Action::CheckAppendChild(AdType* ad_type_out) const {
-  const base::DictionaryValue* child = NULL;
-  if (!args_->GetDictionary(0u, &child))
+Action::InjectionType Action::CheckElementAddition() const {
+  if (api_name_ != kBlinkAddElementEvent)
     return NO_AD_INJECTION;
 
-  return CheckDomObject(child, ad_type_out);
-}
+  GURL url;
+  std::string url_string;
+  if (args_.get() && args_->GetString(1u, &url_string))
+    url = GURL(url_string);
 
-Action::InjectionType Action::CheckDomObject(
-    const base::DictionaryValue* object,
-    AdType* ad_type_out) const {
-  DCHECK(ad_type_out);
-  std::string type;
-  object->GetString(keys::kType, &type);
-
-  AdType ad_type = AD_TYPE_NONE;
-  std::string url_key;
-  if (type == kIframeElementType) {
-    ad_type = AD_TYPE_IFRAME;
-    url_key = keys::kSrc;
-  } else if (type == kEmbedElementType) {
-    ad_type = AD_TYPE_EMBED;
-    url_key = keys::kSrc;
-  } else if (type == kAnchorElementType) {
-    ad_type = AD_TYPE_ANCHOR;
-    url_key = keys::kHref;
+  if (UrlCouldBeAd(url)) {
+    if (AdNetworkDatabase::Get()->IsAdNetwork(url))
+      return INJECTION_NEW_AD;
+    // If the extension injected an URL which is not local to itself or the
+    // page, there is a good chance it could be a new ad, and our database
+    // missed it.
+    return INJECTION_LIKELY_NEW_AD;
   }
-
-  if (!url_key.empty()) {
-    std::string url;
-    if (object->GetString(url_key, &url)) {
-      GURL gurl(url);
-      if (UrlCouldBeAd(gurl)) {
-        *ad_type_out = ad_type;
-        if (AdNetworkDatabase::Get()->IsAdNetwork(gurl))
-          return INJECTION_NEW_AD;
-        // If the extension injected an URL which is not local to itself or the
-        // page, there is a good chance it could be a new ad, and our database
-        // missed it.
-        return INJECTION_LIKELY_NEW_AD;
-      }
-    }
-  }
-
-  const base::ListValue* children = NULL;
-  if (object->GetList(keys::kChildren, &children)) {
-    const base::DictionaryValue* child = NULL;
-    for (size_t i = 0;
-         i < children->GetSize() &&
-             i < ad_injection_constants::kMaximumChildrenToCheck;
-         ++i) {
-      if (children->GetDictionary(i, &child)) {
-        InjectionType type = CheckDomObject(child, ad_type_out);
-        if (type != NO_AD_INJECTION)
-          return type;
-      }
-    }
-  }
-
   return NO_AD_INJECTION;
 }
 

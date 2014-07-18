@@ -31,8 +31,6 @@
 var kBodyHtml =
     '<iframe id="ad-iframe" src="http://www.known-ads.adnetwork"></iframe>' +
     '<iframe id="non-ad-iframe" src="http://www.not-ads.adnetwork"></iframe>' +
-    '<embed id="ad-embed" src="http://www.known-ads.adnetwork"><embed>' +
-    '<embed id="non-ad-embed" src="http://www.not-ads.adnetwork"><embed>' +
     '<a id="ad-anchor" href="http://www.known-ads.adnetwork"></a>' +
     '<a id="non-ad-anchor" href="http://www.not-ads.adnetwork"></a>' +
     '<div id="empty-div"></div>';
@@ -43,8 +41,8 @@ var kBodyHtml =
  * - Signal the C++ test that we're going to do page setup, and we shouldn't
  *   record any ad-injector events (as some of the page setup could qualify).
  * - Do the page setup, which involves creating a 'playground' for ad injectors
- *   of iframes, embeds, etc. See also ad_injectors.html. We do this set up for
- *   each test, so that none of the tests conflicts with each other.
+ *   of iframes, etc. See also ad_injectors.html. We do this set up for each
+ *   test, so that none of the tests conflicts with each other.
  * - Signal that we are done with page setup, and should start recording events.
  * - Run the next test.
  * - Signal that the test is done, and we should check for the result.
@@ -180,18 +178,6 @@ var getIframeAd = function() {
   return kIframeAdTemplate.cloneNode(true);
 };
 
-// Creates an embed ad, like so:
-// <embed src="http://www.known-ads.adnetwork"></embed>
-var kEmbedAdTemplate = document.createElement('embed');
-kEmbedAdTemplate.src = kAdNetwork;
-
-/**
- * @return An embed element which will count as ad injection in the tests.
- */
-var getEmbedAd = function() {
-  return kEmbedAdTemplate.cloneNode(true);
-};
-
 // Creates an anchor ad, like so:
 // <a href="http://www.known-ads.adnetwork"></a>
 var kAnchorAdTemplate = document.createElement('a');
@@ -241,12 +227,10 @@ var functions = [];
 functions.push(function NoAdInjection() {
   var div = document.createElement('div');
   var iframe = document.createElement('iframe');
-  var embed = document.createElement('embed');
   var anchor = document.createElement('anchor');
   var span = document.createElement('span');
   span.textContent = 'Hello, world';
   div.appendChild(iframe);
-  div.appendChild(embed);
   div.appendChild(anchor);
   div.appendChild(span);
   document.body.appendChild(div);
@@ -269,31 +253,15 @@ functions.push(function NewIframeLikelyAdNetwork() {
 
 // Modify an iframe which is currently in the DOM, switching the src to an
 // ad network.
-functions.push(function ModifyExistingIframeToAdNetwork() {
+functions.push(function ModifyExistingIframeToAdNetwork1() {
   var frame = $('non-ad-iframe');
   frame.src = kAdNetwork;
   return INJECTION_NEW_AD;
 });
 
-// Add a new embed element which serves ads.
-functions.push(function NewEmbedAdNetwork() {
-  document.body.appendChild(getEmbedAd());
-  return INJECTION_NEW_AD;
-});
-
-// Add a new embed element which does not serve ads. We should not record
-// anything.
-functions.push(function NewEmbedLikelyAdNetwork() {
-  var embed = document.createElement('embed');
-  document.body.appendChild(embed).src = kMaybeAdNetwork;
-  return INJECTION_LIKELY_NEW_AD;
-});
-
-// Modify an embed which is currently in the DOM, switching the src to an
-// ad network.
-functions.push(function ModifyExistingEmbedToAdNetwork() {
-  var embed = $('non-ad-embed');
-  embed.src = kAdNetwork;
+functions.push(function ModifyExistingIframeToAdNetwork2() {
+  var frame = $('non-ad-iframe');
+  frame.setAttribute('src', kAdNetwork);
   return INJECTION_NEW_AD;
 });
 
@@ -326,10 +294,15 @@ functions.push(function SamePageUrlNotConsideredAd() {
   return NO_AD_INJECTION;
 });
 
-
-functions.push(function ModifyExistingAnchorToAdNetwork() {
+functions.push(function ModifyExistingAnchorToAdNetwork1() {
   var anchor = $('non-ad-anchor');
   anchor.href = kAdNetwork;
+  return INJECTION_NEW_AD;
+});
+
+functions.push(function ModifyExistingAnchorToAdNetwork2() {
+  var anchor = $('non-ad-anchor');
+  anchor.setAttribute('href', kAdNetwork);
   return INJECTION_NEW_AD;
 });
 
@@ -340,27 +313,31 @@ functions.push(function NewNestedAd() {
   return INJECTION_NEW_AD;
 });
 
-// Switch an existing embed ad to a new ad network.
-functions.push(function ReplaceEmbedAd() {
-  $('ad-embed').src = kAdNetwork2;
-  return INJECTION_REPLACED_AD;
-});
-
 // Switch an existing iframe ad to a new ad network.
-functions.push(function ReplaceIframeAd() {
+functions.push(function ReplaceIframeAd1() {
   $('ad-iframe').src = kAdNetwork2;
   return INJECTION_REPLACED_AD;
 });
 
+functions.push(function ReplaceIframeAd2() {
+  $('ad-iframe').setAttribute('src', kAdNetwork2);
+  return INJECTION_REPLACED_AD;
+});
+
 // Switch an existing anchor ad to a new ad network.
-functions.push(function ReplaceAnchorAd() {
+functions.push(function ReplaceAnchorAd1() {
   $('ad-anchor').href = kAdNetwork2;
   return INJECTION_REPLACED_AD;
 });
 
-// Remove an existing embed ad by setting it's src to a non-ad network.
+functions.push(function ReplaceAnchorAd2() {
+  $('ad-anchor').setAttribute('href', kAdNetwork2);
+  return INJECTION_REPLACED_AD;
+});
+
+// Remove an existing iframe ad by setting it's src to a non-ad network.
 functions.push(function RemoveAdBySettingSrc() {
-  $('ad-embed').src = kMaybeAdNetwork;
+  $('ad-iframe').src = kMaybeAdNetwork;
   return INJECTION_REMOVED_AD;
 });
 
@@ -370,7 +347,7 @@ functions.push(function LikelyReplacedAd() {
   // Switching from one valid url src to another valid url src is very
   // suspicious behavior, and should be relatively rare. This helps us determine
   // the effectiveness of our ad network recognition.
-  $('non-ad-embed').src = 'http://www.thismightbeanadnetwork.ads';
+  $('non-ad-iframe').src = 'http://www.thismightbeanadnetwork.ads';
   return INJECTION_LIKELY_REPLACED_AD;
 });
 

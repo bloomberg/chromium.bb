@@ -36,20 +36,11 @@ class ActivityLogConverterStrategy
                            v8::Isolate* isolate,
                            const FromV8ValueCallback& callback) const OVERRIDE;
 
-  void set_enable_detailed_parsing(bool enable_detailed_parsing) {
-    enable_detailed_parsing_ = enable_detailed_parsing;
-  }
-
  private:
   bool FromV8Internal(v8::Handle<v8::Object> value,
                       base::Value** out,
                       v8::Isolate* isolate,
                       const FromV8ValueCallback& callback) const;
-
-  // Whether or not to extract a detailed value from the passed in objects. We
-  // do this when we need more information about the arguments in order to
-  // determine, e.g., if an ad was injected.
-  bool enable_detailed_parsing_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivityLogConverterStrategy);
 };

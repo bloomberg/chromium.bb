@@ -7,18 +7,26 @@
 #include "components/rappor/byte_vector_utils.h"
 #include "components/rappor/proto/rappor_metric.pb.h"
 #include "components/rappor/rappor_service.h"
+#include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 
 namespace {
 
-scoped_refptr<Action> CreateAction(const std::string& api_name) {
+scoped_refptr<Action> CreateAction(const std::string& api_name,
+                                   const std::string& element,
+                                   const std::string& attr) {
   scoped_refptr<Action> action = new Action("id",
                                             base::Time::Now(),
                                             Action::ACTION_DOM_ACCESS,
                                             api_name);
-  action->set_arg_url(GURL("http://www.notarealhost.notarealtld"));
+  action->set_args(ListBuilder()
+                   .Append(element)
+                   .Append(attr)
+                   .Append("http://www.google.co.uk")
+                   .Append("http://www.google.co.uk")
+                   .Build());
   return action;
 }
 
@@ -58,24 +66,19 @@ TEST(AdInjectionUnittest, CheckActionForAdInjectionTest) {
   EXPECT_EQ(0, reports.report_size());
 
   scoped_refptr<Action> modify_iframe_src =
-      CreateAction("HTMLIFrameElement.src");
+      CreateAction("blinkSetAttribute", "iframe", "src");
   modify_iframe_src->DidInjectAd(&rappor_service);
   reports = rappor_service.GetReports();
   EXPECT_EQ(1, reports.report_size());
 
-  scoped_refptr<Action> modify_embed_src =
-      CreateAction("HTMLEmbedElement.src");
-  modify_embed_src->DidInjectAd(&rappor_service);
-  reports = rappor_service.GetReports();
-  EXPECT_EQ(1, reports.report_size());
-
   scoped_refptr<Action> modify_anchor_href =
-      CreateAction("HTMLAnchorElement.href");
+      CreateAction("blinkSetAttribute", "a", "href");
   modify_anchor_href->DidInjectAd(&rappor_service);
   reports = rappor_service.GetReports();
   EXPECT_EQ(1, reports.report_size());
 
-  scoped_refptr<Action> harmless_action = CreateAction("Location.replace");
+  scoped_refptr<Action> harmless_action =
+      CreateAction("Location.replace", "", "");
   harmless_action->DidInjectAd(&rappor_service);
   reports = rappor_service.GetReports();
   EXPECT_EQ(0, reports.report_size());
