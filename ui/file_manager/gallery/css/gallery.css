@@ -152,7 +152,7 @@ input[type='checkbox']:checked {
   -webkit-box-orient: horizontal;
   -webkit-box-pack: start;
   background-color: rgba(30, 30, 30, 0.8);
-  display: -webkit-box;
+  display: flex;
   left: 0;
   opacity: 0;
   padding: 0 10px;
@@ -180,7 +180,7 @@ input[type='checkbox']:checked {
   border-top: 1px solid rgba(50, 50, 50, 0.8);
   bottom: 0;
   height: 55px;
-  min-width: 800px;
+  overflow: hidden;
 }
 
 .gallery[tools]:not([slideshow]) > .header,
@@ -283,10 +283,12 @@ input[type='checkbox']:checked {
 /* Filename */
 
 .gallery .filename-spacer {
+  flex: 0 1 auto;
   height: 100%;
+  min-width: 140px;
   overflow: hidden;
   position: relative;
-  width: 270px;
+  width: 210px;
 }
 
 .gallery .filename-spacer > * {
@@ -398,6 +400,7 @@ input[type='checkbox']:checked {
 }
 
 /* Bubble */
+
 .gallery .toolbar .bubble {
   bottom: 65px;
   font-size: 85%;
@@ -410,31 +413,31 @@ input[type='checkbox']:checked {
   display: none;
 }
 
+/* Middle spacer */
+
+.gallery .middle-spacer {
+  align-items: center;
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+}
+
 /* Toolbar buttons */
 
 .gallery .button-spacer {
-  -webkit-box-flex: 1;
-  display: -webkit-box;
+  display: flex;
+  flex: none;
+  width: 210px; /* 42px button x 5 */
 }
 
 /* Thumbnails */
 
 .gallery .ribbon-spacer {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: center;
-  display: -webkit-box;
-  height: 100%;
-  left: 280px;
-  position: absolute;
-  right: 280px;
+  height: 55px;
+  margin-bottom: -55px;
 }
 
 .gallery .toolbar .ribbon {
-  -webkit-box-flex: 0;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: start;
-  display: -webkit-box;
   height: 100%;
   overflow: hidden;
   transition: opacity 180ms linear, visibility 0 linear;
@@ -448,12 +451,9 @@ input[type='checkbox']:checked {
 }
 
 .gallery .ribbon-image {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: center;
   border: 2px solid rgba(255, 255, 255, 0);  /* transparent white */
   cursor: pointer;
-  display: -webkit-box;
+  display: inline-block;
   height: 47px;
   margin: 2px;
   overflow: hidden;
@@ -517,10 +517,10 @@ input[type='checkbox']:checked {
   height: 100%;
   left: 280px;
   opacity: 0;
-  position: absolute;
   right: 280px;
   transition: opacity 180ms linear, visibility 0 linear 180ms;
   visibility: hidden;
+  margin-bottom: -55px;
 }
 
 .gallery .toolbar .edit-main {
@@ -543,10 +543,6 @@ input[type='checkbox']:checked {
 .gallery .toolbar button,
 .gallery .header button[disabled],
 .gallery .toolbar button[disabled] {
-  -webkit-box-align: center;
-  -webkit-box-flex: 0;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: end;
   background-color: rgba(0, 0, 0, 0);
   background-position: center;
   background-repeat: no-repeat;
@@ -554,7 +550,8 @@ input[type='checkbox']:checked {
   box-shadow: none;
   color: white;
   cursor: pointer;
-  display: -webkit-box;
+  display: inline-block;
+  flex: none;
   opacity: 0.99;  /* Workaround for http://crosbug.com/21065 */
   padding: 1px;  /* Instead of a border. */
   position: relative;
@@ -714,95 +711,95 @@ input[type='checkbox']:checked {
   display: none;
 }
 
-.gallery[mode='slide'] > .toolbar > button.mode {
+.gallery[mode='slide'] > .toolbar button.mode {
   background-image: -webkit-image-set(
       url(../images/100/icon_mosaic.png) 1x,
       url(../images/200/icon_mosaic.png) 2x);
 }
 
-.gallery[mode='slide'] > .toolbar > button.mode:active {
+.gallery[mode='slide'] > .toolbar button.mode:active {
   background-image: -webkit-image-set(
       url(../images/100/icon_mosaic_selected.png) 1x,
       url(../images/200/icon_mosaic_selected.png) 2x);
 }
 
-.gallery[mode='mosaic'] > .toolbar > button.mode {
+.gallery[mode='mosaic'] > .toolbar button.mode {
   background-image: -webkit-image-set(
       url(../images/100/icon_1up.png) 1x,
       url(../images/200/icon_1up.png) 2x);
 }
 
-.gallery[mode='mosaic'] > .toolbar > button.mode:active {
+.gallery[mode='mosaic'] > .toolbar button.mode:active {
   background-image: -webkit-image-set(
       url(../images/100/icon_1up_selected.png) 1x,
       url(../images/200/icon_1up_selected.png) 2x);
 }
 
-.gallery > .toolbar > button.slideshow {
+.gallery > .toolbar button.slideshow {
   background-image: -webkit-image-set(
       url(../images/100/icon_slideshow.png) 1x,
       url(../images/200/icon_slideshow.png) 2x);
 }
 
-.gallery > .toolbar > button.slideshow:active,
-.gallery > .toolbar > button.slideshow[pressed] {
+.gallery > .toolbar button.slideshow:active,
+.gallery > .toolbar button.slideshow[pressed] {
   background-image: -webkit-image-set(
       url(../images/100/icon_slideshow_selected.png) 1x,
       url(../images/200/icon_slideshow_selected.png) 2x);
 }
 
-.gallery > .toolbar > button.delete {
+.gallery > .toolbar button.delete {
   background-image: -webkit-image-set(
       url(../images/100/icon_delete.png) 1x,
       url(../images/200/icon_delete.png) 2x);
 }
 
-.gallery > .toolbar > button.delete:active {
+.gallery > .toolbar button.delete:active {
   background-image: -webkit-image-set(
       url(../images/100/icon_delete_selected.png) 1x,
       url(../images/200/icon_delete_selected.png) 2x);
 }
 
-.gallery > .toolbar > button.edit {
+.gallery > .toolbar button.edit {
   background-image: -webkit-image-set(
       url(../images/100/icon_edit.png) 1x,
       url(../images/200/icon_edit.png) 2x);
 }
 
-.gallery > .toolbar > button.edit:active,
-.gallery > .toolbar > button.edit[pressed] {
+.gallery > .toolbar button.edit:active,
+.gallery > .toolbar button.edit[pressed] {
   background-image: -webkit-image-set(
       url(../images/100/icon_edit_selected.png) 1x,
       url(../images/200/icon_edit_selected.png) 2x);
 }
 
-.gallery > .toolbar > button.print {
+.gallery > .toolbar button.print {
   background-image: -webkit-image-set(
       url(../images/100/icon_print.png) 1x,
       url(../images/200/icon_print.png) 2x);
 }
 
-.gallery > .toolbar > button.print:active,
-.gallery > .toolbar > button.print[pressed] {
+.gallery > .toolbar button.print:active,
+.gallery > .toolbar button.print[pressed] {
   background-image: -webkit-image-set(
       url(../images/100/icon_print_selected.png) 1x,
       url(../images/200/icon_print_selected.png) 2x);
 }
 
-.gallery > .toolbar > button.share {
+.gallery > .toolbar button.share {
   background-image: -webkit-image-set(
       url(../images/100/icon_share.png) 1x,
       url(../images/200/icon_share.png) 2x);
 }
 
-.gallery > .toolbar > button.share:active,
-.gallery > .toolbar > button.share[pressed] {
+.gallery > .toolbar button.share:active,
+.gallery > .toolbar button.share[pressed] {
   background-image: -webkit-image-set(
       url(../images/100/icon_share_selected.png) 1x,
       url(../images/200/icon_share_selected.png) 2x);
 }
 
-.gallery > .toolbar > button.share[disabled] {
+.gallery > .toolbar button.share[disabled] {
   display: none;
 }
 

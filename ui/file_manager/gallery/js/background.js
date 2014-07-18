@@ -131,7 +131,7 @@ function launch(selectedEntriesPromise) {
           {
             id: 'gallery',
             innerBounds: {
-              minWidth: 800,
+              minWidth: 820,
               minHeight: 300
             },
             frame: 'none'

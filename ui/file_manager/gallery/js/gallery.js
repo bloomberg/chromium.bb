@@ -268,11 +268,11 @@ Gallery.prototype.initDom_ = function() {
   cr.ui.dialogs.BaseDialog.OK_LABEL = str('GALLERY_OK_LABEL');
   cr.ui.dialogs.BaseDialog.CANCEL_LABEL = str('GALLERY_CANCEL_LABEL');
 
-  var content = util.createChild(this.container_, 'content');
+  var content = document.querySelector('#content');
   content.addEventListener('click', this.onContentClick_.bind(this));
 
-  this.header_ = util.createChild(this.container_, 'header tool dimmable');
-  this.toolbar_ = util.createChild(this.container_, 'toolbar tool dimmable');
+  this.header_ = document.querySelector('#header');
+  this.toolbar_ = document.querySelector('#toolbar');
 
   var preventDefault = function(event) { event.preventDefault(); };
 
@@ -297,7 +297,7 @@ Gallery.prototype.initDom_ = function() {
   closeButton.addEventListener('click', this.onClose_.bind(this));
   closeButton.addEventListener('mousedown', preventDefault);
 
-  this.filenameSpacer_ = util.createChild(this.toolbar_, 'filename-spacer');
+  this.filenameSpacer_ = this.toolbar_.querySelector('.filename-spacer');
   this.filenameEdit_ = util.createChild(this.filenameSpacer_,
                                         'namebox', 'input');
 
@@ -311,13 +311,14 @@ Gallery.prototype.initDom_ = function() {
   this.filenameEdit_.addEventListener('keydown',
       this.onFilenameEditKeydown_.bind(this));
 
-  util.createChild(this.toolbar_, 'button-spacer');
+  var middleSpacer = this.filenameSpacer_ =
+      this.toolbar_.querySelector('.middle-spacer');
+  var buttonSpacer = this.toolbar_.querySelector('button-spacer');
 
   this.prompt_ = new ImageEditor.Prompt(this.container_, str);
 
-  this.modeButton_ = util.createChild(this.toolbar_, 'button mode', 'button');
-  this.modeButton_.addEventListener('click',
-      this.toggleMode_.bind(this, null));
+  this.modeButton_ = this.toolbar_.querySelector('button.mode');
+  this.modeButton_.addEventListener('click', this.toggleMode_.bind(this, null));
 
   this.mosaicMode_ = new MosaicMode(content,
                                     this.dataModel_,
@@ -342,10 +343,10 @@ Gallery.prototype.initDom_ = function() {
     cr.dispatchSimpleEvent(this, 'image-saved');
   }.bind(this));
 
-  var deleteButton = this.createToolbarButton_('delete', 'GALLERY_DELETE');
+  var deleteButton = this.initToolbarButton_('delete', 'GALLERY_DELETE');
   deleteButton.addEventListener('click', this.delete_.bind(this));
 
-  this.shareButton_ = this.createToolbarButton_('share', 'GALLERY_SHARE');
+  this.shareButton_ = this.initToolbarButton_('share', 'GALLERY_SHARE');
   this.shareButton_.setAttribute('disabled', '');
   this.shareButton_.addEventListener('click', this.toggleShare_.bind(this));
 
@@ -361,15 +362,15 @@ Gallery.prototype.initDom_ = function() {
 };
 
 /**
- * Creates toolbar button.
+ * Initializes a toolbar button.
  *
  * @param {string} className Class to add.
  * @param {string} title Button title.
  * @return {!HTMLElement} Newly created button.
  * @private
  */
-Gallery.prototype.createToolbarButton_ = function(className, title) {
-  var button = util.createChild(this.toolbar_, className, 'button');
+Gallery.prototype.initToolbarButton_ = function(className, title) {
+  var button = this.toolbar_.querySelector('button.' + className);
   button.title = str(title);
   return button;
 };

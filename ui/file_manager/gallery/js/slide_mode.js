@@ -166,7 +166,7 @@ SlideMode.prototype.initDom_ = function() {
       this.advanceManually.bind(this, 1));
   util.createChild(this.arrowRight_);
 
-  this.ribbonSpacer_ = util.createChild(this.toolbar_, 'ribbon-spacer');
+  this.ribbonSpacer_ = this.toolbar_.querySelector('.ribbon-spacer');
   this.ribbon_ = new Ribbon(
       this.document_, this.dataModel_, this.selectionModel_);
   this.ribbonSpacer_.appendChild(this.ribbon_);
@@ -179,8 +179,7 @@ SlideMode.prototype.initDom_ = function() {
 
   util.createChild(this.container_, 'spinner');
 
-  var slideShowButton = util.createChild(this.toolbar_,
-      'button slideshow', 'button');
+  var slideShowButton = this.toolbar_.querySelector('button.slideshow');
   slideShowButton.title = this.displayStringFunction_('GALLERY_SLIDESHOW');
   slideShowButton.addEventListener('click',
       this.startSlideshow.bind(this, SlideMode.SLIDESHOW_INTERVAL_FIRST));
@@ -194,17 +193,17 @@ SlideMode.prototype.initDom_ = function() {
 
   // Editor.
 
-  this.editButton_ = util.createChild(this.toolbar_, 'button edit', 'button');
+  this.editButton_ = this.toolbar_.querySelector('button.edit');
   this.editButton_.title = this.displayStringFunction_('GALLERY_EDIT');
   this.editButton_.setAttribute('disabled', '');  // Disabled by default.
   this.editButton_.addEventListener('click', this.toggleEditor.bind(this));
 
-  this.printButton_ = util.createChild(this.toolbar_, 'button print', 'button');
+  this.printButton_ = this.toolbar_.querySelector('button.print');
   this.printButton_.title = this.displayStringFunction_('GALLERY_PRINT');
   this.printButton_.setAttribute('disabled', '');  // Disabled by default.
   this.printButton_.addEventListener('click', this.print_.bind(this));
 
-  this.editBarSpacer_ = util.createChild(this.toolbar_, 'edit-bar-spacer');
+  this.editBarSpacer_ = this.toolbar_.querySelector('.edit-bar-spacer');
   this.editBarMain_ = util.createChild(this.editBarSpacer_, 'edit-main');
 
   this.editBarMode_ = util.createChild(this.container_, 'edit-modal');
