@@ -14,9 +14,10 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
+#include "content/child/webcrypto/algorithm_dispatch.h"
 #include "content/child/webcrypto/crypto_data.h"
-#include "content/child/webcrypto/shared_crypto.h"
 #include "content/child/webcrypto/status.h"
+#include "content/child/webcrypto/structured_clone.h"
 #include "content/child/webcrypto/webcrypto_util.h"
 #include "content/child/worker_thread_task_runner.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
@@ -525,12 +526,11 @@ void DoVerify(scoped_ptr<VerifySignatureState> passed_state) {
   VerifySignatureState* state = passed_state.get();
   if (state->cancelled())
     return;
-  state->status =
-      webcrypto::VerifySignature(state->algorithm,
-                                 state->key,
-                                 webcrypto::CryptoData(state->signature),
-                                 webcrypto::CryptoData(state->data),
-                                 &state->verify_result);
+  state->status = webcrypto::Verify(state->algorithm,
+                                    state->key,
+                                    webcrypto::CryptoData(state->signature),
+                                    webcrypto::CryptoData(state->data),
+                                    &state->verify_result);
 
   state->origin_thread->PostTask(
       FROM_HERE, base::Bind(DoVerifyReply, Passed(&passed_state)));
@@ -582,10 +582,6 @@ WebCryptoImpl::WebCryptoImpl() {
 }
 
 WebCryptoImpl::~WebCryptoImpl() {
-}
-
-void WebCryptoImpl::EnsureInit() {
-  webcrypto::Init();
 }
 
 void WebCryptoImpl::encrypt(const blink::WebCryptoAlgorithm& algorithm,

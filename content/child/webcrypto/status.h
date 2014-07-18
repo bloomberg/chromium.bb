@@ -69,10 +69,6 @@ class CONTENT_EXPORT Status {
   // incompatible with the value requested by the Web Crypto call.
   static Status ErrorJwkExtInconsistent();
 
-  // The "alg" parameter could not be converted to an equivalent
-  // WebCryptoAlgorithm. Either it was malformed or unrecognized.
-  static Status ErrorJwkUnrecognizedAlgorithm();
-
   // The "alg" parameter is incompatible with the (optional) Algorithm
   // specified by the Web Crypto import operation.
   static Status ErrorJwkAlgorithmInconsistent();
@@ -97,9 +93,9 @@ class CONTENT_EXPORT Status {
   // are incompatible with each other.
   static Status ErrorJwkUseAndKeyopsInconsistent();
 
-  // The "kty" parameter was given and was a string, however it was
-  // unrecognized.
-  static Status ErrorJwkUnrecognizedKty();
+  // The "kty" parameter was given and was a string, however it was not the
+  // expected value.
+  static Status ErrorJwkUnexpectedKty(const std::string& expected);
 
   // The amount of key data provided was incompatible with the selected
   // algorithm. For instance if the algorith name was A128CBC then EXACTLY
@@ -119,6 +115,14 @@ class CONTENT_EXPORT Status {
   // key. This does not apply to raw format, since it is possible to have empty
   // key data there.
   static Status ErrorImportEmptyKeyData();
+
+  // Tried importing a key using an unsupported format for the key type (for
+  // instance importing an HMAC key using format=spki).
+  static Status ErrorUnsupportedImportKeyFormat();
+
+  // Tried exporting a key using an unsupported format for the key type (for
+  // instance exporting an HMAC key using format=spki).
+  static Status ErrorUnsupportedExportKeyFormat();
 
   // The key data buffer provided for importKey() is an incorrect length for
   // AES.

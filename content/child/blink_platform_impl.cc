@@ -933,7 +933,6 @@ void BlinkPlatformImpl::didStopWorkerThread(blink::WebThread* thread) {
 }
 
 blink::WebCrypto* BlinkPlatformImpl::crypto() {
-  WebCryptoImpl::EnsureInit();
   return &web_crypto_;
 }
 
