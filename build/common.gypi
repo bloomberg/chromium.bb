@@ -1247,14 +1247,6 @@
     # Experimental setting to optimize Chrome's DLLs with PGO.
     'chrome_pgo_phase%': '0',
 
-    # The default settings for third party code for treating
-    # warnings-as-errors. Ideally, this would not be required, however there
-    # is some third party code that takes a long time to fix/roll. So, this
-    # flag allows us to have warnings as errors in general to prevent
-    # regressions in most modules, while working on the bits that are
-    # remaining.
-    'win_third_party_warn_as_error%': 'true',
-
     # Clang stuff.
     'clang%': '<(clang)',
     'make_clang_dir%': 'third_party/llvm-build/Release+Asserts',
@@ -2954,7 +2946,7 @@
             'msvs_settings': {
               'VCCLCompilerTool': {
                 'WarningLevel': '3',
-                'WarnAsError': '<(win_third_party_warn_as_error)',
+                'WarnAsError': 'true',
                 'Detect64BitPortabilityProblems': 'false',
               },
             },
