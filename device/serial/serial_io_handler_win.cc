@@ -53,7 +53,7 @@ int ParityBitEnumToConstant(serial::ParityBit parity_bit) {
     case serial::PARITY_BIT_EVEN:
       return EVENPARITY;
     case serial::PARITY_BIT_ODD:
-      return SPACEPARITY;
+      return ODDPARITY;
     case serial::PARITY_BIT_NO:
     default:
       return NOPARITY;
