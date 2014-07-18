@@ -205,7 +205,8 @@ void InspectorFrontendHost::showContextMenu(Page* page, float x, float y, const 
 
     RefPtr<FrontendMenuProvider> menuProvider = FrontendMenuProvider::create(this, frontendApiObject, items);
     m_menuProvider = menuProvider.get();
-    page->inspectorController().showContextMenu(x, y, menuProvider);
+    float zoom = page->deprecatedLocalMainFrame()->pageZoomFactor();
+    page->inspectorController().showContextMenu(x * zoom, y * zoom, menuProvider);
 }
 
 void InspectorFrontendHost::showContextMenu(Event* event, const Vector<ContextMenuItem>& items)
