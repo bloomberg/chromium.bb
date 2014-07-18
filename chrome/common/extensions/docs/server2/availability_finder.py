@@ -378,5 +378,9 @@ class AvailabilityFinder(object):
         self.GetAPIAvailability(api_name).channel_info,
         update_availability_graph)
 
+    # TODO(ahernandez): There are currently no API nodes that have a
+    # scheduled availability. https://codereview.chromium.org/400833002/
+    # should be implemented when there is a need to determine scheduled
+    # availability at the object level.
     self._node_level_object_store.Set(api_name, availability_graph)
     return availability_graph
