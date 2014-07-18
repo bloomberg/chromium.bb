@@ -5,6 +5,7 @@
 #include "android_webview/native/android_webview_jni_registrar.h"
 
 #include "android_webview/native/android_protocol_handler.h"
+#include "android_webview/native/aw_assets.h"
 #include "android_webview/native/aw_autofill_client.h"
 #include "android_webview/native/aw_contents.h"
 #include "android_webview/native/aw_contents_client_bridge.h"
@@ -35,6 +36,7 @@ static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
   // Register JNI for android_webview classes.
   { "AndroidProtocolHandler", RegisterAndroidProtocolHandler },
   { "AwAutofillClient", RegisterAwAutofillClient },
+  { "AwAssets", RegisterAwAssets },
   { "AwContents", RegisterAwContents },
   { "AwContentsClientBridge", RegisterAwContentsClientBridge },
   { "AwContentsIoThreadClientImpl", RegisterAwContentsIoThreadClientImpl },

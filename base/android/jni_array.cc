@@ -167,6 +167,19 @@ void JavaIntArrayToIntVector(JNIEnv* env,
   env->ReleaseIntArrayElements(int_array, ints, JNI_ABORT);
 }
 
+void JavaLongArrayToLongVector(JNIEnv* env,
+                               jlongArray long_array,
+                               std::vector<long>* out) {
+  DCHECK(out);
+  out->clear();
+  jsize len = env->GetArrayLength(long_array);
+  jlong* longs = env->GetLongArrayElements(long_array, NULL);
+  for (jsize i = 0; i < len; ++i) {
+    out->push_back(static_cast<long>(longs[i]));
+  }
+  env->ReleaseLongArrayElements(long_array, longs, JNI_ABORT);
+}
+
 void JavaFloatArrayToFloatVector(JNIEnv* env,
                                  jfloatArray float_array,
                                  std::vector<float>* out) {
