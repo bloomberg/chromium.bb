@@ -6103,12 +6103,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_DISABLE_BOOT_ANIMATION_DESCRIPTION" desc="Description for the flag to disable wallpaper boot animation (except for OOBE).">
           Disables wallpaper boot animation (except for OOBE case).
         </message>
-        <message name="IDS_FLAGS_DISABLE_SAML_SIGNIN_NAME" desc="Name for the flag to disable SAML sign-in support.">
-          Disable SAML sign-in.
-        </message>
-        <message name="IDS_FLAGS_DISABLE_SAML_SIGNIN_DESCRIPTION" desc="Description for the flag to disables SAML sign-in support.">
-          Disables SAML sign-in support for Chrome OS sign-in.
-        </message>
       </if>
       <message name="IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_NAME" desc="Name of the flag to disable accelerated video decode where available.">
         Disable hardware-accelerated video decode.

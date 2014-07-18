@@ -4,7 +4,17 @@
   "name": "GaiaAuthExtension",
   "version": "0.0.1",
   "manifest_version": 2,
+  "background" : {
+    "scripts": ["background.js", "channel.js"]
+  },
   "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": ["channel.js", "saml_injected.js"],
+      "all_frames": true
+    },
     {
       "matches": [
           "https://www.google.com/accounts/*",
@@ -27,14 +37,9 @@
     "success.js",
     "util.js"
   ],
-  // cookies for getting hash passed back from GAIA on login success
-  // tabs for calling current webui's login. This might not be needed once
-  //     we have extension API
   "permissions": [
-      "cookies",
-      "tabs",
-      "chrome://oobe/",
-      "https://www.google.com/accounts/*",
-      "https://accounts.google.com/*"
+    "<all_urls>",
+    "webRequest",
+    "webRequestBlocking"
   ]
 }

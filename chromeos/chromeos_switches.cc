@@ -230,9 +230,6 @@ const char kSmsTestMessages[] = "sms-test-messages";
 // This option is for testing the chromeos build of chrome on the desktop only.
 const char kStubCrosSettings[] = "stub-cros-settings";
 
-// Disables SAML sigin support.
-const char kDisableSamlSignin[] = "disable-saml-signin";
-
 // Enables animated transitions during first-run tutorial.
 const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
 

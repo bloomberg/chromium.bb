@@ -1033,13 +1033,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kDisableOfficeEditingComponentApp),
   },
   {
-    "disable-saml-signin",
-    IDS_FLAGS_DISABLE_SAML_SIGNIN_NAME,
-    IDS_FLAGS_DISABLE_SAML_SIGNIN_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kDisableSamlSignin),
-  },
-  {
     "disable-display-color-calibration",
     IDS_FLAGS_DISABLE_DISPLAY_COLOR_CALIBRATION_NAME,
     IDS_FLAGS_DISABLE_DISPLAY_COLOR_CALIBRATION_DESCRIPTION,

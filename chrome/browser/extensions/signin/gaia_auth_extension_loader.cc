@@ -20,12 +20,7 @@
 #include "grit/browser_resources.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/file_util.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
-#include "chromeos/chromeos_constants.h"
-#include "chromeos/chromeos_switches.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #endif
 
 using content::BrowserContext;
@@ -52,19 +47,13 @@ void LoadGaiaAuthExtension(BrowserContext* context) {
     return;
   }
 
-#if defined(OS_CHROMEOS)
   int manifest_resource_id = IDR_GAIA_AUTH_MANIFEST;
+
+#if defined(OS_CHROMEOS)
   if (chromeos::system::InputDeviceSettings::Get()
           ->ForceKeyboardDrivenUINavigation()) {
     manifest_resource_id = IDR_GAIA_AUTH_KEYBOARD_MANIFEST;
-  } else if (!command_line->HasSwitch(chromeos::switches::kDisableSamlSignin) ||
-             (switches::IsNewProfileManagement() &&
-              context->GetPath() !=
-                  chromeos::ProfileHelper::GetSigninProfileDir())) {
-    manifest_resource_id = IDR_GAIA_AUTH_SAML_MANIFEST;
   }
-#else
-  int manifest_resource_id = IDR_GAIA_AUTH_SAML_MANIFEST;
 #endif
 
   component_loader->Add(manifest_resource_id,

@@ -63,7 +63,7 @@ Authenticator.prototype = {
   intputEmail_: undefined,
 
   isSAMLFlow_: false,
-  isSAMLEnabled_: false,
+  gaiaLoaded_: false,
   supportChannel_: null,
 
   GAIA_URL: 'https://accounts.google.com/',
@@ -87,12 +87,15 @@ Authenticator.prototype = {
     this.initialFrameUrl_ = params.frameUrl || this.constructInitialFrameUrl_();
     this.initialFrameUrlWithoutParams_ = stripParams(this.initialFrameUrl_);
 
+    // For CrOS 'ServiceLogin' we assume that Gaia is loaded if we recieved
+    // 'clearOldAttempts' message. For other scenarios Gaia doesn't send this
+    // message so we have to rely on 'load' event.
+    // TODO(dzhioev): Do not rely on 'load' event after b/16313327 is fixed.
+    this.assumeLoadedOnLoadEvent_ =
+        this.gaiaPath_.indexOf('ServiceLogin') !== 0 ||
+        this.service_ !== 'chromeoslogin';
+
     document.addEventListener('DOMContentLoaded', this.onPageLoad_.bind(this));
-    if (!this.desktopMode_) {
-      // SAML is always enabled in desktop mode, thus no need to listen for
-      // enableSAML event.
-      document.addEventListener('enableSAML', this.onEnableSAML_.bind(this));
-    }
   },
 
   isGaiaMessage_: function(msg) {
@@ -125,56 +128,67 @@ Authenticator.prototype = {
 
   onPageLoad_: function() {
     window.addEventListener('message', this.onMessage.bind(this), false);
+    this.initSupportChannel_();
 
     var gaiaFrame = $('gaia-frame');
     gaiaFrame.src = this.initialFrameUrl_;
 
-    if (this.desktopMode_) {
+    if (this.assumeLoadedOnLoadEvent_) {
       var handler = function() {
-        this.onLoginUILoaded_();
         gaiaFrame.removeEventListener('load', handler);
-
-        this.initDesktopChannel_();
+        if (!this.gaiaLoaded_) {
+          this.gaiaLoaded_ = true;
+          this.maybeInitialized_();
+        }
       }.bind(this);
       gaiaFrame.addEventListener('load', handler);
     }
   },
 
-  initDesktopChannel_: function() {
-    this.supportChannel_ = new Channel();
-    this.supportChannel_.connect('authMain');
+  initSupportChannel_: function() {
+    var supportChannel = new Channel();
+    supportChannel.connect('authMain');
 
-    var channelConnected = false;
-    this.supportChannel_.registerMessage('channelConnected', function() {
-      channelConnected = true;
+    supportChannel.registerMessage('channelConnected', function() {
+      if (this.supportChannel_) {
+        console.error('Support channel is already initialized.');
+        return;
+      }
+      this.supportChannel_ = supportChannel;
 
-      this.supportChannel_.send({
-        name: 'initDesktopFlow',
-        gaiaUrl: this.gaiaUrl_,
-        continueUrl: stripParams(this.continueUrl_),
-        isConstrainedWindow: this.isConstrainedWindow_
-      });
-      this.supportChannel_.registerMessage(
-          'switchToFullTab', this.switchToFullTab_.bind(this));
-      this.supportChannel_.registerMessage(
-          'completeLogin', this.completeLogin_.bind(this));
-
-      this.onEnableSAML_();
+      if (this.desktopMode_) {
+        this.supportChannel_.send({
+          name: 'initDesktopFlow',
+          gaiaUrl: this.gaiaUrl_,
+          continueUrl: stripParams(this.continueUrl_),
+          isConstrainedWindow: this.isConstrainedWindow_
+        });
+        this.supportChannel_.registerMessage(
+            'switchToFullTab', this.switchToFullTab_.bind(this));
+        this.supportChannel_.registerMessage(
+            'completeLogin', this.completeLogin_.bind(this));
+      }
+      this.initSAML_();
+      this.maybeInitialized_();
     }.bind(this));
 
     window.setTimeout(function() {
-      if (!channelConnected) {
+      if (!this.supportChannel_) {
         // Re-initialize the channel if it is not connected properly, e.g.
         // connect may be called before background script started running.
-        this.initDesktopChannel_();
+        this.initSupportChannel_();
       }
     }.bind(this), 200);
   },
 
   /**
-   * Invoked when the login UI is initialized or reset.
+   * Called when one of the initialization stages has finished. If all the
+   * needed parts are initialized, notifies parent about successfull
+   * initialization.
    */
-  onLoginUILoaded_: function() {
+  maybeInitialized_: function() {
+    if (!this.gaiaLoaded_ || !this.supportChannel_)
+      return;
     var msg = {
       'method': 'loginUILoaded'
     };
@@ -210,22 +224,14 @@ Authenticator.prototype = {
       'sessionIndex': opt_extraMsg && opt_extraMsg.sessionIndex
     };
     window.parent.postMessage(msg, this.parentPage_);
-    if (this.isSAMLEnabled_)
-      this.supportChannel_.send({name: 'resetAuth'});
+    this.supportChannel_.send({name: 'resetAuth'});
   },
 
   /**
-   * Invoked when 'enableSAML' event is received to initialize SAML support on
-   * Chrome OS, or when initDesktopChannel_ is called on desktop.
+   * Invoked when support channel is connected.
    */
-  onEnableSAML_: function() {
-    this.isSAMLEnabled_ = true;
+  initSAML_: function() {
     this.isSAMLFlow_ = false;
-
-    if (!this.supportChannel_) {
-      this.supportChannel_ = new Channel();
-      this.supportChannel_.connect('authMain');
-    }
 
     this.supportChannel_.registerMessage(
         'onAuthPageLoaded', this.onAuthPageLoaded_.bind(this));
@@ -400,15 +406,20 @@ Authenticator.prototype = {
       this.attemptToken_ = msg.attemptToken;
       this.chooseWhatToSync_ = msg.chooseWhatToSync;
       this.isSAMLFlow_ = false;
-      if (this.isSAMLEnabled_)
+      if (this.supportChannel_)
         this.supportChannel_.send({name: 'startAuth'});
+      else
+        console.error('Support channel is not initialized.');
     } else if (msg.method == 'clearOldAttempts' && this.isGaiaMessage_(e)) {
+      if (!this.gaiaLoaded_) {
+        this.gaiaLoaded_ = true;
+        this.maybeInitialized_();
+      }
       this.email_ = null;
       this.passwordBytes_ = null;
       this.attemptToken_ = null;
       this.isSAMLFlow_ = false;
-      this.onLoginUILoaded_();
-      if (this.isSAMLEnabled_)
+      if (this.supportChannel_)
         this.supportChannel_.send({name: 'resetAuth'});
     } else if (msg.method == 'setAuthenticatedUserEmail' &&
                this.isParentMessage_(e)) {
