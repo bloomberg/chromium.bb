@@ -2737,7 +2737,7 @@
             ['exclude', '^../ui/views/'],
           ],
         }],
-        ['use_nss==0 and use_openssl==0', {
+        ['use_nss==0 and use_openssl_certs==0', {
           'sources!': [
             'common/net/x509_certificate_model_unittest.cc',
           ],
