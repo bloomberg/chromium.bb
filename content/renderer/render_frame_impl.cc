@@ -954,7 +954,8 @@ void RenderFrameImpl::OnSwapOut(int proxy_routing_id) {
     // RenderFrameProxy as well so its routing id is registered for receiving
     // IPC messages.
     render_view_->SyncNavigationState();
-    proxy = RenderFrameProxy::CreateFrameProxy(proxy_routing_id, routing_id_);
+    proxy = RenderFrameProxy::CreateProxyToReplaceFrame(this,
+                                                        proxy_routing_id);
 
     // Synchronously run the unload handler before sending the ACK.
     // TODO(creis): Call dispatchUnloadEvent unconditionally here to support
