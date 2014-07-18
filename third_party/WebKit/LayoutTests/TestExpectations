@@ -130,6 +130,18 @@ crbug.com/360889 fast/css/css3-ch-unit.html [ Failure ]
 crbug.com/360889 fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
 crbug.com/360889 virtual/antialiasedtext/fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
 
+crbug.com/266214 [ Linux ] fast/css/line-height-determined-by-primary-font.html [ NeedsRebaseline ]
+crbug.com/266214 [ Linux ] fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
+crbug.com/266214 [ Linux ] fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
+crbug.com/266214 [ Linux ] fast/text/emphasis-vertical.html [ NeedsRebaseline ]
+crbug.com/266214 [ Linux ] fast/text/emphasis.html [ NeedsRebaseline ]
+crbug.com/266214 [ Linux ] fast/text/international/khmer-selection.html [ NeedsRebaseline ]
+crbug.com/266214 [ Linux ] fast/text/international/plane2.html [ NeedsRebaseline ]
+crbug.com/266214 [ Linux ] fast/text/midword-break-before-surrogate-pair-2.html [ NeedsRebaseline ]
+crbug.com/266214 [ Linux ] fast/text/midword-break-before-surrogate-pair.html [ NeedsRebaseline ]
+crbug.com/266214 [ Linux ] fast/text/vertical-surrogate-pair.html [ NeedsRebaseline ]
+crbug.com/266214 [ Linux ] svg/custom/svg-fonts-fallback.xhtml [ NeedsRebaseline ]
+
 # New W3C failures (dpranke@ to triage)
 crbug.com/330083 w3c/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars-first-char.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars.html [ Failure ]
