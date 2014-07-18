@@ -201,14 +201,17 @@ class SupervisedUserServiceExtensionTestBase
     return extension;
   }
 
-  scoped_refptr<extensions::Extension> MakeExtension() {
+  scoped_refptr<extensions::Extension> MakeExtension(bool by_custodian) {
     scoped_ptr<base::DictionaryValue> manifest = extensions::DictionaryBuilder()
       .Set(extensions::manifest_keys::kName, "Extension")
       .Set(extensions::manifest_keys::kVersion, "1.0")
       .Build();
+    int creation_flags = extensions::Extension::NO_FLAGS;
+    if (by_custodian)
+      creation_flags |= extensions::Extension::WAS_INSTALLED_BY_CUSTODIAN;
     extensions::ExtensionBuilder builder;
     scoped_refptr<extensions::Extension> extension =
-        builder.SetManifest(manifest.Pass()).Build();
+        builder.SetManifest(manifest.Pass()).AddFlags(creation_flags).Build();
     return extension;
   }
 
@@ -236,7 +239,7 @@ TEST_F(SupervisedUserServiceExtensionTestUnsupervised,
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
   EXPECT_FALSE(profile_->IsSupervised());
 
-  scoped_refptr<extensions::Extension> extension = MakeExtension();
+  scoped_refptr<extensions::Extension> extension = MakeExtension(false);
   base::string16 error_1;
   EXPECT_TRUE(supervised_user_service->UserMayLoad(extension.get(), &error_1));
   EXPECT_EQ(base::string16(), error_1);
@@ -267,15 +270,28 @@ TEST_F(SupervisedUserServiceExtensionTest, ExtensionManagementPolicyProvider) {
   EXPECT_TRUE(error_1.empty());
 
   // Now check a different kind of extension.
-  scoped_refptr<extensions::Extension> extension = MakeExtension();
+  scoped_refptr<extensions::Extension> extension = MakeExtension(false);
   EXPECT_FALSE(supervised_user_service->UserMayLoad(extension.get(), &error_1));
   EXPECT_FALSE(error_1.empty());
 
   base::string16 error_2;
-  EXPECT_FALSE(
-      supervised_user_service->UserMayModifySettings(extension.get(),
-                                                     &error_2));
+  EXPECT_FALSE(supervised_user_service->UserMayModifySettings(extension.get(),
+                                                              &error_2));
   EXPECT_FALSE(error_2.empty());
+
+  // Check that an extension that was installed by the custodian may be loaded.
+  base::string16 error_3;
+  scoped_refptr<extensions::Extension> extension_2 = MakeExtension(true);
+  EXPECT_TRUE(supervised_user_service->UserMayLoad(extension_2.get(),
+                                                   &error_3));
+  EXPECT_TRUE(error_3.empty());
+
+  // The supervised user should still not be able to uninstall or disable the
+  // extension.
+  base::string16 error_4;
+  EXPECT_FALSE(supervised_user_service->UserMayModifySettings(extension_2.get(),
+                                                              &error_4));
+  EXPECT_FALSE(error_4.empty());
 
 #ifndef NDEBUG
   EXPECT_FALSE(supervised_user_service->GetDebugPolicyProviderName().empty());
