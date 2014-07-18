@@ -25,6 +25,7 @@ class MockWebClipboardImpl : public blink::WebClipboard {
   MockWebClipboardImpl();
   virtual ~MockWebClipboardImpl();
 
+  virtual uint64_t sequenceNumber(Buffer);
   virtual bool isFormatAvailable(blink::WebClipboard::Format format,
                                  blink::WebClipboard::Buffer buffer);
   virtual blink::WebVector<blink::WebString> readAvailableTypes(
@@ -53,6 +54,7 @@ class MockWebClipboardImpl : public blink::WebClipboard {
  private:
   void clear();
 
+  uint64_t m_sequenceNumber;
   base::NullableString16 m_plainText;
   base::NullableString16 m_htmlText;
   blink::WebImage m_image;

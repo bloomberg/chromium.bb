@@ -116,6 +116,8 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
   std::string CaptureTree(bool debug_render_tree);
   void CapturePixelsForPrinting(
       const base::Callback<void(const SkBitmap&)>& callback);
+  void CopyImageAtAndCapturePixels(
+      int x, int y, const base::Callback<void(const SkBitmap&)>& callback);
   void CapturePixelsAsync(
       const base::Callback<void(const SkBitmap&)>& callback);
 

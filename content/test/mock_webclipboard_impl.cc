@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -26,9 +25,15 @@ using blink::WebVector;
 
 namespace content {
 
-MockWebClipboardImpl::MockWebClipboardImpl() {}
+MockWebClipboardImpl::MockWebClipboardImpl()
+  : m_sequenceNumber(0),
+    m_writeSmartPaste(false) {}
 
 MockWebClipboardImpl::~MockWebClipboardImpl() {}
+
+uint64_t MockWebClipboardImpl::sequenceNumber(Buffer) {
+  return m_sequenceNumber;
+}
 
 bool MockWebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
   switch (format) {
@@ -130,12 +135,14 @@ void MockWebClipboardImpl::writeHTML(const blink::WebString& htmlText,
   m_htmlText = htmlText;
   m_plainText = plainText;
   m_writeSmartPaste = writeSmartPaste;
+  ++m_sequenceNumber;
 }
 
 void MockWebClipboardImpl::writePlainText(const blink::WebString& plain_text) {
   clear();
 
   m_plainText = plain_text;
+  ++m_sequenceNumber;
 }
 
 void MockWebClipboardImpl::writeURL(const blink::WebURL& url,
@@ -144,6 +151,7 @@ void MockWebClipboardImpl::writeURL(const blink::WebURL& url,
 
   m_htmlText = WebString::fromUTF8(URLToMarkup(url, title));
   m_plainText = url.spec().utf16();
+  ++m_sequenceNumber;
 }
 
 void MockWebClipboardImpl::writeImage(const blink::WebImage& image,
@@ -155,6 +163,7 @@ void MockWebClipboardImpl::writeImage(const blink::WebImage& image,
     m_plainText = m_htmlText;
     m_htmlText = WebString::fromUTF8(URLToImageMarkup(url, title));
     m_image = image;
+    ++m_sequenceNumber;
   }
 }
 
@@ -166,6 +175,7 @@ void MockWebClipboardImpl::writeDataObject(const WebDragData& data) {
     const WebDragData::Item& item = itemList[i];
     switch (item.storageType) {
       case WebDragData::Item::StorageTypeString: {
+        ++m_sequenceNumber;
         if (EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeText)) {
           m_plainText = item.stringData;
           continue;

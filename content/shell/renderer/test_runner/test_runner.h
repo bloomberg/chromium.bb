@@ -542,6 +542,12 @@ class TestRunner : public WebTestRunner,
   // snapshot (width, height, snapshot) to the callback. The snapshot is in
   // uint8 RGBA format.
   void CapturePixelsAsyncThen(v8::Handle<v8::Function> callback);
+  // Similar to CapturePixelsAsyncThen(). Copies to the clipboard the image
+  // located at a particular point in the WebView (if there is such an image),
+  // reads back its pixels, and provides the snapshot to the callback. If there
+  // is no image at that point, calls the callback with (0, 0, empty_snapshot).
+  void CopyImageAtAndCapturePixelsAsyncThen(
+      int x, int y, const v8::Handle<v8::Function> callback);
 
   void SetMockPushClientSuccess(const std::string& endpoint,
                                 const std::string& registration_id);

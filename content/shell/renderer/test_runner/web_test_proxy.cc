@@ -26,7 +26,9 @@
 #include "content/shell/renderer/test_runner/web_test_runner.h"
 // FIXME: Including platform_canvas.h here is a layering violation.
 #include "skia/ext/platform_canvas.h"
+#include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
+#include "third_party/WebKit/public/platform/WebClipboard.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
@@ -466,6 +468,28 @@ void WebTestProxyBase::SetAcceptLanguages(const std::string& accept_languages) {
 
   if (notify)
     GetWebView()->acceptLanguagesChanged();
+}
+
+void WebTestProxyBase::CopyImageAtAndCapturePixels(
+    int x, int y, const base::Callback<void(const SkBitmap&)>& callback) {
+  DCHECK(web_widget_->isAcceleratedCompositingActive());
+  DCHECK(!callback.is_null());
+  uint64_t sequence_number =  blink::Platform::current()->clipboard()->
+      sequenceNumber(blink::WebClipboard::Buffer());
+  GetWebView()->copyImageAt(blink::WebPoint(x, y));
+  if (sequence_number == blink::Platform::current()->clipboard()->
+      sequenceNumber(blink::WebClipboard::Buffer())) {
+    SkBitmap emptyBitmap;
+    callback.Run(emptyBitmap);
+    return;
+  }
+
+  blink::WebData data = blink::Platform::current()->clipboard()->readImage(
+      blink::WebClipboard::Buffer());
+  blink::WebImage image = blink::WebImage::fromData(data, blink::WebSize());
+  const SkBitmap& bitmap = image.getSkBitmap();
+  SkAutoLockPixels autoLock(bitmap);
+  callback.Run(bitmap);
 }
 
 void WebTestProxyBase::CapturePixelsForPrinting(

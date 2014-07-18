@@ -281,6 +281,9 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void DisplayAsync();
   void DisplayAsyncThen(v8::Handle<v8::Function> callback);
   void CapturePixelsAsyncThen(v8::Handle<v8::Function> callback);
+  void CopyImageAtAndCapturePixelsAsyncThen(int x,
+                                            int y,
+                                            v8::Handle<v8::Function> callback);
   void SetCustomTextOutput(std::string output);
   void SetViewSourceForFrame(const std::string& name, bool enabled);
   void SetMockPushClientSuccess(const std::string& endpoint,
@@ -528,6 +531,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("displayAsyncThen", &TestRunnerBindings::DisplayAsyncThen)
       .SetMethod("capturePixelsAsyncThen",
                  &TestRunnerBindings::CapturePixelsAsyncThen)
+      .SetMethod("copyImageAtAndCapturePixelsAsyncThen",
+                 &TestRunnerBindings::CopyImageAtAndCapturePixelsAsyncThen)
       .SetMethod("setCustomTextOutput",
                  &TestRunnerBindings::SetCustomTextOutput)
       .SetMethod("setViewSourceForFrame",
@@ -1348,6 +1353,12 @@ void TestRunnerBindings::CapturePixelsAsyncThen(
     v8::Handle<v8::Function> callback) {
   if (runner_)
     runner_->CapturePixelsAsyncThen(callback);
+}
+
+void TestRunnerBindings::CopyImageAtAndCapturePixelsAsyncThen(
+    int x, int y, v8::Handle<v8::Function> callback) {
+  if (runner_)
+    runner_->CopyImageAtAndCapturePixelsAsyncThen(x, y, callback);
 }
 
 void TestRunnerBindings::SetCustomTextOutput(std::string output) {
@@ -2789,6 +2800,16 @@ void TestRunner::CapturePixelsAsyncThen(v8::Handle<v8::Function> callback) {
                                         base::Passed(&task)));
 }
 
+void TestRunner::CopyImageAtAndCapturePixelsAsyncThen(
+    int x, int y, v8::Handle<v8::Function> callback) {
+  scoped_ptr<InvokeCallbackTask> task(
+      new InvokeCallbackTask(this, callback));
+  proxy_->CopyImageAtAndCapturePixels(
+      x, y, base::Bind(&TestRunner::CapturePixelsCallback,
+                       base::Unretained(this),
+                       base::Passed(&task)));
+}
+
 void TestRunner::CapturePixelsCallback(scoped_ptr<InvokeCallbackTask> task,
                                        const SkBitmap& snapshot) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
@@ -2803,12 +2824,12 @@ void TestRunner::CapturePixelsCallback(scoped_ptr<InvokeCallbackTask> task,
   v8::Handle<v8::Value> argv[3];
   SkAutoLockPixels snapshot_lock(snapshot);
 
+  // Size can be 0 for cases where copyImageAt was called on position
+  // that doesn't have an image.
   int width = snapshot.info().fWidth;
-  DCHECK_NE(0, width);
   argv[0] = v8::Number::New(isolate, width);
 
   int height = snapshot.info().fHeight;
-  DCHECK_NE(0, height);
   argv[1] = v8::Number::New(isolate, height);
 
   blink::WebArrayBuffer buffer =
