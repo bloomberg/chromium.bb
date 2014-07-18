@@ -40,7 +40,6 @@
         '../testing/gmock/include',
       ],
       'sources': [
-        '../chrome/test/base/run_all_remoting_unittests.cc',
         'base/auth_token_util_unittest.cc',
         'base/auto_thread_task_runner_unittest.cc',
         'base/auto_thread_unittest.cc',
@@ -50,12 +49,13 @@
         'base/rate_counter_unittest.cc',
         'base/resources_unittest.cc',
         'base/rsa_key_pair_unittest.cc',
+        'base/run_all_unittests.cc',
         'base/running_average_unittest.cc',
         'base/test_rsa_key_pair.h',
         'base/typed_buffer_unittest.cc',
         'base/util_unittest.cc',
         'client/audio_player_unittest.cc',
-	'client/client_status_logger_unittest.cc',
+        'client/client_status_logger_unittest.cc',
         'client/key_event_mapper_unittest.cc',
         'client/plugin/normalizing_input_filter_cros_unittest.cc',
         'client/plugin/normalizing_input_filter_mac_unittest.cc',
@@ -177,40 +177,6 @@
             ],
           },
         }],
-        [ 'OS=="mac" or (OS=="linux" and chromeos==0)', {
-          # Javascript unittests are disabled on CrOS because they cause
-          # valgrind and test errors.
-          #
-          # Javascript unittests are disabled on Windows because they add a
-          # dependency on 'common_constants' which (only on Windows) requires
-          # additional dependencies:
-          #   '../content/content.gyp:content_common',
-          #   'installer_util',
-          # These targets are defined in .gypi files that would need to be
-          # included here:
-          #   '../chrome/chrome_common.gypi',
-          #   '../chrome/chrome_installer.gypi',
-          #   '../chrome/chrome_installer_util.gypi',
-          # But we can't do that because ninja will complain about multiple
-          # target definitions.
-          # TODO(garykac): Move installer_util into a proper .gyp file so that
-          # it can be included in multiple .gyp files.
-          'includes': [
-            '../chrome/js_unittest_rules.gypi',
-          ],
-          'dependencies': [
-            '../chrome/common_constants.gyp:common_constants',
-            '../v8/tools/gyp/v8.gyp:v8',
-          ],
-          'sources': [
-            '../chrome/test/base/v8_unit_test.cc',
-            '../chrome/test/base/v8_unit_test.h',
-            'webapp/browser_globals.gtestjs',
-            'webapp/all_js_load.gtestjs',
-            'webapp/format_iq.gtestjs',
-            '<@(remoting_webapp_all_js_files)',
-          ],
-        }],
         [ 'OS=="android"', {
           'dependencies!': [
             'remoting_client_plugin',
@@ -264,7 +230,7 @@
         '../testing/gmock/include',
       ],
       'sources': [
-        '../chrome/test/base/run_all_remoting_unittests.cc',
+        'base/run_all_unittests.cc',
         'codec/codec_test.cc',
         'codec/codec_test.h',
         'codec/video_encoder_vpx_perftest.cc',
@@ -330,6 +296,10 @@
       'type': 'none',
       'variables': {
         'output_dir': '<(PRODUCT_DIR)/remoting/unittests',
+        'webapp_js_files': [
+          '<@(remoting_webapp_main_html_js_files)',
+          '<@(remoting_webapp_js_wcs_sandbox_files)',
+        ]
       },
       'copies': [
         {
@@ -357,7 +327,7 @@
         {
           'destination': '<(output_dir)',
           'files': [
-            '<@(remoting_webapp_main_html_js_files)',
+            '<@(webapp_js_files)',
           ],
         },
         {
@@ -373,7 +343,7 @@
           'inputs': [
             'webapp/build-html.py',
             '<(remoting_webapp_unittest_template_main)',
-            '<@(remoting_webapp_main_html_js_files)',
+            '<@(webapp_js_files)',
             '<@(remoting_webapp_unittest_cases)'
           ],
           'outputs': [
@@ -389,7 +359,7 @@
             # exclude list.
             '--exclude-js', '<@(remoting_webapp_unittest_exclude_files)',
             '--js', '<@(remoting_webapp_unittest_cases)',
-            '--instrument-js', '<@(remoting_webapp_main_html_js_files)',
+            '--instrument-js', '<@(webapp_js_files)',
            ],
         },
       ],

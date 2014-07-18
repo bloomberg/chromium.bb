@@ -26,8 +26,6 @@
 # Note that when you run your TestSuite, you'll need to call
 # chrome::RegisterPathProvider(). These path providers are required by
 # src/chrome/test/base/v8_unit_test.cc to setup and run the tests.
-#
-# See src/chrome/test/base/run_all_remoting_unittests.cc for an example.
 
 {
     'dependencies': [
