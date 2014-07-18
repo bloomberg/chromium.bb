@@ -722,6 +722,18 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   if (inspected_rvh)
     inspected_contents_observer_.reset(new ObserverWithAccessor(
         content::WebContents::FromRenderViewHost(inspected_rvh)));
+
+  // Initialize docked page to be of the right size.
+  WebContents* inspected_web_contents = GetInspectedWebContents();
+  if (can_dock_ && inspected_web_contents) {
+    content::RenderWidgetHostView* inspected_view =
+        inspected_web_contents->GetRenderWidgetHostView();
+    if (inspected_view && main_web_contents_->GetRenderWidgetHostView()) {
+      gfx::Size size = inspected_view->GetViewBounds().size();
+      main_web_contents_->GetRenderWidgetHostView()->SetSize(size);
+    }
+  }
+
   event_forwarder_.reset(new DevToolsEventForwarder(this));
 }
 
@@ -853,9 +865,12 @@ void DevToolsWindow::AddNewContents(WebContents* source,
     toolbox_web_contents_->SetDelegate(
         new DevToolsToolboxDelegate(toolbox_web_contents_,
                                     inspected_contents_observer_.get()));
-    gfx::Size size = main_web_contents_->GetViewBounds().size();
-    if (toolbox_web_contents_->GetRenderWidgetHostView())
+    if (main_web_contents_->GetRenderWidgetHostView() &&
+        toolbox_web_contents_->GetRenderWidgetHostView()) {
+      gfx::Size size =
+          main_web_contents_->GetRenderWidgetHostView()->GetViewBounds().size();
       toolbox_web_contents_->GetRenderWidgetHostView()->SetSize(size);
+    }
     UpdateBrowserWindow();
     return;
   }
