@@ -247,8 +247,11 @@ class Graphics3DInstance : public pp::Instance {
   }
 
   virtual void DidChangeView(const pp::View& view) {
-    int32_t new_width = view.GetRect().width();
-    int32_t new_height = view.GetRect().height();
+    // Pepper specifies dimensions in DIPs (device-independent pixels). To
+    // generate a context that is at device-pixel resolution on HiDPI devices,
+    // scale the dimensions by view.GetDeviceScale().
+    int32_t new_width = view.GetRect().width() * view.GetDeviceScale();
+    int32_t new_height = view.GetRect().height() * view.GetDeviceScale();
 
     if (context_.is_null()) {
       if (!InitGL(new_width, new_height)) {
