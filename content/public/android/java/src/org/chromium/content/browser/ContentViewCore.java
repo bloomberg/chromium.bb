@@ -112,11 +112,11 @@ public class ContentViewCore
     // Length of the delay (in ms) before fading in handles after the last page movement.
     private static final int TEXT_HANDLE_FADE_IN_DELAY = 300;
 
-    // These values are empirically obtained.
-    private static final int SPEN_ACTION_DOWN = 11;
-    private static final int SPEN_ACTION_UP = 12;
-    private static final int SPEN_ACTION_MOVE = 13;
-    private static final int SPEN_ACTION_CANCEL = 14;
+    // These values are obtained from Samsung.
+    private static final int SPEN_ACTION_DOWN = 211;
+    private static final int SPEN_ACTION_UP = 212;
+    private static final int SPEN_ACTION_MOVE = 213;
+    private static final int SPEN_ACTION_CANCEL = 214;
     private static Boolean sIsSPenSupported;
 
     // If the embedder adds a JavaScript interface object that contains an indirect reference to
