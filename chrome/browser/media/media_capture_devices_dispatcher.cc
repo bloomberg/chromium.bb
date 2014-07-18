@@ -598,20 +598,52 @@ void MediaCaptureDevicesDispatcher::
         const content::MediaStreamRequest& request,
         const content::MediaResponseCallback& callback,
         const extensions::Extension* extension) {
-  content::MediaStreamDevices devices;
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
-  if (request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE &&
+  // TODO(vrk): This code is largely duplicated in
+  // MediaStreamDevicesController::Accept(). Move this code into a shared method
+  // between the two classes.
+
+  bool audio_allowed =
+      request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE &&
       extension->permissions_data()->HasAPIPermission(
-          extensions::APIPermission::kAudioCapture)) {
-    GetDefaultDevicesForProfile(profile, true, false, &devices);
+          extensions::APIPermission::kAudioCapture);
+  bool video_allowed =
+      request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE &&
+      extension->permissions_data()->HasAPIPermission(
+          extensions::APIPermission::kVideoCapture);
+
+  bool get_default_audio_device = audio_allowed;
+  bool get_default_video_device = video_allowed;
+
+  content::MediaStreamDevices devices;
+
+  // Get the exact audio or video device if an id is specified.
+  if (audio_allowed && !request.requested_audio_device_id.empty()) {
+    const content::MediaStreamDevice* audio_device =
+        GetRequestedAudioDevice(request.requested_audio_device_id);
+    if (audio_device) {
+      devices.push_back(*audio_device);
+      get_default_audio_device = false;
+    }
+  }
+  if (video_allowed && !request.requested_video_device_id.empty()) {
+    const content::MediaStreamDevice* video_device =
+        GetRequestedVideoDevice(request.requested_video_device_id);
+    if (video_device) {
+      devices.push_back(*video_device);
+      get_default_video_device = false;
+    }
   }
 
-  if (request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE &&
-      extension->permissions_data()->HasAPIPermission(
-          extensions::APIPermission::kVideoCapture)) {
-    GetDefaultDevicesForProfile(profile, false, true, &devices);
+  // If either or both audio and video devices were requested but not
+  // specified by id, get the default devices.
+  if (get_default_audio_device || get_default_video_device) {
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    GetDefaultDevicesForProfile(profile,
+                                get_default_audio_device,
+                                get_default_video_device,
+                                &devices);
   }
 
   scoped_ptr<content::MediaStreamUI> ui;
