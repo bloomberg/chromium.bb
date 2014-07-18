@@ -52,20 +52,18 @@ asyncTest("basic", 7, function() {
     }
     Promise.all([
       opentree.update().then(function() {
-        equal(opentree.status, "Tree is open");
-        equal(opentree.$.content.style.backgroundColor, "rgb(72, 209, 204)");
+        equal(opentree.message, "Tree is open");
+        equal(opentree.status, "open");
       }),
       throttledtree.update().then(function() {
-        equal(throttledtree.status,
+        equal(throttledtree.message,
               "Tree is throttled just for fun by username@test.org");
-        equal(throttledtree.$.content.style.backgroundColor,
-              "rgb(240, 230, 140)");
+        equal(throttledtree.status, "throttled");
       }),
       closedtree.update().then(function() {
-        equal(closedtree.status,
+        equal(closedtree.message,
               "Tree is closed for maintenance by username@test.org");
-        equal(closedtree.$.content.style.backgroundColor,
-              "rgb(255, 99, 71)");
+        equal(closedtree.status, "closed");
       })
     ]).then(function() {
       start();
