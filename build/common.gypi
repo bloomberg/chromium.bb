@@ -3235,7 +3235,10 @@
                 'AdditionalOptions': ['/Oy-'],
               }],
             ],
-            'AdditionalOptions': [ '<@(win_release_extra_cflags)', ],
+            'AdditionalOptions': [
+                '/d2Zi+',  # Improve debugging of Release builds.
+                '<@(win_release_extra_cflags)',
+            ],
           },
           'VCLinkerTool': {
             # LinkIncremental is a tri-state boolean, where 0 means default
