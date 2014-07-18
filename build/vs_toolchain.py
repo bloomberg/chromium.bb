@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -11,10 +11,10 @@ import sys
 
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
-chrome_src = os.path.abspath(os.path.join(script_dir, os.pardir))
-SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(1, os.path.join(chrome_src, 'tools'))
-sys.path.insert(0, os.path.join(chrome_src, 'tools', 'gyp', 'pylib'))
+nacl_dir = os.path.dirname(script_dir)
+root_dir = os.path.dirname(nacl_dir)
+sys.path.insert(1, os.path.join(root_dir, 'tools'))
+sys.path.insert(0, os.path.join(root_dir, 'tools', 'gyp', 'pylib'))
 json_data_file = os.path.join(script_dir, 'win_toolchain.json')
 
 

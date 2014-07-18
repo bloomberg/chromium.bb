@@ -4,6 +4,8 @@
 
 #  Generated from GYP
 
+if (os == "linux") {
+
 if (cpu_arch == "arm") {
   import("//native_client/build/config/arm.gni")
 }
@@ -150,4 +152,6 @@ action("nacl_helper_bootstrap") {
     bootstrap_exe_path
   ]
   args = rebase_path(inputs + outputs)
+}
+
 }
