@@ -14,7 +14,7 @@
     <application>
         <uses-library android:name="android.test.runner" />
     </application>
-    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="14" />
+    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="20" />
     <instrumentation android:name="android.test.InstrumentationTestRunner"
         android:targetPackage="org.chromium.chromoting"
         android:label="Tests for org.chromium.chromoting"/>
