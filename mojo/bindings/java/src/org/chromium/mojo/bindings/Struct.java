@@ -42,35 +42,6 @@ public abstract class Struct {
             this.size = size;
             this.numFields = numFields;
         }
-
-        /**
-         * @see Object#hashCode()
-         */
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + numFields;
-            result = prime * result + size;
-            return result;
-        }
-
-        /**
-         * @see Object#equals(Object)
-         */
-        @Override
-        public boolean equals(Object object) {
-            if (object == this)
-                return true;
-            if (object == null)
-                return false;
-            if (getClass() != object.getClass())
-                return false;
-
-            DataHeader other = (DataHeader) object;
-            return (numFields == other.numFields &&
-                    size == other.size);
-        }
     }
 
     /**
@@ -100,20 +71,6 @@ public abstract class Struct {
         Encoder encoder = new Encoder(core, mEncodedBaseSize);
         encode(encoder);
         return encoder.getMessage();
-    }
-
-    /**
-     * Returns the serialization of the struct prepended with the given header.
-     *
-     * @param header the header to prepend to the returned message.
-     * @param core the |Core| implementation used to generate handles. Only used if the |Struct|
-     *            being encoded contains interfaces, can be |null| otherwise.
-     */
-    public MessageWithHeader serializeWithHeader(Core core, MessageHeader header) {
-        Encoder encoder = new Encoder(core, mEncodedBaseSize + header.getSize());
-        header.encode(encoder);
-        encode(encoder);
-        return new MessageWithHeader(encoder.getMessage(), header);
     }
 
 }

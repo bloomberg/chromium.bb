@@ -4,9 +4,6 @@
 
 package org.chromium.mojo.bindings;
 
-import org.chromium.mojo.system.AsyncWaiter;
-import org.chromium.mojo.system.Handle;
-
 /**
  * Helper functions.
  */
@@ -76,17 +73,4 @@ public class BindingsHelper {
     private static boolean isSurrogate(char c) {
         return c >= Character.MIN_SURROGATE && c < (Character.MAX_SURROGATE + 1);
     }
-
-    /**
-     * Returns an {@link AsyncWaiter} to use with the given handle, or <code>null</code> if none if
-     * available.
-     */
-    static AsyncWaiter getDefaultAsyncWaiterForHandle(Handle handle) {
-        if (handle.getCore() != null) {
-            return handle.getCore().getDefaultAsyncWaiter();
-        } else {
-            return null;
-        }
-    }
-
 }

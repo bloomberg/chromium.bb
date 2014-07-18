@@ -7,6 +7,7 @@ package org.chromium.mojo.bindings;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.mojo.MojoTestCase;
+import org.chromium.mojo.TestUtils;
 import org.chromium.mojo.bindings.BindingsTestUtils.RecordingMessageReceiver;
 import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.DataPipe;
@@ -23,9 +24,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Testing {@link MessageWithHeader}.
+ * Testing {@link Message}.
  */
-public class MessageWithHeaderTest extends MojoTestCase {
+public class MessageTest extends MojoTestCase {
 
     private static final int DATA_SIZE = 1024;
 
@@ -42,7 +43,7 @@ public class MessageWithHeaderTest extends MojoTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         Core core = CoreImpl.getInstance();
-        mData = BindingsTestUtils.newRandomMessageWithHeader(DATA_SIZE).getMessage().buffer;
+        mData = TestUtils.newRandomBuffer(DATA_SIZE);
         mMessageReceiver = new RecordingMessageReceiver();
         mHandles = core.createMessagePipe(new MessagePipeHandle.CreateOptions());
         Pair<DataPipe.ProducerHandle, DataPipe.ConsumerHandle> datapipe = core.createDataPipe(null);
@@ -63,43 +64,43 @@ public class MessageWithHeaderTest extends MojoTestCase {
     }
 
     /**
-     * Testing {@link MessageWithHeader#readAndDispatchMessage(MessagePipeHandle, MessageReceiver)}
+     * Testing {@link Message#readAndDispatchMessage(MessagePipeHandle, MessageReceiver)}
      */
     @SmallTest
     public void testReadAndDispatchMessage() {
         mHandles.first.writeMessage(mData, mHandlesToSend, MessagePipeHandle.WriteFlags.NONE);
         assertEquals(MojoResult.OK,
-                MessageWithHeader.readAndDispatchMessage(mHandles.second, mMessageReceiver));
+                Message.readAndDispatchMessage(mHandles.second, mMessageReceiver));
         assertEquals(1, mMessageReceiver.messages.size());
-        MessageWithHeader message = mMessageReceiver.messages.get(0);
-        mHandlesToClose.addAll(message.getMessage().handles);
-        assertEquals(mData, message.getMessage().buffer);
-        assertEquals(2, message.getMessage().handles.size());
-        for (Handle handle : message.getMessage().handles) {
+        Message message = mMessageReceiver.messages.get(0);
+        mHandlesToClose.addAll(message.handles);
+        assertEquals(mData, message.buffer);
+        assertEquals(2, message.handles.size());
+        for (Handle handle : message.handles) {
             assertTrue(handle.isValid());
         }
     }
 
     /**
-     * Testing {@link MessageWithHeader#readAndDispatchMessage(MessagePipeHandle, MessageReceiver)}
-     * with no message available.
+     * Testing {@link Message#readAndDispatchMessage(MessagePipeHandle, MessageReceiver)} with no
+     * message available.
      */
     @SmallTest
     public void testReadAndDispatchMessageOnEmptyHandle() {
         assertEquals(MojoResult.SHOULD_WAIT,
-                MessageWithHeader.readAndDispatchMessage(mHandles.second, mMessageReceiver));
+                Message.readAndDispatchMessage(mHandles.second, mMessageReceiver));
         assertEquals(0, mMessageReceiver.messages.size());
     }
 
     /**
-     * Testing {@link MessageWithHeader#readAndDispatchMessage(MessagePipeHandle, MessageReceiver)}
-     * on closed handle.
+     * Testing {@link Message#readAndDispatchMessage(MessagePipeHandle, MessageReceiver)} on closed
+     * handle.
      */
     @SmallTest
     public void testReadAndDispatchMessageOnClosedHandle() {
         mHandles.first.close();
         try {
-            MessageWithHeader.readAndDispatchMessage(mHandles.second, mMessageReceiver);
+            Message.readAndDispatchMessage(mHandles.second, mMessageReceiver);
             fail("MojoException should have been thrown");
         } catch (MojoException expected) {
             assertEquals(MojoResult.FAILED_PRECONDITION, expected.getMojoResult());

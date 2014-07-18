@@ -7,6 +7,7 @@ package org.chromium.mojo.bindings;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.mojo.MojoTestCase;
+import org.chromium.mojo.TestUtils;
 import org.chromium.mojo.bindings.BindingsTestUtils.CapturingErrorHandler;
 import org.chromium.mojo.bindings.BindingsTestUtils.RecordingMessageReceiver;
 import org.chromium.mojo.system.Core;
@@ -30,7 +31,7 @@ public class ConnectorTest extends MojoTestCase {
 
     private MessagePipeHandle mHandle;
     private Connector mConnector;
-    private MessageWithHeader mTestMessage;
+    private Message mTestMessage;
     private RecordingMessageReceiver mReceiver;
     private CapturingErrorHandler mErrorHandler;
 
@@ -50,7 +51,7 @@ public class ConnectorTest extends MojoTestCase {
         mErrorHandler = new CapturingErrorHandler();
         mConnector.setErrorHandler(mErrorHandler);
         mConnector.start();
-        mTestMessage = BindingsTestUtils.newRandomMessageWithHeader(DATA_LENGTH);
+        mTestMessage = new Message(TestUtils.newRandomBuffer(DATA_LENGTH), new ArrayList<Handle>());
         assertNull(mErrorHandler.exception);
         assertEquals(0, mReceiver.messages.size());
     }
@@ -77,7 +78,7 @@ public class ConnectorTest extends MojoTestCase {
                 MessagePipeHandle.ReadFlags.NONE);
         assertEquals(MojoResult.OK, result.getMojoResult());
         assertEquals(DATA_LENGTH, result.getMessageSize());
-        assertEquals(mTestMessage.getMessage().buffer, received);
+        assertEquals(mTestMessage.buffer, received);
     }
 
     /**
@@ -85,14 +86,14 @@ public class ConnectorTest extends MojoTestCase {
      */
     @SmallTest
     public void testReceivingMessage() {
-        mHandle.writeMessage(mTestMessage.getMessage().buffer, new ArrayList<Handle>(),
+        mHandle.writeMessage(mTestMessage.buffer, new ArrayList<Handle>(),
                 MessagePipeHandle.WriteFlags.NONE);
         nativeRunLoop(RUN_LOOP_TIMEOUT_MS);
         assertNull(mErrorHandler.exception);
         assertEquals(1, mReceiver.messages.size());
-        MessageWithHeader received = mReceiver.messages.get(0);
-        assertEquals(0, received.getMessage().handles.size());
-        assertEquals(mTestMessage.getMessage().buffer, received.getMessage().buffer);
+        Message received = mReceiver.messages.get(0);
+        assertEquals(0, received.handles.size());
+        assertEquals(mTestMessage.buffer, received.buffer);
     }
 
     /**

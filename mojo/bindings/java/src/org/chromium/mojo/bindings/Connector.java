@@ -21,6 +21,13 @@ import org.chromium.mojo.system.MojoResult;
 public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle> {
 
     /**
+     * An {@link ErrorHandler} is notified of error happening while using the message pipe.
+     */
+    interface ErrorHandler {
+        public void onError(MojoException e);
+    }
+
+    /**
      * The callback that is notified when the state of the owned handle changes.
      */
     private final AsyncWaiterCallback mAsyncWaiterCallback = new AsyncWaiterCallback();
@@ -48,14 +55,14 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
     /**
      * The error handler to notify of errors.
      */
-    private ConnectionErrorHandler mErrorHandler;
+    private ErrorHandler mErrorHandler;
 
     /**
      * Create a new connector over a |messagePipeHandle|. The created connector will use the default
      * {@link AsyncWaiter} from the {@link Core} implementation of |messagePipeHandle|.
      */
     public Connector(MessagePipeHandle messagePipeHandle) {
-        this(messagePipeHandle, BindingsHelper.getDefaultAsyncWaiterForHandle(messagePipeHandle));
+        this(messagePipeHandle, getDefaultAsyncWaiterForMessagePipe(messagePipeHandle));
     }
 
     /**
@@ -76,10 +83,9 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
     }
 
     /**
-     * Set the {@link ConnectionErrorHandler} that will be notified of errors on the owned message
-     * pipe.
+     * Set the {@link ErrorHandler} that will be notified of errors on the owned message pipe.
      */
-    public void setErrorHandler(ConnectionErrorHandler errorHandler) {
+    public void setErrorHandler(ErrorHandler errorHandler) {
         mErrorHandler = errorHandler;
     }
 
@@ -92,13 +98,13 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
     }
 
     /**
-     * @see MessageReceiver#accept(MessageWithHeader)
+     * @see MessageReceiver#accept(Message)
      */
     @Override
-    public boolean accept(MessageWithHeader message) {
+    public boolean accept(Message message) {
         try {
-            mMessagePipeHandle.writeMessage(message.getMessage().buffer,
-                    message.getMessage().handles, MessagePipeHandle.WriteFlags.NONE);
+            mMessagePipeHandle.writeMessage(message.buffer, message.handles,
+                    MessagePipeHandle.WriteFlags.NONE);
             return true;
         } catch (MojoException e) {
             onError(e);
@@ -125,6 +131,15 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
     public void close() {
         cancelIfActive();
         mMessagePipeHandle.close();
+    }
+
+    private static AsyncWaiter getDefaultAsyncWaiterForMessagePipe(
+            MessagePipeHandle messagePipeHandle) {
+        if (messagePipeHandle.getCore() != null) {
+            return messagePipeHandle.getCore().getDefaultAsyncWaiter();
+        } else {
+            return null;
+        }
     }
 
     private class AsyncWaiterCallback implements AsyncWaiter.Callback {
@@ -163,7 +178,7 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
         mCancellable = null;
         close();
         if (mErrorHandler != null) {
-            mErrorHandler.onConnectionError(exception);
+            mErrorHandler.onError(exception);
         }
     }
 
@@ -187,7 +202,7 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
         int result;
         do {
             try {
-                result = MessageWithHeader.readAndDispatchMessage(mMessagePipeHandle,
+                result = Message.readAndDispatchMessage(mMessagePipeHandle,
                         mIncomingMessageReceiver);
             } catch (MojoException e) {
                 onError(e);
@@ -207,4 +222,5 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
             mCancellable = null;
         }
     }
+
 }

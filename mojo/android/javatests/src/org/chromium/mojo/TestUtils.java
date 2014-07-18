@@ -5,7 +5,6 @@
 package org.chromium.mojo;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.Random;
 
 /**
@@ -23,7 +22,6 @@ public final class TestUtils {
         RANDOM.setSeed(size);
         RANDOM.nextBytes(bytes);
         ByteBuffer data = ByteBuffer.allocateDirect(size);
-        data.order(ByteOrder.nativeOrder());
         data.put(bytes);
         data.flip();
         return data;
