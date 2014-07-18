@@ -21,12 +21,9 @@ LockOrientationCallback::~LockOrientationCallback()
 {
 }
 
-void LockOrientationCallback::onSuccess(unsigned angle, blink::WebScreenOrientationType type)
+void LockOrientationCallback::onSuccess()
 {
-    // FIXME: for the moment, we do nothing with the angle, we should use it and
-    // convert it to the appropriate type if the type == 'undefined' when the
-    // method will be implemented in ScreenOrientationController.
-    m_resolver->resolve(ScreenOrientation::orientationTypeToString(type));
+    m_resolver->resolve();
 }
 
 void LockOrientationCallback::onError(blink::WebLockOrientationError error)

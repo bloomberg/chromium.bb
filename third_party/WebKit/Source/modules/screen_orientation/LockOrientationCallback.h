@@ -24,7 +24,7 @@ public:
     explicit LockOrientationCallback(PassRefPtr<ScriptPromiseResolver>);
     virtual ~LockOrientationCallback();
 
-    virtual void onSuccess(unsigned angle, blink::WebScreenOrientationType) OVERRIDE;
+    virtual void onSuccess() OVERRIDE;
     virtual void onError(blink::WebLockOrientationError) OVERRIDE;
 
 private:
