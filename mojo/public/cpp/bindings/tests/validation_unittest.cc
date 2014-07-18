@@ -406,7 +406,7 @@ TEST_F(ValidationIntegrationTest, InterfacePtr) {
   IntegrationTestInterface2Ptr interface2_ptr =
       MakeProxy<IntegrationTestInterface2>(testee_endpoint().Pass());
   interface2_ptr.set_client(&interface1_client);
-  interface2_ptr.internal_state()->router()->EnableTestingMode();
+  interface2_ptr.internal_state()->router_for_testing()->EnableTestingMode();
 
   RunValidationTests("integration_", test_message_receiver());
 }

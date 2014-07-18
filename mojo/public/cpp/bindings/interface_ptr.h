@@ -60,15 +60,14 @@ class InterfacePtr {
   // The proxy is bound to the current thread, which means its methods may
   // only be called on the current thread.
   //
-  // To move a bound InterfacePtr<..> to another thread, call
-  // ResetAndReturnMessagePipe. Then create a new InterfacePtr<..> on another
-  // thread, and bind the new InterfacePtr<..> to the message pipe on that
-  // thread.
+  // To move a bound InterfacePtr<..> to another thread, call PassMessagePipe().
+  // Then create a new InterfacePtr<..> on another thread, and bind the new
+  // InterfacePtr<..> to the message pipe on that thread.
   void Bind(
       ScopedMessagePipeHandle handle,
       const MojoAsyncWaiter* waiter = Environment::GetDefaultAsyncWaiter()) {
     reset();
-    internal_state_.ConfigureProxy(handle.Pass(), waiter);
+    internal_state_.Bind(handle.Pass(), waiter);
   }
 
   // The client interface may only be set after this InterfacePtr<..> is bound.
@@ -80,16 +79,15 @@ class InterfacePtr {
   // an error. If true, this means method calls made on this interface will be
   // dropped (and may have already been dropped) on the floor.
   bool encountered_error() const {
-    assert(internal_state_.router());
-    return internal_state_.router()->encountered_error();
+    return internal_state_.encountered_error();
   }
 
   // This method may be called to register an ErrorHandler to observe a
-  // connection error on the underlying pipe. The callback runs asynchronously
-  // from the current message loop.
+  // connection error on the underlying pipe. It must only be called on a bound
+  // object.
+  // The callback runs asynchronously from the current message loop.
   void set_error_handler(ErrorHandler* error_handler) {
-    assert(internal_state_.router());
-    internal_state_.router()->set_error_handler(error_handler);
+    internal_state_.set_error_handler(error_handler);
   }
 
   // Returns the underlying message pipe handle (if any) and resets the
@@ -98,8 +96,7 @@ class InterfacePtr {
   ScopedMessagePipeHandle PassMessagePipe() {
     State state;
     internal_state_.Swap(&state);
-    return state.router() ?
-        state.router()->PassMessagePipe() : ScopedMessagePipeHandle();
+    return state.PassMessagePipe();
   }
 
   // DO NOT USE. Exposed only for internal use and for testing.
@@ -109,7 +106,7 @@ class InterfacePtr {
 
  private:
   typedef internal::InterfacePtrState<Interface> State;
-  State internal_state_;
+  mutable State internal_state_;
 };
 
 // Takes a handle to the proxy end-point of a pipe. On the other end is

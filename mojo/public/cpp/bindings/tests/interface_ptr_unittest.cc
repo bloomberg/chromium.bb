@@ -278,7 +278,7 @@ TEST_F(InterfacePtrTest, Resettable) {
   a.reset();
 
   EXPECT_TRUE(!a.get());
-  EXPECT_FALSE(a.internal_state()->router());
+  EXPECT_FALSE(a.internal_state()->router_for_testing());
 
   // Test that handle was closed.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, CloseRaw(handle));
