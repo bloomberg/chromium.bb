@@ -167,8 +167,12 @@ void FullscreenElementStack::requestFullScreenForElement(Element& element, Reque
 
         // The context object's node document, or an ancestor browsing context's document does not have
         // the fullscreen enabled flag set.
-        if (requestType != PrefixedVideoRequest && !fullscreenIsAllowedForAllOwners(element.document()))
-            break;
+        if (!fullscreenIsAllowedForAllOwners(element.document())) {
+            if (requestType == PrefixedVideoRequest)
+                UseCounter::count(element.document(), UseCounter::VideoFullscreenAllowedExemption);
+            else
+                break;
+        }
 
         // The context object's node document fullscreen element stack is not empty and its top element
         // is not an ancestor of the context object. (NOTE: Ignore this requirement if the request was
