@@ -4360,8 +4360,15 @@ class PrerenderOmniboxBrowserTest : public PrerenderBrowserTest {
   }
 };
 
+// Times out on Mac at minimum. http://crbug.com/395152
+#if defined(OS_MACOSX)
+#define MAYBE_PrerenderOmniboxCancel DISABLED_PrerenderOmniboxCancel
+#else
+#define MAYBE_PrerenderOmniboxCancel PrerenderOmniboxCancel
+#endif
 // Checks that closing the omnibox popup cancels an omnibox prerender.
-IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest, PrerenderOmniboxCancel) {
+IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
+                       MAYBE_PrerenderOmniboxCancel) {
   // Ensure the cookie store has been loaded.
   if (!GetPrerenderManager()->cookie_store_loaded()) {
     base::RunLoop loop;
