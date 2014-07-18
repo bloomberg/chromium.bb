@@ -122,10 +122,6 @@ const char kDisableDelegatedRenderer[]      = "disable-delegated-renderer";
 // Disables desktop notifications (default enabled on windows).
 const char kDisableDesktopNotifications[]   = "disable-desktop-notifications";
 
-// Disables experimental navigator content utils implementation.
-const char kDisableNavigatorContentUtils[]  =
-      "disable-navigator-content-utils";
-
 // Handles URL requests by NPAPI plugins through the renderer.
 const char kDisableDirectNPAPIRequests[]    = "disable-direct-npapi-requests";
 

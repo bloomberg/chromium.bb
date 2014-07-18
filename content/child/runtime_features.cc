@@ -74,9 +74,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableDesktopNotifications))
     WebRuntimeFeatures::enableNotifications(false);
 
-  if (command_line.HasSwitch(switches::kDisableNavigatorContentUtils))
-    WebRuntimeFeatures::enableNavigatorContentUtils(false);
-
   if (command_line.HasSwitch(switches::kDisableLocalStorage))
     WebRuntimeFeatures::enableLocalStorage(false);
 
