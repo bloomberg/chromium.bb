@@ -33,7 +33,6 @@
 
 // FIXME: Can we move this to webkit/support and fix the layering violation?
 #include <base/test/test_suite.h>
-#include <gmock/gmock.h>
 
 static TestSuite* testSuite = 0;
 
@@ -41,7 +40,6 @@ namespace blink {
 
 void InitTestSuite(int argc, char** argv)
 {
-    ::testing::InitGoogleMock(&argc, argv);
     testSuite = new TestSuite(argc, argv);
 }
 
