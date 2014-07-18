@@ -218,6 +218,12 @@ class HostContentSettingsMap
                        const GURL& secondary_url,
                        ContentSettingsType content_type);
 
+  // Sets the last time that a given content type has been used for a pattern
+  // pair to the current time.
+  void UpdateLastUsageByPattern(const ContentSettingsPattern& primary_pattern,
+                                const ContentSettingsPattern& secondary_pattern,
+                                ContentSettingsType content_type);
+
   // Returns the last time the pattern that matches the URL has requested
   // permission for the |content_type| setting.
   base::Time GetLastUsage(const GURL& primary_url,
@@ -270,12 +276,6 @@ class HostContentSettingsMap
   // teardown), so that we can DCHECK in RegisterExtensionService that
   // it is not being called too late.
   void UsedContentSettingsProviders() const;
-
-  // Convenience method for updating the last usage of a content type for a
-  // pattern.
-  void UpdateLastUsageByPattern(const ContentSettingsPattern& primary_pattern,
-                                const ContentSettingsPattern& secondary_pattern,
-                                ContentSettingsType content_type);
 
   content_settings::PrefProvider* GetPrefProvider();
 

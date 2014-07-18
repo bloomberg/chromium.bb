@@ -345,6 +345,19 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
         SetPermission(true);
       }
     }
+
+    if (audio_allowed) {
+      profile_->GetHostContentSettingsMap()->UpdateLastUsageByPattern(
+          ContentSettingsPattern::FromURLNoWildcard(request_.security_origin),
+          ContentSettingsPattern::Wildcard(),
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+    }
+    if (video_allowed) {
+      profile_->GetHostContentSettingsMap()->UpdateLastUsageByPattern(
+          ContentSettingsPattern::FromURLNoWildcard(request_.security_origin),
+          ContentSettingsPattern::Wildcard(),
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+    }
   }
 
   scoped_ptr<content::MediaStreamUI> ui;
