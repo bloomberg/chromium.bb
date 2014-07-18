@@ -5,8 +5,9 @@
 <script>
 function populateConsoleWithMessages(count)
 {
-    for (var i = 0; i < count; ++i)
+    for (var i = 0; i < count - 1; ++i)
         console.log("Message #" + i);
+    console.log("hello %cworld", "color: blue");
 }
 
 function test()
@@ -146,6 +147,20 @@ function test()
             dumpViewportRenderedItems();
             next();
         },
+
+        function testZeroOffsetSelection(next)
+        {
+            viewport.forceScrollItemToBeLast(messagesCount - 1);
+            var lastMessageElement = viewport.renderedElementAt(messagesCount - 1);
+            // there is a blue-colored "world" span in last message.
+            var blueSpan = lastMessageElement;
+            while (blueSpan.nodeName !== "SPAN" || blueSpan.textContent !== "world")
+                blueSpan = blueSpan.traverseNextNode();
+
+            window.getSelection().setBaseAndExtent(blueSpan, 0, blueSpan, blueSpan.textContent.length);
+            InspectorTest.addResult("Selected text: " + viewport._selectedText());
+            next();
+        },
     ];
 
     var awaitingMessagesCount = messagesCount;
@@ -156,7 +171,7 @@ function test()
     }
 
     InspectorTest.addConsoleSniffer(messageAdded, true);
-    InspectorTest.evaluateInConsole(String.sprintf("populateConsoleWithMessages(%d)", messagesCount));
+    InspectorTest.evaluateInPage(String.sprintf("populateConsoleWithMessages(%d)", messagesCount));
 
     function dumpSelectionModelElement(model)
     {
