@@ -144,12 +144,12 @@ class SchemaVersionedMySQLConnection(object):
     else:
       return 0
 
-  def ApplySchemaMigrations(self, maxVersion=None):
-    """Apply pending migration scripts to database, in order.
+  def _GetMigrationScripts(self):
+    """Look for migration scripts and return their versions and paths."
 
-    Args:
-      maxVersion: The highest version migration script to apply. If
-                  unspecified, all migrations found will be applied.
+    Returns:
+      A list of (schema_version, script_path) tuples of the migration
+      scripts for this database, sorted in ascending schema_version order.
     """
     # Look for migration script files in the migration script directory,
     # with names of the form [number]*.sql, and sort these by number.
@@ -161,6 +161,16 @@ class SchemaVersionedMySQLConnection(object):
         migrations.append((int(match.group(1)), script))
 
     migrations.sort()
+    return migrations
+
+  def ApplySchemaMigrations(self, maxVersion=None):
+    """Apply pending migration scripts to database, in order.
+
+    Args:
+      maxVersion: The highest version migration script to apply. If
+                  unspecified, all migrations found will be applied.
+    """
+    migrations = self._GetMigrationScripts()
 
     # Execute the migration scripts in order, asserting that each one
     # updates the schema version to the expected number. If maxVersion
@@ -173,6 +183,7 @@ class SchemaVersionedMySQLConnection(object):
         # Invalidate self._meta, then run script and ensure that schema
         # version was increased.
         self._meta = None
+        logging.info('Running migration script %s', script)
         self.RunQueryScript(script)
         self.schema_version = self.QuerySchemaVersion()
         if self.schema_version != number:

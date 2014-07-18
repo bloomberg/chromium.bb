@@ -73,8 +73,18 @@ class CIDBMigrationsTest(CIDBIntegrationTest):
   """Test that all migrations apply correctly."""
 
   def testMigrations(self):
-    """Test that all migrations apply correctly."""
+    """Test that all migrations apply in bulk correctly."""
     self._PrepareFreshDatabase()
+
+
+  def testIncrementalMigrations(self):
+    """Test that all migrations apply incrementally correctly."""
+    db = self._PrepareFreshDatabase(0)
+    migrations = db._GetMigrationScripts()
+    max_version = migrations[-1][0]
+
+    for i in range(1, max_version+1):
+      db.ApplySchemaMigrations(i)
 
 
 class CIDBAPITest(CIDBIntegrationTest):
