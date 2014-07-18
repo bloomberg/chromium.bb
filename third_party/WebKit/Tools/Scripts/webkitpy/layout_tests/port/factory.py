@@ -104,13 +104,22 @@ class PortFactory(object):
         if port_name == 'chromium':
             port_name = self._host.platform.os_name
 
-        for port_class in self.PORT_CLASSES:
-            module_name, class_name = port_class.rsplit('.', 1)
+        if 'browser_test' in port_name:
+            module_name, class_name = port_name.rsplit('.', 1)
             module = __import__(module_name, globals(), locals(), [], -1)
-            cls = module.__dict__[class_name]
-            if port_name.startswith(cls.port_name):
-                port_name = cls.determine_full_port_name(self._host, options, port_name)
+            port_class_name = module.get_port_class_name(class_name)
+            if port_class_name != None:
+                cls = module.__dict__[port_class_name]
+                port_name = cls.determine_full_port_name(self._host, options, class_name)
                 return cls(self._host, port_name, options=options, **kwargs)
+        else:
+            for port_class in self.PORT_CLASSES:
+                module_name, class_name = port_class.rsplit('.', 1)
+                module = __import__(module_name, globals(), locals(), [], -1)
+                cls = module.__dict__[class_name]
+                if port_name.startswith(cls.port_name):
+                    port_name = cls.determine_full_port_name(self._host, options, port_name)
+                    return cls(self._host, port_name, options=options, **kwargs)
         raise NotImplementedError('unsupported platform: "%s"' % port_name)
 
     def all_port_names(self, platform=None):
