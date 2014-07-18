@@ -9,7 +9,7 @@
 #include "WebNonCopyable.h"
 #include "WebPrivatePtr.h"
 
-namespace WebCore {
+namespace blink {
 class RTCOfferOptions;
 }
 
@@ -38,11 +38,11 @@ public:
     BLINK_PLATFORM_EXPORT bool iceRestart() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCOfferOptions(const WTF::PassRefPtr<WebCore::RTCOfferOptions>&);
+    BLINK_PLATFORM_EXPORT WebRTCOfferOptions(const WTF::PassRefPtr<blink::RTCOfferOptions>&);
 #endif
 
 private:
-    WebPrivatePtr<WebCore::RTCOfferOptions> m_private;
+    WebPrivatePtr<blink::RTCOfferOptions> m_private;
 };
 
 } // namespace blink

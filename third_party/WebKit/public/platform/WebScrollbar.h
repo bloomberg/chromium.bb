@@ -33,7 +33,7 @@
 #include "wtf/PassOwnPtr.h"
 #endif
 
-namespace WebCore {
+namespace blink {
 class Scrollbar;
 }
 

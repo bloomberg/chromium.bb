@@ -30,7 +30,7 @@
 #include "WebPrivatePtr.h"
 #include "WebVector.h"
 
-namespace WebCore {
+namespace blink {
 class MediaStreamDescriptor;
 }
 
@@ -81,15 +81,15 @@ public:
     BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebMediaStream(WebCore::MediaStreamDescriptor*);
-    BLINK_PLATFORM_EXPORT WebMediaStream(const WTF::PassRefPtr<WebCore::MediaStreamDescriptor>&);
-    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<WebCore::MediaStreamDescriptor>() const;
-    BLINK_PLATFORM_EXPORT operator WebCore::MediaStreamDescriptor*() const;
-    BLINK_PLATFORM_EXPORT WebMediaStream& operator=(const WTF::PassRefPtr<WebCore::MediaStreamDescriptor>&);
+    BLINK_PLATFORM_EXPORT WebMediaStream(blink::MediaStreamDescriptor*);
+    BLINK_PLATFORM_EXPORT WebMediaStream(const WTF::PassRefPtr<blink::MediaStreamDescriptor>&);
+    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<blink::MediaStreamDescriptor>() const;
+    BLINK_PLATFORM_EXPORT operator blink::MediaStreamDescriptor*() const;
+    BLINK_PLATFORM_EXPORT WebMediaStream& operator=(const WTF::PassRefPtr<blink::MediaStreamDescriptor>&);
 #endif
 
 private:
-    WebPrivatePtr<WebCore::MediaStreamDescriptor> m_private;
+    WebPrivatePtr<blink::MediaStreamDescriptor> m_private;
 };
 
 } // namespace blink

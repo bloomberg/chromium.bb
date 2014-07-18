@@ -42,7 +42,7 @@ class Value;
 template <class T> class Handle;
 }
 
-namespace WebCore { class DOMError; }
+namespace blink { class DOMError; }
 
 namespace blink {
 
@@ -69,12 +69,12 @@ public:
     BLINK_EXPORT v8::Handle<v8::Value> toV8Value(v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 #if BLINK_IMPLEMENTATION
-    explicit WebDOMError(const PassRefPtrWillBeRawPtr<WebCore::DOMError>&);
-    WebDOMError& operator=(const PassRefPtrWillBeRawPtr<WebCore::DOMError>&);
+    explicit WebDOMError(const PassRefPtrWillBeRawPtr<blink::DOMError>&);
+    WebDOMError& operator=(const PassRefPtrWillBeRawPtr<blink::DOMError>&);
 #endif
 
 protected:
-    WebPrivatePtr<WebCore::DOMError> m_private;
+    WebPrivatePtr<blink::DOMError> m_private;
 };
 
 } // namespace blink

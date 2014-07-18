@@ -48,7 +48,7 @@ struct WebURLError;
 // and calls delete when the instance is no longer needed.
 class WebApplicationCacheHost {
 public:
-    // These values must match WebCore::ApplicationCacheHost::Status values
+    // These values must match blink::ApplicationCacheHost::Status values
     enum Status {
         Uncached,
         Idle,
@@ -58,7 +58,7 @@ public:
         Obsolete
     };
 
-    // These values must match WebCore::ApplicationCacheHost::EventID values
+    // These values must match blink::ApplicationCacheHost::EventID values
     enum EventID {
         CheckingEvent,
         ErrorEvent,

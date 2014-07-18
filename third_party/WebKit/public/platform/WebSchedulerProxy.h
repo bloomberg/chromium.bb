@@ -7,7 +7,7 @@
 
 #include "WebThread.h"
 
-namespace WebCore {
+namespace blink {
 class Scheduler;
 }
 
@@ -30,7 +30,7 @@ public:
 private:
     WebSchedulerProxy();
 
-    WebCore::Scheduler* m_scheduler;
+    blink::Scheduler* m_scheduler;
 };
 
 } // namespace blink

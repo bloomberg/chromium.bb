@@ -35,7 +35,7 @@
 #include "WebPrivatePtr.h"
 #include "WebStorageQuotaError.h"
 
-namespace WebCore {
+namespace blink {
 class StorageQuotaCallbacks;
 }
 
@@ -60,7 +60,7 @@ public:
     BLINK_PLATFORM_EXPORT void assign(const WebStorageQuotaCallbacks&);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebStorageQuotaCallbacks(const WTF::PassOwnPtr<WebCore::StorageQuotaCallbacks>&);
+    BLINK_PLATFORM_EXPORT WebStorageQuotaCallbacks(const WTF::PassOwnPtr<blink::StorageQuotaCallbacks>&);
 #endif
 
     // Callback for WebFrameClient::queryStorageUsageAndQuota.

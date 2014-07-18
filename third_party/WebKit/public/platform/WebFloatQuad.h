@@ -62,7 +62,7 @@ struct WebFloatQuad {
     BLINK_PLATFORM_EXPORT WebRect enclosingRect() const;
 
 #if INSIDE_BLINK
-    WebFloatQuad& operator=(const WebCore::FloatQuad& q)
+    WebFloatQuad& operator=(const blink::FloatQuad& q)
     {
         p[0] = q.p1();
         p[1] = q.p2();
@@ -70,7 +70,7 @@ struct WebFloatQuad {
         p[3] = q.p4();
         return *this;
     }
-    WebFloatQuad(const WebCore::FloatQuad& q)
+    WebFloatQuad(const blink::FloatQuad& q)
     {
         *this = q;
     }

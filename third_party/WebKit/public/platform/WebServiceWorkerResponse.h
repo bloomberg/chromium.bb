@@ -16,7 +16,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 class BlobDataHandle;
 }
 #endif
@@ -60,8 +60,8 @@ public:
     void setHeaders(const HashMap<String, String>&);
     const HashMap<String, String>& headers() const;
 
-    void setBlobDataHandle(PassRefPtr<WebCore::BlobDataHandle>);
-    PassRefPtr<WebCore::BlobDataHandle> blobDataHandle() const;
+    void setBlobDataHandle(PassRefPtr<blink::BlobDataHandle>);
+    PassRefPtr<blink::BlobDataHandle> blobDataHandle() const;
 #endif
 
 private:

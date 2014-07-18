@@ -30,7 +30,7 @@
 #include "WebScrollbarThemeGeometry.h"
 #include "WebScrollbarThemePainter.h"
 
-namespace WebCore {
+namespace blink {
 class Scrollbar;
 }
 

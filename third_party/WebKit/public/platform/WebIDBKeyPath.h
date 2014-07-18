@@ -32,7 +32,7 @@
 #include "WebString.h"
 #include "WebVector.h"
 
-namespace WebCore { class IDBKeyPath; }
+namespace blink { class IDBKeyPath; }
 
 namespace blink {
 
@@ -59,13 +59,13 @@ public:
     BLINK_EXPORT WebString string() const; // Only valid for StringType.
 
 #if BLINK_IMPLEMENTATION
-    WebIDBKeyPath(const WebCore::IDBKeyPath&);
-    WebIDBKeyPath& operator=(const WebCore::IDBKeyPath&);
-    operator const WebCore::IDBKeyPath&() const;
+    WebIDBKeyPath(const blink::IDBKeyPath&);
+    WebIDBKeyPath& operator=(const blink::IDBKeyPath&);
+    operator const blink::IDBKeyPath&() const;
 #endif
 
 private:
-    WebPrivateOwnPtr<WebCore::IDBKeyPath> m_private;
+    WebPrivateOwnPtr<blink::IDBKeyPath> m_private;
 };
 
 } // namespace blink

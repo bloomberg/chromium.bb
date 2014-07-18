@@ -29,7 +29,7 @@
 #include "../platform/WebCommon.h"
 #include "../platform/WebNonCopyable.h"
 
-namespace WebCore { class GeolocationController; }
+namespace blink { class GeolocationController; }
 
 namespace blink {
 
@@ -44,12 +44,12 @@ public:
     BLINK_EXPORT void errorOccurred(const WebGeolocationError&);
 
 #if BLINK_IMPLEMENTATION
-    WebGeolocationController(WebCore::GeolocationController* c)
+    WebGeolocationController(blink::GeolocationController* c)
         : m_private(c)
     {
     }
 
-    WebCore::GeolocationController* controller() const { return m_private; }
+    blink::GeolocationController* controller() const { return m_private; }
 #endif
 
 private:
@@ -57,7 +57,7 @@ private:
     // can be created by the consumers of Chromium WebKit.
     WebGeolocationController();
 
-    WebCore::GeolocationController* m_private;
+    blink::GeolocationController* m_private;
 };
 
 } // namespace blink

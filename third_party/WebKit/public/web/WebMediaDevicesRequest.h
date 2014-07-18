@@ -31,7 +31,7 @@
 #include "public/platform/WebPrivatePtr.h"
 #include "public/platform/WebString.h"
 
-namespace WebCore {
+namespace blink {
 class MediaDevicesRequest;
 }
 
@@ -63,12 +63,12 @@ public:
     BLINK_EXPORT void requestSucceeded(WebVector<WebMediaDeviceInfo>);
 
 #if BLINK_IMPLEMENTATION
-    WebMediaDevicesRequest(WebCore::MediaDevicesRequest*);
-    operator WebCore::MediaDevicesRequest*() const;
+    WebMediaDevicesRequest(blink::MediaDevicesRequest*);
+    operator blink::MediaDevicesRequest*() const;
 #endif
 
 private:
-    WebPrivatePtr<WebCore::MediaDevicesRequest> m_private;
+    WebPrivatePtr<blink::MediaDevicesRequest> m_private;
 };
 
 inline bool operator==(const WebMediaDevicesRequest& a, const WebMediaDevicesRequest& b)

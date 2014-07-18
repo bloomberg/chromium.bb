@@ -29,7 +29,7 @@
 #include "public/platform/WebString.h"
 
 #if BLINK_IMPLEMENTATION
-namespace WebCore { struct DateTimeSuggestion; }
+namespace blink { struct DateTimeSuggestion; }
 #endif
 
 namespace blink {
@@ -42,8 +42,8 @@ struct WebDateTimeSuggestion {
     WebDateTimeSuggestion() { }
 
 #if BLINK_IMPLEMENTATION
-    WebDateTimeSuggestion(const WebCore::DateTimeSuggestion&);
-    WebDateTimeSuggestion& operator=(const WebCore::DateTimeSuggestion&);
+    WebDateTimeSuggestion(const blink::DateTimeSuggestion&);
+    WebDateTimeSuggestion& operator=(const blink::DateTimeSuggestion&);
 #endif
 };
 

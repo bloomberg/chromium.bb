@@ -35,7 +35,7 @@
 #include "WebPrivateOwnPtr.h"
 
 #if INSIDE_BLINK
-namespace WebCore { class ResourceResponse; }
+namespace blink { class ResourceResponse; }
 #endif
 
 namespace blink {
@@ -139,8 +139,8 @@ public:
     BLINK_PLATFORM_EXPORT void setSecurityInfo(const WebCString&);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebCore::ResourceResponse& toMutableResourceResponse();
-    BLINK_PLATFORM_EXPORT const WebCore::ResourceResponse& toResourceResponse() const;
+    BLINK_PLATFORM_EXPORT blink::ResourceResponse& toMutableResourceResponse();
+    BLINK_PLATFORM_EXPORT const blink::ResourceResponse& toResourceResponse() const;
 #endif
 
     // Flag whether this request was served from the disk cache entry.

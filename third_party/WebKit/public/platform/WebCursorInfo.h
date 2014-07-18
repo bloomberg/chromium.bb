@@ -35,7 +35,7 @@
 #include "WebPoint.h"
 
 #if INSIDE_BLINK
-namespace WebCore { class Cursor; }
+namespace blink { class Cursor; }
 #endif
 
 #ifdef WIN32
@@ -116,7 +116,7 @@ struct WebCursorInfo {
     }
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT explicit WebCursorInfo(const WebCore::Cursor&);
+    BLINK_PLATFORM_EXPORT explicit WebCursorInfo(const blink::Cursor&);
 #endif
 };
 

@@ -35,7 +35,7 @@
 #include "WebPrivatePtr.h"
 #include "WebString.h"
 
-namespace WebCore {
+namespace blink {
 class RTCIceCandidateDescriptor;
 }
 

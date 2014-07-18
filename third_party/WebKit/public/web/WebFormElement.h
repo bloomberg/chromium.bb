@@ -35,7 +35,7 @@
 #include "WebElement.h"
 
 #if BLINK_IMPLEMENTATION
-namespace WebCore { class HTMLFormElement; }
+namespace blink { class HTMLFormElement; }
 #endif
 
 namespace blink {
@@ -81,9 +81,9 @@ namespace blink {
         BLINK_EXPORT void finishRequestAutocomplete(WebFormElement::AutocompleteResult);
 
 #if BLINK_IMPLEMENTATION
-        WebFormElement(const PassRefPtrWillBeRawPtr<WebCore::HTMLFormElement>&);
-        WebFormElement& operator=(const PassRefPtrWillBeRawPtr<WebCore::HTMLFormElement>&);
-        operator PassRefPtrWillBeRawPtr<WebCore::HTMLFormElement>() const;
+        WebFormElement(const PassRefPtrWillBeRawPtr<blink::HTMLFormElement>&);
+        WebFormElement& operator=(const PassRefPtrWillBeRawPtr<blink::HTMLFormElement>&);
+        operator PassRefPtrWillBeRawPtr<blink::HTMLFormElement>() const;
 #endif
     };
 

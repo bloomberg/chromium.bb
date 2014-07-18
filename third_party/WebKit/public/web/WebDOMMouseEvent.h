@@ -33,7 +33,7 @@
 #include "WebDOMEvent.h"
 
 #if BLINK_IMPLEMENTATION
-namespace WebCore { class Event; }
+namespace blink { class Event; }
 #endif
 
 namespace blink {

@@ -68,7 +68,7 @@ struct WebFloatRect {
     }
 
 #if INSIDE_BLINK
-    WebFloatRect(const WebCore::FloatRect& r)
+    WebFloatRect(const blink::FloatRect& r)
         : x(r.x())
         , y(r.y())
         , width(r.width())
@@ -76,7 +76,7 @@ struct WebFloatRect {
     {
     }
 
-    WebFloatRect& operator=(const WebCore::FloatRect& r)
+    WebFloatRect& operator=(const blink::FloatRect& r)
     {
         x = r.x();
         y = r.y();
@@ -85,9 +85,9 @@ struct WebFloatRect {
         return *this;
     }
 
-    operator WebCore::FloatRect() const
+    operator blink::FloatRect() const
     {
-        return WebCore::FloatRect(x, y, width, height);
+        return blink::FloatRect(x, y, width, height);
     }
 #else
     WebFloatRect(const gfx::RectF& r)

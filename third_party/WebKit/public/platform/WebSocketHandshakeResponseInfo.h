@@ -35,9 +35,9 @@
 #include "public/platform/WebNonCopyable.h"
 #include "public/platform/WebPrivateOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 class WebSocketHandshakeResponse;
-} // namespace WebCore
+} // namespace blink
 
 namespace blink {
 
@@ -54,11 +54,11 @@ public:
     BLINK_PLATFORM_EXPORT void setHeadersText(const WebString&);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT const WebCore::WebSocketHandshakeResponse& toCoreResponse() const { return *m_private.get(); }
+    BLINK_PLATFORM_EXPORT const blink::WebSocketHandshakeResponse& toCoreResponse() const { return *m_private.get(); }
 #endif // INSIDE_BLINK
 
 private:
-    WebPrivateOwnPtr<WebCore::WebSocketHandshakeResponse> m_private;
+    WebPrivateOwnPtr<blink::WebSocketHandshakeResponse> m_private;
 };
 
 } // namespace blink

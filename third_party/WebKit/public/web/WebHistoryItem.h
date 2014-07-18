@@ -35,7 +35,7 @@
 #include "../platform/WebPrivatePtr.h"
 #include "../platform/WebReferrerPolicy.h"
 
-namespace WebCore { class HistoryItem; }
+namespace blink { class HistoryItem; }
 
 namespace blink {
 class WebHTTPBody;
@@ -113,13 +113,13 @@ public:
     BLINK_EXPORT WebVector<WebString> getReferencedFilePaths() const;
 
 #if BLINK_IMPLEMENTATION
-    WebHistoryItem(const WTF::PassRefPtr<WebCore::HistoryItem>&);
-    WebHistoryItem& operator=(const WTF::PassRefPtr<WebCore::HistoryItem>&);
-    operator WTF::PassRefPtr<WebCore::HistoryItem>() const;
+    WebHistoryItem(const WTF::PassRefPtr<blink::HistoryItem>&);
+    WebHistoryItem& operator=(const WTF::PassRefPtr<blink::HistoryItem>&);
+    operator WTF::PassRefPtr<blink::HistoryItem>() const;
 #endif
 
 private:
-    WebPrivatePtr<WebCore::HistoryItem> m_private;
+    WebPrivatePtr<blink::HistoryItem> m_private;
 };
 
 } // namespace blink

@@ -33,7 +33,7 @@
 
 #include "../platform/WebPrivatePtr.h"
 
-namespace WebCore {
+namespace blink {
 class UserGestureToken;
 }
 
@@ -59,15 +59,15 @@ public:
     bool isNull() const { return m_token.isNull(); }
 
 #if BLINK_IMPLEMENTATION
-    explicit WebUserGestureToken(PassRefPtr<WebCore::UserGestureToken>);
-    operator PassRefPtr<WebCore::UserGestureToken>() const;
+    explicit WebUserGestureToken(PassRefPtr<blink::UserGestureToken>);
+    operator PassRefPtr<blink::UserGestureToken>() const;
 #endif
 
 private:
     BLINK_EXPORT void assign(const WebUserGestureToken&);
     BLINK_EXPORT void reset();
 
-    WebPrivatePtr<WebCore::UserGestureToken> m_token;
+    WebPrivatePtr<blink::UserGestureToken> m_token;
 };
 
 } // namespace blink

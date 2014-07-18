@@ -36,7 +36,7 @@
 #include "../platform/WebString.h"
 #include "WebExceptionCode.h"
 
-namespace WebCore { class Node; }
+namespace blink { class Node; }
 
 namespace blink {
 class WebDOMEvent;
@@ -51,7 +51,7 @@ class WebPluginContainer;
 // Provides access to some properties of a DOM node.
 // Note that the class design requires that neither this class nor any of its subclasses have any virtual
 // methods (other than the destructor), so that it is possible to safely static_cast an instance of one
-// class to the appropriate subclass based on the actual type of the wrapped WebCore::Node. For the same
+// class to the appropriate subclass based on the actual type of the wrapped blink::Node. For the same
 // reason, subclasses must not add any additional data members.
 class WebNode {
 public:
@@ -142,9 +142,9 @@ public:
     }
 
 #if BLINK_IMPLEMENTATION
-    WebNode(const PassRefPtrWillBeRawPtr<WebCore::Node>&);
-    WebNode& operator=(const PassRefPtrWillBeRawPtr<WebCore::Node>&);
-    operator PassRefPtrWillBeRawPtr<WebCore::Node>() const;
+    WebNode(const PassRefPtrWillBeRawPtr<blink::Node>&);
+    WebNode& operator=(const PassRefPtrWillBeRawPtr<blink::Node>&);
+    operator PassRefPtrWillBeRawPtr<blink::Node>() const;
 #endif
 
 #if BLINK_IMPLEMENTATION
@@ -160,7 +160,7 @@ public:
 #endif
 
 protected:
-    WebPrivatePtr<WebCore::Node> m_private;
+    WebPrivatePtr<blink::Node> m_private;
 };
 
 inline bool operator==(const WebNode& a, const WebNode& b)

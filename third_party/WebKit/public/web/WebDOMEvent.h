@@ -36,7 +36,7 @@
 #include "../platform/WebString.h"
 #include "WebNode.h"
 
-namespace WebCore { class Event; }
+namespace blink { class Event; }
 #if BLINK_IMPLEMENTATION
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
@@ -92,8 +92,8 @@ public:
     BLINK_EXPORT bool isXMLHttpRequestProgressEvent() const;
 
 #if BLINK_IMPLEMENTATION
-    WebDOMEvent(const PassRefPtrWillBeRawPtr<WebCore::Event>&);
-    operator PassRefPtrWillBeRawPtr<WebCore::Event>() const;
+    WebDOMEvent(const PassRefPtrWillBeRawPtr<blink::Event>&);
+    operator PassRefPtrWillBeRawPtr<blink::Event>() const;
 #endif
 
     template<typename T> T to()
@@ -112,7 +112,7 @@ public:
 
 protected:
 #if BLINK_IMPLEMENTATION
-    void assign(const PassRefPtrWillBeRawPtr<WebCore::Event>&);
+    void assign(const PassRefPtrWillBeRawPtr<blink::Event>&);
 
     template<typename T> T* unwrap()
     {
@@ -125,7 +125,7 @@ protected:
     }
 #endif
 
-    WebPrivatePtr<WebCore::Event> m_private;
+    WebPrivatePtr<blink::Event> m_private;
 };
 
 } // namespace blink

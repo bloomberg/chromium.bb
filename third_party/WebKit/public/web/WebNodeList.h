@@ -34,7 +34,7 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebPrivatePtr.h"
 
-namespace WebCore { class NodeList; }
+namespace blink { class NodeList; }
 #if BLINK_IMPLEMENTATION
 #include "platform/heap/Handle.h"
 namespace WTF { template <typename T> class PassRefPtr; }
@@ -63,12 +63,12 @@ public:
     BLINK_EXPORT WebNode item(size_t) const;
 
 #if BLINK_IMPLEMENTATION
-    WebNodeList(const PassRefPtrWillBeRawPtr<WebCore::NodeList>&);
-    WebNodeList& operator=(const PassRefPtrWillBeRawPtr<WebCore::NodeList>&);
+    WebNodeList(const PassRefPtrWillBeRawPtr<blink::NodeList>&);
+    WebNodeList& operator=(const PassRefPtrWillBeRawPtr<blink::NodeList>&);
 #endif
 
 private:
-    WebPrivatePtr<WebCore::NodeList> m_private;
+    WebPrivatePtr<blink::NodeList> m_private;
 };
 
 } // namespace blink

@@ -34,7 +34,7 @@
 #include "../platform/WebCommon.h"
 
 #if BLINK_IMPLEMENTATION
-namespace WebCore { class EventTarget; }
+namespace blink { class EventTarget; }
 #endif
 
 namespace blink {
@@ -55,8 +55,8 @@ public:
 
 #if BLINK_IMPLEMENTATION
     void notifyEventListenerDeleted(EventListenerWrapper*);
-    EventListenerWrapper* createEventListenerWrapper(const WebString& eventType, bool useCapture, WebCore::EventTarget*);
-    EventListenerWrapper* getEventListenerWrapper(const WebString& eventType, bool useCapture, WebCore::EventTarget*);
+    EventListenerWrapper* createEventListenerWrapper(const WebString& eventType, bool useCapture, blink::EventTarget*);
+    EventListenerWrapper* getEventListenerWrapper(const WebString& eventType, bool useCapture, blink::EventTarget*);
 #endif
 
 private:

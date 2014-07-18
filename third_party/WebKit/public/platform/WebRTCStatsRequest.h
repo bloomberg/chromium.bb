@@ -35,7 +35,7 @@
 #include "WebPrivatePtr.h"
 #include "WebString.h"
 
-namespace WebCore {
+namespace blink {
 class RTCStatsRequest;
 }
 
@@ -95,11 +95,11 @@ public:
     BLINK_PLATFORM_EXPORT WebRTCStatsResponse createResponse() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCStatsRequest(const PassRefPtr<WebCore::RTCStatsRequest>&);
+    BLINK_PLATFORM_EXPORT WebRTCStatsRequest(const PassRefPtr<blink::RTCStatsRequest>&);
 #endif
 
 private:
-    WebPrivatePtr<WebCore::RTCStatsRequest> m_private;
+    WebPrivatePtr<blink::RTCStatsRequest> m_private;
 };
 
 } // namespace blink

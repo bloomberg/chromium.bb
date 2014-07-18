@@ -34,7 +34,7 @@
 #include "WebElement.h"
 
 #if BLINK_IMPLEMENTATION
-namespace WebCore { class HTMLLabelElement; }
+namespace blink { class HTMLLabelElement; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
@@ -57,9 +57,9 @@ public:
     BLINK_EXPORT WebElement correspondingControl();
 
 #if BLINK_IMPLEMENTATION
-    WebLabelElement(const PassRefPtrWillBeRawPtr<WebCore::HTMLLabelElement>&);
-    WebLabelElement& operator=(const PassRefPtrWillBeRawPtr<WebCore::HTMLLabelElement>&);
-    operator PassRefPtrWillBeRawPtr<WebCore::HTMLLabelElement>() const;
+    WebLabelElement(const PassRefPtrWillBeRawPtr<blink::HTMLLabelElement>&);
+    WebLabelElement& operator=(const PassRefPtrWillBeRawPtr<blink::HTMLLabelElement>&);
+    operator PassRefPtrWillBeRawPtr<blink::HTMLLabelElement>() const;
 #endif
 };
 

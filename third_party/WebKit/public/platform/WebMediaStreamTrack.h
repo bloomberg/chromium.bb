@@ -29,7 +29,7 @@
 #include "WebNonCopyable.h"
 #include "WebPrivatePtr.h"
 
-namespace WebCore {
+namespace blink {
 class MediaStreamComponent;
 }
 
@@ -49,11 +49,11 @@ public:
         BLINK_PLATFORM_EXPORT WebMediaStreamTrack owner();
 
 #if INSIDE_BLINK
-        BLINK_PLATFORM_EXPORT void setOwner(WebCore::MediaStreamComponent*);
+        BLINK_PLATFORM_EXPORT void setOwner(blink::MediaStreamComponent*);
 #endif
 
     private:
-        WebCore::MediaStreamComponent* m_owner;
+        blink::MediaStreamComponent* m_owner;
     };
 
     WebMediaStreamTrack() { }
@@ -91,15 +91,15 @@ public:
     BLINK_PLATFORM_EXPORT void setSourceProvider(WebAudioSourceProvider*);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebMediaStreamTrack(PassRefPtr<WebCore::MediaStreamComponent>);
-    BLINK_PLATFORM_EXPORT WebMediaStreamTrack(WebCore::MediaStreamComponent*);
-    BLINK_PLATFORM_EXPORT WebMediaStreamTrack& operator=(WebCore::MediaStreamComponent*);
-    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<WebCore::MediaStreamComponent>() const;
-    BLINK_PLATFORM_EXPORT operator WebCore::MediaStreamComponent*() const;
+    BLINK_PLATFORM_EXPORT WebMediaStreamTrack(PassRefPtr<blink::MediaStreamComponent>);
+    BLINK_PLATFORM_EXPORT WebMediaStreamTrack(blink::MediaStreamComponent*);
+    BLINK_PLATFORM_EXPORT WebMediaStreamTrack& operator=(blink::MediaStreamComponent*);
+    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<blink::MediaStreamComponent>() const;
+    BLINK_PLATFORM_EXPORT operator blink::MediaStreamComponent*() const;
 #endif
 
 private:
-    WebPrivatePtr<WebCore::MediaStreamComponent> m_private;
+    WebPrivatePtr<blink::MediaStreamComponent> m_private;
 };
 
 } // namespace blink

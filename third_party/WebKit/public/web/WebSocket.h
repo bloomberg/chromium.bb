@@ -35,7 +35,7 @@
 #include "../platform/WebPrivatePtr.h"
 #include "../platform/WebString.h"
 
-namespace WebCore { class WebSocketChannel; }
+namespace blink { class WebSocketChannel; }
 
 namespace blink {
 

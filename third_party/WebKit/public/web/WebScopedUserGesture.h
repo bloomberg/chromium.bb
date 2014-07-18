@@ -33,7 +33,7 @@
 
 #include "../platform/WebPrivateOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 class UserGestureIndicator;
 }
 
@@ -65,7 +65,7 @@ private:
     BLINK_EXPORT void initializeWithToken(const WebUserGestureToken&);
     BLINK_EXPORT void reset();
 
-    WebPrivateOwnPtr<WebCore::UserGestureIndicator> m_indicator;
+    WebPrivateOwnPtr<blink::UserGestureIndicator> m_indicator;
 };
 
 } // namespace blink

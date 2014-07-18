@@ -34,7 +34,7 @@
 #include "WebFormControlElement.h"
 
 #if BLINK_IMPLEMENTATION
-namespace WebCore { class HTMLInputElement; }
+namespace blink { class HTMLInputElement; }
 #endif
 
 namespace blink {
@@ -88,9 +88,9 @@ namespace blink {
         BLINK_EXPORT void setShouldRevealPassword(bool value);
 
 #if BLINK_IMPLEMENTATION
-        WebInputElement(const PassRefPtrWillBeRawPtr<WebCore::HTMLInputElement>&);
-        WebInputElement& operator=(const PassRefPtrWillBeRawPtr<WebCore::HTMLInputElement>&);
-        operator PassRefPtrWillBeRawPtr<WebCore::HTMLInputElement>() const;
+        WebInputElement(const PassRefPtrWillBeRawPtr<blink::HTMLInputElement>&);
+        WebInputElement& operator=(const PassRefPtrWillBeRawPtr<blink::HTMLInputElement>&);
+        operator PassRefPtrWillBeRawPtr<blink::HTMLInputElement>() const;
 #endif
     };
 

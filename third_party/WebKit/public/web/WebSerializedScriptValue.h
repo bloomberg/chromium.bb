@@ -34,7 +34,7 @@
 #include "../platform/WebCommon.h"
 #include "../platform/WebPrivatePtr.h"
 
-namespace WebCore { class SerializedScriptValue; }
+namespace blink { class SerializedScriptValue; }
 
 namespace v8 {
 class Value;
@@ -76,13 +76,13 @@ public:
     BLINK_EXPORT v8::Handle<v8::Value> deserialize();
 
 #if BLINK_IMPLEMENTATION
-    WebSerializedScriptValue(const WTF::PassRefPtr<WebCore::SerializedScriptValue>&);
-    WebSerializedScriptValue& operator=(const WTF::PassRefPtr<WebCore::SerializedScriptValue>&);
-    operator WTF::PassRefPtr<WebCore::SerializedScriptValue>() const;
+    WebSerializedScriptValue(const WTF::PassRefPtr<blink::SerializedScriptValue>&);
+    WebSerializedScriptValue& operator=(const WTF::PassRefPtr<blink::SerializedScriptValue>&);
+    operator WTF::PassRefPtr<blink::SerializedScriptValue>() const;
 #endif
 
 private:
-    WebPrivatePtr<WebCore::SerializedScriptValue> m_private;
+    WebPrivatePtr<blink::SerializedScriptValue> m_private;
 };
 
 } // namespace blink

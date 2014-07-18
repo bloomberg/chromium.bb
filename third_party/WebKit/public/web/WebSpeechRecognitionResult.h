@@ -31,7 +31,7 @@
 #include "../platform/WebString.h"
 #include "../platform/WebVector.h"
 
-namespace WebCore {
+namespace blink {
 class SpeechRecognitionResult;
 }
 
@@ -48,11 +48,11 @@ public:
     BLINK_EXPORT void reset();
 
 #if BLINK_IMPLEMENTATION
-    operator WebCore::SpeechRecognitionResult*() const;
+    operator blink::SpeechRecognitionResult*() const;
 #endif
 
 private:
-    WebPrivatePtr<WebCore::SpeechRecognitionResult> m_private;
+    WebPrivatePtr<blink::SpeechRecognitionResult> m_private;
 };
 
 } // namespace blink

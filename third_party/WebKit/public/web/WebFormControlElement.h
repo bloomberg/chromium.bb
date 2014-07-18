@@ -36,7 +36,7 @@
 #include "WebFormElement.h"
 
 #if BLINK_IMPLEMENTATION
-namespace WebCore { class HTMLFormControlElement; }
+namespace blink { class HTMLFormControlElement; }
 #endif
 
 namespace blink {
@@ -116,9 +116,9 @@ public:
     BLINK_EXPORT WebFormElement form() const;
 
 #if BLINK_IMPLEMENTATION
-    WebFormControlElement(const PassRefPtrWillBeRawPtr<WebCore::HTMLFormControlElement>&);
-    WebFormControlElement& operator=(const PassRefPtrWillBeRawPtr<WebCore::HTMLFormControlElement>&);
-    operator PassRefPtrWillBeRawPtr<WebCore::HTMLFormControlElement>() const;
+    WebFormControlElement(const PassRefPtrWillBeRawPtr<blink::HTMLFormControlElement>&);
+    WebFormControlElement& operator=(const PassRefPtrWillBeRawPtr<blink::HTMLFormControlElement>&);
+    operator PassRefPtrWillBeRawPtr<blink::HTMLFormControlElement>() const;
 #endif
 };
 

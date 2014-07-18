@@ -38,7 +38,7 @@
 #include <string>
 #endif
 
-namespace WebCore { class RawData; }
+namespace blink { class RawData; }
 
 namespace blink {
 
@@ -58,8 +58,8 @@ public:
     bool isEmpty() const { return !size(); }
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebThreadSafeData(const WTF::PassRefPtr<WebCore::RawData>&);
-    BLINK_PLATFORM_EXPORT WebThreadSafeData& operator=(const WTF::PassRefPtr<WebCore::RawData>&);
+    BLINK_PLATFORM_EXPORT WebThreadSafeData(const WTF::PassRefPtr<blink::RawData>&);
+    BLINK_PLATFORM_EXPORT WebThreadSafeData& operator=(const WTF::PassRefPtr<blink::RawData>&);
 #else
     operator std::string() const
     {
@@ -69,7 +69,7 @@ public:
 #endif
 
 private:
-    WebPrivatePtr<WebCore::RawData> m_private;
+    WebPrivatePtr<blink::RawData> m_private;
 };
 
 } // namespace blink

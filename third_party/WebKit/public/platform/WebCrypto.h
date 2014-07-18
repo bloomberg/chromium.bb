@@ -38,7 +38,7 @@
 #include "WebString.h"
 #include "WebVector.h"
 
-namespace WebCore { class CryptoResult; }
+namespace blink { class CryptoResult; }
 
 #if INSIDE_BLINK
 namespace WTF { template <typename T> class PassRefPtr; }
@@ -100,14 +100,14 @@ public:
     BLINK_PLATFORM_EXPORT bool cancelled() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT explicit WebCryptoResult(const WTF::PassRefPtr<WebCore::CryptoResult>&);
+    BLINK_PLATFORM_EXPORT explicit WebCryptoResult(const WTF::PassRefPtr<blink::CryptoResult>&);
 #endif
 
 private:
     BLINK_PLATFORM_EXPORT void reset();
     BLINK_PLATFORM_EXPORT void assign(const WebCryptoResult&);
 
-    WebPrivatePtr<WebCore::CryptoResult> m_impl;
+    WebPrivatePtr<blink::CryptoResult> m_impl;
 };
 
 class WebCryptoDigestor {

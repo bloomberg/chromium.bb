@@ -46,7 +46,7 @@
 struct NPObject;
 
 #if BLINK_IMPLEMENTATION
-namespace WebCore { class Frame; }
+namespace blink { class Frame; }
 #endif
 
 namespace v8 {
@@ -674,7 +674,7 @@ public:
     virtual WebString layerTreeAsText(bool showDebugInfo = false) const = 0;
 
 #if BLINK_IMPLEMENTATION
-    static WebFrame* fromFrame(WebCore::Frame*);
+    static WebFrame* fromFrame(blink::Frame*);
 #endif
 
 protected:
@@ -695,7 +695,7 @@ private:
 };
 
 #if BLINK_IMPLEMENTATION
-WebCore::Frame* toWebCoreFrame(const WebFrame*);
+blink::Frame* toWebCoreFrame(const WebFrame*);
 #endif
 
 } // namespace blink

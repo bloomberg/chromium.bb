@@ -35,7 +35,7 @@
 #include "WebElement.h"
 
 #if BLINK_IMPLEMENTATION
-namespace WebCore { class HTMLOptionElement; }
+namespace blink { class HTMLOptionElement; }
 #endif
 
 namespace blink {
@@ -62,9 +62,9 @@ public:
     BLINK_EXPORT bool isEnabled() const;
 
 #if BLINK_IMPLEMENTATION
-    WebOptionElement(const PassRefPtrWillBeRawPtr<WebCore::HTMLOptionElement>&);
-    WebOptionElement& operator=(const PassRefPtrWillBeRawPtr<WebCore::HTMLOptionElement>&);
-    operator PassRefPtrWillBeRawPtr<WebCore::HTMLOptionElement>() const;
+    WebOptionElement(const PassRefPtrWillBeRawPtr<blink::HTMLOptionElement>&);
+    WebOptionElement& operator=(const PassRefPtrWillBeRawPtr<blink::HTMLOptionElement>&);
+    operator PassRefPtrWillBeRawPtr<blink::HTMLOptionElement>() const;
 #endif
 };
 

@@ -30,7 +30,7 @@
 #include "WebPrivatePtr.h"
 #include "WebString.h"
 
-namespace WebCore { class PlatformSpeechSynthesisUtterance; }
+namespace blink { class PlatformSpeechSynthesisUtterance; }
 
 namespace blink {
 
@@ -62,13 +62,13 @@ public:
     BLINK_PLATFORM_EXPORT double startTime() const; // In seconds.
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebSpeechSynthesisUtterance(WebCore::PlatformSpeechSynthesisUtterance*);
-    BLINK_PLATFORM_EXPORT WebSpeechSynthesisUtterance& operator=(WebCore::PlatformSpeechSynthesisUtterance*);
-    BLINK_PLATFORM_EXPORT operator WebCore::PlatformSpeechSynthesisUtterance*() const;
+    BLINK_PLATFORM_EXPORT WebSpeechSynthesisUtterance(blink::PlatformSpeechSynthesisUtterance*);
+    BLINK_PLATFORM_EXPORT WebSpeechSynthesisUtterance& operator=(blink::PlatformSpeechSynthesisUtterance*);
+    BLINK_PLATFORM_EXPORT operator blink::PlatformSpeechSynthesisUtterance*() const;
 #endif
 
 private:
-    WebPrivatePtr<WebCore::PlatformSpeechSynthesisUtterance> m_private;
+    WebPrivatePtr<blink::PlatformSpeechSynthesisUtterance> m_private;
 };
 
 } // namespace blink

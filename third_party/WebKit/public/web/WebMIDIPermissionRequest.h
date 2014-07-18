@@ -33,7 +33,7 @@
 
 #include "../platform/WebCommon.h"
 
-namespace WebCore {
+namespace blink {
 class MIDIAccessInitializer;
 }
 
@@ -56,13 +56,13 @@ public:
     BLINK_EXPORT bool equals(const WebMIDIPermissionRequest&) const;
 
 #if BLINK_IMPLEMENTATION
-    explicit WebMIDIPermissionRequest(WebCore::MIDIAccessInitializer*);
+    explicit WebMIDIPermissionRequest(blink::MIDIAccessInitializer*);
 
-    WebCore::MIDIAccessInitializer* midiAccessInitializer() const { return m_initializer; }
+    blink::MIDIAccessInitializer* midiAccessInitializer() const { return m_initializer; }
 #endif
 
 private:
-    WebCore::MIDIAccessInitializer* m_initializer;
+    blink::MIDIAccessInitializer* m_initializer;
 };
 
 inline bool operator==(const WebMIDIPermissionRequest& a, const WebMIDIPermissionRequest& b)

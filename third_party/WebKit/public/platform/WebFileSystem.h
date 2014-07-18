@@ -148,7 +148,7 @@ public:
     // In local filesystem cases the backend may simply return the metadata of the file itself (as well as readMetadata does), while in
     // remote filesystem case the backend may download the file into a temporary snapshot file and return the metadata of the temporary file.
     // The returned metadata is used to create a File object for the |path|.
-    // The snapshot file is supposed to be deleted when the last reference to a WebCore::File referring to it's path is dropped.
+    // The snapshot file is supposed to be deleted when the last reference to a blink::File referring to it's path is dropped.
     // WebFileSystemCallbacks::didCreateSnapshotFile() with the metadata of the snapshot file must be called when the operation is completed successfully.
     // WebFileSystemCallbacks::didFail() must be called otherwise.
     virtual void createSnapshotFileAndReadMetadata(const WebURL& path, WebFileSystemCallbacks) { BLINK_ASSERT_NOT_REACHED(); }

@@ -41,7 +41,7 @@
 #include "wtf/PassRefPtr.h"
 #endif
 
-namespace WebCore {
+namespace blink {
 class Prerender;
 }
 
@@ -70,9 +70,9 @@ public:
     }
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT explicit WebPrerender(PassRefPtr<WebCore::Prerender>);
+    BLINK_PLATFORM_EXPORT explicit WebPrerender(PassRefPtr<blink::Prerender>);
 
-    BLINK_PLATFORM_EXPORT const WebCore::Prerender* toPrerender() const;
+    BLINK_PLATFORM_EXPORT const blink::Prerender* toPrerender() const;
 #endif
 
     BLINK_PLATFORM_EXPORT void reset();
@@ -93,7 +93,7 @@ public:
     BLINK_PLATFORM_EXPORT void didSendDOMContentLoadedForPrerender();
 
 private:
-    WebPrivatePtr<WebCore::Prerender> m_private;
+    WebPrivatePtr<blink::Prerender> m_private;
 };
 
 } // namespace blink

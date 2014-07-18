@@ -35,7 +35,7 @@
 #include "WebURL.h"
 
 #if INSIDE_BLINK
-namespace WebCore { class ResourceError; }
+namespace blink { class ResourceError; }
 #endif
 
 namespace blink {
@@ -69,9 +69,9 @@ struct WebURLError {
     WebURLError() : reason(0), staleCopyInCache(false), isCancellation(false) { }
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebURLError(const WebCore::ResourceError&);
-    BLINK_PLATFORM_EXPORT WebURLError& operator=(const WebCore::ResourceError&);
-    BLINK_PLATFORM_EXPORT operator WebCore::ResourceError() const;
+    BLINK_PLATFORM_EXPORT WebURLError(const blink::ResourceError&);
+    BLINK_PLATFORM_EXPORT WebURLError& operator=(const blink::ResourceError&);
+    BLINK_PLATFORM_EXPORT operator blink::ResourceError() const;
 #endif
 };
 

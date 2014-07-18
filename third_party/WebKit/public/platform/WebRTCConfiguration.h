@@ -36,7 +36,7 @@
 #include "WebPrivatePtr.h"
 #include "WebVector.h"
 
-namespace WebCore {
+namespace blink {
 class RTCIceServer;
 class RTCConfiguration;
 }
@@ -67,11 +67,11 @@ public:
     BLINK_PLATFORM_EXPORT WebString credential() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCICEServer(const WTF::PassRefPtr<WebCore::RTCIceServer>&);
+    BLINK_PLATFORM_EXPORT WebRTCICEServer(const WTF::PassRefPtr<blink::RTCIceServer>&);
 #endif
 
 private:
-    WebPrivatePtr<WebCore::RTCIceServer> m_private;
+    WebPrivatePtr<blink::RTCIceServer> m_private;
 };
 
 enum WebRTCIceTransports {
@@ -103,11 +103,11 @@ public:
     BLINK_PLATFORM_EXPORT WebRTCIceTransports iceTransports() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCConfiguration(const WTF::PassRefPtr<WebCore::RTCConfiguration>&);
+    BLINK_PLATFORM_EXPORT WebRTCConfiguration(const WTF::PassRefPtr<blink::RTCConfiguration>&);
 #endif
 
 private:
-    WebPrivatePtr<WebCore::RTCConfiguration> m_private;
+    WebPrivatePtr<blink::RTCConfiguration> m_private;
 };
 
 } // namespace blink

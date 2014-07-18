@@ -58,22 +58,22 @@ struct WebFloatPoint {
     }
 
 #if INSIDE_BLINK
-    WebFloatPoint(const WebCore::FloatPoint& p)
+    WebFloatPoint(const blink::FloatPoint& p)
         : x(p.x())
         , y(p.y())
     {
     }
 
-    WebFloatPoint& operator=(const WebCore::FloatPoint& p)
+    WebFloatPoint& operator=(const blink::FloatPoint& p)
     {
         x = p.x();
         y = p.y();
         return *this;
     }
 
-    operator WebCore::FloatPoint() const
+    operator blink::FloatPoint() const
     {
-        return WebCore::FloatPoint(x, y);
+        return blink::FloatPoint(x, y);
     }
 #else
     WebFloatPoint(const gfx::PointF& p)

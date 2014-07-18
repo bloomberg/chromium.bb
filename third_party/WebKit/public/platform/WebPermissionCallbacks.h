@@ -7,7 +7,7 @@
 
 #include "WebPrivatePtr.h"
 
-namespace WebCore {
+namespace blink {
 class PermissionCallbacks;
 }
 
@@ -32,7 +32,7 @@ public:
     BLINK_PLATFORM_EXPORT void assign(const WebPermissionCallbacks&);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebPermissionCallbacks(const WTF::PassOwnPtr<WebCore::PermissionCallbacks>&);
+    BLINK_PLATFORM_EXPORT WebPermissionCallbacks(const WTF::PassOwnPtr<blink::PermissionCallbacks>&);
 #endif
 
     BLINK_PLATFORM_EXPORT void doAllow();

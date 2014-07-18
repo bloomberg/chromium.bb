@@ -34,7 +34,7 @@
 #include "../platform/WebString.h"
 
 #if BLINK_IMPLEMENTATION
-namespace WebCore { class TextRun; }
+namespace blink { class TextRun; }
 #endif
 
 namespace blink {
@@ -57,9 +57,9 @@ struct WebTextRun {
     bool directionalOverride;
 
 #if BLINK_IMPLEMENTATION
-    // The resulting WebCore::TextRun will refer to the text in this
+    // The resulting blink::TextRun will refer to the text in this
     // struct, so "this" must outlive the WebCore text run.
-    operator WebCore::TextRun() const;
+    operator blink::TextRun() const;
 #endif
 };
 

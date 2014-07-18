@@ -36,7 +36,7 @@
 #include "WebString.h"
 #include "WebURL.h"
 
-namespace WebCore { class DataObject; }
+namespace blink { class DataObject; }
 
 namespace blink {
 
@@ -109,14 +109,14 @@ public:
     BLINK_EXPORT void setFilesystemId(const WebString&);
 
 #if BLINK_IMPLEMENTATION
-    explicit WebDragData(const PassRefPtrWillBeRawPtr<WebCore::DataObject>&);
-    WebDragData& operator=(const PassRefPtrWillBeRawPtr<WebCore::DataObject>&);
-    WebCore::DataObject* getValue() const;
+    explicit WebDragData(const PassRefPtrWillBeRawPtr<blink::DataObject>&);
+    WebDragData& operator=(const PassRefPtrWillBeRawPtr<blink::DataObject>&);
+    blink::DataObject* getValue() const;
 #endif
 
 private:
     void ensureMutable();
-    WebPrivatePtr<WebCore::DataObject> m_private;
+    WebPrivatePtr<blink::DataObject> m_private;
 };
 
 } // namespace blink

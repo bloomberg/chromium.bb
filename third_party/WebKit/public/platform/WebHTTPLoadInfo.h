@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
 
-namespace WebCore {
+namespace blink {
 struct ResourceLoadInfo;
 }
 
@@ -75,12 +75,12 @@ public:
     BLINK_PLATFORM_EXPORT void setResponseHeadersText(const WebString&);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebHTTPLoadInfo(WTF::PassRefPtr<WebCore::ResourceLoadInfo>);
-    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<WebCore::ResourceLoadInfo>() const;
+    BLINK_PLATFORM_EXPORT WebHTTPLoadInfo(WTF::PassRefPtr<blink::ResourceLoadInfo>);
+    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<blink::ResourceLoadInfo>() const;
 #endif
 
 private:
-    WebPrivatePtr<WebCore::ResourceLoadInfo> m_private;
+    WebPrivatePtr<blink::ResourceLoadInfo> m_private;
 };
 
 } // namespace blink

@@ -35,7 +35,7 @@
 #include "../platform/WebCommon.h"
 #include "../platform/WebPrivatePtr.h"
 
-namespace WebCore { class HTMLCollection; }
+namespace blink { class HTMLCollection; }
 #if BLINK_IMPLEMENTATION
 #include "platform/heap/Handle.h"
 namespace WTF { template <typename T> class PassRefPtr; }
@@ -67,12 +67,12 @@ public:
     BLINK_EXPORT WebElement firstItem() const;
 
 #if BLINK_IMPLEMENTATION
-    WebElementCollection(const PassRefPtrWillBeRawPtr<WebCore::HTMLCollection>&);
-    WebElementCollection& operator=(const PassRefPtrWillBeRawPtr<WebCore::HTMLCollection>&);
+    WebElementCollection(const PassRefPtrWillBeRawPtr<blink::HTMLCollection>&);
+    WebElementCollection& operator=(const PassRefPtrWillBeRawPtr<blink::HTMLCollection>&);
 #endif
 
 private:
-    WebPrivatePtr<WebCore::HTMLCollection> m_private;
+    WebPrivatePtr<blink::HTMLCollection> m_private;
     mutable unsigned m_current;
 };
 

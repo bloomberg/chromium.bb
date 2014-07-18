@@ -9,7 +9,7 @@
 #include "WebContentDecryptionModuleException.h"
 #include "WebPrivatePtr.h"
 
-namespace WebCore {
+namespace blink {
 class ContentDecryptionModuleResult;
 }
 
@@ -58,14 +58,14 @@ public:
     BLINK_PLATFORM_EXPORT void completeWithError(WebContentDecryptionModuleException, unsigned long systemCode, const WebString& message);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT explicit WebContentDecryptionModuleResult(WebCore::ContentDecryptionModuleResult*);
+    BLINK_PLATFORM_EXPORT explicit WebContentDecryptionModuleResult(blink::ContentDecryptionModuleResult*);
 #endif
 
 private:
     BLINK_PLATFORM_EXPORT void reset();
     BLINK_PLATFORM_EXPORT void assign(const WebContentDecryptionModuleResult&);
 
-    WebPrivatePtr<WebCore::ContentDecryptionModuleResult> m_impl;
+    WebPrivatePtr<blink::ContentDecryptionModuleResult> m_impl;
 };
 
 } // namespace blink

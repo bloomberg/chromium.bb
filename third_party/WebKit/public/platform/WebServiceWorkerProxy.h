@@ -7,7 +7,7 @@
 
 #include "WebCommon.h"
 
-namespace WebCore { class ServiceWorker; }
+namespace blink { class ServiceWorker; }
 
 namespace blink {
 
@@ -29,12 +29,12 @@ public:
     virtual void dispatchStateChangeEvent() = 0;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebServiceWorkerProxy(WebCore::ServiceWorker*);
-    BLINK_PLATFORM_EXPORT WebCore::ServiceWorker* unwrap() const;
+    BLINK_PLATFORM_EXPORT WebServiceWorkerProxy(blink::ServiceWorker*);
+    BLINK_PLATFORM_EXPORT blink::ServiceWorker* unwrap() const;
 #endif
 
 protected:
-    WebCore::ServiceWorker* m_private;
+    blink::ServiceWorker* m_private;
 };
 
 } // namespace blink

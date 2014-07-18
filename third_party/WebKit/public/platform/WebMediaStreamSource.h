@@ -36,7 +36,7 @@
 #include "WebPrivatePtr.h"
 #include "WebVector.h"
 
-namespace WebCore {
+namespace blink {
 class MediaStreamSource;
 }
 
@@ -55,11 +55,11 @@ public:
         BLINK_PLATFORM_EXPORT WebMediaStreamSource owner();
 
 #if INSIDE_BLINK
-        BLINK_PLATFORM_EXPORT void setOwner(WebCore::MediaStreamSource*);
+        BLINK_PLATFORM_EXPORT void setOwner(blink::MediaStreamSource*);
 #endif
 
     private:
-        WebCore::MediaStreamSource* m_owner;
+        blink::MediaStreamSource* m_owner;
     };
 
     enum Type {
@@ -113,14 +113,14 @@ public:
     BLINK_PLATFORM_EXPORT bool removeAudioConsumer(WebAudioDestinationConsumer*);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebMediaStreamSource(const WTF::PassRefPtr<WebCore::MediaStreamSource>&);
-    BLINK_PLATFORM_EXPORT WebMediaStreamSource& operator=(WebCore::MediaStreamSource*);
-    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<WebCore::MediaStreamSource>() const;
-    BLINK_PLATFORM_EXPORT operator WebCore::MediaStreamSource*() const;
+    BLINK_PLATFORM_EXPORT WebMediaStreamSource(const WTF::PassRefPtr<blink::MediaStreamSource>&);
+    BLINK_PLATFORM_EXPORT WebMediaStreamSource& operator=(blink::MediaStreamSource*);
+    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<blink::MediaStreamSource>() const;
+    BLINK_PLATFORM_EXPORT operator blink::MediaStreamSource*() const;
 #endif
 
 private:
-    WebPrivatePtr<WebCore::MediaStreamSource> m_private;
+    WebPrivatePtr<blink::MediaStreamSource> m_private;
 };
 
 } // namespace blink

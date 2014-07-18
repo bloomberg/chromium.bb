@@ -34,7 +34,7 @@
 #include "WebDocument.h"
 
 #if BLINK_IMPLEMENTATION
-namespace WebCore { class PluginDocument; }
+namespace blink { class PluginDocument; }
 #endif
 
 namespace blink {
@@ -56,9 +56,9 @@ public:
     BLINK_EXPORT WebPlugin* plugin();
 
 #if BLINK_IMPLEMENTATION
-    WebPluginDocument(const PassRefPtrWillBeRawPtr<WebCore::PluginDocument>&);
-    WebPluginDocument& operator=(const PassRefPtrWillBeRawPtr<WebCore::PluginDocument>&);
-    operator PassRefPtrWillBeRawPtr<WebCore::PluginDocument>() const;
+    WebPluginDocument(const PassRefPtrWillBeRawPtr<blink::PluginDocument>&);
+    WebPluginDocument& operator=(const PassRefPtrWillBeRawPtr<blink::PluginDocument>&);
+    operator PassRefPtrWillBeRawPtr<blink::PluginDocument>() const;
 #endif
 };
 

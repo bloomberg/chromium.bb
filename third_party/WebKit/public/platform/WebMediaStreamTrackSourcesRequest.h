@@ -32,7 +32,7 @@
 #include "WebString.h"
 #include "WebVector.h"
 
-namespace WebCore {
+namespace blink {
 class MediaStreamTrackSourcesRequest;
 }
 
@@ -72,11 +72,11 @@ public:
     BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebMediaStreamTrackSourcesRequest(WebCore::MediaStreamTrackSourcesRequest*);
+    BLINK_PLATFORM_EXPORT WebMediaStreamTrackSourcesRequest(blink::MediaStreamTrackSourcesRequest*);
 #endif
 
 private:
-    WebPrivatePtr<WebCore::MediaStreamTrackSourcesRequest> m_private;
+    WebPrivatePtr<blink::MediaStreamTrackSourcesRequest> m_private;
 };
 
 } // namespace blink

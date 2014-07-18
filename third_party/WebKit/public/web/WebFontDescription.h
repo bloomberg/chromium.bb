@@ -34,7 +34,7 @@
 #include "../platform/WebString.h"
 
 #if BLINK_IMPLEMENTATION
-namespace WebCore { class FontDescription; }
+namespace blink { class FontDescription; }
 #endif
 
 namespace blink {
@@ -95,9 +95,9 @@ struct WebFontDescription {
     short wordSpacing;
 
 #if BLINK_IMPLEMENTATION
-    WebFontDescription(const WebCore::FontDescription&);
+    WebFontDescription(const blink::FontDescription&);
 
-    operator WebCore::FontDescription() const;
+    operator blink::FontDescription() const;
 #endif
 };
 

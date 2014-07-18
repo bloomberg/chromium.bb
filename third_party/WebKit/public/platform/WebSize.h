@@ -63,22 +63,22 @@ struct WebSize {
     }
 
 #if INSIDE_BLINK
-    WebSize(const WebCore::IntSize& s)
+    WebSize(const blink::IntSize& s)
         : width(s.width())
         , height(s.height())
     {
     }
 
-    WebSize& operator=(const WebCore::IntSize& s)
+    WebSize& operator=(const blink::IntSize& s)
     {
         width = s.width();
         height = s.height();
         return *this;
     }
 
-    operator WebCore::IntSize() const
+    operator blink::IntSize() const
     {
-        return WebCore::IntSize(width, height);
+        return blink::IntSize(width, height);
     }
 #else
     WebSize(const gfx::Size& s)

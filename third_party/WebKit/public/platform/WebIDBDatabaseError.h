@@ -33,7 +33,7 @@
 #include "WebPrivatePtr.h"
 #include "WebString.h"
 
-namespace WebCore { class DOMError; }
+namespace blink { class DOMError; }
 
 namespace blink {
 
@@ -55,14 +55,14 @@ public:
     BLINK_EXPORT void reset();
 
 #if BLINK_IMPLEMENTATION
-    operator PassRefPtrWillBeRawPtr<WebCore::DOMError>() const;
+    operator PassRefPtrWillBeRawPtr<blink::DOMError>() const;
 #endif
 
 private:
     BLINK_EXPORT void assign(unsigned short code);
     BLINK_EXPORT void assign(unsigned short code, const WebString& message);
 
-    WebPrivatePtr<WebCore::DOMError> m_private;
+    WebPrivatePtr<blink::DOMError> m_private;
 };
 
 } // namespace blink

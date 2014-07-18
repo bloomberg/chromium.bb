@@ -53,8 +53,8 @@ public:
     bool isReload() const;
 
 #if INSIDE_BLINK
-    const WebCore::HTTPHeaderMap& headers() const;
-    const WebCore::Referrer& referrer() const;
+    const blink::HTTPHeaderMap& headers() const;
+    const blink::Referrer& referrer() const;
 #endif
 
 private:

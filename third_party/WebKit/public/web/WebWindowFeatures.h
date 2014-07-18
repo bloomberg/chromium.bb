@@ -84,7 +84,7 @@ struct WebWindowFeatures {
 
 
 #if BLINK_IMPLEMENTATION
-    WebWindowFeatures(const WebCore::WindowFeatures& f)
+    WebWindowFeatures(const blink::WindowFeatures& f)
         : x(f.x)
         , xSet(f.xSet)
         , y(f.y)
@@ -105,9 +105,9 @@ struct WebWindowFeatures {
     {
     }
 
-    operator WebCore::WindowFeatures() const
+    operator blink::WindowFeatures() const
     {
-        WebCore::WindowFeatures result;
+        blink::WindowFeatures result;
         result.x = x;
         result.xSet = xSet;
         result.y = y;

@@ -27,7 +27,7 @@
 
 #include "WebCommon.h"
 
-namespace WebCore { class AudioBus; }
+namespace blink { class AudioBus; }
 
 #if INSIDE_BLINK
 namespace WTF { template <typename T> class PassRefPtr; }
@@ -63,7 +63,7 @@ public:
     float* channelData(unsigned channelIndex);
 
 #if INSIDE_BLINK
-    WTF::PassRefPtr<WebCore::AudioBus> release();
+    WTF::PassRefPtr<blink::AudioBus> release();
 #endif
 
 private:
@@ -71,7 +71,7 @@ private:
     WebAudioBus(const WebAudioBus&);
     void operator=(const WebAudioBus&);
 
-    WebCore::AudioBus* m_private;
+    blink::AudioBus* m_private;
 };
 
 } // namespace blink

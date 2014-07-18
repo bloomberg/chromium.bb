@@ -36,7 +36,7 @@
 #include "WebReferrerPolicy.h"
 
 #if INSIDE_BLINK
-namespace WebCore { class ResourceRequest; }
+namespace blink { class ResourceRequest; }
 #endif
 
 namespace blink {
@@ -252,8 +252,8 @@ public:
     BLINK_PLATFORM_EXPORT void setPriority(Priority);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebCore::ResourceRequest& toMutableResourceRequest();
-    BLINK_PLATFORM_EXPORT const WebCore::ResourceRequest& toResourceRequest() const;
+    BLINK_PLATFORM_EXPORT blink::ResourceRequest& toMutableResourceRequest();
+    BLINK_PLATFORM_EXPORT const blink::ResourceRequest& toResourceRequest() const;
 #endif
 
     // FIXME: Drop these once we replace TargetType upstream.

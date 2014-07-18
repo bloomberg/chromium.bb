@@ -33,7 +33,7 @@
 
 #include "../WebCommon.h"
 
-namespace WebCore { struct FontRenderStyle; }
+namespace blink { struct FontRenderStyle; }
 
 namespace blink {
 
@@ -52,7 +52,7 @@ struct BLINK_EXPORT WebFontRenderStyle {
 
 #if BLINK_IMPLEMENTATION || BLINK_PLATFORM_IMPLEMENTATION
     // Translates the members of this struct to a FontRenderStyle
-    void toFontRenderStyle(WebCore::FontRenderStyle*);
+    void toFontRenderStyle(blink::FontRenderStyle*);
 #endif
 
     void setDefaults();

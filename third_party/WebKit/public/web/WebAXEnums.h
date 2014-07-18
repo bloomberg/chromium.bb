@@ -34,7 +34,7 @@
 namespace blink {
 
 // Accessibility events sent from Blink to the embedder.
-// These values must match WebCore::AXObjectCache::AXNotification values.
+// These values must match blink::AXObjectCache::AXNotification values.
 // Enforced in AssertMatchingEnums.cpp.
 enum WebAXEvent {
     WebAXEventActiveDescendantChanged,
@@ -68,7 +68,7 @@ enum WebAXEvent {
 };
 
 // Accessibility roles.
-// These values must match WebCore::AccessibilityRole values.
+// These values must match blink::AccessibilityRole values.
 // Enforced in AssertMatchingEnums.cpp.
 enum WebAXRole {
     WebAXRoleAlertDialog = 1,

@@ -36,7 +36,7 @@
 #include "WebOptionElement.h"
 
 #if BLINK_IMPLEMENTATION
-namespace WebCore { class HTMLSelectElement; }
+namespace blink { class HTMLSelectElement; }
 #endif
 
 namespace blink {
@@ -57,9 +57,9 @@ public:
     BLINK_EXPORT WebVector<WebElement> listItems() const;
 
 #if BLINK_IMPLEMENTATION
-    WebSelectElement(const PassRefPtrWillBeRawPtr<WebCore::HTMLSelectElement>&);
-    WebSelectElement& operator=(const PassRefPtrWillBeRawPtr<WebCore::HTMLSelectElement>&);
-    operator PassRefPtrWillBeRawPtr<WebCore::HTMLSelectElement>() const;
+    WebSelectElement(const PassRefPtrWillBeRawPtr<blink::HTMLSelectElement>&);
+    WebSelectElement& operator=(const PassRefPtrWillBeRawPtr<blink::HTMLSelectElement>&);
+    operator PassRefPtrWillBeRawPtr<blink::HTMLSelectElement>() const;
 #endif
 };
 

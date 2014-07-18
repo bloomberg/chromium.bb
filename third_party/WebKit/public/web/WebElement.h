@@ -35,7 +35,7 @@
 #include "WebNode.h"
 
 #if BLINK_IMPLEMENTATION
-namespace WebCore { class Element; }
+namespace blink { class Element; }
 #endif
 
 namespace blink {
@@ -85,9 +85,9 @@ struct WebRect;
         BLINK_EXPORT WebImage imageContents();
 
 #if BLINK_IMPLEMENTATION
-        WebElement(const PassRefPtrWillBeRawPtr<WebCore::Element>&);
-        WebElement& operator=(const PassRefPtrWillBeRawPtr<WebCore::Element>&);
-        operator PassRefPtrWillBeRawPtr<WebCore::Element>() const;
+        WebElement(const PassRefPtrWillBeRawPtr<blink::Element>&);
+        WebElement& operator=(const PassRefPtrWillBeRawPtr<blink::Element>&);
+        operator PassRefPtrWillBeRawPtr<blink::Element>() const;
 #endif
     };
 

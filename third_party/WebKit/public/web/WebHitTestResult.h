@@ -28,7 +28,7 @@
 
 #include "../platform/WebPrivateOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 class HitTestResult;
 }
 
@@ -73,8 +73,8 @@ public:
     BLINK_EXPORT bool isContentEditable() const;
 
 #if BLINK_IMPLEMENTATION
-    WebHitTestResult(const WebCore::HitTestResult&);
-    WebHitTestResult& operator=(const WebCore::HitTestResult&);
+    WebHitTestResult(const blink::HitTestResult&);
+    WebHitTestResult& operator=(const blink::HitTestResult&);
 #endif
 
 protected:

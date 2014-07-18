@@ -8,7 +8,7 @@
 #include "WebString.h"
 
 #if INSIDE_BLINK
-namespace WebCore { class SecurityOrigin; }
+namespace blink { class SecurityOrigin; }
 #else
 #include <url/origin.h>
 #endif
@@ -20,7 +20,7 @@ class WebSerializedOrigin {
 public:
     WebSerializedOrigin() : m_string("null") { }
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebSerializedOrigin(const WebCore::SecurityOrigin&);
+    BLINK_PLATFORM_EXPORT WebSerializedOrigin(const blink::SecurityOrigin&);
 #else
     WebSerializedOrigin(const url::Origin& origin) : m_string(WebString::fromUTF8(origin.string())) { }
     operator url::Origin() const { return url::Origin(m_string.utf8()); }

@@ -29,7 +29,7 @@
 #include "WebPrivatePtr.h"
 #include "WebString.h"
 
-namespace WebCore {
+namespace blink {
 class RTCStatsResponseBase;
 }
 
@@ -55,12 +55,12 @@ public:
     BLINK_PLATFORM_EXPORT void addStatistic(size_t report, const WebString& name, const WebString& value);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCStatsResponse(WebCore::RTCStatsResponseBase*);
-    BLINK_PLATFORM_EXPORT operator WebCore::RTCStatsResponseBase*() const;
+    BLINK_PLATFORM_EXPORT WebRTCStatsResponse(blink::RTCStatsResponseBase*);
+    BLINK_PLATFORM_EXPORT operator blink::RTCStatsResponseBase*() const;
 #endif
 
 private:
-    WebPrivatePtr<WebCore::RTCStatsResponseBase> m_private;
+    WebPrivatePtr<blink::RTCStatsResponseBase> m_private;
 };
 
 } // namespace blink

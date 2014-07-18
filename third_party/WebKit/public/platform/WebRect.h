@@ -68,7 +68,7 @@ struct WebRect {
     }
 
 #if INSIDE_BLINK
-    WebRect(const WebCore::IntRect& r)
+    WebRect(const blink::IntRect& r)
         : x(r.x())
         , y(r.y())
         , width(r.width())
@@ -76,7 +76,7 @@ struct WebRect {
     {
     }
 
-    WebRect& operator=(const WebCore::IntRect& r)
+    WebRect& operator=(const blink::IntRect& r)
     {
         x = r.x();
         y = r.y();
@@ -85,9 +85,9 @@ struct WebRect {
         return *this;
     }
 
-    operator WebCore::IntRect() const
+    operator blink::IntRect() const
     {
-        return WebCore::IntRect(x, y, width, height);
+        return blink::IntRect(x, y, width, height);
     }
 #else
     WebRect(const gfx::Rect& r)

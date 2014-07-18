@@ -31,7 +31,7 @@
 #include "WebString.h"
 #include "WebVector.h"
 
-namespace WebCore {
+namespace blink {
 struct IDBDatabaseMetadata;
 }
 
@@ -81,8 +81,8 @@ struct WebIDBMetadata {
     };
 
 #if BLINK_IMPLEMENTATION
-    WebIDBMetadata(const WebCore::IDBDatabaseMetadata&);
-    operator WebCore::IDBDatabaseMetadata() const;
+    WebIDBMetadata(const blink::IDBDatabaseMetadata&);
+    operator blink::IDBDatabaseMetadata() const;
 #endif
 };
 

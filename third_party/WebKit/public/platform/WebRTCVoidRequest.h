@@ -36,7 +36,7 @@
 #include "WebPrivatePtr.h"
 #include "WebString.h"
 
-namespace WebCore {
+namespace blink {
 class RTCVoidRequest;
 }
 
@@ -75,11 +75,11 @@ public:
     BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebRTCVoidRequest(const WTF::PassRefPtr<WebCore::RTCVoidRequest>&);
+    BLINK_PLATFORM_EXPORT WebRTCVoidRequest(const WTF::PassRefPtr<blink::RTCVoidRequest>&);
 #endif
 
 private:
-    WebPrivatePtr<WebCore::RTCVoidRequest> m_private;
+    WebPrivatePtr<blink::RTCVoidRequest> m_private;
 };
 
 } // namespace blink

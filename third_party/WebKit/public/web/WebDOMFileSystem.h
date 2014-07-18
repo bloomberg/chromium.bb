@@ -48,7 +48,7 @@ class Value;
 template <class T> class Handle;
 }
 
-namespace WebCore { class DOMFileSystem; }
+namespace blink { class DOMFileSystem; }
 
 namespace blink {
 
@@ -102,12 +102,12 @@ public:
     bool isNull() const { return m_private.isNull(); }
 
 #if BLINK_IMPLEMENTATION
-    WebDOMFileSystem(WebCore::DOMFileSystem*);
-    WebDOMFileSystem& operator=(WebCore::DOMFileSystem*);
+    WebDOMFileSystem(blink::DOMFileSystem*);
+    WebDOMFileSystem& operator=(blink::DOMFileSystem*);
 #endif
 
 private:
-    WebPrivatePtr<WebCore::DOMFileSystem> m_private;
+    WebPrivatePtr<blink::DOMFileSystem> m_private;
 };
 
 } // namespace blink

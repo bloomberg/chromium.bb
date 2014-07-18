@@ -35,7 +35,7 @@
 #include "../platform/WebString.h"
 #include "WebTextDecorationType.h"
 
-namespace WebCore {
+namespace blink {
 struct TextCheckingResult;
 }
 
@@ -61,7 +61,7 @@ struct WebTextCheckingResult {
     }
 
 #if BLINK_IMPLEMENTATION
-    operator WebCore::TextCheckingResult() const;
+    operator blink::TextCheckingResult() const;
 #endif
 
     WebTextDecorationType decoration;

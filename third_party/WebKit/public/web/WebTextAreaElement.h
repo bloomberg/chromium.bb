@@ -34,7 +34,7 @@
 #include "WebFormControlElement.h"
 
 #if BLINK_IMPLEMENTATION
-namespace WebCore { class HTMLTextAreaElement; }
+namespace blink { class HTMLTextAreaElement; }
 #endif
 
 namespace blink {
@@ -53,9 +53,9 @@ public:
     void assign(const WebTextAreaElement& element) { WebFormControlElement::assign(element); }
 
 #if BLINK_IMPLEMENTATION
-    WebTextAreaElement(const PassRefPtrWillBeRawPtr<WebCore::HTMLTextAreaElement>&);
-    WebTextAreaElement& operator=(const PassRefPtrWillBeRawPtr<WebCore::HTMLTextAreaElement>&);
-    operator PassRefPtrWillBeRawPtr<WebCore::HTMLTextAreaElement>() const;
+    WebTextAreaElement(const PassRefPtrWillBeRawPtr<blink::HTMLTextAreaElement>&);
+    WebTextAreaElement& operator=(const PassRefPtrWillBeRawPtr<blink::HTMLTextAreaElement>&);
+    operator PassRefPtrWillBeRawPtr<blink::HTMLTextAreaElement>() const;
 #endif
 };
 

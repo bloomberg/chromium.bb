@@ -34,7 +34,7 @@
 #include "WebNode.h"
 
 #if BLINK_IMPLEMENTATION
-namespace WebCore { class DocumentType; }
+namespace blink { class DocumentType; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
@@ -57,9 +57,9 @@ public:
     BLINK_EXPORT WebString name() const;
 
 #if BLINK_IMPLEMENTATION
-    WebDocumentType(const PassRefPtrWillBeRawPtr<WebCore::DocumentType>&);
-    WebDocumentType& operator=(const PassRefPtrWillBeRawPtr<WebCore::DocumentType>&);
-    operator PassRefPtrWillBeRawPtr<WebCore::DocumentType>() const;
+    WebDocumentType(const PassRefPtrWillBeRawPtr<blink::DocumentType>&);
+    WebDocumentType& operator=(const PassRefPtrWillBeRawPtr<blink::DocumentType>&);
+    operator PassRefPtrWillBeRawPtr<blink::DocumentType>() const;
 #endif
 };
 
