@@ -58,11 +58,58 @@
 
 namespace WebCore {
 
+class WorkerScriptController::WorkerGlobalScopeExecutionState FINAL {
+    STACK_ALLOCATED();
+public:
+    explicit WorkerGlobalScopeExecutionState(WorkerScriptController* controller)
+        : hadException(false)
+        , lineNumber(0)
+        , columnNumber(0)
+        , m_controller(controller)
+        , m_outerState(controller->m_globalScopeExecutionState)
+    {
+        m_controller->m_globalScopeExecutionState = this;
+    }
+
+    ~WorkerGlobalScopeExecutionState()
+    {
+        m_controller->m_globalScopeExecutionState = m_outerState;
+    }
+
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_errorEventFromImportedScript);
+    }
+
+    bool hadException;
+    String errorMessage;
+    int lineNumber;
+    int columnNumber;
+    String sourceURL;
+    ScriptValue exception;
+    RefPtrWillBeMember<ErrorEvent> m_errorEventFromImportedScript;
+
+    // A WorkerGlobalScopeExecutionState context is stack allocated by
+    // WorkerScriptController::evaluate(), with the contoller using it
+    // during script evaluation. To handle nested evaluate() uses,
+    // WorkerGlobalScopeExecutionStates are chained together;
+    // |m_outerState| keeps a pointer to the context object one level out
+    // (or 0, if outermost.) Upon return from evaluate(), the
+    // WorkerScriptController's WorkerGlobalScopeExecutionState is popped
+    // and the previous one restored (see above dtor.)
+    //
+    // With Oilpan, |m_outerState| isn't traced. It'll be "up the stack"
+    // and its fields will be traced when scanning the stack.
+    WorkerScriptController* m_controller;
+    WorkerGlobalScopeExecutionState* m_outerState;
+};
+
 WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalScope)
     : m_isolate(v8::Isolate::New())
     , m_workerGlobalScope(workerGlobalScope)
     , m_executionForbidden(false)
     , m_executionScheduledToTerminate(false)
+    , m_globalScopeExecutionState(0)
 {
     m_isolate->Enter();
     V8Initializer::initializeWorker(m_isolate);
@@ -153,7 +200,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
     return true;
 }
 
-ScriptValue WorkerScriptController::evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, WorkerGlobalScopeExecutionState* state)
+ScriptValue WorkerScriptController::evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition)
 {
     if (!initializeContextIfNeeded())
         return ScriptValue();
@@ -179,16 +226,16 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
 
     if (block.HasCaught()) {
         v8::Local<v8::Message> message = block.Message();
-        state->hadException = true;
-        state->errorMessage = toCoreString(message->Get());
-        state->lineNumber = message->GetLineNumber();
-        state->columnNumber = message->GetStartColumn() + 1;
+        m_globalScopeExecutionState->hadException = true;
+        m_globalScopeExecutionState->errorMessage = toCoreString(message->Get());
+        m_globalScopeExecutionState->lineNumber = message->GetLineNumber();
+        m_globalScopeExecutionState->columnNumber = message->GetStartColumn() + 1;
         TOSTRING_DEFAULT(V8StringResource<>, sourceURL, message->GetScriptOrigin().ResourceName(), ScriptValue());
-        state->sourceURL = sourceURL;
-        state->exception = ScriptValue(m_scriptState.get(), block.Exception());
+        m_globalScopeExecutionState->sourceURL = sourceURL;
+        m_globalScopeExecutionState->exception = ScriptValue(m_scriptState.get(), block.Exception());
         block.Reset();
     } else {
-        state->hadException = false;
+        m_globalScopeExecutionState->hadException = false;
     }
 
     if (result.IsEmpty() || result->IsUndefined())
@@ -202,21 +249,27 @@ void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtr
     if (isExecutionForbidden())
         return;
 
-    WorkerGlobalScopeExecutionState state;
-    evaluate(sourceCode.source(), sourceCode.url().string(), sourceCode.startPosition(), &state);
+    WorkerGlobalScopeExecutionState state(this);
+    evaluate(sourceCode.source(), sourceCode.url().string(), sourceCode.startPosition());
     if (state.hadException) {
         if (errorEvent) {
-            *errorEvent = m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin) ?
-                ErrorEvent::createSanitizedError(m_world.get()) : ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, m_world.get());
+            if (state.m_errorEventFromImportedScript) {
+                // Propagate inner error event outwards.
+                *errorEvent = state.m_errorEventFromImportedScript.release();
+                return;
+            }
+            if (m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin))
+                *errorEvent = ErrorEvent::createSanitizedError(m_world.get());
+            else
+                *errorEvent = ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, m_world.get());
             V8ErrorHandler::storeExceptionOnErrorEventWrapper(errorEvent->get(), state.exception.v8Value(), m_scriptState->context()->Global(), m_isolate);
         } else {
             ASSERT(!m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin));
             RefPtrWillBeRawPtr<ErrorEvent> event = nullptr;
-            if (m_errorEventFromImportedScript) {
-                event = m_errorEventFromImportedScript.release();
-            } else {
+            if (state.m_errorEventFromImportedScript)
+                event = state.m_errorEventFromImportedScript.release();
+            else
                 event = ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, m_world.get());
-            }
             m_workerGlobalScope.reportException(event, nullptr, NotSharableCrossOrigin);
         }
     }
@@ -258,10 +311,12 @@ void WorkerScriptController::disableEval(const String& errorMessage)
     m_disableEvalPending = errorMessage;
 }
 
-void WorkerScriptController::rethrowExceptionFromImportedScript(PassRefPtrWillBeRawPtr<ErrorEvent> errorEvent)
+void WorkerScriptController::rethrowExceptionFromImportedScript(PassRefPtrWillBeRawPtr<ErrorEvent> errorEvent, ExceptionState& exceptionState)
 {
-    m_errorEventFromImportedScript = errorEvent;
-    throwError(V8ThrowException::createError(v8GeneralError, m_errorEventFromImportedScript->message(), m_isolate), m_isolate);
+    const String& errorMessage = errorEvent->message();
+    if (m_globalScopeExecutionState)
+        m_globalScopeExecutionState->m_errorEventFromImportedScript = errorEvent;
+    exceptionState.rethrowV8Exception(V8ThrowException::createError(v8GeneralError, errorMessage, m_isolate));
 }
 
 } // namespace WebCore
