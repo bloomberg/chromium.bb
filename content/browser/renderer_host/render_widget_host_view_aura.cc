@@ -62,6 +62,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/compositor_vsync_manager.h"
+#include "ui/compositor/dip_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_recognizer.h"
@@ -1618,6 +1619,7 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
       GetDisplayNearestWindow(window_);
   DCHECK_EQ(device_scale_factor, display.device_scale_factor());
   current_cursor_.SetDisplayInfo(display);
+  SnapToPhysicalPixelBoundary();
 }
 
 void RenderWidgetHostViewAura::OnWindowDestroying(aura::Window* window) {
@@ -2251,15 +2253,17 @@ void RenderWidgetHostViewAura::SnapToPhysicalPixelBoundary() {
   // to avoid the web contents area looking blurry we translate the web contents
   // in the +x, +y direction to land on the nearest pixel boundary. This may
   // cause the bottom and right edges to be clipped slightly, but that's ok.
-  gfx::Point view_offset_dips = window_->GetBoundsInRootWindow().origin();
-  gfx::PointF view_offset = view_offset_dips;
-  view_offset.Scale(current_device_scale_factor_);
-  gfx::PointF view_offset_snapped(std::ceil(view_offset.x()),
-                                  std::ceil(view_offset.y()));
-
-  gfx::Vector2dF fudge = view_offset_snapped - view_offset;
-  fudge.Scale(1.0 / current_device_scale_factor_);
-  GetLayer()->SetSubpixelPositionOffset(fudge);
+  aura::Window* snapped = NULL;
+  // On desktop, use the root window. On alternative environment (ash),
+  // use the toplevel window which must be already snapped.
+  if (gfx::Screen::GetScreenFor(window_) !=
+      gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE)) {
+    snapped = window_->GetRootWindow();
+  } else {
+    snapped = window_->GetToplevelWindow();
+  }
+  if (snapped && snapped != window_)
+    ui::SnapLayerToPhysicalPixelBoundary(snapped->layer(), window_->layer());
 }
 
 void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
