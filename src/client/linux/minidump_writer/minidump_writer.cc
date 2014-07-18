@@ -1758,23 +1758,6 @@ class MinidumpWriter {
       space_left -= info_len;
     }
 
-#ifdef __ANDROID__
-    // On Android, try to get the build fingerprint and append it.
-    // Fail gracefully because there is no guarantee that the system
-    // property will always be available or accessible.
-    char fingerprint[PROP_VALUE_MAX];
-    int fingerprint_len = __system_property_get("ro.build.fingerprint",
-                                                fingerprint);
-    // System property values shall always be zero-terminated.
-    // Be paranoid and don't trust the system.
-    if (fingerprint_len > 0 && fingerprint_len < PROP_VALUE_MAX) {
-      const char* separator = " ";
-      if (!first_item)
-        my_strlcat(buf, separator, sizeof(buf));
-      my_strlcat(buf, fingerprint, sizeof(buf));
-    }
-#endif
-
     MDLocationDescriptor location;
     if (!minidump_writer_.WriteString(buf, 0, &location))
       return false;
