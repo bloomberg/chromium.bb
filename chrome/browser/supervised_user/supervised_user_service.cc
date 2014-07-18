@@ -275,16 +275,6 @@ bool SupervisedUserService::UserMayLoad(const extensions::Extension* extension,
   if (ExtensionManagementPolicyImpl(extension, &tmp_error))
     return true;
 
-  // If the extension is already loaded, we allow it, otherwise we'd unload
-  // all existing extensions.
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-
-  // |extension_service| can be NULL in a unit test.
-  if (extension_service &&
-      extension_service->GetInstalledExtension(extension->id()))
-    return true;
-
   bool was_installed_by_default = extension->was_installed_by_default();
   bool was_installed_by_custodian = extension->was_installed_by_custodian();
 #if defined(OS_CHROMEOS)
@@ -297,7 +287,7 @@ bool SupervisedUserService::UserMayLoad(const extensions::Extension* extension,
   was_installed_by_default =
       extensions::Manifest::IsExternalLocation(extension->location());
 #endif
-  if (extension->location() == extensions::Manifest::COMPONENT ||
+  if (extensions::Manifest::IsComponentLocation(extension->location()) ||
       was_installed_by_default ||
       was_installed_by_custodian) {
     return true;
