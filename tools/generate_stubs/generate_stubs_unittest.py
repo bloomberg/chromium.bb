@@ -165,7 +165,7 @@ class PosixStubWriterUnittest(unittest.TestCase):
     self.module_name = 'my_module-1'
     self.signatures = [sig[1] for sig in SIMPLE_SIGNATURES]
     self.out_dir = 'out_dir'
-    self.writer = gs.PosixStubWriter(self.module_name, self.signatures)
+    self.writer = gs.PosixStubWriter(self.module_name, '', self.signatures)
 
   def testEnumName(self):
     self.assertEqual('kModuleMy_module1',
@@ -193,15 +193,23 @@ class PosixStubWriterUnittest(unittest.TestCase):
   def testStubFunction(self):
     # Test for a signature with a return value and a parameter.
     self.assertEqual("""extern int foo(int a) __attribute__((weak));
-int foo(int a) {
+int  foo(int a) {
   return foo_ptr(a);
 }""", gs.PosixStubWriter.StubFunction(SIMPLE_SIGNATURES[0][1]))
 
     # Test for a signature with a void return value and no parameters.
     self.assertEqual("""extern void waldo(void) __attribute__((weak));
-void waldo(void) {
+void  waldo(void) {
   waldo_ptr();
 }""", gs.PosixStubWriter.StubFunction(SIMPLE_SIGNATURES[4][1]))
+
+    # Test export macros.
+    sig = _MakeSignature('int*', 'foo', ['bool b'])
+    sig['export'] = 'TEST_EXPORT'
+    self.assertEqual("""extern int* foo(bool b) __attribute__((weak));
+int* TEST_EXPORT foo(bool b) {
+  return foo_ptr(b);
+}""", gs.PosixStubWriter.StubFunction(sig))
 
   def testWriteImplemenationContents(self):
     outfile = StringIO.StringIO()

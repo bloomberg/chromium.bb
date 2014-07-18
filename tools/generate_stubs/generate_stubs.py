@@ -85,13 +85,14 @@ FILE_TYPE_WIN_DEF = 'windows_def'
 # declaration marking the symbol as weak.  This template takes the following
 # named parameters.
 #   return_type: The return type.
+#   export: The macro used to alter the stub's visibility.
 #   name: The name of the function.
 #   params: The parameters to the function.
 #   return_prefix: 'return ' if this function is not void. '' otherwise.
 #   arg_list: The arguments used to call the stub function.
 STUB_FUNCTION_DEFINITION = (
     """extern %(return_type)s %(name)s(%(params)s) __attribute__((weak));
-%(return_type)s %(name)s(%(params)s) {
+%(return_type)s %(export)s %(name)s(%(params)s) {
   %(return_prefix)s%(name)s_ptr(%(arg_list)s);
 }""")
 
@@ -100,6 +101,7 @@ STUB_FUNCTION_DEFINITION = (
 # Includes a forward declaration marking the symbol as weak.
 # This template takes the following named parameters.
 #   return_type: The return type.
+#   export: The macro used to alter the stub's visibility.
 #   name: The name of the function.
 #   params: The parameters to the function.
 #   arg_list: The arguments used to call the stub function without the
@@ -108,7 +110,7 @@ STUB_FUNCTION_DEFINITION = (
 #                   argument.
 VARIADIC_STUB_FUNCTION_DEFINITION = (
     """extern %(return_type)s %(name)s(%(params)s) __attribute__((weak));
-%(return_type)s %(name)s(%(params)s) {
+%(return_type)s %(export)s %(name)s(%(params)s) {
   va_list args___;
   va_start(args___, %(last_named_arg)s);
   %(return_type)s ret___ = %(name)s_ptr(%(arg_list)s, va_arg(args___, void*));
@@ -122,13 +124,14 @@ VARIADIC_STUB_FUNCTION_DEFINITION = (
 # This template takes the following named parameters.
 #   name: The name of the function.
 #   params: The parameters to the function.
+#   export: The macro used to alter the stub's visibility.
 #   arg_list: The arguments used to call the stub function without the
 #             variadic argument.
 #   last_named_arg: Name of the last named argument before the variadic
 #                   argument.
 VOID_VARIADIC_STUB_FUNCTION_DEFINITION = (
     """extern void %(name)s(%(params)s) __attribute__((weak));
-void %(name)s(%(params)s) {
+void %(export)s %(name)s(%(params)s) {
   va_list args___;
   va_start(args___, %(last_named_arg)s);
   %(name)s_ptr(%(arg_list)s, va_arg(args___, void*));
@@ -517,16 +520,19 @@ class PosixStubWriter(object):
   functions plus initialization code for them.
   """
 
-  def __init__(self, module_name, signatures):
+  def __init__(self, module_name, export_macro, signatures):
     """Initializes PosixStubWriter for this set of signatures and module_name.
 
     Args:
       module_name: The name of the module we are writing a stub for.
+      export_macro: A preprocessor macro used to annotate stub symbols with
+                    an EXPORT marking, to control visibility.
       signatures: The list of signature hashes, as produced by ParseSignatures,
                   to create stubs for.
     """
     self.signatures = signatures
     self.module_name = module_name
+    self.export_macro = export_macro
 
   @classmethod
   def CStyleIdentifier(cls, identifier):
@@ -654,13 +660,15 @@ class PosixStubWriter(object):
             'name': signature['name'],
             'params': ', '.join(signature['params']),
             'arg_list': ', '.join(arguments[0:-1]),
-            'last_named_arg': arguments[-2]}
+            'last_named_arg': arguments[-2],
+            'export': signature.get('export', '')}
       else:
         return VOID_VARIADIC_STUB_FUNCTION_DEFINITION % {
             'name': signature['name'],
             'params': ', '.join(signature['params']),
             'arg_list': ', '.join(arguments[0:-1]),
-            'last_named_arg': arguments[-2]}
+            'last_named_arg': arguments[-2],
+            'export': signature.get('export', '')}
     else:
       # This is a regular function.
       return STUB_FUNCTION_DEFINITION % {
@@ -668,7 +676,8 @@ class PosixStubWriter(object):
           'name': signature['name'],
           'params': ', '.join(signature['params']),
           'return_prefix': return_prefix,
-          'arg_list': arg_list}
+          'arg_list': arg_list,
+          'export': signature.get('export', '')}
 
   @classmethod
   def WriteImplementationPreamble(cls, header_path, outfile):
@@ -816,6 +825,7 @@ class PosixStubWriter(object):
     """
     outfile.write('// Stubs that dispatch to the real implementations.\n')
     for sig in self.signatures:
+      sig['export'] = self.export_macro
       outfile.write('%s\n' % PosixStubWriter.StubFunction(sig))
 
   def WriteModuleInitializeFunctions(self, outfile):
@@ -922,6 +932,13 @@ def CreateOptionParser():
                     default=None,
                     help=('Name of output DLL or LIB for DEF creation using '
                           '%s type.' % FILE_TYPE_WIN_DEF))
+  parser.add_option('-x',
+                    '--export_macro',
+                    dest='export_macro',
+                    default='',
+                    help=('A macro to place between the return type and '
+                          'function name, e.g. MODULE_EXPORT, to control the '
+                          'visbility of the stub functions.'))
 
   return parser
 
@@ -996,7 +1013,8 @@ def CreateOutputDirectories(options):
   return out_dir, intermediate_dir
 
 
-def CreateWindowsLibForSigFiles(sig_files, out_dir, intermediate_dir, machine):
+def CreateWindowsLibForSigFiles(sig_files, out_dir, intermediate_dir, machine,
+                                export_macro):
   """For each signature file, create a windows lib.
 
   Args:
@@ -1005,12 +1023,16 @@ def CreateWindowsLibForSigFiles(sig_files, out_dir, intermediate_dir, machine):
     intermediate_dir: String holding path to directory generated intermdiate
                       artifacts.
     machine: String holding the machine type, 'X86' or 'X64'.
+    export_macro: A preprocessor macro used to annotate stub symbols with
+                  an EXPORT marking, to control visibility.
   """
   for input_path in sig_files:
     infile = open(input_path, 'r')
     try:
       signatures = ParseSignatures(infile)
       module_name = ExtractModuleName(os.path.basename(input_path))
+      for sig in signatures:
+        sig['export'] = export_macro
       CreateWindowsLib(module_name, signatures, intermediate_dir, out_dir,
                        machine)
     finally:
@@ -1045,7 +1067,7 @@ def CreateWindowsDefForSigFiles(sig_files, out_dir, module_name):
 
 def CreatePosixStubsForSigFiles(sig_files, stub_name, out_dir,
                                 intermediate_dir, path_from_source,
-                                extra_stub_header):
+                                extra_stub_header, export_macro):
   """Create a posix stub library with a module for each signature file.
 
   Args:
@@ -1057,6 +1079,8 @@ def CreatePosixStubsForSigFiles(sig_files, stub_name, out_dir,
                       project root.
     extra_stub_header: String with path to file of extra lines to insert
                        into the generated header for the stub library.
+    export_macro: A preprocessor macro used to annotate stub symbols with
+                  an EXPORT marking, to control visibility.
   """
   header_base_name = stub_name + '.h'
   header_path = os.path.join(out_dir, header_base_name)
@@ -1093,7 +1117,7 @@ def CreatePosixStubsForSigFiles(sig_files, stub_name, out_dir,
         signatures = ParseSignatures(infile)
       finally:
         infile.close()
-      writer = PosixStubWriter(name, signatures)
+      writer = PosixStubWriter(name, export_macro, signatures)
       writer.WriteImplementationContents(namespace, impl_file)
 
     # Lastly, output the umbrella function for the file.
@@ -1116,13 +1140,15 @@ def main():
   out_dir, intermediate_dir = CreateOutputDirectories(options)
 
   if options.type == FILE_TYPE_WIN_X86:
-    CreateWindowsLibForSigFiles(args, out_dir, intermediate_dir, 'X86')
+    CreateWindowsLibForSigFiles(args, out_dir, intermediate_dir, 'X86',
+                                options.export_macro)
   elif options.type == FILE_TYPE_WIN_X64:
-    CreateWindowsLibForSigFiles(args, out_dir, intermediate_dir, 'X64')
+    CreateWindowsLibForSigFiles(args, out_dir, intermediate_dir, 'X64',
+                                options.export_macro)
   elif options.type == FILE_TYPE_POSIX_STUB:
     CreatePosixStubsForSigFiles(args, options.stubfile_name, out_dir,
                                 intermediate_dir, options.path_from_source,
-                                options.extra_stub_header)
+                                options.extra_stub_header, options.export_macro)
   elif options.type == FILE_TYPE_WIN_DEF:
     CreateWindowsDefForSigFiles(args, out_dir, options.module_name)
 
