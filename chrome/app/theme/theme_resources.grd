@@ -484,18 +484,18 @@
         <structure type="chrome_scaled_image" name="IDR_KIOSK_APP_USER_POD_ICON" file="cros/kiosk_app_user_pod_icon.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_ICON" file="common/limited_user.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_BOTTOM" file="common/managed_user_theme/label_bg_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_BOTTOM_LEFT" file="common/managed_user_theme/label_bg_bottom_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_BOTTOM_RIGHT" file="common/managed_user_theme/label_bg_bottom_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_CENTER" file="common/managed_user_theme/label_bg_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_LEFT" file="common/managed_user_theme/label_bg_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_RIGHT" file="common/managed_user_theme/label_bg_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_TOP" file="common/managed_user_theme/label_bg_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_TOP_LEFT" file="common/managed_user_theme/label_bg_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_TOP_RIGHT" file="common/managed_user_theme/label_bg_top_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_THEME_FRAME" file="common/managed_user_theme/theme_frame_supervised.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_THEME_FRAME_INACTIVE" file="common/managed_user_theme/theme_frame_supervised_inactive.png" />
-      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_THEME_TAB_BACKGROUND" file="common/managed_user_theme/theme_tab_background_supervised.png" />
+      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_BOTTOM" file="common/supervised_user_theme/label_bg_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_BOTTOM_LEFT" file="common/supervised_user_theme/label_bg_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_BOTTOM_RIGHT" file="common/supervised_user_theme/label_bg_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_CENTER" file="common/supervised_user_theme/label_bg_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_LEFT" file="common/supervised_user_theme/label_bg_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_RIGHT" file="common/supervised_user_theme/label_bg_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_TOP" file="common/supervised_user_theme/label_bg_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_TOP_LEFT" file="common/supervised_user_theme/label_bg_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_TOP_RIGHT" file="common/supervised_user_theme/label_bg_top_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_THEME_FRAME" file="common/supervised_user_theme/theme_frame_supervised.png" />
+      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_THEME_FRAME_INACTIVE" file="common/supervised_user_theme/theme_frame_supervised_inactive.png" />
+      <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_THEME_TAB_BACKGROUND" file="common/supervised_user_theme/theme_tab_background_supervised.png" />
       <structure type="chrome_scaled_image" name="IDR_MAXIMIZE_BUTTON_MASK" file="common/maximize_button_mask.png" />
       <structure type="chrome_scaled_image" name="IDR_MINIMIZE_BUTTON_MASK" file="common/minimize_button_mask.png" />
       <if expr="chromeos">
