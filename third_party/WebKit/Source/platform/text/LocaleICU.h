@@ -40,7 +40,7 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 // We should use this class only for LocalizedNumberICU.cpp, LocalizedDateICU.cpp,
 // and LocalizedNumberICUTest.cpp.
@@ -107,5 +107,5 @@ private:
     bool m_didCreateTimeFormat;
 };
 
-} // namespace WebCore
+} // namespace blink
 #endif

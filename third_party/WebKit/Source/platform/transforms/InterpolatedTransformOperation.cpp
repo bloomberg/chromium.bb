@@ -33,7 +33,7 @@
 
 #include "platform/transforms/IdentityTransformOperation.h"
 
-namespace WebCore {
+namespace blink {
 
 bool InterpolatedTransformOperation::operator==(const TransformOperation& o) const
 {
@@ -69,5 +69,5 @@ PassRefPtr<TransformOperation> InterpolatedTransformOperation::blend(const Trans
     return InterpolatedTransformOperation::create(thisOperations, fromOperations, progress);
 }
 
-} // namespace WebCore
+} // namespace blink
 

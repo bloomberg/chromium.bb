@@ -31,7 +31,7 @@
 
 using blink::WebScrollbar;
 
-namespace WebCore {
+namespace blink {
 
 WebScrollbarThemeClientImpl::WebScrollbarThemeClientImpl(WebScrollbar* scrollbar)
     : m_scrollbar(scrollbar)
@@ -111,9 +111,9 @@ void WebScrollbarThemeClientImpl::invalidateRect(const IntRect&)
     ASSERT_NOT_REACHED();
 }
 
-WebCore::ScrollbarOverlayStyle WebScrollbarThemeClientImpl::scrollbarOverlayStyle() const
+blink::ScrollbarOverlayStyle WebScrollbarThemeClientImpl::scrollbarOverlayStyle() const
 {
-    return static_cast<WebCore::ScrollbarOverlayStyle>(m_scrollbar->scrollbarOverlayStyle());
+    return static_cast<blink::ScrollbarOverlayStyle>(m_scrollbar->scrollbarOverlayStyle());
 }
 
 void WebScrollbarThemeClientImpl::getTickmarks(Vector<IntRect>& tickmarks) const
@@ -149,9 +149,9 @@ bool WebScrollbarThemeClientImpl::isCustomScrollbar() const
     return m_scrollbar->isCustomScrollbar();
 }
 
-WebCore::ScrollbarOrientation WebScrollbarThemeClientImpl::orientation() const
+blink::ScrollbarOrientation WebScrollbarThemeClientImpl::orientation() const
 {
-    return static_cast<WebCore::ScrollbarOrientation>(m_scrollbar->orientation());
+    return static_cast<blink::ScrollbarOrientation>(m_scrollbar->orientation());
 }
 
 bool WebScrollbarThemeClientImpl::isLeftSideVerticalScrollbar() const
@@ -184,19 +184,19 @@ int WebScrollbarThemeClientImpl::maximum() const
     return m_scrollbar->maximum();
 }
 
-WebCore::ScrollbarControlSize WebScrollbarThemeClientImpl::controlSize() const
+blink::ScrollbarControlSize WebScrollbarThemeClientImpl::controlSize() const
 {
-    return static_cast<WebCore::ScrollbarControlSize>(m_scrollbar->controlSize());
+    return static_cast<blink::ScrollbarControlSize>(m_scrollbar->controlSize());
 }
 
-WebCore::ScrollbarPart WebScrollbarThemeClientImpl::pressedPart() const
+blink::ScrollbarPart WebScrollbarThemeClientImpl::pressedPart() const
 {
-    return static_cast<WebCore::ScrollbarPart>(m_scrollbar->pressedPart());
+    return static_cast<blink::ScrollbarPart>(m_scrollbar->pressedPart());
 }
 
-WebCore::ScrollbarPart WebScrollbarThemeClientImpl::hoveredPart() const
+blink::ScrollbarPart WebScrollbarThemeClientImpl::hoveredPart() const
 {
-    return static_cast<WebCore::ScrollbarPart>(m_scrollbar->hoveredPart());
+    return static_cast<blink::ScrollbarPart>(m_scrollbar->hoveredPart());
 }
 
 void WebScrollbarThemeClientImpl::styleChanged()

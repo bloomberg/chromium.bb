@@ -29,7 +29,7 @@
 #include "config.h"
 #include "platform/mhtml/ArchiveResource.h"
 
-namespace WebCore {
+namespace blink {
 
 inline ArchiveResource::ArchiveResource(PassRefPtr<SharedBuffer> data, const KURL& url, const AtomicString& mimeType, const AtomicString& textEncoding, const String& frameName, const ResourceResponse& response)
     : m_url(url)

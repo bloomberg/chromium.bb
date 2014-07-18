@@ -32,7 +32,7 @@
 #include "platform/text/TextStream.h"
 #include "third_party/skia/include/core/SkDevice.h"
 
-namespace WebCore {
+namespace blink {
 
 FEOffset::FEOffset(Filter* filter, float dx, float dy)
     : FilterEffect(filter)
@@ -110,4 +110,4 @@ TextStream& FEOffset::externalRepresentation(TextStream& ts, int indent) const
     return ts;
 }
 
-} // namespace WebCore
+} // namespace blink

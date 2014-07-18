@@ -8,7 +8,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class RTCOfferOptions FINAL : public RefCounted<RTCOfferOptions> {
 public:
@@ -37,6 +37,6 @@ private:
     bool m_iceRestart;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCOfferOptions_h

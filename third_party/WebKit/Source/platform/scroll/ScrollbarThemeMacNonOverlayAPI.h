@@ -33,7 +33,7 @@
 
 #include "platform/scroll/ScrollbarThemeMacCommon.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT ScrollbarThemeMacNonOverlayAPI : public ScrollbarThemeMacCommon {
 public:

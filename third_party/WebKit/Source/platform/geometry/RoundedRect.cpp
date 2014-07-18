@@ -33,7 +33,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 bool RoundedRect::Radii::isZero() const
 {
@@ -246,4 +246,4 @@ bool RoundedRect::intersectsQuad(const FloatQuad& quad) const
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

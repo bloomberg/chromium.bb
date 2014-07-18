@@ -36,7 +36,7 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 
-namespace WebCore {
+namespace blink {
 
 void getSupportedKeySizes(Locale& locale, Vector<String>& sizes)
 {
@@ -50,4 +50,4 @@ String signedPublicKeyAndChallengeString(unsigned keySizeIndex, const String& ch
     return blink::Platform::current()->signedPublicKeyAndChallengeString(keySizeIndex, blink::WebString(challengeString), blink::WebURL(url));
 }
 
-} // namespace WebCore
+} // namespace blink

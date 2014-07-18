@@ -41,7 +41,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 const double kFrameRate = 60;
 const double kTickTime = 1 / kFrameRate;
@@ -524,4 +524,4 @@ void ScrollAnimatorNone::stopAnimationTimerIfNeeded()
         m_animationActive = false;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -26,7 +26,7 @@
 #ifndef PlatformEvent_h
 #define PlatformEvent_h
 
-namespace WebCore {
+namespace blink {
 
 class PlatformEvent {
 public:
@@ -139,6 +139,6 @@ protected:
     double m_timestamp;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PlatformEvent_h

@@ -37,7 +37,7 @@
 
 #include "platform/WindowsKeyboardCodes.h"
 
-namespace WebCore {
+namespace blink {
 
 enum {
     // VKEY_LBUTTON (01) Left mouse button
@@ -556,6 +556,6 @@ enum {
     VKEY_UNKNOWN = 0
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

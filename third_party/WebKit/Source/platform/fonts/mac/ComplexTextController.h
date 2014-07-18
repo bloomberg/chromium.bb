@@ -39,7 +39,7 @@ typedef unsigned short CGGlyph;
 typedef const struct __CTRun * CTRunRef;
 typedef const struct __CTLine * CTLineRef;
 
-namespace WebCore {
+namespace blink {
 
 class Font;
 class GlyphBuffer;
@@ -175,6 +175,6 @@ private:
     float m_maxGlyphBoundingBoxY;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ComplexTextController_h

@@ -33,7 +33,7 @@
 
 #include "platform/text/TextStream.h"
 
-namespace WebCore {
+namespace blink {
 
 void DistantLightSource::initPaintingData(PaintingData& paintingData) const
 {
@@ -73,4 +73,4 @@ TextStream& DistantLightSource::externalRepresentation(TextStream& ts) const
     return ts;
 }
 
-} // namespace WebCore
+} // namespace blink

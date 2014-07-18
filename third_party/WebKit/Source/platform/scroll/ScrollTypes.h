@@ -28,7 +28,7 @@
 
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 enum ScrollDirection {
     ScrollUp,

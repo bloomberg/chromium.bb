@@ -30,7 +30,7 @@
 
 #if !LOG_DISABLED
 
-namespace WebCore {
+namespace blink {
 
 WTFLogChannel LogNotYetImplemented =  { WTFLogChannelOff };
 

@@ -38,7 +38,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class MediaStreamDescriptorClient {
 public:
@@ -101,6 +101,6 @@ private:
 
 typedef Vector<RefPtr<MediaStreamDescriptor> > MediaStreamDescriptorVector;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaStreamDescriptor_h

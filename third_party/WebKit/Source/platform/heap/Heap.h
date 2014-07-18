@@ -46,7 +46,7 @@
 
 #include <stdint.h>
 
-namespace WebCore {
+namespace blink {
 
 const size_t blinkPageSizeLog2 = 17;
 const size_t blinkPageSize = 1 << blinkPageSizeLog2;
@@ -1469,7 +1469,7 @@ public:
 class HeapAllocator {
 public:
     typedef HeapAllocatorQuantizer Quantizer;
-    typedef WebCore::Visitor Visitor;
+    typedef blink::Visitor Visitor;
     static const bool isGarbageCollected = true;
 
     template <typename Return, typename Metadata>
@@ -2046,7 +2046,7 @@ struct GCInfoTrait<HeapHashTableBacking<Table> > {
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 namespace WTF {
 
@@ -2058,9 +2058,9 @@ namespace WTF {
 // weak elements.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
 struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, T, Traits> {
-    static bool trace(WebCore::Visitor* visitor, T& t)
+    static bool trace(blink::Visitor* visitor, T& t)
     {
-        WebCore::TraceTrait<T>::trace(visitor, &t);
+        blink::TraceTrait<T>::trace(visitor, &t);
         return false;
     }
 };
@@ -2068,7 +2068,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, T, Traits>
 // Catch-all for things that have HashTrait support for tracing with weakness.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
 struct TraceInCollectionTrait<WeakHandlingInCollections, strongify, T, Traits> {
-    static bool trace(WebCore::Visitor* visitor, T& t)
+    static bool trace(blink::Visitor* visitor, T& t)
     {
         return Traits::traceInCollection(visitor, t, strongify);
     }
@@ -2076,40 +2076,40 @@ struct TraceInCollectionTrait<WeakHandlingInCollections, strongify, T, Traits> {
 
 // Vector backing that needs marking. We don't support weak members in vectors.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
-struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, WebCore::HeapVectorBacking<T, Traits>, void> {
-    static bool trace(WebCore::Visitor* visitor, void* self)
+struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::HeapVectorBacking<T, Traits>, void> {
+    static bool trace(blink::Visitor* visitor, void* self)
     {
         // The allocator can oversize the allocation a little, according to
         // the allocation granularity. The extra size is included in the
         // payloadSize call below, since there is nowhere to store the
         // originally allocated memory. This assert ensures that visiting the
         // last bit of memory can't cause trouble.
-        COMPILE_ASSERT(!ShouldBeTraced<Traits>::value || sizeof(T) > WebCore::allocationGranularity || Traits::canInitializeWithMemset, HeapOverallocationCanCauseSpuriousVisits);
+        COMPILE_ASSERT(!ShouldBeTraced<Traits>::value || sizeof(T) > blink::allocationGranularity || Traits::canInitializeWithMemset, HeapOverallocationCanCauseSpuriousVisits);
 
         T* array = reinterpret_cast<T*>(self);
-        WebCore::FinalizedHeapObjectHeader* header = WebCore::FinalizedHeapObjectHeader::fromPayload(self);
+        blink::FinalizedHeapObjectHeader* header = blink::FinalizedHeapObjectHeader::fromPayload(self);
         // Use the payload size as recorded by the heap to determine how many
         // elements to mark.
         size_t length = header->payloadSize() / sizeof(T);
         for (size_t i = 0; i < length; i++)
-            WebCore::CollectionBackingTraceTrait<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WeakPointersActStrong, T, Traits>::trace(visitor, array[i]);
+            blink::CollectionBackingTraceTrait<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, WeakPointersActStrong, T, Traits>::trace(visitor, array[i]);
         return false;
     }
 };
 
 // Almost all hash table backings are visited with this specialization.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename Table>
-struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, WebCore::HeapHashTableBacking<Table>, void> {
+struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::HeapHashTableBacking<Table>, void> {
     typedef typename Table::ValueType Value;
     typedef typename Table::ValueTraits Traits;
-    static bool trace(WebCore::Visitor* visitor, void* self)
+    static bool trace(blink::Visitor* visitor, void* self)
     {
         Value* array = reinterpret_cast<Value*>(self);
-        WebCore::FinalizedHeapObjectHeader* header = WebCore::FinalizedHeapObjectHeader::fromPayload(self);
+        blink::FinalizedHeapObjectHeader* header = blink::FinalizedHeapObjectHeader::fromPayload(self);
         size_t length = header->payloadSize() / sizeof(Value);
         for (size_t i = 0; i < length; i++) {
             if (!HashTableHelper<Value, typename Table::ExtractorType, typename Table::KeyTraitsType>::isEmptyOrDeletedBucket(array[i]))
-                WebCore::CollectionBackingTraceTrait<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, strongify, Value, Traits>::trace(visitor, array[i]);
+                blink::CollectionBackingTraceTrait<ShouldBeTraced<Traits>::value, Traits::weakHandlingFlag, strongify, Value, Traits>::trace(visitor, array[i]);
         }
         return false;
     }
@@ -2121,13 +2121,13 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, WebCore::H
 // ListHashSet method since normal API use does not put pointers to the backing
 // on the stack.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename NodeContents, size_t inlineCapacity, typename T, typename U, typename V, typename W, typename X, typename Y>
-struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, WebCore::HeapHashTableBacking<HashTable<ListHashSetNode<NodeContents, WebCore::HeapListHashSetAllocator<T, inlineCapacity> >*, U, V, W, X, Y, WebCore::HeapAllocator> >, void> {
-    typedef ListHashSetNode<NodeContents, WebCore::HeapListHashSetAllocator<T, inlineCapacity> > Node;
-    typedef HashTable<Node*, U, V, W, X, Y, WebCore::HeapAllocator> Table;
-    static bool trace(WebCore::Visitor* visitor, void* self)
+struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::HeapHashTableBacking<HashTable<ListHashSetNode<NodeContents, blink::HeapListHashSetAllocator<T, inlineCapacity> >*, U, V, W, X, Y, blink::HeapAllocator> >, void> {
+    typedef ListHashSetNode<NodeContents, blink::HeapListHashSetAllocator<T, inlineCapacity> > Node;
+    typedef HashTable<Node*, U, V, W, X, Y, blink::HeapAllocator> Table;
+    static bool trace(blink::Visitor* visitor, void* self)
     {
         Node** array = reinterpret_cast<Node**>(self);
-        WebCore::FinalizedHeapObjectHeader* header = WebCore::FinalizedHeapObjectHeader::fromPayload(self);
+        blink::FinalizedHeapObjectHeader* header = blink::FinalizedHeapObjectHeader::fromPayload(self);
         size_t length = header->payloadSize() / sizeof(Node*);
         for (size_t i = 0; i < length; i++) {
             if (!HashTableHelper<Node*, typename Table::ExtractorType, typename Table::KeyTraitsType>::isEmptyOrDeletedBucket(array[i])) {
@@ -2148,18 +2148,18 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, WebCore::H
 // one with weak handling.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename Key, typename Value, typename Traits>
 struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, KeyValuePair<Key, Value>, Traits>  {
-    static bool trace(WebCore::Visitor* visitor, KeyValuePair<Key, Value>& self)
+    static bool trace(blink::Visitor* visitor, KeyValuePair<Key, Value>& self)
     {
         ASSERT(ShouldBeTraced<Traits>::value);
-        WebCore::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::KeyTraits>::value, NoWeakHandlingInCollections, strongify, Key, typename Traits::KeyTraits>::trace(visitor, self.key);
-        WebCore::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::ValueTraits>::value, NoWeakHandlingInCollections, strongify, Value, typename Traits::ValueTraits>::trace(visitor, self.value);
+        blink::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::KeyTraits>::value, NoWeakHandlingInCollections, strongify, Key, typename Traits::KeyTraits>::trace(visitor, self.key);
+        blink::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::ValueTraits>::value, NoWeakHandlingInCollections, strongify, Value, typename Traits::ValueTraits>::trace(visitor, self.value);
         return false;
     }
 };
 
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename Key, typename Value, typename Traits>
 struct TraceInCollectionTrait<WeakHandlingInCollections, strongify, KeyValuePair<Key, Value>, Traits> {
-    static bool trace(WebCore::Visitor* visitor, KeyValuePair<Key, Value>& self)
+    static bool trace(blink::Visitor* visitor, KeyValuePair<Key, Value>& self)
     {
         // This is the core of the ephemeron-like functionality. If there is
         // weakness on the key side then we first check whether there are
@@ -2183,16 +2183,16 @@ struct TraceInCollectionTrait<WeakHandlingInCollections, strongify, KeyValuePair
         COMPILE_ASSERT(!keyIsWeak || !valueIsWeak || !keyHasStrongRefs || !valueHasStrongRefs, ThisConfigurationWasDisallowedToAvoidUnexpectedLeaks);
         if ((valueIsWeak && !keyIsWeak) || (valueIsWeak && keyIsWeak && !valueHasStrongRefs)) {
             // Check value first.
-            bool deadWeakObjectsFoundOnValueSide = WebCore::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::ValueTraits>::value, Traits::ValueTraits::weakHandlingFlag, strongify, Value, typename Traits::ValueTraits>::trace(visitor, self.value);
+            bool deadWeakObjectsFoundOnValueSide = blink::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::ValueTraits>::value, Traits::ValueTraits::weakHandlingFlag, strongify, Value, typename Traits::ValueTraits>::trace(visitor, self.value);
             if (deadWeakObjectsFoundOnValueSide)
                 return true;
-            return WebCore::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::KeyTraits>::value, Traits::KeyTraits::weakHandlingFlag, strongify, Key, typename Traits::KeyTraits>::trace(visitor, self.key);
+            return blink::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::KeyTraits>::value, Traits::KeyTraits::weakHandlingFlag, strongify, Key, typename Traits::KeyTraits>::trace(visitor, self.key);
         }
         // Check key first.
-        bool deadWeakObjectsFoundOnKeySide = WebCore::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::KeyTraits>::value, Traits::KeyTraits::weakHandlingFlag, strongify, Key, typename Traits::KeyTraits>::trace(visitor, self.key);
+        bool deadWeakObjectsFoundOnKeySide = blink::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::KeyTraits>::value, Traits::KeyTraits::weakHandlingFlag, strongify, Key, typename Traits::KeyTraits>::trace(visitor, self.key);
         if (deadWeakObjectsFoundOnKeySide)
             return true;
-        return WebCore::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::ValueTraits>::value, Traits::ValueTraits::weakHandlingFlag, strongify, Value, typename Traits::ValueTraits>::trace(visitor, self.value);
+        return blink::CollectionBackingTraceTrait<ShouldBeTraced<typename Traits::ValueTraits>::value, Traits::ValueTraits::weakHandlingFlag, strongify, Value, typename Traits::ValueTraits>::trace(visitor, self.value);
     }
 };
 
@@ -2200,17 +2200,17 @@ struct TraceInCollectionTrait<WeakHandlingInCollections, strongify, KeyValuePair
 // template.
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename Value, typename Traits>
 struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, LinkedHashSetNode<Value>, Traits> {
-    static bool trace(WebCore::Visitor* visitor, LinkedHashSetNode<Value>& self)
+    static bool trace(blink::Visitor* visitor, LinkedHashSetNode<Value>& self)
     {
         ASSERT(ShouldBeTraced<Traits>::value);
-        WebCore::TraceTrait<Value>::trace(visitor, &self.m_value);
+        blink::TraceTrait<Value>::trace(visitor, &self.m_value);
         return false;
     }
 };
 
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename Value, typename Traits>
 struct TraceInCollectionTrait<WeakHandlingInCollections, strongify, LinkedHashSetNode<Value>, Traits> {
-    static bool trace(WebCore::Visitor* visitor, LinkedHashSetNode<Value>& self)
+    static bool trace(blink::Visitor* visitor, LinkedHashSetNode<Value>& self)
     {
         return TraceInCollectionTrait<WeakHandlingInCollections, strongify, Value, typename Traits::ValueTraits>::trace(visitor, self.m_value);
     }
@@ -2218,9 +2218,9 @@ struct TraceInCollectionTrait<WeakHandlingInCollections, strongify, LinkedHashSe
 
 // ListHashSetNode pointers (a ListHashSet is implemented as a hash table of these pointers).
 template<ShouldWeakPointersBeMarkedStrongly strongify, typename Value, size_t inlineCapacity, typename Traits>
-struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, ListHashSetNode<Value, WebCore::HeapListHashSetAllocator<Value, inlineCapacity> >*, Traits> {
-    typedef ListHashSetNode<Value, WebCore::HeapListHashSetAllocator<Value, inlineCapacity> > Node;
-    static bool trace(WebCore::Visitor* visitor, Node* node)
+struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, ListHashSetNode<Value, blink::HeapListHashSetAllocator<Value, inlineCapacity> >*, Traits> {
+    typedef ListHashSetNode<Value, blink::HeapListHashSetAllocator<Value, inlineCapacity> > Node;
+    static bool trace(blink::Visitor* visitor, Node* node)
     {
         traceListHashSetValue(visitor, node->m_value);
         // Just mark the node without tracing because we already traced the
@@ -2234,7 +2234,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, ListHashSe
 
 } // namespace WTF
 
-namespace WebCore {
+namespace blink {
 
 // CollectionBackingTraceTrait. Do nothing for things in collections that don't
 // need tracing, or call TraceInCollectionTrait for those that do.

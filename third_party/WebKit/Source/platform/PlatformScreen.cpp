@@ -36,7 +36,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebScreenInfo.h"
 
-namespace WebCore {
+namespace blink {
 
 static HostWindow* toHostWindow(Widget* widget)
 {
@@ -111,4 +111,4 @@ void screenColorProfile(ColorProfile& toProfile)
     toProfile.append(profile.data(), profile.size());
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -10,7 +10,7 @@
 #include "wtf/Vector.h"
 #include "wtf/unicode/Unicode.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef std::pair<unsigned, DigestValue> CSPHashValue;
 
@@ -47,6 +47,6 @@ PLATFORM_EXPORT bool isMediaTypeCharacter(UChar);
 // positional and may only appear at the end of a Base64 encoded string.
 PLATFORM_EXPORT bool isBase64EncodedCharacter(UChar);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

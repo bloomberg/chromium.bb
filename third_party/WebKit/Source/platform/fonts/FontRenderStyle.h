@@ -30,7 +30,7 @@
 #ifndef FontRenderStyle_h
 #define FontRenderStyle_h
 
-namespace WebCore {
+namespace blink {
 
 // FontRenderStyle describes the user's preferences for rendering a font at a
 // given size.

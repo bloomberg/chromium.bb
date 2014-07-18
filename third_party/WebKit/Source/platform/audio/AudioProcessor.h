@@ -33,7 +33,7 @@
 
 #include "platform/PlatformExport.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioBus;
 
@@ -78,6 +78,6 @@ protected:
     float m_sampleRate;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioProcessor_h

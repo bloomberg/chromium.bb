@@ -44,7 +44,7 @@
 // In debug mode, printing of the data contained in the tree is
 // enabled. This requires the template specialization to be available:
 //
-//   template<> struct WebCore::ValueToString<T> {
+//   template<> struct blink::ValueToString<T> {
 //       static String string(const T& t);
 //   };
 //
@@ -82,7 +82,7 @@
 #include "wtf/text/WTFString.h"
 #endif
 
-namespace WebCore {
+namespace blink {
 
 #ifndef NDEBUG
 template<class T>
@@ -823,6 +823,6 @@ private:
 #endif
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PODRedBlackTree_h

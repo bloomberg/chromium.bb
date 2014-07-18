@@ -104,7 +104,7 @@ private:
 //
 // Freetype does not parse these tables so we do so here.
 
-namespace WebCore {
+namespace blink {
 
 // Parse a TrueType VDMX table.
 //   yMax: (output) the ascender value from the table
@@ -200,4 +200,4 @@ bool parseVDMX(int* yMax, int* yMin,
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

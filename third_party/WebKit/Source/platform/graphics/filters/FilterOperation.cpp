@@ -29,7 +29,7 @@
 
 #include "platform/animation/AnimationUtilities.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<FilterOperation> FilterOperation::blend(const FilterOperation* from, const FilterOperation* to, double progress)
 {
@@ -61,7 +61,7 @@ PassRefPtr<FilterOperation> BasicColorMatrixFilterOperation::blend(const FilterO
         }
     }
 
-    double result = WebCore::blend(fromAmount, m_amount, progress);
+    double result = blink::blend(fromAmount, m_amount, progress);
     switch (m_type) {
     case HUE_ROTATE:
         break;
@@ -100,7 +100,7 @@ PassRefPtr<FilterOperation> BasicComponentTransferFilterOperation::blend(const F
         }
     }
 
-    double result = WebCore::blend(fromAmount, m_amount, progress);
+    double result = blink::blend(fromAmount, m_amount, progress);
     switch (m_type) {
     case BRIGHTNESS:
     case CONTRAST:
@@ -130,17 +130,17 @@ PassRefPtr<FilterOperation> DropShadowFilterOperation::blend(const FilterOperati
 {
     if (!from) {
         return DropShadowFilterOperation::create(
-            WebCore::blend(IntPoint(), m_location, progress),
-            WebCore::blend(0, m_stdDeviation, progress),
-            WebCore::blend(Color(Color::transparent), m_color, progress));
+            blink::blend(IntPoint(), m_location, progress),
+            blink::blend(0, m_stdDeviation, progress),
+            blink::blend(Color(Color::transparent), m_color, progress));
     }
 
     const DropShadowFilterOperation* fromOp = toDropShadowFilterOperation(from);
     return DropShadowFilterOperation::create(
-        WebCore::blend(fromOp->location(), m_location, progress),
-        WebCore::blend(fromOp->stdDeviation(), m_stdDeviation, progress),
-        WebCore::blend(fromOp->color(), m_color, progress));
+        blink::blend(fromOp->location(), m_location, progress),
+        blink::blend(fromOp->stdDeviation(), m_stdDeviation, progress),
+        blink::blend(fromOp->color(), m_color, progress));
 }
 
-} // namespace WebCore
+} // namespace blink
 

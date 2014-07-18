@@ -28,7 +28,7 @@
 
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 Clock::Clock()
     : m_running(false)
@@ -92,4 +92,4 @@ PassOwnPtr<Clock> Clock::create()
     return adoptPtr(new Clock());
 }
 
-} // namespace WebCore
+} // namespace blink

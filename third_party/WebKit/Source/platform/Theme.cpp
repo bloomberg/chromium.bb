@@ -26,7 +26,7 @@
 #include "config.h"
 #include "platform/Theme.h"
 
-namespace WebCore {
+namespace blink {
 
 LengthBox Theme::controlBorder(ControlPart part, const FontDescription&, const LengthBox& zoomedBox, float) const
 {

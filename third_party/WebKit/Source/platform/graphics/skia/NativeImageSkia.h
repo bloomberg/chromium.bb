@@ -45,7 +45,7 @@
 class SkMatrix;
 class SkPaint;
 
-namespace WebCore {
+namespace blink {
 
 class FloatPoint;
 class FloatRect;

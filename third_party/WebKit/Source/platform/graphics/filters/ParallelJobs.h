@@ -52,7 +52,7 @@
 //     parallelJobs.execute();
 //
 
-namespace WebCore {
+namespace blink {
 
 template<typename Type>
 class ParallelJobs {
@@ -97,6 +97,6 @@ private:
     Vector<Type> m_parameters;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ParallelJobs_h

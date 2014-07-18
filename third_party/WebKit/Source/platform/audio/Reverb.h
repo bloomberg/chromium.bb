@@ -33,7 +33,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioBus;
 
@@ -64,6 +64,6 @@ private:
     RefPtr<AudioBus> m_tempBuffer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Reverb_h

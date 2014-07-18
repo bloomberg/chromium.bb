@@ -26,7 +26,7 @@
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
-namespace WebCore {
+namespace blink {
 
 enum MorphologyOperatorType {
     FEMORPHOLOGY_OPERATOR_UNKNOWN = 0,
@@ -80,6 +80,6 @@ private:
     float m_radiusY;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FEMorphology_h

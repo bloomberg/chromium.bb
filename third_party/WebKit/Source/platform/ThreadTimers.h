@@ -32,7 +32,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class SharedTimer;
 class TimerBase;

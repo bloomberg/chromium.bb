@@ -31,8 +31,8 @@
 #include "config.h"
 #include "platform/DateTimeChooserClient.h"
 
-namespace WebCore {
+namespace blink {
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DateTimeChooserClient)
 
-} // namespace WebCore
+} // namespace blink

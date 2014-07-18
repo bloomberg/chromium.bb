@@ -33,7 +33,7 @@
 
 #include "platform/SharedBuffer.h"
 
-namespace WebCore {
+namespace blink {
 
 SharedBufferChunkReader::SharedBufferChunkReader(SharedBuffer* buffer, const Vector<char>& separator)
     : m_buffer(buffer)

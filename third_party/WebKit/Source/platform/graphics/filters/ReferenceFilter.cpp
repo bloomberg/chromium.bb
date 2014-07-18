@@ -35,7 +35,7 @@
 #include "platform/graphics/filters/FilterEffect.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 
-namespace WebCore {
+namespace blink {
 
 ReferenceFilter::ReferenceFilter()
     : Filter(AffineTransform())
@@ -52,4 +52,4 @@ ReferenceFilter::~ReferenceFilter()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

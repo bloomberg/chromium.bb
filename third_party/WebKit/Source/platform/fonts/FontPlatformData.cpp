@@ -32,7 +32,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     : m_syntheticBold(false)

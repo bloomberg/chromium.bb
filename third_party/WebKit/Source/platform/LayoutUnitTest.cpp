@@ -34,7 +34,7 @@
 #include <gtest/gtest.h>
 #include <limits.h>
 
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 

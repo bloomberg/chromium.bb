@@ -26,7 +26,7 @@
 #ifndef UnicodeBidi_h
 #define UnicodeBidi_h
 
-namespace WebCore {
+namespace blink {
 
 enum EUnicodeBidi {
     UBNormal,

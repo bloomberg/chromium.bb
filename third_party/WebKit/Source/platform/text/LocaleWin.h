@@ -37,7 +37,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class DateComponents;
 struct DateFormatToken;
@@ -91,5 +91,5 @@ private:
     bool m_defaultsForLocale;
 };
 
-} // namespace WebCore
+} // namespace blink
 #endif

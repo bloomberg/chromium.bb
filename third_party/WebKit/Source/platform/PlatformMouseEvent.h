@@ -29,7 +29,7 @@
 #include "platform/PlatformEvent.h"
 #include "platform/geometry/IntPoint.h"
 
-namespace WebCore {
+namespace blink {
 
 // These button numbers match the ones used in the DOM API, 0 through 2, except for NoButton which isn't specified.
 enum MouseButton { NoButton = -1, LeftButton, MiddleButton, RightButton };
@@ -102,6 +102,6 @@ protected:
     unsigned m_modifierFlags;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PlatformMouseEvent_h

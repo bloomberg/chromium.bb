@@ -43,7 +43,7 @@
 
 #include <unicode/uscript.h>
 
-namespace WebCore {
+namespace blink {
 
 class Font;
 class GlyphBuffer;
@@ -166,6 +166,6 @@ private:
     friend struct CachedShapingResults;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HarfBuzzShaper_h

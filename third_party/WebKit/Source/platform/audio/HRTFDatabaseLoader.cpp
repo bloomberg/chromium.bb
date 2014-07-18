@@ -36,7 +36,7 @@
 #include "public/platform/Platform.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 // Singleton
 HRTFDatabaseLoader::LoaderMap* HRTFDatabaseLoader::s_loaderMap = 0;
@@ -113,6 +113,6 @@ void HRTFDatabaseLoader::waitForLoaderThreadCompletion()
     m_databaseLoaderThread.clear();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

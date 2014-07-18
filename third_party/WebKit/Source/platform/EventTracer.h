@@ -42,7 +42,7 @@
 // to explicitly enable the event.
 #define TRACE_DISABLED_BY_DEFAULT(name) "disabled-by-default-" name
 
-namespace WebCore {
+namespace blink {
 
 namespace TraceEvent {
 typedef uint64_t TraceEventHandle;
@@ -70,7 +70,7 @@ public:
         const char* argNames[],
         const unsigned char argTypes[],
         const unsigned long long argValues[],
-        WebCore::TraceEvent::ConvertableToTraceFormat*[],
+        blink::TraceEvent::ConvertableToTraceFormat*[],
         unsigned char flags);
     static TraceEvent::TraceEventHandle addTraceEvent(char phase,
         const unsigned char* categoryEnabledFlag,
@@ -84,6 +84,6 @@ public:
     static void updateTraceEventDuration(const unsigned char* categoryEnabledFlag, const char* name, TraceEvent::TraceEventHandle);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // EventTracer_h

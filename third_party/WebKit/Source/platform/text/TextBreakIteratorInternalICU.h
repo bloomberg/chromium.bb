@@ -26,7 +26,7 @@
 // FIXME: Now that this handles locales for ICU, not just for text breaking,
 // this file and the various implementation files should be renamed.
 
-namespace WebCore {
+namespace blink {
 
 PLATFORM_EXPORT const char* currentSearchLocaleID();
 PLATFORM_EXPORT const char* currentTextBreakLocaleID();

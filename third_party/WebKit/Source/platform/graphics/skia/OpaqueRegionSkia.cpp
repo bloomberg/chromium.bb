@@ -37,7 +37,7 @@
 #include "SkColorFilter.h"
 #include "SkShader.h"
 
-namespace WebCore {
+namespace blink {
 
 OpaqueRegionSkia::OpaqueRegionSkia()
     : m_opaqueRect(SkRect::MakeEmpty())
@@ -439,4 +439,4 @@ SkRect& OpaqueRegionSkia::currentTrackingOpaqueRect()
     return m_canvasLayerStack.isEmpty() ? m_opaqueRect : m_canvasLayerStack.last().opaqueRect;
 }
 
-} // namespace WebCore
+} // namespace blink

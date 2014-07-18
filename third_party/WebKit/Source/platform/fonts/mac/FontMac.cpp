@@ -42,7 +42,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 
-namespace WebCore {
+namespace blink {
 
 bool FontPlatformFeatures::canReturnFallbackFontsForComplexText()
 {
@@ -172,4 +172,4 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         gc->restore();
 }
 
-} // namespace WebCore
+} // namespace blink

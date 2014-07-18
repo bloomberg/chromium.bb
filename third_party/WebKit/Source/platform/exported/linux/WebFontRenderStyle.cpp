@@ -33,7 +33,7 @@
 
 #include "platform/fonts/FontRenderStyle.h"
 
-using WebCore::FontRenderStyle;
+using blink::FontRenderStyle;
 
 namespace blink {
 

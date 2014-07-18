@@ -29,7 +29,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class GraphicsLayer;
 class GraphicsLayerClient;
@@ -41,6 +41,6 @@ public:
     virtual PassOwnPtr<GraphicsLayer> createGraphicsLayer(GraphicsLayerClient*) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GraphicsLayerFactory_h

@@ -16,7 +16,7 @@ namespace blink {
 class WebGraphicsContext3D;
 }
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT Extensions3DUtil {
 public:
@@ -39,6 +39,6 @@ private:
     HashSet<String> m_requestableExtensions;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Extensions3DUtil_h

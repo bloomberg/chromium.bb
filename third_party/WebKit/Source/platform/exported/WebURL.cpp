@@ -35,14 +35,14 @@
 
 namespace blink {
 
-WebURL::WebURL(const WebCore::KURL& url)
+WebURL::WebURL(const blink::KURL& url)
     : m_string(url.string())
     , m_parsed(url.parsed())
     , m_isValid(url.isValid())
 {
 }
 
-WebURL& WebURL::operator=(const WebCore::KURL& url)
+WebURL& WebURL::operator=(const blink::KURL& url)
 {
     m_string = url.string();
     m_parsed = url.parsed();
@@ -50,9 +50,9 @@ WebURL& WebURL::operator=(const WebCore::KURL& url)
     return *this;
 }
 
-WebURL::operator WebCore::KURL() const
+WebURL::operator blink::KURL() const
 {
-    return WebCore::KURL(m_string, m_parsed, m_isValid);
+    return blink::KURL(m_string, m_parsed, m_isValid);
 }
 
 } // namespace blink

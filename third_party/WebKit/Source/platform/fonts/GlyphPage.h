@@ -39,7 +39,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/unicode/Unicode.h"
 
-namespace WebCore {
+namespace blink {
 
 class SimpleFontData;
 class GlyphPageTreeNode;
@@ -222,6 +222,6 @@ private:
 #pragma warning(pop)
 #endif
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GlyphPage_h

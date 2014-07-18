@@ -26,7 +26,7 @@
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
-namespace WebCore {
+namespace blink {
 
 enum BlendModeType {
     FEBLEND_MODE_UNKNOWN = 0,
@@ -60,6 +60,6 @@ private:
     BlendModeType m_mode;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FEBlend_h

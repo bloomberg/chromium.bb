@@ -36,7 +36,7 @@
 #include "wtf/Forward.h"
 #include "wtf/unicode/Unicode.h"
 
-namespace WebCore {
+namespace blink {
 
 // A DateComponents instance represents one of the following date and time combinations:
 // * Month type: year-month
@@ -210,6 +210,6 @@ private:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DateComponents_h

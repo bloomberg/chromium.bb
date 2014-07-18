@@ -34,7 +34,7 @@
 #include "platform/graphics/Color.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 struct ColorSuggestion {
     Color color;
@@ -46,6 +46,6 @@ struct ColorSuggestion {
     { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ColorSuggestion_h

@@ -37,7 +37,7 @@ namespace WTF {
 class TextEncoding;
 }
 
-namespace WebCore {
+namespace blink {
 
 // Given a sequence of bytes in |data| of length |len| and an optional
 // hintEncodingName, detect the most likely character encoding.
@@ -46,6 +46,6 @@ namespace WebCore {
 PLATFORM_EXPORT bool detectTextEncoding(const char* data, size_t length,
     const char* hintEncodingName, WTF::TextEncoding* detectedEncoding);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

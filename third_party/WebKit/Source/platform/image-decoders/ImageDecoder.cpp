@@ -30,7 +30,7 @@
 #include "platform/image-decoders/webp/WEBPImageDecoder.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 static unsigned copyFromSharedBuffer(char* buffer, unsigned bufferLength, const SharedBuffer& sharedBuffer, unsigned offset)
 {
@@ -204,4 +204,4 @@ size_t ImageDecoder::findRequiredPreviousFrame(size_t frameIndex, bool frameRect
     }
 }
 
-} // namespace WebCore
+} // namespace blink

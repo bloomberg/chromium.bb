@@ -41,7 +41,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 static inline String languageFromLocale(const String& locale)
 {

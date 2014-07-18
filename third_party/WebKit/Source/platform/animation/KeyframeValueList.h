@@ -33,7 +33,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 enum AnimatedPropertyID {
     AnimatedPropertyInvalid,
@@ -85,6 +85,6 @@ protected:
     AnimatedPropertyID m_property;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // KeyframeValueList_h

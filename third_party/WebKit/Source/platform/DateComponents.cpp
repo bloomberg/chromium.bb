@@ -39,7 +39,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 // HTML5 specification defines minimum week of year is one.
 const int DateComponents::minimumWeekNumber = 1;
@@ -714,4 +714,4 @@ String DateComponents::toString(SecondFormat format) const
     return String("(Invalid DateComponents)");
 }
 
-} // namespace WebCore
+} // namespace blink

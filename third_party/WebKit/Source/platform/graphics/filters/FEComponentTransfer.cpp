@@ -35,7 +35,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/Uint8ClampedArray.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef void (*TransferType)(unsigned char*, const ComponentTransferFunction&);
 
@@ -281,4 +281,4 @@ TextStream& FEComponentTransfer::externalRepresentation(TextStream& ts, int inde
     return ts;
 }
 
-} // namespace WebCore
+} // namespace blink

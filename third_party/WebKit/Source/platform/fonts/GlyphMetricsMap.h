@@ -37,7 +37,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/unicode/Unicode.h"
 
-namespace WebCore {
+namespace blink {
 
 const float cGlyphSizeUnknown = -1;
 
@@ -126,6 +126,6 @@ template<class T> typename GlyphMetricsMap<T>::GlyphMetricsPage* GlyphMetricsMap
     return page;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

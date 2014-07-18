@@ -13,7 +13,7 @@ namespace blink {
 class WebThread;
 }
 
-namespace WebCore {
+namespace blink {
 
 // The scheduler is an opinionated gateway for arranging work to be run the
 // main thread. It decides which tasks get priority over others based on a
@@ -59,6 +59,6 @@ private:
     void (*m_sharedTimerFunction)();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Scheduler_h

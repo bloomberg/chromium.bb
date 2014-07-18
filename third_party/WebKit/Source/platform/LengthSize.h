@@ -23,7 +23,7 @@
 
 #include "platform/Length.h"
 
-namespace WebCore {
+namespace blink {
 
 class LengthSize {
 public:
@@ -53,6 +53,6 @@ private:
     Length m_height;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LengthSize_h

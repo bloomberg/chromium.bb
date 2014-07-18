@@ -31,7 +31,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 static const int dashRatio = 3; // Ratio of the length of a dash to its width.
 

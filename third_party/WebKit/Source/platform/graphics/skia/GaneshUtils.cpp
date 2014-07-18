@@ -34,7 +34,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/gpu/SkGrPixelRef.h"
 
-namespace WebCore {
+namespace blink {
 
 bool ensureTextureBackedSkBitmap(GrContext* gr, SkBitmap& bitmap, const IntSize& size, GrSurfaceOrigin origin, GrPixelConfig config)
 {
@@ -63,4 +63,4 @@ bool ensureTextureBackedSkBitmap(GrContext* gr, SkBitmap& bitmap, const IntSize&
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

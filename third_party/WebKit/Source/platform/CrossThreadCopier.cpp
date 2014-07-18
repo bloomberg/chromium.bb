@@ -38,7 +38,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 CrossThreadCopierBase<false, false, false, KURL>::Type CrossThreadCopierBase<false, false, false, KURL>::copy(const KURL& url)
 {
@@ -129,4 +129,4 @@ COMPILE_ASSERT((WTF::IsSameType<
                   >::value),
                OwnPtrTest);
 
-} // namespace WebCore
+} // namespace blink

@@ -33,7 +33,7 @@
 #include "wtf/Vector.h"
 #include <cstring>
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: This enum makes it hard to tell in general what values may be
 // appropriate for any given Length.
@@ -309,7 +309,7 @@ public:
         if (isZero())
             resultType = from.type();
 
-        float blendedValue = WebCore::blend(from.value(), value(), progress);
+        float blendedValue = blink::blend(from.value(), value(), progress);
         if (range == ValueRangeNonNegative)
             blendedValue = clampTo<float>(blendedValue, 0);
         return Length(blendedValue, resultType);
@@ -352,6 +352,6 @@ private:
 
 PLATFORM_EXPORT Vector<Length> parseHTMLAreaElementCoords(const String&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Length_h

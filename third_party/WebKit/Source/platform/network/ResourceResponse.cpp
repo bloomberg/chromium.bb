@@ -30,7 +30,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 ResourceResponse::ResourceResponse()
     : m_expectedContentLength(0)

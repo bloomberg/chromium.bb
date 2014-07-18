@@ -29,7 +29,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT PathTraversalState {
 public:

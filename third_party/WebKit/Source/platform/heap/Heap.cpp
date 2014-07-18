@@ -55,7 +55,7 @@
 #include <windows.h>
 #endif
 
-namespace WebCore {
+namespace blink {
 
 #if ENABLE(GC_TRACING)
 static String classOf(const void* object)
@@ -1753,7 +1753,7 @@ public:
         for (LiveObjectMap::iterator it = currentlyLive().begin(), end = currentlyLive().end(); it != end; ++it) {
             fprintf(stderr, "%s %u", it->key.ascii().data(), it->value.size());
 
-            if (it->key == "WebCore::Document")
+            if (it->key == "blink::Document")
                 reportStillAlive(it->value, previouslyLive().get(it->key));
 
             fprintf(stderr, "\n");
@@ -1960,13 +1960,13 @@ String Heap::createBacktraceString()
     StringBuilder builder;
     builder.append("Persistent");
     bool didAppendFirstName = false;
-    // Skip frames before/including "WebCore::Persistent".
+    // Skip frames before/including "blink::Persistent".
     bool didSeePersistent = false;
     for (int i = 0; i < stackFrameSize && framesToShow > 0; ++i) {
         FrameToNameScope frameToName(stackFrame[i]);
         if (!frameToName.nullableName())
             continue;
-        if (strstr(frameToName.nullableName(), "WebCore::Persistent")) {
+        if (strstr(frameToName.nullableName(), "blink::Persistent")) {
             didSeePersistent = true;
             continue;
         }
@@ -1980,7 +1980,7 @@ String Heap::createBacktraceString()
         builder.append(frameToName.nullableName());
         --framesToShow;
     }
-    return builder.toString().replace("WebCore::", "");
+    return builder.toString().replace("blink::", "");
 }
 #endif
 

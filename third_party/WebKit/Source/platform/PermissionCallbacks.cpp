@@ -32,7 +32,7 @@
 
 #include "platform/PermissionCallbacks.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtr<PermissionCallbacks> PermissionCallbacks::create(const Closure& allowed, const Closure& denied)
 {
@@ -45,4 +45,4 @@ PermissionCallbacks::PermissionCallbacks(const Closure& allowed, const Closure& 
 {
 }
 
-} // namespace WebCore
+} // namespace blink

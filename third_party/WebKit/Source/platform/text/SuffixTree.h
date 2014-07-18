@@ -29,7 +29,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class UnicodeCodebook {
 public:
@@ -117,6 +117,6 @@ private:
     Node m_leaf;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SuffixTree_h

@@ -25,7 +25,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace WTF::Unicode;
 
@@ -110,4 +110,4 @@ bool operator==(const BidiContext& c1, const BidiContext& c2)
     return c2.parent() && *c1.parent() == *c2.parent();
 }
 
-} // namespace WebCore
+} // namespace blink

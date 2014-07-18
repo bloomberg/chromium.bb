@@ -32,7 +32,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
 
-namespace WebCore {
+namespace blink {
 
 // ReverbInputBuffer is used to buffer input samples for deferred processing by the background threads.
 class PLATFORM_EXPORT ReverbInputBuffer {
@@ -60,6 +60,6 @@ private:
     size_t m_writeIndex;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ReverbInputBuffer_h

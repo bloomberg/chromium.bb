@@ -32,7 +32,7 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -294,4 +294,4 @@ bool DeferredImageDecoder::hotSpot(IntPoint& hotSpot) const
     return m_actualDecoder ? m_actualDecoder->hotSpot(hotSpot) : false;
 }
 
-} // namespace WebCore
+} // namespace blink

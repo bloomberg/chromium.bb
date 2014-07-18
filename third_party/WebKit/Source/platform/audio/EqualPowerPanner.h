@@ -27,7 +27,7 @@
 
 #include "platform/audio/Panner.h"
 
-namespace WebCore {
+namespace blink {
 
 // Common type of stereo panner as found in normal audio mixing equipment.
 
@@ -51,6 +51,6 @@ private:
     double m_gainR;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // EqualPowerPanner_h

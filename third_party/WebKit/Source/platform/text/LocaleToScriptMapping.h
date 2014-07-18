@@ -37,7 +37,7 @@
 
 #include <unicode/uscript.h>
 
-namespace WebCore {
+namespace blink {
 
 PLATFORM_EXPORT UScriptCode localeToScriptCodeForFontSelection(const String&);
 PLATFORM_EXPORT UScriptCode scriptNameToCode(const String&);

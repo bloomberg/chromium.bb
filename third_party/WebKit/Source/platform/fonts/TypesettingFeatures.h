@@ -26,7 +26,7 @@
 #ifndef TypesettingFeatures_h
 #define TypesettingFeatures_h
 
-namespace WebCore {
+namespace blink {
 
 enum TypesettingFeature {
     Kerning = 1 << 0,
@@ -35,6 +35,6 @@ enum TypesettingFeature {
 
 typedef unsigned TypesettingFeatures;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TypesettingFeatures_h

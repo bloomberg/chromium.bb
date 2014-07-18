@@ -31,7 +31,7 @@
 #include "public/platform/WebScrollbar.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 class ScrollView;
 
 // Adapts a WebScrollbar to the ScrollbarThemeClient interface

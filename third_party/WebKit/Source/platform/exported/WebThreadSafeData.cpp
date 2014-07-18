@@ -33,7 +33,7 @@
 
 #include "platform/blob/BlobData.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

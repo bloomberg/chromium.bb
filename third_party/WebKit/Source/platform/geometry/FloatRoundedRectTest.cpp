@@ -33,9 +33,9 @@
 
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 
-namespace WebCore {
+namespace blink {
 
 void PrintTo(const FloatSize& size, std::ostream* os)
 {
@@ -69,7 +69,7 @@ void PrintTo(const FloatRoundedRect& roundedRect, std::ostream* os)
         << ::testing::PrintToString(roundedRect.radii()) << ")";
 }
 
-} // namespace WebCore
+} // namespace blink
 
 namespace {
 

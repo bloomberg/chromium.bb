@@ -31,7 +31,7 @@
 #ifndef TextDecoration_h
 #define TextDecoration_h
 
-namespace WebCore {
+namespace blink {
 
 enum TextDecorationType {
     TextDecorationTypeSpelling            = 1 << 1,

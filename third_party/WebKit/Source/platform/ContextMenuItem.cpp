@@ -28,7 +28,7 @@
 
 #include "platform/ContextMenu.h"
 
-namespace WebCore {
+namespace blink {
 
 ContextMenuItem::ContextMenuItem(ContextMenuItemType type, ContextMenuAction action, const String& title, ContextMenu* subMenu)
     : m_type(type)
@@ -115,4 +115,4 @@ bool ContextMenuItem::enabled() const
     return m_enabled;
 }
 
-} // namespace WebCore
+} // namespace blink

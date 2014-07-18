@@ -30,7 +30,7 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 
-namespace WebCore {
+namespace blink {
 
 FontCustomPlatformData::FontCustomPlatformData(CGFontRef cgFont, PassRefPtr<SkTypeface> typeface)
     : m_cgFont(AdoptCF, cgFont)

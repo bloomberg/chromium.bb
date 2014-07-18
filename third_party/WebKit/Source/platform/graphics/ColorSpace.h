@@ -29,7 +29,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/graphics/Color.h"
 
-namespace WebCore {
+namespace blink {
 
 enum ColorSpace {
     ColorSpaceDeviceRGB,
@@ -51,6 +51,6 @@ Color convertColor(const Color& srcColor, ColorSpace dstColorSpace, ColorSpace s
 
 } // namespace ColorSpaceUtilities
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ColorSpace_h

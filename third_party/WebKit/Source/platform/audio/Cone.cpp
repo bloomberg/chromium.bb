@@ -33,7 +33,7 @@
 #include "platform/audio/Cone.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 ConeEffect::ConeEffect()
     : m_innerAngle(360.0)
@@ -80,6 +80,6 @@ double ConeEffect::gain(FloatPoint3D sourcePosition, FloatPoint3D sourceOrientat
     return gain;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

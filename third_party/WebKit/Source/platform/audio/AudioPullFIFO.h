@@ -33,7 +33,7 @@
 #include "platform/audio/AudioFIFO.h"
 #include "platform/audio/AudioSourceProvider.h"
 
-namespace WebCore {
+namespace blink {
 
 // A FIFO (First In First Out) buffer to handle mismatches in buffer sizes between a provider and
 // receiver. The receiver will "pull" data from this FIFO. If data is already available in the
@@ -69,6 +69,6 @@ private:
     RefPtr<AudioBus> m_tempBus;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioPullFIFO.h

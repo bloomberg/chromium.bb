@@ -31,7 +31,7 @@
 #include "config.h"
 #include "platform/audio/AudioDSPKernel.h"
 
-namespace WebCore {
+namespace blink {
 
 AudioDSPKernel::~AudioDSPKernel()
 {

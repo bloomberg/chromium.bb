@@ -28,7 +28,7 @@
 
 #include "platform/PlatformExport.h"
 
-namespace WebCore {
+namespace blink {
 
 class AffineTransform;
 class FloatSize;
@@ -89,6 +89,6 @@ private:
     ImageOrientationEnum m_orientation;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ImageOrientation_h

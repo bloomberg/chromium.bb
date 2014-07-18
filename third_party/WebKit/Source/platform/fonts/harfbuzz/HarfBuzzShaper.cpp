@@ -52,7 +52,7 @@
 #include <map>
 #include <string>
 
-namespace WebCore {
+namespace blink {
 
 template<typename T>
 class HarfBuzzScopedPtr {
@@ -1130,4 +1130,4 @@ FloatRect HarfBuzzShaper::selectionRect(const FloatPoint& point, int height, int
         point.y(), height);
 }
 
-} // namespace WebCore
+} // namespace blink

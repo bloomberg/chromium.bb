@@ -42,7 +42,7 @@ class SkBitmap;
 
 namespace blink { class WebLayer; }
 
-namespace WebCore {
+namespace blink {
 
 class ImageBuffer;
 
@@ -85,6 +85,6 @@ private:
     IntSize m_size;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -53,13 +53,13 @@
 // FIXME: There are repainting problems due to Aqua scroll bar buttons' visual overflow.
 
 using namespace std;
-using namespace WebCore;
+using namespace blink;
 
 @interface NSColor (WebNSColorDetails)
 + (NSImage *)_linenPatternImage;
 @end
 
-namespace WebCore {
+namespace blink {
 
 typedef HashSet<ScrollbarThemeClient*> ScrollbarSet;
 
@@ -361,4 +361,4 @@ bool ScrollbarThemeMacCommon::isOverlayAPIAvailable()
     return apiAvailable;
 }
 
-} // namespace WebCore
+} // namespace blink

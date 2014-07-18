@@ -26,7 +26,7 @@
 #include "config.h"
 #include "platform/fonts/FontFeatureSettings.h"
 
-namespace WebCore {
+namespace blink {
 
 FontFeature::FontFeature(const AtomicString& tag, int value)
     : m_tag(tag)

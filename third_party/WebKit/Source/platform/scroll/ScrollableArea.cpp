@@ -42,7 +42,7 @@
 static const int kPixelsPerLineStep = 40;
 static const float kMinFractionToStepWhenPaging = 0.875f;
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsScrollableArea {
     virtual ~SameSizeAsScrollableArea();
@@ -445,4 +445,4 @@ float ScrollableArea::pixelStep(ScrollbarOrientation) const
     return 1;
 }
 
-} // namespace WebCore
+} // namespace blink

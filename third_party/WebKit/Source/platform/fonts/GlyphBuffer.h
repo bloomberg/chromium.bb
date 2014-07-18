@@ -34,7 +34,7 @@
 #include "platform/geometry/FloatSize.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class SimpleFontData;
 

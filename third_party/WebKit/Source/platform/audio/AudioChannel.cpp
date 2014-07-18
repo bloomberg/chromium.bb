@@ -37,7 +37,7 @@
 #include "platform/audio/VectorMath.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace VectorMath;
 

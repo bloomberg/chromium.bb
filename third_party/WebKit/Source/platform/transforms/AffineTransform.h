@@ -32,7 +32,7 @@
 #include <string.h> // for memcpy
 #include "wtf/FastAllocBase.h"
 
-namespace WebCore {
+namespace blink {
 
 class FloatPoint;
 class FloatQuad;

@@ -17,7 +17,7 @@
 #include "wtf/StringHasher.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 static const size_t kMaxDigestSize = 64;
 typedef Vector<uint8_t, kMaxDigestSize> DigestValue;
@@ -34,32 +34,32 @@ PLATFORM_EXPORT bool computeDigest(HashAlgorithm, const char* digestable, size_t
 PLATFORM_EXPORT PassOwnPtr<blink::WebCryptoDigestor> createDigestor(HashAlgorithm);
 PLATFORM_EXPORT void finishDigestor(blink::WebCryptoDigestor*, DigestValue& digestResult);
 
-} // namespace WebCore
+} // namespace blink
 
 namespace WTF {
 
 struct DigestValueHash {
-    static unsigned hash(const WebCore::DigestValue& v)
+    static unsigned hash(const blink::DigestValue& v)
     {
         return StringHasher::computeHash(v.data(), v.size());
     }
-    static bool equal(const WebCore::DigestValue& a, const WebCore::DigestValue& b)
+    static bool equal(const blink::DigestValue& a, const blink::DigestValue& b)
     {
         return a == b;
     };
     static const bool safeToCompareToEmptyOrDeleted = true;
 };
 template <>
-struct DefaultHash<WebCore::DigestValue> {
+struct DefaultHash<blink::DigestValue> {
     typedef DigestValueHash Hash;
 };
 
 template <>
-struct DefaultHash<WebCore::HashAlgorithm> {
-    typedef IntHash<WebCore::HashAlgorithm> Hash;
+struct DefaultHash<blink::HashAlgorithm> {
+    typedef IntHash<blink::HashAlgorithm> Hash;
 };
 template <>
-struct HashTraits<WebCore::HashAlgorithm> : UnsignedWithZeroKeyHashTraits<WebCore::HashAlgorithm> {
+struct HashTraits<blink::HashAlgorithm> : UnsignedWithZeroKeyHashTraits<blink::HashAlgorithm> {
 };
 
 } // namespace WTF

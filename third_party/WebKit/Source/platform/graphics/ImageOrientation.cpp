@@ -29,7 +29,7 @@
 
 #include "platform/transforms/AffineTransform.h"
 
-namespace WebCore {
+namespace blink {
 
 AffineTransform ImageOrientation::transformFromDefault(const FloatSize& drawnSize) const
 {
@@ -59,4 +59,4 @@ AffineTransform ImageOrientation::transformFromDefault(const FloatSize& drawnSiz
     return AffineTransform();
 }
 
-} // namespace WebCore
+} // namespace blink

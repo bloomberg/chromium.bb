@@ -30,7 +30,7 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntRect.h"
 
-namespace WebCore {
+namespace blink {
 
 // This class is used to represent rectangles with rounded corners. It is only
 // used for painting. It uses integer units because using layout units leads to
@@ -127,6 +127,6 @@ inline bool operator==(const RoundedRect& a, const RoundedRect& b)
 }
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RoundedRect_h

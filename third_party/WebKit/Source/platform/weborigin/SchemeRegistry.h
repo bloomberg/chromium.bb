@@ -32,7 +32,7 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef HashSet<String, CaseFoldingHash> URLSchemesMap;
 
@@ -88,6 +88,6 @@ public:
     static bool schemeShouldBypassContentSecurityPolicy(const String& scheme);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SchemeRegistry_h

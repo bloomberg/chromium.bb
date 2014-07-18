@@ -35,7 +35,7 @@
 
 #include <gtest/gtest.h>
 
-using WebCore::Clock;
+using blink::Clock;
 
 namespace {
 

@@ -28,7 +28,7 @@
 #ifndef WindRule_h
 #define WindRule_h
 
-namespace WebCore {
+namespace blink {
 
 enum WindRule {
     RULE_NONZERO = 0,

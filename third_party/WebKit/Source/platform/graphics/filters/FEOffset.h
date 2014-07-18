@@ -26,7 +26,7 @@
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT FEOffset : public FilterEffect {
 public:
@@ -53,6 +53,6 @@ private:
     float m_dy;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FEOffset_h

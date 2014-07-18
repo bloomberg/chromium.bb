@@ -64,7 +64,7 @@ using blink::WebFilterOperations;
 using blink::WebLayer;
 using blink::WebPoint;
 
-namespace WebCore {
+namespace blink {
 
 typedef HashMap<const GraphicsLayer*, Vector<FloatRect> > RepaintMap;
 static RepaintMap& repaintRectMap()
@@ -1124,15 +1124,15 @@ void GraphicsLayer::didScroll()
         m_scrollableArea->scrollToOffsetWithoutAnimation(m_scrollableArea->minimumScrollPosition() + toIntSize(m_layer->layer()->scrollPosition()));
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
-void showGraphicsLayerTree(const WebCore::GraphicsLayer* layer)
+void showGraphicsLayerTree(const blink::GraphicsLayer* layer)
 {
     if (!layer)
         return;
 
-    String output = layer->layerTreeAsText(WebCore::LayerTreeIncludesDebugInfo);
+    String output = layer->layerTreeAsText(blink::LayerTreeIncludesDebugInfo);
     fprintf(stderr, "%s\n", output.utf8().data());
 }
 #endif

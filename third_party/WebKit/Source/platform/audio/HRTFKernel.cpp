@@ -38,7 +38,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 // Takes the input AudioChannel as an input impulse response and calculates the average group delay.
 // This represents the initial delay before the most energetic part of the impulse response.
@@ -130,6 +130,6 @@ PassRefPtr<HRTFKernel> HRTFKernel::createInterpolatedKernel(HRTFKernel* kernel1,
     return HRTFKernel::create(interpolatedFrame.release(), frameDelay, sampleRate1);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

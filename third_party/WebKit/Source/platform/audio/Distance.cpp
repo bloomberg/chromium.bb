@@ -38,7 +38,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 DistanceEffect::DistanceEffect()
     : m_model(ModelInverse)
@@ -87,6 +87,6 @@ double DistanceEffect::exponentialGain(double distance)
     return pow(distance / m_refDistance, -m_rolloffFactor);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

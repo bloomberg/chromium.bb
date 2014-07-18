@@ -27,7 +27,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<SourceGraphic> SourceGraphic::create(Filter* filter)
 {
@@ -69,4 +69,4 @@ TextStream& SourceGraphic::externalRepresentation(TextStream& ts, int indent) co
     return ts;
 }
 
-} // namespace WebCore
+} // namespace blink

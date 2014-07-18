@@ -42,7 +42,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
 public:
@@ -152,23 +152,23 @@ public:
 namespace WTF {
 
 template<typename T> struct DefaultHash;
-template<> struct DefaultHash<WebCore::ThreadMarker> {
-    typedef WebCore::ThreadMarkerHash Hash;
+template<> struct DefaultHash<blink::ThreadMarker> {
+    typedef blink::ThreadMarkerHash Hash;
 };
 
 // ThreadMarkerHash is the default hash for ThreadMarker
-template<> struct HashTraits<WebCore::ThreadMarker> : GenericHashTraits<WebCore::ThreadMarker> {
+template<> struct HashTraits<blink::ThreadMarker> : GenericHashTraits<blink::ThreadMarker> {
     static const bool emptyValueIsZero = true;
-    static void constructDeletedValue(WebCore::ThreadMarker& slot) { new (NotNull, &slot) WebCore::ThreadMarker(HashTableDeletedValue); }
-    static bool isDeletedValue(const WebCore::ThreadMarker& slot) { return slot.isHashTableDeletedValue(); }
+    static void constructDeletedValue(blink::ThreadMarker& slot) { new (NotNull, &slot) blink::ThreadMarker(HashTableDeletedValue); }
+    static bool isDeletedValue(const blink::ThreadMarker& slot) { return slot.isHashTableDeletedValue(); }
 };
 
 // The hash algorithm for our custom pair class is just the standard double
 // hash for pairs. Note that this means you can't mutate either of the parts of
 // the pair while they are in the hash table, as that would change their hash
 // code and thus their preferred placement in the table.
-template<> struct DefaultHash<WebCore::PairWithWeakHandling> {
-    typedef PairHash<WebCore::Member<WebCore::IntWrapper>, WebCore::WeakMember<WebCore::IntWrapper> > Hash;
+template<> struct DefaultHash<blink::PairWithWeakHandling> {
+    typedef PairHash<blink::Member<blink::IntWrapper>, blink::WeakMember<blink::IntWrapper> > Hash;
 };
 
 // Custom traits for the pair. These are weakness handling traits, which means
@@ -178,17 +178,17 @@ template<> struct DefaultHash<WebCore::PairWithWeakHandling> {
 // SimpleClassHashTraits allow empty slots in the table to be initialzed with
 // memset to zero, and we use -1 in the first part of the pair to represent
 // deleted slots.
-template<> struct HashTraits<WebCore::PairWithWeakHandling> : WebCore::WeakHandlingHashTraits<WebCore::PairWithWeakHandling> {
+template<> struct HashTraits<blink::PairWithWeakHandling> : blink::WeakHandlingHashTraits<blink::PairWithWeakHandling> {
     static const bool needsDestruction = false;
     static const bool hasIsEmptyValueFunction = true;
-    static bool isEmptyValue(const WebCore::PairWithWeakHandling& value) { return !value.first; }
-    static void constructDeletedValue(WebCore::PairWithWeakHandling& slot) { new (NotNull, &slot) WebCore::PairWithWeakHandling(HashTableDeletedValue); }
-    static bool isDeletedValue(const WebCore::PairWithWeakHandling& value) { return value.isHashTableDeletedValue(); }
+    static bool isEmptyValue(const blink::PairWithWeakHandling& value) { return !value.first; }
+    static void constructDeletedValue(blink::PairWithWeakHandling& slot) { new (NotNull, &slot) blink::PairWithWeakHandling(HashTableDeletedValue); }
+    static bool isDeletedValue(const blink::PairWithWeakHandling& value) { return value.isHashTableDeletedValue(); }
 };
 
 }
 
-namespace WebCore {
+namespace blink {
 
 class TestGCScope {
 public:
@@ -1345,11 +1345,11 @@ private:
 
 } // WebCore namespace
 
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(WebCore::VectorObject);
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(WebCore::VectorObjectInheritedTrace);
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(WebCore::VectorObjectNoTrace);
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::VectorObject);
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::VectorObjectInheritedTrace);
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::VectorObjectNoTrace);
 
-namespace WebCore {
+namespace blink {
 
 class OneKiloByteObject : public GarbageCollectedFinalized<OneKiloByteObject> {
 public:

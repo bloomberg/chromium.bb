@@ -34,7 +34,7 @@
 #include "platform/graphics/InterceptingCanvas.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ProfilingCanvas : public InterceptingCanvas {
 public:

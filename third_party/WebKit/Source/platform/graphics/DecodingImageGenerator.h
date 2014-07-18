@@ -33,7 +33,7 @@
 
 class SkData;
 
-namespace WebCore {
+namespace blink {
 
 class ImageFrameGenerator;
 
@@ -61,6 +61,6 @@ private:
     size_t m_generationId;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DecodingImageGenerator_h_

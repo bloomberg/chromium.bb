@@ -34,7 +34,7 @@
 
 #include "platform/audio/DenormalDisabler.h"
 
-namespace WebCore {
+namespace blink {
 
 void ZeroPole::process(const float *source, float *destination, unsigned framesToProcess)
 {
@@ -69,6 +69,6 @@ void ZeroPole::process(const float *source, float *destination, unsigned framesT
     m_lastY = DenormalDisabler::flushDenormalFloatToZero(lastY);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

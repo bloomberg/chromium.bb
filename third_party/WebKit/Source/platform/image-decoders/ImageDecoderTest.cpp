@@ -38,7 +38,7 @@
 #include "wtf/Vector.h"
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 
 class TestImageDecoder : public ImageDecoder {
 public:

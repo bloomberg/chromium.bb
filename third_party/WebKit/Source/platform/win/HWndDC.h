@@ -29,7 +29,7 @@
 #include <windows.h>
 #include "wtf/NonCopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class HWndDC {
     WTF_MAKE_NONCOPYABLE(HWndDC);
@@ -84,6 +84,6 @@ private:
     HDC m_hdc;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HWndDC_h

@@ -35,11 +35,11 @@
 #include "public/platform/WebPluginListBuilder.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class PluginListBuilder FINAL : public blink::WebPluginListBuilder {
 public:
-    PluginListBuilder(Vector<WebCore::PluginInfo>* results) : m_results(results) { }
+    PluginListBuilder(Vector<blink::PluginInfo>* results) : m_results(results) { }
 
     // WebPluginListBuilder methods:
     virtual void addPlugin(const blink::WebString& name, const blink::WebString& description, const blink::WebString& fileName) OVERRIDE;
@@ -50,6 +50,6 @@ private:
     Vector<PluginInfo>* m_results;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

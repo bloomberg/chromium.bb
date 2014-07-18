@@ -33,7 +33,7 @@
 
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 LayoutUnit LayoutBoxExtent::logicalTop(WritingMode writingMode) const
 {
@@ -197,4 +197,4 @@ LayoutUnit& LayoutBoxExtent::mutableAfter(WritingMode writingMode)
         (isFlippedBlocksWritingMode(writingMode) ? m_left: m_right);
 }
 
-} // namespace WebCore
+} // namespace blink

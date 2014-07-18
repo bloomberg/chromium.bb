@@ -34,7 +34,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 enum AnnotationMode {
     AnnotateRendererName    = 1 << 0,
@@ -50,6 +50,6 @@ enum AnnotationMode {
 typedef unsigned AnnotationModeFlags;
 typedef Vector<std::pair<const char*, String> > AnnotationList;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GraphicsContextAnnotation_h

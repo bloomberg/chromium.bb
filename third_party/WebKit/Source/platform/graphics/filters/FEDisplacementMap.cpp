@@ -33,7 +33,7 @@
 #include "platform/text/TextStream.h"
 #include "wtf/Uint8ClampedArray.h"
 
-namespace WebCore {
+namespace blink {
 
 FEDisplacementMap::FEDisplacementMap(Filter* filter, ChannelSelectorType xChannelSelector, ChannelSelectorType yChannelSelector, float scale)
     : FilterEffect(filter)
@@ -223,4 +223,4 @@ TextStream& FEDisplacementMap::externalRepresentation(TextStream& ts, int indent
     return ts;
 }
 
-} // namespace WebCore
+} // namespace blink

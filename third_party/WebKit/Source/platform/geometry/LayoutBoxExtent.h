@@ -36,7 +36,7 @@
 #include "platform/text/TextDirection.h"
 #include "platform/text/WritingMode.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT LayoutBoxExtent {
 public:
@@ -82,6 +82,6 @@ private:
     LayoutUnit m_left;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LayoutBoxExtent_h

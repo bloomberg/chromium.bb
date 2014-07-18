@@ -34,7 +34,7 @@
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class Event;
 class GraphicsContext;
@@ -144,6 +144,6 @@ private:
     bool m_parentVisible;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Widget_h

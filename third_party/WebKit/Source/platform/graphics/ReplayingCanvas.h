@@ -34,7 +34,7 @@
 #include "platform/graphics/InterceptingCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 
-namespace WebCore {
+namespace blink {
 
 class ReplayingCanvas : public InterceptingCanvas, public SkDrawPictureCallback {
 public:

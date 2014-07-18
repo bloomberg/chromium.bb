@@ -30,10 +30,10 @@
 #ifndef Glyph_h
 #define Glyph_h
 
-namespace WebCore {
+namespace blink {
 
 typedef unsigned short Glyph;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Glyph_h

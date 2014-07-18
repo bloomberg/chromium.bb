@@ -31,7 +31,7 @@
 #include "config.h"
 #include "platform/network/WebSocketHandshakeRequest.h"
 
-namespace WebCore {
+namespace blink {
 
 WebSocketHandshakeRequest::WebSocketHandshakeRequest(const KURL& url) : m_url(url)
 {
@@ -59,4 +59,4 @@ void WebSocketHandshakeRequest::addAndMergeHeader(HTTPHeaderMap* map, const Atom
     }
 }
 
-} // namespace WebCore
+} // namespace blink

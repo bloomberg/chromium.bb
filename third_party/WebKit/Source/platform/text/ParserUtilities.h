@@ -24,7 +24,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 template<typename CharType>
 inline bool skipString(const CharType*& ptr, const CharType* end, const CharType* name, int length)

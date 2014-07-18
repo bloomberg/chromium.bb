@@ -32,7 +32,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 bool isDefaultPortForProtocol(unsigned short port, const String& protocol)
 {

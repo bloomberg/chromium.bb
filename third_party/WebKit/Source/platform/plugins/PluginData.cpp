@@ -27,7 +27,7 @@
 #include "platform/plugins/PluginListBuilder.h"
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 class PluginCache {
 public:

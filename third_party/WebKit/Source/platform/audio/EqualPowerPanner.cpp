@@ -38,7 +38,7 @@ const float SmoothingTimeConstant = 0.050f;
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 EqualPowerPanner::EqualPowerPanner(float sampleRate)
     : Panner(PanningModelEqualPower)
@@ -154,6 +154,6 @@ void EqualPowerPanner::pan(double azimuth, double /*elevation*/, const AudioBus*
     m_gainR = gainR;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

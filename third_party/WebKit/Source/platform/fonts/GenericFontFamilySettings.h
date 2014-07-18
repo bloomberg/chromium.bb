@@ -38,7 +38,7 @@
 
 #include <unicode/uscript.h>
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT GenericFontFamilySettings {
     WTF_MAKE_FAST_ALLOCATED;

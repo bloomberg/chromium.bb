@@ -37,7 +37,7 @@
 #include "wtf/text/WTFString.h"
 #include "wtf/unicode/CharacterNames.h"
 
-namespace WebCore {
+namespace blink {
 
 using std::max;
 using std::min;
@@ -409,8 +409,8 @@ void showGlyphPageTrees()
 {
     printf("Page 0:\n");
     showGlyphPageTree(0);
-    HashMap<int, WebCore::GlyphPageTreeNode*>::iterator end = WebCore::GlyphPageTreeNode::roots->end();
-    for (HashMap<int, WebCore::GlyphPageTreeNode*>::iterator it = WebCore::GlyphPageTreeNode::roots->begin(); it != end; ++it) {
+    HashMap<int, blink::GlyphPageTreeNode*>::iterator end = blink::GlyphPageTreeNode::roots->end();
+    for (HashMap<int, blink::GlyphPageTreeNode*>::iterator it = blink::GlyphPageTreeNode::roots->begin(); it != end; ++it) {
         printf("\nPage %d:\n", it->key);
         showGlyphPageTree(it->key);
     }
@@ -418,6 +418,6 @@ void showGlyphPageTrees()
 
 void showGlyphPageTree(unsigned pageNumber)
 {
-    WebCore::GlyphPageTreeNode::getRoot(pageNumber)->showSubtree();
+    blink::GlyphPageTreeNode::getRoot(pageNumber)->showSubtree();
 }
 #endif

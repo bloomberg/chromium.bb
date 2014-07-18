@@ -33,7 +33,7 @@
 
 class SkImageFilter;
 
-namespace WebCore {
+namespace blink {
 class AffineTransform;
 class FilterEffect;
 class FilterOperations;
@@ -61,6 +61,6 @@ private:
     GraphicsContext* m_context;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

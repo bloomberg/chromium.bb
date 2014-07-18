@@ -33,7 +33,7 @@
 using namespace WTF;
 using namespace Unicode;
 
-namespace WebCore {
+namespace blink {
 
 int endOfFirstWordBoundaryContext(const UChar* characters, int length)
 {
@@ -100,4 +100,4 @@ void findWordBoundary(const UChar* chars, int len, int position, int* start, int
 }
 
 
-} // namespace WebCore
+} // namespace blink

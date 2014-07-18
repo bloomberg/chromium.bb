@@ -32,7 +32,7 @@
 #include "platform/graphics/ImageObserver.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSCrossfadeValue;
 

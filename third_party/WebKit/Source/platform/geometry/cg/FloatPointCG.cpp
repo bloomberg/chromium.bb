@@ -29,7 +29,7 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 
-namespace WebCore {
+namespace blink {
 
 FloatPoint::FloatPoint(const CGPoint& p) : m_x(p.x), m_y(p.y)
 {

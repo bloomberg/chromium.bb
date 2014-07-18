@@ -38,7 +38,7 @@
 
 #include "SkTypeface_android.h"
 
-namespace WebCore {
+namespace blink {
 
 static AtomicString getFamilyNameForCharacter(UChar32 c, UScriptCode script)
 {
@@ -101,4 +101,4 @@ AtomicString FontCache::getGenericFamilyNameForScript(const AtomicString& family
     return getFamilyNameForCharacter(examplerChar, script);
 }
 
-} // namespace WebCore
+} // namespace blink

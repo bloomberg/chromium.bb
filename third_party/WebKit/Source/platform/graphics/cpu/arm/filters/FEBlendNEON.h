@@ -33,7 +33,7 @@
 
 #include <arm_neon.h>
 
-namespace WebCore {
+namespace blink {
 
 class FEBlendUtilitiesNEON {
 public:
@@ -167,7 +167,7 @@ void FEBlend::platformApplyNEON(unsigned char* srcPixelArrayA, unsigned char* sr
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HAVE(ARM_NEON_INTRINSICS)
 

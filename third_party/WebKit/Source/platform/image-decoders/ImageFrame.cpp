@@ -27,7 +27,7 @@
 #include "config.h"
 #include "platform/image-decoders/ImageDecoder.h"
 
-namespace WebCore {
+namespace blink {
 
 ImageFrame::ImageFrame()
     : m_allocator(0)
@@ -157,4 +157,4 @@ void ImageFrame::zeroFillFrameRect(const IntRect& rect)
     setHasAlpha(true);
 }
 
-} // namespace WebCore
+} // namespace blink

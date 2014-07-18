@@ -45,7 +45,7 @@
 #include "hb.h"
 #include "wtf/HashMap.h"
 
-namespace WebCore {
+namespace blink {
 
 // Our implementation of the callbacks which HarfBuzz requires by using Skia
 // calls. See the HarfBuzz source for references about what these callbacks do.
@@ -234,4 +234,4 @@ hb_font_t* HarfBuzzFace::createFont()
     return font;
 }
 
-} // namespace WebCore
+} // namespace blink

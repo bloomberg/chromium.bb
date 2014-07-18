@@ -37,7 +37,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/TemporaryChange.h"
 
-namespace WebCore {
+namespace blink {
 
 class HostWindow;
 class Scrollbar;
@@ -345,6 +345,6 @@ private:
 
 DEFINE_TYPE_CASTS(ScrollView, Widget, widget, widget->isScrollView(), widget.isScrollView());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScrollView_h

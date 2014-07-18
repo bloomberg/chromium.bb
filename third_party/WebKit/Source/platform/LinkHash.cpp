@@ -36,7 +36,7 @@
 #include "wtf/text/StringUTF8Adaptor.h"
 #include <url/url_util.h>
 
-namespace WebCore {
+namespace blink {
 
 static bool resolveRelative(const KURL& base, const String& relative, url::RawCanonOutput<2048>* buffer)
 {
@@ -60,4 +60,4 @@ LinkHash visitedLinkHash(const KURL& base, const AtomicString& relative)
     return blink::Platform::current()->visitedLinkHash(buffer.data(), buffer.length());
 }
 
-} // namespace WebCore
+} // namespace blink

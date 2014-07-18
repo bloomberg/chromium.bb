@@ -37,7 +37,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioFIFO;
 class AudioPullFIFO;
@@ -63,7 +63,7 @@ public:
     // blink::WebAudioDevice::RenderCallback
     virtual void render(const blink::WebVector<float*>& sourceData, const blink::WebVector<float*>& audioData, size_t numberOfFrames) OVERRIDE;
 
-    // WebCore::AudioSourceProvider
+    // blink::AudioSourceProvider
     virtual void provideInput(AudioBus*, size_t framesToProcess) OVERRIDE;
 
     static float hardwareSampleRate();
@@ -90,6 +90,6 @@ private:
     OwnPtr<AudioPullFIFO> m_fifo;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioDestination_h

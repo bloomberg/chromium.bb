@@ -35,7 +35,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 UScriptCode scriptNameToCode(const String& scriptName)
 {
@@ -401,4 +401,4 @@ UScriptCode localeToScriptCodeForFontSelection(const String& locale)
     return USCRIPT_COMMON;
 }
 
-} // namespace WebCore
+} // namespace blink

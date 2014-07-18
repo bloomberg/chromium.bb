@@ -39,7 +39,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/StreamBuffer.h"
 
-namespace WebCore {
+namespace blink {
 
 class SocketStreamHandleClient;
 class SocketStreamHandleInternal;
@@ -82,6 +82,6 @@ private:
     OwnPtrWillBeMember<SocketStreamHandleInternal> m_internal;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SocketStreamHandle_h

@@ -44,7 +44,7 @@ using namespace WTF;
 using namespace Unicode;
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 CodePath Font::s_codePath = AutoPath;
 

@@ -35,7 +35,7 @@
 #include "platform/NotImplemented.h"
 #endif
 
-namespace WebCore {
+namespace blink {
 
 #if OS(WIN)
 static const unsigned short HIGHBITMASKSHORT = 0x8000;
@@ -106,4 +106,4 @@ void PlatformKeyboardEvent::getCurrentModifierState(bool& shiftKey, bool& ctrlKe
 #endif
 }
 
-} // namespace WebCore
+} // namespace blink

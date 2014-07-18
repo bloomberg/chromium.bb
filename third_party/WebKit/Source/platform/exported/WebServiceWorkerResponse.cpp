@@ -15,7 +15,7 @@ public:
     unsigned short status;
     WebString statusText;
     HashMap<String, String> headers;
-    RefPtr<WebCore::BlobDataHandle> blobDataHandle;
+    RefPtr<blink::BlobDataHandle> blobDataHandle;
 };
 
 WebServiceWorkerResponse::WebServiceWorkerResponse()
@@ -97,12 +97,12 @@ const HashMap<String, String>& WebServiceWorkerResponse::headers() const
     return m_private->headers;
 }
 
-void WebServiceWorkerResponse::setBlobDataHandle(PassRefPtr<WebCore::BlobDataHandle> blobDataHandle)
+void WebServiceWorkerResponse::setBlobDataHandle(PassRefPtr<blink::BlobDataHandle> blobDataHandle)
 {
     m_private->blobDataHandle = blobDataHandle;
 }
 
-PassRefPtr<WebCore::BlobDataHandle> WebServiceWorkerResponse::blobDataHandle() const
+PassRefPtr<blink::BlobDataHandle> WebServiceWorkerResponse::blobDataHandle() const
 {
     return m_private->blobDataHandle;
 }

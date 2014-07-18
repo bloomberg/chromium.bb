@@ -36,7 +36,7 @@
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 DisplayList::DisplayList(const FloatRect& bounds)
     : m_bounds(bounds)

@@ -36,7 +36,7 @@
 #include "platform/audio/AudioPullFIFO.h"
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 // Buffer size at which the web audio engine will render.
 const unsigned renderBufferSize = 128;
@@ -175,6 +175,6 @@ void AudioDestination::provideInput(AudioBus* bus, size_t framesToProcess)
     m_callback.render(sourceBus, bus, framesToProcess);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

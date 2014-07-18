@@ -30,7 +30,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 
@@ -62,6 +62,6 @@ private:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // URLPatternMatcher_h

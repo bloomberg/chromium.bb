@@ -27,7 +27,7 @@
 #include "wtf/RefCounted.h"
 #include <unicode/uchar.h>
 
-namespace WebCore {
+namespace blink {
 
 struct GlyphData;
 class GlyphPage;

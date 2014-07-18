@@ -31,16 +31,16 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/WebScrollbar.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
-PassOwnPtr<blink::WebScrollbarThemeGeometryNative> WebScrollbarThemeGeometryNative::create(WebCore::ScrollbarTheme* theme)
+PassOwnPtr<blink::WebScrollbarThemeGeometryNative> WebScrollbarThemeGeometryNative::create(blink::ScrollbarTheme* theme)
 {
     return adoptPtr(new WebScrollbarThemeGeometryNative(theme));
 }
 
-WebScrollbarThemeGeometryNative::WebScrollbarThemeGeometryNative(WebCore::ScrollbarTheme* theme)
+WebScrollbarThemeGeometryNative::WebScrollbarThemeGeometryNative(blink::ScrollbarTheme* theme)
     : m_theme(theme)
 {
 }

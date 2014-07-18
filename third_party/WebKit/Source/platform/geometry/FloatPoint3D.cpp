@@ -25,7 +25,7 @@
 
 #include <math.h>
 
-namespace WebCore {
+namespace blink {
 
 void FloatPoint3D::normalize()
 {
@@ -38,5 +38,5 @@ void FloatPoint3D::normalize()
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 

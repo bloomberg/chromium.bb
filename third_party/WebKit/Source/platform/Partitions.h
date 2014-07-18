@@ -34,7 +34,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/PartitionAlloc.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT Partitions {
 public:
@@ -54,6 +54,6 @@ private:
     static SizeSpecificPartitionAllocator<1024> m_renderingAllocator;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Partitions_h

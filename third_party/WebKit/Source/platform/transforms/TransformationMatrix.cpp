@@ -44,7 +44,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 //
 // Supporting Math Functions
@@ -1297,7 +1297,7 @@ bool TransformationMatrix::isInvertible() const
     if (isIdentityOrTranslation())
         return true;
 
-    double det = WebCore::determinant4x4(m_matrix);
+    double det = blink::determinant4x4(m_matrix);
 
     if (fabs(det) < SMALL_NUMBER)
         return false;
@@ -1320,7 +1320,7 @@ TransformationMatrix TransformationMatrix::inverse() const
     }
 
     TransformationMatrix invMat;
-    bool inverted = WebCore::inverse(m_matrix, invMat.m_matrix);
+    bool inverted = blink::inverse(m_matrix, invMat.m_matrix);
     if (!inverted)
         return TransformationMatrix();
 
@@ -1401,7 +1401,7 @@ bool TransformationMatrix::decompose(DecomposedType& decomp) const
         decomp.scaleZ = 1;
     }
 
-    if (!WebCore::decompose(m_matrix, decomp))
+    if (!blink::decompose(m_matrix, decomp))
         return false;
     return true;
 }
@@ -1521,7 +1521,7 @@ bool TransformationMatrix::isBackFaceVisible() const
     // we can simply compute the m33() of the adjoint (adjugate) matrix, without computing
     // the full adjoint.
 
-    double determinant = WebCore::determinant4x4(m_matrix);
+    double determinant = blink::determinant4x4(m_matrix);
 
     // If the matrix is not invertible, then we assume its backface is not visible.
     if (fabs(determinant) < SMALL_NUMBER)

@@ -33,7 +33,7 @@
 
 #include "platform/scroll/ScrollbarTheme.h"
 
-namespace WebCore {
+namespace blink {
 
 class PlatformMouseEvent;
 
@@ -52,6 +52,6 @@ protected:
     virtual IntSize buttonSize(ScrollbarThemeClient*) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

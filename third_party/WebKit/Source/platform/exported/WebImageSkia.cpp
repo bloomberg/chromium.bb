@@ -44,7 +44,7 @@
 #include "wtf/Vector.h"
 #include <algorithm>
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

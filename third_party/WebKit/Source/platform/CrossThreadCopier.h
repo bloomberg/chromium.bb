@@ -42,7 +42,7 @@
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/TypeTraits.h"
 
-namespace WebCore {
+namespace blink {
 
     class IntRect;
     class IntSize;
@@ -226,6 +226,6 @@ namespace WebCore {
     }
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CrossThreadCopier_h

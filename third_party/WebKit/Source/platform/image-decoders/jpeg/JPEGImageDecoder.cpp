@@ -97,7 +97,7 @@ const unsigned scaleDenominator = 8;
 
 } // namespace
 
-namespace WebCore {
+namespace blink {
 
 struct decoder_error_mgr {
     struct jpeg_error_mgr pub; // "public" fields for IJG library

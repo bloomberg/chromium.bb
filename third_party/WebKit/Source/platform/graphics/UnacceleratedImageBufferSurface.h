@@ -36,7 +36,7 @@
 
 class SkSurface;
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT UnacceleratedImageBufferSurface : public ImageBufferSurface {
     WTF_MAKE_NONCOPYABLE(UnacceleratedImageBufferSurface); WTF_MAKE_FAST_ALLOCATED;
@@ -51,6 +51,6 @@ private:
     RefPtr<SkSurface> m_surface;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

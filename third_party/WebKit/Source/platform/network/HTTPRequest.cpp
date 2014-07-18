@@ -28,7 +28,7 @@
 
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<HTTPRequest> HTTPRequest::parseHTTPRequestFromBuffer(const char* data, size_t length, String& failureReason)
 {
@@ -114,4 +114,4 @@ HTTPRequest::~HTTPRequest()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

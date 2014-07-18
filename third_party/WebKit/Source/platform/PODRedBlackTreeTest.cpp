@@ -34,7 +34,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 using ArenaTestHelpers::TrackedAllocator;
 using TreeTestHelpers::initRandom;
@@ -205,4 +205,4 @@ TEST(PODRedBlackTreeTest, RandomDeletionAndInsertionRegressionTest1)
     InsertionAndDeletionTest(12311, 100);
 }
 
-} // namespace WebCore
+} // namespace blink

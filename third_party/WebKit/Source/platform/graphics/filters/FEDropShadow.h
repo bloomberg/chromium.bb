@@ -25,7 +25,7 @@
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT FEDropShadow : public FilterEffect {
 public:
@@ -67,6 +67,6 @@ private:
     float m_shadowOpacity;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FEDropShadow_h

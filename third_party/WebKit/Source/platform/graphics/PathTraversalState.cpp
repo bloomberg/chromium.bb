@@ -23,7 +23,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 static inline FloatPoint midPoint(const FloatPoint& first, const FloatPoint& second)
 {

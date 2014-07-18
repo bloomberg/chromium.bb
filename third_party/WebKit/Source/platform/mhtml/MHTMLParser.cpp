@@ -44,7 +44,7 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 // This class is a limited MIME parser used to parse the MIME headers of MHTML files.
 class MIMEHeader : public RefCountedWillBeGarbageCollectedFinalized<MIMEHeader> {
@@ -95,7 +95,7 @@ private:
 
 typedef HashMap<String, String> KeyValueMap;
 
-static KeyValueMap retrieveKeyValuePairs(WebCore::SharedBufferChunkReader* buffer)
+static KeyValueMap retrieveKeyValuePairs(blink::SharedBufferChunkReader* buffer)
 {
     KeyValueMap keyValuePairs;
     String line;

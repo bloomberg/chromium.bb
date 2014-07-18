@@ -31,7 +31,7 @@
 #include "wtf/Forward.h"
 #include "wtf/unicode/Unicode.h"
 
-namespace WebCore {
+namespace blink {
 
 class Color;
 
@@ -171,6 +171,6 @@ inline Color blend(const Color& from, const Color& to, double progress, bool ble
                  blend(from.blue(), to.blue(), progress),
                  blend(from.alpha(), to.alpha(), progress));
 }
-} // namespace WebCore
+} // namespace blink
 
 #endif // Color_h

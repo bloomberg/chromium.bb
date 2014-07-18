@@ -34,7 +34,7 @@ namespace blink {
 struct WebScreenInfo;
 }
 
-namespace WebCore {
+namespace blink {
 class Cursor;
 class IntPoint;
 class IntRect;
@@ -62,6 +62,6 @@ public:
     virtual void scheduleAnimation() = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HostWindow_h

@@ -37,7 +37,7 @@
 #include "wtf/text/AtomicStringHash.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 // Multiplying the floating point size by 100 gives two decimal point
 // precision which should be sufficient.

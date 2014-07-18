@@ -28,7 +28,7 @@
 #include "SkBitmap.h"
 #include "SkPixelRef.h"
 
-namespace WebCore {
+namespace blink {
 
 class MockDiscardablePixelRef : public SkPixelRef {
 public:
@@ -83,6 +83,6 @@ private:
     bool discarded;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MockDiscardablePixelRef_h

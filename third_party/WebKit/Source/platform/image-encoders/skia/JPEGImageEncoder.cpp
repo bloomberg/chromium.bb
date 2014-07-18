@@ -41,7 +41,7 @@ extern "C" {
 #include "jpeglib.h"
 }
 
-namespace WebCore {
+namespace blink {
 
 struct JPEGOutputBuffer : public jpeg_destination_mgr {
     Vector<unsigned char>* output;
@@ -212,4 +212,4 @@ bool JPEGImageEncoder::encode(const ImageDataBuffer& imageData, int quality, Vec
     return encodePixels(imageData.size(), imageData.data(), false, quality, output);
 }
 
-} // namespace WebCore
+} // namespace blink

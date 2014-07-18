@@ -37,7 +37,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 class TimerHeapReference;
 
@@ -412,5 +412,5 @@ double TimerBase::nextUnalignedFireInterval() const
     return max(m_unalignedNextFireTime - monotonicallyIncreasingTime(), 0.0);
 }
 
-} // namespace WebCore
+} // namespace blink
 

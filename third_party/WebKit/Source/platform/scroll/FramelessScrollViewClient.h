@@ -34,7 +34,7 @@
 #include "platform/HostWindow.h"
 #include "platform/PlatformExport.h"
 
-namespace WebCore {
+namespace blink {
 class FramelessScrollView;
 
 class PLATFORM_EXPORT FramelessScrollViewClient : public HostWindow {
@@ -42,6 +42,6 @@ public:
     virtual void popupClosed(FramelessScrollView*) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

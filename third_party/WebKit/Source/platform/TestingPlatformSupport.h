@@ -35,7 +35,7 @@
 #include "public/platform/WebDiscardableMemory.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class TestingDiscardableMemory : public blink::WebDiscardableMemory {
 public:
@@ -74,6 +74,6 @@ private:
     blink::Platform* const m_oldPlatform;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TestingPlatformSupport_h

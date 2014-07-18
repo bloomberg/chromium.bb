@@ -43,7 +43,7 @@ namespace blink {
 class WebThread;
 }
 
-namespace WebCore {
+namespace blink {
 
 class AudioChannel;
 
@@ -86,6 +86,6 @@ private:
     OwnPtr<blink::WebThread> m_backgroundThread;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ReverbConvolver_h

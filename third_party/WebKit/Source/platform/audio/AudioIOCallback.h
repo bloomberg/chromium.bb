@@ -29,7 +29,7 @@
 #ifndef AudioIOCallback_h
 #define AudioIOCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class AudioBus;
 

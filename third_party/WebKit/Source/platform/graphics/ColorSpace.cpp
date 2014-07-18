@@ -35,7 +35,7 @@
 
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace ColorSpaceUtilities {
 
@@ -104,4 +104,4 @@ Color convertColor(const Color& srcColor, ColorSpace dstColorSpace, ColorSpace s
 
 } // namespace ColorSpaceUtilities
 
-} // namespace WebCore
+} // namespace blink

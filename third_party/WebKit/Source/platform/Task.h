@@ -34,7 +34,7 @@
 #include "public/platform/WebThread.h"
 #include "wtf/Functional.h"
 
-namespace WebCore {
+namespace blink {
 
 class Task : public blink::WebThread::Task {
 public:
@@ -52,6 +52,6 @@ private:
     Closure m_closure;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Task_h

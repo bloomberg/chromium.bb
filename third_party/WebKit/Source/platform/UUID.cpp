@@ -35,7 +35,7 @@
 #include "wtf/HexNumber.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 String createCanonicalUUIDString()
 {

@@ -30,7 +30,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT PlatformSpeechSynthesisVoice FINAL : public GarbageCollectedFinalized<PlatformSpeechSynthesisVoice> {
 public:
@@ -65,6 +65,6 @@ private:
     bool m_default;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PlatformSpeechSynthesisVoice_h

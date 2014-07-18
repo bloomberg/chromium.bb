@@ -34,7 +34,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class SecurityOrigin;
 
@@ -87,6 +87,6 @@ PLATFORM_EXPORT inline bool operator!=(const OriginAccessEntry& a, const OriginA
     return !(a == b);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // OriginAccessEntry_h

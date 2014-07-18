@@ -35,7 +35,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class FileChooser;
 
@@ -98,6 +98,6 @@ private:
     FileChooserSettings m_settings;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FileChooser_h

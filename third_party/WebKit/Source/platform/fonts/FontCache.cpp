@@ -51,7 +51,7 @@
 
 using namespace WTF;
 
-namespace WebCore {
+namespace blink {
 
 #if !OS(WIN)
 FontCache::FontCache()
@@ -289,4 +289,4 @@ void FontCache::invalidate()
     purge(ForcePurge);
 }
 
-} // namespace WebCore
+} // namespace blink

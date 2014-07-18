@@ -23,7 +23,7 @@
 #include "platform/fonts/FontBaseline.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 const unsigned gDefaultUnitsPerEm = 1000;
 
@@ -164,6 +164,6 @@ inline float scaleEmToUnits(float x, unsigned unitsPerEm)
     return unitsPerEm ? x / unitsPerEm : x;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FontMetrics_h

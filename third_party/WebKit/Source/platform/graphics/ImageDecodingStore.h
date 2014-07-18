@@ -41,7 +41,7 @@
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ImageFrameGenerator;
 class SharedBuffer;
@@ -324,6 +324,6 @@ private:
     Mutex m_mutex;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

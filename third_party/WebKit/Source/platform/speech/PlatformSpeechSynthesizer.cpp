@@ -34,7 +34,7 @@
 #include "public/platform/WebSpeechSynthesizerClient.h"
 #include "wtf/RetainPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 PlatformSpeechSynthesizer* PlatformSpeechSynthesizer::create(PlatformSpeechSynthesizerClient* client)
 {
@@ -98,4 +98,4 @@ void PlatformSpeechSynthesizer::trace(Visitor* visitor)
     visitor->trace(m_webSpeechSynthesizerClient);
 }
 
-} // namespace WebCore
+} // namespace blink

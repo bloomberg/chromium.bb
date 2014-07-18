@@ -38,7 +38,7 @@ namespace blink {
 
 namespace {
 
-class ExtraDataContainer : public WebCore::Prerender::ExtraData {
+class ExtraDataContainer : public blink::Prerender::ExtraData {
 public:
     static PassRefPtr<ExtraDataContainer> create(WebPrerender::ExtraData* extraData) { return adoptRef(new ExtraDataContainer(extraData)); }
 
@@ -57,12 +57,12 @@ private:
 
 } // anon namespace
 
-WebPrerender::WebPrerender(PassRefPtr<WebCore::Prerender> prerender)
+WebPrerender::WebPrerender(PassRefPtr<blink::Prerender> prerender)
     : m_private(prerender)
 {
 }
 
-const WebCore::Prerender* WebPrerender::toPrerender() const
+const blink::Prerender* WebPrerender::toPrerender() const
 {
     return m_private.get();
 }
@@ -109,7 +109,7 @@ void WebPrerender::setExtraData(WebPrerender::ExtraData* extraData)
 
 const WebPrerender::ExtraData* WebPrerender::extraData() const
 {
-    RefPtr<WebCore::Prerender::ExtraData> webcoreExtraData = m_private->extraData();
+    RefPtr<blink::Prerender::ExtraData> webcoreExtraData = m_private->extraData();
     if (!webcoreExtraData)
         return 0;
     return static_cast<ExtraDataContainer*>(webcoreExtraData.get())->extraData();

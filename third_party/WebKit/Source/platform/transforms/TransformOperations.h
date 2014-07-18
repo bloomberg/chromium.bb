@@ -30,7 +30,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 class FloatBox;
 class PLATFORM_EXPORT TransformOperations {
     WTF_MAKE_FAST_ALLOCATED;
@@ -91,6 +91,6 @@ private:
     Vector<RefPtr<TransformOperation> > m_operations;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TransformOperations_h

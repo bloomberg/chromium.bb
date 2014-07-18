@@ -33,7 +33,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 class FloatPolygonTestValue {
 public:
@@ -52,11 +52,11 @@ private:
     OwnPtr<FloatPolygon> m_polygon;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 namespace {
 
-using namespace WebCore;
+using namespace blink;
 
 static bool compareEdgeIndex(const FloatPolygonEdge* edge1, const FloatPolygonEdge* edge2)
 {

@@ -27,7 +27,7 @@
 #include "wtf/Forward.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 class GlyphPageTreeNode;
 class GraphicsContext;

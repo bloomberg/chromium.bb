@@ -33,7 +33,7 @@
 
 using namespace WTF::Unicode;
 
-namespace WebCore {
+namespace blink {
 
 enum VoicedSoundMarkType {
     NoVoicedSoundMark,

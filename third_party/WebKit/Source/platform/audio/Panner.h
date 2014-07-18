@@ -32,7 +32,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioBus;
 class HRTFDatabaseLoader;
@@ -67,6 +67,6 @@ protected:
     PanningModel m_panningModel;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Panner_h

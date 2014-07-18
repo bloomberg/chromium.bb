@@ -32,7 +32,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/TemporaryChange.h"
 
-namespace WebCore {
+namespace blink {
 
 template<typename T> class LifecycleContext;
 
@@ -113,6 +113,6 @@ inline void LifecycleNotifier<T>::removeObserver(typename LifecycleNotifier<T>::
 
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LifecycleNotifier_h

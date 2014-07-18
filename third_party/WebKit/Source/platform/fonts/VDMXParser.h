@@ -33,10 +33,10 @@
 
 #include <stdint.h>
 
-namespace WebCore {
+namespace blink {
     bool parseVDMX(int* ymax, int* ymin,
                    const uint8_t* vdmx, size_t vdmxLength,
                    unsigned targetPixelSize);
-}  // namespace WebCore
+}  // namespace blink
 
 #endif

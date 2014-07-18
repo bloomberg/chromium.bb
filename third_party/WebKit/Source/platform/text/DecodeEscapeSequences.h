@@ -35,7 +35,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextEncoding.h"
 
-namespace WebCore {
+namespace blink {
 
 // See <http://en.wikipedia.org/wiki/Percent-encoding#Non-standard_implementations>.
 struct Unicode16BitEscapeSequence {
@@ -153,6 +153,6 @@ String decodeEscapeSequences(const String& string, const WTF::TextEncoding& enco
     return result.toString();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DecodeEscapeSequences_h

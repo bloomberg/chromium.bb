@@ -41,7 +41,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/PassOwnPtr.h"
 
-using namespace WebCore;
+using namespace blink;
 using namespace std;
 
 static bool supportsUIStateTransitionProgress()
@@ -88,9 +88,9 @@ static ScrollbarPainter scrollbarPainterForScrollbar(Scrollbar* scrollbar)
 
 @interface WebScrollAnimationHelperDelegate : NSObject
 {
-    WebCore::ScrollAnimatorMac* _animator;
+    blink::ScrollAnimatorMac* _animator;
 }
-- (id)initWithScrollAnimator:(WebCore::ScrollAnimatorMac*)scrollAnimator;
+- (id)initWithScrollAnimator:(blink::ScrollAnimatorMac*)scrollAnimator;
 @end
 
 static NSSize abs(NSSize size)
@@ -105,7 +105,7 @@ static NSSize abs(NSSize size)
 
 @implementation WebScrollAnimationHelperDelegate
 
-- (id)initWithScrollAnimator:(WebCore::ScrollAnimatorMac*)scrollAnimator
+- (id)initWithScrollAnimator:(blink::ScrollAnimatorMac*)scrollAnimator
 {
     self = [super init];
     if (!self)
@@ -125,7 +125,7 @@ static NSSize abs(NSSize size)
     if (!_animator)
         return NSZeroRect;
 
-    WebCore::FloatPoint currentPosition = _animator->currentPosition();
+    blink::FloatPoint currentPosition = _animator->currentPosition();
     return NSMakeRect(currentPosition.x(), currentPosition.y(), 0, 0);
 }
 
@@ -211,7 +211,7 @@ static NSSize abs(NSSize size)
     if (!_scrollableArea)
         return NSZeroRect;
 
-    WebCore::IntSize contentsSize = _scrollableArea->contentsSize();
+    blink::IntSize contentsSize = _scrollableArea->contentsSize();
     return NSMakeRect(0, 0, contentsSize.width(), contentsSize.height());
 }
 
@@ -237,7 +237,7 @@ static NSSize abs(NSSize size)
     if (!_scrollableArea || !scrollerImp)
         return NSZeroPoint;
 
-    WebCore::Scrollbar* scrollbar = 0;
+    blink::Scrollbar* scrollbar = 0;
     if ([scrollerImp isHorizontal])
         scrollbar = _scrollableArea->horizontalScrollbar();
     else
@@ -253,7 +253,7 @@ static NSSize abs(NSSize size)
 
     ASSERT(scrollerImp == scrollbarPainterForScrollbar(scrollbar));
 
-    return scrollbar->convertFromContainingView(WebCore::IntPoint(pointInContentArea));
+    return scrollbar->convertFromContainingView(blink::IntPoint(pointInContentArea));
 }
 
 - (void)scrollerImpPair:(id)scrollerImpPair setContentAreaNeedsDisplayInRect:(NSRect)rect
@@ -383,20 +383,20 @@ enum FeatureToAnimate {
 
 @interface WebScrollbarPainterDelegate : NSObject<NSAnimationDelegate>
 {
-    WebCore::Scrollbar* _scrollbar;
+    blink::Scrollbar* _scrollbar;
 
     RetainPtr<WebScrollbarPartAnimation> _knobAlphaAnimation;
     RetainPtr<WebScrollbarPartAnimation> _trackAlphaAnimation;
     RetainPtr<WebScrollbarPartAnimation> _uiStateTransitionAnimation;
     RetainPtr<WebScrollbarPartAnimation> _expansionTransitionAnimation;
 }
-- (id)initWithScrollbar:(WebCore::Scrollbar*)scrollbar;
+- (id)initWithScrollbar:(blink::Scrollbar*)scrollbar;
 - (void)cancelAnimations;
 @end
 
 @implementation WebScrollbarPainterDelegate
 
-- (id)initWithScrollbar:(WebCore::Scrollbar*)scrollbar
+- (id)initWithScrollbar:(blink::Scrollbar*)scrollbar
 {
     self = [super init];
     if (!self)
@@ -441,7 +441,7 @@ enum FeatureToAnimate {
     return _scrollbar->convertFromContainingView(_scrollbar->scrollableArea()->lastKnownMousePosition());
 }
 
-- (void)setUpAlphaAnimation:(RetainPtr<WebScrollbarPartAnimation>&)scrollbarPartAnimation scrollerPainter:(ScrollbarPainter)scrollerPainter part:(WebCore::ScrollbarPart)part animateAlphaTo:(CGFloat)newAlpha duration:(NSTimeInterval)duration
+- (void)setUpAlphaAnimation:(RetainPtr<WebScrollbarPartAnimation>&)scrollbarPartAnimation scrollerPainter:(ScrollbarPainter)scrollerPainter part:(blink::ScrollbarPart)part animateAlphaTo:(CGFloat)newAlpha duration:(NSTimeInterval)duration
 {
     // If the user has scrolled the page, then the scrollbars must be animated here.
     // This overrides the early returns.
@@ -464,7 +464,7 @@ enum FeatureToAnimate {
         scrollbarPartAnimation = nil;
     }
 
-    if (part == WebCore::ThumbPart && _scrollbar->orientation() == VerticalScrollbar) {
+    if (part == blink::ThumbPart && _scrollbar->orientation() == VerticalScrollbar) {
         if (newAlpha == 1) {
             IntRect thumbRect = IntRect([scrollerPainter rectForPart:NSScrollerKnob]);
             [self scrollAnimator]->setVisibleScrollerThumbRect(thumbRect);
@@ -488,7 +488,7 @@ enum FeatureToAnimate {
     ASSERT(scrollerImp == scrollbarPainterForScrollbar(_scrollbar));
 
     ScrollbarPainter scrollerPainter = (ScrollbarPainter)scrollerImp;
-    [self setUpAlphaAnimation:_knobAlphaAnimation scrollerPainter:scrollerPainter part:WebCore::ThumbPart animateAlphaTo:newKnobAlpha duration:duration];
+    [self setUpAlphaAnimation:_knobAlphaAnimation scrollerPainter:scrollerPainter part:blink::ThumbPart animateAlphaTo:newKnobAlpha duration:duration];
 }
 
 - (void)scrollerImp:(id)scrollerImp animateTrackAlphaTo:(CGFloat)newTrackAlpha duration:(NSTimeInterval)duration
@@ -499,7 +499,7 @@ enum FeatureToAnimate {
     ASSERT(scrollerImp == scrollbarPainterForScrollbar(_scrollbar));
 
     ScrollbarPainter scrollerPainter = (ScrollbarPainter)scrollerImp;
-    [self setUpAlphaAnimation:_trackAlphaAnimation scrollerPainter:scrollerPainter part:WebCore::BackTrackPart animateAlphaTo:newTrackAlpha duration:duration];
+    [self setUpAlphaAnimation:_trackAlphaAnimation scrollerPainter:scrollerPainter part:blink::BackTrackPart animateAlphaTo:newTrackAlpha duration:duration];
 }
 
 - (void)scrollerImp:(id)scrollerImp animateUIStateTransitionWithDuration:(NSTimeInterval)duration
@@ -579,7 +579,7 @@ enum FeatureToAnimate {
 
 @end
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtr<ScrollAnimator> ScrollAnimator::create(ScrollableArea* scrollableArea)
 {
@@ -1294,4 +1294,4 @@ bool ScrollAnimatorMac::canUseCoordinatedScrollbar() {
     return ScrollbarThemeMacCommon::isOverlayAPIAvailable();
 }
 
-} // namespace WebCore
+} // namespace blink

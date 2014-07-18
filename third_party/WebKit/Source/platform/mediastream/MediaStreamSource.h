@@ -42,7 +42,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT MediaStreamSource FINAL : public RefCounted<MediaStreamSource> {
 public:
@@ -111,6 +111,6 @@ private:
 
 typedef Vector<RefPtr<MediaStreamSource> > MediaStreamSourceVector;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaStreamSource_h

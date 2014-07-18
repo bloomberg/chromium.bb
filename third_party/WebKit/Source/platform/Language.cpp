@@ -29,7 +29,7 @@
 #include "public/platform/Platform.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 static const AtomicString& platformLanguage()
 {

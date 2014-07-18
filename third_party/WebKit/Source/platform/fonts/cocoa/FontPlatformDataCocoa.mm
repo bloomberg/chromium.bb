@@ -33,7 +33,7 @@
 #include "third_party/skia/include/ports/SkTypeface_mac.h"
 #endif
 
-namespace WebCore {
+namespace blink {
 
 // These CoreText Text Spacing feature selectors are not defined in CoreText.
 enum TextSpacingCTFeatureSelector { TextSpacingProportional, TextSpacingFullWidth, TextSpacingHalfWidth, TextSpacingThirdWidth, TextSpacingQuarterWidth };
@@ -328,4 +328,4 @@ String FontPlatformData::description() const
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

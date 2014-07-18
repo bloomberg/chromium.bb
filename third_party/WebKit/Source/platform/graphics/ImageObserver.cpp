@@ -31,10 +31,10 @@
 
 #include "platform/graphics/ImageObserver.h"
 
-namespace WebCore {
+namespace blink {
 
 ImageObserver::~ImageObserver()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

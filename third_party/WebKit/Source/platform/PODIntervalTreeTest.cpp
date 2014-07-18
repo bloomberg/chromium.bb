@@ -35,7 +35,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 using TreeTestHelpers::initRandom;
 using TreeTestHelpers::nextRandom;
@@ -347,4 +347,4 @@ TEST(PODIntervalTreeTest, RandomDeletionAndInsertionRegressionTest4)
     ASSERT_TRUE(tree.checkInvariants());
 }
 
-} // namespace WebCore
+} // namespace blink

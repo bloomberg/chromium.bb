@@ -37,7 +37,7 @@
 #include "platform/mac/NSScrollerImpDetails.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef HashMap<ScrollbarThemeClient*, RetainPtr<ScrollbarPainter> > ScrollbarPainterMap;
 
@@ -192,4 +192,4 @@ void ScrollbarThemeMacOverlayAPI::updateEnabledState(ScrollbarThemeClient* scrol
     [painterForScrollbar(scrollbar) setEnabled:scrollbar->enabled()];
 }
 
-} // namespace WebCore
+} // namespace blink

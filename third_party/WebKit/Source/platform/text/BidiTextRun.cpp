@@ -34,7 +34,7 @@
 #include "platform/text/BidiResolver.h"
 #include "platform/text/TextRunIterator.h"
 
-namespace WebCore {
+namespace blink {
 
 TextDirection directionForRun(TextRun& run, bool& hasStrongDirectionality)
 {
@@ -59,5 +59,5 @@ TextRun textRunWithDirectionality(const String& value, bool& hasStrongDirectiona
     return run;
 }
 
-} // namespace WebCore
+} // namespace blink
 

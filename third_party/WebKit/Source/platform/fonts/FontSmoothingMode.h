@@ -26,10 +26,10 @@
 #ifndef FontSmoothingMode_h
 #define FontSmoothingMode_h
 
-namespace WebCore {
+namespace blink {
 
 enum FontSmoothingMode { AutoSmoothing, NoSmoothing, Antialiased, SubpixelAntialiased };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FontSmoothingMode_h

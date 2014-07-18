@@ -13,7 +13,7 @@ using blink::WebString;
 
 namespace blink {
 
-WebConvertableToTraceFormat::WebConvertableToTraceFormat(WebCore::TraceEvent::ConvertableToTraceFormat* convertable)
+WebConvertableToTraceFormat::WebConvertableToTraceFormat(blink::TraceEvent::ConvertableToTraceFormat* convertable)
     : m_private(convertable)
 {
 }

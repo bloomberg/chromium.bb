@@ -37,7 +37,7 @@
 
 typedef struct CGFont* CGFontRef;
 
-namespace WebCore {
+namespace blink {
 
 // MemoryActivatedFont encapsulates a font loaded from another process and
 // activated from memory.
@@ -90,6 +90,6 @@ private:
     WTF::String m_inSandboxHashKey;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MemoryActivatedFont_h

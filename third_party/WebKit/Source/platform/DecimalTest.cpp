@@ -36,7 +36,7 @@
 #include <float.h>
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 std::ostream& operator<<(std::ostream& os, const Decimal& decimal)
 {
@@ -48,9 +48,9 @@ std::ostream& operator<<(std::ostream& os, const Decimal& decimal)
         << ")=" << decimal.toString().ascii().data();
 }
 
-} // namespace WebCore
+} // namespace blink
 
-using namespace WebCore;
+using namespace blink;
 
 // Simulate WebCore/html/StepRange
 class DecimalStepRange {

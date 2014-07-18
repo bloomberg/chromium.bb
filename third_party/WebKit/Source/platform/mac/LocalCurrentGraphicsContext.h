@@ -23,7 +23,7 @@
 
 OBJC_CLASS NSGraphicsContext;
 
-namespace WebCore {
+namespace blink {
 
 class GraphicsContext;
 

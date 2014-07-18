@@ -29,7 +29,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -48,7 +48,7 @@ void WebRTCStatsResponse::reset()
     m_private.reset();
 }
 
-WebRTCStatsResponse::operator WebCore::RTCStatsResponseBase*() const
+WebRTCStatsResponse::operator blink::RTCStatsResponseBase*() const
 {
     return m_private.get();
 }

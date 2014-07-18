@@ -31,7 +31,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 TransformOperations::TransformOperations(bool makeIdentity)
 {
@@ -381,4 +381,4 @@ TransformOperations TransformOperations::add(const TransformOperations& addend) 
     return result;
 }
 
-} // namespace WebCore
+} // namespace blink

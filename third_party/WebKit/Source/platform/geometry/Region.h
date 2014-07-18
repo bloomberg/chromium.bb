@@ -30,7 +30,7 @@
 #include "platform/geometry/IntRect.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT Region {
 public:
@@ -180,6 +180,6 @@ inline bool operator==(const Region::Span& a, const Region::Span& b)
     return a.y == b.y && a.segmentIndex == b.segmentIndex;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Region_h

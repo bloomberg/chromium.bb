@@ -32,7 +32,7 @@
 - (NSString*)webCoreFamilyName;
 @end
 
-namespace WebCore {
+namespace blink {
 
 class ThemeMac : public Theme {
 public:
@@ -59,6 +59,6 @@ public:
     static void setFocusRingClipRect(const FloatRect&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ThemeMac_h

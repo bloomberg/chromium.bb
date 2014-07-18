@@ -33,7 +33,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
 
-namespace WebCore {
+namespace blink {
 
 // A FloatQuad is a collection of 4 points, often representing the result of
 // mapping a rectangle through transforms. When initialized from a rect, the
@@ -173,7 +173,7 @@ inline bool operator!=(const FloatQuad& a, const FloatQuad& b)
            a.p4() != b.p4();
 }
 
-}   // namespace WebCore
+}   // namespace blink
 
 
 #endif // FloatQuad_h

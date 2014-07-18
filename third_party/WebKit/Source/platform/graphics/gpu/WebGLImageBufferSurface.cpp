@@ -38,7 +38,7 @@
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 WebGLImageBufferSurface::WebGLImageBufferSurface(const IntSize& size, OpacityMode opacityMode)
     : ImageBufferSurface(size, opacityMode)
@@ -76,4 +76,4 @@ void WebGLImageBufferSurface::updateCachedBitmapIfNeeded()
     }
 }
 
-} // namespace WebCore
+} // namespace blink

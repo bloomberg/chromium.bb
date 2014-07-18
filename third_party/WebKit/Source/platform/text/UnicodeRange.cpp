@@ -35,7 +35,7 @@
 #include "config.h"
 #include "platform/text/UnicodeRange.h"
 
-namespace WebCore {
+namespace blink {
 
 // This table depends on unicode range definitions.
 // Each item's index must correspond to a unicode range value

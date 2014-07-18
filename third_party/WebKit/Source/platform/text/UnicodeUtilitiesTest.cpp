@@ -37,7 +37,7 @@
 #include <gtest/gtest.h>
 #include <unicode/uchar.h>
 
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 

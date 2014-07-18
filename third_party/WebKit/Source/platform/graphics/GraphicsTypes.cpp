@@ -30,7 +30,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 static const char* const compositeOperatorNames[] = {
     "clear",

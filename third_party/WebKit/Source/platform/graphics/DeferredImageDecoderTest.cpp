@@ -41,7 +41,7 @@
 #include "wtf/RefPtr.h"
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -342,4 +342,4 @@ TEST_F(DeferredImageDecoderTest, smallerFrameCount)
     EXPECT_EQ(m_frameCount, m_lazyDecoder->frameCount());
 }
 
-} // namespace WebCore
+} // namespace blink

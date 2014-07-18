@@ -42,7 +42,7 @@ typedef struct CGRect CGRect;
 struct SkRect;
 struct SkIRect;
 
-namespace WebCore {
+namespace blink {
 
 class FloatRect;
 class LayoutRect;
@@ -204,8 +204,8 @@ PLATFORM_EXPORT IntRect enclosingIntRect(const NSRect&);
 #endif
 #endif
 
-} // namespace WebCore
+} // namespace blink
 
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(WebCore::IntRect);
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::IntRect);
 
 #endif // IntRect_h

@@ -12,7 +12,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -1776,4 +1776,4 @@ bool WebGLImageConversion::packPixels(
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -53,7 +53,7 @@
 #define DEBUG_ONLY(x)
 #endif
 
-namespace WebCore {
+namespace blink {
 
 class FinalizedHeapObjectHeader;
 template<typename T> class GarbageCollectedFinalized;
@@ -593,13 +593,13 @@ public:
 
 #define USING_GARBAGE_COLLECTED_MIXIN(TYPE) \
 public: \
-    virtual void adjustAndMark(WebCore::Visitor* visitor) const OVERRIDE    \
+    virtual void adjustAndMark(blink::Visitor* visitor) const OVERRIDE    \
     { \
-        typedef WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<TYPE>::Type, WebCore::GarbageCollected> IsSubclassOfGarbageCollected; \
+        typedef WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<TYPE>::Type, blink::GarbageCollected> IsSubclassOfGarbageCollected; \
         COMPILE_ASSERT(IsSubclassOfGarbageCollected::value, OnlyGarbageCollectedObjectsCanHaveGarbageCollectedMixins); \
-        visitor->mark(static_cast<const TYPE*>(this), &WebCore::TraceTrait<TYPE>::trace); \
+        visitor->mark(static_cast<const TYPE*>(this), &blink::TraceTrait<TYPE>::trace); \
     } \
-    virtual bool isAlive(WebCore::Visitor* visitor) const OVERRIDE  \
+    virtual bool isAlive(blink::Visitor* visitor) const OVERRIDE  \
     { \
         return visitor->isAlive(this); \
     } \

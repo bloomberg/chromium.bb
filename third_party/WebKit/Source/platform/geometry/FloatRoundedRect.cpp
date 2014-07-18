@@ -32,7 +32,7 @@
 
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 FloatRoundedRect::FloatRoundedRect(float x, float y, float width, float height)
     : m_rect(x, y, width, height)
@@ -137,4 +137,4 @@ bool FloatRoundedRect::xInterceptsAtY(float y, float& minXIntercept, float& maxX
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

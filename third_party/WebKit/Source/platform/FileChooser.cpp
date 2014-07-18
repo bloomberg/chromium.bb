@@ -29,7 +29,7 @@
 #include "config.h"
 #include "platform/FileChooser.h"
 
-namespace WebCore {
+namespace blink {
 
 FileChooserClient::~FileChooserClient()
 {

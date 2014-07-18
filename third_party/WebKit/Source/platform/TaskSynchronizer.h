@@ -34,7 +34,7 @@
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
 
-namespace WebCore {
+namespace blink {
 
 // TaskSynchronizer can be used to wait for task completion.
 class PLATFORM_EXPORT TaskSynchronizer {
@@ -64,6 +64,6 @@ private:
 #endif
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TaskSynchronizer_h

@@ -29,7 +29,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 bool URLPatternMatcher::matchesPatterns(const KURL& url, const Vector<String>& whitelist)
 {
@@ -213,4 +213,4 @@ bool URLPatternMatcher::matchesPath(const KURL& test) const
     return match.test();
 }
 
-} // namespace WebCore
+} // namespace blink

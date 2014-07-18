@@ -29,7 +29,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 
 static inline void assertDescriptionMatchesMask(FontDescription& source, FontTraitsBitfield bitfield)
@@ -118,4 +118,4 @@ TEST(FontDescriptionTest, TestFontTraits)
     assertDescriptionMatchesMask(source, source.traits().bitfield());
 }
 
-} // namespace WebCore
+} // namespace blink

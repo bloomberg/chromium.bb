@@ -22,7 +22,7 @@
 #include "config.h"
 #include "platform/text/TextBreakIterator.h"
 
-namespace WebCore {
+namespace blink {
 
 unsigned numGraphemeClusters(const String& string)
 {
@@ -67,4 +67,4 @@ unsigned numCharactersInGraphemeClusters(const String& string, unsigned numGraph
     return it.current();
 }
 
-} // namespace WebCore
+} // namespace blink

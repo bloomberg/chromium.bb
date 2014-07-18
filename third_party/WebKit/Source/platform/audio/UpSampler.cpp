@@ -36,7 +36,7 @@
 
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 UpSampler::UpSampler(size_t inputBlockSize)
     : m_inputBlockSize(inputBlockSize)
@@ -129,6 +129,6 @@ size_t UpSampler::latencyFrames() const
     return m_kernel.size() / 2;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

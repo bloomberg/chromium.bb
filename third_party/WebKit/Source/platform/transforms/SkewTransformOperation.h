@@ -27,7 +27,7 @@
 
 #include "platform/transforms/TransformOperation.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT SkewTransformOperation : public TransformOperation {
 public:
@@ -71,6 +71,6 @@ private:
     OperationType m_type;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SkewTransformOperation_h

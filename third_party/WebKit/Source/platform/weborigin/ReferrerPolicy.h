@@ -32,7 +32,7 @@
 #ifndef ReferrerPolicy_h
 #define ReferrerPolicy_h
 
-namespace WebCore {
+namespace blink {
 
 enum ReferrerPolicy {
     ReferrerPolicyAlways,

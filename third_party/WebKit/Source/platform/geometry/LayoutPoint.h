@@ -35,7 +35,7 @@
 #include "platform/geometry/LayoutSize.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 class LayoutPoint {
 public:
@@ -199,6 +199,6 @@ inline LayoutPoint flooredLayoutPoint(const FloatSize& s)
 }
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LayoutPoint_h

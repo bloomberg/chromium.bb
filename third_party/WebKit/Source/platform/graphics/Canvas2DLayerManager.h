@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class Canvas2DLayerManagerTest;
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT Canvas2DLayerManager : public blink::WebThread::TaskObserver {
 public:

@@ -31,7 +31,7 @@
 #include "platform/speech/PlatformSpeechSynthesisVoice.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class PlatformSpeechSynthesisUtteranceClient : public GarbageCollectedMixin {
 public:
@@ -85,6 +85,6 @@ private:
     double m_startTime;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PlatformSpeechSynthesisUtterance_h

@@ -40,7 +40,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #include <Carbon/Carbon.h>
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: Get these numbers from CoreUI.
 static int cRealButtonLength[] = { 28, 21 };

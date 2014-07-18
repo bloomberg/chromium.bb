@@ -33,7 +33,7 @@
 
 #include "public/platform/WebString.h"
 
-namespace WebCore {
+namespace blink {
 
 void PluginListBuilder::addPlugin(const blink::WebString& name, const blink::WebString& description, const blink::WebString& fileName)
 {
@@ -58,4 +58,4 @@ void PluginListBuilder::addFileExtensionToLastMediaType(const blink::WebString& 
     info.extensions.append(extension);
 }
 
-} // namespace WebCore
+} // namespace blink

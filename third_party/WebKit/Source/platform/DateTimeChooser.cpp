@@ -31,10 +31,10 @@
 #include "config.h"
 #include "platform/DateTimeChooser.h"
 
-namespace WebCore {
+namespace blink {
 
 DateTimeChooser::~DateTimeChooser()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

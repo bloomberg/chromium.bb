@@ -37,7 +37,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class RTCIceServer FINAL : public RefCounted<RTCIceServer> {
 public:
@@ -86,6 +86,6 @@ private:
     RTCIceTransports m_iceTransports;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCConfiguration_h

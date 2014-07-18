@@ -34,7 +34,7 @@
 #include "platform/transforms/TransformationMatrix.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT TransformState {
 public:
@@ -117,6 +117,6 @@ private:
     TransformDirection m_direction;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TransformState_h

@@ -34,7 +34,7 @@
 #include "platform/weborigin/KURL.h"
 #include <gtest/gtest.h>
 
-using WebCore::SecurityOrigin;
+using blink::SecurityOrigin;
 
 namespace {
 

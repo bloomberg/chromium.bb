@@ -30,7 +30,7 @@
 #include "platform/fonts/FontData.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class SimpleFontData;
 
@@ -84,6 +84,6 @@ private:
 
 DEFINE_FONT_DATA_TYPE_CASTS(SegmentedFontData, true);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SegmentedFontData_h

@@ -26,7 +26,7 @@
 #include "config.h"
 #include "platform/Cursor.h"
 
-namespace WebCore {
+namespace blink {
 
 IntPoint determineHotSpot(Image* image, const IntPoint& specifiedHotSpot)
 {
@@ -443,4 +443,4 @@ const Cursor& grabbingCursor()
     return c;
 }
 
-} // namespace WebCore
+} // namespace blink

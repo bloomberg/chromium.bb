@@ -46,7 +46,7 @@
 #include "wtf/text/Base64.h"
 #include "wtf/text/TextEncoding.h"
 
-namespace WebCore {
+namespace blink {
 
 GraphicsContext* GraphicsContextRecorder::record(const IntSize& size, bool isCertainlyOpaque)
 {

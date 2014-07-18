@@ -40,7 +40,7 @@
 #include <stdio.h>
 #endif
 
-namespace WebCore {
+namespace blink {
 
 static const int maximumValidPortNumber = 0xFFFE;
 static const int invalidPortNumber = 0xFFFF;
@@ -919,4 +919,4 @@ bool KURL::isSafeToSendToAnotherThread() const
         && (!m_innerURL || m_innerURL->isSafeToSendToAnotherThread());
 }
 
-} // namespace WebCore
+} // namespace blink

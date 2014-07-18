@@ -35,7 +35,7 @@
 
 typedef id ScrollbarPainter;
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT ScrollbarThemeMacOverlayAPI : public ScrollbarThemeMacCommon {
 public:

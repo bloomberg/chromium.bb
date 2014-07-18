@@ -43,7 +43,7 @@
 using namespace std;
 #endif
 
-namespace WebCore {
+namespace blink {
 
 using namespace VectorMath;
 
@@ -236,6 +236,6 @@ size_t Reverb::latencyFrames() const
     return !m_convolvers.isEmpty() ? m_convolvers.first()->latencyFrames() : 0;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

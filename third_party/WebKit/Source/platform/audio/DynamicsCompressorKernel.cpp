@@ -39,7 +39,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 using namespace AudioUtilities;
 
@@ -474,6 +474,6 @@ void DynamicsCompressorKernel::reset()
     m_maxAttackCompressionDiffDb = -1; // uninitialized state
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

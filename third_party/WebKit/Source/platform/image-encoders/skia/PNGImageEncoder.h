@@ -35,7 +35,7 @@
 
 class SkBitmap;
 
-namespace WebCore {
+namespace blink {
 
 struct ImageDataBuffer;
 
@@ -46,6 +46,6 @@ public:
     static bool encode(const ImageDataBuffer&, Vector<unsigned char>* output);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -29,7 +29,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
 
-namespace WebCore {
+namespace blink {
 
 double ResourceRequest::s_defaultTimeoutInterval = INT_MAX;
 

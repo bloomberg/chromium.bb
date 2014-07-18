@@ -10,7 +10,7 @@
 #include "public/platform/Platform.h"
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 class EmptyPlatform : public blink::Platform {
 public:
@@ -43,4 +43,4 @@ TEST(FontCache, getLastResortFallbackFont)
     blink::Platform::initialize(oldPlatform);
 }
 
-} // namespace WebCore
+} // namespace blink

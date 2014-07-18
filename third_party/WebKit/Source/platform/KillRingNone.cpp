@@ -26,7 +26,7 @@
 #include "config.h"
 #include "platform/KillRing.h"
 
-namespace WebCore {
+namespace blink {
 
 void KillRing::append(const String&)
 {
@@ -49,4 +49,4 @@ void KillRing::setToYankedState()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

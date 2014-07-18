@@ -30,7 +30,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 class NetworkingContext;
@@ -75,6 +75,6 @@ PLATFORM_EXPORT Vector<ProxyServer> proxyServersForURL(const KURL&, const Networ
 // http://web.archive.org/web/20060424005037/wp.netscape.com/eng/mozilla/2.0/relnotes/demo/proxy-live.html
 PLATFORM_EXPORT String toString(const Vector<ProxyServer>&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ProxyServer_h

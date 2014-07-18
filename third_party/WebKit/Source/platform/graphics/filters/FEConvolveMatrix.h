@@ -30,7 +30,7 @@
 #include "platform/graphics/filters/FilterEffect.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 enum EdgeModeType {
     EDGEMODE_UNKNOWN   = 0,
@@ -129,6 +129,6 @@ private:
     Vector<float> m_kernelMatrix;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FEConvolveMatrix_h

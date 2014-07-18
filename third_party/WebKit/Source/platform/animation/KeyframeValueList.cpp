@@ -27,7 +27,7 @@
 #include "config.h"
 #include "platform/animation/KeyframeValueList.h"
 
-namespace WebCore {
+namespace blink {
 
 void KeyframeValueList::insert(PassOwnPtr<const AnimationValue> value)
 {
@@ -49,4 +49,4 @@ void KeyframeValueList::insert(PassOwnPtr<const AnimationValue> value)
     m_values.append(value);
 }
 
-} // namespace WebCore
+} // namespace blink

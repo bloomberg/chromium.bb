@@ -36,7 +36,7 @@
 #include "opentype-sanitiser.h"
 #include "ots-memory-stream.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<SharedBuffer> OpenTypeSanitizer::sanitize()
 {
@@ -72,4 +72,4 @@ bool OpenTypeSanitizer::supportsFormat(const String& format)
         || (RuntimeEnabledFeatures::woff2Enabled() && equalIgnoringCase(format, "woff2"));
 }
 
-} // namespace WebCore
+} // namespace blink

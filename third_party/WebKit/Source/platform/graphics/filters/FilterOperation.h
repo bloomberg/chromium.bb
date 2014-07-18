@@ -36,7 +36,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 // CSS Filters
 
@@ -309,7 +309,7 @@ private:
 
 DEFINE_FILTER_OPERATION_TYPE_CASTS(DropShadowFilterOperation, DROP_SHADOW);
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // FilterOperation_h

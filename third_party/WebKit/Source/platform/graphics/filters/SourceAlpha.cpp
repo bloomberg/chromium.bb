@@ -30,7 +30,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<SourceAlpha> SourceAlpha::create(Filter* filter)
 {
@@ -91,4 +91,4 @@ TextStream& SourceAlpha::externalRepresentation(TextStream& ts, int indent) cons
     return ts;
 }
 
-} // namespace WebCore
+} // namespace blink

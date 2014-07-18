@@ -33,7 +33,7 @@
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class SharedBuffer;
 
@@ -68,6 +68,6 @@ private:
     size_t m_readPosition;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -39,7 +39,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 const int maxAllowedPort = 65535;
 
@@ -102,4 +102,4 @@ String createDatabaseIdentifierFromSecurityOrigin(const SecurityOrigin* security
     return securityOrigin->protocol() + separatorString + securityOrigin->host() + separatorString + String::number(securityOrigin->port());
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -35,7 +35,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 WebSocketHandshakeResponse::WebSocketHandshakeResponse()
 {
@@ -81,4 +81,4 @@ void WebSocketHandshakeResponse::clearHeaderFields()
     m_headerFields.clear();
 }
 
-} // namespace WebCore
+} // namespace blink

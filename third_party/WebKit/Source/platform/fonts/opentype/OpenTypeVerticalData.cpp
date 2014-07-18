@@ -35,7 +35,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 namespace OpenType {
 
 const uint32_t GSUBTag = OT_MAKE_TAG('G', 'S', 'U', 'B');
@@ -569,5 +569,5 @@ void OpenTypeVerticalData::substituteWithVerticalGlyphs(const SimpleFontData* fo
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 #endif // ENABLE(OPENTYPE_VERTICAL)

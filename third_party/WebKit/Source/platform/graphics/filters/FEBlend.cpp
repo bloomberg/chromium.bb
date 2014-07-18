@@ -36,7 +36,7 @@
 
 typedef unsigned char (*BlendType)(unsigned char colorA, unsigned char colorB, unsigned char alphaA, unsigned char alphaB);
 
-namespace WebCore {
+namespace blink {
 
 FEBlend::FEBlend(Filter* filter, BlendModeType mode)
     : FilterEffect(filter)
@@ -246,4 +246,4 @@ TextStream& FEBlend::externalRepresentation(TextStream& ts, int indent) const
     return ts;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -30,7 +30,7 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/filters/FEGaussianBlur.h"
 
-namespace WebCore {
+namespace blink {
 
 static inline IntSize outsetSizeForBlur(float stdDeviation)
 {
@@ -171,5 +171,5 @@ bool FilterOperations::hasFilterThatMovesPixels() const
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink
 

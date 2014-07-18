@@ -29,7 +29,7 @@
 #import <wtf/RetainPtr.h>
 #import <wtf/StdLibExtras.h>
 
-namespace WebCore {
+namespace blink {
 
 // NSColor calls don't throw, so no need to block Cocoa exceptions in this file
 
@@ -76,4 +76,4 @@ NSColor *nsColor(const Color& color)
 }
 
 
-} // namespace WebCore
+} // namespace blink

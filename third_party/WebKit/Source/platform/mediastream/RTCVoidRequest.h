@@ -35,7 +35,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class RTCVoidRequest : public RefCounted<RTCVoidRequest> {
 public:
@@ -59,6 +59,6 @@ private:
     OwnPtr<ExtraData> m_extraData;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCVoidRequest_h

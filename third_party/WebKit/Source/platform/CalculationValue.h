@@ -38,7 +38,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT CalculationValue : public RefCounted<CalculationValue> {
 public:
@@ -65,6 +65,6 @@ private:
     bool m_isNonNegative;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CalculationValue_h

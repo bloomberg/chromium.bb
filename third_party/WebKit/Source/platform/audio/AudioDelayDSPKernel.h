@@ -28,7 +28,7 @@
 #include "platform/audio/AudioArray.h"
 #include "platform/audio/AudioDSPKernel.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT AudioDelayDSPKernel : public AudioDSPKernel {
 public:
@@ -64,6 +64,6 @@ protected:
     size_t bufferLengthForDelay(double delayTime, double sampleRate) const;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioDelayDSPKernel_h

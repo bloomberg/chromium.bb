@@ -28,7 +28,7 @@
 #include "platform/transforms/TransformOperation.h"
 #include "platform/transforms/TransformationMatrix.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT MatrixTransformOperation : public TransformOperation {
 public:
@@ -99,6 +99,6 @@ private:
     double m_f;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MatrixTransformOperation_h

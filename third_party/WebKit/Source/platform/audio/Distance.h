@@ -31,7 +31,7 @@
 
 #include "platform/PlatformExport.h"
 
-namespace WebCore {
+namespace blink {
 
 // Distance models are defined according to the OpenAL specification:
 // http://connect.creativelabs.com/openal/Documentation/OpenAL%201.1%20Specification.htm.
@@ -78,6 +78,6 @@ protected:
     double m_rolloffFactor;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Distance_h

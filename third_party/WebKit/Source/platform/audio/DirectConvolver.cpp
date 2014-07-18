@@ -39,7 +39,7 @@
 #include "platform/audio/VectorMath.h"
 #include "wtf/CPU.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace VectorMath;
 
@@ -383,6 +383,6 @@ void DirectConvolver::reset()
 #endif // USE(WEBAUDIO_IPP)
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

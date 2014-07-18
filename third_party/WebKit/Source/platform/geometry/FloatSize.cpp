@@ -35,7 +35,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 FloatSize::FloatSize(const LayoutSize& size)
     : m_width(size.width().toFloat())

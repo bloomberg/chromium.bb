@@ -43,7 +43,7 @@
 #include "wtf/RetainPtr.h"
 #endif
 
-namespace WebCore {
+namespace blink {
 
 class CSSFontFaceSource;
 class FontDescription;
@@ -293,5 +293,5 @@ ALWAYS_INLINE float SimpleFontData::widthForGlyph(Glyph glyph) const
 
 DEFINE_FONT_DATA_TYPE_CASTS(SimpleFontData, false);
 
-} // namespace WebCore
+} // namespace blink
 #endif // SimpleFontData_h

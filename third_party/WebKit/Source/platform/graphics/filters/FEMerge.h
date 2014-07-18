@@ -27,7 +27,7 @@
 #include "platform/graphics/filters/FilterEffect.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT FEMerge : public FilterEffect {
 public:
@@ -43,6 +43,6 @@ private:
     virtual void applySoftware() OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FEMerge_h

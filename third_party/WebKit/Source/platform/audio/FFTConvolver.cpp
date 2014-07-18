@@ -34,7 +34,7 @@
 
 #include "platform/audio/VectorMath.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace VectorMath;
 
@@ -115,6 +115,6 @@ void FFTConvolver::reset()
     m_readWriteIndex = 0;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

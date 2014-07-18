@@ -32,7 +32,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/Uint8ClampedArray.h"
 
-namespace WebCore {
+namespace blink {
 
 FEConvolveMatrix::FEConvolveMatrix(Filter* filter, const IntSize& kernelSize,
     float divisor, float bias, const IntPoint& targetOffset, EdgeModeType edgeMode,
@@ -460,7 +460,7 @@ void FEConvolveMatrix::applySoftware()
 
         int optimalThreadNumber = (absolutePaintRect().width() * absolutePaintRect().height()) / s_minimalRectDimension;
         if (optimalThreadNumber > 1) {
-            ParallelJobs<InteriorPixelParameters> parallelJobs(&WebCore::FEConvolveMatrix::setInteriorPixelsWorker, optimalThreadNumber);
+            ParallelJobs<InteriorPixelParameters> parallelJobs(&blink::FEConvolveMatrix::setInteriorPixelsWorker, optimalThreadNumber);
             const int numOfThreads = parallelJobs.numberOfJobs();
 
             // Split the job into "heightPerThread" jobs but there a few jobs that need to be slightly larger since
@@ -502,14 +502,14 @@ void FEConvolveMatrix::applySoftware()
     }
 }
 
-SkMatrixConvolutionImageFilter::TileMode toSkiaTileMode(WebCore::EdgeModeType edgeMode)
+SkMatrixConvolutionImageFilter::TileMode toSkiaTileMode(blink::EdgeModeType edgeMode)
 {
     switch (edgeMode) {
-    case WebCore::EDGEMODE_DUPLICATE:
+    case blink::EDGEMODE_DUPLICATE:
         return SkMatrixConvolutionImageFilter::kClamp_TileMode;
-    case WebCore::EDGEMODE_WRAP:
+    case blink::EDGEMODE_WRAP:
         return SkMatrixConvolutionImageFilter::kRepeat_TileMode;
-    case WebCore::EDGEMODE_NONE:
+    case blink::EDGEMODE_NONE:
         return SkMatrixConvolutionImageFilter::kClampToBlack_TileMode;
     default:
         return SkMatrixConvolutionImageFilter::kClamp_TileMode;
@@ -518,7 +518,7 @@ SkMatrixConvolutionImageFilter::TileMode toSkiaTileMode(WebCore::EdgeModeType ed
 
 }; // unnamed namespace
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<SkImageFilter> FEConvolveMatrix::createImageFilter(SkiaImageFilterBuilder* builder)
 {
@@ -574,4 +574,4 @@ TextStream& FEConvolveMatrix::externalRepresentation(TextStream& ts, int indent)
     return ts;
 }
 
-}; // namespace WebCore
+}; // namespace blink

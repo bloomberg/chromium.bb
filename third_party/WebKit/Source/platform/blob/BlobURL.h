@@ -34,7 +34,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 class SecurityOrigin;

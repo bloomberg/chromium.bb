@@ -31,7 +31,7 @@
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/graphics/ImageFrameGenerator.h"
 
-namespace WebCore {
+namespace blink {
 
 LazyDecodingPixelRef::LazyDecodingPixelRef(const SkImageInfo& info, PassRefPtr<ImageFrameGenerator> frameGenerator, size_t index)
     : LazyPixelRef(info)

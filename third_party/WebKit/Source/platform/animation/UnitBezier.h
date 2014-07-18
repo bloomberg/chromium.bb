@@ -30,7 +30,7 @@
 #include "wtf/Assertions.h"
 #include <math.h>
 
-namespace WebCore {
+namespace blink {
 
 struct UnitBezier {
     UnitBezier(double p1x, double p1y, double p2x, double p2y)
@@ -159,6 +159,6 @@ private:
     double m_endGradient;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // UnitBezier_h

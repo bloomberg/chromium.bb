@@ -35,7 +35,7 @@
 #include "platform/fonts/harfbuzz/HarfBuzzFace.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     : m_textSize(0)
@@ -219,4 +219,4 @@ HarfBuzzFace* FontPlatformData::harfBuzzFace() const
     return m_harfBuzzFace.get();
 }
 
-} // namespace WebCore
+} // namespace blink

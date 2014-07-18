@@ -24,7 +24,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Latin1TextIterator {
 public:

@@ -35,7 +35,7 @@
 #include "platform/graphics/Color.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class GraphicsContext;
 class ScrollView;
@@ -109,6 +109,6 @@ private:
 
 PLATFORM_EXPORT Theme* platformTheme();
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Theme_h

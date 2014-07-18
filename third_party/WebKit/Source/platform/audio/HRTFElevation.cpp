@@ -41,7 +41,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 const unsigned HRTFElevation::AzimuthSpacing = 15;
 const unsigned HRTFElevation::NumberOfRawAzimuths = 360 / AzimuthSpacing;
@@ -337,6 +337,6 @@ void HRTFElevation::getKernelsFromAzimuth(double azimuthBlend, unsigned azimuthI
     frameDelayR = (1.0 - azimuthBlend) * frameDelayR + azimuthBlend * frameDelay2R;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

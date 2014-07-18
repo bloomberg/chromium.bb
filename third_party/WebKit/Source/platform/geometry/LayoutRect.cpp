@@ -36,7 +36,7 @@
 #include <algorithm>
 #include <stdio.h>
 
-namespace WebCore {
+namespace blink {
 
 LayoutRect::LayoutRect(const FloatRect& r)
     : m_location(LayoutPoint(r.location()))
@@ -155,4 +155,4 @@ LayoutRect enclosingLayoutRect(const FloatRect& rect)
     return LayoutRect(location, maxPoint - location);
 }
 
-} // namespace WebCore
+} // namespace blink

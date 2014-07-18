@@ -27,7 +27,7 @@
 #include "platform/graphics/filters/FilterEffect.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 enum ComponentTransferType {
     FECOMPONENTTRANSFER_TYPE_UNKNOWN  = 0,
@@ -97,6 +97,6 @@ private:
     ComponentTransferFunction m_alphaFunc;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FEComponentTransfer_h

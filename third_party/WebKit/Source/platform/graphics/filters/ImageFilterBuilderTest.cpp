@@ -35,7 +35,7 @@
 #include <gtest/gtest.h>
 
 using testing::Test;
-using namespace WebCore;
+using namespace blink;
 
 class ImageFilterBuilderTest : public Test {
 protected:

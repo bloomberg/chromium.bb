@@ -35,7 +35,7 @@
 #include "SkTypeface.h"
 #include "platform/fonts/FontCache.h"
 
-namespace WebCore {
+namespace blink {
 
 #if !OS(MACOSX)
 unsigned FontPlatformData::hash() const
@@ -87,4 +87,4 @@ PassRefPtr<SharedBuffer> FontPlatformData::openTypeTable(uint32_t table) const
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

@@ -32,7 +32,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class Font;
 
@@ -43,6 +43,6 @@ public:
     static float width(const String&, const Font&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(StringTruncator_h)

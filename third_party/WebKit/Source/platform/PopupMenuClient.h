@@ -27,7 +27,7 @@
 #include "platform/PopupMenuStyle.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class PopupMenuClient {
 public:

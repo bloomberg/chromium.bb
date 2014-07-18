@@ -35,7 +35,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebPublicSuffixList.h"
 
-namespace WebCore {
+namespace blink {
 
 OriginAccessEntry::OriginAccessEntry(const String& protocol, const String& host, SubdomainSetting subdomainSetting, IPAddressSetting ipAddressSetting)
     : m_protocol(protocol.lower())
@@ -91,4 +91,4 @@ OriginAccessEntry::MatchResult OriginAccessEntry::matchesOrigin(const SecurityOr
     return MatchesOrigin;
 }
 
-} // namespace WebCore
+} // namespace blink

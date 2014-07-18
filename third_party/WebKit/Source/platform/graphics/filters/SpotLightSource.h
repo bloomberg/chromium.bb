@@ -25,7 +25,7 @@
 
 #include "platform/graphics/filters/LightSource.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT SpotLightSource : public LightSource {
 public:
@@ -76,6 +76,6 @@ private:
     float m_limitingConeAngle;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SpotLightSource_h

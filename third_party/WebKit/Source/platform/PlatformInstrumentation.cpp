@@ -32,7 +32,7 @@
 
 #include "platform/PlatformInstrumentation.h"
 
-namespace WebCore {
+namespace blink {
 
 const char PlatformInstrumentation::CategoryName[] = TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
 

@@ -36,7 +36,7 @@
 #include "platform/geometry/LayoutPoint.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class FloatRect;
 
@@ -230,6 +230,6 @@ inline IntRect pixelSnappedIntRect(LayoutPoint location, LayoutSize size)
     return IntRect(roundedIntPoint(location), pixelSnappedIntSize(size, location));
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LayoutRect_h

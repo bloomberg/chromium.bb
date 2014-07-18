@@ -34,7 +34,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 ScrollView::ScrollView()
     : m_horizontalScrollbarMode(ScrollbarAuto)
@@ -1136,4 +1136,4 @@ void ScrollView::setScrollOrigin(const IntPoint& origin, bool updatePositionAtAl
         updateScrollbars(scrollOffset());
 }
 
-} // namespace WebCore
+} // namespace blink

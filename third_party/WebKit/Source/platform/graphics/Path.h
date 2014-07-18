@@ -39,7 +39,7 @@
 
 class SkPath;
 
-namespace WebCore {
+namespace blink {
 
 class AffineTransform;
 class FloatPoint;

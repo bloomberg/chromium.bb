@@ -41,7 +41,7 @@ class SkCanvas;
 class SkPicture;
 class SkPictureRecorder;
 
-namespace WebCore {
+namespace blink {
 
 class IntSize;
 

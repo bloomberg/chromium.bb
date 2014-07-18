@@ -57,7 +57,7 @@
 using namespace std;
 using blink::WebBlendMode;
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 

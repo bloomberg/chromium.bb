@@ -36,7 +36,7 @@
 #include "public/platform/WebPrerender.h"
 #include "public/platform/WebPrerenderingSupport.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<Prerender> Prerender::create(PrerenderClient* client, const KURL& url, unsigned relTypes, const String& referrer, ReferrerPolicy policy)
 {

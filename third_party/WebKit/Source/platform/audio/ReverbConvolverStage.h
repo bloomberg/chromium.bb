@@ -34,7 +34,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ReverbAccumulationBuffer;
 class ReverbConvolver;
@@ -82,6 +82,6 @@ private:
     OwnPtr<DirectConvolver> m_directConvolver;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ReverbConvolverStage_h

@@ -7,7 +7,7 @@
 
 #include "platform/mediastream/RTCOfferOptions.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

@@ -38,7 +38,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 ScrollbarThemeOverlay::ScrollbarThemeOverlay(int thumbThickness, int scrollbarMargin, HitTestBehavior allowHitTest, Color color)
     : ScrollbarTheme()
@@ -163,4 +163,4 @@ ScrollbarPart ScrollbarThemeOverlay::hitTest(ScrollbarThemeClient* scrollbar, co
     return ScrollbarTheme::hitTest(scrollbar, position);
 }
 
-} // namespace WebCore
+} // namespace blink

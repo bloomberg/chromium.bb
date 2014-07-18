@@ -11,13 +11,13 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
 size_t parseHTTPHeader(const char* data, String& failureReason, AtomicString& nameStr, AtomicString& valueStr)
 {
-    return WebCore::parseHTTPHeader(data, strlen(data), failureReason, nameStr, valueStr);
+    return blink::parseHTTPHeader(data, strlen(data), failureReason, nameStr, valueStr);
 }
 
 } // namespace
@@ -223,5 +223,5 @@ TEST(HTTPParsersTest, parseHTTPHeaderTwoLines)
     EXPECT_EQ("fuga", value.string());
 }
 
-} // namespace WebCore
+} // namespace blink
 

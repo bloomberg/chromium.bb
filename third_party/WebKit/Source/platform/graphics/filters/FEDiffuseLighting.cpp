@@ -26,7 +26,7 @@
 #include "platform/graphics/filters/LightSource.h"
 #include "platform/text/TextStream.h"
 
-namespace WebCore {
+namespace blink {
 
 FEDiffuseLighting::FEDiffuseLighting(Filter* filter, const Color& lightingColor, float surfaceScale,
     float diffuseConstant, float kernelUnitLengthX, float kernelUnitLengthY, PassRefPtr<LightSource> lightSource)
@@ -133,4 +133,4 @@ TextStream& FEDiffuseLighting::externalRepresentation(TextStream& ts, int indent
     return ts;
 }
 
-} // namespace WebCore
+} // namespace blink

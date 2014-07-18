@@ -37,7 +37,7 @@
 
 using blink::WebRect;
 using blink::WebFloatRect;
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 

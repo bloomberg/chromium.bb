@@ -33,7 +33,7 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT GradientGeneratedImage : public GeneratedImage {
 public:

@@ -30,7 +30,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 PLATFORM_EXPORT extern const char errorDomainBlinkInternal[]; // Used for errors that won't be exposed to clients.
 
@@ -93,6 +93,6 @@ private:
 inline bool operator==(const ResourceError& a, const ResourceError& b) { return ResourceError::compare(a, b); }
 inline bool operator!=(const ResourceError& a, const ResourceError& b) { return !(a == b); }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ResourceError_h

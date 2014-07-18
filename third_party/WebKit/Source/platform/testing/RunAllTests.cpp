@@ -56,16 +56,16 @@ int main(int argc, char** argv)
     WTF::initialize(CurrentTime, 0);
     WTF::initializeMainThread(0);
 
-    WebCore::TestingPlatformSupport::Config platformConfig;
-    WebCore::TestingPlatformSupport platform(platformConfig);
+    blink::TestingPlatformSupport::Config platformConfig;
+    blink::TestingPlatformSupport platform(platformConfig);
 
-    WebCore::Heap::init();
-    WebCore::ThreadState::attachMainThread();
-    WebCore::Partitions::init();
-    WebCore::EventTracer::initialize();
+    blink::Heap::init();
+    blink::ThreadState::attachMainThread();
+    blink::Partitions::init();
+    blink::EventTracer::initialize();
     int result = base::RunUnitTestsUsingBaseTestSuite(argc, argv);
-    WebCore::Partitions::shutdown();
-    WebCore::ThreadState::detachMainThread();
-    WebCore::Heap::shutdown();
+    blink::Partitions::shutdown();
+    blink::ThreadState::detachMainThread();
+    blink::Heap::shutdown();
     return result;
 }

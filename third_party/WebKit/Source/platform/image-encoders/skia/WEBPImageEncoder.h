@@ -35,7 +35,7 @@
 
 class SkBitmap;
 
-namespace WebCore {
+namespace blink {
 
 struct ImageDataBuffer;
 
@@ -49,6 +49,6 @@ public:
     enum Quality { DefaultCompressionQuality = 80 };
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

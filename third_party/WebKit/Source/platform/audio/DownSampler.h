@@ -34,7 +34,7 @@
 #include "platform/audio/AudioArray.h"
 #include "platform/audio/DirectConvolver.h"
 
-namespace WebCore {
+namespace blink {
 
 // DownSampler down-samples the source stream by a factor of 2x.
 
@@ -69,6 +69,6 @@ private:
     AudioFloatArray m_inputBuffer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DownSampler_h

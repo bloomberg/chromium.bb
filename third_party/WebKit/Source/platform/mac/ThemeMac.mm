@@ -89,7 +89,7 @@ NSRect focusRingClipRect;
 
 @end
 
-namespace WebCore {
+namespace blink {
 
 enum {
     topMargin,

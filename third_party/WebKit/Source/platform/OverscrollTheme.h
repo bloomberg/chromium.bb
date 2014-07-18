@@ -31,7 +31,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/Image.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT OverscrollTheme {
     WTF_MAKE_NONCOPYABLE(OverscrollTheme); WTF_MAKE_FAST_ALLOCATED;

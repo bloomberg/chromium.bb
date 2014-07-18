@@ -30,7 +30,7 @@
 #include "platform/network/HTTPHeaderMap.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 struct ResourceLoadInfo : RefCounted<ResourceLoadInfo> {
     ResourceLoadInfo()

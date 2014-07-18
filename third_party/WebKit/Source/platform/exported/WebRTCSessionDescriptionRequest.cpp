@@ -36,7 +36,7 @@
 #include "public/platform/WebRTCSessionDescription.h"
 #include "wtf/PassOwnPtr.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

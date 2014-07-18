@@ -29,7 +29,7 @@
 #include "platform/text/TextStream.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 FEMerge::FEMerge(Filter* filter)
     : FilterEffect(filter)
@@ -84,4 +84,4 @@ TextStream& FEMerge::externalRepresentation(TextStream& ts, int indent) const
     return ts;
 }
 
-} // namespace WebCore
+} // namespace blink

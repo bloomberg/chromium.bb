@@ -38,7 +38,7 @@
 #include <limits>
 #include <stdlib.h>
 
-namespace WebCore {
+namespace blink {
 
 #if !ERROR_DISABLED
 
@@ -792,6 +792,6 @@ inline LayoutUnit clampToLayoutUnit(LayoutUnit value, LayoutUnit min, LayoutUnit
     return value;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LayoutUnit_h

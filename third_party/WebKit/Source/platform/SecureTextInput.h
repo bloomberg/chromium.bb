@@ -33,7 +33,7 @@
 
 #include "platform/PlatformExport.h"
 
-namespace WebCore {
+namespace blink {
 
 #if OS(MACOSX)
 // Once enableSecureTextInput is called, secure text input mode is set until
@@ -45,6 +45,6 @@ inline void enableSecureTextInput() { }
 inline void disableSecureTextInput() { }
 #endif
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SecureTextInput_h

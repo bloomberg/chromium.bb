@@ -32,7 +32,7 @@
 #ifndef PrerenderClient_h
 #define PrerenderClient_h
 
-namespace WebCore {
+namespace blink {
 
 class PrerenderClient {
 public:

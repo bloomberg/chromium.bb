@@ -34,7 +34,7 @@
 #include "platform/FileMetadata.h"
 #include "platform/network/FormData.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

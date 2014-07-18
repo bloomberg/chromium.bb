@@ -33,7 +33,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 // ScaledImageFragment is a scaled version of an image.
 class PLATFORM_EXPORT ScaledImageFragment {
@@ -70,6 +70,6 @@ private:
     SkBitmap m_bitmap;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

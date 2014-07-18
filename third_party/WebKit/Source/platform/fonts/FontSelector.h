@@ -31,7 +31,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class FontData;
 class FontDescription;
@@ -45,6 +45,6 @@ public:
     virtual unsigned version() const = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FontSelector_h

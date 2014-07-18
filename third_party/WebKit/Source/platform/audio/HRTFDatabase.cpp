@@ -35,7 +35,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 const int HRTFDatabase::MinElevation = -45;
 const int HRTFDatabase::MaxElevation = 90;
@@ -118,6 +118,6 @@ unsigned HRTFDatabase::indexFromElevationAngle(double elevationAngle)
     return elevationIndex;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

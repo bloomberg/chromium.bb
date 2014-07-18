@@ -38,7 +38,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 struct CrossThreadResourceResponseData;
 
@@ -313,6 +313,6 @@ public:
     RefPtr<BlobDataHandle> m_downloadedFileHandle;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ResourceResponse_h

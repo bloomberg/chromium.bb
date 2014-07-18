@@ -28,7 +28,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioResampler;
 
@@ -72,6 +72,6 @@ private:
     unsigned m_fillIndex;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioResamplerKernel_h

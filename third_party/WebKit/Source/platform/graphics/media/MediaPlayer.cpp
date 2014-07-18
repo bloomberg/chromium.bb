@@ -28,7 +28,7 @@
 
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 static CreateMediaEnginePlayer createMediaEngineFunction = 0;
 
@@ -45,4 +45,4 @@ PassOwnPtr<MediaPlayer> MediaPlayer::create(MediaPlayerClient* client)
     return createMediaEngineFunction(client);
 }
 
-} // namespace WebCore
+} // namespace blink

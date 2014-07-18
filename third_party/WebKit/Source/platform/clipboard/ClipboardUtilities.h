@@ -34,7 +34,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 
@@ -46,6 +46,6 @@ PLATFORM_EXPORT String convertURIListToURL(const String& uriList);
 // FIXME: This should probably be implemented in the embedder rather than here.
 PLATFORM_EXPORT void validateFilename(String& name, String& extension);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ClipboardUtilities_h

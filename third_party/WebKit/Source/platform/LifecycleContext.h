@@ -34,7 +34,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 template <typename T>
 class LifecycleContext {
@@ -90,6 +90,6 @@ inline PassOwnPtr<typename LifecycleContext<T>::Notifier> LifecycleContext<T>::c
     return LifecycleContext<T>::Notifier::create(static_cast<T*>(this));
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LifecycleContext_h

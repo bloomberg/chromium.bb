@@ -3,7 +3,7 @@
 
 #include "platform/graphics/GraphicsContext.h"
 
-namespace WebCore {
+namespace blink {
 
 class FloatRect;
 
@@ -41,6 +41,6 @@ private:
     bool m_cullApplied;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GraphicsContextCullSaver_h

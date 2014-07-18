@@ -33,7 +33,7 @@
 
 using namespace WTF;
 
-namespace WebCore {
+namespace blink {
 
 template<typename CharType>
 static unsigned splitLength(const CharType* data, unsigned length, unsigned& intLength, unsigned& doubleLength)
@@ -182,8 +182,8 @@ Length Length::blendMixedTypes(const Length& from, double progress, ValueRange r
     ASSERT(isSpecified());
     PixelsAndPercent fromPixelsAndPercent = from.pixelsAndPercent();
     PixelsAndPercent toPixelsAndPercent = pixelsAndPercent();
-    const float pixels = WebCore::blend(fromPixelsAndPercent.pixels, toPixelsAndPercent.pixels, progress);
-    const float percent = WebCore::blend(fromPixelsAndPercent.percent, toPixelsAndPercent.percent, progress);
+    const float pixels = blink::blend(fromPixelsAndPercent.pixels, toPixelsAndPercent.pixels, progress);
+    const float percent = blink::blend(fromPixelsAndPercent.percent, toPixelsAndPercent.percent, progress);
     return Length(CalculationValue::create(PixelsAndPercent(pixels, percent), range));
 }
 
@@ -252,4 +252,4 @@ struct SameSizeAsLength {
 };
 COMPILE_ASSERT(sizeof(Length) == sizeof(SameSizeAsLength), length_should_stay_small);
 
-} // namespace WebCore
+} // namespace blink

@@ -28,7 +28,7 @@
 
 #include "platform/scroll/ScrollbarTheme.h"
 
-namespace WebCore {
+namespace blink {
 
 // Scrollbar theme used in image snapshots, to eliminate appearance differences between platforms.
 class PLATFORM_EXPORT ScrollbarThemeMock : public ScrollbarTheme {

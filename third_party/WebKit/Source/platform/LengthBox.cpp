@@ -31,7 +31,7 @@
 #include "config.h"
 #include "platform/LengthBox.h"
 
-namespace WebCore {
+namespace blink {
 
 const Length& LengthBox::logicalLeft(WritingMode writingMode) const
 {
@@ -89,4 +89,4 @@ const Length& LengthBox::end(WritingMode writingMode, TextDirection direction) c
     return isLeftToRightDirection(direction) ? m_bottom : m_top;
 }
 
-} // namespace WebCore
+} // namespace blink

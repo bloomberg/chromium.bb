@@ -41,7 +41,7 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/WebThemeEngine.h"
 
-namespace WebCore {
+namespace blink {
 
 static bool useMockTheme()
 {
@@ -172,4 +172,4 @@ int ScrollbarThemeAura::minimumThumbLength(ScrollbarThemeClient* scrollbar)
     return size.width();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -44,7 +44,7 @@
 #include <math.h>
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 using namespace VectorMath;
 

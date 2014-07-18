@@ -54,11 +54,11 @@ int main(int argc, char** argv)
     WTF::setRandomSource(AlwaysZeroNumberSource);
     WTF::initialize(CurrentTime, 0);
     WTF::initializeMainThread(0);
-    WebCore::Heap::init();
-    WebCore::ThreadState::attachMainThread();
-    WebCore::EventTracer::initialize();
+    blink::Heap::init();
+    blink::ThreadState::attachMainThread();
+    blink::EventTracer::initialize();
     int result = base::RunUnitTestsUsingBaseTestSuite(argc, argv);
-    WebCore::ThreadState::detachMainThread();
-    WebCore::Heap::shutdown();
+    blink::ThreadState::detachMainThread();
+    blink::Heap::shutdown();
     return result;
 }

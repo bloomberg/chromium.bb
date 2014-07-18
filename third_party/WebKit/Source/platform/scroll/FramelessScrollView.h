@@ -34,7 +34,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/scroll/ScrollView.h"
 
-namespace WebCore {
+namespace blink {
 
 class FramelessScrollViewClient;
 class PlatformGestureEvent;
@@ -89,6 +89,6 @@ private:
     FramelessScrollViewClient* m_client;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

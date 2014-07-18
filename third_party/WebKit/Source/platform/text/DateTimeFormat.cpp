@@ -29,7 +29,7 @@
 #include "wtf/ASCIICType.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 static const DateTimeFormat::FieldType lowerCaseToFieldTypeMap[26] = {
     DateTimeFormat::FieldTypePeriod, // a
@@ -276,4 +276,4 @@ void DateTimeFormat::quoteAndAppendLiteral(const String& literal, StringBuilder&
     }
 }
 
-} // namespace WebCore
+} // namespace blink

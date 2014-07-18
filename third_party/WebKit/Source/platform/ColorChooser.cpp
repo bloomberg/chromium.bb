@@ -31,7 +31,7 @@
 
 #include "platform/ColorChooser.h"
 
-namespace WebCore {
+namespace blink {
 
 ColorChooser::ColorChooser()
 {
@@ -41,4 +41,4 @@ ColorChooser::~ColorChooser()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

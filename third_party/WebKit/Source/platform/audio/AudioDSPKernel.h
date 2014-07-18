@@ -33,7 +33,7 @@
 
 #include "platform/audio/AudioDSPKernelProcessor.h"
 
-namespace WebCore {
+namespace blink {
 
 // AudioDSPKernel does the processing for one channel of an AudioDSPKernelProcessor.
 
@@ -71,6 +71,6 @@ protected:
     float m_sampleRate;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioDSPKernel_h

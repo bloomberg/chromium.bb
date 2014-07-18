@@ -37,7 +37,7 @@
 #include "wtf/Uint8ClampedArray.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class Filter;
 class FilterEffect;
@@ -248,6 +248,6 @@ private:
     RefPtr<SkImageFilter> m_imageFilters[4];
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FilterEffect_h

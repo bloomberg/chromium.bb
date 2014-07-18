@@ -33,7 +33,7 @@
 
 #include "third_party/skia/include/core/SkCanvas.h"
 
-namespace WebCore {
+namespace blink {
 
 class InterceptingCanvas : public SkCanvas {
 public:

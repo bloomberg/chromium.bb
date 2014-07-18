@@ -13,7 +13,7 @@ namespace blink {
 class WebString;
 }
 
-namespace WebCore {
+namespace blink {
 
 // Used to notify completion of a CDM operation.
 class ContentDecryptionModuleResult : public GarbageCollectedFinalized<ContentDecryptionModuleResult> {
@@ -32,6 +32,6 @@ public:
     virtual void trace(Visitor*) { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ContentDecryptionModuleResult_h

@@ -33,7 +33,7 @@
 #include "wtf/Assertions.h"
 #include <string.h>
 
-namespace WebCore {
+namespace blink {
 
 class PlatformGestureEvent : public PlatformEvent {
 public:
@@ -166,6 +166,6 @@ protected:
     } m_data;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PlatformGestureEvent_h

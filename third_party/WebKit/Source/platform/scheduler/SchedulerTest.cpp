@@ -11,7 +11,7 @@
 
 #include <gtest/gtest.h>
 
-using WebCore::Scheduler;
+using blink::Scheduler;
 
 namespace {
 
@@ -53,7 +53,7 @@ private:
     WTF::Deque<OwnPtr<Task> > m_pendingTasks;
 };
 
-class SchedulerTestingPlatformSupport : WebCore::TestingPlatformSupport {
+class SchedulerTestingPlatformSupport : blink::TestingPlatformSupport {
 public:
     SchedulerTestingPlatformSupport()
         : TestingPlatformSupport(TestingPlatformSupport::Config())

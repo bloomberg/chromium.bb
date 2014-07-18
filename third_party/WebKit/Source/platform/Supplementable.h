@@ -36,7 +36,7 @@
 #include "wtf/Threading.h"
 #endif
 
-namespace WebCore {
+namespace blink {
 
 // What you should know about Supplementable and Supplement
 // ========================================================
@@ -250,15 +250,15 @@ template<typename T>
 class Supplementable : public SupplementableBase<T, false> { };
 
 template<typename T>
-struct ThreadingTrait<WebCore::SupplementBase<T, true> > {
+struct ThreadingTrait<blink::SupplementBase<T, true> > {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 template<typename T>
-struct ThreadingTrait<WebCore::SupplementableBase<T, true> > {
+struct ThreadingTrait<blink::SupplementableBase<T, true> > {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Supplementable_h

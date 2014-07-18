@@ -34,7 +34,7 @@
 #include "platform/network/WebSocketHandshakeResponse.h"
 #include "public/platform/WebString.h"
 
-using WebCore::WebSocketHandshakeResponse;
+using blink::WebSocketHandshakeResponse;
 
 namespace blink {
 

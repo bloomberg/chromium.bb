@@ -38,7 +38,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/unicode/Unicode.h"
 
-namespace WebCore {
+namespace blink {
 
 // The following constants define unicode subranges
 // values below cRangeNum must be continuous so that we can map to

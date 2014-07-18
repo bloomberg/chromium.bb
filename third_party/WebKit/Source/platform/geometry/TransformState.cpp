@@ -28,7 +28,7 @@
 
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 TransformState& TransformState::operator=(const TransformState& other)
 {
@@ -208,4 +208,4 @@ void TransformState::flattenWithTransform(const TransformationMatrix& t, bool* w
     m_accumulatingTransform = false;
 }
 
-} // namespace WebCore
+} // namespace blink

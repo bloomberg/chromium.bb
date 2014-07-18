@@ -38,7 +38,7 @@
 
 #include "platform/audio/VectorMath.h"
 
-namespace WebCore {
+namespace blink {
 
 const int kMaxFFTPow2Size = 24;
 
@@ -163,7 +163,7 @@ float* FFTFrame::imagData() const
     return m_frame.imagp;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // #if OS(MACOSX)
 

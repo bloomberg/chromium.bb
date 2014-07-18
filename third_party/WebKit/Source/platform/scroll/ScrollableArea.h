@@ -32,7 +32,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class FloatPoint;
 class GraphicsContext;
@@ -283,6 +283,6 @@ private:
     IntPoint m_scrollOrigin;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScrollableArea_h

@@ -27,7 +27,7 @@
 
 #include "platform/graphics/ScaledImageFragment.h"
 
-namespace WebCore {
+namespace blink {
 
 ScaledImageFragment::~ScaledImageFragment()
 {
@@ -41,4 +41,4 @@ ScaledImageFragment::ScaledImageFragment(const SkISize& scaledSize, size_t index
 {
 }
 
-} // namespace WebCore
+} // namespace blink

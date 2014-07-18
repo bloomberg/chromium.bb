@@ -36,7 +36,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 using blink::Platform;
 using blink::WebLocalizedString;

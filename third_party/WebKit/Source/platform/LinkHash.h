@@ -30,7 +30,7 @@
 #include "wtf/Forward.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 
@@ -60,6 +60,6 @@ struct LinkHashHash {
 // look like a relative URL.
 PLATFORM_EXPORT LinkHash visitedLinkHash(const KURL& base, const AtomicString& attributeURL);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LinkHash_h

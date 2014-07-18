@@ -10,7 +10,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT PermissionCallbacks {
     WTF_MAKE_NONCOPYABLE(PermissionCallbacks);
@@ -28,6 +28,6 @@ private:
     Closure m_denied;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PermissionCallbacks_h

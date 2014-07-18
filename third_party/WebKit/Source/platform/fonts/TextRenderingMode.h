@@ -26,10 +26,10 @@
 #ifndef TextRenderingMode_h
 #define TextRenderingMode_h
 
-namespace WebCore {
+namespace blink {
 
 enum TextRenderingMode { AutoTextRendering, OptimizeSpeed, OptimizeLegibility, GeometricPrecision };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TextRenderingMode_h

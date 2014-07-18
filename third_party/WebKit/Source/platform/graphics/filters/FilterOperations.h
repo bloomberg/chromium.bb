@@ -32,7 +32,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef IntRectExtent FilterOutsets;
 
@@ -75,7 +75,7 @@ private:
     Vector<RefPtr<FilterOperation> > m_operations;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // FilterOperations_h

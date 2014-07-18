@@ -39,7 +39,7 @@ namespace blink {
 class WebRTCSessionDescription;
 }
 
-namespace WebCore {
+namespace blink {
 
 class RTCSessionDescriptionRequest : public RefCounted<RTCSessionDescriptionRequest> {
 public:
@@ -63,6 +63,6 @@ private:
     OwnPtr<ExtraData> m_extraData;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCSessionDescriptionRequest_h

@@ -34,7 +34,7 @@
 #include "platform/transforms/TransformOperation.h"
 #include "platform/transforms/TransformOperations.h"
 
-namespace WebCore {
+namespace blink {
 
 // This class is an implementation detail for deferred interpolations.
 class PLATFORM_EXPORT InterpolatedTransformOperation : public TransformOperation {
@@ -75,7 +75,7 @@ private:
     double progress;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InterpolatedTransformOperation_h
 

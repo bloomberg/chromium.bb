@@ -42,7 +42,7 @@ extern "C" {
 
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 #if ENABLE(ASSERT)
 const int kMaxFFTPow2Size = 24;
@@ -184,7 +184,7 @@ RDFTContext* FFTFrame::contextForSize(unsigned fftSize, int trans)
     return context;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // USE(WEBAUDIO_FFMPEG)
 

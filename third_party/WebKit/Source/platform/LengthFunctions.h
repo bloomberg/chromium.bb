@@ -26,7 +26,7 @@
 
 #include "platform/PlatformExport.h"
 
-namespace WebCore {
+namespace blink {
 
 class FloatSize;
 class LayoutUnit;
@@ -40,6 +40,6 @@ PLATFORM_EXPORT LayoutUnit roundedMinimumValueForLength(const Length&, LayoutUni
 PLATFORM_EXPORT LayoutUnit valueForLength(const Length&, LayoutUnit maximumValue);
 PLATFORM_EXPORT FloatSize floatSizeForLengthSize(const LengthSize&, const FloatSize& boxSize);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LengthFunctions_h

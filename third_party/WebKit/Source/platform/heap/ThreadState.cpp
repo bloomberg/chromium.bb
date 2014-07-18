@@ -51,7 +51,7 @@ extern "C" void* __libc_stack_end;  // NOLINT
 #include <sanitizer/msan_interface.h>
 #endif
 
-namespace WebCore {
+namespace blink {
 
 static void* getStackStart()
 {

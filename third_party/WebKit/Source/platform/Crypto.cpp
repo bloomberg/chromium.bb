@@ -10,7 +10,7 @@
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoAlgorithm.h"
 
-namespace WebCore {
+namespace blink {
 
 static blink::WebCryptoAlgorithmId toWebCryptoAlgorithmId(HashAlgorithm algorithm)
 {
@@ -64,4 +64,4 @@ void finishDigestor(blink::WebCryptoDigestor* digestor, DigestValue& digestResul
     digestResult.append(static_cast<uint8_t*>(result), resultSize);
 }
 
-} // namespace WebCore
+} // namespace blink

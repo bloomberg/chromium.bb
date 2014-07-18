@@ -32,7 +32,7 @@
 
 #include "platform/audio/AudioPullFIFO.h"
 
-namespace WebCore {
+namespace blink {
 
 AudioPullFIFO::AudioPullFIFO(AudioSourceProvider& audioProvider, unsigned numberOfChannels, size_t fifoLength, size_t providerSize)
     : m_provider(audioProvider)
@@ -70,6 +70,6 @@ void AudioPullFIFO::fillBuffer(size_t numberOfFrames)
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

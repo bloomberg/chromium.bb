@@ -34,7 +34,7 @@
 #include "public/platform/WebCrypto.h"
 #include "wtf/ThreadSafeRefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 // Receives notification of completion of the crypto operation.
 class CryptoResult : public ThreadSafeRefCounted<CryptoResult> {
@@ -55,6 +55,6 @@ public:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

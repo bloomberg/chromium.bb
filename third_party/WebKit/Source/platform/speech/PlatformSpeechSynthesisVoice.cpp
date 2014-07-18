@@ -26,7 +26,7 @@
 #include "config.h"
 #include "platform/speech/PlatformSpeechSynthesisVoice.h"
 
-namespace WebCore {
+namespace blink {
 
 PlatformSpeechSynthesisVoice* PlatformSpeechSynthesisVoice::create(const String& voiceURI, const String& name, const String& lang, bool localService, bool isDefault)
 {
@@ -53,4 +53,4 @@ PlatformSpeechSynthesisVoice::PlatformSpeechSynthesisVoice()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

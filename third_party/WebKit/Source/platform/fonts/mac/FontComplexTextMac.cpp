@@ -38,7 +38,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 static bool preferHarfBuzz(const Font* font)
 {
@@ -209,4 +209,4 @@ const SimpleFontData* Font::fontDataForCombiningCharacterSequence(const UChar* c
     return SimpleFontData::systemFallback();
 }
 
-} // namespace WebCore
+} // namespace blink

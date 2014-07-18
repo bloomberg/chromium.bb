@@ -33,7 +33,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/VectorTraits.h"
 
-namespace WebCore {
+namespace blink {
 
 class NativeImageSkia;
 
@@ -56,10 +56,10 @@ public:
     unsigned m_frameBytes;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 namespace WTF {
-template<> struct VectorTraits<WebCore::FrameData> : public SimpleClassVectorTraits<WebCore::FrameData> {
+template<> struct VectorTraits<blink::FrameData> : public SimpleClassVectorTraits<blink::FrameData> {
     static const bool canInitializeWithMemset = false; // Not all FrameData members initialize to 0.
 };
 }

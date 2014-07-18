@@ -34,7 +34,7 @@
 #include "wtf/CPU.h"
 #include "wtf/FastAllocBase.h"
 
-namespace WebCore {
+namespace blink {
 
 class AffineTransform;
 class IntRect;
@@ -361,6 +361,6 @@ private:
     Matrix4 m_matrix;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TransformationMatrix_h

@@ -65,7 +65,7 @@ typedef FMFont ATSUFontID;
 typedef UInt32 ATSFontRef;
 #endif
 
-namespace WebCore {
+namespace blink {
 
 class FontDescription;
 class SharedBuffer;
@@ -200,7 +200,7 @@ private:
     bool m_isCompositeFontReference;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FontPlatformData_h
 

@@ -30,7 +30,7 @@
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 PLATFORM_EXPORT AtomicString defaultLanguage();
 PLATFORM_EXPORT Vector<AtomicString> userPreferredLanguages();

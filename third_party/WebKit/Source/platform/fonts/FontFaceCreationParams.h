@@ -36,7 +36,7 @@
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 enum FontFaceCreationType {
     CreateFontByFamily,
@@ -122,6 +122,6 @@ public:
 
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FontFaceCreationParams_h

@@ -8,7 +8,7 @@
 #include "platform/fonts/SimpleFontData.h"
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 TEST(FontCacheAndroid, fallbackFontForCharacter)
 {
@@ -26,4 +26,4 @@ TEST(FontCacheAndroid, fallbackFontForCharacter)
     EXPECT_TRUE(fontData);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -24,7 +24,7 @@
 #include "platform/PlatformTouchPoint.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class PlatformTouchEvent : public PlatformEvent {
 public:

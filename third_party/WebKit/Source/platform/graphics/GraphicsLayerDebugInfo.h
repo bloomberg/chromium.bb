@@ -38,7 +38,7 @@
 
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class GraphicsLayerDebugInfo FINAL : public blink::WebGraphicsLayerDebugInfo {
 public:
@@ -67,6 +67,6 @@ private:
     Vector<LayoutRect> m_currentLayoutRects;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

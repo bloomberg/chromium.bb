@@ -36,7 +36,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 static inline float min4(float a, float b, float c, float d)
 {
@@ -233,4 +233,4 @@ bool FloatQuad::isCounterclockwise() const
     return determinant(m_p2 - m_p1, m_p3 - m_p2) < 0;
 }
 
-} // namespace WebCore
+} // namespace blink

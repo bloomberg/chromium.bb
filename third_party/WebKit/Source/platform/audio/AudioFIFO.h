@@ -31,7 +31,7 @@
 
 #include "platform/audio/AudioBus.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioFIFO {
 public:
@@ -70,6 +70,6 @@ private:
     size_t m_writeIndex;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioFIFO.h

@@ -38,7 +38,7 @@ extern "C" {
 void CGFontGetGlyphsForUnichars(CGFontRef, const UniChar chars[], CGGlyph glyphs[], size_t length);
 }
 
-namespace WebCore {
+namespace blink {
 
 CFDictionaryRef SimpleFontData::getCFStringAttributes(TypesettingFeatures typesettingFeatures, FontOrientation orientation) const
 {
@@ -198,4 +198,4 @@ bool SimpleFontData::fillGlyphPage(GlyphPage* pageToFill, unsigned offset, unsig
     return haveGlyphs;
 }
 
-} // namespace WebCore
+} // namespace blink

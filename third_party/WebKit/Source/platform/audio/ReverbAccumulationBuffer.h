@@ -32,7 +32,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
 
-namespace WebCore {
+namespace blink {
 
 // ReverbAccumulationBuffer is a circular delay buffer with one client reading from it and multiple clients
 // writing/accumulating to it at different delay offsets from the read position.  The read operation will zero the memory
@@ -63,6 +63,6 @@ private:
     size_t m_readTimeFrame; // for debugging (frame on continuous timeline)
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ReverbAccumulationBuffer_h

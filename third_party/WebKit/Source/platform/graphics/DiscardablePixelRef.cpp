@@ -29,7 +29,7 @@
 #include "public/platform/Platform.h"
 #include <string.h>
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -116,4 +116,4 @@ bool DiscardablePixelRef::isDiscardable(SkPixelRef* pixelRef)
     return pixelRef && pixelRef->getURI() && !strcmp(pixelRef->getURI(), labelDiscardable);
 }
 
-} // namespace WebCore
+} // namespace blink

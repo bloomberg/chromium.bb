@@ -55,7 +55,7 @@ static NSTimeInterval systemUptime()
     return 0;
 }
 
-namespace WebCore {
+namespace blink {
 
 static const float scrollVelocityZeroingTimeout = 0.10f;
 static const float rubberbandDirectionLockStretchRatio = 1;
@@ -452,6 +452,6 @@ bool ScrollElasticityController::shouldHandleEvent(const PlatformWheelEvent& whe
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // USE(RUBBER_BANDING)

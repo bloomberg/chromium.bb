@@ -36,7 +36,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT StorageQuotaCallbacks {
     WTF_MAKE_NONCOPYABLE(StorageQuotaCallbacks);
@@ -49,6 +49,6 @@ public:
     virtual void didFail(blink::WebStorageQuotaError) { ASSERT_NOT_REACHED(); };
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StorageQuotaCallbacks_h

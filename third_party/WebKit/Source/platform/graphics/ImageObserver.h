@@ -28,7 +28,7 @@
 
 #include "platform/PlatformExport.h"
 
-namespace WebCore {
+namespace blink {
 
 class Image;
 class IntRect;

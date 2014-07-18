@@ -40,7 +40,7 @@ extern "C" {
 #include "png.h"
 }
 
-namespace WebCore {
+namespace blink {
 
 static void writeOutput(png_structp png, png_bytep data, png_size_t size)
 {
@@ -129,4 +129,4 @@ bool PNGImageEncoder::encode(const ImageDataBuffer& imageData, Vector<unsigned c
     return encodePixels(imageData.size(), imageData.data(), false, output);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -35,7 +35,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -526,4 +526,4 @@ PassRefPtr<JSONValue> JSONArrayBase::get(size_t index)
     return m_data[index];
 }
 
-} // namespace WebCore
+} // namespace blink

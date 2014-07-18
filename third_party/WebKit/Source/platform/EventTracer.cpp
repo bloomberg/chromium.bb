@@ -36,7 +36,7 @@
 #include "wtf/Assertions.h"
 #include <stdio.h>
 
-namespace WebCore {
+namespace blink {
 
 COMPILE_ASSERT(sizeof(blink::Platform::TraceEventHandle) == sizeof(TraceEvent::TraceEventHandle), TraceEventHandle_types_must_be_compatible);
 
@@ -104,4 +104,4 @@ void EventTracer::updateTraceEventDuration(const unsigned char* categoryEnabledF
     blink::Platform::current()->updateTraceEventDuration(categoryEnabledFlag, name, handle);
 }
 
-} // namespace WebCore
+} // namespace blink

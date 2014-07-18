@@ -9,7 +9,7 @@
 #include "wtf/MathExtras.h"
 #include <stdint.h>
 
-namespace WebCore {
+namespace blink {
 
 const uint64_t CompositingReasonNone                                     = 0;
 const uint64_t CompositingReasonAll                                      = ~static_cast<uint64_t>(0);
@@ -184,6 +184,6 @@ struct CompositingReasonStringMap {
 PLATFORM_EXPORT extern const CompositingReasonStringMap kCompositingReasonStringMap[];
 PLATFORM_EXPORT extern size_t kNumberOfCompositingReasons;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CompositingReasons_h

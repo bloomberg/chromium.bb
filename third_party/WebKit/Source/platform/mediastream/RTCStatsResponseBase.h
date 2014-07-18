@@ -27,7 +27,7 @@
 
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class RTCStatsResponseBase : public GarbageCollectedFinalized<RTCStatsResponseBase> {
 public:
@@ -39,7 +39,7 @@ public:
     virtual void trace(Visitor*) { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCStatsResponseBase_h
 

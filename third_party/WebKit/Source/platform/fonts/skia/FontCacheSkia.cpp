@@ -59,7 +59,7 @@ static SkStream* streamForFontconfigInterfaceId(int fontconfigInterfaceId)
 }
 #endif
 
-namespace WebCore {
+namespace blink {
 
 void FontCache::platformInit()
 {
@@ -231,4 +231,4 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
 }
 #endif // !OS(WIN)
 
-} // namespace WebCore
+} // namespace blink

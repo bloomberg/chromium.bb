@@ -34,9 +34,9 @@
 #include "platform/geometry/IntRect.h"
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: Move this somewhere more generic.
 void PrintTo(const IntRect& rect, std::ostream* os)
@@ -48,7 +48,7 @@ void PrintTo(const IntRect& rect, std::ostream* os)
         << rect.height() << ")";
 }
 
-} // namespace WebCore
+} // namespace blink
 
 namespace {
 

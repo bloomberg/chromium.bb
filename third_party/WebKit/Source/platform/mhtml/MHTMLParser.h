@@ -40,7 +40,7 @@ namespace WTF {
 class String;
 }
 
-namespace WebCore {
+namespace blink {
 
 class ArchiveResource;
 class MHTMLArchive;

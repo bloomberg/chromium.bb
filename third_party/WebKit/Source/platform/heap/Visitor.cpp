@@ -34,7 +34,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 
-namespace WebCore {
+namespace blink {
 
 #if ENABLE(ASSERT)
 void Visitor::checkGCInfo(const void* payload, const GCInfo* gcInfo)

@@ -33,7 +33,7 @@
 
 #include "platform/audio/FFTFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 // Normal constructor: allocates for a given fftSize.
 FFTFrame::FFTFrame(unsigned /*fftSize*/)
@@ -95,7 +95,7 @@ float* FFTFrame::imagData() const
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !OS(MACOSX) && !USE(WEBAUDIO_FFMPEG) && !USE(WEBAUDIO_IPP) && !USE(WEBAUDIO_OPENMAX_DL_FFT)
 

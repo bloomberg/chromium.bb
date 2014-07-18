@@ -32,7 +32,7 @@
 
 #include "platform/audio/AudioFIFO.h"
 
-namespace WebCore {
+namespace blink {
 
 AudioFIFO::AudioFIFO(unsigned numberOfChannels, size_t fifoLength)
     : m_fifoAudioBus(AudioBus::create(numberOfChannels, fifoLength))
@@ -139,6 +139,6 @@ void AudioFIFO::findWrapLengths(size_t index, size_t size, size_t& part1Length, 
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

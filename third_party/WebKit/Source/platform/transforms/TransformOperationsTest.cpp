@@ -38,7 +38,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 namespace {
 
 static const TransformOperations identityOperations;
@@ -79,8 +79,8 @@ TEST(TransformOperationsTest, AbsoluteAnimatedTranslatedBoundsTest)
 {
     TransformOperations fromOps;
     TransformOperations toOps;
-    fromOps.operations().append(TranslateTransformOperation::create(Length(-30, WebCore::Fixed), Length(20, WebCore::Fixed), 15, TransformOperation::Translate3D));
-    toOps.operations().append(TranslateTransformOperation::create(Length(10, WebCore::Fixed), Length(10, WebCore::Fixed), 200, TransformOperation::Translate3D));
+    fromOps.operations().append(TranslateTransformOperation::create(Length(-30, blink::Fixed), Length(20, blink::Fixed), 15, TransformOperation::Translate3D));
+    toOps.operations().append(TranslateTransformOperation::create(Length(10, blink::Fixed), Length(10, blink::Fixed), 200, TransformOperation::Translate3D));
     FloatBox box(0, 0, 0, 10, 10, 10);
     FloatBox bounds;
 
@@ -120,8 +120,8 @@ TEST(TransformOperationsTest, EmpiricalAnimatedTranslatedBoundsTest)
         for (size_t j = 0; j < WTF_ARRAY_LENGTH(progress); ++j) {
             TransformOperations fromOps;
             TransformOperations toOps;
-            fromOps.operations().append(TranslateTransformOperation::create(Length(testTransforms[i][0][0], WebCore::Fixed), Length(testTransforms[i][0][1], WebCore::Fixed), testTransforms[i][0][2], TransformOperation::Translate3D));
-            toOps.operations().append(TranslateTransformOperation::create(Length(testTransforms[i][1][0], WebCore::Fixed), Length(testTransforms[i][1][1], WebCore::Fixed), testTransforms[i][1][2], TransformOperation::Translate3D));
+            fromOps.operations().append(TranslateTransformOperation::create(Length(testTransforms[i][0][0], blink::Fixed), Length(testTransforms[i][0][1], blink::Fixed), testTransforms[i][0][2], TransformOperation::Translate3D));
+            toOps.operations().append(TranslateTransformOperation::create(Length(testTransforms[i][1][0], blink::Fixed), Length(testTransforms[i][1][1], blink::Fixed), testTransforms[i][1][2], TransformOperation::Translate3D));
             EmpiricallyTestBounds(fromOps, toOps, 0, 1);
         }
     }
@@ -175,8 +175,8 @@ TEST(TransformOperationsTest, EmpiricalAnimatedScaleBoundsTest)
         for (size_t j = 0; j < WTF_ARRAY_LENGTH(progress); ++j) {
             TransformOperations fromOps;
             TransformOperations toOps;
-            fromOps.operations().append(TranslateTransformOperation::create(Length(testTransforms[i][0][0], WebCore::Fixed), Length(testTransforms[i][0][1], WebCore::Fixed), testTransforms[i][0][2], TransformOperation::Translate3D));
-            toOps.operations().append(TranslateTransformOperation::create(Length(testTransforms[i][1][0], WebCore::Fixed), Length(testTransforms[i][1][1], WebCore::Fixed), testTransforms[i][1][2], TransformOperation::Translate3D));
+            fromOps.operations().append(TranslateTransformOperation::create(Length(testTransforms[i][0][0], blink::Fixed), Length(testTransforms[i][0][1], blink::Fixed), testTransforms[i][0][2], TransformOperation::Translate3D));
+            toOps.operations().append(TranslateTransformOperation::create(Length(testTransforms[i][1][0], blink::Fixed), Length(testTransforms[i][1][1], blink::Fixed), testTransforms[i][1][2], TransformOperation::Translate3D));
             EmpiricallyTestBounds(fromOps, toOps, 0, 1);
         }
     }

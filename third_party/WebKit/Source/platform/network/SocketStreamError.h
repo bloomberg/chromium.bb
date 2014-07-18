@@ -37,7 +37,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT SocketStreamError : public RefCounted<SocketStreamError> {
 public:
@@ -71,6 +71,6 @@ private:
 inline bool operator==(const SocketStreamError& a, const SocketStreamError& b) { return SocketStreamError::compare(a, b); }
 inline bool operator!=(const SocketStreamError& a, const SocketStreamError& b) { return !(a == b); }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SocketStreamError_h

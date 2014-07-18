@@ -39,7 +39,7 @@
 
 #include <cstring>
 
-namespace WebCore {
+namespace blink {
 
 // WebDiscardableMemory allocations are expensive and page-grained. We only use
 // them when there's a reasonable amount of memory to be saved by the OS
@@ -259,4 +259,4 @@ size_t PurgeableVector::adjustPurgeableCapacity(size_t capacity) const
     return std::max(capacity, newCapacity); // Overflow check.
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -33,7 +33,7 @@
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkDevice.h"
 
-namespace WebCore {
+namespace blink {
 
 FETile::FETile(Filter* filter)
     : FilterEffect(filter)
@@ -128,4 +128,4 @@ TextStream& FETile::externalRepresentation(TextStream& ts, int indent) const
     return ts;
 }
 
-} // namespace WebCore
+} // namespace blink

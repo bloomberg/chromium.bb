@@ -36,7 +36,7 @@ using namespace WTF;
 using namespace Unicode;
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 WidthIterator::WidthIterator(const Font* font, const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, bool accountForGlyphBounds, bool forTextEmphasis)
     : m_font(font)

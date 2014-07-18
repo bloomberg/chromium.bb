@@ -47,7 +47,7 @@ class WebGraphicsContext3DProvider;
 
 class Canvas2DLayerBridgeTest;
 
-namespace WebCore {
+namespace blink {
 
 class ImageBuffer;
 

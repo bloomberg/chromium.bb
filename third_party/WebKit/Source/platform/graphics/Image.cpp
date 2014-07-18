@@ -44,7 +44,7 @@
 
 #include <math.h>
 
-namespace WebCore {
+namespace blink {
 
 Image::Image(ImageObserver* observer)
     : m_imageObserver(observer)

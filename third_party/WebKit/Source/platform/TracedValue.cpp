@@ -8,7 +8,7 @@
 
 #include "platform/JSONValues.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 

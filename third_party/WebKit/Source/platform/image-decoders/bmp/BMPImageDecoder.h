@@ -34,7 +34,7 @@
 #include "platform/image-decoders/bmp/BMPImageReader.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 // This class decodes the BMP image format.
 class PLATFORM_EXPORT BMPImageDecoder : public ImageDecoder {
@@ -80,6 +80,6 @@ private:
     OwnPtr<BMPImageReader> m_reader;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

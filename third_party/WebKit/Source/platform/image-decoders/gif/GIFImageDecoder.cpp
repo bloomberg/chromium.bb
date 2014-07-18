@@ -32,7 +32,7 @@
 #include "wtf/NotFound.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 GIFImageDecoder::GIFImageDecoder(ImageSource::AlphaOption alphaOption,
     ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption,
@@ -385,4 +385,4 @@ bool GIFImageDecoder::initFrameBuffer(size_t frameIndex)
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

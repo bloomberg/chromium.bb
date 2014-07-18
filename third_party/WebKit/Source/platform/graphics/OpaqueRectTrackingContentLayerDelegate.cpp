@@ -36,7 +36,7 @@
 using blink::WebFloatRect;
 using blink::WebRect;
 
-namespace WebCore {
+namespace blink {
 
 OpaqueRectTrackingContentLayerDelegate::OpaqueRectTrackingContentLayerDelegate(GraphicsContextPainter* painter)
     : m_painter(painter)

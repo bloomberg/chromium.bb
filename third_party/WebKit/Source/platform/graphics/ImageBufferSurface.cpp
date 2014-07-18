@@ -36,7 +36,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
 
-namespace WebCore {
+namespace blink {
 
 ImageBufferSurface::ImageBufferSurface(const IntSize& size, OpacityMode opacityMode)
     : m_opacityMode(opacityMode)
@@ -70,4 +70,4 @@ const SkBitmap& ImageBufferSurface::cachedBitmap() const
     return nullBitmap;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -38,7 +38,7 @@ namespace WTF {
 class TextEncoding;
 }
 
-namespace WebCore {
+namespace blink {
 
 struct KURLHash;
 
@@ -265,14 +265,14 @@ inline bool operator!=(const String& a, const KURL& b)
     return a != b.string();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 namespace WTF {
 
 // KURLHash is the default hash for String
 template<typename T> struct DefaultHash;
-template<> struct DefaultHash<WebCore::KURL> {
-    typedef WebCore::KURLHash Hash;
+template<> struct DefaultHash<blink::KURL> {
+    typedef blink::KURLHash Hash;
 };
 
 } // namespace WTF

@@ -37,8 +37,8 @@
 #include "public/platform/WebPublicSuffixList.h"
 #include <gtest/gtest.h>
 
-using WebCore::SecurityOrigin;
-using WebCore::OriginAccessEntry;
+using blink::SecurityOrigin;
+using blink::OriginAccessEntry;
 
 namespace {
 

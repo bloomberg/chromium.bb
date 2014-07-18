@@ -50,7 +50,7 @@
 #include <math.h>
 #include <limits>
 
-namespace WebCore {
+namespace blink {
 
 static bool nearlyIntegral(float value)
 {
@@ -556,4 +556,4 @@ SkIRect NativeImageSkia::ImageResourceInfo::rectInSubset(const SkIRect& otherSca
     return subsetRect;
 }
 
-} // namespace WebCore
+} // namespace blink

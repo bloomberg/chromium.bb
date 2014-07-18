@@ -149,7 +149,7 @@ void internalNormalizeLineEndingsToCRLF(const CString& from, OutputBuffer& buffe
 
 };
 
-namespace WebCore {
+namespace blink {
 
 void normalizeToCROrLF(const CString& from, Vector<char>& result, bool toCR);
 
@@ -234,4 +234,4 @@ void normalizeLineEndingsToNative(const CString& from, Vector<char>& result)
 #endif
 }
 
-} // namespace WebCore
+} // namespace blink

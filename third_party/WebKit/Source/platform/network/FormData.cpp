@@ -27,7 +27,7 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncoding.h"
 
-namespace WebCore {
+namespace blink {
 
 inline FormData::FormData()
     : m_identifier(0)
@@ -187,4 +187,4 @@ unsigned long long FormData::sizeInBytes() const
     return size;
 }
 
-} // namespace WebCore
+} // namespace blink

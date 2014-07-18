@@ -34,7 +34,7 @@
 #include "platform/heap/Heap.h"
 #include "platform/heap/Visitor.h"
 
-namespace WebCore {
+namespace blink {
 
 template <typename T>
 class HeapLinkedStack : public GarbageCollected<HeapLinkedStack<T> > {

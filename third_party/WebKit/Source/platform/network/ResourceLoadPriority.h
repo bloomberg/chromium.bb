@@ -26,7 +26,7 @@
 #ifndef ResourceLoadPriority_h
 #define ResourceLoadPriority_h
 
-namespace WebCore {
+namespace blink {
 
 enum ResourceLoadPriority {
     // The unresolved priority is here for the convenience of the clients. It

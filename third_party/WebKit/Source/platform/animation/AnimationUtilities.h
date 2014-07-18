@@ -33,7 +33,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/TypeTraits.h"
 
-namespace WebCore {
+namespace blink {
 
 inline int blend(int from, int to, double progress)
 {
@@ -79,6 +79,6 @@ inline double accuracyForDuration(double duration)
     return 1.0 / (200.0 * duration);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimationUtilities_h

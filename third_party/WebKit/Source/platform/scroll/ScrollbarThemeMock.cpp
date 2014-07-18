@@ -30,7 +30,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 
-namespace WebCore {
+namespace blink {
 
 static int cScrollbarThickness[] = { 15, 11 };
 

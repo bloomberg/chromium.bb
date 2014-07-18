@@ -36,7 +36,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 const char BlobURL::kBlobProtocol[] = "blob";
 
@@ -67,4 +67,4 @@ KURL BlobURL::createBlobURL(const String& originString)
     return KURL::createIsolated(ParsedURLString, urlString);
 }
 
-} // namespace WebCore
+} // namespace blink

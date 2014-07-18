@@ -48,7 +48,7 @@ typedef struct CGFont* CGFontRef;
 
 class SkTypeface;
 
-namespace WebCore {
+namespace blink {
 
 class FontPlatformData;
 class SharedBuffer;
@@ -73,6 +73,6 @@ private:
     RefPtr<SkTypeface> m_typeface;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FontCustomPlatformData_h

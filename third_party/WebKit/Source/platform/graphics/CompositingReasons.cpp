@@ -7,7 +7,7 @@
 
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 const CompositingReasonStringMap kCompositingReasonStringMap[] = {
     { CompositingReasonNone,
@@ -191,4 +191,4 @@ const CompositingReasonStringMap kCompositingReasonStringMap[] = {
 
 size_t kNumberOfCompositingReasons = WTF_ARRAY_LENGTH(kCompositingReasonStringMap);
 
-} // namespace WebCore
+} // namespace blink

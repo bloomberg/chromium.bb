@@ -31,7 +31,7 @@
 #include "config.h"
 #include "platform/LayoutTestSupport.h"
 
-namespace WebCore {
+namespace blink {
 
 static bool s_isRunningLayoutTest = false;
 static bool s_isFontAntialiasingEnabled = false;
@@ -56,4 +56,4 @@ void LayoutTestSupport::setFontAntialiasingEnabledForTest(bool value)
     s_isFontAntialiasingEnabled = value;
 }
 
-} // namespace WebCore
+} // namespace blink

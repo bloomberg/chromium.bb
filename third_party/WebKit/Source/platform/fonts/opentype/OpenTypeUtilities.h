@@ -30,12 +30,12 @@
 #include <windows.h>
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class SharedBuffer;
 
 HANDLE renameAndActivateFont(SharedBuffer*, const String&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // OpenTypeUtilities_h

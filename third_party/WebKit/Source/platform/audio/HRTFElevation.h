@@ -39,7 +39,7 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 // HRTFElevation contains all of the HRTFKernels (one left ear and one right ear per azimuth angle) for a particular elevation.
 
@@ -107,6 +107,6 @@ private:
     float m_sampleRate;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HRTFElevation_h

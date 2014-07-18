@@ -38,7 +38,7 @@
 #include <ipps.h>
 #endif // USE(WEBAUDIO_IPP)
 
-namespace WebCore {
+namespace blink {
 
 // A basic biquad (two-zero / two-pole digital filter)
 //
@@ -113,6 +113,6 @@ private:
 #endif
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Biquad_h

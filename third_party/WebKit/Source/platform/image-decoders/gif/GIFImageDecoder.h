@@ -34,7 +34,7 @@ class GIFImageReader;
 
 typedef Vector<unsigned char> GIFRow;
 
-namespace WebCore {
+namespace blink {
 
 // This class decodes the GIF image format.
 class PLATFORM_EXPORT GIFImageDecoder : public ImageDecoder {
@@ -89,6 +89,6 @@ private:
     OwnPtr<GIFImageReader> m_reader;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

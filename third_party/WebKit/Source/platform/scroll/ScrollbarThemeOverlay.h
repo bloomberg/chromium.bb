@@ -29,7 +29,7 @@
 #include "platform/graphics/Color.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
-namespace WebCore {
+namespace blink {
 
 // This scrollbar theme is used to get overlay scrollbar for platforms other
 // than Mac. Mac's overlay scrollbars are in ScrollbarThemeMac*.
@@ -66,6 +66,6 @@ private:
     const bool m_useSolidColor;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

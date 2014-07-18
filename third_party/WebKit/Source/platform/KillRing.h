@@ -29,7 +29,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT KillRing {
     WTF_MAKE_FAST_ALLOCATED;
@@ -41,6 +41,6 @@ public:
     void setToYankedState();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // KillRing_h

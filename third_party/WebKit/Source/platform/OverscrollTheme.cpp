@@ -27,7 +27,7 @@
 #include "config.h"
 #include "platform/OverscrollTheme.h"
 
-namespace WebCore {
+namespace blink {
 
 OverscrollTheme::OverscrollTheme()
 {

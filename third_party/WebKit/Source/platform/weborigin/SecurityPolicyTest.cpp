@@ -34,14 +34,14 @@
 #include "platform/weborigin/KURL.h"
 #include <gtest/gtest.h>
 
-using WebCore::KURL;
-using WebCore::SecurityPolicy;
+using blink::KURL;
+using blink::SecurityPolicy;
 
 namespace {
 
 TEST(SecurityPolicyTest, ReferrerIsAlwaysAWebURL)
 {
-    EXPECT_TRUE(String() == SecurityPolicy::generateReferrerHeader(WebCore::ReferrerPolicyAlways, KURL(WebCore::ParsedURLString, "http://example.com/"), String::fromUTF8("chrome://somepage/")));
+    EXPECT_TRUE(String() == SecurityPolicy::generateReferrerHeader(blink::ReferrerPolicyAlways, KURL(blink::ParsedURLString, "http://example.com/"), String::fromUTF8("chrome://somepage/")));
 }
 
 } // namespace

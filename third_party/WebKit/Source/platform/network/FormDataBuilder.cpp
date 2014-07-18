@@ -31,7 +31,7 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncoding.h"
 
-namespace WebCore {
+namespace blink {
 
 // Helper functions
 static inline void append(Vector<char>& buffer, char string)

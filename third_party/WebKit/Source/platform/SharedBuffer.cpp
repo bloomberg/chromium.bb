@@ -39,7 +39,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 static const unsigned segmentSize = 0x1000;
 static const unsigned segmentPositionMask = 0x0FFF;
@@ -420,4 +420,4 @@ bool SharedBuffer::isLocked() const
     return m_buffer.isLocked();
 }
 
-} // namespace WebCore
+} // namespace blink

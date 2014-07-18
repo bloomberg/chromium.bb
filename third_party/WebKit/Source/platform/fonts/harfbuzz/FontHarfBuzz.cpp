@@ -44,7 +44,7 @@
 
 #include "wtf/unicode/Unicode.h"
 
-namespace WebCore {
+namespace blink {
 
 bool FontPlatformFeatures::canReturnFallbackFontsForComplexText()
 {
@@ -278,4 +278,4 @@ FloatRect Font::selectionRectForComplexText(const TextRun& run,
     return shaper.selectionRect(point, height, from, to);
 }
 
-} // namespace WebCore
+} // namespace blink

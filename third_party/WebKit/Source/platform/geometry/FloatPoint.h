@@ -42,7 +42,7 @@ typedef struct CGPoint CGPoint;
 
 struct SkPoint;
 
-namespace WebCore {
+namespace blink {
 
 class IntPoint;
 class IntSize;

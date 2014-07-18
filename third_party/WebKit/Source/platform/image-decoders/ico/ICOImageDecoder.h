@@ -33,7 +33,7 @@
 
 #include "platform/image-decoders/bmp/BMPImageReader.h"
 
-namespace WebCore {
+namespace blink {
 
 class PNGImageDecoder;
 
@@ -151,6 +151,6 @@ private:
     IntSize m_frameSize;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

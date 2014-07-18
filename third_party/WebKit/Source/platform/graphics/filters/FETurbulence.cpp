@@ -34,7 +34,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/Uint8ClampedArray.h"
 
-namespace WebCore {
+namespace blink {
 
 /*
     Produces results in the range [1, 2**31 - 2]. Algorithm is:
@@ -368,7 +368,7 @@ void FETurbulence::applySoftware()
     int optimalThreadNumber = (absolutePaintRect().width() * absolutePaintRect().height()) / s_minimalRectDimension;
     if (optimalThreadNumber > 1) {
         // Initialize parallel jobs
-        ParallelJobs<FillRegionParameters> parallelJobs(&WebCore::FETurbulence::fillRegionWorker, optimalThreadNumber);
+        ParallelJobs<FillRegionParameters> parallelJobs(&blink::FETurbulence::fillRegionWorker, optimalThreadNumber);
 
         // Fill the parameter array
         int i = parallelJobs.numberOfJobs();
@@ -457,4 +457,4 @@ TextStream& FETurbulence::externalRepresentation(TextStream& ts, int indent) con
     return ts;
 }
 
-} // namespace WebCore
+} // namespace blink

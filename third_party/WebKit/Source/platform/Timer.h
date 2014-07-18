@@ -33,7 +33,7 @@
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 // Time intervals are all in seconds.
 

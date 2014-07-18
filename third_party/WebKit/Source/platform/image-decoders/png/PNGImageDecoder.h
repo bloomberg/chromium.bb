@@ -30,7 +30,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class PNGImageReader;
 
@@ -72,6 +72,6 @@ private:
     bool m_hasColorProfile;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -29,7 +29,7 @@
 
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 template<typename T>
 class LifecycleObserver {
@@ -88,6 +88,6 @@ inline void LifecycleObserver<T>::observeContext(typename LifecycleObserver<T>::
         observerContext(m_lifecycleContext, this);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LifecycleObserver_h

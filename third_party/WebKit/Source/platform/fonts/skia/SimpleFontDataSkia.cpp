@@ -43,7 +43,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "wtf/unicode/Unicode.h"
 
-namespace WebCore {
+namespace blink {
 
 // This is the largest VDMX table which we'll try to load and parse.
 static const size_t maxVDMXTableSize = 1024 * 1024; // 1 MB
@@ -305,4 +305,4 @@ bool SimpleFontData::fillGlyphPage(GlyphPage* pageToFill, unsigned offset, unsig
     return haveGlyphs;
 }
 
-} // namespace WebCore
+} // namespace blink

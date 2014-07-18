@@ -7,7 +7,7 @@
 
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 String LinearTimingFunction::toString() const
 {
@@ -226,4 +226,4 @@ bool operator!=(const TimingFunction& lhs, const TimingFunction& rhs)
     return !(lhs == rhs);
 }
 
-} // namespace WebCore
+} // namespace blink

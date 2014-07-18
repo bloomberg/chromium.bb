@@ -36,7 +36,7 @@
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 // Normalize all line-endings in the given string to CRLF.
 PLATFORM_EXPORT CString normalizeLineEndingsToCRLF(const CString& from);
@@ -51,6 +51,6 @@ PLATFORM_EXPORT void normalizeLineEndingsToLF(const CString& from, Vector<char>&
 // (Normalize to CRLF on Windows and normalize to LF on all other platforms.)
 PLATFORM_EXPORT void normalizeLineEndingsToNative(const CString& from, Vector<char>& result);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LineEnding_h

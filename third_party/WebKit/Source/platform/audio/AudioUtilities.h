@@ -27,7 +27,7 @@
 
 #include "platform/PlatformExport.h"
 
-namespace WebCore {
+namespace blink {
 namespace AudioUtilities {
 
 // Standard functions for converting to and from decibel values from linear.

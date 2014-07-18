@@ -29,7 +29,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 // On POSIX systems, the typical filename length limit is 255 character units. HFS+'s limit is
 // actually 255 Unicode characters using Apple's modification of Normzliation Form D, but the
@@ -57,4 +57,4 @@ void validateFilename(String& name, String& extension)
     name.truncate(maxFilenameLength - extension.length() - 1);
 }
 
-} // namespace WebCore
+} // namespace blink

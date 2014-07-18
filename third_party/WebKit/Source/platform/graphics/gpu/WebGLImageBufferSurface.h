@@ -39,7 +39,7 @@ namespace blink {
 class WebGraphicsContext3DProvider;
 }
 
-namespace WebCore {
+namespace blink {
 
 // This is a GPU backed surface that has no canvas or render target.
 class PLATFORM_EXPORT WebGLImageBufferSurface : public ImageBufferSurface {
@@ -67,6 +67,6 @@ private:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

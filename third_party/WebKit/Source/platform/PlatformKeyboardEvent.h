@@ -31,7 +31,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class PlatformKeyboardEvent : public PlatformEvent {
     WTF_MAKE_FAST_ALLOCATED;
@@ -100,6 +100,6 @@ protected:
     bool m_isSystemKey;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PlatformKeyboardEvent_h

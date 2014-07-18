@@ -34,7 +34,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 void replaceNBSPWithSpace(String& str)
 {
@@ -65,4 +65,4 @@ String convertURIListToURL(const String& uriList)
     return String();
 }
 
-} // namespace WebCore
+} // namespace blink

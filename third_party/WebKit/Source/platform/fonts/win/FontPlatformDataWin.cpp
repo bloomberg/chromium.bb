@@ -38,7 +38,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include <windows.h>
 
-namespace WebCore {
+namespace blink {
 
 // Maximum font size, in pixels, at which embedded bitmaps will be used
 // if available.
@@ -158,4 +158,4 @@ bool FontPlatformData::defaultUseSubpixelPositioning()
     return FontCache::fontCache()->useSubpixelPositioning();
 }
 
-} // namespace WebCore
+} // namespace blink

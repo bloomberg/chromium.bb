@@ -32,7 +32,7 @@
 #include "wtf/text/WTFString.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 // Describe a glyph from a SVG Font.
 struct SVGGlyph {
@@ -108,7 +108,7 @@ struct SVGGlyph {
 Vector<SVGGlyph::ArabicForm> PLATFORM_EXPORT charactersWithArabicForm(const String& input, bool rtl);
 bool PLATFORM_EXPORT isCompatibleGlyph(const SVGGlyph&, bool isVerticalText, const String& language, const Vector<SVGGlyph::ArabicForm>&, unsigned startPosition, unsigned endPosition);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(SVG_FONTS)
 #endif

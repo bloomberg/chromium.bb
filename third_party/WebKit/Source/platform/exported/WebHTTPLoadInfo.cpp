@@ -35,7 +35,7 @@
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebString.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -54,12 +54,12 @@ void WebHTTPLoadInfo::assign(const WebHTTPLoadInfo& r)
     m_private = r.m_private;
 }
 
-WebHTTPLoadInfo::WebHTTPLoadInfo(WTF::PassRefPtr<WebCore::ResourceLoadInfo> value)
+WebHTTPLoadInfo::WebHTTPLoadInfo(WTF::PassRefPtr<blink::ResourceLoadInfo> value)
     : m_private(value)
 {
 }
 
-WebHTTPLoadInfo::operator WTF::PassRefPtr<WebCore::ResourceLoadInfo>() const
+WebHTTPLoadInfo::operator WTF::PassRefPtr<blink::ResourceLoadInfo>() const
 {
     return m_private.get();
 }

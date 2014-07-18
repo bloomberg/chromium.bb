@@ -32,7 +32,7 @@
 
 #include "platform/audio/ReverbInputBuffer.h"
 
-namespace WebCore {
+namespace blink {
 
 ReverbInputBuffer::ReverbInputBuffer(size_t length)
     : m_buffer(length)
@@ -84,6 +84,6 @@ void ReverbInputBuffer::reset()
     m_writeIndex = 0;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

@@ -35,7 +35,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT DynamicsCompressorKernel {
     WTF_MAKE_NONCOPYABLE(DynamicsCompressorKernel);
@@ -126,6 +126,6 @@ protected:
     float m_K;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DynamicsCompressorKernel_h

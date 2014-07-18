@@ -10,7 +10,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 class JSONArray;
 class JSONObject;
 class JSONValue;
@@ -260,6 +260,6 @@ public:
     PassRefPtr<TraceEvent::ConvertableToTraceFormat> finish();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TracedValue_h

@@ -29,7 +29,7 @@
 
 #include "platform/SharedBuffer.h"
 
-namespace WebCore {
+namespace blink {
 
 ThreadSafeDataTransport::ThreadSafeDataTransport()
     : m_readBuffer(SharedBuffer::create())
@@ -79,4 +79,4 @@ bool ThreadSafeDataTransport::hasNewData()
     return !m_newBufferQueue.isEmpty();
 }
 
-} // namespace WebCore
+} // namespace blink

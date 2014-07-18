@@ -41,7 +41,7 @@ OBJC_CLASS NSCalendar;
 OBJC_CLASS NSDateFormatter;
 OBJC_CLASS NSLocale;
 
-namespace WebCore {
+namespace blink {
 
 class DateComponents;
 
@@ -96,5 +96,5 @@ private:
     bool m_didInitializeNumberData;
 };
 
-} // namespace WebCore
+} // namespace blink
 #endif

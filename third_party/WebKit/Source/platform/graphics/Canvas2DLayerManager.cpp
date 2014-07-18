@@ -39,7 +39,7 @@ enum {
 
 } // unnamed namespace
 
-namespace WebCore {
+namespace blink {
 
 Canvas2DLayerManager::Canvas2DLayerManager()
     : m_bytesAllocated(0)

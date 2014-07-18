@@ -39,7 +39,7 @@
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ImageDecoder;
 class ScaledImageFragment;
@@ -125,6 +125,6 @@ private:
     Mutex m_alphaMutex;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

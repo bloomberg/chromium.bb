@@ -32,7 +32,7 @@
 
 #include "platform/geometry/LayoutRect.h"
 
-namespace WebCore {
+namespace blink {
 
 class IntRectExtent {
 public:
@@ -103,7 +103,7 @@ inline void operator+=(IntRectExtent& a, const IntRectExtent& b)
     a.setLeft(a.left() + b.left());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // IntRectExtent_h

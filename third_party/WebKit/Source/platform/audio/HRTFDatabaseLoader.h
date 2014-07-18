@@ -37,7 +37,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadingPrimitives.h"
 
-namespace WebCore {
+namespace blink {
 
 // HRTFDatabaseLoader will asynchronously load the default HRTFDatabase in a new thread.
 
@@ -88,6 +88,6 @@ private:
     float m_databaseSampleRate;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HRTFDatabaseLoader_h

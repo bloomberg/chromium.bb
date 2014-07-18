@@ -31,7 +31,7 @@
 #ifndef SecurityOriginCache_h
 #define SecurityOriginCache_h
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 class SecurityOrigin;

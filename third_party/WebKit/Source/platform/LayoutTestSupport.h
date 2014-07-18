@@ -33,7 +33,7 @@
 
 #include "platform/PlatformExport.h"
 
-namespace WebCore {
+namespace blink {
 
 class LayoutTestSupport {
 public:
@@ -43,6 +43,6 @@ public:
     PLATFORM_EXPORT static void setFontAntialiasingEnabledForTest(bool);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LayoutTestSupport_h

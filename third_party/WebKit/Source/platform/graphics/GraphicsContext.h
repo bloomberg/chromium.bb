@@ -49,7 +49,7 @@ class SkPath;
 class SkRRect;
 struct SkRect;
 
-namespace WebCore {
+namespace blink {
 
 class DisplayList;
 class ImageBuffer;
@@ -527,6 +527,6 @@ private:
     bool m_antialiasHairlineImages : 1;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GraphicsContext_h

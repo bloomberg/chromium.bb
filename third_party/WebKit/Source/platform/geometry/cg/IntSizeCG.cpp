@@ -28,7 +28,7 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 
-namespace WebCore {
+namespace blink {
 
 IntSize::IntSize(const CGSize& s) : m_width(static_cast<int>(s.width)), m_height(static_cast<int>(s.height))
 {

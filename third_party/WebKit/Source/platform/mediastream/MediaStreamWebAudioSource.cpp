@@ -37,7 +37,7 @@
 #include "platform/audio/AudioBus.h"
 #include "public/platform/WebAudioSourceProvider.h"
 
-namespace WebCore {
+namespace blink {
 
 MediaStreamWebAudioSource::MediaStreamWebAudioSource(PassOwnPtr<blink::WebAudioSourceProvider> provider)
     : m_webAudioSourceProvider(provider)
@@ -68,6 +68,6 @@ void MediaStreamWebAudioSource::provideInput(AudioBus* bus, size_t framesToProce
     m_webAudioSourceProvider->provideInput(webAudioData, framesToProcess);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

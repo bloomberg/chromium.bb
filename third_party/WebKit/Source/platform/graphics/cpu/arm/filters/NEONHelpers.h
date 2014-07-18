@@ -31,7 +31,7 @@
 
 #include <arm_neon.h>
 
-namespace WebCore {
+namespace blink {
 
 inline float32x4_t loadRGBA8AsFloat(uint32_t* source)
 {
@@ -48,7 +48,7 @@ inline void storeFloatAsRGBA8(float32x4_t data, uint32_t* destination)
     *destination = vget_lane_u32(vreinterpret_u32_u8(temporary2), 0);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HAVE(ARM_NEON_INTRINSICS)
 

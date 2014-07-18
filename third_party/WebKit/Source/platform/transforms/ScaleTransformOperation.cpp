@@ -24,7 +24,7 @@
 
 #include "platform/animation/AnimationUtilities.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<TransformOperation> ScaleTransformOperation::blend(const TransformOperation* from, double progress, bool blendToIdentity)
 {
@@ -32,17 +32,17 @@ PassRefPtr<TransformOperation> ScaleTransformOperation::blend(const TransformOpe
         return this;
 
     if (blendToIdentity)
-        return ScaleTransformOperation::create(WebCore::blend(m_x, 1.0, progress),
-                                               WebCore::blend(m_y, 1.0, progress),
-                                               WebCore::blend(m_z, 1.0, progress), m_type);
+        return ScaleTransformOperation::create(blink::blend(m_x, 1.0, progress),
+                                               blink::blend(m_y, 1.0, progress),
+                                               blink::blend(m_z, 1.0, progress), m_type);
 
     const ScaleTransformOperation* fromOp = static_cast<const ScaleTransformOperation*>(from);
     double fromX = fromOp ? fromOp->m_x : 1.0;
     double fromY = fromOp ? fromOp->m_y : 1.0;
     double fromZ = fromOp ? fromOp->m_z : 1.0;
-    return ScaleTransformOperation::create(WebCore::blend(fromX, m_x, progress),
-                                           WebCore::blend(fromY, m_y, progress),
-                                           WebCore::blend(fromZ, m_z, progress), m_type);
+    return ScaleTransformOperation::create(blink::blend(fromX, m_x, progress),
+                                           blink::blend(fromY, m_y, progress),
+                                           blink::blend(fromZ, m_z, progress), m_type);
 }
 
 
@@ -55,4 +55,4 @@ bool ScaleTransformOperation::canBlendWith(const TransformOperation& other) cons
         || other.type() == Scale;
 }
 
-} // namespace WebCore
+} // namespace blink

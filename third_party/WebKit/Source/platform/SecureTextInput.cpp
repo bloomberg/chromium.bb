@@ -30,7 +30,7 @@
 
 #import <Carbon/Carbon.h>
 
-namespace WebCore {
+namespace blink {
 
 void enableSecureTextInput()
 {
@@ -46,6 +46,6 @@ void disableSecureTextInput()
     DisableSecureEventInput();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // OS(MACOSX)

@@ -47,7 +47,7 @@
 #endif
 #endif
 
-namespace WebCore {
+namespace blink {
 
 // ImageDecoder is a base for all format-specific decoders
 // (e.g. JPEGImageDecoder). This base manages the ImageFrame cache.
@@ -303,6 +303,6 @@ private:
     bool m_failed;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

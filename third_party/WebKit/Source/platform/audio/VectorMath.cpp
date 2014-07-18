@@ -46,7 +46,7 @@
 #include <math.h>
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 namespace VectorMath {
 
@@ -685,6 +685,6 @@ void vclip(const float* sourceP, int sourceStride, const float* lowThresholdP, c
 
 } // namespace VectorMath
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

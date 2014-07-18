@@ -31,7 +31,7 @@
 
 #include "platform/PlatformExport.h"
 
-namespace WebCore {
+namespace blink {
 
 // ZeroPole is a simple filter with one zero and one pole.
 
@@ -63,6 +63,6 @@ private:
     float m_lastY;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ZeroPole_h

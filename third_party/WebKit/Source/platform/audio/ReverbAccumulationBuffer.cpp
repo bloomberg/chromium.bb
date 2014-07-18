@@ -34,7 +34,7 @@
 
 #include "platform/audio/VectorMath.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace VectorMath;
 
@@ -114,6 +114,6 @@ void ReverbAccumulationBuffer::reset()
     m_readTimeFrame = 0;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

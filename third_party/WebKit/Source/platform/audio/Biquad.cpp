@@ -41,7 +41,7 @@
 #include <Accelerate/Accelerate.h>
 #endif
 
-namespace WebCore {
+namespace blink {
 
 #if OS(MACOSX)
 const int kBufferSize = 1024;
@@ -584,6 +584,6 @@ void Biquad::getFrequencyResponse(int nFrequencies,
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

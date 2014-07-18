@@ -30,7 +30,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 

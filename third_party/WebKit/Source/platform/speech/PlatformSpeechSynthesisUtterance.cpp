@@ -26,7 +26,7 @@
 #include "config.h"
 #include "platform/speech/PlatformSpeechSynthesisUtterance.h"
 
-namespace WebCore {
+namespace blink {
 
 PlatformSpeechSynthesisUtterance* PlatformSpeechSynthesisUtterance::create(PlatformSpeechSynthesisUtteranceClient* client)
 {
@@ -47,4 +47,4 @@ void PlatformSpeechSynthesisUtterance::trace(Visitor* visitor)
     visitor->trace(m_voice);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -30,7 +30,7 @@
 
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 Widget::Widget()
     : m_parent(0)
@@ -202,4 +202,4 @@ IntPoint Widget::convertSelfToChild(const Widget*, const IntPoint& point) const
     return point;
 }
 
-} // namespace WebCore
+} // namespace blink

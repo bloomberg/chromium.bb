@@ -35,7 +35,7 @@
 
 using namespace WTF;
 
-namespace WebCore {
+namespace blink {
 
 #if !OS(ANDROID)
 const unsigned cMaxInactiveFontData = 250;

@@ -37,7 +37,7 @@
 
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 const unsigned maximumFFTPower2Size = 24;
 
@@ -146,7 +146,7 @@ float* FFTFrame::getUpToDateComplexData()
     return const_cast<float*>(m_complexData.data());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // USE(WEBAUDIO_IPP)
 

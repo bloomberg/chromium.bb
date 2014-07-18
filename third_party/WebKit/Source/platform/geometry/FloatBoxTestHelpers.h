@@ -25,7 +25,7 @@
 #define FloatBoxTestHelpers_h
 
 #include <gtest/gtest.h>
-namespace WebCore {
+namespace blink {
 class FloatBox;
 
 void PrintTo(const FloatBox&, ::std::ostream*);
@@ -37,6 +37,6 @@ bool ApproximatelyEqual(const FloatBox&, const FloatBox&);
 ::testing::AssertionResult AssertAlmostEqual(const char*, const char*, const FloatBox&, const FloatBox&);
 ::testing::AssertionResult AssertContains(const char*, const char*, const FloatBox&, const FloatBox&);
 } // namespace FloatBoxTest
-} // namespace WebCore
+} // namespace blink
 
 #endif // FloatBoxTestHelpers_h

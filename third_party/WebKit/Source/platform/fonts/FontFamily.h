@@ -31,7 +31,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class SharedFontFamily;
 

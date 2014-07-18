@@ -91,7 +91,7 @@ bool WebCryptoResult::cancelled() const
     return m_impl->cancelled();
 }
 
-WebCryptoResult::WebCryptoResult(const PassRefPtr<WebCore::CryptoResult>& impl)
+WebCryptoResult::WebCryptoResult(const PassRefPtr<blink::CryptoResult>& impl)
     : m_impl(impl)
 {
     ASSERT(m_impl.get());

@@ -28,7 +28,7 @@
 
 #include "platform/speech/PlatformSpeechSynthesisUtterance.h"
 
-namespace WebCore {
+namespace blink {
 
 WebSpeechSynthesizerClientImpl::WebSpeechSynthesizerClientImpl(PlatformSpeechSynthesizer* synthesizer, PlatformSpeechSynthesizerClient* client)
     : m_synthesizer(synthesizer)
@@ -90,4 +90,4 @@ void WebSpeechSynthesizerClientImpl::trace(Visitor* visitor)
     visitor->trace(m_client);
 }
 
-} // namespace WebCore
+} // namespace blink

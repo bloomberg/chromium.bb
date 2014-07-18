@@ -34,7 +34,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class Widget;
 
@@ -91,6 +91,6 @@ protected:
     virtual ~ScrollbarThemeClient() { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScollbarThemeClient_h

@@ -33,7 +33,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/Uint8ClampedArray.h"
 
-namespace WebCore {
+namespace blink {
 
 FEColorMatrix::FEColorMatrix(Filter* filter, ColorMatrixType type, const Vector<float>& values)
     : FilterEffect(filter)
@@ -239,4 +239,4 @@ TextStream& FEColorMatrix::externalRepresentation(TextStream& ts, int indent) co
     return ts;
 }
 
-} // namespace WebCore
+} // namespace blink

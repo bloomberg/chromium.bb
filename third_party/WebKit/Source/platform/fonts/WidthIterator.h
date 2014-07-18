@@ -30,7 +30,7 @@
 #include "wtf/unicode/Unicode.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class Font;
 class GlyphBuffer;

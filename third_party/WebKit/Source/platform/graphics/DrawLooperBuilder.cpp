@@ -41,7 +41,7 @@
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 DrawLooperBuilder::DrawLooperBuilder() { }
 
@@ -113,4 +113,4 @@ void DrawLooperBuilder::addShadow(const FloatSize& offset, float blur, const Col
     paint->setColorFilter(cf.get());
 }
 
-} // namespace WebCore
+} // namespace blink

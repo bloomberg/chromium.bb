@@ -53,7 +53,7 @@ class WebGraphicsContext3D;
 class WebLayer;
 }
 
-namespace WebCore {
+namespace blink {
 class Extensions3DUtil;
 class ImageData;
 class ImageBuffer;
@@ -300,6 +300,6 @@ private:
     Vector<uint8_t> m_scanline;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DrawingBuffer_h

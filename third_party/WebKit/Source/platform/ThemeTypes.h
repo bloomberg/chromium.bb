@@ -26,7 +26,7 @@
 #ifndef ThemeTypes_h
 #define ThemeTypes_h
 
-namespace WebCore {
+namespace blink {
 
 enum ControlState {
     HoverControlState = 1,

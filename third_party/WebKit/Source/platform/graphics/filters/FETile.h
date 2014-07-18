@@ -26,7 +26,7 @@
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT FETile : public FilterEffect {
 public:
@@ -46,6 +46,6 @@ private:
     virtual void applySoftware() OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FETile_h

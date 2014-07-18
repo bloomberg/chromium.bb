@@ -34,7 +34,7 @@
 #include "platform/geometry/IntRect.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 AffineTransform::AffineTransform()
 {

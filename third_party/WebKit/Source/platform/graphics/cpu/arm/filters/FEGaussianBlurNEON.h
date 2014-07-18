@@ -32,7 +32,7 @@
 #include "platform/graphics/cpu/arm/filters/NEONHelpers.h"
 #include "platform/graphics/filters/FEGaussianBlur.h"
 
-namespace WebCore {
+namespace blink {
 
 inline void boxBlurNEON(Uint8ClampedArray* srcPixelArray, Uint8ClampedArray* dstPixelArray,
                         unsigned dx, int dxLeft, int dxRight, int stride, int strideLine, int effectWidth, int effectHeight)
@@ -71,7 +71,7 @@ inline void boxBlurNEON(Uint8ClampedArray* srcPixelArray, Uint8ClampedArray* dst
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HAVE(ARM_NEON_INTRINSICS)
 

@@ -29,7 +29,7 @@
 
 #include "platform/graphics/skia/NativeImageSkia.h"
 
-namespace WebCore {
+namespace blink {
 
 FrameData::FrameData()
     : m_frame(nullptr)
@@ -63,4 +63,4 @@ bool FrameData::clear(bool clearMetadata)
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

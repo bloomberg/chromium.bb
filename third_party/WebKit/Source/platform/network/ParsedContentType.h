@@ -36,7 +36,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 // <index, length>
 typedef std::pair<unsigned, unsigned> SubstringRange;

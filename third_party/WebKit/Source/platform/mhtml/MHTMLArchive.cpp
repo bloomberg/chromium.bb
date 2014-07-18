@@ -44,7 +44,7 @@
 #include "wtf/text/Base64.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 const char* const quotedPrintable = "quoted-printable";
 const char* const base64 = "base64";

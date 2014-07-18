@@ -78,7 +78,7 @@ mailing address.
 #include <string.h>
 #include "platform/graphics/ImageSource.h"
 
-using WebCore::GIFImageDecoder;
+using blink::GIFImageDecoder;
 
 // GETN(n, s) requests at least 'n' bytes available from 'q', at start of state 's'.
 //
@@ -321,7 +321,7 @@ void GIFColorMap::buildTable(const unsigned char* data, size_t length)
 // Perform decoding for this frame. frameDecoded will be true if the entire frame is decoded.
 // Returns false if a decoding error occurred. This is a fatal error and causes the GIFImageReader to set the "decode failed" flag.
 // Otherwise, either not enough data is available to decode further than before, or the new data has been decoded successfully; returns true in this case.
-bool GIFFrameContext::decode(const unsigned char* data, size_t length, WebCore::GIFImageDecoder* client, bool* frameDecoded)
+bool GIFFrameContext::decode(const unsigned char* data, size_t length, blink::GIFImageDecoder* client, bool* frameDecoded)
 {
     m_localColorMap.buildTable(data, length);
 
@@ -550,11 +550,11 @@ bool GIFImageReader::parseData(size_t dataPosition, size_t len, GIFImageDecoder:
             // matching those in the GIF spec!
             int disposalMethod = ((*currentComponent) >> 2) & 0x7;
             if (disposalMethod < 4) {
-                currentFrame->setDisposalMethod(static_cast<WebCore::ImageFrame::DisposalMethod>(disposalMethod));
+                currentFrame->setDisposalMethod(static_cast<blink::ImageFrame::DisposalMethod>(disposalMethod));
             } else if (disposalMethod == 4) {
                 // Some specs say that disposal method 3 is "overwrite previous", others that setting
                 // the third bit of the field (i.e. method 4) is. We map both to the same value.
-                currentFrame->setDisposalMethod(WebCore::ImageFrame::DisposeOverwritePrevious);
+                currentFrame->setDisposalMethod(blink::ImageFrame::DisposeOverwritePrevious);
             }
             currentFrame->setDelayTime(GETINT16(currentComponent + 1) * 10);
             GETN(1, GIFConsumeBlock);
@@ -604,7 +604,7 @@ bool GIFImageReader::parseData(size_t dataPosition, size_t len, GIFImageDecoder:
 
                 // Zero loop count is infinite animation loop request.
                 if (!m_loopCount)
-                    m_loopCount = WebCore::cAnimationLoopInfinite;
+                    m_loopCount = blink::cAnimationLoopInfinite;
 
                 GETN(1, GIFNetscapeExtensionBlock);
             } else if (netscapeExtension == 2) {

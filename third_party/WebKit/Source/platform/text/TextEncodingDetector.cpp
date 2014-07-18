@@ -35,7 +35,7 @@
 #include <unicode/ucnv.h>
 #include <unicode/ucsdet.h>
 
-namespace WebCore {
+namespace blink {
 
 bool detectTextEncoding(const char* data, size_t length,
     const char* hintEncodingName, WTF::TextEncoding* detectedEncoding)

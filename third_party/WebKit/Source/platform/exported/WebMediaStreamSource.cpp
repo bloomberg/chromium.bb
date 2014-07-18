@@ -41,7 +41,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -65,7 +65,7 @@ WebMediaStreamSource WebMediaStreamSource::ExtraData::owner()
     return WebMediaStreamSource(m_owner);
 }
 
-void WebMediaStreamSource::ExtraData::setOwner(WebCore::MediaStreamSource* owner)
+void WebMediaStreamSource::ExtraData::setOwner(blink::MediaStreamSource* owner)
 {
     ASSERT(!m_owner);
     m_owner = owner;
@@ -76,7 +76,7 @@ WebMediaStreamSource::WebMediaStreamSource(const PassRefPtr<MediaStreamSource>& 
 {
 }
 
-WebMediaStreamSource& WebMediaStreamSource::operator=(WebCore::MediaStreamSource* mediaStreamSource)
+WebMediaStreamSource& WebMediaStreamSource::operator=(blink::MediaStreamSource* mediaStreamSource)
 {
     m_private = mediaStreamSource;
     return *this;
@@ -168,7 +168,7 @@ bool WebMediaStreamSource::requiresAudioConsumer() const
     return m_private->requiresAudioConsumer();
 }
 
-class ConsumerWrapper : public WebCore::AudioDestinationConsumer {
+class ConsumerWrapper : public blink::AudioDestinationConsumer {
 public:
     static PassRefPtr<ConsumerWrapper> create(WebAudioDestinationConsumer* consumer)
     {

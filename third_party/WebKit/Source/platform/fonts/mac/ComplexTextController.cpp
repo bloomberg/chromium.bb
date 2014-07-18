@@ -37,7 +37,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 ComplexTextController::ComplexTextController(const Font* font, const TextRun& run, bool mayUseNaturalWritingDirection, HashSet<const SimpleFontData*>* fallbackFonts, bool forTextEmphasis)
     : m_font(*font)
@@ -613,4 +613,4 @@ void ComplexTextController::adjustGlyphsAndAdvances()
     m_totalWidth += widthSinceLastCommit;
 }
 
-} // namespace WebCore
+} // namespace blink

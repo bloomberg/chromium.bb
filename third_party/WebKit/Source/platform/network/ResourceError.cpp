@@ -32,7 +32,7 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
 
-namespace WebCore {
+namespace blink {
 
 const char errorDomainBlinkInternal[] = "BlinkInternal";
 
@@ -87,4 +87,4 @@ bool ResourceError::compare(const ResourceError& a, const ResourceError& b)
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

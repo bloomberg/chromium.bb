@@ -34,7 +34,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 // Class for allocating the DiscardablePixelRef object.
 class PLATFORM_EXPORT DiscardablePixelRefAllocator : public SkBitmap::Allocator {
@@ -65,6 +65,6 @@ private:
     size_t m_rowBytes;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

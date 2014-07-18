@@ -30,7 +30,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT ContentType {
 public:
@@ -44,6 +44,6 @@ private:
     String m_type;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ContentType_h

@@ -43,7 +43,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 void FFTFrame::doPaddedFFT(const float* data, size_t dataSize)
 {
@@ -292,6 +292,6 @@ void FFTFrame::print()
 }
 #endif // NDEBUG
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

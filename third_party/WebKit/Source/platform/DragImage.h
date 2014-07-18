@@ -31,7 +31,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class FontDescription;
 class Image;

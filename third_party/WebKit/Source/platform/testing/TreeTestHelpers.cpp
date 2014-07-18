@@ -28,7 +28,7 @@
 
 #include <cstdlib>
 
-namespace WebCore {
+namespace blink {
 namespace TreeTestHelpers {
 
 void initRandom(const int32_t seed)
@@ -43,4 +43,4 @@ int32_t nextRandom(const int32_t maximumValue)
 }
 
 } // namespace TreeTestHelpers
-} // namespace WebCore
+} // namespace blink

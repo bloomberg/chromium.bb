@@ -34,7 +34,7 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/RoundedRect.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT FloatRoundedRect {
 public:
@@ -132,6 +132,6 @@ inline bool operator==(const FloatRoundedRect& a, const FloatRoundedRect& b)
     return a.rect() == b.rect() && a.radii() == b.radii();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FloatRoundedRect_h

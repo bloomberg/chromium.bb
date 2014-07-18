@@ -34,7 +34,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 UnacceleratedImageBufferSurface::UnacceleratedImageBufferSurface(const IntSize& size, OpacityMode opacityMode)
     : ImageBufferSurface(size, opacityMode)
@@ -56,4 +56,4 @@ bool UnacceleratedImageBufferSurface::isValid() const
     return m_surface;
 }
 
-} // namespace WebCore
+} // namespace blink

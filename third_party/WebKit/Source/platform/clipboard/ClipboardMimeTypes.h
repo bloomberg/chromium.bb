@@ -33,7 +33,7 @@
 
 #include "platform/PlatformExport.h"
 
-namespace WebCore {
+namespace blink {
 
 PLATFORM_EXPORT extern const char mimeTypeText[];
 PLATFORM_EXPORT extern const char mimeTypeTextPlain[];
@@ -45,6 +45,6 @@ PLATFORM_EXPORT extern const char mimeTypeDownloadURL[];
 PLATFORM_EXPORT extern const char mimeTypeFiles[];
 PLATFORM_EXPORT extern const char mimeTypeImagePng[];
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

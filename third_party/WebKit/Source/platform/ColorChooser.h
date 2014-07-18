@@ -32,7 +32,7 @@
 
 #include "platform/PlatformExport.h"
 
-namespace WebCore {
+namespace blink {
 
 class Color;
 
@@ -45,6 +45,6 @@ public:
     virtual void endChooser() { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ColorChooser_h

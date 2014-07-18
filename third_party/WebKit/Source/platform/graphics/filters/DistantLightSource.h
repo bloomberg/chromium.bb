@@ -25,7 +25,7 @@
 
 #include "platform/graphics/filters/LightSource.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT DistantLightSource : public LightSource {
 public:
@@ -62,6 +62,6 @@ private:
     float m_elevation;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DistantLightSource_h

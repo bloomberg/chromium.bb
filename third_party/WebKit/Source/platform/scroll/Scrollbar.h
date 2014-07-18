@@ -33,7 +33,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class GraphicsContext;
 class IntRect;
@@ -198,6 +198,6 @@ private:
 
 DEFINE_TYPE_CASTS(Scrollbar, Widget, widget, widget->isScrollbar(), widget.isScrollbar());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Scrollbar_h

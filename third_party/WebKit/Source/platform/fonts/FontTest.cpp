@@ -32,7 +32,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 static void TestSpecificUCharRange(UChar rangeStart, UChar rangeEnd)
 {
@@ -362,5 +362,5 @@ TEST(FontTest, TestIsCJKIdeographOrSymbol)
     TestSpecificUChar32RangeIdeographSymbol(0x1F200, 0x1F6FF);
 }
 
-} // namespace WebCore
+} // namespace blink
 

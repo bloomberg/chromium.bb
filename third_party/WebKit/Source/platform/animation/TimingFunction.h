@@ -37,7 +37,7 @@
 #include "wtf/text/WTFString.h"
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT TimingFunction : public RefCounted<TimingFunction> {
 public:
@@ -257,6 +257,6 @@ DEFINE_TIMING_FUNCTION_TYPE_CASTS(Linear);
 DEFINE_TIMING_FUNCTION_TYPE_CASTS(CubicBezier);
 DEFINE_TIMING_FUNCTION_TYPE_CASTS(Steps);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TimingFunction_h

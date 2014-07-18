@@ -28,7 +28,7 @@
 
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 enum FontWidthVariant {
     RegularWidth,
@@ -42,6 +42,6 @@ const unsigned FontWidthVariantWidth = 2;
 
 COMPILE_ASSERT(LastFontWidthVariant >> FontWidthVariantWidth == 0, FontWidthVariantWidth_is_correct);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FontWidthVariant_h

@@ -34,7 +34,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class FontPlatformData;
 class GlyphPage;
@@ -73,7 +73,7 @@ private:
     bool m_inFontCache; // for mark & sweep in FontCache::purgeInactiveFontData()
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(OPENTYPE_VERTICAL)
 

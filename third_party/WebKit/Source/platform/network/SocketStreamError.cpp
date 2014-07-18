@@ -31,7 +31,7 @@
 #include "config.h"
 #include "platform/network/SocketStreamError.h"
 
-namespace WebCore {
+namespace blink {
 
 bool SocketStreamError::compare(const SocketStreamError& a, const SocketStreamError& b)
 {
@@ -53,4 +53,4 @@ bool SocketStreamError::compare(const SocketStreamError& a, const SocketStreamEr
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

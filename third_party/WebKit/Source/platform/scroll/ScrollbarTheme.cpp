@@ -43,7 +43,7 @@
 #include "public/platform/WebThemeEngine.h"
 #endif
 
-namespace WebCore {
+namespace blink {
 
 bool ScrollbarTheme::gMockScrollbarsEnabled = false;
 

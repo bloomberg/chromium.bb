@@ -34,7 +34,7 @@
 #include "public/platform/WebString.h"
 #include "wtf/Vector.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -58,23 +58,23 @@ WebMediaStreamTrack WebMediaStreamTrack::ExtraData::owner()
     return WebMediaStreamTrack(m_owner);
 }
 
-void WebMediaStreamTrack::ExtraData::setOwner(WebCore::MediaStreamComponent* owner)
+void WebMediaStreamTrack::ExtraData::setOwner(blink::MediaStreamComponent* owner)
 {
     ASSERT(!m_owner);
     m_owner = owner;
 }
 
-WebMediaStreamTrack::WebMediaStreamTrack(PassRefPtr<WebCore::MediaStreamComponent> mediaStreamComponent)
+WebMediaStreamTrack::WebMediaStreamTrack(PassRefPtr<blink::MediaStreamComponent> mediaStreamComponent)
     : m_private(mediaStreamComponent)
 {
 }
 
-WebMediaStreamTrack::WebMediaStreamTrack(WebCore::MediaStreamComponent* mediaStreamComponent)
+WebMediaStreamTrack::WebMediaStreamTrack(blink::MediaStreamComponent* mediaStreamComponent)
     : m_private(mediaStreamComponent)
 {
 }
 
-WebMediaStreamTrack& WebMediaStreamTrack::operator=(WebCore::MediaStreamComponent* mediaStreamComponent)
+WebMediaStreamTrack& WebMediaStreamTrack::operator=(blink::MediaStreamComponent* mediaStreamComponent)
 {
     m_private = mediaStreamComponent;
     return *this;

@@ -33,7 +33,7 @@
 
 #include <gtest/gtest.h>
 
-using WebCore::SegmentedString;
+using blink::SegmentedString;
 
 namespace {
 

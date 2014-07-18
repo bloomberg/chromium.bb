@@ -34,7 +34,7 @@
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 struct Referrer {
     Referrer(const String& referrer, ReferrerPolicy referrerPolicy) : referrer(referrer), referrerPolicy(referrerPolicy) { }

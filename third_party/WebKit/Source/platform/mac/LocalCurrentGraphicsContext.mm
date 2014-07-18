@@ -24,7 +24,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform_canvas.h"
 
-namespace WebCore {
+namespace blink {
 
 LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(GraphicsContext* graphicsContext)
     : m_didSetGraphicsContext(false)

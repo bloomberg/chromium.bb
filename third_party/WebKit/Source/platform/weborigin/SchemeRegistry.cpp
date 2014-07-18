@@ -30,7 +30,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 static URLSchemesMap& localURLSchemes()
 {
@@ -291,4 +291,4 @@ bool SchemeRegistry::schemeShouldBypassContentSecurityPolicy(const String& schem
     return ContentSecurityPolicyBypassingSchemes().contains(scheme);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -32,7 +32,7 @@
 
 #include <windows.h>
 
-namespace WebCore {
+namespace blink {
 
 #ifndef _WIN32_WINNT_WINBLUE
 static bool IsWindowsVistaOrGreater()
@@ -60,4 +60,4 @@ bool isWindowsVistaOrGreater()
     return cachedIsWindowsVistaOrGreater;
 }
 
-} // namespace WebCore
+} // namespace blink

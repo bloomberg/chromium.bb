@@ -36,7 +36,7 @@
 #include "wtf/text/WTFString.h"
 #include <stdint.h>
 
-namespace WebCore {
+namespace blink {
 
 namespace DecimalPrivate {
 class SpecialValueHandler;
@@ -177,6 +177,6 @@ private:
     EncodedData m_data;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Decimal_h

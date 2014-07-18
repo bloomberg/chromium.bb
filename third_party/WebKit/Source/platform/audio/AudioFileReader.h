@@ -32,7 +32,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioBus;
 
@@ -48,6 +48,6 @@ PLATFORM_EXPORT PassRefPtr<AudioBus> createBusFromAudioFile(const char* filePath
 // May pass in 0.0 for sampleRate in which case it will use the AudioBus's sampleRate
 PLATFORM_EXPORT void writeBusToAudioFile(AudioBus* bus, const char* filePath, double fileSampleRate);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioFileReader_h

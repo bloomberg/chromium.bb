@@ -39,7 +39,7 @@
 typedef Vector<SkScalar, 8> ColorStopOffsetVector;
 typedef Vector<SkColor, 8> ColorStopColorVector;
 
-namespace WebCore {
+namespace blink {
 
 Gradient::Gradient(const FloatPoint& p0, const FloatPoint& p1)
     : m_p0(p0)

@@ -26,10 +26,10 @@
 #include "config.h"
 #include "platform/fonts/FontData.h"
 
-namespace WebCore {
+namespace blink {
 
 FontData::~FontData()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

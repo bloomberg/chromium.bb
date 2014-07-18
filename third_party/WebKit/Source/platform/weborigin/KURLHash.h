@@ -30,7 +30,7 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 struct KURLHash {
     static unsigned hash(const KURL& key)
@@ -46,11 +46,11 @@ struct KURLHash {
     static const bool safeToCompareToEmptyOrDeleted = false;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 namespace WTF {
 
-template<> struct HashTraits<WebCore::KURL> : SimpleClassHashTraits<WebCore::KURL> { };
+template<> struct HashTraits<blink::KURL> : SimpleClassHashTraits<blink::KURL> { };
 
 } // namespace WTF
 

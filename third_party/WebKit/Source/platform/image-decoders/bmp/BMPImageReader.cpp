@@ -64,7 +64,7 @@ const uint8_t nBitTo8BitlookupTable[] = {
 
 }
 
-namespace WebCore {
+namespace blink {
 
 BMPImageReader::BMPImageReader(ImageDecoder* parent, size_t decodedAndHeaderOffset, size_t imgDataOffset, bool isInICO)
     : m_parent(parent)
@@ -798,4 +798,4 @@ void BMPImageReader::moveBufferToNextRow()
     m_coord.move(-m_coord.x(), m_isTopDown ? 1 : -1);
 }
 
-} // namespace WebCore
+} // namespace blink

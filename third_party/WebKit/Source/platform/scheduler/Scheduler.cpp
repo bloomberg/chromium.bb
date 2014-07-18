@@ -10,7 +10,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -114,4 +114,4 @@ bool Scheduler::shouldYieldForHighPriorityWork()
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

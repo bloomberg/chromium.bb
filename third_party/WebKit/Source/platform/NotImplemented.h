@@ -33,14 +33,14 @@
     #define notImplemented() ((void)0)
 #else
 
-namespace WebCore {
+namespace blink {
 PLATFORM_EXPORT WTFLogChannel* notImplementedLoggingChannel();
 }
 
 #define notImplemented() do { \
         static bool havePrinted = false; \
         if (!havePrinted) { \
-            WTFLogVerbose(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, WebCore::notImplementedLoggingChannel(), "UNIMPLEMENTED: "); \
+            WTFLogVerbose(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, blink::notImplementedLoggingChannel(), "UNIMPLEMENTED: "); \
             havePrinted = true; \
         } \
     } while (0)

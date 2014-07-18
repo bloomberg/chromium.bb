@@ -30,7 +30,7 @@
 
 #include <arm_neon.h>
 
-namespace WebCore {
+namespace blink {
 
 namespace SIMD {
 
@@ -297,7 +297,7 @@ ALWAYS_INLINE void packOneRowOfRGBA8ToUnsignedShort565(const uint8_t*& source, u
 
 } // namespace SIMD
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HAVE(ARM_NEON_INTRINSICS)
 

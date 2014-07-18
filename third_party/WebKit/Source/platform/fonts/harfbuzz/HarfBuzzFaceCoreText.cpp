@@ -38,7 +38,7 @@
 #include <ApplicationServices/ApplicationServices.h>
 #include "hb.h"
 
-namespace WebCore {
+namespace blink {
 
 static hb_position_t floatToHarfBuzzPosition(CGFloat value)
 {
@@ -141,4 +141,4 @@ hb_font_t* HarfBuzzFace::createFont()
     return font;
 }
 
-} // namespace WebCore
+} // namespace blink

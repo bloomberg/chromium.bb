@@ -39,7 +39,7 @@
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 Path::Path()
     : m_path()

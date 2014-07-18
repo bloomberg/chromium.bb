@@ -39,7 +39,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 class BitmapImageTest : public ::testing::Test {
 public:

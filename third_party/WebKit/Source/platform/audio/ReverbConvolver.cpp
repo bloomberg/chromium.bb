@@ -38,7 +38,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace VectorMath;
 
@@ -196,6 +196,6 @@ size_t ReverbConvolver::latencyFrames() const
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

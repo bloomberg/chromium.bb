@@ -28,7 +28,7 @@
 
 #include "platform/PODArena.h"
 
-namespace WebCore {
+namespace blink {
 
 template <class T>
 class PODFreeListArena : public RefCounted<PODFreeListArena<T> > {
@@ -125,6 +125,6 @@ private:
     friend class PODFreeListArenaTest;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -48,7 +48,7 @@
 class SkCanvas;
 class SkRegion;
 
-namespace WebCore {
+namespace blink {
 
 class GraphicsContext;
 
@@ -91,6 +91,6 @@ bool PLATFORM_EXPORT SkPathContainsPoint(const SkPath&, const FloatPoint&, SkPat
 
 SkMatrix PLATFORM_EXPORT affineTransformToSkMatrix(const AffineTransform&);
 
-}  // namespace WebCore
+}  // namespace blink
 
 #endif  // SkiaUtils_h

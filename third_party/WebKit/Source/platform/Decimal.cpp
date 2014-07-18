@@ -38,7 +38,7 @@
 #include <algorithm>
 #include <float.h>
 
-namespace WebCore {
+namespace blink {
 
 namespace DecimalPrivate {
 
@@ -1023,4 +1023,4 @@ Decimal Decimal::zero(Sign sign)
     return Decimal(EncodedData(sign, EncodedData::ClassZero));
 }
 
-} // namespace WebCore
+} // namespace blink

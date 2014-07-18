@@ -30,7 +30,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 class Locale;
@@ -45,6 +45,6 @@ PLATFORM_EXPORT void getSupportedKeySizes(Locale&, Vector<String>& sizes);
 // key (from a newly generated key pair).
 PLATFORM_EXPORT String signedPublicKeyAndChallengeString(unsigned keySizeIndex, const String& challengeString, const KURL&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SSLKeyGenerator_h

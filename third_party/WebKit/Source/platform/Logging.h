@@ -36,7 +36,7 @@
 #define LOG_CHANNEL_PREFIX Log
 #endif
 
-namespace WebCore {
+namespace blink {
 
 PLATFORM_EXPORT extern WTFLogChannel LogNotYetImplemented;
 PLATFORM_EXPORT extern WTFLogChannel LogFrames;

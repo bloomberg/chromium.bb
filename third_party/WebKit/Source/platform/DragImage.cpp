@@ -53,7 +53,7 @@
 
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 const float kDragLabelBorderX = 4;
 // Keep border_y in synch with DragController::LinkDragBorderInset.
@@ -269,4 +269,4 @@ void DragImage::dissolveToFraction(float fraction)
     }
 }
 
-} // namespace WebCore
+} // namespace blink

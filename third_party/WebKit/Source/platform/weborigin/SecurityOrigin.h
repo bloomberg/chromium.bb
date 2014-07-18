@@ -33,7 +33,7 @@
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 class SecurityOriginCache;
@@ -225,6 +225,6 @@ private:
     bool m_needsDatabaseIdentifierQuirkForFiles;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SecurityOrigin_h

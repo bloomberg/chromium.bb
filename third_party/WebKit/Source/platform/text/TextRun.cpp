@@ -26,7 +26,7 @@
 #include "config.h"
 #include "platform/text/TextRun.h"
 
-namespace WebCore {
+namespace blink {
 
 struct ExpectedTextRunSize {
     const void* pointer;

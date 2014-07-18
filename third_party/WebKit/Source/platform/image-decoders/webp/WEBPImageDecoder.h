@@ -34,7 +34,7 @@
 #include "webp/decode.h"
 #include "webp/demux.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT WEBPImageDecoder : public ImageDecoder {
 public:
@@ -89,6 +89,6 @@ private:
     void clearDecoder();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

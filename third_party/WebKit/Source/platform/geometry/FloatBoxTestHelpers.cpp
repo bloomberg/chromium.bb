@@ -28,7 +28,7 @@
 #include "platform/geometry/FloatBox.h"
 const static float kTestEpsilon = 1e-6;
 
-void WebCore::PrintTo(const FloatBox& box, ::std::ostream* os)
+void blink::PrintTo(const FloatBox& box, ::std::ostream* os)
 {
     *os << "FloatBox("
         << box.x() << ", "
@@ -39,7 +39,7 @@ void WebCore::PrintTo(const FloatBox& box, ::std::ostream* os)
         << box.depth() << ")";
 }
 
-bool WebCore::FloatBoxTest::ApproximatelyEqual(const float& a, const float& b)
+bool blink::FloatBoxTest::ApproximatelyEqual(const float& a, const float& b)
 {
     float absA = ::fabs(a);
     float absB = ::fabs(b);
@@ -53,7 +53,7 @@ bool WebCore::FloatBoxTest::ApproximatelyEqual(const float& a, const float& b)
     return ((absErr / (absA + absB)) < kTestEpsilon);
 }
 
-bool WebCore::FloatBoxTest::ApproximatelyEqual(const FloatBox& a, const FloatBox& b)
+bool blink::FloatBoxTest::ApproximatelyEqual(const FloatBox& a, const FloatBox& b)
 {
     if (!ApproximatelyEqual(a.x(), b.x())
         || !ApproximatelyEqual(a.y(), b.y())
@@ -66,7 +66,7 @@ bool WebCore::FloatBoxTest::ApproximatelyEqual(const FloatBox& a, const FloatBox
     return true;
 }
 
-::testing::AssertionResult WebCore::FloatBoxTest::AssertAlmostEqual(const char* m_expr, const char* n_expr, const FloatBox& m, const FloatBox& n)
+::testing::AssertionResult blink::FloatBoxTest::AssertAlmostEqual(const char* m_expr, const char* n_expr, const FloatBox& m, const FloatBox& n)
 {
     if (!ApproximatelyEqual(m, n)) {
         return ::testing::AssertionFailure() << "       Value of:" << n_expr << std::endl
@@ -77,7 +77,7 @@ bool WebCore::FloatBoxTest::ApproximatelyEqual(const FloatBox& a, const FloatBox
     return ::testing::AssertionSuccess();
 }
 
-::testing::AssertionResult WebCore::FloatBoxTest::AssertContains(const char* m_expr, const char* n_expr, const FloatBox& m, const FloatBox& n)
+::testing::AssertionResult blink::FloatBoxTest::AssertContains(const char* m_expr, const char* n_expr, const FloatBox& m, const FloatBox& n)
 {
     FloatBox newM = m;
     newM.expandTo(n);

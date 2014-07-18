@@ -43,7 +43,7 @@ namespace blink {
 class WebAudioSourceProvider;
 }
 
-namespace WebCore {
+namespace blink {
 
 class MediaStreamDescriptor;
 class MediaStreamSource;
@@ -89,11 +89,11 @@ private:
 
         virtual ~AudioSourceProviderImpl() { }
 
-        // Wraps the given blink::WebAudioSourceProvider to WebCore::AudioSourceProvider.
+        // Wraps the given blink::WebAudioSourceProvider to blink::AudioSourceProvider.
         void wrap(blink::WebAudioSourceProvider*);
 
-        // WebCore::AudioSourceProvider
-        virtual void provideInput(WebCore::AudioBus*, size_t framesToProcess) OVERRIDE;
+        // blink::AudioSourceProvider
+        virtual void provideInput(blink::AudioBus*, size_t framesToProcess) OVERRIDE;
 
     private:
         blink::WebAudioSourceProvider* m_webAudioSourceProvider;
@@ -112,6 +112,6 @@ private:
 
 typedef Vector<RefPtr<MediaStreamComponent> > MediaStreamComponentVector;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaStreamComponent_h

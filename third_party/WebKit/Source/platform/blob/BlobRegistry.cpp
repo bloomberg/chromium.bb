@@ -54,7 +54,7 @@ using blink::WebBlobRegistry;
 using blink::WebThreadSafeData;
 using WTF::ThreadSpecific;
 
-namespace WebCore {
+namespace blink {
 
 class BlobOriginCache : public SecurityOriginCache {
 public:
@@ -288,4 +288,4 @@ SecurityOrigin* BlobOriginCache::cachedOrigin(const KURL& url)
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink

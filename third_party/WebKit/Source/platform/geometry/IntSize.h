@@ -38,7 +38,7 @@ typedef struct CGSize CGSize;
 #endif
 #endif
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT IntSize {
 public:
@@ -167,6 +167,6 @@ inline bool operator!=(const IntSize& a, const IntSize& b)
     return a.width() != b.width() || a.height() != b.height();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IntSize_h

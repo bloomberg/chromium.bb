@@ -37,7 +37,7 @@
 using namespace WTF;
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 class LineBreakIteratorPool {
     WTF_MAKE_NONCOPYABLE(LineBreakIteratorPool);

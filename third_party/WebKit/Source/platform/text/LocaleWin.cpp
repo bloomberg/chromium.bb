@@ -47,7 +47,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 typedef LCID (WINAPI* LocaleNameToLCIDPtr)(LPCWSTR, DWORD);
 typedef HashMap<String, LCID> NameToLCIDMap;

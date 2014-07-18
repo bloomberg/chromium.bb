@@ -35,7 +35,7 @@
 
 #include "platform/UUID.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<MediaStreamDescriptor> MediaStreamDescriptor::create(const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
 {
@@ -124,5 +124,5 @@ MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStream
         m_videoComponents.append((*iter));
 }
 
-} // namespace WebCore
+} // namespace blink
 

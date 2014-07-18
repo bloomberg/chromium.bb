@@ -9,7 +9,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/TemporaryChange.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT ScriptForbiddenScope {
 public:
@@ -27,6 +27,6 @@ public:
     static bool isScriptForbidden();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptForbiddenScope_h

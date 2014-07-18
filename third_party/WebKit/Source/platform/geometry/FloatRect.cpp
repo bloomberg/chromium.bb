@@ -36,7 +36,7 @@
 #include <algorithm>
 #include <math.h>
 
-namespace WebCore {
+namespace blink {
 
 FloatRect::FloatRect(const IntRect& r) : m_location(r.location()), m_size(r.size())
 {

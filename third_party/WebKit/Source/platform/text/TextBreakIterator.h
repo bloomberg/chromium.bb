@@ -28,7 +28,7 @@
 
 #include <unicode/brkiter.h>
 
-namespace WebCore {
+namespace blink {
 
 typedef icu::BreakIterator TextBreakIterator;
 

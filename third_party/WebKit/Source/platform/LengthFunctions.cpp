@@ -27,7 +27,7 @@
 #include "platform/LayoutUnit.h"
 #include "platform/LengthSize.h"
 
-namespace WebCore {
+namespace blink {
 
 int intValueForLength(const Length& length, LayoutUnit maximumValue)
 {
@@ -129,4 +129,4 @@ FloatSize floatSizeForLengthSize(const LengthSize& lengthSize, const FloatSize& 
     return FloatSize(floatValueForLength(lengthSize.width(), boxSize.width()), floatValueForLength(lengthSize.height(), boxSize.height()));
 }
 
-} // namespace WebCore
+} // namespace blink

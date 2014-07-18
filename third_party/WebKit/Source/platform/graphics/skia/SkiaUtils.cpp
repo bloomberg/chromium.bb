@@ -37,7 +37,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 
-namespace WebCore {
+namespace blink {
 
 static const struct CompositOpToXfermodeMode {
     uint8_t mCompositOp;
@@ -189,4 +189,4 @@ SkMatrix affineTransformToSkMatrix(const AffineTransform& source)
     return result;
 }
 
-}  // namespace WebCore
+}  // namespace blink

@@ -30,7 +30,7 @@
 #include "platform/audio/HRTFDatabaseLoader.h"
 #include "platform/audio/Panner.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT HRTFPanner : public Panner {
 public:
@@ -104,6 +104,6 @@ private:
     AudioFloatArray m_tempR2;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HRTFPanner_h

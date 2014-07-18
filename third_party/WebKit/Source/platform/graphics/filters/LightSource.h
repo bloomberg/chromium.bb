@@ -29,7 +29,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 enum LightType {
     LS_DISTANT,
@@ -86,6 +86,6 @@ private:
     LightType m_type;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LightSource_h

@@ -34,7 +34,7 @@
 #include "platform/fonts/FontDescription.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 // We currently do not support bitmap fonts on windows.
 // Instead of trying to construct a bitmap font and then going down the fallback path map
@@ -131,6 +131,6 @@ inline const AtomicString getFallbackFontFamily(const FontDescription& descripti
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AlternateFontFamily_h

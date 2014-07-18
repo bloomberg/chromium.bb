@@ -31,10 +31,10 @@
 
 #include "platform/graphics/filters/LightSource.h"
 
-namespace WebCore {
+namespace blink {
 
 LightSource::~LightSource()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

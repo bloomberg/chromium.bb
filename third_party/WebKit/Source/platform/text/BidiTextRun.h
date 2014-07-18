@@ -35,12 +35,12 @@
 #include "platform/text/TextRun.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 PLATFORM_EXPORT TextDirection directionForRun(TextRun&, bool& hasStrongDirectionality);
 PLATFORM_EXPORT TextDirection determineDirectionality(const String& value, bool& hasStrongDirectionality);
 PLATFORM_EXPORT TextRun textRunWithDirectionality(const String& value, bool& hasStrongDirectionality);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BidiTextRun_h

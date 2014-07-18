@@ -25,7 +25,7 @@
 
 #include "platform/geometry/FloatPoint.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT FloatPoint3D {
 public:
@@ -182,6 +182,6 @@ inline float FloatPoint3D::distanceTo(const FloatPoint3D& a) const
     return (*this - a).length();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FloatPoint3D_h

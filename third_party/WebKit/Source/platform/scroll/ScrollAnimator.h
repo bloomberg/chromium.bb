@@ -39,7 +39,7 @@
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class FloatPoint;
 class ScrollableArea;
@@ -114,6 +114,6 @@ private:
     float clampScrollPosition(ScrollbarOrientation, float);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScrollAnimator_h

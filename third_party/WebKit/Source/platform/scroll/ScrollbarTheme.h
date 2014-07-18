@@ -30,7 +30,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/scroll/ScrollTypes.h"
 
-namespace WebCore {
+namespace blink {
 
 class GraphicsContext;
 class PlatformMouseEvent;

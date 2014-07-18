@@ -38,7 +38,7 @@
 #include "platform/audio/VectorMath.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace VectorMath;
 
@@ -179,6 +179,6 @@ void ReverbConvolverStage::reset()
     m_framesProcessed = 0;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

@@ -32,7 +32,7 @@
 
 #include "platform/geometry/FloatRect.h"
 
-namespace WebCore {
+namespace blink {
 
 class FloatBoxExtent {
 public:
@@ -119,7 +119,7 @@ inline void operator+=(FloatBoxExtent& a, const FloatBoxExtent& b)
     a.setLeft(a.left() + b.left());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // FloatBoxExtent_h

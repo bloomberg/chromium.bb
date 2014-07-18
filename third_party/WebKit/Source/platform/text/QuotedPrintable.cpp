@@ -33,7 +33,7 @@
 
 #include "wtf/ASCIICType.h"
 
-namespace WebCore {
+namespace blink {
 
 static const size_t maximumLineLength = 76;
 

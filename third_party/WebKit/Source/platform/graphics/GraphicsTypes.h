@@ -31,7 +31,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 enum StrokeStyle {
     NoStroke,
@@ -123,6 +123,6 @@ PLATFORM_EXPORT bool parseTextAlign(const String&, TextAlign&);
 PLATFORM_EXPORT String textBaselineName(TextBaseline);
 PLATFORM_EXPORT bool parseTextBaseline(const String&, TextBaseline&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

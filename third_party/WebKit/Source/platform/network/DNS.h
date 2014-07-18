@@ -30,10 +30,10 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 PLATFORM_EXPORT void prefetchDNS(const String& hostname);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

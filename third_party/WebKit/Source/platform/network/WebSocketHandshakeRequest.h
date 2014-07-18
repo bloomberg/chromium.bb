@@ -38,7 +38,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTTPHeaderMap;
 
@@ -75,6 +75,6 @@ private:
     String m_headersText;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebSocketHandshakeRequest_h

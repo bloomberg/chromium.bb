@@ -32,7 +32,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 CrossfadeGeneratedImage::CrossfadeGeneratedImage(Image* fromImage, Image* toImage, float percentage, IntSize crossfadeSize, const IntSize& size)
     : m_fromImage(fromImage)

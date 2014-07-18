@@ -33,7 +33,7 @@
 
 #include <stdint.h>
 
-namespace WebCore {
+namespace blink {
 namespace TreeTestHelpers {
 
 // Initializes the pseudo-random number generator with a specific seed.
@@ -45,6 +45,6 @@ void initRandom(const int32_t seed);
 int32_t nextRandom(const int32_t maximumValue);
 
 } // namespace TreeTestHelpers
-} // namespace WebCore
+} // namespace blink
 
 #endif // TreeTestHelpers_h

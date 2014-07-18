@@ -9,7 +9,7 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -98,4 +98,4 @@ bool Extensions3DUtil::canUseCopyTextureCHROMIUM(GLenum destFormat, GLenum destT
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

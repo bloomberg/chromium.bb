@@ -36,7 +36,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT ArchiveResource FINAL : public RefCountedWillBeGarbageCollectedFinalized<ArchiveResource> {
 public:

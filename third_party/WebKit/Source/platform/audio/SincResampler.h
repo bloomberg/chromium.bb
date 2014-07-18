@@ -33,7 +33,7 @@
 #include "platform/audio/AudioArray.h"
 #include "platform/audio/AudioSourceProvider.h"
 
-namespace WebCore {
+namespace blink {
 
 // SincResampler is a high-quality sample-rate converter.
 
@@ -82,6 +82,6 @@ protected:
     bool m_isBufferPrimed;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SincResampler_h

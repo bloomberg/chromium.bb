@@ -33,7 +33,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 const size_t AudioResamplerKernel::MaxFramesToProcess = 128;
 
@@ -138,6 +138,6 @@ double AudioResamplerKernel::rate() const
     return m_resampler->rate();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

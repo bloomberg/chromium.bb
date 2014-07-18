@@ -37,7 +37,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioChannel;
 
@@ -93,6 +93,6 @@ private:
 
 typedef Vector<RefPtr<HRTFKernel> > HRTFKernelList;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HRTFKernel_h

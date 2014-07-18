@@ -30,7 +30,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 SegmentedFontData::~SegmentedFontData()
 {
@@ -106,4 +106,4 @@ String SegmentedFontData::description() const
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

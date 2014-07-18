@@ -49,7 +49,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 // Global resource ceiling (expressed in terms of pixels) for DrawingBuffer creation and resize.
@@ -1069,4 +1069,4 @@ void DrawingBuffer::deleteChromiumImageForTexture(TextureInfo* info)
     }
 }
 
-} // namespace WebCore
+} // namespace blink

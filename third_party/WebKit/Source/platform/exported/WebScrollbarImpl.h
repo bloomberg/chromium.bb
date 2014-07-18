@@ -28,7 +28,7 @@
 #include "platform/PlatformExport.h"
 #include "public/platform/WebScrollbar.h"
 
-namespace WebCore {
+namespace blink {
 class Scrollbar;
 }
 
@@ -36,7 +36,7 @@ namespace blink {
 
 class PLATFORM_EXPORT WebScrollbarImpl : public WebScrollbar {
 public:
-    explicit WebScrollbarImpl(WebCore::Scrollbar*);
+    explicit WebScrollbarImpl(blink::Scrollbar*);
 
     // Implement blink::WebScrollbar methods
     virtual bool isOverlay() const OVERRIDE;
@@ -60,7 +60,7 @@ public:
     virtual void setIsAlphaLocked(bool) OVERRIDE;
 
 private:
-    RefPtr<WebCore::Scrollbar> m_scrollbar;
+    RefPtr<blink::Scrollbar> m_scrollbar;
 };
 
 } // namespace blink

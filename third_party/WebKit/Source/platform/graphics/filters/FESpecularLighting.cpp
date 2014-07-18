@@ -26,7 +26,7 @@
 #include "platform/graphics/filters/LightSource.h"
 #include "platform/text/TextStream.h"
 
-namespace WebCore {
+namespace blink {
 
 FESpecularLighting::FESpecularLighting(Filter* filter, const Color& lightingColor, float surfaceScale,
     float specularConstant, float specularExponent, float kernelUnitLengthX,
@@ -149,4 +149,4 @@ TextStream& FESpecularLighting::externalRepresentation(TextStream& ts, int inden
     return ts;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -40,7 +40,7 @@
 #include "SkPoint.h"
 #include "SkRect.h"
 
-namespace WebCore {
+namespace blink {
 class GraphicsContext;
 
 // This class is an encapsulation of functionality for GraphicsContext, and its methods are mirrored

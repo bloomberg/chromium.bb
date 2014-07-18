@@ -28,7 +28,7 @@
 
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 static void appendProxyServerString(StringBuilder& builder, const ProxyServer& proxyServer)
 {
@@ -72,4 +72,4 @@ String toString(const Vector<ProxyServer>& proxyServers)
 }
 
 
-} // namespace WebCore
+} // namespace blink

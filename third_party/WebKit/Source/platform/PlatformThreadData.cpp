@@ -35,7 +35,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadSpecific.h"
 
-namespace WebCore {
+namespace blink {
 
 static ThreadSpecific<PlatformThreadData>* s_data;
 
@@ -60,4 +60,4 @@ PlatformThreadData& PlatformThreadData::current()
     return **s_data;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -34,7 +34,7 @@
 #include <limits>
 #include <math.h>
 
-namespace WebCore {
+namespace blink {
 
 // Skia has problems when passed infinite, etc floats, filter them to 0.
 static inline SkScalar WebCoreFloatToSkScalar(float f)

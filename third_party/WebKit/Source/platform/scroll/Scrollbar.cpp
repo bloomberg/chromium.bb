@@ -43,7 +43,7 @@ using namespace std;
 #define THUMB_POSITION_AFFECTS_BUTTONS
 #endif
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<Scrollbar> Scrollbar::create(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize size)
 {
@@ -603,4 +603,4 @@ float Scrollbar::scrollableAreaCurrentPos() const
     return m_scrollableArea->scrollPosition().y() - m_scrollableArea->minimumScrollPosition().y();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -23,7 +23,7 @@
 
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 GraphicsLayerDebugInfo::GraphicsLayerDebugInfo()
     : m_compositingReasons(CompositingReasonNone)
@@ -96,4 +96,4 @@ void GraphicsLayerDebugInfo::appendOwnerNodeId(JSONObject* jsonObject) const
     jsonObject->setNumber("owner_node", m_ownerNodeId);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -41,7 +41,7 @@
 
 class SkShader;
 
-namespace WebCore {
+namespace blink {
 
 class FloatRect;
 class IntSize;
@@ -145,6 +145,6 @@ private:
     RefPtr<SkShader> m_gradient;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

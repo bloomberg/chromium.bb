@@ -41,7 +41,7 @@ namespace blink {
 class WebAudioSourceProvider;
 }
 
-namespace WebCore {
+namespace blink {
 
 class MediaStreamWebAudioSource : public AudioSourceProvider {
     WTF_MAKE_NONCOPYABLE(MediaStreamWebAudioSource);
@@ -53,12 +53,12 @@ public:
 private:
     explicit MediaStreamWebAudioSource(PassOwnPtr<blink::WebAudioSourceProvider>);
 
-    // WebCore::AudioSourceProvider implementation.
-    virtual void provideInput(WebCore::AudioBus*, size_t framesToProcess) OVERRIDE;
+    // blink::AudioSourceProvider implementation.
+    virtual void provideInput(blink::AudioBus*, size_t framesToProcess) OVERRIDE;
 
     OwnPtr<blink::WebAudioSourceProvider> m_webAudioSourceProvider;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaStreamWebAudioSource_h

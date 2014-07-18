@@ -33,7 +33,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 #ifndef NDEBUG
 template<class T>
@@ -262,6 +262,6 @@ struct ValueToString<PODInterval<T, UserData> > {
 };
 #endif
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PODIntervalTree_h

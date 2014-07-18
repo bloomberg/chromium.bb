@@ -34,7 +34,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 const float SmoothingTimeConstant = 0.020f; // 20ms
 
@@ -177,6 +177,6 @@ double AudioDelayDSPKernel::latencyTime() const
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

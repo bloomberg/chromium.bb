@@ -32,7 +32,7 @@
 #include "platform/mediastream/MediaStreamSource.h"
 
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<MediaStreamSource> MediaStreamSource::create(const String& id, Type type, const String& name, ReadyState readyState, bool requiresConsumer)
 {
@@ -104,4 +104,4 @@ void MediaStreamSource::consumeAudio(AudioBus* bus, size_t numberOfFrames)
         (*it)->consumeAudio(bus, numberOfFrames);
 }
 
-} // namespace WebCore
+} // namespace blink

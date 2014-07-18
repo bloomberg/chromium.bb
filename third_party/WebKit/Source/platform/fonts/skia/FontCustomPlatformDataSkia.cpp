@@ -42,7 +42,7 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 FontCustomPlatformData::FontCustomPlatformData(PassRefPtr<SkTypeface> typeface)
     : m_typeface(typeface)

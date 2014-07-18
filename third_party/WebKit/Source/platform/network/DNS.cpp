@@ -30,7 +30,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebPrescientNetworking.h"
 
-namespace WebCore {
+namespace blink {
 
 void prefetchDNS(const String& hostname)
 {
@@ -42,4 +42,4 @@ void prefetchDNS(const String& hostname)
     prescientNetworking->prefetchDNS(hostname);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -9,7 +9,7 @@
 #include "platform/fonts/SimpleFontData.h"
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 class TestCustomFontData : public CustomFontData {
 public:
@@ -223,4 +223,4 @@ TEST(GlyphPageTreeNode, systemFallback)
     EXPECT_EQ(pageCountBeforeTest, GlyphPageTreeNode::treeGlyphPageCount());
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -27,7 +27,7 @@
 #include "platform/graphics/filters/FilterEffect.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 enum CompositeOperationType {
     FECOMPOSITE_OPERATOR_UNKNOWN    = 0,
@@ -91,6 +91,6 @@ private:
     float m_k4;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FEComposite_h

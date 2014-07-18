@@ -34,7 +34,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 HTTPHeaderMap::HTTPHeaderMap()
 {
@@ -112,4 +112,4 @@ HTTPHeaderMap::AddResult HTTPHeaderMap::add(const char* name, const AtomicString
     return HashMap<AtomicString, AtomicString, CaseFoldingHash>::add<CaseFoldingCStringTranslator>(name, value);
 }
 
-} // namespace WebCore
+} // namespace blink

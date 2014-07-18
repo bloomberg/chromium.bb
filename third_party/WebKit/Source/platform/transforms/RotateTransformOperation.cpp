@@ -29,7 +29,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 static const double angleEpsilon = 1e-4;
 
@@ -100,14 +100,14 @@ PassRefPtr<TransformOperation> RotateTransformOperation::blend(const TransformOp
         return RotateTransformOperation::create(fromOp ? fromOp->m_x : m_x,
                                                 fromOp ? fromOp->m_y : m_y,
                                                 fromOp ? fromOp->m_z : m_z,
-                                                WebCore::blend(fromAngle, m_angle, progress), m_type);
+                                                blink::blend(fromAngle, m_angle, progress), m_type);
     }
     double fromAngle;
     double toAngle;
     FloatPoint3D axis;
 
     if (shareSameAxis(fromOp, this, &axis, &fromAngle, &toAngle))
-        return RotateTransformOperation::create(axis.x(), axis.y(), axis.z(), WebCore::blend(fromAngle, toAngle, progress), m_type);
+        return RotateTransformOperation::create(axis.x(), axis.y(), axis.z(), blink::blend(fromAngle, toAngle, progress), m_type);
 
     const RotateTransformOperation* toOp = this;
 
@@ -156,4 +156,4 @@ bool RotateTransformOperation::canBlendWith(const TransformOperation& other) con
     return other.isSameType(*this);
 }
 
-} // namespace WebCore
+} // namespace blink

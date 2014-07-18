@@ -26,7 +26,7 @@
 #include "config.h"
 #include "platform/ContextMenu.h"
 
-namespace WebCore {
+namespace blink {
 
 static const ContextMenuItem* findItemWithAction(unsigned action, const Vector<ContextMenuItem>& items)
 {
@@ -48,4 +48,4 @@ const ContextMenuItem* ContextMenu::itemWithAction(unsigned action) const
     return findItemWithAction(action, m_items);
 }
 
-} // namespace WebCore
+} // namespace blink

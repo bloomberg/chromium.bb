@@ -31,7 +31,7 @@
 #include "platform/graphics/Color.h"
 #include "platform/text/TextDirection.h"
 
-namespace WebCore {
+namespace blink {
 
 class PopupMenuStyle {
 public:
@@ -69,6 +69,6 @@ private:
     BackgroundColorType m_backgroundColorType;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PopupMenuStyle_h

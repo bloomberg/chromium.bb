@@ -28,10 +28,10 @@
 
 #include "platform/PlatformExport.h"
 
-namespace WebCore {
+namespace blink {
 
 extern "C" PLATFORM_EXPORT bool isWindowsVistaOrGreater();
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SystemInfo_h

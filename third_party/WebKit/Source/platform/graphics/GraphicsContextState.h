@@ -41,7 +41,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 // Encapsulates the state information we store for each pushed graphics state.
 // Only GraphicsContext can use this class.
@@ -188,6 +188,6 @@ private:
     bool m_shouldClampToSourceRect : 1;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GraphicsContextState_h

@@ -8,7 +8,7 @@
 
 #include "platform/PermissionCallbacks.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

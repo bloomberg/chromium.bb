@@ -41,7 +41,7 @@
 #include "public/platform/WebSocketStreamHandle.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 static const unsigned bufferSize = 100 * 1024 * 1024;
 
@@ -291,4 +291,4 @@ void SocketStreamHandle::trace(Visitor* visitor)
     visitor->trace(m_internal);
 }
 
-} // namespace WebCore
+} // namespace blink

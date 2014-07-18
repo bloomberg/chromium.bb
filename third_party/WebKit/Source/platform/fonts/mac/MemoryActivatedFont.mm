@@ -36,7 +36,7 @@
 #import "public/platform/Platform.h"
 #import "wtf/HashMap.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -204,4 +204,4 @@ void FontPlatformData::loadFont(NSFont* nsFont, float fontSize, NSFont*& outNSFo
     }
 }
 
-} // namespace WebCore
+} // namespace blink

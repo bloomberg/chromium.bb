@@ -37,7 +37,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 enum ResourceRequestCachePolicy {
     UseProtocolCachePolicy, // normal load
@@ -262,6 +262,6 @@ public:
 
 unsigned initializeMaximumHTTPConnectionCountPerHost();
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ResourceRequest_h

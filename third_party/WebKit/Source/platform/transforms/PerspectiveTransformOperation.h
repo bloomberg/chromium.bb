@@ -28,7 +28,7 @@
 
 #include "platform/transforms/TransformOperation.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT PerspectiveTransformOperation : public TransformOperation {
 public:
@@ -71,6 +71,6 @@ private:
     double m_p;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PerspectiveTransformOperation_h

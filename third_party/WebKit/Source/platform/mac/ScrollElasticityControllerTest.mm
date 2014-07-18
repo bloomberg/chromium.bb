@@ -10,7 +10,7 @@
 #include "platform/mac/ScrollElasticityController.h"
 #include "platform/PlatformWheelEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 class MockScrollElasticityControllerClient : public ScrollElasticityControllerClient {
 public:
@@ -26,7 +26,7 @@ public:
     virtual bool canScrollVertically() OVERRIDE { return true; }
 
     // Return the absolute scroll position, not relative to the scroll origin.
-    virtual WebCore::IntPoint absoluteScrollPosition() OVERRIDE { return IntPoint(m_stretchX, 0); }
+    virtual blink::IntPoint absoluteScrollPosition() OVERRIDE { return IntPoint(m_stretchX, 0); }
 
     virtual void immediateScrollBy(const FloatSize& size) OVERRIDE { m_stretchX += size.width(); }
     virtual void immediateScrollByWithoutContentEdgeConstraints(const FloatSize& size) OVERRIDE { m_stretchX += size.width(); }
@@ -170,4 +170,4 @@ TEST_F(ScrollElasticityControllerTest, zeroDeltaEventsIgnored)
     EXPECT_TRUE(handleWheelEvent(AllowRubberband, DisallowScroll, PlatformWheelEventPhaseEnded, deltaNone));
 }
 
-} // namespace WebCore
+} // namespace blink

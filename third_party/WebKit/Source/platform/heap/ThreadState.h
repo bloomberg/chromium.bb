@@ -41,7 +41,7 @@
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class BaseHeap;
 class BaseHeapPage;
@@ -117,7 +117,7 @@ struct ThreadingTrait {
     namespace Namespace {                                               \
         class Class;                                                    \
     }                                                                   \
-    namespace WebCore {                                                 \
+    namespace blink {                                                 \
         template<> struct ThreadingTrait<Namespace::Class> {            \
             static const ThreadAffinity Affinity = AnyThread;           \
         };                                                              \

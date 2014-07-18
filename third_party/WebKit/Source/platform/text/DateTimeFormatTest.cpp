@@ -31,7 +31,7 @@
 #include "wtf/text/StringBuilder.h"
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 
 class DateTimeFormatTest : public ::testing::Test {
 public:

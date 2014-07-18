@@ -26,7 +26,7 @@
 #import "config.h"
 #import "platform/KillRing.h"
 
-namespace WebCore {
+namespace blink {
 
 extern "C" {
 
@@ -80,4 +80,4 @@ void KillRing::setToYankedState()
     _NSSetKillRingToYankedState();
 }
 
-} // namespace WebCore
+} // namespace blink

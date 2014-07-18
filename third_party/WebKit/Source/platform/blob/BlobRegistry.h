@@ -36,7 +36,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class BlobData;
 class BlobDataHandle;
@@ -63,6 +63,6 @@ public:
     static void unregisterStreamURL(const KURL&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BlobRegistry_h

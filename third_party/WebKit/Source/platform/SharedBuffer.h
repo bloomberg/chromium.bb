@@ -36,7 +36,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
 public:
@@ -116,6 +116,6 @@ private:
     mutable Vector<char*> m_segments;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SharedBuffer_h

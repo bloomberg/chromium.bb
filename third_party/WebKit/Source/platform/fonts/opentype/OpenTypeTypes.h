@@ -28,7 +28,7 @@
 #include "platform/SharedBuffer.h"
 #include "wtf/ByteOrder.h"
 
-namespace WebCore {
+namespace blink {
 namespace OpenType {
 
 struct Int16 {
@@ -97,5 +97,5 @@ protected:
 };
 
 } // namespace OpenType
-} // namespace WebCore
+} // namespace blink
 #endif // OpenTypeTypes_h

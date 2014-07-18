@@ -27,7 +27,7 @@
 #include "config.h"
 #include "platform/geometry/FloatSize.h"
 
-namespace WebCore {
+namespace blink {
 
 #ifndef NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES
 

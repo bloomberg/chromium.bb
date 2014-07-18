@@ -34,7 +34,7 @@
 
 #include "platform/audio/AudioBus.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -118,6 +118,6 @@ void MultiChannelResampler::process(AudioSourceProvider* provider, AudioBus* des
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

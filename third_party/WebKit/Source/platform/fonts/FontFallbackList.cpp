@@ -35,7 +35,7 @@
 #include "platform/fonts/FontFamily.h"
 #include "platform/fonts/SegmentedFontData.h"
 
-namespace WebCore {
+namespace blink {
 
 FontFallbackList::FontFallbackList()
     : m_pageZero(0)

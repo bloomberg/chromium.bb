@@ -38,7 +38,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef Vector<OriginAccessEntry> OriginAccessWhiteList;
 typedef HashMap<String, OwnPtr<OriginAccessWhiteList> > OriginAccessMap;
@@ -156,4 +156,4 @@ void SecurityPolicy::resetOriginAccessWhitelists()
     originAccessMap().clear();
 }
 
-} // namespace WebCore
+} // namespace blink

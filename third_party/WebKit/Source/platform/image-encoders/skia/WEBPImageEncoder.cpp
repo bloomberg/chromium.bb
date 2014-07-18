@@ -38,7 +38,7 @@
 
 typedef int (*WebPImporter)(WebPPicture* const, const uint8_t* const data, int rowStride);
 
-namespace WebCore {
+namespace blink {
 
 static int writeOutput(const uint8_t* data, size_t size, const WebPPicture* const picture)
 {
@@ -130,4 +130,4 @@ bool WEBPImageEncoder::encode(const ImageDataBuffer& imageData, int quality, Vec
     return encodePixels(imageData.size(), imageData.data(), false, quality, output);
 }
 
-} // namespace WebCore
+} // namespace blink

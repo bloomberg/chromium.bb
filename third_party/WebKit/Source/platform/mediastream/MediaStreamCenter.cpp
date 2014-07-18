@@ -46,7 +46,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 MediaStreamCenter& MediaStreamCenter::instance()
 {
@@ -151,4 +151,4 @@ void MediaStreamCenter::stopLocalMediaStream(const blink::WebMediaStream& webStr
         stream->setEnded();
 }
 
-} // namespace WebCore
+} // namespace blink

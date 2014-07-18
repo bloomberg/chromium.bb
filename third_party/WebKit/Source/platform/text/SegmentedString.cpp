@@ -20,7 +20,7 @@
 #include "config.h"
 #include "platform/text/SegmentedString.h"
 
-namespace WebCore {
+namespace blink {
 
 unsigned SegmentedString::length() const
 {

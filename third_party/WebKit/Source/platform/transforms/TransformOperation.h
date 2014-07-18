@@ -30,7 +30,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 // CSS Transforms (may become part of CSS3)
 
@@ -85,6 +85,6 @@ public:
     virtual bool dependsOnBoxSize() const { return false; }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TransformOperation_h

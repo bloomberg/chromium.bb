@@ -38,7 +38,7 @@
 using namespace WTF;
 using namespace Unicode;
 
-namespace WebCore {
+namespace blink {
 
 static const UChar32 cjkIsolatedSymbolsArray[] = {
     // 0x2C7 Caron, Mandarin Chinese 3rd Tone

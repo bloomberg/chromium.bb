@@ -40,7 +40,7 @@ class WebLayer;
 class WebMediaSource;
 }
 
-namespace WebCore {
+namespace blink {
 
 class AudioSourceProvider;
 class GraphicsContext;

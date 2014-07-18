@@ -7,7 +7,7 @@
 
 #include "platform/graphics/skia/SkiaUtils.h"
 
-namespace WebCore {
+namespace blink {
 
 GraphicsContextState::GraphicsContextState()
     : m_fillColor(Color::black)
@@ -253,4 +253,4 @@ void GraphicsContextState::setShouldAntialias(bool shouldAntialias)
 }
 
 
-} // namespace WebCore
+} // namespace blink

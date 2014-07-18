@@ -33,7 +33,7 @@
 #include "platform/TraceEvent.h"
 #include "platform/graphics/ImageFrameGenerator.h"
 
-namespace WebCore {
+namespace blink {
 
 DecodingImageGenerator::DecodingImageGenerator(PassRefPtr<ImageFrameGenerator> frameGenerator, const SkImageInfo& info, size_t index)
     : m_frameGenerator(frameGenerator)

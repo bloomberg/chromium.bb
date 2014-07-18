@@ -37,7 +37,7 @@
 #include "public/platform/WebMimeRegistry.h"
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 String MIMETypeRegistry::getMIMETypeForExtension(const String &ext)
 {
@@ -122,4 +122,4 @@ bool MIMETypeRegistry::isJavaAppletMIMEType(const String& mimeType)
         || mimeType.startsWith("application/x-java-vm", false);
 }
 
-} // namespace WebCore
+} // namespace blink

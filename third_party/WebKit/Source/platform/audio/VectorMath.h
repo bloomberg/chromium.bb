@@ -29,7 +29,7 @@
 
 // Defines the interface for several vector math functions whose implementation will ideally be optimized.
 
-namespace WebCore {
+namespace blink {
 namespace VectorMath {
 
 // Vector scalar multiply and then add.
@@ -54,6 +54,6 @@ PLATFORM_EXPORT void zvmul(const float* real1P, const float* imag1P, const float
 PLATFORM_EXPORT void vclip(const float* sourceP, int sourceStride, const float* lowThresholdP, const float* highThresholdP, float* destP, int destStride, size_t framesToProcess);
 
 } // namespace VectorMath
-} // namespace WebCore
+} // namespace blink
 
 #endif // VectorMath_h

@@ -35,7 +35,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 // An arena which allocates only Plain Old Data (POD), or classes and
 // structs bottoming out in Plain Old Data. NOTE: the constructors of
@@ -195,6 +195,6 @@ protected:
     Vector<OwnPtr<Chunk> > m_chunks;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PODArena_h

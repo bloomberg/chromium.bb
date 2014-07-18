@@ -40,7 +40,7 @@
 namespace {
 
 using namespace WTF;
-using namespace WebCore;
+using namespace blink;
 
 TEST(BidiResolver, Basic)
 {

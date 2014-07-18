@@ -34,7 +34,7 @@
 // This implementation uses two vectors instead of linked list, and
 // also compresses regions when possible.
 
-namespace WebCore {
+namespace blink {
 
 Region::Region()
 {
@@ -628,4 +628,4 @@ void Region::translate(const IntSize& offset)
     m_shape.translate(offset);
 }
 
-} // namespace WebCore
+} // namespace blink

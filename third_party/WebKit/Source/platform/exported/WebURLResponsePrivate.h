@@ -33,7 +33,7 @@
 
 #include "public/platform/WebString.h"
 
-namespace WebCore { class ResourceResponse; }
+namespace blink { class ResourceResponse; }
 
 namespace blink {
 
@@ -44,7 +44,7 @@ public:
     // Called by WebURLResponse when it no longer needs this object.
     virtual void dispose() = 0;
 
-    WebCore::ResourceResponse* m_resourceResponse;
+    blink::ResourceResponse* m_resourceResponse;
 };
 
 } // namespace blink

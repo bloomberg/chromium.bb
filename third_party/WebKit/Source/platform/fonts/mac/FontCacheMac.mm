@@ -48,7 +48,7 @@
 + (NSFont*)findFontLike:(NSFont*)font forCharacter:(UniChar)uc inLanguage:(id)useNil;
 @end
 
-namespace WebCore {
+namespace blink {
 
 // The "void*" parameter makes the function match the prototype for callbacks from callOnMainThread.
 static void invalidateFontCache(void*)
@@ -230,4 +230,4 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
     return platformData.leakPtr();
 }
 
-} // namespace WebCore
+} // namespace blink

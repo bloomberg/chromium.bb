@@ -28,7 +28,7 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 
-namespace WebCore {
+namespace blink {
 
 IntRect::operator CGRect() const
 {

@@ -36,7 +36,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT PlatformInstrumentationClient {
 public:
@@ -130,6 +130,6 @@ inline void PlatformInstrumentation::didDecodeLazyPixelRef()
     TRACE_EVENT_END0(CategoryName, DecodeLazyPixelRefEvent);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PlatformInstrumentation_h

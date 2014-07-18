@@ -30,7 +30,7 @@
 #include "platform/graphics/Image.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT GeneratedImage : public Image {
 public:

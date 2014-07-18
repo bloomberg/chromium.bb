@@ -32,7 +32,7 @@
 
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 IntRect::IntRect(const FloatRect& r)
     : m_location(clampToInteger(r.x()), clampToInteger(r.y()))
@@ -179,4 +179,4 @@ void IntRect::show() const
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

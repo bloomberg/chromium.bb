@@ -34,7 +34,7 @@
 #include "public/platform/WebThread.h"
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -332,4 +332,4 @@ TEST_F(ImageFrameGeneratorTest, decodingAllocatorFailure)
     }
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -33,7 +33,7 @@
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 class SecurityOrigin;
@@ -58,6 +58,6 @@ public:
     static bool isAccessToURLWhiteListed(const SecurityOrigin* activeOrigin, const KURL&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SecurityPolicy_h

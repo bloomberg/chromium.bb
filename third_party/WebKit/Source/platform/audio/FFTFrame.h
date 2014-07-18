@@ -48,7 +48,7 @@ struct RDFTContext;
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Threading.h"
 
-namespace WebCore {
+namespace blink {
 
 // Defines the interface for an "FFT frame", an object which is able to perform a forward
 // and reverse FFT, internally storing the resultant frequency-domain data.
@@ -143,6 +143,6 @@ private:
 #endif // !OS(MACOSX)
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FFTFrame_h

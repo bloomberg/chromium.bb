@@ -39,7 +39,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 // Encapsulates stroke painting information.
 // It is pulled out of GraphicsContextState to enable other methods to use it.
@@ -106,6 +106,6 @@ private:
     RefPtr<SkDashPathEffect> m_dash;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StrokeData_h

@@ -32,7 +32,7 @@
 #include "platform/graphics/filters/FEComposite.h"
 #include <arm_neon.h>
 
-namespace WebCore {
+namespace blink {
 
 template <int b1, int b4>
 inline void FEComposite::computeArithmeticPixelsNeon(unsigned char* source, unsigned char* destination,
@@ -92,7 +92,7 @@ inline void FEComposite::platformArithmeticNeon(unsigned char* source, unsigned 
     computeArithmeticPixelsNeon<1, 1>(source, destination, pixelArrayLength, k1, k2, k3, k4);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HAVE(ARM_NEON_INTRINSICS)
 

@@ -26,10 +26,10 @@
 #ifndef FontOrientation_h
 #define FontOrientation_h
 
-namespace WebCore {
+namespace blink {
 
 enum FontOrientation { Horizontal, Vertical };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FontOrientation_h

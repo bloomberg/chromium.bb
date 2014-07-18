@@ -38,7 +38,7 @@
 
 // Common base class for FEDiffuseLighting and FESpecularLighting
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT FELighting : public FilterEffect {
 public:
@@ -120,6 +120,6 @@ private:
     void getTransform(FloatPoint3D* scale, FloatSize* offset) const;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FELighting_h

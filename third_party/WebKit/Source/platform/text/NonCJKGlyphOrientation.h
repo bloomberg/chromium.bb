@@ -26,7 +26,7 @@
 #ifndef NonCJKGlyphOrientation_h
 #define NonCJKGlyphOrientation_h
 
-namespace WebCore {
+namespace blink {
 
 enum NonCJKGlyphOrientation { NonCJKGlyphOrientationVerticalRight, NonCJKGlyphOrientationUpright };
 

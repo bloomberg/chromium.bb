@@ -29,7 +29,7 @@
 #include "platform/PlatformEvent.h"
 #include "platform/geometry/IntPoint.h"
 
-namespace WebCore {
+namespace blink {
 
 class FloatPoint;
 class FloatSize;
@@ -151,6 +151,6 @@ protected:
 #endif
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PlatformWheelEvent_h

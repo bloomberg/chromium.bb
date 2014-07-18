@@ -28,7 +28,7 @@ namespace WTF{
 class TextEncoding;
 }
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT FormDataBuilder {
     WTF_MAKE_NONCOPYABLE(FormDataBuilder);

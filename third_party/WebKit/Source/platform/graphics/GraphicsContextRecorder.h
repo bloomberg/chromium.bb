@@ -38,7 +38,7 @@
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT GraphicsContextSnapshot : public RefCounted<GraphicsContextSnapshot> {
 WTF_MAKE_NONCOPYABLE(GraphicsContextSnapshot);

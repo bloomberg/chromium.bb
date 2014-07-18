@@ -46,7 +46,7 @@
 class SkTypeface;
 typedef uint32_t SkFontID;
 
-namespace WebCore {
+namespace blink {
 
 class GraphicsContext;
 class HarfBuzzFace;
@@ -138,6 +138,6 @@ private:
 #endif
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ifdef FontPlatformDataHarfBuzz_h

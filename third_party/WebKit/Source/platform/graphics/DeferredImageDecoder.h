@@ -36,7 +36,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ImageFrameGenerator;
 class SharedBuffer;
@@ -101,6 +101,6 @@ private:
     static bool s_enabled;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

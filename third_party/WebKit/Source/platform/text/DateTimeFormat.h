@@ -29,7 +29,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 // DateTimeFormat parses date time format defined in Unicode Technical
 // standard 35, Locale Data Markup Language (LDML)[1].
@@ -106,6 +106,6 @@ public:
     static void quoteAndAppendLiteral(const String&, StringBuilder&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DateTimeFormat_h

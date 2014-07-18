@@ -28,7 +28,7 @@
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
-namespace WebCore {
+namespace blink {
 
 enum TurbulenceType {
     FETURBULENCE_TYPE_UNKNOWN = 0,
@@ -132,6 +132,6 @@ private:
     bool m_stitchTiles;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FETurbulence_h

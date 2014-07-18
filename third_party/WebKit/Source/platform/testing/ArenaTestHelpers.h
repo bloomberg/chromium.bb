@@ -32,7 +32,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 namespace ArenaTestHelpers {
 
 // An allocator for the PODArena which tracks the regions which have
@@ -75,6 +75,6 @@ private:
 };
 
 } // namespace ArenaTestHelpers
-} // namespace WebCore
+} // namespace blink
 
 #endif // ArenaTestHelpers_h

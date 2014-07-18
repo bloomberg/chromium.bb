@@ -32,7 +32,7 @@
 #include "public/platform/WebSpeechSynthesisVoice.h"
 #include "public/platform/WebSpeechSynthesizerClient.h"
 
-namespace WebCore {
+namespace blink {
 
 class PlatformSpeechSynthesizer;
 class PlatformSpeechSynthesizerClient;
@@ -58,6 +58,6 @@ private:
     Member<PlatformSpeechSynthesizerClient> m_client;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebSpeechSynthesizerClientImpl_h

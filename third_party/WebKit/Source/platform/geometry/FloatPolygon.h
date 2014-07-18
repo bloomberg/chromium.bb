@@ -38,7 +38,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class FloatPolygonEdge;
 
@@ -148,6 +148,6 @@ template<> struct ValueToString<FloatPolygonEdge*> {
 };
 #endif
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FloatPolygon_h

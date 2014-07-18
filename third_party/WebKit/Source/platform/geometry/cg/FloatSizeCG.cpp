@@ -29,7 +29,7 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 
-namespace WebCore {
+namespace blink {
 
 FloatSize::FloatSize(const CGSize& s) : m_width(s.width), m_height(s.height)
 {

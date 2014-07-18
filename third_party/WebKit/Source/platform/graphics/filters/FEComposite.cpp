@@ -38,7 +38,7 @@
 
 #include "wtf/Uint8ClampedArray.h"
 
-namespace WebCore {
+namespace blink {
 
 FEComposite::FEComposite(Filter* filter, const CompositeOperationType& type, float k1, float k2, float k3, float k4)
     : FilterEffect(filter)
@@ -357,18 +357,18 @@ void FEComposite::applySoftware()
     }
 }
 
-SkXfermode::Mode toXfermode(WebCore::CompositeOperationType mode)
+SkXfermode::Mode toXfermode(blink::CompositeOperationType mode)
 {
     switch (mode) {
-    case WebCore::FECOMPOSITE_OPERATOR_OVER:
+    case blink::FECOMPOSITE_OPERATOR_OVER:
         return SkXfermode::kSrcOver_Mode;
-    case WebCore::FECOMPOSITE_OPERATOR_IN:
+    case blink::FECOMPOSITE_OPERATOR_IN:
         return SkXfermode::kSrcIn_Mode;
-    case WebCore::FECOMPOSITE_OPERATOR_OUT:
+    case blink::FECOMPOSITE_OPERATOR_OUT:
         return SkXfermode::kSrcOut_Mode;
-    case WebCore::FECOMPOSITE_OPERATOR_ATOP:
+    case blink::FECOMPOSITE_OPERATOR_ATOP:
         return SkXfermode::kSrcATop_Mode;
-    case WebCore::FECOMPOSITE_OPERATOR_XOR:
+    case blink::FECOMPOSITE_OPERATOR_XOR:
         return SkXfermode::kXor_Mode;
     default:
         ASSERT_NOT_REACHED();
@@ -441,4 +441,4 @@ TextStream& FEComposite::externalRepresentation(TextStream& ts, int indent) cons
     return ts;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -32,7 +32,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 // AudioResampler resamples the audio stream from an AudioSourceProvider.
 // The audio stream may be single or multi-channel.
@@ -65,6 +65,6 @@ private:
     RefPtr<AudioBus> m_sourceBus;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioResampler_h

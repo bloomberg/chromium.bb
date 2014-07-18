@@ -33,7 +33,7 @@
 
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 
-namespace WebCore {
+namespace blink {
 
 class AutoReplayer {
 public:

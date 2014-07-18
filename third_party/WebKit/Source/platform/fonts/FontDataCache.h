@@ -36,7 +36,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class SimpleFontData;
 

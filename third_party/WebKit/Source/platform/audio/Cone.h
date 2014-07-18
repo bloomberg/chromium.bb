@@ -32,7 +32,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint3D.h"
 
-namespace WebCore {
+namespace blink {
 
 // Cone gain is defined according to the OpenAL specification
 
@@ -59,6 +59,6 @@ protected:
     double m_outerGain;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Cone_h

@@ -53,7 +53,7 @@
 #define JMPBUF(png_ptr) png_ptr->jmpbuf
 #endif
 
-namespace WebCore {
+namespace blink {
 
 // Gamma constants.
 const double cMaxGamma = 21474.83;
@@ -544,4 +544,4 @@ void PNGImageDecoder::decode(bool onlySize)
         m_reader.clear();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -9,7 +9,7 @@
 #include "wtf/TerminatedArray.h"
 #include "wtf/TerminatedArrayBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 template<typename T>
 class HeapTerminatedArray : public TerminatedArray<T> {
@@ -49,6 +49,6 @@ private:
     template<typename U, template <typename> class> friend class WTF::TerminatedArrayBuilder;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HeapTerminatedArray_h

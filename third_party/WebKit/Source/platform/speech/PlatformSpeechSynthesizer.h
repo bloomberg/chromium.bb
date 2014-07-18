@@ -36,7 +36,7 @@ class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 }
 
-namespace WebCore {
+namespace blink {
 
 enum SpeechBoundary {
     SpeechWordBoundary,
@@ -90,9 +90,9 @@ private:
     Member<PlatformSpeechSynthesizerClient> m_speechSynthesizerClient;
 
     OwnPtr<blink::WebSpeechSynthesizer> m_webSpeechSynthesizer;
-    Member<WebCore::WebSpeechSynthesizerClientImpl> m_webSpeechSynthesizerClient;
+    Member<blink::WebSpeechSynthesizerClientImpl> m_webSpeechSynthesizerClient;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PlatformSpeechSynthesizer_h

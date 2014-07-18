@@ -38,7 +38,7 @@
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioBus;
 class AudioDSPKernel;
@@ -74,6 +74,6 @@ protected:
     bool m_hasJustReset;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioDSPKernelProcessor_h

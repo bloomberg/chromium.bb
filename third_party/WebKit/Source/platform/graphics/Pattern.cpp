@@ -34,7 +34,7 @@
 #include "platform/graphics/skia/SkiaUtils.h"
 
 
-namespace WebCore {
+namespace blink {
 
 Pattern::Pattern(PassRefPtr<Image> image, bool repeatX, bool repeatY)
     : m_repeatX(repeatX)

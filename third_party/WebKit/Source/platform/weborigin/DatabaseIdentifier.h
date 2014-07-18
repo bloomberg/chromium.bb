@@ -33,11 +33,11 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 PLATFORM_EXPORT PassRefPtr<SecurityOrigin> createSecurityOriginFromDatabaseIdentifier(const String&);
 PLATFORM_EXPORT String createDatabaseIdentifierFromSecurityOrigin(const SecurityOrigin*);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DatabaseIdentifier_h

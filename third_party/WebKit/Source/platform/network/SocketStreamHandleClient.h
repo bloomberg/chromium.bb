@@ -32,7 +32,7 @@
 #ifndef SocketStreamHandleClient_h
 #define SocketStreamHandleClient_h
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 class SocketStreamError;
@@ -52,6 +52,6 @@ public:
     virtual void trace(Visitor*) { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SocketStreamHandleClient_h

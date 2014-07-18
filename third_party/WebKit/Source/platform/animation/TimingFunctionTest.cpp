@@ -48,11 +48,11 @@
         << " (" << b.second->toString().latin1().data() << ")" \
         << "\n";
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
-using namespace WebCore;
+using namespace blink;
 
 class TimingFunctionTest : public ::testing::Test {
 public:
@@ -418,4 +418,4 @@ TEST_F(TimingFunctionTest, StepsEvaluate)
 
 } // namespace
 
-} // namespace WebCore
+} // namespace blink

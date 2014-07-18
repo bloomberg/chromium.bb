@@ -35,7 +35,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioBus;
 
@@ -103,6 +103,6 @@ protected:
     DynamicsCompressorKernel m_compressor;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DynamicsCompressor_h

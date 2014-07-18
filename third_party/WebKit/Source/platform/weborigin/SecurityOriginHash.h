@@ -33,7 +33,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 struct SecurityOriginHash {
     static unsigned hash(SecurityOrigin* origin)
@@ -85,14 +85,14 @@ struct SecurityOriginHash {
     static const bool safeToCompareToEmptyOrDeleted = false;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 namespace WTF {
 
 template<typename> struct DefaultHash;
 
-template<> struct DefaultHash<RefPtr<WebCore::SecurityOrigin> > {
-    typedef WebCore::SecurityOriginHash Hash;
+template<> struct DefaultHash<RefPtr<blink::SecurityOrigin> > {
+    typedef blink::SecurityOriginHash Hash;
 };
 
 } // namespace WTF

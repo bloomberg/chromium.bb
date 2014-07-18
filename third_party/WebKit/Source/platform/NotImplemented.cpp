@@ -28,7 +28,7 @@
 
 #include "platform/Logging.h"
 
-namespace WebCore {
+namespace blink {
 
 #if !LOG_DISABLED
 

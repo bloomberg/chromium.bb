@@ -79,7 +79,7 @@ static CGFontRenderingMode cgFontRenderingModeForNSFont(NSFont* font) {
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 static bool fontHasVerticalGlyphs(CTFontRef ctFont)
 {
@@ -453,4 +453,4 @@ bool SimpleFontData::canRenderCombiningCharacterSequence(const UChar* characters
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

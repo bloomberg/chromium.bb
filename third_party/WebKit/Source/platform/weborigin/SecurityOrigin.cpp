@@ -40,7 +40,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 const int InvalidPort = 0;
 const int MaxAllowedPort = 65535;
@@ -527,4 +527,4 @@ const String& SecurityOrigin::urlWithUniqueSecurityOrigin()
     return uniqueSecurityOriginURL;
 }
 
-} // namespace WebCore
+} // namespace blink

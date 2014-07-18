@@ -32,7 +32,7 @@
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 
-namespace WebCore {
+namespace blink {
 
 bool ScrollbarThemeNonMacCommon::hasThumb(ScrollbarThemeClient* scrollbar)
 {
@@ -126,4 +126,4 @@ void ScrollbarThemeNonMacCommon::paintTickmarks(GraphicsContext* context, Scroll
     }
 }
 
-} // namespace WebCore
+} // namespace blink

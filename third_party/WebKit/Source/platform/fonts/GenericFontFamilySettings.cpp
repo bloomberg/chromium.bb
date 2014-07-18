@@ -31,7 +31,7 @@
 #include "config.h"
 #include "platform/fonts/GenericFontFamilySettings.h"
 
-namespace WebCore {
+namespace blink {
 
 GenericFontFamilySettings::GenericFontFamilySettings(const GenericFontFamilySettings& other)
     : m_standardFontFamilyMap(other.m_standardFontFamilyMap)

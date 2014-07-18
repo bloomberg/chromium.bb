@@ -25,7 +25,7 @@
 
 #include "platform/graphics/filters/LightSource.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT PointLightSource : public LightSource {
 public:
@@ -58,6 +58,6 @@ private:
     FloatPoint3D m_position;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PointLightSource_h

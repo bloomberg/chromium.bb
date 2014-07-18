@@ -42,7 +42,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -131,7 +131,7 @@ void WebFileSystemCallbacks::didOpenFileSystem(const WebString& name, const WebU
 void WebFileSystemCallbacks::didResolveURL(const WebString& name, const WebURL& rootURL, WebFileSystemType type, const WebString& filePath, bool isDirectory)
 {
     ASSERT(!m_private.isNull());
-    m_private->callbacks()->didResolveURL(name, rootURL, static_cast<WebCore::FileSystemType>(type), filePath, isDirectory);
+    m_private->callbacks()->didResolveURL(name, rootURL, static_cast<blink::FileSystemType>(type), filePath, isDirectory);
     m_private.reset();
 }
 

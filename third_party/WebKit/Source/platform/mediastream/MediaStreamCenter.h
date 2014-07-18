@@ -45,7 +45,7 @@ class WebMediaStreamCenter;
 class WebMediaStreamTrack;
 }
 
-namespace WebCore {
+namespace blink {
 
 class AudioSourceProvider;
 class MediaStreamComponent;
@@ -81,6 +81,6 @@ private:
     OwnPtr<blink::WebMediaStreamCenter> m_private;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaStreamCenter_h

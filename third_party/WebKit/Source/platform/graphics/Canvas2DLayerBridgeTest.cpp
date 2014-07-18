@@ -40,7 +40,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 using namespace blink;
 using testing::InSequence;
 using testing::Return;

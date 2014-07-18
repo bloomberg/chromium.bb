@@ -32,7 +32,7 @@
 
 #include "platform/Length.h"
 
-namespace WebCore {
+namespace blink {
 
 struct LengthPoint {
 public:
@@ -60,6 +60,6 @@ private:
     Length m_y;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LengthPoint_h

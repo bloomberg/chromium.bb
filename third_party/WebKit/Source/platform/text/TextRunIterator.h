@@ -31,7 +31,7 @@
 
 #include "platform/text/TextRun.h"
 
-namespace WebCore {
+namespace blink {
 
 class TextRunIterator {
 public:
@@ -73,6 +73,6 @@ private:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TextRunIterator_h

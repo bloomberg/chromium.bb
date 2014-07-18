@@ -28,7 +28,7 @@
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class FilterEffect;
 
@@ -115,6 +115,6 @@ private:
     RefPtr<SkImageFilter::Cache> m_cache;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Filter_h

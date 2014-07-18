@@ -31,10 +31,10 @@
 
 #include "platform/ColorChooserClient.h"
 
-namespace WebCore {
+namespace blink {
 
 ColorChooserClient::~ColorChooserClient()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

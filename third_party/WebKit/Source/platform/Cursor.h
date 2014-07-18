@@ -32,7 +32,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT Cursor {
     WTF_MAKE_FAST_ALLOCATED;
@@ -165,6 +165,6 @@ PLATFORM_EXPORT const Cursor& noneCursor();
 PLATFORM_EXPORT const Cursor& grabCursor();
 PLATFORM_EXPORT const Cursor& grabbingCursor();
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Cursor_h

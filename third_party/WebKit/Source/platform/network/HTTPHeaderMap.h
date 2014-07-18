@@ -36,7 +36,7 @@
 #include "wtf/text/StringHash.h"
 #include <utility>
 
-namespace WebCore {
+namespace blink {
 
 typedef Vector<std::pair<String, String> > CrossThreadHTTPHeaderMapData;
 
@@ -62,6 +62,6 @@ public:
 
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTTPHeaderMap_h

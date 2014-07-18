@@ -26,7 +26,7 @@
 #ifndef TextDirection_h
 #define TextDirection_h
 
-namespace WebCore {
+namespace blink {
 
 enum TextDirection { RTL, LTR };
 

@@ -36,7 +36,7 @@
 #include "platform/audio/HRTFPanner.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtr<Panner> Panner::create(PanningModel model, float sampleRate, HRTFDatabaseLoader* databaseLoader)
 {
@@ -59,6 +59,6 @@ PassOwnPtr<Panner> Panner::create(PanningModel model, float sampleRate, HRTFData
     return panner.release();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

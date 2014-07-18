@@ -26,10 +26,10 @@
 #ifndef FontBaseline_h
 #define FontBaseline_h
 
-namespace WebCore {
+namespace blink {
 
 enum FontBaseline { AlphabeticBaseline, IdeographicBaseline };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FontBaseline_h

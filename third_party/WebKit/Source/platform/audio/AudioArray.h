@@ -33,7 +33,7 @@
 #include "wtf/FastMalloc.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 template<typename T>
 class AudioArray {

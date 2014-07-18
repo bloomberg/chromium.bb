@@ -43,7 +43,7 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncoding.h"
 
-namespace WebCore {
+namespace blink {
 
 const long long BlobDataItem::toEndOfFile = -1;
 
@@ -106,7 +106,7 @@ void BlobData::appendText(const String& text, bool doNormalizeLineEndingsToNativ
 
     CString utf8Text = UTF8Encoding().normalizeAndEncode(text, WTF::EntitiesForUnencodables);
     if (doNormalizeLineEndingsToNative) {
-        WebCore::normalizeLineEndingsToNative(utf8Text, *buffer);
+        blink::normalizeLineEndingsToNative(utf8Text, *buffer);
     } else {
         buffer->append(utf8Text.data(), utf8Text.length());
     }
@@ -190,4 +190,4 @@ BlobDataHandle::~BlobDataHandle()
     BlobRegistry::removeBlobDataRef(m_uuid);
 }
 
-} // namespace WebCore
+} // namespace blink

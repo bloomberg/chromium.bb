@@ -34,7 +34,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 // Base class for animation values (also used for transitions). Here to
 // represent values for properties being animated via the GraphicsLayer,
@@ -109,6 +109,6 @@ private:
     FilterOperations m_value;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimationValue_h

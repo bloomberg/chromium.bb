@@ -11,7 +11,7 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 class Image;
 class IntSize;
 
@@ -163,6 +163,6 @@ private:
     static bool packPixels(const uint8_t* sourceData, DataFormat sourceDataFormat, unsigned width, unsigned height, unsigned sourceUnpackAlignment, unsigned destinationFormat, unsigned destinationType, AlphaOp, void* destinationData, bool flipY);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLImageConversion_h

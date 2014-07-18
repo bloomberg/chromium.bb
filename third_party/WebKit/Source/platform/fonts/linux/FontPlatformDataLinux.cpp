@@ -39,7 +39,7 @@
 #include "public/platform/linux/WebFontRenderStyle.h"
 #include "public/platform/linux/WebSandboxSupport.h"
 
-namespace WebCore {
+namespace blink {
 
 static SkPaint::Hinting skiaHinting = SkPaint::kNormal_Hinting;
 static bool useSkiaAutoHint = true;
@@ -148,4 +148,4 @@ bool FontPlatformData::defaultUseSubpixelPositioning()
     return FontDescription::subpixelPositioning();
 }
 
-} // namespace WebCore
+} // namespace blink

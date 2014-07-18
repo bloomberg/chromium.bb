@@ -35,7 +35,7 @@
 #include "public/platform/WebFileInfo.h"
 #include "public/platform/WebFileUtilities.h"
 
-namespace WebCore {
+namespace blink {
 
 bool getFileSize(const String& path, long long& result)
 {
@@ -76,4 +76,4 @@ KURL filePathToURL(const String& path)
     return blink::Platform::current()->fileUtilities()->filePathToURL(path);
 }
 
-} // namespace WebCore
+} // namespace blink

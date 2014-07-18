@@ -35,7 +35,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ThreadTimers;
 
@@ -54,6 +54,6 @@ private:
     OwnPtr<ThreadTimers> m_threadTimers;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PlatformThreadData_h

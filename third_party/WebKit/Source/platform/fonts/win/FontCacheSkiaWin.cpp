@@ -41,7 +41,7 @@
 #include "platform/fonts/harfbuzz/FontPlatformDataHarfbuzz.h"
 #include "platform/fonts/win/FontFallbackWin.h"
 
-namespace WebCore {
+namespace blink {
 
 HashMap<String, SkTypeface*>* FontCache::s_sideloadedFonts = 0;
 

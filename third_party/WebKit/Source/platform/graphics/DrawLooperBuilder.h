@@ -39,7 +39,7 @@
 
 class SkDrawLooper;
 
-namespace WebCore {
+namespace blink {
 
 class Color;
 class FloatSize;
@@ -77,6 +77,6 @@ private:
     SkLayerDrawLooper::Builder m_skDrawLooperBuilder;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DrawLooperBuilder_h

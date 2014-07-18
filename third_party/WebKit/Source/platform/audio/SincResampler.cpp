@@ -69,7 +69,7 @@ using namespace std;
 //
 // note: we're glossing over how the sub-sample handling works with m_virtualSourceIndex, etc.
 
-namespace WebCore {
+namespace blink {
 
 SincResampler::SincResampler(double scaleFactor, unsigned kernelSize, unsigned numberOfKernelOffsets)
     : m_scaleFactor(scaleFactor)
@@ -470,6 +470,6 @@ void SincResampler::process(AudioSourceProvider* sourceProvider, float* destinat
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

@@ -36,7 +36,7 @@
 #include "platform/graphics/ImageSource.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class NativeImageSkia;
 template <typename T> class Timer;

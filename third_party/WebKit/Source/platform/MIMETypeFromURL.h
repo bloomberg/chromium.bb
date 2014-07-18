@@ -29,13 +29,13 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 
 PLATFORM_EXPORT String mimeTypeFromDataURL(const String& url);
 PLATFORM_EXPORT String mimeTypeFromURL(const KURL&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MIMETypeFromURL_h

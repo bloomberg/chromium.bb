@@ -36,10 +36,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
-namespace WebCore {
+namespace blink {
 
 bool PLATFORM_EXPORT ensureTextureBackedSkBitmap(GrContext*, SkBitmap&, const IntSize&, GrSurfaceOrigin, GrPixelConfig);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GaneshUtils_h

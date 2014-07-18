@@ -33,7 +33,7 @@
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/weborigin/KURL.h"
 
-namespace WebCore {
+namespace blink {
 
 ArchiveResourceCollection::ArchiveResourceCollection()
 {

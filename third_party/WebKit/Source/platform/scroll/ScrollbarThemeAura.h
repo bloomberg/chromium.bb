@@ -33,7 +33,7 @@
 
 #include "platform/scroll/ScrollbarThemeNonMacCommon.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT ScrollbarThemeAura : public ScrollbarThemeNonMacCommon {
 public:
@@ -47,6 +47,6 @@ protected:
     virtual int minimumThumbLength(ScrollbarThemeClient*) OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

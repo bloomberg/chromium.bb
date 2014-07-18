@@ -29,7 +29,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/unicode/Unicode.h"
 
-namespace WebCore {
+namespace blink {
 
 inline bool requiresContextForWordBoundary(UChar32 ch)
 {

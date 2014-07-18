@@ -32,7 +32,7 @@
 #include "platform/audio/AudioArray.h"
 #include "platform/audio/FFTFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT FFTConvolver {
 public:
@@ -66,6 +66,6 @@ private:
     AudioFloatArray m_lastOverlapBuffer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FFTConvolver_h

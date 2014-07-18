@@ -25,7 +25,7 @@
 
 #include "platform/graphics/filters/FELighting.h"
 
-namespace WebCore {
+namespace blink {
 
 class LightSource;
 
@@ -59,6 +59,6 @@ private:
     FEDiffuseLighting(Filter*, const Color&, float, float, float, float, PassRefPtr<LightSource>);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FEDiffuseLighting_h

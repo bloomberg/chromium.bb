@@ -34,7 +34,7 @@
 #include "platform/JSONValues.h"
 #include "platform/graphics/InterceptingCanvas.h"
 
-namespace WebCore {
+namespace blink {
 
 class LoggingCanvas : public InterceptingCanvas {
 public:

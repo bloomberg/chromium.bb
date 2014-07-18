@@ -7,7 +7,7 @@
 
 #include "wtf/ASCIICType.h"
 
-namespace WebCore {
+namespace blink {
 
 bool isCSPDirectiveNameCharacter(UChar c)
 {

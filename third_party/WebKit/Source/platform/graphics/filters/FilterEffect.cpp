@@ -33,7 +33,7 @@
 #include <arm_neon.h>
 #endif
 
-namespace WebCore {
+namespace blink {
 
 static const float kMaxFilterArea = 4096 * 4096;
 
@@ -600,4 +600,4 @@ void FilterEffect::setImageFilter(ColorSpace colorSpace, bool requiresPMColorVal
     m_imageFilters[index] = imageFilter;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -38,7 +38,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT ColorChooserClient {
 public:
@@ -52,6 +52,6 @@ public:
     virtual Vector<ColorSuggestion> suggestions() const = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ColorChooserClient_h

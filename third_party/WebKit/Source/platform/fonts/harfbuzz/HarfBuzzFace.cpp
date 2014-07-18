@@ -35,7 +35,7 @@
 #include "hb-ot.h"
 #include "hb.h"
 
-namespace WebCore {
+namespace blink {
 
 const hb_tag_t HarfBuzzFace::vertTag = HB_TAG('v', 'e', 'r', 't');
 const hb_tag_t HarfBuzzFace::vrt2Tag = HB_TAG('v', 'r', 't', '2');
@@ -128,4 +128,4 @@ void HarfBuzzFace::setScriptForVerticalGlyphSubstitution(hb_buffer_t* buffer)
     hb_buffer_set_script(buffer, m_scriptForVerticalText);
 }
 
-} // namespace WebCore
+} // namespace blink

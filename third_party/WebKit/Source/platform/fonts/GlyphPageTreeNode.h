@@ -42,7 +42,7 @@ void PLATFORM_EXPORT showGlyphPageTrees();
 void PLATFORM_EXPORT showGlyphPageTree(unsigned pageNumber);
 #endif
 
-namespace WebCore {
+namespace blink {
 
 class FontData;
 class SimpleFontData;
@@ -137,6 +137,6 @@ private:
 #endif
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GlyphPageTreeNode_h

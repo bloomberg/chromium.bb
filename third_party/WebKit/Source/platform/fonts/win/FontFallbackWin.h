@@ -40,7 +40,7 @@
 
 class SkFontMgr;
 
-namespace WebCore {
+namespace blink {
 
 // Return a font family that can render |character| based on what script
 // that characters belong to.
@@ -51,6 +51,6 @@ PLATFORM_EXPORT const UChar* getFallbackFamily(UChar32 character,
     UScriptCode* scriptChecked,
     SkFontMgr* fontManager);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FontFallbackWin_h

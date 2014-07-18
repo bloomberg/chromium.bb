@@ -29,7 +29,7 @@
 #include "platform/scheduler/Scheduler.h"
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 void setSharedTimerFiredFunction(void (*f)())
 {
@@ -46,4 +46,4 @@ void stopSharedTimer()
     Scheduler::shared()->stopSharedTimer();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -34,7 +34,7 @@
 
 #include "platform/text/TextStream.h"
 
-namespace WebCore {
+namespace blink {
 
 // spot-light edge darkening depends on an absolute treshold
 // according to the SVG 1.1 SE light regression tests
@@ -146,4 +146,4 @@ TextStream& SpotLightSource::externalRepresentation(TextStream& ts) const
     return ts;
 }
 
-}; // namespace WebCore
+}; // namespace blink

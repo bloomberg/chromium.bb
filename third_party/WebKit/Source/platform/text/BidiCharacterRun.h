@@ -25,7 +25,7 @@
 #include "platform/text/BidiContext.h"
 #include "platform/text/TextDirection.h"
 
-namespace WebCore {
+namespace blink {
 
 struct BidiCharacterRun {
     BidiCharacterRun(int start, int stop, BidiContext* context, WTF::Unicode::Direction dir)
@@ -75,6 +75,6 @@ struct BidiCharacterRun {
     int m_stop;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BidiCharacterRun_h

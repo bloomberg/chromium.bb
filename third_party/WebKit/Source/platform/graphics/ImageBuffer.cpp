@@ -59,7 +59,7 @@
 
 using namespace std;
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtr<ImageBuffer> ImageBuffer::create(PassOwnPtr<ImageBufferSurface> surface)
 {
@@ -421,4 +421,4 @@ String ImageDataToDataURL(const ImageDataBuffer& imageData, const String& mimeTy
     return "data:" + mimeType + ";base64," + base64Data;
 }
 
-} // namespace WebCore
+} // namespace blink

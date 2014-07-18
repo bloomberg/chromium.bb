@@ -31,7 +31,7 @@
 #ifndef WritingMode_h
 #define WritingMode_h
 
-namespace WebCore {
+namespace blink {
 
 enum WritingMode {
     TopToBottomWritingMode, RightToLeftWritingMode, LeftToRightWritingMode, BottomToTopWritingMode
@@ -55,6 +55,6 @@ inline bool isFlippedBlocksWritingMode(WritingMode writingMode)
     return writingMode == RightToLeftWritingMode || writingMode == BottomToTopWritingMode;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WritingMode_h

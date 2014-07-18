@@ -35,7 +35,7 @@ namespace blink {
 class WebSourceInfo;
 }
 
-namespace WebCore {
+namespace blink {
 
 class MediaStreamTrackSourcesRequest : public GarbageCollectedFinalized<MediaStreamTrackSourcesRequest> {
 public:
@@ -61,6 +61,6 @@ private:
     OwnPtr<ExtraData> m_extraData;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaStreamTrackSourcesRequest_h

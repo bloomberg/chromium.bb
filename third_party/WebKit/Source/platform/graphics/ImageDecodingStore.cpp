@@ -29,7 +29,7 @@
 #include "platform/TraceEvent.h"
 #include "wtf/Threading.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -427,4 +427,4 @@ void ImageDecodingStore::removeFromCacheListInternal(const Vector<OwnPtr<CacheEn
         m_orderedCacheList.remove(deletionList[i].get());
 }
 
-} // namespace WebCore
+} // namespace blink

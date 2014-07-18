@@ -39,7 +39,7 @@ typedef struct CGSize CGSize;
 #endif
 #endif
 
-namespace WebCore {
+namespace blink {
 
 class IntSize;
 class LayoutSize;
@@ -194,6 +194,6 @@ inline IntPoint flooredIntPoint(const FloatSize& p)
     return IntPoint(clampToInteger(floorf(p.width())), clampToInteger(floorf(p.height())));
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FloatSize_h

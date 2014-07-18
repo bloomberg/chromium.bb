@@ -31,13 +31,13 @@
 #ifndef PasteMode_h
 #define PasteMode_h
 
-namespace WebCore {
+namespace blink {
 
 enum PasteMode {
     AllMimeTypes,
     PlainTextOnly,
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

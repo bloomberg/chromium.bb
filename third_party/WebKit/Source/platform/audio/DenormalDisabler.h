@@ -29,7 +29,7 @@
 #include "wtf/MathExtras.h"
 #include <float.h>
 
-namespace WebCore {
+namespace blink {
 
 // Deal with denormals. They can very seriously impact performance on x86.
 

@@ -37,7 +37,7 @@
 #include "platform/audio/AudioDSPKernel.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 // setNumberOfChannels() may later be called if the object is not yet in an "initialized" state.
 AudioDSPKernelProcessor::AudioDSPKernelProcessor(float sampleRate, unsigned numberOfChannels)
@@ -152,6 +152,6 @@ double AudioDSPKernelProcessor::latencyTime() const
     return std::numeric_limits<double>::infinity();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

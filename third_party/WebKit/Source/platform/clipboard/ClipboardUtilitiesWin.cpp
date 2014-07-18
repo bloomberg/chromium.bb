@@ -32,7 +32,7 @@
 
 #include <shlwapi.h>
 
-namespace WebCore {
+namespace blink {
 
 // FAT32 and NTFS both limit filenames to a maximum of 255 characters.
 static const unsigned maxFilenameLength = 255;
@@ -70,4 +70,4 @@ void validateFilename(String& name, String& extension)
     name.truncate(maxFilenameLength - extension.length() - 1);
 }
 
-} // namespace WebCore
+} // namespace blink

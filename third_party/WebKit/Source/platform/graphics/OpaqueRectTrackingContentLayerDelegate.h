@@ -32,7 +32,7 @@
 
 class SkCanvas;
 
-namespace WebCore {
+namespace blink {
 
 class GraphicsContext;
 class IntRect;

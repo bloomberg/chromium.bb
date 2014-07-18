@@ -39,7 +39,7 @@ typedef struct CGRect CGRect;
 #endif
 #endif
 
-namespace WebCore {
+namespace blink {
 
 class LayoutRect;
 class IntRect;

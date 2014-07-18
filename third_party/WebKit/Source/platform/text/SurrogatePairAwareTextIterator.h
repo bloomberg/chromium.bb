@@ -25,7 +25,7 @@
 #include "wtf/text/WTFString.h"
 #include "wtf/unicode/CharacterNames.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT SurrogatePairAwareTextIterator {
 public:

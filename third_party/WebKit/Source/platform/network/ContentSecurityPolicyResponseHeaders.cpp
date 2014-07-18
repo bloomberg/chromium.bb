@@ -28,7 +28,7 @@
 
 #include "platform/network/ResourceResponse.h"
 
-namespace WebCore {
+namespace blink {
 
 ContentSecurityPolicyResponseHeaders::ContentSecurityPolicyResponseHeaders(const ResourceResponse& response)
     : m_contentSecurityPolicy(response.httpHeaderField("Content-Security-Policy"))

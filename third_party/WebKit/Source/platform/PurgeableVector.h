@@ -42,7 +42,7 @@ class WebDiscardableMemory;
 
 } // namespace blink
 
-namespace WebCore {
+namespace blink {
 
 // A simple vector implementation that supports purgeable memory. The vector is
 // already locked at construction and locking uses an internal counter which
@@ -122,6 +122,6 @@ private:
     int m_locksCount;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PurgeableVector_h

@@ -29,7 +29,7 @@
 
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 enum FontWeight {
     FontWeight100,
@@ -105,5 +105,5 @@ struct FontTraits {
     };
 };
 
-} // namespace WebCore
+} // namespace blink
 #endif // FontTraits_h

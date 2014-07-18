@@ -32,7 +32,7 @@
 #include "public/platform/Platform.h"
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 void FontCache::getFontForCharacter(UChar32 c, const char* preferredLocale, FontCache::PlatformFallbackFont* fallbackFont)
 {

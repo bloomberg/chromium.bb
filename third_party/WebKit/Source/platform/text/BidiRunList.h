@@ -26,7 +26,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 template <class Run>
 class BidiRunList {
@@ -248,6 +248,6 @@ void BidiRunList<Run>::reverseRuns(unsigned start, unsigned end)
         m_lastRun = startRun;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BidiRunList

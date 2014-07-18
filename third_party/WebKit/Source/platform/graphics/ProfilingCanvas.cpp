@@ -33,7 +33,7 @@
 
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 class AutoStamper {
 public:

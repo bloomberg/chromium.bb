@@ -28,7 +28,7 @@
 
 #include "platform/scroll/ScrollbarThemeOverlay.h"
 
-namespace WebCore {
+namespace blink {
 
 ScrollbarTheme* ScrollbarTheme::nativeTheme()
 {
@@ -36,4 +36,4 @@ ScrollbarTheme* ScrollbarTheme::nativeTheme()
     return &theme;
 }
 
-} // namespace WebCore
+} // namespace blink

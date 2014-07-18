@@ -33,7 +33,7 @@
 
 #include "platform/scroll/FramelessScrollViewClient.h"
 
-namespace WebCore {
+namespace blink {
 
 FramelessScrollView::~FramelessScrollView()
 {
@@ -97,4 +97,4 @@ void FramelessScrollView::scrollbarExistenceDidChange()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

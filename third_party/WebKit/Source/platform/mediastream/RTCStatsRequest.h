@@ -35,7 +35,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class MediaStreamComponent;
 class MediaStreamDescriptor;
@@ -54,6 +54,6 @@ protected:
     RTCStatsRequest() { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCStatsRequest_h

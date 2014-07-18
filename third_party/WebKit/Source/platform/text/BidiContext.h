@@ -29,7 +29,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/unicode/Unicode.h"
 
-namespace WebCore {
+namespace blink {
 
 enum BidiEmbeddingSource {
     FromStyleOrDOM,
@@ -86,6 +86,6 @@ inline unsigned char nextGreaterEvenLevel(unsigned char level)
 
 PLATFORM_EXPORT bool operator==(const BidiContext&, const BidiContext&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BidiContext_h

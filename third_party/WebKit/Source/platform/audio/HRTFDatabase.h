@@ -36,7 +36,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class HRTFKernel;
 
@@ -80,6 +80,6 @@ private:
     float m_sampleRate;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HRTFDatabase_h

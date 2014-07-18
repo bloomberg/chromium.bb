@@ -56,7 +56,7 @@ struct IDWriteFactory;
 
 class SkTypeface;
 
-namespace WebCore {
+namespace blink {
 
 class FontCacheClient;
 class FontFaceCreationParams;

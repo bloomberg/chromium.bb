@@ -32,7 +32,7 @@
 
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 static inline float determinant(const FloatSize& a, const FloatSize& b)
 {
@@ -251,4 +251,4 @@ bool VertexPair::intersection(const VertexPair& other, FloatPoint& point) const
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -44,7 +44,7 @@ typedef id ScrollbarPainterController;
 class ScrollElasticityControllerClient { };
 #endif
 
-namespace WebCore {
+namespace blink {
 
 class Scrollbar;
 
@@ -137,7 +137,7 @@ private:
     virtual bool pinnedInDirection(const FloatSize&) OVERRIDE;
     virtual bool canScrollHorizontally() OVERRIDE;
     virtual bool canScrollVertically() OVERRIDE;
-    virtual WebCore::IntPoint absoluteScrollPosition() OVERRIDE;
+    virtual blink::IntPoint absoluteScrollPosition() OVERRIDE;
     virtual void immediateScrollByWithoutContentEdgeConstraints(const FloatSize&) OVERRIDE;
     virtual void immediateScrollBy(const FloatSize&) OVERRIDE;
     virtual void startSnapRubberbandTimer() OVERRIDE;
@@ -156,6 +156,6 @@ private:
     IntRect m_visibleScrollerThumbRect;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScrollAnimatorMac_h

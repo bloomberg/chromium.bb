@@ -38,7 +38,7 @@
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class BlobDataHandle;
 
@@ -232,6 +232,6 @@ private:
     const long long m_size;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BlobData_h

@@ -84,7 +84,7 @@ struct GIFFrameContext;
 class GIFLZWContext {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    GIFLZWContext(WebCore::GIFImageDecoder* client, const GIFFrameContext* frameContext)
+    GIFLZWContext(blink::GIFImageDecoder* client, const GIFFrameContext* frameContext)
         : codesize(0)
         , codemask(0)
         , clearCode(0)
@@ -127,7 +127,7 @@ private:
     GIFRow::iterator rowIter;
 
     // Initialized during construction and read-only.
-    WebCore::GIFImageDecoder* m_client;
+    blink::GIFImageDecoder* m_client;
     const GIFFrameContext* m_frameContext;
 };
 
@@ -148,7 +148,7 @@ public:
 class GIFColorMap {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    typedef Vector<WebCore::ImageFrame::PixelData> Table;
+    typedef Vector<blink::ImageFrame::PixelData> Table;
 
     GIFColorMap()
         : m_isDefined(false)
@@ -188,7 +188,7 @@ public:
         , m_width(0)
         , m_height(0)
         , m_transparentPixel(kNotFound)
-        , m_disposalMethod(WebCore::ImageFrame::DisposeNotSpecified)
+        , m_disposalMethod(blink::ImageFrame::DisposeNotSpecified)
         , m_dataSize(0)
         , m_progressiveDisplay(false)
         , m_interlaced(false)
@@ -209,7 +209,7 @@ public:
         m_lzwBlocks.append(GIFLZWBlock(position, size));
     }
 
-    bool decode(const unsigned char* data, size_t length, WebCore::GIFImageDecoder* client, bool* frameDecoded);
+    bool decode(const unsigned char* data, size_t length, blink::GIFImageDecoder* client, bool* frameDecoded);
 
     int frameId() const { return m_frameId; }
     void setRect(unsigned x, unsigned y, unsigned width, unsigned height)
@@ -219,15 +219,15 @@ public:
         m_width = width;
         m_height = height;
     }
-    WebCore::IntRect frameRect() const { return WebCore::IntRect(m_xOffset, m_yOffset, m_width, m_height); }
+    blink::IntRect frameRect() const { return blink::IntRect(m_xOffset, m_yOffset, m_width, m_height); }
     unsigned xOffset() const { return m_xOffset; }
     unsigned yOffset() const { return m_yOffset; }
     unsigned width() const { return m_width; }
     unsigned height() const { return m_height; }
     size_t transparentPixel() const { return m_transparentPixel; }
     void setTransparentPixel(size_t pixel) { m_transparentPixel = pixel; }
-    WebCore::ImageFrame::DisposalMethod disposalMethod() const { return m_disposalMethod; }
-    void setDisposalMethod(WebCore::ImageFrame::DisposalMethod disposalMethod) { m_disposalMethod = disposalMethod; }
+    blink::ImageFrame::DisposalMethod disposalMethod() const { return m_disposalMethod; }
+    void setDisposalMethod(blink::ImageFrame::DisposalMethod disposalMethod) { m_disposalMethod = disposalMethod; }
     unsigned delayTime() const { return m_delayTime; }
     void setDelayTime(unsigned delay) { m_delayTime = delay; }
     bool isComplete() const { return m_isComplete; }
@@ -257,7 +257,7 @@ private:
     unsigned m_width;
     unsigned m_height;
     size_t m_transparentPixel; // Index of transparent pixel. Value is kNotFound if there is no transparent pixel.
-    WebCore::ImageFrame::DisposalMethod m_disposalMethod; // Restore to background, leave in place, etc.
+    blink::ImageFrame::DisposalMethod m_disposalMethod; // Restore to background, leave in place, etc.
     int m_dataSize;
 
     bool m_progressiveDisplay; // If true, do Haeberli interlace hack.
@@ -278,7 +278,7 @@ private:
 class PLATFORM_EXPORT GIFImageReader {
     WTF_MAKE_FAST_ALLOCATED; WTF_MAKE_NONCOPYABLE(GIFImageReader);
 public:
-    GIFImageReader(WebCore::GIFImageDecoder* client = 0)
+    GIFImageReader(blink::GIFImageDecoder* client = 0)
         : m_client(client)
         , m_state(GIFType)
         , m_bytesToConsume(6) // Number of bytes for GIF type, either "GIF87a" or "GIF89a".
@@ -295,8 +295,8 @@ public:
     {
     }
 
-    void setData(PassRefPtr<WebCore::SharedBuffer> data) { m_data = data; }
-    bool parse(WebCore::GIFImageDecoder::GIFParseQuery);
+    void setData(PassRefPtr<blink::SharedBuffer> data) { m_data = data; }
+    bool parse(blink::GIFImageDecoder::GIFParseQuery);
     bool decode(size_t frameIndex);
 
     size_t imagesCount() const
@@ -326,7 +326,7 @@ public:
     void clearDecodeState(size_t index) { m_frames[index]->clearDecodeState(); }
 
 private:
-    bool parseData(size_t dataPosition, size_t len, WebCore::GIFImageDecoder::GIFParseQuery);
+    bool parseData(size_t dataPosition, size_t len, blink::GIFImageDecoder::GIFParseQuery);
     void setRemainingBytes(size_t);
 
     const unsigned char* data(size_t dataPosition) const
@@ -340,7 +340,7 @@ private:
         return m_frames.isEmpty() || (m_frames.size() == 1u && !m_frames[0]->isComplete());
     }
 
-    WebCore::GIFImageDecoder* m_client;
+    blink::GIFImageDecoder* m_client;
 
     // Parsing state machine.
     GIFState m_state; // Current decoder master state.
@@ -356,7 +356,7 @@ private:
 
     Vector<OwnPtr<GIFFrameContext> > m_frames;
 
-    RefPtr<WebCore::SharedBuffer> m_data;
+    RefPtr<blink::SharedBuffer> m_data;
     bool m_parseCompleted;
 };
 

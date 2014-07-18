@@ -37,9 +37,9 @@
 
 #include <gtest/gtest.h>
 
-using WebCore::SecurityOrigin;
-using WebCore::createDatabaseIdentifierFromSecurityOrigin;
-using WebCore::createSecurityOriginFromDatabaseIdentifier;
+using blink::SecurityOrigin;
+using blink::createDatabaseIdentifierFromSecurityOrigin;
+using blink::createSecurityOriginFromDatabaseIdentifier;
 
 namespace {
 

@@ -34,7 +34,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 PLATFORM_EXPORT void quotedPrintableEncode(const Vector<char>&, Vector<char>&);
 PLATFORM_EXPORT void quotedPrintableEncode(const char*, size_t, Vector<char>&);
@@ -42,6 +42,6 @@ PLATFORM_EXPORT void quotedPrintableEncode(const char*, size_t, Vector<char>&);
 PLATFORM_EXPORT void quotedPrintableDecode(const Vector<char>&, Vector<char>&);
 PLATFORM_EXPORT void quotedPrintableDecode(const char*, size_t, Vector<char>&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // QuotedPrintable_h

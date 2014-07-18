@@ -42,7 +42,7 @@
 #undef Complex
 #endif
 
-namespace WebCore {
+namespace blink {
 
 class FloatPoint;
 class FloatRect;

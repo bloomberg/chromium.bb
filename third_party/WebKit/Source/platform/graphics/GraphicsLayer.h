@@ -55,7 +55,7 @@ class WebAnimation;
 class WebLayer;
 }
 
-namespace WebCore {
+namespace blink {
 
 class FloatRect;
 class GraphicsContext;
@@ -363,11 +363,11 @@ private:
     int m_3dRenderingContext;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void PLATFORM_EXPORT showGraphicsLayerTree(const WebCore::GraphicsLayer*);
+void PLATFORM_EXPORT showGraphicsLayerTree(const blink::GraphicsLayer*);
 #endif
 
 #endif // GraphicsLayer_h

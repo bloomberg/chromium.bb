@@ -35,7 +35,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/CString.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

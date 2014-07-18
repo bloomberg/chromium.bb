@@ -29,7 +29,7 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 
-namespace WebCore {
+namespace blink {
 
 FloatRect::FloatRect(const CGRect& r) : m_location(r.origin), m_size(r.size)
 {

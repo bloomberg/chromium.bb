@@ -27,7 +27,7 @@
 #include "platform/graphics/filters/FilterEffect.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 enum ColorMatrixType {
     FECOLORMATRIX_TYPE_UNKNOWN          = 0,
@@ -65,6 +65,6 @@ private:
     Vector<float> m_values;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FEColorMatrix_h

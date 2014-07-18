@@ -34,7 +34,7 @@
 #include "platform/PlatformInstrumentation.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 // Number of bits in .BMP used to store the file header (doesn't match
 // "sizeof(BMPImageDecoder::BitmapFileHeader)" since we omit some fields and
@@ -153,4 +153,4 @@ bool BMPImageDecoder::processFileHeader(size_t* imgDataOffset)
     return (fileType == BMAP) || setFailed();
 }
 
-} // namespace WebCore
+} // namespace blink

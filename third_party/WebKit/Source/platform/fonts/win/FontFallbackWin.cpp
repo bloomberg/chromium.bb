@@ -40,7 +40,7 @@
 #include <unicode/locid.h>
 #include <unicode/uchar.h>
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -348,4 +348,4 @@ const UChar* getFallbackFamily(UChar32 character,
     return family;
 }
 
-} // namespace WebCore
+} // namespace blink

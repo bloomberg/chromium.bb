@@ -34,7 +34,7 @@
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class PlatformWheelEvent;
 
@@ -53,7 +53,7 @@ public:
     virtual bool canScrollVertically() = 0;
 
     // Return the absolute scroll position, not relative to the scroll origin.
-    virtual WebCore::IntPoint absoluteScrollPosition() = 0;
+    virtual blink::IntPoint absoluteScrollPosition() = 0;
 
     virtual void immediateScrollBy(const FloatSize&) = 0;
     virtual void immediateScrollByWithoutContentEdgeConstraints(const FloatSize&) = 0;
@@ -134,7 +134,7 @@ private:
     bool m_snapRubberbandTimerIsActive;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // USE(RUBBER_BANDING)
 

@@ -27,7 +27,7 @@
 
 #include "platform/transforms/TransformOperation.h"
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT IdentityTransformOperation : public TransformOperation {
 public:
@@ -63,6 +63,6 @@ private:
 
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IdentityTransformOperation_h

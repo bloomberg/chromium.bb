@@ -36,7 +36,7 @@
 #include <ipps.h>
 #endif // USE(WEBAUDIO_IPP)
 
-namespace WebCore {
+namespace blink {
 
 class PLATFORM_EXPORT DirectConvolver {
 public:
@@ -55,6 +55,6 @@ private:
     AudioFloatArray m_buffer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DirectConvolver_h

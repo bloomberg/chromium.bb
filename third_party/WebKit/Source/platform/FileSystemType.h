@@ -31,7 +31,7 @@
 #ifndef FileSystemType_h
 #define FileSystemType_h
 
-namespace WebCore {
+namespace blink {
 
 // For file system types used in FileSystem API.
 enum FileSystemType {
@@ -45,6 +45,6 @@ enum FileSystemType {
     FileSystemTypeExternal,
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FileSystemType_h

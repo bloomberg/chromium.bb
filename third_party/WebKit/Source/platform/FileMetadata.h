@@ -37,7 +37,7 @@
 #include "wtf/text/WTFString.h"
 #include <time.h>
 
-namespace WebCore {
+namespace blink {
 
 inline double invalidFileTime() { return std::numeric_limits<double>::quiet_NaN(); }
 inline bool isValidFileTime(double time) { return std::isfinite(time); }
@@ -69,6 +69,6 @@ PLATFORM_EXPORT bool getFileMetadata(const String&, FileMetadata&);
 PLATFORM_EXPORT String directoryName(const String&);
 PLATFORM_EXPORT KURL filePathToURL(const String&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FileMetadata_h

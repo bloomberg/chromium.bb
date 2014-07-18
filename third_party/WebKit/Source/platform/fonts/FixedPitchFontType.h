@@ -5,7 +5,7 @@
 #ifndef FixedPitchFontType_h
 #define FixedPitchFontType_h
 
-namespace WebCore {
+namespace blink {
 
 enum FixedPitchFontType {
     FixedPitchFont,

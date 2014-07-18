@@ -46,7 +46,7 @@ static inline float gaussianKernelFactor()
 
 static const int gMaxKernelSize = 1000;
 
-namespace WebCore {
+namespace blink {
 
 FEGaussianBlur::FEGaussianBlur(Filter* filter, float x, float y)
     : FilterEffect(filter)
@@ -185,4 +185,4 @@ TextStream& FEGaussianBlur::externalRepresentation(TextStream& ts, int indent) c
     return ts;
 }
 
-} // namespace WebCore
+} // namespace blink

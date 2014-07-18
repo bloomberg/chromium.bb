@@ -41,19 +41,19 @@ CTLineRef CTLineCreateWithUniCharProvider(const UniChar* (*provide)(CFIndex stri
 
 @interface WebCascadeList : NSArray {
     @private
-    const WebCore::Font* _font;
+    const blink::Font* _font;
     UChar32 _character;
     NSUInteger _count;
     Vector<RetainPtr<CTFontDescriptorRef>, 16> _fontDescriptors;
 }
 
-- (id)initWithFont:(const WebCore::Font*)font character:(UChar32)character;
+- (id)initWithFont:(const blink::Font*)font character:(UChar32)character;
 
 @end
 
 @implementation WebCascadeList
 
-- (id)initWithFont:(const WebCore::Font*)font character:(UChar32)character
+- (id)initWithFont:(const blink::Font*)font character:(UChar32)character
 {
     if (!(self = [super init]))
         return nil;
@@ -83,7 +83,7 @@ CTLineRef CTLineCreateWithUniCharProvider(const UniChar* (*provide)(CFIndex stri
     } else
         _fontDescriptors.grow(index + 1);
 
-    const WebCore::SimpleFontData* fontData = _font->fontDataAt(index)->fontDataForCharacter(_character);
+    const blink::SimpleFontData* fontData = _font->fontDataAt(index)->fontDataForCharacter(_character);
     fontDescriptor = CTFontCopyFontDescriptor(fontData->platformData().ctFont());
     _fontDescriptors[index] = RetainPtr<CTFontDescriptorRef>(AdoptCF, fontDescriptor);
     return (id)fontDescriptor;
@@ -91,7 +91,7 @@ CTLineRef CTLineCreateWithUniCharProvider(const UniChar* (*provide)(CFIndex stri
 
 @end
 
-namespace WebCore {
+namespace blink {
 
 ComplexTextController::ComplexTextRun::ComplexTextRun(CTRunRef ctRun, const SimpleFontData* fontData, const UChar* characters, unsigned stringLocation, size_t stringLength, CFRange runRange)
     : m_fontData(fontData)
@@ -294,4 +294,4 @@ void ComplexTextController::collectComplexTextRunsForCharacters(const UChar* cp,
     }
 }
 
-} // namespace WebCore
+} // namespace blink

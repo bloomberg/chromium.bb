@@ -41,7 +41,7 @@
 #include "public/platform/WebURLLoadTiming.h"
 #include "wtf/RefPtr.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

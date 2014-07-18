@@ -35,7 +35,7 @@
 #include "platform/image-decoders/ImageDecoder.h"
 #include "wtf/CPU.h"
 
-namespace WebCore {
+namespace blink {
 
 // This class decodes a BMP image.  It is used in the BMP and ICO decoders,
 // which wrap it in the appropriate code to read file headers, etc.
@@ -349,6 +349,6 @@ private:
     bool m_decodingAndMask;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -33,7 +33,7 @@
 
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class SharedBuffer;
 
@@ -52,6 +52,6 @@ private:
     SharedBuffer* const m_buffer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // OpenTypeSanitizer_h

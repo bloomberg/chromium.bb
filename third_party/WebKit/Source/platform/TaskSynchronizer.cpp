@@ -31,7 +31,7 @@
 
 #include "heap/ThreadState.h"
 
-namespace WebCore {
+namespace blink {
 
 TaskSynchronizer::TaskSynchronizer()
     : m_taskCompleted(false)
@@ -70,4 +70,4 @@ void TaskSynchronizer::taskCompleted()
     m_synchronousMutex.unlock();
 }
 
-} // namespace WebCore
+} // namespace blink

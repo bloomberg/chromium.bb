@@ -36,7 +36,7 @@
 #include "platform/audio/AudioUtilities.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace AudioUtilities;
 
@@ -207,6 +207,6 @@ void DynamicsCompressor::setNumberOfChannels(unsigned numberOfChannels)
     m_numberOfChannels = numberOfChannels;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

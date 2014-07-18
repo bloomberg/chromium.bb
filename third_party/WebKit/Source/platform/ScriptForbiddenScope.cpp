@@ -8,7 +8,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 static unsigned s_scriptForbiddenCount = 0;
 
@@ -40,4 +40,4 @@ ScriptForbiddenScope::AllowUserAgentScript::~AllowUserAgentScript()
     ASSERT(!s_scriptForbiddenCount);
 }
 
-} // namespace WebCore
+} // namespace blink

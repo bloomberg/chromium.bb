@@ -39,7 +39,7 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class JSONArray;
 class JSONObject;
@@ -314,6 +314,6 @@ public:
     using JSONArrayBase::end;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(JSONValues_h)

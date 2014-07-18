@@ -35,7 +35,7 @@
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 template <typename TargetClass>
 class AsyncMethodRunner FINAL {

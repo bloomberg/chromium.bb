@@ -33,7 +33,7 @@
 #include "platform/geometry/FloatPoint3D.h"
 #include <cmath>
 
-namespace WebCore {
+namespace blink {
 
 class FloatBox {
 public:

@@ -31,7 +31,7 @@ namespace WTF{
 class TextEncoding;
 }
 
-namespace WebCore {
+namespace blink {
 
 class BlobDataHandle;
 
@@ -161,6 +161,6 @@ inline bool operator!=(const FormData& a, const FormData& b)
     return !(a == b);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

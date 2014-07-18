@@ -34,7 +34,7 @@
 #include "platform/heap/ThreadState.h"
 #include "public/platform/WebThread.h"
 
-namespace WebCore {
+namespace blink {
 
 class MessageLoopInterruptor : public ThreadState::Interruptor {
 public:

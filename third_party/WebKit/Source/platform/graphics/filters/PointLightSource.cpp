@@ -33,7 +33,7 @@
 
 #include "platform/text/TextStream.h"
 
-namespace WebCore {
+namespace blink {
 
 void PointLightSource::initPaintingData(PaintingData&) const
 {
@@ -68,4 +68,4 @@ TextStream& PointLightSource::externalRepresentation(TextStream& ts) const
     return ts;
 }
 
-}; // namespace WebCore
+}; // namespace blink

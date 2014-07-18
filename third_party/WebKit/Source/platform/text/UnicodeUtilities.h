@@ -31,7 +31,7 @@
 #include "wtf/text/WTFString.h"
 #include "wtf/unicode/Unicode.h"
 
-namespace WebCore {
+namespace blink {
 
 PLATFORM_EXPORT bool isSeparator(UChar32);
 PLATFORM_EXPORT bool isKanaLetter(UChar character);
@@ -42,6 +42,6 @@ PLATFORM_EXPORT void foldQuoteMarksAndSoftHyphens(String&);
 PLATFORM_EXPORT bool checkOnlyKanaLettersInStrings(const UChar* firstData, unsigned firstLength, const UChar* secondData, unsigned secondLength);
 PLATFORM_EXPORT bool checkKanaStringsEqual(const UChar* firstData, unsigned firstLength, const UChar* secondData, unsigned secondLength);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // UnicodeUtilities_h

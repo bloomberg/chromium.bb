@@ -28,7 +28,7 @@
 #include "platform/image-decoders/ImageDecoder.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class MockImageDecoderClient {
 public:
@@ -144,6 +144,6 @@ private:
     IntSize m_decodedSize;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MockImageDecoder_h

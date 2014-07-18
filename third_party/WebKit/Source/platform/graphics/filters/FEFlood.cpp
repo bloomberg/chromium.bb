@@ -32,7 +32,7 @@
 #include "platform/text/TextStream.h"
 #include "third_party/skia/include/core/SkDevice.h"
 
-namespace WebCore {
+namespace blink {
 
 FEFlood::FEFlood(Filter* filter, const Color& floodColor, float floodOpacity)
     : FilterEffect(filter)
@@ -103,4 +103,4 @@ TextStream& FEFlood::externalRepresentation(TextStream& ts, int indent) const
     return ts;
 }
 
-} // namespace WebCore
+} // namespace blink
