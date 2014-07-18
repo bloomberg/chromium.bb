@@ -47,8 +47,6 @@
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/accessibility/renderer_accessibility.h"
-#include "content/renderer/accessibility/renderer_accessibility_complete.h"
-#include "content/renderer/accessibility/renderer_accessibility_focus_only.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/child_frame_compositing_helper.h"
@@ -413,8 +411,6 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       geolocation_dispatcher_(NULL),
       push_messaging_dispatcher_(NULL),
       screen_orientation_dispatcher_(NULL),
-      accessibility_mode_(AccessibilityModeOff),
-      renderer_accessibility_(NULL),
       weak_factory_(this) {
   std::pair<RoutingIDFrameMap::iterator, bool> result =
       g_routing_id_frame_map.Get().insert(std::make_pair(routing_id_, this));
@@ -505,8 +501,8 @@ void RenderFrameImpl::PepperTextInputTypeChanged(
 
   GetRenderWidget()->UpdateTextInputState(
       RenderWidget::NO_SHOW_IME, RenderWidget::FROM_NON_IME);
-  if (renderer_accessibility())
-    renderer_accessibility()->FocusedNodeChanged(WebNode());
+  if (render_view_->renderer_accessibility())
+    render_view_->renderer_accessibility()->FocusedNodeChanged(WebNode());
 }
 
 void RenderFrameImpl::PepperCaretPositionChanged(
@@ -727,8 +723,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnTextSurroundingSelectionRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_AddStyleSheetByURL,
                         OnAddStyleSheetByURL)
-    IPC_MESSAGE_HANDLER(FrameMsg_SetAccessibilityMode,
-                        OnSetAccessibilityMode)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(InputMsg_CopyToFindPboard, OnCopyToFindPboard)
 #endif
@@ -1182,25 +1176,6 @@ void RenderFrameImpl::OnExtendSelectionAndDelete(int before, int after) {
     return;
   ImeEventGuard guard(GetRenderWidget());
   frame_->extendSelectionAndDelete(before, after);
-}
-
-void RenderFrameImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {
-  if (accessibility_mode_ == new_mode)
-    return;
-  accessibility_mode_ = new_mode;
-  if (renderer_accessibility_) {
-    delete renderer_accessibility_;
-    renderer_accessibility_ = NULL;
-  }
-  if (accessibility_mode_ == AccessibilityModeOff)
-    return;
-
-  if (accessibility_mode_ & AccessibilityModeFlagFullTree)
-    renderer_accessibility_ = new RendererAccessibilityComplete(this);
-#if !defined(OS_ANDROID)
-  else
-    renderer_accessibility_ = new RendererAccessibilityFocusOnly(this);
-#endif
 }
 
 void RenderFrameImpl::OnReload(bool ignore_cache) {
@@ -3158,17 +3133,6 @@ void RenderFrameImpl::didStopLoading() {
 
 void RenderFrameImpl::didChangeLoadProgress(double load_progress) {
   Send(new FrameHostMsg_DidChangeLoadProgress(routing_id_, load_progress));
-}
-
-void RenderFrameImpl::HandleWebAccessibilityEvent(
-    const blink::WebAXObject& obj, blink::WebAXEvent event) {
-  if (renderer_accessibility_)
-    renderer_accessibility_->HandleWebAccessibilityEvent(obj, event);
-}
-
-void RenderFrameImpl::FocusedNodeChanged(const WebNode& node) {
-  if (renderer_accessibility_)
-    renderer_accessibility_->FocusedNodeChanged(node);
 }
 
 WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(

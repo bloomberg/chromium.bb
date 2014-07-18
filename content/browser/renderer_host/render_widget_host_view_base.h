@@ -50,7 +50,6 @@ struct WebScreenInfo;
 }
 
 namespace content {
-class BrowserAccessibilityDelegate;
 class BrowserAccessibilityManager;
 class SyntheticGesture;
 class SyntheticGestureTarget;
@@ -88,6 +87,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   void SetPopupType(blink::WebPopupType popup_type);
 
   blink::WebPopupType GetPopupType();
+
+  // Get the BrowserAccessibilityManager if it exists, may return NULL.
+  BrowserAccessibilityManager* GetBrowserAccessibilityManager() const;
+
+  void SetBrowserAccessibilityManager(BrowserAccessibilityManager* manager);
 
   // Return a value that is incremented each time the renderer swaps a new frame
   // to the view.
@@ -147,11 +151,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Return true if frame subscription is supported on this platform.
   virtual bool CanSubscribeFrame() const;
 
-  // Create a BrowserAccessibilityManager for this view.
-  virtual BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
-      BrowserAccessibilityDelegate* delegate);
+  // Create a BrowserAccessibilityManager for this view if it's possible to
+  // create one and if one doesn't exist already. Some ports may not create
+  // one depending on the current state.
+  virtual void CreateBrowserAccessibilityManagerIfNeeded();
 
-  virtual void AccessibilityShowMenu(const gfx::Point& point);
+  virtual void OnAccessibilitySetFocus(int acc_obj_id);
+  virtual void AccessibilityShowMenu(int acc_obj_id);
   virtual gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds);
 
   virtual SkColorType PreferredReadbackFormat();
@@ -419,6 +425,9 @@ protected:
 
  private:
   void FlushInput();
+
+  // Manager of the tree representation of the WebKit render tree.
+  scoped_ptr<BrowserAccessibilityManager> browser_accessibility_manager_;
 
   gfx::Rect current_display_area_;
 

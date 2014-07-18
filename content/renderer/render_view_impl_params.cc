@@ -22,7 +22,8 @@ RenderViewImplParams::RenderViewImplParams(
     bool hidden,
     bool never_visible,
     int32 next_page_id,
-    const blink::WebScreenInfo& screen_info)
+    const blink::WebScreenInfo& screen_info,
+    AccessibilityMode accessibility_mode)
     : opener_id(opener_id),
       window_was_created_with_opener(window_was_created_with_opener),
       renderer_prefs(renderer_prefs),
@@ -38,7 +39,8 @@ RenderViewImplParams::RenderViewImplParams(
       hidden(hidden),
       never_visible(never_visible),
       next_page_id(next_page_id),
-      screen_info(screen_info) {}
+      screen_info(screen_info),
+      accessibility_mode(accessibility_mode) {}
 
 RenderViewImplParams::~RenderViewImplParams() {}
 

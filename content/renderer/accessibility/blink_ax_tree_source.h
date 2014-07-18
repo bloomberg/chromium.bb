@@ -11,12 +11,12 @@
 
 namespace content {
 
-class RenderFrameImpl;
+class RenderViewImpl;
 
 class BlinkAXTreeSource
     : public ui::AXTreeSource<blink::WebAXObject> {
  public:
-  BlinkAXTreeSource(RenderFrameImpl* render_frame);
+  BlinkAXTreeSource(RenderViewImpl* render_view);
   virtual ~BlinkAXTreeSource();
 
   // Walks up the ancestor chain to see if this is a descendant of the root.
@@ -41,7 +41,7 @@ class BlinkAXTreeSource
   blink::WebDocument GetMainDocument() const;
 
  private:
-  RenderFrameImpl* render_frame_;
+  RenderViewImpl* render_view_;
 };
 
 }  // namespace content

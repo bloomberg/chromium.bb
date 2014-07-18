@@ -8,9 +8,8 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -27,9 +26,9 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(Shell* shell)
       weak_factory_(this),
       event_target_id_(0) {
   WebContents* web_contents = shell_->web_contents();
-  frame_host_ = static_cast<RenderFrameHostImpl*>(
-      web_contents->GetMainFrame());
-  frame_host_->SetAccessibilityCallbackForTesting(
+  view_host_ = static_cast<RenderViewHostImpl*>(
+      web_contents->GetRenderViewHost());
+  view_host_->SetAccessibilityCallbackForTesting(
       base::Bind(&AccessibilityNotificationWaiter::OnAccessibilityEvent,
                  weak_factory_.GetWeakPtr()));
 }
@@ -43,14 +42,13 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
       loop_runner_(new MessageLoopRunner()),
       weak_factory_(this),
       event_target_id_(0) {
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      shell_->web_contents());
-  frame_host_ = static_cast<RenderFrameHostImpl*>(
-      web_contents->GetMainFrame());
-  frame_host_->SetAccessibilityCallbackForTesting(
+  WebContents* web_contents = shell_->web_contents();
+  view_host_ = static_cast<RenderViewHostImpl*>(
+      web_contents->GetRenderViewHost());
+  view_host_->SetAccessibilityCallbackForTesting(
       base::Bind(&AccessibilityNotificationWaiter::OnAccessibilityEvent,
                  weak_factory_.GetWeakPtr()));
-  web_contents->AddAccessibilityMode(accessibility_mode);
+  view_host_->AddAccessibilityMode(accessibility_mode);
 }
 
 AccessibilityNotificationWaiter::~AccessibilityNotificationWaiter() {
@@ -61,7 +59,7 @@ void AccessibilityNotificationWaiter::WaitForNotification() {
 }
 
 const ui::AXTree& AccessibilityNotificationWaiter::GetAXTree() const {
-  return *frame_host_->GetAXTreeForTesting();
+  return view_host_->ax_tree_for_testing();
 }
 
 void AccessibilityNotificationWaiter::OnAccessibilityEvent(

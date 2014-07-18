@@ -16,7 +16,6 @@ class WebGestureEvent;
 
 namespace content {
 
-class BrowserAccessibilityManager;
 class RenderWidgetHostImpl;
 struct NativeWebKeyboardEvent;
 
@@ -63,15 +62,8 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Notifies that RenderWidgetHost will toggle touch emulation.
   virtual void OnTouchEmulationEnabled(bool enabled) {}
 
-  // Get the root BrowserAccessibilityManager for this frame tree.
-  virtual BrowserAccessibilityManager* GetRootBrowserAccessibilityManager();
-
-  // Get the root BrowserAccessibilityManager for this frame tree,
-  // or create it if it doesn't exist.
-  virtual BrowserAccessibilityManager*
-      GetOrCreateRootBrowserAccessibilityManager();
-
 #if defined(OS_WIN)
+  // Returns the widget's parent's NativeViewAccessible.
   virtual gfx::NativeViewAccessible GetParentNativeViewAccessible();
 #endif
 

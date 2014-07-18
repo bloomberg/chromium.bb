@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
 namespace content {
@@ -30,10 +30,12 @@ AccessibilityTreeFormatter::AccessibilityTreeFormatter(
 
 // static
 AccessibilityTreeFormatter* AccessibilityTreeFormatter::Create(
-    WebContents* web_contents) {
+    RenderViewHost* rvh) {
+  RenderWidgetHostViewBase* host_view = static_cast<RenderWidgetHostViewBase*>(
+      WebContents::FromRenderViewHost(rvh)->GetRenderWidgetHostView());
+
   BrowserAccessibilityManager* manager =
-      static_cast<WebContentsImpl*>(web_contents)->
-          GetRootBrowserAccessibilityManager();
+      host_view->GetBrowserAccessibilityManager();
   if (!manager)
     return NULL;
 

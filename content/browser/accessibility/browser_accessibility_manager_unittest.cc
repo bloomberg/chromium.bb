@@ -69,11 +69,11 @@ class TestBrowserAccessibilityDelegate
 
   virtual void AccessibilitySetFocus(int acc_obj_id) OVERRIDE {}
   virtual void AccessibilityDoDefaultAction(int acc_obj_id) OVERRIDE {}
-  virtual void AccessibilityShowMenu(const gfx::Point& point) OVERRIDE {}
+  virtual void AccessibilityShowMenu(int acc_obj_id) OVERRIDE {}
   virtual void AccessibilityScrollToMakeVisible(
-      int acc_obj_id, const gfx::Rect& subfocus) OVERRIDE {}
+      int acc_obj_id, gfx::Rect subfocus) OVERRIDE {}
   virtual void AccessibilityScrollToPoint(
-      int acc_obj_id, const gfx::Point& point) OVERRIDE {}
+      int acc_obj_id, gfx::Point point) OVERRIDE {}
   virtual void AccessibilitySetTextSelection(
       int acc_obj_id, int start_offset, int end_offset) OVERRIDE {}
   virtual bool AccessibilityViewHasFocus() const OVERRIDE {

@@ -45,6 +45,7 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_resize_helper.h"
+#include "content/common/accessibility_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -171,6 +172,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       overdraw_bottom_height_(0.f),
       should_auto_resize_(false),
       waiting_for_screen_rects_ack_(false),
+      accessibility_mode_(AccessibilityModeOff),
       needs_repainting_on_restore_(false),
       is_unresponsive_(false),
       in_flight_event_count_(0),
@@ -217,6 +219,9 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   // Otherwise we'll notify the process host when we are first shown.
   if (!hidden)
     process_->WidgetRestored();
+
+  accessibility_mode_ =
+      BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode();
 
   input_router_.reset(new InputRouterImpl(
       process_, this, this, routing_id_, GetInputRouterConfigForPlatform()));
@@ -839,6 +844,22 @@ void RenderWidgetHostImpl::StopHangMonitorTimeout() {
   if (hang_monitor_timeout_)
     hang_monitor_timeout_->Stop();
   RendererIsResponsive();
+}
+
+void RenderWidgetHostImpl::EnableFullAccessibilityMode() {
+  AddAccessibilityMode(AccessibilityModeComplete);
+}
+
+bool RenderWidgetHostImpl::IsFullAccessibilityModeForTesting() {
+  return accessibility_mode() == AccessibilityModeComplete;
+}
+
+void RenderWidgetHostImpl::EnableTreeOnlyAccessibilityMode() {
+  AddAccessibilityMode(AccessibilityModeTreeOnly);
+}
+
+bool RenderWidgetHostImpl::IsTreeOnlyAccessibilityModeForTesting() {
+  return accessibility_mode() == AccessibilityModeTreeOnly;
 }
 
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
@@ -1885,6 +1906,92 @@ void RenderWidgetHostImpl::SetEditCommandsForNextKeyEvent(
   Send(new InputMsg_SetEditCommandsForNextKeyEvent(GetRoutingID(), commands));
 }
 
+void RenderWidgetHostImpl::AddAccessibilityMode(AccessibilityMode mode) {
+  SetAccessibilityMode(
+      content::AddAccessibilityModeTo(accessibility_mode_, mode));
+}
+
+void RenderWidgetHostImpl::RemoveAccessibilityMode(AccessibilityMode mode) {
+  SetAccessibilityMode(
+      content::RemoveAccessibilityModeFrom(accessibility_mode_, mode));
+}
+
+void RenderWidgetHostImpl::ResetAccessibilityMode() {
+  SetAccessibilityMode(
+      BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode());
+}
+
+void RenderWidgetHostImpl::SetAccessibilityMode(AccessibilityMode mode) {
+  accessibility_mode_ = mode;
+  Send(new ViewMsg_SetAccessibilityMode(GetRoutingID(), mode));
+}
+
+void RenderWidgetHostImpl::AccessibilitySetFocus(int object_id) {
+  Send(new AccessibilityMsg_SetFocus(GetRoutingID(), object_id));
+  view_->OnAccessibilitySetFocus(object_id);
+}
+
+void RenderWidgetHostImpl::AccessibilityDoDefaultAction(int object_id) {
+  Send(new AccessibilityMsg_DoDefaultAction(GetRoutingID(), object_id));
+}
+
+void RenderWidgetHostImpl::AccessibilityShowMenu(int object_id) {
+  view_->AccessibilityShowMenu(object_id);
+}
+
+void RenderWidgetHostImpl::AccessibilityScrollToMakeVisible(
+    int acc_obj_id, gfx::Rect subfocus) {
+  Send(new AccessibilityMsg_ScrollToMakeVisible(
+      GetRoutingID(), acc_obj_id, subfocus));
+}
+
+void RenderWidgetHostImpl::AccessibilityScrollToPoint(
+    int acc_obj_id, gfx::Point point) {
+  Send(new AccessibilityMsg_ScrollToPoint(
+      GetRoutingID(), acc_obj_id, point));
+}
+
+void RenderWidgetHostImpl::AccessibilitySetTextSelection(
+    int object_id, int start_offset, int end_offset) {
+  Send(new AccessibilityMsg_SetTextSelection(
+      GetRoutingID(), object_id, start_offset, end_offset));
+}
+
+bool RenderWidgetHostImpl::AccessibilityViewHasFocus() const {
+  return view_->HasFocus();
+}
+
+gfx::Rect RenderWidgetHostImpl::AccessibilityGetViewBounds() const {
+  return view_->GetViewBounds();
+}
+
+gfx::Point RenderWidgetHostImpl::AccessibilityOriginInScreen(
+    const gfx::Rect& bounds) const {
+  return view_->AccessibilityOriginInScreen(bounds);
+}
+
+void RenderWidgetHostImpl::AccessibilityHitTest(const gfx::Point& point) {
+  Send(new AccessibilityMsg_HitTest(GetRoutingID(), point));
+}
+
+void RenderWidgetHostImpl::AccessibilityFatalError() {
+  Send(new AccessibilityMsg_FatalError(GetRoutingID()));
+  view_->SetBrowserAccessibilityManager(NULL);
+}
+
+#if defined(OS_WIN)
+void RenderWidgetHostImpl::SetParentNativeViewAccessible(
+    gfx::NativeViewAccessible accessible_parent) {
+  if (view_)
+    view_->SetParentNativeViewAccessible(accessible_parent);
+}
+
+gfx::NativeViewAccessible
+RenderWidgetHostImpl::GetParentNativeViewAccessible() const {
+  return delegate_->GetParentNativeViewAccessible();
+}
+#endif
+
 void RenderWidgetHostImpl::ExecuteEditCommand(const std::string& command,
                                               const std::string& value) {
   Send(new InputMsg_ExecuteEditCommand(GetRoutingID(), command, value));
@@ -2233,24 +2340,6 @@ void RenderWidgetHostImpl::AddLatencyInfoComponentIds(
     latency_info->latency_components[lc->first] = lc->second;
   }
 }
-
-BrowserAccessibilityManager*
-    RenderWidgetHostImpl::GetRootBrowserAccessibilityManager() {
-  return delegate_ ? delegate_->GetRootBrowserAccessibilityManager() : NULL;
-}
-
-BrowserAccessibilityManager*
-    RenderWidgetHostImpl::GetOrCreateRootBrowserAccessibilityManager() {
-  return delegate_ ?
-      delegate_->GetOrCreateRootBrowserAccessibilityManager() : NULL;
-}
-
-#if defined(OS_WIN)
-gfx::NativeViewAccessible
-    RenderWidgetHostImpl::GetParentNativeViewAccessible() {
-  return delegate_ ? delegate_->GetParentNativeViewAccessible() : NULL;
-}
-#endif
 
 SkColorType RenderWidgetHostImpl::PreferredReadbackFormat() {
   if (view_)

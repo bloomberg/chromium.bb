@@ -75,8 +75,12 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TestRendererAccessibilityEnabled) {
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
   content::WebContents* const tab =
       browser()->tab_strip_model()->GetWebContentsAt(0);
-  ASSERT_FALSE(tab->IsFullAccessibilityModeForTesting());
-  ASSERT_FALSE(tab->IsTreeOnlyAccessibilityModeForTesting());
+  content::RenderWidgetHost* rwh =
+      tab->GetRenderWidgetHostView()->GetRenderWidgetHost();
+  ASSERT_NE((content::RenderWidgetHost*)NULL, rwh)
+      << "Couldn't get RenderWidgetHost";
+  ASSERT_FALSE(rwh->IsFullAccessibilityModeForTesting());
+  ASSERT_FALSE(rwh->IsTreeOnlyAccessibilityModeForTesting());
 
   base::FilePath extension_path =
       test_data_dir_.AppendASCII("automation/tests/basic");
@@ -84,8 +88,11 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TestRendererAccessibilityEnabled) {
   LoadExtension(extension_path);
   ASSERT_TRUE(got_tree.WaitUntilSatisfied());
 
-  ASSERT_FALSE(tab->IsFullAccessibilityModeForTesting());
-  ASSERT_TRUE(tab->IsTreeOnlyAccessibilityModeForTesting());
+  rwh = tab->GetRenderWidgetHostView()->GetRenderWidgetHost();
+  ASSERT_NE((content::RenderWidgetHost*)NULL, rwh)
+      << "Couldn't get RenderWidgetHost";
+  ASSERT_FALSE(rwh->IsFullAccessibilityModeForTesting());
+  ASSERT_TRUE(rwh->IsTreeOnlyAccessibilityModeForTesting());
 }
 
 #if defined(ADDRESS_SANITIZER)

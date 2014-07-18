@@ -9,9 +9,6 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/time/time.h"
-#include "content/browser/accessibility/accessibility_mode_helper.h"
-#include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
@@ -25,17 +22,13 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/transition_request_manager.h"
-#include "content/common/accessibility_messages.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/render_frame_setup.mojom.h"
 #include "content/common/swapped_out_messages.h"
-#include "content/public/browser/ax_event_notification_details.h"
-#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/desktop_notification_delegate.h"
@@ -45,7 +38,6 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
-#include "ui/accessibility/ax_tree.h"
 #include "url/gurl.h"
 
 using base::TimeDelta;
@@ -354,78 +346,9 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnCancelDesktopNotification)
     IPC_MESSAGE_HANDLER(FrameHostMsg_TextSurroundingSelectionResponse,
                         OnTextSurroundingSelectionResponse)
-    IPC_MESSAGE_HANDLER(AccessibilityHostMsg_Events, OnAccessibilityEvents)
-    IPC_MESSAGE_HANDLER(AccessibilityHostMsg_LocationChanges,
-                        OnAccessibilityLocationChanges)
   IPC_END_MESSAGE_MAP()
 
   return handled;
-}
-
-void RenderFrameHostImpl::AccessibilitySetFocus(int object_id) {
-  Send(new AccessibilityMsg_SetFocus(routing_id_, object_id));
-}
-
-void RenderFrameHostImpl::AccessibilityDoDefaultAction(int object_id) {
-  Send(new AccessibilityMsg_DoDefaultAction(routing_id_, object_id));
-}
-
-void RenderFrameHostImpl::AccessibilityShowMenu(
-    const gfx::Point& global_point) {
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      render_view_host_->GetView());
-  if (view)
-    view->AccessibilityShowMenu(global_point);
-}
-
-void RenderFrameHostImpl::AccessibilityScrollToMakeVisible(
-    int acc_obj_id, const gfx::Rect& subfocus) {
-  Send(new AccessibilityMsg_ScrollToMakeVisible(
-      routing_id_, acc_obj_id, subfocus));
-}
-
-void RenderFrameHostImpl::AccessibilityScrollToPoint(
-    int acc_obj_id, const gfx::Point& point) {
-  Send(new AccessibilityMsg_ScrollToPoint(
-      routing_id_, acc_obj_id, point));
-}
-
-void RenderFrameHostImpl::AccessibilitySetTextSelection(
-    int object_id, int start_offset, int end_offset) {
-  Send(new AccessibilityMsg_SetTextSelection(
-      routing_id_, object_id, start_offset, end_offset));
-}
-
-bool RenderFrameHostImpl::AccessibilityViewHasFocus() const {
-  RenderWidgetHostView* view = render_view_host_->GetView();
-  if (view)
-    return view->HasFocus();
-  return false;
-}
-
-gfx::Rect RenderFrameHostImpl::AccessibilityGetViewBounds() const {
-  RenderWidgetHostView* view = render_view_host_->GetView();
-  if (view)
-    return view->GetViewBounds();
-  return gfx::Rect();
-}
-
-gfx::Point RenderFrameHostImpl::AccessibilityOriginInScreen(
-    const gfx::Rect& bounds) const {
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      render_view_host_->GetView());
-  if (view)
-    return view->AccessibilityOriginInScreen(bounds);
-  return gfx::Point();
-}
-
-void RenderFrameHostImpl::AccessibilityHitTest(const gfx::Point& point) {
-  Send(new AccessibilityMsg_HitTest(routing_id_, point));
-}
-
-void RenderFrameHostImpl::AccessibilityFatalError() {
-  Send(new AccessibilityMsg_FatalError(routing_id_));
-  browser_accessibility_manager_.reset(NULL);
 }
 
 void RenderFrameHostImpl::Init() {
@@ -849,84 +772,11 @@ void RenderFrameHostImpl::OnUpdateEncoding(const std::string& encoding_name) {
   delegate_->UpdateEncoding(this, encoding_name);
 }
 
-
 void RenderFrameHostImpl::OnBeginNavigation(
     const FrameHostMsg_BeginNavigation_Params& params) {
 #if defined(USE_BROWSER_SIDE_NAVIGATION)
   frame_tree_node()->render_manager()->OnBeginNavigation(params);
 #endif
-}
-
-void RenderFrameHostImpl::OnAccessibilityEvents(
-    const std::vector<AccessibilityHostMsg_EventParams>& params) {
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      render_view_host_->GetView());
-
-
-  AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if ((accessibility_mode != AccessibilityModeOff) && view &&
-      RenderViewHostImpl::IsRVHStateActive(render_view_host_->rvh_state())) {
-    if (accessibility_mode & AccessibilityModeFlagPlatform) {
-      GetOrCreateBrowserAccessibilityManager();
-      if (browser_accessibility_manager_)
-        browser_accessibility_manager_->OnAccessibilityEvents(params);
-    }
-
-    std::vector<AXEventNotificationDetails> details;
-    details.reserve(params.size());
-    for (size_t i = 0; i < params.size(); ++i) {
-      const AccessibilityHostMsg_EventParams& param = params[i];
-      AXEventNotificationDetails detail(param.update.node_id_to_clear,
-                                        param.update.nodes,
-                                        param.event_type,
-                                        param.id,
-                                        GetProcess()->GetID(),
-                                        routing_id_);
-      details.push_back(detail);
-    }
-
-    delegate_->AccessibilityEventReceived(details);
-  }
-
-  // Always send an ACK or the renderer can be in a bad state.
-  Send(new AccessibilityMsg_Events_ACK(routing_id_));
-
-  // The rest of this code is just for testing; bail out if we're not
-  // in that mode.
-  if (accessibility_testing_callback_.is_null())
-    return;
-
-  for (size_t i = 0; i < params.size(); i++) {
-    const AccessibilityHostMsg_EventParams& param = params[i];
-    if (static_cast<int>(param.event_type) < 0)
-      continue;
-    if (!ax_tree_for_testing_) {
-      ax_tree_for_testing_.reset(new ui::AXTree(param.update));
-    } else {
-      CHECK(ax_tree_for_testing_->Unserialize(param.update))
-          << ax_tree_for_testing_->error();
-    }
-    accessibility_testing_callback_.Run(param.event_type, param.id);
-  }
-}
-
-void RenderFrameHostImpl::OnAccessibilityLocationChanges(
-    const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      render_view_host_->GetView());
-  if (view &&
-      RenderViewHostImpl::IsRVHStateActive(render_view_host_->rvh_state())) {
-    AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
-    if (accessibility_mode & AccessibilityModeFlagPlatform) {
-      if (!browser_accessibility_manager_) {
-        browser_accessibility_manager_.reset(
-            view->CreateBrowserAccessibilityManager(this));
-      }
-      if (browser_accessibility_manager_)
-        browser_accessibility_manager_->OnLocationChanges(params);
-    }
-    // TODO(aboxhall): send location change events to web contents observers too
-  }
 }
 
 void RenderFrameHostImpl::SetPendingShutdown(const base::Closure& on_swap_out) {
@@ -1095,46 +945,6 @@ void RenderFrameHostImpl::DesktopNotificationPermissionRequestDone(
   Send(new DesktopNotificationMsg_PermissionRequestDone(
       routing_id_, callback_context));
 }
-
-void RenderFrameHostImpl::SetAccessibilityMode(AccessibilityMode mode) {
-  Send(new FrameMsg_SetAccessibilityMode(routing_id_, mode));
-}
-
-void RenderFrameHostImpl::SetAccessibilityCallbackForTesting(
-    const base::Callback<void(ui::AXEvent, int)>& callback) {
-  accessibility_testing_callback_ = callback;
-}
-
-const ui::AXTree* RenderFrameHostImpl::GetAXTreeForTesting() {
-  return ax_tree_for_testing_.get();
-}
-
-BrowserAccessibilityManager*
-    RenderFrameHostImpl::GetOrCreateBrowserAccessibilityManager() {
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      render_view_host_->GetView());
-  if (view &&
-      !browser_accessibility_manager_) {
-    browser_accessibility_manager_.reset(
-        view->CreateBrowserAccessibilityManager(this));
-  }
-  return browser_accessibility_manager_.get();
-}
-
-#if defined(OS_WIN)
-void RenderFrameHostImpl::SetParentNativeViewAccessible(
-    gfx::NativeViewAccessible accessible_parent) {
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      render_view_host_->GetView());
-  if (view)
-    view->SetParentNativeViewAccessible(accessible_parent);
-}
-
-gfx::NativeViewAccessible
-RenderFrameHostImpl::GetParentNativeViewAccessible() const {
-  return delegate_->GetParentNativeViewAccessible();
-}
-#endif  // defined(OS_WIN)
 
 void RenderFrameHostImpl::SetHasPendingTransitionRequest(
     bool has_pending_request) {
