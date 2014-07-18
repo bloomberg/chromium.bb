@@ -39,6 +39,23 @@ class MinimizedHomeView : public views::View {
     return gfx::Size(kDragHandleWidth, kDragHandleHeight);
   }
 
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+    if (event.IsLeftMouseButton() && event.GetClickCount() > 1) {
+      delegate_->OnDragUpCompleted();
+      SetColor(kDragHandleColorNormal);
+      return true;
+    }
+    return false;
+  }
+
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
+    SetColor(kDragHandleColorHot);
+  }
+
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE {
+    SetColor(kDragHandleColorNormal);
+  }
+
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
     SkColor change_color = SK_ColorTRANSPARENT;
     if (event->type() == ui::ET_GESTURE_BEGIN &&
