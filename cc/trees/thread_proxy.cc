@@ -64,15 +64,18 @@ struct ThreadProxy::SchedulerStateRequest {
 
 scoped_ptr<Proxy> ThreadProxy::Create(
     LayerTreeHost* layer_tree_host,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
-  return make_scoped_ptr(new ThreadProxy(layer_tree_host, impl_task_runner))
-      .PassAs<Proxy>();
+  return make_scoped_ptr(new ThreadProxy(layer_tree_host,
+                                         main_task_runner,
+                                         impl_task_runner)).PassAs<Proxy>();
 }
 
 ThreadProxy::ThreadProxy(
     LayerTreeHost* layer_tree_host,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner)
-    : Proxy(impl_task_runner),
+    : Proxy(main_task_runner, impl_task_runner),
       main_thread_only_vars_unsafe_(this, layer_tree_host->id()),
       main_thread_or_blocked_vars_unsafe_(layer_tree_host),
       compositor_thread_vars_unsafe_(this, layer_tree_host->id()) {
@@ -465,12 +468,13 @@ void ThreadProxy::SetDeferCommits(bool defer_commits) {
   else
     TRACE_EVENT_ASYNC_END0("cc", "ThreadProxy::SetDeferCommits", this);
 
-  if (!main().defer_commits && main().pending_deferred_commit)
+  if (!main().defer_commits && main().pending_deferred_commit) {
     Proxy::MainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&ThreadProxy::BeginMainFrame,
                    main_thread_weak_ptr_,
                    base::Passed(&main().pending_deferred_commit)));
+  }
 }
 
 bool ThreadProxy::CommitRequested() const {

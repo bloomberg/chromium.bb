@@ -66,11 +66,12 @@ void Proxy::SetMainThreadBlocked(bool is_main_thread_blocked) {
 }
 #endif
 
-Proxy::Proxy(scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner)
-    : main_task_runner_(base::MessageLoopProxy::current()),
+Proxy::Proxy(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+             scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner)
 #if !DCHECK_IS_ON
-      impl_task_runner_(impl_task_runner) {
+    : main_task_runner_(main_task_runner), impl_task_runner_(impl_task_runner) {
 #else
+    : main_task_runner_(main_task_runner),
       impl_task_runner_(impl_task_runner),
       main_thread_id_(base::PlatformThread::CurrentId()),
       impl_thread_is_overridden_(false),

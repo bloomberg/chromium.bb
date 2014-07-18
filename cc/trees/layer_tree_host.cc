@@ -68,11 +68,13 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
     LayerTreeHostClient* client,
     SharedBitmapManager* manager,
     const LayerTreeSettings& settings,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
+  DCHECK(main_task_runner);
   DCHECK(impl_task_runner);
   scoped_ptr<LayerTreeHost> layer_tree_host(
       new LayerTreeHost(client, manager, settings));
-  layer_tree_host->InitializeThreaded(impl_task_runner);
+  layer_tree_host->InitializeThreaded(main_task_runner, impl_task_runner);
   return layer_tree_host.Pass();
 }
 
@@ -80,10 +82,12 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
     LayerTreeHostClient* client,
     LayerTreeHostSingleThreadClient* single_thread_client,
     SharedBitmapManager* manager,
-    const LayerTreeSettings& settings) {
+    const LayerTreeSettings& settings,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner) {
   scoped_ptr<LayerTreeHost> layer_tree_host(
       new LayerTreeHost(client, manager, settings));
-  layer_tree_host->InitializeSingleThreaded(single_thread_client);
+  layer_tree_host->InitializeSingleThreaded(single_thread_client,
+                                            main_task_runner);
   return layer_tree_host.Pass();
 }
 
@@ -125,13 +129,17 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
 }
 
 void LayerTreeHost::InitializeThreaded(
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
-  InitializeProxy(ThreadProxy::Create(this, impl_task_runner));
+  InitializeProxy(
+      ThreadProxy::Create(this, main_task_runner, impl_task_runner));
 }
 
 void LayerTreeHost::InitializeSingleThreaded(
-    LayerTreeHostSingleThreadClient* single_thread_client) {
-  InitializeProxy(SingleThreadProxy::Create(this, single_thread_client));
+    LayerTreeHostSingleThreadClient* single_thread_client,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner) {
+  InitializeProxy(
+      SingleThreadProxy::Create(this, single_thread_client, main_task_runner));
 }
 
 void LayerTreeHost::InitializeForTesting(scoped_ptr<Proxy> proxy_for_testing) {

@@ -23,7 +23,11 @@ CompositorHost::CompositorHost(ScopedMessagePipeHandle command_buffer_handle)
 
   cc::LayerTreeSettings settings;
   tree_ = cc::LayerTreeHost::CreateThreaded(
-      this, NULL, settings, compositor_thread_.message_loop_proxy());
+      this,
+      NULL,
+      settings,
+      base::MessageLoopProxy::current(),
+      compositor_thread_.message_loop_proxy());
   SetupScene();
 }
 

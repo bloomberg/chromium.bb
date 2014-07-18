@@ -142,10 +142,15 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
         this,
         context_factory_->GetSharedBitmapManager(),
         settings,
+        base::MessageLoopProxy::current(),
         compositor_thread_loop_);
   } else {
     host_ = cc::LayerTreeHost::CreateSingleThreaded(
-        this, this, context_factory_->GetSharedBitmapManager(), settings);
+        this,
+        this,
+        context_factory_->GetSharedBitmapManager(),
+        settings,
+        base::MessageLoopProxy::current());
   }
   UMA_HISTOGRAM_TIMES("GPU.CreateBrowserCompositor",
                       base::TimeTicks::Now() - before_create);

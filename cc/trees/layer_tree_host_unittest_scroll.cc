@@ -1129,6 +1129,7 @@ TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
       LayerTreeHost::CreateThreaded(&client,
                                     shared_bitmap_manager.get(),
                                     settings,
+                                    base::MessageLoopProxy::current(),
                                     impl_thread.message_loop_proxy());
 
   impl_thread.message_loop_proxy()

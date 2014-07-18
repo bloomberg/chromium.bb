@@ -13,11 +13,11 @@ namespace cc {
 
 class FakeProxy : public Proxy {
  public:
-  FakeProxy() : Proxy(NULL), layer_tree_host_(NULL) {}
+  FakeProxy() : Proxy(NULL, NULL), layer_tree_host_(NULL) {}
   explicit FakeProxy(
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner)
-      : Proxy(impl_task_runner),
-        layer_tree_host_(NULL) {}
+      : Proxy(main_task_runner, impl_task_runner), layer_tree_host_(NULL) {}
 
   void SetLayerTreeHost(LayerTreeHost* host);
 

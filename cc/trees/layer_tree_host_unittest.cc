@@ -2043,8 +2043,12 @@ TEST(LayerTreeHostTest, PartialUpdatesWithGLRenderer) {
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
-  scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
-      &client, &client, shared_bitmap_manager.get(), settings);
+  scoped_ptr<LayerTreeHost> host =
+      LayerTreeHost::CreateSingleThreaded(&client,
+                                          &client,
+                                          shared_bitmap_manager.get(),
+                                          settings,
+                                          base::MessageLoopProxy::current());
   host->Composite(base::TimeTicks::Now());
 
   EXPECT_EQ(4u, host->settings().max_partial_texture_updates);
@@ -2058,8 +2062,12 @@ TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer) {
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
-  scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
-      &client, &client, shared_bitmap_manager.get(), settings);
+  scoped_ptr<LayerTreeHost> host =
+      LayerTreeHost::CreateSingleThreaded(&client,
+                                          &client,
+                                          shared_bitmap_manager.get(),
+                                          settings,
+                                          base::MessageLoopProxy::current());
   host->Composite(base::TimeTicks::Now());
 
   EXPECT_EQ(4u, host->settings().max_partial_texture_updates);
@@ -2073,8 +2081,12 @@ TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndGLContent) {
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
-  scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
-      &client, &client, shared_bitmap_manager.get(), settings);
+  scoped_ptr<LayerTreeHost> host =
+      LayerTreeHost::CreateSingleThreaded(&client,
+                                          &client,
+                                          shared_bitmap_manager.get(),
+                                          settings,
+                                          base::MessageLoopProxy::current());
   host->Composite(base::TimeTicks::Now());
 
   EXPECT_EQ(0u, host->MaxPartialTextureUpdates());
@@ -2089,8 +2101,12 @@ TEST(LayerTreeHostTest,
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
-  scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
-      &client, &client, shared_bitmap_manager.get(), settings);
+  scoped_ptr<LayerTreeHost> host =
+      LayerTreeHost::CreateSingleThreaded(&client,
+                                          &client,
+                                          shared_bitmap_manager.get(),
+                                          settings,
+                                          base::MessageLoopProxy::current());
   host->Composite(base::TimeTicks::Now());
 
   EXPECT_EQ(0u, host->MaxPartialTextureUpdates());

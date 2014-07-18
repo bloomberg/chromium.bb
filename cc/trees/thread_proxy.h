@@ -39,6 +39,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
  public:
   static scoped_ptr<Proxy> Create(
       LayerTreeHost* layer_tree_host,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
 
   virtual ~ThreadProxy();
@@ -231,6 +232,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
 
  protected:
   ThreadProxy(LayerTreeHost* layer_tree_host,
+              scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
               scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
 
  private:

@@ -419,7 +419,11 @@ void CompositorImpl::SetVisible(bool visible) {
         command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
 
     host_ = cc::LayerTreeHost::CreateSingleThreaded(
-        this, this, HostSharedBitmapManager::current(), settings);
+        this,
+        this,
+        HostSharedBitmapManager::current(),
+        settings,
+        base::MessageLoopProxy::current());
     host_->SetRootLayer(root_layer_);
 
     host_->SetVisible(true);

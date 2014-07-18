@@ -16,7 +16,8 @@ class FakeImplProxy : public FakeProxy {
 
   explicit FakeImplProxy(
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner)
-      : FakeProxy(impl_task_runner), set_impl_thread_(this) {}
+      : FakeProxy(base::MessageLoopProxy::current(), impl_task_runner),
+        set_impl_thread_(this) {}
 
  private:
   DebugScopedSetImplThread set_impl_thread_;

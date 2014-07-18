@@ -86,13 +86,15 @@ class CC_EXPORT LayerTreeHost {
       LayerTreeHostClient* client,
       SharedBitmapManager* manager,
       const LayerTreeSettings& settings,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
 
   static scoped_ptr<LayerTreeHost> CreateSingleThreaded(
       LayerTreeHostClient* client,
       LayerTreeHostSingleThreadClient* single_thread_client,
       SharedBitmapManager* manager,
-      const LayerTreeSettings& settings);
+      const LayerTreeSettings& settings,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
   virtual ~LayerTreeHost();
 
   void SetLayerTreeHostClientReady();
@@ -302,9 +304,11 @@ class CC_EXPORT LayerTreeHost {
                 SharedBitmapManager* manager,
                 const LayerTreeSettings& settings);
   void InitializeThreaded(
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
   void InitializeSingleThreaded(
-      LayerTreeHostSingleThreadClient* single_thread_client);
+      LayerTreeHostSingleThreadClient* single_thread_client,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
   void InitializeForTesting(scoped_ptr<Proxy> proxy_for_testing);
   void SetOutputSurfaceLostForTesting(bool is_lost) {
     output_surface_lost_ = is_lost;

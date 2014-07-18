@@ -52,7 +52,7 @@ class MockLayerTreeHost : public LayerTreeHost {
  public:
   explicit MockLayerTreeHost(FakeLayerTreeHostClient* client)
       : LayerTreeHost(client, NULL, LayerTreeSettings()) {
-    InitializeSingleThreaded(client);
+    InitializeSingleThreaded(client, base::MessageLoopProxy::current());
   }
 
   MOCK_METHOD0(SetNeedsCommit, void());

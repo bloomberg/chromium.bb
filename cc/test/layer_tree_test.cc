@@ -53,11 +53,12 @@ class ThreadProxyForTest : public ThreadProxy {
   static scoped_ptr<Proxy> Create(
       TestHooks* test_hooks,
       LayerTreeHost* host,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
     return make_scoped_ptr(
-        new ThreadProxyForTest(test_hooks,
-                               host,
-                               impl_task_runner)).PassAs<Proxy>();
+               new ThreadProxyForTest(
+                   test_hooks, host, main_task_runner, impl_task_runner))
+        .PassAs<Proxy>();
   }
 
   virtual ~ThreadProxyForTest() {}
@@ -99,10 +100,10 @@ class ThreadProxyForTest : public ThreadProxy {
   ThreadProxyForTest(
       TestHooks* test_hooks,
       LayerTreeHost* host,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner)
-      : ThreadProxy(host, impl_task_runner),
-        test_hooks_(test_hooks) {
-  }
+      : ThreadProxy(host, main_task_runner, impl_task_runner),
+        test_hooks_(test_hooks) {}
 };
 
 // Adapts LayerTreeHostImpl for test. Runs real code, then invokes test hooks.
@@ -335,6 +336,7 @@ class LayerTreeHostForTesting : public LayerTreeHost {
       TestHooks* test_hooks,
       LayerTreeHostClientForTesting* client,
       const LayerTreeSettings& settings,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
     scoped_ptr<LayerTreeHostForTesting> layer_tree_host(
         new LayerTreeHostForTesting(test_hooks, client, settings));
@@ -342,10 +344,11 @@ class LayerTreeHostForTesting : public LayerTreeHost {
       layer_tree_host->InitializeForTesting(
           ThreadProxyForTest::Create(test_hooks,
                                      layer_tree_host.get(),
+                                     main_task_runner,
                                      impl_task_runner));
     } else {
-      layer_tree_host->InitializeForTesting(
-          SingleThreadProxy::Create(layer_tree_host.get(), client));
+      layer_tree_host->InitializeForTesting(SingleThreadProxy::Create(
+          layer_tree_host.get(), client, main_task_runner));
     }
     return layer_tree_host.Pass();
   }
@@ -514,6 +517,7 @@ void LayerTreeTest::DoBeginTest() {
       this,
       client_.get(),
       settings_,
+      base::MessageLoopProxy::current(),
       impl_thread_ ? impl_thread_->message_loop_proxy() : NULL);
   ASSERT_TRUE(layer_tree_host_);
 

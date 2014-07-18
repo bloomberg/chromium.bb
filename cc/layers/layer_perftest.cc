@@ -41,7 +41,8 @@ class LayerPerfTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     layer_tree_host_ = FakeLayerTreeHost::Create();
-    layer_tree_host_->InitializeSingleThreaded(&fake_client_);
+    layer_tree_host_->InitializeSingleThreaded(
+        &fake_client_, base::MessageLoopProxy::current());
   }
 
   virtual void TearDown() OVERRIDE {

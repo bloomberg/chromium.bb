@@ -24,7 +24,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
  public:
   static scoped_ptr<Proxy> Create(
       LayerTreeHost* layer_tree_host,
-      LayerTreeHostSingleThreadClient* client);
+      LayerTreeHostSingleThreadClient* client,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
   virtual ~SingleThreadProxy();
 
   // Proxy implementation
@@ -92,8 +93,10 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void CompositeImmediately(base::TimeTicks frame_begin_time);
 
  private:
-  SingleThreadProxy(LayerTreeHost* layer_tree_host,
-                    LayerTreeHostSingleThreadClient* client);
+  SingleThreadProxy(
+      LayerTreeHost* layer_tree_host,
+      LayerTreeHostSingleThreadClient* client,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
 
   void DoCommit(scoped_ptr<ResourceUpdateQueue> queue);
   bool DoComposite(LayerTreeHostImpl::FrameData* frame);

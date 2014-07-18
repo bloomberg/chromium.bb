@@ -525,10 +525,18 @@ void RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {
   }
   if (compositor_message_loop_proxy.get()) {
     layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(
-        this, shared_bitmap_manager, settings, compositor_message_loop_proxy);
+        this,
+        shared_bitmap_manager,
+        settings,
+        base::MessageLoopProxy::current(),
+        compositor_message_loop_proxy);
   } else {
     layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(
-        this, this, shared_bitmap_manager, settings);
+        this,
+        this,
+        shared_bitmap_manager,
+        settings,
+        base::MessageLoopProxy::current());
   }
   DCHECK(layer_tree_host_);
 }

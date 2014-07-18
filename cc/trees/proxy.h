@@ -100,8 +100,8 @@ class CC_EXPORT Proxy {
   virtual scoped_ptr<base::Value> SchedulerAsValueForTesting();
 
  protected:
-  explicit Proxy(
-      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
+  Proxy(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+        scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
   friend class DebugScopedSetImplThread;
   friend class DebugScopedSetMainThread;
   friend class DebugScopedSetMainThreadBlocked;
