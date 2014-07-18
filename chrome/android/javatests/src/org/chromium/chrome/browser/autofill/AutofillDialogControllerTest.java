@@ -51,7 +51,7 @@ public class AutofillDialogControllerTest extends ChromeShellTestBase {
 
     private static final String TEST_SHIPPING_NAME = "Mister Receiver";
     private static final String TEST_SHIPPING_PHONE = "+46 8 713 99 99";
-    private static final String TEST_SHIPPING_PHONE_UNFORMATTED = "4687139999";
+    private static final String TEST_SHIPPING_PHONE_UNFORMATTED = "+4687139999";
     private static final String TEST_SHIPPING1 = "19 Farstaplan";
     private static final String TEST_SHIPPING2 = "Third floor";
     private static final String TEST_SHIPPING3 = "please call first";

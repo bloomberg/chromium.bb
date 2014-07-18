@@ -65,12 +65,24 @@ void FormatValidatedNumber(const PhoneNumber& number,
   std::string processed_number;
   phone_util->Format(number, format, &processed_number);
 
+  std::string region_code;
+  phone_util->GetRegionCodeForNumber(number, &region_code);
+
+  // Drop the leading '+' for US numbers as some US sites can't handle the "+",
+  // and in the US dialing "+1..." is the same as dialing "1...".
+  std::string prefix;
+  if (processed_number[0] == '+') {
+    processed_number = processed_number.substr(1);
+    if (region_code != "US")
+      prefix = "+";
+  }
+
   if (formatted_number)
-    *formatted_number = base::UTF8ToUTF16(processed_number);
+    *formatted_number = base::UTF8ToUTF16(prefix + processed_number);
 
   if (normalized_number) {
     phone_util->NormalizeDigitsOnly(&processed_number);
-    *normalized_number = base::UTF8ToUTF16(processed_number);
+    *normalized_number = base::UTF8ToUTF16(prefix + processed_number);
   }
 }
 

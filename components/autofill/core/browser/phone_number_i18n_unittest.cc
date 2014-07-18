@@ -149,58 +149,58 @@ TEST(PhoneNumberI18NTest, ConstructPhoneNumber) {
                                    ASCIIToUTF16("2345678"),
                                    "US",
                                    &number));
-  EXPECT_EQ(number, ASCIIToUTF16("+1 650-234-5678"));
+  EXPECT_EQ(ASCIIToUTF16("1 650-234-5678"), number);
   EXPECT_TRUE(ConstructPhoneNumber(base::string16(),
                                    ASCIIToUTF16("650"),
                                    ASCIIToUTF16("2345678"),
                                    "US",
                                    &number));
-  EXPECT_EQ(number, ASCIIToUTF16("(650) 234-5678"));
+  EXPECT_EQ(ASCIIToUTF16("(650) 234-5678"), number);
   EXPECT_TRUE(ConstructPhoneNumber(ASCIIToUTF16("1"),
                                    base::string16(),
                                    ASCIIToUTF16("6502345678"),
                                    "US",
                                    &number));
-  EXPECT_EQ(number, ASCIIToUTF16("+1 650-234-5678"));
+  EXPECT_EQ(ASCIIToUTF16("1 650-234-5678"), number);
   EXPECT_TRUE(ConstructPhoneNumber(base::string16(),
                                    base::string16(),
                                    ASCIIToUTF16("6502345678"),
                                    "US",
                                    &number));
-  EXPECT_EQ(number, ASCIIToUTF16("(650) 234-5678"));
+  EXPECT_EQ(ASCIIToUTF16("(650) 234-5678"), number);
 
   EXPECT_FALSE(ConstructPhoneNumber(base::string16(),
                                     ASCIIToUTF16("650"),
                                     ASCIIToUTF16("234567890"),
                                     "US",
                                     &number));
-  EXPECT_EQ(number, base::string16());
+  EXPECT_EQ(base::string16(), number);
   // Italian number
   EXPECT_TRUE(ConstructPhoneNumber(ASCIIToUTF16("39"),
                                    ASCIIToUTF16("347"),
                                    ASCIIToUTF16("2345678"),
                                    "IT",
                                    &number));
-  EXPECT_EQ(number, ASCIIToUTF16("+39 347 234 5678"));
+  EXPECT_EQ(ASCIIToUTF16("+39 347 234 5678"), number);
   EXPECT_TRUE(ConstructPhoneNumber(base::string16(),
                                    ASCIIToUTF16("347"),
                                    ASCIIToUTF16("2345678"),
                                    "IT",
                                    &number));
-  EXPECT_EQ(number, ASCIIToUTF16("347 234 5678"));
+  EXPECT_EQ(ASCIIToUTF16("347 234 5678"), number);
   // German number.
   EXPECT_TRUE(ConstructPhoneNumber(ASCIIToUTF16("49"),
                                    ASCIIToUTF16("024"),
                                    ASCIIToUTF16("2345678901"),
                                    "DE",
                                    &number));
-  EXPECT_EQ(number, ASCIIToUTF16("+49 2423 45678901"));
+  EXPECT_EQ(ASCIIToUTF16("+49 2423 45678901"), number);
   EXPECT_TRUE(ConstructPhoneNumber(base::string16(),
                                    ASCIIToUTF16("024"),
                                    ASCIIToUTF16("2345678901"),
                                    "DE",
                                    &number));
-  EXPECT_EQ(number, ASCIIToUTF16("02423 45678901"));
+  EXPECT_EQ(ASCIIToUTF16("02423 45678901"), number);
 }
 
 TEST(PhoneNumberI18NTest, PhoneNumbersMatch) {

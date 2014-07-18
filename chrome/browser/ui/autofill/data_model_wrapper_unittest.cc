@@ -98,19 +98,19 @@ TEST(DataModelWrapperTest, GetDisplayText) {
   base::string16 vertical, horizontal;
   EXPECT_TRUE(
       AutofillProfileWrapper(&profile).GetDisplayText(&horizontal, &vertical));
-  EXPECT_EQ(
-      ASCIIToUTF16("John H. Doe, 666 Erebus St., Apt 8, Elysium, CA 91111\n"
-                   "johndoe@hades.com\n"
-                   "+1 650-211-1111"),
-      horizontal);
-  EXPECT_EQ(
-      ASCIIToUTF16("John H. Doe\n"
-                   "666 Erebus St.\n"
-                   "Apt 8\n"
-                   "Elysium, CA 91111\n"
-                   "johndoe@hades.com\n"
-                   "+1 650-211-1111"),
-      vertical);
+  EXPECT_EQ(ASCIIToUTF16(
+                "John H. Doe, 666 Erebus St., Apt 8, Elysium, CA 91111\n"
+                "johndoe@hades.com\n"
+                "1 650-211-1111"),
+            horizontal);
+  EXPECT_EQ(ASCIIToUTF16(
+                "John H. Doe\n"
+                "666 Erebus St.\n"
+                "Apt 8\n"
+                "Elysium, CA 91111\n"
+                "johndoe@hades.com\n"
+                "1 650-211-1111"),
+            vertical);
 
   // A Japanese address.
   AutofillProfile foreign_profile(
@@ -170,8 +170,9 @@ TEST(DataModelWrapperTest, GetDisplayPhoneNumber) {
   const base::string16 national_unformatted = ASCIIToUTF16("3104567890");
   const base::string16 national_formatted = ASCIIToUTF16("(310) 456-7890");
   const base::string16 international_unformatted = ASCIIToUTF16("13104567890");
-  const base::string16 international_formatted =
-      ASCIIToUTF16("+1 310-456-7890");
+  const base::string16 international_unformatted_with_plus =
+      ASCIIToUTF16("+13104567890");
+  const base::string16 international_formatted = ASCIIToUTF16("1 310-456-7890");
   const base::string16 user_formatted = ASCIIToUTF16("310.456 78 90");
 
   scoped_ptr<wallet::WalletItems::MaskedInstrument> instrument(
@@ -210,6 +211,15 @@ TEST(DataModelWrapperTest, GetDisplayPhoneNumber) {
             address_wrapper.GetInfoForDisplay(
                 AutofillType(PHONE_HOME_WHOLE_NUMBER)));
 
+  const_cast<wallet::Address*>(&instrument->address())
+      ->SetPhoneNumber(international_unformatted_with_plus);
+  EXPECT_EQ(national_formatted,
+            instrument_wrapper.GetInfoForDisplay(
+                AutofillType(PHONE_HOME_WHOLE_NUMBER)));
+  EXPECT_EQ(
+      national_formatted,
+      address_wrapper.GetInfoForDisplay(AutofillType(PHONE_HOME_WHOLE_NUMBER)));
+
   // Autofill numbers that are unformatted get formatted either nationally or
   // internationally depending on the presence of a country code. Formatted
   // numbers stay formatted.
@@ -217,6 +227,11 @@ TEST(DataModelWrapperTest, GetDisplayPhoneNumber) {
   EXPECT_EQ(international_formatted,
             profile_wrapper.GetInfoForDisplay(
                 AutofillType(PHONE_HOME_WHOLE_NUMBER)));
+  profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
+                     international_unformatted_with_plus);
+  EXPECT_EQ(
+      international_formatted,
+      profile_wrapper.GetInfoForDisplay(AutofillType(PHONE_HOME_WHOLE_NUMBER)));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, national_unformatted);
   EXPECT_EQ(national_formatted,
             profile_wrapper.GetInfoForDisplay(
@@ -229,7 +244,6 @@ TEST(DataModelWrapperTest, GetDisplayPhoneNumber) {
   EXPECT_EQ(user_formatted,
             profile_wrapper.GetInfoForDisplay(
                 AutofillType(PHONE_HOME_WHOLE_NUMBER)));
-
 }
 
 }  // namespace autofill

@@ -175,8 +175,7 @@ TEST_F(AutofillIeToolbarImportTest, TestAutofillImport) {
             profiles[1].GetInfo(AutofillType(PHONE_HOME_CITY_CODE), "US"));
   EXPECT_EQ(L"5555555",
             profiles[1].GetInfo(AutofillType(PHONE_HOME_NUMBER), "US"));
-  EXPECT_EQ(L"+1 650-555-5555",
-            profiles[1].GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+  EXPECT_EQ(L"1 650-555-5555", profiles[1].GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
 
   EXPECT_EQ(profile2[0].value, profiles[0].GetRawInfo(NAME_FIRST));
   EXPECT_EQ(profile2[1].value, profiles[0].GetRawInfo(NAME_LAST));

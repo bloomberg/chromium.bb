@@ -107,7 +107,7 @@ TEST(PhoneNumberTest, SetInfo) {
   EXPECT_TRUE(phone.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
                             ASCIIToUTF16("+18887776666"),
                             "US"));
-  EXPECT_EQ(ASCIIToUTF16("+1 888-777-6666"),
+  EXPECT_EQ(ASCIIToUTF16("1 888-777-6666"),
             phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
 
   // Differently formatted numbers should be left alone.
@@ -173,7 +173,7 @@ TEST(PhoneNumberTest, PhoneCombineHelper) {
   base::string16 parsed_phone;
   EXPECT_TRUE(number1.ParseNumber(profile, "en-US", &parsed_phone));
   // International format as it has a country code.
-  EXPECT_EQ(ASCIIToUTF16("+1 650-234-5678"), parsed_phone);
+  EXPECT_EQ(ASCIIToUTF16("1 650-234-5678"), parsed_phone);
 
   PhoneNumber::PhoneCombineHelper number3;
   EXPECT_TRUE(number3.SetInfo(AutofillType(PHONE_HOME_CITY_CODE),
