@@ -1289,6 +1289,31 @@ bool FrameLoader::shouldClose()
     return shouldClose;
 }
 
+bool FrameLoader::validateTransitionNavigationMode()
+{
+    if (frame()->document()->inQuirksMode()) {
+        frame()->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "Ignoring transition elements due to quirks mode.");
+        return false;
+    }
+
+    // FIXME(oysteine): Also check for width=device-width here, to avoid zoom/scaling issues.
+    return true;
+}
+
+bool FrameLoader::dispatchNavigationTransitionData()
+{
+    Vector<Document::TransitionElementData> elementData;
+    frame()->document()->getTransitionElementData(elementData);
+    if (elementData.isEmpty() || !validateTransitionNavigationMode())
+        return false;
+
+    Vector<Document::TransitionElementData>::iterator iter = elementData.begin();
+    for (; iter != elementData.end(); ++iter)
+        client()->dispatchAddNavigationTransitionData(iter->scope, iter->selector, iter->markup);
+
+    return true;
+}
+
 void FrameLoader::loadWithNavigationAction(const NavigationAction& action, FrameLoadType type, PassRefPtrWillBeRawPtr<FormState> formState, const SubstituteData& substituteData, ContentSecurityPolicyCheck shouldCheckMainWorldContentSecurityPolicy, ClientRedirectPolicy clientRedirect, const AtomicString& overrideEncoding)
 {
     ASSERT(client()->hasWebView());
@@ -1318,9 +1343,14 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
     else if (m_documentLoader)
         m_policyDocumentLoader->setOverrideEncoding(m_documentLoader->overrideEncoding());
 
+
+    bool isTransitionNavigation = false;
+    if (RuntimeEnabledFeatures::navigationTransitionsEnabled())
+        isTransitionNavigation = dispatchNavigationTransitionData();
+
     // stopAllLoaders can detach the LocalFrame, so protect it.
     RefPtr<LocalFrame> protect(m_frame);
-    if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request, shouldCheckMainWorldContentSecurityPolicy) || !shouldClose()) && m_policyDocumentLoader) {
+    if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request, shouldCheckMainWorldContentSecurityPolicy, isTransitionNavigation) || !shouldClose()) && m_policyDocumentLoader) {
         m_policyDocumentLoader->detachFromFrame();
         m_policyDocumentLoader = nullptr;
         return;
@@ -1354,7 +1384,7 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
     if (m_provisionalDocumentLoader->isClientRedirect())
         m_provisionalDocumentLoader->appendRedirect(m_frame->document()->url());
     m_provisionalDocumentLoader->appendRedirect(m_provisionalDocumentLoader->request().url());
-    client()->dispatchDidStartProvisionalLoad();
+    client()->dispatchDidStartProvisionalLoad(isTransitionNavigation);
     ASSERT(m_provisionalDocumentLoader);
     m_provisionalDocumentLoader->startLoadingMainResource();
 }

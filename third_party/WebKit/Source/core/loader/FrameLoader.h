@@ -214,6 +214,8 @@ private:
     void loadWithNavigationAction(const NavigationAction&, FrameLoadType, PassRefPtrWillBeRawPtr<FormState>,
         const SubstituteData&, ContentSecurityPolicyCheck shouldCheckMainWorldContentSecurityPolicy, ClientRedirectPolicy = NotClientRedirect, const AtomicString& overrideEncoding = nullAtom);
 
+    bool validateTransitionNavigationMode();
+    bool dispatchNavigationTransitionData();
     void detachFromParent();
     void detachChildren();
     void detachClient();

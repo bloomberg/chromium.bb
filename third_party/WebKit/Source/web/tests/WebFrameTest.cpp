@@ -2650,11 +2650,9 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
 
 class TestReloadDoesntRedirectWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
-    virtual WebNavigationPolicy decidePolicyForNavigation(
-        WebLocalFrame*, WebDataSource::ExtraData*, const WebURLRequest&, WebNavigationType,
-        WebNavigationPolicy defaultPolicy, bool isRedirect) OVERRIDE
+    virtual WebNavigationPolicy decidePolicyForNavigation(const NavigationPolicyInfo& info) OVERRIDE
     {
-        EXPECT_FALSE(isRedirect);
+        EXPECT_FALSE(info.isRedirect);
         return WebNavigationPolicyCurrentTab;
     }
 };
@@ -4944,11 +4942,10 @@ public:
     {
     }
 
-    virtual WebNavigationPolicy decidePolicyForNavigation(WebLocalFrame*, WebDataSource::ExtraData*, const WebURLRequest&,
-        WebNavigationType, WebNavigationPolicy policy, bool) OVERRIDE
+    virtual WebNavigationPolicy decidePolicyForNavigation(const NavigationPolicyInfo& info) OVERRIDE
     {
         m_decidePolicyCallCount++;
-        return policy;
+        return info.defaultPolicy;
     }
 
     int decidePolicyCallCount() const { return m_decidePolicyCallCount; }
@@ -5298,7 +5295,8 @@ public:
         m_replacesCurrentHistoryItem = false;
         m_frame = 0;
     }
-    void didStartProvisionalLoad(WebLocalFrame* frame)
+
+    void didStartProvisionalLoad(WebLocalFrame* frame, bool isTransitionNavigation)
     {
         WebDataSource* ds = frame->provisionalDataSource();
         m_replacesCurrentHistoryItem = ds->replacesCurrentHistoryItem();

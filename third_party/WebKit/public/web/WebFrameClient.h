@@ -183,6 +183,32 @@ public:
 
     // The client may choose to alter the navigation policy.  Otherwise,
     // defaultPolicy should just be returned.
+
+    struct NavigationPolicyInfo {
+        WebLocalFrame* frame;
+        WebDataSource::ExtraData* extraData;
+        const WebURLRequest& urlRequest;
+        WebNavigationType navigationType;
+        WebNavigationPolicy defaultPolicy;
+        bool isRedirect;
+        bool isTransitionNavigation;
+
+        NavigationPolicyInfo(const WebURLRequest& urlRequest)
+            : frame(0)
+            , extraData(0)
+            , urlRequest(urlRequest)
+            , navigationType(WebNavigationTypeOther)
+            , defaultPolicy(WebNavigationPolicyIgnore)
+            , isRedirect(false)
+            , isTransitionNavigation(false) { }
+    };
+
+    virtual WebNavigationPolicy decidePolicyForNavigation(const NavigationPolicyInfo& info)
+    {
+        return decidePolicyForNavigation(info.frame, info.extraData, info.urlRequest, info.navigationType, info.defaultPolicy, info.isRedirect);
+    }
+
+    // DEPRECATED
     virtual WebNavigationPolicy decidePolicyForNavigation(
         WebLocalFrame*, WebDataSource::ExtraData*, const WebURLRequest&, WebNavigationType,
         WebNavigationPolicy defaultPolicy, bool isRedirect) { return defaultPolicy; }
@@ -215,6 +241,8 @@ public:
     virtual void didCreateDataSource(WebLocalFrame*, WebDataSource*) { }
 
     // A new provisional load has been started.
+    virtual void didStartProvisionalLoad(WebLocalFrame* localFrame, bool isTransitionNavigation) { didStartProvisionalLoad(localFrame); }
+    // DEPRECATED
     virtual void didStartProvisionalLoad(WebLocalFrame*) { }
 
     // The provisional load was redirected via a HTTP 3xx response.
@@ -269,6 +297,12 @@ public:
 
     // The frame's theme color has changed.
     virtual void didChangeThemeColor() { }
+
+
+    // Transition navigations -----------------------------------------------
+
+    // Provides serialized markup of transition elements for use in the following navigation.
+    virtual void addNavigationTransitionData(const WebString& allowedDestinationOrigin, const WebString& selector, const WebString& markup) { }
 
 
     // Web Notifications ---------------------------------------------------

@@ -383,10 +383,10 @@ void FrameLoaderClientImpl::dispatchWillClose()
         m_webFrame->client()->willClose(m_webFrame);
 }
 
-void FrameLoaderClientImpl::dispatchDidStartProvisionalLoad()
+void FrameLoaderClientImpl::dispatchDidStartProvisionalLoad(bool isTransitionNavigation)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->didStartProvisionalLoad(m_webFrame);
+        m_webFrame->client()->didStartProvisionalLoad(m_webFrame, isTransitionNavigation);
 }
 
 void FrameLoaderClientImpl::dispatchDidReceiveTitle(const String& title)
@@ -456,14 +456,29 @@ void FrameLoaderClientImpl::dispatchDidChangeThemeColor()
         m_webFrame->client()->didChangeThemeColor();
 }
 
-NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const ResourceRequest& request, DocumentLoader* loader, NavigationPolicy policy)
+NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const ResourceRequest& request, DocumentLoader* loader, NavigationPolicy policy, bool isTransitionNavigation)
 {
     if (!m_webFrame->client())
         return NavigationPolicyIgnore;
     WebDataSourceImpl* ds = WebDataSourceImpl::fromDocumentLoader(loader);
-    WebNavigationPolicy webPolicy = m_webFrame->client()->decidePolicyForNavigation(m_webFrame, ds->extraData(), WrappedResourceRequest(request),
-        ds->navigationType(), static_cast<WebNavigationPolicy>(policy), ds->isRedirect());
+
+    WrappedResourceRequest wrappedResourceRequest(request);
+    WebFrameClient::NavigationPolicyInfo navigationInfo(wrappedResourceRequest);
+    navigationInfo.frame = m_webFrame;
+    navigationInfo.extraData = ds->extraData();
+    navigationInfo.navigationType = ds->navigationType();
+    navigationInfo.defaultPolicy = static_cast<WebNavigationPolicy>(policy);
+    navigationInfo.isRedirect = ds->isRedirect();
+    navigationInfo.isTransitionNavigation = isTransitionNavigation;
+
+    WebNavigationPolicy webPolicy = m_webFrame->client()->decidePolicyForNavigation(navigationInfo);
     return static_cast<NavigationPolicy>(webPolicy);
+}
+
+void FrameLoaderClientImpl::dispatchAddNavigationTransitionData(const String& allowedDestinationOrigin, const String& selector, const String& markup)
+{
+    if (m_webFrame->client())
+        m_webFrame->client()->addNavigationTransitionData(allowedDestinationOrigin, selector, markup);
 }
 
 void FrameLoaderClientImpl::dispatchWillRequestResource(FetchRequest* request)

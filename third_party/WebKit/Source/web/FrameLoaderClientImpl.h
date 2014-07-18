@@ -84,7 +84,7 @@ public:
     virtual void dispatchDidReceiveServerRedirectForProvisionalLoad() OVERRIDE;
     virtual void dispatchDidNavigateWithinPage(WebCore::HistoryItem*, WebCore::HistoryCommitType) OVERRIDE;
     virtual void dispatchWillClose() OVERRIDE;
-    virtual void dispatchDidStartProvisionalLoad() OVERRIDE;
+    virtual void dispatchDidStartProvisionalLoad(bool isTransitionNavigation) OVERRIDE;
     virtual void dispatchDidReceiveTitle(const String&) OVERRIDE;
     virtual void dispatchDidChangeIcons(WebCore::IconType) OVERRIDE;
     virtual void dispatchDidCommitLoad(WebCore::LocalFrame*, WebCore::HistoryItem*, WebCore::HistoryCommitType) OVERRIDE;
@@ -93,8 +93,10 @@ public:
     virtual void dispatchDidFinishDocumentLoad() OVERRIDE;
     virtual void dispatchDidFinishLoad() OVERRIDE;
     virtual void dispatchDidFirstVisuallyNonEmptyLayout() OVERRIDE;
+
     virtual void dispatchDidChangeThemeColor() OVERRIDE;
-    virtual WebCore::NavigationPolicy decidePolicyForNavigation(const WebCore::ResourceRequest&, WebCore::DocumentLoader*, WebCore::NavigationPolicy) OVERRIDE;
+    virtual WebCore::NavigationPolicy decidePolicyForNavigation(const WebCore::ResourceRequest&, WebCore::DocumentLoader*, WebCore::NavigationPolicy, bool isTransitionNavigation) OVERRIDE;
+    virtual void dispatchAddNavigationTransitionData(const String& allowedDestinationOrigin, const String& selector, const String& markup) OVERRIDE;
     virtual void dispatchWillRequestResource(WebCore::FetchRequest*) OVERRIDE;
     virtual void dispatchWillSendSubmitEvent(WebCore::HTMLFormElement*) OVERRIDE;
     virtual void dispatchWillSubmitForm(WebCore::HTMLFormElement*) OVERRIDE;
