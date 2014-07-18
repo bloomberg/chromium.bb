@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            #test {
+                width: 300px;
+                height: 300px;
+                overflow: auto;
+                border: 1px solid silver;
+            }
+            #test > article {
+                width: 1000px;
+                height: 1000px;
+                position: relative;
+            }
+            #top-left {
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+            #bottom-right {
+                position: absolute;
+                bottom: 0;
+                right: 0;
+            }
+        </style>
+        <script src="../../resources/js-test.js"></script>
+    </head>
+    <body>
+        <section id="test">
+            <article>
+                <span id="top-left">top left</span>
+                <span id="bottom-right">bottom right</span>
+            </article>
+        </section>
+        <p>
+            Tests that large scrollLeft/Top values aren't being ignored.
+        </p>
+        <script>
+            var el = document.getElementById('test');
+            el.scrollLeft = 100000000;
+            el.scrollTop = 100000000;
+
+            var expectedScrollLeft = el.firstElementChild.offsetWidth -
+                el.clientWidth;
+            if (el.scrollLeft == expectedScrollLeft) {
+                testPassed('Setting el.scrollLeft = 100000000 scrolls all ' +
+                    'the way to the right.');
+            } else {
+                testFailed('Setting el.scrollLeft = 100000000 scrolls to ' +
+                    el.scrollLeft + ', expected ' + expectedScrollLeft + '.');
+            }
+
+            var expectedScrollTop = el.firstElementChild.offsetHeight -
+                el.clientHeight;
+            if (el.scrollTop == expectedScrollTop) {
+                testPassed('Setting el.scrollTop = 100000000 scrolls all ' +
+                    'the way to the bottom.');
+            } else {
+                testFailed('Setting el.scrollTop = 100000000 scrolls to ' +
+                    el.scrollTop + ', expected ' + expectedScrollTop + '.');
+            }
+        </script>
+    </body>
+</html>

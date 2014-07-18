@@ -1,0 +1,7 @@
+PASS Setting el.scrollLeft = 100000000 scrolls all the way to the right.
+PASS Setting el.scrollTop = 100000000 scrolls all the way to the bottom.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+top leftbottom right
+Tests that large scrollLeft/Top values aren't being ignored.
