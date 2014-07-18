@@ -987,6 +987,10 @@ void Widget::OnRootViewLayout() {
   native_widget_->OnRootViewLayout();
 }
 
+bool Widget::IsTranslucentWindowOpacitySupported() const {
+  return native_widget_->IsTranslucentWindowOpacitySupported();
+}
+
 void Widget::OnOwnerClosing() {
 }
 

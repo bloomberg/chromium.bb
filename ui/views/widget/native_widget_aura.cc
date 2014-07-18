@@ -691,6 +691,10 @@ ui::NativeTheme* NativeWidgetAura::GetNativeTheme() const {
 void NativeWidgetAura::OnRootViewLayout() {
 }
 
+bool NativeWidgetAura::IsTranslucentWindowOpacitySupported() const {
+  return true;
+}
+
 void NativeWidgetAura::RepostNativeEvent(gfx::NativeEvent native_event) {
   OnEvent(native_event);
 }

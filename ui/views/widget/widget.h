@@ -198,6 +198,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     WidgetDelegate* delegate;
     bool child;
     // If TRANSLUCENT_WINDOW, the widget may be fully or partially transparent.
+    // Translucent windows may not always be supported. Use
+    // IsTranslucentWindowOpacitySupported to determine if translucent windows
+    // are supported.
     // If OPAQUE_WINDOW, we can perform optimizations based on the widget being
     // fully opaque.  Defaults to TRANSLUCENT_WINDOW if
     // ViewsDelegate::UseTransparentWindows().  Defaults to OPAQUE_WINDOW for
@@ -725,6 +728,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Called by our RootView after it has performed a Layout. Used to forward
   // window sizing information to the window server on some platforms.
   void OnRootViewLayout();
+
+  // Whether the widget supports translucency.
+  bool IsTranslucentWindowOpacitySupported() const;
 
   // Notification that our owner is closing.
   // NOTE: this is not invoked for aura as it's currently not needed there.

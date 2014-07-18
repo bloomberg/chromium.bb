@@ -932,6 +932,11 @@ void DesktopNativeWidgetAura::OnRootViewLayout() {
     desktop_window_tree_host_->OnRootViewLayout();
 }
 
+bool DesktopNativeWidgetAura::IsTranslucentWindowOpacitySupported() const {
+  return content_window_ &&
+      desktop_window_tree_host_->IsTranslucentWindowOpacitySupported();
+}
+
 void DesktopNativeWidgetAura::RepostNativeEvent(gfx::NativeEvent native_event) {
   OnEvent(native_event);
 }

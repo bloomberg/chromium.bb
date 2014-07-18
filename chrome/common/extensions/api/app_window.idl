@@ -351,6 +351,10 @@ namespace app.window {
     // <code>"alwaysOnTopWindows"</code> permission.
     static void setAlwaysOnTop(boolean alwaysOnTop);
 
+    // Can the window use alpha transparency?
+    // TODO(jackhou): Document this properly before going to stable.
+    [nodoc] static boolean alphaEnabled();
+
     // The JavaScript 'window' object for the created child.
     [instanceOf=Window] object contentWindow;
 
@@ -432,6 +436,9 @@ namespace app.window {
 
     // Fired when the window is restored from being minimized or maximized.
     [nocompile] static void onRestored();
+
+    // Fired when the window's ability to use alpha transparency changes.
+    [nocompile, nodoc] static void onAlphaEnabledChanged();
 
     // Event for testing. Lets tests wait until a window has been shown.
     [nocompile, nodoc] static void onWindowFirstShown();

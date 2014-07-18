@@ -501,6 +501,10 @@ void NativeWidgetMac::OnRootViewLayout() const {
   NOTIMPLEMENTED();
 }
 
+bool NativeWidgetMac::IsTranslucentWindowOpacitySupported() const {
+  return false;
+}
+
 void NativeWidgetMac::RepostNativeEvent(gfx::NativeEvent native_event) {
   NOTIMPLEMENTED();
 }

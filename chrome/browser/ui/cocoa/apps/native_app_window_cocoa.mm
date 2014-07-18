@@ -800,6 +800,10 @@ gfx::Insets NativeAppWindowCocoa::GetFrameInsets() const {
   return frame_rect.InsetsFrom(content_rect);
 }
 
+bool NativeAppWindowCocoa::CanHaveAlphaEnabled() const {
+  return false;
+}
+
 gfx::NativeView NativeAppWindowCocoa::GetHostView() const {
   NOTIMPLEMENTED();
   return NULL;

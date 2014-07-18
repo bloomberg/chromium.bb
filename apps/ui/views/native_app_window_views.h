@@ -52,6 +52,9 @@ class NativeAppWindowViews : public NativeAppWindow,
   void Init(AppWindow* app_window,
             const AppWindow::CreateParams& create_params);
 
+  // Signal that CanHaveTransparentBackground has changed.
+  void OnCanHaveAlphaEnabledChanged();
+
   views::Widget* widget() { return widget_; }
 
   void set_window_for_testing(views::Widget* window) { widget_ = window; }
@@ -156,6 +159,7 @@ class NativeAppWindowViews : public NativeAppWindow,
   virtual gfx::Size GetContentMaximumSize() const OVERRIDE;
   virtual void SetContentSizeConstraints(const gfx::Size& min_size,
                                          const gfx::Size& max_size) OVERRIDE;
+  virtual bool CanHaveAlphaEnabled() const OVERRIDE;
 
   // web_modal::WebContentsModalDialogHost implementation.
   virtual gfx::NativeView GetHostView() const OVERRIDE;
@@ -177,7 +181,6 @@ class NativeAppWindowViews : public NativeAppWindow,
   scoped_ptr<SkRegion> draggable_region_;
 
   bool frameless_;
-  bool transparent_background_;
   bool resizable_;
   apps::SizeConstraints size_constraints_;
 

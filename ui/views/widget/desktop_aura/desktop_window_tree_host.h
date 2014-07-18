@@ -153,6 +153,9 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
   // Returns true if the Widget was closed but is still showing because of
   // animations.
   virtual bool IsAnimatingClosed() const = 0;
+
+  // Returns true if the Widget supports translucency.
+  virtual bool IsTranslucentWindowOpacitySupported() const = 0;
 };
 
 }  // namespace views

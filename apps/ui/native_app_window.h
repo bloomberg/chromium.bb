@@ -87,6 +87,10 @@ class NativeAppWindow : public ui::BaseWindow,
   virtual void SetContentSizeConstraints(const gfx::Size& min_size,
                                          const gfx::Size& max_size) = 0;
 
+  // Returns false if the underlying native window ignores alpha transparency
+  // when compositing.
+  virtual bool CanHaveAlphaEnabled() const = 0;
+
   virtual ~NativeAppWindow() {}
 };
 

@@ -146,6 +146,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   virtual void OnNativeWidgetFocus() OVERRIDE;
   virtual void OnNativeWidgetBlur() OVERRIDE;
   virtual bool IsAnimatingClosed() const OVERRIDE;
+  virtual bool IsTranslucentWindowOpacitySupported() const OVERRIDE;
 
   // Overridden from aura::WindowTreeHost:
   virtual ui::EventSource* GetEventSource() OVERRIDE;

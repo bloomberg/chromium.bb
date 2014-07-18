@@ -654,6 +654,7 @@ class WidgetWithDestroyedNativeViewTest : public ViewsTestBase {
     widget->ReleaseCapture();
     widget->HasCapture();
     widget->GetWorkAreaBoundsInScreen();
+    widget->IsTranslucentWindowOpacitySupported();
   }
 
  private:

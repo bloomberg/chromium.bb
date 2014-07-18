@@ -365,7 +365,7 @@ void DesktopWindowTreeHostWin::SetVisibilityChangedAnimationsEnabled(
 }
 
 bool DesktopWindowTreeHostWin::ShouldUseNativeFrame() const {
-  return ui::win::IsAeroGlassEnabled();
+  return IsTranslucentWindowOpacitySupported();
 }
 
 bool DesktopWindowTreeHostWin::ShouldWindowContentsBeTransparent() const {
@@ -425,6 +425,10 @@ void DesktopWindowTreeHostWin::OnNativeWidgetBlur() {
 
 bool DesktopWindowTreeHostWin::IsAnimatingClosed() const {
   return pending_close_;
+}
+
+bool DesktopWindowTreeHostWin::IsTranslucentWindowOpacitySupported() const {
+  return ui::win::IsAeroGlassEnabled();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

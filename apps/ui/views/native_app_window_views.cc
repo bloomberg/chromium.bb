@@ -27,14 +27,12 @@ NativeAppWindowViews::NativeAppWindowViews()
       web_view_(NULL),
       widget_(NULL),
       frameless_(false),
-      transparent_background_(false),
       resizable_(false) {}
 
 void NativeAppWindowViews::Init(AppWindow* app_window,
                                 const AppWindow::CreateParams& create_params) {
   app_window_ = app_window;
   frameless_ = create_params.frame == AppWindow::FRAME_NONE;
-  transparent_background_ = create_params.transparent_background;
   resizable_ = create_params.resizable;
   size_constraints_.set_minimum_size(
       create_params.GetContentMinimumSize(gfx::Insets()));
@@ -51,6 +49,10 @@ void NativeAppWindowViews::Init(AppWindow* app_window,
 
 NativeAppWindowViews::~NativeAppWindowViews() {
   web_view_->SetWebContents(NULL);
+}
+
+void NativeAppWindowViews::OnCanHaveAlphaEnabledChanged() {
+  app_window_->OnNativeWindowChanged();
 }
 
 void NativeAppWindowViews::InitializeWindow(
@@ -260,7 +262,8 @@ void NativeAppWindowViews::OnWidgetActivationChanged(views::Widget* widget,
 
 void NativeAppWindowViews::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
-  if (transparent_background_) {
+  if (app_window_->requested_transparent_background() &&
+      CanHaveAlphaEnabled()) {
     content::RenderWidgetHostView* view = render_view_host->GetView();
     DCHECK(view);
     view->SetBackgroundOpaque(false);
@@ -396,6 +399,10 @@ void NativeAppWindowViews::SetContentSizeConstraints(
     const gfx::Size& min_size, const gfx::Size& max_size) {
   size_constraints_.set_minimum_size(min_size);
   size_constraints_.set_maximum_size(max_size);
+}
+
+bool NativeAppWindowViews::CanHaveAlphaEnabled() const {
+  return widget_->IsTranslucentWindowOpacitySupported();
 }
 
 }  // namespace apps

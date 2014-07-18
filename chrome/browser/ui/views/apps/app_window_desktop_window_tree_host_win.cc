@@ -48,6 +48,7 @@ bool AppWindowDesktopWindowTreeHostWin::GetClientAreaInsets(
 void AppWindowDesktopWindowTreeHostWin::HandleFrameChanged() {
   // We need to update the glass region on or off before the base class adjusts
   // the window region.
+  app_window_->OnCanHaveAlphaEnabledChanged();
   UpdateDWMFrame();
   DesktopWindowTreeHostWin::HandleFrameChanged();
 }

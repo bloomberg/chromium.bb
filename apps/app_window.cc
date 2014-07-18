@@ -245,7 +245,8 @@ AppWindow::AppWindow(BrowserContext* context,
       has_been_shown_(false),
       can_send_events_(false),
       is_hidden_(false),
-      cached_always_on_top_(false) {
+      cached_always_on_top_(false),
+      requested_transparent_background_(false) {
   extensions::ExtensionsBrowserClient* client =
       extensions::ExtensionsBrowserClient::Get();
   CHECK(!client->IsGuestSession(context) || context->IsOffTheRecord())
@@ -284,6 +285,8 @@ void AppWindow::Init(const GURL& url,
   cached_always_on_top_ = new_params.always_on_top;
   if (new_params.state == ui::SHOW_STATE_FULLSCREEN)
     new_params.always_on_top = false;
+
+  requested_transparent_background_ = new_params.transparent_background;
 
   native_app_window_.reset(delegate_->CreateNativeAppWindow(this, new_params));
 
@@ -756,6 +759,9 @@ void AppWindow::GetSerializedState(base::DictionaryValue* properties) const {
   properties->SetBoolean("maximized", native_app_window_->IsMaximized());
   properties->SetBoolean("alwaysOnTop", IsAlwaysOnTop());
   properties->SetBoolean("hasFrameColor", native_app_window_->HasFrameColor());
+  properties->SetBoolean("alphaEnabled",
+                         requested_transparent_background_ &&
+                             native_app_window_->CanHaveAlphaEnabled());
 
   // These properties are undocumented and are to enable testing. Alpha is
   // removed to

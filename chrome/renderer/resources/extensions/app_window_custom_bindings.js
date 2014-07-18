@@ -241,6 +241,9 @@ appWindow.registerCustomHook(function(bindingsAPI) {
     AppWindow.prototype.isAlwaysOnTop = function() {
       return appWindowData.alwaysOnTop;
     };
+    AppWindow.prototype.alphaEnabled = function() {
+      return appWindowData.alphaEnabled;
+    }
     AppWindow.prototype.handleWindowFirstShownForTests = function(callback) {
       // This allows test apps to get have their callback run even if they
       // call this after the first show has happened.
@@ -301,7 +304,8 @@ appWindow.registerCustomHook(function(bindingsAPI) {
       alwaysOnTop: params.alwaysOnTop,
       hasFrameColor: params.hasFrameColor,
       activeFrameColor: params.activeFrameColor,
-      inactiveFrameColor: params.inactiveFrameColor
+      inactiveFrameColor: params.inactiveFrameColor,
+      alphaEnabled: params.alphaEnabled
     };
     currentAppWindow = new AppWindow;
   });
@@ -348,6 +352,9 @@ function updateAppWindowProperties(update) {
       (oldData.minimized && !update.minimized) ||
       (oldData.maximized && !update.maximized))
     dispatchEventIfExists(currentWindow, "onRestored");
+
+  if (oldData.alphaEnabled !== update.alphaEnabled)
+    dispatchEventIfExists(currentWindow, "onAlphaEnabledChanged");
 };
 
 function onAppWindowShownForTests() {
