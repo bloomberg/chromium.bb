@@ -63,8 +63,8 @@
 </head>
 <body>
 <div class="grid" id="gridInitial"></div>
-<div class="grid gridAutoFlowColumn" id="gridAutoFlowColumn"></div>
-<div class="grid gridAutoFlowRow" id="gridAutoFlowRow"></div>
+<div class="grid gridAutoFlowColumnSparse" id="gridAutoFlowColumnSparse"></div>
+<div class="grid gridAutoFlowRowSparse" id="gridAutoFlowRowSparse"></div>
 <div class="grid gridAutoFlowColumnDense" id="gridAutoFlowColumnDense"></div>
 <div class="grid gridAutoFlowRowDense" id="gridAutoFlowRowDense"></div>
 <div class="grid gridAutoFlowDenseColumn" id="gridAutoFlowDenseColumn"></div>
@@ -74,10 +74,10 @@
 <div class="grid gridAutoFlowStackRow" id="gridAutoFlowStackRow"></div>
 <div class="grid gridAutoFlowColumnStack" id="gridAutoFlowColumnStack"></div>
 <div class="grid gridAutoFlowRowStack" id="gridAutoFlowRowStack"></div>
-<div class="grid gridAutoFlowColumn">
+<div class="grid gridAutoFlowColumnSparse">
     <div class="grid gridAutoFlowInherit" id="gridAutoFlowInherit"></div>
 </div>
-<div class="grid gridAutoFlowColumn">
+<div class="grid gridAutoFlowColumnSparse">
     <div><div class="grid gridAutoFlowInherit" id="gridAutoFlowNoInherit"></div><div>
 </div>
 <div class="grid gridAutoFlowNone" id="gridAutoFlowNone"></div>
@@ -93,11 +93,11 @@
     description('Test that setting and getting grid-auto-flow works as expected');
 
     debug("Test getting auto-flow set through CSS");
-    var gridAutoFlowColumn = document.getElementById("gridAutoFlowColumn");
-    shouldBe("window.getComputedStyle(gridAutoFlowColumn, '').getPropertyValue('grid-auto-flow')", "'column'");
+    var gridAutoFlowColumnSparse = document.getElementById("gridAutoFlowColumnSparse");
+    shouldBe("window.getComputedStyle(gridAutoFlowColumnSparse, '').getPropertyValue('grid-auto-flow')", "'column'");
 
-    var gridAutoFlowRow = document.getElementById("gridAutoFlowRow");
-    shouldBe("window.getComputedStyle(gridAutoFlowRow, '').getPropertyValue('grid-auto-flow')", "'row'");
+    var gridAutoFlowRowSparse = document.getElementById("gridAutoFlowRowSparse");
+    shouldBe("window.getComputedStyle(gridAutoFlowRowSparse, '').getPropertyValue('grid-auto-flow')", "'row'");
 
     var gridAutoFlowColumnDense = document.getElementById("gridAutoFlowColumnDense");
     shouldBe("window.getComputedStyle(gridAutoFlowColumnDense, '').getPropertyValue('grid-auto-flow')", "'column dense'");

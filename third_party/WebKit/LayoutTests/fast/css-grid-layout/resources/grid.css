@@ -151,8 +151,7 @@
     grid-auto-flow: stack;
 }
 
-/* FIXME: Rename to gridAutoFlowColumnSparse to be more explicit about the algorithm mode by default. */
-.gridAutoFlowColumn {
+.gridAutoFlowColumnSparse {
     grid-auto-flow: column;
 }
 
@@ -160,8 +159,7 @@
     grid-auto-flow: column dense;
 }
 
-/* FIXME: Rename to gridAutoFlowRowSparse to be more explicit about the algorithm mode by default. */
-.gridAutoFlowRow {
+.gridAutoFlowRowSparse {
     grid-auto-flow: row;
 }
 
