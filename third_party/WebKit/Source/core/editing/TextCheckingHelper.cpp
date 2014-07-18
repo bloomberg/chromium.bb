@@ -41,7 +41,7 @@
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextCheckerClient.h"
 
-namespace WebCore {
+namespace blink {
 
 static void findBadGrammars(TextCheckerClient& client, const UChar* text, int start, int length, Vector<TextCheckingResult>& results)
 {
@@ -527,7 +527,7 @@ bool TextCheckingHelper::unifiedTextCheckerEnabled() const
         return false;
 
     Document& doc = m_range->ownerDocument();
-    return WebCore::unifiedTextCheckerEnabled(doc.frame());
+    return blink::unifiedTextCheckerEnabled(doc.frame());
 }
 
 void checkTextOfParagraph(TextCheckerClient& client, const String& text, TextCheckingTypeMask checkingTypes, Vector<TextCheckingResult>& results)

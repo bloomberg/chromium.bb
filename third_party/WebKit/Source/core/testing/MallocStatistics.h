@@ -31,7 +31,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class MallocStatistics : public RefCountedWillBeGarbageCollected<MallocStatistics> {
 public:
@@ -55,6 +55,6 @@ private:
     WTF::FastMallocStatistics m_stats;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

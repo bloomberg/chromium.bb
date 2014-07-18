@@ -53,7 +53,7 @@
 
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderLayerReflectionInfo::RenderLayerReflectionInfo(RenderBox& renderer)
     : m_box(renderer)
@@ -145,4 +145,4 @@ String RenderLayerReflectionInfo::debugName() const
     return m_box.debugName() + " (reflection)";
 }
 
-} // namespace WebCore
+} // namespace blink

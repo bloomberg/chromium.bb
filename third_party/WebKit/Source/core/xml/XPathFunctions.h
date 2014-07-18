@@ -29,7 +29,7 @@
 
 #include "core/xml/XPathExpressionNode.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace XPath {
 
@@ -53,6 +53,6 @@ Function* createFunction(const String& name, WillBeHeapVector<OwnPtrWillBeMember
 
 } // namespace XPath
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // XPathFunctions_h

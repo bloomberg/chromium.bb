@@ -9,7 +9,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 struct Timing;
 
@@ -45,6 +45,6 @@ private:
     Vector<RefPtr<TimingFunction> > m_timingFunctionList;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSTimingData_h

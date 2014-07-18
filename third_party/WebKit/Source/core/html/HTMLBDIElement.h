@@ -23,7 +23,7 @@
 
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLBDIElement FINAL : public HTMLElement {
 public:
@@ -40,6 +40,6 @@ private:
 
 DEFINE_NODE_FACTORY(HTMLBDIElement)
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

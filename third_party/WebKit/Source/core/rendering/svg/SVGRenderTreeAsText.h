@@ -28,7 +28,7 @@
 
 #include "platform/text/TextStream.h"
 
-namespace WebCore {
+namespace blink {
 
 class Color;
 class RenderObject;
@@ -80,6 +80,6 @@ TextStream& operator<<(TextStream& ts, Pointer* t)
     return ts;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGRenderTreeAsText_h

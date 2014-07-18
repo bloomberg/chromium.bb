@@ -27,7 +27,7 @@
 
 #include <limits>
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 class LocalFrame;

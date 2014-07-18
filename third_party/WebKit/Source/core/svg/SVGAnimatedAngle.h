@@ -34,7 +34,7 @@
 #include "core/svg/SVGAngleTearOff.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGMarkerElement;
 
@@ -63,6 +63,6 @@ private:
     RefPtr<SVGAnimatedEnumeration<SVGMarkerOrientType> > m_orientType;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGAnimatedAngle_h

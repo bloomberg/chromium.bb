@@ -27,7 +27,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSParserContext;
 class CSSStyleSheet;
@@ -114,6 +114,6 @@ private:
 #define DEFINE_CSS_RULE_TYPE_CASTS(ToType, TYPE_NAME) \
     DEFINE_TYPE_CASTS(ToType, CSSRule, rule, rule->type() == CSSRule::TYPE_NAME, rule.type() == CSSRule::TYPE_NAME)
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSRule_h

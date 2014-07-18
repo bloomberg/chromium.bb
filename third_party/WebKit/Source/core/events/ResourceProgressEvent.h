@@ -33,7 +33,7 @@
 
 #include "core/events/ProgressEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 // ResourceProgressEvent is a non-standard class that is simply a ProgressEvent
 // with an additional read-only "url" property containing a string URL. This is
@@ -67,6 +67,6 @@ private:
     String m_url;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ResourceProgressEvent_h

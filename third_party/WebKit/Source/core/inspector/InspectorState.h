@@ -36,7 +36,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class InspectorStateClient;
 
@@ -112,6 +112,6 @@ private:
     InspectorStateMap m_inspectorStateMap;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InspectorState_h)

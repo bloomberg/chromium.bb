@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/rendering/style/StyleSurroundData.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleSurroundData::StyleSurroundData()
     : margin(Fixed)
@@ -44,4 +44,4 @@ bool StyleSurroundData::operator==(const StyleSurroundData& o) const
     return offset == o.offset && margin == o.margin && padding == o.padding && border == o.border;
 }
 
-} // namespace WebCore
+} // namespace blink

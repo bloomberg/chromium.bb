@@ -37,7 +37,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 struct HTMLConstructionSiteTask {
     ALLOW_ONLY_INLINE_ALLOCATION();
@@ -78,11 +78,11 @@ public:
     bool selfClosing;
 };
 
-} // namespace WebCore
+} // namespace blink
 
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(WebCore::HTMLConstructionSiteTask);
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::HTMLConstructionSiteTask);
 
-namespace WebCore {
+namespace blink {
 
 // Note: These are intentionally ordered so that when we concatonate
 // strings and whitespaces the resulting whitespace is ws = min(ws1, ws2).
@@ -311,6 +311,6 @@ private:
     bool m_inQuirksMode;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

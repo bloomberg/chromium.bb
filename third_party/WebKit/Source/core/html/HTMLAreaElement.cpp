@@ -32,7 +32,7 @@
 #include "platform/graphics/Path.h"
 #include "platform/transforms/AffineTransform.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

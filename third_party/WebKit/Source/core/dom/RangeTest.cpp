@@ -19,7 +19,7 @@
 #include "wtf/text/AtomicString.h"
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 

@@ -35,7 +35,7 @@
 #include "core/page/Page.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsNodeRareData {
     void* m_pointer[2];
@@ -75,4 +75,4 @@ void NodeRareData::finalizeGarbageCollectedObject()
 // Ensure the 10 bits reserved for the m_connectedFrameCount cannot overflow
 COMPILE_ASSERT(Page::maxNumberOfFrames < (1 << NodeRareData::ConnectedFrameCountBits), Frame_limit_should_fit_in_rare_data_count);
 
-} // namespace WebCore
+} // namespace blink

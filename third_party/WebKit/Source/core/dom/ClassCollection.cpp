@@ -33,7 +33,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/NodeRareData.h"
 
-namespace WebCore {
+namespace blink {
 
 ClassCollection::ClassCollection(ContainerNode& rootNode, const AtomicString& classNames)
     : HTMLCollection(rootNode, ClassCollectionType, DoesNotOverrideItemAfter)
@@ -49,4 +49,4 @@ ClassCollection::~ClassCollection()
 #endif
 }
 
-} // namespace WebCore
+} // namespace blink

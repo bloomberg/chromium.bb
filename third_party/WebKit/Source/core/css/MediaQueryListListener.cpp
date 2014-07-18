@@ -24,7 +24,7 @@
 #include "bindings/core/v8/V8MediaQueryList.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 MediaQueryListListener::MediaQueryListListener()
 {

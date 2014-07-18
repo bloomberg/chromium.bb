@@ -34,7 +34,7 @@
 #include "platform/transforms/TransformationMatrix.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderLayer;
 class RenderLayerModelObject;
@@ -138,8 +138,8 @@ private:
     MapCoordinatesFlags m_mapCoordinatesFlags;
 };
 
-} // namespace WebCore
+} // namespace blink
 
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(WebCore::RenderGeometryMapStep);
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::RenderGeometryMapStep);
 
 #endif // RenderGeometryMap_h

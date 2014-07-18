@@ -28,7 +28,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSImportRule::CSSImportRule(StyleRuleImport* importRule, CSSStyleSheet* parent)
     : CSSRule(parent)
@@ -102,4 +102,4 @@ void CSSImportRule::trace(Visitor* visitor)
     CSSRule::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

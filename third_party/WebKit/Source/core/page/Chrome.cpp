@@ -43,7 +43,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -413,4 +413,4 @@ void Chrome::willBeDestroyed()
     m_client->chromeDestroyed();
 }
 
-} // namespace WebCore
+} // namespace blink

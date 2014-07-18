@@ -52,7 +52,7 @@
 #include "platform/text/TextBreakIterator.h"
 #include <limits>
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

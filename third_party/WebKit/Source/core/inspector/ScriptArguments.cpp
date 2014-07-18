@@ -37,7 +37,7 @@
 #include "wtf/text/StringBuilder.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -196,4 +196,4 @@ bool ScriptArguments::getFirstArgumentAsString(String& result, bool checkForNull
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

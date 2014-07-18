@@ -40,7 +40,7 @@
 #include "core/rendering/RenderTheme.h"
 #include "wtf/LeakAnnotations.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -210,4 +210,4 @@ void CSSDefaultStyleSheets::trace(Visitor* visitor)
     visitor->trace(m_fullscreenStyleSheet);
 }
 
-} // namespace WebCore
+} // namespace blink

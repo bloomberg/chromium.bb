@@ -35,7 +35,7 @@
 #include "core/frame/LocalFrame.h"
 #include "platform/graphics/GraphicsContext.h"
 
-namespace WebCore {
+namespace blink {
 
 static const double cLowQualityTimeThreshold = 0.500; // 500 ms
 
@@ -233,4 +233,4 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, R
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

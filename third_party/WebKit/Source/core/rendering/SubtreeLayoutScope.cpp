@@ -34,7 +34,7 @@
 #include "core/frame/FrameView.h"
 #include "core/rendering/RenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 SubtreeLayoutScope::SubtreeLayoutScope(RenderObject& root)
     : m_root(root)

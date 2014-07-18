@@ -49,7 +49,7 @@
 #define WEBCORE_NAVIGATOR_VENDOR_SUB ""
 #endif // ifndef WEBCORE_NAVIGATOR_VENDOR_SUB
 
-namespace WebCore {
+namespace blink {
 
 Navigator::Navigator(LocalFrame* frame)
     : DOMWindowProperty(frame)
@@ -159,4 +159,4 @@ void Navigator::trace(Visitor* visitor)
     WillBeHeapSupplementable<Navigator>::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

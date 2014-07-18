@@ -27,7 +27,7 @@
 
 #include "core/html/canvas/WebGLExtension.h"
 
-namespace WebCore {
+namespace blink {
 
 WebGLExtension::WebGLExtension(WebGLRenderingContextBase* context)
     : m_context(context)
@@ -38,4 +38,4 @@ WebGLExtension::~WebGLExtension()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -36,7 +36,7 @@
 #include "core/InspectorTypeBuilder.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class JSONValue;
 class ScriptFunctionCall;
@@ -75,6 +75,6 @@ private:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

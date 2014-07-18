@@ -42,7 +42,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace WorkerAgentState {
 static const char workerInspectionEnabled[] = "workerInspectionEnabled";
@@ -249,4 +249,4 @@ void InspectorWorkerAgent::createWorkerFrontendChannel(WorkerGlobalScopeProxy* w
     m_inspectorFrontend->worker()->workerCreated(channel->id(), url, autoconnectToWorkers);
 }
 
-} // namespace WebCore
+} // namespace blink

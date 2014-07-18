@@ -36,7 +36,7 @@
 #include "core/dom/IdTargetObserverRegistry.h"
 #include "core/frame/UseCounter.h"
 
-namespace WebCore {
+namespace blink {
 
 inline HTMLDataListElement::HTMLDataListElement(Document& document)
     : HTMLElement(HTMLNames::datalistTag, document)
@@ -72,4 +72,4 @@ void HTMLDataListElement::optionElementChildrenChanged()
     treeScope().idTargetObserverRegistry().notifyObservers(getIdAttribute());
 }
 
-} // namespace WebCore
+} // namespace blink

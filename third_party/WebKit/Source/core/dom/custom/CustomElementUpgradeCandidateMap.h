@@ -38,7 +38,7 @@
 #include "wtf/LinkedHashSet.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 

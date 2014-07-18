@@ -36,7 +36,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "wtf/ArrayBuffer.h"
 
-namespace WebCore {
+namespace blink {
 
 struct MessageEventInit : public EventInit {
     MessageEventInit();
@@ -140,6 +140,6 @@ private:
     OwnPtr<MessagePortChannelArray> m_channels;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MessageEvent_h

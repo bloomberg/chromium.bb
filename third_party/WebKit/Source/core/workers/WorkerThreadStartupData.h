@@ -39,7 +39,7 @@
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class WorkerClients;
 
@@ -68,6 +68,6 @@ private:
     WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, PassOwnPtrWillBeRawPtr<WorkerClients>);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerThreadStartupData_h

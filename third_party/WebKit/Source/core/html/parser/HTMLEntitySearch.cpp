@@ -28,7 +28,7 @@
 
 #include "core/html/parser/HTMLEntityTable.h"
 
-namespace WebCore {
+namespace blink {
 
 static const HTMLEntityTableEntry* halfway(const HTMLEntityTableEntry* left, const HTMLEntityTableEntry* right)
 {

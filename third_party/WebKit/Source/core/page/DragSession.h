@@ -28,7 +28,7 @@
 
 #include "core/page/DragActions.h"
 
-namespace WebCore {
+namespace blink {
 
 struct DragSession {
     DragOperation operation;

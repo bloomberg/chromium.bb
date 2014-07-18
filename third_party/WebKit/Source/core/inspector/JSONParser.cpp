@@ -34,7 +34,7 @@
 #include "platform/JSONValues.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -475,4 +475,4 @@ PassRefPtr<JSONValue> parseJSON(const String& json)
     return parseJSONInternal(json.characters16(), json.length());
 }
 
-} // namespace WebCore
+} // namespace blink

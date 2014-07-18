@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/events/TransitionEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 TransitionEventInit::TransitionEventInit()
     : elapsedTime(0)
@@ -87,4 +87,4 @@ void TransitionEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

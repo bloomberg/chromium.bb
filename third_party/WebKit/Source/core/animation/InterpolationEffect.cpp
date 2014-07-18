@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/animation/InterpolationEffect.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > InterpolationEffect::getActiveInterpolations(double fraction, double iterationDuration) const
 {

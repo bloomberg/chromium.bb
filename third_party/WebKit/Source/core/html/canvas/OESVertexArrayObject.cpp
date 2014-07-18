@@ -31,7 +31,7 @@
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 #include "core/html/canvas/WebGLVertexArrayObjectOES.h"
 
-namespace WebCore {
+namespace blink {
 
 OESVertexArrayObject::OESVertexArrayObject(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -117,4 +117,4 @@ const char* OESVertexArrayObject::extensionName()
     return "OES_vertex_array_object";
 }
 
-} // namespace WebCore
+} // namespace blink

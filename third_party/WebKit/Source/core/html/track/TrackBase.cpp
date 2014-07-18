@@ -33,7 +33,7 @@
 
 #include "core/html/HTMLMediaElement.h"
 
-namespace WebCore {
+namespace blink {
 
 static blink::WebMediaPlayer::TrackId nextTrackId()
 {
@@ -77,4 +77,4 @@ void TrackBase::setKind(const AtomicString& kind)
         m_kind = defaultKind();
 }
 
-} // namespace WebCore
+} // namespace blink

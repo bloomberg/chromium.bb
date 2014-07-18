@@ -20,7 +20,7 @@
 #ifndef SVGPropertyInfo_h
 #define SVGPropertyInfo_h
 
-namespace WebCore {
+namespace blink {
 
 enum AnimatedPropertyType {
     AnimatedAngle,

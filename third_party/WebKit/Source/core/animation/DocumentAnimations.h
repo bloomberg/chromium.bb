@@ -33,7 +33,7 @@
 
 #include "core/CSSPropertyNames.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class FrameView;

@@ -33,7 +33,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtr<PublicURLManager> PublicURLManager::create(ExecutionContext* context)
 {

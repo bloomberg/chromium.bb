@@ -37,7 +37,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class Interpolation;
 
@@ -57,6 +57,6 @@ public:
     virtual void trace(Visitor*) { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimationEffect_h

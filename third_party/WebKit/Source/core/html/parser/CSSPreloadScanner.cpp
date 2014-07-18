@@ -32,7 +32,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/text/SegmentedString.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSPreloadScanner::CSSPreloadScanner()
     : m_state(Initial)

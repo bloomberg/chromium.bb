@@ -9,7 +9,7 @@
 #include "core/animation/css/CSSTimingData.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSAnimationData FINAL : public CSSTimingData {
 public:
@@ -56,6 +56,6 @@ private:
     Vector<EAnimPlayState> m_playStateList;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSAnimationData_h

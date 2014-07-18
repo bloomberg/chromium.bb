@@ -33,7 +33,7 @@
 
 #include "core/fetch/TextResource.h"
 
-namespace WebCore {
+namespace blink {
 
 class StyleSheetResourceClient;
 

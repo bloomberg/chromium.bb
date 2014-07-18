@@ -35,7 +35,7 @@
 #include "core/html/HTMLShadowElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 
-namespace WebCore {
+namespace blink {
 
 class DistributionPool FINAL {
     STACK_ALLOCATED();

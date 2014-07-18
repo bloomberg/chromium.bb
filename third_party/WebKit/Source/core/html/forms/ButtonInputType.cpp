@@ -34,7 +34,7 @@
 #include "core/InputTypeNames.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<InputType> ButtonInputType::create(HTMLInputElement& element)
 {
@@ -56,4 +56,4 @@ bool ButtonInputType::isTextButton() const
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

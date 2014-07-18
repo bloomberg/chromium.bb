@@ -34,7 +34,7 @@
 #include "core/dom/Position.h"
 #include "core/editing/VisiblePosition.h"
 
-namespace WebCore {
+namespace blink {
 
 static inline RenderObject* rendererFromPosition(const Position& position)
 {

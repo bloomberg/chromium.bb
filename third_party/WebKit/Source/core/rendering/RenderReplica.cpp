@@ -32,7 +32,7 @@
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/RenderLayer.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderReplica::RenderReplica()
     : RenderBox(0)
@@ -90,4 +90,4 @@ void RenderReplica::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
         paintMask(paintInfo, adjustedPaintOffset);
 }
 
-} // namespace WebCore
+} // namespace blink

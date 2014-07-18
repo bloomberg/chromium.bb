@@ -27,7 +27,7 @@
 
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGMaskElement::SVGMaskElement(Document& document)
     : SVGElement(SVGNames::maskTag, document)

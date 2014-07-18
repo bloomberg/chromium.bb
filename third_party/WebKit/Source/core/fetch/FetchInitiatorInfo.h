@@ -29,7 +29,7 @@
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/TextPosition.h"
 
-namespace WebCore {
+namespace blink {
 
 struct FetchInitiatorInfo {
     FetchInitiatorInfo()
@@ -44,6 +44,6 @@ struct FetchInitiatorInfo {
     double startTime;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

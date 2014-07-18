@@ -29,7 +29,7 @@
 
 #include "platform/graphics/GraphicsLayer.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderLayer;
 
@@ -60,6 +60,6 @@ private:
     bool m_needsRebuildTree;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GraphicsLayerUpdater_h

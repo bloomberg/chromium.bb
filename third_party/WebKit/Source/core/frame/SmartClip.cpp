@@ -41,7 +41,7 @@
 #include "core/rendering/RenderObject.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 static IntRect applyScaleWithoutCollapsingToZero(const IntRect& rect, float scale)
 {
@@ -274,4 +274,4 @@ String SmartClip::extractTextFromNode(Node* node)
     return result.toString();
 }
 
-} // namespace WebCore
+} // namespace blink

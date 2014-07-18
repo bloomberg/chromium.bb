@@ -35,7 +35,7 @@
 
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class EventTarget;
 class ScheduledAction;
@@ -47,6 +47,6 @@ void clearTimeout(EventTarget&, int timeoutId);
 void clearInterval(EventTarget&, int timeoutId);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMWindowTimers_h

@@ -26,7 +26,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/NamedNodeMap.h"
 
-namespace WebCore {
+namespace blink {
 
 DocumentType::DocumentType(Document* document, const String& name, const String& publicId, const String& systemId)
     : Node(document, CreateOther)

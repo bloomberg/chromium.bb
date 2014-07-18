@@ -25,7 +25,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLAppletElement.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderApplet::RenderApplet(HTMLAppletElement* applet)
     : RenderEmbeddedObject(applet)
@@ -38,4 +38,4 @@ RenderApplet::~RenderApplet()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

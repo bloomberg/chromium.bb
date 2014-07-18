@@ -7,7 +7,7 @@
 
 #include "core/rendering/RenderGeometryMap.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderLayer;
 
@@ -56,6 +56,6 @@ private:
     RenderLayer* m_rootRenderLayer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CompositingInputsUpdater_h

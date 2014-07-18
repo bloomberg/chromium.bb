@@ -27,7 +27,7 @@
 #include "core/fetch/StyleSheetResourceClient.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSStyleSheetResource;
 class MediaQuerySet;
@@ -87,6 +87,6 @@ private:
 
 DEFINE_STYLE_RULE_TYPE_CASTS(Import);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

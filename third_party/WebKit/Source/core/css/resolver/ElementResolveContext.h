@@ -25,7 +25,7 @@
 #include "core/dom/Element.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
-namespace WebCore {
+namespace blink {
 
 class ContainerNode;
 class Element;
@@ -60,6 +60,6 @@ private:
     bool m_distributedToInsertionPoint;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ElementResolveContext_h

@@ -34,7 +34,7 @@
 #include "platform/text/SegmentedString.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 // Line collection helper for the WebVTT Parser.
 //
@@ -83,6 +83,6 @@ private:
     bool m_maybeSkipLF;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

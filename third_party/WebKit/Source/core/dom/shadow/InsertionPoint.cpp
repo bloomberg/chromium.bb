@@ -38,7 +38,7 @@
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/shadow/ElementShadow.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -292,4 +292,4 @@ void collectDestinationInsertionPoints(const Node& node, WillBeHeapVector<RawPtr
     }
 }
 
-} // namespace WebCore
+} // namespace blink

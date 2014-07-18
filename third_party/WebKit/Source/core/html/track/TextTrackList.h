@@ -35,7 +35,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class GenericEventQueue;
 class TextTrack;
@@ -97,6 +97,6 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<TextTrack> > m_inbandTracks;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

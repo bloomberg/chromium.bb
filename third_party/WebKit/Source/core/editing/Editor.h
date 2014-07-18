@@ -39,7 +39,7 @@
 #include "platform/PasteMode.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class CompositeEditCommand;
 class DataTransfer;
@@ -275,7 +275,7 @@ private:
 
     SpellChecker& spellChecker() const;
 
-    bool handleEditingKeyboardEvent(WebCore::KeyboardEvent*);
+    bool handleEditingKeyboardEvent(blink::KeyboardEvent*);
 };
 
 inline void Editor::setStartNewKillRingSequence(bool flag)
@@ -299,6 +299,6 @@ inline bool Editor::markedTextMatchesAreHighlighted() const
 }
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Editor_h

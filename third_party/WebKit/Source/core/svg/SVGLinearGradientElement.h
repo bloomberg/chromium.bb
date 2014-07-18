@@ -25,7 +25,7 @@
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGGradientElement.h"
 
-namespace WebCore {
+namespace blink {
 
 struct LinearGradientAttributes;
 
@@ -57,6 +57,6 @@ private:
     RefPtr<SVGAnimatedLength> m_y2;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

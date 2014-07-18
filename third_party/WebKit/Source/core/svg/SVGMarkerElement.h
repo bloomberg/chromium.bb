@@ -29,7 +29,7 @@
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFitToViewBox.h"
 
-namespace WebCore {
+namespace blink {
 
 enum SVGMarkerUnitsType {
     SVGMarkerUnitsUnknown = 0,

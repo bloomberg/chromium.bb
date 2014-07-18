@@ -30,7 +30,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 void CanvasPattern::parseRepetitionType(const String& type, bool& repeatX, bool& repeatY, ExceptionState& exceptionState)
 {

@@ -34,7 +34,7 @@
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
-namespace WebCore {
+namespace blink {
 
 enum ContentSniffingPolicy {
     SniffContent,
@@ -153,6 +153,6 @@ struct ResourceLoaderOptions {
     RefPtr<SecurityOrigin> securityOrigin;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ResourceLoaderOptions_h

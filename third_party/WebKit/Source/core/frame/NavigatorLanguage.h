@@ -7,7 +7,7 @@
 
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class NavigatorLanguage {
 public:
@@ -22,6 +22,6 @@ private:
     bool m_languagesChanged;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigatorLanguage_h

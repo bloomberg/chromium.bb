@@ -27,7 +27,7 @@
 
 #include "core/events/Event.h"
 
-namespace WebCore {
+namespace blink {
 
 struct AutocompleteErrorEventInit : public EventInit {
     String reason;
@@ -79,6 +79,6 @@ private:
     String m_reason;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AutocompleteErrorEvent_h

@@ -28,7 +28,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 String CSSCubicBezierTimingFunctionValue::customCSSText() const
 {
@@ -70,4 +70,4 @@ bool CSSStepsTimingFunctionValue::equals(const CSSStepsTimingFunctionValue& othe
     return m_steps == other.m_steps && m_stepAtPosition == other.m_stepAtPosition;
 }
 
-} // namespace WebCore
+} // namespace blink

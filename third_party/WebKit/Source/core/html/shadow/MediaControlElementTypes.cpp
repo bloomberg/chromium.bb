@@ -39,7 +39,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/shadow/MediaControls.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -150,4 +150,4 @@ void MediaControlTimeDisplayElement::setCurrentValue(double time)
     m_currentValue = time;
 }
 
-} // namespace WebCore
+} // namespace blink

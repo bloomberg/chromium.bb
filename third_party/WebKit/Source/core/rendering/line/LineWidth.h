@@ -32,7 +32,7 @@
 
 #include "platform/LayoutUnit.h"
 
-namespace WebCore {
+namespace blink {
 
 class FloatingObject;
 class RenderObject;

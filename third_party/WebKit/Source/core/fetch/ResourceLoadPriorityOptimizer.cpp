@@ -35,7 +35,7 @@
 
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 ResourceLoadPriorityOptimizer* ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()
 {

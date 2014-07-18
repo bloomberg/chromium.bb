@@ -35,7 +35,7 @@
 #include "core/dom/NodeList.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class EmptyNodeList FINAL : public NodeList {
 public:
@@ -63,6 +63,6 @@ private:
 
 DEFINE_TYPE_CASTS(EmptyNodeList, NodeList, nodeList, nodeList->isEmptyNodeList(), nodeList.isEmptyNodeList());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // EmptyNodeList_h

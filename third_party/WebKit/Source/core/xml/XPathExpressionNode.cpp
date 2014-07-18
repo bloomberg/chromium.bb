@@ -29,7 +29,7 @@
 
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 namespace XPath {
 
 EvaluationContext::EvaluationContext(Node& contextNode)

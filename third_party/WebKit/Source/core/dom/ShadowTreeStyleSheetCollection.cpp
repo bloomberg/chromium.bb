@@ -35,7 +35,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLStyleElement.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

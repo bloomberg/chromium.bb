@@ -46,7 +46,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SharedWorker::SharedWorker(ExecutionContext* context)
     : AbstractWorker(context)
@@ -109,4 +109,4 @@ void SharedWorker::trace(Visitor* visitor)
     WillBeHeapSupplementable<SharedWorker>::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

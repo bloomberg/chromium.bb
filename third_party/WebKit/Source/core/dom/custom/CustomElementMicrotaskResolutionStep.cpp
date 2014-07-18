@@ -34,7 +34,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtrWillBeRawPtr<CustomElementMicrotaskResolutionStep> CustomElementMicrotaskResolutionStep::create(PassRefPtrWillBeRawPtr<CustomElementRegistrationContext> context, PassRefPtrWillBeRawPtr<Element> element, const CustomElementDescriptor& descriptor)
 {
@@ -73,4 +73,4 @@ void CustomElementMicrotaskResolutionStep::show(unsigned indent)
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

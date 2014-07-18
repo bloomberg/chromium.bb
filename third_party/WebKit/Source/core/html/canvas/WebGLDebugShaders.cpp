@@ -30,7 +30,7 @@
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 #include "core/html/canvas/WebGLShader.h"
 
-namespace WebCore {
+namespace blink {
 
 WebGLDebugShaders::WebGLDebugShaders(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -71,4 +71,4 @@ const char* WebGLDebugShaders::extensionName()
     return "WEBGL_debug_shaders";
 }
 
-} // namespace WebCore
+} // namespace blink

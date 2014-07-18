@@ -30,7 +30,7 @@
 #include "core/rendering/style/CollapsedBorderValue.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderTableCol;
 class RenderTableCaption;
@@ -362,6 +362,6 @@ inline RenderTableSection* RenderTable::topSection() const
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTable, isTable());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderTable_h

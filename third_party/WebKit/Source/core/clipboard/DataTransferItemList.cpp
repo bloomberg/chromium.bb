@@ -33,7 +33,7 @@
 #include "core/clipboard/DataTransferItem.h"
 #include "core/dom/ExceptionCode.h"
 
-namespace WebCore {
+namespace blink {
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DataTransferItemList);
 
@@ -111,4 +111,4 @@ void DataTransferItemList::trace(Visitor* visitor)
     visitor->trace(m_dataObject);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -37,7 +37,7 @@
 #include "core/inspector/ConsoleAPITypes.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalDOMWindow;
 class InjectedScriptManager;
@@ -82,6 +82,6 @@ private:
     double m_timestamp;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InspectorConsoleMessage_h

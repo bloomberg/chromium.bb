@@ -36,7 +36,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSBasicShape : public RefCountedWillBeGarbageCollected<CSSBasicShape> {
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(CSSBasicShape);
@@ -218,6 +218,6 @@ private:
     RefPtrWillBeMember<CSSPrimitiveValue> m_bottomLeftRadius;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSBasicShapes_h

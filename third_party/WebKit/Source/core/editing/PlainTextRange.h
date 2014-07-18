@@ -30,7 +30,7 @@
 #include "wtf/NotFound.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ContainerNode;
 class Node;
@@ -64,6 +64,6 @@ private:
     const size_t m_end;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PlainTextRange_h

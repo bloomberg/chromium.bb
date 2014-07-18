@@ -54,7 +54,7 @@
 
 using namespace blink;
 
-namespace WebCore {
+namespace blink {
 
 // We provide a custom implementation of this class that calls out to the
 // embedding application instead of using WebCore's built in appcache system.
@@ -118,7 +118,7 @@ void ApplicationCacheHost::selectCacheWithManifest(const KURL& manifestURL)
         // of the navigation algorithm. The navigation will not result in the
         // same resource being loaded, because "foreign" entries are never picked
         // during navigation.
-        // see WebCore::ApplicationCacheGroup::selectCache()
+        // see blink::ApplicationCacheGroup::selectCache()
         LocalFrame* frame = m_documentLoader->frame();
         frame->navigationScheduler().scheduleLocationChange(frame->document(), frame->document()->url(), Referrer(frame->document()->referrer(), frame->document()->referrerPolicy()));
     }
@@ -277,4 +277,4 @@ void ApplicationCacheHost::notifyErrorEventListener(blink::WebApplicationCacheHo
     notifyApplicationCache(ERROR_EVENT, 0, 0, reason, url.string(), status, message);
 }
 
-} // namespace WebCore
+} // namespace blink

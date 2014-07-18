@@ -27,7 +27,7 @@
 #include "core/html/HTMLElement.h"
 #include "platform/Timer.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class RenderMarquee;
@@ -62,6 +62,6 @@ private:
     RenderMarquee* renderMarquee() const;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLMarqueeElement_h

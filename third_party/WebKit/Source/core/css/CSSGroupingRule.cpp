@@ -39,7 +39,7 @@
 #include "core/frame/UseCounter.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSGroupingRule::CSSGroupingRule(StyleRuleGroup* groupRule, CSSStyleSheet* parent)
     : CSSRule(parent)
@@ -163,4 +163,4 @@ void CSSGroupingRule::trace(Visitor* visitor)
     visitor->trace(m_ruleListCSSOMWrapper);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -28,7 +28,7 @@
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
-namespace WebCore {
+namespace blink {
 
 class Image;
 class RenderObject;
@@ -62,6 +62,6 @@ private:
     PassRefPtr<SVGPreserveAspectRatio> m_preserveAspectRatio;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGFEImage_h

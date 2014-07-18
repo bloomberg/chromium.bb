@@ -29,7 +29,7 @@
 
 #include "core/rendering/RenderFlowThread.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderMultiColumnSet;
 
@@ -150,7 +150,7 @@ private:
     bool m_progressionIsInline; // Always true for regular multicol. False for paged-y overflow.
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderMultiColumnFlowThread_h
 

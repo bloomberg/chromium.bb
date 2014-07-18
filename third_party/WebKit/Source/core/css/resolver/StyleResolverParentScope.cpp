@@ -6,8 +6,8 @@
 
 #include "core/css/resolver/StyleResolverParentScope.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleResolverParentScope* StyleResolverParentScope::s_currentScope = 0;
 
-} // namespace WebCore
+} // namespace blink

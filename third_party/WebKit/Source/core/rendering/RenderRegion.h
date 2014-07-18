@@ -33,7 +33,7 @@
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
-namespace WebCore {
+namespace blink {
 
 struct LayerFragment;
 typedef Vector<LayerFragment, 1> LayerFragments;
@@ -94,6 +94,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderRegion, isRenderRegion());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderRegion_h

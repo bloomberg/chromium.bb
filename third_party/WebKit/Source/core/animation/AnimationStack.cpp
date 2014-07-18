@@ -38,11 +38,11 @@
 #include "wtf/NonCopyingSort.h"
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
-void copyToActiveInterpolationMap(const WillBeHeapVector<RefPtrWillBeMember<WebCore::Interpolation> >& source, WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<WebCore::Interpolation> >& target)
+void copyToActiveInterpolationMap(const WillBeHeapVector<RefPtrWillBeMember<blink::Interpolation> >& source, WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<blink::Interpolation> >& target)
 {
     for (size_t i = 0; i < source.size(); ++i) {
         Interpolation* interpolation = source[i].get();
@@ -171,4 +171,4 @@ bool AnimationStack::getAnimatedBoundingBox(FloatBox& box, CSSPropertyID propert
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

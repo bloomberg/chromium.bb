@@ -30,7 +30,7 @@
 #include "core/rendering/style/StylePendingImage.h"
 #include "platform/graphics/filters/FilterOperation.h"
 
-namespace WebCore {
+namespace blink {
 
 ElementStyleResources::ElementStyleResources()
     : m_deviceScaleFactor(1)

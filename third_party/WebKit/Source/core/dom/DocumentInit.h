@@ -36,7 +36,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/WeakPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class CustomElementRegistrationContext;
 class Document;
@@ -87,6 +87,6 @@ private:
     bool m_createNewRegistrationContext;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DocumentInit_h

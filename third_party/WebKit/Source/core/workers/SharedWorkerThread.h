@@ -33,7 +33,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerThread.h"
 
-namespace WebCore {
+namespace blink {
 
 class WorkerThreadStartupData;
 
@@ -51,6 +51,6 @@ private:
     String m_name;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SharedWorkerThread_h

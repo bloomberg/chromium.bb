@@ -9,7 +9,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 class AnimationInterpolableValueTest : public ::testing::Test {
 protected:

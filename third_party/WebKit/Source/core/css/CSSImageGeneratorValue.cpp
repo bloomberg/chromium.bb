@@ -31,7 +31,7 @@
 #include "core/css/CSSGradientValue.h"
 #include "platform/graphics/Image.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSImageGeneratorValue::CSSImageGeneratorValue(ClassType classType)
     : CSSValue(classType)
@@ -227,4 +227,4 @@ void CSSImageGeneratorValue::loadSubimages(ResourceFetcher* fetcher)
     }
 }
 
-} // namespace WebCore
+} // namespace blink

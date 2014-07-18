@@ -32,7 +32,7 @@
 
 #include "core/animation/animatable/AnimatableValueTestHelper.h"
 
-namespace WebCore {
+namespace blink {
 
 bool operator==(const AnimatableValue& a, const AnimatableValue& b)
 {
@@ -202,4 +202,4 @@ void PrintTo(const AnimatableValue& animValue, ::std::ostream* os)
         *os << "Unknown AnimatableValue - update ifelse chain in AnimatableValueTestHelper.h";
 }
 
-} // namespace WebCore
+} // namespace blink

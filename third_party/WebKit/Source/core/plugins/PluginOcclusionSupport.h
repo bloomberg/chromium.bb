@@ -22,13 +22,13 @@
 
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 class Element;
 class Widget;
 class IntRect;
 
 void getPluginOcclusions(Element*, Widget* parentWidget, const IntRect& frameRect, Vector<IntRect>& occlusions);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PluginOcclusionSupport_h

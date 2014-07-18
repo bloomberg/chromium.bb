@@ -26,7 +26,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 struct QualifiedNameComponents {
     StringImpl* m_prefix;
@@ -183,13 +183,13 @@ namespace WTF {
 
     template<typename T> struct DefaultHash;
 
-    template<> struct DefaultHash<WebCore::QualifiedName> {
-        typedef WebCore::QualifiedNameHash Hash;
+    template<> struct DefaultHash<blink::QualifiedName> {
+        typedef blink::QualifiedNameHash Hash;
     };
 
-    template<> struct HashTraits<WebCore::QualifiedName> : SimpleClassHashTraits<WebCore::QualifiedName> {
+    template<> struct HashTraits<blink::QualifiedName> : SimpleClassHashTraits<blink::QualifiedName> {
         static const bool emptyValueIsZero = false;
-        static WebCore::QualifiedName emptyValue() { return WebCore::QualifiedName::null(); }
+        static blink::QualifiedName emptyValue() { return blink::QualifiedName::null(); }
     };
 }
 

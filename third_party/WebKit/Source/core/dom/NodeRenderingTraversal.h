@@ -29,7 +29,7 @@
 
 #include "core/dom/Element.h"
 
-namespace WebCore {
+namespace blink {
 
 class InsertionPoint;
 class RenderObject;
@@ -81,6 +81,6 @@ inline Element* parentElement(const Node* node)
 
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

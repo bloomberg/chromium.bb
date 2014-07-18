@@ -48,7 +48,7 @@
 #include "wtf/Vector.h"
 #include "wtf/WeakPtr.h"
 
-namespace WebCore {
+namespace blink {
 struct FetchInitiatorInfo;
 struct TimelineImageInfo;
 struct TimelineThreadState;
@@ -320,6 +320,6 @@ private:
     double m_lastProgressTimestamp;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InspectorTimelineAgent_h)

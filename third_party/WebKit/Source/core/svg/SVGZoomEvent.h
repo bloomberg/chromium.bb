@@ -26,7 +26,7 @@
 #include "core/svg/SVGPoint.h"
 #include "core/svg/SVGRect.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGZoomEvent FINAL : public UIEvent {
 public:
@@ -60,6 +60,6 @@ private:
     FloatPoint m_previousTranslate;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGZoomEvent_h

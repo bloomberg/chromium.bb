@@ -33,7 +33,7 @@
 #include "core/accessibility/AXSlider.h"
 #include "core/html/shadow/MediaControlElements.h"
 
-namespace WebCore {
+namespace blink {
 
 class AccessibilityMediaControl : public AXRenderObject {
 
@@ -104,6 +104,6 @@ private:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXMediaControls_h

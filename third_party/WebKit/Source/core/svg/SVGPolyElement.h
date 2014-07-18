@@ -26,7 +26,7 @@
 #include "core/svg/SVGAnimatedPointList.h"
 #include "core/svg/SVGGeometryElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPolyElement : public SVGGeometryElement {
 public:
@@ -55,6 +55,6 @@ inline bool isSVGPolyElement(const Node& node)
 
 DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGPolyElement);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

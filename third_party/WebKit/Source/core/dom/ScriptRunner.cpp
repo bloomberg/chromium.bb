@@ -33,7 +33,7 @@
 #include "core/fetch/ScriptResource.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 ScriptRunner::ScriptRunner(Document* document)
     : m_document(document)

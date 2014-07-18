@@ -32,7 +32,7 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/Path.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGRenderStyle : public RefCounted<SVGRenderStyle> {
 public:
@@ -452,6 +452,6 @@ private:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGRenderStyle_h

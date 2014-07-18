@@ -26,7 +26,7 @@
 #ifndef ContextMenuClient_h
 #define ContextMenuClient_h
 
-namespace WebCore {
+namespace blink {
 
 class ContextMenu;
 

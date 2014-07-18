@@ -36,7 +36,7 @@
 using std::max;
 using std::min;
 
-namespace WebCore {
+namespace blink {
 
 // Clamp rowspan and colspan at 8k.
 // Firefox used a limit of 8190 for rowspan but they changed it to 65,534.
@@ -186,4 +186,4 @@ HTMLTableCellElement* HTMLTableCellElement::cellAbove() const
     return toHTMLTableCellElement(cellAboveRenderer->node());
 }
 
-} // namespace WebCore
+} // namespace blink

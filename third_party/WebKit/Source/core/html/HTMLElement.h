@@ -25,7 +25,7 @@
 
 #include "core/dom/Element.h"
 
-namespace WebCore {
+namespace blink {
 
 class DocumentFragment;
 class HTMLCollection;
@@ -154,7 +154,7 @@ inline HTMLElement::HTMLElement(const QualifiedName& tagName, Document& document
     template <> inline bool isElementOfType<const thisType>(const HTMLElement& element) { return is##thisType(element); } \
     DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType)
 
-} // namespace WebCore
+} // namespace blink
 
 #include "core/HTMLElementTypeHelpers.h"
 

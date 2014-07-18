@@ -37,7 +37,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class DataObject;
 class DataTransfer;
@@ -67,6 +67,6 @@ private:
     RefPtrWillBeMember<DataObject> m_dataObject;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DataTransferItemList_h

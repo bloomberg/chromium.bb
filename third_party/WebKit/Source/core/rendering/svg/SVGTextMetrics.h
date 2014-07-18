@@ -24,7 +24,7 @@
 #include "platform/text/TextDirection.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderSVGInlineText;
 class TextRun;
@@ -66,6 +66,6 @@ private:
     Glyph m_glyph;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

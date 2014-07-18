@@ -33,7 +33,7 @@
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/TraceEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 class OverlapMapContainer {
 public:
@@ -418,4 +418,4 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
 
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -29,7 +29,7 @@
 #include "core/editing/ApplyBlockElementCommand.h"
 #include "core/editing/EditAction.h"
 
-namespace WebCore {
+namespace blink {
 
 class IndentOutdentCommand FINAL : public ApplyBlockElementCommand {
 public:
@@ -57,6 +57,6 @@ private:
     EIndentType m_typeOfAction;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IndentOutdentCommand_h

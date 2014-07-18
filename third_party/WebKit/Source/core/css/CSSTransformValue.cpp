@@ -28,7 +28,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 // These names must be kept in sync with TransformOperationType.
 const char* const transformNamePrefixes[] = {

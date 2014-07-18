@@ -30,7 +30,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 MouseRelatedEvent::MouseRelatedEvent()
     : m_isSimulated(false)
@@ -229,4 +229,4 @@ void MouseRelatedEvent::trace(Visitor* visitor)
     UIEventWithKeyState::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

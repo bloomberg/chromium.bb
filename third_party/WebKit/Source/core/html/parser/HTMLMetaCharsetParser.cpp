@@ -35,7 +35,7 @@
 
 using namespace WTF;
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

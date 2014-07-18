@@ -26,7 +26,7 @@
 #ifndef PagePopupDriver_h
 #define PagePopupDriver_h
 
-namespace WebCore {
+namespace blink {
 
 class IntRect;
 class PagePopup;

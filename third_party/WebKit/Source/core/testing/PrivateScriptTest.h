@@ -8,7 +8,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 
@@ -25,6 +25,6 @@ private:
     PrivateScriptTest(LocalFrame*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

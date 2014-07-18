@@ -38,7 +38,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class InspectorConsoleMessage;
 class DocumentLoader;
@@ -120,7 +120,7 @@ private:
     static int s_enabledAgentCount;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // !defined(InspectorConsoleAgent_h)

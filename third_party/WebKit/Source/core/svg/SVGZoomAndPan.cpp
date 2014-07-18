@@ -24,7 +24,7 @@
 
 #include "core/svg/SVGParserUtilities.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGZoomAndPan::SVGZoomAndPan()
     : m_zoomAndPan(SVGZoomAndPanMagnify)

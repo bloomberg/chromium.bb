@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class AnimationTimingInputTest : public ::testing::Test {
 protected:
@@ -178,4 +178,4 @@ TEST_F(AnimationTimingInputTest, TimingInputEmpty)
     EXPECT_EQ(*controlTiming.timingFunction, *updatedTiming.timingFunction);
 }
 
-} // namespace WebCore
+} // namespace blink

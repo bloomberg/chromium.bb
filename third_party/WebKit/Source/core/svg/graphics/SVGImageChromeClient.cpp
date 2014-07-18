@@ -35,7 +35,7 @@
 #include "platform/graphics/ImageObserver.h"
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 static const double animationFrameDelay = 0.025;
 

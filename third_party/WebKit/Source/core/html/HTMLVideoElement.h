@@ -33,7 +33,7 @@ namespace blink {
 class WebGraphicsContext3D;
 }
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class HTMLImageLoader;

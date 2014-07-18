@@ -38,7 +38,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 namespace XPath {
 
 static inline bool isWhitespace(UChar c)

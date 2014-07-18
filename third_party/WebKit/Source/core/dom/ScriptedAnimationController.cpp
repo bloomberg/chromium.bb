@@ -36,7 +36,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
 
-namespace WebCore {
+namespace blink {
 
 std::pair<EventTarget*, StringImpl*> eventTargetKey(const Event* event)
 {

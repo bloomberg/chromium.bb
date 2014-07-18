@@ -35,7 +35,7 @@ namespace WTF{
 class TextEncoding;
 }
 
-namespace WebCore {
+namespace blink {
 
 class Event;
 class FormAssociatedElement;
@@ -186,6 +186,6 @@ private:
     OwnPtrWillBeMember<GenericEventQueue> m_pendingAutocompleteEventsQueue;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLFormElement_h

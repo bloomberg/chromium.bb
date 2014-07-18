@@ -33,7 +33,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 struct FocusCandidate;
 class Document;
@@ -121,6 +121,6 @@ private:
     bool m_isChangingFocusedFrame;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FocusController_h

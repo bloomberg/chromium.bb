@@ -7,7 +7,7 @@
 
 #include "core/html/parser/InputStreamPreprocessor.h"
 
-namespace WebCore {
+namespace blink {
 
 MediaQueryInputStream::MediaQueryInputStream(String input)
     : m_offset(0)
@@ -63,4 +63,4 @@ double MediaQueryInputStream::getDouble(unsigned start, unsigned end)
     return isResultOK ? result : 0.0;
 }
 
-} // namespace WebCore
+} // namespace blink

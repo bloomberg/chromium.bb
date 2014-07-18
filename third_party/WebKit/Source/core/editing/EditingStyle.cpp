@@ -57,7 +57,7 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 static const CSSPropertyID& textDecorationPropertyForEditing()
 {

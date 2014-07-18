@@ -36,7 +36,7 @@ class WebStorageArea;
 class WebStorageNamespace;
 }
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class LocalFrame;
@@ -84,6 +84,6 @@ private:
     LocalFrame* m_canAccessStorageCachedFrame;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StorageArea_h

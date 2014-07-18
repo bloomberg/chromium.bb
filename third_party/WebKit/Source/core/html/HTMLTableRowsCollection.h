@@ -31,7 +31,7 @@
 
 #include "core/html/HTMLCollection.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLTableElement;
 class HTMLTableRowElement;

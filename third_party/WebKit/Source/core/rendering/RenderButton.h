@@ -24,7 +24,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/rendering/RenderFlexibleBox.h"
 
-namespace WebCore {
+namespace blink {
 
 // RenderButtons are just like normal flexboxes except that they will generate an anonymous block child.
 // For inputs, they will also generate an anonymous RenderText and keep its style and content up
@@ -67,6 +67,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderButton, isRenderButton());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderButton_h

@@ -33,7 +33,7 @@
 #include "platform/SharedBuffer.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 XSLStyleSheetResource::XSLStyleSheetResource(const ResourceRequest& resourceRequest, const String& charset)
     : StyleSheetResource(resourceRequest, XSLStyleSheet, "text/xsl", charset)
@@ -64,4 +64,4 @@ void XSLStyleSheetResource::checkNotify()
         c->setXSLStyleSheet(m_resourceRequest.url(), m_response.url(), m_sheet);
 }
 
-} // namespace WebCore
+} // namespace blink

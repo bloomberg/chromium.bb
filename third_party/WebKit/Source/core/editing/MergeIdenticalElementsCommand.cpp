@@ -30,7 +30,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Element.h"
 
-namespace WebCore {
+namespace blink {
 
 MergeIdenticalElementsCommand::MergeIdenticalElementsCommand(PassRefPtrWillBeRawPtr<Element> first, PassRefPtrWillBeRawPtr<Element> second)
     : SimpleEditCommand(first->document())
@@ -94,4 +94,4 @@ void MergeIdenticalElementsCommand::trace(Visitor* visitor)
     SimpleEditCommand::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -36,7 +36,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class InsertionPoint : public HTMLElement {
 public:
@@ -114,6 +114,6 @@ const InsertionPoint* resolveReprojection(const Node*);
 
 void collectDestinationInsertionPoints(const Node&, WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8>& results);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InsertionPoint_h

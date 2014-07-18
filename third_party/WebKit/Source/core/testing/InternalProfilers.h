@@ -36,7 +36,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class InternalProfilers : public RefCountedWillBeGarbageCollected<InternalProfilers> {
 public:
@@ -53,6 +53,6 @@ public:
     void trace(Visitor*) { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

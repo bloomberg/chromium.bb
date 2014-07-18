@@ -50,7 +50,7 @@
 
 #include "wtf/TemporaryChange.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 using namespace SVGNames;

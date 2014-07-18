@@ -29,7 +29,7 @@
 
 #include "core/page/DragActions.h"
 
-namespace WebCore {
+namespace blink {
 
 class DataTransfer;
 class DragData;

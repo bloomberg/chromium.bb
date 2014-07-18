@@ -30,7 +30,7 @@
 #include "core/fetch/ImageResource.h"
 #include "core/rendering/RenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleFetchedImageSet::StyleFetchedImageSet(ImageResource* image, float imageScaleFactor, CSSImageSetValue* value)
     : m_bestFitImage(image)
@@ -119,4 +119,4 @@ bool StyleFetchedImageSet::knownToBeOpaque(const RenderObject* renderer) const
     return m_bestFitImage->currentFrameKnownToBeOpaque(renderer);
 }
 
-} // namespace WebCore
+} // namespace blink

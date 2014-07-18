@@ -30,7 +30,7 @@
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebGLExtension : public RefCounted<WebGLExtension> {
     WTF_MAKE_FAST_ALLOCATED;
@@ -59,6 +59,6 @@ protected:
     WebGLRenderingContextBase* m_context;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLExtension_h

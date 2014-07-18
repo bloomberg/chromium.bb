@@ -27,7 +27,7 @@
 #include "core/dom/LiveNodeList.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 // NodeList which lists all Nodes in a Element with a given "name" attribute
 class NameNodeList FINAL : public LiveNodeList {
@@ -48,6 +48,6 @@ private:
     AtomicString m_name;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NameNodeList_h

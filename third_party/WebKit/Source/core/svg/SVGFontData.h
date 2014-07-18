@@ -25,7 +25,7 @@
 #include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class SimpleFontData;
 class SVGFontElement;
@@ -82,7 +82,7 @@ private:
     float m_verticalAdvanceY;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif
 #endif // SVGFontData_h

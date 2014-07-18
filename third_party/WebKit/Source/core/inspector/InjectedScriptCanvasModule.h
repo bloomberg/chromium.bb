@@ -35,7 +35,7 @@
 #include "core/inspector/InjectedScriptModule.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class InjectedScriptManager;
 class ScriptValue;
@@ -69,6 +69,6 @@ private:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InjectedScriptCanvasModule_h)

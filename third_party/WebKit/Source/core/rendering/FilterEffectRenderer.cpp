@@ -47,7 +47,7 @@
 #include "wtf/MathExtras.h"
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 static inline void endMatrixRow(Vector<float>& parameters)
 {
@@ -393,5 +393,5 @@ GraphicsContext* FilterEffectRendererHelper::applyFilterEffect()
     return m_savedGraphicsContext;
 }
 
-} // namespace WebCore
+} // namespace blink
 

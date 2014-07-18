@@ -22,7 +22,7 @@
 
 #include "core/svg/SVGPathConsumer.h"
 
-namespace WebCore {
+namespace blink {
 
 enum FloatBlendMode {
     BlendHorizontal,
@@ -68,6 +68,6 @@ private:
     bool m_isInFirstHalfOfAnimation;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPathBlender_h

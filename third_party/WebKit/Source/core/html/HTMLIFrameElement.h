@@ -26,7 +26,7 @@
 
 #include "core/html/HTMLFrameElementBase.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLIFrameElement FINAL : public HTMLFrameElementBase {
 public:
@@ -54,6 +54,6 @@ private:
     bool m_didLoadNonEmptyDocument;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLIFrameElement_h

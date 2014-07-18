@@ -33,7 +33,7 @@
 #include "core/dom/Text.h"
 #include "core/events/Event.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/animation/animatable/AnimatableShapeValue.h"
 
-namespace WebCore {
+namespace blink {
 
 bool AnimatableShapeValue::usesDefaultInterpolationWith(const AnimatableValue* value) const
 {

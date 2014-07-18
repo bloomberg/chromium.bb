@@ -23,7 +23,7 @@
 #include "core/svg/properties/SVGPropertyHelper.h"
 #include "platform/geometry/FloatRect.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGRectTearOff;
 
@@ -96,6 +96,6 @@ inline PassRefPtr<SVGRect> toSVGRect(PassRefPtr<SVGPropertyBase> passBase)
     return static_pointer_cast<SVGRect>(base.release());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGRect_h

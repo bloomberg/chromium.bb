@@ -33,7 +33,7 @@
 
 #include "core/html/forms/InputType.h"
 
-namespace WebCore {
+namespace blink {
 
 // Base of checkbox and radio types.
 class BaseCheckableInputType : public InputType {
@@ -55,6 +55,6 @@ private:
     virtual bool shouldDispatchFormControlChangeEvent(String&, String&) OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BaseCheckableInputType_h

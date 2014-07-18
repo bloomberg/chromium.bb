@@ -34,7 +34,7 @@
 #include "core/html/forms/InputType.h"
 #include "platform/DateComponents.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -74,5 +74,5 @@ private:
     virtual bool shouldShowFocusRingOnMouseFocus() const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 #endif // BaseDateAndTimeInputType_h

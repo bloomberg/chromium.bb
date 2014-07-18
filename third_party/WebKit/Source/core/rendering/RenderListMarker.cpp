@@ -38,7 +38,7 @@
 using namespace WTF;
 using namespace Unicode;
 
-namespace WebCore {
+namespace blink {
 
 const int cMarkerPadding = 7;
 
@@ -1843,4 +1843,4 @@ LayoutRect RenderListMarker::selectionRectForPaintInvalidation(const RenderLayer
     return rect;
 }
 
-} // namespace WebCore
+} // namespace blink

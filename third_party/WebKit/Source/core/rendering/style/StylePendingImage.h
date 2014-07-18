@@ -33,7 +33,7 @@
 #include "core/rendering/style/StyleImage.h"
 #include "platform/graphics/Image.h"
 
-namespace WebCore {
+namespace blink {
 
 // StylePendingImage is a placeholder StyleImage that is entered into the RenderStyle during
 // style resolution, in order to avoid loading images that are not referenced by the final style.

@@ -30,7 +30,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ExceptionCode.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -119,4 +119,4 @@ void NamedNodeMap::trace(Visitor* visitor)
     visitor->trace(m_element);
 }
 
-} // namespace WebCore
+} // namespace blink

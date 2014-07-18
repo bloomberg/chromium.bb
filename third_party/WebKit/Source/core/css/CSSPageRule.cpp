@@ -30,7 +30,7 @@
 #include "core/css/StyleRule.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSPageRule::CSSPageRule(StyleRulePage* pageRule, CSSStyleSheet* parent)
     : CSSRule(parent)
@@ -110,4 +110,4 @@ void CSSPageRule::trace(Visitor* visitor)
     CSSRule::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

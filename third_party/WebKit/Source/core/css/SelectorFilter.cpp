@@ -31,7 +31,7 @@
 
 #include "core/css/CSSSelector.h"
 
-namespace WebCore {
+namespace blink {
 
 // Salt to separate otherwise identical string hashes so a class-selector like .article won't match <article> elements.
 enum { TagNameSalt = 13, IdAttributeSalt = 17, ClassAttributeSalt = 19 };

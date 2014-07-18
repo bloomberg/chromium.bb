@@ -24,7 +24,7 @@
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderWidget.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLMeterElement;
 
@@ -48,6 +48,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderMeter, isMeter());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderMeter_h

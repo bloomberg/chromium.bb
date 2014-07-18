@@ -30,7 +30,7 @@
 #include "core/html/canvas/WebGLExtension.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class OESElementIndexUint FINAL : public WebGLExtension, public ScriptWrappable {
 public:
@@ -45,6 +45,6 @@ private:
     OESElementIndexUint(WebGLRenderingContextBase*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // OESElementIndexUint_h

@@ -35,7 +35,7 @@
 #include "core/svg/SVGLength.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGLengthTearOff FINAL : public SVGPropertyTearOff<SVGLength>, public ScriptWrappable {
 public:
@@ -74,6 +74,6 @@ private:
     SVGLengthTearOff(PassRefPtr<SVGLength>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGLengthTearOff_h_

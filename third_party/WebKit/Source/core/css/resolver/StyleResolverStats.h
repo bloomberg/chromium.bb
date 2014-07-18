@@ -34,7 +34,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class StyleResolverStats {
 public:
@@ -72,6 +72,6 @@ private:
 
 #define INCREMENT_STYLE_STATS_COUNTER(resolver, counter) ((resolver).stats() && ++(resolver).stats()-> counter && (resolver).statsTotals()-> counter ++);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleResolverStats_h

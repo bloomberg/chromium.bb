@@ -27,7 +27,7 @@
 #include "wtf/VectorTraits.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class DocumentMarkerDetails;
 
@@ -156,6 +156,6 @@ public:
     virtual void trace(Visitor*) { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DocumentMarker_h

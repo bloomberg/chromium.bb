@@ -40,7 +40,7 @@
 #include "wtf/ListHashSet.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSStyleSheetResource;
 class DocumentResource;
@@ -270,6 +270,6 @@ private:
     bool m_previousState;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

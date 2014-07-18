@@ -33,7 +33,7 @@
 
 #include "core/svg/SVGElement.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGAnimatedPropertyBase::SVGAnimatedPropertyBase(AnimatedPropertyType type, SVGElement* contextElement, const QualifiedName& attributeName)
     : m_type(type)
@@ -68,4 +68,4 @@ bool SVGAnimatedPropertyBase::isSpecified() const
     return isAnimating() || contextElement()->hasAttribute(attributeName());
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -29,7 +29,7 @@
 #include "core/dom/QualifiedName.h"
 #include "core/editing/EditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class SetNodeAttributeCommand FINAL : public SimpleEditCommand {
 public:
@@ -52,6 +52,6 @@ private:
     AtomicString m_oldValue;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SetNodeAttributeCommand_h

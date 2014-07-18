@@ -26,7 +26,7 @@
 
 #include "core/dom/Node.h"
 
-namespace WebCore {
+namespace blink {
 
 class DocumentType FINAL : public Node {
 public:
@@ -57,6 +57,6 @@ private:
 
 DEFINE_NODE_TYPE_CASTS(DocumentType, isDocumentTypeNode());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

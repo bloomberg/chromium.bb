@@ -24,7 +24,7 @@
 #include "core/css/CSSParserValues.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSValueList::CSSValueList(ClassType classType, ValueListSeparator listSeparator)
     : CSSValue(classType)
@@ -168,4 +168,4 @@ void CSSValueList::traceAfterDispatch(Visitor* visitor)
     CSSValue::traceAfterDispatch(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

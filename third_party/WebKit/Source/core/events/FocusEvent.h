@@ -29,7 +29,7 @@
 #include "core/events/EventTarget.h"
 #include "core/events/UIEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 class Node;
 
@@ -110,6 +110,6 @@ private:
     virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FocusEvent_h

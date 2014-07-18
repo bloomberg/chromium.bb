@@ -31,7 +31,7 @@
 #include "core/editing/UndoStep.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class EditingStyle;
 class Element;
@@ -176,6 +176,6 @@ private:
 
 DEFINE_TYPE_CASTS(CompositeEditCommand, EditCommand, command, command->isCompositeEditCommand(), command.isCompositeEditCommand());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CompositeEditCommand_h

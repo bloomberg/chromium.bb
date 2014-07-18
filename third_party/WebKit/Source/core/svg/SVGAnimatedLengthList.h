@@ -34,10 +34,10 @@
 #include "core/svg/SVGLengthListTearOff.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef SVGAnimatedProperty<SVGLengthList> SVGAnimatedLengthList;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

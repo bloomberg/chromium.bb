@@ -35,7 +35,7 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -76,4 +76,4 @@ void StringCallback::scheduleCallback(PassOwnPtr<StringCallback> callback, Execu
     context->postTask(DispatchCallbackTask::create(callback, data, instrumentationName));
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -33,7 +33,7 @@
 
 #include "core/svg/properties/SVGPropertyHelper.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGBoolean : public SVGPropertyHelper<SVGBoolean> {
 public:
@@ -79,6 +79,6 @@ inline PassRefPtr<SVGBoolean> toSVGBoolean(PassRefPtr<SVGPropertyBase> passBase)
     return static_pointer_cast<SVGBoolean>(base.release());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGBoolean_h

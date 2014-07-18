@@ -56,7 +56,7 @@
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

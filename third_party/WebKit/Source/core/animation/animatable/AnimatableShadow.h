@@ -34,7 +34,7 @@
 #include "core/animation/animatable/AnimatableValue.h"
 #include "core/rendering/style/ShadowList.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableShadow FINAL : public AnimatableValue {
 public:
@@ -63,6 +63,6 @@ private:
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableShadow, isShadow());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatableShadow_h

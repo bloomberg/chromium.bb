@@ -32,7 +32,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 
-namespace WebCore {
+namespace blink {
 
 MatchedProperties::MatchedProperties()
     : possiblyPaddedMember(0)
@@ -58,4 +58,4 @@ void MatchResult::addMatchedProperties(const StylePropertySet* properties, Style
     matchedRules.append(rule);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -28,7 +28,7 @@
 
 #include <libxslt/xsltInternals.h>
 
-namespace WebCore {
+namespace blink {
 
 void registerXSLTExtensions(xsltTransformContextPtr ctxt);
 

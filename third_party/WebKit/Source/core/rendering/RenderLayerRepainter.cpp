@@ -49,7 +49,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderLayerRepainter::RenderLayerRepainter(RenderLayerModelObject& renderer)
     : m_renderer(renderer)

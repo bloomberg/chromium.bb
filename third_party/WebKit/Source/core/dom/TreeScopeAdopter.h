@@ -27,7 +27,7 @@
 
 #include "core/dom/Node.h"
 
-namespace WebCore {
+namespace blink {
 
 class TreeScope;
 

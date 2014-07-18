@@ -31,7 +31,7 @@
 #include "core/events/Event.h"
 #include "core/events/TouchEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<TouchEventContext> TouchEventContext::create()
 {

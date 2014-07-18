@@ -28,7 +28,7 @@
 #include "core/events/EventDispatchMediator.h"
 #include "core/frame/LocalDOMWindow.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef LocalDOMWindow AbstractView;
 
@@ -86,6 +86,6 @@ private:
     int m_detail;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // UIEvent_h

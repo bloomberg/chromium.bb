@@ -27,7 +27,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/text/TextPosition.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSCharsetRule;
 class CSSImportRule;

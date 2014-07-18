@@ -30,7 +30,7 @@
 #include "core/html/canvas/WebGLSharedObject.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebGLRenderbuffer FINAL : public WebGLSharedObject, public ScriptWrappable {
 public:
@@ -76,6 +76,6 @@ private:
     RefPtr<WebGLRenderbuffer> m_emulatedStencilBuffer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLRenderbuffer_h

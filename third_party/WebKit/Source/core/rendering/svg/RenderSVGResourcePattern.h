@@ -33,7 +33,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 struct PatternData {
     WTF_MAKE_FAST_ALLOCATED;

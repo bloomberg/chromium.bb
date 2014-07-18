@@ -33,7 +33,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -522,4 +522,4 @@ void RenderListItem::updateListMarkerNumbers()
     }
 }
 
-} // namespace WebCore
+} // namespace blink

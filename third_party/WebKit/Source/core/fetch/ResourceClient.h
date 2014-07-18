@@ -28,7 +28,7 @@
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 class Resource;
 
 class ResourceClient {

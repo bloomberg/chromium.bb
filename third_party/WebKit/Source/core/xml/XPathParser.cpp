@@ -37,7 +37,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringHash.h"
 
-using namespace WebCore;
+using namespace blink;
 using namespace WTF;
 using namespace Unicode;
 using namespace XPath;

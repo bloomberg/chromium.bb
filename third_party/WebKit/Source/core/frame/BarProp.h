@@ -35,7 +35,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
     class LocalFrame;
 
@@ -57,6 +57,6 @@ namespace WebCore {
         Type m_type;
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BarProp_h

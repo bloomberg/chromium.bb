@@ -29,7 +29,7 @@
 #include "core/css/CSSValueList.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSTransformValue : public CSSValueList {
 public:

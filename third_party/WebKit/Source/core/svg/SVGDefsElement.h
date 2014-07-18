@@ -24,7 +24,7 @@
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGGraphicsElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGDefsElement FINAL : public SVGGraphicsElement {
 public:
@@ -38,6 +38,6 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

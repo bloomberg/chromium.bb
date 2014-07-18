@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/rendering/style/QuotesData.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<QuotesData> QuotesData::create(String open, String close)
 {
@@ -64,4 +64,4 @@ const String QuotesData::getCloseQuote(int index) const
     return m_quotePairs.at(index).second;
 }
 
-} // namespace WebCore
+} // namespace blink

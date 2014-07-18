@@ -34,7 +34,7 @@
 #include "core/html/forms/BaseClickableWithKeyInputType.h"
 #include "platform/ColorChooserClient.h"
 
-namespace WebCore {
+namespace blink {
 
 class ColorChooser;
 
@@ -74,6 +74,6 @@ private:
     OwnPtr<ColorChooser> m_chooser;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ColorInputType_h

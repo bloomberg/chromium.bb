@@ -27,7 +27,7 @@
 #include "wtf/Vector.h"
 #include <inttypes.h>
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 

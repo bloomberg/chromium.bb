@@ -34,7 +34,7 @@
 #include "core/svg/SVGEnumeration.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGAnimatedEnumerationBase : public SVGAnimatedProperty<SVGEnumerationBase> {
 public:

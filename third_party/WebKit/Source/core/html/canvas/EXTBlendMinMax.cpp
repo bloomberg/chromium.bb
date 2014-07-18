@@ -6,7 +6,7 @@
 
 #include "core/html/canvas/EXTBlendMinMax.h"
 
-namespace WebCore {
+namespace blink {
 
 EXTBlendMinMax::EXTBlendMinMax(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -39,4 +39,4 @@ const char* EXTBlendMinMax::extensionName()
     return "EXT_blend_minmax";
 }
 
-} // namespace WebCore
+} // namespace blink

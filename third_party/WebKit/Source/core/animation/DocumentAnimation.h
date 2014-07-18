@@ -7,13 +7,13 @@
 
 #include "core/dom/Document.h"
 
-namespace WebCore {
+namespace blink {
 
 class DocumentAnimation {
 public:
     static AnimationTimeline* timeline(Document& document) { return &document.timeline(); }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DocumentAnimation_h

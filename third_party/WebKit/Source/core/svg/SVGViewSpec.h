@@ -27,7 +27,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/WeakPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGViewSpec FINAL : public RefCountedWillBeGarbageCollectedFinalized<SVGViewSpec>, public ScriptWrappable, public SVGZoomAndPan, public SVGFitToViewBox {
 public:
@@ -72,6 +72,6 @@ private:
     String m_viewTargetString;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

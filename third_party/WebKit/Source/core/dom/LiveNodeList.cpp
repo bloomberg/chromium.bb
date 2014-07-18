@@ -23,7 +23,7 @@
 #include "config.h"
 #include "core/dom/LiveNodeList.h"
 
-namespace WebCore {
+namespace blink {
 
 static inline bool isMatchingElement(const LiveNodeList& nodeList, const Element& element)
 {
@@ -67,4 +67,4 @@ void LiveNodeList::trace(Visitor* visitor)
     NodeList::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

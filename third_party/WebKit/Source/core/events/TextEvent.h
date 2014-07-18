@@ -30,7 +30,7 @@
 #include "core/events/TextEventInputType.h"
 #include "core/events/UIEvent.h"
 
-namespace WebCore {
+namespace blink {
 
     class DocumentFragment;
 
@@ -84,6 +84,6 @@ inline bool isTextEvent(const Event& event)
 
 DEFINE_TYPE_CASTS(TextEvent, Event, event, isTextEvent(*event), isTextEvent(event));
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TextEvent_h

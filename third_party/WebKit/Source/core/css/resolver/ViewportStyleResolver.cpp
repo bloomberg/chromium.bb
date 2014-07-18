@@ -40,7 +40,7 @@
 #include "core/dom/ViewportDescription.h"
 #include "core/frame/FrameView.h"
 
-namespace WebCore {
+namespace blink {
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ViewportStyleResolver);
 
@@ -202,4 +202,4 @@ void ViewportStyleResolver::trace(Visitor* visitor)
     visitor->trace(m_propertySet);
 }
 
-} // namespace WebCore
+} // namespace blink

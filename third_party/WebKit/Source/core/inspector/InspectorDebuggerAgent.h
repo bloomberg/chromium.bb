@@ -45,7 +45,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class Event;
@@ -258,7 +258,7 @@ private:
     AsyncCallStackTracker m_asyncCallStackTracker;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // !defined(InspectorDebuggerAgent_h)

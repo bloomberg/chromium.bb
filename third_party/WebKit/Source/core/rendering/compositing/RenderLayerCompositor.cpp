@@ -58,7 +58,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
     : m_renderView(renderView)
@@ -1173,4 +1173,4 @@ String RenderLayerCompositor::debugName(const GraphicsLayer* graphicsLayer)
     return name;
 }
 
-} // namespace WebCore
+} // namespace blink

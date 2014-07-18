@@ -35,7 +35,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSFontFace;
 class CSSFontFaceRule;
@@ -99,6 +99,6 @@ private:
     GenericFontFamilySettings m_genericFontFamilySettings;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSFontSelector_h

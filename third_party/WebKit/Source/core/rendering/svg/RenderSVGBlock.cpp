@@ -29,7 +29,7 @@
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElement.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSVGBlock::RenderSVGBlock(SVGElement* element)
     : RenderBlockFlow(element)

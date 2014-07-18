@@ -24,7 +24,7 @@
 #include "core/svg/SVGTextContentElement.h"
 #include "core/svg/SVGURIReference.h"
 
-namespace WebCore {
+namespace blink {
 
 enum SVGTextPathMethodType {
     SVGTextPathMethodUnknown = 0,
@@ -85,6 +85,6 @@ private:
     RefPtr<SVGAnimatedEnumeration<SVGTextPathSpacingType> > m_spacing;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

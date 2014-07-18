@@ -33,7 +33,7 @@
 #include "core/frame/UseCounter.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleRuleKeyframes::StyleRuleKeyframes()
     : StyleRuleBase(Keyframes)
@@ -220,4 +220,4 @@ void CSSKeyframesRule::trace(Visitor* visitor)
     visitor->trace(m_ruleListCSSOMWrapper);
 }
 
-} // namespace WebCore
+} // namespace blink

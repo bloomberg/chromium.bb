@@ -29,7 +29,7 @@
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGAElement.h"
 
-namespace WebCore {
+namespace blink {
 
 bool RenderSVGInline::isChildAllowed(RenderObject* child, RenderStyle* style) const
 {

@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/events/AnimationPlayerEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 AnimationPlayerEventInit::AnimationPlayerEventInit()
     : currentTime(0.0)
@@ -60,4 +60,4 @@ void AnimationPlayerEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

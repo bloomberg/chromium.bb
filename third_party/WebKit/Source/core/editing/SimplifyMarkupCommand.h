@@ -28,7 +28,7 @@
 
 #include "core/editing/CompositeEditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class SimplifyMarkupCommand FINAL : public CompositeEditCommand {
 public:
@@ -49,6 +49,6 @@ private:
     RefPtrWillBeMember<Node> m_nodeAfterLast;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SimplifyMarkupCommand_h

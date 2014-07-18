@@ -27,7 +27,7 @@
 #include "core/dom/NodeRenderStyle.h"
 #include "core/frame/FrameHost.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleResolverState::StyleResolverState(Document& document, Element* element, RenderStyle* parentStyle)
     : m_elementContext(element ? ElementResolveContext(*element) : ElementResolveContext())
@@ -66,4 +66,4 @@ PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> StyleResolverState::takeAnimationUpda
     return m_animationUpdate.release();
 }
 
-} // namespace WebCore
+} // namespace blink

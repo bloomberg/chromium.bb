@@ -48,7 +48,7 @@
 #include "core/dom/ExecutionContextTask.h"
 #endif
 
-namespace WebCore {
+namespace blink {
 
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
 class WriteDebugInfoTask : public ExecutionContextTask {
@@ -1154,4 +1154,4 @@ float FastTextAutosizer::computeAutosizedFontSize(float specifiedSize, float mul
     return computedSize;
 }
 
-} // namespace WebCore
+} // namespace blink

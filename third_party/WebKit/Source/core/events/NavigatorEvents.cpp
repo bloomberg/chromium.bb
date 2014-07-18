@@ -35,7 +35,7 @@
 #include "core/frame/Navigator.h"
 #include "core/frame/Settings.h"
 
-namespace WebCore {
+namespace blink {
 
 long NavigatorEvents::maxTouchPoints(Navigator& navigator)
 {
@@ -47,4 +47,4 @@ long NavigatorEvents::maxTouchPoints(Navigator& navigator)
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink

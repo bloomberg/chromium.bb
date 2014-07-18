@@ -8,7 +8,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/VideoTrack.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<VideoTrackList> VideoTrackList::create(HTMLMediaElement& mediaElement)
 {

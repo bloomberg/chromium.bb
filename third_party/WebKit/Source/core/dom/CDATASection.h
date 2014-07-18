@@ -25,7 +25,7 @@
 
 #include "core/dom/Text.h"
 
-namespace WebCore {
+namespace blink {
 
 class CDATASection FINAL : public Text {
 public:
@@ -41,6 +41,6 @@ private:
 
 DEFINE_NODE_TYPE_CASTS(CDATASection, nodeType() == Node::CDATA_SECTION_NODE);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CDATASection_h

@@ -35,7 +35,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class DOMWindowCSS : public RefCountedWillBeGarbageCollected<DOMWindowCSS> {
 public:

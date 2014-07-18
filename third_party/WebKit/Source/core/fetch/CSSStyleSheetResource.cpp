@@ -35,7 +35,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSStyleSheetResource::CSSStyleSheetResource(const ResourceRequest& resourceRequest, const String& charset)
     : StyleSheetResource(resourceRequest, CSSStyleSheet, "text/css", charset)

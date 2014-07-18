@@ -85,7 +85,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/unicode/CharacterNames.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 using namespace WTF;
@@ -1284,4 +1284,4 @@ void Editor::trace(Visitor* visitor)
     visitor->trace(m_mark);
 }
 
-} // namespace WebCore
+} // namespace blink

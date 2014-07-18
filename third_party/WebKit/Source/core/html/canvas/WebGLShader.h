@@ -31,7 +31,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebGLShader FINAL : public WebGLSharedObject, public ScriptWrappable {
 public:
@@ -55,6 +55,6 @@ private:
     String m_source;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLShader_h

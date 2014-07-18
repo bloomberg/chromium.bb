@@ -25,7 +25,7 @@
 
 #include "core/svg/SVGPathTraversalStateBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGPathTraversalStateBuilder::SVGPathTraversalStateBuilder()
     : m_traversalState(0)

@@ -7,7 +7,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class MediaQueryInputStream {
     WTF_MAKE_NONCOPYABLE(MediaQueryInputStream);
@@ -51,7 +51,7 @@ private:
     String m_string;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaQueryInputStream_h
 

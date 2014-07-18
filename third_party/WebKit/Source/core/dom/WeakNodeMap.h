@@ -7,7 +7,7 @@
 
 #include "wtf/HashMap.h"
 
-namespace WebCore {
+namespace blink {
 
 // Oilpan supports weak maps, so we no longer need WeakNodeMap.
 #if !ENABLE(OILPAN)

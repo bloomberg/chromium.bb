@@ -32,7 +32,7 @@
 #include "core/fetch/FetchContext.h"
 
 
-namespace WebCore {
+namespace blink {
 
 FetchContext& FetchContext::nullInstance()
 {
@@ -93,4 +93,4 @@ void FetchContext::sendRemainingDelegateMessages(DocumentLoader*, unsigned long,
 {
 }
 
-} // namespace WebCore
+} // namespace blink

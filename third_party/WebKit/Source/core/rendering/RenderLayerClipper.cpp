@@ -47,7 +47,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 
-namespace WebCore {
+namespace blink {
 
 static void adjustClipRectsForChildren(const RenderObject& renderer, ClipRects& clipRects)
 {
@@ -377,4 +377,4 @@ RenderLayer* RenderLayerClipper::clippingRootForPainting() const
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink

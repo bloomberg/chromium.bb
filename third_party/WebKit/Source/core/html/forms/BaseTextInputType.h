@@ -33,7 +33,7 @@
 
 #include "core/html/forms/TextFieldInputType.h"
 
-namespace WebCore {
+namespace blink {
 
 // Base of email, password, search, tel, text, and URL types.
 // They support maxlength, selection functions, and so on.
@@ -48,6 +48,6 @@ private:
     virtual bool supportsSelectionAPI() const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BaseTextInputType_h

@@ -28,7 +28,7 @@
 
 #include "core/editing/EditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class RemoveNodeCommand FINAL : public SimpleEditCommand {
 public:
@@ -51,6 +51,6 @@ private:
     ShouldAssumeContentIsAlwaysEditable m_shouldAssumeContentIsAlwaysEditable;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RemoveNodeCommand_h

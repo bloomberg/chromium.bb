@@ -39,7 +39,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class ScriptValue;
 
@@ -85,7 +85,7 @@ private:
     ScopedPersistent<v8::Object> m_callFrame;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // JavaScriptCallFrame_h

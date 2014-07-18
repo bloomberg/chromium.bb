@@ -33,7 +33,7 @@
 
 #include "wtf/text/TextEncoding.h"
 
-namespace WebCore {
+namespace blink {
 class TextResourceDecoder;
 
 class DocumentEncodingData {
@@ -59,6 +59,6 @@ inline bool operator!=(const DocumentEncodingData& a, const DocumentEncodingData
         || a.sawDecodingError() != b.sawDecodingError();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DocumentEncodingData_h

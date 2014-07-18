@@ -30,7 +30,7 @@
 #include "core/editing/VisibleSelection.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class CompositeEditCommand;
 class Document;
@@ -92,6 +92,6 @@ private:
 
 DEFINE_TYPE_CASTS(SimpleEditCommand, EditCommand, command, command->isSimpleEditCommand(), command.isSimpleEditCommand());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // EditCommand_h

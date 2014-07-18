@@ -44,7 +44,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/rendering/RenderLayer.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<Animation> Animation::create(Element* target, PassRefPtrWillBeRawPtr<AnimationEffect> effect, const Timing& timing, Priority priority, PassOwnPtr<EventDelegate> eventDelegate)
 {
@@ -313,4 +313,4 @@ void Animation::trace(Visitor* visitor)
     AnimationNode::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

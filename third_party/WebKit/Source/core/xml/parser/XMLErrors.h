@@ -33,7 +33,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextPosition.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 
@@ -60,6 +60,6 @@ private:
     StringBuilder m_errorMessages;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // XMLErrors_h

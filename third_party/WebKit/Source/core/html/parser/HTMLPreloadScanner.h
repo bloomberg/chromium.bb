@@ -33,7 +33,7 @@
 #include "platform/text/SegmentedString.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef size_t TokenPreloadScannerCheckpoint;
 

@@ -36,7 +36,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/unicode/CharacterNames.h"
 
-namespace WebCore {
+namespace blink {
 
 #define WEBVTT_BEGIN_STATE(stateName) case stateName: stateName:
 #define WEBVTT_ADVANCE_TO(stateName)                               \

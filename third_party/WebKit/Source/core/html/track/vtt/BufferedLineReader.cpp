@@ -33,7 +33,7 @@
 
 #include "wtf/unicode/CharacterNames.h"
 
-namespace WebCore {
+namespace blink {
 
 bool BufferedLineReader::getLine(String& line)
 {
@@ -101,4 +101,4 @@ bool BufferedLineReader::getLine(String& line)
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

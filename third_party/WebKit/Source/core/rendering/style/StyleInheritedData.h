@@ -32,7 +32,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class StyleInheritedData : public RefCounted<StyleInheritedData> {
 public:
@@ -63,6 +63,6 @@ private:
     StyleInheritedData(const StyleInheritedData&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleInheritedData_h

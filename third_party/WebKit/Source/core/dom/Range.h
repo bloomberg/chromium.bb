@@ -34,7 +34,7 @@
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class ClientRect;
 class ClientRectList;
@@ -178,7 +178,7 @@ bool areRangesEqual(const Range*, const Range*);
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showTree(const WebCore::Range*);
+void showTree(const blink::Range*);
 #endif
 
 #endif

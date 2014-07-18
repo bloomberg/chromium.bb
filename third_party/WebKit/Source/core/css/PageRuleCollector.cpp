@@ -33,7 +33,7 @@
 #include "core/css/StyleRule.h"
 #include "core/css/resolver/StyleResolverState.h"
 
-namespace WebCore {
+namespace blink {
 
 static inline bool comparePageRules(const StyleRulePage* r1, const StyleRulePage* r2)
 {
@@ -122,4 +122,4 @@ void PageRuleCollector::matchPageRulesForList(WillBeHeapVector<RawPtrWillBeMembe
     }
 }
 
-} // namespace WebCore
+} // namespace blink

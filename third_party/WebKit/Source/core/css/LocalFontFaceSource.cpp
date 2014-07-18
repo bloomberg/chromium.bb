@@ -10,7 +10,7 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 bool LocalFontFaceSource::isLocalFontAvailable(const FontDescription& fontDescription)
 {
@@ -33,4 +33,4 @@ void LocalFontFaceSource::LocalFontHistograms::record(bool loadSuccess)
     blink::Platform::current()->histogramEnumeration("WebFont.LocalFontUsed", loadSuccess ? 1 : 0, 2);
 }
 
-} // namespace WebCore
+} // namespace blink

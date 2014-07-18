@@ -33,7 +33,7 @@
 
 #include "core/fetch/ResourcePtr.h"
 
-namespace WebCore {
+namespace blink {
 
 
 template<class R, class C = typename R::ClientType>
@@ -111,6 +111,6 @@ inline ResourceOwner<R, C>& ResourceOwner<R, C>::operator=(const ResourceOwner<R
     return *this;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

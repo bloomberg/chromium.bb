@@ -30,7 +30,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 enum StyleInjectionTarget { InjectStyleInAllFrames, InjectStyleInTopFrameOnly };
 
@@ -72,6 +72,6 @@ private:
     InjectedStyleSheetEntryVector m_entries;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InjectedStyleSheets_h

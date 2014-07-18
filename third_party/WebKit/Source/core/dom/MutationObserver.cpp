@@ -43,7 +43,7 @@
 #include "wtf/MainThread.h"
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 static unsigned s_observerPriority = 0;
 
@@ -282,4 +282,4 @@ void MutationObserver::trace(Visitor* visitor)
 #endif
 }
 
-} // namespace WebCore
+} // namespace blink

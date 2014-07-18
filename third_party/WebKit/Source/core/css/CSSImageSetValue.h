@@ -30,7 +30,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/weborigin/Referrer.h"
 
-namespace WebCore {
+namespace blink {
 
 class ResourceFetcher;
 class StyleFetchedImageSet;
@@ -89,6 +89,6 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSImageSetValue, isImageSetValue());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSImageSetValue_h

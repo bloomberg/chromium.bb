@@ -82,7 +82,7 @@
 #include "wtf/text/Base64.h"
 #include "wtf/text/TextEncoding.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace PageAgentState {
 static const char pageAgentEnabled[] = "pageAgentEnabled";
@@ -681,7 +681,7 @@ void InspectorPageAgent::deleteCookie(ErrorString*, const String& cookieName, co
     KURL parsedURL(ParsedURLString, url);
     for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext(m_page->mainFrame())) {
         if (frame->isLocalFrame())
-            WebCore::deleteCookie(toLocalFrame(frame)->document(), parsedURL, cookieName);
+            blink::deleteCookie(toLocalFrame(frame)->document(), parsedURL, cookieName);
     }
 }
 
@@ -1437,5 +1437,5 @@ bool InspectorPageAgent::getEditedResourceContent(const String& url, String* con
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink
 

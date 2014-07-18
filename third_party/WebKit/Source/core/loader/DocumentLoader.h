@@ -51,7 +51,7 @@ namespace WTF {
 class SchedulePair;
 }
 
-namespace WebCore {
+namespace blink {
     class ApplicationCacheHost;
     class ArchiveResource;
     class ArchiveResourceCollection;

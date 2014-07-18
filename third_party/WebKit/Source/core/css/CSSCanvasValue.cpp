@@ -29,7 +29,7 @@
 #include "core/rendering/RenderObject.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSCanvasValue::~CSSCanvasValue()
 {
@@ -108,4 +108,4 @@ void CSSCanvasValue::traceAfterDispatch(Visitor* visitor)
     CSSImageGeneratorValue::traceAfterDispatch(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

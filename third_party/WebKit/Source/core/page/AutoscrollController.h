@@ -29,7 +29,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class EventHandler;
 class LocalFrame;
@@ -88,6 +88,6 @@ private:
 #endif
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AutoscrollController_h

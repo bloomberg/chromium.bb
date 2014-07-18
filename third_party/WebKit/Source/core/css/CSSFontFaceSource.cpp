@@ -32,7 +32,7 @@
 #include "platform/fonts/FontFaceCreationParams.h"
 #include "platform/fonts/SimpleFontData.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSFontFaceSource::CSSFontFaceSource()
     : m_face(nullptr)

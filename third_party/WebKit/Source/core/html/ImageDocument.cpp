@@ -46,7 +46,7 @@
 
 using std::min;
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

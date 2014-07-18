@@ -43,7 +43,7 @@
 #include "core/page/Page.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
-namespace WebCore {
+namespace blink {
 
 PageRuntimeAgent::PageRuntimeAgent(InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, Page* page, InspectorPageAgent* pageAgent)
     : InspectorRuntimeAgent(injectedScriptManager, scriptDebugServer)
@@ -162,5 +162,5 @@ void PageRuntimeAgent::frameWindowDiscarded(LocalDOMWindow* window)
     m_scriptStateToId.removeAll(scriptStatesToRemove);
 }
 
-} // namespace WebCore
+} // namespace blink
 

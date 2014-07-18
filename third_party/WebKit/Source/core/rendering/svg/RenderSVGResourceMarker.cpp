@@ -30,7 +30,7 @@
 
 #include "wtf/TemporaryChange.h"
 
-namespace WebCore {
+namespace blink {
 
 const RenderSVGResourceType RenderSVGResourceMarker::s_resourceType = MarkerResourceType;
 

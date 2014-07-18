@@ -27,7 +27,7 @@
 #include "core/svg/SVGFELightElement.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGFEDiffuseLightingElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
@@ -55,6 +55,6 @@ private:
     RefPtr<SVGAnimatedString> m_in1;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

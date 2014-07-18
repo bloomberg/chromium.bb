@@ -26,7 +26,7 @@
 #include "core/html/FormAssociatedElement.h"
 #include "core/html/HTMLPlugInElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLFormElement;
 

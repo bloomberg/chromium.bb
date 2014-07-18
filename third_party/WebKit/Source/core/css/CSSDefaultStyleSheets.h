@@ -25,7 +25,7 @@
 
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 class RuleSet;
@@ -77,6 +77,6 @@ private:
     RefPtrWillBeMember<StyleSheetContents> m_fullscreenStyleSheet;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSDefaultStyleSheets_h

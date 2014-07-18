@@ -7,7 +7,7 @@
 
 #include "core/rendering/RenderMultiColumnFlowThread.h"
 
-namespace WebCore {
+namespace blink {
 
 // A flow thread for paged overflow. FIXME: The current implementation relies on the multicol
 // implementation, but it in the long run it would be better to have what's common between
@@ -27,6 +27,6 @@ public:
     virtual void layout();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderPagedFlowThread_h

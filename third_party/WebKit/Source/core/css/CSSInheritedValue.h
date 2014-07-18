@@ -24,7 +24,7 @@
 #include "core/css/CSSValue.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSInheritedValue : public CSSValue {
 public:
@@ -48,6 +48,6 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSInheritedValue, isInheritedValue());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSInheritedValue_h

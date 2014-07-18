@@ -23,7 +23,7 @@
 
 #include "core/accessibility/AXRenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLProgressElement;
 class RenderProgress;
@@ -48,6 +48,6 @@ private:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXProgressIndicator_h

@@ -32,7 +32,7 @@
 #include "core/svg/SVGStopElement.h"
 #include "core/svg/SVGTransformList.h"
 
-namespace WebCore {
+namespace blink {
 
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGSpreadMethodType>()
 {

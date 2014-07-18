@@ -36,7 +36,7 @@
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGTransformTearOff;
 
@@ -100,6 +100,6 @@ private:
     SVGTransformTearOff* m_contextTransform;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGMatrixTearOff_h_

@@ -30,7 +30,7 @@
 
 #include "core/frame/Settings.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<WebGLContextAttributes> WebGLContextAttributes::create()
 {
@@ -170,4 +170,4 @@ blink::WebGraphicsContext3D::Attributes WebGLContextAttributes::attributes(
     return attrs;
 }
 
-} // namespace WebCore
+} // namespace blink

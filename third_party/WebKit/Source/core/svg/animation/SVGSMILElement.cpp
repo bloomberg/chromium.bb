@@ -42,7 +42,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class RepeatEvent FINAL : public Event {
 public:

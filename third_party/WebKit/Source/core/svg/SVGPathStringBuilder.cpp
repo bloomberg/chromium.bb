@@ -22,7 +22,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 String SVGPathStringBuilder::result()
 {
@@ -136,4 +136,4 @@ void SVGPathStringBuilder::closePath()
     m_stringBuilder.append("Z ");
 }
 
-} // namespace WebCore
+} // namespace blink

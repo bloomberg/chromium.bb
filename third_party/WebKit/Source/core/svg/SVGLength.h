@@ -27,7 +27,7 @@
 #include "core/svg/properties/SVGProperty.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSPrimitiveValue;
 class ExceptionState;
@@ -118,6 +118,6 @@ inline PassRefPtr<SVGLength> toSVGLength(PassRefPtr<SVGPropertyBase> passBase)
     return static_pointer_cast<SVGLength>(base.release());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGLength_h

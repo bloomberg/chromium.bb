@@ -33,7 +33,7 @@
 #include "wtf/ASCIICType.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 static bool isValidAttributeName(const String& name)
 {
@@ -222,4 +222,4 @@ void DatasetDOMStringMap::trace(Visitor* visitor)
     DOMStringMap::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

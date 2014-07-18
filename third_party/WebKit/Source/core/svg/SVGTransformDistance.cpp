@@ -25,7 +25,7 @@
 #include "platform/geometry/FloatSize.h"
 #include <math.h>
 
-namespace WebCore {
+namespace blink {
 
 SVGTransformDistance::SVGTransformDistance()
     : m_transformType(SVG_TRANSFORM_UNKNOWN)

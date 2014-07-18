@@ -43,7 +43,7 @@ class WebInbandTextTrack;
 class WebLayer;
 }
 
-namespace WebCore {
+namespace blink {
 
 #if ENABLE(WEB_AUDIO)
 class AudioSourceProvider;

@@ -29,7 +29,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebGLRenderingContext FINAL : public WebGLRenderingContextBase, public ScriptWrappable {
 public:
@@ -71,6 +71,6 @@ DEFINE_TYPE_CASTS(WebGLRenderingContext, CanvasRenderingContext, context,
     context->is3d() && WebGLRenderingContextBase::getWebGLVersion(context) == 1,
     context.is3d() && WebGLRenderingContextBase::getWebGLVersion(&context) == 1);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

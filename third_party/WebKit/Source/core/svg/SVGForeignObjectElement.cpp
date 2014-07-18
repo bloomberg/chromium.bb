@@ -28,7 +28,7 @@
 #include "core/svg/SVGLength.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
     : SVGGraphicsElement(SVGNames::foreignObjectTag, document)

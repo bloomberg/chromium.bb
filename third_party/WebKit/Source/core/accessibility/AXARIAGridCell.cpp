@@ -33,7 +33,7 @@
 #include "core/accessibility/AXTableRow.h"
 
 
-namespace WebCore {
+namespace blink {
 
 AXARIAGridCell::AXARIAGridCell(RenderObject* renderer)
     : AXTableCell(renderer)
@@ -120,4 +120,4 @@ void AXARIAGridCell::columnIndexRange(pair<unsigned, unsigned>& columnRange)
     columnRange.second = 1;
 }
 
-} // namespace WebCore
+} // namespace blink

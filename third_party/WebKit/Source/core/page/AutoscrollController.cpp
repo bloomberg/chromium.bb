@@ -39,7 +39,7 @@
 #include "core/rendering/RenderListBox.h"
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 // Delay time in second for start autoscroll if pointer is in border edge of scrollable element.
 static double autoscrollDelay = 0.2;
@@ -296,4 +296,4 @@ void AutoscrollController::updatePanScrollState(FrameView* view, const IntPoint&
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

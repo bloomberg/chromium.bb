@@ -33,7 +33,7 @@
 #include "core/page/Page.h"
 #include "platform/PlatformMouseEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 PointerLockController::PointerLockController(Page* page)
     : m_page(page)
@@ -173,4 +173,4 @@ void PointerLockController::trace(Visitor* visitor)
     visitor->trace(m_documentOfRemovedElementWhileWaitingForUnlock);
 }
 
-} // namespace WebCore
+} // namespace blink

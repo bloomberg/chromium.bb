@@ -23,7 +23,7 @@
 #ifndef HitTestRequest_h
 #define HitTestRequest_h
 
-namespace WebCore {
+namespace blink {
 
 class HitTestRequest {
 public:
@@ -71,6 +71,6 @@ private:
     HitTestRequestType m_requestType;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HitTestRequest_h

@@ -34,7 +34,7 @@
 #include "core/svg/SVGPathSegListTearOff.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathElement;
 
@@ -51,6 +51,6 @@ protected:
     SVGAnimatedPath(SVGPathElement*, const QualifiedName&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGAnimatedPath_h

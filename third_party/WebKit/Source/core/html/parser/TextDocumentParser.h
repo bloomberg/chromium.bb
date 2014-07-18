@@ -28,7 +28,7 @@
 
 #include "core/html/parser/HTMLDocumentParser.h"
 
-namespace WebCore {
+namespace blink {
 
 class TextDocumentParser FINAL : public HTMLDocumentParser {
 public:

@@ -46,7 +46,7 @@ class WebLayerTreeView;
 class WebScrollbarLayer;
 }
 
-namespace WebCore {
+namespace blink {
 
 class FrameHost;
 class GraphicsContext;
@@ -160,6 +160,6 @@ private:
     IntSize m_size;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PinchViewport_h

@@ -29,7 +29,7 @@
 
 #include "core/rendering/RenderText.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLElement;
 

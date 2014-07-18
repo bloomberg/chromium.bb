@@ -32,7 +32,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleMedia::StyleMedia(LocalFrame* frame)
     : DOMWindowProperty(frame)
@@ -67,4 +67,4 @@ bool StyleMedia::matchMedium(const String& query) const
     return screenEval.eval(media.get());
 }
 
-} // namespace WebCore
+} // namespace blink

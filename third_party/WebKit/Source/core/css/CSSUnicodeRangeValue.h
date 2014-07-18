@@ -29,7 +29,7 @@
 #include "core/css/CSSValue.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSUnicodeRangeValue : public CSSValue {
 public:
@@ -61,6 +61,6 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSUnicodeRangeValue, isUnicodeRangeValue());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSUnicodeRangeValue_h

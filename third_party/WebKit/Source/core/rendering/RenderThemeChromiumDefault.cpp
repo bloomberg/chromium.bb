@@ -39,7 +39,7 @@
 #include "public/platform/WebThemeEngine.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 static bool useMockTheme()
 {
@@ -542,4 +542,4 @@ bool RenderThemeChromiumDefault::shouldUseFallbackTheme(RenderStyle* style) cons
     return RenderTheme::shouldUseFallbackTheme(style);
 }
 
-} // namespace WebCore
+} // namespace blink

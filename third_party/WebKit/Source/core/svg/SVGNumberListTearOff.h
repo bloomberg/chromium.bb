@@ -34,7 +34,7 @@
 #include "core/svg/SVGNumberList.h"
 #include "core/svg/properties/SVGListPropertyTearOffHelper.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGNumberListTearOff FINAL :
     public SVGListPropertyTearOffHelper<SVGNumberListTearOff, SVGNumberList>,
@@ -53,6 +53,6 @@ private:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGNumberListTearOff_h_

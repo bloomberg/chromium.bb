@@ -24,7 +24,7 @@
 
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleVisualData::StyleVisualData()
     : hasClip(false)
@@ -46,4 +46,4 @@ StyleVisualData::StyleVisualData(const StyleVisualData& o)
 {
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -25,7 +25,7 @@
 
 #include "core/rendering/RenderPart.h"
 
-namespace WebCore {
+namespace blink {
 
 class TextRun;
 
@@ -69,6 +69,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderEmbeddedObject, isEmbeddedObject());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderEmbeddedObject_h

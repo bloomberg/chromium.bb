@@ -30,7 +30,7 @@
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 #include "platform/NotImplemented.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 

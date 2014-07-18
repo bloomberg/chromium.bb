@@ -27,7 +27,7 @@
 
 #include "core/dom/QualifiedName.h"
 
-namespace WebCore {
+namespace blink {
 
 // This has no counterpart in DOM.
 // It is an internal representation of the node value of an Attr.
@@ -79,6 +79,6 @@ inline bool Attribute::matches(const QualifiedName& qualifiedName) const
     return qualifiedName.prefix() == starAtom || qualifiedName.namespaceURI() == namespaceURI();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Attribute_h

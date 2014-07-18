@@ -31,7 +31,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/text/TextPosition.h"
 
-namespace WebCore {
+namespace blink {
 
 class PreloadRequest {
 public:

@@ -25,7 +25,7 @@
 
 #include "core/rendering/svg/RenderSVGModelObject.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGElement;
 
@@ -92,6 +92,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGContainer, isSVGContainer());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderSVGContainer_h

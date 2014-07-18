@@ -34,7 +34,7 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/text/LocaleToScriptMapping.h"
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: This scoping class is a short-term fix to minimize the changes in
 // Font-constructing logic.

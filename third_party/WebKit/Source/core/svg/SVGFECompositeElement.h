@@ -26,7 +26,7 @@
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FEComposite.h"
 
-namespace WebCore {
+namespace blink {
 
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<CompositeOperationType>();
 
@@ -60,6 +60,6 @@ private:
     RefPtr<SVGAnimatedEnumeration<CompositeOperationType> > m_svgOperator;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

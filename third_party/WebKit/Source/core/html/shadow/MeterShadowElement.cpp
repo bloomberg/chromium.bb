@@ -38,7 +38,7 @@
 #include "core/rendering/RenderMeter.h"
 #include "core/rendering/RenderTheme.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

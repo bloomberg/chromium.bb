@@ -30,7 +30,7 @@
 #include "platform/animation/TimingFunction.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class FillLayer;
 class CSSToLengthConversionData;

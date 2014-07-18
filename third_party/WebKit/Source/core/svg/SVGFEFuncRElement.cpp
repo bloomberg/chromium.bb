@@ -22,7 +22,7 @@
 
 #include "core/svg/SVGFEFuncRElement.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGFEFuncRElement::SVGFEFuncRElement(Document& document)
     : SVGComponentTransferFunctionElement(SVGNames::feFuncRTag, document)

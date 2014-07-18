@@ -27,7 +27,7 @@
 
 #include "core/dom/Document.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -79,4 +79,4 @@ void ClassList::trace(Visitor* visitor)
     DOMTokenList::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

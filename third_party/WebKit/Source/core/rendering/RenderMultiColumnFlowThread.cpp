@@ -28,7 +28,7 @@
 
 #include "core/rendering/RenderMultiColumnSet.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderMultiColumnFlowThread::RenderMultiColumnFlowThread()
     : m_columnCount(1)

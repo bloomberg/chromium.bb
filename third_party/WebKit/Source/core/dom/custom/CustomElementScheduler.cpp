@@ -45,7 +45,7 @@
 #include "core/html/imports/HTMLImportChild.h"
 #include "core/html/imports/HTMLImportsController.h"
 
-namespace WebCore {
+namespace blink {
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CustomElementScheduler)
 
@@ -161,4 +161,4 @@ void CustomElementScheduler::trace(Visitor* visitor)
     visitor->trace(m_elementCallbackQueueMap);
 }
 
-} // namespace WebCore
+} // namespace blink

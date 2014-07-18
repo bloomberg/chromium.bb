@@ -33,7 +33,7 @@
 
 #include "core/rendering/RenderBlockFlow.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderRubyRun;
 
@@ -63,6 +63,6 @@ private:
     friend class RenderRubyRun;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderRubyBase_h

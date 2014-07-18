@@ -29,7 +29,7 @@
 
 #include "core/events/ProgressEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 class XMLHttpRequestProgressEvent FINAL : public ProgressEvent {
 public:
@@ -63,6 +63,6 @@ private:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // XMLHttpRequestProgressEvent_h

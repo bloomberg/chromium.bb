@@ -42,7 +42,7 @@
 // This needs to be here because Document.h also depends on it.
 #define DUMP_NODE_STATISTICS 0
 
-namespace WebCore {
+namespace blink {
 
 class Attribute;
 class ClassCollection;
@@ -901,13 +901,13 @@ PassRefPtrWillBeRawPtr<T> T::create(Document& document) \
     return adoptRefWillBeNoop(new T(document)); \
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showNode(const WebCore::Node*);
-void showTree(const WebCore::Node*);
-void showNodePath(const WebCore::Node*);
+void showNode(const blink::Node*);
+void showTree(const blink::Node*);
+void showNodePath(const blink::Node*);
 #endif
 
 #endif

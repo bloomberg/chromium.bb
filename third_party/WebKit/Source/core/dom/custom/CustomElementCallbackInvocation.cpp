@@ -35,7 +35,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/custom/CustomElementScheduler.h"
 
-namespace WebCore {
+namespace blink {
 
 class AttachedDetachedInvocation : public CustomElementCallbackInvocation {
 public:
@@ -132,4 +132,4 @@ PassOwnPtr<CustomElementCallbackInvocation> CustomElementCallbackInvocation::cre
     return adoptPtr(new AttributeChangedInvocation(callbacks, name, oldValue, newValue));
 }
 
-} // namespace WebCore
+} // namespace blink

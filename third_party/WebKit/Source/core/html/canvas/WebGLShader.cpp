@@ -29,7 +29,7 @@
 
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<WebGLShader> WebGLShader::create(WebGLRenderingContextBase* ctx, GLenum type)
 {

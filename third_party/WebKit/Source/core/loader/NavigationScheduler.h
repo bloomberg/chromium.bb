@@ -41,7 +41,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class FormSubmission;
@@ -102,6 +102,6 @@ private:
     OwnPtr<ScheduledNavigation> m_redirect;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigationScheduler_h

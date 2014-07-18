@@ -32,7 +32,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -88,6 +88,6 @@ private:
     NodePointer m_candidateNode;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NodeIterator_h

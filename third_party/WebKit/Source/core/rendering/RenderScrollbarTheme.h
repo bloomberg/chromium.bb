@@ -28,7 +28,7 @@
 
 #include "platform/scroll/ScrollbarTheme.h"
 
-namespace WebCore {
+namespace blink {
 
 class PlatformMouseEvent;
 
@@ -75,6 +75,6 @@ protected:
     virtual IntRect constrainTrackRectToTrackPieces(ScrollbarThemeClient*, const IntRect&) OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderScrollbarTheme_h

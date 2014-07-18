@@ -40,7 +40,7 @@
 #include "platform/network/ResourceLoadTiming.h"
 #include "platform/network/ResourceResponse.h"
 
-namespace WebCore {
+namespace blink {
 
 static unsigned long long toIntegerMilliseconds(double seconds)
 {
@@ -355,4 +355,4 @@ unsigned long long PerformanceTiming::monotonicTimeToIntegerMilliseconds(double 
     return toIntegerMilliseconds(timing->monotonicTimeToPseudoWallTime(monotonicSeconds));
 }
 
-} // namespace WebCore
+} // namespace blink

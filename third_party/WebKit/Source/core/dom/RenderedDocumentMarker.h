@@ -30,7 +30,7 @@
 #include "core/dom/DocumentMarker.h"
 #include "platform/geometry/LayoutRect.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderedDocumentMarker FINAL : public DocumentMarker {
 public:
@@ -72,6 +72,6 @@ DEFINE_TYPE_CASTS(RenderedDocumentMarker, DocumentMarker, marker, true, true);
 
 } // namespace
 
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(WebCore::RenderedDocumentMarker);
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::RenderedDocumentMarker);
 
 #endif

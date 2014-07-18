@@ -32,7 +32,7 @@
 #include "core/rendering/RenderQuote.h"
 #include "core/rendering/style/ContentData.h"
 
-namespace WebCore {
+namespace blink {
 
 const QualifiedName& pseudoElementTagName()
 {

@@ -42,7 +42,7 @@
 #include "core/dom/Element.h"
 #include "wtf/NonCopyingSort.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState& exceptionState)
 {
@@ -126,4 +126,4 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
     return keyframeEffectModel;
 }
 
-} // namespace WebCore
+} // namespace blink

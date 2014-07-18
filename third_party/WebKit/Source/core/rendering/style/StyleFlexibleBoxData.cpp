@@ -28,7 +28,7 @@
 
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleFlexibleBoxData::StyleFlexibleBoxData()
     : m_flexGrow(RenderStyle::initialFlexGrow())

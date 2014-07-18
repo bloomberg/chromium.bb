@@ -39,7 +39,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicStringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
@@ -75,6 +75,6 @@ private:
     WorkerGlobalScopeProxy* m_contextProxy; // The proxy outlives the worker to perform thread shutdown.
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Worker_h

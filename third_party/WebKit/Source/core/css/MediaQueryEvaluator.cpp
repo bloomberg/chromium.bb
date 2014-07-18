@@ -56,7 +56,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "wtf/HashMap.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace MediaFeatureNames;
 

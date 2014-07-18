@@ -34,7 +34,7 @@
 #include "core/inspector/InspectorState.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 InspectorAgent::InspectorAgent(const String& name)
     : m_name(name)
@@ -106,5 +106,5 @@ void InspectorAgentRegistry::didCommitLoadForMainFrame()
         m_agents[i]->didCommitLoadForMainFrame();
 }
 
-} // namespace WebCore
+} // namespace blink
 

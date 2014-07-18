@@ -27,7 +27,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/LabelableElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLLabelElement FINAL : public HTMLElement {
 public:

@@ -42,7 +42,7 @@
 #include "platform/fonts/Font.h"
 #include <math.h>
 
-namespace WebCore {
+namespace blink {
 
 using namespace SVGNames;
 
@@ -356,6 +356,6 @@ void SVGFontFaceElement::trace(Visitor* visitor)
     SVGElement::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(SVG_FONTS)

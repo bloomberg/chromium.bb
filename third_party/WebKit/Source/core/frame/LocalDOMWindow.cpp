@@ -113,7 +113,7 @@
 using std::min;
 using std::max;
 
-namespace WebCore {
+namespace blink {
 
 class PostMessageTimer FINAL : public SuspendableTimer {
 public:
@@ -1523,7 +1523,7 @@ DOMWindowCSS& LocalDOMWindow::css() const
 
 static void didAddStorageEventListener(LocalDOMWindow* window)
 {
-    // Creating these WebCore::Storage objects informs the system that we'd like to receive
+    // Creating these blink::Storage objects informs the system that we'd like to receive
     // notifications about storage events that might be triggered in other processes. Rather
     // than subscribe to these notifications explicitly, we subscribe to them implicitly to
     // simplify the work done by the system.
@@ -1948,4 +1948,4 @@ void LocalDOMWindow::trace(Visitor* visitor)
     EventTargetWithInlineData::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

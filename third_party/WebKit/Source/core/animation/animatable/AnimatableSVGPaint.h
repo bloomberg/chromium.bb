@@ -35,7 +35,7 @@
 #include "core/animation/animatable/AnimatableValue.h"
 #include "core/rendering/style/SVGRenderStyleDefs.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableSVGPaint FINAL : public AnimatableValue {
 public:
@@ -93,6 +93,6 @@ private:
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableSVGPaint, isSVGPaint());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatableSVGPaint_h

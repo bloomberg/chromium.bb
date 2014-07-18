@@ -34,7 +34,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/unicode/CharacterNames.h"
 
-namespace WebCore {
+namespace blink {
 
 class FlexBoxIterator {
 public:
@@ -1075,4 +1075,4 @@ const char* RenderDeprecatedFlexibleBox::renderName() const
     return "RenderDeprecatedFlexibleBox";
 }
 
-} // namespace WebCore
+} // namespace blink

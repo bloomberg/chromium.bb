@@ -30,7 +30,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/TemporaryChange.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 
@@ -74,6 +74,6 @@ inline void DocumentLifecycleNotifier::notifyDocumentWasDisposed()
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DocumentLifecycleNotifier_h

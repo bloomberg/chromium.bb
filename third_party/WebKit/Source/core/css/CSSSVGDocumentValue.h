@@ -29,7 +29,7 @@
 #include "core/fetch/DocumentResource.h"
 #include "core/fetch/ResourcePtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ResourceFetcher;
 
@@ -61,6 +61,6 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSSVGDocumentValue, isSVGDocumentValue());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSSVGDocumentValue_h

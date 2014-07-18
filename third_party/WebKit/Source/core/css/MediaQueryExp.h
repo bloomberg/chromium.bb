@@ -36,7 +36,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 class CSSParserValueList;
 
 struct MediaQueryExpValue {

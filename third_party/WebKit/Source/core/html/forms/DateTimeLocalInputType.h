@@ -34,7 +34,7 @@
 #include "core/html/forms/BaseChooserOnlyDateAndTimeInputType.h"
 #include "core/html/forms/BaseMultipleFieldsDateAndTimeInputType.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -67,6 +67,6 @@ private:
 #endif
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DateTimeLocalInputType_h

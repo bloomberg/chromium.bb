@@ -33,7 +33,7 @@
 
 #include "core/html/forms/InputType.h"
 
-namespace WebCore {
+namespace blink {
 
 // Base of input types that dispatches a simulated click on space/return key.
 class BaseClickableWithKeyInputType : public InputType {
@@ -53,6 +53,6 @@ private:
     virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BaseClickableWithKeyInputType_h

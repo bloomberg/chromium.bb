@@ -33,7 +33,7 @@
 
 #include "core/dom/Element.h"
 
-namespace WebCore {
+namespace blink {
 
 // Maps elements to the observer watching them. At most one per
 // element at a time.
@@ -73,4 +73,4 @@ void CustomElementObserver::unobserve(Element* element)
     ASSERT_UNUSED(observer, observer == this);
 }
 
-} // namespace WebCore
+} // namespace blink

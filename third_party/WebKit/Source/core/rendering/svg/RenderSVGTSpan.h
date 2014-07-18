@@ -24,7 +24,7 @@
 
 #include "core/rendering/svg/RenderSVGInline.h"
 
-namespace WebCore {
+namespace blink {
 class RenderSVGTSpan FINAL : public RenderSVGInline {
 public:
     explicit RenderSVGTSpan(Element*);

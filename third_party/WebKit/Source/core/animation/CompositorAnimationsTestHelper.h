@@ -111,7 +111,7 @@ typedef WebAnimationCurveMock<blink::WebFloatAnimationCurve, blink::WebAnimation
 
 } // namespace blink
 
-namespace WebCore {
+namespace blink {
 
 class AnimationCompositorAnimationsTestBase : public ::testing::Test {
 public:

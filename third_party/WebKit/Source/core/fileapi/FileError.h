@@ -37,7 +37,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -86,6 +86,6 @@ private:
     ErrorCode m_code;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FileError_h

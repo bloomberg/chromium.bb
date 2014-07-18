@@ -26,7 +26,7 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/svg/SVGElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSFontFaceSrcValue;
 
@@ -52,7 +52,7 @@ private:
     ResourcePtr<FontResource> m_resource;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(SVG_FONTS)
 #endif

@@ -43,7 +43,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 class StyleSheetCSSRuleList FINAL : public CSSRuleList {
 public:

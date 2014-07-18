@@ -27,7 +27,7 @@
 #include "core/html/HTMLElement.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLQuoteElement FINAL : public HTMLElement {
 public:

@@ -34,7 +34,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSComputedStyleDeclaration;
 class Element;
@@ -310,12 +310,12 @@ inline bool offsetIsBeforeLastNodeOffset(int offset, Node* anchorNode)
     return offset < currentOffset;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showTree(const WebCore::Position&);
-void showTree(const WebCore::Position*);
+void showTree(const blink::Position&);
+void showTree(const blink::Position*);
 #endif
 
 #endif // Position_h

@@ -9,7 +9,7 @@
 #include "core/animation/css/CSSTimingData.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSTransitionData FINAL : public CSSTimingData {
 public:
@@ -76,6 +76,6 @@ private:
     Vector<TransitionProperty> m_propertyList;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSTransitionData_h

@@ -34,7 +34,7 @@
 #include "bindings/core/v8/WorkerScriptDebugServer.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 
-namespace WebCore {
+namespace blink {
 
 class WorkerGlobalScope;
 class WorkerThread;
@@ -62,6 +62,6 @@ private:
     WorkerGlobalScope* m_inspectedWorkerGlobalScope;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(WorkerDebuggerAgent_h)

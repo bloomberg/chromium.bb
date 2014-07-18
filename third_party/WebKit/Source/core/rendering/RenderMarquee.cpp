@@ -54,7 +54,7 @@
 #include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -324,4 +324,4 @@ void RenderMarquee::timerFired()
         layer()->scrollableArea()->scrollToYOffset(newPos);
 }
 
-} // namespace WebCore
+} // namespace blink

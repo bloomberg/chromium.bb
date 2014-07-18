@@ -33,7 +33,7 @@
 #include "core/rendering/RenderObject.h"
 
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -56,4 +56,4 @@ bool AXList::computeAccessibilityIsIgnored() const
     return accessibilityIsIgnoredByDefault();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -25,7 +25,7 @@
 #include "core/css/resolver/ElementResolveContext.h"
 #include "core/dom/Element.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 class Node;
@@ -79,6 +79,6 @@ private:
     const ElementResolveContext& m_context;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SharedStyleFinder_h

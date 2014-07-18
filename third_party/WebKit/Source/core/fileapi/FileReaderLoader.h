@@ -41,7 +41,7 @@
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class BlobDataHandle;
 class FileReaderLoaderClient;
@@ -142,6 +142,6 @@ private:
     FileError::ErrorCode m_errorCode;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FileReaderLoader_h

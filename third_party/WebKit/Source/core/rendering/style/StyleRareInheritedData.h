@@ -34,7 +34,7 @@
 #include "wtf/RefVector.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class AppliedTextDecoration;
 class CursorData;
@@ -156,6 +156,6 @@ private:
     StyleRareInheritedData(const StyleRareInheritedData&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleRareInheritedData_h

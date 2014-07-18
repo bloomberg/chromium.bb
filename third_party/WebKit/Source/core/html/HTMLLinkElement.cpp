@@ -51,7 +51,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -747,4 +747,4 @@ void LinkStyle::trace(Visitor* visitor)
     LinkResource::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

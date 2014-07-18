@@ -26,7 +26,7 @@
 
 #include "core/rendering/style/DataEquivalency.h"
 
-namespace WebCore {
+namespace blink {
 
 static DataRef<NinePieceImageData>& defaultData()
 {

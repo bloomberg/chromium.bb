@@ -53,7 +53,7 @@
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSVGText::RenderSVGText(SVGTextElement* node)
     : RenderSVGBlock(node)

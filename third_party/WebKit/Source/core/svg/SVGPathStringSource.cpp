@@ -25,7 +25,7 @@
 #include "core/svg/SVGParserUtilities.h"
 #include "platform/geometry/FloatPoint.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGPathStringSource::SVGPathStringSource(const String& string)
     : m_string(string)

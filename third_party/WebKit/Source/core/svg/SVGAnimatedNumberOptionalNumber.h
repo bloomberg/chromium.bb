@@ -34,7 +34,7 @@
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGNumberOptionalNumber.h"
 
-namespace WebCore {
+namespace blink {
 
 // SVG Spec: http://www.w3.org/TR/SVG11/types.html <number-optional-number>
 // Unlike other SVGAnimated* class, this class is not exposed to Javascript directly,
@@ -62,6 +62,6 @@ protected:
     RefPtr<SVGAnimatedNumber> m_secondNumber;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGAnimatedNumberOptionalNumber_h

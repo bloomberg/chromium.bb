@@ -36,7 +36,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 
-namespace WebCore {
+namespace blink {
 
     class Color;
     class Document;
@@ -237,7 +237,7 @@ namespace WebCore {
 
     DEFINE_TYPE_CASTS(LocalFrame, Frame, localFrame, localFrame->isLocalFrame(), localFrame.isLocalFrame());
 
-} // namespace WebCore
+} // namespace blink
 
 // During refactoring, there are some places where we need to do type conversions that
 // will not be needed once all instances of LocalFrame and RemoteFrame are sorted out.

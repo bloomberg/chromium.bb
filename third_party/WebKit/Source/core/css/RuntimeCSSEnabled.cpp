@@ -33,7 +33,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/BitArray.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef BitArray<numCSSProperties> CSSPropertySwitches;
 
@@ -164,4 +164,4 @@ void RuntimeCSSEnabled::filterEnabledCSSPropertiesIntoVector(const CSSPropertyID
     }
 }
 
-} // namespace WebCore
+} // namespace blink

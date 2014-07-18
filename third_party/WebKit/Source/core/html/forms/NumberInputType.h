@@ -33,7 +33,7 @@
 
 #include "core/html/forms/TextFieldInputType.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -73,6 +73,6 @@ private:
     virtual bool supportsSelectionAPI() const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NumberInputType_h

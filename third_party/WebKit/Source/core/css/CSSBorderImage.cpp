@@ -20,7 +20,7 @@
 #include "config.h"
 #include "core/css/CSSBorderImage.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<CSSValueList> createBorderImageValue(PassRefPtrWillBeRawPtr<CSSValue> image, PassRefPtrWillBeRawPtr<CSSValue> imageSlice,
     PassRefPtrWillBeRawPtr<CSSValue> borderSlice, PassRefPtrWillBeRawPtr<CSSValue> outset, PassRefPtrWillBeRawPtr<CSSValue> repeat)
@@ -48,4 +48,4 @@ PassRefPtrWillBeRawPtr<CSSValueList> createBorderImageValue(PassRefPtrWillBeRawP
     return list.release();
 }
 
-} // namespace WebCore
+} // namespace blink

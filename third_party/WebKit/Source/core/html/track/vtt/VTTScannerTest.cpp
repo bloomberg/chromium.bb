@@ -34,7 +34,7 @@
 
 #include <gtest/gtest.h>
 
-using WebCore::VTTScanner;
+using blink::VTTScanner;
 
 namespace {
 

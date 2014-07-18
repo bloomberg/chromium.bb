@@ -35,7 +35,7 @@
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/GraphicsContext.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef WTF::HashMap<const char*, Image*> MediaControlImageMap;
 static MediaControlImageMap* gMediaControlImageMap = 0;
@@ -440,4 +440,4 @@ String RenderMediaControls::formatMediaControlsCurrentTime(float currentTime, fl
     return formatChromiumMediaControlsTime(currentTime, duration);
 }
 
-} // namespace WebCore
+} // namespace blink

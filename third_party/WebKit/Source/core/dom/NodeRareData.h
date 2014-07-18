@@ -29,7 +29,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class NodeMutationObserverData FINAL : public NoBaseWillBeGarbageCollected<NodeMutationObserverData> {
     WTF_MAKE_NONCOPYABLE(NodeMutationObserverData);
@@ -131,6 +131,6 @@ protected:
     unsigned m_isElementRareData : 1;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NodeRareData_h

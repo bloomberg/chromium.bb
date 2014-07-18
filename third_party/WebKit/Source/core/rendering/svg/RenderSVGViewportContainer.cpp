@@ -29,7 +29,7 @@
 #include "core/svg/SVGUseElement.h"
 #include "platform/graphics/GraphicsContext.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSVGViewportContainer::RenderSVGViewportContainer(SVGElement* node)
     : RenderSVGContainer(node)

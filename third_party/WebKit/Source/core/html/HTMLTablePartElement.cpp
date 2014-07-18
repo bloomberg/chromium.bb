@@ -36,7 +36,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/weborigin/Referrer.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

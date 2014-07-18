@@ -39,7 +39,7 @@
 #include "wtf/MathExtras.h"
 #include <limits>
 
-namespace WebCore {
+namespace blink {
 
 struct RenderFlexibleBox::LineContext {
     LineContext(LayoutUnit crossAxisOffset, LayoutUnit crossAxisExtent, size_t numberOfChildren, LayoutUnit maxAscent)

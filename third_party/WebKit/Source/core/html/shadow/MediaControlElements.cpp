@@ -47,7 +47,7 @@
 #include "core/rendering/RenderVideo.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -681,4 +681,4 @@ void MediaControlTextTrackContainerElement::updateSizes()
 
 // ----------------------------
 
-} // namespace WebCore
+} // namespace blink

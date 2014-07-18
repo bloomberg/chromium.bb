@@ -33,7 +33,7 @@
 
 #include "core/animation/animatable/AnimatableValue.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableLengthBoxAndBool FINAL : public AnimatableValue {
 public:
@@ -66,6 +66,6 @@ private:
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthBoxAndBool, isLengthBoxAndBool());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatableLengthBoxAndBool_h

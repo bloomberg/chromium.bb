@@ -50,7 +50,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -762,11 +762,11 @@ public:
     StyleChange change;
 };
 
-} // namespace WebCore
+} // namespace blink
 
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(WebCore::InlineRunToApplyStyle);
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::InlineRunToApplyStyle);
 
-namespace WebCore {
+namespace blink {
 
 void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRefPtrWillBeRawPtr<Node> startNode, PassRefPtrWillBeRawPtr<Node> pastEndNode)
 {

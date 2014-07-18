@@ -28,7 +28,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 // Though isspace() considers \t and \v to be whitespace, Win IE doesn't when parsing window features.
 static bool isWindowFeaturesSeparator(UChar c)
@@ -267,4 +267,4 @@ void WindowFeatures::parseDialogFeatures(const String& string, DialogFeaturesMap
     }
 }
 
-} // namespace WebCore
+} // namespace blink

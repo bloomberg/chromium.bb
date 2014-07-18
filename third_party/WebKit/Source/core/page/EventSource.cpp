@@ -54,7 +54,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 const unsigned long long EventSource::defaultReconnectDelay = 3000;
 
@@ -438,4 +438,4 @@ PassRefPtrWillBeRawPtr<MessageEvent> EventSource::createMessageEvent()
     return event.release();
 }
 
-} // namespace WebCore
+} // namespace blink

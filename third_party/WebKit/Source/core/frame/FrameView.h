@@ -34,7 +34,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXObjectCache;
 class DocumentLifecycle;
@@ -562,6 +562,6 @@ private:
     bool m_originalValue;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FrameView_h

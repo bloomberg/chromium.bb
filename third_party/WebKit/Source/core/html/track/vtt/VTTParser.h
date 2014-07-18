@@ -42,7 +42,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class VTTScanner;
@@ -148,6 +148,6 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<VTTRegion> > m_regionList;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

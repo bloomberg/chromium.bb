@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/css/CSSAspectRatioValue.h"
 
-namespace WebCore {
+namespace blink {
 
 String CSSAspectRatioValue::customCSSText() const
 {

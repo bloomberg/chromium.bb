@@ -28,7 +28,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicStringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSSelectorList;
 class DescendantInvalidationSet;
@@ -178,11 +178,11 @@ private:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
 namespace WTF {
 
-template <> struct VectorTraits<WebCore::RuleFeature> : VectorTraitsBase<WebCore::RuleFeature> {
+template <> struct VectorTraits<blink::RuleFeature> : VectorTraitsBase<blink::RuleFeature> {
     static const bool needsDestruction = false;
     static const bool canInitializeWithMemset = true;
     static const bool canMoveWithMemcpy = true;

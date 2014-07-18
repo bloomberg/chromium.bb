@@ -52,7 +52,7 @@
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 class MessageWorkerGlobalScopeTask : public ExecutionContextTask {
 public:
@@ -303,4 +303,4 @@ bool WorkerMessagingProxy::hasPendingActivity() const
     return (m_unconfirmedMessageCount || m_workerThreadHadPendingActivity) && !m_askedToTerminate;
 }
 
-} // namespace WebCore
+} // namespace blink

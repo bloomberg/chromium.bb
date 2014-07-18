@@ -31,7 +31,7 @@
 #include "core/page/PopupOpeningObserver.h"
 #include "platform/Timer.h"
 
-namespace WebCore {
+namespace blink {
 
 class SpinButtonElement FINAL : public HTMLDivElement, public PopupOpeningObserver {
 public:

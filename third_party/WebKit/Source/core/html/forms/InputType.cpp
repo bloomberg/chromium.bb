@@ -70,7 +70,7 @@
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/TextBreakIterator.h"
 
-namespace WebCore {
+namespace blink {
 
 using blink::WebLocalizedString;
 using namespace HTMLNames;
@@ -970,4 +970,4 @@ StepRange InputType::createStepRange(AnyStepHandling anyStepHandling, const Deci
     return StepRange(stepBase, minimum, maximum, step, stepDescription);
 }
 
-} // namespace WebCore
+} // namespace blink

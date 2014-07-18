@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 class FontBuilderTest : public ::testing::Test {
 protected:
@@ -23,4 +23,4 @@ TEST_F(FontBuilderTest, StylePointerInitialisation)
     EXPECT_EQ(0, getStyle(builder));
 }
 
-} // namespace WebCore
+} // namespace blink

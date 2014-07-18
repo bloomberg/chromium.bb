@@ -29,7 +29,7 @@
 
 #include "core/dom/DocumentFragment.h"
 
-namespace WebCore {
+namespace blink {
 
 class TemplateContentDocumentFragment FINAL : public DocumentFragment {
 public:
@@ -61,6 +61,6 @@ private:
     RawPtrWillBeMember<Element> m_host;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TemplateContentDocumentFragment_h

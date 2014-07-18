@@ -24,7 +24,7 @@
 
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class CachedUAStyle;
 class Element;
@@ -50,6 +50,6 @@ private:
     bool m_useQuirksModeStyles;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleAdjuster_h

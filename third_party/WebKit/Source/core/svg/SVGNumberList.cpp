@@ -26,7 +26,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 inline PassRefPtr<SVGNumberList> toSVGNumberList(PassRefPtr<SVGPropertyBase> passBase)
 {

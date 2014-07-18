@@ -7,7 +7,7 @@
 
 #include "core/html/HTMLNameCollection.h"
 
-namespace WebCore {
+namespace blink {
 
 class WindowNameCollection FINAL : public HTMLNameCollection {
 public:
@@ -25,6 +25,6 @@ private:
 
 DEFINE_TYPE_CASTS(WindowNameCollection, LiveNodeListBase, collection, collection->type() == WindowNamedItems, collection.type() == WindowNamedItems);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WindowNameCollection_h

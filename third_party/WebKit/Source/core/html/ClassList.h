@@ -32,7 +32,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 
@@ -73,6 +73,6 @@ private:
     mutable OwnPtr<SpaceSplitString> m_classNamesForQuirksMode;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ClassList_h

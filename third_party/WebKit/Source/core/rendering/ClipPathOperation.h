@@ -37,7 +37,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ClipPathOperation : public RefCounted<ClipPathOperation> {
 public:

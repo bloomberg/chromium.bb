@@ -36,7 +36,7 @@
 #include "platform/animation/AnimationUtilities.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 static inline double multiplyZeroAlwaysGivesZero(double x, double y)
 {
@@ -193,6 +193,6 @@ static inline double calculateTransformedTime(double currentIteration, double it
     return multiplyZeroAlwaysGivesZero(iterationDuration, specified.timingFunction->evaluate(timeFraction, accuracyForDuration(iterationDuration)));
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

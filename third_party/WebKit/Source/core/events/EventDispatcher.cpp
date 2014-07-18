@@ -38,7 +38,7 @@
 #include "platform/TraceEvent.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 bool EventDispatcher::dispatchEvent(Node* node, PassRefPtrWillBeRawPtr<EventDispatchMediator> mediator)
 {

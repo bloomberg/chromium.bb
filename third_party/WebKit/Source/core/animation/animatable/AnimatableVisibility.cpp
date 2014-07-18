@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/animation/animatable/AnimatableVisibility.h"
 
-namespace WebCore {
+namespace blink {
 
 bool AnimatableVisibility::usesDefaultInterpolationWith(const AnimatableValue* value) const
 {
@@ -58,4 +58,4 @@ bool AnimatableVisibility::equalTo(const AnimatableValue* value) const
     return m_visibility == toAnimatableVisibility(value)->m_visibility;
 }
 
-} // namespace WebCore
+} // namespace blink

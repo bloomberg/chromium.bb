@@ -33,7 +33,7 @@
 #include "core/dom/Text.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 SplitTextNodeCommand::SplitTextNodeCommand(PassRefPtrWillBeRawPtr<Text> text, int offset)
     : SimpleEditCommand(text->document())
@@ -110,4 +110,4 @@ void SplitTextNodeCommand::trace(Visitor* visitor)
     SimpleEditCommand::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

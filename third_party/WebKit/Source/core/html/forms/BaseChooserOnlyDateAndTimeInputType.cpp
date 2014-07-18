@@ -36,7 +36,7 @@
 #include "core/page/Chrome.h"
 #include "platform/UserGestureIndicator.h"
 
-namespace WebCore {
+namespace blink {
 
 BaseChooserOnlyDateAndTimeInputType::~BaseChooserOnlyDateAndTimeInputType()
 {

@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/rendering/style/StyleFilterData.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleFilterData::StyleFilterData()
     : m_operations()
@@ -44,5 +44,5 @@ bool StyleFilterData::operator==(const StyleFilterData& o) const
     return m_operations == o.m_operations;
 }
 
-} // namespace WebCore
+} // namespace blink
 

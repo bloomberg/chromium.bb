@@ -34,7 +34,7 @@
 #include "wtf/LinkedStack.h"
 #include "wtf/TerminatedArray.h"
 
-namespace WebCore {
+namespace blink {
 
 enum AddRuleFlags {
     RuleHasNoSpecialState         = 0,
@@ -234,9 +234,9 @@ private:
 #endif
 };
 
-} // namespace WebCore
+} // namespace blink
 
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::RuleData);
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::MinimalRuleData);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::RuleData);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::MinimalRuleData);
 
 #endif // RuleSet_h

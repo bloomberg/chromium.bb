@@ -27,7 +27,7 @@
 #include "core/rendering/line/LineInfo.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 enum WhitespacePosition { LeadingWhitespace, TrailingWhitespace };
 

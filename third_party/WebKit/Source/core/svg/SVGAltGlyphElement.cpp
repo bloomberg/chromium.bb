@@ -33,7 +33,7 @@
 #include "core/rendering/svg/RenderSVGTSpan.h"
 #include "core/svg/SVGAltGlyphDefElement.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGAltGlyphElement::SVGAltGlyphElement(Document& document)
     : SVGTextPositioningElement(SVGNames::altGlyphTag, document)

@@ -21,7 +21,7 @@
 #include "core/page/Page.h"
 #include "public/platform/WebURLRequest.h"
 
-namespace WebCore {
+namespace blink {
 
 class InspectorResourceContentLoader::ResourceClient FINAL : private RawResourceClient, private StyleSheetResourceClient {
 public:
@@ -190,4 +190,4 @@ void InspectorResourceContentLoader::resourceFinished(ResourceClient* client)
     checkDone();
 }
 
-} // namespace WebCore
+} // namespace blink

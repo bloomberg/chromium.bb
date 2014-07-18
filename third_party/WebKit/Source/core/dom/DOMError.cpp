@@ -27,7 +27,7 @@
 #include "core/dom/DOMError.h"
 
 
-namespace WebCore {
+namespace blink {
 
 DOMError::DOMError(const String& name)
     : m_name(name)
@@ -42,4 +42,4 @@ DOMError::DOMError(const String& name, const String& message)
     ScriptWrappable::init(this);
 }
 
-} // namespace WebCore
+} // namespace blink

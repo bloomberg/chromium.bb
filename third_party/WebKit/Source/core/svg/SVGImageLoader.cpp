@@ -27,7 +27,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/svg/SVGImageElement.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGImageLoader::SVGImageLoader(SVGImageElement* node)
     : ImageLoader(node)

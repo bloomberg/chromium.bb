@@ -35,7 +35,7 @@
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class FrameHost;
 
@@ -59,6 +59,6 @@ private:
     LocalFrame& m_frame;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FrameConsole_h

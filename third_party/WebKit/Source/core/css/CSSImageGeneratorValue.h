@@ -31,7 +31,7 @@
 #include "wtf/HashCountedSet.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ResourceFetcher;
 class Image;
@@ -91,6 +91,6 @@ protected:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSImageGeneratorValue, isImageGeneratorValue());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSImageGeneratorValue_h

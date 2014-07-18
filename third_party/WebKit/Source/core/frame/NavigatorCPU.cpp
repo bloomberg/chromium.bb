@@ -7,11 +7,11 @@
 
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 unsigned NavigatorCPU::hardwareConcurrency() const
 {
     return blink::Platform::current()->numberOfProcessors();
 }
 
-} // namespace WebCore
+} // namespace blink

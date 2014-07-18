@@ -43,7 +43,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/text/StringConcatenate.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace ProfilerAgentState {
 static const char samplingInterval[] = "samplingInterval";
@@ -295,5 +295,5 @@ void InspectorProfilerAgent::didLeaveNestedRunLoop()
     idleFinished();
 }
 
-} // namespace WebCore
+} // namespace blink
 

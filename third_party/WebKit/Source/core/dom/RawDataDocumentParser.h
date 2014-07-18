@@ -29,7 +29,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 
-namespace WebCore {
+namespace blink {
 
 class RawDataDocumentParser : public DocumentParser {
 protected:

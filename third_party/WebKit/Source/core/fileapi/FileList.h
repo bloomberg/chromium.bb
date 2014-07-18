@@ -34,7 +34,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class FileList FINAL : public RefCountedWillBeGarbageCollected<FileList>, public ScriptWrappable {
 public:
@@ -59,6 +59,6 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<File> > m_files;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FileList_h

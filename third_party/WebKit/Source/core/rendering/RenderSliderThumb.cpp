@@ -35,7 +35,7 @@
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSliderThumb::RenderSliderThumb(SliderThumbElement* element)
     : RenderBlockFlow(element)
@@ -63,4 +63,4 @@ bool RenderSliderThumb::isSliderThumb() const
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

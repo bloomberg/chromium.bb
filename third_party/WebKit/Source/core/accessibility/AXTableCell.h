@@ -31,7 +31,7 @@
 
 #include "core/accessibility/AXRenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXTableCell : public AXRenderObject {
 
@@ -62,6 +62,6 @@ private:
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTableCell, isTableCell());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXTableCell_h

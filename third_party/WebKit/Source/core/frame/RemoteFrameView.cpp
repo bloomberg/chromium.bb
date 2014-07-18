@@ -8,7 +8,7 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/rendering/RenderPart.h"
 
-namespace WebCore {
+namespace blink {
 
 RemoteFrameView::RemoteFrameView(RemoteFrame* remoteFrame)
     : m_remoteFrame(remoteFrame)
@@ -56,4 +56,4 @@ void RemoteFrameView::frameRectsChanged()
     // FIXME: Notify embedder via WebLocalFrameClient when that is possible.
 }
 
-} // namespace WebCore
+} // namespace blink

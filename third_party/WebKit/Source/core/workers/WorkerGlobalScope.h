@@ -45,7 +45,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicStringHash.h"
 
-namespace WebCore {
+namespace blink {
 
     class Blob;
     class ExceptionState;
@@ -183,6 +183,6 @@ namespace WebCore {
 
 DEFINE_TYPE_CASTS(WorkerGlobalScope, ExecutionContext, context, context->isWorkerGlobalScope(), context.isWorkerGlobalScope());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerGlobalScope_h

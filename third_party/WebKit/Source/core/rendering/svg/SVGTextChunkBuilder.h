@@ -23,7 +23,7 @@
 #include "core/rendering/svg/SVGTextChunk.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGInlineTextBox;
 struct SVGTextFragment;
@@ -57,6 +57,6 @@ private:
     HashMap<SVGInlineTextBox*, AffineTransform> m_textBoxTransformations;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

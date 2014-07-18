@@ -27,7 +27,7 @@
 #include "core/svg/SVGElement.h"
 #include "platform/fonts/SVGGlyph.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGFontData;
 
@@ -57,7 +57,7 @@ private:
     void invalidateGlyphCache();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(SVG_FONTS)
 #endif

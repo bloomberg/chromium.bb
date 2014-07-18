@@ -29,7 +29,7 @@
 
 #include "core/html/canvas/WebGLSharedObject.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<WebGLContextGroup> WebGLContextGroup::create()
 {
@@ -95,4 +95,4 @@ void WebGLContextGroup::loseContextGroup(WebGLRenderingContextBase::LostContextM
         (*it)->loseContextImpl(mode);
 }
 
-} // namespace WebCore
+} // namespace blink

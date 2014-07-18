@@ -31,7 +31,7 @@
 #include "core/html/shadow/DetailsMarkerControl.h"
 #include "core/rendering/RenderBlockFlow.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

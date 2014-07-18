@@ -27,7 +27,7 @@
 #include "platform/Language.h"
 #include "core/svg/SVGElement.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGTests::SVGTests(SVGElement* contextElement)
     : m_requiredFeatures(SVGStaticStringList::create(contextElement, SVGNames::requiredFeaturesAttr))

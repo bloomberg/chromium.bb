@@ -38,7 +38,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -116,4 +116,4 @@ bool BaseCheckableInputType::shouldDispatchFormControlChangeEvent(String& oldVal
     return oldValue != newValue;
 }
 
-} // namespace WebCore
+} // namespace blink

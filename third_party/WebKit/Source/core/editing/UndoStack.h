@@ -35,7 +35,7 @@
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class UndoStep;
@@ -67,6 +67,6 @@ private:
     UndoStepStack m_redoStack;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

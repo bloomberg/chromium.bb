@@ -33,7 +33,7 @@
 #include "core/rendering/RenderTableRow.h"
 
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -128,4 +128,4 @@ AXObject* AXTableRow::headerObject()
     return cell;
 }
 
-} // namespace WebCore
+} // namespace blink

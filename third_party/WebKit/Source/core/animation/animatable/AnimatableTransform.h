@@ -34,7 +34,7 @@
 #include "core/animation/animatable/AnimatableValue.h"
 #include "platform/transforms/TransformOperations.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableTransform FINAL : public AnimatableValue {
 public:
@@ -62,7 +62,7 @@ private:
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableTransform, isTransform());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatableTransform_h
 

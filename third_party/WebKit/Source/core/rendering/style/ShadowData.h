@@ -28,7 +28,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/Color.h"
 
-namespace WebCore {
+namespace blink {
 
 enum ShadowStyle { Normal, Inset };
 
@@ -67,6 +67,6 @@ private:
     ShadowStyle m_style;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ShadowData_h

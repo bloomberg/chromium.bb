@@ -29,12 +29,12 @@
 // FIXME: This file has a similar purpose to
 // CSSOMUtils.h. Perhaps the two should be combined?
 
-namespace WebCore {
+namespace blink {
 
 String quoteCSSString(const String&);
 String quoteCSSStringIfNeeded(const String&);
 String quoteCSSURLIfNeeded(const String&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSMarkup_h

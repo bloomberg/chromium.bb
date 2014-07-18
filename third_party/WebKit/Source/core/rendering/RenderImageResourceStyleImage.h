@@ -30,7 +30,7 @@
 #include "core/rendering/style/StyleImage.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderObject;
 
@@ -64,6 +64,6 @@ private:
     RefPtr<StyleImage> m_styleImage;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderImageStyleImage_h

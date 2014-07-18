@@ -24,7 +24,7 @@
 #include "core/SVGNames.h"
 #include "core/svg/SVGTextPositioningElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGTextElement FINAL : public SVGTextPositioningElement {
 public:
@@ -38,6 +38,6 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

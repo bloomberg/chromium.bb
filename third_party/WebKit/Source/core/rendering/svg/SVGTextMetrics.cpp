@@ -24,7 +24,7 @@
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGTextMetrics::SVGTextMetrics()
     : m_width(0)

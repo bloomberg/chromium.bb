@@ -91,7 +91,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -1808,7 +1808,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
         || (!isPaintingScrollingContent && isPaintingCompositedForeground));
     bool shouldPaintContent = m_hasVisibleContent && isSelfPaintingLayer && !isPaintingOverlayScrollbars;
 
-    float deviceScaleFactor = WebCore::deviceScaleFactor(renderer()->frame());
+    float deviceScaleFactor = blink::deviceScaleFactor(renderer()->frame());
     context->setDeviceScaleFactor(deviceScaleFactor);
 
     GraphicsContext* transparencyLayerContext = context;
@@ -3654,7 +3654,7 @@ FilterOperations RenderLayer::computeFilterOperations(const RenderStyle* style)
             // FIXME: Cache the ReferenceFilter if it didn't change.
             RefPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create();
 #ifdef BLINK_SCALE_FILTERS_AT_RECORD_TIME
-            float zoom = style->effectiveZoom() * WebCore::deviceScaleFactor(renderer()->frame());
+            float zoom = style->effectiveZoom() * blink::deviceScaleFactor(renderer()->frame());
 #else
             float zoom = style->effectiveZoom();
 #endif
@@ -3772,21 +3772,21 @@ DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()
 
 COMPILE_ASSERT(1 << RenderLayer::ViewportConstrainedNotCompositedReasonBits >= RenderLayer::NumNotCompositedReasons, too_many_viewport_constrained_not_compositing_reasons);
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
-void showLayerTree(const WebCore::RenderLayer* layer)
+void showLayerTree(const blink::RenderLayer* layer)
 {
     if (!layer)
         return;
 
-    if (WebCore::LocalFrame* frame = layer->renderer()->frame()) {
-        WTF::String output = externalRepresentation(frame, WebCore::RenderAsTextShowAllLayers | WebCore::RenderAsTextShowLayerNesting | WebCore::RenderAsTextShowCompositedLayers | WebCore::RenderAsTextShowAddresses | WebCore::RenderAsTextShowIDAndClass | WebCore::RenderAsTextDontUpdateLayout | WebCore::RenderAsTextShowLayoutState);
+    if (blink::LocalFrame* frame = layer->renderer()->frame()) {
+        WTF::String output = externalRepresentation(frame, blink::RenderAsTextShowAllLayers | blink::RenderAsTextShowLayerNesting | blink::RenderAsTextShowCompositedLayers | blink::RenderAsTextShowAddresses | blink::RenderAsTextShowIDAndClass | blink::RenderAsTextDontUpdateLayout | blink::RenderAsTextShowLayoutState);
         fprintf(stderr, "%s\n", output.utf8().data());
     }
 }
 
-void showLayerTree(const WebCore::RenderObject* renderer)
+void showLayerTree(const blink::RenderObject* renderer)
 {
     if (!renderer)
         return;

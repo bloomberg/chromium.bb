@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/parser/BackgroundHTMLInputStream.h"
 
-namespace WebCore {
+namespace blink {
 
 BackgroundHTMLInputStream::BackgroundHTMLInputStream()
     : m_firstValidCheckpointIndex(0)

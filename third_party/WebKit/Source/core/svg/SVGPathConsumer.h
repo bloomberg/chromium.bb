@@ -28,7 +28,7 @@
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 enum PathCoordinateMode {
     AbsoluteCoordinates,
@@ -66,6 +66,6 @@ protected:
     virtual ~SVGPathConsumer() { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPathConsumer_h

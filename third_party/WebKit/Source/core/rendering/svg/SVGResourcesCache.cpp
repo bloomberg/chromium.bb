@@ -26,7 +26,7 @@
 #include "core/rendering/svg/SVGResourcesCycleSolver.h"
 #include "core/svg/SVGDocumentExtensions.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGResourcesCache::SVGResourcesCache()
 {

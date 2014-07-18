@@ -25,7 +25,7 @@
 #include "platform/plugins/PluginData.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 DOMPluginArray::DOMPluginArray(LocalFrame* frame)
     : DOMWindowProperty(frame)
@@ -97,4 +97,4 @@ PluginData* DOMPluginArray::pluginData() const
     return page->pluginData();
 }
 
-} // namespace WebCore
+} // namespace blink

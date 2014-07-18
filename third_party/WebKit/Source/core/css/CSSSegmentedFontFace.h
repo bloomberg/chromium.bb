@@ -35,7 +35,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSFontFace;
 class CSSFontSelector;
@@ -88,6 +88,6 @@ private:
     FontFaceList::iterator m_firstNonCssConnectedFace;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSSegmentedFontFace_h

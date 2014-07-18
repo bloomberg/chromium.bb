@@ -28,7 +28,7 @@
 
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLTableCaptionElement FINAL : public HTMLElement {
 public:

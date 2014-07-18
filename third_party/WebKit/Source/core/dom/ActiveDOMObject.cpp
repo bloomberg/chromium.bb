@@ -29,7 +29,7 @@
 
 #include "core/dom/ExecutionContext.h"
 
-namespace WebCore {
+namespace blink {
 
 ActiveDOMObject::ActiveDOMObject(ExecutionContext* executionContext)
     : ContextLifecycleObserver(executionContext, ActiveDOMObjectType)
@@ -99,4 +99,4 @@ void ActiveDOMObject::didMoveToNewExecutionContext(ExecutionContext* context)
     resume();
 }
 
-} // namespace WebCore
+} // namespace blink

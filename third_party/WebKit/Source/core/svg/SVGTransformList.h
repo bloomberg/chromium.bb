@@ -35,7 +35,7 @@
 #include "core/svg/SVGTransform.h"
 #include "core/svg/properties/SVGListPropertyHelper.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGTransformListTearOff;
 
@@ -76,6 +76,6 @@ private:
     bool parseInternal(const CharType*& ptr, const CharType* end);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGTransformList_h

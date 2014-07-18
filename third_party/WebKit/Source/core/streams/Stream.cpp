@@ -35,7 +35,7 @@
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"
 
-namespace WebCore {
+namespace blink {
 
 Stream::Stream(ExecutionContext* context, const String& mediaType)
     : ActiveDOMObject(context)
@@ -87,4 +87,4 @@ void Stream::stop()
     abort();
 }
 
-} // namespace WebCore
+} // namespace blink

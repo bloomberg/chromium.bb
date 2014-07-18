@@ -31,7 +31,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLTrackElement;
 class LoadableTextTrack;
@@ -76,6 +76,6 @@ private:
     KURL m_url;
     bool m_isDefault;
 };
-} // namespace WebCore
+} // namespace blink
 
 #endif

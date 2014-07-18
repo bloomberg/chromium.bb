@@ -33,7 +33,7 @@
 #include "core/dom/TreeScope.h"
 #include "wtf/DoublyLinkedList.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class ElementShadow;

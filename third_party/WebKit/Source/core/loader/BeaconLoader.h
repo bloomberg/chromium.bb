@@ -13,7 +13,7 @@ namespace WTF {
 class ArrayBufferView;
 }
 
-namespace WebCore {
+namespace blink {
 
 class Blob;
 class DOMFormData;
@@ -38,6 +38,6 @@ private:
     static void issueRequest(LocalFrame*, ResourceRequest&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BeaconLoader_h

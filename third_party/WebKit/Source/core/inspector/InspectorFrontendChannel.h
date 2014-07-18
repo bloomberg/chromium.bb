@@ -29,7 +29,7 @@
 #include "platform/JSONValues.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class InspectorFrontendChannel {
 public:
@@ -38,6 +38,6 @@ public:
     virtual void flush() = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InspectorFrontendChannel_h)

@@ -29,7 +29,7 @@
 #include "core/dom/Element.h"
 #include "core/fetch/ScriptResource.h"
 
-namespace WebCore {
+namespace blink {
 
 PendingScript::~PendingScript()
 {

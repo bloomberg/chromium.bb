@@ -10,7 +10,7 @@
 #include "core/css/RemoteFontFaceSource.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGFontElement;
 
@@ -30,7 +30,7 @@ private:
     RefPtrWillBeMember<SVGFontElement> m_externalSVGFontElement;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(SVG_FONTS)
 #endif

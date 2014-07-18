@@ -36,7 +36,7 @@
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 static const float& compareIgnoringAuto(const float& value1, const float& value2, const float& (*compare) (const float&, const float&))
 {
@@ -231,7 +231,7 @@ void ViewportDescription::reportMobilePageStats(const LocalFrame* mainFrame) con
     }
 
     if (isMetaViewportType()) {
-        if (maxWidth.type() == WebCore::Fixed) {
+        if (maxWidth.type() == blink::Fixed) {
             blink::Platform::current()->histogramEnumeration("Viewport.MetaTagType", ConstantWidth, TypeCount);
 
             if (mainFrame->view()) {
@@ -245,7 +245,7 @@ void ViewportDescription::reportMobilePageStats(const LocalFrame* mainFrame) con
                 blink::Platform::current()->histogramSparse("Viewport.OverviewZoom", overviewZoomPercent);
             }
 
-        } else if (maxWidth.type() == WebCore::DeviceWidth || maxWidth.type() == WebCore::ExtendToZoom) {
+        } else if (maxWidth.type() == blink::DeviceWidth || maxWidth.type() == blink::ExtendToZoom) {
             blink::Platform::current()->histogramEnumeration("Viewport.MetaTagType", DeviceWidth, TypeCount);
         } else {
             // Overflow bucket for cases we may be unaware of.
@@ -259,4 +259,4 @@ void ViewportDescription::reportMobilePageStats(const LocalFrame* mainFrame) con
 #endif
 }
 
-} // namespace WebCore
+} // namespace blink

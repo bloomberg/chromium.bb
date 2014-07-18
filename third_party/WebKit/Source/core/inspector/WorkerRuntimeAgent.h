@@ -34,7 +34,7 @@
 #include "core/inspector/InspectorRuntimeAgent.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class WorkerGlobalScope;
 
@@ -64,6 +64,6 @@ private:
     bool m_paused;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InspectorPagerAgent_h)

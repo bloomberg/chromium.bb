@@ -44,7 +44,7 @@
 #include <stdio.h>
 #endif
 
-namespace WebCore {
+namespace blink {
 
 VisibleSelection::VisibleSelection()
     : m_affinity(DOWNSTREAM)
@@ -848,16 +848,16 @@ void VisibleSelection::showTreeForThis() const
 
 #endif
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 
-void showTree(const WebCore::VisibleSelection& sel)
+void showTree(const blink::VisibleSelection& sel)
 {
     sel.showTreeForThis();
 }
 
-void showTree(const WebCore::VisibleSelection* sel)
+void showTree(const blink::VisibleSelection* sel)
 {
     if (sel)
         sel->showTreeForThis();

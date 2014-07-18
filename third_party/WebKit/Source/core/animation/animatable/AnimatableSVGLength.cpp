@@ -33,7 +33,7 @@
 
 #include "platform/FloatConversion.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableSVGLength::interpolateTo(const AnimatableValue* value, double fraction) const
 {
@@ -45,4 +45,4 @@ bool AnimatableSVGLength::equalTo(const AnimatableValue* value) const
     return *m_length == *toAnimatableSVGLength(value)->m_length;
 }
 
-} // namespace WebCore
+} // namespace blink

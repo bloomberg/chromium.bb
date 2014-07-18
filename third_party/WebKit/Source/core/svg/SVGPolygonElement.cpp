@@ -22,7 +22,7 @@
 
 #include "core/svg/SVGPolygonElement.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGPolygonElement::SVGPolygonElement(Document& document)
     : SVGPolyElement(SVGNames::polygonTag, document)

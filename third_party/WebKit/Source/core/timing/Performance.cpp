@@ -41,7 +41,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 static const size_t defaultResourceTimingBufferSize = 150;
 
@@ -284,4 +284,4 @@ void Performance::trace(Visitor* visitor)
     EventTargetWithInlineData::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

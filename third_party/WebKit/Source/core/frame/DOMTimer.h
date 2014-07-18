@@ -34,7 +34,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 
@@ -77,6 +77,6 @@ private:
     RefPtr<UserGestureToken> m_userGestureToken;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMTimer_h

@@ -32,7 +32,7 @@
 
 #include "core/inspector/WorkerConsoleAgent.h"
 
-namespace WebCore {
+namespace blink {
 
 WorkerConsoleAgent::WorkerConsoleAgent(InspectorTimelineAgent* timelineAgent, InjectedScriptManager* injectedScriptManager)
     : InspectorConsoleAgent(timelineAgent, injectedScriptManager)
@@ -48,4 +48,4 @@ void WorkerConsoleAgent::addInspectedNode(ErrorString* error, int)
     *error = "addInspectedNode is not supported for workers";
 }
 
-} // namespace WebCore
+} // namespace blink

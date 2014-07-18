@@ -27,7 +27,7 @@
 
 #include "core/rendering/style/BorderValue.h"
 
-namespace WebCore {
+namespace blink {
 
 class OutlineValue : public BorderValue {
 friend class RenderStyle;
@@ -54,6 +54,6 @@ private:
     int m_offset;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // OutlineValue_h

@@ -7,7 +7,7 @@
 
 #include "core/events/Event.h"
 
-namespace WebCore {
+namespace blink {
 
 struct AnimationPlayerEventInit : public EventInit {
     AnimationPlayerEventInit();
@@ -49,6 +49,6 @@ private:
     double m_timelineTime;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimationPlayerEvent_h

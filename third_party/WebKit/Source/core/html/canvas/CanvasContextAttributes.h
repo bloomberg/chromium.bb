@@ -29,7 +29,7 @@
 
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 // A base class for any attributes that are needed which would affect
 // the creation of the Canvas's rendering context.
@@ -42,6 +42,6 @@ class CanvasContextAttributes : public RefCounted<CanvasContextAttributes> {
     CanvasContextAttributes();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CanvasContextAttributes_h

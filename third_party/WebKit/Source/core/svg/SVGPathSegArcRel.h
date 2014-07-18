@@ -24,7 +24,7 @@
 
 #include "core/svg/SVGPathSegArc.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathSegArcRel FINAL : public SVGPathSegArc {
 public:
@@ -44,6 +44,6 @@ private:
     virtual String pathSegTypeAsLetter() const OVERRIDE { return "a"; }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

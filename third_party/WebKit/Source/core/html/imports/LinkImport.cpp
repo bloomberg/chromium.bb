@@ -39,7 +39,7 @@
 #include "core/html/imports/HTMLImportTreeRoot.h"
 #include "core/html/imports/HTMLImportsController.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtrWillBeRawPtr<LinkImport> LinkImport::create(HTMLLinkElement* owner)
 {
@@ -147,4 +147,4 @@ void LinkImport::trace(Visitor* visitor)
     LinkResource::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

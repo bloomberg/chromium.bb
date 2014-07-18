@@ -74,17 +74,17 @@ const double progressAnimationNumFrames = 256;
 
 @interface WebCoreRenderThemeNotificationObserver : NSObject
 {
-    WebCore::RenderTheme *_theme;
+    blink::RenderTheme *_theme;
 }
 
-- (id)initWithTheme:(WebCore::RenderTheme *)theme;
+- (id)initWithTheme:(blink::RenderTheme *)theme;
 - (void)systemColorsDidChange:(NSNotification *)notification;
 
 @end
 
 @implementation WebCoreRenderThemeNotificationObserver
 
-- (id)initWithTheme:(WebCore::RenderTheme *)theme
+- (id)initWithTheme:(blink::RenderTheme *)theme
 {
     if (!(self = [super init]))
         return nil;
@@ -147,7 +147,7 @@ void _NSDrawCarbonThemeBezel(NSRect frame, BOOL enabled, BOOL flipped);
 void _NSDrawCarbonThemeListBox(NSRect frame, BOOL enabled, BOOL flipped, BOOL always_yes);
 }
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -1910,4 +1910,4 @@ bool RenderThemeChromiumMac::shouldUseFallbackTheme(RenderStyle* style) const
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

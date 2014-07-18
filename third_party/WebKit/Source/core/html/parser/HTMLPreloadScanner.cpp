@@ -42,7 +42,7 @@
 #include "platform/TraceEvent.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

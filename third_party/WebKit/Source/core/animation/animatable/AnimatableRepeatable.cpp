@@ -33,7 +33,7 @@
 
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 bool AnimatableRepeatable::usesDefaultInterpolationWith(const AnimatableValue* value) const
 {
@@ -97,4 +97,4 @@ void AnimatableRepeatable::trace(Visitor* visitor)
     AnimatableValue::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

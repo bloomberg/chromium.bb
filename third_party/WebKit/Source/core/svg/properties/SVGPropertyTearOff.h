@@ -35,7 +35,7 @@
 #include "core/svg/properties/SVGProperty.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 enum PropertyIsAnimValType {
     PropertyIsNotAnimVal,

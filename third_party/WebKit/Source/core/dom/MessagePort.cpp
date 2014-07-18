@@ -40,7 +40,7 @@
 #include "wtf/Functional.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<MessagePort> MessagePort::create(ExecutionContext& executionContext)
 {
@@ -256,4 +256,4 @@ PassOwnPtrWillBeRawPtr<MessagePortArray> MessagePort::entanglePorts(ExecutionCon
     return portArray.release();
 }
 
-} // namespace WebCore
+} // namespace blink

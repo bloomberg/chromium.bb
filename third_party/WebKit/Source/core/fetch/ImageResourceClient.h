@@ -25,7 +25,7 @@
 
 #include "core/fetch/ResourceClient.h"
 
-namespace WebCore {
+namespace blink {
 
 class ImageResource;
 class IntRect;

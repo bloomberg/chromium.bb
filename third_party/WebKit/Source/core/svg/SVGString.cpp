@@ -22,7 +22,7 @@
 
 #include "core/svg/SVGAnimateElement.h"
 
-namespace WebCore {
+namespace blink {
 
 void SVGString::add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
 {

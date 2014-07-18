@@ -25,7 +25,7 @@
 
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLParamElement FINAL : public HTMLElement {
 public:
@@ -42,6 +42,6 @@ private:
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

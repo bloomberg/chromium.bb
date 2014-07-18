@@ -24,7 +24,7 @@
 #include "core/dom/Document.h"
 #include "core/svg/SVGAnimatedString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 
@@ -62,6 +62,6 @@ private:
     RefPtr<SVGAnimatedString> m_href;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGURIReference_h

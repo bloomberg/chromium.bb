@@ -10,7 +10,7 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/ShadowList.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 

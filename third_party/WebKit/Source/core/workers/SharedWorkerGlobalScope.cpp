@@ -39,7 +39,7 @@
 #include "core/workers/WorkerClients.h"
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<MessageEvent> createConnectEvent(PassRefPtrWillBeRawPtr<MessagePort> prpPort)
 {
@@ -89,4 +89,4 @@ void SharedWorkerGlobalScope::trace(Visitor* visitor)
     WorkerGlobalScope::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

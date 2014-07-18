@@ -34,7 +34,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 static inline void calculateShadowExtent(const ShadowList* shadowList, float additionalOutlineSize, float& shadowLeft, float& shadowRight, float& shadowTop, float& shadowBottom)
 {
@@ -112,4 +112,4 @@ PassOwnPtr<DrawLooperBuilder> ShadowList::createDrawLooper(DrawLooperBuilder::Sh
     return drawLooperBuilder.release();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -30,7 +30,7 @@
 #include "core/xml/XPathExpressionNode.h"
 #include "core/xml/XPathNodeSet.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace XPath {
 

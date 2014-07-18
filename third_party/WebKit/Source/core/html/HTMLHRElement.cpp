@@ -29,7 +29,7 @@
 #include "core/css/CSSValuePool.h"
 #include "core/css/StylePropertySet.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

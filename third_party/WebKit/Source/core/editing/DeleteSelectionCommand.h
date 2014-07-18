@@ -28,7 +28,7 @@
 
 #include "core/editing/CompositeEditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class EditingStyle;
 
@@ -99,6 +99,6 @@ private:
     RefPtrWillBeMember<Node> m_temporaryPlaceholder;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DeleteSelectionCommand_h

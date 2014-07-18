@@ -34,7 +34,7 @@
 #include "core/frame/ConsoleTypes.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class WorkerGlobalScope;
 
@@ -65,6 +65,6 @@ public:
     virtual void willDestroyWorkerGlobalScope() = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerReportingProxy_h

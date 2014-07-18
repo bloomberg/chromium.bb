@@ -36,7 +36,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class InspectorFrontend;
 class InspectorCompositeState;
@@ -103,6 +103,6 @@ protected:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InspectorBaseAgent_h)

@@ -7,7 +7,7 @@
 
 #include "core/css/MediaValues.h"
 
-namespace WebCore {
+namespace blink {
 
 class MediaValuesCached FINAL : public MediaValues {
 public:

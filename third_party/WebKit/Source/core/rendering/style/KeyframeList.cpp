@@ -26,7 +26,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/rendering/RenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 KeyframeList::~KeyframeList()
 {
@@ -78,4 +78,4 @@ void KeyframeList::insert(const KeyframeValue& keyframe)
     }
 }
 
-} // namespace WebCore
+} // namespace blink

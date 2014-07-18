@@ -37,7 +37,7 @@
 #include "wtf/ListHashSet.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class FontResource;
 class ImageResource;

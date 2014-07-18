@@ -34,7 +34,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ClientRect;
 
@@ -61,6 +61,6 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<ClientRect> > m_list;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ClientRectList_h

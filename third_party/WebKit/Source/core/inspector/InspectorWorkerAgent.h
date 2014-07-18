@@ -35,7 +35,7 @@
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 
-namespace WebCore {
+namespace blink {
 class InspectorFrontend;
 class InstrumentingAgents;
 class JSONObject;
@@ -83,6 +83,6 @@ private:
     DedicatedWorkers m_dedicatedWorkers;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InspectorWorkerAgent_h)

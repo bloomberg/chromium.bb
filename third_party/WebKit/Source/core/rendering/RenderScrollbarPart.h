@@ -29,7 +29,7 @@
 #include "core/rendering/RenderBlock.h"
 #include "platform/scroll/ScrollTypes.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderScrollbar;
 
@@ -91,6 +91,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderScrollbarPart, isRenderScrollbarPart());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderScrollbarPart_h

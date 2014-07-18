@@ -45,7 +45,7 @@
 #include "wtf/PassOwnPtr.h"
 #include <limits>
 
-namespace WebCore {
+namespace blink {
 
 using blink::WebLocalizedString;
 using namespace HTMLNames;
@@ -292,4 +292,4 @@ bool NumberInputType::supportsSelectionAPI() const
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

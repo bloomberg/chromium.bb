@@ -26,7 +26,7 @@
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<MorphologyOperatorType>()
 {
@@ -147,4 +147,4 @@ PassRefPtr<FilterEffect> SVGFEMorphologyElement::build(SVGFilterBuilder* filterB
     return effect.release();
 }
 
-} // namespace WebCore
+} // namespace blink

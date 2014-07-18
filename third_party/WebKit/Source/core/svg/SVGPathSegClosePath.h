@@ -23,7 +23,7 @@
 
 #include "core/svg/SVGPathSegWithContext.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathSegClosePath FINAL : public SVGPathSegWithContext {
 public:
@@ -43,6 +43,6 @@ private:
     virtual String pathSegTypeAsLetter() const OVERRIDE { return "Z"; }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

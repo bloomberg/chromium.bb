@@ -33,7 +33,7 @@
 
 #include "core/html/forms/BaseClickableWithKeyInputType.h"
 
-namespace WebCore {
+namespace blink {
 
 // Base of button, file, image, reset, and submit types.
 class BaseButtonInputType : public BaseClickableWithKeyInputType {
@@ -50,6 +50,6 @@ private:
     virtual void setValue(const String&, bool, TextFieldEventBehavior) OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BaseButtonInputType_h

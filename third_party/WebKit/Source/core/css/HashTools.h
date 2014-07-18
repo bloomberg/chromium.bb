@@ -20,7 +20,7 @@
 #ifndef HashTools_h
 #define HashTools_h
 
-namespace WebCore {
+namespace blink {
 
 struct Property {
     int nameOffset;
@@ -35,6 +35,6 @@ struct Value {
 const Property* findProperty(register const char* str, register unsigned len);
 const Value* findValue(register const char* str, register unsigned len);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HashTools_h

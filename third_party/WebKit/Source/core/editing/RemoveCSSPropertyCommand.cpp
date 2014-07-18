@@ -32,7 +32,7 @@
 #include "core/dom/Element.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 RemoveCSSPropertyCommand::RemoveCSSPropertyCommand(Document& document, PassRefPtrWillBeRawPtr<Element> element, CSSPropertyID property)
     : SimpleEditCommand(document)
@@ -72,4 +72,4 @@ void RemoveCSSPropertyCommand::trace(Visitor* visitor)
     SimpleEditCommand::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

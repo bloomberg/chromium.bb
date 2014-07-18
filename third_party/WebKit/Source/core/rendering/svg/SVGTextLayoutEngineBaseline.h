@@ -23,7 +23,7 @@
 #include "core/rendering/style/SVGRenderStyleDefs.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class Font;
 class RenderObject;
@@ -48,6 +48,6 @@ private:
     const Font& m_font;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

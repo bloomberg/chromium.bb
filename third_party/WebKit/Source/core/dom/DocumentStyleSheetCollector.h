@@ -32,7 +32,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSStyleSheet;
 class Document;
@@ -75,6 +75,6 @@ public:
     ImportedDocumentStyleSheetCollector(DocumentStyleSheetCollector&, WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DocumentStyleSheetCollector_h

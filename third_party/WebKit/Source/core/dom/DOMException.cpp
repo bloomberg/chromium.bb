@@ -31,7 +31,7 @@
 
 #include "core/dom/ExceptionCode.h"
 
-namespace WebCore {
+namespace blink {
 
 static const struct CoreException {
     const char* const name;
@@ -139,4 +139,4 @@ String DOMException::getErrorMessage(ExceptionCode ec)
     return entry->message;
 }
 
-} // namespace WebCore
+} // namespace blink

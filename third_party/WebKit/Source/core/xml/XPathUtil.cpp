@@ -31,7 +31,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 namespace XPath {
 
 bool isRootDomNode(Node* node)

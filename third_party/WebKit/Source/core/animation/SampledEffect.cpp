@@ -7,7 +7,7 @@
 
 #include "core/animation/interpolation/StyleInterpolation.h"
 
-namespace WebCore {
+namespace blink {
 
 SampledEffect::SampledEffect(Animation* animation, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > interpolations)
     : m_animation(animation)
@@ -63,4 +63,4 @@ void SampledEffect::trace(Visitor* visitor)
 #endif
 }
 
-} // namespace WebCore
+} // namespace blink

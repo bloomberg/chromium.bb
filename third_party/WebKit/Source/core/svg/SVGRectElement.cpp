@@ -26,7 +26,7 @@
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGLength.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGRectElement::SVGRectElement(Document& document)
     : SVGGeometryElement(SVGNames::rectTag, document)

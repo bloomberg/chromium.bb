@@ -27,7 +27,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSRule;
 class CSSStyleSheet;
@@ -114,6 +114,6 @@ private:
     RawPtrWillBeMember<Rule> m_rule;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSRuleList_h

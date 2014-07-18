@@ -12,7 +12,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class NullExecutionContext FINAL : public RefCountedWillBeGarbageCollectedFinalized<NullExecutionContext>, public SecurityContext, public ExecutionContext {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NullExecutionContext);
@@ -52,6 +52,6 @@ private:
     KURL m_dummyURL;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NullExecutionContext_h

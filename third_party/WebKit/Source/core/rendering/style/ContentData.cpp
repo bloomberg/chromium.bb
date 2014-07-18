@@ -30,7 +30,7 @@
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtr<ContentData> ContentData::create(PassRefPtr<StyleImage> image)
 {
@@ -98,4 +98,4 @@ RenderObject* QuoteContentData::createRenderer(Document& doc, RenderStyle* pseud
     return renderer;
 }
 
-} // namespace WebCore
+} // namespace blink

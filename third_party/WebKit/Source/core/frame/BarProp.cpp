@@ -33,7 +33,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 BarProp::BarProp(LocalFrame* frame, Type type)
     : DOMWindowProperty(frame)
@@ -67,4 +67,4 @@ bool BarProp::visible() const
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

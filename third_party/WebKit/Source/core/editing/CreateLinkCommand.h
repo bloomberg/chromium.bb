@@ -28,7 +28,7 @@
 
 #include "core/editing/CompositeEditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class CreateLinkCommand FINAL : public CompositeEditCommand {
 public:
@@ -46,6 +46,6 @@ private:
     String m_url;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CreateLinkCommand_h

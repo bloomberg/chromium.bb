@@ -36,7 +36,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class ScriptValue;
@@ -82,7 +82,7 @@ public:
     virtual void didReceiveV8AsyncTaskEvent(ExecutionContext*, const String& eventType, const String& eventName, int id) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // ScriptDebugListener_h

@@ -40,7 +40,7 @@
 #include "platform/geometry/FloatRoundedRect.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsBorderValue {
     RGBA32 m_color;
@@ -1693,4 +1693,4 @@ float calcBorderRadiiConstraintScaleFor(const FloatRect& rect, const FloatRounde
     return factor;
 }
 
-} // namespace WebCore
+} // namespace blink

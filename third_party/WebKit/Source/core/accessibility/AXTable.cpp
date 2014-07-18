@@ -44,7 +44,7 @@
 #include "core/html/HTMLTableSectionElement.h"
 #include "core/rendering/RenderTableCell.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -578,4 +578,4 @@ String AXTable::title() const
     return title;
 }
 
-} // namespace WebCore
+} // namespace blink

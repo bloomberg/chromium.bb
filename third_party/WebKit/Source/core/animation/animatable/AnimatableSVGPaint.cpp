@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/animation/animatable/AnimatableSVGPaint.h"
 
-namespace WebCore {
+namespace blink {
 
 bool AnimatableSVGPaint::usesDefaultInterpolationWith(const AnimatableValue* value) const
 {

@@ -35,7 +35,7 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/rendering/RenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -156,4 +156,4 @@ bool AXSliderThumb::computeAccessibilityIsIgnored() const
     return accessibilityIsIgnoredByDefault();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -29,7 +29,7 @@
 #include "core/svg/SVGPathByteStream.h"
 #include "wtf/WeakPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathSegArcAbs;
 class SVGPathSegArcRel;
@@ -111,6 +111,6 @@ private:
     RefPtr<SVGAnimatedPath> m_pathSegList;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

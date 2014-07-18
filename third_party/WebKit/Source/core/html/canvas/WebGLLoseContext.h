@@ -30,7 +30,7 @@
 #include "core/html/canvas/WebGLExtension.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebGLRenderingContextBase;
 
@@ -51,6 +51,6 @@ private:
     WebGLLoseContext(WebGLRenderingContextBase*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLLoseContext_h

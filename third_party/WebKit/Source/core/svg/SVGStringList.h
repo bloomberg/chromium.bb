@@ -35,7 +35,7 @@
 #include "core/svg/SVGString.h"
 #include "core/svg/properties/SVGPropertyHelper.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGStringListTearOff;
 
@@ -93,6 +93,6 @@ private:
     Vector<String> m_values;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGStringList_h

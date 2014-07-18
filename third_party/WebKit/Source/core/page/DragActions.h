@@ -28,7 +28,7 @@
 
 #include <limits.h>
 
-namespace WebCore {
+namespace blink {
 
     typedef enum {
         DragDestinationActionNone    = 0,

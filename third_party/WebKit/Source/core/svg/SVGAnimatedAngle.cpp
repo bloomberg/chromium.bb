@@ -35,7 +35,7 @@
 #include "core/svg/SVGAngleTearOff.h"
 #include "core/svg/SVGMarkerElement.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGAnimatedAngle::SVGAnimatedAngle(SVGMarkerElement* contextElement)
     : SVGAnimatedProperty<SVGAngle>(contextElement, SVGNames::orientAttr, SVGAngle::create())

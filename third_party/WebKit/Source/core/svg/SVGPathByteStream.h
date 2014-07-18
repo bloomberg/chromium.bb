@@ -24,7 +24,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 template<typename DataType>
 union ByteType {
@@ -68,6 +68,6 @@ private:
     Data m_data;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPathByteStream_h

@@ -32,7 +32,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class Clock;
 class ExceptionState;
@@ -130,6 +130,6 @@ private:
     double m_previousTimeupdateTime;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

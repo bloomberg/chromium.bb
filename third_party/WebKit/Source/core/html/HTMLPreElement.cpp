@@ -29,7 +29,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/frame/UseCounter.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

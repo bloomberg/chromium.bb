@@ -36,7 +36,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/Path.h"
 
-namespace WebCore {
+namespace blink {
 
 void BasicShapeCenterCoordinate::updateComputedLength()
 {

@@ -32,7 +32,7 @@
 #include "core/accessibility/AXTable.h"
 
 
-namespace WebCore {
+namespace blink {
 
 AXARIAGridRow::AXARIAGridRow(RenderObject* renderer)
     : AXTableRow(renderer)
@@ -70,4 +70,4 @@ AXObject* AXARIAGridRow::headerObject()
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink

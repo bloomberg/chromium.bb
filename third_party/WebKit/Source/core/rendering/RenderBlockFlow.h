@@ -41,7 +41,7 @@
 #include "core/rendering/line/TrailingObjects.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
-namespace WebCore {
+namespace blink {
 
 class MarginInfo;
 class LineBreaker;
@@ -489,6 +489,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderBlockFlow, isRenderBlockFlow());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderBlockFlow_h

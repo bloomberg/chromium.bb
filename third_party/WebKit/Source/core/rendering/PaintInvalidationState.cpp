@@ -11,7 +11,7 @@
 #include "core/rendering/svg/RenderSVGModelObject.h"
 #include "platform/Partitions.h"
 
-namespace WebCore {
+namespace blink {
 
 PaintInvalidationState::PaintInvalidationState(RenderObject& renderer)
     : m_clipped(false)
@@ -134,4 +134,4 @@ void PaintInvalidationState::applyClipIfNeeded(const RenderObject& renderer)
     m_paintOffset -= box.scrolledContentOffset();
 }
 
-} // namespace WebCore
+} // namespace blink

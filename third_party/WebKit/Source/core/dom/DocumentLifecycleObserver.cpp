@@ -29,7 +29,7 @@
 
 #include "core/dom/Document.h"
 
-namespace WebCore {
+namespace blink {
 
 template<> void observerContext(Document* context, LifecycleObserver<Document>* observer)
 {
@@ -50,4 +50,4 @@ DocumentLifecycleObserver::~DocumentLifecycleObserver()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

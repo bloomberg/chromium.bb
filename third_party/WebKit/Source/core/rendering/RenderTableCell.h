@@ -30,7 +30,7 @@
 #include "core/rendering/RenderTableSection.h"
 #include "platform/LengthFunctions.h"
 
-namespace WebCore {
+namespace blink {
 
 static const unsigned unsetColumnIndex = 0x1FFFFFFF;
 static const unsigned maxColumnIndex = 0x1FFFFFFE; // 536,870,910
@@ -316,6 +316,6 @@ inline RenderTableCell* RenderTableRow::lastCell() const
     return toRenderTableCell(children()->lastChild());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderTableCell_h

@@ -33,7 +33,7 @@
 #include "core/testing/InternalSettings.h"
 #include "core/testing/Internals.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace WebCoreTestSupport {
 

@@ -36,7 +36,7 @@
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMTimer.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace DOMWindowTimers {
 
@@ -64,4 +64,4 @@ void clearInterval(EventTarget& eventTarget, int timeoutID)
 
 } // namespace DOMWindowTimers
 
-} // namespace WebCore
+} // namespace blink

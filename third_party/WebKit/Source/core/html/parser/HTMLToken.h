@@ -31,7 +31,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class DoctypeData {
     WTF_MAKE_NONCOPYABLE(DoctypeData);

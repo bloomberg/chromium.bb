@@ -26,7 +26,7 @@
 #include "core/editing/MarkupAccumulator.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 String XMLSerializer::serializeToString(Node* node, ExceptionState& exceptionState)
 {
@@ -39,4 +39,4 @@ String XMLSerializer::serializeToString(Node* node, ExceptionState& exceptionSta
     return accumulator.serializeNodes(*node, IncludeNode);
 }
 
-} // namespace WebCore
+} // namespace blink

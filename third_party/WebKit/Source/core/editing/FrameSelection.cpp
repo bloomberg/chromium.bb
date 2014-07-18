@@ -76,7 +76,7 @@
 
 #define EDIT_DEBUG 0
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -478,7 +478,7 @@ void FrameSelection::updateSelectionIfNeeded(const Position& base, const Positio
 
 TextDirection FrameSelection::directionOfEnclosingBlock()
 {
-    return WebCore::directionOfEnclosingBlock(m_selection.extent());
+    return blink::directionOfEnclosingBlock(m_selection.extent());
 }
 
 TextDirection FrameSelection::directionOfSelection()
@@ -1891,12 +1891,12 @@ void FrameSelection::trace(Visitor* visitor)
 
 #ifndef NDEBUG
 
-void showTree(const WebCore::FrameSelection& sel)
+void showTree(const blink::FrameSelection& sel)
 {
     sel.showTreeForThis();
 }
 
-void showTree(const WebCore::FrameSelection* sel)
+void showTree(const blink::FrameSelection* sel)
 {
     if (sel)
         sel->showTreeForThis();

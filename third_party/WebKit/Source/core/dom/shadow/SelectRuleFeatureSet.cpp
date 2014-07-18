@@ -35,7 +35,7 @@
 
 #include "wtf/BitVector.h"
 
-namespace WebCore {
+namespace blink {
 
 SelectRuleFeatureSet::SelectRuleFeatureSet()
     : m_featureFlags(0)

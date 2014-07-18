@@ -29,7 +29,7 @@
 #include "core/html/forms/StepRange.h"
 #include "platform/FileChooser.h"
 
-namespace WebCore {
+namespace blink {
 
 class DragData;
 class ExceptionState;

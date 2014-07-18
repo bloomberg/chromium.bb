@@ -47,7 +47,7 @@
 #include "wtf/unicode/CharacterNames.h"
 #include <stdio.h>
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -1295,16 +1295,16 @@ void Position::showTreeForThis() const
 
 
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 
-void showTree(const WebCore::Position& pos)
+void showTree(const blink::Position& pos)
 {
     pos.showTreeForThis();
 }
 
-void showTree(const WebCore::Position* pos)
+void showTree(const blink::Position* pos)
 {
     if (pos)
         pos->showTreeForThis();

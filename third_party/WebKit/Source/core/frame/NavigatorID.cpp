@@ -41,7 +41,7 @@
 #define WEBCORE_NAVIGATOR_PRODUCT "Gecko"
 #endif // ifndef WEBCORE_NAVIGATOR_PRODUCT
 
-namespace WebCore {
+namespace blink {
 
 String NavigatorID::appCodeName()
 {
@@ -82,4 +82,4 @@ String NavigatorID::product()
     return WEBCORE_NAVIGATOR_PRODUCT;
 }
 
-} // namespace WebCore
+} // namespace blink

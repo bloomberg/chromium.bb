@@ -33,7 +33,7 @@
 
 #include "core/page/NetworkStateNotifier.h"
 
-namespace WebCore {
+namespace blink {
 
 class NavigatorOnLine {
 public:

@@ -41,7 +41,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class FetchRequest;
 class ExecutionContext;
@@ -86,6 +86,6 @@ private:
     LoaderList m_loaders;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLImportsController_h

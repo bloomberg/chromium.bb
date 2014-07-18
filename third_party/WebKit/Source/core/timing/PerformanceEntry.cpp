@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/timing/PerformanceEntry.h"
 
-namespace WebCore {
+namespace blink {
 
 PerformanceEntry::PerformanceEntry(const String& name, const String& entryType, double startTime, double finishTime)
     : m_name(name)
@@ -66,4 +66,4 @@ double PerformanceEntry::duration() const
     return m_duration;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -44,7 +44,7 @@
 #include <stdio.h>
 #endif
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -795,17 +795,17 @@ void VisiblePosition::trace(Visitor* visitor)
     visitor->trace(m_deepPosition);
 }
 
-}  // namespace WebCore
+}  // namespace blink
 
 #ifndef NDEBUG
 
-void showTree(const WebCore::VisiblePosition* vpos)
+void showTree(const blink::VisiblePosition* vpos)
 {
     if (vpos)
         vpos->showTreeForThis();
 }
 
-void showTree(const WebCore::VisiblePosition& vpos)
+void showTree(const blink::VisiblePosition& vpos)
 {
     vpos.showTreeForThis();
 }

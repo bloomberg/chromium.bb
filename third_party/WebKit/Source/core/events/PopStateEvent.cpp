@@ -30,7 +30,7 @@
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/frame/History.h"
 
-namespace WebCore {
+namespace blink {
 
 PopStateEvent::PopStateEvent()
     : Event(EventTypeNames::popstate, false, true)
@@ -85,4 +85,4 @@ void PopStateEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

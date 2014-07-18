@@ -29,7 +29,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
-namespace WebCore {
+namespace blink {
 
 // NOTEs
 //  1) EditingMacBehavior comprises builds on Mac;
@@ -132,4 +132,4 @@ void Settings::setOpenGLMultisamplingEnabled(bool flag)
     invalidate(SettingsDelegate::MultisamplingChange);
 }
 
-} // namespace WebCore
+} // namespace blink

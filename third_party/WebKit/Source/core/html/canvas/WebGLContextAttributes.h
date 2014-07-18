@@ -32,7 +32,7 @@
 #include "public/platform/WebGraphicsContext3D.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Settings;
 
@@ -97,6 +97,6 @@ private:
     bool m_failIfMajorPerformanceCaveat;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLContextAttributes_h

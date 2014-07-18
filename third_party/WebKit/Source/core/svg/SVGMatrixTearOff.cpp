@@ -35,7 +35,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGTransformTearOff.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGMatrixTearOff::SVGMatrixTearOff(const AffineTransform& staticValue)
     : m_staticValue(staticValue)

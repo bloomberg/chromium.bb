@@ -26,7 +26,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/rendering/RenderTextControl.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLInputElement;
 

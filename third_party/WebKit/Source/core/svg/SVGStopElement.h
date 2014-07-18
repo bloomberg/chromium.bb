@@ -25,7 +25,7 @@
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGStopElement FINAL : public SVGElement {
 public:
@@ -48,6 +48,6 @@ private:
     RefPtr<SVGAnimatedNumber> m_offset;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -31,7 +31,7 @@
 
 #include "core/css/CSSValue.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSAspectRatioValue : public CSSValue {
 public:

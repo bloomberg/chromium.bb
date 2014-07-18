@@ -10,7 +10,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/rendering/RenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<MediaValues> MediaValuesCached::create()
 {

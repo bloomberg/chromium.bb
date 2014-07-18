@@ -24,7 +24,7 @@
 #include "core/svg/SVGAnimationElement.h"
 #include "platform/graphics/Path.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGAnimateMotionElement FINAL : public SVGAnimationElement {
 public:
@@ -71,6 +71,6 @@ private:
     Path m_animationPath;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGAnimateMotionElement_h

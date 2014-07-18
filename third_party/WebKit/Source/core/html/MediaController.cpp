@@ -40,7 +40,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<MediaController> MediaController::create(ExecutionContext* context)
 {

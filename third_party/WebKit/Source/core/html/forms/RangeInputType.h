@@ -33,7 +33,7 @@
 
 #include "core/html/forms/InputType.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class SliderThumbElement;
@@ -78,6 +78,6 @@ private:
     Vector<Decimal> m_tickMarkValues;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RangeInputType_h

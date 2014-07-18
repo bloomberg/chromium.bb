@@ -32,7 +32,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 
-namespace WebCore {
+namespace blink {
 
 class StyleSheetContents;
 
@@ -222,4 +222,4 @@ void ScopedStyleTree::remove(const ContainerNode* scopingNode)
     m_authorStyles.remove(scopingNode);
 }
 
-} // namespace WebCore
+} // namespace blink

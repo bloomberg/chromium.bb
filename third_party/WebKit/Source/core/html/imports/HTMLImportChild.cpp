@@ -40,7 +40,7 @@
 #include "core/html/imports/HTMLImportTreeRoot.h"
 #include "core/html/imports/HTMLImportsController.h"
 
-namespace WebCore {
+namespace blink {
 
 HTMLImportChild::HTMLImportChild(const KURL& url, HTMLImportLoader* loader, SyncMode sync)
     : HTMLImport(sync)
@@ -231,4 +231,4 @@ void HTMLImportChild::trace(Visitor* visitor)
     HTMLImport::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

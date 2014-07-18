@@ -27,7 +27,7 @@
 #include "core/svg/SVGElement.h"
 #include "wtf/WeakPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGFontElement;
 class StyleRuleFontFace;
@@ -72,7 +72,7 @@ private:
     WeakPtrFactory<SVGFontFaceElement> m_weakFactory;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(SVG_FONTS)
 #endif

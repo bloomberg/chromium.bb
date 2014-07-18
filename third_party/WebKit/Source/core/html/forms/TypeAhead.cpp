@@ -33,7 +33,7 @@
 
 using namespace WTF::Unicode;
 
-namespace WebCore {
+namespace blink {
 
 TypeAhead::TypeAhead(TypeAheadDataSource* dataSource)
     : m_dataSource(dataSource)
@@ -119,4 +119,4 @@ int TypeAhead::handleEvent(KeyboardEvent* event, MatchModeFlags matchMode)
     return -1;
 }
 
-} // namespace WebCore
+} // namespace blink

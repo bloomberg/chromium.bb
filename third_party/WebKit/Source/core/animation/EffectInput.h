@@ -8,7 +8,7 @@
 #include "core/animation/AnimationEffect.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimationEffect;
 class Dictionary;
@@ -20,6 +20,6 @@ public:
     static PassRefPtrWillBeRawPtr<AnimationEffect> convert(Element*, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -30,7 +30,7 @@
 #include "core/xml/XPathExpressionNode.h"
 #include "core/xml/XPathNodeSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class Node;
 
@@ -123,6 +123,6 @@ void optimizeStepPair(Step*, Step*, bool& dropSecondStep);
 
 } // namespace XPath
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // XPathStep_h

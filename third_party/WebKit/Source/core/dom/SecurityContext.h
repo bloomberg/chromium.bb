@@ -31,7 +31,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class SecurityOrigin;
 class ContentSecurityPolicy;
@@ -64,6 +64,6 @@ private:
     RefPtr<ContentSecurityPolicy> m_contentSecurityPolicy;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SecurityContext_h

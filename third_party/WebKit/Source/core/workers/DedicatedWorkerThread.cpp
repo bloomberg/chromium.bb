@@ -36,7 +36,7 @@
 #include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<DedicatedWorkerThread> DedicatedWorkerThread::create(WorkerLoaderProxy& workerLoaderProxy, WorkerObjectProxy& workerObjectProxy, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
 {
@@ -66,4 +66,4 @@ void DedicatedWorkerThread::runEventLoop()
     WorkerThread::runEventLoop();
 }
 
-} // namespace WebCore
+} // namespace blink

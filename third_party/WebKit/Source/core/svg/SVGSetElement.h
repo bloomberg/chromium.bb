@@ -23,7 +23,7 @@
 
 #include "core/svg/SVGAnimateElement.h"
 
-namespace WebCore {
+namespace blink {
 
 // SVGAnimateElement implements superset of the functionality.
 class SVGSetElement FINAL : public SVGAnimateElement {
@@ -35,6 +35,6 @@ private:
     virtual void updateAnimationMode() OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

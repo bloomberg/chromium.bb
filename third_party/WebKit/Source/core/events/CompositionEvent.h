@@ -30,7 +30,7 @@
 #include "core/editing/CompositionUnderline.h"
 #include "core/events/UIEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 struct CompositionEventInit : UIEventInit {
     CompositionEventInit();
@@ -80,6 +80,6 @@ private:
     Vector<unsigned> m_segments;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CompositionEvent_h

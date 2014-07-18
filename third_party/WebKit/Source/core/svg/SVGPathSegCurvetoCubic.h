@@ -23,7 +23,7 @@
 
 #include "core/svg/SVGPathSegWithContext.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathSegCurvetoCubic : public SVGPathSegWithContext {
 public:
@@ -89,6 +89,6 @@ private:
     float m_y2;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

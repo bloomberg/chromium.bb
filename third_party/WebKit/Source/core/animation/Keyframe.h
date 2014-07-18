@@ -10,7 +10,7 @@
 #include "core/animation/AnimationNode.h"
 #include "core/animation/animatable/AnimatableValue.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef HashSet<CSSPropertyID> PropertySet;
 
@@ -64,7 +64,7 @@ public:
         virtual bool isStringPropertySpecificKeyframe() const { return false; }
 
         virtual PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const = 0;
-        virtual PassRefPtrWillBeRawPtr<Interpolation> createInterpolation(CSSPropertyID, WebCore::Keyframe::PropertySpecificKeyframe* end, Element*) const = 0;
+        virtual PassRefPtrWillBeRawPtr<Interpolation> createInterpolation(CSSPropertyID, blink::Keyframe::PropertySpecificKeyframe* end, Element*) const = 0;
 
         virtual void trace(Visitor*) { }
 

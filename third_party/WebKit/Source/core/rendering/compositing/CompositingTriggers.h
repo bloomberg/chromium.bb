@@ -22,7 +22,7 @@
 #ifndef CompositingTriggers_h
 #define CompositingTriggers_h
 
-namespace WebCore {
+namespace blink {
 
 enum CompositingTrigger {
     VideoTrigger = 1 << 1,

@@ -29,7 +29,7 @@
 
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class TextCheckerClient;
 

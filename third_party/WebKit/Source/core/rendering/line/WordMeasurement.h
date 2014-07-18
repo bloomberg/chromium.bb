@@ -27,7 +27,7 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderText;
 
@@ -48,6 +48,6 @@ public:
     HashSet<const SimpleFontData*> fallbackFonts;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WordMeasurement_h

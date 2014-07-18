@@ -33,7 +33,7 @@
 
 #include "core/html/forms/BaseTextInputType.h"
 
-namespace WebCore {
+namespace blink {
 
 class TextInputType FINAL : public BaseTextInputType {
 public:
@@ -47,6 +47,6 @@ private:
     virtual bool supportsInputModeAttribute() const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TextInputType_h

@@ -44,7 +44,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 static const int defaultFontSize = 10;
 static const char defaultFontFamily[] = "sans-serif";
@@ -603,4 +603,4 @@ void FontFaceSet::trace(Visitor* visitor)
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

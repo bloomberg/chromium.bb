@@ -30,7 +30,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/html/HTMLSelectElement.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -146,4 +146,4 @@ void AXMenuListPopup::didUpdateActiveOption(int optionIndex)
     cache->postNotification(child.get(), document(), AXObjectCache::AXMenuListItemSelected, true, PostSynchronously);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -36,7 +36,7 @@
 #include "core/svg/SVGLength.h"
 #include "platform/LengthSize.h"
 
-namespace WebCore {
+namespace blink {
 
 // Note that we assume the parser only allows valid CSSValue types.
 
@@ -112,6 +112,6 @@ AtomicString StyleBuilderConverter::convertString(StyleResolverState&, CSSValue*
     return AtomicString(primitiveValue->getStringValue());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

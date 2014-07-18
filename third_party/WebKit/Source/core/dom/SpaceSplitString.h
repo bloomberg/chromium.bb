@@ -25,7 +25,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
     class SpaceSplitStringData : public RefCounted<SpaceSplitStringData> {
     public:
@@ -94,6 +94,6 @@ namespace WebCore {
         RefPtr<SpaceSplitStringData> m_data;
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SpaceSplitString_h

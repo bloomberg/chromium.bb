@@ -29,7 +29,7 @@
 #include "core/events/MouseEvent.h"
 #include "platform/geometry/FloatPoint.h"
 
-namespace WebCore {
+namespace blink {
 
 class PlatformWheelEvent;
 
@@ -125,6 +125,6 @@ private:
     virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WheelEvent_h

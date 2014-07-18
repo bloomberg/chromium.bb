@@ -49,7 +49,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/unicode/CharacterNames.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -2800,4 +2800,4 @@ void HTMLTreeBuilder::parseError(AtomicHTMLToken*)
 {
 }
 
-} // namespace WebCore
+} // namespace blink

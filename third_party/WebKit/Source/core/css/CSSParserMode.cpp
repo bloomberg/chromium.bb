@@ -30,7 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/Settings.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSParserContext::CSSParserContext(CSSParserMode mode, UseCounter* useCounter)
     : m_mode(mode)
@@ -86,4 +86,4 @@ KURL CSSParserContext::completeURL(const String& url) const
     return KURL(baseURL(), url, charset());
 }
 
-} // namespace WebCore
+} // namespace blink

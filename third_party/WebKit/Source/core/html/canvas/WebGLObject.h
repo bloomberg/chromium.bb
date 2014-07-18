@@ -33,7 +33,7 @@ namespace blink {
 class WebGraphicsContext3D;
 }
 
-namespace WebCore {
+namespace blink {
 
 class WebGLContextGroup;
 class WebGLRenderingContextBase;
@@ -81,6 +81,6 @@ private:
     bool m_deleted;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLObject_h

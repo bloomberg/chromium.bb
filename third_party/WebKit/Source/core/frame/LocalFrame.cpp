@@ -67,7 +67,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -627,4 +627,4 @@ LocalFrame* LocalFrame::localFrameRoot()
     return curFrame;
 }
 
-} // namespace WebCore
+} // namespace blink

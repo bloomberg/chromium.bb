@@ -31,7 +31,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "wtf/TemporaryChange.h"
 
-namespace WebCore {
+namespace blink {
 
 ContextLifecycleNotifier::ContextLifecycleNotifier(ExecutionContext* context)
     : LifecycleNotifier<ExecutionContext>(context)
@@ -124,4 +124,4 @@ bool ContextLifecycleNotifier::hasPendingActivity() const
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

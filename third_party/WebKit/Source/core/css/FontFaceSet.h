@@ -43,7 +43,7 @@
 #undef check
 #endif
 
-namespace WebCore {
+namespace blink {
 
 class CSSFontFace;
 class CSSFontFaceSource;
@@ -159,6 +159,6 @@ private:
     FontLoadHistogram m_histogram;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FontFaceSet_h

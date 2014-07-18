@@ -33,7 +33,7 @@
 #include "core/html/parser/HTMLTokenizer.h"
 #include "core/html/parser/XSSAuditor.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLViewSourceParser FINAL :  public DecodedDataDocumentParser {
 public:

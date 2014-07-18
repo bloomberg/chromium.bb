@@ -34,7 +34,7 @@
 #include "core/svg/SVGLengthList.h"
 #include "core/svg/properties/SVGListPropertyTearOffHelper.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGLengthListTearOff FINAL :
     public SVGListPropertyTearOffHelper<SVGLengthListTearOff, SVGLengthList>,
@@ -53,6 +53,6 @@ private:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGLengthListTearOff_h_

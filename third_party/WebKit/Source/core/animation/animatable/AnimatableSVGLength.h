@@ -34,7 +34,7 @@
 #include "core/animation/animatable/AnimatableValue.h"
 #include "core/svg/SVGLength.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableSVGLength FINAL : public AnimatableValue {
 public:
@@ -69,6 +69,6 @@ private:
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableSVGLength, isSVGLength());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatableSVGLength_h

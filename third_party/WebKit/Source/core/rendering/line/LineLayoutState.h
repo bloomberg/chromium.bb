@@ -27,7 +27,7 @@
 #include "core/rendering/RenderBlockFlow.h"
 #include "platform/geometry/LayoutRect.h"
 
-namespace WebCore {
+namespace blink {
 
 // Like LayoutState for layout(), LineLayoutState keeps track of global information
 // during an entire linebox tree layout pass (aka layoutInlineChildren).

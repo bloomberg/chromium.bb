@@ -7,7 +7,7 @@
 
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 class DeviceEventControllerBase;
 
 class DeviceEventDispatcherBase {
@@ -32,6 +32,6 @@ private:
     bool m_isDispatching;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DeviceEventDispatcherBase_h

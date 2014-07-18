@@ -32,7 +32,7 @@
 
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 static inline float ellipseXIntercept(float y, float rx, float ry)
 {
@@ -95,4 +95,4 @@ void RectangleShape::buildDisplayPaths(DisplayPaths& paths) const
         paths.marginShape.addRoundedRect(shapeMarginBounds(), FloatSize(m_radii.width() + shapeMargin(), m_radii.height() + shapeMargin()));
 }
 
-} // namespace WebCore
+} // namespace blink

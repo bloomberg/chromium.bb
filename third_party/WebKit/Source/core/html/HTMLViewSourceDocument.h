@@ -27,7 +27,7 @@
 
 #include "core/html/HTMLDocument.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLTableCellElement;
 class HTMLTableSectionElement;

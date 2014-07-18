@@ -36,7 +36,7 @@
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 DOMFormData::DOMFormData(const WTF::TextEncoding& encoding)
     : FormDataList(encoding)
@@ -70,4 +70,4 @@ void DOMFormData::append(const String& name, Blob* blob, const String& filename)
         appendBlob(name, blob, filename);
 }
 
-} // namespace WebCore
+} // namespace blink

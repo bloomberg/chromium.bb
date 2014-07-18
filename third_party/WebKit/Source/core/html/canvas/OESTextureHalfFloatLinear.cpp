@@ -27,7 +27,7 @@
 
 #include "core/html/canvas/OESTextureHalfFloatLinear.h"
 
-namespace WebCore {
+namespace blink {
 
 OESTextureHalfFloatLinear::OESTextureHalfFloatLinear(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -60,4 +60,4 @@ const char* OESTextureHalfFloatLinear::extensionName()
     return "OES_texture_half_float_linear";
 }
 
-} // namespace WebCore
+} // namespace blink

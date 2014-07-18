@@ -45,7 +45,7 @@
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/transforms/TransformationMatrix.h"
 
-namespace WebCore {
+namespace blink {
 
 class AffineTransform;
 class Cursor;
@@ -1484,16 +1484,16 @@ inline void adjustFloatRectForAbsoluteZoom(FloatRect& rect, RenderObject& render
 #define DEFINE_RENDER_OBJECT_TYPE_CASTS(thisType, predicate) \
     DEFINE_TYPE_CASTS(thisType, RenderObject, object, object->predicate, object.predicate)
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showTree(const WebCore::RenderObject*);
-void showLineTree(const WebCore::RenderObject*);
-void showRenderTree(const WebCore::RenderObject* object1);
+void showTree(const blink::RenderObject*);
+void showLineTree(const blink::RenderObject*);
+void showRenderTree(const blink::RenderObject* object1);
 // We don't make object2 an optional parameter so that showRenderTree
 // can be called from gdb easily.
-void showRenderTree(const WebCore::RenderObject* object1, const WebCore::RenderObject* object2);
+void showRenderTree(const blink::RenderObject* object1, const blink::RenderObject* object2);
 
 #endif
 

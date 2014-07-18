@@ -31,7 +31,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ContainerNode;
 class DOMSelection;
@@ -204,6 +204,6 @@ DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(TreeScope)
 HitTestResult hitTestInDocument(const Document*, int x, int y);
 TreeScope* commonTreeScope(Node*, Node*);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TreeScope_h

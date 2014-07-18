@@ -36,7 +36,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/text/StringImpl.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 class TreeScope;
@@ -92,6 +92,6 @@ inline bool DocumentOrderedMap::containsMultiple(StringImpl* id) const
     return it != m_map.end() && it->value->count > 1;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DocumentOrderedMap_h

@@ -28,7 +28,7 @@
 
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderObject;
 
@@ -62,6 +62,6 @@ private:
     RenderObject* m_lastChild;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderObjectChildList_h

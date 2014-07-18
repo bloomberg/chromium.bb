@@ -28,7 +28,7 @@
 
 #include "core/html/HTMLCollection.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLAllCollection FINAL : public HTMLCollection {
 public:
@@ -44,6 +44,6 @@ private:
 
 DEFINE_TYPE_CASTS(HTMLAllCollection, LiveNodeListBase, collection, collection->type() == DocAll, collection.type() == DocAll);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLAllCollection_h

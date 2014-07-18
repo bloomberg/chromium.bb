@@ -11,7 +11,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class StyleWillChangeData : public RefCounted<StyleWillChangeData> {
 public:
@@ -37,6 +37,6 @@ private:
     StyleWillChangeData(const StyleWillChangeData&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleWillChangeData_h

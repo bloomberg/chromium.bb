@@ -29,7 +29,7 @@
 #include "core/rendering/RenderText.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 // This class is used to RenderInline subtrees, stepping by character within the
 // text children. InlineIterator will use bidiNext to find the next RenderText

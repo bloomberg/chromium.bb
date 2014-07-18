@@ -31,7 +31,7 @@
 
 
 
-namespace WebCore {
+namespace blink {
 
 AXTableHeaderContainer::AXTableHeaderContainer()
 {
@@ -75,4 +75,4 @@ void AXTableHeaderContainer::addChildren()
         m_headerRect.unite(m_children[k]->elementRect());
 }
 
-} // namespace WebCore
+} // namespace blink

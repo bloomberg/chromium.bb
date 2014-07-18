@@ -35,7 +35,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 // Metadata retrieved from the embedding application's cache.
 //

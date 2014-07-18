@@ -26,10 +26,10 @@
 #ifndef CSSReflectionDirection_h
 #define CSSReflectionDirection_h
 
-namespace WebCore {
+namespace blink {
 
 enum CSSReflectionDirection { ReflectionBelow, ReflectionAbove, ReflectionLeft, ReflectionRight };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSReflectionDirection_h

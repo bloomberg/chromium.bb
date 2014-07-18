@@ -25,7 +25,7 @@
 #include "platform/animation/AnimationUtilities.h"
 #include "wtf/TemporaryChange.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGPathBlender::SVGPathBlender()
     : m_fromSource(0)

@@ -35,7 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/shadow/ShadowRoot.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 
@@ -80,5 +80,5 @@ Node::InsertionNotificationRequest HTMLShadowElement::insertedInto(ContainerNode
     return InsertionPoint::insertedInto(insertionPoint);
 }
 
-} // namespace WebCore
+} // namespace blink
 

@@ -7,7 +7,7 @@
 
 #include "core/fetch/ResourcePtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ResourceFetcher;
 class TextResourceDecoder;

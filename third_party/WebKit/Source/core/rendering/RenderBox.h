@@ -28,7 +28,7 @@
 #include "core/rendering/shapes/ShapeOutsideInfo.h"
 #include "platform/scroll/ScrollTypes.h"
 
-namespace WebCore {
+namespace blink {
 
 struct PaintInfo;
 
@@ -785,6 +785,6 @@ inline void RenderBox::setInlineBoxWrapper(InlineBox* boxWrapper)
     ensureRareData().m_inlineBoxWrapper = boxWrapper;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderBox_h

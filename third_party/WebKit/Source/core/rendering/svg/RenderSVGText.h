@@ -26,7 +26,7 @@
 #include "core/rendering/svg/SVGTextLayoutAttributesBuilder.h"
 #include "platform/transforms/AffineTransform.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderSVGInlineText;
 class SVGTextElement;

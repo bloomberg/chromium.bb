@@ -29,7 +29,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class StyleSheetContents;
@@ -257,6 +257,6 @@ inline bool compareCSSValuePtr(const Member<CSSValueType>& first, const Member<C
 #define DEFINE_CSS_VALUE_TYPE_CASTS(thisType, predicate) \
     DEFINE_TYPE_CASTS(thisType, CSSValue, value, value->predicate, value.predicate)
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSValue_h

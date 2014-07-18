@@ -8,7 +8,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 enum MediaQueryTokenType {
     IdentToken = 0,

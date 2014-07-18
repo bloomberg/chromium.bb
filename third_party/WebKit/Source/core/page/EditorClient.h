@@ -30,7 +30,7 @@
 #include "core/editing/SelectionType.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 class LocalFrame;

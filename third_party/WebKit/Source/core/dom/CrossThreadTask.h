@@ -38,7 +38,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/TypeTraits.h"
 
-namespace WebCore {
+namespace blink {
 
 // Traits for the CrossThreadTask.
 template<typename T> struct CrossThreadTaskTraits {
@@ -730,6 +730,6 @@ PassOwnPtr<ExecutionContextTask> createCrossThreadTask(
         CrossThreadCopier<P6>::copy(parameter6)));
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CrossThreadTask_h

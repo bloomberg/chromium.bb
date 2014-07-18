@@ -39,7 +39,7 @@
 #include "platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 using blink::WebLocalizedString;
 using namespace HTMLNames;
@@ -121,4 +121,4 @@ bool DateInputType::isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, boo
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

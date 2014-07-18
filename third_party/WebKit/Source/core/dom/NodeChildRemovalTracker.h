@@ -29,7 +29,7 @@
 
 #include "core/dom/Node.h"
 
-namespace WebCore {
+namespace blink {
 
 class NodeChildRemovalTracker {
 public:

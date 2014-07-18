@@ -7,7 +7,7 @@
 
 #include "core/css/CSSCursorImageValue.h"
 
-namespace WebCore {
+namespace blink {
 
 MutableStylePropertySet* SVGElementRareData::ensureAnimatedSMILStyleProperties()
 {

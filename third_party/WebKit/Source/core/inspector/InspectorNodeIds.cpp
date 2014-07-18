@@ -12,7 +12,7 @@
 #endif
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 #if ENABLE(OILPAN)
 typedef HeapHashMap<WeakMember<Node>, int> NodeToIdMap;

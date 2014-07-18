@@ -27,7 +27,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSCursorImageValue;
 class SVGElement;

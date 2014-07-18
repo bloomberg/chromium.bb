@@ -23,7 +23,7 @@
 #include "core/rendering/style/CounterDirectives.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 bool operator==(const CounterDirectives& a, const CounterDirectives& b)
 {
@@ -40,4 +40,4 @@ PassOwnPtr<CounterDirectiveMap> clone(const CounterDirectiveMap& counterDirectiv
     return result.release();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -22,7 +22,7 @@
 #if ENABLE(SVG_FONTS)
 #include "core/svg/SVGMissingGlyphElement.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGMissingGlyphElement::SVGMissingGlyphElement(Document& document)
     : SVGElement(SVGNames::missing_glyphTag, document)

@@ -38,7 +38,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ShareableElementData;
 class StylePropertySet;
@@ -231,6 +231,6 @@ inline Attribute& UniqueElementData::attributeAt(unsigned index)
     return m_attributeVector.at(index);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ElementData_h

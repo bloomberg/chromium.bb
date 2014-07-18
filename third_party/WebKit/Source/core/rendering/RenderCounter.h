@@ -25,7 +25,7 @@
 #include "core/rendering/RenderText.h"
 #include "core/rendering/style/CounterContent.h"
 
-namespace WebCore {
+namespace blink {
 
 class CounterNode;
 
@@ -62,11 +62,11 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderCounter, isCounter());
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showCounterRendererTree(const WebCore::RenderObject*, const char* counterName = 0);
+void showCounterRendererTree(const blink::RenderObject*, const char* counterName = 0);
 #endif
 
 #endif // RenderCounter_h

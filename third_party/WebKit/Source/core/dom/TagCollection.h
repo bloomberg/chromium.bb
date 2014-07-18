@@ -27,7 +27,7 @@
 #include "core/html/HTMLCollection.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 // Collection that limits to a particular tag.
 class TagCollection : public HTMLCollection {
@@ -57,6 +57,6 @@ protected:
 
 DEFINE_TYPE_CASTS(TagCollection, LiveNodeListBase, collection, collection->type() == TagCollectionType, collection.type() == TagCollectionType);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TagCollection_h

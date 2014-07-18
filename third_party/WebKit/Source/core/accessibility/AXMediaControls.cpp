@@ -33,7 +33,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "platform/text/PlatformLocale.h"
 
-namespace WebCore {
+namespace blink {
 
 using blink::WebLocalizedString;
 using namespace HTMLNames;
@@ -296,4 +296,4 @@ String AccessibilityMediaTimeDisplay::stringValue() const
     return localizedMediaTimeDescription(fabsf(time));
 }
 
-} // namespace WebCore
+} // namespace blink

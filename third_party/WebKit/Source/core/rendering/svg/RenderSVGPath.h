@@ -28,7 +28,7 @@
 
 #include "core/rendering/svg/RenderSVGShape.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderSVGPath FINAL : public RenderSVGShape {
 public:

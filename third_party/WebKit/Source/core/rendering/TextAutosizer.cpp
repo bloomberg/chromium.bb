@@ -39,7 +39,7 @@
 #include "platform/geometry/IntSize.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 #define AUTOSIZING_CLUSTER_HASH
 
@@ -825,4 +825,4 @@ void TextAutosizer::getNarrowDescendantsGroupedByWidth(const TextAutosizingClust
     }
 }
 
-} // namespace WebCore
+} // namespace blink

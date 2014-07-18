@@ -35,7 +35,7 @@
 #include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Microtask {
 public:

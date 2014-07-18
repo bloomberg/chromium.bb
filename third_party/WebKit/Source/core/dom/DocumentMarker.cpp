@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/dom/DocumentMarker.h"
 
-namespace WebCore {
+namespace blink {
 
 DocumentMarkerDetails::~DocumentMarkerDetails()
 {
@@ -188,4 +188,4 @@ void DocumentMarker::trace(Visitor* visitor)
     visitor->trace(m_details);
 }
 
-} // namespace WebCore
+} // namespace blink

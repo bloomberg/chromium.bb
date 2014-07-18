@@ -24,7 +24,7 @@
 
 #include "core/dom/Document.h"
 
-namespace WebCore {
+namespace blink {
 
 inline CDATASection::CDATASection(Document& document, const String& data)
     : Text(document, data, CreateText)
@@ -52,4 +52,4 @@ PassRefPtrWillBeRawPtr<Text> CDATASection::cloneWithData(const String& data)
     return create(document(), data);
 }
 
-} // namespace WebCore
+} // namespace blink

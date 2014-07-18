@@ -32,7 +32,7 @@
 #include "core/accessibility/AXMockObject.h"
 #include "core/accessibility/AXRenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLInputElement;
 
@@ -79,6 +79,6 @@ private:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXSlider_h

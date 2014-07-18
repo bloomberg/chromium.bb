@@ -34,7 +34,7 @@
 
 #include "core/svg/SVGAnimationElement.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGInteger::SVGInteger(int value)
     : m_value(value)

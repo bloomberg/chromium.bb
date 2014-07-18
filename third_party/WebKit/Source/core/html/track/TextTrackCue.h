@@ -37,7 +37,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -116,6 +116,6 @@ private:
     bool m_pauseOnExit : 1;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

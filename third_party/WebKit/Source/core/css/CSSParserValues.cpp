@@ -25,7 +25,7 @@
 #include "core/css/CSSSelectorList.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace WTF;
 
@@ -236,4 +236,4 @@ bool CSSParserSelector::hasHostPseudoSelector() const
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

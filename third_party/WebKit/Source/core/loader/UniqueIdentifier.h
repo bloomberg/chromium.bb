@@ -31,7 +31,7 @@
 #ifndef UniqueIdentifier_h
 #define UniqueIdentifier_h
 
-namespace WebCore {
+namespace blink {
 
 unsigned long createUniqueIdentifier();
 

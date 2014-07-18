@@ -26,7 +26,7 @@
 
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class InlineIterator;
 class RenderObject;

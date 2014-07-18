@@ -31,7 +31,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGImageCache::SVGImageCache(SVGImage* svgImage)
     : m_svgImage(svgImage)
@@ -101,4 +101,4 @@ Image* SVGImageCache::imageForRenderer(const RenderObject* renderer)
     return imageForContainer.get();
 }
 
-} // namespace WebCore
+} // namespace blink

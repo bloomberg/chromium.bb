@@ -30,7 +30,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSValuePool& cssValuePool()
 {

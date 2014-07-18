@@ -37,7 +37,7 @@
 #include "core/frame/Settings.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtr<DummyPageHolder> DummyPageHolder::create(const IntSize& initialViewSize, Page::PageClients* pageClients)
 {
@@ -99,4 +99,4 @@ Document& DummyPageHolder::document() const
     return *m_frame->domWindow()->document();
 }
 
-} // namespace WebCore
+} // namespace blink

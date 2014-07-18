@@ -42,7 +42,7 @@
 #include "core/rendering/line/WordMeasurement.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 
-namespace WebCore {
+namespace blink {
 
 // We don't let our line box tree for a single line get any deeper than this.
 const unsigned cMaxLineDepth = 200;

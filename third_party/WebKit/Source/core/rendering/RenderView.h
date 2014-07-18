@@ -30,7 +30,7 @@
 #include "platform/scroll/ScrollableArea.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class FlowThreadController;
 class RenderLayerCompositor;
@@ -231,6 +231,6 @@ private:
     bool m_didDisable;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderView_h

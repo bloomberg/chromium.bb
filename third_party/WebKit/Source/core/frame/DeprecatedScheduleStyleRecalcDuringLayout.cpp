@@ -7,7 +7,7 @@
 
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 DeprecatedScheduleStyleRecalcDuringLayout::DeprecatedScheduleStyleRecalcDuringLayout(DocumentLifecycle& lifecycle)
     : m_lifecycle(lifecycle)

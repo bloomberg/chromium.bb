@@ -34,7 +34,7 @@
 #include "platform/Supplementable.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 // This is created on the main thread, passed to the worker thread and
 // attached to WorkerGlobalScope when it is created.
@@ -59,6 +59,6 @@ private:
     WorkerClients() { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerClients_h

@@ -9,7 +9,7 @@
 #include "wtf/text/StringHash.h"
 #include <limits.h>
 
-namespace WebCore {
+namespace blink {
 
 
 MediaQueryToken::MediaQueryToken(MediaQueryTokenType type, BlockType blockType)
@@ -126,4 +126,4 @@ double MediaQueryToken::numericValue() const
     return m_numericValue;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -49,7 +49,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 static const unsigned maximumConsoleMessages = 1000;
 static const int expireConsoleMessagesStep = 100;
@@ -330,5 +330,5 @@ void InspectorConsoleAgent::addInspectedHeapObject(ErrorString*, int inspectedHe
     m_injectedScriptManager->injectedScriptHost()->addInspectedObject(adoptPtr(new InspectableHeapObject(inspectedHeapObjectId)));
 }
 
-} // namespace WebCore
+} // namespace blink
 

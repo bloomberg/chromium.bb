@@ -29,7 +29,7 @@
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AbstractInlineTextBox;
 class InlineTextBox;
@@ -233,6 +233,6 @@ inline void RenderText::checkConsistency() const
 
 void applyTextTransform(const RenderStyle*, String&, UChar);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderText_h

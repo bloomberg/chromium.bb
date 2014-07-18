@@ -33,7 +33,7 @@
 #include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 

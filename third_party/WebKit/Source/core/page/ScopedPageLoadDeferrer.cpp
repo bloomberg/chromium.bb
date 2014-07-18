@@ -27,7 +27,7 @@
 #include "core/page/Page.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 ScopedPageLoadDeferrer::ScopedPageLoadDeferrer(Page* exclusion)
 {
@@ -76,4 +76,4 @@ ScopedPageLoadDeferrer::~ScopedPageLoadDeferrer()
     }
 }
 
-} // namespace WebCore
+} // namespace blink

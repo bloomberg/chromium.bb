@@ -24,7 +24,7 @@
 
 #include "core/svg/SVGPathSegCurvetoQuadratic.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathSegCurvetoQuadraticAbs FINAL : public SVGPathSegCurvetoQuadratic {
 public:
@@ -44,6 +44,6 @@ private:
     virtual String pathSegTypeAsLetter() const OVERRIDE { return "Q"; }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

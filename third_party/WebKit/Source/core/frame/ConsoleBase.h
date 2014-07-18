@@ -41,7 +41,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class ScriptArguments;
 
@@ -83,6 +83,6 @@ private:
     void internalAddMessage(MessageType, MessageLevel, ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>, bool acceptNoArguments = false, bool printTrace = false);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ConsoleBase_h

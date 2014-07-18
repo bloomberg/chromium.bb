@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/track/TrackBase.h"
 
-namespace WebCore {
+namespace blink {
 
 class VideoTrack FINAL : public TrackBase, public ScriptWrappable {
 public:

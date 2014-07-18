@@ -43,7 +43,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 using blink::WebLocalizedString;
 using namespace HTMLNames;
@@ -381,4 +381,4 @@ String FileInputType::defaultToolTip() const
     return names.toString();
 }
 
-} // namespace WebCore
+} // namespace blink

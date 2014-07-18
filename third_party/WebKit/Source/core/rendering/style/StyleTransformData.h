@@ -30,7 +30,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class StyleTransformData : public RefCounted<StyleTransformData> {
 public:
@@ -53,6 +53,6 @@ private:
     StyleTransformData(const StyleTransformData&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleTransformData_h

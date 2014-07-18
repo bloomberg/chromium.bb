@@ -29,7 +29,7 @@
 
 #include "core/html/HTMLAnchorElement.h"
 
-namespace WebCore {
+namespace blink {
 
 CreateLinkCommand::CreateLinkCommand(Document& document, const String& url)
     : CompositeEditCommand(document)

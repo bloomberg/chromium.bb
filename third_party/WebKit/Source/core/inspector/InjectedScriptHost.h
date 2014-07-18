@@ -37,7 +37,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Database;
 class EventTarget;
@@ -102,6 +102,6 @@ private:
     OwnPtr<InspectableObject> m_defaultInspectableObject;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InjectedScriptHost_h)

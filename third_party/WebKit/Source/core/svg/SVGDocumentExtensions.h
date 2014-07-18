@@ -28,7 +28,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicStringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class RenderSVGResourceContainer;

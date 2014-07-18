@@ -12,7 +12,7 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGFontFaceSource::SVGFontFaceSource(SVGFontFaceElement* element)
     : m_svgFontFaceElement(element)
@@ -34,6 +34,6 @@ void SVGFontFaceSource::trace(Visitor* visitor)
     CSSFontFaceSource::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(SVG_FONTS)

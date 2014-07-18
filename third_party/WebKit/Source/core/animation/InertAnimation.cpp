@@ -32,7 +32,7 @@
 #include "core/animation/InertAnimation.h"
 #include "core/animation/interpolation/Interpolation.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<InertAnimation> InertAnimation::create(PassRefPtrWillBeRawPtr<AnimationEffect> effect, const Timing& timing, bool paused)
 {
@@ -69,4 +69,4 @@ void InertAnimation::trace(Visitor* visitor)
     AnimationNode::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

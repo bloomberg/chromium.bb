@@ -26,7 +26,7 @@
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGTextLayoutEngine.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderSVGResource;
 
@@ -95,6 +95,6 @@ private:
 
 DEFINE_INLINE_BOX_TYPE_CASTS(SVGInlineTextBox);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGInlineTextBox_h

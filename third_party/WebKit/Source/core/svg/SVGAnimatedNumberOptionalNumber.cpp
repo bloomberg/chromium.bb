@@ -21,7 +21,7 @@
 
 #include "core/svg/SVGAnimatedNumberOptionalNumber.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGAnimatedNumberOptionalNumber::SVGAnimatedNumberOptionalNumber(SVGElement* contextElement, const QualifiedName& attributeName, float initialFirstValue, float initialSecondValue)
     : SVGAnimatedPropertyCommon<SVGNumberOptionalNumber>(contextElement, attributeName,

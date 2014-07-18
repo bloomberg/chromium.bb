@@ -35,7 +35,7 @@
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 struct CustomElementDescriptorHash;
 
@@ -87,13 +87,13 @@ private:
     AtomicString m_localName;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 namespace WTF {
 
 template<typename T> struct DefaultHash;
-template<> struct DefaultHash<WebCore::CustomElementDescriptor> {
-    typedef WebCore::CustomElementDescriptorHash Hash;
+template<> struct DefaultHash<blink::CustomElementDescriptor> {
+    typedef blink::CustomElementDescriptorHash Hash;
 };
 
 } // namespace WTF

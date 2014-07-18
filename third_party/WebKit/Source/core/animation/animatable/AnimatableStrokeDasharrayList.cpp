@@ -34,7 +34,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/animation/animatable/AnimatableSVGLength.h"
 
-namespace WebCore {
+namespace blink {
 
 AnimatableStrokeDasharrayList::AnimatableStrokeDasharrayList(PassRefPtr<SVGLengthList> passLengths)
 {
@@ -97,4 +97,4 @@ void AnimatableStrokeDasharrayList::trace(Visitor* visitor)
     AnimatableRepeatable::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

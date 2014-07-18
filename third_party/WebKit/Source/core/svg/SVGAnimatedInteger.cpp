@@ -33,7 +33,7 @@
 
 #include "core/svg/SVGAnimatedIntegerOptionalInteger.h"
 
-namespace WebCore {
+namespace blink {
 
 void SVGAnimatedInteger::synchronizeAttribute()
 {

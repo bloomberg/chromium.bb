@@ -28,7 +28,7 @@
 
 #include "core/editing/CompositeEditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class RemoveNodePreservingChildrenCommand FINAL : public CompositeEditCommand {
 public:
@@ -48,6 +48,6 @@ private:
     ShouldAssumeContentIsAlwaysEditable m_shouldAssumeContentIsAlwaysEditable;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RemoveNodePreservingChildrenCommand_h

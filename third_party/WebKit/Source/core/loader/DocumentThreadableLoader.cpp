@@ -52,7 +52,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 void DocumentThreadableLoader::loadResourceSynchronously(Document& document, const ResourceRequest& request, ThreadableLoaderClient& client, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
 {
@@ -509,4 +509,4 @@ SecurityOrigin* DocumentThreadableLoader::securityOrigin() const
     return m_securityOrigin ? m_securityOrigin.get() : m_document.securityOrigin();
 }
 
-} // namespace WebCore
+} // namespace blink

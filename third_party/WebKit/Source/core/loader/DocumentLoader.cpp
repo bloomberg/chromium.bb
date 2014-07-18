@@ -64,7 +64,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 static bool isArchiveMIMEType(const String& mimeType)
 {
@@ -835,4 +835,4 @@ void DocumentLoader::replaceDocument(const String& source, Document* ownerDocume
     endWriting(m_writer.get());
 }
 
-} // namespace WebCore
+} // namespace blink

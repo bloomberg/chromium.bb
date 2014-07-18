@@ -36,7 +36,7 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class MessageEvent;
 class SharedWorkerThread;
@@ -69,6 +69,6 @@ private:
 
 PassRefPtrWillBeRawPtr<MessageEvent> createConnectEvent(PassRefPtrWillBeRawPtr<MessagePort>);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SharedWorkerGlobalScope_h

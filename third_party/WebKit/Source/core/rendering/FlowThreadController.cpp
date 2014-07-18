@@ -31,7 +31,7 @@
 
 #include "core/rendering/FlowThreadController.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtr<FlowThreadController> FlowThreadController::create()
 {
@@ -43,4 +43,4 @@ FlowThreadController::FlowThreadController()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

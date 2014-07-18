@@ -27,7 +27,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/NodeRareData.h"
 
-namespace WebCore {
+namespace blink {
 
 ChildNodeList::ChildNodeList(ContainerNode& parent)
     : m_parent(parent)
@@ -73,4 +73,4 @@ void ChildNodeList::trace(Visitor* visitor)
     NodeList::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

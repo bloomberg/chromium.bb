@@ -24,7 +24,7 @@
 #include "platform/fonts/Font.h"
 #include "platform/text/TextRun.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderObject;
 class RenderSVGResource;
@@ -77,6 +77,6 @@ inline bool textRunNeedsRenderingContext(const Font& font)
     return font.primaryFont()->isSVGFont();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGTextRunRenderingContext_h

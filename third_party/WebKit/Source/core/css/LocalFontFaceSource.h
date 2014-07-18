@@ -8,7 +8,7 @@
 #include "core/css/CSSFontFaceSource.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFontFaceSource : public CSSFontFaceSource {
 public:
@@ -31,6 +31,6 @@ private:
     LocalFontHistograms m_histograms;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

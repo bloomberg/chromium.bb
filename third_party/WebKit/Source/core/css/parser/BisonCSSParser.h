@@ -45,7 +45,7 @@
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/TextPosition.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimationParseContext;
 class CSSArrayFunctionValue;
@@ -324,6 +324,6 @@ inline int cssyylex(void* yylval, BisonCSSParser* parser)
 
 bool isValidNthToken(const CSSParserString&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BisonCSSParser_h

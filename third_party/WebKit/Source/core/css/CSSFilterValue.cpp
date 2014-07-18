@@ -28,7 +28,7 @@
 
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSFilterValue::CSSFilterValue(FilterOperationType operationType)
     : CSSValueList(CSSFilterClass, CommaSeparator)

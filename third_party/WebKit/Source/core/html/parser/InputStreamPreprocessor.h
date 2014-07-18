@@ -31,7 +31,7 @@
 #include "platform/text/SegmentedString.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 const LChar kEndOfFileMarker = 0;
 

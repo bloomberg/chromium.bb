@@ -28,7 +28,7 @@
 #include "core/svg/SVGURIReference.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -50,7 +50,7 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif
 #endif

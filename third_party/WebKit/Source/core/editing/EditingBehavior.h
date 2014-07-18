@@ -23,7 +23,7 @@
 
 #include "core/editing/EditingBehaviorTypes.h"
 
-namespace WebCore {
+namespace blink {
 class KeyboardEvent;
 
 class EditingBehavior {
@@ -100,6 +100,6 @@ private:
     EditingBehaviorType m_type;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // EditingBehavior_h

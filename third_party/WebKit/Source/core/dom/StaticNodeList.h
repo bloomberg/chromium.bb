@@ -35,7 +35,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class Node;
 
@@ -64,6 +64,6 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<Node> > m_nodes;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StaticNodeList_h

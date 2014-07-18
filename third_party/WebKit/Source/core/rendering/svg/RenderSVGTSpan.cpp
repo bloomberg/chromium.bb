@@ -27,7 +27,7 @@
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/svg/SVGAltGlyphElement.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSVGTSpan::RenderSVGTSpan(Element* element)
     : RenderSVGInline(element)

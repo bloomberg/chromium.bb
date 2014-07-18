@@ -32,7 +32,7 @@
 
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleGridItemData::StyleGridItemData()
     : m_gridColumnStart(RenderStyle::initialGridColumnStart())
@@ -51,4 +51,4 @@ StyleGridItemData::StyleGridItemData(const StyleGridItemData& o)
 {
 }
 
-} // namespace WebCore
+} // namespace blink

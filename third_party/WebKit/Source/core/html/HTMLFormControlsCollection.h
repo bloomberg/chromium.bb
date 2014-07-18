@@ -28,7 +28,7 @@
 #include "core/html/HTMLCollection.h"
 #include "core/html/RadioNodeList.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLElement;
 class HTMLImageElement;

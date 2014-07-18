@@ -36,7 +36,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 // A span in a single direction (either rows or columns). Note that |resolvedInitialPosition|
 // and |resolvedFinalPosition| are grid areas' indexes, NOT grid lines'. Iterating over the
@@ -182,6 +182,6 @@ struct GridCoordinate {
 
 typedef HashMap<String, GridCoordinate> NamedGridAreaMap;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GridCoordinate_h

@@ -47,7 +47,7 @@
 #include "core/frame/Settings.h"
 #include "platform/URLPatternMatcher.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

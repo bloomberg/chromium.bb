@@ -53,7 +53,7 @@
 #include "core/workers/WorkerThread.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 

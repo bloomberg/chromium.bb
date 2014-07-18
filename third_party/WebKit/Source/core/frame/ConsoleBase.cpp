@@ -37,7 +37,7 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 ConsoleBase::~ConsoleBase()
 {
@@ -184,4 +184,4 @@ void ConsoleBase::internalAddMessage(MessageType type, MessageLevel level, Scrip
         reportMessageToClient(level, message, callStack);
 }
 
-} // namespace WebCore
+} // namespace blink

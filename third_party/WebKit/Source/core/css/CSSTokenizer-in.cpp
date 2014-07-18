@@ -35,7 +35,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/svg/SVGParserUtilities.h"
 
-namespace WebCore {
+namespace blink {
 
 #include "core/CSSGrammar.h"
 
@@ -1588,4 +1588,4 @@ void CSSTokenizer::setupTokenizer(const char* prefix, unsigned prefixLength, con
     m_lexFunc = &CSSTokenizer::realLex<UChar>;
 }
 
-} // namespace WebCore
+} // namespace blink

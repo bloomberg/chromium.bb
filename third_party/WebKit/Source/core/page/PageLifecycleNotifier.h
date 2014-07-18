@@ -31,7 +31,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/TemporaryChange.h"
 
-namespace WebCore {
+namespace blink {
 
 class Page;
 class LocalFrame;
@@ -72,6 +72,6 @@ inline void PageLifecycleNotifier::notifyDidCommitLoad(LocalFrame* frame)
         (*it)->didCommitLoad(frame);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PageLifecycleNotifier_h

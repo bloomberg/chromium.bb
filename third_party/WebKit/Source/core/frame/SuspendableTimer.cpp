@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/frame/SuspendableTimer.h"
 
-namespace WebCore {
+namespace blink {
 
 SuspendableTimer::SuspendableTimer(ExecutionContext* context)
     : ActiveDOMObject(context)
@@ -79,4 +79,4 @@ void SuspendableTimer::resume()
         start(m_nextFireInterval, m_repeatInterval, FROM_HERE);
 }
 
-} // namespace WebCore
+} // namespace blink

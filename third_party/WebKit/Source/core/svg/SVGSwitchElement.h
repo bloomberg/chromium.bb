@@ -24,7 +24,7 @@
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGGraphicsElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGSwitchElement FINAL : public SVGGraphicsElement {
 public:
@@ -37,6 +37,6 @@ private:
 
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

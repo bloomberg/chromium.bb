@@ -28,7 +28,7 @@
 
 #include "core/accessibility/AXObject.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXMockObject : public AXObject {
 
@@ -57,6 +57,6 @@ private:
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXMockObject, isMockObject());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXMockObject_h

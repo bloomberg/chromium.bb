@@ -36,7 +36,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGElement.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGAnimatedEnumerationBase::~SVGAnimatedEnumerationBase()
 {

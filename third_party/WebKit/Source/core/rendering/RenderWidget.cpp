@@ -36,7 +36,7 @@
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "wtf/HashMap.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderWidget::RenderWidget(Element* element)
     : RenderReplaced(element)
@@ -321,4 +321,4 @@ CursorDirective RenderWidget::getCursor(const LayoutPoint& point, Cursor& cursor
     return RenderReplaced::getCursor(point, cursor);
 }
 
-} // namespace WebCore
+} // namespace blink

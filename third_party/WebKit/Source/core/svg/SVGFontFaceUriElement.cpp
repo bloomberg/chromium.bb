@@ -30,7 +30,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/svg/SVGFontFaceElement.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace SVGNames;
 

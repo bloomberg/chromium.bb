@@ -28,7 +28,7 @@
 #include "platform/SharedBuffer.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 DocumentResource::DocumentResource(const ResourceRequest& request, Type type)
     : Resource(request, type)

@@ -29,7 +29,7 @@
 
 #include "core/dom/DocumentFragment.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<TextEvent> TextEvent::create()
 {
@@ -112,4 +112,4 @@ void TextEvent::trace(Visitor* visitor)
     UIEvent::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

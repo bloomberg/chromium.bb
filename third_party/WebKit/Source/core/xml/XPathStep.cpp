@@ -36,7 +36,7 @@
 #include "core/xml/XPathParser.h"
 #include "core/xml/XPathUtil.h"
 
-namespace WebCore {
+namespace blink {
 namespace XPath {
 
 Step::Step(Axis axis, const NodeTest& nodeTest)

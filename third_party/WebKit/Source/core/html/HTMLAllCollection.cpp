@@ -29,7 +29,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/NamedNodesCollection.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<HTMLAllCollection> HTMLAllCollection::create(ContainerNode& node, CollectionType type)
 {
@@ -86,4 +86,4 @@ void HTMLAllCollection::namedGetter(const AtomicString& name, bool& returnValue0
     returnValue0 = NamedNodesCollection::create(namedItems);
 }
 
-} // namespace WebCore
+} // namespace blink

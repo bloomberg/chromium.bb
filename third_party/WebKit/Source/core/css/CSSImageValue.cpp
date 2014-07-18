@@ -31,7 +31,7 @@
 #include "core/rendering/style/StylePendingImage.h"
 #include "platform/weborigin/KURL.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSImageValue::CSSImageValue(const String& rawValue, const KURL& url, StyleImage* image)
     : CSSValue(ImageClass)
@@ -136,4 +136,4 @@ void CSSImageValue::reResolveURL(const Document& document)
     m_image.clear();
 }
 
-} // namespace WebCore
+} // namespace blink

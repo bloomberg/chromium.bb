@@ -27,7 +27,7 @@
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGTextLayoutEngine.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGRootInlineBox FINAL : public RootInlineBox {
 public:
@@ -62,6 +62,6 @@ private:
 
 DEFINE_INLINE_BOX_TYPE_CASTS(SVGRootInlineBox);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGRootInlineBox_h

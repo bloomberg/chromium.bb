@@ -35,7 +35,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -71,4 +71,4 @@ bool TextInputType::supportsInputModeAttribute() const
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

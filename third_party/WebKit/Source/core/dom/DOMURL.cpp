@@ -38,7 +38,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 DOMURL::DOMURL(const String& url, const KURL& base, ExceptionState& exceptionState)
 {
@@ -103,4 +103,4 @@ void DOMURL::revokeObjectUUID(ExecutionContext* executionContext, const String& 
     executionContext->publicURLManager().revoke(uuid);
 }
 
-} // namespace WebCore
+} // namespace blink

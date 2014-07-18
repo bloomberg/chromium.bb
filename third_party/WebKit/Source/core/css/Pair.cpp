@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/css/Pair.h"
 
-namespace WebCore {
+namespace blink {
 
 void Pair::trace(Visitor* visitor)
 {

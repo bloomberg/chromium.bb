@@ -34,7 +34,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ContainerNode;
 class DocumentFragment;
@@ -189,6 +189,6 @@ private:
     unsigned m_stackDepth;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLElementStack_h

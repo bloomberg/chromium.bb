@@ -28,7 +28,7 @@
 #include "core/svg/SVGPathSegLinetoHorizontal.h"
 #include "core/svg/SVGPathSegLinetoVertical.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGPathSegListSource::SVGPathSegListSource(SVGPathSegList::ConstIterator itBegin, SVGPathSegList::ConstIterator itEnd)
     : m_itCurrent(itBegin)

@@ -27,7 +27,7 @@
 
 #include "core/html/canvas/OESElementIndexUint.h"
 
-namespace WebCore {
+namespace blink {
 
 OESElementIndexUint::OESElementIndexUint(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -60,4 +60,4 @@ const char* OESElementIndexUint::extensionName()
     return "OES_element_index_uint";
 }
 
-} // namespace WebCore
+} // namespace blink

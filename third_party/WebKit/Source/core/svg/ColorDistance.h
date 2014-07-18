@@ -20,7 +20,7 @@
 #ifndef ColorDistance_h
 #define ColorDistance_h
 
-namespace WebCore {
+namespace blink {
 
 class Color;
 

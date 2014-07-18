@@ -41,7 +41,7 @@
 #include "wtf/Threading.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
     class ResourceError;
     class ResourceRequest;
@@ -129,6 +129,6 @@ namespace WebCore {
         MainThreadBridge& m_bridge;
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerThreadableLoader_h

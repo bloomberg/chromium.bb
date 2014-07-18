@@ -29,7 +29,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class FontFaceSet;
@@ -39,6 +39,6 @@ public:
     static PassRefPtrWillBeRawPtr<FontFaceSet> fonts(Document&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DocumentFontFaceSet_h

@@ -49,12 +49,12 @@ namespace internal {
 // (See https://code.google.com/p/googletest/issues/detail?id=442)
 //
 // Work around is to define this custom IsNullLiteralHelper.
-char(&IsNullLiteralHelper(const WebCore::CSSValue&))[2];
+char(&IsNullLiteralHelper(const blink::CSSValue&))[2];
 
 }
 }
 
-namespace WebCore {
+namespace blink {
 
 inline bool operator==(const CSSValue& a, const CSSValue& b)
 {

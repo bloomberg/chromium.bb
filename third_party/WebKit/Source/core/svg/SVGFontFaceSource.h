@@ -9,7 +9,7 @@
 
 #include "core/css/CSSFontFaceSource.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGFontFaceElement;
 
@@ -25,7 +25,7 @@ private:
     RawPtrWillBeMember<SVGFontFaceElement> m_svgFontFaceElement;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(SVG_FONTS)
 #endif

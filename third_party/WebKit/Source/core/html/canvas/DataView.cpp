@@ -41,7 +41,7 @@ union Value {
 
 }
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<DataView> DataView::create(unsigned length)
 {

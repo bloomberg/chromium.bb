@@ -91,7 +91,7 @@ using blink::WebMediaPlayer;
 using blink::WebMimeRegistry;
 using blink::WebMediaPlayerClient;
 
-namespace WebCore {
+namespace blink {
 
 #if !LOG_DISABLED
 static String urlForLoggingMedia(const KURL& url)

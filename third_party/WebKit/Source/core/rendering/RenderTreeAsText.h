@@ -29,7 +29,7 @@
 
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 class LayoutRect;
@@ -75,6 +75,6 @@ String markerTextForListItem(Element*);
 
 String nodePositionAsStringForTesting(Node*);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderTreeAsText_h

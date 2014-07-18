@@ -33,7 +33,7 @@
 
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class LabelsNodeList;
 
@@ -66,6 +66,6 @@ inline bool isLabelableElement(const HTMLElement& element)
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(LabelableElement);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

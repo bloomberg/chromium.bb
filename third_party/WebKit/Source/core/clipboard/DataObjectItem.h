@@ -39,7 +39,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Blob;
 
@@ -93,6 +93,6 @@ private:
     uint64_t m_sequenceNumber; // Only valid when m_source == PasteboardSource
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DataObjectItem_h

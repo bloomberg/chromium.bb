@@ -34,7 +34,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSToLengthConversionData::CSSToLengthConversionData(const RenderStyle* style, const RenderStyle* rootStyle, const RenderView* renderView, float zoom, bool computingFontSize)
     : m_style(style)
@@ -98,4 +98,4 @@ double CSSToLengthConversionData::viewportMaxPercent() const
     return std::max(m_viewportWidth, m_viewportHeight) / 100;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -25,7 +25,7 @@
 #include "core/css/CSSRule.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSStyleSheetResource;
 class MediaList;
@@ -61,6 +61,6 @@ private:
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSImportRule, IMPORT_RULE);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSImportRule_h

@@ -32,7 +32,7 @@
 #include "core/page/EventHandler.h"
 #include "core/rendering/RenderView.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

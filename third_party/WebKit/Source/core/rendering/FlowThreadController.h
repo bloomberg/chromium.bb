@@ -33,7 +33,7 @@
 #include "wtf/FastAllocBase.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderFlowThread;
 

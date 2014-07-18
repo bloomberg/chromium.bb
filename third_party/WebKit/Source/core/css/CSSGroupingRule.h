@@ -27,7 +27,7 @@
 #include "core/css/StyleRule.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class CSSRuleList;
@@ -59,6 +59,6 @@ protected:
     mutable OwnPtrWillBeMember<CSSRuleList> m_ruleListCSSOMWrapper;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSGroupingRule_h

@@ -39,7 +39,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<InputType> PasswordInputType::create(HTMLInputElement& element)
 {
@@ -110,4 +110,4 @@ void PasswordInputType::disableSecureTextInput()
         element().document().setUseSecureKeyboardEntryWhenActive(false);
 }
 
-} // namespace WebCore
+} // namespace blink

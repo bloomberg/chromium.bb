@@ -34,7 +34,7 @@
 #include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 // This assertion-prettify function needs to be in the WebCore namespace.
 void PrintTo(const HTMLDimension& dimension, ::std::ostream* os)
@@ -44,7 +44,7 @@ void PrintTo(const HTMLDimension& dimension, ::std::ostream* os)
 
 }
 
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 

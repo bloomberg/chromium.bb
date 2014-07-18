@@ -77,7 +77,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -1464,4 +1464,4 @@ void StyleBuilderFunctions::applyValueCSSPropertyGridAutoFlow(StyleResolverState
     state.style()->setGridAutoFlow(autoFlow);
 }
 
-} // namespace WebCore
+} // namespace blink

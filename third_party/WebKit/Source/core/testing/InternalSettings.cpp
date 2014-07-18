@@ -54,7 +54,7 @@
         return; \
     }
 
-namespace WebCore {
+namespace blink {
 
 InternalSettings::Backup::Backup(Settings* settings)
     : m_originalAuthorShadowDOMForAnyElementEnabled(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled())

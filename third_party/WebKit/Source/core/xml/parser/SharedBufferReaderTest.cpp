@@ -38,7 +38,7 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-namespace WebCore {
+namespace blink {
 
 TEST(SharedBufferReaderTest, readDataWithNullSharedBuffer)
 {
@@ -116,4 +116,4 @@ TEST(SharedBufferReaderTest, clearSharedBufferBetweenCallsToReadData)
     EXPECT_EQ(0, reader.readData(&destinationVector[0], bytesToRead));
 }
 
-} // namespace WebCore
+} // namespace blink

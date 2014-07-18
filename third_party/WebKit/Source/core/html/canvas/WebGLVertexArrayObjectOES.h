@@ -31,7 +31,7 @@
 #include "core/html/canvas/WebGLContextObject.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebGLVertexArrayObjectOES FINAL : public WebGLContextObject, public ScriptWrappable {
 public:
@@ -95,6 +95,6 @@ private:
     Vector<VertexAttribState> m_vertexAttribState;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLVertexArrayObjectOES_h

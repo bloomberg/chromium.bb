@@ -8,7 +8,7 @@
 
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 
-namespace WebCore {
+namespace blink {
 
 WebGLCompressedTextureETC1::WebGLCompressedTextureETC1(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -42,4 +42,4 @@ const char* WebGLCompressedTextureETC1::extensionName()
     return "WEBGL_compressed_texture_etc1";
 }
 
-} // namespace WebCore
+} // namespace blink

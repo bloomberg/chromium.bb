@@ -32,7 +32,7 @@
 #include "core/svg/SVGEllipseElement.h"
 #include "platform/graphics/GraphicsContext.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSVGEllipse::RenderSVGEllipse(SVGGraphicsElement* node)
     : RenderSVGShape(node)

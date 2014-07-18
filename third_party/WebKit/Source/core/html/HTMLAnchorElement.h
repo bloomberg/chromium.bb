@@ -30,7 +30,7 @@
 #include "core/html/HTMLElement.h"
 #include "platform/LinkHash.h"
 
-namespace WebCore {
+namespace blink {
 
 // Link relation bitmask values.
 // FIXME: Uncomment as the various link relations are implemented.
@@ -113,7 +113,7 @@ private:
 inline LinkHash HTMLAnchorElement::visitedLinkHash() const
 {
     if (!m_cachedVisitedLinkHash)
-        m_cachedVisitedLinkHash = WebCore::visitedLinkHash(document().baseURL(), fastGetAttribute(HTMLNames::hrefAttr));
+        m_cachedVisitedLinkHash = blink::visitedLinkHash(document().baseURL(), fastGetAttribute(HTMLNames::hrefAttr));
     return m_cachedVisitedLinkHash;
 }
 
@@ -122,6 +122,6 @@ inline LinkHash HTMLAnchorElement::visitedLinkHash() const
 bool isEnterKeyKeydownEvent(Event*);
 bool isLinkClick(Event*);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLAnchorElement_h

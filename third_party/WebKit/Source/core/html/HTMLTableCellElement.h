@@ -28,7 +28,7 @@
 
 #include "core/html/HTMLTablePartElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLTableCellElement FINAL : public HTMLTablePartElement {
 public:

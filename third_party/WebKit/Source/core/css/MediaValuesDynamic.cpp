@@ -12,7 +12,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<MediaValues> MediaValuesDynamic::create(Document& document)
 {

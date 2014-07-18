@@ -95,11 +95,11 @@
 extern int cssyydebug;
 #endif
 
-int cssyyparse(WebCore::BisonCSSParser*);
+int cssyyparse(blink::BisonCSSParser*);
 
 using namespace WTF;
 
-namespace WebCore {
+namespace blink {
 
 static const unsigned INVALID_NUM_PARSED_PROPERTIES = UINT_MAX;
 

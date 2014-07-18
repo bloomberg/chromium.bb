@@ -23,7 +23,7 @@
 
 #include "core/svg/SVGPathSegWithContext.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathSegLinetoHorizontal : public SVGPathSegWithContext {
 public:
@@ -44,6 +44,6 @@ private:
     float m_x;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

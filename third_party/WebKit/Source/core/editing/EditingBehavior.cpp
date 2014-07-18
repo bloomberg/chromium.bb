@@ -31,7 +31,7 @@
 #include "platform/KeyboardCodes.h"
 #include "platform/PlatformKeyboardEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 //
 // The below code was adapted from the WebKit file webview.cpp
@@ -263,5 +263,5 @@ bool EditingBehavior::shouldInsertCharacter(const KeyboardEvent& event) const
 
     return true;
 }
-} // namespace WebCore
+} // namespace blink
 

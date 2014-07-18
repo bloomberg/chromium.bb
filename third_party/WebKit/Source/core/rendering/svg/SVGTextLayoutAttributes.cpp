@@ -24,7 +24,7 @@
 
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGTextLayoutAttributes::SVGTextLayoutAttributes(RenderSVGInlineText* context)
     : m_context(context)

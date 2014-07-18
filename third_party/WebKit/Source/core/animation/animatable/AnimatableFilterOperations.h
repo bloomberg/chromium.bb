@@ -34,7 +34,7 @@
 #include "core/animation/animatable/AnimatableValue.h"
 #include "platform/graphics/filters/FilterOperations.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableFilterOperations FINAL : public AnimatableValue {
 public:
@@ -64,6 +64,6 @@ private:
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableFilterOperations, isFilterOperations());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatableFilterOperations_h

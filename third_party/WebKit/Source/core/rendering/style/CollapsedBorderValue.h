@@ -27,7 +27,7 @@
 
 #include "core/rendering/style/BorderValue.h"
 
-namespace WebCore {
+namespace blink {
 
 class CollapsedBorderValue {
 public:
@@ -72,6 +72,6 @@ private:
     unsigned m_transparent : 1;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CollapsedBorderValue_h

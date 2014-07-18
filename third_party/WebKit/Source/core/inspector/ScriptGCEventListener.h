@@ -32,7 +32,7 @@
 #define ScriptGCEventListener_h
 
 
-namespace WebCore {
+namespace blink {
 
 class ScriptGCEventListener
 {
@@ -41,6 +41,6 @@ public:
     virtual ~ScriptGCEventListener(){}
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(ScriptGCEventListener_h)

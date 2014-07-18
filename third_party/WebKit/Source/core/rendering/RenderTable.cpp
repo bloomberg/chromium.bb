@@ -45,7 +45,7 @@
 #include "core/rendering/style/StyleInheritedData.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

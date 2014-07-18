@@ -28,7 +28,7 @@
 
 #include "core/dom/Document.h"
 
-namespace WebCore {
+namespace blink {
 
 class IgnoreDestructiveWriteCountIncrementer {
     WTF_MAKE_NONCOPYABLE(IgnoreDestructiveWriteCountIncrementer);

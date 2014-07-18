@@ -47,7 +47,7 @@
 #include "core/svg/SVGPathUtilities.h"
 #include "core/svg/SVGPointTearOff.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGPathElement::SVGPathElement(Document& document)
     : SVGGeometryElement(SVGNames::pathTag, document)

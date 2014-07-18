@@ -34,7 +34,7 @@
 #include "core/html/MediaController.h"
 #include "core/rendering/RenderTheme.h"
 
-namespace WebCore {
+namespace blink {
 
 // If you change this value, then also update the corresponding value in
 // LayoutTests/media/media-controls.js.

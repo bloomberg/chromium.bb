@@ -30,7 +30,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGFilter FINAL : public Filter {
 public:
@@ -51,6 +51,6 @@ private:
     bool m_effectBBoxMode;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGFilter_h

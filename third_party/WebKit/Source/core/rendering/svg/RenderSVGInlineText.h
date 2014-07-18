@@ -25,7 +25,7 @@
 #include "core/rendering/RenderText.h"
 #include "core/rendering/svg/SVGTextLayoutAttributes.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderSVGInlineText FINAL : public RenderText {
 public:

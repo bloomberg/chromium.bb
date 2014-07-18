@@ -29,7 +29,7 @@
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/ResourceFetcher.h"
 
-namespace WebCore {
+namespace blink {
 
 FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const AtomicString& initiator, const String& charset, ResourceLoadPriority priority)
     : m_resourceRequest(resourceRequest)
@@ -89,4 +89,4 @@ void FetchRequest::setCrossOriginAccessControl(SecurityOrigin* origin, const Ato
     setCrossOriginAccessControl(origin, equalIgnoringCase(crossOriginMode, "use-credentials") ? AllowStoredCredentials : DoNotAllowStoredCredentials);
 }
 
-} // namespace WebCore
+} // namespace blink

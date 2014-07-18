@@ -31,7 +31,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<Storage> Storage::create(LocalFrame* frame, PassOwnPtrWillBeRawPtr<StorageArea> storageArea)
 {

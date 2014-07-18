@@ -23,7 +23,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class Page;
@@ -38,6 +38,6 @@ private:
     Vector<RefPtr<LocalFrame>, 16> m_deferredFrames;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScopedPageLoadDeferrer_h

@@ -28,7 +28,7 @@
 #include "core/rendering/RenderingTestHelper.h"
 #include "core/rendering/RenderTableCell.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -113,4 +113,4 @@ TEST_F(RenderTableCellTest, DoNotResetRowspanJustBelowBoundary)
 
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -33,7 +33,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLObjectElement.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

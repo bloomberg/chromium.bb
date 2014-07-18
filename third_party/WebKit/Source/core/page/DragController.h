@@ -32,7 +32,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class DataTransfer;
 class Document;
@@ -112,6 +112,6 @@ private:
     bool m_didInitiateDrag;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DragController_h

@@ -37,7 +37,7 @@
 using blink::WebInbandTextTrack;
 using blink::WebString;
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<InbandTextTrack> InbandTextTrack::create(WebInbandTextTrack* webTrack)
 {
@@ -111,4 +111,4 @@ void InbandTextTrack::addWebVTTCue(double start, double end, const WebString& id
     addCue(cue);
 }
 
-} // namespace WebCore
+} // namespace blink

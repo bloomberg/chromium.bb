@@ -35,7 +35,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class Attribute;
 class ShareableElementData;

@@ -29,7 +29,7 @@
 #include "core/svg/SVGImageLoader.h"
 #include "core/svg/SVGURIReference.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGImageElement FINAL : public SVGGraphicsElement,
                               public SVGURIReference {
@@ -79,6 +79,6 @@ private:
     bool m_needsLoaderURIUpdate : 1;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

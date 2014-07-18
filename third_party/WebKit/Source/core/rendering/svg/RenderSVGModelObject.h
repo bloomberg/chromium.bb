@@ -35,7 +35,7 @@
 #include "core/svg/SVGElement.h"
 #include "platform/geometry/FloatRect.h"
 
-namespace WebCore {
+namespace blink {
 
 // Most renderers in the SVG rendering tree will inherit from this class
 // but not all. (e.g. RenderSVGForeignObject, RenderSVGBlock) thus methods

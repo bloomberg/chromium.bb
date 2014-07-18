@@ -31,7 +31,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class VTTRegionList FINAL : public RefCountedWillBeGarbageCollected<VTTRegionList> {
 public:
@@ -56,6 +56,6 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<VTTRegion> > m_list;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -40,7 +40,7 @@
 #include "core/dom/custom/CustomElementObserver.h"
 #include "core/dom/custom/CustomElementScheduler.h"
 
-namespace WebCore {
+namespace blink {
 
 CustomElementMicrotaskImportStep* CustomElement::didCreateImport(HTMLImportChild* import)
 {
@@ -145,4 +145,4 @@ void CustomElement::wasDestroyed(Element* element)
     }
 }
 
-} // namespace WebCore
+} // namespace blink

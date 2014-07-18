@@ -37,7 +37,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<DataObject> DataObject::createFromPasteboard(PasteMode pasteMode)
 {
@@ -263,4 +263,4 @@ void DataObject::trace(Visitor* visitor)
     WillBeHeapSupplementable<DataObject>::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

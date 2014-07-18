@@ -39,7 +39,7 @@
 #include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<DedicatedWorkerGlobalScope> DedicatedWorkerGlobalScope::create(DedicatedWorkerThread* thread, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData, double timeOrigin)
 {
@@ -123,4 +123,4 @@ void DedicatedWorkerGlobalScope::trace(Visitor* visitor)
     WorkerGlobalScope::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

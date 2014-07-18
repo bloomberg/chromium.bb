@@ -40,7 +40,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class DocumentLoader;
@@ -105,7 +105,7 @@ private:
     FramesWithUninstrumentedCanvases m_framesWithUninstrumentedCanvases;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // !defined(InspectorCanvasAgent_h)

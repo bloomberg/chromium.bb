@@ -41,7 +41,7 @@
 #include "core/svg/SVGElement.h"
 #include "platform/geometry/TransformState.h"
 
-namespace WebCore {
+namespace blink {
 
 LayoutRect SVGRenderSupport::clippedOverflowRectForRepaint(const RenderObject* object, const RenderLayerModelObject* repaintContainer, const PaintInvalidationState* paintInvalidationState)
 {

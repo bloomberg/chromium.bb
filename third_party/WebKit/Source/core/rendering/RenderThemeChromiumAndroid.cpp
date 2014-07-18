@@ -41,7 +41,7 @@
 #include "public/platform/WebThemeEngine.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<RenderTheme> RenderThemeChromiumAndroid::create()
 {
@@ -89,4 +89,4 @@ int RenderThemeChromiumAndroid::menuListArrowPadding() const
     return scrollbarSize.width();
 }
 
-} // namespace WebCore
+} // namespace blink

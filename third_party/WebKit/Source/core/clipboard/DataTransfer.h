@@ -35,7 +35,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class DataObject;
 class DataTransferItemList;
@@ -141,6 +141,6 @@ private:
 DragOperation convertDropZoneOperationToDragOperation(const String& dragOperation);
 String convertDragOperationToDropZoneOperation(DragOperation);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DataTransfer_h

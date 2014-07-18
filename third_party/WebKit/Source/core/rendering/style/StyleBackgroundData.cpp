@@ -25,7 +25,7 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleBackgroundData::StyleBackgroundData()
     : m_background(BackgroundFillLayer, true)
@@ -51,4 +51,4 @@ bool StyleBackgroundData::visuallyEqual(const StyleBackgroundData& o) const
     return m_background == o.m_background && m_color == o.m_color && m_outline.visuallyEqual(o.m_outline);
 }
 
-} // namespace WebCore
+} // namespace blink

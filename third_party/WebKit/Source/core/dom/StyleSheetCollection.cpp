@@ -29,7 +29,7 @@
 
 #include "core/css/CSSStyleSheet.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleSheetCollection::StyleSheetCollection()
 {

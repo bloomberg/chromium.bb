@@ -34,7 +34,7 @@
 #include "core/animation/animatable/AnimatableValue.h"
 #include "core/rendering/ClipPathOperation.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableClipPathOperation FINAL : public AnimatableValue {
 public:
@@ -65,6 +65,6 @@ private:
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableClipPathOperation, isClipPathOperation());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatableClipPathOperation_h

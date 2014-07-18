@@ -35,7 +35,7 @@ namespace blink {
 class WebGraphicsContext3D;
 }
 
-namespace WebCore {
+namespace blink {
 
 class WebGLExtension;
 class WebGLSharedObject;
@@ -69,6 +69,6 @@ public:
     HashSet<WebGLSharedObject*> m_groupObjects;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLContextGroup_h

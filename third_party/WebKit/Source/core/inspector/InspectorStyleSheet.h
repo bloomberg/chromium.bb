@@ -39,7 +39,7 @@
 
 class ParsedStyleSheet;
 
-namespace WebCore {
+namespace blink {
 
 class CSSRuleList;
 class CSSStyleDeclaration;
@@ -299,8 +299,8 @@ private:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::InspectorStyleProperty);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::InspectorStyleProperty);
 
 #endif // !defined(InspectorStyleSheet_h)

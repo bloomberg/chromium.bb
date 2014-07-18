@@ -30,7 +30,7 @@
 #include "platform/animation/TimingFunction.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSCubicBezierTimingFunctionValue : public CSSValue {
 public:

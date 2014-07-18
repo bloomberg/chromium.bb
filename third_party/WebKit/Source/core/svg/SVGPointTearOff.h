@@ -35,7 +35,7 @@
 #include "core/svg/SVGPoint.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGMatrixTearOff;
 
@@ -57,6 +57,6 @@ protected:
     SVGPointTearOff(PassRefPtr<SVGPoint>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPointTearOff_h_

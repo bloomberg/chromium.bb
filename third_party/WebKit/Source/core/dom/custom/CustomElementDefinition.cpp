@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/dom/custom/CustomElementDefinition.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<CustomElementDefinition> CustomElementDefinition::create(const CustomElementDescriptor& descriptor, PassRefPtr<CustomElementLifecycleCallbacks> callbacks)
 {

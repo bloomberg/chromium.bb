@@ -26,7 +26,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/StyleEngine.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

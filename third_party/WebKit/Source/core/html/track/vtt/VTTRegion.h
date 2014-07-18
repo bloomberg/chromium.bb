@@ -39,7 +39,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class ExceptionState;
@@ -154,5 +154,5 @@ private:
     Timer<VTTRegion> m_scrollTimer;
 };
 
-} // namespace WebCore
+} // namespace blink
 #endif

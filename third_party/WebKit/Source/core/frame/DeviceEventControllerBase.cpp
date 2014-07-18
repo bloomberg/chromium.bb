@@ -7,7 +7,7 @@
 
 #include "core/page/Page.h"
 
-namespace WebCore {
+namespace blink {
 
 DeviceEventControllerBase::DeviceEventControllerBase(Page* page)
     : PageLifecycleObserver(page)
@@ -67,4 +67,4 @@ void DeviceEventControllerBase::pageVisibilityChanged()
         stopUpdating();
 }
 
-} // namespace WebCore
+} // namespace blink

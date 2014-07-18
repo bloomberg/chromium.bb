@@ -32,7 +32,7 @@
 #include "core/dom/Element.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 SplitElementCommand::SplitElementCommand(PassRefPtrWillBeRawPtr<Element> element, PassRefPtrWillBeRawPtr<Node> atChild)
     : SimpleEditCommand(element->document())
@@ -116,4 +116,4 @@ void SplitElementCommand::trace(Visitor* visitor)
     SimpleEditCommand::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/css/CSSFontFaceLoadEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSFontFaceLoadEvent::CSSFontFaceLoadEvent()
 {
@@ -67,4 +67,4 @@ void CSSFontFaceLoadEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

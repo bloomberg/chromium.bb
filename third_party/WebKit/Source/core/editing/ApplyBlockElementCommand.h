@@ -34,7 +34,7 @@
 #include "core/dom/QualifiedName.h"
 #include "core/editing/CompositeEditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class ApplyBlockElementCommand : public CompositeEditCommand {
 protected:

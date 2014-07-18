@@ -35,7 +35,7 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class InstrumentingAgents;
 
@@ -61,6 +61,6 @@ private:
     InspectorFrontend::Memory* m_frontend;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InspectorMemoryAgent_h)

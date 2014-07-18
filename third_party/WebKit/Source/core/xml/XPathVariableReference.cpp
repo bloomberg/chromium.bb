@@ -29,7 +29,7 @@
 
 #include "core/xml/XPathValue.h"
 
-namespace WebCore {
+namespace blink {
 namespace XPath {
 
 VariableReference::VariableReference(const String& name)

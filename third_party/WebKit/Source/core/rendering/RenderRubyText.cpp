@@ -33,7 +33,7 @@
 
 #include "core/rendering/RenderRubyText.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderRubyText::RenderRubyText(Element* element)
     : RenderBlockFlow(element)
@@ -86,4 +86,4 @@ bool RenderRubyText::avoidsFloats() const
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

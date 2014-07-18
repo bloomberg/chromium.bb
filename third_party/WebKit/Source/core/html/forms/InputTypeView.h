@@ -41,7 +41,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class BeforeTextInsertedEvent;
 class Element;
@@ -127,5 +127,5 @@ private:
     RawPtrWillBeMember<HTMLInputElement> m_element;
 };
 
-} // namespace WebCore
+} // namespace blink
 #endif

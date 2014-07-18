@@ -32,7 +32,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 class ExecutionContext;
@@ -65,6 +65,6 @@ private:
     bool m_isStopped;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PublicURLManager_h

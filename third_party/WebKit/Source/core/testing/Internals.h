@@ -39,7 +39,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class CanvasRenderingContext2D;
 class ClientRect;
@@ -330,6 +330,6 @@ private:
     RefPtrWillBeMember<InternalProfilers> m_profilers;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

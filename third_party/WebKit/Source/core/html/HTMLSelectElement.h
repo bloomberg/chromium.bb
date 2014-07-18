@@ -32,7 +32,7 @@
 #include "core/html/forms/TypeAhead.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class AutoscrollController;
 class ExceptionState;

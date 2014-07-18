@@ -32,7 +32,7 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/StyleFetchedImage.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderImageResourceStyleImage::RenderImageResourceStyleImage(StyleImage* styleImage)
     : m_styleImage(styleImage)
@@ -75,4 +75,4 @@ void RenderImageResourceStyleImage::setContainerSizeForRenderer(const IntSize& s
     m_styleImage->setContainerSizeForRenderer(m_renderer, size, m_renderer->style()->effectiveZoom());
 }
 
-} // namespace WebCore
+} // namespace blink

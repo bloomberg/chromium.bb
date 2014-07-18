@@ -31,7 +31,7 @@
 #include "core/frame/LocalFrame.h"
 #include "platform/geometry/FloatPoint.h"
 
-namespace WebCore {
+namespace blink {
 
 static FloatPoint contentsOffset(LocalFrame* frame)
 {
@@ -83,4 +83,4 @@ void Touch::trace(Visitor* visitor)
     visitor->trace(m_target);
 }
 
-} // namespace WebCore
+} // namespace blink

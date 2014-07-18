@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/events/WebKitAnimationEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 WebKitAnimationEventInit::WebKitAnimationEventInit()
     : animationName()
@@ -80,4 +80,4 @@ void WebKitAnimationEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

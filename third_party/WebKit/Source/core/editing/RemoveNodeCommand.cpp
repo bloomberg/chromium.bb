@@ -30,7 +30,7 @@
 #include "core/dom/Node.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 RemoveNodeCommand::RemoveNodeCommand(PassRefPtrWillBeRawPtr<Node> node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
     : SimpleEditCommand(node->document())

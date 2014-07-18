@@ -31,7 +31,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class MediaKeyError FINAL : public RefCountedWillBeGarbageCollectedFinalized<MediaKeyError>, public ScriptWrappable {
 public:
@@ -65,6 +65,6 @@ private:
     unsigned long m_systemCode;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -26,12 +26,12 @@
 #ifndef UnitTestHelpers_h
 #define UnitTestHelpers_h
 
-namespace WebCore {
+namespace blink {
 namespace testing {
 
 void runPendingTasks();
 
 } // namespace testing
-} // namespace WebCore
+} // namespace blink
 
 #endif

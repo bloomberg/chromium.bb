@@ -34,7 +34,7 @@
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderInline.h"
 
-namespace WebCore {
+namespace blink {
 
 // Following the HTML 5 spec, the box object model for a <ruby> element allows several runs of ruby
 // bases with their respective ruby texts looks as follows:
@@ -87,6 +87,6 @@ private:
     virtual void removeLeftoverAnonymousBlock(RenderBlock*) OVERRIDE { ASSERT_NOT_REACHED(); }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderRuby_h

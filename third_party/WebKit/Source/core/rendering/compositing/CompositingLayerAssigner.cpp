@@ -30,7 +30,7 @@
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "platform/TraceEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 // We will only allow squashing if the bbox-area:squashed-area doesn't exceed
 // the ratio |gSquashingSparsityTolerance|:1.

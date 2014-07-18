@@ -26,7 +26,7 @@
 #include "core/SVGNames.h"
 #include "core/svg/SVGFontElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGHKernElement FINAL : public SVGElement {
 public:
@@ -43,7 +43,7 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(SVG_FONTS)
 #endif

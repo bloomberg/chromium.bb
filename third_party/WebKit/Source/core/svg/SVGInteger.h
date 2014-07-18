@@ -35,7 +35,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/svg/properties/SVGPropertyHelper.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGInteger : public SVGPropertyHelper<SVGInteger> {
 public:
@@ -74,6 +74,6 @@ inline PassRefPtr<SVGInteger> toSVGInteger(PassRefPtr<SVGPropertyBase> passBase)
     return static_pointer_cast<SVGInteger>(base.release());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGInteger_h

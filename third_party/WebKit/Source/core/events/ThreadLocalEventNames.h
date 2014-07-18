@@ -29,7 +29,7 @@
 #include "core/EventTypeNames.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 inline bool isTouchEventType(const AtomicString& eventType)
 {

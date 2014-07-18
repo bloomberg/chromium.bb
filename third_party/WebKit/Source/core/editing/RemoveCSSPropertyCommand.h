@@ -29,7 +29,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/editing/EditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 
@@ -55,6 +55,6 @@ private:
     bool m_important;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RemoveCSSPropertyCommand_h

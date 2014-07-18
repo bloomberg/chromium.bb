@@ -29,7 +29,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class NestingLevelIncrementer {
     STACK_ALLOCATED();

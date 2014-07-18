@@ -28,7 +28,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/rendering/RenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleGeneratedImage::StyleGeneratedImage(PassRefPtrWillBeRawPtr<CSSImageGeneratorValue> value)
     : m_imageGeneratorValue(value)

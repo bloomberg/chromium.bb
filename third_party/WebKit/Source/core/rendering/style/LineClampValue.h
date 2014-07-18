@@ -27,7 +27,7 @@
 
 #include "core/rendering/style/RenderStyleConstants.h"
 
-namespace WebCore {
+namespace blink {
 
 class LineClampValue {
 public:
@@ -64,6 +64,6 @@ private:
     int m_value;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LineClampValue_h

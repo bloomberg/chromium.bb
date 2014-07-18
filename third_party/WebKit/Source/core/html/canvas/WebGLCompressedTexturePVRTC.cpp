@@ -29,7 +29,7 @@
 
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 
-namespace WebCore {
+namespace blink {
 
 WebGLCompressedTexturePVRTC::WebGLCompressedTexturePVRTC(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -65,4 +65,4 @@ const char* WebGLCompressedTexturePVRTC::extensionName()
     return "WEBGL_compressed_texture_pvrtc";
 }
 
-} // namespace WebCore
+} // namespace blink

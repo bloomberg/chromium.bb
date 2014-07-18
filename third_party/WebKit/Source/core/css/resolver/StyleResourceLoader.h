@@ -26,7 +26,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ElementStyleResources;
 class RenderStyle;
@@ -55,6 +55,6 @@ private:
     ResourceFetcher* m_fetcher;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleResourceLoader_h

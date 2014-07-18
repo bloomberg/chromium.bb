@@ -58,7 +58,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
 
-namespace WebCore {
+namespace blink {
 
 class CloseWorkerGlobalScopeTask : public ExecutionContextTask {
 public:
@@ -346,4 +346,4 @@ void WorkerGlobalScope::trace(Visitor* visitor)
     EventTargetWithInlineData::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

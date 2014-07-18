@@ -25,7 +25,7 @@
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/scroll/ScrollTypes.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderScrollbar;
 class RenderStyle;
@@ -50,6 +50,6 @@ public:
     RenderScrollbar* scrollbar;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PseudoStyleRequest_h

@@ -35,7 +35,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class KURL;
@@ -73,6 +73,6 @@ private:
     RefPtr<SerializedScriptValue> m_lastStateObjectRequested;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // History_h

@@ -32,7 +32,7 @@
 #include "core/svg/SVGURIReference.h"
 #include "core/svg/SVGUnitTypes.h"
 
-namespace WebCore {
+namespace blink {
 
 struct PatternAttributes;
 
@@ -82,6 +82,6 @@ private:
     RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_patternContentUnits;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

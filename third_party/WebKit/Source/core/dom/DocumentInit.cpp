@@ -35,7 +35,7 @@
 #include "core/html/imports/HTMLImportsController.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: Broken with OOPI.
 static Document* parentDocument(LocalFrame* frame)
@@ -161,5 +161,5 @@ DocumentInit DocumentInit::fromContext(WeakPtrWillBeRawPtr<Document> contextDocu
     return DocumentInit(url, 0, contextDocument, 0);
 }
 
-} // namespace WebCore
+} // namespace blink
 

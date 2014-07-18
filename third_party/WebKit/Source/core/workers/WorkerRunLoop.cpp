@@ -40,7 +40,7 @@
 #include "platform/heap/ThreadState.h"
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 class WorkerRunLoopTask : public blink::WebThread::Task {
     WTF_MAKE_NONCOPYABLE(WorkerRunLoopTask); WTF_MAKE_FAST_ALLOCATED;
@@ -290,4 +290,4 @@ bool WorkerRunLoop::postDebuggerTask(PassOwnPtr<ExecutionContextTask> task)
     return posted;
 }
 
-} // namespace WebCore
+} // namespace blink

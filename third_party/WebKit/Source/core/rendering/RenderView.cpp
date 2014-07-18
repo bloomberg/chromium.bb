@@ -46,7 +46,7 @@
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsContext.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderView::RenderView(Document* document)
     : RenderBlockFlow(document)
@@ -999,4 +999,4 @@ double RenderView::layoutViewportHeight() const
     return viewHeight(IncludeScrollbars) / scale;
 }
 
-} // namespace WebCore
+} // namespace blink

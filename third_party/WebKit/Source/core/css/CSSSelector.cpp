@@ -39,7 +39,7 @@
 #include <stdio.h>
 #endif
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -896,4 +896,4 @@ bool CSSSelector::RareData::matchNth(int count)
     }
 }
 
-} // namespace WebCore
+} // namespace blink

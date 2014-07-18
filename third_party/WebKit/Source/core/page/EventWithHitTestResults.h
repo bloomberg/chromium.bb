@@ -26,7 +26,7 @@
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 class Scrollbar;
 
@@ -58,6 +58,6 @@ typedef EventWithHitTestResults<PlatformMouseEvent> MouseEventWithHitTestResults
 
 typedef EventWithHitTestResults<PlatformGestureEvent> GestureEventWithHitTestResults;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // EventWithHitTestResults_h

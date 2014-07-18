@@ -27,7 +27,7 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/ParserContentPolicy.h"
 
-namespace WebCore {
+namespace blink {
 
 class DocumentFragment : public ContainerNode {
 public:
@@ -51,6 +51,6 @@ private:
 
 DEFINE_NODE_TYPE_CASTS(DocumentFragment, isDocumentFragment());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

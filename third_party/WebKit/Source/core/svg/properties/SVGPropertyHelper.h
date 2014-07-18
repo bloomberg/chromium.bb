@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/svg/properties/SVGProperty.h"
 
-namespace WebCore {
+namespace blink {
 
 template<typename Derived>
 class SVGPropertyHelper : public SVGPropertyBase {

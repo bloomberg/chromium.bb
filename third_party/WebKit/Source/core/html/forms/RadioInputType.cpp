@@ -33,7 +33,7 @@
 #include "platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -200,4 +200,4 @@ bool RadioInputType::supportsIndeterminateAppearance() const
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -37,7 +37,7 @@
 #include "platform/graphics/media/MediaPlayer.h"
 #include "public/platform/WebLayer.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -288,4 +288,4 @@ CompositingReasons RenderVideo::additionalCompositingReasons(CompositingTriggerF
     return CompositingReasonNone;
 }
 
-} // namespace WebCore
+} // namespace blink

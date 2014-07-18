@@ -29,7 +29,7 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/editing/ReplaceSelectionCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 MoveSelectionCommand::MoveSelectionCommand(PassRefPtrWillBeRawPtr<DocumentFragment> fragment, const Position& position, bool smartInsert, bool smartDelete)
     : CompositeEditCommand(*position.document()), m_fragment(fragment), m_position(position), m_smartInsert(smartInsert), m_smartDelete(smartDelete)
@@ -90,4 +90,4 @@ void MoveSelectionCommand::trace(Visitor* visitor)
     CompositeEditCommand::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

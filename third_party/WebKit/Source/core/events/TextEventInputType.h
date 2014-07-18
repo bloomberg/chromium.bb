@@ -26,7 +26,7 @@
 #ifndef TextEventInputType_h
 #define TextEventInputType_h
 
-namespace WebCore {
+namespace blink {
 
 enum TextEventInputType {
     TextEventInputKeyboard, // any newline characters in the text are line breaks only, not paragraph separators.
@@ -39,6 +39,6 @@ enum TextEventInputType {
     TextEventInputOther,
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TextEventInputType_h

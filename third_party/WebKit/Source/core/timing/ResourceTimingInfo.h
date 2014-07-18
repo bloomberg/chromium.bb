@@ -35,7 +35,7 @@
 #include "platform/network/ResourceResponse.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ResourceTimingInfo : public RefCounted<ResourceTimingInfo> {
 public:
@@ -87,6 +87,6 @@ private:
     Vector<ResourceResponse> m_redirectChain;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

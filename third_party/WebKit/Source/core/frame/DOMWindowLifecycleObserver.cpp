@@ -29,7 +29,7 @@
 
 #include "core/frame/LocalDOMWindow.h"
 
-namespace WebCore {
+namespace blink {
 
 template<> void observerContext(LocalDOMWindow* context, LifecycleObserver<LocalDOMWindow>* observer)
 {
@@ -55,4 +55,4 @@ LocalDOMWindow* DOMWindowLifecycleObserver::window() const
     return static_cast<LocalDOMWindow*>(lifecycleContext());
 }
 
-} // namespace WebCore
+} // namespace blink

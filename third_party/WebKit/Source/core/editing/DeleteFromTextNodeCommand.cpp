@@ -30,7 +30,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Text.h"
 
-namespace WebCore {
+namespace blink {
 
 DeleteFromTextNodeCommand::DeleteFromTextNodeCommand(PassRefPtrWillBeRawPtr<Text> node, unsigned offset, unsigned count)
     : SimpleEditCommand(node->document())
@@ -74,4 +74,4 @@ void DeleteFromTextNodeCommand::trace(Visitor* visitor)
     SimpleEditCommand::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

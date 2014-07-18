@@ -21,7 +21,7 @@
 
 #include "core/svg/SVGPathByteStreamSource.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGPathByteStreamSource::SVGPathByteStreamSource(const SVGPathByteStream* stream)
 {

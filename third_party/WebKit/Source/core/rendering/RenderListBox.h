@@ -33,7 +33,7 @@
 
 #include "core/rendering/RenderBlockFlow.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLSelectElement;
 

@@ -31,7 +31,7 @@
 
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 // Encapsulates a state machine for FrameLoader. Note that this is different from FrameState,
 // which stores the state of the current load that FrameLoader is executing.
@@ -60,6 +60,6 @@ private:
     State m_state;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FrameLoaderStateMachine_h

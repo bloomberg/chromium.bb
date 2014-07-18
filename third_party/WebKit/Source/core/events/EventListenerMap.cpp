@@ -43,7 +43,7 @@
 
 using namespace WTF;
 
-namespace WebCore {
+namespace blink {
 
 #if ENABLE(ASSERT)
 static Mutex& activeIteratorCountMutex()
@@ -269,4 +269,4 @@ EventListener* EventListenerIterator::nextListener()
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink

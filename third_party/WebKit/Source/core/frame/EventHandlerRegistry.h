@@ -8,7 +8,7 @@
 #include "core/frame/FrameHost.h"
 #include "wtf/HashCountedSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class EventTarget;
@@ -93,6 +93,6 @@ private:
     EventTargetSet m_targets[EventHandlerClassCount];
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // EventHandlerRegistry_h

@@ -26,7 +26,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathByteStreamBuilder FINAL : public SVGPathConsumer {
 public:
@@ -56,6 +56,6 @@ private:
     SVGPathByteStream* m_byteStream;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPathByteStreamBuilder_h

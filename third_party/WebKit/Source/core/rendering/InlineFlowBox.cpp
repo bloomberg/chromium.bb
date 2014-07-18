@@ -39,7 +39,7 @@
 
 #include <math.h>
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsInlineFlowBox : public InlineBox {
     void* pointers[5];
@@ -1670,4 +1670,4 @@ void InlineFlowBox::checkConsistency() const
 
 #endif
 
-} // namespace WebCore
+} // namespace blink

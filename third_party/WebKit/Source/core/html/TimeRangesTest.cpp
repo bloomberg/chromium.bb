@@ -36,7 +36,7 @@
 
 #include <sstream>
 
-using WebCore::TimeRanges;
+using blink::TimeRanges;
 
 static std::string ToString(const TimeRanges& ranges)
 {

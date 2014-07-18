@@ -30,7 +30,7 @@
 #include "core/xml/XPathEvaluator.h"
 #include "core/xml/XPathNSResolver.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class XPathExpression;
@@ -58,6 +58,6 @@ private:
     RefPtrWillBeMember<XPathEvaluator> m_xpathEvaluator;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DocumentXPathEvaluator_h

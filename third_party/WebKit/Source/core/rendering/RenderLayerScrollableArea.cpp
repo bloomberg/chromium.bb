@@ -72,7 +72,7 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 const int ResizerControlExpandRatioForTouch = 2;
 
@@ -1260,7 +1260,7 @@ void RenderLayerScrollableArea::updateResizerStyle()
 
 void RenderLayerScrollableArea::drawPlatformResizerImage(GraphicsContext* context, IntRect resizerCornerRect)
 {
-    float deviceScaleFactor = WebCore::deviceScaleFactor(box().frame());
+    float deviceScaleFactor = blink::deviceScaleFactor(box().frame());
 
     RefPtr<Image> resizeCornerImage;
     IntSize cornerResizerSize;

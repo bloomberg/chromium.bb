@@ -9,7 +9,7 @@
 #include "core/frame/LocalFrame.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 PrivateScriptTest::PrivateScriptTest(LocalFrame* frame)
 {
@@ -17,4 +17,4 @@ PrivateScriptTest::PrivateScriptTest(LocalFrame* frame)
     RELEASE_ASSERT(!classObject.IsEmpty());
 }
 
-} // namespace WebCore
+} // namespace blink

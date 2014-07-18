@@ -43,7 +43,7 @@ static size_t maximumResourcesContentSize = 100 * 1000 * 1000;
 static size_t maximumSingleResourceContentSize = 10 * 1000 * 1000;
 }
 
-namespace WebCore {
+namespace blink {
 
 
 PassRefPtr<XHRReplayData> XHRReplayData::create(ExecutionContext* executionContext, const AtomicString& method, const KURL& url, bool async, PassRefPtr<FormData> formData, bool includeCredentials)
@@ -377,5 +377,5 @@ bool NetworkResourcesData::ensureFreeSpace(size_t size)
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink
 

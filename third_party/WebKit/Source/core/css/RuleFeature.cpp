@@ -40,7 +40,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/BitVector.h"
 
-namespace WebCore {
+namespace blink {
 
 static bool isSkippableComponentForInvalidation(const CSSSelector& selector)
 {
@@ -526,4 +526,4 @@ void RuleFeatureSet::trace(Visitor* visitor)
     visitor->trace(m_styleInvalidator);
 }
 
-} // namespace WebCore
+} // namespace blink

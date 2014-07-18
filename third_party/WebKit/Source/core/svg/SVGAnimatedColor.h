@@ -34,7 +34,7 @@
 #include "core/css/StyleColor.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGAnimationElement;
 
@@ -73,6 +73,6 @@ inline PassRefPtr<SVGColorProperty> toSVGColorProperty(PassRefPtr<SVGPropertyBas
     return static_pointer_cast<SVGColorProperty>(base.release());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

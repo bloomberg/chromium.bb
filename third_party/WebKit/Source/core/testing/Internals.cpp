@@ -140,7 +140,7 @@
 #include "wtf/text/StringBuffer.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: oilpan: These will be removed soon.
 static MockPagePopupDriver* s_pagePopupDriver = 0;
@@ -188,7 +188,7 @@ void Internals::resetToConsistentState(Page* page)
     page->setDeviceScaleFactor(1);
     page->setIsCursorVisible(true);
     page->setPageScaleFactor(1, IntPoint(0, 0));
-    WebCore::overrideUserPreferredLanguages(Vector<AtomicString>());
+    blink::overrideUserPreferredLanguages(Vector<AtomicString>());
     delete s_pagePopupDriver;
     s_pagePopupDriver = 0;
     page->chrome().client().resetPagePopupDriver();
@@ -1246,7 +1246,7 @@ int Internals::lastSpellCheckProcessedSequence(Document* document, ExceptionStat
 
 Vector<AtomicString> Internals::userPreferredLanguages() const
 {
-    return WebCore::userPreferredLanguages();
+    return blink::userPreferredLanguages();
 }
 
 // Optimally, the bindings generator would pass a Vector<AtomicString> here but
@@ -1256,7 +1256,7 @@ void Internals::setUserPreferredLanguages(const Vector<String>& languages)
     Vector<AtomicString> atomicLanguages;
     for (size_t i = 0; i < languages.size(); ++i)
         atomicLanguages.append(AtomicString(languages[i]));
-    WebCore::overrideUserPreferredLanguages(atomicLanguages);
+    blink::overrideUserPreferredLanguages(atomicLanguages);
 }
 
 unsigned Internals::activeDOMObjectCount(Document* document, ExceptionState& exceptionState)
@@ -2141,7 +2141,7 @@ String Internals::markerTextForListItem(Element* element, ExceptionState& except
         exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return String();
     }
-    return WebCore::markerTextForListItem(element);
+    return blink::markerTextForListItem(element);
 }
 
 String Internals::getImageSourceURL(Element* element, ExceptionState& exceptionState)
@@ -2348,4 +2348,4 @@ String Internals::serializeNavigationMarkup(Document* document)
     return markup.toString();
 }
 
-} // namespace WebCore
+} // namespace blink

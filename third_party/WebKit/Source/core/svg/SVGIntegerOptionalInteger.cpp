@@ -34,7 +34,7 @@
 #include "core/svg/SVGAnimationElement.h"
 #include "core/svg/SVGParserUtilities.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGIntegerOptionalInteger::SVGIntegerOptionalInteger(PassRefPtr<SVGInteger> firstInteger, PassRefPtr<SVGInteger> secondInteger)
     : SVGPropertyBase(classType())

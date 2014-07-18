@@ -33,7 +33,7 @@
 
 #include "core/html/forms/BaseButtonInputType.h"
 
-namespace WebCore {
+namespace blink {
 
 class ResetInputType FINAL : public BaseButtonInputType {
 public:
@@ -48,6 +48,6 @@ private:
     virtual bool isTextButton() const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ResetInputType_h

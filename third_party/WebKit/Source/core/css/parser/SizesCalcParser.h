@@ -9,7 +9,7 @@
 #include "core/css/parser/MediaQueryToken.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 struct SizesCalcValue {
     double value;
@@ -53,7 +53,7 @@ private:
     RefPtr<MediaValues> m_mediaValues;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SizesCalcParser_h
 

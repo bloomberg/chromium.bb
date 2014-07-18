@@ -29,7 +29,7 @@
 
 #include "wtf/TemporaryChange.h"
 
-namespace WebCore {
+namespace blink {
 
 static inline SVGDocumentExtensions& svgExtensionsFromElement(SVGElement* element)
 {

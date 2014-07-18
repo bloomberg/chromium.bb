@@ -25,7 +25,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsCSSProperty {
     uint32_t bitfields;
@@ -697,4 +697,4 @@ bool CSSProperty::isAffectedByAllProperty(CSSPropertyID propertyID)
     return propertyID != CSSPropertyUnicodeBidi && propertyID != CSSPropertyDirection;
 }
 
-} // namespace WebCore
+} // namespace blink

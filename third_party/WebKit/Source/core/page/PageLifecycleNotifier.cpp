@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/page/PageLifecycleNotifier.h"
 
-namespace WebCore {
+namespace blink {
 
 PageLifecycleNotifier::PageLifecycleNotifier(Page* context)
     : LifecycleNotifier<Page>(context)
@@ -54,4 +54,4 @@ void PageLifecycleNotifier::removeObserver(PageLifecycleNotifier::Observer* obse
     LifecycleNotifier<Page>::removeObserver(observer);
 }
 
-} // namespace WebCore
+} // namespace blink

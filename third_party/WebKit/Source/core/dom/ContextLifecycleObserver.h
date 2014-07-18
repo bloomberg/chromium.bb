@@ -29,7 +29,7 @@
 
 #include "platform/LifecycleContext.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 
@@ -44,6 +44,6 @@ protected:
     virtual ~ContextLifecycleObserver();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ContextLifecycleObserver_h

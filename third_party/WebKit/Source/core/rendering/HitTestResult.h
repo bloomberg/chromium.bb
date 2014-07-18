@@ -34,7 +34,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 class LocalFrame;
@@ -152,6 +152,6 @@ private:
     mutable OwnPtrWillBeMember<NodeSet> m_rectBasedTestResult;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HitTestResult_h

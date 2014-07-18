@@ -34,7 +34,7 @@
 #include "core/svg/SVGPointList.h"
 #include "core/svg/properties/SVGListPropertyTearOffHelper.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPointListTearOff FINAL :
     public SVGListPropertyTearOffHelper<SVGPointListTearOff, SVGPointList>,
@@ -53,6 +53,6 @@ private:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPointListTearOff_h_

@@ -34,7 +34,7 @@
 #include "core/css/CSSRule.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSStyleDeclaration;
 class StyleRuleViewport;
@@ -65,6 +65,6 @@ private:
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSViewportRule, VIEWPORT_RULE);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSViewportRule_h

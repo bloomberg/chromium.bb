@@ -51,7 +51,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 unsigned NavigationDisablerForBeforeUnload::s_navigationDisableCount = 0;
 
@@ -426,4 +426,4 @@ void NavigationScheduler::cancel()
     m_redirect.clear();
 }
 
-} // namespace WebCore
+} // namespace blink

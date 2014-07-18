@@ -35,7 +35,7 @@
 #include "core/rendering/SubtreeLayoutScope.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -257,4 +257,4 @@ RenderTableRow* RenderTableRow::createAnonymousWithParentRenderer(const RenderOb
     return newRow;
 }
 
-} // namespace WebCore
+} // namespace blink

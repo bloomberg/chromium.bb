@@ -35,7 +35,7 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 class MediaQueryExp;
 
 typedef WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > ExpressionHeapVector;

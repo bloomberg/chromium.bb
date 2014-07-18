@@ -27,7 +27,7 @@
 
 #include "core/html/canvas/OESStandardDerivatives.h"
 
-namespace WebCore {
+namespace blink {
 
 OESStandardDerivatives::OESStandardDerivatives(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -60,4 +60,4 @@ const char* OESStandardDerivatives::extensionName()
     return "OES_standard_derivatives";
 }
 
-} // namespace WebCore
+} // namespace blink

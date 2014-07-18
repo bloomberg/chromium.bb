@@ -40,7 +40,7 @@ namespace WTF{
 class TextEncoding;
 }
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class Event;

@@ -31,7 +31,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 
@@ -73,6 +73,6 @@ inline void LiveNodeList::invalidateCacheForAttribute(const QualifiedName* attrN
         invalidateCache();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LiveNodeList_h

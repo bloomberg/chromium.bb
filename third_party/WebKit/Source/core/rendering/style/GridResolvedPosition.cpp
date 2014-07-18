@@ -8,7 +8,7 @@
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/style/GridCoordinate.h"
 
-namespace WebCore {
+namespace blink {
 
 static const NamedGridLinesMap& gridLinesForSide(const RenderStyle& style, GridPositionSide side)
 {
@@ -251,4 +251,4 @@ PassOwnPtr<GridSpan> GridResolvedPosition::resolveNamedGridLinePositionAgainstOp
     return GridSpan::createWithNamedSpanAgainstOpposite(resolvedOppositePosition, position, side, it->value);
 }
 
-} // namespace WebCore
+} // namespace blink

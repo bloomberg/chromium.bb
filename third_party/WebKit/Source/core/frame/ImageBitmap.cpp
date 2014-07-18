@@ -14,7 +14,7 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 static inline IntRect normalizeRect(const IntRect& rect)
 {

@@ -34,7 +34,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/rendering/RenderListItem.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -186,4 +186,4 @@ void BreakBlockquoteCommand::doApply()
     rebalanceWhitespace();
 }
 
-} // namespace WebCore
+} // namespace blink

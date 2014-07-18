@@ -33,7 +33,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<ImageData> ImageData::create(const IntSize& size)
 {

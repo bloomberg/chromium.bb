@@ -49,7 +49,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 WorkerThreadableLoader::WorkerThreadableLoader(WorkerGlobalScope& workerGlobalScope, PassRefPtr<ThreadableLoaderClientWrapper> clientWrapper, PassOwnPtr<ThreadableLoaderClient> clientBridge, const ResourceRequest& request, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
     : m_workerGlobalScope(&workerGlobalScope)
@@ -230,4 +230,4 @@ void WorkerThreadableLoader::MainThreadBridge::didFailRedirectCheck()
     m_clientBridge->didFailRedirectCheck();
 }
 
-} // namespace WebCore
+} // namespace blink

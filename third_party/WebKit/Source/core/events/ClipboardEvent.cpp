@@ -25,7 +25,7 @@
 
 #include "core/clipboard/DataTransfer.h"
 
-namespace WebCore {
+namespace blink {
 
 ClipboardEvent::ClipboardEvent()
 {
@@ -57,4 +57,4 @@ void ClipboardEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

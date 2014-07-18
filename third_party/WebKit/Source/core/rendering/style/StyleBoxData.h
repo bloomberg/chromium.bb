@@ -30,7 +30,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class StyleBoxData : public RefCounted<StyleBoxData> {
 public:
@@ -83,6 +83,6 @@ private:
     unsigned m_boxDecorationBreak : 1; // EBoxDecorationBreak
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleBoxData_h

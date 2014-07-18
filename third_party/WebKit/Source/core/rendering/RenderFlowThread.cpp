@@ -43,7 +43,7 @@
 #include "platform/PODIntervalTree.h"
 #include "platform/geometry/TransformState.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderFlowThread::RenderFlowThread()
     : RenderBlockFlow(0)
@@ -517,4 +517,4 @@ CurrentRenderFlowThreadMaintainer::~CurrentRenderFlowThreadMaintainer()
 }
 
 
-} // namespace WebCore
+} // namespace blink

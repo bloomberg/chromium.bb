@@ -32,7 +32,7 @@
 #include "core/dom/Element.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<StaticNodeList> StaticNodeList::adopt(WillBeHeapVector<RefPtrWillBeMember<Node> >& nodes)
 {
@@ -65,4 +65,4 @@ void StaticNodeList::trace(Visitor* visitor)
     NodeList::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -26,7 +26,7 @@
 
 #include "core/rendering/style/StyleImage.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSValue;
 class CSSImageGeneratorValue;

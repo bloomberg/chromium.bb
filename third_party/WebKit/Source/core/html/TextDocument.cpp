@@ -27,7 +27,7 @@
 
 #include "core/html/parser/TextDocumentParser.h"
 
-namespace WebCore {
+namespace blink {
 
 TextDocument::TextDocument(const DocumentInit& initializer)
     : HTMLDocument(initializer)

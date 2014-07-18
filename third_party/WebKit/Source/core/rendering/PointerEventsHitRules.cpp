@@ -20,7 +20,7 @@
 #include "config.h"
 #include "core/rendering/PointerEventsHitRules.h"
 
-namespace WebCore {
+namespace blink {
 
 PointerEventsHitRules::PointerEventsHitRules(EHitTesting hitTesting, const HitTestRequest& request, EPointerEvents pointerEvents)
     : requireVisible(false)

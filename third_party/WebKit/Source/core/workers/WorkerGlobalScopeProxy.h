@@ -36,7 +36,7 @@
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
     class KURL;
     class Worker;
@@ -66,6 +66,6 @@ namespace WebCore {
         virtual void sendMessageToInspector(const String&) { }
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerGlobalScopeProxy_h

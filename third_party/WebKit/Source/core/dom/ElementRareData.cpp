@@ -33,7 +33,7 @@
 
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsElementRareData : NodeRareData {
     short indices[2];
@@ -76,4 +76,4 @@ void ElementRareData::traceAfterDispatch(Visitor* visitor)
 
 COMPILE_ASSERT(sizeof(ElementRareData) == sizeof(SameSizeAsElementRareData), ElementRareDataShouldStaySmall);
 
-} // namespace WebCore
+} // namespace blink

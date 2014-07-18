@@ -43,7 +43,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ContextLifecycleNotifier;
 class LocalDOMWindow;
@@ -174,6 +174,6 @@ private:
     OwnPtr<ContextLifecycleNotifier> m_lifecycleNotifier;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ExecutionContext_h

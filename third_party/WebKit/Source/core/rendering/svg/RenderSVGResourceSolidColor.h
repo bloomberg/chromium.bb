@@ -24,7 +24,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/Color.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderSVGResourceSolidColor FINAL : public RenderSVGResource {
 public:

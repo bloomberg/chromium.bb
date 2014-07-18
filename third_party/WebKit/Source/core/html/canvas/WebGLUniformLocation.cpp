@@ -28,7 +28,7 @@
 
 #include "core/html/canvas/WebGLUniformLocation.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<WebGLUniformLocation> WebGLUniformLocation::create(WebGLProgram* program, GLint location)
 {

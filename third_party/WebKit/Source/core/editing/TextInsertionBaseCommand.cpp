@@ -33,7 +33,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 TextInsertionBaseCommand::TextInsertionBaseCommand(Document& document)
     : CompositeEditCommand(document)

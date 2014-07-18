@@ -27,7 +27,7 @@
 
 #include "core/html/canvas/WebGLDebugRendererInfo.h"
 
-namespace WebCore {
+namespace blink {
 
 WebGLDebugRendererInfo::WebGLDebugRendererInfo(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -59,4 +59,4 @@ const char* WebGLDebugRendererInfo::extensionName()
     return "WEBGL_debug_renderer_info";
 }
 
-} // namespace WebCore
+} // namespace blink

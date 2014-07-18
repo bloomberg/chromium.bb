@@ -39,7 +39,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSParserValueList;
 class CSSValueList;
@@ -143,7 +143,7 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSCalcValue, isCalcValue());
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // CSSCalculationValue_h

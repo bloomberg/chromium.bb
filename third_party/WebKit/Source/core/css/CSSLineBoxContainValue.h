@@ -29,7 +29,7 @@
 #include "core/css/CSSValue.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSPrimitiveValue;
 

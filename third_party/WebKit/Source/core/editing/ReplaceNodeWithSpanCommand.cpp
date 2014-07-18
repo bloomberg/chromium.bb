@@ -37,7 +37,7 @@
 #include "core/html/HTMLElement.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -88,4 +88,4 @@ void ReplaceNodeWithSpanCommand::trace(Visitor* visitor)
     SimpleEditCommand::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

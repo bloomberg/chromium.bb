@@ -32,7 +32,7 @@
 #include "core/dom/shadow/ComposedTreeWalker.h"
 #include "core/rendering/RenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace NodeRenderingTraversal {
 

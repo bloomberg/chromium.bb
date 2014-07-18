@@ -28,7 +28,7 @@
 
 #include "core/accessibility/AXObject.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXScrollbar;
 class Scrollbar;
@@ -83,6 +83,6 @@ private:
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXScrollView, isAXScrollView());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXScrollView_h

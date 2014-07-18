@@ -30,7 +30,7 @@
 #include "core/html/canvas/WebGLExtension.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebGLTexture;
 
@@ -47,6 +47,6 @@ private:
     WebGLCompressedTextureS3TC(WebGLRenderingContextBase*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLCompressedTextureS3TC_h

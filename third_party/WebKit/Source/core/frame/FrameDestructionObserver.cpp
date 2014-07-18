@@ -28,7 +28,7 @@
 
 #include "core/frame/LocalFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 FrameDestructionObserver::FrameDestructionObserver(LocalFrame* frame)
     : m_frame(0)

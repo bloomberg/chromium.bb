@@ -31,7 +31,7 @@
 #include "core/rendering/style/StyleImage.h"
 #include "platform/geometry/LayoutSize.h"
 
-namespace WebCore {
+namespace blink {
 
 class ImageResource;
 class CSSImageSetValue;
@@ -87,6 +87,6 @@ private:
 
 DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleFetchedImageSet, isImageResourceSet());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleFetchedImageSet_h

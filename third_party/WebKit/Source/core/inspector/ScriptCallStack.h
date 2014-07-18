@@ -38,7 +38,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ScriptAsyncCallStack;
 
@@ -66,6 +66,6 @@ private:
     RefPtrWillBeMember<ScriptAsyncCallStack> m_asyncCallStack;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptCallStack_h

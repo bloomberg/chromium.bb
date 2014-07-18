@@ -44,7 +44,7 @@
 #include "core/html/HTMLBRElement.h"
 #include "core/rendering/RenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -631,4 +631,4 @@ bool TypingCommand::isTypingCommand() const
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

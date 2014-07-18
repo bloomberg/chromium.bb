@@ -35,7 +35,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGSVGElement.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGTransformListTearOff::SVGTransformListTearOff(PassRefPtr<SVGTransformList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     : SVGListPropertyTearOffHelper<SVGTransformListTearOff, SVGTransformList>(target, contextElement, propertyIsAnimVal, attributeName)

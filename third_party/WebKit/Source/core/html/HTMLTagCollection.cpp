@@ -25,7 +25,7 @@
 #include "config.h"
 #include "HTMLTagCollection.h"
 
-namespace WebCore {
+namespace blink {
 
 HTMLTagCollection::HTMLTagCollection(ContainerNode& rootNode, const AtomicString& localName)
     : TagCollection(rootNode, HTMLTagCollectionType, starAtom, localName)
@@ -34,4 +34,4 @@ HTMLTagCollection::HTMLTagCollection(ContainerNode& rootNode, const AtomicString
     ASSERT(rootNode.document().isHTMLDocument());
 }
 
-} // namespace WebCore
+} // namespace blink

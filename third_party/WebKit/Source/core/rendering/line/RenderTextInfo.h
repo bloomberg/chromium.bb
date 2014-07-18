@@ -25,7 +25,7 @@
 
 #include "platform/text/TextBreakIterator.h"
 
-namespace WebCore {
+namespace blink {
 
 class Font;
 class RenderText;
@@ -42,6 +42,6 @@ struct RenderTextInfo {
     const Font* m_font;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderTextInfo_h

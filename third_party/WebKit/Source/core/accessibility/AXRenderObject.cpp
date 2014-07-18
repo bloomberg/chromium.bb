@@ -73,7 +73,7 @@
 
 using blink::WebLocalizedString;
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -2320,4 +2320,4 @@ LayoutRect AXRenderObject::computeElementRect() const
     return result;
 }
 
-} // namespace WebCore
+} // namespace blink

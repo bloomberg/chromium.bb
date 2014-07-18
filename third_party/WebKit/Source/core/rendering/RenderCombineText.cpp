@@ -23,7 +23,7 @@
 
 #include "core/rendering/TextRunConstructor.h"
 
-namespace WebCore {
+namespace blink {
 
 const float textCombineMargin = 1.1f; // Allow em + 10% margin
 
@@ -144,4 +144,4 @@ void RenderCombineText::combineText()
     }
 }
 
-} // namespace WebCore
+} // namespace blink

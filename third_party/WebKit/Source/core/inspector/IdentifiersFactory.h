@@ -28,7 +28,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class IdentifiersFactory {
 public:
@@ -41,7 +41,7 @@ private:
     static long s_processId;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // IdentifiersFactory_h

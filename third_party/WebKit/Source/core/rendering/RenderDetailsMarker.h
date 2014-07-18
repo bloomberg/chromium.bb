@@ -23,7 +23,7 @@
 
 #include "core/rendering/RenderBlockFlow.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderDetailsMarker FINAL : public RenderBlockFlow {
 public:

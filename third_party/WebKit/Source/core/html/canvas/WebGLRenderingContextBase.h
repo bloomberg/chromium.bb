@@ -49,7 +49,7 @@ namespace blink {
 class WebLayer;
 }
 
-namespace WebCore {
+namespace blink {
 
 class ANGLEInstancedArrays;
 class EXTBlendMinMax;
@@ -909,6 +909,6 @@ protected:
 
 DEFINE_TYPE_CASTS(WebGLRenderingContextBase, CanvasRenderingContext, context, context->is3d(), context.is3d());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLRenderingContextBase_h

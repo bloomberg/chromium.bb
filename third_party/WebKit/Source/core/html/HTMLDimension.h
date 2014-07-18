@@ -34,7 +34,7 @@
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 // This class corresponds to a dimension as described in HTML5 by the
 // "rules for parsing a list of dimensions" (section 2.4.4.6).
@@ -77,6 +77,6 @@ private:
 
 Vector<HTMLDimension> parseListOfDimensions(const String&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLDimension_h

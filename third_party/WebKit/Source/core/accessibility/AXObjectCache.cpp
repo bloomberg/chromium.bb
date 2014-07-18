@@ -77,7 +77,7 @@
 #include "platform/scroll/ScrollView.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -1027,4 +1027,4 @@ void AXObjectCache::setCanvasObjectBounds(Element* element, const LayoutRect& re
     obj->setElementRect(rect);
 }
 
-} // namespace WebCore
+} // namespace blink

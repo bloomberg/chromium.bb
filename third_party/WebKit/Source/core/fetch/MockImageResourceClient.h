@@ -35,9 +35,9 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
-class MockImageResourceClient FINAL : public WebCore::ImageResourceClient {
+class MockImageResourceClient FINAL : public blink::ImageResourceClient {
 public:
     MockImageResourceClient()
         : m_imageChangedCount(0)
@@ -65,6 +65,6 @@ private:
     bool m_notifyFinishedCalled;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ImageResourceTest_h

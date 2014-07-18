@@ -25,7 +25,7 @@
 #include "core/CSSValueKeywords.h"
 #include "platform/fonts/FixedPitchFontType.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 
@@ -48,6 +48,6 @@ public:
     static int legacyFontSize(const Document*, int pixelFontSize, FixedPitchFontType);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FontSize_h

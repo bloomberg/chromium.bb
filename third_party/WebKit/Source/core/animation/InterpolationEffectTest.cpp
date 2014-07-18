@@ -13,7 +13,7 @@ const double duration = 1.0;
 
 } // namespace
 
-namespace WebCore {
+namespace blink {
 
 class AnimationInterpolationEffectTest : public ::testing::Test {
 protected:

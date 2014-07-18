@@ -32,7 +32,7 @@
 
 #include "core/dom/Element.h"
 
-namespace WebCore {
+namespace blink {
 
 Element* NamedNodesCollection::item(unsigned index) const
 {
@@ -47,4 +47,4 @@ void NamedNodesCollection::trace(Visitor* visitor)
     NodeList::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

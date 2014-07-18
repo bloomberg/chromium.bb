@@ -22,7 +22,7 @@
 
 #include "core/loader/ImageLoader.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGImageElement;
 
@@ -39,6 +39,6 @@ private:
     virtual String sourceURI(const AtomicString&) const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGImageLoader_h

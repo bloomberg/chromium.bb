@@ -26,7 +26,7 @@
 
 #include "core/html/HTMLFrameElementBase.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLFrameElement FINAL : public HTMLFrameElementBase {
 public:
@@ -50,6 +50,6 @@ private:
     bool m_frameBorderSet;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLFrameElement_h

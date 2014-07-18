@@ -27,7 +27,7 @@
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 #include "core/svg/SVGAngleTearOff.h"
 
-namespace WebCore {
+namespace blink {
 
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGMarkerUnitsType>()
 {

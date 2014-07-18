@@ -45,7 +45,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 static PassOwnPtr<Shape> createInsetShape(const FloatRoundedRect& bounds)
 {
@@ -238,4 +238,4 @@ PassOwnPtr<Shape> Shape::createLayoutBoxShape(const RoundedRect& roundedRect, Wr
     return shape.release();
 }
 
-} // namespace WebCore
+} // namespace blink

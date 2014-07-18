@@ -37,7 +37,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<DataObjectItem> DataObjectItem::createFromString(const String& type, const String& data)
 {
@@ -175,5 +175,5 @@ void DataObjectItem::trace(Visitor* visitor)
     visitor->trace(m_file);
 }
 
-} // namespace WebCore
+} // namespace blink
 

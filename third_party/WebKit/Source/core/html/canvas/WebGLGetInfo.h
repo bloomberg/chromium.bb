@@ -41,7 +41,7 @@
 #include "wtf/Uint8Array.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 // A tagged union representing the result of get queries like
 // getParameter (encompassing getBooleanv, getIntegerv, getFloatv) and
@@ -135,6 +135,6 @@ private:
     RefPtr<WebGLVertexArrayObjectOES> m_webglVertexArrayObject;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLGetInfo_h

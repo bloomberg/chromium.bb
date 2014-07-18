@@ -23,7 +23,7 @@
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGClipPathElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class DisplayList;
 

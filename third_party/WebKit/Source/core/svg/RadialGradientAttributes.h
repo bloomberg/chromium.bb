@@ -22,7 +22,7 @@
 
 #include "core/svg/GradientAttributes.h"
 
-namespace WebCore {
+namespace blink {
 struct RadialGradientAttributes : GradientAttributes {
     RadialGradientAttributes()
         : m_cx(SVGLength::create(LengthModeWidth))
@@ -82,6 +82,6 @@ private:
     bool m_frSet : 1;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

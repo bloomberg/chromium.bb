@@ -7,7 +7,7 @@
 
 #include "platform/Language.h"
 
-namespace WebCore {
+namespace blink {
 
 NavigatorLanguage::NavigatorLanguage()
     : m_languagesChanged(true)
@@ -33,4 +33,4 @@ void NavigatorLanguage::setLanguagesChanged()
     m_languagesChanged = true;
 }
 
-} // namespace WebCore
+} // namespace blink

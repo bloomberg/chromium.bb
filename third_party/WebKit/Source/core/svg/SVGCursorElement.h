@@ -29,7 +29,7 @@
 #include "core/svg/SVGTests.h"
 #include "core/svg/SVGURIReference.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGCursorElement FINAL : public SVGElement,
                                public SVGTests,
@@ -67,6 +67,6 @@ private:
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > m_clients;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -11,7 +11,7 @@
 #include "core/rendering/RenderBox.h" // For OverlayScrollbarSizeRelevancy.
 #endif
 
-namespace WebCore {
+namespace blink {
 
 enum ClipRectsCacheSlot {
     // Relative to the ancestor treated as the root (e.g. transformed layer). Used for hit testing.
@@ -63,6 +63,6 @@ private:
     Entry m_entries[NumberOfClipRectsCacheSlots];
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ClipRectsCache_h

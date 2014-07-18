@@ -31,7 +31,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeTraversal.h"
 
-namespace WebCore {
+namespace blink {
 
 TreeWalker::TreeWalker(PassRefPtrWillBeRawPtr<Node> rootNode, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter> filter)
     : NodeIteratorBase(rootNode, whatToShow, filter)
@@ -283,4 +283,4 @@ void TreeWalker::trace(Visitor* visitor)
     NodeIteratorBase::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

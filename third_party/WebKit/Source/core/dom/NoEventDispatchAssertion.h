@@ -8,7 +8,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/TemporaryChange.h"
 
-namespace WebCore {
+namespace blink {
 
 #if ENABLE(ASSERT)
 
@@ -71,6 +71,6 @@ public:
 
 #endif // ENABLE(ASSERT)
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NoEventDispatchAssertion_h

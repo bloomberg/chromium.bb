@@ -26,7 +26,7 @@
 
 #include "core/rendering/InlineIterator.h"
 
-namespace WebCore {
+namespace blink {
 
 void TrailingObjects::updateMidpointsForTrailingObjects(LineMidpointState& lineMidpointState, const InlineIterator& lBreak, CollapseFirstSpaceOrNot collapseFirstSpace)
 {

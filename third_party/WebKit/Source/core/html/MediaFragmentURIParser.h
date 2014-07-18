@@ -29,7 +29,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 
@@ -59,6 +59,6 @@ private:
     Vector<std::pair<String, String> > m_fragments;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

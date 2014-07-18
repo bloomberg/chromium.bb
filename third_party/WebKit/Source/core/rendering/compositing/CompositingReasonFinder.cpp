@@ -13,7 +13,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 
-namespace WebCore {
+namespace blink {
 
 CompositingReasonFinder::CompositingReasonFinder(RenderView& renderView)
     : m_renderView(renderView)

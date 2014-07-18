@@ -34,7 +34,7 @@
 #include "core/editing/TextAffinity.h"
 #include "core/rendering/InlineBox.h"
 
-namespace WebCore {
+namespace blink {
 
 class LayoutUnit;
 class Position;

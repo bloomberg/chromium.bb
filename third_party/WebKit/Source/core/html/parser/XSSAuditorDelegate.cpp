@@ -37,7 +37,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 String XSSInfo::buildConsoleError() const
 {
@@ -124,4 +124,4 @@ void XSSAuditorDelegate::didBlockScript(const XSSInfo& xssInfo)
         m_document->frame()->navigationScheduler().schedulePageBlock(m_document, Referrer());
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -22,7 +22,7 @@
 
 #include "core/rendering/InlineBox.h"
 
-namespace WebCore {
+namespace blink {
 
 class HitTestRequest;
 class HitTestResult;
@@ -59,6 +59,6 @@ private:
     RenderObject::SelectionState m_selectionState;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // EllipsisBox_h

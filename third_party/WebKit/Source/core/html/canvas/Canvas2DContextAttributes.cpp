@@ -30,7 +30,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 Canvas2DContextAttributes::Canvas2DContextAttributes()
     : m_alpha(true)
@@ -76,4 +76,4 @@ Canvas2DContextStorage Canvas2DContextAttributes::parsedStorage() const
     return m_storage;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -37,7 +37,7 @@
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -205,4 +205,4 @@ void HTMLDialogElement::defaultEventHandler(Event* event)
     HTMLElement::defaultEventHandler(event);
 }
 
-} // namespace WebCore
+} // namespace blink

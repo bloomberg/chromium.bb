@@ -35,7 +35,7 @@
 #include "core/workers/SharedWorkerGlobalScope.h"
 #include "core/workers/WorkerThreadStartupData.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<SharedWorkerThread> SharedWorkerThread::create(const String& name, WorkerLoaderProxy& workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
 {
@@ -57,4 +57,4 @@ PassRefPtrWillBeRawPtr<WorkerGlobalScope> SharedWorkerThread::createWorkerGlobal
     return SharedWorkerGlobalScope::create(m_name, this, startupData);
 }
 
-} // namespace WebCore
+} // namespace blink

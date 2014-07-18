@@ -25,7 +25,7 @@
 
 #include "platform/geometry/LayoutRect.h"
 
-namespace WebCore {
+namespace blink {
 
     struct GapRects {
         const LayoutRect& left() const { return m_left; }
@@ -57,6 +57,6 @@ namespace WebCore {
         LayoutRect m_right;
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GapRects_h

@@ -33,7 +33,7 @@
 
 #include "core/svg/SVGAnimatedNumber.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGNumberOptionalNumber : public SVGPropertyBase {
 public:
@@ -75,6 +75,6 @@ inline PassRefPtr<SVGNumberOptionalNumber> toSVGNumberOptionalNumber(PassRefPtr<
     return static_pointer_cast<SVGNumberOptionalNumber>(base.release());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGNumberOptionalNumber_h

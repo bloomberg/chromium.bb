@@ -33,7 +33,7 @@
 
 #include "core/svg/SVGGraphicsElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPointTearOff;
 
@@ -46,6 +46,6 @@ protected:
     SVGGeometryElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGGraphicsElement_h

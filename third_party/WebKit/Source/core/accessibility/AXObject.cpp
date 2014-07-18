@@ -44,7 +44,7 @@
 
 using blink::WebLocalizedString;
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -899,4 +899,4 @@ AccessibilityRole AXObject::buttonRoleType() const
     return ButtonRole;
 }
 
-} // namespace WebCore
+} // namespace blink

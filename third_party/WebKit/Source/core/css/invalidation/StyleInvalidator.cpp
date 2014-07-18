@@ -15,7 +15,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/rendering/RenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 void StyleInvalidator::invalidate(Document& document)
 {
@@ -164,4 +164,4 @@ void StyleInvalidator::trace(Visitor* visitor)
     visitor->trace(m_pendingInvalidationMap);
 }
 
-} // namespace WebCore
+} // namespace blink

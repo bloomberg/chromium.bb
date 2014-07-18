@@ -25,7 +25,7 @@
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FEDisplacementMap.h"
 
-namespace WebCore {
+namespace blink {
 
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<ChannelSelectorType>();
 
@@ -57,6 +57,6 @@ private:
     RefPtr<SVGAnimatedEnumeration<ChannelSelectorType> > m_yChannelSelector;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGFEDisplacementMapElement_h

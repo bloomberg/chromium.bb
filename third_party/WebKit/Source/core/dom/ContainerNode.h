@@ -29,7 +29,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ClassCollection;
 class ExceptionState;
@@ -323,6 +323,6 @@ inline void getChildNodes(Node& node, NodeVector& nodes)
         nodes.append(child);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ContainerNode_h

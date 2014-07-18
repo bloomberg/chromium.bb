@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/testing/GarbageCollectedScriptWrappable.h"
 
-namespace WebCore {
+namespace blink {
 
 GarbageCollectedScriptWrappable::GarbageCollectedScriptWrappable(const String& string)
     : m_string(string)
@@ -17,5 +17,5 @@ GarbageCollectedScriptWrappable::~GarbageCollectedScriptWrappable()
 {
 }
 
-} // namespace WebCore
+} // namespace blink
 

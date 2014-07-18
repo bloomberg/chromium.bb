@@ -33,7 +33,7 @@
 
 #include "core/animation/animatable/AnimatableValue.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableDouble FINAL : public AnimatableValue {
 public:
@@ -73,6 +73,6 @@ private:
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableDouble, isDouble());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatableDouble_h

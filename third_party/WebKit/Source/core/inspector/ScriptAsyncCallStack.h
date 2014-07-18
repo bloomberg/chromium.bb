@@ -12,7 +12,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ScriptAsyncCallStack : public RefCountedWillBeGarbageCollectedFinalized<ScriptAsyncCallStack> {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptAsyncCallStack);
@@ -31,6 +31,6 @@ private:
     RefPtrWillBeMember<ScriptAsyncCallStack> m_asyncStackTrace;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptAsyncCallStack_h

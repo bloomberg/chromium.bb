@@ -11,7 +11,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 MediaListDirective::MediaListDirective(const String& name, const String& value, ContentSecurityPolicy* policy)
     : CSPDirective(name, value, policy)
@@ -83,4 +83,4 @@ void MediaListDirective::parse(const UChar* begin, const UChar* end)
     }
 }
 
-} // namespace WebCore
+} // namespace blink

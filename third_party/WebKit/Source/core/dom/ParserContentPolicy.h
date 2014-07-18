@@ -26,7 +26,7 @@
 #ifndef ParserContentPolicy_h
 #define ParserContentPolicy_h
 
-namespace WebCore {
+namespace blink {
 
 enum ParserContentPolicy {
     DisallowScriptingAndPluginContent,
@@ -59,6 +59,6 @@ static inline ParserContentPolicy allowPluginContent(ParserContentPolicy parserC
     return DisallowScriptingContent;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ParserContentPolicy_h

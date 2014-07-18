@@ -34,7 +34,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerStackingNode.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderLayerStackingNode* RenderLayerStackingNodeIterator::next()
 {
@@ -137,4 +137,4 @@ void RenderLayerStackingNodeReverseIterator::setIndexToLastItem()
     m_index = -1;
 }
 
-} // namespace WebCore
+} // namespace blink

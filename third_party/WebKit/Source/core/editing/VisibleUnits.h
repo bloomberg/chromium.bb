@@ -29,7 +29,7 @@
 #include "core/editing/EditingBoundary.h"
 #include "platform/text/TextDirection.h"
 
-namespace WebCore {
+namespace blink {
 
 class Node;
 class VisiblePosition;
@@ -93,6 +93,6 @@ VisiblePosition startOfEditableContent(const VisiblePosition&);
 VisiblePosition endOfEditableContent(const VisiblePosition&);
 bool isEndOfEditableOrNonEditableContent(const VisiblePosition&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // VisibleUnits_h

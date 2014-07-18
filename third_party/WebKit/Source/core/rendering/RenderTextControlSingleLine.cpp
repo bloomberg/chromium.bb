@@ -35,7 +35,7 @@
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/fonts/SimpleFontData.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

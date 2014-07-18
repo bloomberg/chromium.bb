@@ -44,7 +44,7 @@
 #include "platform/MIMETypeRegistry.h"
 #include "platform/Widget.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

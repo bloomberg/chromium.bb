@@ -33,7 +33,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class TextTrackLoader;
@@ -93,6 +93,6 @@ private:
     bool m_newCuesAvailable;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

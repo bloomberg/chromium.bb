@@ -30,7 +30,7 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/rendering/style/StyleImage.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderObject;
 
@@ -78,6 +78,6 @@ private:
     LayoutSize getImageSize(float multiplier, ImageResource::SizeType) const;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderImage_h

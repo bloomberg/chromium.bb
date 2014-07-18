@@ -23,7 +23,7 @@
 
 #include "core/html/LabelableElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class MeterValueElement;

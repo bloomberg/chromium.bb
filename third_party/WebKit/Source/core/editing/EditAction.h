@@ -26,7 +26,7 @@
 #ifndef EditAction_h
 #define EditAction_h
 
-namespace WebCore {
+namespace blink {
     typedef enum {
         EditActionUnspecified,
         EditActionSetColor,

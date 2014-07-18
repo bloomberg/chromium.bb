@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/dom/custom/CustomElementCallbackQueue.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtrWillBeRawPtr<CustomElementCallbackQueue> CustomElementCallbackQueue::create(PassRefPtrWillBeRawPtr<Element> element)
 {
@@ -77,4 +77,4 @@ void CustomElementCallbackQueue::trace(Visitor* visitor)
     visitor->trace(m_element);
 }
 
-} // namespace WebCore
+} // namespace blink

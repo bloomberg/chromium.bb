@@ -37,7 +37,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class InlineTextBox;
 
@@ -93,6 +93,6 @@ private:
     static InlineToAbstractInlineTextBoxHashMap* gAbstractInlineTextBoxMap;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AbstractInlineTextBox_h

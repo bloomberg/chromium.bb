@@ -29,7 +29,7 @@
 
 #include "platform/RefCountedSupplement.h"
 
-namespace WebCore {
+namespace blink {
 
 class ContextFeaturesClient;
 class Document;
@@ -114,6 +114,6 @@ inline void ContextFeatures::urlDidChange(Document* document)
     // m_client->urlDidChange(document);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ContextFeatures_h

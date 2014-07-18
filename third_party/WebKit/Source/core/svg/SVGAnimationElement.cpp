@@ -37,7 +37,7 @@
 #include "platform/FloatConversion.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName, Document& document)
     : SVGSMILElement(tagName, document)

@@ -55,7 +55,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -521,4 +521,4 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, do
     ASSERT(!animations.isEmpty());
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -42,7 +42,7 @@
 #include "core/svg/SVGSVGElement.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGUseElement::SVGUseElement(Document& document)
     : SVGGraphicsElement(SVGNames::useTag, document)

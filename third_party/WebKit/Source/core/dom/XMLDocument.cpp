@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/dom/XMLDocument.h"
 
-namespace WebCore {
+namespace blink {
 
 XMLDocument::XMLDocument(const DocumentInit& initializer, DocumentClassFlags documentClasses)
     : Document(initializer, documentClasses)
@@ -34,4 +34,4 @@ XMLDocument::XMLDocument(const DocumentInit& initializer, DocumentClassFlags doc
     ScriptWrappable::init(this);
 }
 
-} // namespace WebCore
+} // namespace blink

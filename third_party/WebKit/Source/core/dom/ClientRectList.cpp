@@ -29,7 +29,7 @@
 
 #include "core/dom/ClientRect.h"
 
-namespace WebCore {
+namespace blink {
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ClientRectList);
 
@@ -67,4 +67,4 @@ void ClientRectList::trace(Visitor* visitor)
     visitor->trace(m_list);
 }
 
-} // namespace WebCore
+} // namespace blink

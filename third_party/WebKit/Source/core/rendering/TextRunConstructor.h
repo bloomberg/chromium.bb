@@ -41,7 +41,7 @@
 #include "wtf/text/WTFString.h"
 #include "wtf/unicode/Unicode.h"
 
-namespace WebCore {
+namespace blink {
 
 class Font;
 class RenderObject;
@@ -81,6 +81,6 @@ TextRun constructTextRun(RenderObject* context, const Font&, const LChar* charac
 TextRun constructTextRun(RenderObject* context, const Font&, const UChar* characters, int length, RenderStyle*, TextDirection,
     TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

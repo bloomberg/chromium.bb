@@ -39,7 +39,7 @@
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

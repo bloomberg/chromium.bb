@@ -41,7 +41,7 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
 
-namespace WebCore {
+namespace blink {
 
 static blink::WebCookieJar* toCookieJar(const Document* document)
 {

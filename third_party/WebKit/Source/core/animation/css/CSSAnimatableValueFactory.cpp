@@ -60,7 +60,7 @@
 #include "platform/Length.h"
 #include "platform/LengthBox.h"
 
-namespace WebCore {
+namespace blink {
 
 static PassRefPtrWillBeRawPtr<AnimatableValue> createFromLength(const Length& length, const RenderStyle& style)
 {
@@ -517,4 +517,4 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
     }
 }
 
-} // namespace WebCore
+} // namespace blink

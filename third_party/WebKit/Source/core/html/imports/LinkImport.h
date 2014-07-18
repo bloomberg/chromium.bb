@@ -37,7 +37,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class HTMLImportChild;
@@ -76,6 +76,6 @@ private:
     RawPtrWillBeMember<HTMLImportChild> m_child;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LinkImport_h

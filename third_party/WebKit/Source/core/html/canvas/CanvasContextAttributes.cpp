@@ -28,7 +28,7 @@
 
 #include "core/html/canvas/CanvasContextAttributes.h"
 
-namespace WebCore {
+namespace blink {
 
 CanvasContextAttributes::CanvasContextAttributes()
 {
@@ -38,4 +38,4 @@ CanvasContextAttributes::~CanvasContextAttributes()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

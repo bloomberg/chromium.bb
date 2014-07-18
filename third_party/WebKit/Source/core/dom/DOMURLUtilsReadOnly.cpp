@@ -30,7 +30,7 @@
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
-namespace WebCore {
+namespace blink {
 
 String DOMURLUtilsReadOnly::href()
 {
@@ -78,4 +78,4 @@ String DOMURLUtilsReadOnly::hash(const KURL& kurl)
     return AtomicString(String("#" + fragmentIdentifier));
 }
 
-} // namespace WebCore
+} // namespace blink

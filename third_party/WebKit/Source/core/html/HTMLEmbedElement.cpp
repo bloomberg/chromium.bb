@@ -36,7 +36,7 @@
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderWidget.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

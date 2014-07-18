@@ -31,7 +31,7 @@
 
 #include "core/accessibility/AXMockObject.h"
 
-namespace WebCore {
+namespace blink {
 
 class Scrollbar;
 
@@ -66,6 +66,6 @@ private:
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXScrollbar, isAXScrollbar());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXScrollbar_h

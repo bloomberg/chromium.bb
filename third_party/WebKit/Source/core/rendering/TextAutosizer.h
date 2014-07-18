@@ -33,7 +33,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class RenderBlock;
@@ -140,6 +140,6 @@ private:
     bool m_previouslyAutosized;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TextAutosizer_h

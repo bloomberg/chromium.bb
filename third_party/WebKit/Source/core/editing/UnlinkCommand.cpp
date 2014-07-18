@@ -28,7 +28,7 @@
 
 #include "core/html/HTMLAnchorElement.h"
 
-namespace WebCore {
+namespace blink {
 
 UnlinkCommand::UnlinkCommand(Document& document)
     : CompositeEditCommand(document)

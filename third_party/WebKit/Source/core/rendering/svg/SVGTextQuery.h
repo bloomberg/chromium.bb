@@ -25,7 +25,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class InlineFlowBox;
 class RenderObject;

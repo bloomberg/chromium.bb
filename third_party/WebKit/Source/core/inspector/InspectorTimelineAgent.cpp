@@ -62,7 +62,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace TimelineAgentState {
 static const char enabled[] = "enabled";
@@ -1311,5 +1311,5 @@ bool TimelineRecordStack::isOpenRecordOfType(const String& type)
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink
 

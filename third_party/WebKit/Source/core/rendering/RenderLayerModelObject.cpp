@@ -29,7 +29,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 
-namespace WebCore {
+namespace blink {
 
 bool RenderLayerModelObject::s_wasFloating = false;
 
@@ -179,5 +179,5 @@ void RenderLayerModelObject::addLayerHitTestRects(LayerHitTestRects& rects, cons
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 

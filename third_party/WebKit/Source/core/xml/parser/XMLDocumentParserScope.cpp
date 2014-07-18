@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/xml/parser/XMLDocumentParserScope.h"
 
-namespace WebCore {
+namespace blink {
 
 ResourceFetcher* XMLDocumentParserScope::currentFetcher = 0;
 

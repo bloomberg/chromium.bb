@@ -33,7 +33,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class NavigatorID {
 public:
@@ -45,6 +45,6 @@ public:
     virtual String userAgent() const = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigatorID_h

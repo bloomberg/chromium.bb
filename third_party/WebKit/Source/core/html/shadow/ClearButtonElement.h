@@ -29,7 +29,7 @@
 #include "core/html/HTMLDivElement.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class ClearButtonElement FINAL : public HTMLDivElement {
 public:

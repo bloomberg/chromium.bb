@@ -36,7 +36,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

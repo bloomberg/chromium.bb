@@ -25,7 +25,7 @@
 
 #include "core/rendering/RenderText.h"
 
-namespace WebCore {
+namespace blink {
 
 // Used to represent a text substring of an element, e.g., for text runs that are split because of
 // first letter and that must therefore have different styles (and positions in the render tree).
@@ -74,6 +74,6 @@ private:
 
 DEFINE_TYPE_CASTS(RenderTextFragment, RenderObject, object, toRenderText(object)->isTextFragment(), toRenderText(object).isTextFragment());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderTextFragment_h

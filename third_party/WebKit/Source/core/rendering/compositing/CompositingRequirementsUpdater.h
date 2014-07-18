@@ -31,7 +31,7 @@
 #include "platform/graphics/CompositingReasons.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class CompositingReasonFinder;
 class RenderLayer;
@@ -64,6 +64,6 @@ private:
     CompositingReasonFinder& m_compositingReasonFinder;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CompositingRequirementsUpdater_h

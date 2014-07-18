@@ -28,7 +28,7 @@
 
 #include "bindings/core/v8/SerializedScriptValue.h"
 
-namespace WebCore {
+namespace blink {
 
 CustomEvent::CustomEvent()
 {
@@ -65,4 +65,4 @@ void CustomEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

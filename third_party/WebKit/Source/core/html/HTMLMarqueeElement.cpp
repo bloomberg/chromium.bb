@@ -30,7 +30,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/rendering/RenderMarquee.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -162,4 +162,4 @@ void HTMLMarqueeElement::timerFired(Timer<HTMLMarqueeElement>*)
         toRenderMarquee(renderer())->timerFired();
 }
 
-} // namespace WebCore
+} // namespace blink

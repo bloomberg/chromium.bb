@@ -33,7 +33,7 @@
 
 #include "core/events/EventTarget.h"
 
-namespace WebCore {
+namespace blink {
 
 class XMLHttpRequestEventTarget : public EventTargetWithInlineData {
 public:
@@ -46,6 +46,6 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(timeout);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // XMLHttpRequestEventTarget_h

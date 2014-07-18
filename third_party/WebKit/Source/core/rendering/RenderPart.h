@@ -25,7 +25,7 @@
 
 #include "core/rendering/RenderWidget.h"
 
-namespace WebCore {
+namespace blink {
 
 // Renderer for frames via RenderFrame and RenderIFrame, and plug-ins via RenderEmbeddedObject.
 class RenderPart : public RenderWidget {

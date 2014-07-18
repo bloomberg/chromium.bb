@@ -25,7 +25,7 @@
 #include "core/SVGNames.h"
 #include "core/XLinkNames.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGCursorElement::SVGCursorElement(Document& document)
     : SVGElement(SVGNames::cursorTag, document)

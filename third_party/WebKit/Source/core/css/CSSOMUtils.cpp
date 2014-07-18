@@ -34,7 +34,7 @@
 #include "wtf/HexNumber.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 void serializeCharacter(UChar32 c, StringBuilder& appendTo)
 {
@@ -97,4 +97,4 @@ void serializeString(const String& string, StringBuilder& appendTo)
     appendTo.append('\"');
 }
 
-} // namespace WebCore
+} // namespace blink

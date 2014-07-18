@@ -26,7 +26,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 #if ENABLE(SECURITY_ASSERT)
 template<typename NodeType> class TreeShared;

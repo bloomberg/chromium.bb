@@ -42,7 +42,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<DocumentWriter> DocumentWriter::create(Document* document, const AtomicString& mimeType, const AtomicString& encoding, bool encodingUserChoosen)
 {
@@ -140,4 +140,4 @@ void DocumentWriter::setDocumentWasLoadedAsPartOfNavigation()
     m_parser->setDocumentWasLoadedAsPartOfNavigation();
 }
 
-} // namespace WebCore
+} // namespace blink

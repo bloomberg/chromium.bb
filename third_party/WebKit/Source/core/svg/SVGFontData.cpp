@@ -42,7 +42,7 @@
 using namespace WTF;
 using namespace Unicode;
 
-namespace WebCore {
+namespace blink {
 
 SVGFontData::SVGFontData(SVGFontFaceElement* fontFaceElement)
     : CustomFontData()
@@ -334,6 +334,6 @@ bool SVGFontData::shouldSkipDrawing() const
     return !m_svgFontFaceElement || !m_svgFontFaceElement->inDocument();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

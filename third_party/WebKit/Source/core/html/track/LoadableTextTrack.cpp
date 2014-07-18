@@ -32,7 +32,7 @@
 #include "core/html/track/TextTrackCueList.h"
 #include "core/html/track/vtt/VTTRegionList.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -184,4 +184,4 @@ void LoadableTextTrack::trace(Visitor* visitor)
     TextTrack::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

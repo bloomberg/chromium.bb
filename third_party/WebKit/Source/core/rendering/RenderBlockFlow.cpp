@@ -45,7 +45,7 @@
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include "platform/text/BidiTextRun.h"
 
-namespace WebCore {
+namespace blink {
 
 bool RenderBlockFlow::s_canPropagateFloatIntoSibling = false;
 
@@ -2852,4 +2852,4 @@ RenderBlockFlow::RenderBlockFlowRareData& RenderBlockFlow::ensureRareData()
     return *m_rareData;
 }
 
-} // namespace WebCore
+} // namespace blink

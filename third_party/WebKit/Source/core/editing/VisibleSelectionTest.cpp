@@ -20,7 +20,7 @@
     "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt " \
     "mollit anim id est laborum."
 
-namespace WebCore {
+namespace blink {
 
 class VisibleSelectionTest : public ::testing::Test {
 protected:
@@ -57,7 +57,7 @@ private:
     OwnPtrWillBePersistent<VisibleSelectionWrapper> m_wrap;
 };
 
-void WebCore::VisibleSelectionTest::SetUp()
+void blink::VisibleSelectionTest::SetUp()
 {
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
     m_textNode = document().createTextNode(LOREM_IPSUM);
@@ -65,11 +65,11 @@ void WebCore::VisibleSelectionTest::SetUp()
     document().body()->appendChild(m_textNode.get());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 namespace {
 
-using namespace WebCore;
+using namespace blink;
 
 TEST_F(VisibleSelectionTest, Initialisation)
 {
@@ -168,4 +168,4 @@ TEST_F(VisibleSelectionTest, WordGranularity)
     }
 }
 
-} // namespace WebCore
+} // namespace blink

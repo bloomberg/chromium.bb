@@ -26,7 +26,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderObject;
 class RenderStyle;

@@ -25,7 +25,7 @@
 
 #include "core/rendering/RenderBlock.h"
 
-namespace WebCore {
+namespace blink {
 
 class FlexBoxIterator;
 
@@ -70,6 +70,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderDeprecatedFlexibleBox, isDeprecatedFlexibleBox());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderDeprecatedFlexibleBox_h

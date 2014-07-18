@@ -33,7 +33,7 @@
 #include "core/CSSPropertyNames.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 // A class storing static arrays for enabling CSS properties at
 // runtime. By default, all properties are enabled.
@@ -51,6 +51,6 @@ private:
     RuntimeCSSEnabled();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RuntimeCSSEnabled_h

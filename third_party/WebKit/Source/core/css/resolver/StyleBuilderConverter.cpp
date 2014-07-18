@@ -35,7 +35,7 @@
 #include "core/css/Pair.h"
 #include "core/svg/SVGURIReference.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -450,4 +450,4 @@ float StyleBuilderConverter::convertTextStrokeWidth(StyleResolverState& state, C
     return primitiveValue->computeLength<float>(state.cssToLengthConversionData());
 }
 
-} // namespace WebCore
+} // namespace blink

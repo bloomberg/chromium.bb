@@ -34,7 +34,7 @@
 #include "core/html/HTMLTableElement.h"
 #include "core/html/HTMLTableRowElement.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

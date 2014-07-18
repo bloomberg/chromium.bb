@@ -38,11 +38,11 @@
 #include "core/page/Page.h"
 #include "platform/TraceEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
-bool compareAnimationPlayers(const RefPtrWillBeMember<WebCore::AnimationPlayer>& left, const RefPtrWillBeMember<WebCore::AnimationPlayer>& right)
+bool compareAnimationPlayers(const RefPtrWillBeMember<blink::AnimationPlayer>& left, const RefPtrWillBeMember<blink::AnimationPlayer>& right)
 {
     return left->sortInfo().hasLowerSequenceNumber(right->sortInfo());
 }

@@ -34,7 +34,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimationPlayer;
 
@@ -59,6 +59,6 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > m_waitingForCompositorAnimationStart;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

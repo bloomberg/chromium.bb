@@ -38,7 +38,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 enum PaddingType {
     TopPadding,
@@ -351,7 +351,7 @@ bool RenderThemeChromiumSkia::paintMediaFullscreenButton(RenderObject* object, c
     return RenderMediaControls::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
 }
 
-void RenderThemeChromiumSkia::adjustMenuListStyle(RenderStyle* style, WebCore::Element*) const
+void RenderThemeChromiumSkia::adjustMenuListStyle(RenderStyle* style, blink::Element*) const
 {
     // Height is locked to auto on all browsers.
     style->setLineHeight(RenderStyle::initialLineHeight());
@@ -487,4 +487,4 @@ RenderThemeChromiumSkia::DirectionFlippingScope::~DirectionFlippingScope()
     m_paintInfo.context->restore();
 }
 
-} // namespace WebCore
+} // namespace blink

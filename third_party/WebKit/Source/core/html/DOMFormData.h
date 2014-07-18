@@ -41,7 +41,7 @@ namespace WTF{
 class TextEncoding;
 }
 
-namespace WebCore {
+namespace blink {
 
 class Blob;
 class HTMLFormElement;
@@ -66,6 +66,6 @@ private:
     explicit DOMFormData(HTMLFormElement*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMFormData_h

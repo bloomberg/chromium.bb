@@ -25,7 +25,7 @@
 
 #include "core/rendering/line/BreakingContextInlineHeaders.h"
 
-namespace WebCore {
+namespace blink {
 
 void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver, LineInfo& lineInfo,
     FloatingObject* lastFloatFromPreviousLine, LineWidth& width)

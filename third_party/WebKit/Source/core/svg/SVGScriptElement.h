@@ -28,7 +28,7 @@
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
 
-namespace WebCore {
+namespace blink {
 
 class ScriptLoader;
 
@@ -83,6 +83,6 @@ private:
     OwnPtr<ScriptLoader> m_loader;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

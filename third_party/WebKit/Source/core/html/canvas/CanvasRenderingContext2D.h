@@ -46,7 +46,7 @@
 
 namespace blink { class WebLayer; }
 
-namespace WebCore {
+namespace blink {
 
 class CanvasImageSource;
 class CanvasGradient;
@@ -372,6 +372,6 @@ private:
 
 DEFINE_TYPE_CASTS(CanvasRenderingContext2D, CanvasRenderingContext, context, context->is2d(), context.is2d());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

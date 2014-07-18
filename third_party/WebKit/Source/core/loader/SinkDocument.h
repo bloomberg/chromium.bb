@@ -28,7 +28,7 @@
 
 #include "core/html/HTMLDocument.h"
 
-namespace WebCore {
+namespace blink {
 
 class SinkDocument FINAL : public HTMLDocument {
 public:
@@ -44,6 +44,6 @@ private:
 };
 
 
-}; // namespace WebCore
+}; // namespace blink
 
 #endif // SinkDocument_h

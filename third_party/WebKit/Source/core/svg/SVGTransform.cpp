@@ -26,7 +26,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGTransform::SVGTransform()
     : SVGPropertyBase(classType())
@@ -244,4 +244,4 @@ float SVGTransform::calculateDistance(PassRefPtr<SVGPropertyBase>, SVGElement*)
     return -1;
 }
 
-} // namespace WebCore
+} // namespace blink

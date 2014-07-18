@@ -41,7 +41,7 @@
 #include "core/rendering/RenderSlider.h"
 #include "core/rendering/RenderTheme.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSliderContainer::RenderSliderContainer(SliderContainerElement* element)
     : RenderFlexibleBox(element)
@@ -141,4 +141,4 @@ void RenderSliderContainer::layout()
     thumb->setLocation(thumbLocation);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -28,7 +28,7 @@
 
 #include "core/fetch/Resource.h"
 
-namespace WebCore {
+namespace blink {
 
 class ResourcePtrBase {
 public:

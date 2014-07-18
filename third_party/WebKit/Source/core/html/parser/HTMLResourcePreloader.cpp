@@ -33,7 +33,7 @@
 #include "core/rendering/RenderObject.h"
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 bool PreloadRequest::isSafeToSendToAnotherThread() const
 {

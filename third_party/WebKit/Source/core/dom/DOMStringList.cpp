@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/dom/DOMStringList.h"
 
-namespace WebCore {
+namespace blink {
 
 String DOMStringList::item(unsigned index) const
 {
@@ -53,4 +53,4 @@ void DOMStringList::sort()
     std::sort(m_strings.begin(), m_strings.end(), WTF::codePointCompareLessThan);
 }
 
-} // namespace WebCore
+} // namespace blink

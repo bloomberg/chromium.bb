@@ -27,7 +27,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

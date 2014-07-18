@@ -15,7 +15,7 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGRemoteFontFaceSource::SVGRemoteFontFaceSource(const String& uri, FontResource* font, PassRefPtrWillBeRawPtr<FontLoader> fontLoader)
     : RemoteFontFaceSource(font, fontLoader)
@@ -69,6 +69,6 @@ void SVGRemoteFontFaceSource::trace(Visitor* visitor)
     RemoteFontFaceSource::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(SVG_FONTS)

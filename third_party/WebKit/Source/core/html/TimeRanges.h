@@ -34,7 +34,7 @@
 
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -125,8 +125,8 @@ private:
     WillBeHeapVector<Range> m_ranges;
 };
 
-} // namespace WebCore
+} // namespace blink
 
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::TimeRanges::Range);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::TimeRanges::Range);
 
 #endif

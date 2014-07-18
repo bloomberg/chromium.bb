@@ -7,7 +7,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ContentSecurityPolicy;
 class KURL;
@@ -33,6 +33,6 @@ private:
     ContentSecurityPolicy* m_policy;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

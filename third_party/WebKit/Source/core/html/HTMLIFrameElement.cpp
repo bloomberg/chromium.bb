@@ -31,7 +31,7 @@
 #include "core/html/HTMLDocument.h"
 #include "core/rendering/RenderIFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

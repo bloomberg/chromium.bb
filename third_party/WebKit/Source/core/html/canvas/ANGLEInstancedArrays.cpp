@@ -34,7 +34,7 @@
 
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 
-namespace WebCore {
+namespace blink {
 
 ANGLEInstancedArrays::ANGLEInstancedArrays(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -91,4 +91,4 @@ void ANGLEInstancedArrays::vertexAttribDivisorANGLE(GLuint index, GLuint divisor
     m_context->vertexAttribDivisorANGLE(index, divisor);
 }
 
-} // namespace WebCore
+} // namespace blink

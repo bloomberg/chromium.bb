@@ -31,7 +31,7 @@
 
 #include "core/rendering/style/SVGRenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleFillData::StyleFillData()
     : opacity(SVGRenderStyle::initialFillOpacity())

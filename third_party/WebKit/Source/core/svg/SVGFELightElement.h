@@ -27,7 +27,7 @@
 #include "core/svg/SVGElement.h"
 #include "platform/graphics/filters/LightSource.h"
 
-namespace WebCore {
+namespace blink {
 
 class Filter;
 
@@ -90,6 +90,6 @@ inline bool isSVGFELightElement(const Node& node)
 
 DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGFELightElement);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

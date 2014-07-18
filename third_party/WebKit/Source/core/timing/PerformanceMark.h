@@ -31,7 +31,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class PerformanceMark FINAL : public PerformanceEntry {
 public:

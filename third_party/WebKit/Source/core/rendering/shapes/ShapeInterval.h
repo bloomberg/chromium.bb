@@ -32,7 +32,7 @@
 
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 template <typename T>
 class ShapeInterval {
@@ -105,6 +105,6 @@ typedef ShapeInterval<float> FloatShapeInterval;
 typedef Vector<IntShapeInterval> IntShapeIntervals;
 typedef Vector<FloatShapeInterval> FloatShapeIntervals;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ShapeInterval_h

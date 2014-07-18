@@ -40,7 +40,7 @@
 #include "platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<InputType> SubmitInputType::create(HTMLInputElement& element)
 {
@@ -91,4 +91,4 @@ bool SubmitInputType::isTextButton() const
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

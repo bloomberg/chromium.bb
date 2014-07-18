@@ -25,7 +25,7 @@
 
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLHeadingElement FINAL : public HTMLElement {
 public:
@@ -35,6 +35,6 @@ private:
     HTMLHeadingElement(const QualifiedName&, Document&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLHeadingElement_h

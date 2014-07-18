@@ -22,7 +22,7 @@
 
 #include "core/svg/SVGPathSeg.h"
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: This should be deprecated.
 class SVGPathSegWithContext : public SVGPathSeg {
@@ -63,6 +63,6 @@ private:
     float m_y;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

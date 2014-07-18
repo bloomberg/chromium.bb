@@ -59,7 +59,7 @@
 #include "wtf/text/StringBuilder.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -798,4 +798,4 @@ void InspectorOverlay::startedRecordingProfile()
         freePage();
 }
 
-} // namespace WebCore
+} // namespace blink

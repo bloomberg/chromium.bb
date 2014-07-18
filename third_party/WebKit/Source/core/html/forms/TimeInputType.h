@@ -34,7 +34,7 @@
 #include "core/html/forms/BaseChooserOnlyDateAndTimeInputType.h"
 #include "core/html/forms/BaseMultipleFieldsDateAndTimeInputType.h"
 
-namespace WebCore {
+namespace blink {
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 typedef BaseMultipleFieldsDateAndTimeInputType BaseTimeInputType;
@@ -65,6 +65,6 @@ private:
 #endif
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TimeInputType_h

@@ -25,7 +25,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathStringSource FINAL : public SVGPathSource {
 public:
@@ -65,6 +65,6 @@ private:
     } m_end;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPathStringSource_h

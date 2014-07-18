@@ -35,7 +35,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 class BoxShapeTest : public ::testing::Test {
 protected:
@@ -47,11 +47,11 @@ protected:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 namespace {
 
-using namespace WebCore;
+using namespace blink;
 
 #define TEST_EXCLUDED_INTERVAL(shapePtr, lineTop, lineHeight, expectedLeft, expectedRight) \
 {                                                                                          \

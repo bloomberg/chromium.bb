@@ -60,7 +60,7 @@
 #include "platform/graphics/CompositingReasons.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class FilterEffectRenderer;
 class FilterOperations;
@@ -770,12 +770,12 @@ private:
     LayoutSize m_subpixelAccumulation; // The accumulated subpixel offset of a composited layer's composited bounds compared to absolute coordinates.
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showLayerTree(const WebCore::RenderLayer*);
-void showLayerTree(const WebCore::RenderObject*);
+void showLayerTree(const blink::RenderLayer*);
+void showLayerTree(const blink::RenderObject*);
 #endif
 
 #endif // RenderLayer_h

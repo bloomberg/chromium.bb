@@ -37,7 +37,7 @@
 #include "platform/LengthFunctions.h"
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSBoxType referenceBox(const ShapeValue& shapeValue)
 {

@@ -27,7 +27,7 @@
 #include "core/html/FormAssociatedElement.h"
 #include "core/html/LabelableElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class FormDataList;
 class HTMLFieldSetElement;

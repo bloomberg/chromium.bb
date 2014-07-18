@@ -40,7 +40,7 @@
 #include "wtf/text/WTFString.h"
 
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class Resource;
@@ -185,7 +185,7 @@ private:
     size_t m_maximumSingleResourceContentSize;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // !defined(NetworkResourcesData_h)

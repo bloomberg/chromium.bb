@@ -27,7 +27,7 @@
 
 #include "core/html/canvas/OESTextureHalfFloat.h"
 
-namespace WebCore {
+namespace blink {
 
 OESTextureHalfFloat::OESTextureHalfFloat(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -60,4 +60,4 @@ const char* OESTextureHalfFloat::extensionName()
     return "OES_texture_half_float";
 }
 
-} // namespace WebCore
+} // namespace blink

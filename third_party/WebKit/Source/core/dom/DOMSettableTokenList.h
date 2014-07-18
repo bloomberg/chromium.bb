@@ -31,7 +31,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -77,6 +77,6 @@ private:
     SpaceSplitString m_tokens;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMSettableTokenList_h

@@ -20,7 +20,7 @@
 #ifndef SVGPathData_h
 #define SVGPathData_h
 
-namespace WebCore {
+namespace blink {
 
 class SVGElement;
 class Path;

@@ -30,7 +30,7 @@
 
 #include "core/html/shadow/MediaControlElements.h"
 
-namespace WebCore {
+namespace blink {
 
 struct PaintInfo;
 
@@ -45,6 +45,6 @@ public:
     static String formatMediaControlsCurrentTime(float currentTime, float duration);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderMediaControls_h

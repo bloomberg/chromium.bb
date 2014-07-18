@@ -39,7 +39,7 @@ namespace blink {
 class WebMessagePortChannel;
 }
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class ExceptionState;
@@ -57,6 +57,6 @@ public:
     virtual void documentDetached(Document*) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SharedWorkerRepositoryClient_h

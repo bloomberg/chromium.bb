@@ -28,7 +28,7 @@
 #include "core/rendering/RenderTable.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 enum CollapsedBorderSide {
     CBSBefore,
@@ -309,6 +309,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTableSection, isTableSection());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderTableSection_h

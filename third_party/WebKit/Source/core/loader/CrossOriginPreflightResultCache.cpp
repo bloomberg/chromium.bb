@@ -33,7 +33,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 // These values are at the discretion of the user agent.
 static const unsigned defaultPreflightCacheTimeoutSeconds = 5;
@@ -172,4 +172,4 @@ bool CrossOriginPreflightResultCache::canSkipPreflight(const String& origin, con
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

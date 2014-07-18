@@ -23,7 +23,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<Document> DOMParser::parseFromString(const String& str, const String& contentType, ExceptionState& exceptionState)
 {
@@ -43,4 +43,4 @@ PassRefPtrWillBeRawPtr<Document> DOMParser::parseFromString(const String& str, c
     return doc.release();
 }
 
-} // namespace WebCore
+} // namespace blink

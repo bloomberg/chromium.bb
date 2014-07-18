@@ -5,7 +5,7 @@
 #ifndef PageAnimator_h
 #define PageAnimator_h
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class Page;

@@ -25,7 +25,7 @@
 #include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/svg/SVGLengthContext.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGTextChunkBuilder::SVGTextChunkBuilder()
 {

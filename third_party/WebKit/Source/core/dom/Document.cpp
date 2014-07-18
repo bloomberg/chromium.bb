@@ -205,7 +205,7 @@
 using namespace WTF;
 using namespace Unicode;
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -834,12 +834,12 @@ PassRefPtrWillBeRawPtr<Element> Document::createElementNS(const AtomicString& na
     return element.release();
 }
 
-ScriptValue Document::registerElement(WebCore::ScriptState* scriptState, const AtomicString& name, ExceptionState& exceptionState)
+ScriptValue Document::registerElement(blink::ScriptState* scriptState, const AtomicString& name, ExceptionState& exceptionState)
 {
     return registerElement(scriptState, name, Dictionary(), exceptionState);
 }
 
-ScriptValue Document::registerElement(WebCore::ScriptState* scriptState, const AtomicString& name, const Dictionary& options, ExceptionState& exceptionState, CustomElement::NameSet validNames)
+ScriptValue Document::registerElement(blink::ScriptState* scriptState, const AtomicString& name, const Dictionary& options, ExceptionState& exceptionState, CustomElement::NameSet validNames)
 {
     if (!registrationContext()) {
         exceptionState.throwDOMException(NotSupportedError, "No element registration context is available.");
@@ -5881,10 +5881,10 @@ void Document::trace(Visitor* visitor)
     ExecutionContext::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
-using namespace WebCore;
+using namespace blink;
 void showLiveDocumentInstances()
 {
     WeakDocumentSet& set = liveDocumentSet();

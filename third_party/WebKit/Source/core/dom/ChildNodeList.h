@@ -29,7 +29,7 @@
 #include "core/html/CollectionIndexCache.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ChildNodeList FINAL : public NodeList {
 public:
@@ -71,6 +71,6 @@ private:
 
 DEFINE_TYPE_CASTS(ChildNodeList, NodeList, nodeList, nodeList->isChildNodeList(), nodeList.isChildNodeList());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ChildNodeList_h

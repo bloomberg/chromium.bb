@@ -25,7 +25,7 @@
 #include "core/SVGNames.h"
 #include "core/svg/SVGParserUtilities.h"
 
-namespace WebCore {
+namespace blink {
 
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGStitchOptions>()
 {

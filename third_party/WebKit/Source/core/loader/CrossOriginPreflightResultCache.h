@@ -34,7 +34,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
     class HTTPHeaderMap;
     class ResourceResponse;
@@ -81,6 +81,6 @@ namespace WebCore {
         CrossOriginPreflightResultHashMap m_preflightHashMap;
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

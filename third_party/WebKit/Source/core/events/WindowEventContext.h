@@ -30,7 +30,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalDOMWindow;
 class EventTarget;

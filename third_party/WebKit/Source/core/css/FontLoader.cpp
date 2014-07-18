@@ -9,7 +9,7 @@
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourceFetcher.h"
 
-namespace WebCore {
+namespace blink {
 
 FontLoader::FontLoader(CSSFontSelector* fontSelector, ResourceFetcher* resourceFetcher)
     : m_beginLoadingTimer(this, &FontLoader::beginLoadTimerFired)
@@ -44,7 +44,7 @@ void FontLoader::addFontToBeginLoading(FontResource* fontResource)
         m_beginLoadingTimer.startOneShot(0, FROM_HERE);
 }
 
-void FontLoader::beginLoadTimerFired(Timer<WebCore::FontLoader>*)
+void FontLoader::beginLoadTimerFired(Timer<blink::FontLoader>*)
 {
     loadPendingFonts();
 }
@@ -92,4 +92,4 @@ void FontLoader::trace(Visitor* visitor)
     visitor->trace(m_fontSelector);
 }
 
-} // namespace WebCore
+} // namespace blink

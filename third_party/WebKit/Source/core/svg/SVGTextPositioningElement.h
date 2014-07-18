@@ -26,7 +26,7 @@
 #include "core/svg/SVGAnimatedNumberList.h"
 #include "core/svg/SVGTextContentElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGTextPositioningElement : public SVGTextContentElement {
 public:
@@ -60,6 +60,6 @@ inline bool isSVGTextPositioningElement(const Node& node)
 
 DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGTextPositioningElement);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -39,7 +39,7 @@
 #define NONCLIENTMETRICS_SIZE_PRE_VISTA \
     SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(NONCLIENTMETRICS, lfMessageFont)
 
-namespace WebCore {
+namespace blink {
 
 static FontDescription& smallSystemFont()
 {
@@ -188,4 +188,4 @@ void RenderThemeChromiumFontProvider::setDefaultFontSize(int fontSize)
     smallSystemFont() = menuFont() = labelFont() = FontDescription();
 }
 
-} // namespace WebCore
+} // namespace blink

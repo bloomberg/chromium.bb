@@ -69,7 +69,7 @@
   overflow content.
 */
 
-namespace WebCore {
+namespace blink {
 
 FixedTableLayout::FixedTableLayout(RenderTable* table)
     : TableLayout(table)
@@ -334,4 +334,4 @@ void FixedTableLayout::willChangeTableLayout()
     }
 }
 
-} // namespace WebCore
+} // namespace blink

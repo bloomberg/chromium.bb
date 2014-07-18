@@ -10,7 +10,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/TrackEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 template<class T>
 class TrackListBase : public RefCountedWillBeRefCountedGarbageCollected<TrackListBase<T> >, public EventTargetWithInlineData {

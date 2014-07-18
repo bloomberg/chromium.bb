@@ -33,7 +33,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSStyleSheet;
 class LocalDOMWindow;
@@ -551,6 +551,6 @@ private:
     BitVector m_CSSFeatureBits;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // UseCounter_h

@@ -24,7 +24,7 @@
 #include "core/rendering/RenderText.h"
 #include "platform/fonts/Font.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderCombineText FINAL : public RenderText {
 public:
@@ -52,6 +52,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderCombineText, isCombineText());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderCombineText_h

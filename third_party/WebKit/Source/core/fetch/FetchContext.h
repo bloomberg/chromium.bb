@@ -37,7 +37,7 @@
 #include "platform/network/ResourceLoadPriority.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class DocumentLoader;

@@ -33,7 +33,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerThread.h"
 
-namespace WebCore {
+namespace blink {
 
 class WorkerObjectProxy;
 class WorkerThreadStartupData;
@@ -55,6 +55,6 @@ private:
     double m_timeOrigin;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DedicatedWorkerThread_h

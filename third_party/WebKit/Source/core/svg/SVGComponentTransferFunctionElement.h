@@ -27,7 +27,7 @@
 #include "core/svg/SVGElement.h"
 #include "platform/graphics/filters/FEComponentTransfer.h"
 
-namespace WebCore {
+namespace blink {
 
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<ComponentTransferType>();
 
@@ -62,6 +62,6 @@ private:
     RefPtr<SVGAnimatedEnumeration<ComponentTransferType> > m_type;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

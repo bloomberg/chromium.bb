@@ -27,7 +27,7 @@
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGPointTearOff.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -89,6 +89,6 @@ inline bool isSVGTextContentElement(const Node& node)
 
 DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGTextContentElement);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

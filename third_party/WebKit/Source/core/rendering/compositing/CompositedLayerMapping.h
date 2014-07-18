@@ -33,7 +33,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderLayerCompositor;
 
@@ -418,6 +418,6 @@ private:
     unsigned m_scrollingContentsAreEmpty : 1;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CompositedLayerMapping_h

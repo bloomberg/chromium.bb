@@ -8,7 +8,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/animation/interpolation/Interpolation.h"
 
-namespace WebCore {
+namespace blink {
 
 class StyleResolverState;
 

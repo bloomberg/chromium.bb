@@ -33,7 +33,7 @@
 
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 bool navigationPolicyFromMouseEvent(unsigned short button, bool ctrl, bool shift, bool alt, bool meta, NavigationPolicy* policy)
 {
@@ -60,5 +60,5 @@ bool navigationPolicyFromMouseEvent(unsigned short button, bool ctrl, bool shift
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink
 

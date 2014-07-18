@@ -35,7 +35,7 @@
 #include "core/dom/custom/CustomElementScheduler.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 size_t CustomElementCallbackDispatcher::s_elementQueueStart = 0;
 
@@ -92,4 +92,4 @@ void CustomElementCallbackDispatcher::enqueue(CustomElementCallbackQueue* callba
     ++s_elementQueueEnd;
 }
 
-} // namespace WebCore
+} // namespace blink

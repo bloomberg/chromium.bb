@@ -31,7 +31,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutPoint.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderLayer;
 
@@ -91,6 +91,6 @@ private:
     bool m_layersChanged;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CompositingLayerAssigner_h

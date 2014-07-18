@@ -26,7 +26,7 @@
 #include "core/rendering/RenderReplaced.h"
 #include "platform/geometry/FloatRect.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGElement;
 
@@ -127,6 +127,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGRoot, isSVGRoot());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderSVGRoot_h

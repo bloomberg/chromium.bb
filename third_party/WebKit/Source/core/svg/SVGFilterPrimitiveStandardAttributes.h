@@ -28,7 +28,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Filter;
 class FilterEffect;
@@ -80,6 +80,6 @@ private:
 
 void invalidateFilterPrimitiveParent(SVGElement*);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

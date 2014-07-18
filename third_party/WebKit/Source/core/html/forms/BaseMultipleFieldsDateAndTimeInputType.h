@@ -39,7 +39,7 @@
 #include "core/html/shadow/PickerIndicatorElement.h"
 #include "core/html/shadow/SpinButtonElement.h"
 
-namespace WebCore {
+namespace blink {
 
 struct DateTimeChooserParameters;
 
@@ -131,7 +131,7 @@ private:
     bool m_pickerIndicatorIsAlwaysVisible;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif
 #endif // BaseMultipleFieldsDateAndTimeInputType_h

@@ -43,7 +43,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 Pasteboard* Pasteboard::generalPasteboard()
 {
@@ -136,4 +136,4 @@ void Pasteboard::writeHTML(const String& markup, const KURL& documentURL, const 
     blink::Platform::current()->clipboard()->writeHTML(markup, documentURL, text, canSmartCopyOrDelete);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -26,7 +26,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class Node;
 
@@ -35,6 +35,6 @@ bool findBestContextMenuCandidate(Node*& targetNode, IntPoint& targetPoint, cons
 bool findBestZoomableArea(Node*& targetNode, IntRect& targetArea, const IntPoint& touchHotspot, const IntRect& touchArea, const WillBeHeapVector<RefPtrWillBeMember<Node> >&);
 // FIXME: Implement the similar functions for other gestures here as well.
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

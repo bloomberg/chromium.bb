@@ -7,7 +7,7 @@
 
 #include "core/animation/Timing.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSTransitionData::CSSTransitionData()
 {
@@ -34,4 +34,4 @@ Timing CSSTransitionData::convertToTiming(size_t index) const
     return timing;
 }
 
-} // namespace WebCore
+} // namespace blink

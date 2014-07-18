@@ -32,7 +32,7 @@
 #include "platform/Length.h"
 #include "platform/geometry/FloatSize.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 
@@ -134,6 +134,6 @@ private:
     static float resolveViewportLength(const Length&, const FloatSize& initialViewportSize, Direction);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ViewportDescription_h

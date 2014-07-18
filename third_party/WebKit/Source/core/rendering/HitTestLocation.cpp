@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/rendering/HitTestLocation.h"
 
-namespace WebCore {
+namespace blink {
 
 HitTestLocation::HitTestLocation()
     : m_isRectBased(false)
@@ -170,4 +170,4 @@ IntRect HitTestLocation::rectForPoint(const LayoutPoint& point, unsigned topPadd
     return IntRect(actualPoint, actualPadding);
 }
 
-} // namespace WebCore
+} // namespace blink

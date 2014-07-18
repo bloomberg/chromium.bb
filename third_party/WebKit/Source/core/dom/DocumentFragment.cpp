@@ -27,7 +27,7 @@
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 
-namespace WebCore {
+namespace blink {
 
 DocumentFragment::DocumentFragment(Document* document, ConstructionType constructionType)
     : ContainerNode(document, constructionType)

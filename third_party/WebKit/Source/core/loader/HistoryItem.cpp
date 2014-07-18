@@ -32,7 +32,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 static long long generateSequenceNumber()
 {
@@ -213,5 +213,5 @@ bool HistoryItem::isCurrentDocument(Document* doc) const
     return equalIgnoringFragmentIdentifier(url(), doc->url());
 }
 
-} // namespace WebCore
+} // namespace blink
 

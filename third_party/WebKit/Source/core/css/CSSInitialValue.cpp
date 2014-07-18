@@ -23,11 +23,11 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 String CSSInitialValue::customCSSText() const
 {
     return "initial";
 }
 
-} // namespace WebCore
+} // namespace blink

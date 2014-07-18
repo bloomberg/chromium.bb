@@ -34,7 +34,7 @@
 #include "core/fetch/ResourceLoader.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class ResourceLoaderSet {
 public:

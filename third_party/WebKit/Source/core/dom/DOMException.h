@@ -35,7 +35,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef int ExceptionCode;
 
@@ -68,6 +68,6 @@ private:
     String m_unsanitizedMessage;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMException_h

@@ -30,7 +30,7 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 DocumentParser::DocumentParser(Document* document)
     : m_state(ParsingState)

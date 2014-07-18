@@ -25,7 +25,7 @@
 #include "core/SVGNames.h"
 #include "core/svg/SVGFontFaceElement.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace SVGNames;
 

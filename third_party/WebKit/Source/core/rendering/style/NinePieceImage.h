@@ -30,7 +30,7 @@
 #include "platform/LayoutUnit.h"
 #include "platform/LengthBox.h"
 
-namespace WebCore {
+namespace blink {
 
 enum ENinePieceImageRule {
     StretchImageRule, RoundImageRule, SpaceImageRule, RepeatImageRule
@@ -128,6 +128,6 @@ private:
     DataRef<NinePieceImageData> m_data;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NinePieceImage_h

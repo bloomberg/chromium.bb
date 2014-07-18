@@ -32,7 +32,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebGLProgram FINAL : public WebGLSharedObject, public ScriptWrappable {
 public:
@@ -84,6 +84,6 @@ private:
     bool m_infoValid;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLProgram_h

@@ -24,7 +24,7 @@
 
 #include "platform/animation/AnimationUtilities.h"
 
-namespace WebCore {
+namespace blink {
 
 bool ShadowData::operator==(const ShadowData& o) const
 {
@@ -40,11 +40,11 @@ ShadowData ShadowData::blend(const ShadowData& from, double progress) const
     if (style() != from.style())
         return *this;
 
-    return ShadowData(WebCore::blend(from.location(), location(), progress),
-        clampTo(WebCore::blend(from.blur(), blur(), progress), 0.0f),
-        WebCore::blend(from.spread(), spread(), progress),
+    return ShadowData(blink::blend(from.location(), location(), progress),
+        clampTo(blink::blend(from.blur(), blur(), progress), 0.0f),
+        blink::blend(from.spread(), spread(), progress),
         style(),
-        WebCore::blend(from.color(), color(), progress));
+        blink::blend(from.color(), color(), progress));
 }
 
-} // namespace WebCore
+} // namespace blink

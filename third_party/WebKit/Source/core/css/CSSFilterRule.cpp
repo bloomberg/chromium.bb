@@ -35,7 +35,7 @@
 #include "core/css/StyleRule.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSFilterRule::CSSFilterRule(StyleRuleFilter* filterRule, CSSStyleSheet* parent)
     : CSSRule(parent)
@@ -91,5 +91,5 @@ void CSSFilterRule::trace(Visitor* visitor)
     CSSRule::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink
 

@@ -29,7 +29,7 @@
 #include "wtf/Noncopyable.h"
 #include <libxml/xmlerror.h>
 
-namespace WebCore {
+namespace blink {
 
 class ResourceFetcher;
 
@@ -50,6 +50,6 @@ private:
     void* m_oldErrorContext;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // XMLDocumentParserScope_h

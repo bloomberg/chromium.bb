@@ -23,7 +23,7 @@
 #include "platform/graphics/filters/SourceAlpha.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGFilterBuilder::SVGFilterBuilder(PassRefPtr<FilterEffect> sourceGraphic, PassRefPtr<FilterEffect> sourceAlpha)
 {
@@ -100,4 +100,4 @@ void SVGFilterBuilder::clearResultsRecursive(FilterEffect* effect)
          clearResultsRecursive(*it);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -27,7 +27,7 @@
 #include "core/dom/LiveNodeList.h"
 #include "core/html/HTMLCollection.h"
 
-namespace WebCore {
+namespace blink {
 
 void LiveNodeListBase::invalidateCacheForAttribute(const QualifiedName* attrName) const
 {
@@ -51,4 +51,4 @@ void LiveNodeListBase::didMoveToDocument(Document& oldDocument, Document& newDoc
     newDocument.registerNodeList(this);
 }
 
-} // namespace WebCore
+} // namespace blink

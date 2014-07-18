@@ -24,7 +24,7 @@
 #ifndef SVGRenderSupport_h
 #define SVGRenderSupport_h
 
-namespace WebCore {
+namespace blink {
 
 class AffineTransform;
 class FloatPoint;
@@ -93,6 +93,6 @@ private:
     static bool layoutSizeOfNearestViewportChanged(const RenderObject* start);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGRenderSupport_h

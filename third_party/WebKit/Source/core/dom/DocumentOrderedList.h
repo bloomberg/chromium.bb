@@ -32,7 +32,7 @@
 #include "wtf/FastAllocBase.h"
 #include "wtf/ListHashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class Node;
 

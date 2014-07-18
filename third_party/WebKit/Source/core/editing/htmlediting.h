@@ -32,7 +32,7 @@
 #include "wtf/Forward.h"
 #include "wtf/unicode/CharacterNames.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class Element;

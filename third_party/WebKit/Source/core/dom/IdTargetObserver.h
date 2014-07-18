@@ -29,7 +29,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class IdTargetObserverRegistry;
 
@@ -50,6 +50,6 @@ private:
     AtomicString m_id;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IdTargetObserver_h

@@ -32,7 +32,7 @@
 #include "core/frame/Settings.h"
 #include "core/rendering/RenderText.h"
 
-namespace WebCore {
+namespace blink {
 
 InsertIntoTextNodeCommand::InsertIntoTextNodeCommand(PassRefPtrWillBeRawPtr<Text> node, unsigned offset, const String& text)
     : SimpleEditCommand(node->document())
@@ -77,4 +77,4 @@ void InsertIntoTextNodeCommand::trace(Visitor* visitor)
     SimpleEditCommand::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

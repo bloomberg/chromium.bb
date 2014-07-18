@@ -35,7 +35,7 @@
 #include "core/html/HTMLAnchorElement.h"
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 static inline const AtomicString& linkAttribute(const Element& element)
 {

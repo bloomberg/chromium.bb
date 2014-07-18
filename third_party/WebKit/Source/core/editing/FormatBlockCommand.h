@@ -30,7 +30,7 @@
 #include "core/editing/ApplyBlockElementCommand.h"
 #include "core/editing/EditAction.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class Element;
@@ -60,6 +60,6 @@ private:
     bool m_didApply;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FormatBlockCommand_h

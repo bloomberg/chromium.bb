@@ -24,7 +24,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathStringBuilder FINAL : public SVGPathConsumer {
 public:
@@ -52,6 +52,6 @@ private:
     StringBuilder m_stringBuilder;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPathStringBuilder_h

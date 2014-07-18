@@ -30,7 +30,7 @@
 #include "platform/scroll/Scrollbar.h"
 #include "wtf/HashMap.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class Node;
@@ -89,6 +89,6 @@ private:
 
 DEFINE_TYPE_CASTS(RenderScrollbar, ScrollbarThemeClient, scrollbar, scrollbar->isCustomScrollbar(), scrollbar.isCustomScrollbar());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderScrollbar_h

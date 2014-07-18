@@ -47,7 +47,7 @@
 #include "core/rendering/RenderSliderThumb.h"
 #include "core/rendering/RenderTheme.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

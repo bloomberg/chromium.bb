@@ -28,7 +28,7 @@
 
 #include "core/css/CSSSelector.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSParserSelector;
 
@@ -86,6 +86,6 @@ inline const CSSSelector* CSSSelectorList::next(const CSSSelector& current)
     return last->isLastInSelectorList() ? 0 : last + 1;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSSelectorList_h

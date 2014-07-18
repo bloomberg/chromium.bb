@@ -23,7 +23,7 @@
 #include "config.h"
 #include "core/events/MutationEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 MutationEvent::MutationEvent()
     : m_attrChange(0)
@@ -75,4 +75,4 @@ void MutationEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

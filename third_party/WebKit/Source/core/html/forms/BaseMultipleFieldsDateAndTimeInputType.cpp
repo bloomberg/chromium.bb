@@ -51,7 +51,7 @@
 #include "platform/text/PlatformLocale.h"
 #include "wtf/DateMath.h"
 
-namespace WebCore {
+namespace blink {
 
 class DateTimeFormatValidator : public DateTimeFormat::TokenHandler {
 public:
@@ -620,6 +620,6 @@ void BaseMultipleFieldsDateAndTimeInputType::updateClearButtonVisibility()
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -34,7 +34,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class LocalFrame;
@@ -79,6 +79,6 @@ private:
     ApplicationCacheHost* applicationCacheHost() const;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ApplicationCache_h

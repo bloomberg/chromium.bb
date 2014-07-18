@@ -26,7 +26,7 @@
 
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLModElement FINAL : public HTMLElement {
 public:

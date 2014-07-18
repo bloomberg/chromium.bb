@@ -41,7 +41,7 @@
 #include "core/workers/WorkerThread.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 inline Worker::Worker(ExecutionContext* context)
     : AbstractWorker(context)
@@ -142,4 +142,4 @@ void Worker::trace(Visitor* visitor)
     AbstractWorker::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

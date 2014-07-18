@@ -54,7 +54,7 @@
 #include "platform/graphics/ImageObserver.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGImage::SVGImage(ImageObserver* observer)
     : Image(observer)

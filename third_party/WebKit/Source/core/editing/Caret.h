@@ -31,7 +31,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class GraphicsContext;
@@ -98,7 +98,7 @@ private:
     VisiblePosition m_position;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // Caret_h

@@ -35,7 +35,7 @@
 #include "platform/TraceEvent.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 static bool isCSS(Element* element, const AtomicString& type)
 {

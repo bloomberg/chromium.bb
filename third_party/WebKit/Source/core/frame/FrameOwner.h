@@ -7,7 +7,7 @@
 
 #include "core/dom/SandboxFlags.h"
 
-namespace WebCore {
+namespace blink {
 
 class FrameOwner {
 public:
@@ -19,6 +19,6 @@ public:
     virtual void dispatchLoad() = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FrameOwner_h

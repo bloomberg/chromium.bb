@@ -39,7 +39,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 
@@ -96,6 +96,6 @@ protected:
     bool m_isNeutered;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Stream_h

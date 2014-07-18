@@ -14,7 +14,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class CustomElementMicrotaskQueueBase : public RefCountedWillBeGarbageCollectedFinalized<CustomElementMicrotaskQueueBase> {
     WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskQueueBase);

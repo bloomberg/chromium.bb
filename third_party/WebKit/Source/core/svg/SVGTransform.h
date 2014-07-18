@@ -26,7 +26,7 @@
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class FloatSize;
 class SVGTransformTearOff;
@@ -124,6 +124,6 @@ inline bool operator!=(const SVGTransform& a, const SVGTransform& b)
     return !(a == b);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

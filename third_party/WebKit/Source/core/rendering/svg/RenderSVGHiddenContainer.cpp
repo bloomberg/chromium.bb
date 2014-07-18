@@ -22,7 +22,7 @@
 #include "core/rendering/svg/RenderSVGHiddenContainer.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSVGHiddenContainer::RenderSVGHiddenContainer(SVGElement* element)
     : RenderSVGContainer(element)

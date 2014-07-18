@@ -31,7 +31,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
 
-namespace WebCore {
+namespace blink {
 
 // VisiblePosition default affinity is downstream because
 // the callers do not really care (they just want the
@@ -141,12 +141,12 @@ Element* enclosingBlockFlowElement(const VisiblePosition&);
 bool isFirstVisiblePositionInNode(const VisiblePosition&, const Node*);
 bool isLastVisiblePositionInNode(const VisiblePosition&, const Node*);
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showTree(const WebCore::VisiblePosition*);
-void showTree(const WebCore::VisiblePosition&);
+void showTree(const blink::VisiblePosition*);
+void showTree(const blink::VisiblePosition&);
 #endif
 
 #endif // VisiblePosition_h

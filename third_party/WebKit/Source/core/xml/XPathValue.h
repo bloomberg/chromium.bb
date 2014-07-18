@@ -30,7 +30,7 @@
 #include "core/xml/XPathNodeSet.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace XPath {
 

@@ -23,7 +23,7 @@
 
 #include "core/rendering/InlineFlowBox.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGInlineFlowBox FINAL : public InlineFlowBox {
 public:
@@ -48,6 +48,6 @@ private:
 
 DEFINE_INLINE_BOX_TYPE_CASTS(SVGInlineFlowBox);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGInlineFlowBox_h

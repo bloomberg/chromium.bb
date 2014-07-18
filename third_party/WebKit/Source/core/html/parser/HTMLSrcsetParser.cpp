@@ -36,7 +36,7 @@
 #include "platform/ParsingUtilities.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 static bool compareByDensity(const ImageCandidate& first, const ImageCandidate& second)
 {

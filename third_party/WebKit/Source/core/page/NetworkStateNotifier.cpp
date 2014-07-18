@@ -35,7 +35,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"
 
-namespace WebCore {
+namespace blink {
 
 NetworkStateNotifier& networkStateNotifier()
 {
@@ -178,4 +178,4 @@ void NetworkStateNotifier::collectZeroedObservers(ObserverList* list, ExecutionC
     }
 }
 
-} // namespace WebCore
+} // namespace blink

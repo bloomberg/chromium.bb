@@ -40,7 +40,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class InjectedScriptManager;
 class HeapStatsUpdateTask;
@@ -88,7 +88,7 @@ private:
     OwnPtr<HeapStatsUpdateTask> m_heapStatsUpdateTask;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // !defined(InspectorHeapProfilerAgent_h)

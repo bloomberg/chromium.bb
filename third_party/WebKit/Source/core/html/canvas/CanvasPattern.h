@@ -32,7 +32,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class Image;
@@ -57,6 +57,6 @@ private:
     bool m_originClean;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

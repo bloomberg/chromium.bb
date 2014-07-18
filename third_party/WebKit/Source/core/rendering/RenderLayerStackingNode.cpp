@@ -49,7 +49,7 @@
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: This should not require RenderLayer. There is currently a cycle where
 // in order to determine if we shoulBeNormalFlowOnly() we have to ask the render
@@ -326,4 +326,4 @@ RenderLayerModelObject* RenderLayerStackingNode::renderer() const
     return m_layer->renderer();
 }
 
-} // namespace WebCore
+} // namespace blink

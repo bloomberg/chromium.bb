@@ -25,7 +25,7 @@
 
 #include "core/html/HTMLPlugInElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLEmbedElement FINAL : public HTMLPlugInElement {
 public:

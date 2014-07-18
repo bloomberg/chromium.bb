@@ -33,7 +33,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class LayoutPoint;
 class LayoutRect;
@@ -100,10 +100,10 @@ private:
     DocumentMarker::MarkerTypes m_possiblyExistingMarkerTypes;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
-void showDocumentMarkers(const WebCore::DocumentMarkerController*);
+void showDocumentMarkers(const blink::DocumentMarkerController*);
 #endif
 
 #endif // DocumentMarkerController_h

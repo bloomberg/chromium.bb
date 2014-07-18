@@ -40,7 +40,7 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<Text> Text::create(Document& document, const String& data)
 {
@@ -372,4 +372,4 @@ void Text::formatForDebugger(char *buffer, unsigned length) const
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

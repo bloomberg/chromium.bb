@@ -97,7 +97,7 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -2563,23 +2563,23 @@ unsigned Node::lengthOfContents() const
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 
-void showNode(const WebCore::Node* node)
+void showNode(const blink::Node* node)
 {
     if (node)
         node->showNode("");
 }
 
-void showTree(const WebCore::Node* node)
+void showTree(const blink::Node* node)
 {
     if (node)
         node->showTreeForThis();
 }
 
-void showNodePath(const WebCore::Node* node)
+void showNodePath(const blink::Node* node)
 {
     if (node)
         node->showNodePathForThis();

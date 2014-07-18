@@ -31,7 +31,7 @@
 #include "core/html/shadow/DateTimeFieldElement.h"
 #include "platform/DateComponents.h"
 
-namespace WebCore {
+namespace blink {
 
 class DateTimeFieldsState;
 class KeyboardEvent;
@@ -156,7 +156,7 @@ private:
 
 DEFINE_TYPE_CASTS(DateTimeEditElement, Element, element, element->isDateTimeEditElement(), element.isDateTimeEditElement());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif
 #endif

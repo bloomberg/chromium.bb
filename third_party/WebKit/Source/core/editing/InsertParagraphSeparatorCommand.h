@@ -28,7 +28,7 @@
 
 #include "core/editing/CompositeEditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class EditingStyle;
 

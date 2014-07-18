@@ -34,7 +34,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 template <typename CharacterType>
 static HTMLDimension parseDimension(const CharacterType* characters, size_t lastParsedIndex, size_t endOfCurrentToken)
@@ -130,4 +130,4 @@ Vector<HTMLDimension> parseListOfDimensions(const String& input)
     return parsedDimensions;
 }
 
-} // namespace WebCore
+} // namespace blink

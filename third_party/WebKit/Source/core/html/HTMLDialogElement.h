@@ -28,7 +28,7 @@
 
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class ExceptionState;
@@ -73,6 +73,6 @@ private:
     String m_returnValue;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

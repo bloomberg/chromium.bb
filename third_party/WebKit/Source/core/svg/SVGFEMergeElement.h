@@ -24,7 +24,7 @@
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FEMerge.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGFEMergeElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
@@ -36,6 +36,6 @@ private:
     virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

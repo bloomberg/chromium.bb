@@ -8,7 +8,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/Node.h"
 
-namespace WebCore {
+namespace blink {
 
 class ChildNode {
 public:
@@ -28,6 +28,6 @@ public:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ChildNode_h

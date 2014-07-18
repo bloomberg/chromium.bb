@@ -37,7 +37,7 @@
 #include "wtf/RefCounted.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class GCObservation : public RefCountedWillBeGarbageCollectedFinalized<GCObservation> {
 public:

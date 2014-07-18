@@ -33,7 +33,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXObjectCache;
 class Element;
@@ -212,6 +212,6 @@ private:
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXNodeObject, isAXNodeObject());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXNodeObject_h

@@ -37,7 +37,7 @@
 #include "wtf/Vector.h"
 #include "wtf/WeakPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class CustomElementMicrotaskImportStep;
 class HTMLImportLoader;
@@ -107,6 +107,6 @@ inline HTMLImportChild* toHTMLImportChild(HTMLImport* import)
     return static_cast<HTMLImportChild*>(import);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLImportChild_h

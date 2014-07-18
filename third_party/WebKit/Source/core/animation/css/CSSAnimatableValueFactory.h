@@ -35,7 +35,7 @@
 #include "core/animation/animatable/AnimatableValue.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderStyle;
 
@@ -46,6 +46,6 @@ private:
     static PassRefPtrWillBeRawPtr<AnimatableValue> createFromColor(CSSPropertyID, const RenderStyle&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSAnimatableValueFactory_h

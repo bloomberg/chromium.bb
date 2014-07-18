@@ -40,7 +40,7 @@
 #include "platform/network/ResourceResponse.h"
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 using TypeBuilder::Timeline::TimelineEvent;
 
@@ -323,5 +323,5 @@ String TimelineRecordFactory::type(TypeBuilder::Timeline::TimelineEvent* event)
     return type;
 }
 
-} // namespace WebCore
+} // namespace blink
 

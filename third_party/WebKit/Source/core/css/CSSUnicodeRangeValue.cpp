@@ -28,7 +28,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 String CSSUnicodeRangeValue::customCSSText() const
 {

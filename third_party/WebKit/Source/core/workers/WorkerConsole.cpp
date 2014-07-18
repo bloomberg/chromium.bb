@@ -37,7 +37,7 @@
 #include "core/workers/WorkerThread.h"
 
 
-namespace WebCore {
+namespace blink {
 
 WorkerConsole::WorkerConsole(WorkerGlobalScope* scope)
     : m_scope(scope)
@@ -70,4 +70,4 @@ void WorkerConsole::trace(Visitor* visitor)
 
 // FIXME: add memory getter
 
-} // namespace WebCore
+} // namespace blink

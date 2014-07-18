@@ -48,7 +48,7 @@
 #include "core/rendering/ClipRectsCache.h"
 #include "core/rendering/RenderBox.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderLayer;
 
@@ -143,6 +143,6 @@ private:
     mutable OwnPtr<ClipRectsCache> m_cache;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderLayerClipper_h

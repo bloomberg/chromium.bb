@@ -30,7 +30,7 @@
 
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class HistoryItem;
 
@@ -43,6 +43,6 @@ public:
     virtual int backForwardListCount() = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BackForwardClient_h

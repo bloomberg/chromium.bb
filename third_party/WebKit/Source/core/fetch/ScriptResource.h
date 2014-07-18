@@ -28,7 +28,7 @@
 
 #include "core/fetch/TextResource.h"
 
-namespace WebCore {
+namespace blink {
 
 class ScriptResource FINAL : public TextResource {
 public:

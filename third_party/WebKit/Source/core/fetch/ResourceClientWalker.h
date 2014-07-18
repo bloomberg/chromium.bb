@@ -29,7 +29,7 @@
 #include "wtf/HashCountedSet.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 // Call this "walker" instead of iterator so people won't expect Qt or STL-style iterator interface.
 // Just keep calling next() on this. It's safe from deletions of items.

@@ -37,7 +37,7 @@
 
 using namespace WTF;
 
-namespace WebCore {
+namespace blink {
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CSSBasicShape)
 
@@ -448,5 +448,5 @@ void CSSBasicShapeInset::trace(Visitor* visitor)
     CSSBasicShape::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink
 

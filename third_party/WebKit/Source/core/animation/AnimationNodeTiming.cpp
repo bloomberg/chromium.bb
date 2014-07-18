@@ -9,7 +9,7 @@
 #include "core/animation/AnimationNode.h"
 #include "platform/animation/TimingFunction.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<AnimationNodeTiming> AnimationNodeTiming::create(AnimationNode* parent)
 {
@@ -177,4 +177,4 @@ void AnimationNodeTiming::trace(Visitor* visitor)
     visitor->trace(m_parent);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -41,7 +41,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "platform/geometry/IntRect.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -753,4 +753,4 @@ HTMLFrameOwnerElement* frameOwnerElement(FocusCandidate& candidate)
     return candidate.isFrameOwnerElement() ? toHTMLFrameOwnerElement(candidate.visibleNode) : 0;
 };
 
-} // namespace WebCore
+} // namespace blink

@@ -31,7 +31,7 @@
 
 #include "core/accessibility/AXTableCell.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXARIAGridCell FINAL : public AXTableCell {
 
@@ -50,6 +50,6 @@ protected:
     virtual AXObject* parentTable() const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXARIAGridCell_h

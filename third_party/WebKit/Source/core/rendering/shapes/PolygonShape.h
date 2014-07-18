@@ -34,7 +34,7 @@
 #include "core/rendering/shapes/ShapeInterval.h"
 #include "platform/geometry/FloatPolygon.h"
 
-namespace WebCore {
+namespace blink {
 
 class OffsetPolygonEdge FINAL : public VertexPair {
 public:
@@ -75,6 +75,6 @@ private:
     FloatPolygon m_polygon;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PolygonShape_h

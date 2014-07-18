@@ -34,7 +34,7 @@
 
 #include "core/page/Page.h"
 
-namespace WebCore {
+namespace blink {
 
 // static
 const char* PrerendererClient::supplementName()

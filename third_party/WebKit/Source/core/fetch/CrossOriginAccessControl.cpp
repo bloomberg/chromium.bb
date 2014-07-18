@@ -38,7 +38,7 @@
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 bool isOnAccessControlSimpleRequestMethodWhitelist(const String& method)
 {
@@ -284,4 +284,4 @@ bool CrossOriginAccessControl::handleRedirect(Resource* resource, SecurityOrigin
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

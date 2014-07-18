@@ -41,7 +41,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 
 
-namespace WebCore {
+namespace blink {
 
 class Dictionary;
 
@@ -113,6 +113,6 @@ private:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ElementAnimation_h

@@ -21,7 +21,7 @@
 #ifndef SimulatedClickOptions_h
 #define SimulatedClickOptions_h
 
-namespace WebCore {
+namespace blink {
 
 enum SimulatedClickMouseEventOptions {
     SendNoEvents,
@@ -29,6 +29,6 @@ enum SimulatedClickMouseEventOptions {
     SendMouseOverUpDownEvents
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SimulatedClickOptions_h

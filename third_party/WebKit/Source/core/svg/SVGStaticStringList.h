@@ -34,7 +34,7 @@
 #include "core/svg/SVGStringListTearOff.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGElement;
 

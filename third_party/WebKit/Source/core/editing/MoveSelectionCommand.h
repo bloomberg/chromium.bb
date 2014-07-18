@@ -28,7 +28,7 @@
 
 #include "core/editing/CompositeEditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class DocumentFragment;
 
@@ -53,6 +53,6 @@ private:
     bool m_smartDelete;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MoveSelectionCommand_h

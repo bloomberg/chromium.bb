@@ -36,7 +36,7 @@
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
 
-namespace WebCore {
+namespace blink {
 
 InjectedScriptModule::InjectedScriptModule(const String& name)
     : InjectedScriptBase(name)
@@ -71,4 +71,4 @@ void InjectedScriptModule::ensureInjected(InjectedScriptManager* injectedScriptM
     initialize(resultValue, injectedScriptManager->inspectedStateAccessCheck());
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -28,7 +28,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 
-namespace WebCore {
+namespace blink {
 
 AppendNodeCommand::AppendNodeCommand(PassRefPtrWillBeRawPtr<ContainerNode> parent, PassRefPtrWillBeRawPtr<Node> node)
     : SimpleEditCommand(parent->document())
@@ -65,4 +65,4 @@ void AppendNodeCommand::trace(Visitor* visitor)
     SimpleEditCommand::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

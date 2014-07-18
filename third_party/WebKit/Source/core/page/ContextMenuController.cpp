@@ -38,7 +38,7 @@
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
 
-namespace WebCore {
+namespace blink {
 
 ContextMenuController::ContextMenuController(Page*, ContextMenuClient* client)
     : m_client(client)
@@ -161,4 +161,4 @@ void ContextMenuController::contextMenuItemSelected(const ContextMenuItem* item)
     m_menuProvider->contextMenuItemSelected(item);
 }
 
-} // namespace WebCore
+} // namespace blink

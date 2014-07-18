@@ -36,7 +36,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef HashMap<RefPtr<Widget>, FrameView*> WidgetToParentMap;
 static WidgetToParentMap& widgetNewParentMap()
@@ -278,4 +278,4 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
 }
 
 
-} // namespace WebCore
+} // namespace blink

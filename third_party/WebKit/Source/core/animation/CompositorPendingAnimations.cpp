@@ -37,7 +37,7 @@
 #include "core/page/Page.h"
 #include "core/rendering/RenderLayer.h"
 
-namespace WebCore {
+namespace blink {
 
 void CompositorPendingAnimations::add(AnimationPlayer* player)
 {

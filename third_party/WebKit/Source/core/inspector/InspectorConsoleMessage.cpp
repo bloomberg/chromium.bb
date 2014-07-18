@@ -43,7 +43,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 InspectorConsoleMessage::InspectorConsoleMessage(bool canGenerateCallStack, MessageSource source, MessageType type, MessageLevel level, const String& message)
     : m_source(source)
@@ -260,4 +260,4 @@ unsigned InspectorConsoleMessage::argumentCount()
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink

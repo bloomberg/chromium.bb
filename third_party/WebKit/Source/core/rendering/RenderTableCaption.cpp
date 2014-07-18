@@ -22,7 +22,7 @@
 
 #include "core/rendering/RenderTable.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderTableCaption::RenderTableCaption(Element* element)
     : RenderBlockFlow(element)

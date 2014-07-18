@@ -38,7 +38,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderFullScreen;
 class RenderStyle;
@@ -137,6 +137,6 @@ inline FullscreenElementStack* FullscreenElementStack::fromIfExists(Document& do
     return fromIfExistsSlow(document);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FullscreenElementStack_h

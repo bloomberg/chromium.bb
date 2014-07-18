@@ -24,7 +24,7 @@
 
 #include "core/svg/SVGPathSegLinetoVertical.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathSegLinetoVerticalRel FINAL : public SVGPathSegLinetoVertical {
 public:
@@ -44,6 +44,6 @@ private:
     virtual String pathSegTypeAsLetter() const OVERRIDE { return "v"; }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

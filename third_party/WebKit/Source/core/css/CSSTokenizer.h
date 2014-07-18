@@ -27,7 +27,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class BisonCSSParser;
 struct CSSParserLocation;
@@ -201,6 +201,6 @@ inline UChar* CSSTokenizer::tokenStart<UChar>()
     return m_tokenStart.ptr16;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSTokenizer_h

@@ -41,7 +41,7 @@
 #include "core/svg/SVGUseElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 EventTarget* EventPath::eventTargetRespectingTargetRules(Node* referenceNode)
 {

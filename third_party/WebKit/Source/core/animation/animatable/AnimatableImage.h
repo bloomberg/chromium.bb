@@ -35,7 +35,7 @@
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/rendering/style/StyleImage.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableImage FINAL : public AnimatableValue {
 public:
@@ -70,6 +70,6 @@ private:
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableImage, isImage());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatableImage_h

@@ -33,7 +33,7 @@
 #include "core/html/CollectionType.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 enum NodeListRootType {
     NodeListIsRootedAtNode,
@@ -191,6 +191,6 @@ Element* LiveNodeListBase::traverseMatchingElementsBackwardToOffset(const NodeLi
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LiveNodeListBase_h

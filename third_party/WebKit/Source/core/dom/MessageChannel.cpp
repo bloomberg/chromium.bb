@@ -31,7 +31,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebMessagePortChannel.h"
 
-namespace WebCore {
+namespace blink {
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MessageChannel);
 
@@ -61,4 +61,4 @@ void MessageChannel::trace(Visitor* visitor)
     visitor->trace(m_port2);
 }
 
-} // namespace WebCore
+} // namespace blink

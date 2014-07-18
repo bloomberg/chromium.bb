@@ -84,7 +84,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/TemporaryChange.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -3288,4 +3288,4 @@ void FrameView::willRemoveScrollbar(Scrollbar* scrollbar, ScrollbarOrientation o
     }
 }
 
-} // namespace WebCore
+} // namespace blink

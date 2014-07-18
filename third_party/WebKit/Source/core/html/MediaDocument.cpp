@@ -44,7 +44,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "platform/KeyboardCodes.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

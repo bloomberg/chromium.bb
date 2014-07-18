@@ -34,7 +34,7 @@
 #include "core/svg/properties/SVGPropertyHelper.h"
 #include "platform/geometry/FloatPoint.h"
 
-namespace WebCore {
+namespace blink {
 
 class AffineTransform;
 class SVGPointTearOff;
@@ -94,6 +94,6 @@ inline PassRefPtr<SVGPoint> toSVGPoint(PassRefPtr<SVGPropertyBase> passBase)
     return static_pointer_cast<SVGPoint>(base.release());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPoint_h

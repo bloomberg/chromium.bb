@@ -23,7 +23,7 @@
 
 #include "platform/geometry/LayoutRect.h"
 
-namespace WebCore
+namespace blink
 {
 // RenderOverflow is a class for tracking content that spills out of a box.  This class is used by RenderBox and
 // InlineFlowBox.
@@ -110,6 +110,6 @@ inline void RenderOverflow::setVisualOverflow(const LayoutRect& rect)
     m_visualOverflow = rect;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderOverflow_h

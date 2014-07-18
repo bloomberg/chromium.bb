@@ -36,7 +36,7 @@
 
 #define PERCENT(x, y) ((!y) ? 0 : (((x) * 100.0) / (y)))
 
-namespace WebCore {
+namespace blink {
 
 void StyleResolverStats::reset()
 {
@@ -84,4 +84,4 @@ String StyleResolverStats::report() const
     return output.toString();
 }
 
-} // namespace WebCore
+} // namespace blink

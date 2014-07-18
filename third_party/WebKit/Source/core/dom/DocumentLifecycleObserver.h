@@ -28,7 +28,7 @@
 
 #include "platform/LifecycleContext.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 
@@ -45,6 +45,6 @@ public:
 #endif
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DocumentLifecycleObserver_h

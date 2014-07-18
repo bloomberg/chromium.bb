@@ -7,7 +7,7 @@
 
 #include "core/events/Event.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -28,4 +28,4 @@ NullExecutionContext::NullExecutionContext()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

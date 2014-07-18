@@ -36,7 +36,7 @@
 #include "core/rendering/RenderRubyText.h"
 #include "core/rendering/RenderText.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderRubyRun::RenderRubyRun()
     : RenderBlockFlow(0)
@@ -307,4 +307,4 @@ void RenderRubyRun::getOverhang(bool firstLine, RenderObject* startRenderer, Ren
         endOverhang = std::min<int>(endOverhang, std::min<int>(toRenderText(endRenderer)->minLogicalWidth(), halfWidthOfFontSize));
 }
 
-} // namespace WebCore
+} // namespace blink

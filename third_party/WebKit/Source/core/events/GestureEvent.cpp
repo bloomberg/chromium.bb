@@ -28,7 +28,7 @@
 #include "core/events/GestureEvent.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtrWillBeRawPtr<AbstractView> view, const PlatformGestureEvent& event)
 {
@@ -116,4 +116,4 @@ bool GestureEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) co
     return event()->defaultHandled() || event()->defaultPrevented();
 }
 
-} // namespace WebCore
+} // namespace blink

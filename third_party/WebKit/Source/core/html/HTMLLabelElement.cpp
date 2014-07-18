@@ -33,7 +33,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/FormAssociatedElement.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

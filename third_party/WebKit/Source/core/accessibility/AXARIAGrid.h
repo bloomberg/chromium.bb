@@ -32,7 +32,7 @@
 #include "core/accessibility/AXTable.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXTableCell;
 class AXTableHeaderContainer;
@@ -58,6 +58,6 @@ private:
     bool addTableCellChild(AXObject*, HashSet<AXObject*>& appendedRows, unsigned& columnCount);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXARIAGrid_h

@@ -31,7 +31,7 @@
 
 #include "platform/graphics/Path.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class FloatRect;

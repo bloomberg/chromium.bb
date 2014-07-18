@@ -33,7 +33,7 @@
 
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 static DocumentLifecycle::DeprecatedTransition* s_deprecatedTransitionStack = 0;
 

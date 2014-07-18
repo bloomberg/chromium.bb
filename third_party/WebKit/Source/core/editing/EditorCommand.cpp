@@ -65,7 +65,7 @@
 #include "public/platform/Platform.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -546,7 +546,7 @@ static bool executeInsertLineBreak(LocalFrame& frame, Event* event, EditorComman
 
 static bool executeInsertNewline(LocalFrame& frame, Event* event, EditorCommandSource, const String&)
 {
-    LocalFrame* targetFrame = WebCore::targetFrame(frame, event);
+    LocalFrame* targetFrame = blink::targetFrame(frame, event);
     return targetFrame->eventHandler().handleTextInputEvent("\n", event, targetFrame->editor().canEditRichly() ? TextEventInputKeyboard : TextEventInputLineBreak);
 }
 
@@ -1799,4 +1799,4 @@ int Editor::Command::idForHistogram() const
     return isSupported() ? m_command->idForUserMetrics : 0;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -12,7 +12,7 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
-namespace WebCore {
+namespace blink {
 
 EventHandlerRegistry::EventHandlerRegistry(FrameHost& frameHost)
     : m_frameHost(frameHost)
@@ -252,4 +252,4 @@ void EventHandlerRegistry::checkConsistency() const
 #endif // ENABLE(ASSERT)
 }
 
-} // namespace WebCore
+} // namespace blink

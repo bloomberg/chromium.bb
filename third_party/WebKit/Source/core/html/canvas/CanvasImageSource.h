@@ -29,7 +29,7 @@
 
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Image;
 class SecurityOrigin;
@@ -72,6 +72,6 @@ protected:
     virtual ~CanvasImageSource() { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

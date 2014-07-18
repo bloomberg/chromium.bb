@@ -38,7 +38,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtr<ThreadableLoaderClient> WorkerLoaderClientBridge::create(PassRefPtr<ThreadableLoaderClientWrapper> client, WorkerLoaderProxy& loaderProxy)
 {
@@ -159,4 +159,4 @@ WorkerLoaderClientBridge::WorkerLoaderClientBridge(PassRefPtr<ThreadableLoaderCl
 {
 }
 
-} // namespace WebCore
+} // namespace blink

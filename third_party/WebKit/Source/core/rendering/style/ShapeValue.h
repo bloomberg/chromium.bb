@@ -36,7 +36,7 @@
 #include "core/rendering/style/StyleImage.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ShapeValue : public RefCounted<ShapeValue> {
 public:

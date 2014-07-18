@@ -69,7 +69,7 @@
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderText.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -1503,4 +1503,4 @@ void CompositeEditCommand::trace(Visitor* visitor)
     EditCommand::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

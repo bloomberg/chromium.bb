@@ -36,7 +36,7 @@
 #include "core/xml/XPathUtil.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace XPath;
 

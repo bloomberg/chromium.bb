@@ -40,7 +40,7 @@
 #include "core/rendering/RenderFullScreen.h"
 #include "platform/UserGestureIndicator.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -578,4 +578,4 @@ void FullscreenElementStack::trace(Visitor* visitor)
     DocumentSupplement::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

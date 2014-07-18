@@ -49,7 +49,7 @@
 #include "core/rendering/RenderLayerModelObject.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderLayer;
 class RenderReplica;
@@ -79,6 +79,6 @@ private:
     unsigned m_isPaintingInsideReflection : 1;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderLayerReflectinInfo_h

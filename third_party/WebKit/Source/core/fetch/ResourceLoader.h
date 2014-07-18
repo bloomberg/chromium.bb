@@ -40,7 +40,7 @@ namespace blink {
 class WebThreadedDataReceiver;
 }
 
-namespace WebCore {
+namespace blink {
 
 class Resource;
 class KURL;

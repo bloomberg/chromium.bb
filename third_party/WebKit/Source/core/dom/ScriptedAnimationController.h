@@ -33,7 +33,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/StringImpl.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class Event;

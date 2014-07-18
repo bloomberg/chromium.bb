@@ -31,7 +31,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class HitTestLocation {
 public:
@@ -85,6 +85,6 @@ private:
     bool m_isRectilinear;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HitTestLocation_h

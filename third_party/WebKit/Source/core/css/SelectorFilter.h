@@ -33,7 +33,7 @@
 #include "wtf/BloomFilter.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSSelector;
 

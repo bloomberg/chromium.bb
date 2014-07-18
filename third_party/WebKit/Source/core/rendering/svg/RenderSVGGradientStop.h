@@ -23,7 +23,7 @@
 
 #include "core/rendering/RenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGGradientElement;
 class SVGStopElement;

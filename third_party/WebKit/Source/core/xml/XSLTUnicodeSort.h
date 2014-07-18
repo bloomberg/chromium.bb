@@ -30,7 +30,7 @@
 
 #include <libxslt/xsltInternals.h>
 
-namespace WebCore {
+namespace blink {
 
 void xsltUnicodeSortFunction(xsltTransformContextPtr ctxt, xmlNodePtr* sorts, int nbsorts);
 

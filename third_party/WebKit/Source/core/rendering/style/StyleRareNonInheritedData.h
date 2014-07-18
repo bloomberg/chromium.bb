@@ -41,7 +41,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ContentData;
 class CSSAnimationData;
@@ -215,6 +215,6 @@ private:
     StyleRareNonInheritedData(const StyleRareNonInheritedData&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleRareNonInheritedData_h

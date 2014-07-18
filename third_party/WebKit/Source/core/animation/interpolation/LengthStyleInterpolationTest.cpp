@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 class AnimationLengthStyleInterpolationTest : public ::testing::Test {
 protected:

@@ -31,7 +31,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

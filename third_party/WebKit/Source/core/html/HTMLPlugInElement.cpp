@@ -51,7 +51,7 @@
 #include "platform/Widget.h"
 #include "platform/plugins/PluginData.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

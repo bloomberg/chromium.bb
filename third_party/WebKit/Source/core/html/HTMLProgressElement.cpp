@@ -33,7 +33,7 @@
 #include "core/html/shadow/ProgressShadowElement.h"
 #include "core/rendering/RenderProgress.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

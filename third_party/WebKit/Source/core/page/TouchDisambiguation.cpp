@@ -45,7 +45,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace WebCore {
+namespace blink {
 
 static IntRect boundingBoxForEventNodes(Node* eventNode)
 {
@@ -146,4 +146,4 @@ void findGoodTouchTargets(const IntRect& touchBox, LocalFrame* mainFrame, Vector
     }
 }
 
-} // namespace WebCore
+} // namespace blink

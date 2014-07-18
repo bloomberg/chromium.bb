@@ -33,7 +33,7 @@
 
 #include "core/CSSPropertyNames.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableValue;
 class StyleResolverState;
@@ -43,6 +43,6 @@ public:
     static void applyProperty(CSSPropertyID, StyleResolverState&, const AnimatableValue*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatedStyleBuilder_h

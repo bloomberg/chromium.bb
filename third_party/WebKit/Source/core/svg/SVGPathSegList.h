@@ -37,7 +37,7 @@
 #include "core/svg/properties/SVGListPropertyHelper.h"
 #include "wtf/WeakPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathElement;
 class SVGPathSegListTearOff;
@@ -175,6 +175,6 @@ inline PassRefPtr<SVGPathSegList> toSVGPathSegList(PassRefPtr<SVGPropertyBase> p
     return static_pointer_cast<SVGPathSegList>(base.release());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -35,7 +35,7 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/html/HTMLInputElement.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -99,4 +99,4 @@ void BaseClickableWithKeyInputType::accessKeyAction(bool sendMouseEvents)
     accessKeyAction(element(), sendMouseEvents);
 }
 
-} // namespace WebCore
+} // namespace blink

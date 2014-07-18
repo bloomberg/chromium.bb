@@ -24,7 +24,7 @@
 
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleMultiColData::StyleMultiColData()
     : m_width(0)
@@ -69,4 +69,4 @@ bool StyleMultiColData::operator==(const StyleMultiColData& o) const
         && m_breakAfter == o.m_breakAfter && m_breakInside == o.m_breakInside;
 }
 
-} // namespace WebCore
+} // namespace blink

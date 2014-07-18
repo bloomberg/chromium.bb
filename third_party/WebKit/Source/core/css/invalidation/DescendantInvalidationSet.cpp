@@ -34,7 +34,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
 
-namespace WebCore {
+namespace blink {
 
 DescendantInvalidationSet::DescendantInvalidationSet()
     : m_allDescendantsMightBeInvalid(false)
@@ -223,4 +223,4 @@ void DescendantInvalidationSet::show() const
 }
 #endif // NDEBUG
 
-} // namespace WebCore
+} // namespace blink

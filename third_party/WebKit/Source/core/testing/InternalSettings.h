@@ -35,7 +35,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class ExceptionState;
@@ -130,6 +130,6 @@ private:
     Backup m_backup;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

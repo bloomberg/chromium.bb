@@ -39,7 +39,7 @@
 #include "platform/fonts/FontDescription.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 FontFaceCache::FontFaceCache()
     : m_version(0)

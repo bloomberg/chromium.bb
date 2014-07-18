@@ -10,7 +10,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/page/Page.h"
 
-namespace WebCore {
+namespace blink {
 
 DeviceSingleWindowEventController::DeviceSingleWindowEventController(Document& document)
     : DeviceEventControllerBase(document.page())
@@ -71,4 +71,4 @@ void DeviceSingleWindowEventController::didRemoveAllEventListeners(LocalDOMWindo
     m_hasEventListener = false;
 }
 
-} // namespace WebCore
+} // namespace blink

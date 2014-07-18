@@ -27,7 +27,7 @@
 #include "core/fileapi/FileList.h"
 
 
-namespace WebCore {
+namespace blink {
 
 FileList::FileList()
 {
@@ -55,4 +55,4 @@ void FileList::trace(Visitor* visitor)
     visitor->trace(m_files);
 }
 
-} // namespace WebCore
+} // namespace blink

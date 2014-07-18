@@ -34,7 +34,7 @@
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class InspectorFrontendClient {
 public:
@@ -49,6 +49,6 @@ public:
     virtual bool isUnderTest() = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

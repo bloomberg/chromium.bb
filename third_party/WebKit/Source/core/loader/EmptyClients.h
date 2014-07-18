@@ -62,7 +62,7 @@
  Brittle, yes.  Unfortunate, yes.  Hopefully temporary.
 */
 
-namespace WebCore {
+namespace blink {
 
 class EmptyChromeClient : public ChromeClient {
     WTF_MAKE_FAST_ALLOCATED;

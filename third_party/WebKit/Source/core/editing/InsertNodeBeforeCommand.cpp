@@ -28,7 +28,7 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 
-namespace WebCore {
+namespace blink {
 
 InsertNodeBeforeCommand::InsertNodeBeforeCommand(PassRefPtrWillBeRawPtr<Node> insertChild, PassRefPtrWillBeRawPtr<Node> refChild,
     ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)

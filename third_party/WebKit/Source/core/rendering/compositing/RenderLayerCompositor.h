@@ -31,7 +31,7 @@
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "wtf/HashMap.h"
 
-namespace WebCore {
+namespace blink {
 
 class DocumentLifecycle;
 class GraphicsLayer;
@@ -263,6 +263,6 @@ private:
     bool m_inOverlayFullscreenVideo;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderLayerCompositor_h

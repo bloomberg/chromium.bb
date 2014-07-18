@@ -33,7 +33,7 @@
 
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 enum ChildrenIteration {
     NegativeZOrderChildren = 1,
@@ -86,6 +86,6 @@ private:
     int m_index;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderLayerStackingNodeIterator_h

@@ -42,7 +42,7 @@
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsContext.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderInline::RenderInline(Element* element)
     : RenderBoxModelObject(element)
@@ -1568,4 +1568,4 @@ void RenderInline::invalidateTreeIfNeeded(const PaintInvalidationState& paintInv
     RenderObject::invalidateTreeIfNeeded(childPaintInvalidationState);
 }
 
-} // namespace WebCore
+} // namespace blink

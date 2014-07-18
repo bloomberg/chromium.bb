@@ -30,7 +30,7 @@
 
 #include "core/html/shadow/SpinButtonElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXSpinButton FINAL : public AXMockObject {
 public:
@@ -73,6 +73,6 @@ private:
 DEFINE_AX_OBJECT_TYPE_CASTS(AXSpinButton, isNativeSpinButton());
 DEFINE_AX_OBJECT_TYPE_CASTS(AXSpinButtonPart, isSpinButtonPart());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXSpinButton_h

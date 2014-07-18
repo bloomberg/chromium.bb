@@ -32,7 +32,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/unicode/CharacterNames.h"
 
-namespace WebCore {
+namespace blink {
 
 template<bool treatNoBreakSpaceAsBreak>
 static inline bool isBreakableSpace(UChar ch)
@@ -190,4 +190,4 @@ int nextBreakablePositionIgnoringNBSP(LazyLineBreakIterator& lazyBreakIterator, 
     return nextBreakablePosition<UChar, false>(lazyBreakIterator, string.characters16(), string.length(), pos);
 }
 
-} // namespace WebCore
+} // namespace blink

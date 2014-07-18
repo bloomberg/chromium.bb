@@ -43,7 +43,7 @@ namespace WTF {
 class String;
 }
 
-namespace WebCore {
+namespace blink {
 
 class Resource;
 struct FetchInitiatorInfo;
@@ -175,7 +175,7 @@ private:
     Timer<InspectorResourceAgent> m_removeFinishedReplayXHRTimer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // !defined(InspectorResourceAgent_h)

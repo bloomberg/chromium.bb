@@ -32,7 +32,7 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 struct FillSize {
     FillSize()
@@ -238,6 +238,6 @@ private:
     mutable unsigned m_clipMax : 2; // EFillBox, maximum m_clip value from this to bottom layer
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FillLayer_h

@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/frame/DOMWindowLifecycleNotifier.h"
 
-namespace WebCore {
+namespace blink {
 
 DOMWindowLifecycleNotifier::DOMWindowLifecycleNotifier(LocalDOMWindow* context)
     : LifecycleNotifier<LocalDOMWindow>(context)
@@ -80,4 +80,4 @@ void DOMWindowLifecycleNotifier::notifyRemoveAllEventListeners(LocalDOMWindow* w
         (*it)->didRemoveAllEventListeners(window);
 }
 
-} // namespace WebCore
+} // namespace blink

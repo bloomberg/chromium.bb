@@ -37,7 +37,7 @@
 #include "core/rendering/style/StylePendingImage.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSImageSetValue::CSSImageSetValue()
     : CSSValueList(ImageSetClass, CommaSeparator)
@@ -192,4 +192,4 @@ PassRefPtrWillBeRawPtr<CSSImageSetValue> CSSImageSetValue::cloneForCSSOM() const
     return adoptRefWillBeNoop(new CSSImageSetValue(*this));
 }
 
-} // namespace WebCore
+} // namespace blink

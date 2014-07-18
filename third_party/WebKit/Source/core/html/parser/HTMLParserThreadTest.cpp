@@ -9,7 +9,7 @@
 
 namespace {
 
-using namespace WebCore;
+using namespace blink;
 
 TEST(HTMLParserThread, Init)
 {

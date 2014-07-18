@@ -31,10 +31,10 @@
 
 #include "wtf/unicode/Unicode.h"
 
-namespace WebCore {
+namespace blink {
 
 bool isCharacterSmartReplaceExempt(UChar32 c, bool isPreviousCharacter);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SmartReplace_h

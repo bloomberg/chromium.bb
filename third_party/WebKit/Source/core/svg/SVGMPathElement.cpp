@@ -27,7 +27,7 @@
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGPathElement.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGMPathElement::SVGMPathElement(Document& document)
     : SVGElement(SVGNames::mpathTag, document)
@@ -149,4 +149,4 @@ void SVGMPathElement::notifyParentOfPathChange(ContainerNode* parent)
         toSVGAnimateMotionElement(parent)->updateAnimationPath();
 }
 
-} // namespace WebCore
+} // namespace blink

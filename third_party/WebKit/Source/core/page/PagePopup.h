@@ -31,7 +31,7 @@
 #ifndef PagePopup_h
 #define PagePopup_h
 
-namespace WebCore {
+namespace blink {
 
 // A PagePopup object is created by ChromeClient::openPagePopup(), and deleted
 // by ChromeClient::closePagePopup().

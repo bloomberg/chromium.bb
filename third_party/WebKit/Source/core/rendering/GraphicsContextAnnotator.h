@@ -37,7 +37,7 @@
     if (UNLIKELY(paintInfo.context->annotationMode())) \
         scopedGraphicsContextAnnotator.annotate(paintInfo, renderer)
 
-namespace WebCore {
+namespace blink {
 
 class GraphicsContext;
 struct PaintInfo;
@@ -63,6 +63,6 @@ private:
     GraphicsContext* m_context;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GraphicsContextAnnotator_h

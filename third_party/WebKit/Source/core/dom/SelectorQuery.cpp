@@ -38,7 +38,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 
-namespace WebCore {
+namespace blink {
 
 struct SingleElementSelectorQueryTrait {
     typedef Element* OutputType;

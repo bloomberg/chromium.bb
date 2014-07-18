@@ -8,7 +8,7 @@
 #include "core/frame/RemoteFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 
-namespace WebCore {
+namespace blink {
 
 inline RemoteFrame::RemoteFrame(FrameClient* client, FrameHost* host, FrameOwner* owner)
     : Frame(client, host, owner)
@@ -43,4 +43,4 @@ void RemoteFrame::createView()
     }
 }
 
-} // namespace WebCore
+} // namespace blink

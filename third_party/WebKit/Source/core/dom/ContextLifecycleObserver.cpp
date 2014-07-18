@@ -29,7 +29,7 @@
 
 #include "core/dom/ExecutionContext.h"
 
-namespace WebCore {
+namespace blink {
 
 template<> void observerContext(ExecutionContext* context, LifecycleObserver<ExecutionContext>* observer)
 {
@@ -50,4 +50,4 @@ ContextLifecycleObserver::~ContextLifecycleObserver()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

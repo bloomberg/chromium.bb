@@ -33,7 +33,7 @@
 
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 void ResourceLoaderSet::cancelAll()
 {

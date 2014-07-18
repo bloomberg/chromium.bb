@@ -29,7 +29,7 @@
 
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 DocumentLifecycleNotifier::DocumentLifecycleNotifier(Document* document)
     : LifecycleNotifier<Document>(document)
@@ -56,4 +56,4 @@ void DocumentLifecycleNotifier::removeObserver(DocumentLifecycleNotifier::Observ
     LifecycleNotifier<Document>::removeObserver(observer);
 }
 
-} // namespace WebCore
+} // namespace blink

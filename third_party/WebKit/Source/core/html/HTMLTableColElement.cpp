@@ -30,7 +30,7 @@
 #include "core/html/HTMLTableElement.h"
 #include "core/rendering/RenderTableCol.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

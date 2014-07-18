@@ -8,7 +8,7 @@
 #include "core/animation/interpolation/StyleInterpolation.h"
 #include "platform/Length.h"
 
-namespace WebCore {
+namespace blink {
 
 class LengthStyleInterpolation : public StyleInterpolation {
 public:

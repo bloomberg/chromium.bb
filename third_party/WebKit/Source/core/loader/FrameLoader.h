@@ -46,7 +46,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Resource;
 class Chrome;
@@ -285,6 +285,6 @@ private:
     bool m_willDetachClient;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FrameLoader_h

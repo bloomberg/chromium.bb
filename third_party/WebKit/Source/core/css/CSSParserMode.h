@@ -34,7 +34,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 

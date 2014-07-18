@@ -23,7 +23,7 @@
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
-namespace WebCore {
+namespace blink {
 
 class PointerEventsHitRules {
 public:

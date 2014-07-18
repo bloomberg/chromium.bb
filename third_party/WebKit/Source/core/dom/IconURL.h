@@ -34,7 +34,7 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/weborigin/KURL.h"
 
-namespace WebCore {
+namespace blink {
 
 enum IconType {
     InvalidIcon = 0,

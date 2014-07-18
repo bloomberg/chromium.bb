@@ -32,7 +32,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/text/TextPosition.h"
 
-namespace WebCore {
+namespace blink {
 
 // On a network with high latency and high bandwidth, using a device
 // with a fast CPU, we could end up speculatively tokenizing

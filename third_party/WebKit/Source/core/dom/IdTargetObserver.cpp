@@ -28,7 +28,7 @@
 
 #include "core/dom/IdTargetObserverRegistry.h"
 
-namespace WebCore {
+namespace blink {
 
 IdTargetObserver::IdTargetObserver(IdTargetObserverRegistry& observerRegistry, const AtomicString& id)
     : m_registry(&observerRegistry)
@@ -56,4 +56,4 @@ void IdTargetObserver::unregister()
 #endif
 }
 
-} // namespace WebCore
+} // namespace blink

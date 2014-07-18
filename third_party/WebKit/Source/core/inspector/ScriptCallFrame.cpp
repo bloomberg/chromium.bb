@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/inspector/ScriptCallFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 ScriptCallFrame::ScriptCallFrame(const String& functionName, const String& scriptId, const String& scriptName, unsigned lineNumber, unsigned column)
     : m_functionName(functionName)
@@ -57,4 +57,4 @@ PassRefPtr<TypeBuilder::Console::CallFrame> ScriptCallFrame::buildInspectorObjec
         .release();
 }
 
-} // namespace WebCore
+} // namespace blink

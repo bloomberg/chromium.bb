@@ -26,7 +26,7 @@
 #ifndef PaintPhase_h
 #define PaintPhase_h
 
-namespace WebCore {
+namespace blink {
 
 /*
  *  The painting of a layer occurs in three distinct phases.  Each phase involves
@@ -65,6 +65,6 @@ enum PaintBehaviorFlags {
 
 typedef unsigned PaintBehavior;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PaintPhase_h

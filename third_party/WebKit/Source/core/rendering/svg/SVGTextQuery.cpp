@@ -29,7 +29,7 @@
 #include "platform/FloatConversion.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 // Base structure for callback user data
 struct SVGTextQuery::Data {

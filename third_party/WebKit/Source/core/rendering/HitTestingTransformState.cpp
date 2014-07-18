@@ -29,7 +29,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 void HitTestingTransformState::translate(int x, int y, TransformAccumulation accumulate)
 {
@@ -85,4 +85,4 @@ LayoutRect HitTestingTransformState::boundsOfMappedArea() const
     return m_accumulatedTransform.inverse().clampedBoundsOfProjectedQuad(m_lastPlanarArea);
 }
 
-} // namespace WebCore
+} // namespace blink

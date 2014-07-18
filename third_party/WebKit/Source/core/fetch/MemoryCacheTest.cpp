@@ -40,11 +40,11 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 class MemoryCacheTest : public ::testing::Test {
 public:
-    class FakeDecodedResource : public WebCore::Resource {
+    class FakeDecodedResource : public blink::Resource {
     public:
         FakeDecodedResource(const ResourceRequest& request, Type type)
             : Resource(request, type)
@@ -64,7 +64,7 @@ public:
         }
     };
 
-    class FakeResource : public WebCore::Resource {
+    class FakeResource : public blink::Resource {
     public:
         FakeResource(const ResourceRequest& request, Type type)
             : Resource(request, type)

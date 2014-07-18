@@ -28,7 +28,7 @@
 #include "core/rendering/RenderBox.h"
 #include "platform/geometry/IntRect.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderSelectionInfoBase {
     WTF_MAKE_NONCOPYABLE(RenderSelectionInfoBase); WTF_MAKE_FAST_ALLOCATED;
@@ -115,7 +115,7 @@ private:
     GapRects m_rects; // relative to repaint container
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // RenderSelectionInfo_h

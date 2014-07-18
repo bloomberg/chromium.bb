@@ -32,7 +32,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/html/HTMLShadowElement.h"
 
-namespace WebCore {
+namespace blink {
 
 static inline ElementShadow* shadowFor(const Node* node)
 {

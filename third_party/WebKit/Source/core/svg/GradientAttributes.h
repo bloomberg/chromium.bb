@@ -22,7 +22,7 @@
 
 #include "core/svg/SVGUnitTypes.h"
 
-namespace WebCore {
+namespace blink {
 
 struct GradientAttributes {
     GradientAttributes()
@@ -92,6 +92,6 @@ struct SameSizeAsGradientAttributes {
 
 COMPILE_ASSERT(sizeof(GradientAttributes) == sizeof(SameSizeAsGradientAttributes), GradientAttributes_size_guard);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -73,7 +73,7 @@
 using namespace WTF;
 using namespace Unicode;
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -4906,4 +4906,4 @@ void RenderBlock::showLineTreeAndMark(const InlineBox* markedBox1, const char* m
 
 #endif
 
-} // namespace WebCore
+} // namespace blink

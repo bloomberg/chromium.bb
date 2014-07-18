@@ -37,7 +37,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimationPlayer;
 class AnimationNode;
@@ -165,6 +165,6 @@ protected:
     const CalculatedTiming& ensureCalculated() const;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

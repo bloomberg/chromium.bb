@@ -24,13 +24,13 @@
 
 #include "core/dom/ContainerNode.h"
 
-namespace WebCore {
+namespace blink {
 
 class Notation : public ContainerNode {
 private:
     Notation(); // Left unimplemented on purpose.
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

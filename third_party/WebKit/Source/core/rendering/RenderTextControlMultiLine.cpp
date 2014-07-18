@@ -25,7 +25,7 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/rendering/HitTestResult.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderTextControlMultiLine::RenderTextControlMultiLine(HTMLTextAreaElement* element)
     : RenderTextControl(element)

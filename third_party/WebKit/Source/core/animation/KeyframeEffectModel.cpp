@@ -37,7 +37,7 @@
 #include "platform/transforms/TransformationMatrix.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 PropertySet KeyframeEffectModelBase::properties() const
 {

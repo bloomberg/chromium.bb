@@ -44,7 +44,7 @@
 #include "wtf/HashTraits.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AutoscrollController;
 class DataTransfer;
@@ -406,6 +406,6 @@ private:
     RefPtrWillBeMember<Element> m_lastDeferredTapElement;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // EventHandler_h

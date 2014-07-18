@@ -28,7 +28,7 @@
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "platform/graphics/GraphicsContext.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSVGResourceGradient::RenderSVGResourceGradient(SVGGradientElement* node)
     : RenderSVGResourceContainer(node)

@@ -34,7 +34,7 @@
 #include "core/html/parser/InputStreamPreprocessor.h"
 #include "core/html/track/vtt/VTTToken.h"
 
-namespace WebCore {
+namespace blink {
 
 class VTTTokenizer {
     WTF_MAKE_NONCOPYABLE(VTTTokenizer);

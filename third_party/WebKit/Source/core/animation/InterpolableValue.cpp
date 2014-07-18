@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/animation/InterpolableValue.h"
 
-namespace WebCore {
+namespace blink {
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(InterpolableValue);
 

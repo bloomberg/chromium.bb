@@ -28,7 +28,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/TagCollection.h"
 
-namespace WebCore {
+namespace blink {
 
 // Collection that limits to a particular tag and whose rootNode is in an HTMLDocument.
 class HTMLTagCollection FINAL : public TagCollection {
@@ -61,6 +61,6 @@ inline bool HTMLTagCollection::elementMatches(const Element& testElement) const
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLTagCollection_h

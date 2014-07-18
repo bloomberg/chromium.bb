@@ -29,7 +29,7 @@
 
 #include "core/rendering/style/SVGRenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGRenderStyle::SVGRenderStyle()
 {

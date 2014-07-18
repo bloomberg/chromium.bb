@@ -36,7 +36,7 @@
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include "platform/text/BidiTextRun.h"
 
-namespace WebCore {
+namespace blink {
 
 template <typename CharacterType>
 static inline TextRun constructTextRunInternal(RenderObject* context, const Font& font, const CharacterType* characters, int length, RenderStyle* style, TextDirection direction, TextRun::ExpansionBehavior expansion)
@@ -124,4 +124,4 @@ TextRun constructTextRun(RenderObject* context, const Font& font, const RenderTe
     return run;
 }
 
-} // namespace WebCore
+} // namespace blink

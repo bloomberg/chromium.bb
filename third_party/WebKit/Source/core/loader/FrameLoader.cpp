@@ -96,7 +96,7 @@
 
 using blink::WebURLRequest;
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -1521,4 +1521,4 @@ SandboxFlags FrameLoader::effectiveSandboxFlags() const
     return flags;
 }
 
-} // namespace WebCore
+} // namespace blink

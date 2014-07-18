@@ -30,7 +30,7 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "wtf/WeakPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLFormElement;
 class ImageCandidate;

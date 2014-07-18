@@ -32,7 +32,7 @@
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalDOMWindow;
 
@@ -54,6 +54,6 @@ private:
     DOMWindowObserverSet m_windowObservers;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMWindowLifecycleNotifier_h

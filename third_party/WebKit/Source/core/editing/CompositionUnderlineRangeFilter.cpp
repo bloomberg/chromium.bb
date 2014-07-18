@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/editing/CompositionUnderlineRangeFilter.h"
 
-namespace WebCore {
+namespace blink {
 
 CompositionUnderlineRangeFilter::CompositionUnderlineRangeFilter(const Vector<CompositionUnderline>& underlines, size_t indexLo, size_t indexHi)
     : m_underlines(underlines)
@@ -36,4 +36,4 @@ size_t CompositionUnderlineRangeFilter::seekValidIndex(size_t index)
     return kNotFound;
 }
 
-} // namespace WebCore
+} // namespace blink

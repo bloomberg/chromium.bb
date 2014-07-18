@@ -28,7 +28,7 @@
 #include "core/svg/SVGFitToViewBox.h"
 #include "platform/graphics/GraphicsContext.h"
 
-namespace WebCore {
+namespace blink {
 
 const RenderSVGResourceType RenderSVGResourcePattern::s_resourceType = PatternResourceType;
 

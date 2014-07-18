@@ -25,7 +25,7 @@
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderFlexibleBox.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLTextFormControlElement;
 
@@ -107,6 +107,6 @@ public:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderTextControl_h

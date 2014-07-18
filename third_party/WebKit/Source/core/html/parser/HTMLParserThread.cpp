@@ -36,7 +36,7 @@
 #include "public/platform/Platform.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 static HTMLParserThread* s_sharedThread = 0;
 
@@ -110,4 +110,4 @@ void HTMLParserThread::postTask(const Closure& closure)
     platformThread().postTask(new Task(closure));
 }
 
-} // namespace WebCore
+} // namespace blink

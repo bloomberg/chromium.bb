@@ -34,7 +34,7 @@ struct NPObject;
 
 namespace blink { class WebLayer; }
 
-namespace WebCore {
+namespace blink {
 
 class ResourceError;
 class ResourceResponse;
@@ -63,6 +63,6 @@ protected:
 
 DEFINE_TYPE_CASTS(PluginView, Widget, widget, widget->isPluginView(), widget.isPluginView());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PluginView_h

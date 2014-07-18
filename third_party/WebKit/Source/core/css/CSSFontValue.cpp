@@ -24,7 +24,7 @@
 #include "core/css/CSSValueList.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 String CSSFontValue::customCSSText() const
 {

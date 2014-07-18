@@ -29,7 +29,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class StylePropertySet;
 class StyleRule;
@@ -75,9 +75,9 @@ public:
 
 } // WebCore namespace
 
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::MatchedProperties);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::MatchedProperties);
 
-namespace WebCore {
+namespace blink {
 
 class MatchResult {
     STACK_ALLOCATED();
@@ -116,6 +116,6 @@ inline bool operator!=(const MatchedProperties& a, const MatchedProperties& b)
     return !(a == b);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MatchResult_h

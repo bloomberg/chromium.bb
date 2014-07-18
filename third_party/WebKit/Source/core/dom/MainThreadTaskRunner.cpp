@@ -33,7 +33,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 struct PerformTaskContext {
     WTF_MAKE_NONCOPYABLE(PerformTaskContext); WTF_MAKE_FAST_ALLOCATED;

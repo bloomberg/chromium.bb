@@ -34,7 +34,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class DocumentLifecycle {
     WTF_MAKE_NONCOPYABLE(DocumentLifecycle);

@@ -24,7 +24,7 @@
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class LayoutUnit;
 class RenderTable;
@@ -52,6 +52,6 @@ protected:
     RenderTable* m_table;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TableLayout_h

@@ -33,7 +33,7 @@
 
 #include "core/fileapi/FileError.h"
 
-namespace WebCore {
+namespace blink {
 
 class FileReaderLoaderClient {
 public:
@@ -48,6 +48,6 @@ public:
     virtual void didFail(FileError::ErrorCode) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FileReaderLoaderClient_h

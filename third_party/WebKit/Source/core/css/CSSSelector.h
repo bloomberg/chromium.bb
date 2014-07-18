@@ -27,7 +27,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
     class CSSSelectorList;
 
     // This class represents a selector for a StyleRule.
@@ -523,6 +523,6 @@ inline const AtomicString& CSSSelector::value() const
     return *reinterpret_cast<const AtomicString*>(&m_data.m_value);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSSelector_h

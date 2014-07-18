@@ -23,7 +23,7 @@
 #include "core/rendering/svg/SVGTextLayoutAttributes.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderObject;
 class RenderSVGInlineText;
@@ -75,6 +75,6 @@ private:
     SVGCharacterDataMap m_characterDataMap;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

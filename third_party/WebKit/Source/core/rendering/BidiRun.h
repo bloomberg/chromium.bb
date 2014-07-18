@@ -28,7 +28,7 @@
 #include "platform/text/BidiResolver.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 class BidiContext;
 class InlineBox;

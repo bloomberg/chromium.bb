@@ -26,7 +26,7 @@
 #include "core/svg/SVGParserUtilities.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGStringList::SVGStringList()
 {

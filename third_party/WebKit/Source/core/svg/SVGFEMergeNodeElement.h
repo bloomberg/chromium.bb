@@ -25,7 +25,7 @@
 #include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGFEMergeNodeElement FINAL : public SVGElement {
 public:
@@ -44,6 +44,6 @@ private:
     RefPtr<SVGAnimatedString> m_in1;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

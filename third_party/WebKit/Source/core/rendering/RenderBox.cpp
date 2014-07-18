@@ -61,7 +61,7 @@
 #include <algorithm>
 #include <math.h>
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -4673,4 +4673,4 @@ void RenderBox::savePreviousBorderBoxSizeIfNeeded()
     ensureRareData().m_previousBorderBoxSize = size();
 }
 
-} // namespace WebCore
+} // namespace blink

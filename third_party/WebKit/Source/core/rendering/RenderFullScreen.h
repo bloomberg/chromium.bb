@@ -28,7 +28,7 @@
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderFullScreen FINAL : public RenderFlexibleBox {
 public:

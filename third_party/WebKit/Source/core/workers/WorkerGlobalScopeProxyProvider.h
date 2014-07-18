@@ -35,7 +35,7 @@
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class Page;
 class WorkerGlobalScopeProxy;
@@ -55,6 +55,6 @@ public:
 
 void provideWorkerGlobalScopeProxyProviderTo(Page&, PassOwnPtrWillBeRawPtr<WorkerGlobalScopeProxyProvider>);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerGlobalScopeProxyProvider_h

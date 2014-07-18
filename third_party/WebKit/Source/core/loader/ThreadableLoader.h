@@ -37,7 +37,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
     class ResourceError;
     class ResourceRequest;
@@ -98,6 +98,6 @@ namespace WebCore {
         ThreadableLoader() { }
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ThreadableLoader_h

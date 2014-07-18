@@ -31,7 +31,7 @@
 #include "platform/animation/UnitBezier.h"
 #include "wtf/Functional.h"
 
-namespace WebCore {
+namespace blink {
 
 enum AnimationMode {
     NoAnimation,
@@ -208,6 +208,6 @@ private:
     AnimationMode m_animationMode;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGAnimationElement_h

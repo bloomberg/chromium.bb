@@ -33,7 +33,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -425,4 +425,4 @@ void InlineCSSStyleDeclaration::trace(Visitor* visitor)
     AbstractPropertySetCSSStyleDeclaration::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

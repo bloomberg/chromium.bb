@@ -26,7 +26,7 @@
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathElement;
 
@@ -58,6 +58,6 @@ private:
 
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGMPathElement_h

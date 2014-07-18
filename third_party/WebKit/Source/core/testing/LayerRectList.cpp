@@ -35,7 +35,7 @@
 #include "core/dom/Node.h"
 #include "core/testing/LayerRect.h"
 
-namespace WebCore {
+namespace blink {
 
 LayerRectList::LayerRectList()
 {
@@ -66,4 +66,4 @@ void LayerRectList::trace(Visitor* visitor)
     visitor->trace(m_list);
 }
 
-} // namespace WebCore
+} // namespace blink

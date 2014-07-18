@@ -35,7 +35,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class MutationRecord;
 class MutationObserver;

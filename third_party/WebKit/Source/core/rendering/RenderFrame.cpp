@@ -27,7 +27,7 @@
 #include "core/html/HTMLFrameElement.h"
 #include "core/frame/FrameView.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderFrame::RenderFrame(HTMLFrameElement* frame)
     : RenderPart(frame)
@@ -47,4 +47,4 @@ void RenderFrame::updateFromElement()
         toRenderFrameSet(parent())->notifyFrameEdgeInfoChanged();
 }
 
-} // namespace WebCore
+} // namespace blink

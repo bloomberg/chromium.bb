@@ -31,7 +31,7 @@
 #include "wtf/Forward.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSRuleList;
 class StyleKeyframe;
@@ -114,6 +114,6 @@ private:
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSKeyframesRule, KEYFRAMES_RULE);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSKeyframesRule_h

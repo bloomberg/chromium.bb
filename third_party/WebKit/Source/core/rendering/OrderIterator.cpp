@@ -33,7 +33,7 @@
 
 #include "core/rendering/RenderBox.h"
 
-namespace WebCore {
+namespace blink {
 
 OrderIterator::OrderIterator(const RenderBox* containerBox)
     : m_containerBox(containerBox)
@@ -89,4 +89,4 @@ void OrderIteratorPopulator::collectChild(const RenderBox* child)
     m_iterator.m_orderValues.insert(child->style()->order());
 }
 
-} // namespace WebCore
+} // namespace blink

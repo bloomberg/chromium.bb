@@ -12,7 +12,7 @@
 #include <base/macros.h>
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 TEST(MixedContentCheckerTest, IsMixedContent)
 {
@@ -43,4 +43,4 @@ TEST(MixedContentCheckerTest, IsMixedContent)
     }
 }
 
-} // namespace WebCore
+} // namespace blink

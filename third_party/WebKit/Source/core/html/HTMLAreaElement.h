@@ -26,7 +26,7 @@
 #include "core/html/HTMLAnchorElement.h"
 #include "platform/geometry/LayoutRect.h"
 
-namespace WebCore {
+namespace blink {
 
 class HitTestResult;
 class HTMLImageElement;

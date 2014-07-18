@@ -38,7 +38,7 @@
 #include "platform/PlatformScreen.h"
 #include "platform/geometry/FloatRect.h"
 
-namespace WebCore {
+namespace blink {
 
 Screen::Screen(LocalFrame* frame)
     : DOMWindowProperty(frame)
@@ -125,4 +125,4 @@ void Screen::trace(Visitor* visitor)
     WillBeHeapSupplementable<Screen>::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

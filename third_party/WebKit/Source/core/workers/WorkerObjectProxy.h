@@ -36,7 +36,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class ExecutionContextTask;
@@ -76,6 +76,6 @@ private:
     WorkerMessagingProxy* m_messagingProxy;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerObjectProxy_h

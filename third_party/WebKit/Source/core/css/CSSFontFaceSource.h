@@ -29,7 +29,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 
-namespace WebCore {
+namespace blink {
 
 class FontResource;
 class CSSFontFace;

@@ -29,7 +29,7 @@
 #include "core/css/CSSImageGeneratorValue.h"
 #include "core/html/HTMLCanvasElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 
@@ -113,6 +113,6 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSCanvasValue, isCanvasValue());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSCanvasValue_h

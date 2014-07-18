@@ -40,7 +40,7 @@
 #include "core/html/imports/HTMLImportLoader.h"
 #include "core/html/imports/HTMLImportTreeRoot.h"
 
-namespace WebCore {
+namespace blink {
 
 const char* HTMLImportsController::supplementName()
 {
@@ -172,4 +172,4 @@ void HTMLImportsController::trace(Visitor* visitor)
     DocumentSupplement::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

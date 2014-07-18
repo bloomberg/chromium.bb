@@ -26,7 +26,7 @@
 #ifndef CachePolicy_h
 #define CachePolicy_h
 
-namespace WebCore {
+namespace blink {
 
 enum CachePolicy {
     CachePolicyVerify,

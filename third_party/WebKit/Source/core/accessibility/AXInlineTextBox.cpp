@@ -35,7 +35,7 @@
 #include "platform/LayoutUnit.h"
 
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -150,4 +150,4 @@ AccessibilityTextDirection AXInlineTextBox::textDirection() const
     return AccessibilityTextDirectionLeftToRight;
 }
 
-} // namespace WebCore
+} // namespace blink

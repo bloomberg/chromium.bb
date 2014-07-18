@@ -10,7 +10,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/imports/HTMLImportChild.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtrWillBeRawPtr<HTMLImportTreeRoot> HTMLImportTreeRoot::create(Document* document)
 {

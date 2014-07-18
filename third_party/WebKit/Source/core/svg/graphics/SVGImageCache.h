@@ -27,7 +27,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ImageResourceClient;
 class SVGImage;
@@ -60,6 +60,6 @@ private:
     ImageForContainerMap m_imageForContainerMap;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGImageCache_h

@@ -33,7 +33,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Event;
 class EventTarget;
@@ -97,6 +97,6 @@ private:
     Timer<XMLHttpRequestProgressEventThrottle> m_dispatchDeferredEventsTimer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // XMLHttpRequestProgressEventThrottle_h

@@ -34,7 +34,7 @@
 #include "core/animation/animatable/AnimatableValue.h"
 #include "core/rendering/style/ShapeValue.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableShapeValue FINAL : public AnimatableValue {
 public:
@@ -65,6 +65,6 @@ private:
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableShapeValue, isShapeValue());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatableShapeValue_h

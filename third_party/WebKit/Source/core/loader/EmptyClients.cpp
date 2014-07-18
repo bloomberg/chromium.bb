@@ -39,7 +39,7 @@
 #include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebServiceWorkerProviderClient.h"
 
-namespace WebCore {
+namespace blink {
 
 void fillWithEmptyClients(Page::PageClients& pageClients)
 {

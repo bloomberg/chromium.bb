@@ -26,7 +26,7 @@
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourcePtr.h"
 
-namespace WebCore {
+namespace blink {
 class RawResourceCallback;
 class RawResourceClient;
 

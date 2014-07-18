@@ -47,7 +47,7 @@
 #include "platform/text/TextBoundaries.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

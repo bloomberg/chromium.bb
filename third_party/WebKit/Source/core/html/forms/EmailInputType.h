@@ -33,7 +33,7 @@
 
 #include "core/html/forms/BaseTextInputType.h"
 
-namespace WebCore {
+namespace blink {
 
 class EmailInputType FINAL : public BaseTextInputType {
 public:
@@ -55,6 +55,6 @@ private:
     String findInvalidAddress(const String&) const;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ButtonInputType_h

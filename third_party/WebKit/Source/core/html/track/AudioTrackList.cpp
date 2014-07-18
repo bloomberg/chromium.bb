@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/html/track/AudioTrackList.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<AudioTrackList> AudioTrackList::create(HTMLMediaElement& mediaElement)
 {

@@ -46,7 +46,7 @@
 #include "platform/JSONValues.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace DOMStorageAgentState {
 static const char domStorageAgentEnabled[] = "domStorageAgentEnabled";
@@ -222,5 +222,5 @@ PassOwnPtrWillBeRawPtr<StorageArea> InspectorDOMStorageAgent::findStorageArea(Er
     return m_pageAgent->page()->sessionStorage()->storageArea(frame->document()->securityOrigin());
 }
 
-} // namespace WebCore
+} // namespace blink
 

@@ -28,7 +28,7 @@
 #include "platform/fonts/Font.h"
 #include "platform/text/UnicodeRange.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGTextLayoutEngineBaseline::SVGTextLayoutEngineBaseline(const Font& font)
     : m_font(font)

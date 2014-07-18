@@ -40,7 +40,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 struct CSSParserString;
 class CSSRule;
@@ -224,6 +224,6 @@ private:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InspectorCSSAgent_h)

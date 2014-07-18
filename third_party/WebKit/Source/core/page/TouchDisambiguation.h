@@ -34,7 +34,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class IntRect;
@@ -42,6 +42,6 @@ class Node;
 
 void findGoodTouchTargets(const IntRect& touchBox, LocalFrame* mainFrame, Vector<IntRect>& goodTargets, WillBeHeapVector<RawPtrWillBeMember<Node> >& highlightNodes);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

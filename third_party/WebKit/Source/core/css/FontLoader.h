@@ -11,7 +11,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSFontSelector;
 class FontResource;
@@ -46,6 +46,6 @@ private:
     RawPtrWillBeWeakMember<ResourceFetcher> m_resourceFetcher;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FontLoader_h

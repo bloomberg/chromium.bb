@@ -26,7 +26,7 @@
 #include "core/dom/Node.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -79,6 +79,6 @@ private:
 
 DEFINE_NODE_TYPE_CASTS(CharacterData, isCharacterDataNode());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CharacterData_h

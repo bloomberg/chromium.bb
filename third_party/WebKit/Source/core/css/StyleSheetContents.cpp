@@ -36,7 +36,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Deque.h"
 
-namespace WebCore {
+namespace blink {
 
 // Rough size estimate for the memory cache.
 unsigned StyleSheetContents::estimatedSizeInBytes() const

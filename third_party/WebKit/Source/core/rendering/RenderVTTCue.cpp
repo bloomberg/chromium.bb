@@ -29,7 +29,7 @@
 #include "core/html/track/vtt/VTTCue.h"
 #include "core/rendering/RenderView.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderVTTCue::RenderVTTCue(VTTCueBox* element)
     : RenderBlockFlow(element)
@@ -265,5 +265,5 @@ void RenderVTTCue::repositionCueSnapToLinesNotSet()
     // FIXME: Implement overlapping detection when snap-to-lines is not set. http://wkb.ug/84296
 }
 
-} // namespace WebCore
+} // namespace blink
 

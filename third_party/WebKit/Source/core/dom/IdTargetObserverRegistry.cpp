@@ -28,7 +28,7 @@
 
 #include "core/dom/IdTargetObserver.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtrWillBeRawPtr<IdTargetObserverRegistry> IdTargetObserverRegistry::create()
 {
@@ -96,4 +96,4 @@ bool IdTargetObserverRegistry::hasObservers(const AtomicString& id) const
     return set && !set->isEmpty();
 }
 
-} // namespace WebCore
+} // namespace blink

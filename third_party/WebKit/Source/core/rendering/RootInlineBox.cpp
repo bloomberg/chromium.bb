@@ -34,7 +34,7 @@
 #include "platform/text/BidiResolver.h"
 #include "wtf/unicode/Unicode.h"
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsRootInlineBox : public InlineFlowBox {
     unsigned unsignedVariable;
@@ -883,4 +883,4 @@ const char* RootInlineBox::boxName() const
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

@@ -33,7 +33,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
 
-namespace WebCore {
+namespace blink {
 
 PlainTextRange::PlainTextRange()
     : m_start(kNotFound)

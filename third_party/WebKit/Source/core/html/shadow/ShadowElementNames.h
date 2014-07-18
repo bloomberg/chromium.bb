@@ -33,7 +33,7 @@
 
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace ShadowElementNames {
 

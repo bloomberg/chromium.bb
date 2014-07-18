@@ -26,7 +26,7 @@
 #include "core/rendering/compositing/CompositedLayerMappingPtr.h"
 #include "core/rendering/RenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderLayer;
 class CompositedLayerMapping;
@@ -84,6 +84,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderLayerModelObject, isLayerModelObject());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderLayerModelObject_h

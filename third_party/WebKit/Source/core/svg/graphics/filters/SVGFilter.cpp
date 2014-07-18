@@ -23,7 +23,7 @@
 
 #include "core/svg/graphics/filters/SVGFilter.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGFilter::SVGFilter(const AffineTransform& absoluteTransform, const IntRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode)
     : Filter(absoluteTransform)
@@ -62,4 +62,4 @@ PassRefPtr<SVGFilter> SVGFilter::create(const AffineTransform& absoluteTransform
     return adoptRef(new SVGFilter(absoluteTransform, absoluteSourceDrawingRegion, targetBoundingBox, filterRegion, effectBBoxMode));
 }
 
-} // namespace WebCore
+} // namespace blink

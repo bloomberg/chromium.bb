@@ -33,7 +33,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 struct DOMSiblingTraversalStrategy {
     bool isFirstChild(Element&) const;

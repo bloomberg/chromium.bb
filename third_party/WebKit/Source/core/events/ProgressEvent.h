@@ -28,7 +28,7 @@
 
 #include "core/events/Event.h"
 
-namespace WebCore {
+namespace blink {
 
 struct ProgressEventInit : public EventInit {
     ProgressEventInit();

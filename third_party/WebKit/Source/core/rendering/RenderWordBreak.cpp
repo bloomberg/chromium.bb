@@ -29,7 +29,7 @@
 
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderWordBreak::RenderWordBreak(HTMLElement* element)
     : RenderText(element, StringImpl::empty())

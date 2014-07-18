@@ -25,7 +25,7 @@
 #include "platform/text/TextChecking.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class LocalFrame;
@@ -103,6 +103,6 @@ void checkTextOfParagraph(TextCheckerClient&, const String&, TextCheckingTypeMas
 
 bool unifiedTextCheckerEnabled(const LocalFrame*);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TextCheckingHelper_h

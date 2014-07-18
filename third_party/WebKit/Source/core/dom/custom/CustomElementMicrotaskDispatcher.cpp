@@ -12,7 +12,7 @@
 #include "core/dom/custom/CustomElementScheduler.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 static const CustomElementCallbackQueue::ElementQueueId kMicrotaskQueueId = 0;
 
@@ -89,4 +89,4 @@ void CustomElementMicrotaskDispatcher::trace(Visitor* visitor)
 #endif
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -25,7 +25,7 @@
 #include "core/rendering/RenderReplaced.h"
 #include "platform/Widget.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderWidget : public RenderReplaced {
 public:
@@ -67,6 +67,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderWidget, isWidget());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderWidget_h

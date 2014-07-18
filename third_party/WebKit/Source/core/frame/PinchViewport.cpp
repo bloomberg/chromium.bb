@@ -57,11 +57,11 @@ using blink::WebLayer;
 using blink::WebLayerTreeView;
 using blink::WebScrollbar;
 using blink::WebScrollbarLayer;
-using WebCore::FrameHost;
-using WebCore::GraphicsLayer;
-using WebCore::GraphicsLayerFactory;
+using blink::FrameHost;
+using blink::GraphicsLayer;
+using blink::GraphicsLayerFactory;
 
-namespace WebCore {
+namespace blink {
 
 PinchViewport::PinchViewport(FrameHost& owner)
     : m_frameHost(owner)
@@ -234,7 +234,7 @@ void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Graph
         m_overlayScrollbarHorizontal = GraphicsLayer::create(graphicsLayerFactory, this);
         m_overlayScrollbarVertical = GraphicsLayer::create(graphicsLayerFactory, this);
 
-        WebCore::ScrollingCoordinator* coordinator = m_frameHost.page().scrollingCoordinator();
+        blink::ScrollingCoordinator* coordinator = m_frameHost.page().scrollingCoordinator();
         ASSERT(coordinator);
         coordinator->setLayerIsContainerForFixedPositionLayers(m_innerViewportScrollLayer.get(), true);
 
@@ -450,4 +450,4 @@ String PinchViewport::debugName(const GraphicsLayer* graphicsLayer)
     return name;
 }
 
-} // namespace WebCore
+} // namespace blink

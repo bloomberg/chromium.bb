@@ -39,7 +39,7 @@ namespace blink {
 class WebWaitableEvent;
 }
 
-namespace WebCore {
+namespace blink {
 
     class KURL;
     class WorkerGlobalScope;
@@ -99,6 +99,6 @@ namespace WebCore {
         OwnPtr<blink::WebWaitableEvent> m_shutdownEvent;
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerThread_h

@@ -29,7 +29,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class XSLStyleSheetResource;
 
@@ -66,6 +66,6 @@ private:
     bool m_loading;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // XSLImportRule_h

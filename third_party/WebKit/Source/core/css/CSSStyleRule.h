@@ -25,7 +25,7 @@
 #include "core/css/CSSRule.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSStyleDeclaration;
 class StyleRuleCSSStyleDeclaration;
@@ -65,6 +65,6 @@ private:
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSStyleRule, STYLE_RULE);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSStyleRule_h

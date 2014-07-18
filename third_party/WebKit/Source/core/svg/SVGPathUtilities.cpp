@@ -33,7 +33,7 @@
 #include "core/svg/SVGPathTraversalStateBuilder.h"
 #include "platform/graphics/PathTraversalState.h"
 
-namespace WebCore {
+namespace blink {
 
 static SVGPathBuilder* globalSVGPathBuilder(Path& result)
 {

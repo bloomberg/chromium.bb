@@ -29,7 +29,7 @@
 
 #include "core/dom/shadow/InsertionPoint.h"
 
-namespace WebCore {
+namespace blink {
 
 void ContentDistribution::swap(ContentDistribution& other)
 {
@@ -77,4 +77,4 @@ void ContentDistribution::trace(Visitor* visitor)
     visitor->trace(m_indices);
 }
 
-} // namespace WebCore
+} // namespace blink

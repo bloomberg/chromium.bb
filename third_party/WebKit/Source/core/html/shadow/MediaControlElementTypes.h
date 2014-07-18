@@ -34,7 +34,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/rendering/RenderBlock.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLMediaElement;
 class MediaControls;
@@ -137,6 +137,6 @@ private:
     double m_currentValue;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaControlElementTypes_h

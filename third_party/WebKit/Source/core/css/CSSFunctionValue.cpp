@@ -30,7 +30,7 @@
 #include "core/css/CSSValueList.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSFunctionValue::CSSFunctionValue(CSSParserFunction* function)
     : CSSValue(FunctionClass)

@@ -33,7 +33,7 @@
 #include "core/inspector/JSONParser.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 InspectorState::InspectorState(InspectorStateUpdateListener* listener, PassRefPtr<JSONObject> properties)
     : m_listener(listener)
@@ -168,5 +168,5 @@ void InspectorCompositeState::inspectorStateUpdated()
         m_client->updateInspectorStateCookie(m_stateObject->toJSONString());
 }
 
-} // namespace WebCore
+} // namespace blink
 

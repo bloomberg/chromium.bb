@@ -27,7 +27,7 @@
 #include "core/svg/SVGAnimatedTransformList.h"
 #include "core/svg/SVGParserUtilities.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGViewSpec::SVGViewSpec(SVGSVGElement* contextElement)
     // Note: addToPropertyMap is not needed, as SVGViewSpec do not correspond to an element.

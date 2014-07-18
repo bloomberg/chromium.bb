@@ -30,7 +30,7 @@
 typedef pair<unsigned, unsigned> UnicodeRange;
 typedef Vector<UnicodeRange> UnicodeRanges;
 
-namespace WebCore {
+namespace blink {
 
 class FloatPoint;
 
@@ -87,6 +87,6 @@ template<typename CharType>
 bool parseAndSkipTransformType(const CharType*& ptr, const CharType* end, SVGTransformType&);
 SVGTransformType parseTransformType(const String&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGParserUtilities_h

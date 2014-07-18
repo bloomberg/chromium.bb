@@ -31,7 +31,7 @@
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/text/TextRun.h"
 
-namespace WebCore {
+namespace blink {
 
 void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
@@ -171,4 +171,4 @@ bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& resu
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

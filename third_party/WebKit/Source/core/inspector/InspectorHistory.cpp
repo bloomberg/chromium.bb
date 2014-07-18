@@ -35,7 +35,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Node.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -155,5 +155,5 @@ void InspectorHistory::trace(Visitor* visitor)
     visitor->trace(m_history);
 }
 
-} // namespace WebCore
+} // namespace blink
 

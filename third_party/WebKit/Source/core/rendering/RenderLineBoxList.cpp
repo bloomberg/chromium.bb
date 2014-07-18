@@ -36,7 +36,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RootInlineBox.h"
 
-namespace WebCore {
+namespace blink {
 
 #if ENABLE(ASSERT)
 RenderLineBoxList::~RenderLineBoxList()

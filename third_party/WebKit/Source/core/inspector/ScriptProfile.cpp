@@ -36,7 +36,7 @@
 #include "wtf/RefPtr.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 ScriptProfile::~ScriptProfile()
 {
@@ -112,4 +112,4 @@ PassRefPtr<TypeBuilder::Array<double> > ScriptProfile::buildInspectorObjectForTi
     return array.release();
 }
 
-} // namespace WebCore
+} // namespace blink

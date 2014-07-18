@@ -41,7 +41,7 @@
 #include "core/page/EventHandler.h"
 #include "core/rendering/RenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 InputMethodController::SelectionOffsetsScope::SelectionOffsetsScope(InputMethodController* inputMethodController)
     : m_inputMethodController(inputMethodController)
@@ -422,4 +422,4 @@ void InputMethodController::extendSelectionAndDelete(int before, int after)
     TypingCommand::deleteSelection(*m_frame.document());
 }
 
-} // namespace WebCore
+} // namespace blink

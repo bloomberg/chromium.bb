@@ -25,7 +25,7 @@
 
 #include "core/dom/CharacterData.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class RenderText;
@@ -79,6 +79,6 @@ private:
 
 DEFINE_NODE_TYPE_CASTS(Text, isTextNode());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Text_h

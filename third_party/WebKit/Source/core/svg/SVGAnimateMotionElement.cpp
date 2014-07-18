@@ -36,7 +36,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace SVGNames;
 

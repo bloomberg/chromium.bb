@@ -38,7 +38,7 @@
 #include "platform/text/TextStream.h"
 #include "platform/transforms/AffineTransform.h"
 
-namespace WebCore {
+namespace blink {
 
 FEImage::FEImage(Filter* filter, PassRefPtr<Image> image, PassRefPtr<SVGPreserveAspectRatio> preserveAspectRatio)
     : FilterEffect(filter)
@@ -241,4 +241,4 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder* bui
     return result.release();
 }
 
-} // namespace WebCore
+} // namespace blink

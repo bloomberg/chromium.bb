@@ -30,7 +30,7 @@
 #include "core/events/EventTarget.h"
 #include "core/xml/XMLHttpRequestProgressEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 const double XMLHttpRequestProgressEventThrottle::minimumProgressEventDispatchingIntervalInSeconds = .05; // 50 ms per specification.
 
@@ -223,4 +223,4 @@ void XMLHttpRequestProgressEventThrottle::trace(Visitor* visitor)
     visitor->trace(m_deferredEvents);
 }
 
-} // namespace WebCore
+} // namespace blink

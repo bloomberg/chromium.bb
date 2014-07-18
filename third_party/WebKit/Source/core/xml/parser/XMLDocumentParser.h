@@ -38,7 +38,7 @@
 #include "wtf/text/StringHash.h"
 #include <libxml/tree.h>
 
-namespace WebCore {
+namespace blink {
 
 class ContainerNode;
 class ScriptResource;
@@ -196,6 +196,6 @@ private:
 xmlDocPtr xmlDocPtrForString(ResourceFetcher*, const String& source, const String& url);
 HashMap<String, String> parseAttributes(const String&, bool& attrsOK);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // XMLDocumentParser_h

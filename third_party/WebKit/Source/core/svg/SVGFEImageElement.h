@@ -31,7 +31,7 @@
 #include "core/svg/graphics/filters/SVGFEImage.h"
 #include "platform/graphics/ImageBuffer.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGFEImageElement FINAL : public SVGFilterPrimitiveStandardAttributes,
                                 public SVGURIReference,
@@ -66,6 +66,6 @@ private:
     ResourcePtr<ImageResource> m_cachedImage;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

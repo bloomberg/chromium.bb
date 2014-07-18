@@ -34,7 +34,7 @@
 #include "core/html/forms/BaseChooserOnlyDateAndTimeInputType.h"
 #include "core/html/forms/BaseMultipleFieldsDateAndTimeInputType.h"
 
-namespace WebCore {
+namespace blink {
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 typedef BaseMultipleFieldsDateAndTimeInputType BaseWeekInputType;
@@ -63,6 +63,6 @@ private:
 #endif
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WeekInputType_h

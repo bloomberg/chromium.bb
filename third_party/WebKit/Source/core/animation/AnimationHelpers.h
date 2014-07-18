@@ -8,7 +8,7 @@
 #include "core/css/parser/BisonCSSParser.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 static inline CSSPropertyID camelCaseCSSPropertyNameToID(const String& propertyName)
 {
@@ -28,6 +28,6 @@ static inline CSSPropertyID camelCaseCSSPropertyNameToID(const String& propertyN
     return id;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimationHelpers_h

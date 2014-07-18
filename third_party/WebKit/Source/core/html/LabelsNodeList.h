@@ -28,7 +28,7 @@
 #include "core/dom/LiveNodeList.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class LabelsNodeList FINAL : public LiveNodeList {
 public:
@@ -46,6 +46,6 @@ protected:
     virtual bool elementMatches(const Element&) const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LabelsNodeList_h

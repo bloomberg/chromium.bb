@@ -35,7 +35,7 @@
 #include "wtf/Forward.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class SharedBuffer;
 
@@ -55,6 +55,6 @@ private:
     unsigned m_currentOffset;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SharedBufferReader_h

@@ -13,7 +13,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 struct TestCase {
     const char* input;

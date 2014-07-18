@@ -43,7 +43,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
-namespace WebCore {
+namespace blink {
 
 ElementRuleCollector::ElementRuleCollector(const ElementResolveContext& context,
     const SelectorFilter& filter, RenderStyle* style)
@@ -349,4 +349,4 @@ bool ElementRuleCollector::hasAnyMatchingRules(RuleSet* ruleSet)
     return m_matchedRules && !m_matchedRules->isEmpty();
 }
 
-} // namespace WebCore
+} // namespace blink

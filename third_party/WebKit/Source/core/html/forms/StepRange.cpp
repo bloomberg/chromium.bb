@@ -27,7 +27,7 @@
 #include "wtf/text/WTFString.h"
 #include <float.h>
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -165,4 +165,4 @@ bool StepRange::stepMismatch(const Decimal& valueForCheck) const
     return computedAcceptableError < remainder && remainder < (m_step - computedAcceptableError);
 }
 
-} // namespace WebCore
+} // namespace blink

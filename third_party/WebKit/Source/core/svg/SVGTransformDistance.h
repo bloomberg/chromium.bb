@@ -22,7 +22,7 @@
 
 #include "core/svg/SVGTransform.h"
 
-namespace WebCore {
+namespace blink {
 
 class AffineTransform;
 

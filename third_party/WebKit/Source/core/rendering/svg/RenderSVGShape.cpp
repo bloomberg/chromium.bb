@@ -43,7 +43,7 @@
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSVGShape::RenderSVGShape(SVGGraphicsElement* node)
     : RenderSVGModelObject(node)

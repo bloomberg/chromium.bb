@@ -36,7 +36,7 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/TemplateContentDocumentFragment.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -89,4 +89,4 @@ void HTMLTemplateElement::trace(Visitor* visitor)
     HTMLElement::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

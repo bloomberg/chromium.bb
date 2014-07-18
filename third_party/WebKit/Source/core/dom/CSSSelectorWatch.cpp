@@ -40,7 +40,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/rendering/style/StyleRareNonInheritedData.h"
 
-namespace WebCore {
+namespace blink {
 
 // The address of this string is important; its value is just documentation.
 static const char kSupplementName[] = "CSSSelectorWatch";
@@ -170,4 +170,4 @@ void CSSSelectorWatch::trace(Visitor* visitor)
     DocumentSupplement::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

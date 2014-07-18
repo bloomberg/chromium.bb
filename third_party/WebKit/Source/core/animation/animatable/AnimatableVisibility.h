@@ -34,7 +34,7 @@
 #include "core/animation/animatable/AnimatableValue.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableVisibility FINAL : public AnimatableValue {
 public:
@@ -64,6 +64,6 @@ private:
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableVisibility, isVisibility());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatableVisibility_h

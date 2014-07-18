@@ -33,7 +33,7 @@
 
 #include "core/svg/SVGAnimatedEnumerationBase.h"
 
-namespace WebCore {
+namespace blink {
 
 template<typename Enum>
 class SVGAnimatedEnumeration : public SVGAnimatedEnumerationBase {
@@ -70,6 +70,6 @@ protected:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGAnimatedEnumeration_h

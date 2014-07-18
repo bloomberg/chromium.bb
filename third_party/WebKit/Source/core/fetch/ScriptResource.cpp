@@ -31,7 +31,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/network/HTTPParsers.h"
 
-namespace WebCore {
+namespace blink {
 
 ScriptResource::ScriptResource(const ResourceRequest& resourceRequest, const String& charset)
     : TextResource(resourceRequest, Script, "application/javascript", charset)
@@ -76,4 +76,4 @@ bool ScriptResource::mimeTypeAllowedByNosniff() const
     return parseContentTypeOptionsHeader(m_response.httpHeaderField("X-Content-Type-Options")) != ContentTypeOptionsNosniff || MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType());
 }
 
-} // namespace WebCore
+} // namespace blink

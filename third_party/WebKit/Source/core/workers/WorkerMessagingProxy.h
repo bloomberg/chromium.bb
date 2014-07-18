@@ -37,7 +37,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class WorkerObjectProxy;
 class DedicatedWorkerThread;
@@ -103,6 +103,6 @@ private:
     OwnPtrWillBePersistent<WorkerClients> m_workerClients;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerMessagingProxy_h

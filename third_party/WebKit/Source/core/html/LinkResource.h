@@ -36,7 +36,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLLinkElement;
 
@@ -83,6 +83,6 @@ private:
     AtomicString m_charset;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LinkResource_h

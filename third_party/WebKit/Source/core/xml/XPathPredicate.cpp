@@ -33,7 +33,7 @@
 #include "wtf/MathExtras.h"
 #include <math.h>
 
-namespace WebCore {
+namespace blink {
 
 namespace XPath {
 

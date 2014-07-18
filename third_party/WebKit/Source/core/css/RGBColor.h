@@ -31,7 +31,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
     class CSSPrimitiveValue;
 
@@ -57,6 +57,6 @@ namespace WebCore {
         RGBA32 m_rgbColor;
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RGBColor_h

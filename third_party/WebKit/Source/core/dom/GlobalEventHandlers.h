@@ -32,7 +32,7 @@
 
 #include "core/events/EventTarget.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace GlobalEventHandlers {
 DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(abort);

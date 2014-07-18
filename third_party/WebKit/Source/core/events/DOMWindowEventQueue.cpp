@@ -32,7 +32,7 @@
 #include "core/frame/SuspendableTimer.h"
 #include "core/inspector/InspectorInstrumentation.h"
 
-namespace WebCore {
+namespace blink {
 
 class DOMWindowEventQueueTimer : public NoBaseWillBeGarbageCollectedFinalized<DOMWindowEventQueueTimer>, public SuspendableTimer {
     WTF_MAKE_NONCOPYABLE(DOMWindowEventQueueTimer);

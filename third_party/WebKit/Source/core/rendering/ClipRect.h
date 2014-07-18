@@ -28,7 +28,7 @@
 
 #include "platform/geometry/LayoutRect.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderLayer;
 class HitTestLocation;
@@ -81,6 +81,6 @@ inline ClipRect intersection(const ClipRect& a, const ClipRect& b)
     return c;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ClipRect_h

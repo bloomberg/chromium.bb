@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/rendering/RenderPagedFlowThread.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderPagedFlowThread* RenderPagedFlowThread::createAnonymous(Document& document, RenderStyle* parentStyle)
 {
@@ -39,4 +39,4 @@ void RenderPagedFlowThread::layout()
     RenderMultiColumnFlowThread::layout();
 }
 
-} // namespace WebCore
+} // namespace blink

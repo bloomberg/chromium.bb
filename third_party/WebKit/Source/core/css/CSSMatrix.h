@@ -31,7 +31,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -156,6 +156,6 @@ protected:
     TransformationMatrix m_matrix;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSMatrix_h

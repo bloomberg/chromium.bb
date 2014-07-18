@@ -40,7 +40,7 @@
 #include "core/workers/WorkerThread.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext::PendingException : public NoBaseWillBeGarbageCollectedFinalized<ExecutionContext::PendingException> {
     WTF_MAKE_NONCOPYABLE(PendingException);
@@ -335,7 +335,7 @@ void ExecutionContext::trace(Visitor* visitor)
 #if ENABLE(OILPAN)
     visitor->trace(m_pendingExceptions);
 #endif
-    Supplementable<WebCore::ExecutionContext>::trace(visitor);
+    Supplementable<blink::ExecutionContext>::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

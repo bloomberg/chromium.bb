@@ -35,7 +35,7 @@
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
     class ResourceError;
     class ResourceResponse;
@@ -64,6 +64,6 @@ namespace WebCore {
         ThreadableLoaderClient() { }
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ThreadableLoaderClient_h

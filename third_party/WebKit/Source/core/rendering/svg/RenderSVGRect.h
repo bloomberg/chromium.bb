@@ -31,7 +31,7 @@
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/svg/SVGRectElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderSVGRect FINAL : public RenderSVGShape {
 public:

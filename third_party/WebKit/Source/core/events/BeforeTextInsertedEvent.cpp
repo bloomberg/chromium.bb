@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/events/BeforeTextInsertedEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 BeforeTextInsertedEvent::BeforeTextInsertedEvent(const String& text)
     : Event(EventTypeNames::webkitBeforeTextInserted, false, true), m_text(text)

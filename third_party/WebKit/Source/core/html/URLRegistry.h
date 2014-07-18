@@ -33,7 +33,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 class SecurityOrigin;
@@ -57,6 +57,6 @@ public:
     virtual bool contains(const String&) { ASSERT_NOT_REACHED(); return false; }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // URLRegistry_h

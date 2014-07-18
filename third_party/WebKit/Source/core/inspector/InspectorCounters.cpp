@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/inspector/InspectorCounters.h"
 
-namespace WebCore {
+namespace blink {
 
 int InspectorCounters::s_counters[CounterTypeLength];
 
@@ -40,5 +40,5 @@ int InspectorCounters::counterValue(CounterType type)
     return s_counters[type];
 }
 
-} // namespace WebCore
+} // namespace blink
 

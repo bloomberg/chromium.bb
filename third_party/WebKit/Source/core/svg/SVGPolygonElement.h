@@ -24,7 +24,7 @@
 #include "core/SVGNames.h"
 #include "core/svg/SVGPolyElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPolygonElement FINAL : public SVGPolyElement {
 public:
@@ -34,6 +34,6 @@ private:
     explicit SVGPolygonElement(Document&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

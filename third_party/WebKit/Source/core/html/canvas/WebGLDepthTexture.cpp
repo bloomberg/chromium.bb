@@ -27,7 +27,7 @@
 
 #include "core/html/canvas/WebGLDepthTexture.h"
 
-namespace WebCore {
+namespace blink {
 
 WebGLDepthTexture::WebGLDepthTexture(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -68,4 +68,4 @@ const char* WebGLDepthTexture::extensionName()
     return "WEBGL_depth_texture";
 }
 
-} // namespace WebCore
+} // namespace blink

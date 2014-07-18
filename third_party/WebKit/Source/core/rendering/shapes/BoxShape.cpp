@@ -32,7 +32,7 @@
 
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 LayoutRect BoxShape::shapeMarginLogicalBoundingBox() const
 {
@@ -107,4 +107,4 @@ void BoxShape::buildDisplayPaths(DisplayPaths& paths) const
         paths.marginShape.addRoundedRect(shapeMarginBounds().rect(), shapeMarginBounds().radii().topLeft(), shapeMarginBounds().radii().topRight(), shapeMarginBounds().radii().bottomLeft(), shapeMarginBounds().radii().bottomRight());
 }
 
-} // namespace WebCore
+} // namespace blink

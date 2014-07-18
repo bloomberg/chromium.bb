@@ -38,7 +38,7 @@
 #include "core/dom/StaticNodeList.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -214,4 +214,4 @@ MutationRecord::~MutationRecord()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

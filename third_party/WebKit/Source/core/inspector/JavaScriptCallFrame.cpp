@@ -35,7 +35,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include <v8-debug.h>
 
-namespace WebCore {
+namespace blink {
 
 JavaScriptCallFrame::JavaScriptCallFrame(v8::Handle<v8::Context> debuggerContext, v8::Handle<v8::Object> callFrame)
     : m_isolate(v8::Isolate::GetCurrent())
@@ -211,4 +211,4 @@ void JavaScriptCallFrame::trace(Visitor* visitor)
     visitor->trace(m_caller);
 }
 
-} // namespace WebCore
+} // namespace blink

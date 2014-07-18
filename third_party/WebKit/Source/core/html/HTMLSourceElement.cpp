@@ -37,7 +37,7 @@
 #include "core/html/HTMLPictureElement.h"
 #include "platform/Logging.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

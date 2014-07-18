@@ -92,7 +92,7 @@ template<typename T, typename U> inline bool compareEqual(const T& t, const U& u
     if (!compareEqual(group->variable.color(), value)) \
         group.access()->variable.setColor(value)
 
-namespace WebCore {
+namespace blink {
 
 using std::max;
 
@@ -935,9 +935,9 @@ public:
     ETextSecurity textSecurity() const { return static_cast<ETextSecurity>(rareInheritedData->textSecurity); }
 
     WritingMode writingMode() const { return static_cast<WritingMode>(inherited_flags.m_writingMode); }
-    bool isHorizontalWritingMode() const { return WebCore::isHorizontalWritingMode(writingMode()); }
-    bool isFlippedLinesWritingMode() const { return WebCore::isFlippedLinesWritingMode(writingMode()); }
-    bool isFlippedBlocksWritingMode() const { return WebCore::isFlippedBlocksWritingMode(writingMode()); }
+    bool isHorizontalWritingMode() const { return blink::isHorizontalWritingMode(writingMode()); }
+    bool isFlippedLinesWritingMode() const { return blink::isFlippedLinesWritingMode(writingMode()); }
+    bool isFlippedBlocksWritingMode() const { return blink::isFlippedBlocksWritingMode(writingMode()); }
 
     EImageRendering imageRendering() const { return static_cast<EImageRendering>(rareInheritedData->m_imageRendering); }
 
@@ -1911,6 +1911,6 @@ inline bool RenderStyle::hasPseudoElementStyle() const
 
 float calcBorderRadiiConstraintScaleFor(const FloatRect&, const FloatRoundedRect::Radii&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderStyle_h

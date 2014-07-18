@@ -24,7 +24,7 @@
 
 #include "core/css/CSSRule.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSUnknownRule FINAL : public CSSRule {
 public:
@@ -37,6 +37,6 @@ public:
     virtual void trace(Visitor* visitor) OVERRIDE { CSSRule::trace(visitor); }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSUnknownRule_h

@@ -38,7 +38,7 @@
 #include <stdio.h>
 #endif
 
-namespace WebCore {
+namespace blink {
 
 static size_t sizeForImmutableStylePropertySetWithPropertyCount(unsigned count)
 {
@@ -617,4 +617,4 @@ String StylePropertySet::PropertyReference::cssText() const
 }
 
 
-} // namespace WebCore
+} // namespace blink

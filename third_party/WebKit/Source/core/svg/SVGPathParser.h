@@ -29,7 +29,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathSource;
 
@@ -67,6 +67,6 @@ private:
     FloatPoint m_subPathPoint;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPathParser_h

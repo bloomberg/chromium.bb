@@ -29,7 +29,7 @@
 #include "core/events/Event.h"
 #include "core/html/MediaKeyError.h"
 
-namespace WebCore {
+namespace blink {
 
 struct MediaKeyEventInit : public EventInit {
     MediaKeyEventInit();
@@ -82,6 +82,6 @@ private:
     unsigned short m_systemCode;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

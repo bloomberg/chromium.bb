@@ -28,7 +28,7 @@
 
 #include "core/events/Event.h"
 
-namespace WebCore {
+namespace blink {
 
 // FIXME : This class has a WebKit prefix on purpose so we can use the EventAliases system. When the
 // runtime flag of unprefixed animation will be removed we can rename that class and do the same as
@@ -73,6 +73,6 @@ private:
     double m_elapsedTime;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebKitAnimationEvent_h

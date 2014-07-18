@@ -37,7 +37,7 @@
 #include "core/dom/StringCallback.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DataTransferItem);
 
@@ -100,5 +100,5 @@ void DataTransferItem::trace(Visitor* visitor)
     visitor->trace(m_item);
 }
 
-} // namespace WebCore
+} // namespace blink
 

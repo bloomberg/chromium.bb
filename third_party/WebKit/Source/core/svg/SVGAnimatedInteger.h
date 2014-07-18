@@ -34,7 +34,7 @@
 #include "core/svg/SVGInteger.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGAnimatedIntegerOptionalInteger;
 
@@ -64,6 +64,6 @@ protected:
     SVGAnimatedIntegerOptionalInteger* m_parentIntegerOptionalInteger;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGAnimatedInteger_h

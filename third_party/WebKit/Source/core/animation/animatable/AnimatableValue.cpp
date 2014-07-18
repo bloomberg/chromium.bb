@@ -41,7 +41,7 @@ const double defaultDistance = 1;
 
 } // namespace
 
-namespace WebCore {
+namespace blink {
 
 const AnimatableValue* AnimatableValue::neutralValue()
 {
@@ -78,4 +78,4 @@ double AnimatableValue::distanceTo(const AnimatableValue*) const
     return defaultDistance;
 }
 
-} // namespace WebCore
+} // namespace blink

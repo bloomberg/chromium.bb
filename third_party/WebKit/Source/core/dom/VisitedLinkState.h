@@ -34,7 +34,7 @@
 #include "platform/LinkHash.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 

@@ -45,7 +45,7 @@
 
 #include <utility>
 
-namespace WebCore {
+namespace blink {
 
 static Mutex& threadSetMutex()
 {
@@ -245,4 +245,4 @@ bool WorkerThread::isCurrentThread() const
     return m_threadID == currentThread();
 }
 
-} // namespace WebCore
+} // namespace blink

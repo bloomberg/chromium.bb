@@ -39,7 +39,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 CSSTestHelper::~CSSTestHelper()
 {
@@ -67,4 +67,4 @@ void CSSTestHelper::addCSSRules(const char* cssText)
     ASSERT_TRUE(m_styleSheet->length() > sheetLength);
 }
 
-} // namespace WebCore
+} // namespace blink

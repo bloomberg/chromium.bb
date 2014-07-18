@@ -32,7 +32,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AXRenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -140,4 +140,4 @@ LayoutRect AXImageMapLink::elementRect() const
     return m_areaElement->computeRect(renderer);
 }
 
-} // namespace WebCore
+} // namespace blink

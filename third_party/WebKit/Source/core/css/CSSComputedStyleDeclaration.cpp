@@ -69,7 +69,7 @@
 #include "platform/fonts/FontFeatureSettings.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 // List of all properties we know how to compute, omitting shorthands.
 // NOTE: Do not use this list, use computableProperties() instead
@@ -3134,4 +3134,4 @@ void CSSComputedStyleDeclaration::trace(Visitor* visitor)
     CSSStyleDeclaration::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

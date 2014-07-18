@@ -17,7 +17,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "wtf/ArrayBufferView.h"
 
-namespace WebCore {
+namespace blink {
 
 void BeaconLoader::prepareRequest(LocalFrame* frame, ResourceRequest& request)
 {
@@ -127,4 +127,4 @@ bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beac
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

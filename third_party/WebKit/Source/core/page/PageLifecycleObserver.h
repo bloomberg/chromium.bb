@@ -29,7 +29,7 @@
 
 #include "platform/LifecycleObserver.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class Page;
@@ -48,6 +48,6 @@ public:
     virtual void didCommitLoad(LocalFrame*) { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PageLifecycleObserver_h

@@ -42,7 +42,7 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 class SharedBuffer;
@@ -114,6 +114,6 @@ private:
     String m_filesystemId;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

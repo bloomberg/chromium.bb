@@ -9,7 +9,7 @@
 #include "platform/TraceEvent.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class Event;
@@ -149,7 +149,7 @@ public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, const String& message);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // !defined(InspectorTraceEvents_h)

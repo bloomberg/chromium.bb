@@ -33,7 +33,7 @@
 
 #include "core/html/forms/BaseCheckableInputType.h"
 
-namespace WebCore {
+namespace blink {
 
 class CheckboxInputType FINAL : public BaseCheckableInputType {
 public:
@@ -51,6 +51,6 @@ private:
     virtual bool supportsIndeterminateAppearance() const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CheckboxInputType_h

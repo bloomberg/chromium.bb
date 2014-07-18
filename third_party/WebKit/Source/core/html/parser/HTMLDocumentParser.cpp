@@ -46,7 +46,7 @@
 #include "public/platform/WebThreadedDataReceiver.h"
 #include "wtf/Functional.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

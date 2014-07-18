@@ -55,7 +55,7 @@ const int domBreakpointDerivedTypeShift = 16;
 
 }
 
-namespace WebCore {
+namespace blink {
 
 static const char requestAnimationFrameEventName[] = "requestAnimationFrame";
 static const char cancelAnimationFrameEventName[] = "cancelAnimationFrame";
@@ -563,5 +563,5 @@ void InspectorDOMDebuggerAgent::clear()
     m_pauseInNextEventListener = false;
 }
 
-} // namespace WebCore
+} // namespace blink
 

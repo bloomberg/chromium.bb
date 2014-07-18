@@ -43,7 +43,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -166,4 +166,4 @@ bool TimeInputType::isValidFormat(bool hasYear, bool hasMonth, bool hasWeek, boo
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

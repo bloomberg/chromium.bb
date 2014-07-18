@@ -36,7 +36,7 @@
 #include "core/html/WindowNameCollection.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -521,4 +521,4 @@ void HTMLCollection::trace(Visitor* visitor)
     LiveNodeListBase::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

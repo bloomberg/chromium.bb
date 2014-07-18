@@ -34,7 +34,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class DocumentState;
@@ -133,6 +133,6 @@ private:
 
 }; // class HistoryItem
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HISTORYITEM_H

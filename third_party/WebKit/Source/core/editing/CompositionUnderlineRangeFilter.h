@@ -9,7 +9,7 @@
 #include "wtf/NotFound.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 // A visitor class to yield elements of a sorted (by startOffset) list of
 // underlines, visiting only elements that intersect with specified *inclusive*
@@ -73,6 +73,6 @@ private:
     const ConstIterator m_theEnd;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -28,7 +28,7 @@
 #include <stdio.h>
 #endif
 
-namespace WebCore {
+namespace blink {
 
 CounterNode::CounterNode(RenderObject& o, bool hasResetType, int value)
     : m_hasResetType(hasResetType)
@@ -374,11 +374,11 @@ static void showTreeAndMark(const CounterNode* node)
 
 #endif
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 
-void showCounterTree(const WebCore::CounterNode* counter)
+void showCounterTree(const blink::CounterNode* counter)
 {
     if (counter)
         showTreeAndMark(counter);

@@ -7,7 +7,7 @@
 
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 class StyleDifference {
 public:
@@ -95,6 +95,6 @@ private:
     unsigned m_propertySpecificDifferences : 5;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleDifference_h

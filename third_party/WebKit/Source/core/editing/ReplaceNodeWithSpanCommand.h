@@ -33,7 +33,7 @@
 
 #include "core/editing/CompositeEditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLElement;
 
@@ -59,6 +59,6 @@ private:
     RefPtrWillBeMember<HTMLElement> m_spanElement;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ReplaceNodeWithSpanCommand

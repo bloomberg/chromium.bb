@@ -31,7 +31,7 @@
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "platform/graphics/Image.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGFEImageElement::SVGFEImageElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feImageTag, document)

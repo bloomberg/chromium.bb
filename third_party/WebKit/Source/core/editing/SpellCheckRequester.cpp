@@ -34,7 +34,7 @@
 #include "core/frame/Settings.h"
 #include "platform/text/TextCheckerClient.h"
 
-namespace WebCore {
+namespace blink {
 
 SpellCheckRequest::SpellCheckRequest(
     PassRefPtrWillBeRawPtr<Range> checkingRange,
@@ -263,4 +263,4 @@ void SpellCheckRequester::didCheckCancel(int sequence)
     didCheck(sequence, results);
 }
 
-} // namespace WebCore
+} // namespace blink

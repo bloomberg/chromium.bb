@@ -33,7 +33,7 @@
 
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 PageScaleConstraints::PageScaleConstraints()
     : initialScale(-1), minimumScale(-1), maximumScale(-1) { }
@@ -100,4 +100,4 @@ bool PageScaleConstraints::operator==(const PageScaleConstraints& other) const
         && maximumScale == other.maximumScale;
 }
 
-} // namespace WebCore
+} // namespace blink

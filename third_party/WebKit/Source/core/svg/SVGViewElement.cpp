@@ -22,7 +22,7 @@
 
 #include "core/svg/SVGViewElement.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGViewElement::SVGViewElement(Document& document)
     : SVGElement(SVGNames::viewTag, document)

@@ -8,7 +8,7 @@
 #include "core/html/track/TrackListBase.h"
 #include "core/html/track/VideoTrack.h"
 
-namespace WebCore {
+namespace blink {
 
 class VideoTrackList FINAL : public TrackListBase<VideoTrack> {
 public:

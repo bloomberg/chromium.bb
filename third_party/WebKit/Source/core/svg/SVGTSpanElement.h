@@ -23,7 +23,7 @@
 
 #include "core/svg/SVGTextPositioningElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGTSpanElement FINAL : public SVGTextPositioningElement {
 public:
@@ -36,6 +36,6 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

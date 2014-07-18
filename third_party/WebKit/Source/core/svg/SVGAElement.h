@@ -26,7 +26,7 @@
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGURIReference.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGAElement FINAL : public SVGGraphicsElement,
                           public SVGURIReference {
@@ -61,6 +61,6 @@ private:
     RefPtr<SVGAnimatedString> m_svgTarget;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGAElement_h

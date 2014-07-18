@@ -37,7 +37,7 @@
 
 #include <gtest/gtest.h>
 
-using WebCore::BufferedLineReader;
+using blink::BufferedLineReader;
 
 namespace {
 

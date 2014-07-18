@@ -8,7 +8,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 TEST(CSSSelector, Representations)
 {
@@ -55,4 +55,4 @@ TEST(CSSSelector, Representations)
 #endif
 }
 
-} // namespace WebCore
+} // namespace blink

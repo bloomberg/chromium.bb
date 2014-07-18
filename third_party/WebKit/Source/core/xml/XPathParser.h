@@ -30,7 +30,7 @@
 #include "core/xml/XPathPredicate.h"
 #include "core/xml/XPathStep.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class XPathNSResolver;
@@ -129,7 +129,7 @@ private:
 
 } // namespace XPath
 
-} // namespace WebCore
+} // namespace blink
 
-int xpathyyparse(WebCore::XPath::Parser*);
+int xpathyyparse(blink::XPath::Parser*);
 #endif

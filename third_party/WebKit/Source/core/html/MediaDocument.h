@@ -28,7 +28,7 @@
 
 #include "core/html/HTMLDocument.h"
 
-namespace WebCore {
+namespace blink {
 
 class MediaDocument FINAL : public HTMLDocument {
 public:

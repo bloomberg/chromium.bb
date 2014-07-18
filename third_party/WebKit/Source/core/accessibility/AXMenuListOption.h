@@ -28,7 +28,7 @@
 
 #include "core/accessibility/AXMockObject.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXMenuListPopup;
 class HTMLElement;
@@ -63,6 +63,6 @@ private:
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXMenuListOption, isMenuListOption());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXMenuListOption_h

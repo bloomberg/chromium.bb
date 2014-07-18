@@ -34,7 +34,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 
-namespace WebCore {
+namespace blink {
 
 String CustomElementException::preamble(const AtomicString& type)
 {
@@ -92,4 +92,4 @@ void CustomElementException::throwException(Reason reason, const AtomicString& t
     ASSERT_NOT_REACHED();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -30,7 +30,7 @@
 #include "core/events/MouseRelatedEvent.h"
 #include "platform/PlatformGestureEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 class GestureEvent FINAL : public MouseRelatedEvent {
 public:
@@ -72,6 +72,6 @@ private:
 
 DEFINE_EVENT_TYPE_CASTS(GestureEvent);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GestureEvent_h

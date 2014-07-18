@@ -28,7 +28,7 @@
 
 #include "core/editing/EditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class Text;
 
@@ -52,6 +52,6 @@ private:
     String m_text;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InsertIntoTextNodeCommand_h

@@ -31,7 +31,7 @@
 #include "core/css/StyleSheet.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 
-namespace WebCore {
+namespace blink {
 
 DocumentStyleSheetCollector::DocumentStyleSheetCollector(WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& sheetsForList, WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& activeList, WillBeHeapHashSet<RawPtrWillBeMember<Document> >& visitedDocuments)
     : m_styleSheetsForStyleSheetList(sheetsForList)

@@ -25,7 +25,7 @@
 #include "core/rendering/RenderProgress.h"
 #include "platform/FloatConversion.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -77,4 +77,4 @@ HTMLProgressElement* AXProgressIndicator::element() const
 }
 
 
-} // namespace WebCore
+} // namespace blink

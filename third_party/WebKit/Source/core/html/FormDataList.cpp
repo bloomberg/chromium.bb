@@ -25,7 +25,7 @@
 #include "platform/network/FormDataBuilder.h"
 #include "platform/text/LineEnding.h"
 
-namespace WebCore {
+namespace blink {
 
 FormDataList::FormDataList(const WTF::TextEncoding& c)
     : m_encoding(c)

@@ -34,7 +34,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef HashMap<String, Vector<size_t> > NamedGridLinesMap;
 typedef HashMap<size_t, Vector<String>, WTF::IntHash<size_t>, WTF::UnsignedWithZeroKeyHashTraits<size_t> > OrderedNamedGridLines;
@@ -81,6 +81,6 @@ private:
     StyleGridData(const StyleGridData&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleGridData_h

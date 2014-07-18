@@ -31,7 +31,7 @@
 #include "core/rendering/RenderTable.h"
 #include "core/rendering/RenderTableCell.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

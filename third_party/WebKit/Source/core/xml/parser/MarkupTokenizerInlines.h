@@ -30,7 +30,7 @@
 
 #include "platform/text/SegmentedString.h"
 
-namespace WebCore {
+namespace blink {
 
 inline bool isTokenizerWhitespace(UChar cc)
 {

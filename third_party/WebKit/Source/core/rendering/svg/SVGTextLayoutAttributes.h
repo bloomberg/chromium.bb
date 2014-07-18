@@ -26,7 +26,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderSVGInlineText;
 
@@ -74,6 +74,6 @@ inline SVGCharacterData::SVGCharacterData()
 {
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -35,7 +35,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class ParentNode {
 public:
@@ -73,6 +73,6 @@ public:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ParentNode_h

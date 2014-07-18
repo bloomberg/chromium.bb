@@ -40,7 +40,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSFontFace;
 class CSSValueList;
@@ -134,6 +134,6 @@ private:
 
 typedef WillBeHeapVector<RefPtrWillBeMember<FontFace> > FontFaceArray;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FontFace_h

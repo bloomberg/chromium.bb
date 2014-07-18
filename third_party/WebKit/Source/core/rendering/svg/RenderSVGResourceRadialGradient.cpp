@@ -25,7 +25,7 @@
 
 #include "core/svg/SVGRadialGradientElement.h"
 
-namespace WebCore {
+namespace blink {
 
 const RenderSVGResourceType RenderSVGResourceRadialGradient::s_resourceType = RadialGradientResourceType;
 

@@ -27,7 +27,7 @@
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGUnitTypes.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderObject;
 

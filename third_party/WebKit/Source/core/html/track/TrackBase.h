@@ -31,7 +31,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLMediaElement;
 
@@ -81,6 +81,6 @@ private:
 #define DEFINE_TRACK_TYPE_CASTS(thisType, predicate) \
     DEFINE_TYPE_CASTS(thisType, TrackBase, track, track->type() == predicate, track.type() == predicate)
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TrackBase_h

@@ -31,7 +31,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 
@@ -142,8 +142,8 @@ private:
     WillBeHeapVector<Entry> m_entries;
 };
 
-} // namespace WebCore
+} // namespace blink
 
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::HTMLFormattingElementList::Entry);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::HTMLFormattingElementList::Entry);
 
 #endif // HTMLFormattingElementList_h

@@ -59,7 +59,7 @@
 #include "core/rendering/RenderLayer.h"
 #include <limits>
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -936,4 +936,4 @@ bool FocusController::advanceFocusDirectionally(FocusType type)
     return consumed;
 }
 
-} // namespace WebCore
+} // namespace blink

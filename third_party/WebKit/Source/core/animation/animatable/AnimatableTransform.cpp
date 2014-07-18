@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/animation/animatable/AnimatableTransform.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<AnimatableTransform> AnimatableTransform::create(const TransformOperations& transform)
 {
@@ -49,5 +49,5 @@ bool AnimatableTransform::equalTo(const AnimatableValue* value) const
     return m_transform == toAnimatableTransform(value)->m_transform;
 }
 
-} // namespace WebCore
+} // namespace blink
 

@@ -39,7 +39,7 @@
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class InputMethodController;
@@ -95,6 +95,6 @@ private:
     Vector<unsigned> m_segments;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InputMethodContext_h

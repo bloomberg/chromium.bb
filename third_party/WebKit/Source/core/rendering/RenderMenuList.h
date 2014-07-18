@@ -29,7 +29,7 @@
 #include "platform/PopupMenuClient.h"
 #include "platform/geometry/LayoutRect.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLSelectElement;
 class RenderText;

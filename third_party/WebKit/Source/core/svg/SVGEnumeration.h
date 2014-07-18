@@ -33,7 +33,7 @@
 
 #include "core/svg/properties/SVGProperty.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGEnumerationBase : public SVGPropertyBase {
 public:
@@ -122,6 +122,6 @@ protected:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGEnumeration_h

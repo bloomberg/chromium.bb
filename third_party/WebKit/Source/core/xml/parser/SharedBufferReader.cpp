@@ -38,7 +38,7 @@
 #include <algorithm>
 #include <cstring>
 
-namespace WebCore {
+namespace blink {
 
 SharedBufferReader::SharedBufferReader(PassRefPtr<SharedBuffer> buffer)
     : m_buffer(buffer)
@@ -74,4 +74,4 @@ int SharedBufferReader::readData(char* outputBuffer, unsigned askedToRead)
     return bytesCopied;
 }
 
-} // namespace WebCore
+} // namespace blink

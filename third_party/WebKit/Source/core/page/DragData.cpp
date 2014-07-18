@@ -37,7 +37,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 DragData::DragData(DataObject* data, const IntPoint& clientPosition, const IntPoint& globalPosition,
     DragOperation sourceOperationMask, DragApplicationFlags flags)
@@ -164,4 +164,4 @@ String DragData::droppedFileSystemId() const
     return m_platformDragData->filesystemId();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -35,7 +35,7 @@
 #include "core/svg/SVGPathSegList.h"
 #include "core/svg/properties/SVGListPropertyTearOffHelper.h"
 
-namespace WebCore {
+namespace blink {
 
 template<>
 class ListItemPropertyTraits<SVGPathSeg> {
@@ -77,6 +77,6 @@ private:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPathSegListTearOff_h_

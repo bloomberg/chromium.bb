@@ -31,7 +31,7 @@
 #include "core/svg/SVGForeignObjectElement.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSVGForeignObject::RenderSVGForeignObject(SVGForeignObjectElement* node)
     : RenderSVGBlock(node)

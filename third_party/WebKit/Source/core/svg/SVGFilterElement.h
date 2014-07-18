@@ -33,7 +33,7 @@
 #include "core/svg/SVGURIReference.h"
 #include "core/svg/SVGUnitTypes.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGFilterElement FINAL : public SVGElement,
                                public SVGURIReference {

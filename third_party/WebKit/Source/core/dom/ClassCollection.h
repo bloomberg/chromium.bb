@@ -34,7 +34,7 @@
 #include "core/dom/SpaceSplitString.h"
 #include "core/html/HTMLCollection.h"
 
-namespace WebCore {
+namespace blink {
 
 class ClassCollection FINAL : public HTMLCollection {
 public:
@@ -72,6 +72,6 @@ inline bool ClassCollection::elementMatches(const Element& testElement) const
     return testElement.classNames().containsAll(m_classNames);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ClassCollection_h

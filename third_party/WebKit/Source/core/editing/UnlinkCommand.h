@@ -28,7 +28,7 @@
 
 #include "core/editing/CompositeEditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class UnlinkCommand FINAL : public CompositeEditCommand {
 public:
@@ -44,6 +44,6 @@ private:
     virtual EditAction editingAction() const OVERRIDE { return EditActionUnlink; }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // UnlinkCommand_h

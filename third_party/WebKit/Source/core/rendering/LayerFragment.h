@@ -29,7 +29,7 @@
 #include "core/rendering/ClipRect.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 struct LayerFragment {
 public:
@@ -78,6 +78,6 @@ public:
 
 typedef Vector<LayerFragment, 1> LayerFragments;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LayerFragment_h

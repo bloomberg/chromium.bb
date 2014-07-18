@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/events/ResourceProgressEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 ResourceProgressEvent::ResourceProgressEvent()
 {

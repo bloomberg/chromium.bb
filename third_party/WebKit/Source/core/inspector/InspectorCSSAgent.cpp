@@ -77,9 +77,9 @@ namespace CSSAgentState {
 static const char cssAgentEnabled[] = "cssAgentEnabled";
 }
 
-typedef WebCore::InspectorBackendDispatcher::CSSCommandHandler::EnableCallback EnableCallback;
+typedef blink::InspectorBackendDispatcher::CSSCommandHandler::EnableCallback EnableCallback;
 
-namespace WebCore {
+namespace blink {
 
 enum ForcePseudoClassFlags {
     PseudoNone = 0,
@@ -1406,5 +1406,5 @@ void InspectorCSSAgent::resetPseudoStates()
         (*it)->setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
-} // namespace WebCore
+} // namespace blink
 

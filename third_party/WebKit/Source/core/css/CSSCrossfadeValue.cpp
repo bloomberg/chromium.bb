@@ -32,7 +32,7 @@
 #include "platform/graphics/CrossfadeGeneratedImage.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 static bool subimageIsPending(CSSValue* value)
 {
@@ -226,4 +226,4 @@ void CSSCrossfadeValue::traceAfterDispatch(Visitor* visitor)
     CSSImageGeneratorValue::traceAfterDispatch(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

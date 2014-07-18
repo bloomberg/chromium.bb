@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/page/WindowFocusAllowedIndicator.h"
 
-namespace WebCore {
+namespace blink {
 
 static bool s_windowFocusAllowed = false;
 
@@ -46,4 +46,4 @@ WindowFocusAllowedIndicator::~WindowFocusAllowedIndicator()
     s_windowFocusAllowed = m_previousWindowFocusAllowed;
 }
 
-} // namespace WebCore
+} // namespace blink

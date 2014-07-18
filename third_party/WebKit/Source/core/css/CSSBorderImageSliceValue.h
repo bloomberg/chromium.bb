@@ -30,7 +30,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Rect;
 
@@ -60,6 +60,6 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSBorderImageSliceValue, isBorderImageSliceValue());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSBorderImageSliceValue_h

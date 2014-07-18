@@ -28,7 +28,7 @@
 #include "core/svg/SVGLengthList.h"
 #include "core/svg/SVGNumberList.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGTextPositioningElement::SVGTextPositioningElement(const QualifiedName& tagName, Document& document)
     : SVGTextContentElement(tagName, document)

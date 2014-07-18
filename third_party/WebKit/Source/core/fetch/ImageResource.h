@@ -31,7 +31,7 @@
 #include "platform/graphics/ImageObserver.h"
 #include "wtf/HashMap.h"
 
-namespace WebCore {
+namespace blink {
 
 class ImageResourceClient;
 class ResourceFetcher;
@@ -48,19 +48,19 @@ public:
     typedef ImageResourceClient ClientType;
 
     ImageResource(const ResourceRequest&);
-    ImageResource(WebCore::Image*);
+    ImageResource(blink::Image*);
     // Exposed for testing
-    ImageResource(const ResourceRequest&, WebCore::Image*);
+    ImageResource(const ResourceRequest&, blink::Image*);
     virtual ~ImageResource();
 
     virtual void load(ResourceFetcher*, const ResourceLoaderOptions&) OVERRIDE;
 
-    WebCore::Image* image(); // Returns the nullImage() if the image is not available yet.
-    WebCore::Image* imageForRenderer(const RenderObject*); // Returns the nullImage() if the image is not available yet.
+    blink::Image* image(); // Returns the nullImage() if the image is not available yet.
+    blink::Image* imageForRenderer(const RenderObject*); // Returns the nullImage() if the image is not available yet.
     bool hasImage() const { return m_image.get(); }
     bool currentFrameKnownToBeOpaque(const RenderObject*); // Side effect: ensures decoded image is in cache, therefore should only be called when about to draw the image.
 
-    static std::pair<WebCore::Image*, float> brokenImage(float deviceScaleFactor); // Returns an image and the image's resolution scale factor.
+    static std::pair<blink::Image*, float> brokenImage(float deviceScaleFactor); // Returns an image and the image's resolution scale factor.
     bool willPaintBrokenImage() const;
 
     bool canRender(const RenderObject& renderer, float multiplier) { return !errorOccurred() && !imageSizeForRenderer(&renderer, multiplier).isEmpty(); }
@@ -100,12 +100,12 @@ public:
     virtual bool stillNeedsLoad() const OVERRIDE { return !errorOccurred() && status() == Unknown && !isLoading(); }
 
     // ImageObserver
-    virtual void decodedSizeChanged(const WebCore::Image*, int delta) OVERRIDE;
-    virtual void didDraw(const WebCore::Image*) OVERRIDE;
+    virtual void decodedSizeChanged(const blink::Image*, int delta) OVERRIDE;
+    virtual void didDraw(const blink::Image*) OVERRIDE;
 
-    virtual bool shouldPauseAnimation(const WebCore::Image*) OVERRIDE;
-    virtual void animationAdvanced(const WebCore::Image*) OVERRIDE;
-    virtual void changedInRect(const WebCore::Image*, const IntRect&) OVERRIDE;
+    virtual bool shouldPauseAnimation(const blink::Image*) OVERRIDE;
+    virtual void animationAdvanced(const blink::Image*) OVERRIDE;
+    virtual void changedInRect(const blink::Image*, const IntRect&) OVERRIDE;
 
 protected:
     virtual bool isSafeToUnlock() const OVERRIDE;
@@ -128,7 +128,7 @@ private:
     ContainerSizeRequests m_pendingContainerSizeRequests;
     float m_devicePixelRatioHeaderValue;
 
-    RefPtr<WebCore::Image> m_image;
+    RefPtr<blink::Image> m_image;
     OwnPtr<SVGImageCache> m_svgImageCache;
     bool m_loadingMultipartContent;
     bool m_hasDevicePixelRatioHeaderValue;

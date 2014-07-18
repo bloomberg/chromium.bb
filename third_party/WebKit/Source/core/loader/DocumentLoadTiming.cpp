@@ -29,7 +29,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 DocumentLoadTiming::DocumentLoadTiming()
     : m_referenceMonotonicTime(0.0)
@@ -88,4 +88,4 @@ void DocumentLoadTiming::addRedirect(const KURL& redirectingUrl, const KURL& red
     m_hasCrossOriginRedirect = !redirectedSecurityOrigin->canRequest(redirectingUrl);
 }
 
-} // namespace WebCore
+} // namespace blink

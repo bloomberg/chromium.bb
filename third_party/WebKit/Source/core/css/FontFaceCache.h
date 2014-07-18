@@ -33,7 +33,7 @@
 #include "wtf/ListHashSet.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class FontFace;
 class CSSFontSelector;

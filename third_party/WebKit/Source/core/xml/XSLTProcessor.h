@@ -33,7 +33,7 @@
 #include <libxml/parserInternals.h>
 #include <libxslt/documents.h>
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class Document;

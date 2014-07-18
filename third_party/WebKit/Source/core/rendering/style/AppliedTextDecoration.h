@@ -8,7 +8,7 @@
 #include "core/css/StyleColor.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
-namespace WebCore {
+namespace blink {
 
 class AppliedTextDecoration {
 public:
@@ -29,6 +29,6 @@ private:
     StyleColor m_color;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AppliedTextDecoration_h

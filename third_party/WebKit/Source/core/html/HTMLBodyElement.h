@@ -27,7 +27,7 @@
 #include "core/dom/Document.h"
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 

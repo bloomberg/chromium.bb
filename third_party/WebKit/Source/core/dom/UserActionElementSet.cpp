@@ -30,7 +30,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 
-namespace WebCore {
+namespace blink {
 
 UserActionElementSet::UserActionElementSet()
 {

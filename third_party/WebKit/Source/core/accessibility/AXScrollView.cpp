@@ -32,7 +32,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 
-namespace WebCore {
+namespace blink {
 
 AXScrollView::AXScrollView(ScrollView* view)
     : m_scrollView(view)
@@ -240,4 +240,4 @@ void AXScrollView::scrollTo(const IntPoint& point) const
         m_scrollView->setScrollPosition(point);
 }
 
-} // namespace WebCore
+} // namespace blink

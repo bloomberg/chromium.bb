@@ -47,7 +47,7 @@
 #include "platform/weborigin/Referrer.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

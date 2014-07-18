@@ -13,7 +13,7 @@
 #include "core/animation/interpolation/LegacyStyleInterpolation.h"
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 class AnimationAnimationStackTest : public ::testing::Test {
 protected:

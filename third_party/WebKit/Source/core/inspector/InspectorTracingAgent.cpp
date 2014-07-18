@@ -13,7 +13,7 @@
 #include "core/inspector/InspectorState.h"
 #include "platform/TraceEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace TracingAgentState {
 const char sessionId[] = "sessionId";

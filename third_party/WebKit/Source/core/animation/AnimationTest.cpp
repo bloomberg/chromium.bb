@@ -17,7 +17,7 @@
 #include <gtest/gtest.h>
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class AnimationAnimationTest : public ::testing::Test {
 protected:
@@ -464,4 +464,4 @@ TEST_F(AnimationAnimationTest, ElementDestructorClearsAnimationTarget)
 #endif
 }
 
-} // namespace WebCore
+} // namespace blink

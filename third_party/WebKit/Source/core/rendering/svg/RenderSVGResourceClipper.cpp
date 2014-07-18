@@ -39,7 +39,7 @@
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "wtf/TemporaryChange.h"
 
-namespace WebCore {
+namespace blink {
 
 const RenderSVGResourceType RenderSVGResourceClipper::s_resourceType = ClipperResourceType;
 

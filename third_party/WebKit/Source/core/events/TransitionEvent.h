@@ -29,7 +29,7 @@
 
 #include "core/events/Event.h"
 
-namespace WebCore {
+namespace blink {
 
 struct TransitionEventInit : public EventInit {
     TransitionEventInit();
@@ -74,7 +74,7 @@ private:
     String m_pseudoElement;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TransitionEvent_h
 

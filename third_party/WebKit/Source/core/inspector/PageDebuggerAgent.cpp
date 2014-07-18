@@ -42,7 +42,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtr<PageDebuggerAgent> PageDebuggerAgent::create(PageScriptDebugServer* pageScriptDebugServer, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
 {
@@ -162,5 +162,5 @@ void PageDebuggerAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
         pageDidCommitLoad();
 }
 
-} // namespace WebCore
+} // namespace blink
 

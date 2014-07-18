@@ -43,7 +43,7 @@ double square(double x)
 
 } // namespace
 
-namespace WebCore {
+namespace blink {
 
 AnimatableColorImpl::AnimatableColorImpl(float red, float green, float blue, float alpha)
     : m_alpha(clampTo(alpha, 0.0f, 1.0f))
@@ -116,4 +116,4 @@ double AnimatableColor::distanceTo(const AnimatableValue* value) const
     return m_color.distanceTo(color->m_color);
 }
 
-} // namespace WebCore
+} // namespace blink

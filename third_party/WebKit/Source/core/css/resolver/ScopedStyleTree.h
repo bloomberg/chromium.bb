@@ -32,7 +32,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ScopedStyleTree {
     WTF_MAKE_NONCOPYABLE(ScopedStyleTree); WTF_MAKE_FAST_ALLOCATED;
@@ -103,6 +103,6 @@ inline ScopedStyleResolver* ScopedStyleTree::scopedResolverFor(const Element* el
     return m_cache.scopedResolver;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScopedStyleTree_h

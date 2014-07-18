@@ -29,7 +29,7 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/StyleSheetResource.h"
 
-namespace WebCore {
+namespace blink {
 
 class ResourceFetcher;
 class TextResourceDecoder;
@@ -50,6 +50,6 @@ protected:
 
 DEFINE_RESOURCE_TYPE_CASTS(XSLStyleSheet);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

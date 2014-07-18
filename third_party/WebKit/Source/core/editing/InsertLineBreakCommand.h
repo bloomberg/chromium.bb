@@ -28,7 +28,7 @@
 
 #include "core/editing/CompositeEditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class InsertLineBreakCommand FINAL : public CompositeEditCommand {
 public:
@@ -47,6 +47,6 @@ private:
     bool shouldUseBreakElement(const Position&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InsertLineBreakCommand_h

@@ -31,7 +31,7 @@
 #include "core/fetch/ResourceLoader.h"
 #include "platform/SharedBuffer.h"
 
-namespace WebCore {
+namespace blink {
 
 RawResource::RawResource(const ResourceRequest& resourceRequest, Type type)
     : Resource(resourceRequest, type)
@@ -190,4 +190,4 @@ bool RawResource::canReuse(const ResourceRequest& newRequest) const
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -27,7 +27,7 @@
 #ifndef SVGParsingError_h
 #define SVGParsingError_h
 
-namespace WebCore {
+namespace blink {
 
 enum SVGParsingError {
     NoError,
@@ -35,6 +35,6 @@ enum SVGParsingError {
     NegativeValueForbiddenError
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGParsingError_h

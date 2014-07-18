@@ -32,7 +32,7 @@
 #include "core/loader/EmptyClients.h"
 #include "platform/Timer.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGImageChromeClient FINAL : public EmptyChromeClient {
     WTF_MAKE_NONCOPYABLE(SVGImageChromeClient); WTF_MAKE_FAST_ALLOCATED;

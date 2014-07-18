@@ -28,7 +28,7 @@
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGUseElement.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSVGTransformableContainer::RenderSVGTransformableContainer(SVGGraphicsElement* node)
     : RenderSVGContainer(node)

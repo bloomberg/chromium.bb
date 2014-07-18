@@ -32,7 +32,7 @@
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderFlexibleBox.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderTextTrackContainerElement FINAL : public RenderBlockFlow {
 public:
@@ -43,7 +43,7 @@ private:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderMediaControlElements_h
 

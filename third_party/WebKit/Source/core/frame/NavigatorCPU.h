@@ -5,13 +5,13 @@
 #ifndef NavigatorCPU_h
 #define NavigatorCPU_h
 
-namespace WebCore {
+namespace blink {
 
 class NavigatorCPU {
 public:
     unsigned hardwareConcurrency() const;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigatorCPU_h

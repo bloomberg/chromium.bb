@@ -33,7 +33,7 @@
 #include "platform/ParsingUtilities.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 // Helper class for "scanning" an input string and performing parsing of
 // "micro-syntax"-like constructs.

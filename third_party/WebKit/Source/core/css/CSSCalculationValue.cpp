@@ -45,7 +45,7 @@ enum ParseState {
     NoMoreTokens
 };
 
-namespace WebCore {
+namespace blink {
 
 static CalculationCategory unitCategory(CSSPrimitiveValue::UnitType type)
 {
@@ -760,4 +760,4 @@ void CSSCalcValue::traceAfterDispatch(Visitor* visitor)
     CSSValue::traceAfterDispatch(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

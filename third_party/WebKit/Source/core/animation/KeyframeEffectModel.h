@@ -45,7 +45,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 class KeyframeEffectModelTest;
@@ -174,6 +174,6 @@ inline bool KeyframeEffectModel<AnimatableValueKeyframe>::isAnimatableValueKeyfr
 template <>
 inline bool KeyframeEffectModel<StringKeyframe>::isStringKeyframeEffectModel() const { return true; }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // KeyframeEffectModel_h

@@ -26,7 +26,7 @@
 
 #include "core/html/HTMLFormControlElementWithState.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLSelectElement;
 

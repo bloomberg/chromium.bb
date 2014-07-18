@@ -28,7 +28,7 @@
 
 #include "core/editing/EditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLElement;
 
@@ -53,6 +53,6 @@ private:
     RefPtrWillBeMember<HTMLElement> m_dummySpan;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WrapContentsInDummySpanCommand_h

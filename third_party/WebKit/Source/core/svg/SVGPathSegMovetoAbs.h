@@ -24,7 +24,7 @@
 
 #include "core/svg/SVGPathSegWithContext.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathSegMovetoAbs FINAL : public SVGPathSegSingleCoordinate {
 public:
@@ -44,6 +44,6 @@ private:
     virtual String pathSegTypeAsLetter() const OVERRIDE { return "M"; }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

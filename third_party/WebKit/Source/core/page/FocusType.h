@@ -26,7 +26,7 @@
 #ifndef FocusType_h
 #define FocusType_h
 
-namespace WebCore {
+namespace blink {
 
 enum FocusType {
     // Element::focus(), etc.

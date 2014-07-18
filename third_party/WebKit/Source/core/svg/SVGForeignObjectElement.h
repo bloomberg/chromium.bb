@@ -26,7 +26,7 @@
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGURIReference.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGForeignObjectElement FINAL : public SVGGraphicsElement {
 public:
@@ -57,6 +57,6 @@ private:
     RefPtr<SVGAnimatedLength> m_height;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -29,7 +29,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntSize.h"
 
-namespace WebCore {
+namespace blink {
 
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<EdgeModeType>()
 {
@@ -245,4 +245,4 @@ PassRefPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* fil
     return effect.release();
 }
 
-} // namespace WebCore
+} // namespace blink

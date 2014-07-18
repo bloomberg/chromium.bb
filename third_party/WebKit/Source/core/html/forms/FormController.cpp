@@ -29,7 +29,7 @@
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -561,4 +561,4 @@ void FormController::unregisterStatefulFormControl(HTMLFormControlElementWithSta
     m_documentState->removeControl(&control);
 }
 
-} // namespace WebCore
+} // namespace blink

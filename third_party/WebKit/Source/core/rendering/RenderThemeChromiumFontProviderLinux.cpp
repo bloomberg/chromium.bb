@@ -32,7 +32,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 // static
 void RenderThemeChromiumFontProvider::setDefaultFontSize(int fontSize)
@@ -68,4 +68,4 @@ void RenderThemeChromiumFontProvider::systemFont(CSSValueID valueID, FontDescrip
     fontDescription.setStyle(FontStyleNormal);
 }
 
-} // namespace WebCore
+} // namespace blink

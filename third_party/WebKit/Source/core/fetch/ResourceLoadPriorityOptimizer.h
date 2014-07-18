@@ -39,7 +39,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ResourceLoadPriorityOptimizer {
 public:

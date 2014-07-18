@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/testing/RefCountedScriptWrappable.h"
 
-namespace WebCore {
+namespace blink {
 
 RefCountedScriptWrappable::RefCountedScriptWrappable(const String& string)
     : m_string(string)
@@ -22,5 +22,5 @@ PassRefPtr<RefCountedScriptWrappable> RefCountedScriptWrappable::create(const St
     return adoptRef(new RefCountedScriptWrappable(string));
 }
 
-} // namespace WebCore
+} // namespace blink
 

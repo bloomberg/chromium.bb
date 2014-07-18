@@ -33,7 +33,7 @@
 
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 
@@ -46,6 +46,6 @@ public:
     static void scheduleCallback(PassOwnPtr<StringCallback>, ExecutionContext*, const String& data, const String& instrumentationName);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StringCallback_h

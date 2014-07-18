@@ -32,7 +32,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class TextTrackCueList FINAL : public RefCountedWillBeGarbageCollectedFinalized<TextTrackCueList>, public ScriptWrappable {
 public:
@@ -69,6 +69,6 @@ private:
 
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -37,7 +37,7 @@
 #include "core/page/PagePopupController.h"
 #include "platform/Timer.h"
 
-namespace WebCore {
+namespace blink {
 
 class MockPagePopup : public PagePopup, public RefCounted<MockPagePopup> {
 public:

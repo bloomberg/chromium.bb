@@ -42,7 +42,7 @@
 #include "core/rendering/RenderSearchField.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -184,4 +184,4 @@ bool SearchInputType::supportsInputModeAttribute() const
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

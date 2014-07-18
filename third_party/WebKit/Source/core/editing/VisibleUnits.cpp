@@ -46,7 +46,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/text/TextBoundaries.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 using namespace WTF::Unicode;

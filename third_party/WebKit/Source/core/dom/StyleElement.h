@@ -24,7 +24,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "wtf/text/TextPosition.h"
 
-namespace WebCore {
+namespace blink {
 
 class ContainerNode;
 class Document;

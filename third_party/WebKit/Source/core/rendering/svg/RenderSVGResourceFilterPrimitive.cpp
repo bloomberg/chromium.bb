@@ -29,7 +29,7 @@
 
 #include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
 
-namespace WebCore {
+namespace blink {
 
 void RenderSVGResourceFilterPrimitive::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
@@ -56,4 +56,4 @@ void RenderSVGResourceFilterPrimitive::styleDidChange(StyleDifference diff, cons
     }
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -40,7 +40,7 @@ namespace blink {
 class WebWaitableEvent;
 }
 
-namespace WebCore {
+namespace blink {
 
 // This bridge is created and destroyed on the worker thread, but is
 // passed to and used on the main thread. Each did* method records the given
@@ -74,6 +74,6 @@ private:
     Vector<Closure> m_clientTasks;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerLoaderClientBridgeSyncHelper_h

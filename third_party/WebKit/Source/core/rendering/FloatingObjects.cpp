@@ -30,7 +30,7 @@
 
 using namespace WTF;
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsFloatingObject {
     void* pointers[2];
@@ -542,4 +542,4 @@ String ValueToString<FloatingObject*>::string(const FloatingObject* floatingObje
 #endif
 
 
-} // namespace WebCore
+} // namespace blink

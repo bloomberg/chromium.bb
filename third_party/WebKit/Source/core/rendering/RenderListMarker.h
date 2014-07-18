@@ -25,7 +25,7 @@
 
 #include "core/rendering/RenderBox.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderListItem;
 
@@ -88,6 +88,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderListMarker, isListMarker());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderListMarker_h

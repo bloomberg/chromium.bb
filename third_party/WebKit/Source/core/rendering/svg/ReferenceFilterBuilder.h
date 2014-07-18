@@ -36,7 +36,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Filter;
 class FilterEffect;

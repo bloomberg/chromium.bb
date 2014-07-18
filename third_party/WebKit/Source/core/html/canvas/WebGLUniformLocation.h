@@ -32,7 +32,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebGLUniformLocation FINAL : public RefCounted<WebGLUniformLocation>, public ScriptWrappable {
 public:
@@ -51,6 +51,6 @@ private:
     unsigned m_linkCount;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLUniformLocation_h

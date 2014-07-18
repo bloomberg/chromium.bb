@@ -31,7 +31,7 @@
 #include "core/events/MouseRelatedEvent.h"
 #include "core/dom/TouchList.h"
 
-namespace WebCore {
+namespace blink {
 
 class TouchEvent FINAL : public UIEventWithKeyState {
 public:
@@ -96,6 +96,6 @@ private:
 
 DEFINE_EVENT_TYPE_CASTS(TouchEvent);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TouchEvent_h

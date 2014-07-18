@@ -24,7 +24,7 @@
 #include "core/svg/SVGPathSeg.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 // Helper class that coalesces writes to a SVGPathByteStream to a local buffer.
 class CoalescingBuffer {
@@ -152,4 +152,4 @@ void SVGPathByteStreamBuilder::closePath()
     buffer.writeSegmentType(PathSegClosePath);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -29,7 +29,7 @@
 #include "wtf/BitArray.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 static bool isInitialOrInherit(const String& value)
 {

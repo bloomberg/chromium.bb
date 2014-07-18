@@ -28,7 +28,7 @@
 #include "core/svg/SVGStaticStringList.h"
 #include "core/svg/SVGZoomAndPan.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGViewElement FINAL : public SVGElement,
                              public SVGFitToViewBox,
@@ -55,6 +55,6 @@ private:
     RefPtr<SVGStaticStringList> m_viewTarget;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

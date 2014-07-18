@@ -28,7 +28,7 @@
 
 #include "core/rendering/RenderPart.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderIFrame FINAL : public RenderPart {
 public:
@@ -49,6 +49,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderIFrame, isRenderIFrame());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderIFrame_h

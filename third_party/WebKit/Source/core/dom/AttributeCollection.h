@@ -35,7 +35,7 @@
 
 #include "core/dom/Attribute.h"
 
-namespace WebCore {
+namespace blink {
 
 class Attr;
 
@@ -126,6 +126,6 @@ inline const Attribute* AttributeCollection::find(const QualifiedName& name) con
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AttributeCollection_h

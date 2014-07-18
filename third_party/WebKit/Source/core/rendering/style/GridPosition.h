@@ -33,7 +33,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 enum GridPositionType {
     AutoPosition,
@@ -119,6 +119,6 @@ private:
     String m_namedGridLine;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GridPosition_h

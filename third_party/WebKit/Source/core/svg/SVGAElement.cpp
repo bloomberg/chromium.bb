@@ -49,7 +49,7 @@
 #include "platform/PlatformMouseEvent.h"
 #include "platform/network/ResourceRequest.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -222,4 +222,4 @@ bool SVGAElement::willRespondToMouseClickEvents()
     return isLink() || SVGGraphicsElement::willRespondToMouseClickEvents();
 }
 
-} // namespace WebCore
+} // namespace blink

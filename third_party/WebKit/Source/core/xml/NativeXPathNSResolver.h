@@ -29,7 +29,7 @@
 #include "core/xml/XPathNSResolver.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Node;
 
@@ -50,6 +50,6 @@ private:
     RefPtrWillBeMember<Node> m_node;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NativeXPathNSResolver_h

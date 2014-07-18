@@ -32,7 +32,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
     class CanvasGradient;
     class CanvasPattern;
@@ -100,6 +100,6 @@ namespace WebCore {
     RGBA32 currentColor(HTMLCanvasElement*);
     bool parseColorOrCurrentColor(RGBA32& parsedColor, const String& colorString, HTMLCanvasElement*);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

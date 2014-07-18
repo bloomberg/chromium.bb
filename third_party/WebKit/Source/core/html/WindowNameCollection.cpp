@@ -7,7 +7,7 @@
 
 #include "core/html/HTMLImageElement.h"
 
-namespace WebCore {
+namespace blink {
 
 WindowNameCollection::WindowNameCollection(ContainerNode& document, const AtomicString& name)
     : HTMLNameCollection(document, WindowNamedItems, name)
@@ -29,4 +29,4 @@ bool WindowNameCollection::elementMatches(const Element& element) const
     return element.getIdAttribute() == m_name;
 }
 
-} // namespace WebCore
+} // namespace blink

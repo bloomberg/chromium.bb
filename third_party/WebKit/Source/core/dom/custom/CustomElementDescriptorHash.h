@@ -36,7 +36,7 @@
 #include "wtf/HashTraits.h"
 #include "wtf/text/AtomicStringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 struct CustomElementDescriptorHash {
     static unsigned hash(const CustomElementDescriptor& descriptor)
@@ -52,12 +52,12 @@ struct CustomElementDescriptorHash {
     static const bool safeToCompareToEmptyOrDeleted = true;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 namespace WTF {
 
 template<>
-struct HashTraits<WebCore::CustomElementDescriptor> : SimpleClassHashTraits<WebCore::CustomElementDescriptor> {
+struct HashTraits<blink::CustomElementDescriptor> : SimpleClassHashTraits<blink::CustomElementDescriptor> {
     static const bool emptyValueIsZero = HashTraits<AtomicString>::emptyValueIsZero;
 };
 

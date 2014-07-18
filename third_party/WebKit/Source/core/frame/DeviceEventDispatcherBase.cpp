@@ -8,7 +8,7 @@
 #include "core/frame/DeviceEventControllerBase.h"
 #include "wtf/TemporaryChange.h"
 
-namespace WebCore {
+namespace blink {
 
 DeviceEventDispatcherBase::DeviceEventDispatcherBase()
     : m_needsPurge(false)
@@ -84,4 +84,4 @@ void DeviceEventDispatcherBase::notifyControllers()
         purgeControllers();
 }
 
-} // namespace WebCore
+} // namespace blink

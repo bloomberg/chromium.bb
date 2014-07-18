@@ -5,7 +5,7 @@
 #ifndef CompositingState_h
 #define CompositingState_h
 
-namespace WebCore {
+namespace blink {
 
 enum CompositingState {
     // The layer paints into its enclosing composited ancestor.
@@ -24,6 +24,6 @@ enum CompositingState {
     PaintsIntoGroupedBacking = 3
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CompositingState_h

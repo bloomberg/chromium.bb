@@ -37,7 +37,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Node;
 class QualifiedName;
@@ -74,6 +74,6 @@ public:
 
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MutationRecord_h

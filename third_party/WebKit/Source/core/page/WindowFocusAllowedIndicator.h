@@ -28,7 +28,7 @@
 
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class WindowFocusAllowedIndicator {
     WTF_MAKE_NONCOPYABLE(WindowFocusAllowedIndicator);
@@ -42,6 +42,6 @@ private:
     bool m_previousWindowFocusAllowed;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WindowFocusAllowedIndicator_h

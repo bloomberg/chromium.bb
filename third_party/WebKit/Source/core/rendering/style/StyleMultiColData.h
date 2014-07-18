@@ -31,7 +31,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 // CSS3 Multi Column Layout
 
@@ -73,6 +73,6 @@ private:
     StyleMultiColData(const StyleMultiColData&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleMultiColData_h

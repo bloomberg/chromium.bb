@@ -13,7 +13,7 @@
 #include "core/page/Page.h"
 #include "core/svg/SVGDocumentExtensions.h"
 
-namespace WebCore {
+namespace blink {
 
 PageAnimator::PageAnimator(Page* page)
     : m_page(page)

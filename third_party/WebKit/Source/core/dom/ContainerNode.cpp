@@ -53,7 +53,7 @@
 #include "core/rendering/RenderView.h"
 #include "platform/ScriptForbiddenScope.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -1393,4 +1393,4 @@ bool childAttachedAllowedWhenAttachingChildren(ContainerNode* node)
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

@@ -34,7 +34,7 @@
 #include "core/editing/TextIterator.h"
 #include "platform/text/TextBreakIterator.h"
 
-namespace WebCore {
+namespace blink {
 
 AbstractInlineTextBox::InlineToAbstractInlineTextBoxHashMap* AbstractInlineTextBox::gAbstractInlineTextBoxMap = 0;
 
@@ -161,4 +161,4 @@ String AbstractInlineTextBox::text() const
     return result;
 }
 
-} // namespace WebCore
+} // namespace blink

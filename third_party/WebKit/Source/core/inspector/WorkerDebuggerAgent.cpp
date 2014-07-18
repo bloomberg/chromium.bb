@@ -36,7 +36,7 @@
 #include "core/workers/WorkerThread.h"
 #include "wtf/MessageQueue.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -136,4 +136,4 @@ void WorkerDebuggerAgent::unmuteConsole()
     // We don't need to mute console for workers.
 }
 
-} // namespace WebCore
+} // namespace blink

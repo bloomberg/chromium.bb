@@ -25,7 +25,7 @@
 #include "core/plugins/DOMPlugin.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 DOMMimeType::DOMMimeType(PassRefPtr<PluginData> pluginData, LocalFrame* frame, unsigned index)
     : FrameDestructionObserver(frame)
@@ -73,4 +73,4 @@ PassRefPtrWillBeRawPtr<DOMPlugin> DOMMimeType::enabledPlugin() const
     return DOMPlugin::create(m_pluginData.get(), m_frame, m_pluginData->mimePluginIndices()[m_index]);
 }
 
-} // namespace WebCore
+} // namespace blink

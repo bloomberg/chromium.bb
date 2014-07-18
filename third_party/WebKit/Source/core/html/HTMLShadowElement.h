@@ -34,7 +34,7 @@
 #include "core/dom/shadow/InsertionPoint.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLShadowElement FINAL : public InsertionPoint {
 public:
@@ -48,6 +48,6 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode* insertionPoint) OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLShadowElement_h

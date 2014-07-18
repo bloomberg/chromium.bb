@@ -31,7 +31,7 @@
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class NodeListsNodeData FINAL : public NoBaseWillBeGarbageCollectedFinalized<NodeListsNodeData> {
     WTF_MAKE_NONCOPYABLE(NodeListsNodeData);
@@ -236,6 +236,6 @@ inline bool NodeListsNodeData::deleteThisAndUpdateNodeRareDataIfAboutToRemoveLas
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NodeListsNodeData_h

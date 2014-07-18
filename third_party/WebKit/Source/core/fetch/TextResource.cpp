@@ -8,7 +8,7 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "platform/SharedBuffer.h"
 
-namespace WebCore {
+namespace blink {
 
 TextResource::TextResource(const ResourceRequest& resourceRequest, Resource::Type type, const String& mimeType, const String& charset)
     : Resource(resourceRequest, type)
@@ -40,4 +40,4 @@ String TextResource::decodedText() const
     return text;
 }
 
-} // namespace WebCore
+} // namespace blink

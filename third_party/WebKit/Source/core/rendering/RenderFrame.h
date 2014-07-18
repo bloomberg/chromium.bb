@@ -26,7 +26,7 @@
 #include "core/rendering/RenderFrameSet.h"
 #include "core/rendering/RenderPart.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLFrameElement;
 
@@ -45,6 +45,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderFrame, isFrame());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderFrame_h

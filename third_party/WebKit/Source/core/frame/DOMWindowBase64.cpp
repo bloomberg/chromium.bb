@@ -38,7 +38,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "wtf/text/Base64.h"
 
-namespace WebCore {
+namespace blink {
 
 String DOMWindowBase64::btoa(const String& stringToEncode, ExceptionState& exceptionState)
 {
@@ -71,4 +71,4 @@ String DOMWindowBase64::atob(const String& encodedString, ExceptionState& except
     return String(out.data(), out.size());
 }
 
-} // namespace WebCore
+} // namespace blink

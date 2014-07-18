@@ -8,7 +8,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 v8::Handle<v8::Value> stringToV8Value(String);
 
@@ -18,6 +18,6 @@ void setV8ObjectPropertyAsString(v8::Handle<v8::Object>, String, String);
 
 void setV8ObjectPropertyAsNumber(v8::Handle<v8::Object>, String, double);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimationTestHelper_h

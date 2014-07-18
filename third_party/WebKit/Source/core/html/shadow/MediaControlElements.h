@@ -32,7 +32,7 @@
 
 #include "core/html/shadow/MediaControlElementTypes.h"
 
-namespace WebCore {
+namespace blink {
 
 // ----------------------------
 
@@ -244,6 +244,6 @@ private:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaControlElements_h

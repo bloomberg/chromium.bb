@@ -33,7 +33,7 @@
 #include "core/html/track/TextTrackCue.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class ExecutionContext;
@@ -194,6 +194,6 @@ private:
 // VTTCue is currently the only TextTrackCue subclass.
 DEFINE_TYPE_CASTS(VTTCue, TextTrackCue, cue, true, true);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

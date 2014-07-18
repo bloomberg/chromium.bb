@@ -27,7 +27,7 @@
 
 #include "core/events/Event.h"
 
-namespace WebCore {
+namespace blink {
 
 struct SecurityPolicyViolationEventInit : public EventInit {
     SecurityPolicyViolationEventInit()
@@ -107,6 +107,6 @@ private:
     int m_statusCode;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SecurityPolicyViolationEvent_h

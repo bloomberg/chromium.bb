@@ -26,7 +26,7 @@
 #include "core/html/HTMLElement.h"
 #include "wtf/HashCountedSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalDOMWindow;
 class ExceptionState;
@@ -128,6 +128,6 @@ private:
 
 DEFINE_TYPE_CASTS(HTMLFrameOwnerElement, FrameOwner, owner, owner->isLocal(), owner.isLocal());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLFrameOwnerElement_h

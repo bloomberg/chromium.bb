@@ -22,7 +22,7 @@
 
 #include "core/svg/SVGFELightElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGFEDistantLightElement FINAL : public SVGFELightElement {
 public:
@@ -34,6 +34,6 @@ private:
     virtual PassRefPtr<LightSource> lightSource(Filter*) const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

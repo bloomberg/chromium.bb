@@ -30,7 +30,7 @@
 #include "wtf/ArrayBufferView.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -95,6 +95,6 @@ private:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DataView_h

@@ -30,7 +30,7 @@
 #include "core/dom/DocumentEncodingData.h"
 #include "core/html/parser/TextResourceDecoder.h"
 
-namespace WebCore {
+namespace blink {
 
 DecodedDataDocumentParser::DecodedDataDocumentParser(Document& document)
     : DocumentParser(&document)

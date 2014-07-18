@@ -33,7 +33,7 @@
 #include "core/rendering/shapes/Shape.h"
 #include "platform/geometry/FloatRoundedRect.h"
 
-namespace WebCore {
+namespace blink {
 
 class BoxShape FINAL : public Shape {
 public:
@@ -54,7 +54,7 @@ private:
     FloatRoundedRect m_bounds;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BoxShape_h
 

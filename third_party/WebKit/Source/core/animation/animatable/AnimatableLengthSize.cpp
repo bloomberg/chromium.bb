@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/animation/animatable/AnimatableLengthSize.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLengthSize::interpolateTo(const AnimatableValue* value, double fraction) const
 {

@@ -26,7 +26,7 @@
 #ifndef ConsoleTypes_h
 #define ConsoleTypes_h
 
-namespace WebCore {
+namespace blink {
 
 enum MessageSource {
     XMLMessageSource,
@@ -50,6 +50,6 @@ enum MessageLevel {
     ErrorMessageLevel = 3
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ConsoleTypes_h

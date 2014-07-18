@@ -25,7 +25,7 @@
 
 #include "core/dom/NodeRareData.h"
 
-namespace WebCore {
+namespace blink {
 
 HTMLNameCollection::HTMLNameCollection(ContainerNode& document, CollectionType type, const AtomicString& name)
     : HTMLCollection(document, type, DoesNotOverrideItemAfter)
@@ -42,4 +42,4 @@ HTMLNameCollection::~HTMLNameCollection()
 #endif
 }
 
-} // namespace WebCore
+} // namespace blink

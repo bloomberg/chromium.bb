@@ -29,7 +29,7 @@
 #include "core/css/CSSValue.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSFontFeatureValue : public CSSValue {
 public:

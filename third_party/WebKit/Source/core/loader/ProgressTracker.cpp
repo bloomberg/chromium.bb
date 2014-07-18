@@ -39,7 +39,7 @@
 
 using std::min;
 
-namespace WebCore {
+namespace blink {
 
 // Always start progress at initialProgressValue. This helps provide feedback as
 // soon as a load starts.

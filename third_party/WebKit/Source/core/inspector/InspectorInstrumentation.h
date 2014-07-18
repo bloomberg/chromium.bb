@@ -49,7 +49,7 @@
 #include "platform/network/WebSocketHandshakeResponse.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 struct CSSParserString;
 class Document;
@@ -187,7 +187,7 @@ InstrumentingAgents* instrumentationForPage(Page*);
 
 InstrumentingAgents* instrumentationForWorkerGlobalScope(WorkerGlobalScope*);
 
-} // namespace WebCore
+} // namespace blink
 
 #include "core/InspectorInstrumentationInl.h"
 

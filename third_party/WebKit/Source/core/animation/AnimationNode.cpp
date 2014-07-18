@@ -35,7 +35,7 @@
 #include "core/animation/AnimationPlayer.h"
 #include "core/animation/TimingCalculations.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -192,4 +192,4 @@ void AnimationNode::trace(Visitor* visitor)
     visitor->trace(m_player);
 }
 
-} // namespace WebCore
+} // namespace blink

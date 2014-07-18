@@ -34,7 +34,7 @@
 #include "core/events/Event.h"
 #include "core/events/EventDispatcher.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<EventDispatchMediator> EventDispatchMediator::create(PassRefPtrWillBeRawPtr<Event> event)
 {
@@ -57,4 +57,4 @@ bool EventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const
     return dispatcher->dispatch();
 }
 
-} // namespace WebCore
+} // namespace blink

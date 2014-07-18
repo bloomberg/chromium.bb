@@ -30,7 +30,7 @@
 #include "platform/LifecycleObserver.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalDOMWindow;
 
@@ -49,6 +49,6 @@ public:
     virtual void didRemoveAllEventListeners(LocalDOMWindow*) { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMWindowLifecycleObserver_h

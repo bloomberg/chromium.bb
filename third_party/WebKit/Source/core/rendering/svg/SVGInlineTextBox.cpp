@@ -43,7 +43,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
-namespace WebCore {
+namespace blink {
 
 struct ExpectedSVGInlineTextBoxSize : public InlineTextBox {
     float float1;
@@ -799,4 +799,4 @@ bool SVGInlineTextBox::nodeAtPoint(const HitTestRequest& request, HitTestResult&
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

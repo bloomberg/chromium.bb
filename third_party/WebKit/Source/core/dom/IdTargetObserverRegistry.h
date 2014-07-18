@@ -32,7 +32,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class IdTargetObserver;
 
@@ -66,6 +66,6 @@ inline void IdTargetObserverRegistry::notifyObservers(const AtomicString& id)
     IdTargetObserverRegistry::notifyObserversInternal(id);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IdTargetObserverRegistry_h

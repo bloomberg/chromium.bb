@@ -36,7 +36,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class MediaQueryEvaluator;
 class PageRuleCollector;
@@ -86,6 +86,6 @@ private:
     KeyframesRuleMap m_keyframesRuleMap;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScopedStyleResolver_h

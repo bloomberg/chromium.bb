@@ -35,7 +35,7 @@
 
 #include "core/dom/Attr.h"
 
-namespace WebCore {
+namespace blink {
 
 size_t AttributeCollection::findIndex(Attr* attr) const
 {
@@ -71,4 +71,4 @@ size_t AttributeCollection::findSlowCase(const AtomicString& name, bool shouldIg
     return kNotFound;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -25,7 +25,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSParserValueList;
 
@@ -113,6 +113,6 @@ private:
     size_t m_position;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSValueList_h

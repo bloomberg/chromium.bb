@@ -8,7 +8,7 @@
 #include "core/animation/InterpolableValue.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class Interpolation : public RefCountedWillBeGarbageCollected<Interpolation> {
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(Interpolation);

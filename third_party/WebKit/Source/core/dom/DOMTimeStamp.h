@@ -31,7 +31,7 @@
 #ifndef DOMTimeStamp_h
 #define DOMTimeStamp_h
 
-namespace WebCore {
+namespace blink {
 
 typedef unsigned long long DOMTimeStamp;
 
@@ -45,6 +45,6 @@ inline double convertDOMTimeStampToSeconds(DOMTimeStamp milliseconds)
     return milliseconds / 1000.0;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMTimeStamp_h

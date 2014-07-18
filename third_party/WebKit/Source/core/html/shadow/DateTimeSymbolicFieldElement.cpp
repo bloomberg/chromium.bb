@@ -33,7 +33,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/unicode/Unicode.h"
 
-namespace WebCore {
+namespace blink {
 
 static AtomicString makeVisibleEmptyValue(const Vector<String>& symbols)
 {
@@ -175,6 +175,6 @@ String DateTimeSymbolicFieldElement::optionAtIndex(int index) const
     return m_symbols[index];
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -33,7 +33,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class GenericEventQueue FINAL : public EventQueue {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;

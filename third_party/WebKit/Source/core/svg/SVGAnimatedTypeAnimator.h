@@ -28,7 +28,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGAnimatedPropertyBase;
 class SVGPropertyBase;
@@ -77,6 +77,6 @@ private:
     RefPtr<SVGAnimatedPropertyBase> m_animatedProperty;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGAnimatedTypeAnimator_h

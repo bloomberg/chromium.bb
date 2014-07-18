@@ -73,7 +73,7 @@
 #include <libxml/parserInternals.h>
 #include <libxslt/xslt.h>
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -1637,4 +1637,4 @@ HashMap<String, String> parseAttributes(const String& string, bool& attrsOK)
     return state.attributes;
 }
 
-} // namespace WebCore
+} // namespace blink

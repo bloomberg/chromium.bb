@@ -37,7 +37,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8-profiler.h>
 
-namespace WebCore {
+namespace blink {
 
 class ScriptProfile FINAL : public RefCountedWillBeGarbageCollectedFinalized<ScriptProfile> {
 public:
@@ -69,6 +69,6 @@ private:
     double m_idleTime;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptProfile_h

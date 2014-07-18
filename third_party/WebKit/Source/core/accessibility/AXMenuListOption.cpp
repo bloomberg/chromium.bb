@@ -28,7 +28,7 @@
 
 #include "core/html/HTMLOptionElement.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -109,4 +109,4 @@ String AXMenuListOption::stringValue() const
     return toHTMLOptionElement(m_element)->text();
 }
 
-} // namespace WebCore
+} // namespace blink

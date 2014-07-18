@@ -35,7 +35,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderInline;
 class RenderLayerModelObject;
@@ -121,6 +121,6 @@ private:
     ListHashSet<RenderInline*>* m_outlineObjects; // used to list outlines that should be painted by a block with inline children
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PaintInfo_h

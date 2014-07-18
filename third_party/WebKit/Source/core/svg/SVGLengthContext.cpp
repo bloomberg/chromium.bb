@@ -35,7 +35,7 @@
 #include "core/svg/SVGSVGElement.h"
 #include "platform/fonts/FontMetrics.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGLengthContext::SVGLengthContext(const SVGElement* context)
     : m_context(context)

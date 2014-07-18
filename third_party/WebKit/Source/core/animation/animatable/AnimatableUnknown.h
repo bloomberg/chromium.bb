@@ -35,7 +35,7 @@
 #include "core/animation/animatable/AnimatableValue.h"
 #include "core/css/CSSValuePool.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableUnknown FINAL : public AnimatableValue {
 public:
@@ -87,6 +87,6 @@ inline bool AnimatableUnknown::equalTo(const AnimatableValue* value) const
     return m_value == unknown->m_value || m_value->equals(*unknown->m_value);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatableUnknown_h

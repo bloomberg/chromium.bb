@@ -37,7 +37,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class NamedNodesCollection FINAL : public NodeList {
 public:
@@ -58,6 +58,6 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<Element> > m_nodes;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NamedNodesCollection_h

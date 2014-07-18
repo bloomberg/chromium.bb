@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/events/ApplicationCacheErrorEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 static const String& errorReasonToString(blink::WebApplicationCacheHost::ErrorReason reason)
 {
@@ -79,4 +79,4 @@ void ApplicationCacheErrorEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

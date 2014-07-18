@@ -30,7 +30,7 @@
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderBlockFlow;
 class RenderBox;
@@ -124,7 +124,7 @@ struct FloatingObjectHashFunctions {
 struct FloatingObjectHashTranslator {
     static unsigned hash(RenderBox* key) { return DefaultHash<RenderBox*>::Hash::hash(key); }
     static bool equal(FloatingObject* a, RenderBox* b) { return a->renderer() == b; }
-    static bool equal(const OwnPtr<WebCore::FloatingObject>& a, RenderBox* b) { return a->renderer() == b; }
+    static bool equal(const OwnPtr<blink::FloatingObject>& a, RenderBox* b) { return a->renderer() == b; }
 };
 typedef ListHashSet<OwnPtr<FloatingObject>, 4, FloatingObjectHashFunctions> FloatingObjectSet;
 typedef FloatingObjectSet::const_iterator FloatingObjectSetIterator;
@@ -203,6 +203,6 @@ template<> struct ValueToString<FloatingObject*> {
 };
 #endif
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FloatingObjects_h

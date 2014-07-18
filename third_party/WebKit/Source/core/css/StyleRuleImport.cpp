@@ -29,7 +29,7 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<StyleRuleImport> StyleRuleImport::create(const String& href, PassRefPtrWillBeRawPtr<MediaQuerySet> media)
 {
@@ -140,4 +140,4 @@ void StyleRuleImport::requestStyleSheet()
     }
 }
 
-} // namespace WebCore
+} // namespace blink

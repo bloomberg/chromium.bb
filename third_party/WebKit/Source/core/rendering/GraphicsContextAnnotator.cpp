@@ -47,34 +47,34 @@ const char AnnotationKeyElementClass[]    = "CLASS";
 const char AnnotationKeyElementTag[]      = "TAG";
 const char AnnotationKeyInspectorNodeId[] = "INSPECTOR_ID";
 
-static const char* paintPhaseName(WebCore::PaintPhase phase)
+static const char* paintPhaseName(blink::PaintPhase phase)
 {
     switch (phase) {
-    case WebCore::PaintPhaseBlockBackground:
+    case blink::PaintPhaseBlockBackground:
         return "BlockBackground";
-    case WebCore::PaintPhaseChildBlockBackground:
+    case blink::PaintPhaseChildBlockBackground:
         return "ChildBlockBackground";
-    case WebCore::PaintPhaseChildBlockBackgrounds:
+    case blink::PaintPhaseChildBlockBackgrounds:
         return "ChildBlockBackgrounds";
-    case WebCore::PaintPhaseFloat:
+    case blink::PaintPhaseFloat:
         return "Float";
-    case WebCore::PaintPhaseForeground:
+    case blink::PaintPhaseForeground:
         return "Foreground";
-    case WebCore::PaintPhaseOutline:
+    case blink::PaintPhaseOutline:
         return "Outline";
-    case WebCore::PaintPhaseChildOutlines:
+    case blink::PaintPhaseChildOutlines:
         return "ChildOutlines";
-    case WebCore::PaintPhaseSelfOutline:
+    case blink::PaintPhaseSelfOutline:
         return "SelfOutline";
-    case WebCore::PaintPhaseSelection:
+    case blink::PaintPhaseSelection:
         return "Selection";
-    case WebCore::PaintPhaseCollapsedTableBorders:
+    case blink::PaintPhaseCollapsedTableBorders:
         return "CollapsedTableBorders";
-    case WebCore::PaintPhaseTextClip:
+    case blink::PaintPhaseTextClip:
         return "TextClip";
-    case WebCore::PaintPhaseMask:
+    case blink::PaintPhaseMask:
         return "Mask";
-    case WebCore::PaintPhaseClippingMask:
+    case blink::PaintPhaseClippingMask:
         return "ClippingMask";
     default:
         ASSERT_NOT_REACHED();
@@ -84,7 +84,7 @@ static const char* paintPhaseName(WebCore::PaintPhase phase)
 
 }
 
-namespace WebCore {
+namespace blink {
 
 void GraphicsContextAnnotator::annotate(const PaintInfo& paintInfo, const RenderObject* object)
 {

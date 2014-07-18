@@ -39,7 +39,7 @@
 #include "wtf/ArrayBuffer.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 FileReaderSync::FileReaderSync()
 {
@@ -104,4 +104,4 @@ void FileReaderSync::startLoading(ExecutionContext* executionContext, FileReader
         FileError::throwDOMException(exceptionState, loader.errorCode());
 }
 
-} // namespace WebCore
+} // namespace blink

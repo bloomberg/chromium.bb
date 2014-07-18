@@ -33,7 +33,7 @@
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/animation/SVGSMILElement.h"
 
-namespace WebCore {
+namespace blink {
 
 static const double initialFrameDelay = 0.025;
 

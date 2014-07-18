@@ -31,7 +31,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/TraceEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtrWillBeRawPtr<GenericEventQueue> GenericEventQueue::create(EventTarget* owner)
 {

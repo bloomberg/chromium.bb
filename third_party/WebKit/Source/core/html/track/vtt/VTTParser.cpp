@@ -40,7 +40,7 @@
 #include "platform/text/SegmentedString.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

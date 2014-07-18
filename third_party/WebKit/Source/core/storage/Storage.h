@@ -35,7 +35,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class LocalFrame;
@@ -72,6 +72,6 @@ private:
     OwnPtrWillBeMember<StorageArea> m_storageArea;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Storage_h

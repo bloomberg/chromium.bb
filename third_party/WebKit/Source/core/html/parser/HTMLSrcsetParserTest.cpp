@@ -8,7 +8,7 @@
 #include <gtest/gtest.h>
 #include <limits.h>
 
-namespace WebCore {
+namespace blink {
 
 typedef struct {
     float deviceScaleFactor;

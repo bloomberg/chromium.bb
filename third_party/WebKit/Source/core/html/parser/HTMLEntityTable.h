@@ -28,7 +28,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 // Member order to optimize packing. There will be thousands of these objects.
 struct HTMLEntityTableEntry {

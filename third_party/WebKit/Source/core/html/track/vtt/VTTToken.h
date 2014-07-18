@@ -31,7 +31,7 @@
 #ifndef VTTToken_h
 #define VTTToken_h
 
-namespace WebCore {
+namespace blink {
 
 class VTTTokenTypes {
 public:

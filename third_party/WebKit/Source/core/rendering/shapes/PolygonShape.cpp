@@ -33,7 +33,7 @@
 #include "platform/geometry/LayoutPoint.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 static inline FloatSize inwardEdgeNormal(const FloatPolygonEdge& edge)
 {
@@ -160,4 +160,4 @@ void PolygonShape::buildDisplayPaths(DisplayPaths& paths) const
     paths.shape.closeSubpath();
 }
 
-} // namespace WebCore
+} // namespace blink

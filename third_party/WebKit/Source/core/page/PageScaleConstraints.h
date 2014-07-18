@@ -33,7 +33,7 @@
 
 #include "platform/geometry/FloatSize.h"
 
-namespace WebCore {
+namespace blink {
 
 struct PageScaleConstraints {
     FloatSize layoutSize;
@@ -53,6 +53,6 @@ struct PageScaleConstraints {
     bool operator==(const PageScaleConstraints& other) const;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PageScaleConstraints_h

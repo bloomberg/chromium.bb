@@ -26,7 +26,7 @@
 #ifndef VoidCallback_h
 #define VoidCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class VoidCallback {
 public:
@@ -34,6 +34,6 @@ public:
     virtual void handleEvent() = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

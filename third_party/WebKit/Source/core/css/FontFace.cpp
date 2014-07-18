@@ -60,7 +60,7 @@
 #include "platform/FontFamilyNames.h"
 #include "platform/SharedBuffer.h"
 
-namespace WebCore {
+namespace blink {
 
 class FontFaceReadyPromiseResolver {
 public:
@@ -636,4 +636,4 @@ bool FontFace::hadBlankText() const
     return m_cssFontFace->hadBlankText();
 }
 
-} // namespace WebCore
+} // namespace blink

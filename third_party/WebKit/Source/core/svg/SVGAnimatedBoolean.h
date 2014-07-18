@@ -34,7 +34,7 @@
 #include "core/svg/SVGBoolean.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGAnimatedBoolean FINAL : public SVGAnimatedProperty<SVGBoolean> {
 public:
@@ -50,6 +50,6 @@ protected:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGAnimatedBoolean_h

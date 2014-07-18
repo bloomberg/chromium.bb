@@ -37,7 +37,7 @@
 #include <stdio.h>
 #endif
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -589,27 +589,27 @@ void RenderCounter::rendererStyleChanged(RenderObject& renderer, const RenderSty
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 
-void showCounterRendererTree(const WebCore::RenderObject* renderer, const char* counterName)
+void showCounterRendererTree(const blink::RenderObject* renderer, const char* counterName)
 {
     if (!renderer)
         return;
-    const WebCore::RenderObject* root = renderer;
+    const blink::RenderObject* root = renderer;
     while (root->parent())
         root = root->parent();
 
     AtomicString identifier(counterName);
-    for (const WebCore::RenderObject* current = root; current; current = current->nextInPreOrder()) {
+    for (const blink::RenderObject* current = root; current; current = current->nextInPreOrder()) {
         fprintf(stderr, "%c", (current == renderer) ? '*' : ' ');
-        for (const WebCore::RenderObject* parent = current; parent && parent != root; parent = parent->parent())
+        for (const blink::RenderObject* parent = current; parent && parent != root; parent = parent->parent())
             fprintf(stderr, "    ");
         fprintf(stderr, "%p N:%p P:%p PS:%p NS:%p C:%p\n",
             current, current->node(), current->parent(), current->previousSibling(),
             current->nextSibling(), current->hasCounterNodeMap() ?
-            counterName ? WebCore::counterMaps().get(current)->get(identifier) : (WebCore::CounterNode*)1 : (WebCore::CounterNode*)0);
+            counterName ? blink::counterMaps().get(current)->get(identifier) : (blink::CounterNode*)1 : (blink::CounterNode*)0);
     }
     fflush(stderr);
 }

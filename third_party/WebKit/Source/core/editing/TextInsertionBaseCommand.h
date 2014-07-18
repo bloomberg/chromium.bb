@@ -29,7 +29,7 @@
 #include "core/editing/CompositeEditCommand.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class VisibleSelection;

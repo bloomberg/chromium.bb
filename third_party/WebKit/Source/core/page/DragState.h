@@ -30,7 +30,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class DataTransfer;
 class Node;
@@ -51,6 +51,6 @@ public:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DragState_h

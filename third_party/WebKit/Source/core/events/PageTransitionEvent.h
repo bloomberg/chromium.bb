@@ -28,7 +28,7 @@
 
 #include "core/events/Event.h"
 
-namespace WebCore {
+namespace blink {
 
 struct PageTransitionEventInit : public EventInit {
     PageTransitionEventInit();
@@ -67,6 +67,6 @@ private:
     bool m_persisted;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PageTransitionEvent_h

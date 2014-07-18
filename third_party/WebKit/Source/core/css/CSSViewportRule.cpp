@@ -36,7 +36,7 @@
 #include "core/css/StyleRule.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSViewportRule::CSSViewportRule(StyleRuleViewport* viewportRule, CSSStyleSheet* sheet)
     : CSSRule(sheet)
@@ -90,4 +90,4 @@ void CSSViewportRule::trace(Visitor* visitor)
     CSSRule::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -29,7 +29,7 @@
 
 #include "core/page/Page.h"
 
-namespace WebCore {
+namespace blink {
 
 template<> void observerContext(Page* context, LifecycleObserver<Page>* observer)
 {
@@ -55,4 +55,4 @@ Page* PageLifecycleObserver::page() const
     return static_cast<Page*>(lifecycleContext());
 }
 
-} // namespace WebCore
+} // namespace blink

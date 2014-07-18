@@ -30,7 +30,7 @@
 
 #include "core/dom/TreeScopeStyleSheetCollection.h"
 
-namespace WebCore {
+namespace blink {
 
 class DocumentStyleSheetCollector;
 class StyleEngine;

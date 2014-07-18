@@ -32,7 +32,7 @@
 #include "core/accessibility/AXRenderObject.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXTableCell;
 class RenderTableSection;
@@ -90,6 +90,6 @@ protected:
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTable, isAXTable());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXTable_h

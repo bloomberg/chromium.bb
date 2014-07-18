@@ -31,7 +31,7 @@
 #include "wtf/WeakPtr.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class IncrementLoadEventDelayCount;
 class FetchRequest;

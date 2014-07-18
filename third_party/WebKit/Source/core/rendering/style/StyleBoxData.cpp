@@ -24,7 +24,7 @@
 
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsStyleBoxData : public RefCounted<SameSizeAsStyleBoxData> {
     Length length[7];
@@ -78,4 +78,4 @@ bool StyleBoxData::operator==(const StyleBoxData& o) const
             ;
 }
 
-} // namespace WebCore
+} // namespace blink

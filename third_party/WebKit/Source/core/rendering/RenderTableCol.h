@@ -28,7 +28,7 @@
 
 #include "core/rendering/RenderBox.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderTable;
 class RenderTableCell;

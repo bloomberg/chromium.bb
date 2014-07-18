@@ -34,7 +34,7 @@
 #include "core/rendering/RenderFieldset.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

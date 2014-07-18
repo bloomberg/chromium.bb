@@ -30,7 +30,7 @@
 #include "public/platform/WebThread.h"
 
 
-namespace WebCore {
+namespace blink {
 namespace testing {
 
 class QuitTask : public blink::WebThread::Task {

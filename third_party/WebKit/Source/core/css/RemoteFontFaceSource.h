@@ -9,7 +9,7 @@
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourcePtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class FontLoader;
 
@@ -65,6 +65,6 @@ private:
     FontLoadHistograms m_histograms;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

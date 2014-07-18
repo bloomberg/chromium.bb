@@ -33,7 +33,7 @@
 #include "core/events/NodeEventContext.h"
 #include "core/frame/LocalDOMWindow.h"
 
-namespace WebCore {
+namespace blink {
 
 WindowEventContext::WindowEventContext(Event* event, PassRefPtrWillBeRawPtr<Node> node, const NodeEventContext* topNodeEventContext)
 {

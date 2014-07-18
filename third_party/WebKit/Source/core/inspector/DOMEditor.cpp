@@ -42,7 +42,7 @@
 #include "core/inspector/InspectorHistory.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class DOMEditor::RemoveChildAction FINAL : public InspectorHistory::Action {
     WTF_MAKE_NONCOPYABLE(RemoveChildAction);
@@ -517,5 +517,5 @@ void DOMEditor::trace(Visitor* visitor)
     visitor->trace(m_history);
 }
 
-} // namespace WebCore
+} // namespace blink
 

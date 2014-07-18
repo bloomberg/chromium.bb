@@ -41,7 +41,7 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSFontSelector::CSSFontSelector(Document* document)
     : m_document(document)

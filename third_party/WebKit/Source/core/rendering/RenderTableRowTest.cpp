@@ -33,7 +33,7 @@
 
 using namespace blink;
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -85,4 +85,4 @@ TEST_F(RenderTableRowDeathTest, CrashIfSettingUnsetRowIndex)
 
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -23,7 +23,7 @@
 #include "platform/graphics/Path.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGSubpathData {
 public:

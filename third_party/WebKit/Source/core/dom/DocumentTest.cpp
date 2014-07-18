@@ -37,7 +37,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 
@@ -140,47 +140,47 @@ TEST_F(DocumentTest, LinkManifest)
 
     // Check that we use the first manifest with <link rel=manifest>
     RefPtrWillBeRawPtr<HTMLLinkElement> link = HTMLLinkElement::create(document(), false);
-    link->setAttribute(WebCore::HTMLNames::relAttr, "manifest");
-    link->setAttribute(WebCore::HTMLNames::hrefAttr, "foo.json");
+    link->setAttribute(blink::HTMLNames::relAttr, "manifest");
+    link->setAttribute(blink::HTMLNames::hrefAttr, "foo.json");
     document().head()->appendChild(link);
     EXPECT_EQ(link, document().linkManifest());
 
     RefPtrWillBeRawPtr<HTMLLinkElement> link2 = HTMLLinkElement::create(document(), false);
-    link2->setAttribute(WebCore::HTMLNames::relAttr, "manifest");
-    link2->setAttribute(WebCore::HTMLNames::hrefAttr, "bar.json");
+    link2->setAttribute(blink::HTMLNames::relAttr, "manifest");
+    link2->setAttribute(blink::HTMLNames::hrefAttr, "bar.json");
     document().head()->insertBefore(link2, link.get());
     EXPECT_EQ(link2, document().linkManifest());
     document().head()->appendChild(link2);
     EXPECT_EQ(link, document().linkManifest());
 
     // Check that crazy URLs are accepted.
-    link->setAttribute(WebCore::HTMLNames::hrefAttr, "http:foo.json");
+    link->setAttribute(blink::HTMLNames::hrefAttr, "http:foo.json");
     EXPECT_EQ(link, document().linkManifest());
 
     // Check that empty URLs are accepted.
-    link->setAttribute(WebCore::HTMLNames::hrefAttr, "");
+    link->setAttribute(blink::HTMLNames::hrefAttr, "");
     EXPECT_EQ(link, document().linkManifest());
 
     // Check that URLs from different origins are accepted.
-    link->setAttribute(WebCore::HTMLNames::hrefAttr, "http://example.org/manifest.json");
+    link->setAttribute(blink::HTMLNames::hrefAttr, "http://example.org/manifest.json");
     EXPECT_EQ(link, document().linkManifest());
-    link->setAttribute(WebCore::HTMLNames::hrefAttr, "http://foo.example.org/manifest.json");
+    link->setAttribute(blink::HTMLNames::hrefAttr, "http://foo.example.org/manifest.json");
     EXPECT_EQ(link, document().linkManifest());
-    link->setAttribute(WebCore::HTMLNames::hrefAttr, "http://foo.bar/manifest.json");
+    link->setAttribute(blink::HTMLNames::hrefAttr, "http://foo.bar/manifest.json");
     EXPECT_EQ(link, document().linkManifest());
 
     // More than one token in @rel is accepted.
-    link->setAttribute(WebCore::HTMLNames::relAttr, "foo bar manifest");
+    link->setAttribute(blink::HTMLNames::relAttr, "foo bar manifest");
     EXPECT_EQ(link, document().linkManifest());
 
     // Such as spaces around the token.
-    link->setAttribute(WebCore::HTMLNames::relAttr, " manifest ");
+    link->setAttribute(blink::HTMLNames::relAttr, " manifest ");
     EXPECT_EQ(link, document().linkManifest());
 
     // Check that rel=manifest actually matters.
-    link->setAttribute(WebCore::HTMLNames::relAttr, "");
+    link->setAttribute(blink::HTMLNames::relAttr, "");
     EXPECT_EQ(link2, document().linkManifest());
-    link->setAttribute(WebCore::HTMLNames::relAttr, "manifest");
+    link->setAttribute(blink::HTMLNames::relAttr, "manifest");
 
     // Check that link outside of the <head> are ignored.
     document().head()->removeChild(link.get(), ASSERT_NO_EXCEPTION);
@@ -192,15 +192,15 @@ TEST_F(DocumentTest, LinkManifest)
     document().head()->appendChild(link2);
 
     // Check that some attribute values do not have an effect.
-    link->setAttribute(WebCore::HTMLNames::crossoriginAttr, "use-credentials");
+    link->setAttribute(blink::HTMLNames::crossoriginAttr, "use-credentials");
     EXPECT_EQ(link, document().linkManifest());
-    link->setAttribute(WebCore::HTMLNames::hreflangAttr, "klingon");
+    link->setAttribute(blink::HTMLNames::hreflangAttr, "klingon");
     EXPECT_EQ(link, document().linkManifest());
-    link->setAttribute(WebCore::HTMLNames::typeAttr, "image/gif");
+    link->setAttribute(blink::HTMLNames::typeAttr, "image/gif");
     EXPECT_EQ(link, document().linkManifest());
-    link->setAttribute(WebCore::HTMLNames::sizesAttr, "16x16");
+    link->setAttribute(blink::HTMLNames::sizesAttr, "16x16");
     EXPECT_EQ(link, document().linkManifest());
-    link->setAttribute(WebCore::HTMLNames::mediaAttr, "print");
+    link->setAttribute(blink::HTMLNames::mediaAttr, "print");
     EXPECT_EQ(link, document().linkManifest());
 }
 

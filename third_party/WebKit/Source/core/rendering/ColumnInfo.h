@@ -29,7 +29,7 @@
 #include "platform/LayoutUnit.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ColumnInfo {
     WTF_MAKE_NONCOPYABLE(ColumnInfo); WTF_MAKE_FAST_ALLOCATED;

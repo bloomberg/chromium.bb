@@ -10,7 +10,7 @@
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 
-namespace WebCore {
+namespace blink {
 
 class MouseEventHitRegion {
 public:
@@ -38,6 +38,6 @@ public:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

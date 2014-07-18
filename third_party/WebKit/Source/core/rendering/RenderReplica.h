@@ -31,7 +31,7 @@
 
 #include "core/rendering/RenderBox.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderReplica FINAL : public RenderBox {
 public:
@@ -55,6 +55,6 @@ private:
 
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderReplica_h

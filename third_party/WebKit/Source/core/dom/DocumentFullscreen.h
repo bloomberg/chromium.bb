@@ -26,7 +26,7 @@
 #ifndef DocumentFullscreen_h
 #define DocumentFullscreen_h
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class Element;
@@ -43,6 +43,6 @@ public:
     static void webkitExitFullscreen(Document&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DocumentFullscreen_h

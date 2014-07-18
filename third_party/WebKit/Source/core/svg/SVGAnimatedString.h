@@ -34,7 +34,7 @@
 #include "core/svg/SVGString.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGAnimatedString FINAL : public SVGAnimatedProperty<SVGString> {
 public:
@@ -50,6 +50,6 @@ protected:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGAnimatedString_h

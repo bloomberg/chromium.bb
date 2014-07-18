@@ -57,7 +57,7 @@
 
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsInlineTextBox : public InlineBox {
     unsigned variables[1];
@@ -1535,4 +1535,4 @@ void InlineTextBox::showBox(int printedCharacters) const
 
 #endif
 
-} // namespace WebCore
+} // namespace blink

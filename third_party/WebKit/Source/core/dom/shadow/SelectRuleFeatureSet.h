@@ -34,7 +34,7 @@
 #include "core/css/RuleFeature.h"
 #include "core/dom/Element.h"
 
-namespace WebCore {
+namespace blink {
 
 class SpaceSplitString;
 

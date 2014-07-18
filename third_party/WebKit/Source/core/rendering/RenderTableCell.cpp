@@ -37,7 +37,7 @@
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -1267,4 +1267,4 @@ RenderTableCell* RenderTableCell::createAnonymousWithParentRenderer(const Render
     return newCell;
 }
 
-} // namespace WebCore
+} // namespace blink

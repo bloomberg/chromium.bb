@@ -28,7 +28,7 @@
 #include "core/dom/NodeRareData.h"
 #include "core/html/LabelsNodeList.h"
 
-namespace WebCore {
+namespace blink {
 
 LabelableElement::LabelableElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)

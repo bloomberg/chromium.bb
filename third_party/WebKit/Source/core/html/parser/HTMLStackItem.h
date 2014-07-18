@@ -35,7 +35,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ContainerNode;
 
@@ -242,6 +242,6 @@ private:
     bool m_isDocumentFragmentNode;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLStackItem_h

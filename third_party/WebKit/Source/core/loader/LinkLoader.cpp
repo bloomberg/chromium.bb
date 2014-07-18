@@ -43,7 +43,7 @@
 #include "platform/network/DNS.h"
 #include "public/platform/WebPrerender.h"
 
-namespace WebCore {
+namespace blink {
 
 static unsigned prerenderRelTypesFromRelAttribute(const LinkRelAttribute& relAttribute)
 {

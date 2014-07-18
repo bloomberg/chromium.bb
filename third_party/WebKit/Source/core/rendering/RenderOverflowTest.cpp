@@ -35,9 +35,9 @@
 
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: Move this somewhere more generic.
 void PrintTo(const LayoutRect& rect, std::ostream* os)
@@ -49,7 +49,7 @@ void PrintTo(const LayoutRect& rect, std::ostream* os)
         << rect.height().toFloat() << ")";
 }
 
-} // namespace WebCore
+} // namespace blink
 
 namespace {
 

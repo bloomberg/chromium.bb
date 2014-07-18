@@ -29,7 +29,7 @@
 
 #include "core/dom/ExecutionContext.h"
 
-namespace WebCore {
+namespace blink {
 
 void AddConsoleMessageTask::performTask(ExecutionContext* context)
 {

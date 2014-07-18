@@ -33,7 +33,7 @@
 
 #include "core/rendering/RenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 ActiveAnimations::~ActiveAnimations()
 {
@@ -98,4 +98,4 @@ void ActiveAnimations::trace(Visitor* visitor)
     visitor->trace(m_players);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -29,7 +29,7 @@
 #include "core/html/canvas/CanvasImageSource.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
-namespace WebCore {
+namespace blink {
 
 CanvasRenderingContext::CanvasRenderingContext(HTMLCanvasElement* canvas)
     : m_canvas(canvas)
@@ -60,4 +60,4 @@ bool CanvasRenderingContext::wouldTaintOrigin(CanvasImageSource* imageSource)
     return taintOrigin;
 }
 
-} // namespace WebCore
+} // namespace blink

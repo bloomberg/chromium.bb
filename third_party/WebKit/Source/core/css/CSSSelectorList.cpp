@@ -30,7 +30,7 @@
 #include "core/css/CSSParserValues.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSSelectorList::~CSSSelectorList()
 {
@@ -195,4 +195,4 @@ bool CSSSelectorList::selectorCrossesTreeScopes(size_t index) const
     return forEachTagSelector(functor, selectorAt(index));
 }
 
-} // namespace WebCore
+} // namespace blink

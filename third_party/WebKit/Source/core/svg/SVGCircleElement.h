@@ -26,7 +26,7 @@
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGGeometryElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGCircleElement FINAL : public SVGGeometryElement {
 public:
@@ -52,6 +52,6 @@ private:
     RefPtr<SVGAnimatedLength> m_r;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGCircleElement_h

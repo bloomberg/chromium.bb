@@ -35,7 +35,7 @@
 #include "platform/text/TextRunIterator.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGTextMetricsCalculator {
 public:

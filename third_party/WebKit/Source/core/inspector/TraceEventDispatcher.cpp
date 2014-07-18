@@ -37,7 +37,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 void TraceEventDispatcher::dispatchEventOnAnyThread(char phase, const unsigned char*, const char* name, unsigned long long id,
     int numArgs, const char* const* argNames, const unsigned char* argTypes, const unsigned long long* argValues,
@@ -149,7 +149,7 @@ size_t TraceEventDispatcher::TraceEvent::findParameter(const char* name) const
 
 const TraceEvent::TraceValueUnion& TraceEventDispatcher::TraceEvent::parameter(const char* name, unsigned char expectedType) const
 {
-    static WebCore::TraceEvent::TraceValueUnion missingValue;
+    static blink::TraceEvent::TraceValueUnion missingValue;
     size_t index = findParameter(name);
     ASSERT(isMainThread());
     if (index == kNotFound || m_argumentTypes[index] != expectedType) {
@@ -159,5 +159,5 @@ const TraceEvent::TraceValueUnion& TraceEventDispatcher::TraceEvent::parameter(c
     return m_argumentValues[index];
 }
 
-} // namespace WebCore
+} // namespace blink
 

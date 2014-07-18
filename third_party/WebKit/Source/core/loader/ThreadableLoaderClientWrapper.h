@@ -37,7 +37,7 @@
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/Threading.h"
 
-namespace WebCore {
+namespace blink {
 
 class ThreadableLoaderClientWrapper : public ThreadSafeRefCounted<ThreadableLoaderClientWrapper> {
 public:
@@ -135,6 +135,6 @@ protected:
     bool m_done;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ThreadableLoaderClientWrapper_h

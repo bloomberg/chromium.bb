@@ -28,7 +28,7 @@
 
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 static long s_lastUsedIdentifier = 0;
@@ -61,5 +61,5 @@ String IdentifiersFactory::addProcessIdPrefixTo(const String& id)
     return builder.toString();
 }
 
-} // namespace WebCore
+} // namespace blink
 

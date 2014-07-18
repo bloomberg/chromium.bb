@@ -35,7 +35,7 @@
 #include "core/rendering/RenderListBox.h"
 
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -167,4 +167,4 @@ int AXListBoxOption::listBoxOptionIndex() const
     return -1;
 }
 
-} // namespace WebCore
+} // namespace blink

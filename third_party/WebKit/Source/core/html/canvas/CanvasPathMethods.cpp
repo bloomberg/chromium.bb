@@ -41,7 +41,7 @@
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 void CanvasPathMethods::closePath()
 {

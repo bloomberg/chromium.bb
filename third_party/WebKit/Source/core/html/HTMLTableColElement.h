@@ -28,7 +28,7 @@
 
 #include "core/html/HTMLTablePartElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLTableColElement FINAL : public HTMLTablePartElement {
 public:
@@ -62,6 +62,6 @@ inline bool isHTMLTableColElement(const HTMLElement& element)
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableColElement);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -14,7 +14,7 @@
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, PassRefPtrWillBeRawPtr<FontLoader> fontLoader)
     : m_font(font)
@@ -194,4 +194,4 @@ const char* RemoteFontFaceSource::FontLoadHistograms::histogramName(const FontRe
     return "WebFont.DownloadTime.4.Over1MB";
 }
 
-} // namespace WebCore
+} // namespace blink

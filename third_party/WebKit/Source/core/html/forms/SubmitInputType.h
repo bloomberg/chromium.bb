@@ -33,7 +33,7 @@
 
 #include "core/html/forms/BaseButtonInputType.h"
 
-namespace WebCore {
+namespace blink {
 
 class SubmitInputType FINAL : public BaseButtonInputType {
 public:
@@ -50,6 +50,6 @@ private:
     virtual bool isTextButton() const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SubmitInputType_h

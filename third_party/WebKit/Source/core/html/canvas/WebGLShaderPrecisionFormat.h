@@ -32,7 +32,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebGLShaderPrecisionFormat : public RefCounted<WebGLShaderPrecisionFormat>, public ScriptWrappable {
 public:

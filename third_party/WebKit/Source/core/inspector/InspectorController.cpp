@@ -69,7 +69,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "platform/PlatformMouseEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 InspectorController::InspectorController(Page* page, InspectorClient* inspectorClient)
     : m_instrumentingAgents(InstrumentingAgents::create())
@@ -487,4 +487,4 @@ void InspectorController::didRemovePageOverlay(const GraphicsLayer* layer)
         m_layerTreeAgent->didRemovePageOverlay(layer);
 }
 
-} // namespace WebCore
+} // namespace blink

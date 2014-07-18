@@ -31,7 +31,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class DOMPoint FINAL : public RefCountedWillBeGarbageCollected<DOMPoint>, public ScriptWrappable {
 public:
@@ -64,6 +64,6 @@ private:
     float m_y;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMPoint_h

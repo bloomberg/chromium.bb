@@ -10,7 +10,7 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
 
-namespace WebCore {
+namespace blink {
 
 BinaryDataFontFaceSource::BinaryDataFontFaceSource(SharedBuffer* data)
     : m_customPlatformData(FontCustomPlatformData::create(data))
@@ -34,4 +34,4 @@ PassRefPtr<SimpleFontData> BinaryDataFontFaceSource::createFontData(const FontDe
             fontDescription.orientation(), fontDescription.widthVariant()), CustomFontData::create());
 }
 
-} // namespace WebCore
+} // namespace blink

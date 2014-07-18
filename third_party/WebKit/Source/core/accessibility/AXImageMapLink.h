@@ -33,7 +33,7 @@
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLMapElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXImageMapLink FINAL : public AXMockObject {
 
@@ -76,6 +76,6 @@ private:
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXImageMapLink, isImageMapLink());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXImageMapLink_h

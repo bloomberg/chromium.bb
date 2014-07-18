@@ -30,7 +30,7 @@
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/style/GridResolvedPosition.h"
 
-namespace WebCore {
+namespace blink {
 
 struct GridCoordinate;
 struct GridSpan;
@@ -153,6 +153,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderGrid, isRenderGrid());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderGrid_h

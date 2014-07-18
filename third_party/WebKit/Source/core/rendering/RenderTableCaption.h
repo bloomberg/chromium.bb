@@ -22,7 +22,7 @@
 
 #include "core/rendering/RenderBlockFlow.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderTable;
 
@@ -43,6 +43,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTableCaption, isTableCaption());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderTableCaption_h

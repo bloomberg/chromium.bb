@@ -30,7 +30,7 @@
 #include "core/html/forms/TypeAhead.h"
 #include "core/html/shadow/DateTimeFieldElement.h"
 
-namespace WebCore {
+namespace blink {
 
 // DateTimeSymbolicFieldElement represents non-numeric field of data time
 // format, such as: AM/PM, and month.
@@ -77,7 +77,7 @@ private:
     const int m_maximumIndex;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif
 #endif

@@ -32,7 +32,7 @@
 #include "core/frame/Settings.h"
 #include "core/loader/FrameLoader.h"
 
-namespace WebCore {
+namespace blink {
 
 HTMLParserOptions::HTMLParserOptions(Document* document)
 {

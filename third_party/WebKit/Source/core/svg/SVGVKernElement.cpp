@@ -24,7 +24,7 @@
 
 #include "core/svg/SVGParserUtilities.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGVKernElement::SVGVKernElement(Document& document)
     : SVGElement(SVGNames::vkernTag, document)

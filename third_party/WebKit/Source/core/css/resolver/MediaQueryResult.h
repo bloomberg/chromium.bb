@@ -27,7 +27,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class MediaQueryResult : public RefCountedWillBeGarbageCollectedFinalized<MediaQueryResult> {
     WTF_MAKE_NONCOPYABLE(MediaQueryResult); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;

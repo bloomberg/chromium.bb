@@ -29,7 +29,7 @@
 
 #include "platform/weborigin/KnownPorts.h"
 
-namespace WebCore {
+namespace blink {
 
 void DOMURLUtils::setHref(const String& value)
 {
@@ -139,4 +139,4 @@ void DOMURLUtils::setHash(const String& value)
     setURL(kurl);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -32,7 +32,7 @@
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/ValidityState.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

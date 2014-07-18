@@ -32,7 +32,7 @@
 #include "core/accessibility/AXMockObject.h"
 #include "core/accessibility/AXTable.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderTableSection;
 
@@ -67,6 +67,6 @@ private:
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTableColumn, isTableCol());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXTableColumn_h

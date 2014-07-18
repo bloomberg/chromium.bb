@@ -55,7 +55,7 @@
 #include "wtf/BitArray.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -845,4 +845,4 @@ void CSSAnimationUpdate::trace(Visitor* visitor)
 #endif
 }
 
-} // namespace WebCore
+} // namespace blink

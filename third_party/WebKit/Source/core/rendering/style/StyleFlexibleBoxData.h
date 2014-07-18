@@ -31,7 +31,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class StyleFlexibleBoxData : public RefCounted<StyleFlexibleBoxData> {
 public:
@@ -56,6 +56,6 @@ private:
     StyleFlexibleBoxData(const StyleFlexibleBoxData&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleFlexibleBoxData_h

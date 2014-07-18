@@ -32,7 +32,7 @@
 #include "wtf/text/TextCodec.h"
 #include "wtf/text/TextEncoding.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLTokenizer;
 

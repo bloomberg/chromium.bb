@@ -54,7 +54,7 @@ static const char enqueueMutationRecordName[] = "Mutation";
 
 }
 
-namespace WebCore {
+namespace blink {
 
 class AsyncCallStackTracker::ExecutionContextData FINAL : public ContextLifecycleObserver {
     WTF_MAKE_FAST_ALLOCATED;
@@ -427,4 +427,4 @@ void AsyncCallStackTracker::clear()
         delete it->value;
 }
 
-} // namespace WebCore
+} // namespace blink

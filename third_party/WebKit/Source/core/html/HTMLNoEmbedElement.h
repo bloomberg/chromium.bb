@@ -33,7 +33,7 @@
 
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 // <noembed> is an HTMLElement in script, but we use a separate interface here
 // so HTMLElement's rendererIsNeeded doesn't need to know about it.

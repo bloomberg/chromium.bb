@@ -35,7 +35,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class TextResourceDecoder;
@@ -62,6 +62,6 @@ private:
     bool m_encodingWasChosenByUser;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TextResourceDecoderBuilder_h

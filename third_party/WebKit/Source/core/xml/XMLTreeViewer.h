@@ -31,7 +31,7 @@
 
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 
@@ -46,6 +46,6 @@ private:
     RawPtrWillBeMember<Document> m_document;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // XMLTreeViewer_h

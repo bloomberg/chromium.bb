@@ -30,7 +30,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
-namespace WebCore {
+namespace blink {
 
 SecurityContext::SecurityContext()
     : m_haveInitializedSecurityOrigin(false)

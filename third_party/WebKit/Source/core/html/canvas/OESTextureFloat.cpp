@@ -27,7 +27,7 @@
 
 #include "core/html/canvas/OESTextureFloat.h"
 
-namespace WebCore {
+namespace blink {
 
 OESTextureFloat::OESTextureFloat(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -64,4 +64,4 @@ const char* OESTextureFloat::extensionName()
     return "OES_texture_float";
 }
 
-} // namespace WebCore
+} // namespace blink

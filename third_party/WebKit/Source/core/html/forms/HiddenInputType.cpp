@@ -39,7 +39,7 @@
 #include "core/html/forms/FormController.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -116,4 +116,4 @@ bool HiddenInputType::shouldRespectHeightAndWidthAttributes()
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

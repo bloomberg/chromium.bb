@@ -25,7 +25,7 @@
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FEBlend.h"
 
-namespace WebCore {
+namespace blink {
 
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<BlendModeType>();
 
@@ -50,6 +50,6 @@ private:
     RefPtr<SVGAnimatedEnumeration<BlendModeType> > m_mode;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

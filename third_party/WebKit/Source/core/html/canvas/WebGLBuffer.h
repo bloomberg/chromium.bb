@@ -31,7 +31,7 @@
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebGLBuffer FINAL : public WebGLSharedObject, public ScriptWrappable {
 public:
@@ -55,6 +55,6 @@ private:
     GLenum m_target;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLBuffer_h

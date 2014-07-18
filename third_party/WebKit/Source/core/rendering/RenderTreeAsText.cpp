@@ -61,7 +61,7 @@
 #include "wtf/Vector.h"
 #include "wtf/unicode/CharacterNames.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -776,4 +776,4 @@ String markerTextForListItem(Element* element)
     return toRenderListItem(renderer)->markerText();
 }
 
-} // namespace WebCore
+} // namespace blink

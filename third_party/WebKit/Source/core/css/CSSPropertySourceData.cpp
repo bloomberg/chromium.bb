@@ -36,7 +36,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 SourceRange::SourceRange()
     : start(0)
@@ -119,4 +119,4 @@ void CSSRuleSourceData::trace(Visitor* visitor)
     visitor->trace(childRules);
 }
 
-} // namespace WebCore
+} // namespace blink

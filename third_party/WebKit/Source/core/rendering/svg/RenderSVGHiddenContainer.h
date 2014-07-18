@@ -22,7 +22,7 @@
 
 #include "core/rendering/svg/RenderSVGContainer.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGElement;
 

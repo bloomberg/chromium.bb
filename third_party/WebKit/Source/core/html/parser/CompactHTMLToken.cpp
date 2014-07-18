@@ -29,7 +29,7 @@
 #include "core/dom/QualifiedName.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsCompactHTMLToken  {
     unsigned bitfields;

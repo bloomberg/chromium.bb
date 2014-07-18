@@ -23,7 +23,7 @@
 
 #include "core/rendering/svg/RenderSVGInline.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderSVGTextPath FINAL : public RenderSVGInline {
 public:

@@ -41,7 +41,7 @@
 #include "platform/LengthFunctions.h"
 #include "platform/graphics/GraphicsContext.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSVGRoot::RenderSVGRoot(SVGElement* node)
     : RenderReplaced(node)

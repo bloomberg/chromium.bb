@@ -51,7 +51,7 @@
 #include "wtf/text/Base64.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 FileReaderLoader::FileReaderLoader(ReadType readType, FileReaderLoaderClient* client)
     : m_readType(readType)
@@ -406,4 +406,4 @@ void FileReaderLoader::setEncoding(const String& encoding)
         m_encoding = WTF::TextEncoding(encoding);
 }
 
-} // namespace WebCore
+} // namespace blink

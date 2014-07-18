@@ -23,7 +23,7 @@
 
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 template<typename T> class EventSender;
 typedef EventSender<HTMLDetailsElement> DetailsEventSender;
@@ -49,6 +49,6 @@ private:
     bool m_isOpen;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLDetailsElement_h

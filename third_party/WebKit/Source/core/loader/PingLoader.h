@@ -39,7 +39,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class FormData;
 class LocalFrame;

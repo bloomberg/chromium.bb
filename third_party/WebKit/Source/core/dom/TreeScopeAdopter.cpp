@@ -31,7 +31,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 
-namespace WebCore {
+namespace blink {
 
 void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
 {

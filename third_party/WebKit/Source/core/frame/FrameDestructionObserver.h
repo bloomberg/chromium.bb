@@ -26,7 +26,7 @@
 #ifndef FrameDestructionObserver_h
 #define FrameDestructionObserver_h
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 

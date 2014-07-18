@@ -29,7 +29,7 @@
 #include "core/html/parser/HTMLTokenizer.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 HTMLSourceTracker::HTMLSourceTracker()
     : m_isStarted(false)

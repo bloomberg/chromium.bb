@@ -37,7 +37,7 @@
 
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
     class ApplicationCache;
     class BarProp;
     class CSSRuleList;
@@ -406,6 +406,6 @@ enum PageshowEventPersistence {
         return m_defaultStatus;
     }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMWindow_h

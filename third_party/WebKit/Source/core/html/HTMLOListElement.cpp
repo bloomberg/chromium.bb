@@ -28,7 +28,7 @@
 #include "core/HTMLNames.h"
 #include "core/rendering/RenderListItem.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

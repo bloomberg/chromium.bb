@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/V8Binding.h"
 
-namespace WebCore {
+namespace blink {
 
 v8::Handle<v8::Value> stringToV8Value(String string)
 {
@@ -29,4 +29,4 @@ void setV8ObjectPropertyAsNumber(v8::Handle<v8::Object> object, String name, dou
     object->Set(stringToV8Value(name), doubleToV8Value(value));
 }
 
-} // namespace WebCore
+} // namespace blink

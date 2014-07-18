@@ -32,7 +32,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class FloatRect;
 
@@ -88,6 +88,6 @@ private:
     void setWindowFeature(const String& keyString, const String& valueString);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WindowFeatures_h

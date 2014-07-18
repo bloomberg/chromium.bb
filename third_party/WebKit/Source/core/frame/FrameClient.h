@@ -5,7 +5,7 @@
 #ifndef FrameClient_h
 #define FrameClient_h
 
-namespace WebCore {
+namespace blink {
 
 class Frame;
 
@@ -24,6 +24,6 @@ public:
     virtual ~FrameClient() { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FrameClient_h

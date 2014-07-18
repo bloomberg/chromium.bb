@@ -82,7 +82,7 @@
 #include <windows.h>
 #endif
 
-namespace WebCore {
+namespace blink {
 
 const int DragController::DragIconRightInset = 7;
 const int DragController::DragIconBottomInset = 3;
@@ -830,7 +830,7 @@ static PassOwnPtr<DragImage> dragImageForImage(Element* element, Image* image, c
 static PassOwnPtr<DragImage> dragImageForLink(const KURL& linkURL, const String& linkText, float deviceScaleFactor, const IntPoint& mouseDraggedPoint, IntPoint& dragLoc)
 {
     FontDescription fontDescription;
-    RenderTheme::theme().systemFont(WebCore::CSSValueNone, fontDescription);
+    RenderTheme::theme().systemFont(blink::CSSValueNone, fontDescription);
     OwnPtr<DragImage> dragImage = DragImage::create(linkURL, linkText, fontDescription, deviceScaleFactor);
 
     IntSize size = dragImage ? dragImage->size() : IntSize();
@@ -971,4 +971,4 @@ void DragController::trace(Visitor* visitor)
     visitor->trace(m_fileInputElementUnderMouse);
 }
 
-} // namespace WebCore
+} // namespace blink

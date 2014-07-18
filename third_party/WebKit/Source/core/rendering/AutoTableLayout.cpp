@@ -28,7 +28,7 @@
 #include "core/rendering/RenderTableCol.h"
 #include "core/rendering/RenderTableSection.h"
 
-namespace WebCore {
+namespace blink {
 
 AutoTableLayout::AutoTableLayout(RenderTable* table)
     : TableLayout(table)

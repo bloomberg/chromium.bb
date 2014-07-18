@@ -29,7 +29,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
 
-namespace WebCore {
+namespace blink {
 
 template <class ElementType>
 class Traversal {
@@ -338,6 +338,6 @@ inline ElementType* Traversal<ElementType>::nextSibling(const Node& current)
     return toElement<ElementType>(node);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

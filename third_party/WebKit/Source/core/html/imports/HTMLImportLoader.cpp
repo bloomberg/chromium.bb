@@ -41,7 +41,7 @@
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 
 
-namespace WebCore {
+namespace blink {
 
 HTMLImportLoader::HTMLImportLoader(HTMLImportsController* controller)
     : m_controller(controller)
@@ -226,4 +226,4 @@ void HTMLImportLoader::trace(Visitor* visitor)
     visitor->trace(m_microtaskQueue);
 }
 
-} // namespace WebCore
+} // namespace blink

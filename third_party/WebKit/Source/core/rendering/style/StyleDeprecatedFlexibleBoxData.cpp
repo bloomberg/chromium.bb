@@ -24,7 +24,7 @@
 
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleDeprecatedFlexibleBoxData::StyleDeprecatedFlexibleBoxData()
     : flex(RenderStyle::initialBoxFlex())
@@ -54,4 +54,4 @@ bool StyleDeprecatedFlexibleBoxData::operator==(const StyleDeprecatedFlexibleBox
     return flex == o.flex && flexGroup == o.flexGroup && ordinalGroup == o.ordinalGroup && align == o.align && pack == o.pack && orient == o.orient && lines == o.lines;
 }
 
-} // namespace WebCore
+} // namespace blink

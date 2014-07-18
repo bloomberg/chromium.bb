@@ -39,7 +39,7 @@
 #include "core/dom/Text.h"
 #include "core/frame/LocalFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 XMLTreeViewer::XMLTreeViewer(Document* document)
     : m_document(document)
@@ -58,4 +58,4 @@ void XMLTreeViewer::transformDocumentToTreeView()
     m_document->getElementById("xml-viewer-style")->appendChild(m_document->createTextNode(cssString), IGNORE_EXCEPTION);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -30,7 +30,7 @@
 #include "core/svg/SVGUnitTypes.h"
 #include "platform/graphics/Gradient.h"
 
-namespace WebCore {
+namespace blink {
 
 enum SVGSpreadMethodType {
     SVGSpreadMethodUnknown = 0,
@@ -80,6 +80,6 @@ inline bool isSVGGradientElement(const Node& node)
 
 DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGGradientElement);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

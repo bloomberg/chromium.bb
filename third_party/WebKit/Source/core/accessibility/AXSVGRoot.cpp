@@ -30,7 +30,7 @@
 #include "core/accessibility/AXSVGRoot.h"
 
 
-namespace WebCore {
+namespace blink {
 
 AXSVGRoot::AXSVGRoot(RenderObject* renderer)
     : AXRenderObject(renderer)
@@ -58,4 +58,4 @@ AXObject* AXSVGRoot::parentObject() const
 }
 
 
-} // namespace WebCore
+} // namespace blink

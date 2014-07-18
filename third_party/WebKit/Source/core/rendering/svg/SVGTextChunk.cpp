@@ -24,7 +24,7 @@
 #include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGTextFragment.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGTextChunk::SVGTextChunk(unsigned chunkStyle, float desiredTextLength)
     : m_chunkStyle(chunkStyle)
@@ -79,4 +79,4 @@ float SVGTextChunk::calculateTextAnchorShift(float length) const
     return m_chunkStyle & RightToLeftText ? -length : 0;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -26,7 +26,7 @@
 
 #include "core/events/Event.h"
 
-namespace WebCore {
+namespace blink {
 
 class DataTransfer;
 
@@ -53,6 +53,6 @@ private:
     RefPtrWillBeMember<DataTransfer> m_clipboardData;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ClipboardEvent_h

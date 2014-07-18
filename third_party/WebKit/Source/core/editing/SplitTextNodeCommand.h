@@ -28,7 +28,7 @@
 
 #include "core/editing/EditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class Text;
 
@@ -54,6 +54,6 @@ private:
     unsigned m_offset;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SplitTextNodeCommand_h

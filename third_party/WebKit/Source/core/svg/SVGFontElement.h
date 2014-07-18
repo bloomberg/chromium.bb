@@ -29,7 +29,7 @@
 #include "core/svg/SVGGlyphMap.h"
 #include "core/svg/SVGParserUtilities.h"
 
-namespace WebCore {
+namespace blink {
 
 // Describe an SVG <hkern>/<vkern> element
 struct SVGKerningPair {
@@ -85,7 +85,7 @@ private:
     bool m_isGlyphCacheValid;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(SVG_FONTS)
 #endif

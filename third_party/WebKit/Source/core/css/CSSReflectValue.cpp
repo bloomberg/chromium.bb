@@ -28,7 +28,7 @@
 
 #include "core/css/CSSPrimitiveValue.h"
 
-namespace WebCore {
+namespace blink {
 
 String CSSReflectValue::customCSSText() const
 {
@@ -52,4 +52,4 @@ void CSSReflectValue::traceAfterDispatch(Visitor* visitor)
     CSSValue::traceAfterDispatch(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

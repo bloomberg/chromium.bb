@@ -30,7 +30,7 @@
 
 static const float gOneOverThree = 1 / 3.f;
 
-namespace WebCore {
+namespace blink {
 
 SVGPathParser::SVGPathParser()
     : m_consumer(0)

@@ -31,7 +31,7 @@
 #ifndef LinkLoaderClient_h
 #define LinkLoaderClient_h
 
-namespace WebCore {
+namespace blink {
 
 class LinkLoaderClient {
 public:

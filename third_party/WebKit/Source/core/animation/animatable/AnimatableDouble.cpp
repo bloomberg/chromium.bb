@@ -34,7 +34,7 @@
 #include "platform/animation/AnimationUtilities.h"
 #include <math.h>
 
-namespace WebCore {
+namespace blink {
 
 bool AnimatableDouble::usesDefaultInterpolationWith(const AnimatableValue* value) const
 {
@@ -62,4 +62,4 @@ double AnimatableDouble::distanceTo(const AnimatableValue* value) const
     return fabs(m_number - other->m_number);
 }
 
-} // namespace WebCore
+} // namespace blink

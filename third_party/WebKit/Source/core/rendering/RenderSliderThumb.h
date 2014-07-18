@@ -35,7 +35,7 @@
 #include "core/html/shadow/SliderThumbElement.h"
 #include "core/rendering/RenderBlockFlow.h"
 
-namespace WebCore {
+namespace blink {
 
 class SliderThumbElement;
 
@@ -48,6 +48,6 @@ private:
     virtual bool isSliderThumb() const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderSliderThumb_h

@@ -24,7 +24,7 @@
 #include "core/svg/SVGStaticStringList.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class QualifiedName;
 class SVGElement;
@@ -53,6 +53,6 @@ private:
     RefPtr<SVGStaticStringList> m_systemLanguage;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGTests_h

@@ -34,7 +34,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AbstractInlineTextBox;
 class Document;

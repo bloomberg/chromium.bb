@@ -33,7 +33,7 @@
 #include "core/html/HTMLElement.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXListBox;
 class Element;
@@ -69,6 +69,6 @@ private:
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXListBoxOption, isListBoxOption());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXListBoxOption_h

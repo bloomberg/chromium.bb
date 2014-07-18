@@ -49,7 +49,7 @@
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderLayerBlendInfo::RenderLayerBlendInfo(RenderLayerModelObject& renderer)
     : m_renderer(renderer)
@@ -112,4 +112,4 @@ void RenderLayerBlendInfo::setAncestorChainBlendedDescendant()
     }
 }
 
-} // namespace WebCore
+} // namespace blink

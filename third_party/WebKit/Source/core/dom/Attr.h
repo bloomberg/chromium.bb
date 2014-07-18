@@ -28,7 +28,7 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/QualifiedName.h"
 
-namespace WebCore {
+namespace blink {
 
 // Attr can have Text children
 // therefore it has to be a fullblown Node. The plan
@@ -99,6 +99,6 @@ private:
 
 DEFINE_NODE_TYPE_CASTS(Attr, isAttributeNode());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Attr_h

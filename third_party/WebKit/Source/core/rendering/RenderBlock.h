@@ -35,7 +35,7 @@
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class LineLayoutState;
 class RenderInline;
@@ -524,6 +524,6 @@ protected:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderBlock, isRenderBlock());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderBlock_h

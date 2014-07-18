@@ -30,7 +30,7 @@
 #include "core/html/canvas/WebGLExtension.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebGLDrawBuffers FINAL : public WebGLExtension, public ScriptWrappable {
 public:
@@ -49,6 +49,6 @@ private:
     static bool satisfiesWebGLRequirements(WebGLRenderingContextBase*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLDrawBuffers_h

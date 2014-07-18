@@ -8,7 +8,7 @@
 #include "core/HTMLNames.h"
 #include "core/rendering/RenderRuby.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

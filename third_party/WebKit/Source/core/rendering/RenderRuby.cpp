@@ -36,7 +36,7 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 //=== generic helper functions to avoid excessive code duplication ===
 
@@ -318,4 +318,4 @@ void RenderRubyAsBlock::removeChild(RenderObject* child)
     run->removeChild(child);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -33,7 +33,7 @@
 
 #include "core/html/forms/InputType.h"
 
-namespace WebCore {
+namespace blink {
 
 class HiddenInputType FINAL : public InputType {
 public:
@@ -56,6 +56,6 @@ private:
     virtual bool appendFormData(FormDataList&, bool) const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HiddenInputType_h

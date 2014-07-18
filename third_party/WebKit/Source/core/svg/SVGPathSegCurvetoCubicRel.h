@@ -24,7 +24,7 @@
 
 #include "core/svg/SVGPathSegCurvetoCubic.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathSegCurvetoCubicRel FINAL : public SVGPathSegCurvetoCubic {
 public:
@@ -44,6 +44,6 @@ private:
     virtual String pathSegTypeAsLetter() const OVERRIDE { return "c"; }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

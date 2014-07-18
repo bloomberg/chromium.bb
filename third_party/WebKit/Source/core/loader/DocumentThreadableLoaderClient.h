@@ -33,7 +33,7 @@
 
 #include "core/loader/ThreadableLoaderClient.h"
 
-namespace WebCore {
+namespace blink {
 
 class ResourceRequest;
 class ResourceResponse;
@@ -50,6 +50,6 @@ protected:
     DocumentThreadableLoaderClient() { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DocumentThreadableLoaderClient_h

@@ -31,7 +31,7 @@
 #ifndef HTMLImportChildClient_h
 #define HTMLImportChildClient_h
 
-namespace WebCore {
+namespace blink {
 
 class HTMLImportChild;
 class HTMLLinkElement;
@@ -48,6 +48,6 @@ public:
     virtual void trace(Visitor*) { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLImportChildClient_h

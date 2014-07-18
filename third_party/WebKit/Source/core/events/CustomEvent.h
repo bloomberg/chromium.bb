@@ -28,7 +28,7 @@
 
 #include "core/events/Event.h"
 
-namespace WebCore {
+namespace blink {
 
 class SerializedScriptValue;
 
@@ -69,6 +69,6 @@ private:
     RefPtr<SerializedScriptValue> m_serializedDetail;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CustomEvent_h

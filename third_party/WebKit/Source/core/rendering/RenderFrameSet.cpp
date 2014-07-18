@@ -37,7 +37,7 @@
 #include "platform/Cursor.h"
 #include "platform/graphics/GraphicsContext.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderFrameSet::RenderFrameSet(HTMLFrameSetElement* frameSet)
     : RenderBox(frameSet)
@@ -659,4 +659,4 @@ CursorDirective RenderFrameSet::getCursor(const LayoutPoint& point, Cursor& curs
     return RenderBox::getCursor(point, cursor);
 }
 
-} // namespace WebCore
+} // namespace blink

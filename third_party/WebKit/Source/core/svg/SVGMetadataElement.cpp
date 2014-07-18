@@ -23,7 +23,7 @@
 
 #include "core/SVGNames.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGMetadataElement::SVGMetadataElement(Document& document)
     : SVGElement(SVGNames::metadataTag, document)

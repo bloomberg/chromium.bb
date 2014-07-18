@@ -37,7 +37,7 @@
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Event;
 class FloatQuad;
@@ -108,6 +108,6 @@ private:
     TimelineRecordFactory() { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(TimelineRecordFactory_h)

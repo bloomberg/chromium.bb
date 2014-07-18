@@ -43,7 +43,7 @@
 #include "core/frame/Settings.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
-namespace WebCore {
+namespace blink {
 
 FrameFetchContext::FrameFetchContext(LocalFrame* frame)
     : m_frame(frame)
@@ -200,4 +200,4 @@ void FrameFetchContext::sendRemainingDelegateMessages(DocumentLoader* loader, un
     dispatchDidFinishLoading(ensureLoader(loader), identifier, 0, 0);
 }
 
-} // namespace WebCore
+} // namespace blink

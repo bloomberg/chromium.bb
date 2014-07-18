@@ -91,7 +91,7 @@
 #include <stdio.h>
 #endif
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -462,7 +462,7 @@ void RenderObject::addLayers(RenderLayer* parentLayer)
 
     RenderObject* object = this;
     RenderLayer* beforeChild = 0;
-    WebCore::addLayers(this, parentLayer, object, beforeChild);
+    blink::addLayers(this, parentLayer, object, beforeChild);
 }
 
 void RenderObject::removeLayers(RenderLayer* parentLayer)
@@ -2506,7 +2506,7 @@ void RenderObject::addLayerHitTestRects(LayerHitTestRects& layerRects, const Ren
     const size_t maxRectsPerLayer = 100;
 
     LayerHitTestRects::iterator iter = layerRects.find(currentLayer);
-    Vector<WebCore::LayoutRect>* iterValue;
+    Vector<blink::LayoutRect>* iterValue;
     if (iter == layerRects.end())
         iterValue = &layerRects.add(currentLayer, Vector<LayoutRect>()).storedValue->value;
     else
@@ -3421,31 +3421,31 @@ bool DeprecatedDisableModifyRenderTreeStructureAsserts::canModifyRenderTreeState
     return gModifyRenderTreeStructureAnyState;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 
-void showTree(const WebCore::RenderObject* object)
+void showTree(const blink::RenderObject* object)
 {
     if (object)
         object->showTreeForThis();
 }
 
-void showLineTree(const WebCore::RenderObject* object)
+void showLineTree(const blink::RenderObject* object)
 {
     if (object)
         object->showLineTreeForThis();
 }
 
-void showRenderTree(const WebCore::RenderObject* object1)
+void showRenderTree(const blink::RenderObject* object1)
 {
     showRenderTree(object1, 0);
 }
 
-void showRenderTree(const WebCore::RenderObject* object1, const WebCore::RenderObject* object2)
+void showRenderTree(const blink::RenderObject* object1, const blink::RenderObject* object2)
 {
     if (object1) {
-        const WebCore::RenderObject* root = object1;
+        const blink::RenderObject* root = object1;
         while (root->parent())
             root = root->parent();
         root->showRenderTreeAndMark(object1, "*", object2, "-", 0);

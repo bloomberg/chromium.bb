@@ -29,7 +29,7 @@
 #include "core/dom/Element.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 SetNodeAttributeCommand::SetNodeAttributeCommand(PassRefPtrWillBeRawPtr<Element> element,
         const QualifiedName& attribute, const AtomicString& value)
@@ -59,4 +59,4 @@ void SetNodeAttributeCommand::trace(Visitor* visitor)
     SimpleEditCommand::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

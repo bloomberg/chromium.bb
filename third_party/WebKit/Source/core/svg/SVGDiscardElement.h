@@ -33,7 +33,7 @@
 
 #include "core/svg/animation/SVGSMILElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGDiscardElement FINAL : public SVGSMILElement {
 public:
@@ -54,6 +54,6 @@ private:
     virtual void updateAnimation(float percent, unsigned repeat, SVGSMILElement* resultElement) OVERRIDE { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGDiscardElement_h

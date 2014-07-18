@@ -25,7 +25,7 @@
 #include "core/svg/SVGHKernElement.h"
 
 
-namespace WebCore {
+namespace blink {
 
 inline SVGHKernElement::SVGHKernElement(Document& document)
     : SVGElement(SVGNames::hkernTag, document)

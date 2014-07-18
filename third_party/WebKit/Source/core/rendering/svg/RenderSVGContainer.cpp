@@ -35,7 +35,7 @@
 #include "platform/graphics/GraphicsContextCullSaver.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSVGContainer::RenderSVGContainer(SVGElement* node)
     : RenderSVGModelObject(node)

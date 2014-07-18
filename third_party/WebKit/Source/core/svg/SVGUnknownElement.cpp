@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/svg/SVGUnknownElement.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGUnknownElement::SVGUnknownElement(const QualifiedName& tagName, Document& document)
     : SVGElement(tagName, document)
@@ -40,4 +40,4 @@ inline SVGUnknownElement::SVGUnknownElement(const QualifiedName& tagName, Docume
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(SVGUnknownElement)
 
-} // namespace WebCore
+} // namespace blink

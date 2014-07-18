@@ -33,7 +33,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class IntRect;
 
@@ -69,6 +69,6 @@ private:
     FloatRect m_rect;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ClientRect_h

@@ -28,7 +28,7 @@
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class CounterContent {
     WTF_MAKE_FAST_ALLOCATED;
@@ -58,6 +58,6 @@ static inline bool operator==(const CounterContent& a, const CounterContent& b)
 }
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CounterContent_h

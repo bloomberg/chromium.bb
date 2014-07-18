@@ -30,7 +30,7 @@
 #include <AppKit/NSTextView.h>
 #endif
 
-namespace WebCore {
+namespace blink {
 
 // These match the AppKit values for these concepts.
 // From NSTextView.h:
@@ -38,18 +38,18 @@ namespace WebCore {
 // NSSelectionAffinityDownstream = 1
 enum EAffinity { UPSTREAM = 0, DOWNSTREAM = 1 };
 
-} // namespace WebCore
+} // namespace blink
 
 #ifdef __OBJC__
 
-inline NSSelectionAffinity kit(WebCore::EAffinity affinity)
+inline NSSelectionAffinity kit(blink::EAffinity affinity)
 {
     return static_cast<NSSelectionAffinity>(affinity);
 }
 
-inline WebCore::EAffinity core(NSSelectionAffinity affinity)
+inline blink::EAffinity core(NSSelectionAffinity affinity)
 {
-    return static_cast<WebCore::EAffinity>(affinity);
+    return static_cast<blink::EAffinity>(affinity);
 }
 
 #endif

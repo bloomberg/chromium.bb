@@ -43,7 +43,7 @@
 // from multiple threads and DEFINE_STATIC_LOCAL isn't threadsafe.
 #undef DEFINE_STATIC_LOCAL
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

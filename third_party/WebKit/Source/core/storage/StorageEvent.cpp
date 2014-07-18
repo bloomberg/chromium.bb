@@ -28,7 +28,7 @@
 
 #include "core/storage/Storage.h"
 
-namespace WebCore {
+namespace blink {
 
 StorageEventInit::StorageEventInit()
 {
@@ -105,4 +105,4 @@ void StorageEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

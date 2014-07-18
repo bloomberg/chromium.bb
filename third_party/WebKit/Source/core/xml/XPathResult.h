@@ -33,7 +33,7 @@
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class ExceptionState;
@@ -94,6 +94,6 @@ private:
     uint64_t m_domTreeVersion;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // XPathResult_h

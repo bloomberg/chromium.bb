@@ -27,7 +27,7 @@
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/MouseRelatedEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 class DataTransfer;
 class EventDispatcher;
@@ -137,6 +137,6 @@ private:
 
 DEFINE_EVENT_TYPE_CASTS(MouseEvent);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MouseEvent_h

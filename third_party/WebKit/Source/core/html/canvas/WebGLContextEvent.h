@@ -28,7 +28,7 @@
 
 #include "core/events/Event.h"
 
-namespace WebCore {
+namespace blink {
 
 struct WebGLContextEventInit : public EventInit {
     WebGLContextEventInit();
@@ -66,6 +66,6 @@ private:
     String m_statusMessage;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLContextEvent_h

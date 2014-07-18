@@ -24,7 +24,7 @@
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/PointLightSource.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGFEPointLightElement::SVGFEPointLightElement(Document& document)
     : SVGFELightElement(SVGNames::fePointLightTag, document)

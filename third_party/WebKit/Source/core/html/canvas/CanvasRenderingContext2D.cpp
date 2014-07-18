@@ -70,7 +70,7 @@
 #include "wtf/Uint8ClampedArray.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 static const int defaultFontSize = 10;
 static const char defaultFontFamily[] = "sans-serif";
@@ -2444,4 +2444,4 @@ unsigned CanvasRenderingContext2D::hitRegionsCount() const
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink

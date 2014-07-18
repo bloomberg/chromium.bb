@@ -35,14 +35,14 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/InjectedScriptCanvasModuleSource.h"
 
-using WebCore::TypeBuilder::Array;
-using WebCore::TypeBuilder::Canvas::ResourceId;
-using WebCore::TypeBuilder::Canvas::ResourceState;
-using WebCore::TypeBuilder::Canvas::TraceLog;
-using WebCore::TypeBuilder::Canvas::TraceLogId;
-using WebCore::TypeBuilder::Runtime::RemoteObject;
+using blink::TypeBuilder::Array;
+using blink::TypeBuilder::Canvas::ResourceId;
+using blink::TypeBuilder::Canvas::ResourceState;
+using blink::TypeBuilder::Canvas::TraceLog;
+using blink::TypeBuilder::Canvas::TraceLogId;
+using blink::TypeBuilder::Runtime::RemoteObject;
 
-namespace WebCore {
+namespace blink {
 
 InjectedScriptCanvasModule::InjectedScriptCanvasModule()
     : InjectedScriptModule("InjectedScriptCanvasModule")
@@ -213,4 +213,4 @@ void InjectedScriptCanvasModule::evaluateTraceLogCallArgument(ErrorString* error
         *errorString = "Internal error: no result and no resource state";
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -34,7 +34,7 @@
 #include "core/animation/animatable/AnimatableRepeatable.h"
 #include "core/svg/SVGLengthList.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableStrokeDasharrayList FINAL : public AnimatableRepeatable {
 public:
@@ -66,6 +66,6 @@ private:
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableStrokeDasharrayList, isStrokeDasharrayList());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatableStrokeDasharrayList_h

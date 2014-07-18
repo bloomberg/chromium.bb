@@ -36,7 +36,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 
@@ -101,6 +101,6 @@ private:
     LayoutPoint m_absoluteLocation;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif /* Touch_h */

@@ -25,7 +25,7 @@
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FEOffset.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGFEOffsetElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
@@ -47,6 +47,6 @@ private:
     RefPtr<SVGAnimatedString> m_in1;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

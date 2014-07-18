@@ -35,7 +35,7 @@
 #include "platform/transforms/TransformOperations.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSToLengthConversionData;
 class CSSValue;
@@ -46,6 +46,6 @@ public:
     static bool createTransformOperations(CSSValue* inValue, const CSSToLengthConversionData&, TransformOperations& outOperations);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TransformBuilder_h

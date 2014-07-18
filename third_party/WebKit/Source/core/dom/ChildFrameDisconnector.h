@@ -7,7 +7,7 @@
 
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class ElementShadow;
 class HTMLFrameOwnerElement;
@@ -37,6 +37,6 @@ private:
     Node& m_root;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ChildFrameDisconnector_h

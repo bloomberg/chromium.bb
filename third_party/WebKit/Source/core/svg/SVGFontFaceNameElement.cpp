@@ -24,7 +24,7 @@
 
 #include "core/css/CSSFontFaceSrcValue.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGFontFaceNameElement::SVGFontFaceNameElement(Document& document)
     : SVGElement(SVGNames::font_face_nameTag, document)

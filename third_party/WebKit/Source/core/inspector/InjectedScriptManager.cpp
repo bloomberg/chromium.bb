@@ -39,7 +39,7 @@
 #include "platform/JSONValues.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtr<InjectedScriptManager> InjectedScriptManager::createForPage()
 {
@@ -179,5 +179,5 @@ InjectedScript InjectedScriptManager::injectedScriptFor(ScriptState* inspectedSc
     return result;
 }
 
-} // namespace WebCore
+} // namespace blink
 

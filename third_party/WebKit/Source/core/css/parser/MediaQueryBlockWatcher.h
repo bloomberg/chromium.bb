@@ -5,7 +5,7 @@
 #ifndef MediaQueryBlockWatcher_h
 #define MediaQueryBlockWatcher_h
 
-namespace WebCore {
+namespace blink {
 
 class MediaQueryToken;
 

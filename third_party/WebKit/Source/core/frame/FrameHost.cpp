@@ -36,7 +36,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtrWillBeRawPtr<FrameHost> FrameHost::create(Page& page)
 {

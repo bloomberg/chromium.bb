@@ -10,7 +10,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ContentSecurityPolicy;
 
@@ -26,6 +26,6 @@ private:
     HashSet<String> m_pluginTypes;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

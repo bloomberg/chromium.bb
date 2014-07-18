@@ -27,7 +27,7 @@
 
 #include "core/html/canvas/EXTFragDepth.h"
 
-namespace WebCore {
+namespace blink {
 
 EXTFragDepth::EXTFragDepth(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -60,4 +60,4 @@ const char* EXTFragDepth::extensionName()
     return "EXT_frag_depth";
 }
 
-} // namespace WebCore
+} // namespace blink

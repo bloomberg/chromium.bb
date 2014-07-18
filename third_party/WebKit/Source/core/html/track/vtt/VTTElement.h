@@ -25,7 +25,7 @@
 
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 enum VTTNodeType {
     VTTNodeTypeNone = 0,
@@ -81,5 +81,5 @@ private:
 
 DEFINE_ELEMENT_TYPE_CASTS(VTTElement, isVTTElement());
 
-} // namespace WebCore
+} // namespace blink
 

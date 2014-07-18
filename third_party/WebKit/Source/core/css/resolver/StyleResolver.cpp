@@ -87,7 +87,7 @@
 
 namespace {
 
-using namespace WebCore;
+using namespace blink;
 
 void setAnimationUpdateIfNeeded(StyleResolverState& state, Element& element)
 {
@@ -99,7 +99,7 @@ void setAnimationUpdateIfNeeded(StyleResolverState& state, Element& element)
 
 } // namespace
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -1571,4 +1571,4 @@ void StyleResolver::trace(Visitor* visitor)
 #endif
 }
 
-} // namespace WebCore
+} // namespace blink

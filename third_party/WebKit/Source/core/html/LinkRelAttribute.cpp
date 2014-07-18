@@ -34,7 +34,7 @@
 
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 LinkRelAttribute::LinkRelAttribute(const String& rel)
     : m_iconType(InvalidIcon)

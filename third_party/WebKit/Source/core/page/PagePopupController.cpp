@@ -35,7 +35,7 @@
 #include "platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 PagePopupController::PagePopupController(PagePopupClient* client)
     : m_popupClient(client)

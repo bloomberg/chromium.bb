@@ -26,7 +26,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderObject;
 

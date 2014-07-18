@@ -31,7 +31,7 @@
 #include "core/rendering/RenderView.h"
 #include "platform/Partitions.h"
 
-namespace WebCore {
+namespace blink {
 
 LayoutState::LayoutState(LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, RenderView& view)
     : m_isPaginated(pageLogicalHeight)
@@ -147,4 +147,4 @@ void LayoutState::addForcedColumnBreak(const RenderBox& child, const LayoutUnit&
     m_columnInfo->addForcedBreak(pageLogicalOffset(child, childLogicalOffset));
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -67,7 +67,7 @@
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 static bool isCharsetSpecifyingNode(const Node& node)
 {

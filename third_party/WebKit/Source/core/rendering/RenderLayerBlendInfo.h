@@ -49,7 +49,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderLayerModelObject;
 
@@ -86,6 +86,6 @@ private:
     unsigned m_childLayerHasBlendModeStatusDirty : 1;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderLayerBlendInfo_h

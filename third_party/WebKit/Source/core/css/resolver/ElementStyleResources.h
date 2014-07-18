@@ -29,7 +29,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSCursorImageValue;
 class CSSImageValue;
@@ -76,6 +76,6 @@ private:
     float m_deviceScaleFactor;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ElementStyleResources_h

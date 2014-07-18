@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/animation/animatable/AnimatableLengthBoxAndBool.h"
 
-namespace WebCore {
+namespace blink {
 
 bool AnimatableLengthBoxAndBool::usesDefaultInterpolationWith(const AnimatableValue* value) const
 {

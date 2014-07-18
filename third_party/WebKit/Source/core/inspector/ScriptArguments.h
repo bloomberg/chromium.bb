@@ -37,7 +37,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ScriptValue;
 
@@ -62,6 +62,6 @@ private:
     Vector<ScriptValue> m_arguments;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptArguments_h

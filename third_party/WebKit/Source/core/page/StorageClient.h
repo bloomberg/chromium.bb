@@ -8,7 +8,7 @@
 #include "core/storage/StorageArea.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class StorageNamespace;
 
@@ -20,6 +20,6 @@ public:
     virtual bool canAccessStorage(LocalFrame*, StorageType) const = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StorageClient_h

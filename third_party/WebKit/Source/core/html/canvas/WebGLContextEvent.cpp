@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/canvas/WebGLContextEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 WebGLContextEventInit::WebGLContextEventInit()
 {
@@ -65,4 +65,4 @@ void WebGLContextEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -38,7 +38,7 @@
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGGraphicsElement.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSVGModelObject::RenderSVGModelObject(SVGElement* node)
     : RenderObject(node)
@@ -161,4 +161,4 @@ void RenderSVGModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
     RenderObject::invalidateTreeIfNeeded(paintInvalidationState);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -30,7 +30,7 @@
 #include "core/editing/PlainTextRange.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class Editor;
 class EditorClient;
@@ -113,6 +113,6 @@ private:
     bool setSelectionOffsets(const PlainTextRange&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InputMethodController_h

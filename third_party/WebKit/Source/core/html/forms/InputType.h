@@ -38,7 +38,7 @@
 #include "core/html/forms/StepRange.h"
 #include "core/frame/UseCounter.h"
 
-namespace WebCore {
+namespace blink {
 
 class Chrome;
 class DateComponents;
@@ -239,5 +239,5 @@ private:
     void applyStep(const Decimal&, int count, AnyStepHandling, TextFieldEventBehavior, ExceptionState&);
 };
 
-} // namespace WebCore
+} // namespace blink
 #endif

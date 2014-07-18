@@ -24,7 +24,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Counter : public RefCountedWillBeGarbageCollected<Counter> {
 public:
@@ -72,6 +72,6 @@ private:
     RefPtrWillBeMember<CSSPrimitiveValue> m_separator; // string
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Counter_h

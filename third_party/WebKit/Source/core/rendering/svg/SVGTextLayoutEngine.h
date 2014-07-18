@@ -27,7 +27,7 @@
 #include "platform/graphics/Path.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderObject;
 class RenderStyle;
@@ -102,6 +102,6 @@ private:
     float m_textPathScaling;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

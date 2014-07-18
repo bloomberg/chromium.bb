@@ -32,7 +32,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class HTMLMediaElement;
@@ -142,6 +142,6 @@ private:
 
 DEFINE_TRACK_TYPE_CASTS(TextTrack, TrackBase::TextTrack);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

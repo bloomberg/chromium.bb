@@ -40,7 +40,7 @@
 #include "core/rendering/style/BorderImageLengthBox.h"
 #include "core/rendering/style/FillLayer.h"
 
-namespace WebCore {
+namespace blink {
 
 const CSSToLengthConversionData& CSSToStyleMap::cssToLengthConversionData() const
 {

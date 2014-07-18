@@ -30,7 +30,7 @@
 #include "core/html/HTMLFieldSetElement.h"
 #include "core/html/HTMLFormControlElement.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

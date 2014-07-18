@@ -8,7 +8,7 @@
 #include "core/animation/Keyframe.h"
 #include "core/css/StylePropertySet.h"
 
-namespace WebCore {
+namespace blink {
 
 class StyleSheetContents;
 
@@ -40,7 +40,7 @@ public:
         }
 
         virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const OVERRIDE FINAL;
-        virtual PassRefPtrWillBeRawPtr<Interpolation> createInterpolation(CSSPropertyID, WebCore::Keyframe::PropertySpecificKeyframe* end, Element*) const OVERRIDE FINAL;
+        virtual PassRefPtrWillBeRawPtr<Interpolation> createInterpolation(CSSPropertyID, blink::Keyframe::PropertySpecificKeyframe* end, Element*) const OVERRIDE FINAL;
 
         virtual void trace(Visitor*) OVERRIDE;
 

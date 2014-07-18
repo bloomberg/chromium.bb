@@ -29,7 +29,7 @@
 #include "core/html/parser/HTMLParserOptions.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class CompactHTMLToken;
 class HTMLTokenizer;

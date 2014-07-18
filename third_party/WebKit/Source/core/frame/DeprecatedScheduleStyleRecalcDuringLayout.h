@@ -7,7 +7,7 @@
 
 #include "core/dom/DocumentLifecycle.h"
 
-namespace WebCore {
+namespace blink {
 
 class DeprecatedScheduleStyleRecalcDuringLayout {
     WTF_MAKE_NONCOPYABLE(DeprecatedScheduleStyleRecalcDuringLayout);

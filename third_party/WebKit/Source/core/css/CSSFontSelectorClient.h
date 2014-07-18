@@ -33,7 +33,7 @@
 
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSFontSelector;
 class Visitor;
@@ -47,6 +47,6 @@ public:
     virtual void trace(Visitor*) { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSFontSelectorClient_h

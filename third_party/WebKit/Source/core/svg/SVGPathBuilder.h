@@ -27,7 +27,7 @@
 #include "core/svg/SVGPathConsumer.h"
 #include "platform/geometry/FloatPoint.h"
 
-namespace WebCore {
+namespace blink {
 
 class Path;
 
@@ -60,6 +60,6 @@ private:
     FloatPoint m_current;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPathBuilder_h

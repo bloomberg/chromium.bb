@@ -22,7 +22,7 @@
 
 #include "platform/graphics/Color.h"
 
-namespace WebCore {
+namespace blink {
 
 Color ColorDistance::addColors(const Color& first, const Color& second)
 {

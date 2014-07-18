@@ -27,7 +27,7 @@
 
 #include "core/events/Event.h"
 
-namespace WebCore {
+namespace blink {
 
 class BeforeUnloadEvent FINAL : public Event {
 public:
@@ -55,6 +55,6 @@ private:
 
 DEFINE_EVENT_TYPE_CASTS(BeforeUnloadEvent);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BeforeUnloadEvent_h

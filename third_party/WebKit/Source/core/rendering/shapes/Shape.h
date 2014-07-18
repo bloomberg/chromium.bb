@@ -39,7 +39,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 struct LineSegment {
     LineSegment(float logicalLeft, float logicalRight)
@@ -95,6 +95,6 @@ private:
     float m_margin;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Shape_h

@@ -30,7 +30,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSPrimitiveValue;
 
@@ -68,6 +68,6 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSReflectValue, isReflectValue());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSReflectValue_h

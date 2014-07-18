@@ -34,7 +34,7 @@
 #include "core/rendering/RenderTableCell.h"
 
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -181,4 +181,4 @@ void AXTableColumn::addChildren()
     }
 }
 
-} // namespace WebCore
+} // namespace blink

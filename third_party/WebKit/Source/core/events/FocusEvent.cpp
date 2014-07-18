@@ -29,7 +29,7 @@
 #include "core/events/Event.h"
 #include "core/events/EventDispatcher.h"
 
-namespace WebCore {
+namespace blink {
 
 FocusEventInit::FocusEventInit()
     : relatedTarget(nullptr)
@@ -135,4 +135,4 @@ bool FocusOutEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) c
     return EventDispatchMediator::dispatchEvent(dispatcher);
 }
 
-} // namespace WebCore
+} // namespace blink

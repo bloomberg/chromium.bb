@@ -7,7 +7,7 @@
 
 #include "core/dom/Node.h"
 
-namespace WebCore {
+namespace blink {
 
 #if !ENABLE(OILPAN)
 class NodeToWeakNodeMaps {

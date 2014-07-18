@@ -38,7 +38,7 @@
 #include "core/rendering/RenderBlockFlow.h"
 #include "platform/text/PlatformLocale.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

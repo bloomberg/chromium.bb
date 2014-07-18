@@ -29,7 +29,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 class Document;
@@ -69,6 +69,6 @@ private:
     RefPtrWillBeMember<Document> m_documentOfRemovedElementWhileWaitingForUnlock;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PointerLockController_h

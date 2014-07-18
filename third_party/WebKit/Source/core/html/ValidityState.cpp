@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/html/ValidityState.h"
 
-namespace WebCore {
+namespace blink {
 
 String ValidityState::validationMessage() const
 {

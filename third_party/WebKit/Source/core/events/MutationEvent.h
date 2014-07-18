@@ -27,7 +27,7 @@
 #include "core/events/Event.h"
 #include "core/dom/Node.h"
 
-namespace WebCore {
+namespace blink {
 
     class MutationEvent FINAL : public Event {
     public:
@@ -78,6 +78,6 @@ namespace WebCore {
         unsigned short m_attrChange;
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MutationEvent_h

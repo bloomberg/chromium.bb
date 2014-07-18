@@ -29,7 +29,7 @@
 #include "core/dom/ScriptLoader.h"
 #include "core/events/Event.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGScriptElement::SVGScriptElement(Document& document, bool wasInsertedByParser, bool alreadyStarted)
     : SVGElement(SVGNames::scriptTag, document)

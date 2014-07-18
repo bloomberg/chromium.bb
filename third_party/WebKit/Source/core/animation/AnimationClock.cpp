@@ -43,7 +43,7 @@ const double approximateFrameTime = 1 / 60.0;
 
 }
 
-namespace WebCore {
+namespace blink {
 
 unsigned AnimationClock::s_currentTask = 0;
 

@@ -11,7 +11,7 @@
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/TraceEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 CompositingInputsUpdater::CompositingInputsUpdater(RenderLayer* rootRenderLayer)
     : m_geometryMap(UseTransforms)
@@ -185,4 +185,4 @@ void CompositingInputsUpdater::assertNeedsCompositingInputsUpdateBitsCleared(Ren
 
 #endif
 
-} // namespace WebCore
+} // namespace blink

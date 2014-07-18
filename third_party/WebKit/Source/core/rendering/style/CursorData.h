@@ -28,7 +28,7 @@
 #include "core/rendering/style/StyleImage.h"
 #include "platform/geometry/IntPoint.h"
 
-namespace WebCore {
+namespace blink {
 
 class CursorData {
 public:
@@ -59,6 +59,6 @@ private:
     IntPoint m_hotSpot; // for CSS3 support
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CursorData_h

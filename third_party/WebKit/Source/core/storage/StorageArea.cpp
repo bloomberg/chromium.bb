@@ -43,7 +43,7 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 
-namespace WebCore {
+namespace blink {
 
 StorageArea::StorageArea(PassOwnPtr<blink::WebStorageArea> storageArea, StorageType storageType)
     : m_storageArea(storageArea)
@@ -194,4 +194,4 @@ bool StorageArea::isEventSource(Storage* storage, blink::WebStorageArea* sourceA
     return area->m_storageArea == sourceAreaInstance;
 }
 
-} // namespace WebCore
+} // namespace blink

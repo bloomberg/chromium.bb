@@ -11,7 +11,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
     : m_policy(policy)
@@ -677,4 +677,4 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
 }
 
 
-} // namespace WebCore
+} // namespace blink

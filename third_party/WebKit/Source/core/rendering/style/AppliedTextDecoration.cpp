@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/rendering/style/AppliedTextDecoration.h"
 
-namespace WebCore {
+namespace blink {
 
 AppliedTextDecoration::AppliedTextDecoration(TextDecoration line, TextDecorationStyle style, StyleColor color)
     : m_line(line)
@@ -33,4 +33,4 @@ bool AppliedTextDecoration::operator==(const AppliedTextDecoration& o) const
     return m_color == o.m_color && m_line == o.m_line && m_style == o.m_style;
 }
 
-} // namespace WebCore
+} // namespace blink

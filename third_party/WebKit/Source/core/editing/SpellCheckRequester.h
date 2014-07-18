@@ -36,7 +36,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class Node;
@@ -118,6 +118,6 @@ private:
     RequestQueue m_requestQueue;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SpellCheckRequester_h

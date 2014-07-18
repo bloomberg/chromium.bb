@@ -33,7 +33,7 @@
 
 #include "core/html/parser/TextResourceDecoder.h"
 
-namespace WebCore {
+namespace blink {
 
 DocumentEncodingData::DocumentEncodingData()
     : m_wasDetectedHeuristically(false)
@@ -53,4 +53,4 @@ void DocumentEncodingData::setEncoding(const WTF::TextEncoding& encoding)
     m_encoding = encoding;
 }
 
-} // namespace WebCore
+} // namespace blink

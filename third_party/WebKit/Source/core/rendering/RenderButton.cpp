@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/rendering/RenderButton.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -133,4 +133,4 @@ int RenderButton::baselinePosition(FontBaseline baseline, bool firstLine, LineDi
     return RenderFlexibleBox::baselinePosition(baseline, firstLine, direction, linePositionMode);
 }
 
-} // namespace WebCore
+} // namespace blink

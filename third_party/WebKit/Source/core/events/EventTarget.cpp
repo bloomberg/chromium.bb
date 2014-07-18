@@ -47,7 +47,7 @@
 
 using namespace WTF;
 
-namespace WebCore {
+namespace blink {
 
 EventTargetData::EventTargetData()
 {
@@ -388,4 +388,4 @@ void EventTarget::removeAllEventListeners()
     }
 }
 
-} // namespace WebCore
+} // namespace blink

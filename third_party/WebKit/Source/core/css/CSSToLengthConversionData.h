@@ -34,7 +34,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderStyle;
 class RenderView;
@@ -74,6 +74,6 @@ private:
     bool m_computingFontSize;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

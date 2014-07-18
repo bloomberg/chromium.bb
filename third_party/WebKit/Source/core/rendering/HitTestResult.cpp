@@ -40,7 +40,7 @@
 #include "core/svg/SVGElement.h"
 #include "platform/scroll/Scrollbar.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -473,4 +473,4 @@ Element* HitTestResult::innerElement() const
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink

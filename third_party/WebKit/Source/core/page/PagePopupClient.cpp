@@ -33,7 +33,7 @@
 
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 #define addLiteral(literal, data)    data->append(literal, sizeof(literal) - 1)
 
@@ -109,5 +109,5 @@ void PagePopupClient::addProperty(const char* name, const IntRect& rect, SharedB
     addLiteral("},\n", data);
 }
 
-} // namespace WebCore
+} // namespace blink
 

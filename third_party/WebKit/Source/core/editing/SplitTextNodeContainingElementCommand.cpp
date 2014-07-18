@@ -31,7 +31,7 @@
 #include "core/rendering/RenderObject.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 SplitTextNodeContainingElementCommand::SplitTextNodeContainingElementCommand(PassRefPtrWillBeRawPtr<Text> text, int offset)
     : CompositeEditCommand(text->document()), m_text(text), m_offset(offset)

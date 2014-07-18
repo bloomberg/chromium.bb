@@ -51,14 +51,14 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
-using WebCore::TypeBuilder::Array;
-using WebCore::TypeBuilder::Debugger::BreakpointId;
-using WebCore::TypeBuilder::Debugger::CallFrame;
-using WebCore::TypeBuilder::Debugger::ExceptionDetails;
-using WebCore::TypeBuilder::Debugger::FunctionDetails;
-using WebCore::TypeBuilder::Debugger::ScriptId;
-using WebCore::TypeBuilder::Debugger::StackTrace;
-using WebCore::TypeBuilder::Runtime::RemoteObject;
+using blink::TypeBuilder::Array;
+using blink::TypeBuilder::Debugger::BreakpointId;
+using blink::TypeBuilder::Debugger::CallFrame;
+using blink::TypeBuilder::Debugger::ExceptionDetails;
+using blink::TypeBuilder::Debugger::FunctionDetails;
+using blink::TypeBuilder::Debugger::ScriptId;
+using blink::TypeBuilder::Debugger::StackTrace;
+using blink::TypeBuilder::Runtime::RemoteObject;
 
 namespace {
 
@@ -68,7 +68,7 @@ static const char v8AsyncTaskEventDidHandle[] = "didHandle";
 
 }
 
-namespace WebCore {
+namespace blink {
 
 namespace DebuggerAgentState {
 static const char debuggerEnabled[] = "debuggerEnabled";
@@ -605,7 +605,7 @@ PassRefPtr<TypeBuilder::Debugger::Location> InspectorDebuggerAgent::resolveBreak
     return location;
 }
 
-void InspectorDebuggerAgent::searchInContent(ErrorString* error, const String& scriptId, const String& query, const bool* const optionalCaseSensitive, const bool* const optionalIsRegex, RefPtr<Array<WebCore::TypeBuilder::Page::SearchMatch> >& results)
+void InspectorDebuggerAgent::searchInContent(ErrorString* error, const String& scriptId, const String& query, const bool* const optionalCaseSensitive, const bool* const optionalIsRegex, RefPtr<Array<blink::TypeBuilder::Page::SearchMatch> >& results)
 {
     bool isRegex = optionalIsRegex ? *optionalIsRegex : false;
     bool caseSensitive = optionalCaseSensitive ? *optionalCaseSensitive : false;
@@ -1397,5 +1397,5 @@ void InspectorDebuggerAgent::reset()
         m_frontend->globalObjectCleared();
 }
 
-} // namespace WebCore
+} // namespace blink
 

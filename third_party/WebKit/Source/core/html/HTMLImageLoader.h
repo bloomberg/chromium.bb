@@ -25,7 +25,7 @@
 
 #include "core/loader/ImageLoader.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLImageLoader FINAL : public ImageLoader {
 public:

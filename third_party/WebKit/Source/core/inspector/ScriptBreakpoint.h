@@ -32,7 +32,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 struct ScriptBreakpoint {
     ScriptBreakpoint()
@@ -51,6 +51,6 @@ struct ScriptBreakpoint {
     String condition;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(ScriptBreakpoint_h)

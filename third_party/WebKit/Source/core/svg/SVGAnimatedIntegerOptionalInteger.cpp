@@ -32,7 +32,7 @@
 
 #include "core/svg/SVGAnimatedIntegerOptionalInteger.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGAnimatedIntegerOptionalInteger::SVGAnimatedIntegerOptionalInteger(SVGElement* contextElement, const QualifiedName& attributeName, float initialFirstValue, float initialSecondValue)
     : SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>(contextElement, attributeName,

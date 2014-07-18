@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/animation/animatable/AnimatableShadow.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableShadow::interpolateTo(const AnimatableValue* value, double fraction) const
 {
@@ -45,4 +45,4 @@ bool AnimatableShadow::equalTo(const AnimatableValue* value) const
     return m_shadowList == shadowList || (m_shadowList && shadowList && *m_shadowList == *shadowList);
 }
 
-} // namespace WebCore
+} // namespace blink

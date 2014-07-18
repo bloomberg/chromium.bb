@@ -37,7 +37,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class AutoscrollController;
 class BackForwardClient;
@@ -310,6 +310,6 @@ private:
     OwnPtrWillBeMember<FrameHost> m_frameHost;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Page_h

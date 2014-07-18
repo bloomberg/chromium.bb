@@ -45,9 +45,9 @@
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
 
-using namespace WebCore;
+using namespace blink;
 
-namespace WebCore {
+namespace blink {
 
 TEST(RawResourceTest, DontIgnoreAcceptForCacheReuse)
 {
@@ -187,4 +187,4 @@ TEST(RawResourceTest, RemoveClientDuringCallback)
     EXPECT_FALSE(raw->hasClients());
 }
 
-} // namespace WebCore
+} // namespace blink

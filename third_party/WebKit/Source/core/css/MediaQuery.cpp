@@ -35,7 +35,7 @@
 #include "wtf/NonCopyingSort.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 // http://dev.w3.org/csswg/cssom/#serialize-a-media-query
 String MediaQuery::serialize() const

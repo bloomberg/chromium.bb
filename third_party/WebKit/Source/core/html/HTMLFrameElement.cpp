@@ -29,7 +29,7 @@
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/rendering/RenderFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -82,4 +82,4 @@ void HTMLFrameElement::parseAttribute(const QualifiedName& name, const AtomicStr
         HTMLFrameElementBase::parseAttribute(name, value);
 }
 
-} // namespace WebCore
+} // namespace blink

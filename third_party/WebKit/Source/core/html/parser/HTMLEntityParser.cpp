@@ -34,7 +34,7 @@
 
 using namespace WTF;
 
-namespace WebCore {
+namespace blink {
 
 static const UChar windowsLatin1ExtensionArray[32] = {
     0x20AC, 0x0081, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, // 80-87
@@ -302,4 +302,4 @@ size_t decodeNamedEntityToUCharArray(const char* name, UChar result[4])
     return numberOfCodePoints + appendUChar32ToUCharArray(search.mostRecentMatch()->secondValue, result + numberOfCodePoints);
 }
 
-} // namespace WebCore
+} // namespace blink

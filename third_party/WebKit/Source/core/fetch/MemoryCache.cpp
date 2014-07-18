@@ -40,7 +40,7 @@
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 static MemoryCache* gMemoryCache;
 
@@ -725,4 +725,4 @@ void MemoryCache::dumpLRULists(bool includeLive) const
 
 #endif // MEMORY_CACHE_STATS
 
-} // namespace WebCore
+} // namespace blink

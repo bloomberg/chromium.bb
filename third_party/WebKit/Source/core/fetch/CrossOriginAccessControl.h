@@ -32,7 +32,7 @@
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef HashSet<String, CaseFoldingHash> HTTPHeaderSet;
 
@@ -66,6 +66,6 @@ bool passesAccessControlCheck(const ResourceResponse&, StoredCredentials, Securi
 bool passesPreflightStatusCheck(const ResourceResponse&, String& errorDescription);
 void parseAccessControlExposeHeadersAllowList(const String& headerValue, HTTPHeaderSet&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CrossOriginAccessControl_h

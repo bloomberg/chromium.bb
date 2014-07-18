@@ -30,7 +30,7 @@
 #include "core/editing/TextGranularity.h"
 #include "core/editing/VisiblePosition.h"
 
-namespace WebCore {
+namespace blink {
 
 class LayoutPoint;
 class Position;
@@ -183,12 +183,12 @@ inline bool operator!=(const VisibleSelection& a, const VisibleSelection& b)
     return !(a == b);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showTree(const WebCore::VisibleSelection&);
-void showTree(const WebCore::VisibleSelection*);
+void showTree(const blink::VisibleSelection&);
+void showTree(const blink::VisibleSelection*);
 #endif
 
 #endif // VisibleSelection_h

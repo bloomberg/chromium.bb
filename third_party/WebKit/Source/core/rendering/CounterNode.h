@@ -35,7 +35,7 @@
 
 // Not that render tree children are often counter tree siblings due to counter scoping rules.
 
-namespace WebCore {
+namespace blink {
 
 class RenderObject;
 class RenderCounter;
@@ -91,11 +91,11 @@ private:
     CounterNode* m_lastChild;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showCounterTree(const WebCore::CounterNode*);
+void showCounterTree(const blink::CounterNode*);
 #endif
 
 #endif // CounterNode_h

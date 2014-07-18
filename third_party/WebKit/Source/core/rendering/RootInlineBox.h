@@ -24,7 +24,7 @@
 #include "core/rendering/InlineFlowBox.h"
 #include "platform/text/BidiContext.h"
 
-namespace WebCore {
+namespace blink {
 
 class EllipsisBox;
 class HitTestResult;
@@ -237,6 +237,6 @@ private:
     LayoutUnit m_selectionBottom;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RootInlineBox_h

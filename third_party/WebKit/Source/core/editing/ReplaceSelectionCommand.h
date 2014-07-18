@@ -29,7 +29,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/editing/CompositeEditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class DocumentFragment;
 class ReplacementFragment;
@@ -119,6 +119,6 @@ private:
     bool m_shouldMergeEnd;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ReplaceSelectionCommand_h

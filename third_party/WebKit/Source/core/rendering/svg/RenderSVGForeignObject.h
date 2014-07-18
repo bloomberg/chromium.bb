@@ -23,7 +23,7 @@
 
 #include "core/rendering/svg/RenderSVGBlock.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGForeignObjectElement;
 

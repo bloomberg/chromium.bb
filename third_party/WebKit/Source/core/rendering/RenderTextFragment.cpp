@@ -27,7 +27,7 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderBlock.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderTextFragment::RenderTextFragment(Node* node, StringImpl* str, int startOffset, int length)
     : RenderText(node, str ? str->substring(startOffset, length) : PassRefPtr<StringImpl>(nullptr))
@@ -152,4 +152,4 @@ void RenderTextFragment::updateHitTestResult(HitTestResult& result, const Layout
         result.setIsFirstLetter(true);
 }
 
-} // namespace WebCore
+} // namespace blink

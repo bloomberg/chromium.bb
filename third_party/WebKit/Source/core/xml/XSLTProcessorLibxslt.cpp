@@ -51,7 +51,7 @@
 #include <libxslt/variables.h>
 #include <libxslt/xsltutils.h>
 
-namespace WebCore {
+namespace blink {
 
 void XSLTProcessor::genericErrorFunc(void*, const char*, ...)
 {
@@ -349,4 +349,4 @@ bool XSLTProcessor::transformToString(Node* sourceNode, String& mimeType, String
     return success;
 }
 
-} // namespace WebCore
+} // namespace blink

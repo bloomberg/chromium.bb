@@ -23,7 +23,7 @@
 
 #include "core/events/Event.h"
 
-namespace WebCore {
+namespace blink {
 
 struct HashChangeEventInit : public EventInit {
     HashChangeEventInit()
@@ -95,6 +95,6 @@ private:
     String m_newURL;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HashChangeEvent_h

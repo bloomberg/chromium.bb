@@ -30,7 +30,7 @@
 #include "core/editing/WritingDirection.h"
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSPrimitiveValue;
 class EditingStyle;
@@ -139,6 +139,6 @@ bool isLegacyAppleStyleSpan(const Node*);
 bool isStyleSpanOrSpanWithOnlyStyleAttribute(const Element*);
 PassRefPtrWillBeRawPtr<HTMLElement> createStyleSpanElement(Document&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -30,7 +30,7 @@
 #include "core/xml/XPathExpression.h"
 #include "core/xml/XPathResult.h"
 
-namespace WebCore {
+namespace blink {
 
 DocumentXPathEvaluator::DocumentXPathEvaluator()
 {
@@ -79,4 +79,4 @@ void DocumentXPathEvaluator::trace(Visitor* visitor)
     DocumentSupplement::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

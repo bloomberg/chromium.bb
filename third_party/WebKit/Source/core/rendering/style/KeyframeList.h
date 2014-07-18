@@ -32,7 +32,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderObject;
 class RenderStyle;
@@ -91,6 +91,6 @@ private:
     HashSet<CSSPropertyID> m_properties; // The properties being animated.
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // KeyframeList_h

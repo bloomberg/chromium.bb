@@ -32,7 +32,7 @@
 #include "core/rendering/svg/SVGSubpathData.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSVGPath::RenderSVGPath(SVGGraphicsElement* node)
     : RenderSVGShape(node)

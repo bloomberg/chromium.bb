@@ -34,7 +34,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/page/PagePopupController.h"
 
-namespace WebCore {
+namespace blink {
 
 DOMWindowPagePopup::DOMWindowPagePopup(PagePopupClient* popupClient)
     : m_controller(PagePopupController::create(popupClient))

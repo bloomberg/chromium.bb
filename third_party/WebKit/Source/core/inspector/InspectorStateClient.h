@@ -28,7 +28,7 @@
 
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class InspectorStateClient {
 public:
@@ -40,6 +40,6 @@ public:
     virtual void updateInspectorStateCookie(const String&) { };
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InspectorStateClient_h)

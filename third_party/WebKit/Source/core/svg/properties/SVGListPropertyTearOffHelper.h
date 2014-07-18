@@ -36,7 +36,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/TypeTraits.h"
 
-namespace WebCore {
+namespace blink {
 
 template<typename ItemProperty>
 class ListItemPropertyTraits {

@@ -30,7 +30,7 @@
 #include "core/html/canvas/WebGLExtension.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebGLRenderingContextBase;
 class WebGLVertexArrayObjectOES;
@@ -53,6 +53,6 @@ private:
     OESVertexArrayObject(WebGLRenderingContextBase*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // OESVertexArrayObject_h

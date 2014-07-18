@@ -28,7 +28,7 @@
 #include "core/events/EventDispatcher.h"
 #include "platform/PlatformMouseEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 MouseEventInit::MouseEventInit()
     : screenX(0)
@@ -286,4 +286,4 @@ bool MouseEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) cons
     return !swallowEvent;
 }
 
-} // namespace WebCore
+} // namespace blink

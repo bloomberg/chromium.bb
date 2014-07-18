@@ -32,7 +32,7 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSSVGDocumentValue::CSSSVGDocumentValue(const String& url)
     : CSSValue(CSSSVGDocumentClass)
@@ -69,4 +69,4 @@ bool CSSSVGDocumentValue::equals(const CSSSVGDocumentValue& other) const
     return m_url == other.m_url;
 }
 
-} // namespace WebCore
+} // namespace blink

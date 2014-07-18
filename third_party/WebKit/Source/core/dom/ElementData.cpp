@@ -35,7 +35,7 @@
 #include "core/dom/QualifiedName.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsElementData : public RefCountedWillBeGarbageCollectedFinalized<SameSizeAsElementData> {
     unsigned bitfield;
@@ -228,4 +228,4 @@ void UniqueElementData::traceAfterDispatch(Visitor* visitor)
     ElementData::traceAfterDispatch(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

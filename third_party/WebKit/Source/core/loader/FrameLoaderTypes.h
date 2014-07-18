@@ -29,7 +29,7 @@
 #ifndef FrameLoaderTypes_h
 #define FrameLoaderTypes_h
 
-namespace WebCore {
+namespace blink {
 
 enum FrameState {
     FrameStateProvisional,

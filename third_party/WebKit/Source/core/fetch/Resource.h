@@ -37,7 +37,7 @@
 // FIXME(crbug.com/352043): This is temporarily enabled even on RELEASE to diagnose a wild crash.
 #define ENABLE_RESOURCE_IS_DELETED_CHECK
 
-namespace WebCore {
+namespace blink {
 
 struct FetchInitiatorInfo;
 class MemoryCache;

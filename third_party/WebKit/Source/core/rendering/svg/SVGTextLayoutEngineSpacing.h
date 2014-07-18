@@ -22,7 +22,7 @@
 
 #include "core/rendering/svg/SVGTextMetrics.h"
 
-namespace WebCore {
+namespace blink {
 
 class Font;
 
@@ -45,6 +45,6 @@ private:
 #endif
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

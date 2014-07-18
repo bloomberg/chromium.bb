@@ -30,7 +30,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderMultiColumnFlowThread.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderMultiColumnSet::RenderMultiColumnSet(RenderFlowThread* flowThread)
     : RenderRegion(0, flowThread)

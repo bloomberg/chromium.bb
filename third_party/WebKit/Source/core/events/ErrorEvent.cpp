@@ -34,7 +34,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 ErrorEventInit::ErrorEventInit()
     : message()
@@ -96,4 +96,4 @@ void ErrorEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

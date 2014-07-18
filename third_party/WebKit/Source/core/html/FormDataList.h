@@ -28,7 +28,7 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncoding.h"
 
-namespace WebCore {
+namespace blink {
 
 class FormDataList {
 public:
@@ -93,8 +93,8 @@ private:
     WillBeHeapVector<Item> m_items;
 };
 
-} // namespace WebCore
+} // namespace blink
 
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::FormDataList::Item);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::FormDataList::Item);
 
 #endif // FormDataList_h

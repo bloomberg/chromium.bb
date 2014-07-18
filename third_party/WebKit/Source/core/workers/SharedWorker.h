@@ -36,7 +36,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -63,6 +63,6 @@ private:
     bool m_isBeingConnected;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SharedWorker_h

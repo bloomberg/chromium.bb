@@ -28,7 +28,7 @@
 
 using namespace WTF;
 
-namespace WebCore {
+namespace blink {
 
 template <typename CharacterType>
 static inline bool hasNonASCIIOrUpper(const CharacterType* characters, unsigned length)
@@ -203,4 +203,4 @@ SpaceSplitStringData::SpaceSplitStringData(const SpaceSplitStringData& other)
     // to be removed from the sharedDataMap().
 }
 
-} // namespace WebCore
+} // namespace blink

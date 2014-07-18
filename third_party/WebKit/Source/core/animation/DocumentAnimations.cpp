@@ -42,7 +42,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -93,4 +93,4 @@ void DocumentAnimations::startPendingAnimations(Document& document)
     }
 }
 
-} // namespace WebCore
+} // namespace blink

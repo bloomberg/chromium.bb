@@ -35,7 +35,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/NodeRareData.h"
 
-namespace WebCore {
+namespace blink {
 
 EmptyNodeList::~EmptyNodeList()
 {
@@ -55,4 +55,4 @@ void EmptyNodeList::trace(Visitor* visitor)
     NodeList::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

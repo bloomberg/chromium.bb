@@ -29,7 +29,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/rendering/RenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<AXSpinButton> AXSpinButton::create()
 {
@@ -124,4 +124,4 @@ bool AXSpinButtonPart::press() const
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

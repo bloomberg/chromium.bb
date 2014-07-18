@@ -29,7 +29,7 @@
 
 #include "core/html/forms/FormController.h"
 
-namespace WebCore {
+namespace blink {
 
 const unsigned DateTimeFieldsState::emptyValue = static_cast<unsigned>(-1);
 
@@ -107,6 +107,6 @@ FormControlState DateTimeFieldsState::saveFormControlState() const
     return state;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

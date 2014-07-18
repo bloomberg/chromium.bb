@@ -26,7 +26,7 @@
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSToLengthConversionData;
 class CSSValue;
@@ -37,6 +37,6 @@ public:
     static bool createFilterOperations(CSSValue* inValue, const CSSToLengthConversionData&, FilterOperations& outOperations, StyleResolverState&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FilterOperationResolver_h

@@ -38,7 +38,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class InjectedScriptManager;
 class InspectorFrontend;
@@ -98,7 +98,7 @@ private:
     void idleFinished();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // !defined(InspectorProfilerAgent_h)

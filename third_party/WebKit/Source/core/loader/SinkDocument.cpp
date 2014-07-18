@@ -28,7 +28,7 @@
 
 #include "core/dom/RawDataDocumentParser.h"
 
-namespace WebCore {
+namespace blink {
 
 class SinkDocumentParser : public RawDataDocumentParser {
 public:
@@ -59,4 +59,4 @@ PassRefPtrWillBeRawPtr<DocumentParser> SinkDocument::createParser()
     return SinkDocumentParser::create(this);
 }
 
-} // namespace WebCore
+} // namespace blink

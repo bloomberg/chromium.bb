@@ -29,7 +29,7 @@
 
 #include "core/html/HTMLMediaElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 

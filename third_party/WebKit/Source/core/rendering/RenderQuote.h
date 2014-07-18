@@ -27,7 +27,7 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 
@@ -62,6 +62,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderQuote, isQuote());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderQuote_h

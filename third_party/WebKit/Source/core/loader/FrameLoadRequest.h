@@ -34,7 +34,7 @@
 #include "core/loader/SubstituteData.h"
 #include "platform/network/ResourceRequest.h"
 
-namespace WebCore {
+namespace blink {
 class LocalFrame;
 
 struct FrameLoadRequest {

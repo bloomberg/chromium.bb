@@ -32,7 +32,7 @@
 #include "core/dom/Document.h"
 #include "core/html/HTMLFormElement.h"
 
-namespace WebCore {
+namespace blink {
 
 inline FormState::FormState(HTMLFormElement& form, FormSubmissionTrigger formSubmissionTrigger)
     : m_form(form)

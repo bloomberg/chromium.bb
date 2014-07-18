@@ -34,7 +34,7 @@
 #include "core/rendering/OrderIterator.h"
 #include "core/rendering/RenderBlock.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderFlexibleBox : public RenderBlock {
 public:
@@ -166,6 +166,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderFlexibleBox, isFlexibleBox());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderFlexibleBox_h

@@ -30,7 +30,7 @@
 #include "core/html/HTMLElement.h"
 #include "platform/Timer.h"
 
-namespace WebCore {
+namespace blink {
 
 template<typename T> class EventSender;
 typedef EventSender<HTMLSourceElement> SourceEventSender;
@@ -69,6 +69,6 @@ private:
     RefPtrWillBeMember<Listener> m_listener;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

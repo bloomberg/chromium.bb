@@ -11,7 +11,7 @@
 #include "wtf/BitArray.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class SampledEffect : public NoBaseWillBeGarbageCollected<SampledEffect> {
 public:
@@ -46,6 +46,6 @@ private:
     Animation::Priority m_priority;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

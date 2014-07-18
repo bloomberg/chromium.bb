@@ -26,7 +26,7 @@
 
 #include "core/html/HTMLTextFormControlElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class BeforeTextInsertedEvent;
 class ExceptionState;

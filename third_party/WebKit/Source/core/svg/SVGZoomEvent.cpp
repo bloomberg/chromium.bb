@@ -25,7 +25,7 @@
 #include "core/svg/SVGPointTearOff.h"
 #include "core/svg/SVGRectTearOff.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGZoomEvent::SVGZoomEvent()
     : m_newScale(0.0f)
@@ -75,4 +75,4 @@ void SVGZoomEvent::trace(Visitor* visitor)
     UIEvent::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/css/CSSGridLineNamesValue.h"
 
-namespace WebCore {
+namespace blink {
 
 String CSSGridLineNamesValue::customCSSText() const
 {

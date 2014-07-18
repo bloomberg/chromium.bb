@@ -35,7 +35,7 @@
 #include "core/rendering/RenderObject.h"
 
 
-namespace WebCore {
+namespace blink {
 
 AXARIAGrid::AXARIAGrid(RenderObject* renderer)
     : AXTable(renderer)
@@ -129,4 +129,4 @@ void AXARIAGrid::addChildren()
         m_children.append(headerContainerObject);
 }
 
-} // namespace WebCore
+} // namespace blink

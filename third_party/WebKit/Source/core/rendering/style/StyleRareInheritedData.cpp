@@ -31,7 +31,7 @@
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/style/StyleImage.h"
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsStyleRareInheritedData : public RefCounted<SameSizeAsStyleRareInheritedData> {
     void* styleImage;
@@ -233,4 +233,4 @@ bool StyleRareInheritedData::quotesDataEquivalent(const StyleRareInheritedData& 
     return dataEquivalent(quotes, o.quotes);
 }
 
-} // namespace WebCore
+} // namespace blink

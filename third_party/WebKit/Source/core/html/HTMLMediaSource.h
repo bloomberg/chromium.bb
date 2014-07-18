@@ -39,7 +39,7 @@ namespace blink {
 class WebMediaSource;
 }
 
-namespace WebCore {
+namespace blink {
 
 class HTMLMediaElement;
 class TimeRanges;

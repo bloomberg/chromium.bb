@@ -30,7 +30,7 @@
 #include "core/events/Event.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class History;
 class SerializedScriptValue;
@@ -65,6 +65,6 @@ private:
     RefPtrWillBeMember<History> m_history;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PopStateEvent_h

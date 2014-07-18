@@ -55,7 +55,7 @@
 #include <math.h>
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

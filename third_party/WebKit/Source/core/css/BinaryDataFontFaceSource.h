@@ -8,7 +8,7 @@
 #include "core/css/CSSFontFaceSource.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class FontCustomPlatformData;
 class SharedBuffer;
@@ -25,6 +25,6 @@ private:
     OwnPtr<FontCustomPlatformData> m_customPlatformData;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

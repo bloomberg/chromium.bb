@@ -38,7 +38,7 @@
 #include "core/rendering/style/StylePendingImage.h"
 #include "core/rendering/svg/ReferenceFilterBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleResourceLoader::StyleResourceLoader(ResourceFetcher* fetcher)
     : m_fetcher(fetcher)

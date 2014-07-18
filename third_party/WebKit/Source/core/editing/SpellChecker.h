@@ -31,7 +31,7 @@
 #include "core/editing/VisibleSelection.h"
 #include "platform/text/TextChecking.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class SpellCheckerClient;
@@ -101,6 +101,6 @@ private:
     void markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textCheckingOptions, Range* checkingRange, Range* paragraphRange, bool asynchronous, int requestNumber, int* checkingLength = 0);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SpellChecker_h

@@ -7,7 +7,7 @@
 
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class DescendantInvalidationSet;
 class Document;
@@ -91,6 +91,6 @@ private:
     RecursionData m_recursionData;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleInvalidator_h

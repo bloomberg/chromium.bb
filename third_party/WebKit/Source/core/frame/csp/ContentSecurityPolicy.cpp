@@ -64,7 +64,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 
-namespace WebCore {
+namespace blink {
 
 // CSP 1.0 Directives
 const char ContentSecurityPolicy::ConnectSrc[] = "connect-src";
@@ -787,4 +787,4 @@ void ContentSecurityPolicy::didSendViolationReport(const String& report)
     m_violationReportsSent.add(report.impl()->hash());
 }
 
-} // namespace WebCore
+} // namespace blink

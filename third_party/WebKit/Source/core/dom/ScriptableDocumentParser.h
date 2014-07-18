@@ -30,7 +30,7 @@
 #include "core/dom/ParserContentPolicy.h"
 #include "wtf/text/TextPosition.h"
 
-namespace WebCore {
+namespace blink {
 
 class ScriptableDocumentParser : public DecodedDataDocumentParser {
 public:

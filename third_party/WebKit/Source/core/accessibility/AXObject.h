@@ -37,7 +37,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXObject;
 class AXObjectCache;
@@ -578,6 +578,6 @@ protected:
 #define DEFINE_AX_OBJECT_TYPE_CASTS(thisType, predicate) \
     DEFINE_TYPE_CASTS(thisType, AXObject, object, object->predicate, object.predicate)
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXObject_h

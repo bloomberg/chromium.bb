@@ -35,7 +35,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 struct Timing {
     enum FillMode {
@@ -95,6 +95,6 @@ struct Timing {
     RefPtr<TimingFunction> timingFunction;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

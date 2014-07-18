@@ -44,7 +44,7 @@
 #ifndef ScrollAlignment_h
 #define ScrollAlignment_h
 
-namespace WebCore {
+namespace blink {
 
 enum ScrollAlignmentBehavior {
     ScrollAlignmentNoScroll,
@@ -78,6 +78,6 @@ struct ScrollAlignment {
 };
 
 
-}; // namespace WebCore
+}; // namespace blink
 
 #endif // ScrollAlignment_h

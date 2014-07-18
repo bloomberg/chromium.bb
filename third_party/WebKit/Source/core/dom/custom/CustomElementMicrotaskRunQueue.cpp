@@ -12,7 +12,7 @@
 
 #include <stdio.h>
 
-namespace WebCore {
+namespace blink {
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CustomElementMicrotaskRunQueue)
 
@@ -81,4 +81,4 @@ void CustomElementMicrotaskRunQueue::show(unsigned indent)
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

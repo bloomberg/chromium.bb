@@ -29,7 +29,7 @@
 #include "core/dom/Document.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class XMLDocument FINAL : public Document {
 public:
@@ -54,6 +54,6 @@ protected:
 
 DEFINE_DOCUMENT_TYPE_CASTS(XMLDocument);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // XMLDocument_h

@@ -30,7 +30,7 @@
 #include "core/html/canvas/WebGLContextGroup.h"
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 
-namespace WebCore {
+namespace blink {
 
 WebGLSharedObject::WebGLSharedObject(WebGLRenderingContextBase* context)
     : WebGLObject(context),

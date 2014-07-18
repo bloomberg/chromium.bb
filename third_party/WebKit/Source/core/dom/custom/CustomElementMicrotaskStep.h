@@ -34,7 +34,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class CustomElementMicrotaskStep : public NoBaseWillBeGarbageCollectedFinalized<CustomElementMicrotaskStep> {
     WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskStep);

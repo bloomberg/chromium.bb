@@ -24,7 +24,7 @@
 
 #include "core/svg/SVGPathSegWithContext.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathSegLinetoRel FINAL : public SVGPathSegSingleCoordinate {
 public:
@@ -44,6 +44,6 @@ private:
     virtual String pathSegTypeAsLetter() const OVERRIDE { return "l"; }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -34,7 +34,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ContextMenuItem;
 class Event;
@@ -82,6 +82,6 @@ private:
     FrontendMenuProvider* m_menuProvider;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InspectorFrontendHost_h)

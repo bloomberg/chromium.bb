@@ -63,7 +63,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/Base64.h"
 
-namespace WebCore {
+namespace blink {
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, pageCounter, ("Page"));
 
@@ -451,7 +451,7 @@ void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitia
         return;
     m_visibilityState = visibilityState;
 
-    if (visibilityState == WebCore::PageVisibilityStateHidden)
+    if (visibilityState == blink::PageVisibilityStateHidden)
         setTimerAlignmentInterval(DOMTimer::hiddenPageAlignmentInterval());
     else
         setTimerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval());
@@ -662,4 +662,4 @@ Page::PageClients::~PageClients()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

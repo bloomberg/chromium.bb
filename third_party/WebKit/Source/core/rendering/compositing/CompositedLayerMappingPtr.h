@@ -7,7 +7,7 @@
 
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 class CompositedLayerMapping;
 
@@ -34,6 +34,6 @@ private:
     CompositedLayerMapping* m_mapping;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CompositedLayerMappingPtr_h

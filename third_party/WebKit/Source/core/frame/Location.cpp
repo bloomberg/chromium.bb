@@ -39,7 +39,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
-namespace WebCore {
+namespace blink {
 
 Location::Location(LocalFrame* frame)
     : DOMWindowProperty(frame)
@@ -251,4 +251,4 @@ void Location::setLocation(const String& url, LocalDOMWindow* callingWindow, Loc
     frame->domWindow()->setLocation(url, callingWindow, enteredWindow);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -26,7 +26,7 @@
 
 #include "core/html/HTMLCollection.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class HTMLOptionElement;

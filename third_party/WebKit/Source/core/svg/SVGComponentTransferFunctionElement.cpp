@@ -27,7 +27,7 @@
 #include "core/svg/SVGFEComponentTransferElement.h"
 #include "core/svg/SVGNumberList.h"
 
-namespace WebCore {
+namespace blink {
 
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<ComponentTransferType>()
 {

@@ -37,7 +37,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class DragData;
 class FileList;
@@ -83,6 +83,6 @@ private:
     String m_droppedFileSystemId;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FileInputType_h

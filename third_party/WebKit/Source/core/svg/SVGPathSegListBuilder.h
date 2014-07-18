@@ -28,7 +28,7 @@
 #include "core/svg/SVGPathSegList.h"
 #include "platform/geometry/FloatPoint.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathElement;
 
@@ -69,6 +69,6 @@ private:
     SVGPathSegRole m_pathSegRole;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPathSegListBuilder_h

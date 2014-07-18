@@ -33,7 +33,7 @@
 
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 bool AnimatableFilterOperations::usesDefaultInterpolationWith(const AnimatableValue* value) const
 {

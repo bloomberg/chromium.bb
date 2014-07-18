@@ -24,7 +24,7 @@
 #include "platform/graphics/Path.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 enum SVGMarkerType {
     StartMarker,

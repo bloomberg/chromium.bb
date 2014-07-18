@@ -23,7 +23,7 @@
 
 #include "core/svg/properties/SVGPropertyHelper.h"
 
-namespace WebCore {
+namespace blink {
 
 class AffineTransform;
 class FloatRect;
@@ -104,6 +104,6 @@ inline PassRefPtr<SVGPreserveAspectRatio> toSVGPreserveAspectRatio(PassRefPtr<SV
     return static_pointer_cast<SVGPreserveAspectRatio>(base.release());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPreserveAspectRatio_h

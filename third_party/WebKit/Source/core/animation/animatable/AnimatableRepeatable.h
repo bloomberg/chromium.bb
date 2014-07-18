@@ -34,7 +34,7 @@
 #include "core/animation/animatable/AnimatableValue.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 // This class represents collections of values that animate in a repeated fashion as described by the CSS Transitions spec:
 // http://www.w3.org/TR/css3-transitions/#animtype-repeatable-list
@@ -77,6 +77,6 @@ private:
 
 DEFINE_TYPE_CASTS(AnimatableRepeatable, AnimatableValue, value, (value->isRepeatable() || value->isStrokeDasharrayList()), (value.isRepeatable() || value.isStrokeDasharrayList()));
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatableRepeatable_h

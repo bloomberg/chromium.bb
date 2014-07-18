@@ -25,7 +25,7 @@
 
 #include "core/css/CSSPropertySourceData.h"
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: Although the parser produces these, they're all ignored!
 enum CSSParserError {
@@ -64,6 +64,6 @@ public:
     virtual void endComment(unsigned offset) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSParserObserver_h

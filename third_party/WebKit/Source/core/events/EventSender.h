@@ -30,7 +30,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 template<typename T> class EventSender {
     WTF_MAKE_NONCOPYABLE(EventSender); WTF_MAKE_FAST_ALLOCATED;
@@ -108,6 +108,6 @@ template<typename T> void EventSender<T>::dispatchPendingEvents()
     m_dispatchingList.clear();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // EventSender_h

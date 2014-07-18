@@ -37,7 +37,7 @@
 #include "core/page/Page.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -119,4 +119,4 @@ void FrameConsole::unmute()
     muteCount--;
 }
 
-} // namespace WebCore
+} // namespace blink

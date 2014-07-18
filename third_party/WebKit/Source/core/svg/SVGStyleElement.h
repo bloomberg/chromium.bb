@@ -25,7 +25,7 @@
 #include "core/dom/StyleElement.h"
 #include "core/svg/SVGElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGStyleElement FINAL : public SVGElement
                             , public StyleElement {
@@ -70,6 +70,6 @@ private:
     Timer<SVGElement> m_svgLoadEventTimer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGStyleElement_h

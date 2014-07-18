@@ -33,7 +33,7 @@
 using std::min;
 using std::max;
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -213,4 +213,4 @@ void RenderFieldset::paintMask(PaintInfo& paintInfo, const LayoutPoint& paintOff
     paintMaskImages(paintInfo, paintRect);
 }
 
-} // namespace WebCore
+} // namespace blink

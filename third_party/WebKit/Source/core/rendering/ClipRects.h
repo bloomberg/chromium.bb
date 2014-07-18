@@ -28,7 +28,7 @@
 
 #include "core/rendering/ClipRect.h"
 
-namespace WebCore {
+namespace blink {
 
 class ClipRects {
     WTF_MAKE_FAST_ALLOCATED;
@@ -119,6 +119,6 @@ private:
     unsigned m_fixed : 1;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ClipRects_h

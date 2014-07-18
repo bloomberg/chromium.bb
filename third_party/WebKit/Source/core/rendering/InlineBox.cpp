@@ -32,7 +32,7 @@
 #include <stdio.h>
 #endif
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsInlineBox {
     virtual ~SameSizeAsInlineBox() { }
@@ -351,17 +351,17 @@ LayoutPoint InlineBox::flipForWritingMode(const LayoutPoint& point)
     return root().block().flipForWritingMode(point);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 
-void showTree(const WebCore::InlineBox* b)
+void showTree(const blink::InlineBox* b)
 {
     if (b)
         b->showTreeForThis();
 }
 
-void showLineTree(const WebCore::InlineBox* b)
+void showLineTree(const blink::InlineBox* b)
 {
     if (b)
         b->showLineTreeForThis();

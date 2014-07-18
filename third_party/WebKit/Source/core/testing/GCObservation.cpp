@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/testing/GCObservation.h"
 
-namespace WebCore {
+namespace blink {
 
 static void setWeakCallback(const v8::WeakCallbackData<v8::Value, GCObservation>& data)
 {
@@ -52,4 +52,4 @@ GCObservation::GCObservation(v8::Handle<v8::Value> observedValue)
     m_observed.setWeak(this, setWeakCallback);
 }
 
-} // namespace WebCore
+} // namespace blink

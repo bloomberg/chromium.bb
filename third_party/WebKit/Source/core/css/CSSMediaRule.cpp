@@ -26,7 +26,7 @@
 #include "core/css/StyleRule.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSMediaRule::CSSMediaRule(StyleRuleMedia* mediaRule, CSSStyleSheet* parent)
     : CSSGroupingRule(mediaRule, parent)
@@ -81,4 +81,4 @@ void CSSMediaRule::trace(Visitor* visitor)
     visitor->trace(m_mediaCSSOMWrapper);
     CSSGroupingRule::trace(visitor);
 }
-} // namespace WebCore
+} // namespace blink

@@ -31,7 +31,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 const int secondsPerHour = 3600;
 const int secondsPerMinute = 60;

@@ -30,7 +30,7 @@
 #include "wtf/text/StringHash.h"
 #include <limits>
 
-namespace WebCore {
+namespace blink {
 
 template <typename FloatType>
 static inline bool isValidRange(const FloatType& x)

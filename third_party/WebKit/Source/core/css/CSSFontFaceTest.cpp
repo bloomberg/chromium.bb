@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 static const UChar hiraganaA[2] = { 0x3042, 0 };
 
@@ -87,4 +87,4 @@ TEST(CSSFontFace, UnicodeRangeSetNon8Bit)
     EXPECT_TRUE(set.intersectsWith(String(hiraganaA)));
 }
 
-} // namespace WebCore
+} // namespace blink

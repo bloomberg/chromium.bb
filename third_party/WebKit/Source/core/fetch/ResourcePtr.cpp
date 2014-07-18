@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/fetch/ResourcePtr.h"
 
-namespace WebCore {
+namespace blink {
 
 void ResourcePtrBase::setResource(Resource* resource)
 {

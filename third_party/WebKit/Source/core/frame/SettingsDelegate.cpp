@@ -33,7 +33,7 @@
 
 #include "core/frame/Settings.h"
 
-namespace WebCore {
+namespace blink {
 
 SettingsDelegate::SettingsDelegate(PassOwnPtr<Settings> settings)
     : m_settings(settings)
@@ -48,4 +48,4 @@ SettingsDelegate::~SettingsDelegate()
         m_settings->setDelegate(0);
 }
 
-} // namespace WebCore
+} // namespace blink

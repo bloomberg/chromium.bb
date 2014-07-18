@@ -25,7 +25,7 @@
 #include "core/css/CSSRule.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSStyleDeclaration;
 class StyleRuleFontFace;
@@ -59,6 +59,6 @@ private:
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSFontFaceRule, FONT_FACE_RULE);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSFontFaceRule_h

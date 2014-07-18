@@ -40,7 +40,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 void CSSGradientColorStop::trace(Visitor* visitor)
 {
@@ -1204,4 +1204,4 @@ void CSSRadialGradientValue::traceAfterDispatch(Visitor* visitor)
     CSSGradientValue::traceAfterDispatch(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

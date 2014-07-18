@@ -27,7 +27,7 @@
 #include "core/dom/Document.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class DocumentInit;
@@ -77,6 +77,6 @@ private:
     RawPtrWillBeMember<Document> m_document;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

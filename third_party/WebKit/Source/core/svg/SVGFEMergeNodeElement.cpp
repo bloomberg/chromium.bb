@@ -24,7 +24,7 @@
 
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGFEMergeNodeElement::SVGFEMergeNodeElement(Document& document)
     : SVGElement(SVGNames::feMergeNodeTag, document)

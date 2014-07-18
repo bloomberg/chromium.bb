@@ -26,7 +26,7 @@
 
 #include "core/rendering/RenderBlockFlow.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderFieldset FINAL : public RenderBlockFlow {
 public:
@@ -50,6 +50,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderFieldset, isFieldset());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderFieldset_h

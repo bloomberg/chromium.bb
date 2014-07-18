@@ -8,7 +8,7 @@
 #include "core/page/PageLifecycleObserver.h"
 #include "platform/Timer.h"
 
-namespace WebCore {
+namespace blink {
 
 // Base controller class for registering controllers with a dispatcher.
 // It watches page visibility and calls stopUpdating when page is not visible.
@@ -44,6 +44,6 @@ private:
     Timer<DeviceEventControllerBase> m_timer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DeviceEventControllerBase_h

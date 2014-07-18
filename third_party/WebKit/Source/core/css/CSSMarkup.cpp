@@ -30,7 +30,7 @@
 #include "wtf/HexNumber.h"
 #include "wtf/text/StringBuffer.h"
 
-namespace WebCore {
+namespace blink {
 
 template <typename CharacterType>
 static inline bool isCSSTokenizerIdentifier(const CharacterType* characters, unsigned length)
@@ -186,4 +186,4 @@ String quoteCSSURLIfNeeded(const String& string)
     return isCSSTokenizerURL(string) ? string : quoteCSSString(string);
 }
 
-} // namespace WebCore
+} // namespace blink

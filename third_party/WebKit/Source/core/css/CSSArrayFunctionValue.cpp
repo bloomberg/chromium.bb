@@ -30,7 +30,7 @@
 #include "config.h"
 #include "core/css/CSSArrayFunctionValue.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSArrayFunctionValue::CSSArrayFunctionValue()
     : CSSValueList(CSSArrayFunctionValueClass, CommaSeparator)
@@ -57,5 +57,5 @@ bool CSSArrayFunctionValue::equals(const CSSArrayFunctionValue& other) const
     return CSSValueList::equals(other);
 }
 
-} // namespace WebCore
+} // namespace blink
 

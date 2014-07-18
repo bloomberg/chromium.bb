@@ -34,7 +34,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderPart::RenderPart(Element* node)
     : RenderWidget(node)

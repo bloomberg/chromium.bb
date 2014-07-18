@@ -42,7 +42,7 @@
 #include "platform/transforms/TransformationMatrix.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 
-namespace WebCore {
+namespace blink {
 
 static Length convertToFloatLength(CSSPrimitiveValue* primitiveValue, const CSSToLengthConversionData& conversionData)
 {
@@ -317,4 +317,4 @@ bool TransformBuilder::createTransformOperations(CSSValue* inValue, const CSSToL
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

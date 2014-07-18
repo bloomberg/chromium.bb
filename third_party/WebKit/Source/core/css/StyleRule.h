@@ -27,7 +27,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSRule;
 class CSSStyleRule;
@@ -291,6 +291,6 @@ DEFINE_STYLE_RULE_TYPE_CASTS(Supports);
 DEFINE_STYLE_RULE_TYPE_CASTS(Viewport);
 DEFINE_STYLE_RULE_TYPE_CASTS(Filter);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleRule_h

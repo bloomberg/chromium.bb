@@ -29,7 +29,7 @@
 
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 
-namespace WebCore {
+namespace blink {
 
 WebGLLoseContext::WebGLLoseContext(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -79,4 +79,4 @@ const char* WebGLLoseContext::extensionName()
     return "WEBGL_lose_context";
 }
 
-} // namespace WebCore
+} // namespace blink

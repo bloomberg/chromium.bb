@@ -37,7 +37,7 @@
 #include "wtf/Functional.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class TaskSynchronizer;
 
@@ -64,6 +64,6 @@ private:
     OwnPtr<MessageLoopInterruptor> m_messageLoopInterruptor;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLParserThread_h

@@ -45,7 +45,7 @@
 #include "core/frame/LocalFrame.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 static Node* selectionShadowAncestor(LocalFrame* frame)
 {
@@ -565,4 +565,4 @@ void DOMSelection::addConsoleError(const String& message)
         m_treeScope->document().addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
 }
 
-} // namespace WebCore
+} // namespace blink

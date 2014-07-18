@@ -39,7 +39,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 using blink::WebLocalizedString;
 using namespace HTMLNames;
@@ -189,4 +189,4 @@ bool BaseDateAndTimeInputType::shouldShowFocusRingOnMouseFocus() const
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

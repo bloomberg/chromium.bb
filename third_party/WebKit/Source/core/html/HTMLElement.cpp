@@ -58,7 +58,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 using namespace WTF;
@@ -945,14 +945,14 @@ const AtomicString& HTMLElement::eventParameterName()
     return eventString;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 
 // For use in the debugger
-void dumpInnerHTML(WebCore::HTMLElement*);
+void dumpInnerHTML(blink::HTMLElement*);
 
-void dumpInnerHTML(WebCore::HTMLElement* element)
+void dumpInnerHTML(blink::HTMLElement* element)
 {
     printf("%s\n", element->innerHTML().ascii().data());
 }

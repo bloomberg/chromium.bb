@@ -28,7 +28,7 @@
 
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleGridData::StyleGridData()
     : m_gridTemplateColumns(RenderStyle::initialGridTemplateColumns())
@@ -63,5 +63,5 @@ StyleGridData::StyleGridData(const StyleGridData& o)
 {
 }
 
-} // namespace WebCore
+} // namespace blink
 

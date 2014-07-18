@@ -28,7 +28,7 @@
 
 #include "core/dom/Node.h"
 
-namespace WebCore {
+namespace blink {
 
 class NodeTraversal {
 public:
@@ -119,6 +119,6 @@ inline Node* NodeTraversal::traverseNextSkippingChildrenTemplate(NodeType& curre
     return nextAncestorSibling(current, stayWithin);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

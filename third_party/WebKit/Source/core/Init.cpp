@@ -55,7 +55,7 @@
 #include "platform/heap/Heap.h"
 #include "wtf/text/StringStatics.h"
 
-namespace WebCore {
+namespace blink {
 
 void CoreInitializer::initEventNames()
 {
@@ -129,4 +129,4 @@ void CoreInitializer::shutdown()
     Partitions::shutdown();
 }
 
-} // namespace WebCore
+} // namespace blink

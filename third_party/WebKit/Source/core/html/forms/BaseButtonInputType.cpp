@@ -38,7 +38,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/rendering/RenderButton.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -79,4 +79,4 @@ void BaseButtonInputType::setValue(const String& sanitizedValue, bool, TextField
     element().setAttribute(valueAttr, AtomicString(sanitizedValue));
 }
 
-} // namespace WebCore
+} // namespace blink

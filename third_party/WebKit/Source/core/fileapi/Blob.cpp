@@ -39,7 +39,7 @@
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -155,4 +155,4 @@ URLRegistry& Blob::registry() const
     return BlobURLRegistry::registry();
 }
 
-} // namespace WebCore
+} // namespace blink

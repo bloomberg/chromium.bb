@@ -7,7 +7,7 @@
 
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 // <rt> is an HTMLElement in script, but we use a separate interface here
 // so HTMLElement's createRenderer doesn't need to know about it.

@@ -27,11 +27,11 @@
 
 #include "core/dom/NodeFilter.h"
 
-namespace WebCore {
+namespace blink {
 
 short NodeFilterCondition::acceptNode(Node*, ExceptionState&) const
 {
     return NodeFilter::FILTER_ACCEPT;
 }
 
-} // namespace WebCore
+} // namespace blink

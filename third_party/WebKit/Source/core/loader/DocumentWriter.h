@@ -34,7 +34,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class DocumentParser;
@@ -79,6 +79,6 @@ private:
     RefPtrWillBeMember<DocumentParser> m_parser;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DocumentWriter_h

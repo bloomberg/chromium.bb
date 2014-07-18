@@ -26,7 +26,7 @@
 #ifndef DataTransferAccessPolicy_h
 #define DataTransferAccessPolicy_h
 
-namespace WebCore {
+namespace blink {
 
 enum DataTransferAccessPolicy {
     DataTransferNumb, DataTransferImageWritable, DataTransferWritable, DataTransferTypesReadable, DataTransferReadable

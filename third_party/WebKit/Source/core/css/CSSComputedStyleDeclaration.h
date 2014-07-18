@@ -30,7 +30,7 @@
 #include "wtf/text/AtomicStringHash.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSPrimitiveValue;
 class CSSValueList;
@@ -123,6 +123,6 @@ private:
 #endif
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSComputedStyleDeclaration_h

@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/events/OverflowEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 OverflowEventInit::OverflowEventInit()
     : orient(0)

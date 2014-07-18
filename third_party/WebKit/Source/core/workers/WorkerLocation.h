@@ -36,7 +36,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class WorkerLocation FINAL : public RefCountedWillBeGarbageCollectedFinalized<WorkerLocation>, public ScriptWrappable, public DOMURLUtilsReadOnly {
 public:
@@ -63,6 +63,6 @@ private:
     KURL m_url;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerLocation_h

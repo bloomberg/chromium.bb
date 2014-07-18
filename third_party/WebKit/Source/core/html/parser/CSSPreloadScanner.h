@@ -31,7 +31,7 @@
 #include "core/html/parser/HTMLToken.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 class SegmentedString;
 

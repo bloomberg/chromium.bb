@@ -39,7 +39,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtr<WorkerLoaderClientBridgeSyncHelper> WorkerLoaderClientBridgeSyncHelper::create(ThreadableLoaderClient& client, PassOwnPtr<blink::WebWaitableEvent> event)
 {
@@ -143,4 +143,4 @@ WorkerLoaderClientBridgeSyncHelper::WorkerLoaderClientBridgeSyncHelper(Threadabl
     ASSERT(m_event);
 }
 
-} // namespace WebCore
+} // namespace blink

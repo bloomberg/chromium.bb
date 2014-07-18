@@ -30,7 +30,7 @@
 #include "core/html/HTMLDivElement.h"
 #include "core/html/shadow/MediaControlElements.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class Event;

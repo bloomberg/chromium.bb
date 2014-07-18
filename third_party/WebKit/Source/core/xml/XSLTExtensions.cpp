@@ -34,7 +34,7 @@
 #include <libxslt/extra.h>
 #include <libxslt/xsltutils.h>
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: This code is taken from libexslt 1.1.11; should sync with newer
 // versions.
@@ -75,4 +75,4 @@ void registerXSLTExtensions(xsltTransformContextPtr ctxt)
     xsltRegisterExtFunction(ctxt, (const xmlChar*)"node-set", (const xmlChar*)"http://exslt.org/common", exsltNodeSetFunction);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/events/ProgressEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 ProgressEventInit::ProgressEventInit()
     : lengthComputable(false)

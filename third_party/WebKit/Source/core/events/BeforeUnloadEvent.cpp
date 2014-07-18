@@ -25,7 +25,7 @@
 #include "core/events/BeforeUnloadEvent.h"
 
 
-namespace WebCore {
+namespace blink {
 
 BeforeUnloadEvent::BeforeUnloadEvent()
     : Event(EventTypeNames::beforeunload, false, true)
@@ -47,4 +47,4 @@ void BeforeUnloadEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

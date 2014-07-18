@@ -15,7 +15,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 struct HitRegionOptions {
     STACK_ALLOCATED();
@@ -92,6 +92,6 @@ private:
     HitRegionControlMap m_hitRegionControlMap;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -33,7 +33,7 @@
 
 #include "core/animation/animatable/AnimatableValue.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableNeutral FINAL : public AnimatableValue {
 public:
@@ -59,6 +59,6 @@ private:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatableNeutral_h

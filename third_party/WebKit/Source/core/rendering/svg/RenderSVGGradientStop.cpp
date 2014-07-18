@@ -25,7 +25,7 @@
 #include "core/svg/SVGGradientElement.h"
 #include "core/svg/SVGStopElement.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSVGGradientStop::RenderSVGGradientStop(SVGStopElement* element)
     : RenderObject(element)

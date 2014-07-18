@@ -36,7 +36,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class DedicatedWorkerThread;
 class WorkerThreadStartupData;
@@ -69,6 +69,6 @@ private:
     DedicatedWorkerGlobalScope(const KURL&, const String& userAgent, DedicatedWorkerThread*, double timeOrigin, PassOwnPtrWillBeRawPtr<WorkerClients>);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DedicatedWorkerGlobalScope_h

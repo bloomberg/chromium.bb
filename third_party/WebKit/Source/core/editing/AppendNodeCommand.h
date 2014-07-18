@@ -28,7 +28,7 @@
 
 #include "core/editing/EditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class AppendNodeCommand FINAL : public SimpleEditCommand {
 public:
@@ -49,6 +49,6 @@ private:
     RefPtrWillBeMember<Node> m_node;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AppendNodeCommand_h

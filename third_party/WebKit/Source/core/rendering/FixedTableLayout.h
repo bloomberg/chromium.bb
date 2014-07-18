@@ -25,7 +25,7 @@
 #include "platform/Length.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderTable;
 
@@ -44,6 +44,6 @@ private:
     Vector<Length> m_width;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FixedTableLayout_h

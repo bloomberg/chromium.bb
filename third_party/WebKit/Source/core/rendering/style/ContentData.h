@@ -30,7 +30,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class RenderObject;
@@ -193,6 +193,6 @@ inline bool operator!=(const ContentData& a, const ContentData& b)
     return !(a == b);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ContentData_h

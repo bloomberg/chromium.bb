@@ -29,7 +29,7 @@
 #include "core/html/parser/HTMLToken.h"
 #include "platform/text/SegmentedString.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLTokenizer;
 

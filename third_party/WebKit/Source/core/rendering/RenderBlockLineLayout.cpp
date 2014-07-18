@@ -47,7 +47,7 @@
 #include "wtf/Vector.h"
 #include "wtf/unicode/CharacterNames.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace WTF::Unicode;
 

@@ -30,7 +30,7 @@
 
 OBJC_CLASS WebCoreRenderThemeNotificationObserver;
 
-namespace WebCore {
+namespace blink {
 
 class RenderThemeChromiumMac FINAL : public RenderTheme {
 public:
@@ -211,6 +211,6 @@ private:
     RetainPtr<WebCoreRenderThemeNotificationObserver> m_notificationObserver;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderThemeChromiumMac_h

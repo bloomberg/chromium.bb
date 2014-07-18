@@ -26,7 +26,7 @@
 #include "core/dom/QualifiedName.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -92,6 +92,6 @@ private:
     SVGZoomAndPanType m_zoomAndPan;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGZoomAndPan_h

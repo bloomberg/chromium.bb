@@ -23,7 +23,7 @@
 #include "core/svg/SVGEnumeration.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGUnitTypes : public RefCounted<SVGUnitTypes> {
 public:

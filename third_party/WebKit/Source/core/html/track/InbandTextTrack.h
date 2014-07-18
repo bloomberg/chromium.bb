@@ -36,7 +36,7 @@ class WebInbandTextTrack;
 class WebString;
 }
 
-namespace WebCore {
+namespace blink {
 
 class MediaPlayer;
 class TextTrackCue;
@@ -57,6 +57,6 @@ private:
     blink::WebInbandTextTrack* m_webTrack;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

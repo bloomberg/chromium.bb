@@ -27,7 +27,7 @@
 #include "core/rendering/PaintInfo.h"
 #include "platform/graphics/GraphicsContext.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

@@ -50,7 +50,7 @@
 #include "platform/Length.h"
 #include "platform/Timer.h"
 
-namespace WebCore {
+namespace blink {
 
 // This class handles the auto-scrolling for <marquee>
 class RenderMarquee FINAL : public RenderBlockFlow {
@@ -104,6 +104,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderMarquee, isMarquee());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderMarquee_h

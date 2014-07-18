@@ -28,7 +28,7 @@
 
 #include "core/editing/CompositeEditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class InsertTextCommand FINAL : public CompositeEditCommand {
 public:
@@ -62,6 +62,6 @@ private:
     RebalanceType m_rebalanceType;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InsertTextCommand_h

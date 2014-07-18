@@ -27,7 +27,7 @@
 #include "core/fetch/ResourceClient.h"
 #include "wtf/HashCountedSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class FrameView;
 class HTMLBodyElement;
@@ -102,6 +102,6 @@ inline bool HTMLDocument::hasExtraNamedItem(const AtomicString& name)
 
 DEFINE_DOCUMENT_TYPE_CASTS(HTMLDocument);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLDocument_h

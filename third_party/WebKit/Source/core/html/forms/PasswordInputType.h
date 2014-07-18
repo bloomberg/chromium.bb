@@ -33,7 +33,7 @@
 
 #include "core/html/forms/BaseTextInputType.h"
 
-namespace WebCore {
+namespace blink {
 
 class PasswordInputType FINAL : public BaseTextInputType {
 public:
@@ -54,6 +54,6 @@ private:
     virtual void disableSecureTextInput() OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PasswordInputType_h

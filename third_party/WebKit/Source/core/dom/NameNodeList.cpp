@@ -27,7 +27,7 @@
 #include "core/dom/NodeRareData.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -49,4 +49,4 @@ bool NameNodeList::elementMatches(const Element& element) const
     return element.getNameAttribute() == m_name;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -58,7 +58,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -2256,4 +2256,4 @@ String CompositedLayerMapping::debugName(const GraphicsLayer* graphicsLayer)
     return name;
 }
 
-} // namespace WebCore
+} // namespace blink

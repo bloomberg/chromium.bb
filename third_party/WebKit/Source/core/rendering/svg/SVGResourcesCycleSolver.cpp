@@ -33,7 +33,7 @@
 #include "core/svg/SVGGradientElement.h"
 #include "core/svg/SVGPatternElement.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGResourcesCycleSolver::SVGResourcesCycleSolver(RenderObject* renderer, SVGResources* resources)
     : m_renderer(renderer)

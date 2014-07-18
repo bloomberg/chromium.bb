@@ -27,7 +27,7 @@
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/UIEventWithKeyState.h"
 
-namespace WebCore {
+namespace blink {
 
 class EventDispatcher;
 class Node;
@@ -127,6 +127,6 @@ private:
 
 DEFINE_EVENT_TYPE_CASTS(KeyboardEvent);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // KeyboardEvent_h

@@ -28,7 +28,7 @@
 #include "core/html/HTMLDimension.h"
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLFrameSetElement FINAL : public HTMLElement {
 public:
@@ -85,6 +85,6 @@ private:
     bool m_noresize;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLFrameSetElement_h

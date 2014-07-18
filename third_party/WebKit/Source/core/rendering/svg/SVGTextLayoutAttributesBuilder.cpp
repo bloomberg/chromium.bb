@@ -26,7 +26,7 @@
 #include "core/rendering/svg/SVGTextMetricsBuilder.h"
 #include "core/svg/SVGTextPositioningElement.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGTextLayoutAttributesBuilder::SVGTextLayoutAttributesBuilder()
     : m_textLength(0)

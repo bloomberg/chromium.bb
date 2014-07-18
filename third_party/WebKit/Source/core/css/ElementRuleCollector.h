@@ -30,7 +30,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSStyleSheet;
 class CSSRuleList;
@@ -83,11 +83,11 @@ private:
     RawPtrWillBeMember<const CSSStyleSheet> m_parentStyleSheet;
 };
 
-} // namespace WebCore
+} // namespace blink
 
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::MatchedRule);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::MatchedRule);
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: oilpan: when transition types are gone this class can be replaced with HeapVector.
 class StyleRuleList FINAL : public RefCountedWillBeGarbageCollected<StyleRuleList> {
@@ -180,6 +180,6 @@ private:
     MatchResult m_result;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ElementRuleCollector_h

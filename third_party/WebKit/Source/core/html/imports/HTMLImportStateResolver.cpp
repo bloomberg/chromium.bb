@@ -35,7 +35,7 @@
 #include "core/html/imports/HTMLImportChild.h"
 #include "core/html/imports/HTMLImportLoader.h"
 
-namespace WebCore {
+namespace blink {
 
 inline bool HTMLImportStateResolver::isBlockingFollowers(HTMLImport* import)
 {

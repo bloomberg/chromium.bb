@@ -40,7 +40,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicStringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class KURL;
@@ -63,6 +63,6 @@ protected:
     KURL resolveURL(const String& url, ExceptionState&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AbstractWorker_h

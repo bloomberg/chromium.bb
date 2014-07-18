@@ -29,7 +29,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorStyleSheet.h"
 
-namespace WebCore {
+namespace blink {
 
 InspectorStyleTextEditor::InspectorStyleTextEditor(WillBeHeapVector<InspectorStyleProperty>* allProperties, const String& styleText, const NewLineAndWhitespace& format)
     : m_allProperties(allProperties)
@@ -152,5 +152,5 @@ void InspectorStyleTextEditor::internalReplaceProperty(const InspectorStylePrope
     m_styleText.replace(replaceRangeStart, replacedLength, finalNewText);
 }
 
-} // namespace WebCore
+} // namespace blink
 

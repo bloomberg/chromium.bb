@@ -30,7 +30,7 @@
 #include <libxml/tree.h>
 #include <libxslt/transform.h>
 
-namespace WebCore {
+namespace blink {
 
 class ResourceFetcher;
 class XSLImportRule;
@@ -124,6 +124,6 @@ private:
 
 DEFINE_TYPE_CASTS(XSLStyleSheet, StyleSheet, sheet, !sheet->isCSSStyleSheet(), !sheet.isCSSStyleSheet());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // XSLStyleSheet_h

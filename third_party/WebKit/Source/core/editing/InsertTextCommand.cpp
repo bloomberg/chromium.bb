@@ -34,7 +34,7 @@
 #include "core/editing/htmlediting.h"
 #include "core/frame/LocalFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 InsertTextCommand::InsertTextCommand(Document& document, const String& text, bool selectInsertedText, RebalanceType rebalanceType)
     : CompositeEditCommand(document)

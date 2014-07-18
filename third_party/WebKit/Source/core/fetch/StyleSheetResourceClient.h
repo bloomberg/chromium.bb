@@ -30,7 +30,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 class CSSStyleSheetResource;
 
 class StyleSheetResourceClient : public ResourceClient {

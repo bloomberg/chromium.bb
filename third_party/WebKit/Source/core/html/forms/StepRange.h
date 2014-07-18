@@ -24,7 +24,7 @@
 #include "platform/Decimal.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLInputElement;
 

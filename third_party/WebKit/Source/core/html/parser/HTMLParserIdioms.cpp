@@ -33,7 +33,7 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/TextEncoding.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

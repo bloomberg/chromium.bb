@@ -34,7 +34,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
 
-namespace WebCore {
+namespace blink {
 
 inline HTMLOutputElement::HTMLOutputElement(Document& document, HTMLFormElement* form)
     : HTMLFormControlElement(HTMLNames::outputTag, document, form)

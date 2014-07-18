@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/StylePropertyShorthand.h"
 
-namespace WebCore {
+namespace blink {
 
 const StylePropertyShorthand& borderShorthandForParsing()
 {
@@ -168,4 +168,4 @@ unsigned indexOfShorthandForLonghand(CSSPropertyID shorthandID, const Vector<Sty
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink

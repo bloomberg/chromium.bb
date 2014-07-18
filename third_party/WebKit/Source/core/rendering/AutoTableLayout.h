@@ -26,7 +26,7 @@
 #include "platform/Length.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderTable;
 class RenderTableCell;
@@ -76,6 +76,6 @@ private:
     mutable bool m_effectiveLogicalWidthDirty : 1;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AutoTableLayout_h

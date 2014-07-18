@@ -37,7 +37,7 @@
 #include "core/events/AnimationPlayerEvent.h"
 #include "core/frame/UseCounter.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 

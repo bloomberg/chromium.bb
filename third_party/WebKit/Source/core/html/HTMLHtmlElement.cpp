@@ -32,7 +32,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

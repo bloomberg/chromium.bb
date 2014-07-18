@@ -57,7 +57,7 @@
 // (Objects still need an operator== defined for this to work).
 #define EXPECT_REFV_EQ(a, b) EXPECT_EQ(*(a.get()), *(b.get()))
 
-namespace WebCore {
+namespace blink {
 
 bool operator==(const AnimatableValue&, const AnimatableValue&);
 
@@ -74,6 +74,6 @@ void PrintTo(const AnimatableUnknown&, ::std::ostream*);
 void PrintTo(const AnimatableValue&, ::std::ostream*);
 void PrintTo(const AnimatableVisibility&, ::std::ostream*);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

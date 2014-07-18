@@ -38,9 +38,9 @@
 #include "core/inspector/InspectorState.h"
 #include "platform/JSONValues.h"
 
-using WebCore::TypeBuilder::Runtime::ExecutionContextDescription;
+using blink::TypeBuilder::Runtime::ExecutionContextDescription;
 
-namespace WebCore {
+namespace blink {
 
 namespace InspectorRuntimeAgentState {
 static const char runtimeEnabled[] = "runtimeEnabled";
@@ -212,5 +212,5 @@ void InspectorRuntimeAgent::addExecutionContextToFrontend(ScriptState* scriptSta
         .release());
 }
 
-} // namespace WebCore
+} // namespace blink
 

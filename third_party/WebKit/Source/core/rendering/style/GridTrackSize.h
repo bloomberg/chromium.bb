@@ -33,7 +33,7 @@
 
 #include "core/rendering/style/GridLength.h"
 
-namespace WebCore {
+namespace blink {
 
 enum GridTrackSizeType {
     LengthTrackSizing,
@@ -126,6 +126,6 @@ private:
     bool m_maxTrackBreadthIsMaxContent;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GridTrackSize_h

@@ -10,7 +10,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/shadow/ShadowRoot.h"
 
-namespace WebCore {
+namespace blink {
 
 // Maintains the parent element stack (and bloom filter) inside recalcStyle.
 class StyleResolverParentScope FINAL {
@@ -74,6 +74,6 @@ inline void StyleResolverParentScope::pushParentIfNeeded()
     m_pushed = true;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleResolverParentScope_h

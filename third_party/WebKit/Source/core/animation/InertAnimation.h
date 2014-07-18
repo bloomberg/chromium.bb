@@ -35,7 +35,7 @@
 #include "core/animation/AnimationNode.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class InertAnimation FINAL : public AnimationNode {
 public:
@@ -56,6 +56,6 @@ private:
     bool m_paused;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

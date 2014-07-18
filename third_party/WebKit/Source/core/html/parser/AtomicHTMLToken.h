@@ -33,7 +33,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AtomicHTMLToken {
     WTF_MAKE_NONCOPYABLE(AtomicHTMLToken);

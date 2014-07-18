@@ -48,7 +48,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 class ImageBitmapTest : public ::testing::Test {
 protected:

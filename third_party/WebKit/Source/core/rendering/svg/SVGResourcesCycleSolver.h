@@ -23,7 +23,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderObject;
 class RenderSVGResourceContainer;

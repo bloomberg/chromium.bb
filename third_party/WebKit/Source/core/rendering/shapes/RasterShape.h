@@ -36,7 +36,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class RasterShapeIntervals {
 public:
@@ -105,6 +105,6 @@ private:
     IntSize m_marginRectSize;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RasterShape_h

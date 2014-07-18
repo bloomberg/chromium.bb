@@ -33,7 +33,7 @@
 
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class DocumentFragment;
 class TemplateContentDocumentFragment;
@@ -55,6 +55,6 @@ private:
     mutable RefPtrWillBeMember<TemplateContentDocumentFragment> m_content;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLTemplateElement_h

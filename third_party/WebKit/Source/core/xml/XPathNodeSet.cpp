@@ -31,7 +31,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
 
-namespace WebCore {
+namespace blink {
 namespace XPath {
 
 // When a node set is large, sorting it by traversing the whole document is

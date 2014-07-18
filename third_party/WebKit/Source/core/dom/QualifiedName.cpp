@@ -37,7 +37,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/StaticConstructors.h"
 
-namespace WebCore {
+namespace blink {
 
 static const int staticQualifiedNamesCount = HTMLNames::HTMLTagsCount + HTMLNames::HTMLAttrsCount
     + SVGNames::SVGTagsCount + SVGNames::SVGAttrsCount

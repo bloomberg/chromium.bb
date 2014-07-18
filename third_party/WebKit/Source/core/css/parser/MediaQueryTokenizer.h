@@ -11,7 +11,7 @@
 
 #include <climits>
 
-namespace WebCore {
+namespace blink {
 
 class MediaQueryInputStream;
 
@@ -80,6 +80,6 @@ private:
 
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaQueryTokenizer_h

@@ -28,7 +28,7 @@
 
 #include "core/rendering/RenderImage.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLMediaElement;
 
@@ -73,6 +73,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderMedia, isMedia());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderMedia_h

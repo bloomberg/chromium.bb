@@ -23,7 +23,7 @@
 
 #include "core/svg/SVGElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGTitleElement FINAL : public SVGElement {
 public:
@@ -39,6 +39,6 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

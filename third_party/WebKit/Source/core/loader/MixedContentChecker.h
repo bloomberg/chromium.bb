@@ -33,7 +33,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class FrameLoaderClient;
@@ -80,6 +80,6 @@ private:
     LocalFrame* m_frame;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MixedContentChecker_h

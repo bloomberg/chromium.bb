@@ -33,7 +33,7 @@
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 
-namespace WebCore {
+namespace blink {
 
 static inline bool inheritColorFromParentStyle(RenderObject* object, bool applyToFill, Color& color)
 {

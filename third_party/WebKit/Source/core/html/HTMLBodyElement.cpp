@@ -37,7 +37,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/rendering/RenderBox.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -330,4 +330,4 @@ int HTMLBodyElement::scrollWidth()
     return view ? adjustForZoom(view->contentsWidth(), &document) : 0;
 }
 
-} // namespace WebCore
+} // namespace blink

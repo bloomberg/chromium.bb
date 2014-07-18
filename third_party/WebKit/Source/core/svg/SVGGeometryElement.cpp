@@ -37,7 +37,7 @@
 #include "core/rendering/svg/RenderSVGShape.h"
 #include "core/svg/SVGPointTearOff.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGGeometryElement::SVGGeometryElement(const QualifiedName& tagName, Document& document, ConstructionType constructionType)
     : SVGGraphicsElement(tagName, document, constructionType)

@@ -32,7 +32,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebGLRenderbuffer;
 class WebGLTexture;
@@ -127,6 +127,6 @@ private:
     Vector<GLenum> m_filteredDrawBuffers;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLFramebuffer_h

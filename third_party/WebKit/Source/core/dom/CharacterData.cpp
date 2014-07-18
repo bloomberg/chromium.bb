@@ -34,7 +34,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "wtf/CheckedArithmetic.h"
 
-namespace WebCore {
+namespace blink {
 
 void CharacterData::atomize()
 {
@@ -217,4 +217,4 @@ bool CharacterData::offsetInCharacters() const
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

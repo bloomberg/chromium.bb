@@ -33,7 +33,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/TouchEventContext.h"
 
-namespace WebCore {
+namespace blink {
 
 NodeEventContext::NodeEventContext(PassRefPtrWillBeRawPtr<Node> node, PassRefPtrWillBeRawPtr<EventTarget> currentTarget)
     : m_node(node)

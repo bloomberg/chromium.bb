@@ -33,7 +33,7 @@
 
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLImportState {
 public:

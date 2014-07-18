@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/rendering/line/BreakingContextInlineHeaders.h"
 
-namespace WebCore {
+namespace blink {
 
 InlineIterator BreakingContext::handleEndOfLine()
 {

@@ -31,7 +31,7 @@
 #include "core/rendering/RenderRegion.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 // RenderMultiColumnSet represents a set of columns that all have the same width and height. By
 // combining runs of same-size columns into a single object, we significantly reduce the number of
@@ -209,7 +209,7 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderMultiColumnSet, isRenderMultiColumnSet());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderMultiColumnSet_h
 

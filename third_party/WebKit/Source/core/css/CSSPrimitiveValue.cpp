@@ -44,7 +44,7 @@
 
 using namespace WTF;
 
-namespace WebCore {
+namespace blink {
 
 // Max/min values for CSS, needs to slightly smaller/larger than the true max/min values to allow for rounding without overflowing.
 // Subtract two (rather than one) to allow for values to be converted to float and back without exceeding the LayoutUnit::max.
@@ -1441,4 +1441,4 @@ void CSSPrimitiveValue::traceAfterDispatch(Visitor* visitor)
     CSSValue::traceAfterDispatch(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

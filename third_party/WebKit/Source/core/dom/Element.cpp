@@ -113,7 +113,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextPosition.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 using namespace XMLNames;
@@ -3374,4 +3374,4 @@ void Element::trace(Visitor* visitor)
     ContainerNode::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -28,7 +28,7 @@
 
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSFontFeatureValue::CSSFontFeatureValue(const AtomicString& tag, int value)
     : CSSValue(FontFeatureClass)

@@ -10,7 +10,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 #if ENABLE(ASSERT)
 static unsigned checkConnectedSubframeCountIsConsistent(Node&);

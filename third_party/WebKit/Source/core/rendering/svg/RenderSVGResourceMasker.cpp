@@ -30,7 +30,7 @@
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 const RenderSVGResourceType RenderSVGResourceMasker::s_resourceType = MaskerResourceType;
 

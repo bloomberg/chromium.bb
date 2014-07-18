@@ -28,7 +28,7 @@
 #include "core/rendering/RenderImageResource.h"
 #include "core/rendering/RenderReplaced.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLAreaElement;
 class HTMLMapElement;
@@ -120,6 +120,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderImage, isRenderImage());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderImage_h

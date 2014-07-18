@@ -22,7 +22,7 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/PlatformScreen.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<MediaValues> MediaValues::createDynamicIfFrameExists(LocalFrame* frame)
 {

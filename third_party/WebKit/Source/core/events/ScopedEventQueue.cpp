@@ -37,7 +37,7 @@
 #include "core/events/EventTarget.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 ScopedEventQueue* ScopedEventQueue::s_instance = 0;
 

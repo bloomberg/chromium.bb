@@ -28,7 +28,7 @@
 #include "platform/text/TextRun.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 struct CompositionUnderline;
 class DocumentMarker;
@@ -203,6 +203,6 @@ inline AffineTransform InlineTextBox::rotation(const FloatRect& boxRect, Rotatio
         : AffineTransform(0, -1, 1, 0, boxRect.x() - boxRect.maxY(), boxRect.x() + boxRect.maxY());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InlineTextBox_h

@@ -37,7 +37,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class StyleGridItemData : public RefCounted<StyleGridItemData> {
 public:
@@ -65,6 +65,6 @@ private:
     StyleGridItemData(const StyleGridItemData&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleGridItemData_h

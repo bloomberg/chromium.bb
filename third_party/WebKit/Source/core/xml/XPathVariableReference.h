@@ -28,7 +28,7 @@
 
 #include "core/xml/XPathExpressionNode.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace XPath {
 

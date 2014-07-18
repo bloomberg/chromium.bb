@@ -27,7 +27,7 @@
 
 #include "core/html/canvas/OESTextureFloatLinear.h"
 
-namespace WebCore {
+namespace blink {
 
 OESTextureFloatLinear::OESTextureFloatLinear(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -60,4 +60,4 @@ const char* OESTextureFloatLinear::extensionName()
     return "OES_texture_float_linear";
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -25,7 +25,7 @@
 
 #include "core/rendering/svg/RenderSVGContainer.h"
 
-namespace WebCore {
+namespace blink {
 
 // This is used for non-root <svg> elements and <marker> elements, neither of which are SVGTransformable
 // thus we inherit from RenderSVGContainer instead of RenderSVGTransformableContainer
@@ -64,6 +64,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGViewportContainer, isSVGViewportContainer());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderSVGViewportContainer_h

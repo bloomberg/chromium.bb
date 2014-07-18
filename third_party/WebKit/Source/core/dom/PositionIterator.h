@@ -29,7 +29,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/Position.h"
 
-namespace WebCore {
+namespace blink {
 
 // A Position iterator with constant-time
 // increment, decrement, and several predicates on the Position it is at.
@@ -70,6 +70,6 @@ private:
     int m_offsetInAnchor;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PositionIterator_h

@@ -33,7 +33,7 @@
 
 #include "core/html/forms/BaseTextInputType.h"
 
-namespace WebCore {
+namespace blink {
 
 class URLInputType FINAL : public BaseTextInputType {
 public:
@@ -49,6 +49,6 @@ private:
     virtual bool isURLField() const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // URLInputType_h

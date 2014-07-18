@@ -25,7 +25,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathByteStreamSource FINAL : public SVGPathSource {
 public:
@@ -75,6 +75,6 @@ private:
     SVGPathByteStream::DataIterator m_streamEnd;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPathByteStreamSource_h

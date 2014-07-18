@@ -8,12 +8,12 @@
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/resolver/StyleBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 bool LengthStyleInterpolation::canCreateFrom(const CSSValue& value)
 {
     if (value.isPrimitiveValue()) {
-        const CSSPrimitiveValue& primitiveValue = WebCore::toCSSPrimitiveValue(value);
+        const CSSPrimitiveValue& primitiveValue = blink::toCSSPrimitiveValue(value);
         if (primitiveValue.cssCalcValue())
             return true;
 

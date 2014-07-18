@@ -10,7 +10,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class GarbageCollectedScriptWrappable : public GarbageCollectedFinalized<GarbageCollectedScriptWrappable>, public ScriptWrappable {
 public:
@@ -24,6 +24,6 @@ private:
     String m_string;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // #ifndef GarbageCollectedScriptWrappable_h

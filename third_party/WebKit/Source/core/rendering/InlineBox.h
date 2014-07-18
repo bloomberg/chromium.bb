@@ -25,7 +25,7 @@
 #include "core/rendering/RenderObjectInlines.h"
 #include "platform/text/TextDirection.h"
 
-namespace WebCore {
+namespace blink {
 
 class HitTestRequest;
 class HitTestResult;
@@ -433,12 +433,12 @@ inline void InlineBox::setHasBadParent()
 // Allow equality comparisons of InlineBox's by reference or pointer, interchangeably.
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(InlineBox)
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showTree(const WebCore::InlineBox*);
-void showLineTree(const WebCore::InlineBox*);
+void showTree(const blink::InlineBox*);
+void showLineTree(const blink::InlineBox*);
 #endif
 
 #endif // InlineBox_h

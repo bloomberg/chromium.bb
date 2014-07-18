@@ -34,7 +34,7 @@
 #include "core/css/CSSSelectorList.h"
 #include "core/dom/shadow/InsertionPoint.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLContentElement FINAL : public InsertionPoint {
 public:

@@ -35,7 +35,7 @@
 #include "core/page/NetworkStateNotifier.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace ApplicationCacheAgentState {
 static const char applicationCacheAgentEnabled[] = "applicationCacheAgentEnabled";
@@ -202,5 +202,5 @@ PassRefPtr<TypeBuilder::ApplicationCache::ApplicationCacheResource> InspectorApp
     return value;
 }
 
-} // namespace WebCore
+} // namespace blink
 

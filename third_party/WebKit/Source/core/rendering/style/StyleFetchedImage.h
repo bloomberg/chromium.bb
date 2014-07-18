@@ -28,7 +28,7 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/rendering/style/StyleImage.h"
 
-namespace WebCore {
+namespace blink {
 
 class ImageResource;
 

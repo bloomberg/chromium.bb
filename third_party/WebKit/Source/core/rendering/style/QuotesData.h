@@ -27,7 +27,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class QuotesData : public RefCounted<QuotesData> {
 public:
@@ -48,6 +48,6 @@ private:
     Vector<std::pair<String, String> > m_quotePairs;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // QuotesData_h

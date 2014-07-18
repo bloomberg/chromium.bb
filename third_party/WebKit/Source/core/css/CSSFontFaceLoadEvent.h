@@ -37,7 +37,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 struct CSSFontFaceLoadEventInit : public EventInit {
     FontFaceArray fontfaces;
@@ -76,6 +76,6 @@ private:
     FontFaceArray m_fontfaces;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSFontFaceLoadEvent_h

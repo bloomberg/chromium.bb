@@ -35,7 +35,7 @@
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 
-namespace WebCore {
+namespace blink {
 
 GraphicsLayerTreeBuilder::GraphicsLayerTreeBuilder()
 {

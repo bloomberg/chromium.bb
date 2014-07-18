@@ -29,7 +29,7 @@
 
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderSVGResourceFilterPrimitive FINAL : public RenderSVGHiddenContainer {
 public:
@@ -54,6 +54,6 @@ public:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderSVGResourceFilterPrimitive_h

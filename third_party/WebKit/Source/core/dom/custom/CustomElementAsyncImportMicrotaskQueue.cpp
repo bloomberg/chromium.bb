@@ -33,7 +33,7 @@
 
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
 
-namespace WebCore {
+namespace blink {
 
 void CustomElementAsyncImportMicrotaskQueue::enqueue(PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep> step)
 {
@@ -52,4 +52,4 @@ void CustomElementAsyncImportMicrotaskQueue::doDispatch()
     m_queue.swap(remaining);
 }
 
-} // namespace WebCore
+} // namespace blink

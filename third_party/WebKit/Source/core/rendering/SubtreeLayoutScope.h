@@ -42,7 +42,7 @@
 // It ensures that you don't accidentally mark part of the tree as
 // needing layout and not actually lay it out.
 
-namespace WebCore {
+namespace blink {
 
 class RenderObject;
 

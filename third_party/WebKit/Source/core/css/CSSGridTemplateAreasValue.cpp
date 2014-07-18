@@ -33,7 +33,7 @@
 
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSGridTemplateAreasValue::CSSGridTemplateAreasValue(const NamedGridAreaMap& gridAreaMap, size_t rowCount, size_t columnCount)
     : CSSValue(GridTemplateAreasClass)
@@ -83,4 +83,4 @@ String CSSGridTemplateAreasValue::customCSSText() const
     return builder.toString();
 }
 
-} // namespace WebCore
+} // namespace blink

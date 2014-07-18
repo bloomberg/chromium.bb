@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/css/parser/MediaQueryTokenizer.h"
 
-namespace WebCore {
+namespace blink {
 #include "core/MediaQueryTokenizerCodepoints.cpp"
 }
 
@@ -13,7 +13,7 @@ namespace WebCore {
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "wtf/unicode/CharacterNames.h"
 
-namespace WebCore {
+namespace blink {
 
 // http://dev.w3.org/csswg/css-syntax/#name-start-code-point
 static bool isNameStart(UChar c)
@@ -524,4 +524,4 @@ bool MediaQueryTokenizer::nextCharsAreIdentifier()
     return areIdentifier;
 }
 
-} // namespace WebCore
+} // namespace blink

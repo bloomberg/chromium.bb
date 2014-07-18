@@ -28,7 +28,7 @@
 
 #include "core/css/CSSRule.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSKeyframesRule;
 class CSSParserValueList;
@@ -100,6 +100,6 @@ private:
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSKeyframeRule, KEYFRAME_RULE);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSKeyframeRule_h

@@ -46,7 +46,7 @@
 #include "core/rendering/RenderTextControl.h"
 #include "platform/text/TextCheckerClient.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -909,7 +909,7 @@ TextCheckingTypeMask SpellChecker::resolveTextCheckingTypeMask(TextCheckingTypeM
 
 bool SpellChecker::unifiedTextCheckerEnabled() const
 {
-    return WebCore::unifiedTextCheckerEnabled(&m_frame);
+    return blink::unifiedTextCheckerEnabled(&m_frame);
 }
 
 void SpellChecker::cancelCheck()
@@ -924,4 +924,4 @@ void SpellChecker::requestTextChecking(const Element& element)
 }
 
 
-} // namespace WebCore
+} // namespace blink

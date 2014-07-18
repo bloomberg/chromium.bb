@@ -36,7 +36,7 @@
 #include "wtf/Vector.h"
 #include "wtf/WeakPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class ExecutionContextTask;

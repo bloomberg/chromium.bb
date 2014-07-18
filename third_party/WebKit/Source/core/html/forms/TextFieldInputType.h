@@ -34,7 +34,7 @@
 #include "core/html/forms/InputType.h"
 #include "core/html/shadow/SpinButtonElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class FormDataList;
 
@@ -101,6 +101,6 @@ private:
     SpinButtonElement* spinButtonElement() const;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TextFieldInputType_h

@@ -10,7 +10,7 @@
 #include "core/css/parser/MediaQueryTokenizer.h"
 #include "core/css/parser/SizesCalcParser.h"
 
-namespace WebCore {
+namespace blink {
 
 unsigned SizesAttributeParser::findEffectiveSize(const String& attribute, PassRefPtr<MediaValues> mediaValues)
 {

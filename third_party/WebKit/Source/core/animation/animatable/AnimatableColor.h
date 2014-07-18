@@ -34,7 +34,7 @@
 #include "core/animation/animatable/AnimatableValue.h"
 #include "platform/graphics/Color.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableColorImpl {
 public:
@@ -82,6 +82,6 @@ private:
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableColor, isColor());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatableColor_h

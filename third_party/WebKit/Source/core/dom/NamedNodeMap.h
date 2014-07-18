@@ -31,7 +31,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Node;
 class ExceptionState;
@@ -80,6 +80,6 @@ private:
     RawPtrWillBeMember<Element> m_element;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NamedNodeMap_h

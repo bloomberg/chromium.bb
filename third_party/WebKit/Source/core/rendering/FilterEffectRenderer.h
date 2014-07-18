@@ -39,7 +39,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class GraphicsContext;
 class RenderLayer;
@@ -120,7 +120,7 @@ private:
     bool m_hasFilterThatMovesPixels;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // FilterEffectRenderer_h

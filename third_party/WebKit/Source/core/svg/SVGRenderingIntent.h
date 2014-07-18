@@ -22,7 +22,7 @@
 
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGRenderingIntent : public RefCounted<SVGRenderingIntent> {
 public:
@@ -39,6 +39,6 @@ private:
     SVGRenderingIntent() { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGRenderingIntent_h

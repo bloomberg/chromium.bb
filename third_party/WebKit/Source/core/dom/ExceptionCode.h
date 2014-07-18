@@ -19,7 +19,7 @@
 #ifndef ExceptionCode_h
 #define ExceptionCode_h
 
-namespace WebCore {
+namespace blink {
 
     // The DOM standards use unsigned short for exception codes.
     // In our DOM implementation we use int instead, and use different
@@ -88,6 +88,6 @@ namespace WebCore {
         RangeError,
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ExceptionCode_h

@@ -38,7 +38,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSAnimations;
 class RenderObject;
@@ -107,6 +107,6 @@ private:
     friend class CSSAnimations;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -29,7 +29,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSLineBoxContainValue::CSSLineBoxContainValue(unsigned value)
     : CSSValue(LineBoxContainClass)

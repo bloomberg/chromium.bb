@@ -34,13 +34,13 @@
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 class StylePropertySet;
 
 PassRefPtrWillBeRawPtr<StylePropertySet> computePresentationAttributeStyle(Element&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PresentationAttributeStyle_h

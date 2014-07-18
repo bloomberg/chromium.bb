@@ -24,7 +24,7 @@
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "platform/transforms/AffineTransform.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPatternElement;
 
@@ -160,6 +160,6 @@ private:
     bool m_patternContentElementSet : 1;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

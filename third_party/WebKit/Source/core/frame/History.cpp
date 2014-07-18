@@ -40,7 +40,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 History::History(LocalFrame* frame)
     : DOMWindowProperty(frame)
@@ -137,4 +137,4 @@ void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const Str
     m_frame->loader().updateForSameDocumentNavigation(fullURL, SameDocumentNavigationHistoryApi, data, type);
 }
 
-} // namespace WebCore
+} // namespace blink

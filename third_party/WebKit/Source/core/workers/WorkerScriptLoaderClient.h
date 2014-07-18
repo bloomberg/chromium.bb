@@ -28,7 +28,7 @@
 #ifndef WorkerScriptLoaderClient_h
 #define WorkerScriptLoaderClient_h
 
-namespace WebCore {
+namespace blink {
 
     class ResourceResponse;
 
@@ -44,6 +44,6 @@ namespace WebCore {
         virtual ~WorkerScriptLoaderClient() { }
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerScriptLoaderClient_h

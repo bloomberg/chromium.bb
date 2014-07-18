@@ -31,7 +31,7 @@
 
 #include "core/accessibility/AXRenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXSVGRoot FINAL : public AXRenderObject {
 
@@ -52,6 +52,6 @@ private:
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXSVGRoot, isAXSVGRoot());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXSVGRoot_h

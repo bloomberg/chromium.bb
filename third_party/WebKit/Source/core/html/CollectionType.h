@@ -23,7 +23,7 @@
 #ifndef CollectionType_h
 #define CollectionType_h
 
-namespace WebCore {
+namespace blink {
 
 enum CollectionType {
     // Unnamed HTMLCollection types cached in the document.

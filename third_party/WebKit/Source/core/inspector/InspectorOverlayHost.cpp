@@ -30,7 +30,7 @@
 
 #include "core/inspector/InspectorOverlayHost.h"
 
-namespace WebCore {
+namespace blink {
 
 InspectorOverlayHost::InspectorOverlayHost()
     : m_listener(0)
@@ -54,4 +54,4 @@ void InspectorOverlayHost::stepOver()
         m_listener->overlaySteppedOver();
 }
 
-} // namespace WebCore
+} // namespace blink

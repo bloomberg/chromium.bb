@@ -27,7 +27,7 @@
 #include "core/editing/PositionWithAffinity.h"
 #include "core/rendering/RenderView.h"
 
-namespace WebCore {
+namespace blink {
 
 static PassRefPtr<StringImpl> newlineString()
 {
@@ -70,4 +70,4 @@ PositionWithAffinity RenderBR::positionForPoint(const LayoutPoint&)
     return createPositionWithAffinity(0, DOWNSTREAM);
 }
 
-} // namespace WebCore
+} // namespace blink

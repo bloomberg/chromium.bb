@@ -31,7 +31,7 @@
 #include "core/svg/SVGFontFaceElement.h"
 #endif
 
-namespace WebCore {
+namespace blink {
 
 SVGTextLayoutEngineSpacing::SVGTextLayoutEngineSpacing(const Font& font, float effectiveZoom)
     : m_font(font)

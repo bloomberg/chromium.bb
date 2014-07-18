@@ -39,7 +39,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSBorderImageSliceValue;
 class CSSPrimitiveValue;
@@ -399,6 +399,6 @@ CSSValueID cssValueKeywordID(const CSSParserString&);
 bool isKeywordPropertyID(CSSPropertyID);
 bool isValidKeywordPropertyAndValue(CSSPropertyID, CSSValueID, const CSSParserContext&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSPropertyParser_h

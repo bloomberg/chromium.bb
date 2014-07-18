@@ -27,7 +27,7 @@
 
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class HTMLDataListElement;
@@ -95,6 +95,6 @@ private:
     RefPtr<RenderStyle> m_style;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

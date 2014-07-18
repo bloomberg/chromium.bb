@@ -28,7 +28,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Plugin;
 class PluginData;
@@ -61,6 +61,6 @@ private:
     unsigned m_index;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Plugin_h

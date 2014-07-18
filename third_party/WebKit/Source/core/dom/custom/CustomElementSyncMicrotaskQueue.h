@@ -7,7 +7,7 @@
 
 #include "core/dom/custom/CustomElementMicrotaskQueueBase.h"
 
-namespace WebCore {
+namespace blink {
 
 class CustomElementSyncMicrotaskQueue : public CustomElementMicrotaskQueueBase {
 public:

@@ -38,7 +38,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 static int totalPagesMeasuredCSSSampleId() { return 1; }
 
@@ -796,4 +796,4 @@ UseCounter* UseCounter::getFrom(const StyleSheetContents* sheetContents)
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink

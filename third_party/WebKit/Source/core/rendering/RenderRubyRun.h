@@ -33,7 +33,7 @@
 
 #include "core/rendering/RenderBlockFlow.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderRubyBase;
 class RenderRubyText;
@@ -79,6 +79,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderRubyRun, isRubyRun());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderRubyRun_h

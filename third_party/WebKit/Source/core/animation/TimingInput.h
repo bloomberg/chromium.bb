@@ -7,7 +7,7 @@
 
 #include "core/animation/Timing.h"
 
-namespace WebCore {
+namespace blink {
 
 class Dictionary;
 
@@ -27,6 +27,6 @@ public:
     static void setTimingFunction(Timing&, const String& timingFunctionString);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

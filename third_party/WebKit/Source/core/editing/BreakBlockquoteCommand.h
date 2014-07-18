@@ -28,7 +28,7 @@
 
 #include "core/editing/CompositeEditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class BreakBlockquoteCommand FINAL : public CompositeEditCommand {
 public:
@@ -42,6 +42,6 @@ private:
     virtual void doApply() OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -25,7 +25,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 class SVGElement;
@@ -83,6 +83,6 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSCursorImageValue, isCursorImageValue());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSCursorImageValue_h

@@ -26,7 +26,7 @@
 #include "core/svg/SVGPathElement.h"
 #include "core/svg/SVGTextPathElement.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSVGTextPath::RenderSVGTextPath(Element* element)
     : RenderSVGInline(element)

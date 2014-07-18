@@ -36,7 +36,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Uint8ClampedArray.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -62,6 +62,6 @@ private:
     RefPtr<Uint8ClampedArray> m_data;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ImageData_h

@@ -24,7 +24,7 @@
 #include "core/events/UIEvent.h"
 
 
-namespace WebCore {
+namespace blink {
 
 UIEventInit::UIEventInit()
     : view(nullptr)
@@ -120,4 +120,4 @@ void UIEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

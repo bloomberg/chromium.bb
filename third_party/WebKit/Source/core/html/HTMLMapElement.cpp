@@ -31,7 +31,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/rendering/HitTestResult.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

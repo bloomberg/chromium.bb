@@ -32,7 +32,7 @@
 
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 class MarginIntervalGenerator {
 public:
@@ -175,4 +175,4 @@ void RasterShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logical
     result.append(LineSegment(excludedInterval.x1(), excludedInterval.x2()));
 }
 
-} // namespace WebCore
+} // namespace blink

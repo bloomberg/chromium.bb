@@ -32,7 +32,7 @@
 #include "platform/heap/Heap.h"
 #include "wtf/HashMap.h"
 
-namespace WebCore {
+namespace blink {
 
 class ConditionEventListener;
 class SMILTimeContainer;

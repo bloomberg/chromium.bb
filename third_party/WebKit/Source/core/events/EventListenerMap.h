@@ -37,7 +37,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/AtomicStringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class EventTarget;
 
@@ -93,6 +93,6 @@ private:
 inline void EventListenerMap::assertNoActiveIterators() { }
 #endif
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // EventListenerMap_h

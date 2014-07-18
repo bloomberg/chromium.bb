@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/dom/NodeFilter.h"
 
-namespace WebCore {
+namespace blink {
 
 short NodeFilter::acceptNode(Node* node, ExceptionState& exceptionState) const
 {
@@ -38,4 +38,4 @@ void NodeFilter::trace(Visitor* visitor)
     visitor->trace(m_condition);
 }
 
-} // namespace WebCore
+} // namespace blink

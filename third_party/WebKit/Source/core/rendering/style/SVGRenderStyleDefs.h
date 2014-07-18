@@ -35,7 +35,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
     enum SVGPaintType {
         SVG_PAINTTYPE_UNKNOWN,
@@ -255,6 +255,6 @@ namespace WebCore {
         StyleInheritedResourceData(const StyleInheritedResourceData&);
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGRenderStyleDefs_h

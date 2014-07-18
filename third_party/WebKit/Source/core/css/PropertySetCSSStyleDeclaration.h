@@ -30,7 +30,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSProperty;
 class CSSRule;
@@ -155,6 +155,6 @@ private:
     RawPtrWillBeMember<Element> m_parentElement;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

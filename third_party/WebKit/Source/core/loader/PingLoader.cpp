@@ -54,7 +54,7 @@
 #include "public/platform/WebURLResponse.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 void PingLoader::loadImage(LocalFrame* frame, const KURL& url)
 {

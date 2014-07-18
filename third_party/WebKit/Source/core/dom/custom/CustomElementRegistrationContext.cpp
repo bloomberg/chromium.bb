@@ -44,7 +44,7 @@
 #include "core/svg/SVGUnknownElement.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 CustomElementRegistrationContext::CustomElementRegistrationContext()
     : m_candidates(CustomElementUpgradeCandidateMap::create())
@@ -160,4 +160,4 @@ void CustomElementRegistrationContext::trace(Visitor* visitor)
     visitor->trace(m_candidates);
 }
 
-} // namespace WebCore
+} // namespace blink

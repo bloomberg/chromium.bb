@@ -33,7 +33,7 @@
 
 #include "platform/network/ContentSecurityPolicyParsers.h"
 
-namespace WebCore {
+namespace blink {
 
 WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicyHeaderType contentSecurityPolicyType, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     : m_scriptURL(scriptURL.copy())
@@ -55,4 +55,4 @@ void WorkerThreadStartupData::trace(Visitor* visitor)
     visitor->trace(m_workerClients);
 }
 
-} // namespace WebCore
+} // namespace blink

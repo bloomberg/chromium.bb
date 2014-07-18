@@ -38,7 +38,7 @@
 #include "core/rendering/RenderBox.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

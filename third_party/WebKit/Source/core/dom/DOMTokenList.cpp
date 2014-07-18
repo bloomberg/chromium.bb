@@ -30,7 +30,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 bool DOMTokenList::validateToken(const String& token, ExceptionState& exceptionState)
 {
@@ -249,4 +249,4 @@ AtomicString DOMTokenList::removeTokens(const AtomicString& input, const Vector<
     return output.toAtomicString();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -28,7 +28,7 @@
 
 #include "core/html/canvas/WebGLObject.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebGLContextGroup;
 class WebGLRenderingContextBase;
@@ -68,6 +68,6 @@ private:
     WebGLContextGroup* m_contextGroup;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLSharedObject_h

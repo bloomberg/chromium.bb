@@ -41,7 +41,7 @@
 #include "core/rendering/svg/RenderSVGImage.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
-namespace WebCore {
+namespace blink {
 
 static ImageEventSender& loadEventSender()
 {

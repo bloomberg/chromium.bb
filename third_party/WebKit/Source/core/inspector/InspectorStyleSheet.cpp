@@ -53,14 +53,14 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextPosition.h"
 
-using WebCore::TypeBuilder::Array;
-using WebCore::RuleSourceDataList;
-using WebCore::CSSRuleSourceData;
-using WebCore::CSSStyleSheet;
+using blink::TypeBuilder::Array;
+using blink::RuleSourceDataList;
+using blink::CSSRuleSourceData;
+using blink::CSSStyleSheet;
 
 namespace {
 
-using namespace WebCore;
+using namespace blink;
 
 static CSSParserContext parserContextForDocument(Document *document)
 {
@@ -364,7 +364,7 @@ public:
     bool hasText() const { return m_hasText; }
     bool ensureSourceData();
     bool hasSourceData() const { return m_sourceData; }
-    PassRefPtrWillBeRawPtr<WebCore::CSSRuleSourceData> ruleSourceDataAt(unsigned) const;
+    PassRefPtrWillBeRawPtr<blink::CSSRuleSourceData> ruleSourceDataAt(unsigned) const;
     unsigned ruleCount() { return m_sourceData->size(); }
 
 private:
@@ -438,7 +438,7 @@ void ParsedStyleSheet::setSourceData(PassOwnPtrWillBeRawPtr<RuleSourceDataList> 
     flattenSourceData(sourceData.get());
 }
 
-PassRefPtrWillBeRawPtr<WebCore::CSSRuleSourceData> ParsedStyleSheet::ruleSourceDataAt(unsigned index) const
+PassRefPtrWillBeRawPtr<blink::CSSRuleSourceData> ParsedStyleSheet::ruleSourceDataAt(unsigned index) const
 {
     if (!hasSourceData() || index >= m_sourceData->size())
         return nullptr;
@@ -446,7 +446,7 @@ PassRefPtrWillBeRawPtr<WebCore::CSSRuleSourceData> ParsedStyleSheet::ruleSourceD
     return m_sourceData->at(index);
 }
 
-namespace WebCore {
+namespace blink {
 
 enum MediaListSource {
     MediaListSourceLinkedSheet,
@@ -787,7 +787,7 @@ NewLineAndWhitespace& InspectorStyle::newLineAndWhitespaceDelimiters() const
     bool isFullPrefixScanned = false;
     bool lineFeedTerminated = false;
     while (propertyIndex < propertyCount) {
-        const WebCore::CSSPropertySourceData& currentProperty = sourcePropertyData->at(propertyIndex++);
+        const blink::CSSPropertySourceData& currentProperty = sourcePropertyData->at(propertyIndex++);
 
         bool processNextProperty = false;
         int scanEnd = currentProperty.range.start;
@@ -1693,5 +1693,5 @@ PassRefPtrWillBeRawPtr<CSSRuleSourceData> InspectorStyleSheetForInlineStyle::get
     return ruleSourceDataResult.first().release();
 }
 
-} // namespace WebCore
+} // namespace blink
 

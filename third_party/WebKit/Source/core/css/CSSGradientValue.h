@@ -31,7 +31,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class FloatPoint;
 class Gradient;
@@ -69,14 +69,14 @@ public:
     void trace(Visitor*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 // We have to declare the VectorTraits specialization before CSSGradientValue
 // declares its inline capacity vector below.
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(WebCore::CSSGradientColorStop);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::CSSGradientColorStop);
 
-namespace WebCore {
+namespace blink {
 
 class CSSGradientValue : public CSSImageGeneratorValue {
 public:
@@ -259,6 +259,6 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSRadialGradientValue, isRadialGradientValue());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSGradientValue_h

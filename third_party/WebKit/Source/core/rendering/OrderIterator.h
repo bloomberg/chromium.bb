@@ -36,7 +36,7 @@
 
 #include <set>
 
-namespace WebCore {
+namespace blink {
 
 class RenderBox;
 
@@ -79,6 +79,6 @@ private:
     OrderIterator& m_iterator;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif //  OrderIterator_h

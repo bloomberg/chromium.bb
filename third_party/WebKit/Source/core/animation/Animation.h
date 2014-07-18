@@ -38,7 +38,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Dictionary;
 class Element;
@@ -108,6 +108,6 @@ private:
 
 DEFINE_TYPE_CASTS(Animation, AnimationNode, animationNode, animationNode->isAnimation(), animationNode.isAnimation());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

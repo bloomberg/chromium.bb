@@ -38,7 +38,7 @@
 #include "platform/Timer.h"
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef uint32_t SnapshotObjectId;
 
@@ -102,7 +102,7 @@ void InspectorHeapProfilerAgent::restore()
         startTrackingHeapObjectsInternal(m_state->getBoolean(HeapProfilerAgentState::allocationTrackingEnabled));
 }
 
-void InspectorHeapProfilerAgent::collectGarbage(WebCore::ErrorString*)
+void InspectorHeapProfilerAgent::collectGarbage(blink::ErrorString*)
 {
     ScriptProfiler::collectGarbage();
 }
@@ -312,5 +312,5 @@ void InspectorHeapProfilerAgent::getHeapObjectId(ErrorString* errorString, const
     *heapSnapshotObjectId = String::number(id);
 }
 
-} // namespace WebCore
+} // namespace blink
 

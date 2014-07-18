@@ -32,7 +32,7 @@
 #include <CoreFoundation/CFCharacterSet.h>
 #include <CoreFoundation/CFString.h>
 
-namespace WebCore {
+namespace blink {
 
 static CFMutableCharacterSetRef getSmartSet(bool isPreviousCharacter)
 {

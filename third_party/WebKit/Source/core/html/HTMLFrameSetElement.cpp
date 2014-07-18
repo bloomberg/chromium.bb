@@ -36,7 +36,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/rendering/RenderFrameSet.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -222,4 +222,4 @@ LocalDOMWindow* HTMLFrameSetElement::anonymousNamedGetter(const AtomicString& na
     return document->domWindow();
 }
 
-} // namespace WebCore
+} // namespace blink

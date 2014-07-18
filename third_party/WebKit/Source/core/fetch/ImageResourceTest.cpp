@@ -46,7 +46,7 @@
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 
@@ -125,7 +125,7 @@ TEST(ImageResourceTest, CancelOnDetach)
     EXPECT_NE(reinterpret_cast<Resource*>(0), memoryCache()->resourceForURL(testURL));
 
     // Trigger the cancel timer, ensure the load was cancelled and the resource was evicted from the cache.
-    WebCore::testing::runPendingTasks();
+    blink::testing::runPendingTasks();
     EXPECT_EQ(Resource::LoadError, cachedImage->status());
     EXPECT_EQ(reinterpret_cast<Resource*>(0), memoryCache()->resourceForURL(testURL));
 

@@ -23,7 +23,7 @@
 
 #include "core/rendering/RenderInline.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderSVGInline : public RenderInline {
 public:

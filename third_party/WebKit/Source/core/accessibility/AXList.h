@@ -31,7 +31,7 @@
 
 #include "core/accessibility/AXRenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXList FINAL : public AXRenderObject {
 
@@ -48,6 +48,6 @@ private:
     virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXList_h

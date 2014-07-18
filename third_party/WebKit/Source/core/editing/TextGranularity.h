@@ -26,7 +26,7 @@
 #ifndef TextGranularity_h
 #define TextGranularity_h
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: This really should be broken up into more than one concept.
 // LocalFrame doesn't need the 3 boundaries in this enum.

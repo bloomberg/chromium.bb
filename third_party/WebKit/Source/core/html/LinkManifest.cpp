@@ -10,7 +10,7 @@
 #include "core/html/HTMLLinkElement.h"
 #include "core/loader/FrameLoaderClient.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtrWillBeRawPtr<LinkManifest> LinkManifest::create(HTMLLinkElement* owner)
 {
@@ -44,4 +44,4 @@ void LinkManifest::ownerRemoved()
     process();
 }
 
-} // namespace WebCore
+} // namespace blink

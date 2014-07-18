@@ -31,7 +31,7 @@
 #include "core/html/track/TextTrack.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLMediaElement;
 

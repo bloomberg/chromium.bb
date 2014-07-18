@@ -39,7 +39,7 @@
 #include "platform/NotImplemented.h"
 #include "wtf/Functional.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtr<WorkerObjectProxy> WorkerObjectProxy::create(ExecutionContext* executionContext, WorkerMessagingProxy* messagingProxy)
 {
@@ -104,4 +104,4 @@ WorkerObjectProxy::WorkerObjectProxy(ExecutionContext* executionContext, WorkerM
 {
 }
 
-} // namespace WebCore
+} // namespace blink

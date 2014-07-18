@@ -28,7 +28,7 @@
 #include "wtf/text/AtomicStringHash.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderObject;
 
@@ -78,6 +78,6 @@ private:
     RefPtr<FilterEffect> m_lastEffect;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGFilterBuilder_h

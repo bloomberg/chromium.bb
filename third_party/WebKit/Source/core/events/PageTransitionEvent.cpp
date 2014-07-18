@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/events/PageTransitionEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 PageTransitionEventInit::PageTransitionEventInit()
     : persisted(false)
@@ -67,4 +67,4 @@ void PageTransitionEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

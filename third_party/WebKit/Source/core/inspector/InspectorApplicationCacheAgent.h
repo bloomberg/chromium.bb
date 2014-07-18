@@ -31,7 +31,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class InspectorFrontend;
@@ -76,6 +76,6 @@ private:
     InspectorFrontend::ApplicationCache* m_frontend;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InspectorApplicationCacheAgent_h

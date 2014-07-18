@@ -35,7 +35,7 @@
 #include "core/svg/SVGStringList.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList>, public ScriptWrappable {
 public:
@@ -143,6 +143,6 @@ protected:
     SVGStringListTearOff(PassRefPtr<SVGStringList>, SVGElement*, PropertyIsAnimValType, const QualifiedName&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGStringListTearOff_h_

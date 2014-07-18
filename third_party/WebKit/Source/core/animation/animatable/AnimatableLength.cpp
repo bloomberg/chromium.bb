@@ -34,7 +34,7 @@
 #include "platform/CalculationValue.h"
 #include "platform/animation/AnimationUtilities.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -80,4 +80,4 @@ bool AnimatableLength::equalTo(const AnimatableValue* value) const
     return m_pixels == length->m_pixels && m_percent == length->m_percent && m_hasPixels == length->m_hasPixels && m_hasPercent == length->m_hasPercent;
 }
 
-} // namespace WebCore
+} // namespace blink

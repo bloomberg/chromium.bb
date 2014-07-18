@@ -33,7 +33,7 @@
 
 #include "core/svg/SVGElement.h"
 
-namespace WebCore {
+namespace blink {
 
 void SVGPropertyTearOffBase::commitChange()
 {
@@ -45,4 +45,4 @@ void SVGPropertyTearOffBase::commitChange()
     contextElement()->svgAttributeChanged(m_attributeName);
 }
 
-} // namespace WebCore
+} // namespace blink

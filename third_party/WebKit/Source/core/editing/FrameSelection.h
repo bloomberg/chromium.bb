@@ -37,7 +37,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class CharacterData;
 class LocalFrame;
@@ -304,12 +304,12 @@ inline void FrameSelection::setTypingStyle(PassRefPtrWillBeRawPtr<EditingStyle> 
 {
     m_typingStyle = style;
 }
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showTree(const WebCore::FrameSelection&);
-void showTree(const WebCore::FrameSelection*);
+void showTree(const blink::FrameSelection&);
+void showTree(const blink::FrameSelection*);
 #endif
 
 #endif // FrameSelection_h

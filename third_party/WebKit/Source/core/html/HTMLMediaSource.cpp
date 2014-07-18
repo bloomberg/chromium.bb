@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/html/HTMLMediaSource.h"
 
-namespace WebCore {
+namespace blink {
 
 URLRegistry* HTMLMediaSource::s_registry = 0;
 

@@ -30,7 +30,7 @@
 #include "platform/Length.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class StyleReflection : public RefCounted<StyleReflection> {
 public:
@@ -66,6 +66,6 @@ private:
     NinePieceImage m_mask;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleReflection_h

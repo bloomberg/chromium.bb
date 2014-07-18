@@ -36,7 +36,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalDOMWindow;
 class ExceptionState;
@@ -85,6 +85,6 @@ private:
     const KURL& url() const;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Location_h

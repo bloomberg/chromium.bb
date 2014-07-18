@@ -35,7 +35,7 @@
 #include "core/svg/SVGNumber.h"
 #include "core/svg/properties/SVGListPropertyHelper.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGNumberListTearOff;
 
@@ -70,6 +70,6 @@ private:
     bool parse(const CharType*& ptr, const CharType* end);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGNumberList_h

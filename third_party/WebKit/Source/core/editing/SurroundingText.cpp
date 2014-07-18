@@ -37,7 +37,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/TextIterator.h"
 
-namespace WebCore {
+namespace blink {
 
 SurroundingText::SurroundingText(const Range& range, unsigned maxLength)
     : m_startOffsetInContent(0)
@@ -139,4 +139,4 @@ unsigned SurroundingText::endOffsetInContent() const
     return m_endOffsetInContent;
 }
 
-} // namespace WebCore
+} // namespace blink

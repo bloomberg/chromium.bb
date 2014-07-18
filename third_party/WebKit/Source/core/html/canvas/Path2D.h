@@ -36,7 +36,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class Path2D FINAL : public RefCounted<Path2D>, public CanvasPathMethods, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(Path2D); WTF_MAKE_FAST_ALLOCATED;

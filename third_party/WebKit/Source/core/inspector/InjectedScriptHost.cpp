@@ -41,7 +41,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<InjectedScriptHost> InjectedScriptHost::create()
 {
@@ -142,5 +142,5 @@ void InjectedScriptHost::unmonitorFunction(const String& scriptId, int lineNumbe
         debuggerAgent->removeBreakpoint(scriptId, lineNumber, columnNumber, InspectorDebuggerAgent::MonitorCommandBreakpointSource);
 }
 
-} // namespace WebCore
+} // namespace blink
 

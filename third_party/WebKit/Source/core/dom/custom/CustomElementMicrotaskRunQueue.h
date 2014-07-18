@@ -9,7 +9,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/WeakPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class CustomElementSyncMicrotaskQueue;
 class CustomElementAsyncImportMicrotaskQueue;

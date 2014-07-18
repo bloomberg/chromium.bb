@@ -32,7 +32,7 @@
 #include "core/accessibility/AXObject.h"
 #include "core/rendering/AbstractInlineTextBox.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXInlineTextBox FINAL : public AXObject {
 
@@ -63,6 +63,6 @@ private:
     virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXInlineTextBox_h

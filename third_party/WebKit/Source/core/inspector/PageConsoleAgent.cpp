@@ -37,7 +37,7 @@
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorDOMAgent.h"
 
-namespace WebCore {
+namespace blink {
 
 PageConsoleAgent::PageConsoleAgent(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorTimelineAgent* timelineAgent)
     : InspectorConsoleAgent(timelineAgent, injectedScriptManager)
@@ -84,4 +84,4 @@ void PageConsoleAgent::addInspectedNode(ErrorString* errorString, int nodeId)
     m_injectedScriptManager->injectedScriptHost()->addInspectedObject(adoptPtr(new InspectableNode(node)));
 }
 
-} // namespace WebCore
+} // namespace blink

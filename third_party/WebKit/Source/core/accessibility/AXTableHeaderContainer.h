@@ -32,7 +32,7 @@
 #include "core/accessibility/AXMockObject.h"
 #include "core/accessibility/AXTable.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXTableHeaderContainer FINAL : public AXMockObject {
 
@@ -54,6 +54,6 @@ private:
     virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXTableHeaderContainer_h

@@ -34,12 +34,12 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class JSONValue;
 
 PassRefPtr<JSONValue> parseJSON(const String& json);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(JSONParser_h)

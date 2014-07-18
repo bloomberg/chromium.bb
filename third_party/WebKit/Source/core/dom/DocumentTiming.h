@@ -26,7 +26,7 @@
 #ifndef DocumentTiming_h
 #define DocumentTiming_h
 
-namespace WebCore {
+namespace blink {
 
 struct DocumentTiming {
     DocumentTiming()

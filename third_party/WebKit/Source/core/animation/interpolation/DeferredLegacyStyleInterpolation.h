@@ -8,7 +8,7 @@
 #include "core/animation/interpolation/StyleInterpolation.h"
 #include "core/css/CSSValue.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSBasicShape;
 class CSSImageValue;

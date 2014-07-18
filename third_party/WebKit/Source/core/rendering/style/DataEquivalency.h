@@ -8,7 +8,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 template <typename T>
 bool dataEquivalent(const T* a, const T* b)
@@ -44,6 +44,6 @@ bool dataEquivalent(const OwnPtr<T>& a, const OwnPtr<T>& b)
     return dataEquivalent(a.get(), b.get());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DataEquivalency_h

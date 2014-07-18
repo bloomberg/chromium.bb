@@ -35,7 +35,7 @@
 #include "core/rendering/style/StyleGeneratedImage.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: Once cross-fade works on generated image types, remove this method.
 bool AnimatableImage::usesDefaultInterpolationWith(const AnimatableValue* value) const

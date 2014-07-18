@@ -33,7 +33,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicStringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSSelector;
 class ContainerNode;

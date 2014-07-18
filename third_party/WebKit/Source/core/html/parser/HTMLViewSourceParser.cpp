@@ -32,7 +32,7 @@
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
 
-namespace WebCore {
+namespace blink {
 
 HTMLViewSourceParser::HTMLViewSourceParser(HTMLViewSourceDocument& document, const String& mimeType)
     : DecodedDataDocumentParser(document)

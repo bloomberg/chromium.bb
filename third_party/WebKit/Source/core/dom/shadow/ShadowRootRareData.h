@@ -35,7 +35,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ShadowRootRareData : public NoBaseWillBeGarbageCollected<ShadowRootRareData> {
 public:
@@ -111,6 +111,6 @@ inline void ShadowRootRareData::didRemoveInsertionPoint(InsertionPoint* point)
     ASSERT(m_descendantShadowElementCount >= 0);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

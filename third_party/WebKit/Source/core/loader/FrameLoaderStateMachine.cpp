@@ -31,7 +31,7 @@
 
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 
 FrameLoaderStateMachine::FrameLoaderStateMachine()
@@ -65,4 +65,4 @@ void FrameLoaderStateMachine::advanceTo(State state)
     m_state = state;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -30,7 +30,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 #define DEFINE_ARRAY_FOR_MATCHING(name, source, maxMatchLength) \
 const UChar* name; \

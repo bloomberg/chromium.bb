@@ -30,7 +30,7 @@
 #include "core/rendering/RenderInline.h"
 #include "platform/geometry/FloatPoint.h"
 
-namespace WebCore {
+namespace blink {
 
 class VTTCue;
 class VTTCueBox;
@@ -59,6 +59,6 @@ private:
     FloatPoint m_fallbackPosition;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderVTTCue_h

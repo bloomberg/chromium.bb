@@ -36,9 +36,9 @@
 #include "platform/SSLKeyGenerator.h"
 #include "wtf/StdLibExtras.h"
 
-using namespace WebCore;
+using namespace blink;
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

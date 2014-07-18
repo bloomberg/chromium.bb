@@ -28,7 +28,7 @@
 #include "core/rendering/style/ShadowData.h"
 #include "platform/geometry/LayoutRect.h"
 
-namespace WebCore {
+namespace blink {
 
 // Modes for some of the line-related functions.
 enum LinePositionMode { PositionOnContainingLine, PositionOfInteriorLineBoxes };
@@ -325,6 +325,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderBoxModelObject, isBoxModelObject());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderBoxModelObject_h

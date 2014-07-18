@@ -29,7 +29,7 @@
 #include "platform/fonts/FontBaseline.h"
 #include "wtf/HashMap.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderObject;
 
@@ -64,6 +64,6 @@ private:
     HashMap<RenderObject*, int> m_ideographicPositions;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // VerticalPositionCache_h

@@ -31,7 +31,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 
-namespace WebCore {
+namespace blink {
 
 class FrameView;
 class Page;

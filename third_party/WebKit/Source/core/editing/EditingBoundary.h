@@ -26,7 +26,7 @@
 #ifndef EditingBoundary_h
 #define EditingBoundary_h
 
-namespace WebCore {
+namespace blink {
 
 enum EditingBoundaryCrossingRule {
     CanCrossEditingBoundary,

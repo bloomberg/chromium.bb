@@ -29,7 +29,7 @@
 
 #include "core/rendering/svg/RenderSVGShape.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderSVGEllipse FINAL : public RenderSVGShape {
 public:

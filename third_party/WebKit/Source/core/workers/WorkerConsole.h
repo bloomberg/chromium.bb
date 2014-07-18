@@ -40,7 +40,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ScriptArguments;
 
@@ -64,6 +64,6 @@ private:
     RawPtrWillBeMember<WorkerGlobalScope> m_scope;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerConsole_h

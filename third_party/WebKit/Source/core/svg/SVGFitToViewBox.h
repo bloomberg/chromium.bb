@@ -33,7 +33,7 @@
 #include "core/svg/SVGRect.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class AffineTransform;
 class Document;
@@ -88,6 +88,6 @@ private:
     RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGFitToViewBox_h

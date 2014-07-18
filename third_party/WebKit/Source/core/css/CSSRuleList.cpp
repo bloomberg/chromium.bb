@@ -24,7 +24,7 @@
 
 #include "core/css/CSSRule.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSRuleList::CSSRuleList()
 {
@@ -61,4 +61,4 @@ void StaticCSSRuleList::trace(Visitor* visitor)
 }
 
 
-} // namespace WebCore
+} // namespace blink

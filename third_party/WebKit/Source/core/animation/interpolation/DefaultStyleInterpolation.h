@@ -8,7 +8,7 @@
 #include "core/animation/interpolation/StyleInterpolation.h"
 #include "core/css/resolver/StyleBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 class DefaultStyleInterpolation : public StyleInterpolation {
 public:

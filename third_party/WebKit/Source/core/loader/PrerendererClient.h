@@ -34,7 +34,7 @@
 
 #include "platform/Supplementable.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class Page;
@@ -53,6 +53,6 @@ protected:
 
 void providePrerendererClientTo(Page&, PrerendererClient*);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PrerendererClient_h

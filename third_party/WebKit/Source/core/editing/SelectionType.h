@@ -26,10 +26,10 @@
 #ifndef SelectionType_h
 #define SelectionType_h
 
-namespace WebCore {
+namespace blink {
 
 enum SelectionType { NoSelection, CaretSelection, RangeSelection };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SelectionType_h

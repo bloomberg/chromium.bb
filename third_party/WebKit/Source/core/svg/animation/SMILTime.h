@@ -29,7 +29,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 class SMILTime {
 public:

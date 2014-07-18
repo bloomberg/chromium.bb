@@ -27,7 +27,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "platform/NotImplemented.h"
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsCSSRule : public RefCountedWillBeGarbageCollectedFinalized<SameSizeAsCSSRule> {
     virtual ~SameSizeAsCSSRule();
@@ -63,4 +63,4 @@ void CSSRule::trace(Visitor* visitor)
 #endif
 }
 
-} // namespace WebCore
+} // namespace blink

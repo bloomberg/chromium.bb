@@ -25,7 +25,7 @@
 #include "core/svg/SVGElement.h"
 #include "platform/weborigin/KURL.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGURIReference::SVGURIReference(SVGElement* element)
     : m_href(SVGAnimatedString::create(element, XLinkNames::hrefAttr, SVGString::create()))

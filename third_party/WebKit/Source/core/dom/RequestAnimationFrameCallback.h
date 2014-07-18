@@ -31,7 +31,7 @@
 #ifndef RequestAnimationFrameCallback_h
 #define RequestAnimationFrameCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class RequestAnimationFrameCallback {
 public:

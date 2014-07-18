@@ -30,7 +30,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSRule;
 class CSSStyleDeclaration;
@@ -304,6 +304,6 @@ inline int StylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
     return toImmutableStylePropertySet(this)->findPropertyIndex(propertyID);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StylePropertySet_h

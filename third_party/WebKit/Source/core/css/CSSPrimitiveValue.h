@@ -30,7 +30,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSBasicShape;
 class CSSCalcValue;
@@ -429,6 +429,6 @@ typedef CSSPrimitiveValue::CSSLengthArray CSSLengthArray;
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSPrimitiveValue, isPrimitiveValue());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSPrimitiveValue_h

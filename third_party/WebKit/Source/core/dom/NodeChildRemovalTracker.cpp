@@ -28,7 +28,7 @@
 #include "core/dom/NodeChildRemovalTracker.h"
 
 
-namespace WebCore {
+namespace blink {
 
 NodeChildRemovalTracker* NodeChildRemovalTracker::s_last;
 

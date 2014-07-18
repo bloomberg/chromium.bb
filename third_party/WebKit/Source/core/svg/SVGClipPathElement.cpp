@@ -25,7 +25,7 @@
 
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGClipPathElement::SVGClipPathElement(Document& document)
     : SVGGraphicsElement(SVGNames::clipPathTag, document)

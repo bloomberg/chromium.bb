@@ -25,7 +25,7 @@
 #include "core/svg/ColorDistance.h"
 #include "core/svg/SVGAnimateElement.h"
 
-namespace WebCore {
+namespace blink {
 
 String SVGColorProperty::valueAsString() const
 {

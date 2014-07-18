@@ -30,7 +30,7 @@
 #include "platform/LengthSize.h"
 #include "platform/geometry/IntRect.h"
 
-namespace WebCore {
+namespace blink {
 
 class BorderData {
 friend class RenderStyle;
@@ -138,6 +138,6 @@ private:
     LengthSize m_bottomRight;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BorderData_h

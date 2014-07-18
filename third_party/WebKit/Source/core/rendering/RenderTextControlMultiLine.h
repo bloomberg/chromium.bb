@@ -24,7 +24,7 @@
 
 #include "core/rendering/RenderTextControl.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLTextAreaElement;
 

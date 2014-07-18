@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/page/PageVisibilityState.h"
 
-namespace WebCore {
+namespace blink {
 
 String pageVisibilityStateString(PageVisibilityState state)
 {
@@ -52,4 +52,4 @@ String pageVisibilityStateString(PageVisibilityState state)
     return String();
 }
 
-} // namespace WebCore
+} // namespace blink

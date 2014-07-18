@@ -39,7 +39,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class InertAnimation;
 
@@ -66,6 +66,6 @@ private:
     friend class AnimationAnimationStackTest;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

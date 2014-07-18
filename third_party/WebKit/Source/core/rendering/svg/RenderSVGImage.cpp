@@ -39,7 +39,7 @@
 #include "core/svg/SVGImageElement.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSVGImage::RenderSVGImage(SVGImageElement* impl)
     : RenderSVGModelObject(impl)
@@ -233,4 +233,4 @@ void RenderSVGImage::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint
         rects.append(contentRect);
 }
 
-} // namespace WebCore
+} // namespace blink

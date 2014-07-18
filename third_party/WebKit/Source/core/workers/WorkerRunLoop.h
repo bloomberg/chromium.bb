@@ -39,7 +39,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
     class WorkerGlobalScope;
     class WorkerSharedTimer;
@@ -87,6 +87,6 @@ namespace WebCore {
         int m_nestedCount;
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerRunLoop_h

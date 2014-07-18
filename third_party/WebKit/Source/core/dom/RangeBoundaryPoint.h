@@ -29,7 +29,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/Position.h"
 
-namespace WebCore {
+namespace blink {
 
 class RangeBoundaryPoint {
     DISALLOW_ALLOCATION();

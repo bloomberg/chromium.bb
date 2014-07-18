@@ -43,7 +43,7 @@
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/HTMLViewSourceParser.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

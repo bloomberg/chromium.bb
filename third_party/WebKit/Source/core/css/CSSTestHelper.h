@@ -33,7 +33,7 @@
 #include "core/css/RuleSet.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class CSSStyleSheet;
@@ -58,6 +58,6 @@ private:
     RefPtrWillBePersistent<CSSStyleSheet> m_styleSheet;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSTestHelper_h

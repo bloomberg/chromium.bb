@@ -34,7 +34,7 @@
 
 using std::swap;
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -377,7 +377,7 @@ Frame* FrameTree::deepLastChild() const
     return result;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 
@@ -387,7 +387,7 @@ static void printIndent(int indent)
         printf("    ");
 }
 
-static void printFrames(const WebCore::Frame* frame, const WebCore::Frame* targetFrame, int indent)
+static void printFrames(const blink::Frame* frame, const blink::Frame* targetFrame, int indent)
 {
     if (frame == targetFrame) {
         printf("--> ");
@@ -395,7 +395,7 @@ static void printFrames(const WebCore::Frame* frame, const WebCore::Frame* targe
     } else
         printIndent(indent);
 
-    WebCore::FrameView* view = frame->isLocalFrame() ? toLocalFrame(frame)->view() : 0;
+    blink::FrameView* view = frame->isLocalFrame() ? toLocalFrame(frame)->view() : 0;
     printf("Frame %p %dx%d\n", frame, view ? view->width() : 0, view ? view->height() : 0);
     printIndent(indent);
     printf("  owner=%p\n", frame->owner());
@@ -406,11 +406,11 @@ static void printFrames(const WebCore::Frame* frame, const WebCore::Frame* targe
     printIndent(indent);
     printf("  uri=%s\n\n", frame->isLocalFrame() ? toLocalFrame(frame)->document()->url().string().utf8().data() : 0);
 
-    for (WebCore::Frame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling())
+    for (blink::Frame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling())
         printFrames(child, targetFrame, indent + 1);
 }
 
-void showFrameTree(const WebCore::Frame* frame)
+void showFrameTree(const blink::Frame* frame)
 {
     if (!frame) {
         printf("Null input frame\n");

@@ -26,7 +26,7 @@
 #include "core/rendering/RenderOverflow.h"
 #include "core/rendering/style/ShadowData.h"
 
-namespace WebCore {
+namespace blink {
 
 class HitTestRequest;
 class HitTestResult;
@@ -374,11 +374,11 @@ inline void InlineFlowBox::setHasBadChildList()
 #endif
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showTree(const WebCore::InlineFlowBox*);
+void showTree(const blink::InlineFlowBox*);
 #endif
 
 #endif // InlineFlowBox_h

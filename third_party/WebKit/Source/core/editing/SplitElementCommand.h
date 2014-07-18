@@ -28,7 +28,7 @@
 
 #include "core/editing/EditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class SplitElementCommand FINAL : public SimpleEditCommand {
 public:
@@ -52,6 +52,6 @@ private:
     RefPtrWillBeMember<Node> m_atChild;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SplitElementCommand_h

@@ -37,7 +37,7 @@
 #include "core/rendering/RenderBlockFlow.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLElement;
 class HTMLInputElement;

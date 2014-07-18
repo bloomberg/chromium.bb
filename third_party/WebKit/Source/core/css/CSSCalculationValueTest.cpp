@@ -40,7 +40,7 @@
 #include <gtest/gtest.h>
 
 
-namespace WebCore {
+namespace blink {
 
 void PrintTo(const CSSLengthArray& lengthArray, ::std::ostream* os)
 {
@@ -50,7 +50,7 @@ void PrintTo(const CSSLengthArray& lengthArray, ::std::ostream* os)
 
 }
 
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 

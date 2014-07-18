@@ -31,7 +31,7 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 inline RenderStyle* Node::renderStyle() const
 {

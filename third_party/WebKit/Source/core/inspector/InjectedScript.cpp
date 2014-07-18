@@ -38,14 +38,14 @@
 #include "platform/JSONValues.h"
 #include "wtf/text/WTFString.h"
 
-using WebCore::TypeBuilder::Array;
-using WebCore::TypeBuilder::Debugger::CallFrame;
-using WebCore::TypeBuilder::Runtime::PropertyDescriptor;
-using WebCore::TypeBuilder::Runtime::InternalPropertyDescriptor;
-using WebCore::TypeBuilder::Debugger::FunctionDetails;
-using WebCore::TypeBuilder::Runtime::RemoteObject;
+using blink::TypeBuilder::Array;
+using blink::TypeBuilder::Debugger::CallFrame;
+using blink::TypeBuilder::Runtime::PropertyDescriptor;
+using blink::TypeBuilder::Runtime::InternalPropertyDescriptor;
+using blink::TypeBuilder::Debugger::FunctionDetails;
+using blink::TypeBuilder::Runtime::RemoteObject;
 
-namespace WebCore {
+namespace blink {
 
 InjectedScript::InjectedScript()
     : InjectedScriptBase("InjectedScript")
@@ -322,5 +322,5 @@ ScriptValue InjectedScript::nodeAsScriptValue(Node* node)
     return InjectedScriptHost::nodeAsScriptValue(scriptState(), node);
 }
 
-} // namespace WebCore
+} // namespace blink
 

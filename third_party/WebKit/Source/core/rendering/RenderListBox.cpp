@@ -60,7 +60,7 @@
 #include "platform/text/BidiTextRun.h"
 #include <math.h>
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -138,4 +138,4 @@ void RenderListBox::stopAutoscroll()
     select->handleMouseRelease();
 }
 
-} // namespace WebCore
+} // namespace blink

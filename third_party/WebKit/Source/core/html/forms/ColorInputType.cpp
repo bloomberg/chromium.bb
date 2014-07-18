@@ -50,7 +50,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -252,4 +252,4 @@ Vector<ColorSuggestion> ColorInputType::suggestions() const
     return suggestions;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -11,7 +11,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 TEST(MediaQueryMatcherTest, LostFrame)
 {

@@ -30,7 +30,7 @@
 #include "core/html/shadow/DateTimeNumericFieldElement.h"
 #include "core/html/shadow/DateTimeSymbolicFieldElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class DateTimeAMPMFieldElement FINAL : public DateTimeSymbolicFieldElement {
     WTF_MAKE_NONCOPYABLE(DateTimeAMPMFieldElement);
@@ -259,7 +259,7 @@ private:
     bool m_maxIsSpecified;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif
 #endif

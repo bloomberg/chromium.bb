@@ -31,7 +31,7 @@
 #include "core/html/canvas/CanvasContextAttributes.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 enum Canvas2DContextStorage {
     PersistentStorage,
@@ -60,6 +60,6 @@ protected:
     Canvas2DContextStorage m_storage;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Canvas2DContextAttributes_h

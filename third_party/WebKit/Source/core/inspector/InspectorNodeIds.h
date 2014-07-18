@@ -5,7 +5,7 @@
 #ifndef InspectorNodeIds_h
 #define InspectorNodeIds_h
 
-namespace WebCore {
+namespace blink {
 
 class Node;
 
@@ -15,7 +15,7 @@ public:
     static Node* nodeForId(int);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // !defined(InspectorNodeIds_h)

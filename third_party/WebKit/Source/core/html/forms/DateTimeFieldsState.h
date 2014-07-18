@@ -28,7 +28,7 @@
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 
-namespace WebCore {
+namespace blink {
 
 class FormControlState;
 
@@ -96,7 +96,7 @@ private:
     AMPMValue m_ampm;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif
 #endif

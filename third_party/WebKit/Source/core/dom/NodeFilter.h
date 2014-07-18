@@ -30,7 +30,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class NodeFilter FINAL : public RefCountedWillBeGarbageCollected<NodeFilter>, public ScriptWrappable {
 public:
@@ -99,6 +99,6 @@ private:
     RefPtrWillBeMember<NodeFilterCondition> m_condition;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NodeFilter_h

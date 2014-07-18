@@ -30,7 +30,7 @@
 #include "core/dom/DOMURLUtilsReadOnly.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 
@@ -53,6 +53,6 @@ public:
     void setHash(const String&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMURLUtils_h

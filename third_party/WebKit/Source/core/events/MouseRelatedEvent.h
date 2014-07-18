@@ -27,7 +27,7 @@
 #include "core/events/UIEventWithKeyState.h"
 #include "platform/geometry/LayoutPoint.h"
 
-namespace WebCore {
+namespace blink {
 
     // Internal only: Helper class for what's common between mouse and wheel events.
     class MouseRelatedEvent : public UIEventWithKeyState {
@@ -87,6 +87,6 @@ namespace WebCore {
         bool m_hasCachedRelativePosition;
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MouseRelatedEvent_h

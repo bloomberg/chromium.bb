@@ -41,7 +41,7 @@
 #include "core/html/HTMLShadowElement.h"
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsShadowRoot : public DocumentFragment, public TreeScope, public DoublyLinkedListNode<ShadowRoot> {
     void* pointers[3];

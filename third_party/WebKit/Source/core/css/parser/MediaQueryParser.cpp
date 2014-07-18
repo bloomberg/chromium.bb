@@ -9,7 +9,7 @@
 #include "core/css/parser/CSSPropertyParser.h"
 #include "core/css/parser/MediaQueryTokenizer.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseMediaQuerySet(const String& queryString)
 {
@@ -262,4 +262,4 @@ void MediaQueryData::setMediaType(const String& mediaType)
     m_mediaTypeSet = true;
 }
 
-} // namespace WebCore
+} // namespace blink

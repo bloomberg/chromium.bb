@@ -31,7 +31,7 @@
 
 #include "platform/scroll/ScrollView.h"
 
-namespace WebCore {
+namespace blink {
 
 AXScrollbar::AXScrollbar(Scrollbar* scrollbar)
     : m_scrollbar(scrollbar)
@@ -106,4 +106,4 @@ void AXScrollbar::setValue(float value)
     m_scrollbar->scrollableArea()->scrollToOffsetWithoutAnimation(m_scrollbar->orientation(), newValue);
 }
 
-} // namespace WebCore
+} // namespace blink

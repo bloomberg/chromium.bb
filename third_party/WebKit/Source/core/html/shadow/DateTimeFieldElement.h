@@ -30,7 +30,7 @@
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLSpanElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class DateComponents;
 class DateTimeFieldsState;
@@ -103,7 +103,7 @@ private:
     RawPtrWillBeMember<FieldOwner> m_fieldOwner;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif
 #endif

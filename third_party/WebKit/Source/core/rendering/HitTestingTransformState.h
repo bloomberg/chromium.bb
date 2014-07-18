@@ -34,7 +34,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: Now that TransformState lazily creates its TransformationMatrix it takes up less space.
 // So there's really no need for a ref counted version. So This class should be removed and replaced
@@ -90,6 +90,6 @@ private:
     void flattenWithTransform(const TransformationMatrix&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HitTestingTransformState_h

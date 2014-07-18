@@ -34,7 +34,7 @@
 #include <libxslt/templates.h>
 #include <libxslt/xsltutils.h>
 
-namespace WebCore {
+namespace blink {
 
 inline const xmlChar* toXMLChar(const char* string)
 {
@@ -272,4 +272,4 @@ void xsltUnicodeSortFunction(xsltTransformContextPtr ctxt, xmlNodePtr *sorts, in
     }
 }
 
-} // namespace WebCore
+} // namespace blink

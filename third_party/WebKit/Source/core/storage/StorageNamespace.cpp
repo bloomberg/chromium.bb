@@ -33,7 +33,7 @@
 #include "public/platform/WebStorageNamespace.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 StorageNamespace::StorageNamespace(PassOwnPtr<blink::WebStorageNamespace> webStorageNamespace)
     : m_webStorageNamespace(webStorageNamespace)
@@ -63,4 +63,4 @@ bool StorageNamespace::isSameNamespace(const blink::WebStorageNamespace& session
     return m_webStorageNamespace && m_webStorageNamespace->isSameNamespace(sessionNamespace);
 }
 
-} // namespace WebCore
+} // namespace blink

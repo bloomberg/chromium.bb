@@ -34,7 +34,7 @@
 #include "core/inspector/InspectorCounters.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 InspectorMemoryAgent::~InspectorMemoryAgent()
 {
@@ -64,5 +64,5 @@ void InspectorMemoryAgent::clearFrontend()
     m_frontend = 0;
 }
 
-} // namespace WebCore
+} // namespace blink
 

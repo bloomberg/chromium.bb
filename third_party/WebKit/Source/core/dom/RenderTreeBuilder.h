@@ -31,7 +31,7 @@
 #include "core/dom/NodeRenderingTraversal.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ContainerNode;
 class RenderObject;
@@ -73,6 +73,6 @@ private:
     mutable RefPtr<RenderStyle> m_style;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

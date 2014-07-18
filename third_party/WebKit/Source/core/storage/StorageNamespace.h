@@ -34,7 +34,7 @@ namespace blink {
 class WebStorageNamespace;
 }
 
-namespace WebCore {
+namespace blink {
 
 class Page;
 class SecurityOrigin;
@@ -54,6 +54,6 @@ private:
     OwnPtr<blink::WebStorageNamespace> m_webStorageNamespace;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StorageNamespace_h

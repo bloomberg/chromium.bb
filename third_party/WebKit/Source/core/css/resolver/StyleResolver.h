@@ -42,7 +42,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableValue;
 class AnimationTimeline;
@@ -329,6 +329,6 @@ private:
     unsigned m_accessCount;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleResolver_h

@@ -42,7 +42,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 using namespace blink;
 
 namespace {
@@ -88,7 +88,7 @@ TEST(AnimationTranslationUtilTest, transformsWork)
     EXPECT_CALL(outOps, appendRotate(0.1, 0.2, 0.3, 200000.4));
     EXPECT_CALL(outOps, appendScale(50.2, 100, -4));
 
-    ops.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TranslateX));
+    ops.operations().append(TranslateTransformOperation::create(Length(2, blink::Fixed), Length(0, blink::Fixed), TransformOperation::TranslateX));
     ops.operations().append(RotateTransformOperation::create(0.1, 0.2, 0.3, 200000.4, TransformOperation::Rotate3D));
     ops.operations().append(ScaleTransformOperation::create(50.2, 100, -4, TransformOperation::Scale3D));
     toWebTransformOperations(ops, &outOps);

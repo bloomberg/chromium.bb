@@ -25,7 +25,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Path;
 class SVGPathByteStream;
@@ -50,6 +50,6 @@ bool getSVGPathSegAtLengthFromSVGPathByteStream(const SVGPathByteStream*, float 
 bool getTotalLengthOfSVGPathByteStream(const SVGPathByteStream*, float& totalLength);
 bool getPointAtLengthOfSVGPathByteStream(const SVGPathByteStream*, float length, FloatPoint&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPathUtilities_h

@@ -27,7 +27,7 @@
 
 #include "core/dom/TouchList.h"
 
-namespace WebCore {
+namespace blink {
 
 Touch* TouchList::item(unsigned index)
 {
@@ -46,4 +46,4 @@ void TouchList::trace(Visitor* visitor)
     visitor->trace(m_values);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -33,7 +33,7 @@
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 
@@ -117,6 +117,6 @@ private:
 
 NetworkStateNotifier& networkStateNotifier();
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NetworkStateNotifier_h

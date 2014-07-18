@@ -25,7 +25,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 class RectBase : public RefCountedWillBeGarbageCollected<RectBase> {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(RectBase);
@@ -131,6 +131,6 @@ private:
     // fields.
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Rect_h

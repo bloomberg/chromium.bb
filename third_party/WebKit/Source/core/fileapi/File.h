@@ -31,7 +31,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
@@ -148,6 +148,6 @@ private:
 
 DEFINE_TYPE_CASTS(File, Blob, blob, blob->isFile(), blob.isFile());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // File_h

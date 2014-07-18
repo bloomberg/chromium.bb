@@ -37,7 +37,7 @@
 #include <unicode/idna.h>
 #include <unicode/unistr.h>
 
-namespace WebCore {
+namespace blink {
 
 using blink::WebLocalizedString;
 
@@ -298,4 +298,4 @@ String EmailInputType::visibleValue() const
     return builder.toString();
 }
 
-} // namespace WebCore
+} // namespace blink

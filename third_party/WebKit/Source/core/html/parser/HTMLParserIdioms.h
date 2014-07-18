@@ -34,7 +34,7 @@ namespace WTF {
 class TextEncoding;
 }
 
-namespace WebCore {
+namespace blink {
 
 // Strip leading and trailing whitespace as defined by the HTML specification.
 String stripLeadingAndTrailingHTMLSpaces(const String&);

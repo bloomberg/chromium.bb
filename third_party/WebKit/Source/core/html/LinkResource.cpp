@@ -36,7 +36,7 @@
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/imports/HTMLImportsController.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -82,4 +82,4 @@ FetchRequest LinkRequestBuilder::build(bool blocking) const
     return FetchRequest(ResourceRequest(m_owner->document().completeURL(m_url)), m_owner->localName(), m_charset, priority);
 }
 
-} // namespace WebCore
+} // namespace blink

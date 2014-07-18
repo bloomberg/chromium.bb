@@ -36,7 +36,7 @@
 #include "platform/animation/TimingFunction.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 class FloatBox;
@@ -80,6 +80,6 @@ private:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

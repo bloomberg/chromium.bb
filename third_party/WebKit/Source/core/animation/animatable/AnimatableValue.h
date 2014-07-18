@@ -35,7 +35,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableValue : public RefCountedWillBeGarbageCollectedFinalized<AnimatableValue> {
 public:
@@ -134,6 +134,6 @@ private:
 #define DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(thisType, predicate) \
     DEFINE_TYPE_CASTS(thisType, AnimatableValue, value, value->predicate, value.predicate)
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatableValue_h

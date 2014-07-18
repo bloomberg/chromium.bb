@@ -30,7 +30,7 @@
 #include "core/dom/Element.h"
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 class PseudoElement FINAL : public Element {
 public:

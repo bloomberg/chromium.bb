@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/dom/ClientRect.h"
 
-namespace WebCore {
+namespace blink {
 
 ClientRect::ClientRect()
 {
@@ -46,4 +46,4 @@ ClientRect::ClientRect(const FloatRect& rect)
     ScriptWrappable::init(this);
 }
 
-} // namespace WebCore
+} // namespace blink

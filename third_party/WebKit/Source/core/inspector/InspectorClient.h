@@ -33,7 +33,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class IntPoint;
 class PlatformKeyboardEvent;
@@ -81,6 +81,6 @@ protected:
     virtual ~InspectorClient() { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InspectorClient_h)

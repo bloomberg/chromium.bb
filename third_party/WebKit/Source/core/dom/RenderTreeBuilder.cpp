@@ -39,7 +39,7 @@
 #include "core/svg/SVGElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderObject* RenderTreeBuilder::nextRenderer() const
 {

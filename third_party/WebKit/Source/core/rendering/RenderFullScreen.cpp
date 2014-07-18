@@ -28,7 +28,7 @@
 #include "core/dom/FullscreenElementStack.h"
 #include "core/rendering/RenderBlockFlow.h"
 
-using namespace WebCore;
+using namespace blink;
 
 class RenderFullScreenPlaceholder FINAL : public RenderBlockFlow {
 public:
@@ -100,8 +100,8 @@ static PassRefPtr<RenderStyle> createFullScreenStyle()
     fullscreenStyle->setPosition(FixedPosition);
     fullscreenStyle->setWidth(Length(100.0, Percent));
     fullscreenStyle->setHeight(Length(100.0, Percent));
-    fullscreenStyle->setLeft(Length(0, WebCore::Fixed));
-    fullscreenStyle->setTop(Length(0, WebCore::Fixed));
+    fullscreenStyle->setLeft(Length(0, blink::Fixed));
+    fullscreenStyle->setTop(Length(0, blink::Fixed));
 
     fullscreenStyle->setBackgroundColor(StyleColor(Color::black));
 

@@ -10,7 +10,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 

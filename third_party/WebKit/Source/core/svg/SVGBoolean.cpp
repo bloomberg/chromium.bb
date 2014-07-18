@@ -37,7 +37,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGAnimationElement.h"
 
-namespace WebCore {
+namespace blink {
 
 String SVGBoolean::valueAsString() const
 {

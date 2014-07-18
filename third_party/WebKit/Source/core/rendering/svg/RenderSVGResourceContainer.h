@@ -23,7 +23,7 @@
 #include "core/rendering/svg/RenderSVGHiddenContainer.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderLayer;
 

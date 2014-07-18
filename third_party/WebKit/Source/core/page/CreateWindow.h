@@ -32,7 +32,7 @@
 #include "core/loader/NavigationPolicy.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 class LocalFrame;
 struct FrameLoadRequest;
 struct WindowFeatures;
@@ -42,6 +42,6 @@ LocalFrame* createWindow(const String& urlString, const AtomicString& frameName,
 
 void createWindowForRequest(const FrameLoadRequest&, LocalFrame& openerFrame, NavigationPolicy, ShouldSendReferrer);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CreateWindow_h

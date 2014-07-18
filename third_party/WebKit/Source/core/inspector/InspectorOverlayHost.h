@@ -33,7 +33,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class InspectorOverlayHost : public RefCounted<InspectorOverlayHost>, public ScriptWrappable {
 public:
@@ -60,6 +60,6 @@ private:
     Listener* m_listener;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InspectorOverlayHost_h)

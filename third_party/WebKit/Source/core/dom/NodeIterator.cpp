@@ -30,7 +30,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeTraversal.h"
 
-namespace WebCore {
+namespace blink {
 
 NodeIterator::NodePointer::NodePointer()
 {
@@ -218,4 +218,4 @@ void NodeIterator::trace(Visitor* visitor)
     NodeIteratorBase::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

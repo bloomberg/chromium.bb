@@ -30,7 +30,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 class ExceptionState;
@@ -83,6 +83,6 @@ protected:
     static AtomicString removeTokens(const AtomicString&, const Vector<String>&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMTokenList_h

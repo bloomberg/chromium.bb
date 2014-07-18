@@ -37,7 +37,7 @@
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderView.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderRegion::RenderRegion(Element* element, RenderFlowThread* flowThread)
     : RenderBlockFlow(element)
@@ -167,4 +167,4 @@ void RenderRegion::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, La
     maxLogicalWidth = m_flowThread->maxPreferredLogicalWidth();
 }
 
-} // namespace WebCore
+} // namespace blink

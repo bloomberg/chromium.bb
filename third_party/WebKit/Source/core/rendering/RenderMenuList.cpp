@@ -47,7 +47,7 @@
 #include "platform/text/PlatformLocale.h"
 #include <math.h>
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

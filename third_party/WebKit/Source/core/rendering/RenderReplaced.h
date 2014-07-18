@@ -24,7 +24,7 @@
 
 #include "core/rendering/RenderBox.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderReplaced : public RenderBox {
 public:

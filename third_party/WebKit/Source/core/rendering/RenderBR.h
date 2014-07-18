@@ -27,7 +27,7 @@
  * The whole class here is a hack to get <br> working, as long as we don't have support for
  * CSS2 :before and :after pseudo elements
  */
-namespace WebCore {
+namespace blink {
 
 class RenderBR FINAL : public RenderText {
 public:
@@ -57,6 +57,6 @@ protected:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderBR, isBR());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderBR_h

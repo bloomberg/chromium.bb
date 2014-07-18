@@ -29,7 +29,7 @@
 
 #include <libxml/tree.h>
 
-namespace WebCore {
+namespace blink {
 
 TransformSource::TransformSource(xmlDocPtr source)
     : m_source(source)
@@ -41,4 +41,4 @@ TransformSource::~TransformSource()
     xmlFreeDoc(m_source);
 }
 
-} // namespace WebCore
+} // namespace blink

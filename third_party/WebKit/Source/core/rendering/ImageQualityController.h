@@ -39,7 +39,7 @@
 #include "platform/graphics/ImageSource.h"
 #include "wtf/HashMap.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef HashMap<const void*, LayoutSize> LayerSizeMap;
 typedef HashMap<RenderObject*, LayerSizeMap> ObjectLayerSizeMap;
@@ -73,6 +73,6 @@ private:
     bool m_liveResizeOptimizationIsActive;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

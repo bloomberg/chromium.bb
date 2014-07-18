@@ -32,7 +32,7 @@
 #include "core/rendering/style/GridCoordinate.h"
 #include "platform/LengthFunctions.h"
 
-namespace WebCore {
+namespace blink {
 
 static const int infinity = -1;
 
@@ -1384,4 +1384,4 @@ const char* RenderGrid::renderName() const
     return "RenderGrid";
 }
 
-} // namespace WebCore
+} // namespace blink

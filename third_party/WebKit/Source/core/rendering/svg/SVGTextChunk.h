@@ -23,7 +23,7 @@
 #include "core/rendering/style/SVGRenderStyleDefs.h"
 #include "core/svg/SVGTextContentElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGInlineTextBox;
 
@@ -64,6 +64,6 @@ private:
     float m_desiredTextLength;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

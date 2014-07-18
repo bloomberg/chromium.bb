@@ -29,7 +29,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/NodeFilter.h"
 
-namespace WebCore {
+namespace blink {
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NodeIteratorBase);
 
@@ -57,4 +57,4 @@ void NodeIteratorBase::trace(Visitor* visitor)
     visitor->trace(m_filter);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -28,7 +28,7 @@
 
 #include "core/rendering/RenderMedia.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLVideoElement;
 
@@ -83,6 +83,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderVideo, isVideo());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderVideo_h

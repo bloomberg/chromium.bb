@@ -26,7 +26,7 @@
 
 #include "core/events/UIEvent.h"
 
-namespace WebCore {
+namespace blink {
 
     class UIEventWithKeyState : public UIEvent {
     public:
@@ -63,6 +63,6 @@ namespace WebCore {
 
     UIEventWithKeyState* findEventWithKeyState(Event*);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // UIEventWithKeyState_h

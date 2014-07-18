@@ -30,7 +30,7 @@
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 
-namespace WebCore {
+namespace blink {
 
 HTMLImageLoader::HTMLImageLoader(Element* node)
     : ImageLoader(node)

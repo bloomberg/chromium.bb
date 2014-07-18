@@ -26,7 +26,7 @@
 
 #include "core/rendering/svg/RenderSVGModelObject.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderImageResource;
 class SVGImageElement;
@@ -80,6 +80,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGImage, isSVGImage());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderSVGImage_h

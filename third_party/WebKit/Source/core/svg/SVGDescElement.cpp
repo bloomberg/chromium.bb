@@ -23,7 +23,7 @@
 
 #include "core/SVGNames.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGDescElement::SVGDescElement(Document& document)
     : SVGElement(SVGNames::descTag, document)

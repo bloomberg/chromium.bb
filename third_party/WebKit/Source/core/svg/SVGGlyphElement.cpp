@@ -28,7 +28,7 @@
 #include "core/svg/SVGFontElement.h"
 #include "core/svg/SVGPathUtilities.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGGlyphElement::SVGGlyphElement(Document& document)
     : SVGElement(SVGNames::glyphTag, document)
@@ -105,7 +105,7 @@ void SVGGlyphElement::inheritUnspecifiedAttributes(SVGGlyph& identifier, const S
         identifier.verticalAdvanceY = svgFontData->verticalAdvanceY();
 }
 
-static inline float parseSVGGlyphAttribute(const SVGElement* element, const WebCore::QualifiedName& name)
+static inline float parseSVGGlyphAttribute(const SVGElement* element, const blink::QualifiedName& name)
 {
     AtomicString value(element->fastGetAttribute(name));
     if (value.isEmpty())

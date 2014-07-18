@@ -53,7 +53,7 @@
 using namespace WTF;
 using namespace Unicode;
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsRenderText : public RenderObject {
     uint32_t bitfields : 16;
@@ -310,7 +310,7 @@ PassRefPtr<StringImpl> RenderText::originalText() const
 String RenderText::plainText() const
 {
     if (node())
-        return WebCore::plainText(rangeOfContents(node()).get());
+        return blink::plainText(rangeOfContents(node()).get());
 
     // FIXME: this is just a stopgap until TextIterator is adapted to support generated text.
     StringBuilder plainTextBuilder;
@@ -1875,4 +1875,4 @@ PassRefPtr<AbstractInlineTextBox> RenderText::firstAbstractInlineTextBox()
     return AbstractInlineTextBox::getOrCreate(this, m_firstTextBox);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -37,7 +37,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class Settings {
     WTF_MAKE_NONCOPYABLE(Settings); WTF_MAKE_FAST_ALLOCATED;
@@ -82,6 +82,6 @@ private:
     SETTINGS_MEMBER_VARIABLES
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Settings_h

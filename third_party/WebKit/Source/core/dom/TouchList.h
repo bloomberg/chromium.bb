@@ -32,7 +32,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class TouchList FINAL : public RefCountedWillBeGarbageCollected<TouchList>, public ScriptWrappable {
 public:
@@ -70,6 +70,6 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<Touch> > m_values;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif /* TouchList_h */

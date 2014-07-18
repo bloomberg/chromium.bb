@@ -27,7 +27,7 @@
 #include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 
-namespace WebCore {
+namespace blink {
 
 void SVGInlineFlowBox::paintSelectionBackground(PaintInfo& paintInfo)
 {
@@ -66,4 +66,4 @@ FloatRect SVGInlineFlowBox::calculateBoundaries() const
     return childRect;
 }
 
-} // namespace WebCore
+} // namespace blink

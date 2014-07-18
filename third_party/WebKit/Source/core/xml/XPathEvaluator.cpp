@@ -35,7 +35,7 @@
 #include "core/xml/XPathResult.h"
 #include "core/xml/XPathUtil.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace XPath;
 

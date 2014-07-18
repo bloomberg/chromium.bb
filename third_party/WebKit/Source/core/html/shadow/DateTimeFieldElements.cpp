@@ -33,7 +33,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
 
-namespace WebCore {
+namespace blink {
 
 using blink::WebLocalizedString;
 
@@ -636,6 +636,6 @@ void DateTimeYearFieldElement::setValueAsDateTimeFieldsState(const DateTimeField
     setEmptyValue();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

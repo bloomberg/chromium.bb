@@ -32,7 +32,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 EditCommand::EditCommand(Document& document)
     : m_document(&document)
@@ -128,4 +128,4 @@ void EditCommand::trace(Visitor* visitor)
     visitor->trace(m_parent);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 TEST(AnimationAnimationHelpersTest, ParseCamelCasePropertyNames)
 {
@@ -21,4 +21,4 @@ TEST(AnimationAnimationHelpersTest, ParseCamelCasePropertyNames)
     EXPECT_EQ(CSSPropertyInvalid, camelCaseCSSPropertyNameToID(String("cssFloat")));
 }
 
-} // namespace WebCore
+} // namespace blink

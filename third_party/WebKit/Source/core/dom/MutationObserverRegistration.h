@@ -37,7 +37,7 @@
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class QualifiedName;
 
@@ -78,6 +78,6 @@ private:
     HashSet<AtomicString> m_attributeFilter;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MutationObserverRegistration_h

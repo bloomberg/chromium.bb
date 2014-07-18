@@ -25,7 +25,7 @@
 #include "core/svg/SVGEnumeration.h"
 #include "core/svg/properties/SVGPropertyHelper.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGAngle;
 class SVGAngleTearOff;
@@ -122,6 +122,6 @@ inline PassRefPtr<SVGAngle> toSVGAngle(PassRefPtr<SVGPropertyBase> passBase)
     return static_pointer_cast<SVGAngle>(base.release());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGAngle_h

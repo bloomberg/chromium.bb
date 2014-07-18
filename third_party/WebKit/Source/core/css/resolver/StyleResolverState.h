@@ -36,7 +36,7 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSAnimationUpdate;
 class FontDescription;
@@ -167,6 +167,6 @@ private:
     RawPtrWillBeMember<StyleRule> m_currentRule;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleResolverState_h

@@ -26,7 +26,7 @@
 
 #include "core/rendering/line/LineWidth.h"
 
-namespace WebCore {
+namespace blink {
 
 class LineInfo {
 public:

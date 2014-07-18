@@ -32,7 +32,7 @@
 #include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderScrollbarPart::RenderScrollbarPart(RenderScrollbar* scrollbar, ScrollbarPart part)
     : RenderBlock(0)

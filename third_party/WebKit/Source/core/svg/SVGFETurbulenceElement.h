@@ -28,7 +28,7 @@
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FETurbulence.h"
 
-namespace WebCore {
+namespace blink {
 
 enum SVGStitchOptions {
     SVG_STITCHTYPE_UNKNOWN  = 0,
@@ -66,6 +66,6 @@ private:
     RefPtr<SVGAnimatedInteger> m_numOctaves;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

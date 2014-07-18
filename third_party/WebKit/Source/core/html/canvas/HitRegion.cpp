@@ -8,7 +8,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/rendering/RenderBoxModelObject.h"
 
-namespace WebCore {
+namespace blink {
 
 HitRegion::HitRegion(const HitRegionOptions& options)
     : m_id(options.id)
@@ -163,4 +163,4 @@ void HitRegionManager::trace(Visitor* visitor)
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(HitRegionManager)
 
-} // namespace WebCore
+} // namespace blink

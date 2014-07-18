@@ -22,7 +22,7 @@
 
 #include "core/rendering/svg/SVGTextLayoutAttributes.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderSVGInlineText;
 class RenderSVGText;
@@ -34,6 +34,6 @@ void buildMetricsAndLayoutAttributes(RenderSVGText*, RenderSVGInlineText* stopAt
 
 } // namespace SVGTextMetricsBuilder
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -30,7 +30,7 @@
 
 #include "core/rendering/RenderTheme.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderProgress;
 
@@ -158,6 +158,6 @@ private:
     static const RGBA32 defaultTapHighlightColor = 0x2e000000; // 18% black.
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderThemeChromiumSkia_h

@@ -39,7 +39,7 @@
 #include "wtf/MathExtras.h"
 #include <limits>
 
-namespace WebCore {
+namespace blink {
 
 class HeapSizeCache {
     WTF_MAKE_NONCOPYABLE(HeapSizeCache); WTF_MAKE_FAST_ALLOCATED;
@@ -142,4 +142,4 @@ MemoryInfo::MemoryInfo()
     }
 }
 
-} // namespace WebCore
+} // namespace blink

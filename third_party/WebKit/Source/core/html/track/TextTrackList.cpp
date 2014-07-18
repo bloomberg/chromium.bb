@@ -34,7 +34,7 @@
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/TrackEvent.h"
 
-using namespace WebCore;
+using namespace blink;
 
 TextTrackList::TextTrackList(HTMLMediaElement* owner)
     : m_owner(owner)

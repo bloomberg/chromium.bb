@@ -30,7 +30,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class TextMetrics : public RefCounted<TextMetrics>, public ScriptWrappable {
 public:
@@ -107,6 +107,6 @@ private:
     float m_ideographicBaseline;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TextMetrics_h

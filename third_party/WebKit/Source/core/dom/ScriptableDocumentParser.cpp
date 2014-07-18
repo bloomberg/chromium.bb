@@ -29,7 +29,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/Settings.h"
 
-namespace WebCore {
+namespace blink {
 
 ScriptableDocumentParser::ScriptableDocumentParser(Document& document, ParserContentPolicy parserContentPolicy)
     : DecodedDataDocumentParser(document)

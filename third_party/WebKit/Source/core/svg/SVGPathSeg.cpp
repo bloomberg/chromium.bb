@@ -33,7 +33,7 @@
 
 #include "core/svg/SVGPathElement.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGPathSeg::SVGPathSeg(SVGPathElement* contextElement)
     : m_ownerList(0)

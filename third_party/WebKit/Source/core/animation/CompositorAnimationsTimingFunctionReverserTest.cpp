@@ -44,7 +44,7 @@
 
 namespace {
 
-using namespace WebCore;
+using namespace blink;
 
 class AnimationCompositorAnimationsTimingFunctionReverserTest : public ::testing::Test {
 protected:

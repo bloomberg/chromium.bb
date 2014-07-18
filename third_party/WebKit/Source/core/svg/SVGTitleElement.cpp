@@ -24,7 +24,7 @@
 #include "core/SVGNames.h"
 #include "core/dom/Document.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGTitleElement::SVGTitleElement(Document& document)
     : SVGElement(SVGNames::titleTag, document)

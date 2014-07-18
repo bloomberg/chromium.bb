@@ -25,7 +25,7 @@
 #include "core/svg/SVGElement.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGAltGlyphItemElement FINAL : public SVGElement {
 public:

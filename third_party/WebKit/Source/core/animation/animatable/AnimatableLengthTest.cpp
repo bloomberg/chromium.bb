@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -71,4 +71,4 @@ TEST(AnimationAnimatableLengthTest, Interpolate)
     EXPECT_TRUE(AnimatableValue::interpolate(create(Length(20, Fixed)).get(), create(Length(10, Percent)).get(), 0.4)->equals(create(calc).get()));
 }
 
-} // namespace WebCore
+} // namespace blink

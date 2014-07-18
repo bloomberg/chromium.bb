@@ -41,7 +41,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Blob;
 class ExceptionState;
@@ -133,6 +133,6 @@ private:
     double m_lastProgressNotificationTimeMS;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FileReader_h

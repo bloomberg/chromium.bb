@@ -41,7 +41,7 @@
 
 #define CanvasDefaultInterpolationQuality InterpolationLow
 
-namespace WebCore {
+namespace blink {
 
 class AffineTransform;
 class CanvasContextAttributes;

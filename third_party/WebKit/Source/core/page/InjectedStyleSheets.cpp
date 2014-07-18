@@ -27,7 +27,7 @@
 #include "core/page/Page.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 // static
 InjectedStyleSheets& InjectedStyleSheets::instance()
@@ -62,4 +62,4 @@ void InjectedStyleSheets::invalidateInjectedStyleSheetCacheInAllFrames()
     }
 }
 
-} // namespace WebCore
+} // namespace blink

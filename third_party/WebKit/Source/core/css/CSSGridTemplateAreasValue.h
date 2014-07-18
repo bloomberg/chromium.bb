@@ -35,7 +35,7 @@
 #include "core/rendering/style/GridCoordinate.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSGridTemplateAreasValue : public CSSValue {
 public:
@@ -63,6 +63,6 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSGridTemplateAreasValue, isGridTemplateAreasValue());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSGridTemplateAreasValue_h

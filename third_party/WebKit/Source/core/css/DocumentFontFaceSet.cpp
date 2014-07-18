@@ -28,11 +28,11 @@
 
 #include "core/css/FontFaceSet.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<FontFaceSet> DocumentFontFaceSet::fonts(Document& document)
 {
     return FontFaceSet::from(document);
 }
 
-} // namespace WebCore
+} // namespace blink

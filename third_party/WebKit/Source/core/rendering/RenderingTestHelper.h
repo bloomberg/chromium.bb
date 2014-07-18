@@ -8,7 +8,7 @@
 #include "wtf/OwnPtr.h"
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 class RenderingTest : public testing::Test {
 protected:
@@ -33,4 +33,4 @@ private:
     OwnPtr<DummyPageHolder> m_pageHolder;
 };
 
-} // namespace WebCore
+} // namespace blink

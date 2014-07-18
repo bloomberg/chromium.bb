@@ -28,7 +28,7 @@
 
 #include "core/editing/TextInsertionBaseCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class TypingCommand FINAL : public TextInsertionBaseCommand {
 public:
@@ -133,6 +133,6 @@ private:
     bool m_shouldPreventSpellChecking;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TypingCommand_h

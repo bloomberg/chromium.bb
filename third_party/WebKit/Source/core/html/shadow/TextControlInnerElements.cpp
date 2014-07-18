@@ -41,7 +41,7 @@
 #include "core/rendering/RenderView.h"
 #include "platform/UserGestureIndicator.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

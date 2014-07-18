@@ -25,7 +25,7 @@
 
 #include "core/rendering/RenderTextControlSingleLine.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLInputElement;
 

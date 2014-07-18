@@ -33,7 +33,7 @@
 
 #include "platform/graphics/Color.h"
 
-namespace WebCore {
+namespace blink {
 
 class StyleColor {
 public:
@@ -64,6 +64,6 @@ inline bool operator!=(const StyleColor& a, const StyleColor& b)
 }
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleColor_h

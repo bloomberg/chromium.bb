@@ -39,7 +39,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 WorkerScriptLoader::WorkerScriptLoader()
     : m_client(0)
@@ -193,4 +193,4 @@ void WorkerScriptLoader::notifyFinished()
     m_client->notifyFinished();
 }
 
-} // namespace WebCore
+} // namespace blink

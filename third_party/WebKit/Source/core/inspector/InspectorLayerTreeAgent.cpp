@@ -54,7 +54,7 @@
 #include "public/platform/WebLayer.h"
 #include "wtf/text/Base64.h"
 
-namespace WebCore {
+namespace blink {
 
 unsigned InspectorLayerTreeAgent::s_lastSnapshotId;
 
@@ -418,4 +418,4 @@ void InspectorLayerTreeAgent::didRemovePageOverlay(const GraphicsLayer* layer)
 }
 
 
-} // namespace WebCore
+} // namespace blink

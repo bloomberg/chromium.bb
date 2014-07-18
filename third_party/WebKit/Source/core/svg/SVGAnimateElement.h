@@ -28,7 +28,7 @@
 #include "core/svg/SVGAnimationElement.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGAnimatedTypeAnimator;
 
@@ -82,6 +82,6 @@ inline bool isSVGAnimateElement(const Node& node)
 
 DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGAnimateElement);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGAnimateElement_h

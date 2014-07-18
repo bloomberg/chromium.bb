@@ -27,7 +27,7 @@
 #include "core/events/EventListener.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
     class RegisteredEventListener {
     public:
@@ -46,6 +46,6 @@ namespace WebCore {
         return *a.listener == *b.listener && a.useCapture == b.useCapture;
     }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RegisteredEventListener_h

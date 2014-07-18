@@ -52,7 +52,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 static const int undefinedPosition = -1;
 static const int undefinedSize = -1;
@@ -1104,4 +1104,4 @@ void VTTCue::trace(Visitor* visitor)
     TextTrackCue::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

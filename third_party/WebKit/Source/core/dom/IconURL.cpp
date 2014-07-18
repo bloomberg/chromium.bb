@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/dom/IconURL.h"
 
-namespace WebCore {
+namespace blink {
 
 IconURL IconURL::defaultFavicon(const KURL& documentURL)
 {

@@ -43,7 +43,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class KURL;
@@ -131,6 +131,6 @@ class DocumentThreadableLoader FINAL : public ThreadableLoader, private Resource
         Timer<DocumentThreadableLoader> m_timeoutTimer;
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DocumentThreadableLoader_h

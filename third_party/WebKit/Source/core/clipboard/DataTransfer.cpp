@@ -43,7 +43,7 @@
 #include "platform/clipboard/ClipboardMimeTypes.h"
 #include "platform/clipboard/ClipboardUtilities.h"
 
-namespace WebCore {
+namespace blink {
 
 static DragOperation convertEffectAllowedToDragOperation(const String& op)
 {
@@ -538,4 +538,4 @@ void DataTransfer::trace(Visitor* visitor)
     visitor->trace(m_dragImageElement);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -35,7 +35,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoaderTypes.h"
 
-namespace WebCore {
+namespace blink {
 
 PerformanceNavigation::PerformanceNavigation(LocalFrame* frame)
     : DOMWindowProperty(frame)
@@ -52,7 +52,7 @@ unsigned short PerformanceNavigation::type() const
     if (!documentLoader)
         return TYPE_NAVIGATE;
 
-    WebCore::NavigationType navigationType = documentLoader->triggeringAction().type();
+    blink::NavigationType navigationType = documentLoader->triggeringAction().type();
     switch (navigationType) {
     case NavigationTypeReload:
         return TYPE_RELOAD;
@@ -79,4 +79,4 @@ unsigned short PerformanceNavigation::redirectCount() const
     return timing->redirectCount();
 }
 
-} // namespace WebCore
+} // namespace blink

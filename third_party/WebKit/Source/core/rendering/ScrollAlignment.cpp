@@ -46,7 +46,7 @@
 
 #include "platform/geometry/LayoutRect.h"
 
-namespace WebCore {
+namespace blink {
 
 const ScrollAlignment ScrollAlignment::alignCenterIfNeeded = { ScrollAlignmentNoScroll, ScrollAlignmentCenter, ScrollAlignmentClosestEdge };
 const ScrollAlignment ScrollAlignment::alignToEdgeIfNeeded = { ScrollAlignmentNoScroll, ScrollAlignmentClosestEdge, ScrollAlignmentClosestEdge };
@@ -143,4 +143,4 @@ LayoutRect ScrollAlignment::getRectToExpose(const LayoutRect& visibleRect, const
     return LayoutRect(LayoutPoint(x, y), visibleRect.size());
 }
 
-}; // namespace WebCore
+}; // namespace blink

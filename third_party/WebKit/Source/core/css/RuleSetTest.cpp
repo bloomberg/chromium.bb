@@ -33,7 +33,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_CustomPseudoElements)
 {
@@ -136,4 +136,4 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_DivWithContent)
     ASSERT_EQ(valueStr, rules->at(0).selector().value());
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -43,7 +43,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -391,4 +391,4 @@ bool HTMLOptionElement::spatialNavigationFocused() const
     return select->spatialNavigationFocusedOption() == this;
 }
 
-} // namespace WebCore
+} // namespace blink

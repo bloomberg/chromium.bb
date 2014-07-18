@@ -34,7 +34,7 @@
 
 namespace blink { class WebLayer; }
 
-namespace WebCore {
+namespace blink {
 
 class CanvasImageSource;
 class HTMLCanvasElement;
@@ -76,6 +76,6 @@ private:
     HashSet<String> m_dirtyURLs;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

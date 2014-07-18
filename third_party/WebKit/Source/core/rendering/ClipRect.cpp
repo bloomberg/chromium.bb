@@ -28,11 +28,11 @@
 
 #include "core/rendering/HitTestLocation.h"
 
-namespace WebCore {
+namespace blink {
 
 bool ClipRect::intersects(const HitTestLocation& hitTestLocation) const
 {
     return hitTestLocation.intersects(m_rect);
 }
 
-} // namespace WebCore
+} // namespace blink

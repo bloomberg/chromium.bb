@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/css/Counter.h"
 
-namespace WebCore {
+namespace blink {
 
 void Counter::trace(Visitor* visitor)
 {

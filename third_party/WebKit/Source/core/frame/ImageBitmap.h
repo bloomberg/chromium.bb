@@ -14,7 +14,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLCanvasElement;
 class HTMLVideoElement;
@@ -76,6 +76,6 @@ private:
 
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ImageBitmap_h

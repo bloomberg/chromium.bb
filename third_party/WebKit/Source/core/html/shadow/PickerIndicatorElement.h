@@ -36,7 +36,7 @@
 #include "platform/DateTimeChooser.h"
 #include "platform/DateTimeChooserClient.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLInputElement;
 class PagePopup;

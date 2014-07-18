@@ -29,7 +29,7 @@
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "platform/graphics/ImageBuffer.h"
 
-namespace WebCore {
+namespace blink {
 
 class AffineTransform;
 class RenderObject;
@@ -115,6 +115,6 @@ private:
     RenderSVGResourceMasker* m_masker;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGRenderingContext_h

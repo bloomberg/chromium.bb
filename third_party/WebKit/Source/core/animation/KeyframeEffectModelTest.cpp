@@ -39,7 +39,7 @@
 #include "core/css/resolver/CSSToStyleMap.h"
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 
@@ -428,7 +428,7 @@ TEST(AnimationKeyframeEffectModel, ToKeyframeEffectModel)
 
 } // namespace
 
-namespace WebCore {
+namespace blink {
 
 class KeyframeEffectModelTest : public ::testing::Test {
 public:
@@ -561,4 +561,4 @@ TEST_F(KeyframeEffectModelTest, EvenlyDistributed3)
     EXPECT_DOUBLE_EQ(1.0, result[11]->offset());
 }
 
-} // namespace WebCore
+} // namespace blink

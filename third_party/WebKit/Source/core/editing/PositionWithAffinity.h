@@ -8,7 +8,7 @@
 #include "core/dom/Position.h"
 #include "core/editing/TextAffinity.h"
 
-namespace WebCore {
+namespace blink {
 
 class PositionWithAffinity {
     DISALLOW_ALLOCATION();
@@ -27,6 +27,6 @@ private:
     EAffinity m_affinity;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PositionWithAffinity_h

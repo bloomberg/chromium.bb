@@ -35,7 +35,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class DOMWrapperWorld;
 class DocumentLoader;
@@ -93,6 +93,6 @@ private:
     InjectedScriptForOriginMap m_injectedScriptForOrigin;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InspectorInspectorAgent_h)

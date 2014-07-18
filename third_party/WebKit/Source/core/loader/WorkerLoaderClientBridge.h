@@ -35,7 +35,7 @@
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ThreadableLoaderClientWrapper;
 class WorkerLoaderProxy;
@@ -68,6 +68,6 @@ private:
     WorkerLoaderProxy& m_loaderProxy;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerLoaderClientBridge_h

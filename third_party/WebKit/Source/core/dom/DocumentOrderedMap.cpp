@@ -37,7 +37,7 @@
 #include "core/dom/TreeScope.h"
 #include "core/html/HTMLMapElement.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -192,4 +192,4 @@ void DocumentOrderedMap::MapEntry::trace(Visitor* visitor)
 #endif
 }
 
-} // namespace WebCore
+} // namespace blink

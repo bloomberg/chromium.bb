@@ -26,7 +26,7 @@
 #ifndef RenderStyleConstants_h
 #define RenderStyleConstants_h
 
-namespace WebCore {
+namespace blink {
 
 enum StyleRecalcChange {
     NoChange,
@@ -544,6 +544,6 @@ enum TextIndentType { TextIndentNormal, TextIndentHanging };
 
 enum CSSBoxType { BoxMissing = 0, MarginBox, BorderBox, PaddingBox, ContentBox };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderStyleConstants_h

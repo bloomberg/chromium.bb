@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 TEST(BisonCSSParserTest, ParseAnimationTimingFunctionValue)
 {
@@ -64,4 +64,4 @@ TEST(BisonCSSParserTest, ParseAnimationTimingFunctionValue)
     EXPECT_EQ(0, timingFunctionValue.get());
 }
 
-} // namespace WebCore
+} // namespace blink

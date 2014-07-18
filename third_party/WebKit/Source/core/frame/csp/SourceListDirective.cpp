@@ -11,7 +11,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 SourceListDirective::SourceListDirective(const String& name, const String& value, ContentSecurityPolicy* policy)
     : CSPDirective(name, value, policy)
@@ -58,5 +58,5 @@ uint8_t SourceListDirective::hashAlgorithmsUsed() const
     return m_sourceList.hashAlgorithmsUsed();
 }
 
-} // namespace WebCore
+} // namespace blink
 

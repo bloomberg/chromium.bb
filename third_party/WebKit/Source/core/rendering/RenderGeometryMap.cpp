@@ -32,7 +32,7 @@
 #include "platform/geometry/TransformState.h"
 #include "wtf/TemporaryChange.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderGeometryMap::RenderGeometryMap(MapCoordinatesFlags flags)
     : m_insertionPosition(kNotFound)
@@ -344,4 +344,4 @@ bool RenderGeometryMap::isTopmostRenderView(const RenderObject* renderer) const
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

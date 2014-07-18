@@ -28,7 +28,7 @@
 
 #include "core/editing/CompositeEditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class SplitTextNodeContainingElementCommand FINAL : public CompositeEditCommand {
 public:
@@ -48,6 +48,6 @@ private:
     int m_offset;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SplitTextNodeContainingElementCommand_h

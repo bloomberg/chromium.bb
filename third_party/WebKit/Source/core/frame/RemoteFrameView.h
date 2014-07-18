@@ -8,7 +8,7 @@
 #include "platform/Widget.h"
 #include "platform/geometry/IntRect.h"
 
-namespace WebCore {
+namespace blink {
 
 class RemoteFrame;
 
@@ -37,6 +37,6 @@ private:
 
 DEFINE_TYPE_CASTS(RemoteFrameView, Widget, widget, widget->isRemoteFrameView(), widget.isRemoteFrameView());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RemoteFrameView_h

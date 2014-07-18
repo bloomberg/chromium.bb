@@ -27,7 +27,7 @@
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/VisitedLinkState.h"
 
-namespace WebCore {
+namespace blink {
 
 ElementResolveContext::ElementResolveContext(Element& element)
     : m_element(&element)
@@ -46,4 +46,4 @@ ElementResolveContext::ElementResolveContext(Element& element)
         m_rootElementStyle = documentStyle;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -8,7 +8,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/rendering/RenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 // The following methods are inlined for performance but not put in
 // RenderObject.h because that would unnecessarily tie RenderObject.h

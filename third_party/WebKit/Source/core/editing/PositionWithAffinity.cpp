@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/editing/PositionWithAffinity.h"
 
-namespace WebCore {
+namespace blink {
 
 PositionWithAffinity::PositionWithAffinity(const Position& position, EAffinity affinity)
     : m_position(position)
@@ -27,4 +27,4 @@ void PositionWithAffinity::trace(Visitor* visitor)
     visitor->trace(m_position);
 }
 
-} // namespace WebCore
+} // namespace blink

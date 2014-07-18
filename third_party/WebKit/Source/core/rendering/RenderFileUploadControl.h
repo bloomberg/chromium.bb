@@ -23,7 +23,7 @@
 
 #include "core/rendering/RenderBlockFlow.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLInputElement;
 
@@ -60,6 +60,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderFileUploadControl, isFileUploadControl());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderFileUploadControl_h

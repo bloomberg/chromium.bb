@@ -40,7 +40,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -207,4 +207,4 @@ PassRefPtrWillBeRawPtr<StylePropertySet> computePresentationAttributeStyle(Eleme
     return style.release();
 }
 
-} // namespace WebCore
+} // namespace blink

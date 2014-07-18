@@ -29,7 +29,7 @@
 #include "core/dom/DOMStringMap.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Element;
 class ExceptionState;
@@ -65,6 +65,6 @@ private:
     RawPtrWillBeMember<Element> m_element;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DatasetDOMStringMap_h

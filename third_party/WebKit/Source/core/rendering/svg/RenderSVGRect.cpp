@@ -30,7 +30,7 @@
 #include "core/rendering/svg/RenderSVGRect.h"
 #include "platform/graphics/GraphicsContext.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderSVGRect::RenderSVGRect(SVGRectElement* node)
     : RenderSVGShape(node)

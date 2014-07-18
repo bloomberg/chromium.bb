@@ -33,7 +33,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class EventTarget;
 class ExecutionContextTask;

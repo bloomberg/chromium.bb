@@ -44,7 +44,7 @@ namespace WTF {
 class OrdinalNumber;
 }
 
-namespace WebCore {
+namespace blink {
 
 class ContentSecurityPolicyResponseHeaders;
 class CSPDirectiveList;

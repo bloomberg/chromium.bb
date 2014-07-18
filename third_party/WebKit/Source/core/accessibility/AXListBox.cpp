@@ -35,7 +35,7 @@
 #include "core/rendering/RenderListBox.h"
 
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -53,4 +53,4 @@ PassRefPtr<AXListBox> AXListBox::create(RenderObject* renderer)
     return adoptRef(new AXListBox(renderer));
 }
 
-} // namespace WebCore
+} // namespace blink

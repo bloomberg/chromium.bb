@@ -44,7 +44,7 @@
 
 // This file provides a utility function to support rendering certain elements above plugins.
 
-namespace WebCore {
+namespace blink {
 
 static void getObjectStack(const RenderObject* ro, Vector<const RenderObject*>* roStack)
 {
@@ -200,4 +200,4 @@ void getPluginOcclusions(Element* element, Widget* parentWidget, const IntRect& 
         addTreeToOcclusions(elements[i]->renderer(), frameRect, occlusions);
 }
 
-} // namespace WebCore
+} // namespace blink

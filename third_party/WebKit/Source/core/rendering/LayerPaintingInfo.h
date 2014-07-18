@@ -48,7 +48,7 @@
 #include "core/rendering/PaintInfo.h"
 #include "platform/geometry/LayoutRect.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderLayer;
 
@@ -93,6 +93,6 @@ struct LayerPaintingInfo {
     bool clipToDirtyRect;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LayerPaintingInfo_h

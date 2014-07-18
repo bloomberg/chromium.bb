@@ -37,7 +37,7 @@
 #include "wtf/Vector.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 void Microtask::performCheckpoint()
 {
@@ -68,4 +68,4 @@ void Microtask::enqueueMicrotask(const Closure& callback)
     enqueueMicrotask(adoptPtr(new Task(callback)));
 }
 
-} // namespace WebCore
+} // namespace blink

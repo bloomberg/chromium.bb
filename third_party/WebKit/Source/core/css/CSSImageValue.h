@@ -26,7 +26,7 @@
 #include "platform/weborigin/Referrer.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class Element;
@@ -87,6 +87,6 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSImageValue, isImageValue());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSImageValue_h

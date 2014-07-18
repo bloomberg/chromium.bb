@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/rendering/style/StyleWillChangeData.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleWillChangeData::StyleWillChangeData()
     : m_contents(false)
@@ -21,4 +21,4 @@ StyleWillChangeData::StyleWillChangeData(const StyleWillChangeData& o)
 {
 }
 
-} // namespace WebCore
+} // namespace blink

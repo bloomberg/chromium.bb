@@ -39,7 +39,7 @@
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class InjectedScriptModule;
 class Node;
@@ -110,6 +110,6 @@ private:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -25,7 +25,7 @@
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FEMorphology.h"
 
-namespace WebCore {
+namespace blink {
 
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<MorphologyOperatorType>();
 
@@ -54,6 +54,6 @@ private:
     RefPtr<SVGAnimatedEnumeration<MorphologyOperatorType> > m_svgOperator;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

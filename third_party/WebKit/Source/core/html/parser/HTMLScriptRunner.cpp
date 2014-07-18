@@ -39,7 +39,7 @@
 #include "core/html/parser/NestingLevelIncrementer.h"
 #include "platform/NotImplemented.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

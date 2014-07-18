@@ -35,7 +35,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class DocumentLoader;

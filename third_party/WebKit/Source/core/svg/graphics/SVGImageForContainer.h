@@ -32,7 +32,7 @@
 #include "platform/graphics/Image.h"
 #include "platform/weborigin/KURL.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGImageForContainer FINAL : public Image {
 public:

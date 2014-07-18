@@ -26,7 +26,7 @@
 
 #include "core/html/HTMLFormControlElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class FormControlState;
 

@@ -27,7 +27,7 @@
 
 #include "core/html/canvas/WebGLObject.h"
 
-namespace WebCore {
+namespace blink {
 
 WebGLObject::WebGLObject(WebGLRenderingContextBase*)
     : m_object(0)

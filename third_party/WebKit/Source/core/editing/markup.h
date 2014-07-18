@@ -32,7 +32,7 @@
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ContainerNode;
 class Document;

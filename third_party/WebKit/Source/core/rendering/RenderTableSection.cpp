@@ -37,7 +37,7 @@
 #include "core/rendering/SubtreeLayoutScope.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -1711,4 +1711,4 @@ void RenderTableSection::setLogicalPositionForCell(RenderTableCell* cell, unsign
     cell->setLogicalLocation(cellLocation);
 }
 
-} // namespace WebCore
+} // namespace blink

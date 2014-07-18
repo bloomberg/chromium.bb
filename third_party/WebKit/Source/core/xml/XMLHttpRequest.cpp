@@ -62,7 +62,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, xmlHttpRequestCounter, ("XMLHttpRequest"));
 
@@ -1430,4 +1430,4 @@ void XMLHttpRequest::trace(Visitor* visitor)
     XMLHttpRequestEventTarget::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -24,7 +24,7 @@
 
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleInheritedData::StyleInheritedData()
     : horizontal_border_spacing(RenderStyle::initialHorizontalBorderSpacing())
@@ -63,4 +63,4 @@ bool StyleInheritedData::operator==(const StyleInheritedData& o) const
         && vertical_border_spacing == o.vertical_border_spacing;
 }
 
-} // namespace WebCore
+} // namespace blink

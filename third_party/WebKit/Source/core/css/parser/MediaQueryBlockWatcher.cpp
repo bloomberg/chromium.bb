@@ -7,7 +7,7 @@
 
 #include "core/css/parser/MediaQueryToken.h"
 
-namespace WebCore {
+namespace blink {
 
 MediaQueryBlockWatcher::MediaQueryBlockWatcher()
     : m_blockLevel(0)

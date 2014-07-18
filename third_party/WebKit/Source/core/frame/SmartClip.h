@@ -34,7 +34,7 @@
 #include "core/dom/Node.h"
 #include "core/frame/LocalFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 class SmartClipData {
 public:
@@ -83,6 +83,6 @@ private:
     RefPtr<LocalFrame> m_frame;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SmartClip_h

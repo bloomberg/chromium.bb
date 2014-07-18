@@ -53,7 +53,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 using ::testing::CloneToPassOwnPtr;
 using ::testing::ExpectationSet;
@@ -246,17 +246,17 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKey
 TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorAnimationTransformDependsOnBoxSize)
 {
     TransformOperations ops;
-    ops.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(2, WebCore::Fixed), TransformOperation::TranslateX));
+    ops.operations().append(TranslateTransformOperation::create(Length(2, blink::Fixed), Length(2, blink::Fixed), TransformOperation::TranslateX));
     RefPtrWillBeRawPtr<AnimatableValueKeyframe> goodKeyframe = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops).get());
     EXPECT_TRUE(duplicateSingleKeyframeAndTestIsCandidateOnResult(goodKeyframe.get()));
 
-    ops.operations().append(TranslateTransformOperation::create(Length(50, WebCore::Percent), Length(2, WebCore::Fixed), TransformOperation::TranslateX));
+    ops.operations().append(TranslateTransformOperation::create(Length(50, blink::Percent), Length(2, blink::Fixed), TransformOperation::TranslateX));
     RefPtrWillBeRawPtr<AnimatableValueKeyframe> badKeyframe = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops).get());
     EXPECT_FALSE(duplicateSingleKeyframeAndTestIsCandidateOnResult(badKeyframe.get()));
 
     TransformOperations ops2;
-    Length calcLength = Length(100, WebCore::Percent).blend(Length(100, WebCore::Fixed), 0.5, WebCore::ValueRangeAll);
-    ops2.operations().append(TranslateTransformOperation::create(calcLength, Length(0, WebCore::Fixed), TransformOperation::TranslateX));
+    Length calcLength = Length(100, blink::Percent).blend(Length(100, blink::Fixed), 0.5, blink::ValueRangeAll);
+    ops2.operations().append(TranslateTransformOperation::create(calcLength, Length(0, blink::Fixed), TransformOperation::TranslateX));
     RefPtrWillBeRawPtr<AnimatableValueKeyframe> badKeyframe2 = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops2).get());
     EXPECT_FALSE(duplicateSingleKeyframeAndTestIsCandidateOnResult(badKeyframe2.get()));
 }
@@ -291,9 +291,9 @@ TEST_F(AnimationCompositorAnimationsTest, AnimatedBoundingBox)
 {
     Vector<TransformOperations> transformVector;
     transformVector.append(TransformOperations());
-    transformVector.last().operations().append(TranslateTransformOperation::create(Length(0, WebCore::Fixed), Length(0, WebCore::Fixed), 0.0, TransformOperation::Translate3D));
+    transformVector.last().operations().append(TranslateTransformOperation::create(Length(0, blink::Fixed), Length(0, blink::Fixed), 0.0, TransformOperation::Translate3D));
     transformVector.append(TransformOperations());
-    transformVector.last().operations().append(TranslateTransformOperation::create(Length(200, WebCore::Fixed), Length(200, WebCore::Fixed), 0.0, TransformOperation::Translate3D));
+    transformVector.last().operations().append(TranslateTransformOperation::create(Length(200, blink::Fixed), Length(200, blink::Fixed), 0.0, TransformOperation::Translate3D));
     OwnPtrWillBePersistent<AnimatableValueKeyframeVector> frames = createCompositableTransformKeyframeVector(transformVector);
     FloatBox bounds;
     EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames).get(), 0, 1));
@@ -302,7 +302,7 @@ TEST_F(AnimationCompositorAnimationsTest, AnimatedBoundingBox)
     EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames).get(), -1, 1));
     EXPECT_EQ(FloatBox(-200.0f, -200.0, 0.0, 400.0f, 400.0f, 0.0f), bounds);
     transformVector.append(TransformOperations());
-    transformVector.last().operations().append(TranslateTransformOperation::create(Length(-300, WebCore::Fixed), Length(-400, WebCore::Fixed), 1.0f, TransformOperation::Translate3D));
+    transformVector.last().operations().append(TranslateTransformOperation::create(Length(-300, blink::Fixed), Length(-400, blink::Fixed), 1.0f, TransformOperation::Translate3D));
     bounds = FloatBox();
     frames = createCompositableTransformKeyframeVector(transformVector);
     EXPECT_TRUE(getAnimationBounds(bounds, *AnimatableValueKeyframeEffectModel::create(*frames).get(), 0, 1));
@@ -937,4 +937,4 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegative
 }
 
 
-} // namespace WebCore
+} // namespace blink

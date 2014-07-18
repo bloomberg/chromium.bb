@@ -62,7 +62,7 @@
 
 // The methods in this file are shared by all themes on every platform.
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -1221,4 +1221,4 @@ void RenderTheme::adjustRadioStyleUsingFallbackTheme(RenderStyle* style, Element
     style->resetBorder();
 }
 
-} // namespace WebCore
+} // namespace blink

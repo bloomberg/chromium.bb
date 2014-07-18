@@ -28,7 +28,7 @@
 
 #include "core/css/CSSValue.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSValueList;
 struct CSSParserFunction;
@@ -63,7 +63,7 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSFunctionValue, isFunctionValue());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif
 

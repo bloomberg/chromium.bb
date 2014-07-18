@@ -31,7 +31,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class ForceHorriblySlowRectMapping;
 class RenderBox;
@@ -100,6 +100,6 @@ private:
     RenderObject& m_renderer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LayoutState_h

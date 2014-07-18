@@ -57,7 +57,7 @@
 #include "wtf/text/AtomicString.h"
 #include <limits>
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

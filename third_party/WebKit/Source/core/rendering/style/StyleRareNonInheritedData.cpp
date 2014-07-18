@@ -30,7 +30,7 @@
 #include "core/rendering/style/StyleTransformData.h"
 #include "core/rendering/svg/ReferenceFilterBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleRareNonInheritedData::StyleRareNonInheritedData()
     : opacity(RenderStyle::initialOpacity())
@@ -320,4 +320,4 @@ bool StyleRareNonInheritedData::hasFilters() const
     return m_filter.get() && !m_filter->m_operations.isEmpty();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -24,7 +24,7 @@
 #include "platform/geometry/FloatSize.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 IntSize SVGImageForContainer::size() const
 {
@@ -50,4 +50,4 @@ PassRefPtr<NativeImageSkia> SVGImageForContainer::nativeImageForCurrentFrame()
     return m_image->nativeImageForCurrentFrame();
 }
 
-} // namespace WebCore
+} // namespace blink

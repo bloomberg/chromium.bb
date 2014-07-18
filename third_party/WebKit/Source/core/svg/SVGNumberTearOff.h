@@ -35,7 +35,7 @@
 #include "core/svg/SVGNumber.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGNumberTearOff : public SVGPropertyTearOff<SVGNumber>, public ScriptWrappable {
 public:
@@ -51,6 +51,6 @@ protected:
     SVGNumberTearOff(PassRefPtr<SVGNumber>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGNumberTearOff_h_

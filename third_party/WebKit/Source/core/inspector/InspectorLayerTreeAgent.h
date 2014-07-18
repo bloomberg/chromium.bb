@@ -40,7 +40,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class GraphicsContextSnapshot;
 class InstrumentingAgents;
@@ -105,7 +105,7 @@ private:
     SnapshotById m_snapshotById;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // !defined(InspectorLayerTreeAgent_h)

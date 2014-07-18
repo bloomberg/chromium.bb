@@ -32,7 +32,7 @@
 
 #include "core/events/EventTarget.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace DOMWindowEventHandlers {
 DEFINE_STATIC_WINDOW_ATTRIBUTE_EVENT_LISTENER(beforeunload);

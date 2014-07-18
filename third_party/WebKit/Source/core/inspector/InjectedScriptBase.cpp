@@ -39,10 +39,10 @@
 #include "platform/JSONValues.h"
 #include "wtf/text/WTFString.h"
 
-using WebCore::TypeBuilder::Array;
-using WebCore::TypeBuilder::Runtime::RemoteObject;
+using blink::TypeBuilder::Array;
+using blink::TypeBuilder::Runtime::RemoteObject;
 
-namespace WebCore {
+namespace blink {
 
 static PassRefPtr<TypeBuilder::Debugger::ExceptionDetails> toExceptionDetails(PassRefPtr<JSONObject> object)
 {
@@ -201,5 +201,5 @@ void InjectedScriptBase::makeEvalCall(ErrorString* errorString, ScriptFunctionCa
     *wasThrown = wasThrownVal;
 }
 
-} // namespace WebCore
+} // namespace blink
 

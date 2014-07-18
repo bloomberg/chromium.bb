@@ -27,7 +27,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLInputElement;
 class RadioButtonGroup;
@@ -50,6 +50,6 @@ private:
     OwnPtrWillBeMember<NameToGroupMap> m_nameToGroupMap;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RadioButtonGroupScope_h

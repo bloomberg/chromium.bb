@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/track/vtt/VTTRegionList.h"
 
-namespace WebCore {
+namespace blink {
 
 VTTRegionList::VTTRegionList()
 {
@@ -78,4 +78,4 @@ void VTTRegionList::trace(Visitor* visitor)
     visitor->trace(m_list);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -33,7 +33,7 @@
 
 #include "core/html/imports/HTMLImportState.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLImport;
 

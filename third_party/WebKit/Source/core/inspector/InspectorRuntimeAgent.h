@@ -36,7 +36,7 @@
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class InjectedScript;
 class InjectedScriptManager;
@@ -106,6 +106,6 @@ private:
     ScriptDebugServer* m_scriptDebugServer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InspectorRuntimeAgent_h

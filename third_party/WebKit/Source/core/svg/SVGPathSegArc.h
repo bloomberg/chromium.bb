@@ -23,7 +23,7 @@
 
 #include "core/svg/SVGPathSegWithContext.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPathSegArc : public SVGPathSegWithContext {
 public:
@@ -99,6 +99,6 @@ private:
     bool m_sweepFlag : 1;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

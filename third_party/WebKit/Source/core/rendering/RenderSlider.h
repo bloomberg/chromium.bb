@@ -23,7 +23,7 @@
 
 #include "core/rendering/RenderFlexibleBox.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLInputElement;
 class SliderThumbElement;
@@ -51,6 +51,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSlider, isSlider());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderSlider_h

@@ -40,7 +40,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "platform/network/ResourceRequest.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 

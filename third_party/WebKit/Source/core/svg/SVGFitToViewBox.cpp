@@ -31,7 +31,7 @@
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/text/StringImpl.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGFitToViewBox::SVGFitToViewBox(SVGElement* element, PropertyMapPolicy propertyMapPolicy)
     : m_viewBox(SVGAnimatedRect::create(element, SVGNames::viewBoxAttr))

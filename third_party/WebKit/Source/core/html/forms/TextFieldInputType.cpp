@@ -55,7 +55,7 @@
 #include "core/rendering/RenderTheme.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -560,4 +560,4 @@ void TextFieldInputType::spinButtonDidReleaseMouseCapture(SpinButtonElement::Eve
         element().dispatchFormControlChangeEvent();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -36,7 +36,7 @@
 #include "wtf/text/AtomicStringHash.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 class Blob;
 class DOMFormData;
@@ -259,6 +259,6 @@ private:
     bool m_sameOriginRequest;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // XMLHttpRequest_h

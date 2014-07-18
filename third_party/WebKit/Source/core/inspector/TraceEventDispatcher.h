@@ -38,7 +38,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class InspectorClient;
 
@@ -104,7 +104,7 @@ public:
                 ASSERT_NOT_REACHED();
                 return 0;
             }
-            return reinterpret_cast<const WebCore::TraceEvent::TraceValueUnion*>(m_argumentValues + index)->m_int;
+            return reinterpret_cast<const blink::TraceEvent::TraceValueUnion*>(m_argumentValues + index)->m_int;
         }
         unsigned long long asUInt(const char* name) const
         {
@@ -123,7 +123,7 @@ public:
         enum { MaxArguments = 2 };
 
         size_t findParameter(const char*) const;
-        const WebCore::TraceEvent::TraceValueUnion& parameter(const char* name, unsigned char expectedType) const;
+        const blink::TraceEvent::TraceValueUnion& parameter(const char* name, unsigned char expectedType) const;
 
         double m_timestamp;
         char m_phase;
@@ -133,7 +133,7 @@ public:
         int m_argumentCount;
         const char* m_argumentNames[MaxArguments];
         unsigned char m_argumentTypes[MaxArguments];
-        WebCore::TraceEvent::TraceValueUnion m_argumentValues[MaxArguments];
+        blink::TraceEvent::TraceValueUnion m_argumentValues[MaxArguments];
         // These are only used as buffers for TRACE_VALUE_TYPE_COPY_STRING.
         // Consider allocating the entire vector of buffered trace events and their copied arguments out of a special arena
         // to make things more compact.
@@ -197,6 +197,6 @@ template<typename C> struct TraceEventTarget : public TraceEventTargetBase {
     typedef void (C::*TraceEventHandler)(const TraceEventDispatcher::TraceEvent&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TraceEventDispatcher_h

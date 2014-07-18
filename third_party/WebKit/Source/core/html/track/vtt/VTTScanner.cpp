@@ -30,7 +30,7 @@
 #include "config.h"
 #include "core/html/track/vtt/VTTScanner.h"
 
-namespace WebCore {
+namespace blink {
 
 VTTScanner::VTTScanner(const String& line) : m_is8Bit(line.is8Bit())
 {

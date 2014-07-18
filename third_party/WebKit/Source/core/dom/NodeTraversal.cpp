@@ -27,7 +27,7 @@
 
 #include "core/dom/ContainerNode.h"
 
-namespace WebCore {
+namespace blink {
 
 Node* NodeTraversal::previousIncludingPseudo(const Node& current, const Node* stayWithin)
 {
@@ -167,4 +167,4 @@ Node* NodeTraversal::previousPostOrder(const Node& current, const Node* stayWith
     return previousAncestorSiblingPostOrder(current, stayWithin);
 }
 
-} // namespace WebCore
+} // namespace blink

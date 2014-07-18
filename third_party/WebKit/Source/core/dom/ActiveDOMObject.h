@@ -30,7 +30,7 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 class ActiveDOMObject : public ContextLifecycleObserver {
 public:
@@ -64,6 +64,6 @@ private:
 #endif
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ActiveDOMObject_h

@@ -35,7 +35,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -45,6 +45,6 @@ public:
     String atob(const String& encodedString, ExceptionState&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMWindowBase64_h

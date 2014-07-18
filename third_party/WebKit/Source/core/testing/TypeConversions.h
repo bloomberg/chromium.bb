@@ -30,7 +30,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class TypeConversions : public RefCountedWillBeGarbageCollectedFinalized<TypeConversions> {
 public:
@@ -84,6 +84,6 @@ private:
     String m_scalarValueString;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -44,7 +44,7 @@
 #include "wtf/text/StringBuilder.h"
 
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -1707,4 +1707,4 @@ void AXNodeObject::changeValueByPercent(float percentChange)
     axObjectCache()->postNotification(node(), AXObjectCache::AXValueChanged, true);
 }
 
-} // namespace WebCore
+} // namespace blink

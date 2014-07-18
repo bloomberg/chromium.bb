@@ -31,7 +31,7 @@
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtr<ContextFeaturesClient> ContextFeaturesClient::empty()
 {

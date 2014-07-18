@@ -29,7 +29,7 @@
 #include "core/svg/graphics/filters/SVGFilter.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 struct FilterData {
     WTF_MAKE_FAST_ALLOCATED;

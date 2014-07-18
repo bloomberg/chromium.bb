@@ -42,7 +42,7 @@
 
 using namespace blink;
 
-namespace WebCore {
+namespace blink {
 
 void toWebTransformOperations(const TransformOperations& transformOperations, WebTransformOperations* webTransformOperations)
 {
@@ -124,4 +124,4 @@ void toWebFilterOperations(const FilterOperations& inOperations, WebFilterOperat
     builder.buildFilterOperations(inOperations, outOperations);
 }
 
-} // namespace WebCore
+} // namespace blink

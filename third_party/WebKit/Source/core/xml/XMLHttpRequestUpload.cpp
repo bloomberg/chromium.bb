@@ -31,7 +31,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 XMLHttpRequestUpload::XMLHttpRequestUpload(XMLHttpRequest* xmlHttpRequest)
     : m_xmlHttpRequest(xmlHttpRequest)
@@ -78,4 +78,4 @@ void XMLHttpRequestUpload::trace(Visitor* visitor)
     XMLHttpRequestEventTarget::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

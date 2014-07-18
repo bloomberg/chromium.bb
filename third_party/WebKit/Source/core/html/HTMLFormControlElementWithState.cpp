@@ -33,7 +33,7 @@
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 
-namespace WebCore {
+namespace blink {
 
 HTMLFormControlElementWithState::HTMLFormControlElementWithState(const QualifiedName& tagName, Document& doc, HTMLFormElement* f)
     : HTMLFormControlElement(tagName, doc, f)

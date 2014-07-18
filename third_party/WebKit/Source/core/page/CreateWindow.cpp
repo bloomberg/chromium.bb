@@ -42,7 +42,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
-namespace WebCore {
+namespace blink {
 
 static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer, bool& created)
 {
@@ -189,4 +189,4 @@ void createWindowForRequest(const FrameLoadRequest& request, LocalFrame& openerF
     newFrame->loader().load(newRequest);
 }
 
-} // namespace WebCore
+} // namespace blink

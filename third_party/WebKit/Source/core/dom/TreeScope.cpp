@@ -51,7 +51,7 @@
 #include "core/rendering/RenderView.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -549,4 +549,4 @@ void TreeScope::trace(Visitor* visitor)
     visitor->trace(m_labelsByForAttribute);
 }
 
-} // namespace WebCore
+} // namespace blink

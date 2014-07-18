@@ -26,7 +26,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGSwitchElement::SVGSwitchElement(Document& document)
     : SVGGraphicsElement(SVGNames::switchTag, document)

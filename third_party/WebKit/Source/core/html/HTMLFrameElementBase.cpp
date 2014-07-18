@@ -38,7 +38,7 @@
 #include "core/page/Page.h"
 #include "core/rendering/RenderPart.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -234,4 +234,4 @@ void HTMLFrameElementBase::defaultEventHandler(Event* event)
     HTMLFrameOwnerElement::defaultEventHandler(event);
 }
 
-} // namespace WebCore
+} // namespace blink

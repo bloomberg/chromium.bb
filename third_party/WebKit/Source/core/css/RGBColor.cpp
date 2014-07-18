@@ -28,7 +28,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/RGBColor.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<RGBColor> RGBColor::create(unsigned rgbColor)
 {
@@ -67,5 +67,5 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> RGBColor::alpha()
     return result.release();
 }
 
-} // namespace WebCore
+} // namespace blink
 

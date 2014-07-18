@@ -36,7 +36,7 @@
 #include "core/loader/LinkLoader.h"
 #include "core/loader/LinkLoaderClient.h"
 
-namespace WebCore {
+namespace blink {
 
 class DocumentFragment;
 class HTMLLinkElement;

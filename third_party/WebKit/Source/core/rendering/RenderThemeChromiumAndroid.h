@@ -28,7 +28,7 @@
 
 #include "core/rendering/RenderThemeChromiumDefault.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderThemeChromiumAndroid FINAL : public RenderThemeChromiumDefault {
 public:
@@ -61,6 +61,6 @@ private:
     static const RGBA32 defaultActiveSelectionBackgroundColor = 0x6633b5e5;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderThemeChromiumAndroid_h

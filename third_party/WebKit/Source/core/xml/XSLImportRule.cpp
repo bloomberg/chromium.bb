@@ -28,7 +28,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/XSLStyleSheetResource.h"
 
-namespace WebCore {
+namespace blink {
 
 XSLImportRule::XSLImportRule(XSLStyleSheet* parent, const String& href)
     : m_parentStyleSheet(parent)
@@ -120,4 +120,4 @@ void XSLImportRule::trace(Visitor* visitor)
     visitor->trace(m_styleSheet);
 }
 
-} // namespace WebCore
+} // namespace blink

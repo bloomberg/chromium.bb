@@ -7,7 +7,7 @@
 
 #include "core/animation/interpolation/LegacyStyleInterpolation.h"
 
-namespace WebCore {
+namespace blink {
 
 AnimatableValueKeyframe::AnimatableValueKeyframe(const AnimatableValueKeyframe& copyFrom)
     : Keyframe(copyFrom.m_offset, copyFrom.m_composite, copyFrom.m_easing)

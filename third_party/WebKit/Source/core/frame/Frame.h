@@ -38,7 +38,7 @@ namespace blink {
 class WebLayer;
 }
 
-namespace WebCore {
+namespace blink {
 
 class ChromeClient;
 class FrameClient;
@@ -148,6 +148,6 @@ inline FrameTree& Frame::tree() const
 // Allow equality comparisons of Frames by reference or pointer, interchangeably.
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES_REFCOUNTED(Frame)
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Frame_h

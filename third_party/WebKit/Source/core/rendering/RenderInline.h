@@ -28,7 +28,7 @@
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderLineBoxList.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderInline : public RenderBoxModelObject {
 public:
@@ -192,6 +192,6 @@ private:
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderInline, isRenderInline());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderInline_h

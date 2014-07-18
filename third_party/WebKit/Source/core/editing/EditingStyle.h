@@ -44,7 +44,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSStyleDeclaration;
 class CSSComputedStyleDeclaration;
@@ -233,6 +233,6 @@ private:
 CSSValueID getIdentifierValue(CSSStyleDeclaration*, CSSPropertyID);
 CSSValueID getIdentifierValue(StylePropertySet*, CSSPropertyID);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // EditingStyle_h

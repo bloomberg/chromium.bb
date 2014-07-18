@@ -28,7 +28,7 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/html/parser/TextResourceDecoder.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 

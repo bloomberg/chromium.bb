@@ -30,7 +30,7 @@
 
 #include "core/dom/Node.h"
 
-namespace WebCore {
+namespace blink {
 
 void DocumentOrderedList::add(Node* node)
 {

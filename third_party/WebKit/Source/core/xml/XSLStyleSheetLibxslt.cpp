@@ -35,7 +35,7 @@
 #include <libxml/uri.h>
 #include <libxslt/xsltutils.h>
 
-namespace WebCore {
+namespace blink {
 
 XSLStyleSheet::XSLStyleSheet(XSLImportRule* parentRule, const String& originalURL, const KURL& finalURL)
     : m_ownerNode(nullptr)
@@ -313,4 +313,4 @@ void XSLStyleSheet::trace(Visitor* visitor)
     StyleSheet::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

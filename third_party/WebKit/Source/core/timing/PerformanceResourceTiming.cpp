@@ -39,7 +39,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 
-namespace WebCore {
+namespace blink {
 
 static double monotonicTimeToDocumentMilliseconds(Document* document, double seconds)
 {
@@ -197,4 +197,4 @@ void PerformanceResourceTiming::trace(Visitor* visitor)
     PerformanceEntry::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

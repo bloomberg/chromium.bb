@@ -36,7 +36,7 @@
 #include "core/events/EventTarget.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimationTimeline;
 class ExceptionState;

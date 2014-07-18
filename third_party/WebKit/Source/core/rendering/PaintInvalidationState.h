@@ -8,7 +8,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderBox;
 class RenderInline;
@@ -56,6 +56,6 @@ private:
     RenderObject& m_renderer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PaintInvalidationState_h

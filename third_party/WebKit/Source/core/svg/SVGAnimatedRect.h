@@ -34,7 +34,7 @@
 #include "core/svg/SVGRectTearOff.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGAnimatedRect : public SVGAnimatedProperty<SVGRect> {
 public:
@@ -50,6 +50,6 @@ protected:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGAnimatedRect_h

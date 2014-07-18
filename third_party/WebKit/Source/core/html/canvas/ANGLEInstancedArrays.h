@@ -34,7 +34,7 @@
 #include "core/html/canvas/WebGLExtension.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebGLRenderingContextBase;
 
@@ -55,6 +55,6 @@ private:
     ANGLEInstancedArrays(WebGLRenderingContextBase*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ANGLEInstancedArrays_h

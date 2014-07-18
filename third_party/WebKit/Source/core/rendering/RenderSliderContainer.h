@@ -34,7 +34,7 @@
 
 #include "core/rendering/RenderFlexibleBox.h"
 
-namespace WebCore {
+namespace blink {
 
 class SliderContainerElement;
 
@@ -49,6 +49,6 @@ private:
     virtual void layout() OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderSliderContainer_h

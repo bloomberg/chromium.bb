@@ -24,7 +24,7 @@
 
 #include "core/rendering/style/RenderStyle.h"
 
-namespace WebCore {
+namespace blink {
 
 // RenderTheme::adjustStyle wants the background and borders
 // as specified by the UA sheets, excluding any author rules.
@@ -55,6 +55,6 @@ private:
 
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CachedUAStyle_h

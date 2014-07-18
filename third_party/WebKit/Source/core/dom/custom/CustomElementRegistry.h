@@ -41,7 +41,7 @@
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class CustomElementConstructorBuilder;
 class Document;
@@ -63,6 +63,6 @@ private:
     HashSet<AtomicString> m_registeredTypeNames;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

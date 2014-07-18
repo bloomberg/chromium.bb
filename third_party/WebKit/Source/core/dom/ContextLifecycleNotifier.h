@@ -32,7 +32,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ActiveDOMObject;
 class ExecutionContext;
@@ -69,6 +69,6 @@ inline PassOwnPtr<ContextLifecycleNotifier> ContextLifecycleNotifier::create(Exe
     return adoptPtr(new ContextLifecycleNotifier(context));
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ContextLifecycleNotifier_h

@@ -14,7 +14,7 @@
 #include "wtf/text/Base64.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 static bool isSourceListNone(const UChar* begin, const UChar* end)
 {
@@ -482,4 +482,4 @@ void CSPSourceList::addSourceHash(const ContentSecurityPolicyHashAlgorithm& algo
 }
 
 
-} // namespace WebCore
+} // namespace blink

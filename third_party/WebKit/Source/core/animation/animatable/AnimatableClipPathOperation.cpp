@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/animation/animatable/AnimatableClipPathOperation.h"
 
-namespace WebCore {
+namespace blink {
 
 bool AnimatableClipPathOperation::usesDefaultInterpolationWith(const AnimatableValue* value) const
 {

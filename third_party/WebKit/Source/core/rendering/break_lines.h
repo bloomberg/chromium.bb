@@ -23,7 +23,7 @@
 
 #include "wtf/unicode/Unicode.h"
 
-namespace WebCore {
+namespace blink {
 
 class LazyLineBreakIterator;
 
@@ -36,6 +36,6 @@ inline bool isBreakable(LazyLineBreakIterator& lazyBreakIterator, int pos, int& 
     return pos == nextBreakable;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // break_lines_h

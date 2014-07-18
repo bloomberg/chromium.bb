@@ -42,7 +42,7 @@
 #include "core/html/track/vtt/VTTRegionList.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 static const int invalidTrackIndex = -1;
 
@@ -447,4 +447,4 @@ void TextTrack::trace(Visitor* visitor)
     EventTargetWithInlineData::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

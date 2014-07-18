@@ -31,7 +31,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebGLTexture FINAL : public WebGLSharedObject, public ScriptWrappable {
 public:
@@ -133,6 +133,6 @@ private:
     bool m_isHalfFloatType;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebGLTexture_h

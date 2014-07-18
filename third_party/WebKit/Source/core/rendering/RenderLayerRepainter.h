@@ -48,7 +48,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderLayer;
 class RenderLayerModelObject;
@@ -78,6 +78,6 @@ private:
     RenderLayerModelObject& m_renderer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderLayerRepainter_h

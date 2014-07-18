@@ -7,7 +7,7 @@
 
 #include "core/CSSPropertyNames.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderStyle;
 
@@ -16,6 +16,6 @@ public:
     static bool propertiesEqual(CSSPropertyID, const RenderStyle&, const RenderStyle&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSPropertyEquality_h

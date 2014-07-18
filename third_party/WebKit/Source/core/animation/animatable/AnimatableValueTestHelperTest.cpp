@@ -44,7 +44,7 @@
 #include <string>
 
 
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 
@@ -92,7 +92,7 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
         PrintToString(AnimatableStrokeDasharrayList::create(l2)));
 
     TransformOperations operations1;
-    operations1.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TranslateX));
+    operations1.operations().append(TranslateTransformOperation::create(Length(2, blink::Fixed), Length(0, blink::Fixed), TransformOperation::TranslateX));
     EXPECT_EQ(
         ::std::string("AnimatableTransform([1 0 0 1 2 0])"),
         PrintToString(AnimatableTransform::create(operations1)));

@@ -34,7 +34,7 @@
 
 #include "core/dom/Element.h"
 
-namespace WebCore {
+namespace blink {
 
 template <typename Collection, typename NodeType>
 class CollectionIndexCache {
@@ -203,6 +203,6 @@ inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeAfterCachedNode
     return currentNode;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CollectionIndexCache_h

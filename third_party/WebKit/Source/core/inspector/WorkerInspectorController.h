@@ -38,7 +38,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class InjectedScriptManager;
 class InspectorBackendDispatcher;

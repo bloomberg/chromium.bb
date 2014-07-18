@@ -83,7 +83,7 @@
 #include "wtf/text/TextEncoding.h"
 #include <limits.h>
 
-namespace WebCore {
+namespace blink {
 
 static const double MAX_SCALE = 1000000;
 static const unsigned minRepetitions = 10000;
@@ -496,7 +496,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         break;
 
     /* Start of supported CSS properties with validation. This is needed for parseShorthand to work
-     * correctly and allows optimization in WebCore::applyRule(..)
+     * correctly and allows optimization in blink::applyRule(..)
      */
     case CSSPropertyOverflow: {
         ShorthandScope scope(this, propId);
@@ -8508,4 +8508,4 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parsePaintOrder() const
     return parsedValues.release();
 }
 
-} // namespace WebCore
+} // namespace blink

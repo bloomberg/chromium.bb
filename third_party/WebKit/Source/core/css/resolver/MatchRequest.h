@@ -26,7 +26,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/RuleSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class ContainerNode;
 
@@ -54,6 +54,6 @@ public:
     const unsigned styleSheetIndex;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MatchRequest_h

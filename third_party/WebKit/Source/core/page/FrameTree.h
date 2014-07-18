@@ -22,7 +22,7 @@
 
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Frame;
 class TreeScope;
@@ -74,11 +74,11 @@ private:
     mutable unsigned m_scopedChildCount;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showFrameTree(const WebCore::Frame*);
+void showFrameTree(const blink::Frame*);
 #endif
 
 #endif // FrameTree_h

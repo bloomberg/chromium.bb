@@ -29,7 +29,7 @@
 #include "core/fetch/DocumentResource.h"
 #include "core/fetch/ResourcePtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class DocumentResourceReference FINAL : public DocumentResourceClient {
 public:

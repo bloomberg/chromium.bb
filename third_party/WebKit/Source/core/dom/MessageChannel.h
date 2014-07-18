@@ -33,7 +33,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class MessagePort;
 class ExecutionContext;
@@ -58,6 +58,6 @@ private:
     RefPtrWillBeMember<MessagePort> m_port2;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MessageChannel_h

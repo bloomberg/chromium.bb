@@ -51,7 +51,7 @@
 #include "wtf/Threading.h"
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -493,4 +493,4 @@ void FileReader::trace(Visitor* visitor)
     EventTargetWithInlineData::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -38,7 +38,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class CustomElementSyncMicrotaskQueue;
 class Document;
@@ -128,6 +128,6 @@ private:
     RefPtrWillBeMember<CustomElementSyncMicrotaskQueue> m_microtaskQueue;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLImportLoader_h

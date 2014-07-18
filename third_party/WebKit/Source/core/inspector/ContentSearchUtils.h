@@ -35,7 +35,7 @@
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ScriptRegexp;
 
@@ -53,7 +53,7 @@ String findSourceURL(const String& content, MagicCommentType, bool* deprecated);
 String findSourceMapURL(const String& content, MagicCommentType, bool* deprecated);
 
 } // namespace ContentSearchUtils
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // !defined(ContentSearchUtils_h)

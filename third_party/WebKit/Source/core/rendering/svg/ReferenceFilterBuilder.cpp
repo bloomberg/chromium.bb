@@ -41,7 +41,7 @@
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 #include "platform/graphics/filters/SourceAlpha.h"
 
-namespace WebCore {
+namespace blink {
 
 HashMap<const FilterOperation*, OwnPtr<DocumentResourceReference> >* ReferenceFilterBuilder::documentResourceReferences = 0;
 
@@ -172,4 +172,4 @@ PassRefPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, Ren
     return builder->lastEffect();
 }
 
-} // namespace WebCore
+} // namespace blink

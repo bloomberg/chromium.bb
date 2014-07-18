@@ -40,7 +40,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: Rename this because it contains resolution and upgrade as
 // well as callbacks.

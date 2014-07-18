@@ -31,7 +31,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AffineTransform;
 class CSSCursorImageValue;

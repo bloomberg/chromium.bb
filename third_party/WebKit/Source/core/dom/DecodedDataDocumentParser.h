@@ -29,7 +29,7 @@
 #include "core/dom/DocumentParser.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 class TextResourceDecoder;
 
 class DecodedDataDocumentParser : public DocumentParser {

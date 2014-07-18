@@ -31,7 +31,7 @@
 
 #include "core/accessibility/AXTableRow.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXARIAGridRow FINAL : public AXTableRow {
 
@@ -47,6 +47,6 @@ private:
     virtual bool isARIATreeGridRow() const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXARIAGridRow_h

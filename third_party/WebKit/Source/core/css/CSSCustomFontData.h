@@ -24,7 +24,7 @@
 #include "core/css/CSSFontFaceSource.h"
 #include "platform/fonts/CustomFontData.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSCustomFontData FINAL : public CustomFontData {
 public:

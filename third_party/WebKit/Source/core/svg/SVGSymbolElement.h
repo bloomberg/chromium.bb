@@ -25,7 +25,7 @@
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFitToViewBox.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGSymbolElement FINAL : public SVGElement,
                                public SVGFitToViewBox {
@@ -42,6 +42,6 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

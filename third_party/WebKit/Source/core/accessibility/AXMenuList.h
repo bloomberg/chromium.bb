@@ -28,7 +28,7 @@
 
 #include "core/accessibility/AXRenderObject.h"
 
-namespace WebCore {
+namespace blink {
 
 class AXMenuList;
 class AXMenuListPopup;
@@ -57,6 +57,6 @@ private:
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXMenuList, isMenuList());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AXMenuList_h

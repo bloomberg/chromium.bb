@@ -36,7 +36,7 @@
 #include "core/html/imports/HTMLImport.h"
 #include "core/svg/SVGStyleElement.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

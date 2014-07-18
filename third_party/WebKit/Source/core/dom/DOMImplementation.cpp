@@ -60,7 +60,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef HashSet<String, CaseFoldingHash> FeatureSet;
 

@@ -14,7 +14,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 using namespace HTMLNames;
 
 namespace {
@@ -24,7 +24,7 @@ class AffectedByFocusTest : public ::testing::Test {
 protected:
 
     struct ElementResult {
-        const WebCore::QualifiedName tag;
+        const blink::QualifiedName tag;
         bool affectedBy;
         bool childrenOrSiblingsAffectedBy;
     };

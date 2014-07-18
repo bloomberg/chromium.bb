@@ -36,7 +36,7 @@
 #include "core/dom/Text.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -170,4 +170,4 @@ void XMLErrors::insertErrorMessageBlock()
     m_document->updateRenderTreeIfNeeded();
 }
 
-} // namespace WebCore
+} // namespace blink

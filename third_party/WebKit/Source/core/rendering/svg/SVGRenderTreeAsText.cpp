@@ -69,7 +69,7 @@
 #include <math.h>
 #include <memory>
 
-namespace WebCore {
+namespace blink {
 
 /** class + iomanip to help streaming list separators, i.e. ", " in string "a, b, c, d"
  * Can be used in cases where you don't know which item in the list is the first
@@ -679,4 +679,4 @@ void writeResources(TextStream& ts, const RenderObject& object, int indent)
     }
 }
 
-} // namespace WebCore
+} // namespace blink

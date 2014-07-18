@@ -29,7 +29,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicStringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class FormAssociatedElement;
 class FormKeyGenerator;
@@ -124,5 +124,5 @@ private:
     OwnPtrWillBeMember<FormKeyGenerator> m_formKeyGenerator;
 };
 
-} // namespace WebCore
+} // namespace blink
 #endif

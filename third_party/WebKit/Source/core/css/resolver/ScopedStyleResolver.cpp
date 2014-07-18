@@ -40,7 +40,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLStyleElement.h"
 
-namespace WebCore {
+namespace blink {
 
 ContainerNode* ScopedStyleResolver::scopingNodeFor(Document& document, const CSSStyleSheet* sheet)
 {
@@ -142,4 +142,4 @@ void ScopedStyleResolver::collectViewportRulesTo(StyleResolver* resolver) const
         resolver->viewportStyleResolver()->collectViewportRules(&m_authorStyleSheets[i]->contents()->ruleSet(), ViewportStyleResolver::AuthorOrigin);
 }
 
-} // namespace WebCore
+} // namespace blink

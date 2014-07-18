@@ -33,7 +33,7 @@
 #include "core/css/CSSValueList.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSArrayFunctionValue : public CSSValueList {
 public:
@@ -57,7 +57,7 @@ private:
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSArrayFunctionValue, isArrayFunctionValue());
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif

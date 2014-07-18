@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/dom/custom/CustomElementSyncMicrotaskQueue.h"
 
-namespace WebCore {
+namespace blink {
 
 void CustomElementSyncMicrotaskQueue::enqueue(PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep> step)
 {
@@ -24,4 +24,4 @@ void CustomElementSyncMicrotaskQueue::doDispatch()
     m_queue.remove(0, i);
 }
 
-} // namespace WebCore
+} // namespace blink

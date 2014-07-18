@@ -30,7 +30,7 @@
 #include "platform/scroll/ScrollbarThemeClient.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderScrollbarTheme* RenderScrollbarTheme::renderScrollbarTheme()
 {

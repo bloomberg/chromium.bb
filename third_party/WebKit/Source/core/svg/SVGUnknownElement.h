@@ -33,7 +33,7 @@
 
 #include "core/svg/SVGElement.h"
 
-namespace WebCore {
+namespace blink {
 
 // This type is used for 2 kinds of elements:
 // - Unknown Elements in SVG namespace
@@ -51,6 +51,6 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGUnknownElement_h

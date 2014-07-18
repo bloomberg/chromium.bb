@@ -6,7 +6,7 @@
 
 #include "core/html/canvas/EXTShaderTextureLOD.h"
 
-namespace WebCore {
+namespace blink {
 
 EXTShaderTextureLOD::EXTShaderTextureLOD(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -39,4 +39,4 @@ const char* EXTShaderTextureLOD::extensionName()
     return "EXT_shader_texture_lod";
 }
 
-} // namespace WebCore
+} // namespace blink

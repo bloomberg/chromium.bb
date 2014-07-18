@@ -37,7 +37,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Blob;
 class ExceptionState;
@@ -68,6 +68,6 @@ private:
     void startLoading(ExecutionContext*, FileReaderLoader&, const Blob&, ExceptionState&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FileReaderSync_h

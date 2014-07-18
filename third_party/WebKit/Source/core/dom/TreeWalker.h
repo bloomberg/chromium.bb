@@ -32,7 +32,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -65,6 +65,6 @@ private:
     RefPtrWillBeMember<Node> m_current;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TreeWalker_h

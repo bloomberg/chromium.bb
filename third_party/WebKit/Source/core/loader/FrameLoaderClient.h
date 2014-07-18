@@ -50,7 +50,7 @@ class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 }
 
-namespace WebCore {
+namespace blink {
 
     class Color;
     class DOMWindowExtension;
@@ -231,6 +231,6 @@ namespace WebCore {
         virtual bool isFrameLoaderClientImpl() const { return false; }
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FrameLoaderClient_h

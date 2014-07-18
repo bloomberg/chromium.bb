@@ -39,7 +39,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 MixedContentChecker::MixedContentChecker(LocalFrame* frame)
     : m_frame(frame)
@@ -170,4 +170,4 @@ void MixedContentChecker::logWarning(bool allowed, const KURL& target, const Mix
     m_frame->document()->addConsoleMessage(SecurityMessageSource, messageLevel, message.toString());
 }
 
-} // namespace WebCore
+} // namespace blink

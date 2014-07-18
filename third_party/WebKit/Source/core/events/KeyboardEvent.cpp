@@ -26,7 +26,7 @@
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/WindowsKeyboardCodes.h"
 
-namespace WebCore {
+namespace blink {
 
 static inline const AtomicString& eventTypeForKeyboardEventType(PlatformEvent::Type type)
 {
@@ -237,4 +237,4 @@ bool KeyboardEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) c
     return EventDispatchMediator::dispatchEvent(dispatcher) && !event()->defaultHandled();
 }
 
-} // namespace WebCore
+} // namespace blink

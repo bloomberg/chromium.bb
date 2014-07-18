@@ -28,7 +28,7 @@
 #include "core/html/HTMLDocument.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ImageResource;
 class HTMLImageElement;

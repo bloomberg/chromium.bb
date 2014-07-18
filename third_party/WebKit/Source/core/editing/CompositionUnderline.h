@@ -28,7 +28,7 @@
 
 #include "platform/graphics/Color.h"
 
-namespace WebCore {
+namespace blink {
 
 struct CompositionUnderline {
     CompositionUnderline()
@@ -60,6 +60,6 @@ struct CompositionUnderline {
     Color backgroundColor;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CompositionUnderline_h

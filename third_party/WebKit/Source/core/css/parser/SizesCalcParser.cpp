@@ -8,7 +8,7 @@
 #include "core/css/MediaValues.h"
 #include "core/css/parser/MediaQueryToken.h"
 
-namespace WebCore {
+namespace blink {
 
 bool SizesCalcParser::parse(MediaQueryTokenIterator start, MediaQueryTokenIterator end, PassRefPtr<MediaValues> mediaValues, unsigned& result)
 {
@@ -211,4 +211,4 @@ bool SizesCalcParser::calculate(unsigned& result)
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

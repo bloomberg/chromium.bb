@@ -35,7 +35,7 @@
 #include "core/svg/SVGPathSegListSource.h"
 #include "core/svg/SVGPathUtilities.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGPathSegList::SVGPathSegList(SVGPathElement* contextElement, SVGPathSegRole role)
     : m_contextElement(contextElement)

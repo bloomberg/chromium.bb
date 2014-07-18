@@ -10,7 +10,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/loader/ImageLoader.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

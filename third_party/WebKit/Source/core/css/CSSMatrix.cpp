@@ -38,7 +38,7 @@
 #include "core/rendering/style/StyleInheritedData.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSMatrix::CSSMatrix(const TransformationMatrix& m)
     : m_matrix(m)
@@ -189,4 +189,4 @@ String CSSMatrix::toString() const
     m_matrix.m41(), m_matrix.m42(), m_matrix.m43(), m_matrix.m44());
 }
 
-} // namespace WebCore
+} // namespace blink

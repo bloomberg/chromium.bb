@@ -34,7 +34,7 @@ class Context;
 template <class T> class Local;
 }
 
-namespace WebCore {
+namespace blink {
 class LocalFrame;
 class PagePopupController;
 }
@@ -44,6 +44,6 @@ namespace WebCoreTestSupport {
 void injectInternalsObject(v8::Local<v8::Context>);
 void resetInternalsObject(v8::Local<v8::Context>);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

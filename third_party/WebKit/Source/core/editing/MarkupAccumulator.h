@@ -31,7 +31,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 class Attribute;
 class DocumentType;

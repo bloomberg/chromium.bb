@@ -7,7 +7,7 @@
 
 #include "core/rendering/style/GridPosition.h"
 
-namespace WebCore {
+namespace blink {
 
 struct GridSpan;
 class RenderBox;
@@ -120,6 +120,6 @@ private:
     size_t m_integerPosition;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GridResolvedPosition_h

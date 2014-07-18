@@ -55,7 +55,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 
-namespace WebCore {
+namespace blink {
 
 class FrontendMenuProvider FINAL : public ContextMenuProvider {
 public:
@@ -251,4 +251,4 @@ bool InspectorFrontendHost::isHostedMode()
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -26,7 +26,7 @@
 
 #include "platform/graphics/Path.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGPathBuilder::SVGPathBuilder()
     : m_path(0)

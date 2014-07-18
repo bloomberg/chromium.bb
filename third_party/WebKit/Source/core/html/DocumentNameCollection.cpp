@@ -9,7 +9,7 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLObjectElement.h"
 
-namespace WebCore {
+namespace blink {
 
 DocumentNameCollection::DocumentNameCollection(ContainerNode& document, const AtomicString& name)
     : HTMLNameCollection(document, DocumentNamedItems, name)
@@ -30,4 +30,4 @@ bool DocumentNameCollection::elementMatches(const Element& element) const
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

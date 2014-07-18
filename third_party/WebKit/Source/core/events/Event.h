@@ -31,7 +31,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class EventTarget;
 class EventDispatcher;
@@ -213,6 +213,6 @@ private:
 #define DEFINE_EVENT_TYPE_CASTS(typeName) \
     DEFINE_TYPE_CASTS(typeName, Event, event, event->is##typeName(), event.is##typeName())
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Event_h

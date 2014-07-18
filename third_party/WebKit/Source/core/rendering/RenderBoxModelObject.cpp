@@ -49,7 +49,7 @@
 #include "platform/graphics/Path.h"
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -2733,4 +2733,4 @@ void RenderBoxModelObject::moveChildrenTo(RenderBoxModelObject* toBoxModelObject
     }
 }
 
-} // namespace WebCore
+} // namespace blink

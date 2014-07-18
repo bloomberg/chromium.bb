@@ -34,7 +34,7 @@
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class WorkerConsoleAgent FINAL : public InspectorConsoleAgent {
     WTF_MAKE_NONCOPYABLE(WorkerConsoleAgent);
@@ -52,6 +52,6 @@ private:
     virtual void addInspectedNode(ErrorString*, int nodeId) OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(WorkerConsoleAgent_h)

@@ -26,7 +26,7 @@
 #ifndef FindOptions_h
 #define FindOptions_h
 
-namespace WebCore {
+namespace blink {
 
 enum FindOptionFlag {
     CaseInsensitive = 1 << 0,
@@ -41,6 +41,6 @@ enum FindOptionFlag {
 
 typedef unsigned FindOptions;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FindOptions_h

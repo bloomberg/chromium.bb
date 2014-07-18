@@ -26,7 +26,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class Node;
@@ -49,6 +49,6 @@ private:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // XMLSerializer_h

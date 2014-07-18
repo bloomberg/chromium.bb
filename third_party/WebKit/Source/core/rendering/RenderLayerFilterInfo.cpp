@@ -40,7 +40,7 @@
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "core/svg/graphics/filters/SVGFilter.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderLayerFilterInfoMap* RenderLayerFilterInfo::s_filterMap = 0;
 
@@ -157,5 +157,5 @@ void RenderLayerFilterInfo::removeReferenceFilterClients()
     m_internalSVGReferences.clear();
 }
 
-} // namespace WebCore
+} // namespace blink
 

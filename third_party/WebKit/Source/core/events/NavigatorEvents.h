@@ -31,7 +31,7 @@
 #ifndef NavigatorEvents_h
 #define NavigatorEvents_h
 
-namespace WebCore {
+namespace blink {
 
 class Navigator;
 
@@ -40,6 +40,6 @@ public:
     static long maxTouchPoints(Navigator&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigatorEvents_h

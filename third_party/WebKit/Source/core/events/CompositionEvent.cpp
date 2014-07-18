@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/events/CompositionEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 CompositionEventInit::CompositionEventInit()
 {
@@ -108,4 +108,4 @@ void CompositionEvent::trace(Visitor* visitor)
     UIEvent::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

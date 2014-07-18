@@ -68,9 +68,9 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/RefPtr.h"
 
-typedef WebCore::InspectorBackendDispatcher::NetworkCommandHandler::LoadResourceForFrontendCallback LoadResourceForFrontendCallback;
+typedef blink::InspectorBackendDispatcher::NetworkCommandHandler::LoadResourceForFrontendCallback LoadResourceForFrontendCallback;
 
-namespace WebCore {
+namespace blink {
 
 namespace ResourceAgentState {
 static const char resourceAgentEnabled[] = "resourceAgentEnabled";
@@ -869,4 +869,4 @@ InspectorResourceAgent::InspectorResourceAgent(InspectorPageAgent* pageAgent)
 {
 }
 
-} // namespace WebCore
+} // namespace blink

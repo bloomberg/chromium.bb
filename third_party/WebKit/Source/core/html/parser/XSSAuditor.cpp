@@ -53,7 +53,7 @@ const char kURLWithUniqueOrigin[] = "data:,";
 
 } // namespace
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -806,4 +806,4 @@ bool XSSAuditor::isSafeToSendToAnotherThread() const
         && m_httpBodyAsString.isSafeToSendToAnotherThread();
 }
 
-} // namespace WebCore
+} // namespace blink

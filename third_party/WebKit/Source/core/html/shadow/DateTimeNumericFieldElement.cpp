@@ -35,7 +35,7 @@
 
 using namespace WTF::Unicode;
 
-namespace WebCore {
+namespace blink {
 
 int DateTimeNumericFieldElement::Range::clampValue(int value) const
 {
@@ -241,6 +241,6 @@ int DateTimeNumericFieldElement::roundUp(int n) const
     return n + m_step.stepBase;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

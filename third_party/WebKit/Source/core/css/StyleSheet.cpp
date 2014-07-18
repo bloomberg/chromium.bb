@@ -20,7 +20,7 @@
 #include "config.h"
 #include "core/css/StyleSheet.h"
 
-namespace WebCore {
+namespace blink {
 
 StyleSheet::~StyleSheet()
 {

@@ -27,7 +27,7 @@
 
 #include "core/html/canvas/WebGLCompressedTextureATC.h"
 
-namespace WebCore {
+namespace blink {
 
 WebGLCompressedTextureATC::WebGLCompressedTextureATC(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -62,4 +62,4 @@ const char* WebGLCompressedTextureATC::extensionName()
     return "WEBGL_compressed_texture_atc";
 }
 
-} // namespace WebCore
+} // namespace blink

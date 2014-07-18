@@ -58,7 +58,7 @@
 #include "wtf/PassOwnPtr.h"
 #include <limits>
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -393,4 +393,4 @@ Decimal RangeInputType::findClosestTickMarkValue(const Decimal& value)
     return closestLeft;
 }
 
-} // namespace WebCore
+} // namespace blink

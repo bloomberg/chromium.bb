@@ -39,7 +39,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
     class ApplicationCache;
     class DocumentLoader;
     class LocalFrame;
@@ -172,6 +172,6 @@ namespace WebCore {
         OwnPtr<blink::WebApplicationCacheHost> m_host;
     };
 
-}  // namespace WebCore
+}  // namespace blink
 
 #endif  // ApplicationCacheHost_h

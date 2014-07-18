@@ -30,7 +30,7 @@
 #include "core/html/HTMLHtmlElement.h"
 #include "core/rendering/RenderBlock.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -185,4 +185,4 @@ bool PositionIterator::isCandidate() const
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

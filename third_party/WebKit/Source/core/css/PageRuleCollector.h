@@ -25,7 +25,7 @@
 #include "core/css/resolver/MatchResult.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ElementResolveContext;
 class StyleRulePage;
@@ -53,6 +53,6 @@ private:
     MatchResult m_result;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PageRuleCollector_h

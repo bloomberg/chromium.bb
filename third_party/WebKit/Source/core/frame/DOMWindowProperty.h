@@ -26,7 +26,7 @@
 #ifndef DOMWindowProperty_h
 #define DOMWindowProperty_h
 
-namespace WebCore {
+namespace blink {
 
 class LocalDOMWindow;
 class LocalFrame;

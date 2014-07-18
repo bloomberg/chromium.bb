@@ -10,7 +10,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class Page;
 class Resource;
@@ -43,7 +43,7 @@ private:
     friend class ResourceClient;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // !defined(InspectorResourceContentLoader_h)

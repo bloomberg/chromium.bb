@@ -32,7 +32,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 TouchEvent::TouchEvent()
 {
@@ -131,4 +131,4 @@ bool TouchEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) cons
     return dispatcher->dispatch();
 }
 
-} // namespace WebCore
+} // namespace blink

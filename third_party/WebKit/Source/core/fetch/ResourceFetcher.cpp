@@ -76,7 +76,7 @@
 
 using blink::WebURLRequest;
 
-namespace WebCore {
+namespace blink {
 
 static Resource* createResource(Resource::Type type, const ResourceRequest& request, const String& charset)
 {

@@ -35,7 +35,7 @@
 #include "wtf/text/WTFString.h"
 #include <unicode/uset.h>
 
-namespace WebCore {
+namespace blink {
 
 static void addAllCodePoints(USet* smartSet, const String& string)
 {

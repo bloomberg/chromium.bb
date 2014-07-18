@@ -60,7 +60,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/TypeTraits.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -637,4 +637,4 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     }
 }
 
-} // namespace WebCore
+} // namespace blink

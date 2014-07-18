@@ -24,7 +24,7 @@
 #include "core/svg/SVGPathConsumer.h"
 #include "core/svg/SVGPoint.h"
 
-namespace WebCore {
+namespace blink {
 
 class PathTraversalState;
 
@@ -61,6 +61,6 @@ private:
     PathTraversalState* m_traversalState;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPathTraversalStateBuilder_h

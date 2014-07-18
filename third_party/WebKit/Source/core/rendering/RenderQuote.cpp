@@ -29,7 +29,7 @@
 
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 RenderQuote::RenderQuote(Document* node, QuoteType quote)
     : RenderInline(0)
@@ -385,4 +385,4 @@ void RenderQuote::updateDepth()
         updateText();
 }
 
-} // namespace WebCore
+} // namespace blink

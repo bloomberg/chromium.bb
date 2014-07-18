@@ -26,7 +26,7 @@
 #ifndef PopupOpeningObserver_h
 #define PopupOpeningObserver_h
 
-namespace WebCore {
+namespace blink {
 
 class PopupOpeningObserver {
 public:

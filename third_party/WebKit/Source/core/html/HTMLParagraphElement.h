@@ -25,7 +25,7 @@
 
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLParagraphElement FINAL : public HTMLElement {
 public:
@@ -37,6 +37,6 @@ private:
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLParagraphElement_h

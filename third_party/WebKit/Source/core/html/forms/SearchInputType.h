@@ -34,7 +34,7 @@
 #include "core/html/forms/BaseTextInputType.h"
 #include "platform/Timer.h"
 
-namespace WebCore {
+namespace blink {
 
 class SearchFieldCancelButtonElement;
 class SearchFieldDecorationElement;
@@ -67,6 +67,6 @@ private:
     Timer<SearchInputType> m_searchEventTimer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SearchInputType_h

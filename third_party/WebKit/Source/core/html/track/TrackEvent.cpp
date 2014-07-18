@@ -27,7 +27,7 @@
 
 #include "core/html/track/TrackEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 TrackEventInit::TrackEventInit()
 {
@@ -61,5 +61,5 @@ void TrackEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink
 

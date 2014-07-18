@@ -28,7 +28,7 @@
 
 #include "core/editing/CompositeEditCommand.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLElement;
 
@@ -62,6 +62,6 @@ private:
     Type m_type;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InsertListCommand_h

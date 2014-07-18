@@ -30,7 +30,7 @@
 #include "core/editing/ApplyStyleCommand.h"
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 WrapContentsInDummySpanCommand::WrapContentsInDummySpanCommand(PassRefPtrWillBeRawPtr<Element> element)
     : SimpleEditCommand(element->document())
@@ -94,4 +94,4 @@ void WrapContentsInDummySpanCommand::trace(Visitor* visitor)
     SimpleEditCommand::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

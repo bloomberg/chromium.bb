@@ -41,7 +41,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Color;
 class EmptyChromeClient;
@@ -185,7 +185,7 @@ private:
     int m_activeProfilerCount;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // InspectorOverlay_h

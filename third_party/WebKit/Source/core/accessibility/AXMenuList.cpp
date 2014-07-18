@@ -30,7 +30,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/rendering/RenderMenuList.h"
 
-namespace WebCore {
+namespace blink {
 
 AXMenuList::AXMenuList(RenderMenuList* renderer)
     : AXRenderObject(renderer)
@@ -114,4 +114,4 @@ void AXMenuList::didUpdateActiveOption(int optionIndex)
     cache->postNotification(this, document.get(), AXObjectCache::AXMenuListValueChanged, true, PostSynchronously);
 }
 
-} // namespace WebCore
+} // namespace blink

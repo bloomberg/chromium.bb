@@ -32,7 +32,7 @@
 #include "platform/graphics/Path.h"
 #include "wtf/HashMap.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace SVGNames;
 
@@ -153,4 +153,4 @@ void updatePathFromGraphicsElement(SVGElement* element, Path& path)
         (*pathUpdateFunction)(element, path);
 }
 
-} // namespace WebCore
+} // namespace blink

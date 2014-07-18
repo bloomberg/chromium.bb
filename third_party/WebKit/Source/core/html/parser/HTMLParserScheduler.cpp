@@ -30,7 +30,7 @@
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/frame/FrameView.h"
 
-namespace WebCore {
+namespace blink {
 
 // parserChunkSize is used to define how many tokens the parser will
 // process before checking against parserTimeLimit and possibly yielding.

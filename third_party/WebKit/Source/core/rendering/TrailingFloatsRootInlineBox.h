@@ -28,7 +28,7 @@
 
 #include "core/rendering/RootInlineBox.h"
 
-namespace WebCore {
+namespace blink {
 
 class TrailingFloatsRootInlineBox FINAL : public RootInlineBox {
 public:
@@ -42,6 +42,6 @@ private:
     virtual float virtualLogicalHeight() const OVERRIDE { return 0; }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TrailingFloatsRootInlineBox_h

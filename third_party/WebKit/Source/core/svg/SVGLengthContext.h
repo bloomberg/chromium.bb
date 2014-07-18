@@ -23,7 +23,7 @@
 #include "core/svg/SVGUnitTypes.h"
 #include "platform/geometry/FloatRect.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class SVGElement;
@@ -85,6 +85,6 @@ private:
     FloatRect m_overridenViewport;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGLengthContext_h

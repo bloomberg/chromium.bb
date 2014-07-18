@@ -33,7 +33,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/Settings.h"
 
-namespace WebCore {
+namespace blink {
 
 float FontSize::getComputedSizeFromSpecifiedSize(const Document* document, float zoomFactor, bool isAbsoluteSize, float specifiedSize, ESmartMinimumForFontSize useSmartMinimumForFontSize)
 {
@@ -176,4 +176,4 @@ int FontSize::legacyFontSize(const Document* document, int pixelFontSize, FixedP
     return findNearestLegacyFontSize<float>(pixelFontSize, fontSizeFactors, mediumSize);
 }
 
-} // namespace WebCore
+} // namespace blink

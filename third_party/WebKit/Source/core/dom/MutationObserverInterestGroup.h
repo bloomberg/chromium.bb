@@ -39,7 +39,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class MutationObserverInterestGroup FINAL : public NoBaseWillBeGarbageCollectedFinalized<MutationObserverInterestGroup> {
 public:

@@ -50,7 +50,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
-namespace WebCore {
+namespace blink {
 
 float deviceScaleFactor(LocalFrame*);
 
@@ -102,7 +102,7 @@ IntSize RenderImage::imageSizeForError(ImageResource* newImage) const
 
     IntSize imageSize;
     if (newImage->willPaintBrokenImage()) {
-        float deviceScaleFactor = WebCore::deviceScaleFactor(frame());
+        float deviceScaleFactor = blink::deviceScaleFactor(frame());
         pair<Image*, float> brokenImageAndImageScaleFactor = ImageResource::brokenImage(deviceScaleFactor);
         imageSize = brokenImageAndImageScaleFactor.first->size();
         imageSize.scale(1 / brokenImageAndImageScaleFactor.second);
@@ -304,7 +304,7 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
             RefPtr<Image> image = m_imageResource->image();
 
             if (m_imageResource->errorOccurred() && !image->isNull() && usableWidth >= image->width() && usableHeight >= image->height()) {
-                float deviceScaleFactor = WebCore::deviceScaleFactor(frame());
+                float deviceScaleFactor = blink::deviceScaleFactor(frame());
                 // Call brokenImage() explicitly to ensure we get the broken image icon at the appropriate resolution.
                 pair<Image*, float> brokenImageAndImageScaleFactor = ImageResource::brokenImage(deviceScaleFactor);
                 image = brokenImageAndImageScaleFactor.first;
@@ -628,4 +628,4 @@ RenderBox* RenderImage::embeddedContentBox() const
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink

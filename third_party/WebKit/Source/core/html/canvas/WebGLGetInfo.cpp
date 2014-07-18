@@ -28,7 +28,7 @@
 #include "core/html/canvas/WebGLGetInfo.h"
 
 
-namespace WebCore {
+namespace blink {
 
 WebGLGetInfo::WebGLGetInfo(bool value)
     : m_type(kTypeBool)
@@ -300,4 +300,4 @@ PassRefPtr<WebGLVertexArrayObjectOES> WebGLGetInfo::getWebGLVertexArrayObjectOES
     return m_webglVertexArrayObject;
 }
 
-} // namespace WebCore
+} // namespace blink

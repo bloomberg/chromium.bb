@@ -30,7 +30,7 @@
 #include "core/fetch/StyleSheetResource.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSParserContext;
 class ResourceClient;

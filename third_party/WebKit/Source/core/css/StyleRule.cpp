@@ -34,7 +34,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRuleImport.h"
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsStyleRuleBase : public RefCountedWillBeRefCountedGarbageCollected<SameSizeAsStyleRuleBase> {
     unsigned bitfields;
@@ -482,4 +482,4 @@ void StyleRuleFilter::traceAfterDispatch(Visitor* visitor)
     StyleRuleBase::traceAfterDispatch(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

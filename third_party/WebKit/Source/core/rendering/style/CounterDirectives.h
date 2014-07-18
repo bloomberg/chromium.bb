@@ -31,7 +31,7 @@
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class CounterDirectives {
 public:
@@ -106,6 +106,6 @@ typedef HashMap<AtomicString, CounterDirectives> CounterDirectiveMap;
 
 PassOwnPtr<CounterDirectiveMap> clone(const CounterDirectiveMap&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CounterDirectives_h

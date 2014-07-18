@@ -33,7 +33,7 @@
 #include "core/xml/XPathStep.h"
 #include "core/xml/XPathValue.h"
 
-namespace WebCore {
+namespace blink {
 namespace XPath {
 
 Filter::Filter(PassOwnPtrWillBeRawPtr<Expression> expr, WillBeHeapVector<OwnPtrWillBeMember<Predicate> >& predicates)

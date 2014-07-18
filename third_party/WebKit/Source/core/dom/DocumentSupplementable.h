@@ -30,13 +30,13 @@
 
 #include "platform/Supplementable.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 
 typedef WillBeHeapSupplementable<Document> DocumentSupplementable;
 typedef WillBeHeapSupplement<Document> DocumentSupplement;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DocumentSupplementable_h

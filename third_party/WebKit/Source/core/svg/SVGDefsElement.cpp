@@ -25,7 +25,7 @@
 #include "core/SVGNames.h"
 #include "core/rendering/svg/RenderSVGHiddenContainer.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGDefsElement::SVGDefsElement(Document& document)
     : SVGGraphicsElement(SVGNames::defsTag, document)

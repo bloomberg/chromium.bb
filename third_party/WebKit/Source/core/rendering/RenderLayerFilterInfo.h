@@ -38,7 +38,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class FilterEffectRenderer;
 class FilterOperations;
@@ -78,7 +78,7 @@ private:
     Vector<ResourcePtr<DocumentResource> > m_externalSVGReferences;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // RenderLayerFilterInfo_h

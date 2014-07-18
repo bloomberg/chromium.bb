@@ -27,7 +27,7 @@
 
 #include "core/html/canvas/EXTTextureFilterAnisotropic.h"
 
-namespace WebCore {
+namespace blink {
 
 EXTTextureFilterAnisotropic::EXTTextureFilterAnisotropic(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
@@ -60,4 +60,4 @@ const char* EXTTextureFilterAnisotropic::extensionName()
     return "EXT_texture_filter_anisotropic";
 }
 
-} // namespace WebCore
+} // namespace blink

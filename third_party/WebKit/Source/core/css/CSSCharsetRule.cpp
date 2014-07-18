@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/css/CSSCharsetRule.h"
 
-namespace WebCore {
+namespace blink {
 
 CSSCharsetRule::CSSCharsetRule(CSSStyleSheet* parent, const String& encoding)
     : CSSRule(parent)
@@ -34,4 +34,4 @@ String CSSCharsetRule::cssText() const
     return "@charset \"" + m_encoding + "\";";
 }
 
-} // namespace WebCore
+} // namespace blink

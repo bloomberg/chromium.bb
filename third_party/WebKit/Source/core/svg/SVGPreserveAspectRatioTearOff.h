@@ -35,7 +35,7 @@
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGPreserveAspectRatioTearOff FINAL : public SVGPropertyTearOff<SVGPreserveAspectRatio>, public ScriptWrappable {
 public:
@@ -73,6 +73,6 @@ private:
     SVGPreserveAspectRatioTearOff(PassRefPtr<SVGPreserveAspectRatio>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPreserveAspectRatioTearOff_h_

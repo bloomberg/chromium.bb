@@ -23,7 +23,7 @@
 #include "core/rendering/svg/RenderSVGShape.h"
 #include "core/svg/SVGDocumentExtensions.h"
 
-namespace WebCore {
+namespace blink {
 
 enum RenderSVGResourceType {
     MaskerResourceType,

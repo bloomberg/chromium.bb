@@ -33,7 +33,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 class SecurityOrigin;
 
 class FetchRequest {
@@ -75,6 +75,6 @@ private:
     OriginRestriction m_originRestriction;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

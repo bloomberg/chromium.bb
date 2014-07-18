@@ -45,7 +45,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 // The following values default values are defined within the WebVTT Regions Spec.
 // https://dvcs.w3.org/hg/text-tracks/raw-file/default/608toVTT/region.html
@@ -475,4 +475,4 @@ void VTTRegion::trace(Visitor* visitor)
     visitor->trace(m_track);
 }
 
-} // namespace WebCore
+} // namespace blink

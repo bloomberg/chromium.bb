@@ -32,7 +32,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 // DateTimeNumericFieldElement represents numeric field of date time format,
 // such as:
@@ -103,7 +103,7 @@ private:
     mutable StringBuilder m_typeAheadBuffer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif
 #endif

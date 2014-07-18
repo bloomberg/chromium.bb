@@ -47,7 +47,7 @@
 #include "core/svg/SVGPathSegMovetoAbs.h"
 #include "core/svg/SVGPathSegMovetoRel.h"
 
-namespace WebCore {
+namespace blink {
 
 SVGPathSegListBuilder::SVGPathSegListBuilder()
     : m_pathElement(0)

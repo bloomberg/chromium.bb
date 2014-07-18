@@ -49,7 +49,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextEncoding.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

@@ -32,7 +32,7 @@
 #include "core/svg/SVGVKernElement.h"
 #include "wtf/ASCIICType.h"
 
-namespace WebCore {
+namespace blink {
 
 inline SVGFontElement::SVGFontElement(Document& document)
     : SVGElement(SVGNames::fontTag, document)

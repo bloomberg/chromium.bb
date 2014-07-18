@@ -37,7 +37,7 @@
 #include "core/rendering/svg/ReferenceFilterBuilder.h"
 #include "core/svg/SVGURIReference.h"
 
-namespace WebCore {
+namespace blink {
 
 static FilterOperation::OperationType filterOperationForType(CSSFilterValue::FilterOperationType type)
 {
@@ -210,4 +210,4 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const CS
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

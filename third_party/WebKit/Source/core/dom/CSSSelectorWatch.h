@@ -41,7 +41,7 @@
 #include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSSelectorWatch FINAL : public NoBaseWillBeGarbageCollectedFinalized<CSSSelectorWatch>, public DocumentSupplement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CSSSelectorWatch);
@@ -80,6 +80,6 @@ private:
     int m_timerExpirations;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSSelectorWatch_h

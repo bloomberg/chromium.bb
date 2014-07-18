@@ -29,7 +29,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 // The default variable-width font size. We use this as the default font
 // size for the "system font", and as a base size (which we then shrink) for
@@ -52,4 +52,4 @@ const AtomicString& RenderThemeChromiumFontProvider::defaultGUIFont()
     return fontFace;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -7,7 +7,7 @@
 
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
 
-namespace WebCore {
+namespace blink {
 
 void CustomElementMicrotaskQueueBase::dispatch()
 {
@@ -34,4 +34,4 @@ void CustomElementMicrotaskQueueBase::show(unsigned indent)
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

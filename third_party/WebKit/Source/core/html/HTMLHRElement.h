@@ -25,7 +25,7 @@
 
 #include "core/html/HTMLElement.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLHRElement FINAL : public HTMLElement {
 public:
@@ -40,6 +40,6 @@ private:
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLHRElement_h

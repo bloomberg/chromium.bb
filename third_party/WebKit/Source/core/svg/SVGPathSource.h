@@ -22,7 +22,7 @@
 
 #include "core/svg/SVGPathSeg.h"
 
-namespace WebCore {
+namespace blink {
 
 class FloatPoint;
 
@@ -48,6 +48,6 @@ public:
     virtual bool parseArcToSegment(float&, float&, float&, bool&, bool&, FloatPoint&) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SVGPathSource_h

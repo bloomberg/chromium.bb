@@ -9,7 +9,7 @@
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/resolver/CSSToStyleMap.h"
 
-namespace WebCore {
+namespace blink {
 
 void TimingInput::setStartDelay(Timing& timing, double startDelay)
 {
@@ -151,4 +151,4 @@ Timing TimingInput::convert(double duration)
     return result;
 }
 
-} // namespace WebCore
+} // namespace blink

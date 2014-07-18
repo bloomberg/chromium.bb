@@ -33,7 +33,7 @@
 
 #include "core/animation/animatable/AnimatableValue.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimatableLengthPoint FINAL : public AnimatableValue {
 public:
@@ -65,6 +65,6 @@ private:
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableLengthPoint, isLengthPoint());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnimatableLengthPoint_h

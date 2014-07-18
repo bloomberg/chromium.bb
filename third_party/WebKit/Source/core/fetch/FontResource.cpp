@@ -43,7 +43,7 @@
 #include "core/svg/SVGFontElement.h"
 #endif
 
-namespace WebCore {
+namespace blink {
 
 static const double fontLoadWaitLimitSec = 3.0;
 

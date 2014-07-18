@@ -100,7 +100,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/TemporaryChange.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -3826,4 +3826,4 @@ unsigned EventHandler::accessKeyModifiers()
 #endif
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -38,7 +38,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
     class ResourceRequest;
     class ResourceResponse;
@@ -101,6 +101,6 @@ namespace WebCore {
         blink::WebURLRequest::RequestContext m_requestContext;
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerScriptLoader_h

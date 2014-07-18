@@ -26,7 +26,7 @@
 
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 template <typename T> class DataRef {
 public:
@@ -66,6 +66,6 @@ private:
     RefPtr<T> m_data;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DataRef_h

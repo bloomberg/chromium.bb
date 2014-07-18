@@ -54,7 +54,7 @@
 #include "wtf/text/Base64.h"
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 struct DOMPatchSupport::Digest {
     explicit Digest(Node* node) : m_node(node) { }
@@ -514,5 +514,5 @@ void DOMPatchSupport::dumpMap(const ResultMap& map, const String& name)
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink
 

@@ -27,7 +27,7 @@
 #include "core/clipboard/DataTransfer.h"
 #include "platform/PlatformWheelEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 WheelEventInit::WheelEventInit()
     : deltaX(0)
@@ -161,4 +161,4 @@ bool WheelEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) cons
     return EventDispatchMediator::dispatchEvent(dispatcher) && !event()->defaultHandled();
 }
 
-} // namespace WebCore
+} // namespace blink

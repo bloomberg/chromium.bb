@@ -70,14 +70,14 @@ using blink::WebVector;
 
 namespace {
 
-WebLayer* toWebLayer(WebCore::GraphicsLayer* layer)
+WebLayer* toWebLayer(blink::GraphicsLayer* layer)
 {
     return layer ? layer->platformLayer() : 0;
 }
 
 } // namespace
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtr<ScrollingCoordinator> ScrollingCoordinator::create(Page* page)
 {
@@ -965,4 +965,4 @@ bool ScrollingCoordinator::frameViewIsDirty() const
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

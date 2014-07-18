@@ -26,7 +26,7 @@
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSProperty;
 class CSSRule;
@@ -79,6 +79,6 @@ protected:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSStyleDeclaration_h

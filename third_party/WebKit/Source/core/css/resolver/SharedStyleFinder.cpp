@@ -52,7 +52,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

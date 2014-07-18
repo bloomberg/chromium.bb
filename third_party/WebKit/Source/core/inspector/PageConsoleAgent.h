@@ -34,7 +34,7 @@
 #include "core/inspector/InspectorConsoleAgent.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class InspectorDOMAgent;
 
@@ -57,7 +57,7 @@ private:
     InspectorDOMAgent* m_inspectorDOMAgent;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // !defined(PageConsoleAgent_h)

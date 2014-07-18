@@ -32,7 +32,7 @@
 #include "core/events/EventPath.h"
 #include "core/events/TouchEventContext.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<StaticNodeList> TreeScopeEventContext::ensureEventPath(EventPath& path)
 {

@@ -28,7 +28,7 @@
 
 #include "core/HTMLElementFactory.h"
 
-namespace WebCore {
+namespace blink {
 
 static const QualifiedName& nodeTypeToTagName(VTTNodeType nodeType)
 {
@@ -117,5 +117,5 @@ PassRefPtrWillBeRawPtr<HTMLElement> VTTElement::createEquivalentHTMLElement(Docu
     return htmlElement;
 }
 
-} // namespace WebCore
+} // namespace blink
 

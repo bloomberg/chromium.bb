@@ -28,7 +28,7 @@
 #include "core/svg/SVGTests.h"
 #include "core/svg/SVGUnitTypes.h"
 
-namespace WebCore {
+namespace blink {
 
 class SVGMaskElement FINAL : public SVGElement,
                              public SVGTests {

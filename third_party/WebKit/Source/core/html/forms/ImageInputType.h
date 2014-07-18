@@ -36,7 +36,7 @@
 #include "core/html/forms/BaseButtonInputType.h"
 #include "platform/geometry/IntPoint.h"
 
-namespace WebCore {
+namespace blink {
 
 class ImageInputType FINAL : public BaseButtonInputType {
 public:
@@ -67,6 +67,6 @@ private:
     IntPoint m_clickLocation; // Valid only during HTMLFormElement::prepareForSubmission().
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ImageInputType_h

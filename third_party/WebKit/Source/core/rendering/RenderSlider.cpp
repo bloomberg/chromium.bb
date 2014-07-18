@@ -30,7 +30,7 @@
 
 using std::min;
 
-namespace WebCore {
+namespace blink {
 
 const int RenderSlider::defaultTrackLength = 129;
 
@@ -108,4 +108,4 @@ bool RenderSlider::inDragMode() const
     return sliderThumbElement()->active();
 }
 
-} // namespace WebCore
+} // namespace blink

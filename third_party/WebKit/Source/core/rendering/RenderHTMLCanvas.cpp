@@ -34,7 +34,7 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderView.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -123,4 +123,4 @@ CompositingReasons RenderHTMLCanvas::additionalCompositingReasons(CompositingTri
     return CompositingReasonNone;
 }
 
-} // namespace WebCore
+} // namespace blink

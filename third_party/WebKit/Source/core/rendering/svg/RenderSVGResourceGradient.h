@@ -30,7 +30,7 @@
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/HashMap.h"
 
-namespace WebCore {
+namespace blink {
 
 struct GradientData {
     WTF_MAKE_FAST_ALLOCATED;

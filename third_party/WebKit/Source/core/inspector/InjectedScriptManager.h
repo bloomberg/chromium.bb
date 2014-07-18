@@ -36,7 +36,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class LocalDOMWindow;
 class InjectedScript;
@@ -85,6 +85,6 @@ private:
     ScriptStateToId m_scriptStateToId;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InjectedScriptManager_h)

@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/inspector/ScriptAsyncCallStack.h"
 
-namespace WebCore {
+namespace blink {
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptAsyncCallStack);
 
@@ -39,4 +39,4 @@ void ScriptAsyncCallStack::trace(Visitor* visitor)
     visitor->trace(m_asyncStackTrace);
 }
 
-} // namespace WebCore
+} // namespace blink

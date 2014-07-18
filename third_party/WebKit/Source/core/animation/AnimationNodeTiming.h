@@ -9,7 +9,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnimationNodeTiming : public RefCountedWillBeGarbageCollectedFinalized<AnimationNodeTiming> {
 public:
@@ -41,6 +41,6 @@ private:
     explicit AnimationNodeTiming(AnimationNode*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

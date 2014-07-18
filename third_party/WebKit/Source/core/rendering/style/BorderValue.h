@@ -29,7 +29,7 @@
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/graphics/Color.h"
 
-namespace WebCore {
+namespace blink {
 
 class BorderValue {
 friend class RenderStyle;
@@ -100,6 +100,6 @@ protected:
     unsigned m_isAuto : 1; // OutlineIsAuto
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BorderValue_h

@@ -28,7 +28,7 @@
 
 #include "core/CSSValueKeywords.h"
 
-namespace WebCore {
+namespace blink {
 
 class FontDescription;
 
@@ -43,6 +43,6 @@ protected:
     static float s_defaultFontSize;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderThemeChromiumFontProvider_h

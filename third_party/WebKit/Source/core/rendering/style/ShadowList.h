@@ -38,7 +38,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class FloatRect;
 class LayoutRect;
@@ -76,6 +76,6 @@ private:
     ShadowDataVector m_shadows;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ShadowList_h

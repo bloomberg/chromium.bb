@@ -28,7 +28,7 @@
 
 #include "platform/geometry/FloatRect.h"
 
-namespace WebCore {
+namespace blink {
 
 // ViewportConstraints classes encapsulate data and logic required to reposition elements whose layout
 // depends on the viewport rect (i.e., position fixed), when scrolling and zooming.
@@ -110,6 +110,6 @@ private:
     FloatPoint m_layerPositionAtLastLayout;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScrollingConstraints_h

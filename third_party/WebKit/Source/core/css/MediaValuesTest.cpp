@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-namespace WebCore {
+namespace blink {
 
 struct TestCase {
     double value;

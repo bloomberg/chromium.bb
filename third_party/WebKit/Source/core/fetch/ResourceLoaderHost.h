@@ -34,7 +34,7 @@
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceLoadPriority.h"
 
-namespace WebCore {
+namespace blink {
 
 class Resource;
 class ResourceFetcher;

@@ -29,7 +29,7 @@
 #include "core/dom/NodeRareData.h"
 #include "core/html/HTMLLabelElement.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -50,4 +50,4 @@ bool LabelsNodeList::elementMatches(const Element& element) const
     return isHTMLLabelElement(element) && toHTMLLabelElement(element).control() == ownerNode();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -40,7 +40,7 @@
 
 static int kMaxImageBufferSize = 4096;
 
-namespace WebCore {
+namespace blink {
 
 static inline bool isRenderingMaskImage(RenderObject* object)
 {

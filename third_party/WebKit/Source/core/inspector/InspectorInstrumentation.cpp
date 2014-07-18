@@ -48,7 +48,7 @@
 #include "core/page/Page.h"
 #include "core/workers/WorkerGlobalScope.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 static HashSet<InstrumentingAgents*>* instrumentingAgentsSet = 0;
@@ -275,5 +275,5 @@ InstrumentingAgents* instrumentationForWorkerGlobalScope(WorkerGlobalScope* work
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink
 

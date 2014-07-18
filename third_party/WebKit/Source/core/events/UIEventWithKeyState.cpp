@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/events/UIEventWithKeyState.h"
 
-namespace WebCore {
+namespace blink {
 
 UIEventWithKeyState* findEventWithKeyState(Event* event)
 {
@@ -31,4 +31,4 @@ UIEventWithKeyState* findEventWithKeyState(Event* event)
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink

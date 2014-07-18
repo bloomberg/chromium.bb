@@ -35,7 +35,7 @@
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/TraceEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 class GraphicsLayerUpdater::UpdateContext {
 public:
@@ -137,4 +137,4 @@ void GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(RenderLay
 
 #endif
 
-} // namespace WebCore
+} // namespace blink

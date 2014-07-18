@@ -60,7 +60,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -95,11 +95,11 @@ private:
     String m_value;
 };
 
-} // namespace WebCore
+} // namespace blink
 
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(WebCore::AttributeChange);
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::AttributeChange);
 
-namespace WebCore {
+namespace blink {
 
 static void completeURLs(DocumentFragment& fragment, const String& baseURL)
 {
@@ -526,7 +526,7 @@ static Node* highestAncestorToWrapMarkup(const Range* range, EAnnotateForInterch
         specialCommonAncestor = ancestorToRetainStructureAndAppearance(commonAncestor);
 
         if (Node* parentListNode = enclosingNodeOfType(firstPositionInOrBeforeNode(range->firstNode()), isListItem)) {
-            if (WebCore::areRangesEqual(VisibleSelection::selectionFromContentsOfNode(parentListNode).toNormalizedRange().get(), range)) {
+            if (blink::areRangesEqual(VisibleSelection::selectionFromContentsOfNode(parentListNode).toNormalizedRange().get(), range)) {
                 specialCommonAncestor = parentListNode->parentNode();
                 while (specialCommonAncestor && !isListElement(specialCommonAncestor))
                     specialCommonAncestor = specialCommonAncestor->parentNode();

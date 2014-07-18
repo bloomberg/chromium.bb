@@ -33,7 +33,7 @@
 #include "wtf/StdLibExtras.h"
 #include <limits>
 
-namespace WebCore {
+namespace blink {
 namespace XPath {
 
 const Value::AdoptTag Value::adopt = { };

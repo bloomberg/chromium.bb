@@ -34,7 +34,7 @@
 #include "wtf/text/TextPosition.h"
 
 
-namespace WebCore {
+namespace blink {
 
 class CSSStyleSheet;
 class CSSStyleSheetResource;

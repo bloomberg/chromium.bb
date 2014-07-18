@@ -39,7 +39,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class MutationObserverInterestGroup;
 
@@ -125,6 +125,6 @@ private:
     RefPtrWillBeMember<ChildListMutationAccumulator> m_accumulator;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ChildListMutationScope_h

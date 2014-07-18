@@ -30,7 +30,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class CSSStyleSheet;
 class ContainerNode;
@@ -58,6 +58,6 @@ private:
     TreeBoundaryCrossingRuleSetMap m_treeBoundaryCrossingRuleSetMap;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TreeBoundaryCrossingRules_h

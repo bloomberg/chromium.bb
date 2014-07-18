@@ -30,7 +30,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 SandboxFlags parseSandboxPolicy(const String& policy, String& invalidTokensErrorMessage)
 {

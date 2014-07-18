@@ -32,7 +32,7 @@
 #include "core/dom/ExceptionCode.h"
 #include <math.h>
 
-using namespace WebCore;
+using namespace blink;
 
 TimeRanges::TimeRanges(double start, double end)
 {

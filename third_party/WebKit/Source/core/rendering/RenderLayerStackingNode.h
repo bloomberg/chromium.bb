@@ -50,7 +50,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderLayer;
 class RenderLayerCompositor;
@@ -215,6 +215,6 @@ private:
 };
 #endif
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderLayerStackingNode_h

@@ -38,7 +38,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class LocalFrame;
@@ -116,6 +116,6 @@ private:
     RawPtrWillBeMember<const TreeScope> m_treeScope;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMSelection_h

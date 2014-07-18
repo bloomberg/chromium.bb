@@ -34,7 +34,7 @@
 #include "platform/text/PlatformLocale.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -237,6 +237,6 @@ int DateTimeFieldElement::valueForARIAValueNow() const
     return valueAsInteger();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

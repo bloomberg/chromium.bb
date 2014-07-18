@@ -29,7 +29,7 @@
 #include "core/html/parser/InputStreamPreprocessor.h"
 #include "platform/text/SegmentedString.h"
 
-namespace WebCore {
+namespace blink {
 
 // The InputStream is made up of a sequence of SegmentedStrings:
 //

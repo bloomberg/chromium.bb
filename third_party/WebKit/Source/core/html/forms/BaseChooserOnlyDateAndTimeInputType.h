@@ -32,7 +32,7 @@
 #include "platform/DateTimeChooser.h"
 #include "platform/DateTimeChooserClient.h"
 
-namespace WebCore {
+namespace blink {
 
 class BaseChooserOnlyDateAndTimeInputType : public BaseDateAndTimeInputType, public DateTimeChooserClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BaseChooserOnlyDateAndTimeInputType);

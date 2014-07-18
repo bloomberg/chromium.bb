@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
 
-namespace WebCore {
+namespace blink {
 
 FloatPoint FixedPositionViewportConstraints::layerPositionForViewportRect(const FloatRect& viewportRect) const
 {
@@ -45,4 +45,4 @@ FloatPoint FixedPositionViewportConstraints::layerPositionForViewportRect(const 
     return m_layerPositionAtLastLayout + offset;
 }
 
-} // namespace WebCore
+} // namespace blink

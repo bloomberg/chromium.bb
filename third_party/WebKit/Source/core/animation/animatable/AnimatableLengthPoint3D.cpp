@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/animation/animatable/AnimatableLengthPoint3D.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableLengthPoint3D::interpolateTo(const AnimatableValue* value, double fraction) const
 {

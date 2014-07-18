@@ -39,7 +39,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Event;
 class EventListener;
@@ -130,6 +130,6 @@ private:
     ExecutionContextDataMap m_executionContextDataMap;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(AsyncCallStackTracker_h)

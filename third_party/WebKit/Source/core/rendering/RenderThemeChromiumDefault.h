@@ -31,7 +31,7 @@
 
 #include "core/rendering/RenderThemeChromiumSkia.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderThemeChromiumDefault : public RenderThemeChromiumSkia {
 public:
@@ -103,6 +103,6 @@ private:
     static unsigned m_inactiveSelectionForegroundColor;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderThemeChromiumDefault_h

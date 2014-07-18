@@ -33,7 +33,7 @@
 
 #include "core/rendering/RenderBlockFlow.h"
 
-namespace WebCore {
+namespace blink {
 
 class RenderRubyText FINAL : public RenderBlockFlow {
 public:
@@ -53,6 +53,6 @@ private:
     virtual void adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RenderRubyText_h

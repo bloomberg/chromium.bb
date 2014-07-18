@@ -41,7 +41,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 using blink::WebLocalizedString;
 using namespace HTMLNames;
@@ -164,4 +164,4 @@ bool DateTimeLocalInputType::isValidFormat(bool hasYear, bool hasMonth, bool has
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

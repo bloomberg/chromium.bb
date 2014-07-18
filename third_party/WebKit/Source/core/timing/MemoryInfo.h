@@ -37,7 +37,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class MemoryInfo FINAL : public RefCountedWillBeGarbageCollected<MemoryInfo>, public ScriptWrappable {
 public:
@@ -60,6 +60,6 @@ private:
 
 size_t quantizeMemorySize(size_t);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MemoryInfo_h

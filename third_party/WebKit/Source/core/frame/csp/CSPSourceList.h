@@ -11,7 +11,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ContentSecurityPolicy;
 class KURL;
@@ -60,6 +60,6 @@ private:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -39,7 +39,7 @@
 #include "core/rendering/RenderTheme.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 

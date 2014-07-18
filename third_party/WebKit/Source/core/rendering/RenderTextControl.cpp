@@ -29,7 +29,7 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "wtf/unicode/CharacterNames.h"
 
-namespace WebCore {
+namespace blink {
 
 RenderTextControl::RenderTextControl(HTMLTextFormControlElement* element)
     : RenderBlockFlow(element)
@@ -300,4 +300,4 @@ RenderObject* RenderTextControl::layoutSpecialExcludedChild(bool relayoutChildre
     return placeholderRenderer;
 }
 
-} // namespace WebCore
+} // namespace blink

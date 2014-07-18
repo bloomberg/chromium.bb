@@ -39,7 +39,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class RenderBlock;
@@ -305,6 +305,6 @@ private:
     bool m_updatePageInfoDeferred;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FastTextAutosizer_h

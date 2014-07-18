@@ -24,7 +24,7 @@
 
 #include "core/rendering/style/DataEquivalency.h"
 
-namespace WebCore {
+namespace blink {
 
 struct SameSizeAsFillLayer {
     FillLayer* m_next;
@@ -377,4 +377,4 @@ bool FillLayer::hasRepeatXY() const
     return m_repeatX == RepeatFill && m_repeatY == RepeatFill;
 }
 
-} // namespace WebCore
+} // namespace blink

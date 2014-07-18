@@ -28,7 +28,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLStyleElement;
 class StyleSheet;
@@ -63,6 +63,6 @@ private:
 #endif
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StyleSheetList_h

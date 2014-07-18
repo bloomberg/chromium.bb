@@ -26,7 +26,7 @@
 #ifndef HTMLParserOptions_h
 #define HTMLParserOptions_h
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 

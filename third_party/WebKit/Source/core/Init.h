@@ -31,7 +31,7 @@
 #ifndef Init_h
 #define Init_h
 
-namespace WebCore {
+namespace blink {
 
 class CoreInitializer {
 public:
@@ -51,6 +51,6 @@ private:
     bool m_isInited;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Init_h

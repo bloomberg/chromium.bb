@@ -33,7 +33,7 @@
 #include "core/rendering/RenderTableCell.h"
 
 
-namespace WebCore {
+namespace blink {
 
 using namespace HTMLNames;
 
@@ -174,4 +174,4 @@ AXObject* AXTableCell::titleUIElement() const
     return axObjectCache()->getOrCreate(headerCell);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -26,7 +26,7 @@
 #include "core/html/HTMLCollection.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLNameCollection : public HTMLCollection {
 public:

@@ -40,7 +40,7 @@
 #include "wtf/Vector.h"
 #include "wtf/WeakPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class MessagePort;
@@ -118,6 +118,6 @@ private:
     WeakPtrFactory<MessagePort> m_weakFactory;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MessagePort_h

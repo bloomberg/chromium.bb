@@ -26,7 +26,7 @@
 #include "core/css/CSSGroupingRule.h"
 #include "core/css/MediaList.h"
 
-namespace WebCore {
+namespace blink {
 
 class StyleRuleMedia;
 
@@ -57,6 +57,6 @@ private:
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSMediaRule, MEDIA_RULE);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CSSMediaRule_h
