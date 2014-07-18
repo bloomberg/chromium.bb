@@ -2460,7 +2460,7 @@
       'browser/ui/webui/certificate_viewer_webui.h',
     ],
     # Desktop Linux. Assume aura/ash/views.
-    'chrome_browser_desktop_linux_sources': [
+    'chrome_browser_ui_desktop_linux_sources': [
       'browser/ui/views/app_list/linux/app_list_linux.cc',
       'browser/ui/views/app_list/linux/app_list_linux.h',
       'browser/ui/views/app_list/linux/app_list_service_linux.cc',
@@ -2883,7 +2883,7 @@
           ],
         }],
         ['desktop_linux==1', {
-          'sources': [ '<@(chrome_browser_desktop_linux_sources)' ],
+          'sources': [ '<@(chrome_browser_ui_desktop_linux_sources)' ],
         }],
         ['OS=="linux"', {  # Both desktop Linux and ChromeOS.
           'sources': [ '<@(chrome_browser_ui_linux_sources)' ],

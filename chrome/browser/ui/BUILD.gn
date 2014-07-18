@@ -361,7 +361,7 @@ static_library("ui") {
     }
   }
   if (is_desktop_linux) {
-    sources += rebase_path(gypi_values.chrome_browser_desktop_linux_sources,
+    sources += rebase_path(gypi_values.chrome_browser_ui_desktop_linux_sources,
                            ".", "//chrome")
   }
   if (is_linux) {  # Both desktop Linux and ChromeOS.
