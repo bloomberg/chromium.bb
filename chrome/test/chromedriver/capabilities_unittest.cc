@@ -392,7 +392,7 @@ TEST(ParseCapabilities, MobileEmulationDeviceMetrics) {
   ASSERT_EQ(3.0, capabilities.device_metrics->device_scale_factor);
 }
 
-TEST(ParseCapabilities, DISABLED_MobileEmulationDeviceName) {
+TEST(ParseCapabilities, MobileEmulationDeviceName) {
   Capabilities capabilities;
   base::DictionaryValue mobile_emulation;
   mobile_emulation.SetString("deviceName", "Google Nexus 5");
