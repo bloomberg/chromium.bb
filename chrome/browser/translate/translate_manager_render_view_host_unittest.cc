@@ -6,6 +6,7 @@
 #include <set>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
@@ -618,22 +619,24 @@ TEST_F(TranslateManagerRenderViewHostTest, TestLanguages) {
   }
 }
 
+// A list of languages to fake being returned by the translate server.
+// Use only langauges for which Chrome's copy of ICU has
+// display names in English locale. To save space, Chrome's copy of ICU
+// does not have the display name for a language unless it's in the
+// Accept-Language list.
+static const char* server_language_list[] =
+    {"ach", "ak", "af", "en-CA", "zh", "yi", "fr-FR", "tl", "iw", "in", "xx"};
+static const char* alpha_language_list[] = {"ach", "yi"};
+
 // Test the fetching of languages from the translate server
 TEST_F(TranslateManagerRenderViewHostTest, FetchLanguagesFromTranslateServer) {
   std::vector<std::string> server_languages;
-  // A list of languages to fake being returned by the translate server.
-  server_languages.push_back("aa");
-  server_languages.push_back("ak");
-  server_languages.push_back("ab");
-  server_languages.push_back("en-CA");
-  server_languages.push_back("zh");
-  server_languages.push_back("yi");
-  server_languages.push_back("fr-FR");
-  server_languages.push_back("xx");
+  for (size_t i = 0; i < arraysize(server_language_list); ++i)
+    server_languages.push_back(server_language_list[i]);
 
   std::vector<std::string> alpha_languages;
-  alpha_languages.push_back("aa");
-  alpha_languages.push_back("yi");
+  for (size_t i = 0; i < arraysize(alpha_language_list); ++i)
+    alpha_languages.push_back(alpha_language_list[i]);
 
   // First, get the default languages list. Note that calling
   // GetSupportedLanguages() invokes RequestLanguageList() internally.
@@ -669,11 +672,12 @@ TEST_F(TranslateManagerRenderViewHostTest, FetchLanguagesFromTranslateServer) {
     EXPECT_NE(current_supported_languages.end(),
               std::find(current_supported_languages.begin(),
                         current_supported_languages.end(),
-                        lang));
+                        lang)) << "lang=" << lang;
     bool is_alpha =
         std::find(alpha_languages.begin(), alpha_languages.end(), lang) !=
         alpha_languages.end();
-    EXPECT_EQ(TranslateDownloadManager::IsAlphaLanguage(lang), is_alpha);
+    EXPECT_EQ(TranslateDownloadManager::IsAlphaLanguage(lang),
+              is_alpha) << "lang=" << lang;
   }
 }
 
@@ -682,18 +686,12 @@ TEST_F(TranslateManagerRenderViewHostTest, FetchLanguagesFromTranslateServer) {
 TEST_F(TranslateManagerRenderViewHostTest,
        FetchLanguagesFromTranslateServerWithoutAlpha) {
   std::vector<std::string> server_languages;
-  server_languages.push_back("aa");
-  server_languages.push_back("ak");
-  server_languages.push_back("ab");
-  server_languages.push_back("en-CA");
-  server_languages.push_back("zh");
-  server_languages.push_back("yi");
-  server_languages.push_back("fr-FR");
-  server_languages.push_back("xx");
+  for (size_t i = 0; i < arraysize(server_language_list); ++i)
+    server_languages.push_back(server_language_list[i]);
 
   std::vector<std::string> alpha_languages;
-  alpha_languages.push_back("aa");
-  alpha_languages.push_back("yi");
+  for (size_t i = 0; i < arraysize(alpha_language_list); ++i)
+    alpha_languages.push_back(alpha_language_list[i]);
 
   // call GetSupportedLanguages to call RequestLanguageList internally.
   std::vector<std::string> default_supported_languages;
@@ -715,8 +713,9 @@ TEST_F(TranslateManagerRenderViewHostTest,
     EXPECT_NE(current_supported_languages.end(),
               std::find(current_supported_languages.begin(),
                         current_supported_languages.end(),
-                        lang));
-    EXPECT_FALSE(TranslateDownloadManager::IsAlphaLanguage(lang));
+                        lang)) << "lang=" << lang;
+    EXPECT_FALSE(TranslateDownloadManager::IsAlphaLanguage(lang)) <<
+        "lang=" << lang;
   }
 }
 

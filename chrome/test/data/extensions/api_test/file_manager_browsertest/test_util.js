@@ -203,93 +203,93 @@ TestEntryInfo.prototype.getExpectedRow = function() {
 var ENTRIES = {
   hello: new TestEntryInfo(
       EntryType.FILE, 'text.txt', 'hello.txt',
-      'text/plain', SharedOption.NONE, 'Sep 4, 1998 12:34 PM',
+      'text/plain', SharedOption.NONE, 'Sep 4, 1998, 12:34 PM',
       'hello.txt', '51 bytes', 'Plain text'),
 
   world: new TestEntryInfo(
       EntryType.FILE, 'video.ogv', 'world.ogv',
-      'text/plain', SharedOption.NONE, 'Jul 4, 2012 10:35 AM',
+      'text/plain', SharedOption.NONE, 'Jul 4, 2012, 10:35 AM',
       'world.ogv', '59 KB', 'OGG video'),
 
   unsupported: new TestEntryInfo(
       EntryType.FILE, 'random.bin', 'unsupported.foo',
-      'application/x-foo', SharedOption.NONE, 'Jul 4, 2012 10:36 AM',
+      'application/x-foo', SharedOption.NONE, 'Jul 4, 2012, 10:36 AM',
       'unsupported.foo', '8 KB', 'FOO file'),
 
   desktop: new TestEntryInfo(
       EntryType.FILE, 'image.png', 'My Desktop Background.png',
-      'text/plain', SharedOption.NONE, 'Jan 18, 2038 1:02 AM',
+      'text/plain', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
       'My Desktop Background.png', '272 bytes', 'PNG image'),
 
   image2: new TestEntryInfo(
       EntryType.FILE, 'image2.png', 'image2.png',
-      'image/png', SharedOption.NONE, 'Jan 18, 2038 1:02 AM',
+      'image/png', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
       'image2.png', '272 bytes', 'PNG image'),
 
   image3: new TestEntryInfo(
       EntryType.FILE, 'image3.jpg', 'image3.jpg',
-      'image/jpg', SharedOption.NONE, 'Jan 18, 2038 1:02 AM',
+      'image/jpg', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
       'image3.jpg', '272 bytes', 'JPEG image'),
 
   beautiful: new TestEntryInfo(
       EntryType.FILE, 'music.ogg', 'Beautiful Song.ogg',
-      'text/plain', SharedOption.NONE, 'Nov 12, 2086 12:00 PM',
+      'text/plain', SharedOption.NONE, 'Nov 12, 2086, 12:00 PM',
       'Beautiful Song.ogg', '14 KB', 'OGG audio'),
 
   photos: new TestEntryInfo(
       EntryType.DIRECTORY, null, 'photos',
-      null, SharedOption.NONE, 'Jan 1, 1980 11:59 PM',
+      null, SharedOption.NONE, 'Jan 1, 1980, 11:59 PM',
       'photos', '--', 'Folder'),
 
   testDocument: new TestEntryInfo(
       EntryType.FILE, null, 'Test Document',
       'application/vnd.google-apps.document',
-      SharedOption.NONE, 'Apr 10, 2013 4:20 PM',
+      SharedOption.NONE, 'Apr 10, 2013, 4:20 PM',
       'Test Document.gdoc', '--', 'Google document'),
 
   testSharedDocument: new TestEntryInfo(
       EntryType.FILE, null, 'Test Shared Document',
       'application/vnd.google-apps.document',
-      SharedOption.SHARED, 'Mar 20, 2013 10:40 PM',
+      SharedOption.SHARED, 'Mar 20, 2013, 10:40 PM',
       'Test Shared Document.gdoc', '--', 'Google document'),
 
   newlyAdded: new TestEntryInfo(
       EntryType.FILE, 'music.ogg', 'newly added file.ogg',
-      'audio/ogg', SharedOption.NONE, 'Sep 4, 1998 12:00 AM',
+      'audio/ogg', SharedOption.NONE, 'Sep 4, 1998, 12:00 AM',
       'newly added file.ogg', '14 KB', 'OGG audio'),
 
   directoryA: new TestEntryInfo(
       EntryType.DIRECTORY, null, 'A',
-      null, SharedOption.NONE, 'Jan 1, 2000 1:00 AM',
+      null, SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
       'A', '--', 'Folder'),
 
   directoryB: new TestEntryInfo(
       EntryType.DIRECTORY, null, 'A/B',
-      null, SharedOption.NONE, 'Jan 1, 2000 1:00 AM',
+      null, SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
       'B', '--', 'Folder'),
 
   directoryC: new TestEntryInfo(
       EntryType.DIRECTORY, null, 'A/B/C',
-      null, SharedOption.NONE, 'Jan 1, 2000 1:00 AM',
+      null, SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
       'C', '--', 'Folder'),
 
   directoryD: new TestEntryInfo(
       EntryType.DIRECTORY, null, 'D',
-      null, SharedOption.NONE, 'Jan 1, 2000 1:00 AM',
+      null, SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
       'D', '--', 'Folder'),
 
   directoryE: new TestEntryInfo(
       EntryType.DIRECTORY, null, 'D/E',
-      null, SharedOption.NONE, 'Jan 1, 2000 1:00 AM',
+      null, SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
       'E', '--', 'Folder'),
 
   directoryF: new TestEntryInfo(
       EntryType.DIRECTORY, null, 'D/E/F',
-      null, SharedOption.NONE, 'Jan 1, 2000 1:00 AM',
+      null, SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
       'F', '--', 'Folder'),
 
   zipArchive: new TestEntryInfo(
       EntryType.FILE, 'archive.zip', 'archive.zip',
-      'application/x-zip', SharedOption.NONE, 'Jan 1, 2014 1:00 AM',
+      'application/x-zip', SharedOption.NONE, 'Jan 1, 2014, 1:00 AM',
       'archive.zip', '533 bytes', 'Zip archive')
 };
