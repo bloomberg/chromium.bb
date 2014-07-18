@@ -36,11 +36,12 @@ struct DoInitializeOptions {
       bool delete_sync_data_folder,
       const std::string& restored_key_for_bootstrapping,
       const std::string& restored_keystore_key_for_bootstrapping,
-      scoped_ptr<syncer::InternalComponentsFactory> internal_components_factory,
-      scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
+      scoped_ptr<syncer::InternalComponentsFactory>
+          internal_components_factory,
+      scoped_ptr<syncer::UnrecoverableErrorHandler>
+          unrecoverable_error_handler,
       syncer::ReportUnrecoverableErrorFunction
-          report_unrecoverable_error_function,
-      const std::string& signin_scoped_device_id);
+          report_unrecoverable_error_function);
   ~DoInitializeOptions();
 
   base::MessageLoop* sync_loop;
@@ -63,7 +64,6 @@ struct DoInitializeOptions {
   scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler;
   syncer::ReportUnrecoverableErrorFunction
       report_unrecoverable_error_function;
-  std::string signin_scoped_device_id;
 };
 
 // Helper struct to handle currying params to
@@ -321,10 +321,6 @@ class SyncBackendHostCore
 
   // Set when the forwarding of per-type debug counters is enabled.
   bool forward_type_info_;
-
-  // Obtained from SigninClient::GetSigninScopedDeviceId(). Stored here just to
-  // pass from SyncBackendHostImpl to SyncedDeviceTracker.
-  std::string signin_scoped_device_id_;
 
   base::WeakPtrFactory<SyncBackendHostCore> weak_ptr_factory_;
 

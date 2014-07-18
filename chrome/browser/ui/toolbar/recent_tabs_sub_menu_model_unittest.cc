@@ -154,11 +154,10 @@ class RecentTabsSubMenuModelTest
       const OVERRIDE {
     return scoped_ptr<browser_sync::DeviceInfo>(
         new browser_sync::DeviceInfo(GetLocalSyncCacheGUID(),
-                                     "Test Machine",
-                                     "Chromium 10k",
-                                     "Chrome 10k",
-                                     sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                                     "device_id"));
+                       "Test Machine",
+                       "Chromium 10k",
+                       "Chrome 10k",
+                       sync_pb::SyncEnums_DeviceType_TYPE_LINUX));
   }
 
   virtual std::string GetLocalSyncCacheGUID() const OVERRIDE {

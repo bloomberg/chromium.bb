@@ -68,13 +68,12 @@ scoped_ptr<DeviceInfo> SyncedDeviceTracker::ReadLocalDeviceInfo(
   }
 
   const sync_pb::DeviceInfoSpecifics& specifics = node.GetDeviceInfoSpecifics();
-  return scoped_ptr<DeviceInfo>(
+  return scoped_ptr<DeviceInfo> (
       new DeviceInfo(specifics.cache_guid(),
                      specifics.client_name(),
                      specifics.chrome_version(),
                      specifics.sync_user_agent(),
-                     specifics.device_type(),
-                     specifics.signin_scoped_device_id()));
+                     specifics.device_type()));
 }
 
 scoped_ptr<DeviceInfo> SyncedDeviceTracker::ReadDeviceInfo(
@@ -88,13 +87,12 @@ scoped_ptr<DeviceInfo> SyncedDeviceTracker::ReadDeviceInfo(
   }
 
   const sync_pb::DeviceInfoSpecifics& specifics = node.GetDeviceInfoSpecifics();
-  return scoped_ptr<DeviceInfo>(
+  return scoped_ptr<DeviceInfo> (
       new DeviceInfo(specifics.cache_guid(),
                      specifics.client_name(),
                      specifics.chrome_version(),
                      specifics.sync_user_agent(),
-                     specifics.device_type(),
-                     specifics.signin_scoped_device_id()));
+                     specifics.device_type()));
 }
 
 void SyncedDeviceTracker::GetAllSyncedDeviceInfo(
@@ -125,12 +123,12 @@ void SyncedDeviceTracker::GetAllSyncedDeviceInfo(
 
     const sync_pb::DeviceInfoSpecifics& specifics =
         node.GetDeviceInfoSpecifics();
-    device_info->push_back(new DeviceInfo(specifics.cache_guid(),
-                                          specifics.client_name(),
-                                          specifics.chrome_version(),
-                                          specifics.sync_user_agent(),
-                                          specifics.device_type(),
-                                          specifics.signin_scoped_device_id()));
+    device_info->push_back(
+        new DeviceInfo(specifics.cache_guid(),
+                       specifics.client_name(),
+                       specifics.chrome_version(),
+                       specifics.sync_user_agent(),
+                       specifics.device_type()));
   }
 }
 
@@ -146,15 +144,11 @@ void SyncedDeviceTracker::RemoveObserver(Observer* observer) {
   observers_->RemoveObserver(observer);
 }
 
-void SyncedDeviceTracker::InitLocalDeviceInfo(
-    const std::string& signin_scoped_device_id,
-    const base::Closure& callback) {
+void SyncedDeviceTracker::InitLocalDeviceInfo(const base::Closure& callback) {
   DeviceInfo::CreateLocalDeviceInfo(
       cache_guid_,
-      signin_scoped_device_id,
       base::Bind(&SyncedDeviceTracker::InitLocalDeviceInfoContinuation,
-                 weak_factory_.GetWeakPtr(),
-                 callback));
+                 weak_factory_.GetWeakPtr(), callback));
 }
 
 void SyncedDeviceTracker::InitLocalDeviceInfoContinuation(
@@ -179,7 +173,6 @@ void SyncedDeviceTracker::WriteDeviceInfo(const DeviceInfo& info,
   specifics.set_chrome_version(info.chrome_version());
   specifics.set_sync_user_agent(info.sync_user_agent());
   specifics.set_device_type(info.device_type());
-  specifics.set_signin_scoped_device_id(info.signin_scoped_device_id());
 
   if (node.InitByClientTagLookup(syncer::DEVICE_INFO, tag) ==
       syncer::BaseNode::INIT_OK) {

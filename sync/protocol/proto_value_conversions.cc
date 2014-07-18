@@ -499,7 +499,6 @@ base::DictionaryValue* DeviceInfoSpecificsToValue(
   SET_STR(sync_user_agent);
   SET_STR(chrome_version);
   SET_TIME_STR(backup_timestamp);
-  SET_STR(signin_scoped_device_id);
   return value;
 }
 

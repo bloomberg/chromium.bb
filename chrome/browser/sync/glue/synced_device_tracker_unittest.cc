@@ -93,12 +93,10 @@ TEST_F(SyncedDeviceTrackerTest, CreateNewDeviceInfo) {
   // name to ensure that SyncedDeviceTracker can properly handle non-ASCII
   // characters, which client names can include on some platforms (e.g., Mac
   // and iOS).
-  DeviceInfo write_device_info(user_share()->directory->cache_guid(),
-                               "John’s Device",
-                               "Chromium 3000",
-                               "ChromeSyncAgent 3000",
-                               sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                               "device_id");
+  DeviceInfo write_device_info(
+      user_share()->directory->cache_guid(),
+      "John’s Device", "Chromium 3000", "ChromeSyncAgent 3000",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
   WriteLocalDeviceInfo(write_device_info);
 
   scoped_ptr<DeviceInfo> read_device_info(
@@ -112,12 +110,10 @@ TEST_F(SyncedDeviceTrackerTest, CreateNewDeviceInfo) {
 // Restart scenario: update existing device info with identical data.
 TEST_F(SyncedDeviceTrackerTest, DontModifyExistingDeviceInfo) {
   // For writing.
-  DeviceInfo device_info(user_share()->directory->cache_guid(),
-                         "John’s Device",
-                         "XYZ v1",
-                         "XYZ SyncAgent v1",
-                         sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                         "device_id");
+  DeviceInfo device_info(
+      user_share()->directory->cache_guid(),
+      "John’s Device", "XYZ v1", "XYZ SyncAgent v1",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
   WriteLocalDeviceInfo(device_info);
 
   // First read.
@@ -143,23 +139,19 @@ TEST_F(SyncedDeviceTrackerTest, DontModifyExistingDeviceInfo) {
 // Upgrade scenario: update existing device info with new version.
 TEST_F(SyncedDeviceTrackerTest, UpdateExistingDeviceInfo) {
   // Write v1 device info.
-  DeviceInfo device_info_v1(user_share()->directory->cache_guid(),
-                            "John’s Device",
-                            "XYZ v1",
-                            "XYZ SyncAgent v1",
-                            sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                            "device_id1");
+  DeviceInfo device_info_v1(
+      user_share()->directory->cache_guid(),
+      "John’s Device", "XYZ v1", "XYZ SyncAgent v1",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
   WriteLocalDeviceInfo(device_info_v1);
 
   ResetObservedChangesCounter();
 
   // Write upgraded device info.
-  DeviceInfo device_info_v2(user_share()->directory->cache_guid(),
-                            "John’s Device",
-                            "XYZ v2",
-                            "XYZ SyncAgent v2",
-                            sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                            "device_id2");
+  DeviceInfo device_info_v2(
+      user_share()->directory->cache_guid(),
+      "John’s Device", "XYZ v2", "XYZ SyncAgent v2",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
   WriteLocalDeviceInfo(device_info_v2);
 
   // Verify result.
@@ -175,21 +167,17 @@ TEST_F(SyncedDeviceTrackerTest, UpdateExistingDeviceInfo) {
 
 // Test retrieving DeviceInfos for all the syncing devices.
 TEST_F(SyncedDeviceTrackerTest, GetAllDeviceInfo) {
-  DeviceInfo device_info1(base::GenerateGUID(),
-                          "abc Device",
-                          "XYZ v1",
-                          "XYZ SyncAgent v1",
-                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                          "device_id1");
+  DeviceInfo device_info1(
+      base::GenerateGUID(),
+      "abc Device", "XYZ v1", "XYZ SyncAgent v1",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
 
   std::string guid1 = base::GenerateGUID();
 
-  DeviceInfo device_info2(base::GenerateGUID(),
-                          "def Device",
-                          "XYZ v2",
-                          "XYZ SyncAgent v2",
-                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                          "device_id2");
+  DeviceInfo device_info2(
+      base::GenerateGUID(),
+      "def Device", "XYZ v2", "XYZ SyncAgent v2",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
 
   std::string guid2 = base::GenerateGUID();
 
@@ -205,12 +193,10 @@ TEST_F(SyncedDeviceTrackerTest, GetAllDeviceInfo) {
 }
 
 TEST_F(SyncedDeviceTrackerTest, DeviceBackupTime) {
-  DeviceInfo device_info(user_share()->directory->cache_guid(),
-                         "John’s Device",
-                         "XYZ v1",
-                         "XYZ SyncAgent v1",
-                         sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                         "device_id");
+  DeviceInfo device_info(
+      user_share()->directory->cache_guid(),
+      "John’s Device", "XYZ v1", "XYZ SyncAgent v1",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
   const base::Time test_backup_time =
       base::Time::UnixEpoch() + base::TimeDelta::FromDays(10000);
 
@@ -226,12 +212,10 @@ TEST_F(SyncedDeviceTrackerTest, DeviceBackupTime) {
   EXPECT_TRUE(device_info.Equals(*device_info_out.get()));
 
   // Verify backup time is not lost after updating device info.
-  DeviceInfo device_info2(user_share()->directory->cache_guid(),
-                          "def Device",
-                          "XYZ v2",
-                          "XYZ SyncAgent v2",
-                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                          "device_id");
+  DeviceInfo device_info2(
+      user_share()->directory->cache_guid(),
+      "def Device", "XYZ v2", "XYZ SyncAgent v2",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
   WriteLocalDeviceInfo(device_info2);
   EXPECT_EQ(test_backup_time,
             synced_device_tracker_->GetLocalDeviceBackupTime());
