@@ -126,6 +126,15 @@ message OmniboxEventProto {
     // omnibox before the user started editing it, not the search terms.
     SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT = 9;
 
+    // The user is on the home screen.
+    APP_HOME = 10;
+
+    // The user is in the search app.
+    APP_SEARCH = 11;
+
+    // The user is in the maps app.
+    APP_MAPS = 12;
+
     // When adding new classifications, please consider adding them in
     // chrome/browser/resources/omnibox/omnibox.html
     // so that these new options are displayed on about:omnibox.
@@ -155,7 +164,7 @@ message OmniboxEventProto {
   }
 
   // The result set displayed on the completion popup
-  // Next tag: 6
+  // Next tag: 7
   message Suggestion {
     // Where does this result come from?
     optional ProviderType provider = 1;
@@ -220,6 +229,9 @@ message OmniboxEventProto {
 
     // Whether this item is starred (bookmarked) or not.
     optional bool is_starred = 4;
+
+    // Whether this item is disabled in the UI (not clickable).
+    optional bool is_disabled = 6;
   }
   repeated Suggestion suggestion = 9;
 
