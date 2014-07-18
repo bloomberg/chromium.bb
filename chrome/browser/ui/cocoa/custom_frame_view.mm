@@ -89,22 +89,26 @@ BOOL gCanGetCornerRadius = NO;
     }
   }
 
-  // Swizzle the method that sets the origin for the Lion fullscreen button. Do
-  // nothing if it cannot be found.
-  m0 = class_getInstanceMethod([self class],
-                               @selector(_fullScreenButtonOrigin));
-  if (m0) {
-    BOOL didAdd = class_addMethod(borderViewClass,
-                                  @selector(_fullScreenButtonOriginOriginal),
-                                  method_getImplementation(m0),
-                                  method_getTypeEncoding(m0));
-    if (didAdd) {
-      Method m1 = class_getInstanceMethod(borderViewClass,
-                                          @selector(_fullScreenButtonOrigin));
-      Method m2 = class_getInstanceMethod(borderViewClass,
-          @selector(_fullScreenButtonOriginOriginal));
-      if (m1 && m2) {
-        method_exchangeImplementations(m1, m2);
+  // In Yosemite, the fullscreen button replaces the zoom button. We no longer
+  // need to swizzle out this AppKit private method.
+  if (base::mac::IsOSMavericksOrEarlier()) {
+    // Swizzle the method that sets the origin for the Lion fullscreen button.
+    // Do nothing if it cannot be found.
+    m0 = class_getInstanceMethod([self class],
+                                 @selector(_fullScreenButtonOrigin));
+    if (m0) {
+      BOOL didAdd = class_addMethod(borderViewClass,
+                                    @selector(_fullScreenButtonOriginOriginal),
+                                    method_getImplementation(m0),
+                                    method_getTypeEncoding(m0));
+      if (didAdd) {
+        Method m1 = class_getInstanceMethod(borderViewClass,
+                                            @selector(_fullScreenButtonOrigin));
+        Method m2 = class_getInstanceMethod(
+            borderViewClass, @selector(_fullScreenButtonOriginOriginal));
+        if (m1 && m2) {
+          method_exchangeImplementations(m1, m2);
+        }
       }
     }
   }
