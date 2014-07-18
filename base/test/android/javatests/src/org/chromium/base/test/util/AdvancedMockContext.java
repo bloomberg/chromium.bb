@@ -4,6 +4,7 @@
 
 package org.chromium.base.test.util;
 
+import android.content.ComponentCallbacks;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -64,6 +65,16 @@ public class AdvancedMockContext extends ContextWrapper {
         }
     }
 
+    @Override
+    public void registerComponentCallbacks(ComponentCallbacks callback) {
+        getBaseContext().registerComponentCallbacks(callback);
+    }
+
+    @Override
+    public void unregisterComponentCallbacks(ComponentCallbacks callback) {
+        getBaseContext().unregisterComponentCallbacks(callback);
+    }
+
     public void addSharedPreferences(String name, Map<String, Object> data) {
         synchronized (mSharedPreferences) {
             mSharedPreferences.put(name, new InMemorySharedPreferences(data));
@@ -82,6 +93,10 @@ public class AdvancedMockContext extends ContextWrapper {
         return mFlags.containsKey(key) && mFlags.get(key);
     }
 
+    /**
+     * Builder for maps of type Map<String, Object> to be used with
+     * {@link #addSharedPreferences(String, java.util.Map)}.
+     */
     public static class MapBuilder {
 
         private final Map<String, Object> mData = new HashMap<String, Object>();
