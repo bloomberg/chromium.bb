@@ -49,13 +49,6 @@ class MOJO_SURFACES_EXPORT TypeConverter<surfaces::QuadPtr, cc::DrawQuad> {
   static surfaces::QuadPtr ConvertFrom(const cc::DrawQuad& input);
 };
 
-// This can't use the TypeConverter since it has to return a pointer to a type
-// since cc::DrawQuad is polymorphic and needs an additional input. The
-// TypeConverter for surfaces::Pass calls this explicitly.
-MOJO_SURFACES_EXPORT scoped_ptr<cc::DrawQuad> ConvertTo(
-    const surfaces::QuadPtr& input,
-    cc::SharedQuadState* sqs);
-
 template <>
 class MOJO_SURFACES_EXPORT
 TypeConverter<surfaces::SharedQuadStatePtr, cc::SharedQuadState> {
@@ -63,9 +56,6 @@ TypeConverter<surfaces::SharedQuadStatePtr, cc::SharedQuadState> {
   static surfaces::SharedQuadStatePtr ConvertFrom(
       const cc::SharedQuadState& input);
 };
-
-MOJO_SURFACES_EXPORT scoped_ptr<cc::SharedQuadState> ConvertTo(
-    const surfaces::SharedQuadStatePtr& input);
 
 template <>
 class MOJO_SURFACES_EXPORT TypeConverter<surfaces::PassPtr, cc::RenderPass> {

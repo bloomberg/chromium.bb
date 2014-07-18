@@ -16,6 +16,80 @@
 
 namespace mojo {
 
+namespace {
+
+cc::SharedQuadState* ConvertToSharedQuadState(
+    const surfaces::SharedQuadStatePtr& input,
+    cc::RenderPass* render_pass) {
+  cc::SharedQuadState* state = render_pass->CreateAndAppendSharedQuadState();
+  state->SetAll(input->content_to_target_transform.To<gfx::Transform>(),
+                input->content_bounds.To<gfx::Size>(),
+                input->visible_content_rect.To<gfx::Rect>(),
+                input->clip_rect.To<gfx::Rect>(),
+                input->is_clipped,
+                input->opacity,
+                static_cast<SkXfermode::Mode>(input->blend_mode),
+                input->sorting_context_id);
+  return state;
+}
+
+cc::DrawQuad* ConvertToDrawQuad(const surfaces::QuadPtr& input,
+                                cc::SharedQuadState* sqs,
+                                cc::RenderPass* render_pass) {
+  switch (input->material) {
+    case surfaces::MATERIAL_SOLID_COLOR: {
+      cc::SolidColorDrawQuad* color_quad =
+          render_pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
+      color_quad->SetAll(
+          sqs,
+          input->rect.To<gfx::Rect>(),
+          input->opaque_rect.To<gfx::Rect>(),
+          input->visible_rect.To<gfx::Rect>(),
+          input->needs_blending,
+          input->solid_color_quad_state->color.To<SkColor>(),
+          input->solid_color_quad_state->force_anti_aliasing_off);
+      return color_quad;
+    }
+    case surfaces::MATERIAL_SURFACE_CONTENT: {
+      cc::SurfaceDrawQuad* surface_quad =
+          render_pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
+      surface_quad->SetAll(
+          sqs,
+          input->rect.To<gfx::Rect>(),
+          input->opaque_rect.To<gfx::Rect>(),
+          input->visible_rect.To<gfx::Rect>(),
+          input->needs_blending,
+          input->surface_quad_state->surface.To<cc::SurfaceId>());
+      return surface_quad;
+    }
+    case surfaces::MATERIAL_TEXTURE_CONTENT: {
+      cc::TextureDrawQuad* texture_quad =
+          render_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
+      surfaces::TextureQuadStatePtr& texture_quad_state =
+          input->texture_quad_state;
+      texture_quad->SetAll(
+          sqs,
+          input->rect.To<gfx::Rect>(),
+          input->opaque_rect.To<gfx::Rect>(),
+          input->visible_rect.To<gfx::Rect>(),
+          input->needs_blending,
+          texture_quad_state->resource_id,
+          texture_quad_state->premultiplied_alpha,
+          texture_quad_state->uv_top_left.To<gfx::PointF>(),
+          texture_quad_state->uv_bottom_right.To<gfx::PointF>(),
+          texture_quad_state->background_color.To<SkColor>(),
+          texture_quad_state->vertex_opacity.storage().data(),
+          texture_quad_state->flipped);
+      return texture_quad;
+    }
+    default:
+      NOTREACHED() << "Unsupported material " << input->material;
+  }
+  return NULL;
+}
+
+}  // namespace
+
 // static
 surfaces::SurfaceIdPtr
 TypeConverter<surfaces::SurfaceIdPtr, cc::SurfaceId>::ConvertFrom(
@@ -109,58 +183,6 @@ surfaces::QuadPtr TypeConverter<surfaces::QuadPtr, cc::DrawQuad>::ConvertFrom(
 }
 
 // static
-scoped_ptr<cc::DrawQuad> ConvertTo(const surfaces::QuadPtr& input,
-                                   cc::SharedQuadState* sqs) {
-  switch (input->material) {
-    case surfaces::MATERIAL_SOLID_COLOR: {
-      scoped_ptr<cc::SolidColorDrawQuad> color_quad(new cc::SolidColorDrawQuad);
-      color_quad->SetAll(
-          sqs,
-          input->rect.To<gfx::Rect>(),
-          input->opaque_rect.To<gfx::Rect>(),
-          input->visible_rect.To<gfx::Rect>(),
-          input->needs_blending,
-          input->solid_color_quad_state->color.To<SkColor>(),
-          input->solid_color_quad_state->force_anti_aliasing_off);
-      return color_quad.PassAs<cc::DrawQuad>();
-    }
-    case surfaces::MATERIAL_SURFACE_CONTENT: {
-      scoped_ptr<cc::SurfaceDrawQuad> surface_quad(new cc::SurfaceDrawQuad);
-      surface_quad->SetAll(
-          sqs,
-          input->rect.To<gfx::Rect>(),
-          input->opaque_rect.To<gfx::Rect>(),
-          input->visible_rect.To<gfx::Rect>(),
-          input->needs_blending,
-          input->surface_quad_state->surface.To<cc::SurfaceId>());
-      return surface_quad.PassAs<cc::DrawQuad>();
-    }
-    case surfaces::MATERIAL_TEXTURE_CONTENT: {
-      scoped_ptr<cc::TextureDrawQuad> texture_quad(new cc::TextureDrawQuad);
-      surfaces::TextureQuadStatePtr& texture_quad_state =
-          input->texture_quad_state;
-      texture_quad->SetAll(
-          sqs,
-          input->rect.To<gfx::Rect>(),
-          input->opaque_rect.To<gfx::Rect>(),
-          input->visible_rect.To<gfx::Rect>(),
-          input->needs_blending,
-          texture_quad_state->resource_id,
-          texture_quad_state->premultiplied_alpha,
-          texture_quad_state->uv_top_left.To<gfx::PointF>(),
-          texture_quad_state->uv_bottom_right.To<gfx::PointF>(),
-          texture_quad_state->background_color.To<SkColor>(),
-          texture_quad_state->vertex_opacity.storage().data(),
-          texture_quad_state->flipped);
-      return texture_quad.PassAs<cc::DrawQuad>();
-    }
-    default:
-      NOTREACHED() << "Unsupported material " << input->material;
-  }
-  return scoped_ptr<cc::DrawQuad>();
-}
-
-// static
 surfaces::SharedQuadStatePtr
 TypeConverter<surfaces::SharedQuadStatePtr, cc::SharedQuadState>::ConvertFrom(
     const cc::SharedQuadState& input) {
@@ -174,21 +196,6 @@ TypeConverter<surfaces::SharedQuadStatePtr, cc::SharedQuadState>::ConvertFrom(
   state->opacity = input.opacity;
   state->blend_mode = static_cast<surfaces::SkXfermode>(input.blend_mode);
   state->sorting_context_id = input.sorting_context_id;
-  return state.Pass();
-}
-
-// static
-scoped_ptr<cc::SharedQuadState> ConvertTo(
-    const surfaces::SharedQuadStatePtr& input) {
-  scoped_ptr<cc::SharedQuadState> state(new cc::SharedQuadState);
-  state->SetAll(input->content_to_target_transform.To<gfx::Transform>(),
-                input->content_bounds.To<gfx::Size>(),
-                input->visible_content_rect.To<gfx::Rect>(),
-                input->clip_rect.To<gfx::Rect>(),
-                input->is_clipped,
-                input->opacity,
-                static_cast<SkXfermode::Mode>(input->blend_mode),
-                input->sorting_context_id);
   return state.Pass();
 }
 
@@ -236,14 +243,13 @@ scoped_ptr<cc::RenderPass> ConvertTo(const surfaces::PassPtr& input) {
   cc::SharedQuadStateList& sqs_list = pass->shared_quad_state_list;
   sqs_list.reserve(input->shared_quad_states.size());
   for (size_t i = 0; i < input->shared_quad_states.size(); ++i) {
-    sqs_list.push_back(ConvertTo(input->shared_quad_states[i]));
+    ConvertToSharedQuadState(input->shared_quad_states[i], pass.get());
   }
-  cc::QuadList& quad_list = pass->quad_list;
-  quad_list.reserve(input->quads.size());
+  pass->quad_list.reserve(input->quads.size());
   for (size_t i = 0; i < input->quads.size(); ++i) {
     surfaces::QuadPtr quad = input->quads[i].Pass();
-    quad_list.push_back(
-        ConvertTo(quad, sqs_list[quad->shared_quad_state_index]));
+    ConvertToDrawQuad(
+        quad, sqs_list[quad->shared_quad_state_index], pass.get());
   }
   return pass.Pass();
 }
