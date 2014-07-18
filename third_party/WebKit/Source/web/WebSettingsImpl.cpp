@@ -48,7 +48,6 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings, InspectorController* inspec
     , m_showFPSCounter(false)
     , m_showPaintRects(false)
     , m_renderVSyncNotificationEnabled(false)
-    , m_gestureTapHighlightEnabled(true)
     , m_autoZoomFocusedNodeToLegibleScale(false)
     , m_deferredImageDecodingEnabled(false)
     , m_doubleTapToZoomEnabled(false)
@@ -655,11 +654,6 @@ void WebSettingsImpl::setCookieEnabled(bool enabled)
 void WebSettingsImpl::setNavigateOnDragDrop(bool enabled)
 {
     m_settings->setNavigateOnDragDrop(enabled);
-}
-
-void WebSettingsImpl::setGestureTapHighlightEnabled(bool enableHighlight)
-{
-    m_gestureTapHighlightEnabled = enableHighlight;
 }
 
 void WebSettingsImpl::setAllowCustomScrollbarInMainFrame(bool enabled)
