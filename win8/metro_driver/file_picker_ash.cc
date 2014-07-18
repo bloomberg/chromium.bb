@@ -18,7 +18,6 @@
 
 namespace {
 
-namespace winstorage = ABI::Windows::Storage;
 typedef winfoundtn::Collections::IVector<HSTRING> StringVectorItf;
 
 // TODO(siggi): Complete this implementation and move it to a common place.
