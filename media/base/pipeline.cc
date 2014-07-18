@@ -402,10 +402,12 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
         interpolator_->SetBounds(start_timestamp_, start_timestamp_);
       }
 
-      if (audio_renderer_)
-        audio_renderer_->StartPlayingFrom(start_timestamp_);
+      if (audio_renderer_) {
+        audio_renderer_->SetMediaTime(start_timestamp_);
+        audio_renderer_->StartPlaying();
+      }
       if (video_renderer_)
-        video_renderer_->StartPlayingFrom(start_timestamp_);
+        video_renderer_->StartPlaying();
       if (text_renderer_)
         text_renderer_->StartPlaying();
 

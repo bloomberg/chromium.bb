@@ -66,10 +66,9 @@ class MEDIA_EXPORT VideoRenderer {
   virtual void Flush(const base::Closure& callback) = 0;
 
   // Starts playback by reading from |stream| and decoding and rendering video.
-  // |timestamp| is the media timestamp playback should start rendering from.
   //
   // Only valid to call after a successful Initialize() or Flush().
-  virtual void StartPlayingFrom(base::TimeDelta timestamp) = 0;
+  virtual void StartPlaying() = 0;
 
   // Stop all operations in preparation for being deleted, executing |callback|
   // when complete.

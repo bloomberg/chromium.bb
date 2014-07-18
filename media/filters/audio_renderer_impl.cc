@@ -130,6 +130,17 @@ void AudioRendererImpl::StopRendering_Locked() {
   sink_->Pause();
 }
 
+void AudioRendererImpl::SetMediaTime(base::TimeDelta time) {
+  DVLOG(1) << __FUNCTION__ << "(" << time.InMicroseconds() << ")";
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  base::AutoLock auto_lock(lock_);
+  DCHECK(!rendering_);
+  DCHECK_EQ(state_, kFlushed);
+
+  start_timestamp_ = time;
+}
+
 void AudioRendererImpl::Flush(const base::Closure& callback) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -219,8 +230,8 @@ void AudioRendererImpl::Stop(const base::Closure& callback) {
   task_runner_->PostTask(FROM_HERE, callback);
 }
 
-void AudioRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
-  DVLOG(1) << __FUNCTION__ << "(" << timestamp.InMicroseconds() << ")";
+void AudioRendererImpl::StartPlaying() {
+  DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
@@ -230,8 +241,6 @@ void AudioRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
   DCHECK(!pending_read_) << "Pending read must complete before seeking";
 
   ChangeState_Locked(kPlaying);
-  start_timestamp_ = timestamp;
-
   AttemptRead_Locked();
 }
 

@@ -87,14 +87,14 @@ class PipelineTest : public ::testing::Test {
       : pipeline_(new Pipeline(message_loop_.message_loop_proxy(),
                                new MediaLog())),
         filter_collection_(new FilterCollection()),
-        demuxer_(new MockDemuxer()) {
+        demuxer_(new StrictMock<MockDemuxer>()) {
     filter_collection_->SetDemuxer(demuxer_.get());
 
-    video_renderer_ = new MockVideoRenderer();
+    video_renderer_ = new StrictMock<MockVideoRenderer>();
     scoped_ptr<VideoRenderer> video_renderer(video_renderer_);
     filter_collection_->SetVideoRenderer(video_renderer.Pass());
 
-    audio_renderer_ = new MockAudioRenderer();
+    audio_renderer_ = new StrictMock<MockAudioRenderer>();
     scoped_ptr<AudioRenderer> audio_renderer(audio_renderer_);
     filter_collection_->SetAudioRenderer(audio_renderer.Pass());
 
@@ -203,14 +203,15 @@ class PipelineTest : public ::testing::Test {
       if (audio_stream_) {
         EXPECT_CALL(*audio_renderer_, SetPlaybackRate(0.0f));
         EXPECT_CALL(*audio_renderer_, SetVolume(1.0f));
-        EXPECT_CALL(*audio_renderer_, StartPlayingFrom(base::TimeDelta()))
+        EXPECT_CALL(*audio_renderer_, SetMediaTime(base::TimeDelta()));
+        EXPECT_CALL(*audio_renderer_, StartPlaying())
             .WillOnce(SetBufferingState(&audio_buffering_state_cb_,
                                         BUFFERING_HAVE_ENOUGH));
         EXPECT_CALL(*audio_renderer_, StartRendering());
       }
 
       if (video_stream_) {
-        EXPECT_CALL(*video_renderer_, StartPlayingFrom(base::TimeDelta()))
+        EXPECT_CALL(*video_renderer_, StartPlaying())
             .WillOnce(SetBufferingState(&video_buffering_state_cb_,
                                         BUFFERING_HAVE_ENOUGH));
       }
@@ -270,7 +271,8 @@ class PipelineTest : public ::testing::Test {
           .WillOnce(DoAll(SetBufferingState(&audio_buffering_state_cb_,
                                             BUFFERING_HAVE_NOTHING),
                           RunClosure<0>()));
-      EXPECT_CALL(*audio_renderer_, StartPlayingFrom(seek_time))
+      EXPECT_CALL(*audio_renderer_, SetMediaTime(seek_time));
+      EXPECT_CALL(*audio_renderer_, StartPlaying())
           .WillOnce(SetBufferingState(&audio_buffering_state_cb_,
                                       BUFFERING_HAVE_ENOUGH));
       EXPECT_CALL(*audio_renderer_, SetPlaybackRate(_));
@@ -283,7 +285,7 @@ class PipelineTest : public ::testing::Test {
           .WillOnce(DoAll(SetBufferingState(&video_buffering_state_cb_,
                                             BUFFERING_HAVE_NOTHING),
                           RunClosure<0>()));
-      EXPECT_CALL(*video_renderer_, StartPlayingFrom(seek_time))
+      EXPECT_CALL(*video_renderer_, StartPlaying())
           .WillOnce(SetBufferingState(&video_buffering_state_cb_,
                                       BUFFERING_HAVE_ENOUGH));
     }
@@ -331,9 +333,9 @@ class PipelineTest : public ::testing::Test {
   scoped_ptr<Pipeline> pipeline_;
 
   scoped_ptr<FilterCollection> filter_collection_;
-  scoped_ptr<MockDemuxer> demuxer_;
-  MockVideoRenderer* video_renderer_;
-  MockAudioRenderer* audio_renderer_;
+  scoped_ptr<StrictMock<MockDemuxer> > demuxer_;
+  StrictMock<MockVideoRenderer>* video_renderer_;
+  StrictMock<MockAudioRenderer>* audio_renderer_;
   StrictMock<CallbackHelper> text_renderer_callbacks_;
   TextRenderer* text_renderer_;
   scoped_ptr<StrictMock<MockDemuxerStream> > audio_stream_;
@@ -793,7 +795,8 @@ TEST_F(PipelineTest, AudioTimeUpdateDuringSeek) {
       .WillOnce(DoAll(SetBufferingState(&audio_buffering_state_cb_,
                                         BUFFERING_HAVE_NOTHING),
                       RunClosure<0>()));
-  EXPECT_CALL(*audio_renderer_, StartPlayingFrom(seek_time))
+  EXPECT_CALL(*audio_renderer_, SetMediaTime(seek_time));
+  EXPECT_CALL(*audio_renderer_, StartPlaying())
       .WillOnce(SetBufferingState(&audio_buffering_state_cb_,
                                   BUFFERING_HAVE_ENOUGH));
   EXPECT_CALL(*audio_renderer_, SetPlaybackRate(_));
@@ -993,10 +996,11 @@ class PipelineTeardownTest : public PipelineTest {
     EXPECT_CALL(callbacks_, OnMetadata(_));
 
     // If we get here it's a successful initialization.
-    EXPECT_CALL(*audio_renderer_, StartPlayingFrom(base::TimeDelta()))
+    EXPECT_CALL(*audio_renderer_, SetMediaTime(base::TimeDelta()));
+    EXPECT_CALL(*audio_renderer_, StartPlaying())
         .WillOnce(SetBufferingState(&audio_buffering_state_cb_,
                                     BUFFERING_HAVE_ENOUGH));
-    EXPECT_CALL(*video_renderer_, StartPlayingFrom(base::TimeDelta()))
+    EXPECT_CALL(*video_renderer_, StartPlaying())
         .WillOnce(SetBufferingState(&video_buffering_state_cb_,
                                     BUFFERING_HAVE_ENOUGH));
 

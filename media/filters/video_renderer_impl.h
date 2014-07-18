@@ -68,7 +68,7 @@ class MEDIA_EXPORT VideoRendererImpl
                           const TimeDeltaCB& get_time_cb,
                           const TimeDeltaCB& get_duration_cb) OVERRIDE;
   virtual void Flush(const base::Closure& callback) OVERRIDE;
-  virtual void StartPlayingFrom(base::TimeDelta timestamp) OVERRIDE;
+  virtual void StartPlaying() OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
 
   // PlatformThread::Delegate implementation.
@@ -155,7 +155,7 @@ class MEDIA_EXPORT VideoRendererImpl
   //         |
   //         V            Decoders reset
   //      kFlushed <------------------ kFlushing
-  //         | StartPlayingFrom()         ^
+  //         | StartPlaying()             ^
   //         |                            |
   //         |                            | Flush()
   //         `---------> kPlaying --------'

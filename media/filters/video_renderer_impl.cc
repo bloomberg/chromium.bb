@@ -108,7 +108,7 @@ void VideoRendererImpl::Stop(const base::Closure& callback) {
   task_runner_->PostTask(FROM_HERE, callback);
 }
 
-void VideoRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
+void VideoRendererImpl::StartPlaying() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kFlushed);
@@ -117,7 +117,7 @@ void VideoRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
   DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
 
   state_ = kPlaying;
-  start_timestamp_ = timestamp;
+  start_timestamp_ = get_time_cb_.Run();
   AttemptRead_Locked();
 }
 

@@ -75,10 +75,11 @@ class MEDIA_EXPORT AudioRendererImpl
                           const PipelineStatusCB& error_cb) OVERRIDE;
   virtual void StartRendering() OVERRIDE;
   virtual void StopRendering() OVERRIDE;
+  virtual void SetMediaTime(base::TimeDelta time) OVERRIDE;
   virtual void Flush(const base::Closure& callback) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
   virtual void SetPlaybackRate(float rate) OVERRIDE;
-  virtual void StartPlayingFrom(base::TimeDelta timestamp) OVERRIDE;
+  virtual void StartPlaying() OVERRIDE;
   virtual void SetVolume(float volume) OVERRIDE;
 
  private:
@@ -97,7 +98,7 @@ class MEDIA_EXPORT AudioRendererImpl
   //         |
   //         V            Decoders reset
   //      kFlushed <------------------ kFlushing
-  //         | StartPlayingFrom()         ^
+  //         | StartPlaying()             ^
   //         |                            |
   //         |                            | Flush()
   //         `---------> kPlaying --------'

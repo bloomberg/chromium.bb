@@ -48,11 +48,21 @@ class MEDIA_EXPORT AudioRenderer {
 
   // Signal audio playback to start at the current rate. It is expected that
   // |time_cb| will eventually start being run with time updates.
+  //
+  // TODO(scherkus): Fold into TimeSource API.
   virtual void StartRendering() = 0;
 
   // Signal audio playback to stop until further notice. It is expected that
   // |time_cb| will no longer be run.
+  //
+  // TODO(scherkus): Fold into TimeSource API.
   virtual void StopRendering() = 0;
+
+  // Sets the media time to start rendering from. Only valid to call while not
+  // currently rendering.
+  //
+  // TODO(scherkus): Fold into TimeSource API.
+  virtual void SetMediaTime(base::TimeDelta time) = 0;
 
   // Discard any audio data, executing |callback| when completed.
   //
@@ -61,16 +71,17 @@ class MEDIA_EXPORT AudioRenderer {
   virtual void Flush(const base::Closure& callback) = 0;
 
   // Starts playback by reading from |stream| and decoding and rendering audio.
-  // |timestamp| is the media timestamp playback should start rendering from.
   //
   // Only valid to call after a successful Initialize() or Flush().
-  virtual void StartPlayingFrom(base::TimeDelta timestamp) = 0;
+  virtual void StartPlaying() = 0;
 
   // Stop all operations in preparation for being deleted, executing |callback|
   // when complete.
   virtual void Stop(const base::Closure& callback) = 0;
 
   // Updates the current playback rate.
+  //
+  // TODO(scherkus): Fold into TimeSource API.
   virtual void SetPlaybackRate(float playback_rate) = 0;
 
   // Sets the output volume.

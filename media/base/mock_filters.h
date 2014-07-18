@@ -126,7 +126,7 @@ class MockVideoRenderer : public VideoRenderer {
                                  const TimeDeltaCB& get_time_cb,
                                  const TimeDeltaCB& get_duration_cb));
   MOCK_METHOD1(Flush, void(const base::Closure& callback));
-  MOCK_METHOD1(StartPlayingFrom, void(base::TimeDelta timestamp));
+  MOCK_METHOD0(StartPlaying, void());
   MOCK_METHOD1(Stop, void(const base::Closure& callback));
 
  private:
@@ -148,10 +148,11 @@ class MockAudioRenderer : public AudioRenderer {
                                 const PipelineStatusCB& error_cb));
   MOCK_METHOD0(StartRendering, void());
   MOCK_METHOD0(StopRendering, void());
+  MOCK_METHOD1(SetMediaTime, void(base::TimeDelta));
   MOCK_METHOD1(Flush, void(const base::Closure& callback));
   MOCK_METHOD1(Stop, void(const base::Closure& callback));
   MOCK_METHOD1(SetPlaybackRate, void(float playback_rate));
-  MOCK_METHOD1(StartPlayingFrom, void(base::TimeDelta timestamp));
+  MOCK_METHOD0(StartPlaying, void());
   MOCK_METHOD1(SetVolume, void(float volume));
   MOCK_METHOD0(ResumeAfterUnderflow, void());
 

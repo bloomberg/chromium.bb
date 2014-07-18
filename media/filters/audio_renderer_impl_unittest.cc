@@ -206,7 +206,8 @@ class AudioRendererImplTest : public ::testing::Test {
     next_timestamp_->SetBaseTimestamp(timestamp);
 
     // Fill entire buffer to complete prerolling.
-    renderer_->StartPlayingFrom(timestamp);
+    renderer_->SetMediaTime(timestamp);
+    renderer_->StartPlaying();
     WaitForPendingRead();
     EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
     DeliverRemainingAudio();
@@ -670,7 +671,7 @@ TEST_F(AudioRendererImplTest, ImmediateEndOfStream) {
   Initialize();
   {
     SCOPED_TRACE("Preroll()");
-    renderer_->StartPlayingFrom(base::TimeDelta());
+    renderer_->StartPlaying();
     WaitForPendingRead();
     EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
     DeliverEndOfStream();
