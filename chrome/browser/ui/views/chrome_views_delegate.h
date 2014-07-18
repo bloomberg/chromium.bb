@@ -40,8 +40,10 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   virtual gfx::ImageSkia* GetDefaultWindowIcon() const OVERRIDE;
 #endif
 
+#if defined(USE_ASH)
   virtual views::NonClientFrameView* CreateDefaultNonClientFrameView(
       views::Widget* widget) OVERRIDE;
+#endif
   virtual void AddRef() OVERRIDE;
   virtual void ReleaseRef() OVERRIDE;
   virtual void OnBeforeWidgetInit(
