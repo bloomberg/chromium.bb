@@ -55,8 +55,9 @@ syncer::SyncableService* DomDistillerService::GetSyncableService() const {
   return store_->GetSyncableService();
 }
 
-scoped_ptr<DistillerPage> DomDistillerService::CreateDefaultDistillerPage() {
-  return distiller_page_factory_->CreateDistillerPage().Pass();
+scoped_ptr<DistillerPage> DomDistillerService::CreateDefaultDistillerPage(
+    const gfx::Size& render_view_size) {
+  return distiller_page_factory_->CreateDistillerPage(render_view_size).Pass();
 }
 
 scoped_ptr<DistillerPage>

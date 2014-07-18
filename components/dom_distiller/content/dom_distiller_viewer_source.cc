@@ -285,7 +285,8 @@ void DomDistillerViewerSource::StartDataRequest(
       web_contents, scheme_, path_after_query_separator, callback,
       dom_distiller_service_->GetDistilledPagePrefs());
   scoped_ptr<ViewerHandle> viewer_handle = viewer::CreateViewRequest(
-      dom_distiller_service_, path, request_viewer_handle);
+      dom_distiller_service_, path, request_viewer_handle,
+      web_contents->GetContainerBounds().size());
 
   if (viewer_handle) {
     // The service returned a |ViewerHandle| and guarantees it will call

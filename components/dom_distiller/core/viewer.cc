@@ -177,7 +177,8 @@ const std::string GetJavaScript() {
 scoped_ptr<ViewerHandle> CreateViewRequest(
     DomDistillerServiceInterface* dom_distiller_service,
     const std::string& path,
-    ViewRequestDelegate* view_request_delegate) {
+    ViewRequestDelegate* view_request_delegate,
+    const gfx::Size& render_view_size) {
   std::string entry_id =
       url_utils::GetValueForKeyInUrlPathQuery(path, kEntryIdKey);
   bool has_valid_entry_id = !entry_id.empty();
@@ -195,15 +196,15 @@ scoped_ptr<ViewerHandle> CreateViewRequest(
   }
 
   if (has_valid_entry_id) {
-    return dom_distiller_service->ViewEntry(view_request_delegate,
-                                            dom_distiller_service
-                                                ->CreateDefaultDistillerPage(),
-                                            entry_id).Pass();
+    return dom_distiller_service->ViewEntry(
+        view_request_delegate,
+        dom_distiller_service->CreateDefaultDistillerPage(render_view_size),
+        entry_id).Pass();
   } else if (has_valid_url) {
-    return dom_distiller_service->ViewUrl(view_request_delegate,
-                                          dom_distiller_service
-                                              ->CreateDefaultDistillerPage(),
-                                          requested_url).Pass();
+    return dom_distiller_service->ViewUrl(
+        view_request_delegate,
+        dom_distiller_service->CreateDefaultDistillerPage(render_view_size),
+        requested_url).Pass();
   }
 
   // It is invalid to not specify a query param for |kEntryIdKey| or |kUrlKey|.

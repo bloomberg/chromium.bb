@@ -12,6 +12,7 @@ include_rules = [
   "+net/url_request",
   "+ui/base/l10n",
   "+ui/base/resource",
+  "+ui/gfx",
 
   # The dom distiller is a layered component; subdirectories must explicitly
   # introduce the ability to use the content layer as appropriate.

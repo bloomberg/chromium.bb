@@ -84,7 +84,8 @@ class DomDistillerServiceInterface {
       const GURL& url) = 0;
 
   // Creates a default DistillerPage.
-  virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPage() = 0;
+  virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPage(
+      const gfx::Size& render_view_size) = 0;
   virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPageWithHandle(
       scoped_ptr<SourcePageHandle> handle) = 0;
 
@@ -128,7 +129,8 @@ class DomDistillerService : public DomDistillerServiceInterface {
       ViewRequestDelegate* delegate,
       scoped_ptr<DistillerPage> distiller_page,
       const GURL& url) OVERRIDE;
-  virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPage() OVERRIDE;
+  virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPage(
+      const gfx::Size& render_view_size) OVERRIDE;
   virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPageWithHandle(
       scoped_ptr<SourcePageHandle> handle) OVERRIDE;
   virtual void AddObserver(DomDistillerObserver* observer) OVERRIDE;

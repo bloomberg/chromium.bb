@@ -89,9 +89,10 @@ class TestDistillerPageWebContents : public DistillerPageWebContents {
  public:
   TestDistillerPageWebContents(
       content::BrowserContext* browser_context,
+      const gfx::Size& render_view_size,
       scoped_ptr<SourcePageHandleWebContents> optional_web_contents_handle,
       bool expect_new_web_contents)
-      : DistillerPageWebContents(browser_context,
+      : DistillerPageWebContents(browser_context, render_view_size,
                                  optional_web_contents_handle.Pass()),
         expect_new_web_contents_(expect_new_web_contents),
         new_web_contents_created_(false) {}
@@ -161,6 +162,7 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, BasicDistillationWorks) {
   DistillerPageWebContents distiller_page(
       shell()->web_contents()->GetBrowserContext(),
+      shell()->web_contents()->GetContainerBounds().size(),
       scoped_ptr<SourcePageHandleWebContents>());
   distiller_page_ = &distiller_page;
 
@@ -178,6 +180,7 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, BasicDistillationWorks) {
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeLinks) {
   DistillerPageWebContents distiller_page(
       shell()->web_contents()->GetBrowserContext(),
+      shell()->web_contents()->GetContainerBounds().size(),
       scoped_ptr<SourcePageHandleWebContents>());
   distiller_page_ = &distiller_page;
 
@@ -195,6 +198,7 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeLinks) {
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeImages) {
   DistillerPageWebContents distiller_page(
       shell()->web_contents()->GetBrowserContext(),
+      shell()->web_contents()->GetContainerBounds().size(),
       scoped_ptr<SourcePageHandleWebContents>());
   distiller_page_ = &distiller_page;
 
@@ -213,6 +217,7 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeImages) {
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeVideos) {
   DistillerPageWebContents distiller_page(
       shell()->web_contents()->GetBrowserContext(),
+      shell()->web_contents()->GetContainerBounds().size(),
       scoped_ptr<SourcePageHandleWebContents>());
   distiller_page_ = &distiller_page;
 
@@ -238,6 +243,7 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, HandlesRelativeVideos) {
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, VisibilityDetection) {
   DistillerPageWebContents distiller_page(
       shell()->web_contents()->GetBrowserContext(),
+      shell()->web_contents()->GetContainerBounds().size(),
       scoped_ptr<SourcePageHandleWebContents>());
   distiller_page_ = &distiller_page;
 
@@ -334,6 +340,7 @@ void DistillerPageWebContentsTest::RunUseCurrentWebContentsTest(
 
   TestDistillerPageWebContents distiller_page(
       shell()->web_contents()->GetBrowserContext(),
+      shell()->web_contents()->GetContainerBounds().size(),
       source_page_handle.Pass(),
       expect_new_web_contents);
   distiller_page_ = &distiller_page;

@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/dom_distiller/core/distiller_page.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
@@ -35,7 +36,8 @@ class DistillerPageWebContentsFactory : public DistillerPageFactory {
       : DistillerPageFactory(), browser_context_(browser_context) {}
   virtual ~DistillerPageWebContentsFactory() {}
 
-  virtual scoped_ptr<DistillerPage> CreateDistillerPage() const OVERRIDE;
+  virtual scoped_ptr<DistillerPage> CreateDistillerPage(
+      const gfx::Size& render_view_size) const OVERRIDE;
   virtual scoped_ptr<DistillerPage> CreateDistillerPageWithHandle(
       scoped_ptr<SourcePageHandle> handle) const OVERRIDE;
 
@@ -44,12 +46,18 @@ class DistillerPageWebContentsFactory : public DistillerPageFactory {
 };
 
 class DistillerPageWebContents : public DistillerPage,
+                                 public content::WebContentsDelegate,
                                  public content::WebContentsObserver {
  public:
   DistillerPageWebContents(
       content::BrowserContext* browser_context,
+      const gfx::Size& render_view_size,
       scoped_ptr<SourcePageHandleWebContents> optional_web_contents_handle);
   virtual ~DistillerPageWebContents();
+
+  // content::WebContentsDelegate implementation.
+  virtual gfx::Size GetSizeForNewRenderView(
+      content::WebContents* web_contents) const OVERRIDE;
 
   // content::WebContentsObserver implementation.
   virtual void DocumentLoadedInFrame(
@@ -99,6 +107,7 @@ class DistillerPageWebContents : public DistillerPage,
 
   scoped_ptr<content::WebContents> web_contents_;
   content::BrowserContext* browser_context_;
+  gfx::Size render_view_size_;
   DISALLOW_COPY_AND_ASSIGN(DistillerPageWebContents);
 };
 

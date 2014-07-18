@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/api/reading_list_private.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
+#include "content/public/browser/web_contents.h"
 
 namespace extensions {
 
@@ -37,9 +38,13 @@ bool ReadingListPrivateAddEntryFunction::RunAsync() {
 
   DomDistillerService* service =
       DomDistillerServiceFactory::GetForBrowserContext(GetProfile());
+  gfx::Size render_view_size;
+  content::WebContents* web_contents = GetAssociatedWebContents();
+  if (web_contents)
+    render_view_size = web_contents->GetContainerBounds().size();
   const std::string& id = service->AddToList(
       url_to_add,
-      service->CreateDefaultDistillerPage().Pass(),
+      service->CreateDefaultDistillerPage(render_view_size).Pass(),
       base::Bind(&ReadingListPrivateAddEntryFunction::SendResponse, this));
   Entry new_entry;
   new_entry.id = id;

@@ -151,10 +151,13 @@ std::string GetReadableArticleString(
 
 class ContentExtractionRequest : public ViewRequestDelegate {
  public:
-  void Start(DomDistillerService* service, base::Closure finished_callback) {
+  void Start(DomDistillerService* service, const gfx::Size& render_view_size,
+             base::Closure finished_callback) {
     finished_callback_ = finished_callback;
     viewer_handle_ =
-        service->ViewUrl(this, service->CreateDefaultDistillerPage(), url_);
+        service->ViewUrl(this,
+                         service->CreateDefaultDistillerPage(render_view_size),
+                         url_);
   }
 
   DistilledArticleProto GetArticleCopy() {
@@ -252,6 +255,7 @@ class ContentExtractor : public ContentBrowserTest {
     while (pending_tasks_ < max_tasks_ && next_request_ < requests_.size()) {
       requests_[next_request_]->Start(
           service_.get(),
+          shell()->web_contents()->GetContainerBounds().size(),
           base::Bind(&ContentExtractor::FinishRequest, base::Unretained(this)));
       ++next_request_;
       ++pending_tasks_;

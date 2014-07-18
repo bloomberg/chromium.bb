@@ -16,6 +16,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/gfx/screen.h"
 #include "url/gurl.h"
 
 namespace dom_distiller {
@@ -33,11 +34,12 @@ scoped_ptr<content::WebContents> SourcePageHandleWebContents::GetWebContents() {
   return web_contents_.Pass();
 }
 
-scoped_ptr<DistillerPage> DistillerPageWebContentsFactory::CreateDistillerPage()
-    const {
+scoped_ptr<DistillerPage> DistillerPageWebContentsFactory::CreateDistillerPage(
+    const gfx::Size& render_view_size) const {
   DCHECK(browser_context_);
   return scoped_ptr<DistillerPage>(new DistillerPageWebContents(
-      browser_context_, scoped_ptr<SourcePageHandleWebContents>()));
+      browser_context_, render_view_size,
+      scoped_ptr<SourcePageHandleWebContents>()));
 }
 
 scoped_ptr<DistillerPage>
@@ -48,19 +50,25 @@ DistillerPageWebContentsFactory::CreateDistillerPageWithHandle(
       scoped_ptr<SourcePageHandleWebContents>(
           static_cast<SourcePageHandleWebContents*>(handle.release()));
   return scoped_ptr<DistillerPage>(new DistillerPageWebContents(
-      browser_context_, web_contents_handle.Pass()));
+      browser_context_, gfx::Size(), web_contents_handle.Pass()));
 }
 
 DistillerPageWebContents::DistillerPageWebContents(
     content::BrowserContext* browser_context,
+    const gfx::Size& render_view_size,
     scoped_ptr<SourcePageHandleWebContents> optional_web_contents_handle)
-    : state_(IDLE), browser_context_(browser_context) {
+    : state_(IDLE), browser_context_(browser_context),
+      render_view_size_(render_view_size) {
   if (optional_web_contents_handle) {
     web_contents_ = optional_web_contents_handle->GetWebContents().Pass();
+    if (render_view_size.IsEmpty())
+      render_view_size_ = web_contents_->GetContainerBounds().size();
   }
 }
 
 DistillerPageWebContents::~DistillerPageWebContents() {
+  if (web_contents_)
+    web_contents_->SetDelegate(NULL);
 }
 
 void DistillerPageWebContents::DistillPageImpl(const GURL& url,
@@ -101,10 +109,26 @@ void DistillerPageWebContents::CreateNewWebContents(const GURL& url) {
   web_contents_.reset(content::WebContents::Create(create_params));
   DCHECK(web_contents_.get());
 
+  web_contents_->SetDelegate(this);
+
   // Start observing WebContents and load the requested URL.
   content::WebContentsObserver::Observe(web_contents_.get());
   content::NavigationController::LoadURLParams params(url);
   web_contents_->GetController().LoadURLWithParams(params);
+}
+
+gfx::Size DistillerPageWebContents::GetSizeForNewRenderView(
+    content::WebContents* web_contents) const {
+  gfx::Size size(render_view_size_);
+  if (size.IsEmpty())
+    size = web_contents->GetContainerBounds().size();
+  // If size is still empty, set it to fullscreen so that document.offsetWidth
+  // in the executed domdistiller.js won't be 0.
+  if (size.IsEmpty()) {
+    DVLOG(1) << "Using fullscreen as default RenderView size";
+    size = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().size();
+  }
+  return size;
 }
 
 void DistillerPageWebContents::DocumentLoadedInFrame(

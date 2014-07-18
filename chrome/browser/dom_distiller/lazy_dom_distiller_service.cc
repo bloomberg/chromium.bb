@@ -76,8 +76,9 @@ scoped_ptr<ViewerHandle> LazyDomDistillerService::ViewUrl(
 }
 
 scoped_ptr<DistillerPage>
-LazyDomDistillerService::CreateDefaultDistillerPage() {
-  return instance()->CreateDefaultDistillerPage();
+LazyDomDistillerService::CreateDefaultDistillerPage(
+    const gfx::Size& render_view_size) {
+  return instance()->CreateDefaultDistillerPage(render_view_size);
 }
 
 scoped_ptr<DistillerPage>

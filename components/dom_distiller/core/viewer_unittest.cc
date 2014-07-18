@@ -60,7 +60,8 @@ class TestDomDistillerService : public DomDistillerServiceInterface {
   virtual scoped_ptr<ArticleEntry> RemoveEntry(const std::string&) {
     return scoped_ptr<ArticleEntry>(RemoveEntryImpl());
   }
-  virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPage() {
+  virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPage(
+      const gfx::Size& render_view_size) {
     return scoped_ptr<DistillerPage>();
   }
   virtual scoped_ptr<DistillerPage> CreateDefaultDistillerPageWithHandle(
@@ -81,7 +82,7 @@ class DomDistillerViewerTest : public testing::Test {
       const std::string& path,
       ViewRequestDelegate* view_request_delegate) {
     return viewer::CreateViewRequest(
-        service_.get(), path, view_request_delegate);
+        service_.get(), path, view_request_delegate, gfx::Size());
   }
 
   scoped_ptr<TestDomDistillerService> service_;

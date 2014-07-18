@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
+#include "ui/gfx/size.h"
 
 namespace dom_distiller {
 
@@ -67,7 +68,8 @@ const std::string GetJavaScript();
 scoped_ptr<ViewerHandle> CreateViewRequest(
     DomDistillerServiceInterface* dom_distiller_service,
     const std::string& path,
-    ViewRequestDelegate* view_request_delegate);
+    ViewRequestDelegate* view_request_delegate,
+    const gfx::Size& render_view_size);
 
 // Returns JavaScript corresponding to setting a specific theme.
 const std::string GetDistilledPageThemeJs(DistilledPagePrefs::Theme theme);

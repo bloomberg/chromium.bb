@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "third_party/dom_distiller_js/dom_distiller.pb.h"
+#include "ui/gfx/size.h"
 #include "url/gurl.h"
 
 namespace dom_distiller {
@@ -81,7 +82,8 @@ class DistillerPageFactory {
   // Constructs and returns a new DistillerPage. The implementation of this
   // should be very cheap, since the pages can be thrown away without being
   // used.
-  virtual scoped_ptr<DistillerPage> CreateDistillerPage() const = 0;
+  virtual scoped_ptr<DistillerPage> CreateDistillerPage(
+      const gfx::Size& render_view_size) const = 0;
   virtual scoped_ptr<DistillerPage> CreateDistillerPageWithHandle(
       scoped_ptr<SourcePageHandle> handle) const = 0;
 };
