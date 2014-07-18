@@ -120,6 +120,29 @@ def _GetTipOfTrunkVersionFile(root):
   return _GetVersionContents(chrome_version_info)
 
 
+def CheckIfChromeRightForOS(url):
+  """Checks if DEPS is right for Chrome OS.
+
+  This function checks for a variable called 'buildspec_platforms' to
+  find out if its 'chromeos' or 'all'. If any of those values,
+  then it chooses that DEPS.
+
+  Args:
+    url: url where DEPS file present.
+
+  Returns:
+    True if DEPS is the right Chrome for Chrome OS.
+  """
+  deps_contents = cros_build_lib.RunCommand(['svn', 'cat', url],
+                                            redirect_stdout=True).output
+  platforms = re.search(r'buildspec_platforms.*\s.*\s', deps_contents).group()
+
+  if 'chromeos' in platforms or 'all' in platforms:
+    return True
+
+  return False
+
+
 def GetLatestRelease(base_url, branch=None):
   """Gets the latest release version from the buildspec_url for the branch.
 
@@ -149,7 +172,8 @@ def GetLatestRelease(base_url, branch=None):
                                              error_code_ok=True,
                                              redirect_stdout=True).output
       if deps_check == 'DEPS\n':
-        return chrome_version.rstrip('/')
+        if CheckIfChromeRightForOS(deps_url):
+          return chrome_version.rstrip('/')
 
   return None
 

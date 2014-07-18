@@ -173,6 +173,27 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
     self.mox.VerifyAll()
     self.assertEquals(version, '8.0.256.0')
 
+  def testCheckIfChromeRightForOS(self):
+    """Tests if we can find the chromeos build from our mock DEPS."""
+    ARBITRARY_URL = 'phthp://sores.chromium.org/tqs/7.0.224.1/DEPS'
+    test_data1 = "buildspec_platforms:\n    'chromeos,',\n"
+    test_data2 = "buildspec_platforms:\n    'android,',\n"
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    cros_build_lib.RunCommand(
+        ['svn', 'cat', ARBITRARY_URL],
+        redirect_stdout=True).AndReturn(_StubCommandResult(test_data1))
+    cros_build_lib.RunCommand(
+        ['svn', 'cat', ARBITRARY_URL],
+        redirect_stdout=True).AndReturn(_StubCommandResult(test_data2))
+    self.mox.ReplayAll()
+    expected_deps = cros_mark_chrome_as_stable.CheckIfChromeRightForOS(
+        ARBITRARY_URL)
+    unexpected_deps = cros_mark_chrome_as_stable.CheckIfChromeRightForOS(
+        ARBITRARY_URL)
+    self.mox.VerifyAll()
+    self.assertTrue(expected_deps)
+    self.assertFalse(unexpected_deps)
+
   def testGetLatestRelease(self):
     """Tests if we can find the latest release from our mock url data."""
     ARBITRARY_URL = 'phthp://sores.chromium.org/tqs'
@@ -196,6 +217,12 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
         error_code_ok=True, redirect_stdout=True).AndReturn(
           _StubCommandResult('DEPS\n'))
     self.mox.ReplayAll()
+    self.mox.StubOutWithMock(cros_mark_chrome_as_stable,
+                             'CheckIfChromeRightForOS')
+    cros_mark_chrome_as_stable.CheckIfChromeRightForOS(
+        ARBITRARY_URL + '/releases/7.0.224.2/DEPS').AndReturn(
+            _StubCommandResult('True'))
+    self.mox.ReplayAll()
     release = cros_mark_chrome_as_stable.GetLatestRelease(ARBITRARY_URL)
     self.mox.VerifyAll()
     self.assertEqual('7.0.224.2', release)
@@ -218,6 +245,12 @@ class CrosMarkChromeAsStable(cros_test_lib.MoxTempDirTestCase):
         ['svn', 'ls', ARBITRARY_URL + '/releases/8.0.224.2/DEPS'],
         error_code_ok=True, redirect_stdout=True).AndReturn(
           _StubCommandResult('DEPS\n'))
+    self.mox.ReplayAll()
+    self.mox.StubOutWithMock(cros_mark_chrome_as_stable,
+                             'CheckIfChromeRightForOS')
+    cros_mark_chrome_as_stable.CheckIfChromeRightForOS(
+        ARBITRARY_URL + '/releases/8.0.224.2/DEPS').AndReturn(
+            _StubCommandResult(True))
     self.mox.ReplayAll()
     release = cros_mark_chrome_as_stable.GetLatestRelease(ARBITRARY_URL,
                                                           '8.0.224')
