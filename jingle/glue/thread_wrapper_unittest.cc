@@ -298,7 +298,7 @@ TEST_F(ThreadWrapperTest, SendDuringSend) {
 }
 
 TEST_F(ThreadWrapperTest, Dispose) {
-  bool deleted_;
+  bool deleted_ = false;
   thread_->Dispose(new DeletableObject(&deleted_));
   EXPECT_FALSE(deleted_);
   message_loop_.RunUntilIdle();

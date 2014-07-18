@@ -355,7 +355,7 @@ bool Recovery::AutoRecoverTable(const char* table_name,
   // |rowid_decl| stores the ROWID version of the last INTEGER column
   // seen, which is at |rowid_ofs| in |create_column_decls|.
   size_t pk_column_count = 0;
-  size_t rowid_ofs;  // Only valid if rowid_decl is set.
+  size_t rowid_ofs = 0;  // Only valid if rowid_decl is set.
   std::string rowid_decl;  // ROWID version of column |rowid_ofs|.
 
   while (s.Step()) {
@@ -372,7 +372,7 @@ bool Recovery::AutoRecoverTable(const char* table_name,
       // (zero for not in primary key).  I find that it is always 1 for
       // columns in the primary key.  Since this code is very dependent on
       // that pragma, review if the implementation changes.
-      DCHECK_EQ(pk_column, 1);
+      DCHECK_EQ(1, pk_column);
       ++pk_column_count;
     }
 

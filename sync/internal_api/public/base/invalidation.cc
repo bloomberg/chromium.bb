@@ -73,26 +73,25 @@ scoped_ptr<Invalidation> Invalidation::InitFromValue(
         kInvalidVersion,
         std::string(),
         AckHandle::CreateUnique()));
-  } else {
-    int64 version;
-    std::string version_as_string;
-    if (!value.GetString(kVersionKey, &version_as_string)
-        || !base::StringToInt64(version_as_string, &version)) {
-      DLOG(WARNING) << "Failed to parse version";
-      return scoped_ptr<Invalidation>();
-    }
-    std::string payload;
-    if (!value.GetString(kPayloadKey, &payload)) {
-      DLOG(WARNING) << "Failed to parse payload";
-      return scoped_ptr<Invalidation>();
-    }
-    return scoped_ptr<Invalidation>(new Invalidation(
-        id,
-        false,
-        version,
-        payload,
-        AckHandle::CreateUnique()));
   }
+  int64 version = 0;
+  std::string version_as_string;
+  if (!value.GetString(kVersionKey, &version_as_string)
+      || !base::StringToInt64(version_as_string, &version)) {
+    DLOG(WARNING) << "Failed to parse version";
+    return scoped_ptr<Invalidation>();
+  }
+  std::string payload;
+  if (!value.GetString(kPayloadKey, &payload)) {
+    DLOG(WARNING) << "Failed to parse payload";
+    return scoped_ptr<Invalidation>();
+  }
+  return scoped_ptr<Invalidation>(new Invalidation(
+      id,
+      false,
+      version,
+      payload,
+      AckHandle::CreateUnique()));
 }
 
 Invalidation::~Invalidation() {}

@@ -91,7 +91,7 @@ BluetoothSocketWin::BluetoothSocketWin(
     const net::NetLog::Source& source)
     : BluetoothSocketNet(ui_task_runner, socket_thread, net_log, source),
       supports_rfcomm_(false),
-      rfcomm_channel_(-1),
+      rfcomm_channel_(0xFF),
       bth_addr_(BTH_ADDR_NULL) {
 }
 

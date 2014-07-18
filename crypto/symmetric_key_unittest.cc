@@ -172,7 +172,7 @@ static const PBKDF2TestVector kTestVectors[] = {
   {
     crypto::SymmetricKey::HMAC_SHA1,
     "password",
-    "\0224VxxV4\022", /* 0x1234567878563412 */
+    "\022" "4VxxV4\022", /* 0x1234567878563412 */
     5,
     160,
     "d1daa78615f287e6a1c8b120d7062a493f98d203",

@@ -2862,7 +2862,7 @@ class SyncManagerChangeProcessingTest : public SyncManagerTest {
       }
     }
     ADD_FAILURE() << "Failed to find specified change";
-    return -1;
+    return static_cast<size_t>(-1);
   }
 
   // Returns the current size of the change list.

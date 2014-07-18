@@ -413,14 +413,10 @@ void FakeGaia::HandleSSO(const HttpRequest& request,
 
 void FakeGaia::HandleAuthToken(const HttpRequest& request,
                                BasicHttpResponse* http_response) {
-  std::string grant_type;
-  std::string refresh_token;
-  std::string client_id;
   std::string scope;
-  std::string auth_code;
-  const AccessTokenInfo* token_info = NULL;
   GetQueryParameter(request.content, "scope", &scope);
 
+  std::string grant_type;
   if (!GetQueryParameter(request.content, "grant_type", &grant_type)) {
     http_response->set_code(net::HTTP_BAD_REQUEST);
     LOG(ERROR) << "No 'grant_type' param in /o/oauth2/token";
@@ -428,6 +424,7 @@ void FakeGaia::HandleAuthToken(const HttpRequest& request,
   }
 
   if (grant_type == "authorization_code") {
+    std::string auth_code;
     if (!GetQueryParameter(request.content, "code", &auth_code) ||
         auth_code != merge_session_params_.auth_code) {
       http_response->set_code(net::HTTP_BAD_REQUEST);
@@ -448,26 +445,29 @@ void FakeGaia::HandleAuthToken(const HttpRequest& request,
                             merge_session_params_.access_token);
     response_dict.SetInteger("expires_in", 3600);
     FormatJSONResponse(response_dict, http_response);
-  } else if (GetQueryParameter(request.content,
-                               "refresh_token",
-                               &refresh_token) &&
-             GetQueryParameter(request.content,
-                               "client_id",
-                               &client_id) &&
-             (token_info = FindAccessTokenInfo(refresh_token,
-                                              client_id,
-                                              scope))) {
-    base::DictionaryValue response_dict;
-    response_dict.SetString("access_token", token_info->token);
-    response_dict.SetInteger("expires_in", 3600);
-    FormatJSONResponse(response_dict, http_response);
-  } else {
-    LOG(ERROR) << "Bad request for /o/oauth2/token - "
-               << "refresh_token = " << refresh_token
-               << ", scope = " << scope
-               << ", client_id = " << client_id;
-    http_response->set_code(net::HTTP_BAD_REQUEST);
+    return;
   }
+
+  std::string refresh_token;
+  std::string client_id;
+  if (GetQueryParameter(request.content, "refresh_token", &refresh_token) &&
+      GetQueryParameter(request.content, "client_id", &client_id)) {
+    const AccessTokenInfo* token_info =
+        FindAccessTokenInfo(refresh_token, client_id, scope);
+    if (token_info) {
+      base::DictionaryValue response_dict;
+      response_dict.SetString("access_token", token_info->token);
+      response_dict.SetInteger("expires_in", 3600);
+      FormatJSONResponse(response_dict, http_response);
+      return;
+    }
+  }
+
+  LOG(ERROR) << "Bad request for /o/oauth2/token - "
+              << "refresh_token = " << refresh_token
+              << ", scope = " << scope
+              << ", client_id = " << client_id;
+  http_response->set_code(net::HTTP_BAD_REQUEST);
 }
 
 void FakeGaia::HandleTokenInfo(const HttpRequest& request,
@@ -507,20 +507,22 @@ void FakeGaia::HandleIssueToken(const HttpRequest& request,
   std::string access_token;
   std::string scope;
   std::string client_id;
-  const AccessTokenInfo* token_info = NULL;
   if (GetAccessToken(request, kAuthHeaderBearer, &access_token) &&
       GetQueryParameter(request.content, "scope", &scope) &&
-      GetQueryParameter(request.content, "client_id", &client_id) &&
-      (token_info = FindAccessTokenInfo(access_token, client_id, scope))) {
-    base::DictionaryValue response_dict;
-    response_dict.SetString("issueAdvice", "auto");
-    response_dict.SetString("expiresIn",
-                            base::IntToString(token_info->expires_in));
-    response_dict.SetString("token", token_info->token);
-    FormatJSONResponse(response_dict, http_response);
-  } else {
-    http_response->set_code(net::HTTP_BAD_REQUEST);
+      GetQueryParameter(request.content, "client_id", &client_id)) {
+    const AccessTokenInfo* token_info =
+        FindAccessTokenInfo(access_token, client_id, scope);
+    if (token_info) {
+      base::DictionaryValue response_dict;
+      response_dict.SetString("issueAdvice", "auto");
+      response_dict.SetString("expiresIn",
+                              base::IntToString(token_info->expires_in));
+      response_dict.SetString("token", token_info->token);
+      FormatJSONResponse(response_dict, http_response);
+      return;
+    }
   }
+  http_response->set_code(net::HTTP_BAD_REQUEST);
 }
 
 void FakeGaia::HandleListAccounts(const HttpRequest& request,

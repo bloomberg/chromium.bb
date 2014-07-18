@@ -210,6 +210,7 @@ UINT CALLBACK CabinetCallback(PVOID data,
 }
 
 void ReadyDriverDependencies(const base::FilePath& destination) {
+  base::FilePath destination_copy(destination);
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     // GetCorePrinterDrivers and GetPrinterDriverPackagePath only exist on
     // Vista and later. Winspool.drv must be delayloaded so these calls don't
@@ -221,15 +222,14 @@ void ReadyDriverDependencies(const base::FilePath& destination) {
                           1, &driver);
     GetPrinterDriverPackagePath(NULL, NULL, NULL, driver.szPackageID,
                                 package_path, MAX_PATH, &size);
-    SetupIterateCabinet(package_path, 0, &CabinetCallback,
-                        &base::FilePath(destination));
+    SetupIterateCabinet(package_path, 0, &CabinetCallback, &destination_copy);
   } else {
     // Driver files are in the sp3 cab.
     base::FilePath package_path;
     PathService::Get(base::DIR_WINDOWS, &package_path);
     package_path = package_path.Append(L"Driver Cache\\i386\\sp3.cab");
     SetupIterateCabinet(package_path.value().c_str(), 0, &CabinetCallback,
-                        &base::FilePath(destination));
+                        &destination_copy);
 
     // Copy the rest from the driver cache or system dir.
     base::FilePath driver_cache_path;

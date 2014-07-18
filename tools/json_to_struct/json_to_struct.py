@@ -99,12 +99,12 @@ def _GenerateH(basepath, fileroot, head, namespace, schema, description):
   with open(os.path.join(basepath, h_filename), 'w') as f:
     f.write(head)
 
-    f.write('#include <cstddef>\n')
-    f.write('\n')
-
     header_guard = _GenerateHeaderGuard(h_filename)
     f.write('#ifndef %s\n' % header_guard)
     f.write('#define %s\n' % header_guard)
+    f.write('\n')
+
+    f.write('#include <cstddef>\n')
     f.write('\n')
 
     for header in schema.get('headers', []):

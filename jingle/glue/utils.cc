@@ -62,13 +62,13 @@ bool DeserializeP2PCandidate(const std::string& candidate_str,
       static_cast<base::DictionaryValue*>(value.get());
 
   std::string ip;
-  int port;
+  int port = 0;
   std::string type;
   std::string protocol;
   std::string username;
   std::string password;
-  double preference;
-  int generation;
+  double preference = 0;
+  int generation = 0;
 
   if (!dic_value->GetString("ip", &ip) ||
       !dic_value->GetInteger("port", &port) ||

@@ -765,7 +765,7 @@ bool TextStore::GetCompositionStatus(
   while (true) {
     base::win::ScopedComPtr<ITfRange> range;
     if (ranges->Next(1, range.Receive(), NULL) != S_OK)
-      break;
+      return true;
     base::win::ScopedVariant value;
     base::win::ScopedComPtr<IEnumTfPropertyValue> enum_prop_value;
     if (FAILED(track_property->GetValue(read_only_edit_cookie, range,
@@ -777,16 +777,16 @@ bool TextStore::GetCompositionStatus(
 
     TF_PROPERTYVAL property_value;
     bool is_composition = false;
-    bool has_display_attribute = false;
-    TF_DISPLAYATTRIBUTE display_attribute;
+    metro_viewer::UnderlineInfo underline;
     while (enum_prop_value->Next(1, &property_value, NULL) == S_OK) {
       if (IsEqualGUID(property_value.guidId, GUID_PROP_COMPOSING)) {
         is_composition = (property_value.varValue.lVal == TRUE);
       } else if (IsEqualGUID(property_value.guidId, GUID_PROP_ATTRIBUTE)) {
         TfGuidAtom guid_atom =
             static_cast<TfGuidAtom>(property_value.varValue.lVal);
+        TF_DISPLAYATTRIBUTE display_attribute;
         if (GetDisplayAttribute(guid_atom, &display_attribute))
-          has_display_attribute = true;
+          underline.thick = !!display_attribute.fBoldLine;
       }
       VariantClear(&property_value.varValue);
     }
@@ -795,18 +795,14 @@ bool TextStore::GetCompositionStatus(
     range_acp.QueryFrom(range);
     LONG start_pos, length;
     range_acp->GetExtent(&start_pos, &length);
-    if (!is_composition) {
-      if (*committed_size < static_cast<size_t>(start_pos + length))
-        *committed_size = start_pos + length;
-    } else {
-      metro_viewer::UnderlineInfo underline;
+    if (is_composition) {
       underline.start_offset = start_pos;
       underline.end_offset = start_pos + length;
-      underline.thick = !!display_attribute.fBoldLine;
       undelines->push_back(underline);
+    } else if (*committed_size < static_cast<size_t>(start_pos + length)) {
+      *committed_size = start_pos + length;
     }
   }
-  return true;
 }
 
 bool TextStore::CancelComposition() {

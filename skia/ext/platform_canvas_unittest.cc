@@ -20,11 +20,19 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 
 namespace skia {
 
 namespace {
+
+bool IsOfColor(const SkBitmap& bitmap, int x, int y, uint32_t color) {
+  // For masking out the alpha values.
+  static uint32_t alpha_mask =
+      static_cast<uint32_t>(SK_A32_MASK) << SK_A32_SHIFT;
+  return (*bitmap.getAddr32(x, y) | alpha_mask) == (color | alpha_mask);
+}
 
 // Return true if the canvas is filled to canvas_color, and contains a single
 // rectangle filled to rect_color. This function ignores the alpha channel,
@@ -37,21 +45,16 @@ bool VerifyRect(const PlatformCanvas& canvas,
   const SkBitmap& bitmap = device->accessBitmap(false);
   SkAutoLockPixels lock(bitmap);
 
-  // For masking out the alpha values.
-  uint32_t alpha_mask = 0xFF << SK_A32_SHIFT;
-
   for (int cur_y = 0; cur_y < bitmap.height(); cur_y++) {
     for (int cur_x = 0; cur_x < bitmap.width(); cur_x++) {
       if (cur_x >= x && cur_x < x + w &&
           cur_y >= y && cur_y < y + h) {
         // Inside the square should be rect_color
-        if ((*bitmap.getAddr32(cur_x, cur_y) | alpha_mask) !=
-            (rect_color | alpha_mask))
+        if (!IsOfColor(bitmap, cur_x, cur_y, rect_color))
           return false;
       } else {
         // Outside the square should be canvas_color
-        if ((*bitmap.getAddr32(cur_x, cur_y) | alpha_mask) !=
-            (canvas_color | alpha_mask))
+        if (!IsOfColor(bitmap, cur_x, cur_y, canvas_color))
           return false;
       }
     }
@@ -60,12 +63,6 @@ bool VerifyRect(const PlatformCanvas& canvas,
 }
 
 #if !defined(OS_MACOSX)
-bool IsOfColor(const SkBitmap& bitmap, int x, int y, uint32_t color) {
-  // For masking out the alpha values.
-  static uint32_t alpha_mask = 0xFF << SK_A32_SHIFT;
-  return (*bitmap.getAddr32(x, y) | alpha_mask) == (color | alpha_mask);
-}
-
 // Return true if canvas has something that passes for a rounded-corner
 // rectangle. Basically, we're just checking to make sure that the pixels in the
 // middle are of rect_color and pixels in the corners are of canvas_color.

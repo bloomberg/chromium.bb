@@ -244,11 +244,12 @@ int DragDropController::StartDragAndDrop(
 
 void DragDropController::DragUpdate(aura::Window* target,
                                     const ui::LocatedEvent& event) {
-  aura::client::DragDropDelegate* delegate = NULL;
   int op = ui::DragDropTypes::DRAG_NONE;
   if (target != drag_window_) {
     if (drag_window_) {
-      if ((delegate = aura::client::GetDragDropDelegate(drag_window_)))
+      aura::client::DragDropDelegate* delegate =
+          aura::client::GetDragDropDelegate(drag_window_);
+      if (delegate)
         delegate->OnDragExited();
       if (drag_window_ != drag_source_window_)
         drag_window_->RemoveObserver(this);
@@ -257,7 +258,9 @@ void DragDropController::DragUpdate(aura::Window* target,
     // We are already an observer of |drag_source_window_| so no need to add.
     if (drag_window_ != drag_source_window_)
       drag_window_->AddObserver(this);
-    if ((delegate = aura::client::GetDragDropDelegate(drag_window_))) {
+    aura::client::DragDropDelegate* delegate =
+        aura::client::GetDragDropDelegate(drag_window_);
+    if (delegate) {
       ui::DropTargetEvent e(*drag_data_,
                             event.location(),
                             event.root_location(),
@@ -266,7 +269,9 @@ void DragDropController::DragUpdate(aura::Window* target,
       delegate->OnDragEntered(e);
     }
   } else {
-    if ((delegate = aura::client::GetDragDropDelegate(drag_window_))) {
+    aura::client::DragDropDelegate* delegate =
+        aura::client::GetDragDropDelegate(drag_window_);
+    if (delegate) {
       ui::DropTargetEvent e(*drag_data_,
                             event.location(),
                             event.root_location(),
@@ -298,7 +303,6 @@ void DragDropController::DragUpdate(aura::Window* target,
 void DragDropController::Drop(aura::Window* target,
                               const ui::LocatedEvent& event) {
   ash::Shell::GetInstance()->cursor_manager()->SetCursor(ui::kCursorPointer);
-  aura::client::DragDropDelegate* delegate = NULL;
 
   // We must guarantee that a target gets a OnDragEntered before Drop. WebKit
   // depends on not getting a Drop without DragEnter. This behavior is
@@ -307,7 +311,9 @@ void DragDropController::Drop(aura::Window* target,
     DragUpdate(target, event);
   DCHECK(target == drag_window_);
 
-  if ((delegate = aura::client::GetDragDropDelegate(target))) {
+  aura::client::DragDropDelegate* delegate =
+      aura::client::GetDragDropDelegate(target);
+  if (delegate) {
     ui::DropTargetEvent e(
         *drag_data_, event.location(), event.root_location(), drag_operation_);
     e.set_flags(event.flags());

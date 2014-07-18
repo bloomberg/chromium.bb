@@ -134,14 +134,13 @@ std::vector<Token> Tokenizer::Run() {
 
 // static
 size_t Tokenizer::ByteOffsetOfNthLine(const base::StringPiece& buf, int n) {
-  int cur_line = 1;
-  size_t cur_byte = 0;
-
-  DCHECK(n > 0);
+  DCHECK_GT(n, 0);
 
   if (n == 1)
     return 0;
 
+  int cur_line = 1;
+  size_t cur_byte = 0;
   while (cur_byte < buf.size()) {
     if (IsNewline(buf, cur_byte)) {
       cur_line++;
@@ -150,7 +149,7 @@ size_t Tokenizer::ByteOffsetOfNthLine(const base::StringPiece& buf, int n) {
     }
     cur_byte++;
   }
-  return -1;
+  return static_cast<size_t>(-1);
 }
 
 // static

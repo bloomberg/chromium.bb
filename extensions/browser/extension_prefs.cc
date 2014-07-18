@@ -1005,7 +1005,7 @@ void ExtensionPrefs::MigratePermissions(const ExtensionIdList& extension_ids) {
     // An extension's granted permissions need to be migrated if the
     // full_access bit is present. This bit was always present in the previous
     // scheme and is never present now.
-    bool full_access;
+    bool full_access = false;
     const base::DictionaryValue* ext = GetExtensionPref(*ext_id);
     if (!ext || !ext->GetBoolean(kPrefOldGrantedFullAccess, &full_access))
       continue;
@@ -1288,7 +1288,7 @@ BlacklistState ExtensionPrefs::GetExtensionBlacklistState(
   if (IsExtensionBlacklisted(extension_id))
     return BLACKLISTED_MALWARE;
   const base::DictionaryValue* ext_prefs = GetExtensionPref(extension_id);
-  int int_value;
+  int int_value = 0;
   if (ext_prefs && ext_prefs->GetInteger(kPrefBlacklistState, &int_value))
     return static_cast<BlacklistState>(int_value);
 
