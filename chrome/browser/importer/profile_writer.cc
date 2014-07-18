@@ -231,10 +231,8 @@ void ProfileWriter::AddBookmarks(
 
 void ProfileWriter::AddFavicons(
     const std::vector<ImportedFaviconUsage>& favicons) {
-  HistoryService* history_service =
-      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
-  if (history_service)
-    history_service->SetImportedFavicons(favicons);
+  FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS)->
+      SetImportedFavicons(favicons);
 }
 
 typedef std::map<std::string, TemplateURL*> HostPathMap;

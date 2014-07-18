@@ -687,6 +687,13 @@ void HistoryService::CloneFavicons(const GURL& old_page_url,
                     old_page_url, new_page_url);
 }
 
+void HistoryService::SetImportedFavicons(
+    const std::vector<ImportedFaviconUsage>& favicon_usage) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ScheduleAndForget(PRIORITY_NORMAL,
+                    &HistoryBackend::SetImportedFavicons, favicon_usage);
+}
+
 base::CancelableTaskTracker::TaskId HistoryService::QueryURL(
     const GURL& url,
     bool want_visits,
@@ -704,15 +711,6 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryURL(
                  base::Unretained(query_url_result)),
       base::Bind(
           &RunWithQueryURLResult, callback, base::Owned(query_url_result)));
-}
-
-// Importer --------------------------------------------------------------------
-
-void HistoryService::SetImportedFavicons(
-    const std::vector<ImportedFaviconUsage>& favicon_usage) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(
-      PRIORITY_NORMAL, &HistoryBackend::SetImportedFavicons, favicon_usage);
 }
 
 // Downloads -------------------------------------------------------------------

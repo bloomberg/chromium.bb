@@ -18,6 +18,7 @@
 class FaviconClient;
 class GURL;
 class HistoryService;
+struct ImportedFaviconUsage;
 class Profile;
 
 // The favicon service provides methods to access favicons. It calls the history
@@ -171,6 +172,12 @@ class FaviconService : public KeyedService {
   // Needed if you want to declare favicons (tentatively) in advance, before a
   // page is ever visited.
   void CloneFavicon(const GURL& old_page_url, const GURL& new_page_url);
+
+  // Allows the importer to set many favicons for many pages at once. The pages
+  // must exist, any favicon sets for unknown pages will be discarded. Existing
+  // favicons will not be overwritten.
+  void SetImportedFavicons(
+      const std::vector<ImportedFaviconUsage>& favicon_usage);
 
   // Set the favicon for |page_url| for |icon_type| in the thumbnail database.
   // Unlike SetFavicons(), this method will not delete preexisting bitmap data
