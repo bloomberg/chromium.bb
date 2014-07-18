@@ -96,13 +96,15 @@ class SchemaVersionedMySQLConnection(object):
     ca = os.path.join(db_credentials_dir, 'server-ca.pem')
     self._ssl_args = {'ssl': {'cert': cert, 'key': key, 'ca': ca}}
 
-    connect_string = 'mysql://%s:%s@%s' % (user, password, host)
+    connect_url = sqlalchemy.engine.url.URL('mysql', username=user,
+                                            password=password,
+                                            host=host)
 
     # Create a temporary engine to connect to the mysql instance, and check if
     # a database named |db_name| exists. If not, create one. We use a temporary
     # engine here because the real engine will be opened with a default
     # database name given by |db_name|.
-    temp_engine = sqlalchemy.create_engine(connect_string,
+    temp_engine = sqlalchemy.create_engine(connect_url,
                                            connect_args=self._ssl_args,
                                            listeners=[StrictModeListener()])
     databases = temp_engine.execute('SHOW DATABASES').fetchall()
@@ -115,7 +117,9 @@ class SchemaVersionedMySQLConnection(object):
     # Now create the persistent connection to the database named |db_name|.
     # If there is a schema version table, read the current schema version
     # from it. Otherwise, assume schema_version 0.
-    self._connect_string = '%s/%s' % (connect_string, db_name)
+    self._connect_url = sqlalchemy.engine.url.URL('mysql', username=user,
+                                                  password=password,
+                                                  host=host, database=db_name)
 
     self.schema_version = self.QuerySchemaVersion()
 
@@ -321,7 +325,7 @@ class SchemaVersionedMySQLConnection(object):
     if pid == self._engine_pid and self._engine:
       return self._engine
     else:
-      e = sqlalchemy.create_engine(self._connect_string,
+      e = sqlalchemy.create_engine(self._connect_url,
                                    connect_args=self._ssl_args,
                                    listeners=[StrictModeListener()])
       self._engine = e
