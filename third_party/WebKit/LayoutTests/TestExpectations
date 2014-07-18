@@ -1329,3 +1329,6 @@ crbug.com/395103 [ Linux ] virtual/softwarecompositing/overflow/scroll-parent-wi
 
 # Flaky
 crbug.com/395127 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_measure_navigation_timing.htm [ Failure Pass ]
+
+# Flaky on Linux ASAN bots.
+crbug.com/395137 [ Linux ] inspector/sources/debugger/script-formatter.html [ Failure Pass ]
