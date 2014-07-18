@@ -18,6 +18,7 @@ namespace ui {
 
 class DriBuffer;
 class DriWrapper;
+class GbmBufferBase;
 
 // Implement the ScanoutSurface interface on top of GBM (Generic Buffer
 // Manager). GBM provides generic access to hardware accelerated surfaces which
@@ -49,7 +50,7 @@ class GbmSurface : public ScanoutSurface {
 
   // Backing GBM buffers. One is the current front buffer. The other is the
   // current backbuffer that is pending scan out.
-  gbm_bo* buffers_[2];
+  scoped_refptr<GbmBufferBase> buffers_[2];
 
   // Index to the front buffer.
   int front_buffer_;

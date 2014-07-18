@@ -8,7 +8,6 @@
 #include <gbm.h>
 
 #include "base/files/file_path.h"
-#include "ui/ozone/platform/dri/buffer_data.h"
 #include "ui/ozone/platform/dri/dri_vsync_provider.h"
 #include "ui/ozone/platform/dri/gbm_buffer.h"
 #include "ui/ozone/platform/dri/gbm_surface.h"

@@ -8,12 +8,72 @@
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
-#include "ui/ozone/platform/dri/buffer_data.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/gbm_buffer_base.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
+#include "ui/ozone/platform/dri/scanout_buffer.h"
 
 namespace ui {
+
+namespace {
+
+class GbmSurfaceBuffer : public GbmBufferBase {
+ public:
+  static scoped_refptr<GbmSurfaceBuffer> CreateBuffer(DriWrapper* dri,
+                                                      gbm_bo* buffer);
+  static scoped_refptr<GbmSurfaceBuffer> GetBuffer(gbm_bo* buffer);
+
+ private:
+  GbmSurfaceBuffer(DriWrapper* dri, gbm_bo* bo);
+  virtual ~GbmSurfaceBuffer();
+
+  static void Destroy(gbm_bo* buffer, void* data);
+
+  // This buffer is special and is released by GBM at any point in time (as
+  // long as it isn't being used). Since GBM should be the only one to
+  // release this buffer, keep a self-reference in order to keep this alive.
+  // When GBM calls Destroy(..) the self-reference will dissapear and this will
+  // be destroyed.
+  scoped_refptr<GbmSurfaceBuffer> self_;
+
+  DISALLOW_COPY_AND_ASSIGN(GbmSurfaceBuffer);
+};
+
+GbmSurfaceBuffer::GbmSurfaceBuffer(DriWrapper* dri, gbm_bo* bo)
+  : GbmBufferBase(dri, bo, true) {
+  if (GetFramebufferId()) {
+    self_ = this;
+    gbm_bo_set_user_data(bo, this, GbmSurfaceBuffer::Destroy);
+  }
+}
+
+GbmSurfaceBuffer::~GbmSurfaceBuffer() {}
+
+// static
+scoped_refptr<GbmSurfaceBuffer> GbmSurfaceBuffer::CreateBuffer(
+    DriWrapper* dri, gbm_bo* buffer) {
+  scoped_refptr<GbmSurfaceBuffer> scoped_buffer(new GbmSurfaceBuffer(dri,
+                                                                     buffer));
+  if (!scoped_buffer->GetFramebufferId())
+    return NULL;
+
+  return scoped_buffer;
+}
+
+// static
+scoped_refptr<GbmSurfaceBuffer> GbmSurfaceBuffer::GetBuffer(gbm_bo* buffer) {
+  return scoped_refptr<GbmSurfaceBuffer>(
+      static_cast<GbmSurfaceBuffer*>(gbm_bo_get_user_data(buffer)));
+}
+
+// static
+void GbmSurfaceBuffer::Destroy(gbm_bo* buffer, void* data) {
+  GbmSurfaceBuffer* scoped_buffer = static_cast<GbmSurfaceBuffer*>(data);
+  scoped_buffer->self_ = NULL;
+}
+
+}  // namespace
 
 GbmSurface::GbmSurface(gbm_device* device,
                        DriWrapper* dri,
@@ -31,7 +91,7 @@ GbmSurface::GbmSurface(gbm_device* device,
 GbmSurface::~GbmSurface() {
   for (size_t i = 0; i < arraysize(buffers_); ++i) {
     if (buffers_[i]) {
-      gbm_surface_release_buffer(native_surface_, buffers_[i]);
+      gbm_surface_release_buffer(native_surface_, buffers_[i]->bo());
     }
   }
 
@@ -63,18 +123,14 @@ uint32_t GbmSurface::GetFramebufferId() const {
   if (!buffers_[front_buffer_ ^ 1])
     return dumb_buffer_->GetFramebufferId();
 
-  BufferData* data = BufferData::GetData(buffers_[front_buffer_ ^ 1]);
-  CHECK(data);
-  return data->framebuffer();
+  return buffers_[front_buffer_ ^ 1]->GetFramebufferId();
 }
 
 uint32_t GbmSurface::GetHandle() const {
   if (!buffers_[front_buffer_ ^ 1])
     return dumb_buffer_->GetHandle();
 
-  BufferData* data = BufferData::GetData(buffers_[front_buffer_ ^ 1]);
-  CHECK(data);
-  return data->handle();
+  return buffers_[front_buffer_ ^ 1]->GetHandle();
 }
 
 gfx::Size GbmSurface::Size() const {
@@ -90,22 +146,23 @@ gfx::Size GbmSurface::Size() const {
 void GbmSurface::PreSwapBuffers() {
   CHECK(native_surface_);
   // Lock the buffer we want to display.
-  buffers_[front_buffer_ ^ 1] = gbm_surface_lock_front_buffer(native_surface_);
+  gbm_bo* bo = gbm_surface_lock_front_buffer(native_surface_);
 
-  BufferData* data = BufferData::GetData(buffers_[front_buffer_ ^ 1]);
+  buffers_[front_buffer_ ^ 1] = GbmSurfaceBuffer::GetBuffer(bo);
   // If it is a new buffer, it won't have any data associated with it. So we
   // create it. On creation it will associate itself with the buffer and
   // register the buffer.
-  if (!data) {
-    data = BufferData::CreateData(dri_, buffers_[front_buffer_ ^ 1]);
-    DCHECK(data) << "Failed to associate the buffer with the controller";
+  if (!buffers_[front_buffer_ ^ 1]) {
+    buffers_[front_buffer_ ^ 1] = GbmSurfaceBuffer::CreateBuffer(dri_, bo);
+    DCHECK(buffers_[front_buffer_ ^ 1])
+        << "Failed to associate the buffer with the controller";
   }
 }
 
 void GbmSurface::SwapBuffers() {
   // If there was a frontbuffer, is no longer active. Release it back to GBM.
   if (buffers_[front_buffer_])
-    gbm_surface_release_buffer(native_surface_, buffers_[front_buffer_]);
+    gbm_surface_release_buffer(native_surface_, buffers_[front_buffer_]->bo());
 
   // Update the index to the frontbuffer.
   front_buffer_ ^= 1;
