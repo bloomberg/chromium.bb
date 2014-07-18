@@ -515,6 +515,7 @@ void NetworkStateListDetailedView::UpdateNetworkList() {
       remove_service_paths.insert(it->first);
       network_map_.erase(it->second);
       scroll_content()->RemoveChildView(it->second);
+      delete it->second;
       needs_relayout = true;
     }
   }
@@ -624,6 +625,7 @@ bool NetworkStateListDetailedView::UpdateNetworkListEntries(
         needs_relayout = true;
     } else if (no_cellular_networks_view_) {
       scroll_content()->RemoveChildView(no_cellular_networks_view_);
+      delete no_cellular_networks_view_;
       no_cellular_networks_view_ = NULL;
       needs_relayout = true;
     }
@@ -638,6 +640,7 @@ bool NetworkStateListDetailedView::UpdateNetworkListEntries(
         needs_relayout = true;
     } else if (no_wifi_networks_view_) {
       scroll_content()->RemoveChildView(no_wifi_networks_view_);
+      delete no_wifi_networks_view_;
       no_wifi_networks_view_ = NULL;
       needs_relayout = true;
     }
@@ -650,6 +653,7 @@ bool NetworkStateListDetailedView::UpdateNetworkListEntries(
         needs_relayout = true;
     } else if (scanning_view_ != NULL) {
       scroll_content()->RemoveChildView(scanning_view_);
+      delete scanning_view_;
       scanning_view_ = NULL;
       needs_relayout = true;
     }
