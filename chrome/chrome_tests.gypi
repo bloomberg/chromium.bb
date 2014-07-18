@@ -1001,7 +1001,6 @@
         'browser/chromeos/policy/device_status_collector_browsertest.cc',
         'browser/chromeos/policy/device_system_use_24hour_clock_browsertest.cc',
         'browser/chromeos/policy/login_screen_default_policy_browsertest.cc',
-        'browser/chromeos/policy/policy_cert_verifier_browsertest.cc',
         'browser/chromeos/policy/power_policy_browsertest.cc',
         'browser/chromeos/policy/user_cloud_external_data_manager_browsertest.cc',
         'browser/chromeos/policy/user_cloud_policy_manager_chromeos_browsertest.cc',

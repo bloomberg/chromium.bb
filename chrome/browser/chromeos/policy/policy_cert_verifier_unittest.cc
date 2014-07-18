@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,33 +20,35 @@
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_trust_anchor_provider.h"
 #include "net/cert/cert_verify_result.h"
-#include "net/cert/nss_cert_database.h"
+#include "net/cert/nss_cert_database_chromeos.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
 
-// This is actually a unit test, but is linked with browser_tests because
-// importing a certificate into the NSS test database persists for the duration
-// of a process; since each browser_test runs in a separate process then this
-// won't affect subsequent tests.
-// This can be moved to the unittests target once the TODO in ~ScopedTestNSSDB
-// is fixed.
 class PolicyCertVerifierTest : public testing::Test {
  public:
-  PolicyCertVerifierTest() : cert_db_(NULL), trust_anchor_used_(false) {}
+  PolicyCertVerifierTest()
+      : trust_anchor_used_(false), test_nss_user_("user1") {}
 
   virtual ~PolicyCertVerifierTest() {}
 
   virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(test_nssdb_.is_open());
-    cert_db_ = net::NSSCertDatabase::GetInstance();
+    ASSERT_TRUE(test_nss_user_.constructed_successfully());
+    test_nss_user_.FinishInit();
+
+    test_cert_db_.reset(new net::NSSCertDatabaseChromeOS(
+        crypto::GetPublicSlotForChromeOSUser(test_nss_user_.username_hash()),
+        crypto::GetPrivateSlotForChromeOSUser(
+            test_nss_user_.username_hash(),
+            base::Callback<void(crypto::ScopedPK11Slot)>())));
+    test_cert_db_->SetSlowTaskRunnerForTest(base::MessageLoopProxy::current());
 
     cert_verifier_.reset(new PolicyCertVerifier(base::Bind(
         &PolicyCertVerifierTest::OnTrustAnchorUsed, base::Unretained(this))));
     cert_verifier_->InitializeOnIOThread(new chromeos::CertVerifyProcChromeOS(
-        crypto::ScopedPK11Slot(crypto::GetPersistentNSSKeySlot())));
+        crypto::GetPublicSlotForChromeOSUser(test_nss_user_.username_hash())));
 
     test_ca_cert_ = LoadCertificate("root_ca_cert.pem", net::CA_CERT);
     ASSERT_TRUE(test_ca_cert_);
@@ -95,7 +97,7 @@ class PolicyCertVerifierTest : public testing::Test {
   scoped_refptr<net::X509Certificate> test_ca_cert_;
   scoped_refptr<net::X509Certificate> test_server_cert_;
   net::CertificateList test_ca_cert_list_;
-  net::NSSCertDatabase* cert_db_;
+  scoped_ptr<net::NSSCertDatabaseChromeOS> test_cert_db_;
   scoped_ptr<PolicyCertVerifier> cert_verifier_;
 
  private:
@@ -110,14 +112,14 @@ class PolicyCertVerifierTest : public testing::Test {
 
     // No certificate is trusted right after it's loaded.
     net::NSSCertDatabase::TrustBits trust =
-        cert_db_->GetCertTrust(cert.get(), type);
+        test_cert_db_->GetCertTrust(cert.get(), type);
     EXPECT_EQ(net::NSSCertDatabase::TRUST_DEFAULT, trust);
 
     return cert;
   }
 
   bool trust_anchor_used_;
-  crypto::ScopedTestNSSDB test_nssdb_;
+  crypto::ScopedTestNSSChromeOSUser test_nss_user_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
@@ -150,13 +152,13 @@ TEST_F(PolicyCertVerifierTest, VerifyUntrustedCert) {
 TEST_F(PolicyCertVerifierTest, VerifyTrustedCert) {
   // Make the database trust |test_ca_cert_|.
   net::NSSCertDatabase::ImportCertFailureList failure_list;
-  ASSERT_TRUE(cert_db_->ImportCACerts(
+  ASSERT_TRUE(test_cert_db_->ImportCACerts(
       test_ca_cert_list_, net::NSSCertDatabase::TRUSTED_SSL, &failure_list));
   ASSERT_TRUE(failure_list.empty());
 
   // Verify that it is now trusted.
   net::NSSCertDatabase::TrustBits trust =
-      cert_db_->GetCertTrust(test_ca_cert_.get(), net::CA_CERT);
+      test_cert_db_->GetCertTrust(test_ca_cert_.get(), net::CA_CERT);
   EXPECT_EQ(net::NSSCertDatabase::TRUSTED_SSL, trust);
 
   // Verify() successfully verifies |test_server_cert_| after it was imported.

@@ -809,6 +809,7 @@
         'browser/chromeos/policy/device_local_account_policy_service_unittest.cc',
         'browser/chromeos/policy/enterprise_install_attributes_unittest.cc',
         'browser/chromeos/policy/network_configuration_updater_unittest.cc',
+        'browser/chromeos/policy/policy_cert_verifier_unittest.cc',
         'browser/chromeos/policy/recommendation_restorer_unittest.cc',
         'browser/chromeos/policy/server_backed_state_keys_broker_unittest.cc',
         'browser/chromeos/policy/user_cloud_policy_manager_chromeos_unittest.cc',
