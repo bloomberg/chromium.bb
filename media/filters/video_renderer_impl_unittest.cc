@@ -486,12 +486,12 @@ TEST_F(VideoRendererImplTest, StartPlayingFrom_LowDelay) {
   InitializeWithLowDelay(true);
   QueueFrames("0");
 
-  // Expect to frequently have enough/nothing due to only requiring one frame.
+  // Expect some amount of have enough/nothing due to only requiring one frame.
   EXPECT_CALL(mock_cb_, Display(HasTimestamp(0)));
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH))
-      .Times(AtLeast(1));
+      .Times(AnyNumber());
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_NOTHING))
-      .Times(AtLeast(1));
+      .Times(AnyNumber());
   StartPlayingFrom(0);
 
   QueueFrames("10");
