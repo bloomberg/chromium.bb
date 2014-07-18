@@ -15,8 +15,7 @@ static scoped_ptr<base::DictionaryValue> CreateTestTypeDictionary() {
   base::DictionaryValue* value(new base::DictionaryValue());
   value->SetWithoutPathExpansion("number", base::Value::CreateDoubleValue(1.1));
   value->SetWithoutPathExpansion("integer", new base::FundamentalValue(4));
-  value->SetWithoutPathExpansion("string",
-                                 base::Value::CreateStringValue("bling"));
+  value->SetWithoutPathExpansion("string", new base::StringValue("bling"));
   value->SetWithoutPathExpansion("boolean", new base::FundamentalValue(true));
   return scoped_ptr<base::DictionaryValue>(value);
 }
@@ -102,8 +101,7 @@ TEST(JsonSchemaCompilerCrossrefTest, TestTypeInObjectParamsCreate) {
     scoped_ptr<base::ListValue> params_value(new base::ListValue());
     scoped_ptr<base::DictionaryValue> param_object_value(
         new base::DictionaryValue());
-    param_object_value->Set("testType",
-                            base::Value::CreateStringValue("invalid"));
+    param_object_value->Set("testType", new base::StringValue("invalid"));
     param_object_value->Set("boolean", new base::FundamentalValue(true));
     params_value->Append(param_object_value.release());
     scoped_ptr<TestTypeInObject::Params> params(

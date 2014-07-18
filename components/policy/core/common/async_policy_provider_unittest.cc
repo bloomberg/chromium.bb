@@ -33,7 +33,7 @@ void SetPolicy(PolicyBundle* bundle,
       .Set(name,
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_USER,
-           base::Value::CreateStringValue(value),
+           new base::StringValue(value),
            NULL);
 }
 

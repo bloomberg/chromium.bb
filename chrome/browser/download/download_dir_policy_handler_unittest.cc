@@ -71,7 +71,7 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadDirectory) {
   policy.Set(policy::key::kDownloadDirectory,
              policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER,
-             base::Value::CreateStringValue(std::string()),
+             new base::StringValue(std::string()),
              NULL);
   UpdateProviderPolicy(policy);
 

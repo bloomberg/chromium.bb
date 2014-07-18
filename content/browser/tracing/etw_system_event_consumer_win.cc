@@ -195,7 +195,7 @@ void EtwSystemEventConsumer::TraceAndConsumeOnThread() {
 void EtwSystemEventConsumer::FlushOnThread(const OutputCallback& callback) {
   // Add the header information to the stream.
   scoped_ptr<base::DictionaryValue> header(new base::DictionaryValue());
-  header->Set("name", base::Value::CreateStringValue("ETW"));
+  header->Set("name", new base::StringValue("ETW"));
 
   // Release and pass the events buffer.
   header->Set("content", events_.release());

@@ -32,8 +32,11 @@ void AddTestPolicies(PolicyMap* policy) {
               POLICY_SCOPE_USER,
               new base::FundamentalValue(123),
               NULL);
-  policy->Set("mandatory-machine", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-              base::Value::CreateStringValue("omg"), NULL);
+  policy->Set("mandatory-machine",
+              POLICY_LEVEL_MANDATORY,
+              POLICY_SCOPE_MACHINE,
+              new base::StringValue("omg"),
+              NULL);
   policy->Set("recommended-user",
               POLICY_LEVEL_RECOMMENDED,
               POLICY_SCOPE_USER,

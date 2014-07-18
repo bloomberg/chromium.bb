@@ -86,8 +86,8 @@ TEST(PrefHashCalculatorTest, CatchHashChanges) {
       base::Value::CreateIntegerValue(1234567890));
   scoped_ptr<base::Value> double_value(
       new base::FundamentalValue(123.0987654321));
-  scoped_ptr<base::Value> string_value(base::Value::CreateStringValue(
-      "testing with special chars:\n<>{}:^^@#$\\/"));
+  scoped_ptr<base::Value> string_value(
+      new base::StringValue("testing with special chars:\n<>{}:^^@#$\\/"));
 
   // For legacy reasons, we have to support pruning of empty lists/dictionaries
   // and nested empty ists/dicts in the hash generation algorithm.

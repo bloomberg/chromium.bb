@@ -71,7 +71,7 @@ scoped_ptr<base::Value> PropertyToValue(CFPropertyListRef property) {
 
   if (CFStringRef string = CFCast<CFStringRef>(property)) {
     return scoped_ptr<base::Value>(
-        base::Value::CreateStringValue(base::SysCFStringRefToUTF8(string)));
+        new base::StringValue(base::SysCFStringRefToUTF8(string)));
   }
 
   if (CFDictionaryRef dict = CFCast<CFDictionaryRef>(property)) {

@@ -92,7 +92,7 @@ TEST(IdlCompiler, OptionalArguments) {
   scoped_ptr<Function8::Params> f8_params = Function8::Params::Create(list);
   EXPECT_EQ(8, f8_params->arg1);
   EXPECT_EQ(NULL, f8_params->arg2.get());
-  list.Append(base::Value::CreateStringValue("foo"));
+  list.Append(new base::StringValue("foo"));
   f8_params = Function8::Params::Create(list);
   EXPECT_EQ(8, f8_params->arg1);
   EXPECT_EQ("foo", *(f8_params->arg2));

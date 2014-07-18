@@ -59,7 +59,7 @@ Status ExecuteGetAlertText(
       web_view->GetJavaScriptDialogManager()->GetDialogMessage(&message);
   if (status.IsError())
     return status;
-  value->reset(base::Value::CreateStringValue(message));
+  value->reset(new base::StringValue(message));
   return Status(kOk);
 }
 

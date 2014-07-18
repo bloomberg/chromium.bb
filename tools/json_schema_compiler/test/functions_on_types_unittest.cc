@@ -25,7 +25,7 @@ TEST(JsonSchemaCompilerFunctionsOnTypesTest, StorageAreaGetParamsCreate) {
   }
   {
     scoped_ptr<base::ListValue> params_value(new base::ListValue());
-    params_value->Append(base::Value::CreateStringValue("test"));
+    params_value->Append(new base::StringValue("test"));
     scoped_ptr<StorageArea::Get::Params> params(
         StorageArea::Get::Params::Create(*params_value));
     ASSERT_TRUE(params);

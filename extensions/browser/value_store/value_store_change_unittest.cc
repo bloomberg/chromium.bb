@@ -18,22 +18,22 @@ using extensions::ListBuilder;
 namespace {
 
 TEST(ValueStoreChangeTest, NullOldValue) {
-  ValueStoreChange change("key", NULL, base::Value::CreateStringValue("value"));
+  ValueStoreChange change("key", NULL, new base::StringValue("value"));
 
   EXPECT_EQ("key", change.key());
   EXPECT_EQ(NULL, change.old_value());
   {
-    scoped_ptr<base::Value> expected(base::Value::CreateStringValue("value"));
+    scoped_ptr<base::Value> expected(new base::StringValue("value"));
     EXPECT_TRUE(change.new_value()->Equals(expected.get()));
   }
 }
 
 TEST(ValueStoreChangeTest, NullNewValue) {
-  ValueStoreChange change("key", base::Value::CreateStringValue("value"), NULL);
+  ValueStoreChange change("key", new base::StringValue("value"), NULL);
 
   EXPECT_EQ("key", change.key());
   {
-    scoped_ptr<base::Value> expected(base::Value::CreateStringValue("value"));
+    scoped_ptr<base::Value> expected(new base::StringValue("value"));
     EXPECT_TRUE(change.old_value()->Equals(expected.get()));
   }
   EXPECT_EQ(NULL, change.new_value());
@@ -41,18 +41,16 @@ TEST(ValueStoreChangeTest, NullNewValue) {
 
 TEST(ValueStoreChangeTest, NonNullValues) {
   ValueStoreChange change("key",
-                          base::Value::CreateStringValue("old_value"),
-                          base::Value::CreateStringValue("new_value"));
+                          new base::StringValue("old_value"),
+                          new base::StringValue("new_value"));
 
   EXPECT_EQ("key", change.key());
   {
-    scoped_ptr<base::Value> expected(
-        base::Value::CreateStringValue("old_value"));
+    scoped_ptr<base::Value> expected(new base::StringValue("old_value"));
     EXPECT_TRUE(change.old_value()->Equals(expected.get()));
   }
   {
-    scoped_ptr<base::Value> expected(
-        base::Value::CreateStringValue("new_value"));
+    scoped_ptr<base::Value> expected(new base::StringValue("new_value"));
     EXPECT_TRUE(change.new_value()->Equals(expected.get()));
   }
 }

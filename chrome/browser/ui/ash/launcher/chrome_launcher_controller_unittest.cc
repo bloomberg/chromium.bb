@@ -322,7 +322,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     manifest_gmail.SetString(extensions::manifest_keys::kLaunchWebURL,
                              kGmailLaunchURL);
     base::ListValue* list = new base::ListValue();
-    list->Append(base::Value::CreateStringValue("*://mail.google.com/mail/ca"));
+    list->Append(new base::StringValue("*://mail.google.com/mail/ca"));
     manifest_gmail.Set(extensions::manifest_keys::kWebURLs, list);
 
     extension3_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,

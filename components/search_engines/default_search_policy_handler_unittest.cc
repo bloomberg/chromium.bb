@@ -87,36 +87,55 @@ void DefaultSearchPolicyHandlerTest::
               POLICY_SCOPE_USER,
               new base::FundamentalValue(true),
               NULL);
-  policy->Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
-              POLICY_SCOPE_USER, base::Value::CreateStringValue(kSearchURL),
+  policy->Set(key::kDefaultSearchProviderSearchURL,
+              POLICY_LEVEL_MANDATORY,
+              POLICY_SCOPE_USER,
+              new base::StringValue(kSearchURL),
               NULL);
-  policy->Set(key::kDefaultSearchProviderName, POLICY_LEVEL_MANDATORY,
-              POLICY_SCOPE_USER, base::Value::CreateStringValue(kName), NULL);
-  policy->Set(key::kDefaultSearchProviderKeyword, POLICY_LEVEL_MANDATORY,
-              POLICY_SCOPE_USER, base::Value::CreateStringValue(kKeyword),
+  policy->Set(key::kDefaultSearchProviderName,
+              POLICY_LEVEL_MANDATORY,
+              POLICY_SCOPE_USER,
+              new base::StringValue(kName),
               NULL);
-  policy->Set(key::kDefaultSearchProviderSuggestURL, POLICY_LEVEL_MANDATORY,
-              POLICY_SCOPE_USER, base::Value::CreateStringValue(kSuggestURL),
+  policy->Set(key::kDefaultSearchProviderKeyword,
+              POLICY_LEVEL_MANDATORY,
+              POLICY_SCOPE_USER,
+              new base::StringValue(kKeyword),
               NULL);
-  policy->Set(key::kDefaultSearchProviderIconURL, POLICY_LEVEL_MANDATORY,
-              POLICY_SCOPE_USER, base::Value::CreateStringValue(kIconURL),
+  policy->Set(key::kDefaultSearchProviderSuggestURL,
+              POLICY_LEVEL_MANDATORY,
+              POLICY_SCOPE_USER,
+              new base::StringValue(kSuggestURL),
+              NULL);
+  policy->Set(key::kDefaultSearchProviderIconURL,
+              POLICY_LEVEL_MANDATORY,
+              POLICY_SCOPE_USER,
+              new base::StringValue(kIconURL),
               NULL);
   policy->Set(key::kDefaultSearchProviderEncodings, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, encodings, NULL);
   policy->Set(key::kDefaultSearchProviderAlternateURLs, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, default_alternate_urls_.DeepCopy(), NULL);
   policy->Set(key::kDefaultSearchProviderSearchTermsReplacementKey,
-              POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-              base::Value::CreateStringValue(kReplacementKey), NULL);
+              POLICY_LEVEL_MANDATORY,
+              POLICY_SCOPE_USER,
+              new base::StringValue(kReplacementKey),
+              NULL);
   policy->Set(key::kDefaultSearchProviderImageURL,
-              POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-              base::Value::CreateStringValue(kImageURL), NULL);
+              POLICY_LEVEL_MANDATORY,
+              POLICY_SCOPE_USER,
+              new base::StringValue(kImageURL),
+              NULL);
   policy->Set(key::kDefaultSearchProviderImageURLPostParams,
-              POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-              base::Value::CreateStringValue(kImageParams), NULL);
+              POLICY_LEVEL_MANDATORY,
+              POLICY_SCOPE_USER,
+              new base::StringValue(kImageParams),
+              NULL);
   policy->Set(key::kDefaultSearchProviderNewTabURL,
-              POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-              base::Value::CreateStringValue(kNewTabURL), NULL);
+              POLICY_LEVEL_MANDATORY,
+              POLICY_SCOPE_USER,
+              new base::StringValue(kNewTabURL),
+              NULL);
 }
 
 // Checks that if the policy for default search is valid, i.e. there's a
@@ -128,8 +147,10 @@ TEST_F(DefaultSearchPolicyHandlerTest, MinimallyDefined) {
              POLICY_SCOPE_USER,
              new base::FundamentalValue(true),
              NULL);
-  policy.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, base::Value::CreateStringValue(kSearchURL),
+  policy.Set(key::kDefaultSearchProviderSearchURL,
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER,
+             new base::StringValue(kSearchURL),
              NULL);
   UpdateProviderPolicy(policy);
 
@@ -277,9 +298,11 @@ TEST_F(DefaultSearchPolicyHandlerTest, Invalid) {
   PolicyMap policy;
   BuildDefaultSearchPolicy(&policy);
   const char bad_search_url[] = "http://test.com/noSearchTerms";
-  policy.Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
+  policy.Set(key::kDefaultSearchProviderSearchURL,
+             POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             base::Value::CreateStringValue(bad_search_url), NULL);
+             new base::StringValue(bad_search_url),
+             NULL);
   UpdateProviderPolicy(policy);
 
   EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderSearchURL, NULL));
@@ -414,7 +437,7 @@ TEST_F(DefaultSearchPolicyHandlerTest, DictionaryPrefMinimallyDefined) {
   policy.Set(key::kDefaultSearchProviderSearchURL,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             base::Value::CreateStringValue(kSearchURL),
+             new base::StringValue(kSearchURL),
              NULL);
   UpdateProviderPolicy(policy);
 
@@ -476,7 +499,7 @@ TEST_F(DefaultSearchPolicyHandlerTest, DictionaryPrefFileURL) {
   policy.Set(key::kDefaultSearchProviderSearchURL,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             base::Value::CreateStringValue(kFileSearchURL),
+             new base::StringValue(kFileSearchURL),
              NULL);
   UpdateProviderPolicy(policy);
 

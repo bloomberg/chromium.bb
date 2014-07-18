@@ -81,11 +81,11 @@ static scoped_refptr<Extension> CreateExtensionBase(
   base::ListValue* permissions = new base::ListValue();
   manifest.Set(extensions::manifest_keys::kPermissions, permissions);
   if (background_permission) {
-    permissions->Append(base::Value::CreateStringValue("background"));
+    permissions->Append(new base::StringValue("background"));
   }
   if (push_messaging == PUSH_MESSAGING_PERMISSION ||
       push_messaging == PUSH_MESSAGING_BUT_NOT_BACKGROUND) {
-    permissions->Append(base::Value::CreateStringValue("pushMessaging"));
+    permissions->Append(new base::StringValue("pushMessaging"));
   }
 
   std::string error;

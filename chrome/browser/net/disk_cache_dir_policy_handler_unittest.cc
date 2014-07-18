@@ -43,7 +43,7 @@ TEST_F(DiskCacheDirPolicyTest, SetPolicyValid) {
   policy_.Set(key::kDiskCacheDir,
               POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER,
-              base::Value::CreateStringValue(in),
+              new base::StringValue(in),
               NULL);
   handler_.ApplyPolicySettings(policy_, &prefs_);
 

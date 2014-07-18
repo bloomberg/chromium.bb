@@ -30,7 +30,7 @@ class EventFilterUnittest : public testing::Test {
  protected:
   scoped_ptr<base::Value> HostSuffixDict(const std::string& host_suffix) {
     scoped_ptr<base::DictionaryValue> dict(new DictionaryValue());
-    dict->Set("hostSuffix", base::Value::CreateStringValue(host_suffix));
+    dict->Set("hostSuffix", new base::StringValue(host_suffix));
     return scoped_ptr<base::Value>(dict.release());
   }
 

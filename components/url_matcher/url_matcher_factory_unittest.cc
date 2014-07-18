@@ -55,7 +55,7 @@ TEST(URLMatcherFactoryTest, CreateFromURLFilterDictionary) {
   port_ranges->Append(port_range);
 
   base::ListValue* scheme_list = new base::ListValue();
-  scheme_list->Append(base::Value::CreateStringValue("http"));
+  scheme_list->Append(new base::StringValue("http"));
 
   base::DictionaryValue valid_condition;
   valid_condition.SetString(keys::kHostSuffixKey, "example.com");
@@ -137,7 +137,7 @@ TEST(URLMatcherFactoryTest, UpperCase) {
 
   // {"scheme": ["HTTP"]}
   base::ListValue* scheme_list = new base::ListValue();
-  scheme_list->Append(base::Value::CreateStringValue("HTTP"));
+  scheme_list->Append(new base::StringValue("HTTP"));
   base::DictionaryValue invalid_condition5;
   invalid_condition5.Set(keys::kSchemesKey, scheme_list);
 
@@ -230,7 +230,7 @@ void UrlConditionCaseTest::CheckCondition(
   base::DictionaryValue condition;
   if (use_list_of_strings_) {
     base::ListValue* list = new base::ListValue();
-    list->Append(base::Value::CreateStringValue(value));
+    list->Append(new base::StringValue(value));
     condition.SetWithoutPathExpansion(condition_key_, list);
   } else {
     condition.SetStringWithoutPathExpansion(condition_key_, value);

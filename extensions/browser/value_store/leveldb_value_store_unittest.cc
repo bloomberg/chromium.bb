@@ -66,7 +66,7 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreKeyTest) {
   const char kValue[] = "value";
 
   // Insert a valid pair.
-  scoped_ptr<base::Value> value(base::Value::CreateStringValue(kValue));
+  scoped_ptr<base::Value> value(new base::StringValue(kValue));
   ASSERT_FALSE(
       store()->Set(ValueStore::DEFAULTS, kNotCorruptKey, *value)->HasError());
 
@@ -107,7 +107,7 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreDoesMinimumNecessary) {
   const char kCorruptValue[] = "[{(.*+\"\'\\";
 
   // Insert a collection of non-corrupted pairs.
-  scoped_ptr<base::Value> value(base::Value::CreateStringValue(kValue));
+  scoped_ptr<base::Value> value(new base::StringValue(kValue));
   for (size_t i = 0; i < kNotCorruptKeysSize; ++i) {
     ASSERT_FALSE(store()
                      ->Set(ValueStore::DEFAULTS, kNotCorruptKeys[i], *value)
@@ -152,7 +152,7 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreFullDatabase) {
   const char kValue[] = "value";
 
   // Generate a database.
-  scoped_ptr<base::Value> value(base::Value::CreateStringValue(kValue));
+  scoped_ptr<base::Value> value(new base::StringValue(kValue));
   for (size_t i = 0; i < kNotCorruptKeysSize; ++i) {
     ASSERT_FALSE(store()
                      ->Set(ValueStore::DEFAULTS, kNotCorruptKeys[i], *value)

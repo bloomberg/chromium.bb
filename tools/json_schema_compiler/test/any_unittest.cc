@@ -38,7 +38,7 @@ TEST(JsonSchemaCompilerAnyTest, OptionalAnyParamsCreate) {
   }
   {
     scoped_ptr<base::ListValue> params_value(new base::ListValue());
-    scoped_ptr<base::Value> param(base::Value::CreateStringValue("asdf"));
+    scoped_ptr<base::Value> param(new base::StringValue("asdf"));
     params_value->Append(param->DeepCopy());
     scoped_ptr<OptionalAny::Params> params(
         OptionalAny::Params::Create(*params_value));

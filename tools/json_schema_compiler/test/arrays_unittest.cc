@@ -15,10 +15,10 @@ namespace {
 static scoped_ptr<base::DictionaryValue> CreateBasicArrayTypeDictionary() {
   base::DictionaryValue* value = new base::DictionaryValue();
   base::ListValue* strings_value = new base::ListValue();
-  strings_value->Append(base::Value::CreateStringValue("a"));
-  strings_value->Append(base::Value::CreateStringValue("b"));
-  strings_value->Append(base::Value::CreateStringValue("c"));
-  strings_value->Append(base::Value::CreateStringValue("it's easy as"));
+  strings_value->Append(new base::StringValue("a"));
+  strings_value->Append(new base::StringValue("b"));
+  strings_value->Append(new base::StringValue("c"));
+  strings_value->Append(new base::StringValue("it's easy as"));
   base::ListValue* integers_value = new base::ListValue();
   integers_value->Append(new base::FundamentalValue(1));
   integers_value->Append(new base::FundamentalValue(2));
@@ -185,7 +185,7 @@ TEST(JsonSchemaCompilerArrayTest, OptionalEnumArrayType) {
   {
     base::DictionaryValue value;
     scoped_ptr<base::ListValue> enum_array(new base::ListValue());
-    enum_array->Append(base::Value::CreateStringValue("invalid"));
+    enum_array->Append(new base::StringValue("invalid"));
 
     value.Set("types", enum_array.release());
     OptionalEnumArrayType enum_array_type;
@@ -240,7 +240,7 @@ TEST(JsonSchemaCompilerArrayTest, AnyArrayParamsCreate) {
   scoped_ptr<base::ListValue> params_value(new base::ListValue());
   scoped_ptr<base::ListValue> any_array(new base::ListValue());
   any_array->Append(new base::FundamentalValue(1));
-  any_array->Append(base::Value::CreateStringValue("test"));
+  any_array->Append(new base::StringValue("test"));
   any_array->Append(CreateItemValue(2));
   params_value->Append(any_array.release());
   scoped_ptr<AnyArray::Params> params(

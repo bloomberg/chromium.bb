@@ -138,9 +138,11 @@ std::string GetTestPolicy(const char* homepage, int key_version) {
 
 void GetExpectedDefaultPolicy(PolicyMap* policy_map) {
 #if defined(OS_CHROMEOS)
-  policy_map->Set(
-      key::kChromeOsMultiProfileUserBehavior, POLICY_LEVEL_MANDATORY,
-      POLICY_SCOPE_USER, base::Value::CreateStringValue("primary-only"), NULL);
+  policy_map->Set(key::kChromeOsMultiProfileUserBehavior,
+                  POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_USER,
+                  new base::StringValue("primary-only"),
+                  NULL);
 #endif
 }
 
@@ -161,13 +163,17 @@ void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
   expected->Set(
       key::kMaxInvalidationFetchDelay, POLICY_LEVEL_MANDATORY,
       POLICY_SCOPE_USER, base::Value::CreateIntegerValue(1000), NULL);
-  expected->Set(
-      key::kHomepageLocation, POLICY_LEVEL_RECOMMENDED,
-      POLICY_SCOPE_USER, base::Value::CreateStringValue(homepage), NULL);
+  expected->Set(key::kHomepageLocation,
+                POLICY_LEVEL_RECOMMENDED,
+                POLICY_SCOPE_USER,
+                new base::StringValue(homepage),
+                NULL);
 #if defined(OS_CHROMEOS)
-  expected->Set(
-      key::kChromeOsMultiProfileUserBehavior, POLICY_LEVEL_MANDATORY,
-      POLICY_SCOPE_USER, base::Value::CreateStringValue("primary-only"), NULL);
+  expected->Set(key::kChromeOsMultiProfileUserBehavior,
+                POLICY_LEVEL_MANDATORY,
+                POLICY_SCOPE_USER,
+                new base::StringValue("primary-only"),
+                NULL);
 #endif
 }
 

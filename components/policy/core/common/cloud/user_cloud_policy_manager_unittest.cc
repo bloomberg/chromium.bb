@@ -33,8 +33,11 @@ class UserCloudPolicyManagerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     // Set up a policy map for testing.
-    policy_map_.Set("key", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    base::Value::CreateStringValue("value"), NULL);
+    policy_map_.Set("key",
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_USER,
+                    new base::StringValue("value"),
+                    NULL);
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .CopyFrom(policy_map_);
   }

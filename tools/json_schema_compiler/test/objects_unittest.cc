@@ -12,8 +12,8 @@ using namespace test::api::objects;
 TEST(JsonSchemaCompilerObjectsTest, ObjectParamParamsCreate) {
   {
     scoped_ptr<base::ListValue> strings(new base::ListValue());
-    strings->Append(base::Value::CreateStringValue("one"));
-    strings->Append(base::Value::CreateStringValue("two"));
+    strings->Append(new base::StringValue("one"));
+    strings->Append(new base::StringValue("two"));
     scoped_ptr<base::DictionaryValue> info_value(new base::DictionaryValue());
     info_value->Set("strings", strings.release());
     info_value->Set("integer", new base::FundamentalValue(5));
@@ -32,8 +32,8 @@ TEST(JsonSchemaCompilerObjectsTest, ObjectParamParamsCreate) {
   }
   {
     scoped_ptr<base::ListValue> strings(new base::ListValue());
-    strings->Append(base::Value::CreateStringValue("one"));
-    strings->Append(base::Value::CreateStringValue("two"));
+    strings->Append(new base::StringValue("one"));
+    strings->Append(new base::StringValue("two"));
     scoped_ptr<base::DictionaryValue> info_value(new base::DictionaryValue());
     info_value->Set("strings", strings.release());
     info_value->Set("integer", new base::FundamentalValue(5));

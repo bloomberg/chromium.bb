@@ -101,7 +101,7 @@ class ChromePrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
     TestingPrefServiceSyncable* pref_services =
         profile()->GetTestingPrefService();
     pref_services->SetUserPref(prefs::kDefaultCharset,
-                               base::Value::CreateStringValue("utf8"));
+                               new base::StringValue("utf8"));
     pref_services->SetUserPref(prefs::kWebKitDefaultFontSize,
                                base::Value::CreateIntegerValue(20));
     pref_services->SetUserPref(prefs::kWebKitTextAreasAreResizable,
@@ -109,7 +109,7 @@ class ChromePrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
     pref_services->SetUserPref(prefs::kWebKitUsesUniversalDetector,
                                new base::FundamentalValue(true));
     pref_services->SetUserPref("webkit.webprefs.foo",
-                               base::Value::CreateStringValue("bar"));
+                               new base::StringValue("bar"));
   }
 };
 

@@ -14,7 +14,7 @@ TEST(JsonSchemaCompilerEnumsTest, EnumTypePopulate) {
   {
     EnumType enum_type;
     base::DictionaryValue value;
-    value.Set("type", base::Value::CreateStringValue("one"));
+    value.Set("type", new base::StringValue("one"));
     EXPECT_TRUE(EnumType::Populate(value, &enum_type));
     EXPECT_EQ(EnumType::TYPE_ONE, enum_type.type);
     EXPECT_TRUE(value.Equals(enum_type.ToValue().get()));
@@ -22,7 +22,7 @@ TEST(JsonSchemaCompilerEnumsTest, EnumTypePopulate) {
   {
     EnumType enum_type;
     base::DictionaryValue value;
-    value.Set("type", base::Value::CreateStringValue("invalid"));
+    value.Set("type", new base::StringValue("invalid"));
     EXPECT_FALSE(EnumType::Populate(value, &enum_type));
   }
 }
@@ -30,7 +30,7 @@ TEST(JsonSchemaCompilerEnumsTest, EnumTypePopulate) {
 TEST(JsonSchemaCompilerEnumsTest, EnumsAsTypes) {
   {
     base::ListValue args;
-    args.Append(base::Value::CreateStringValue("one"));
+    args.Append(new base::StringValue("one"));
 
     scoped_ptr<TakesEnumAsType::Params> params(
         TakesEnumAsType::Params::Create(args));
@@ -50,11 +50,11 @@ TEST(JsonSchemaCompilerEnumsTest, EnumsAsTypes) {
     base::DictionaryValue value;
     ASSERT_FALSE(HasEnumeration::Populate(value, &enumeration));
 
-    value.Set("enumeration", base::Value::CreateStringValue("one"));
+    value.Set("enumeration", new base::StringValue("one"));
     ASSERT_TRUE(HasEnumeration::Populate(value, &enumeration));
     EXPECT_TRUE(value.Equals(enumeration.ToValue().get()));
 
-    value.Set("optional_enumeration", base::Value::CreateStringValue("two"));
+    value.Set("optional_enumeration", new base::StringValue("two"));
     ASSERT_TRUE(HasEnumeration::Populate(value, &enumeration));
     EXPECT_TRUE(value.Equals(enumeration.ToValue().get()));
   }
@@ -63,10 +63,10 @@ TEST(JsonSchemaCompilerEnumsTest, EnumsAsTypes) {
     base::DictionaryValue value;
     ASSERT_FALSE(InlineAndReferenceEnum::Populate(value, &enumeration));
 
-    value.Set("inline_enum", base::Value::CreateStringValue("test2"));
+    value.Set("inline_enum", new base::StringValue("test2"));
     ASSERT_FALSE(InlineAndReferenceEnum::Populate(value, &enumeration));
 
-    value.Set("reference_enum", base::Value::CreateStringValue("one"));
+    value.Set("reference_enum", new base::StringValue("one"));
     ASSERT_TRUE(InlineAndReferenceEnum::Populate(value, &enumeration));
     EXPECT_TRUE(value.Equals(enumeration.ToValue().get()));
   }
@@ -75,8 +75,8 @@ TEST(JsonSchemaCompilerEnumsTest, EnumsAsTypes) {
 TEST(JsonSchemaCompilerEnumsTest, EnumsArrayAsType) {
   {
     base::ListValue params_value;
-    params_value.Append(List(base::Value::CreateStringValue("one"),
-                             base::Value::CreateStringValue("two")).release());
+    params_value.Append(List(new base::StringValue("one"),
+                             new base::StringValue("two")).release());
     scoped_ptr<TakesEnumArrayAsType::Params> params(
         TakesEnumArrayAsType::Params::Create(params_value));
     ASSERT_TRUE(params);
@@ -86,8 +86,7 @@ TEST(JsonSchemaCompilerEnumsTest, EnumsArrayAsType) {
   }
   {
     base::ListValue params_value;
-    params_value.Append(
-        List(base::Value::CreateStringValue("invalid")).release());
+    params_value.Append(List(new base::StringValue("invalid")).release());
     scoped_ptr<TakesEnumArrayAsType::Params> params(
         TakesEnumArrayAsType::Params::Create(params_value));
     EXPECT_FALSE(params);
@@ -99,14 +98,14 @@ TEST(JsonSchemaCompilerEnumsTest, ReturnsEnumCreate) {
     ReturnsEnum::Results::State state = ReturnsEnum::Results::STATE_FOO;
     scoped_ptr<base::Value> result(
         new base::StringValue(ReturnsEnum::Results::ToString(state)));
-    scoped_ptr<base::Value> expected(base::Value::CreateStringValue("foo"));
+    scoped_ptr<base::Value> expected(new base::StringValue("foo"));
     EXPECT_TRUE(result->Equals(expected.get()));
   }
   {
     ReturnsEnum::Results::State state = ReturnsEnum::Results::STATE_FOO;
     scoped_ptr<base::ListValue> results = ReturnsEnum::Results::Create(state);
     base::ListValue expected;
-    expected.Append(base::Value::CreateStringValue("foo"));
+    expected.Append(new base::StringValue("foo"));
     EXPECT_TRUE(results->Equals(&expected));
   }
 }
@@ -117,8 +116,8 @@ TEST(JsonSchemaCompilerEnumsTest, ReturnsTwoEnumsCreate) {
         ReturnsTwoEnums::Results::FIRST_STATE_FOO,
         ReturnsTwoEnums::Results::SECOND_STATE_HAM);
     base::ListValue expected;
-    expected.Append(base::Value::CreateStringValue("foo"));
-    expected.Append(base::Value::CreateStringValue("ham"));
+    expected.Append(new base::StringValue("foo"));
+    expected.Append(new base::StringValue("ham"));
     EXPECT_TRUE(results->Equals(&expected));
   }
 }
@@ -127,7 +126,7 @@ TEST(JsonSchemaCompilerEnumsTest, OptionalEnumTypePopulate) {
   {
     OptionalEnumType enum_type;
     base::DictionaryValue value;
-    value.Set("type", base::Value::CreateStringValue("two"));
+    value.Set("type", new base::StringValue("two"));
     EXPECT_TRUE(OptionalEnumType::Populate(value, &enum_type));
     EXPECT_EQ(OptionalEnumType::TYPE_TWO, enum_type.type);
     EXPECT_TRUE(value.Equals(enum_type.ToValue().get()));
@@ -142,7 +141,7 @@ TEST(JsonSchemaCompilerEnumsTest, OptionalEnumTypePopulate) {
   {
     OptionalEnumType enum_type;
     base::DictionaryValue value;
-    value.Set("type", base::Value::CreateStringValue("invalid"));
+    value.Set("type", new base::StringValue("invalid"));
     EXPECT_FALSE(OptionalEnumType::Populate(value, &enum_type));
   }
 }
@@ -150,7 +149,7 @@ TEST(JsonSchemaCompilerEnumsTest, OptionalEnumTypePopulate) {
 TEST(JsonSchemaCompilerEnumsTest, TakesEnumParamsCreate) {
   {
     base::ListValue params_value;
-    params_value.Append(base::Value::CreateStringValue("baz"));
+    params_value.Append(new base::StringValue("baz"));
     scoped_ptr<TakesEnum::Params> params(
         TakesEnum::Params::Create(params_value));
     EXPECT_TRUE(params.get());
@@ -158,7 +157,7 @@ TEST(JsonSchemaCompilerEnumsTest, TakesEnumParamsCreate) {
   }
   {
     base::ListValue params_value;
-    params_value.Append(base::Value::CreateStringValue("invalid"));
+    params_value.Append(new base::StringValue("invalid"));
     scoped_ptr<TakesEnum::Params> params(
         TakesEnum::Params::Create(params_value));
     EXPECT_FALSE(params.get());
@@ -168,8 +167,8 @@ TEST(JsonSchemaCompilerEnumsTest, TakesEnumParamsCreate) {
 TEST(JsonSchemaCompilerEnumsTest, TakesEnumArrayParamsCreate) {
   {
     base::ListValue params_value;
-    params_value.Append(List(base::Value::CreateStringValue("foo"),
-                             base::Value::CreateStringValue("bar")).release());
+    params_value.Append(List(new base::StringValue("foo"),
+                             new base::StringValue("bar")).release());
     scoped_ptr<TakesEnumArray::Params> params(
         TakesEnumArray::Params::Create(params_value));
     ASSERT_TRUE(params);
@@ -179,8 +178,7 @@ TEST(JsonSchemaCompilerEnumsTest, TakesEnumArrayParamsCreate) {
   }
   {
     base::ListValue params_value;
-    params_value.Append(
-        List(base::Value::CreateStringValue("invalid")).release());
+    params_value.Append(List(new base::StringValue("invalid")).release());
     scoped_ptr<TakesEnumArray::Params> params(
         TakesEnumArray::Params::Create(params_value));
     EXPECT_FALSE(params);
@@ -190,7 +188,7 @@ TEST(JsonSchemaCompilerEnumsTest, TakesEnumArrayParamsCreate) {
 TEST(JsonSchemaCompilerEnumsTest, TakesOptionalEnumParamsCreate) {
   {
     base::ListValue params_value;
-    params_value.Append(base::Value::CreateStringValue("baz"));
+    params_value.Append(new base::StringValue("baz"));
     scoped_ptr<TakesOptionalEnum::Params> params(
         TakesOptionalEnum::Params::Create(params_value));
     EXPECT_TRUE(params.get());
@@ -205,7 +203,7 @@ TEST(JsonSchemaCompilerEnumsTest, TakesOptionalEnumParamsCreate) {
   }
   {
     base::ListValue params_value;
-    params_value.Append(base::Value::CreateStringValue("invalid"));
+    params_value.Append(new base::StringValue("invalid"));
     scoped_ptr<TakesOptionalEnum::Params> params(
         TakesOptionalEnum::Params::Create(params_value));
     EXPECT_FALSE(params.get());
@@ -215,8 +213,8 @@ TEST(JsonSchemaCompilerEnumsTest, TakesOptionalEnumParamsCreate) {
 TEST(JsonSchemaCompilerEnumsTest, TakesMultipleOptionalEnumsParamsCreate) {
   {
     base::ListValue params_value;
-    params_value.Append(base::Value::CreateStringValue("foo"));
-    params_value.Append(base::Value::CreateStringValue("foo"));
+    params_value.Append(new base::StringValue("foo"));
+    params_value.Append(new base::StringValue("foo"));
     scoped_ptr<TakesMultipleOptionalEnums::Params> params(
         TakesMultipleOptionalEnums::Params::Create(params_value));
     EXPECT_TRUE(params.get());
@@ -225,7 +223,7 @@ TEST(JsonSchemaCompilerEnumsTest, TakesMultipleOptionalEnumsParamsCreate) {
   }
   {
     base::ListValue params_value;
-    params_value.Append(base::Value::CreateStringValue("foo"));
+    params_value.Append(new base::StringValue("foo"));
     scoped_ptr<TakesMultipleOptionalEnums::Params> params(
         TakesMultipleOptionalEnums::Params::Create(params_value));
     EXPECT_TRUE(params.get());
@@ -242,8 +240,8 @@ TEST(JsonSchemaCompilerEnumsTest, TakesMultipleOptionalEnumsParamsCreate) {
   }
   {
     base::ListValue params_value;
-    params_value.Append(base::Value::CreateStringValue("baz"));
-    params_value.Append(base::Value::CreateStringValue("invalid"));
+    params_value.Append(new base::StringValue("baz"));
+    params_value.Append(new base::StringValue("invalid"));
     scoped_ptr<TakesMultipleOptionalEnums::Params> params(
         TakesMultipleOptionalEnums::Params::Create(params_value));
     EXPECT_FALSE(params.get());
@@ -255,14 +253,14 @@ TEST(JsonSchemaCompilerEnumsTest, OnEnumFiredCreate) {
     OnEnumFired::SomeEnum some_enum = OnEnumFired::SOME_ENUM_FOO;
     scoped_ptr<base::Value> result(
         new base::StringValue(OnEnumFired::ToString(some_enum)));
-    scoped_ptr<base::Value> expected(base::Value::CreateStringValue("foo"));
+    scoped_ptr<base::Value> expected(new base::StringValue("foo"));
     EXPECT_TRUE(result->Equals(expected.get()));
   }
   {
     OnEnumFired::SomeEnum some_enum = OnEnumFired::SOME_ENUM_FOO;
     scoped_ptr<base::ListValue> results(OnEnumFired::Create(some_enum));
     base::ListValue expected;
-    expected.Append(base::Value::CreateStringValue("foo"));
+    expected.Append(new base::StringValue("foo"));
     EXPECT_TRUE(results->Equals(&expected));
   }
 }
@@ -273,8 +271,8 @@ TEST(JsonSchemaCompilerEnumsTest, OnTwoEnumsFiredCreate) {
         OnTwoEnumsFired::FIRST_ENUM_FOO,
         OnTwoEnumsFired::SECOND_ENUM_HAM));
     base::ListValue expected;
-    expected.Append(base::Value::CreateStringValue("foo"));
-    expected.Append(base::Value::CreateStringValue("ham"));
+    expected.Append(new base::StringValue("foo"));
+    expected.Append(new base::StringValue("ham"));
     EXPECT_TRUE(results->Equals(&expected));
   }
 }

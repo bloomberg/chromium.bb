@@ -170,8 +170,7 @@ void DefaultSearchEncodingsPolicyHandler::ApplyPolicySettings(
     }
   }
   std::string encodings = JoinString(string_parts, ';');
-  prefs->SetValue(prefs::kDefaultSearchProviderEncodings,
-                  base::Value::CreateStringValue(encodings));
+  prefs->SetString(prefs::kDefaultSearchProviderEncodings, encodings);
 }
 
 

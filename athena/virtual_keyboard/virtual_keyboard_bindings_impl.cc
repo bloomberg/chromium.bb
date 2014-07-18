@@ -143,11 +143,11 @@ class VKBindings : public gin::Wrappable<VKBindings> {
       return;
     }
     base::ListValue params;
-    params.Set(0, base::Value::CreateStringValue(event.event_type));
-    params.Set(1, base::Value::CreateIntegerValue(event.char_value));
-    params.Set(2, base::Value::CreateIntegerValue(event.key_code));
-    params.Set(3, base::Value::CreateStringValue(event.key_name));
-    params.Set(4, base::Value::CreateIntegerValue(event.modifiers));
+    params.Set(0, new base::StringValue(event.event_type));
+    params.Set(1, new base::FundamentalValue(event.char_value));
+    params.Set(2, new base::FundamentalValue(event.key_code));
+    params.Set(3, new base::StringValue(event.key_name));
+    params.Set(4, new base::FundamentalValue(event.modifiers));
 
     std::string params_json;
     JSONStringValueSerializer serializer(&params_json);

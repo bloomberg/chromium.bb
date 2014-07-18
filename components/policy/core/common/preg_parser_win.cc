@@ -118,7 +118,7 @@ bool DecodePRegValue(uint32 type,
   switch (type) {
     case REG_SZ:
     case REG_EXPAND_SZ:
-      value->reset(base::Value::CreateStringValue(DecodePRegStringValue(data)));
+      value->reset(new base::StringValue(DecodePRegStringValue(data)));
       return true;
     case REG_DWORD_LITTLE_ENDIAN:
     case REG_DWORD_BIG_ENDIAN:

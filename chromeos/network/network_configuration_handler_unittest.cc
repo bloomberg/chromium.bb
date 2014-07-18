@@ -217,10 +217,10 @@ TEST_F(NetworkConfigurationHandlerTest, GetProperties) {
   std::string networkName = "MyNetwork";
   std::string key = "SSID";
   scoped_ptr<base::StringValue> networkNameValue(
-      base::Value::CreateStringValue(networkName));
+      new base::StringValue(networkName));
 
   base::DictionaryValue value;
-  value.Set(key, base::Value::CreateStringValue(networkName));
+  value.Set(key, new base::StringValue(networkName));
   dictionary_value_result_ = &value;
   EXPECT_CALL(*mock_service_client_,
               SetProperty(dbus::ObjectPath(service_path), key,
@@ -251,10 +251,10 @@ TEST_F(NetworkConfigurationHandlerTest, SetProperties) {
   std::string networkName = "MyNetwork";
   std::string key = "SSID";
   scoped_ptr<base::StringValue> networkNameValue(
-      base::Value::CreateStringValue(networkName));
+      new base::StringValue(networkName));
 
   base::DictionaryValue value;
-  value.Set(key, base::Value::CreateStringValue(networkName));
+  value.Set(key, new base::StringValue(networkName));
   dictionary_value_result_ = &value;
   EXPECT_CALL(*mock_service_client_,
               SetProperties(_, _, _, _)).WillOnce(
@@ -273,11 +273,11 @@ TEST_F(NetworkConfigurationHandlerTest, ClearProperties) {
   std::string networkName = "MyNetwork";
   std::string key = "SSID";
   scoped_ptr<base::StringValue> networkNameValue(
-      base::Value::CreateStringValue(networkName));
+      new base::StringValue(networkName));
 
   // First set up a value to clear.
   base::DictionaryValue value;
-  value.Set(key, base::Value::CreateStringValue(networkName));
+  value.Set(key, new base::StringValue(networkName));
   dictionary_value_result_ = &value;
   EXPECT_CALL(*mock_service_client_,
               SetProperties(_, _, _, _)).WillOnce(
@@ -310,11 +310,11 @@ TEST_F(NetworkConfigurationHandlerTest, ClearPropertiesError) {
   std::string networkName = "MyNetwork";
   std::string key = "SSID";
   scoped_ptr<base::StringValue> networkNameValue(
-      base::Value::CreateStringValue(networkName));
+      new base::StringValue(networkName));
 
   // First set up a value to clear.
   base::DictionaryValue value;
-  value.Set(key, base::Value::CreateStringValue(networkName));
+  value.Set(key, new base::StringValue(networkName));
   dictionary_value_result_ = &value;
   EXPECT_CALL(*mock_service_client_,
               SetProperties(_, _, _, _)).WillOnce(
@@ -351,9 +351,9 @@ TEST_F(NetworkConfigurationHandlerTest, CreateConfiguration) {
   base::DictionaryValue value;
   shill_property_util::SetSSID(networkName, &value);
   value.SetWithoutPathExpansion(shill::kTypeProperty,
-                                base::Value::CreateStringValue(type));
+                                new base::StringValue(type));
   value.SetWithoutPathExpansion(shill::kProfileProperty,
-                                base::Value::CreateStringValue(profile));
+                                new base::StringValue(profile));
 
   EXPECT_CALL(*mock_manager_client_,
               ConfigureServiceForProfile(dbus::ObjectPath(profile), _, _, _))

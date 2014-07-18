@@ -258,10 +258,9 @@ TEST(PermissionsTest, CreateUnion) {
   permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<base::ListValue> value(new base::ListValue());
-    value->Append(
-        base::Value::CreateStringValue("tcp-connect:*.example.com:80"));
-    value->Append(base::Value::CreateStringValue("udp-bind::8080"));
-    value->Append(base::Value::CreateStringValue("udp-send-to::8888"));
+    value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
+    value->Append(new base::StringValue("udp-bind::8080"));
+    value->Append(new base::StringValue("udp-send-to::8888"));
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
   }
 
@@ -304,9 +303,8 @@ TEST(PermissionsTest, CreateUnion) {
   permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<base::ListValue> value(new base::ListValue());
-    value->Append(
-        base::Value::CreateStringValue("tcp-connect:*.example.com:80"));
-    value->Append(base::Value::CreateStringValue("udp-send-to::8899"));
+    value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
+    value->Append(new base::StringValue("udp-send-to::8899"));
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
   }
   apis2.insert(permission);
@@ -319,11 +317,10 @@ TEST(PermissionsTest, CreateUnion) {
   permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<base::ListValue> value(new base::ListValue());
-    value->Append(
-        base::Value::CreateStringValue("tcp-connect:*.example.com:80"));
-    value->Append(base::Value::CreateStringValue("udp-bind::8080"));
-    value->Append(base::Value::CreateStringValue("udp-send-to::8888"));
-    value->Append(base::Value::CreateStringValue("udp-send-to::8899"));
+    value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
+    value->Append(new base::StringValue("udp-bind::8080"));
+    value->Append(new base::StringValue("udp-send-to::8888"));
+    value->Append(new base::StringValue("udp-send-to::8899"));
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
   }
   // Insert a new permission socket permisssion which will replace the old one.
@@ -387,10 +384,9 @@ TEST(PermissionsTest, CreateIntersection) {
   permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<base::ListValue> value(new base::ListValue());
-    value->Append(
-        base::Value::CreateStringValue("tcp-connect:*.example.com:80"));
-    value->Append(base::Value::CreateStringValue("udp-bind::8080"));
-    value->Append(base::Value::CreateStringValue("udp-send-to::8888"));
+    value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
+    value->Append(new base::StringValue("udp-bind::8080"));
+    value->Append(new base::StringValue("udp-send-to::8888"));
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
   }
   apis1.insert(permission);
@@ -425,9 +421,9 @@ TEST(PermissionsTest, CreateIntersection) {
   permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<base::ListValue> value(new base::ListValue());
-    value->Append(base::Value::CreateStringValue("udp-bind::8080"));
-    value->Append(base::Value::CreateStringValue("udp-send-to::8888"));
-    value->Append(base::Value::CreateStringValue("udp-send-to::8899"));
+    value->Append(new base::StringValue("udp-bind::8080"));
+    value->Append(new base::StringValue("udp-send-to::8888"));
+    value->Append(new base::StringValue("udp-send-to::8899"));
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
   }
   apis2.insert(permission);
@@ -436,8 +432,8 @@ TEST(PermissionsTest, CreateIntersection) {
   permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<base::ListValue> value(new base::ListValue());
-    value->Append(base::Value::CreateStringValue("udp-bind::8080"));
-    value->Append(base::Value::CreateStringValue("udp-send-to::8888"));
+    value->Append(new base::StringValue("udp-bind::8080"));
+    value->Append(new base::StringValue("udp-send-to::8888"));
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
   }
   expected_apis.insert(permission);
@@ -500,10 +496,9 @@ TEST(PermissionsTest, CreateDifference) {
   permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<base::ListValue> value(new base::ListValue());
-    value->Append(
-       base::Value::CreateStringValue("tcp-connect:*.example.com:80"));
-    value->Append(base::Value::CreateStringValue("udp-bind::8080"));
-    value->Append(base::Value::CreateStringValue("udp-send-to::8888"));
+    value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
+    value->Append(new base::StringValue("udp-bind::8080"));
+    value->Append(new base::StringValue("udp-send-to::8888"));
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
   }
   apis1.insert(permission);
@@ -526,9 +521,8 @@ TEST(PermissionsTest, CreateDifference) {
   permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<base::ListValue> value(new base::ListValue());
-    value->Append(
-        base::Value::CreateStringValue("tcp-connect:*.example.com:80"));
-    value->Append(base::Value::CreateStringValue("udp-send-to::8899"));
+    value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
+    value->Append(new base::StringValue("udp-send-to::8899"));
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
   }
   apis2.insert(permission);
@@ -537,8 +531,8 @@ TEST(PermissionsTest, CreateDifference) {
   permission = permission_info->CreateAPIPermission();
   {
     scoped_ptr<base::ListValue> value(new base::ListValue());
-    value->Append(base::Value::CreateStringValue("udp-bind::8080"));
-    value->Append(base::Value::CreateStringValue("udp-send-to::8888"));
+    value->Append(new base::StringValue("udp-bind::8080"));
+    value->Append(new base::StringValue("udp-send-to::8888"));
     ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
   }
   expected_apis.insert(permission);

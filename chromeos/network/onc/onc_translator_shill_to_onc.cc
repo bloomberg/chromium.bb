@@ -30,7 +30,7 @@ scoped_ptr<base::Value> ConvertStringToValue(const std::string& str,
                                              base::Value::Type type) {
   base::Value* value;
   if (type == base::Value::TYPE_STRING) {
-    value = base::Value::CreateStringValue(str);
+    value = new base::StringValue(str);
   } else {
     value = base::JSONReader::Read(str);
   }

@@ -432,8 +432,8 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerIPConfigPropertyChanged) {
       shill::kAddressProperty, ip_address,
       base::Bind(&DoNothingWithCallStatus));
   base::ListValue dns_servers;
-  dns_servers.Append(base::Value::CreateStringValue("192.168.1.100"));
-  dns_servers.Append(base::Value::CreateStringValue("192.168.1.101"));
+  dns_servers.Append(new base::StringValue("192.168.1.100"));
+  dns_servers.Append(new base::StringValue("192.168.1.101"));
   DBusThreadManager::Get()->GetShillIPConfigClient()->SetProperty(
       dbus::ObjectPath(kTestIPConfigPath),
       shill::kNameServersProperty, dns_servers,

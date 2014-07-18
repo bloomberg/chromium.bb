@@ -465,7 +465,7 @@ TEST_P(PrefHashFilterTest, StampSuperMACAltersStore) {
 TEST_P(PrefHashFilterTest, FilterTrackedPrefUpdate) {
   base::DictionaryValue root_dict;
   // Ownership of |string_value| is transfered to |root_dict|.
-  base::Value* string_value = base::Value::CreateStringValue("string value");
+  base::Value* string_value = new base::StringValue("string value");
   root_dict.Set(kAtomicPref, string_value);
 
   // No path should be stored on FilterUpdate.
@@ -546,7 +546,7 @@ TEST_P(PrefHashFilterTest, FilterSplitPrefUpdate) {
 
 TEST_P(PrefHashFilterTest, FilterUntrackedPrefUpdate) {
   base::DictionaryValue root_dict;
-  root_dict.Set("untracked", base::Value::CreateStringValue("some value"));
+  root_dict.Set("untracked", new base::StringValue("some value"));
   pref_hash_filter_->FilterUpdate("untracked");
 
   // No paths should be stored on FilterUpdate.
@@ -731,7 +731,7 @@ TEST_P(PrefHashFilterTest, InitialValueUnknown) {
 
 TEST_P(PrefHashFilterTest, InitialValueTrustedUnknown) {
   // Ownership of this value is transfered to |pref_store_contents_|.
-  base::Value* string_value = base::Value::CreateStringValue("test");
+  base::Value* string_value = new base::StringValue("test");
   pref_store_contents_->Set(kAtomicPref, string_value);
 
   base::DictionaryValue* dict_value = new base::DictionaryValue;
@@ -906,7 +906,7 @@ TEST_P(PrefHashFilterTest, InitialValueMigrated) {
 
   // Ownership of this value is transfered to |pref_store_contents_|.
   base::ListValue* list_value = new base::ListValue;
-  list_value->Append(base::Value::CreateStringValue("test"));
+  list_value->Append(new base::StringValue("test"));
   pref_store_contents_->Set(kAtomicPref, list_value);
 
   ASSERT_TRUE(pref_store_contents_->Get(kAtomicPref, NULL));

@@ -192,7 +192,7 @@ TEST_F(PolicyLoaderMacTest, TestNonForcedValue) {
       .Set(test_keys::kKeyString,
            POLICY_LEVEL_RECOMMENDED,
            POLICY_SCOPE_USER,
-           base::Value::CreateStringValue("string value"),
+           new base::StringValue("string value"),
            NULL);
   EXPECT_TRUE(provider_->policies().Equals(expected_bundle));
 }

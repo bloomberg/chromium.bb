@@ -135,9 +135,9 @@ ValueStoreTest::ValueStoreTest()
       dict123_(new base::DictionaryValue()),
       ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
       file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {
-  val1_.reset(base::Value::CreateStringValue(key1_ + "Value"));
-  val2_.reset(base::Value::CreateStringValue(key2_ + "Value"));
-  val3_.reset(base::Value::CreateStringValue(key3_ + "Value"));
+  val1_.reset(new base::StringValue(key1_ + "Value"));
+  val2_.reset(new base::StringValue(key2_ + "Value"));
+  val3_.reset(new base::StringValue(key3_ + "Value"));
 
   list1_.push_back(key1_);
   list2_.push_back(key2_);

@@ -41,16 +41,15 @@ scoped_ptr<base::Value> TileResolutionAsValue(
 scoped_ptr<base::Value> TilePriorityBinAsValue(TilePriority::PriorityBin bin) {
   switch (bin) {
     case TilePriority::NOW:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue("NOW"));
+      return scoped_ptr<base::Value>(new base::StringValue("NOW"));
     case TilePriority::SOON:
-      return scoped_ptr<base::Value>(base::Value::CreateStringValue("SOON"));
+      return scoped_ptr<base::Value>(new base::StringValue("SOON"));
     case TilePriority::EVENTUALLY:
-      return scoped_ptr<base::Value>(
-          base::Value::CreateStringValue("EVENTUALLY"));
+      return scoped_ptr<base::Value>(new base::StringValue("EVENTUALLY"));
   }
   DCHECK(false) << "Unrecognized TilePriority::PriorityBin value " << bin;
-  return scoped_ptr<base::Value>(base::Value::CreateStringValue(
-      "<unknown TilePriority::PriorityBin value>"));
+  return scoped_ptr<base::Value>(
+      new base::StringValue("<unknown TilePriority::PriorityBin value>"));
 }
 
 scoped_ptr<base::Value> TilePriority::AsValue() const {

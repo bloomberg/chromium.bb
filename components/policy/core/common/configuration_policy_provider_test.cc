@@ -272,8 +272,8 @@ TEST_P(ConfigurationPolicyProviderTest, IntegerValue) {
 
 TEST_P(ConfigurationPolicyProviderTest, StringListValue) {
   base::ListValue expected_value;
-  expected_value.Set(0U, base::Value::CreateStringValue("first"));
-  expected_value.Set(1U, base::Value::CreateStringValue("second"));
+  expected_value.Set(0U, new base::StringValue("first"));
+  expected_value.Set(1U, new base::StringValue("second"));
   CheckValue(test_keys::kKeyStringList,
              expected_value,
              base::Bind(&PolicyProviderTestHarness::InstallStringListPolicy,
@@ -290,8 +290,8 @@ TEST_P(ConfigurationPolicyProviderTest, DictionaryValue) {
   expected_value.SetString("string", "omg");
 
   base::ListValue* list = new base::ListValue();
-  list->Set(0U, base::Value::CreateStringValue("first"));
-  list->Set(1U, base::Value::CreateStringValue("second"));
+  list->Set(0U, new base::StringValue("first"));
+  list->Set(1U, new base::StringValue("second"));
   expected_value.Set("array", list);
 
   base::DictionaryValue* dict = new base::DictionaryValue();
@@ -341,7 +341,7 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
       .Set(test_keys::kKeyString,
            test_harness_->policy_level(),
            test_harness_->policy_scope(),
-           base::Value::CreateStringValue("value"),
+           new base::StringValue("value"),
            NULL);
   EXPECT_TRUE(provider_->policies().Equals(bundle));
   provider_->RemoveObserver(&observer);
@@ -383,7 +383,7 @@ TEST_P(Configuration3rdPartyPolicyProviderTest, Load3rdParty) {
   // help detecting memory leaks in the code paths that detect invalid input.
   policy_3rdparty.Set("invalid-domain.component", policy_dict.DeepCopy());
   policy_3rdparty.Set("extensions.cccccccccccccccccccccccccccccccc",
-                      base::Value::CreateStringValue("invalid-value"));
+                      new base::StringValue("invalid-value"));
   test_harness_->Install3rdPartyPolicy(&policy_3rdparty);
 
   provider_->RefreshPolicies();

@@ -51,10 +51,10 @@ scoped_ptr<ExternalDataFetcher> PolicyMapTest::CreateExternalDataFetcher(
 
 TEST_F(PolicyMapTest, SetAndGet) {
   PolicyMap map;
-  SetPolicy(&map, kTestPolicyName1, base::Value::CreateStringValue("aaa"));
+  SetPolicy(&map, kTestPolicyName1, new base::StringValue("aaa"));
   base::StringValue expected("aaa");
   EXPECT_TRUE(expected.Equals(map.GetValue(kTestPolicyName1)));
-  SetPolicy(&map, kTestPolicyName1, base::Value::CreateStringValue("bbb"));
+  SetPolicy(&map, kTestPolicyName1, new base::StringValue("bbb"));
   base::StringValue expected_b("bbb");
   EXPECT_TRUE(expected_b.Equals(map.GetValue(kTestPolicyName1)));
   SetPolicy(&map, kTestPolicyName1,
@@ -78,13 +78,13 @@ TEST_F(PolicyMapTest, SetAndGet) {
 
 TEST_F(PolicyMapTest, Equals) {
   PolicyMap a;
-  SetPolicy(&a, kTestPolicyName1, base::Value::CreateStringValue("aaa"));
+  SetPolicy(&a, kTestPolicyName1, new base::StringValue("aaa"));
   PolicyMap a2;
-  SetPolicy(&a2, kTestPolicyName1, base::Value::CreateStringValue("aaa"));
+  SetPolicy(&a2, kTestPolicyName1, new base::StringValue("aaa"));
   PolicyMap b;
-  SetPolicy(&b, kTestPolicyName1, base::Value::CreateStringValue("bbb"));
+  SetPolicy(&b, kTestPolicyName1, new base::StringValue("bbb"));
   PolicyMap c;
-  SetPolicy(&c, kTestPolicyName1, base::Value::CreateStringValue("aaa"));
+  SetPolicy(&c, kTestPolicyName1, new base::StringValue("aaa"));
   SetPolicy(&c, kTestPolicyName2, new base::FundamentalValue(true));
   PolicyMap d;
   SetPolicy(&d, kTestPolicyName1,
@@ -129,11 +129,11 @@ TEST_F(PolicyMapTest, Equals) {
 
 TEST_F(PolicyMapTest, Swap) {
   PolicyMap a;
-  SetPolicy(&a, kTestPolicyName1, base::Value::CreateStringValue("aaa"));
+  SetPolicy(&a, kTestPolicyName1, new base::StringValue("aaa"));
   SetPolicy(&a, kTestPolicyName2,
             CreateExternalDataFetcher("dummy").release());
   PolicyMap b;
-  SetPolicy(&b, kTestPolicyName1, base::Value::CreateStringValue("bbb"));
+  SetPolicy(&b, kTestPolicyName1, new base::StringValue("bbb"));
   SetPolicy(&b, kTestPolicyName3, new base::FundamentalValue(true));
 
   a.Swap(&b);
@@ -161,8 +161,11 @@ TEST_F(PolicyMapTest, Swap) {
 
 TEST_F(PolicyMapTest, MergeFrom) {
   PolicyMap a;
-  a.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateStringValue("google.com"), NULL);
+  a.Set(kTestPolicyName1,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_USER,
+        new base::StringValue("google.com"),
+        NULL);
   a.Set(kTestPolicyName2,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
@@ -177,12 +180,17 @@ TEST_F(PolicyMapTest, MergeFrom) {
         new base::FundamentalValue(false),
         NULL);
   a.Set(kTestPolicyName5,
-        POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
-        base::Value::CreateStringValue("google.com/q={x}"), NULL);
+        POLICY_LEVEL_RECOMMENDED,
+        POLICY_SCOPE_MACHINE,
+        new base::StringValue("google.com/q={x}"),
+        NULL);
 
   PolicyMap b;
-  b.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        base::Value::CreateStringValue("chromium.org"), NULL);
+  b.Set(kTestPolicyName1,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE,
+        new base::StringValue("chromium.org"),
+        NULL);
   b.Set(kTestPolicyName2,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
@@ -199,7 +207,7 @@ TEST_F(PolicyMapTest, MergeFrom) {
   b.Set(kTestPolicyName5,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
-        base::Value::CreateStringValue(std::string()),
+        new base::StringValue(std::string()),
         NULL);
   b.Set(kTestPolicyName6,
         POLICY_LEVEL_RECOMMENDED,
@@ -211,8 +219,11 @@ TEST_F(PolicyMapTest, MergeFrom) {
 
   PolicyMap c;
   // POLICY_SCOPE_MACHINE over POLICY_SCOPE_USER.
-  c.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        base::Value::CreateStringValue("chromium.org"), NULL);
+  c.Set(kTestPolicyName1,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE,
+        new base::StringValue("chromium.org"),
+        NULL);
   // |a| has precedence over |b|.
   c.Set(kTestPolicyName2,
         POLICY_LEVEL_MANDATORY,
@@ -232,7 +243,7 @@ TEST_F(PolicyMapTest, MergeFrom) {
   c.Set(kTestPolicyName5,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_MACHINE,
-        base::Value::CreateStringValue(std::string()),
+        new base::StringValue(std::string()),
         NULL);
   // Merge new ones.
   c.Set(kTestPolicyName6,
@@ -246,8 +257,11 @@ TEST_F(PolicyMapTest, MergeFrom) {
 
 TEST_F(PolicyMapTest, GetDifferingKeys) {
   PolicyMap a;
-  a.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateStringValue("google.com"), NULL);
+  a.Set(kTestPolicyName1,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_USER,
+        new base::StringValue("google.com"),
+        NULL);
   a.Set(kTestPolicyName2,
         POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         NULL, CreateExternalDataFetcher("dummy").release());
@@ -265,8 +279,10 @@ TEST_F(PolicyMapTest, GetDifferingKeys) {
         new base::FundamentalValue(false),
         NULL);
   a.Set(kTestPolicyName6,
-        POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
-        base::Value::CreateStringValue("google.com/q={x}"), NULL);
+        POLICY_LEVEL_RECOMMENDED,
+        POLICY_SCOPE_MACHINE,
+        new base::StringValue("google.com/q={x}"),
+        NULL);
   a.Set(kTestPolicyName7,
         POLICY_LEVEL_MANDATORY,
         POLICY_SCOPE_USER,
@@ -274,8 +290,11 @@ TEST_F(PolicyMapTest, GetDifferingKeys) {
         NULL);
 
   PolicyMap b;
-  b.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateStringValue("google.com"), NULL);
+  b.Set(kTestPolicyName1,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_USER,
+        new base::StringValue("google.com"),
+        NULL);
   b.Set(kTestPolicyName2,
         POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         NULL, CreateExternalDataFetcher("dummy").release());
@@ -292,8 +311,10 @@ TEST_F(PolicyMapTest, GetDifferingKeys) {
         POLICY_SCOPE_USER,
         new base::FundamentalValue(false),
         NULL);
-  b.Set(kTestPolicyName6, POLICY_LEVEL_RECOMMENDED,
-        POLICY_SCOPE_USER, base::Value::CreateStringValue("google.com/q={x}"),
+  b.Set(kTestPolicyName6,
+        POLICY_LEVEL_RECOMMENDED,
+        POLICY_SCOPE_USER,
+        new base::StringValue("google.com/q={x}"),
         NULL);
   b.Set(kTestPolicyName8,
         POLICY_LEVEL_RECOMMENDED,

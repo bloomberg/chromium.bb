@@ -49,8 +49,8 @@ class SessionStartupPrefTest : public testing::Test {
 
 TEST_F(SessionStartupPrefTest, URLListIsFixedUp) {
   base::ListValue* url_pref_list = new base::ListValue;
-  url_pref_list->Set(0, base::Value::CreateStringValue("google.com"));
-  url_pref_list->Set(1, base::Value::CreateStringValue("chromium.org"));
+  url_pref_list->Set(0, new base::StringValue("google.com"));
+  url_pref_list->Set(1, new base::StringValue("chromium.org"));
   pref_service_->SetUserPref(prefs::kURLsToRestoreOnStartup, url_pref_list);
 
   SessionStartupPref result =
@@ -62,13 +62,13 @@ TEST_F(SessionStartupPrefTest, URLListIsFixedUp) {
 
 TEST_F(SessionStartupPrefTest, URLListManagedOverridesUser) {
   base::ListValue* url_pref_list1 = new base::ListValue;
-  url_pref_list1->Set(0, base::Value::CreateStringValue("chromium.org"));
+  url_pref_list1->Set(0, new base::StringValue("chromium.org"));
   pref_service_->SetUserPref(prefs::kURLsToRestoreOnStartup, url_pref_list1);
 
   base::ListValue* url_pref_list2 = new base::ListValue;
-  url_pref_list2->Set(0, base::Value::CreateStringValue("chromium.org"));
-  url_pref_list2->Set(1, base::Value::CreateStringValue("chromium.org"));
-  url_pref_list2->Set(2, base::Value::CreateStringValue("chromium.org"));
+  url_pref_list2->Set(0, new base::StringValue("chromium.org"));
+  url_pref_list2->Set(1, new base::StringValue("chromium.org"));
+  url_pref_list2->Set(2, new base::StringValue("chromium.org"));
   pref_service_->SetManagedPref(prefs::kURLsToRestoreOnStartup,
                                 url_pref_list2);
 

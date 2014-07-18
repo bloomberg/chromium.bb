@@ -81,15 +81,21 @@ TEST_F(ForwardingPolicyProviderTest, Empty) {
 TEST_F(ForwardingPolicyProviderTest, ForwardsChromePolicy) {
   PolicyBundle bundle;
   const PolicyNamespace chrome_ns(POLICY_DOMAIN_CHROME, "");
-  bundle.Get(chrome_ns).Set("policy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                            base::Value::CreateStringValue("value"), NULL);
+  bundle.Get(chrome_ns).Set("policy",
+                            POLICY_LEVEL_MANDATORY,
+                            POLICY_SCOPE_USER,
+                            new base::StringValue("value"),
+                            NULL);
 
   EXPECT_CALL(observer_, OnUpdatePolicy(&forwarding_provider_));
   scoped_ptr<PolicyBundle> delegate_bundle(new PolicyBundle);
   delegate_bundle->CopyFrom(bundle);
   delegate_bundle->Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "xyz"))
-      .Set("foo", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           base::Value::CreateStringValue("not forwarded"), NULL);
+      .Set("foo",
+           POLICY_LEVEL_MANDATORY,
+           POLICY_SCOPE_USER,
+           new base::StringValue("not forwarded"),
+           NULL);
   mock_provider_.UpdatePolicy(delegate_bundle.Pass());
   Mock::VerifyAndClearExpectations(&observer_);
 
@@ -116,8 +122,11 @@ TEST_F(ForwardingPolicyProviderTest, SchemaReady) {
 
 TEST_F(ForwardingPolicyProviderTest, SchemaReadyWithComponents) {
   PolicyMap policy_map;
-  policy_map.Set("foo", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 base::Value::CreateStringValue("omg"), NULL);
+  policy_map.Set("foo",
+                 POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER,
+                 new base::StringValue("omg"),
+                 NULL);
   scoped_ptr<PolicyBundle> bundle(new PolicyBundle);
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, "")).CopyFrom(policy_map);
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "xyz"))
@@ -162,8 +171,11 @@ TEST_F(ForwardingPolicyProviderTest, DelegateUpdates) {
       policy::POLICY_DOMAIN_EXTENSIONS));
 
   PolicyMap policy_map;
-  policy_map.Set("foo", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 base::Value::CreateStringValue("omg"), NULL);
+  policy_map.Set("foo",
+                 POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER,
+                 new base::StringValue("omg"),
+                 NULL);
   // Chrome policy updates are forwarded even if the components aren't ready.
   EXPECT_CALL(observer_, OnUpdatePolicy(&forwarding_provider_));
   mock_provider_.UpdateChromePolicy(policy_map);
@@ -202,8 +214,11 @@ TEST_F(ForwardingPolicyProviderTest, RemoveAndAddComponent) {
 
   // Serve policy for |ns|.
   PolicyBundle platform_policy;
-  platform_policy.Get(ns).Set("foo", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                              base::Value::CreateStringValue("omg"), NULL);
+  platform_policy.Get(ns).Set("foo",
+                              POLICY_LEVEL_MANDATORY,
+                              POLICY_SCOPE_USER,
+                              new base::StringValue("omg"),
+                              NULL);
   scoped_ptr<PolicyBundle> copy(new PolicyBundle);
   copy->CopyFrom(platform_policy);
   EXPECT_CALL(observer_, OnUpdatePolicy(_));

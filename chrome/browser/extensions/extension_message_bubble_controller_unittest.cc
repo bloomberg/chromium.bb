@@ -374,11 +374,10 @@ class ExtensionMessageBubbleTest : public testing::Test {
         base::Time::Now(),
         true,    // is_enabled.
         false);  // is_incognito_enabled.
-    extension_prefs_value_map->SetExtensionPref(
-        id,
-        prefs::kProxy,
-        kExtensionPrefsScopeRegular,
-            base::Value::CreateStringValue(id));
+    extension_prefs_value_map->SetExtensionPref(id,
+                                                prefs::kProxy,
+                                                kExtensionPrefsScopeRegular,
+                                                new base::StringValue(id));
 
     if (ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(id))
       return testing::AssertionSuccess();

@@ -41,7 +41,7 @@ bool ReadBase64String(const base::ListValue& list_value,
 void AppendBase64String(const std::string& str, base::ListValue* list_value) {
   std::string base64_str;
   base::Base64Encode(str, &base64_str);
-  list_value->Append(base::Value::CreateStringValue(base64_str));
+  list_value->AppendString(base64_str);
 }
 
 }  // namespace

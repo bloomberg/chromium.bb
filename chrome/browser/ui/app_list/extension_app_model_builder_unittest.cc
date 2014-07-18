@@ -290,7 +290,7 @@ TEST_F(ExtensionAppModelBuilderTest, InvalidOrdinal) {
   scoped_prefs->UpdateExtensionPref(
       kHostedAppId,
       "page_ordinal",
-      base::Value::CreateStringValue("a corrupted ordinal"));
+      new base::StringValue("a corrupted ordinal"));
 
   // This should not assert or crash.
   CreateBuilder();

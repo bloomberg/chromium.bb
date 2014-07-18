@@ -138,7 +138,7 @@ TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
   base::ListValue* value = new base::ListValue();
-  value->Append(base::Value::CreateStringValue("[*.]google.com"));
+  value->Append(new base::StringValue("[*.]google.com"));
   prefs->SetManagedPref(prefs::kManagedImagesBlockedForUrls,
                         value);
 
@@ -210,7 +210,7 @@ TEST_F(PolicyProviderTest, ResourceIdentifier) {
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
   base::ListValue* value = new base::ListValue();
-  value->Append(base::Value::CreateStringValue("[*.]google.com"));
+  value->Append(new base::StringValue("[*.]google.com"));
   prefs->SetManagedPref(prefs::kManagedPluginsAllowedForUrls,
                         value);
 
@@ -263,8 +263,8 @@ TEST_F(PolicyProviderTest, AutoSelectCertificateList) {
   std::string pattern_str("\"pattern\":\"[*.]google.com\"");
   std::string filter_str("\"filter\":{\"ISSUER\":{\"CN\":\"issuer name\"}}");
   base::ListValue* value = new base::ListValue();
-  value->Append(base::Value::CreateStringValue(
-      "{" + pattern_str + "," + filter_str + "}"));
+  value->Append(
+      new base::StringValue("{" + pattern_str + "," + filter_str + "}"));
   prefs->SetManagedPref(prefs::kManagedAutoSelectCertificateForUrls,
                         value);
   GURL youtube_url("https://www.youtube.com");
