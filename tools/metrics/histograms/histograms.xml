@@ -5560,6 +5560,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="EnterpriseCheck.InvalidPolicies" enum="EnterprisePolicies">
+  <owner>joaodasilva@chromium.org</owner>
+  <summary>
+    A set of policy rules that were ignored due to integrity violations while
+    parsing the policy data which happens on start-up and when the policy has
+    changed.
+  </summary>
+</histogram>
+
 <histogram name="EnterpriseCheck.InvalidPoliciesDetected"
     units="disabled policies">
   <owner>joaodasilva@chromium.org</owner>

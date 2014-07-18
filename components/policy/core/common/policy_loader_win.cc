@@ -30,6 +30,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/scoped_native_library.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -71,6 +72,16 @@ const char kExpectedWebStoreUrl[] =
     ";https://clients2.google.com/service/update2/crx";
 // String to be prepended to each blocked entry.
 const char kBlockedExtensionPrefix[] = "[BLOCKED]";
+
+// List of policies that are considered only if the user is part of a AD domain.
+const char* kInsecurePolicies[] = {
+    key::kMetricsReportingEnabled,
+    key::kDefaultSearchProviderEnabled,
+    key::kHomepageIsNewTabPage,
+    key::kHomepageLocation,
+    key::kRestoreOnStartup,
+    key::kRestoreOnStartupURLs
+};
 
 // The GUID of the registry settings group policy extension.
 GUID kRegistrySettingsCSEGUID = REGISTRY_EXTENSION_GUID;
@@ -126,10 +137,10 @@ void FilterUntrustedPolicy(PolicyMap* policy) {
   if (base::win::IsEnrolledToDomain())
     return;
 
+  int invalid_policies = 0;
   const PolicyMap::Entry* map_entry =
       policy->Get(policy::key::kExtensionInstallForcelist);
   if (map_entry && map_entry->value) {
-    int invalid_policies = 0;
     const base::ListValue* policy_list_value = NULL;
     if (!map_entry->value->GetAsList(&policy_list_value))
       return;
@@ -151,13 +162,33 @@ void FilterUntrustedPolicy(PolicyMap* policy) {
 
       filtered_values->AppendString(entry);
     }
-    policy->Set(policy::key::kExtensionInstallForcelist,
-                map_entry->level, map_entry->scope,
-                filtered_values.release(),
-                map_entry->external_data_fetcher);
-    UMA_HISTOGRAM_COUNTS("EnterpriseCheck.InvalidPoliciesDetected",
-                         invalid_policies);
+    if (invalid_policies) {
+      policy->Set(policy::key::kExtensionInstallForcelist,
+                  map_entry->level, map_entry->scope,
+                  filtered_values.release(),
+                  map_entry->external_data_fetcher);
+
+      const PolicyDetails* details = policy::GetChromePolicyDetails(
+          policy::key::kExtensionInstallForcelist);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("EnterpriseCheck.InvalidPolicies",
+                                  details->id);
+    }
   }
+
+  for (size_t i = 0; i < arraysize(kInsecurePolicies); ++i) {
+    if (policy->Get(kInsecurePolicies[i])) {
+      // TODO(pastarmovj): Surface this issue in the about:policy page.
+      policy->Erase(kInsecurePolicies[i]);
+      invalid_policies++;
+      const PolicyDetails* details =
+          policy::GetChromePolicyDetails(kInsecurePolicies[i]);
+      UMA_HISTOGRAM_SPARSE_SLOWLY("EnterpriseCheck.InvalidPolicies",
+                                  details->id);
+    }
+  }
+
+  UMA_HISTOGRAM_COUNTS("EnterpriseCheck.InvalidPoliciesDetected",
+                       invalid_policies);
 }
 
 // A helper class encapsulating run-time-linked function calls to Wow64 APIs.
