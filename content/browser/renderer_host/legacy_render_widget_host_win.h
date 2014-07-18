@@ -99,7 +99,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
     manager_ = manager;
   }
 
-  void OnManagerDeleted();
+  void OnManagerDeleted(content::BrowserAccessibilityManagerWin* manager);
 
   // Functions to show and hide the window.
   void Show();

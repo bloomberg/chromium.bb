@@ -17,8 +17,7 @@
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -59,10 +58,10 @@ IN_PROC_BROWSER_TEST_F(AndroidHitTestingBrowserTest,
   waiter.WaitForNotification();
 
   // Get the BrowserAccessibilityManager.
-  RenderWidgetHostViewBase* host_view = static_cast<RenderWidgetHostViewBase*>(
-      shell()->web_contents()->GetRenderWidgetHostView());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
   BrowserAccessibilityManager* manager =
-      host_view->GetBrowserAccessibilityManager();
+      web_contents->GetRootBrowserAccessibilityManager();
 
   // Send a hit test request, and wait for the hover event in response.
   AccessibilityNotificationWaiter hover_waiter(

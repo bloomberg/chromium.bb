@@ -2334,30 +2334,30 @@ TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
 }
 
 TEST_F(RenderViewImplTest, OnSetAccessibilityMode) {
-  ASSERT_EQ(AccessibilityModeOff, view()->accessibility_mode());
-  ASSERT_EQ((RendererAccessibility*) NULL, view()->renderer_accessibility());
+  ASSERT_EQ(AccessibilityModeOff, frame()->accessibility_mode());
+  ASSERT_EQ((RendererAccessibility*) NULL, frame()->renderer_accessibility());
 
-  view()->OnSetAccessibilityMode(AccessibilityModeTreeOnly);
-  ASSERT_EQ(AccessibilityModeTreeOnly, view()->accessibility_mode());
-  ASSERT_NE((RendererAccessibility*) NULL, view()->renderer_accessibility());
+  frame()->OnSetAccessibilityMode(AccessibilityModeTreeOnly);
+  ASSERT_EQ(AccessibilityModeTreeOnly, frame()->accessibility_mode());
+  ASSERT_NE((RendererAccessibility*) NULL, frame()->renderer_accessibility());
   ASSERT_EQ(RendererAccessibilityTypeComplete,
-            view()->renderer_accessibility()->GetType());
+            frame()->renderer_accessibility()->GetType());
 
-  view()->OnSetAccessibilityMode(AccessibilityModeOff);
-  ASSERT_EQ(AccessibilityModeOff, view()->accessibility_mode());
-  ASSERT_EQ((RendererAccessibility*) NULL, view()->renderer_accessibility());
+  frame()->OnSetAccessibilityMode(AccessibilityModeOff);
+  ASSERT_EQ(AccessibilityModeOff, frame()->accessibility_mode());
+  ASSERT_EQ((RendererAccessibility*) NULL, frame()->renderer_accessibility());
 
-  view()->OnSetAccessibilityMode(AccessibilityModeComplete);
-  ASSERT_EQ(AccessibilityModeComplete, view()->accessibility_mode());
-  ASSERT_NE((RendererAccessibility*) NULL, view()->renderer_accessibility());
+  frame()->OnSetAccessibilityMode(AccessibilityModeComplete);
+  ASSERT_EQ(AccessibilityModeComplete, frame()->accessibility_mode());
+  ASSERT_NE((RendererAccessibility*) NULL, frame()->renderer_accessibility());
   ASSERT_EQ(RendererAccessibilityTypeComplete,
-            view()->renderer_accessibility()->GetType());
+            frame()->renderer_accessibility()->GetType());
 
-  view()->OnSetAccessibilityMode(AccessibilityModeEditableTextOnly);
-  ASSERT_EQ(AccessibilityModeEditableTextOnly, view()->accessibility_mode());
-  ASSERT_NE((RendererAccessibility*) NULL, view()->renderer_accessibility());
+  frame()->OnSetAccessibilityMode(AccessibilityModeEditableTextOnly);
+  ASSERT_EQ(AccessibilityModeEditableTextOnly, frame()->accessibility_mode());
+  ASSERT_NE((RendererAccessibility*) NULL, frame()->renderer_accessibility());
   ASSERT_EQ(RendererAccessibilityTypeFocusOnly,
-            view()->renderer_accessibility()->GetType());
+            frame()->renderer_accessibility()->GetType());
 }
 
 TEST_F(RenderViewImplTest, ScreenMetricsEmulation) {

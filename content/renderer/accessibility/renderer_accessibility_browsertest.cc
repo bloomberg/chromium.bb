@@ -8,6 +8,7 @@
 #include "content/common/view_message_enums.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/accessibility/renderer_accessibility_complete.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -23,8 +24,8 @@ namespace content {
 
 class TestRendererAccessibilityComplete : public RendererAccessibilityComplete {
  public:
-  explicit TestRendererAccessibilityComplete(RenderViewImpl* render_view)
-    : RendererAccessibilityComplete(render_view) {
+  explicit TestRendererAccessibilityComplete(RenderFrameImpl* render_frame)
+    : RendererAccessibilityComplete(render_frame) {
   }
 
   void SendPendingAccessibilityEvents() {
@@ -50,7 +51,7 @@ class RendererAccessibilityTest : public RenderViewTest {
   }
 
   void SetMode(AccessibilityMode mode) {
-    view()->OnSetAccessibilityMode(mode);
+    frame()->OnSetAccessibilityMode(mode);
   }
 
   void GetLastAccEvent(
@@ -240,7 +241,7 @@ TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
   // Creating a RendererAccessibilityComplete should sent the tree
   // to the browser.
   scoped_ptr<TestRendererAccessibilityComplete> accessibility(
-      new TestRendererAccessibilityComplete(view()));
+      new TestRendererAccessibilityComplete(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
 
@@ -310,7 +311,7 @@ TEST_F(RendererAccessibilityTest,
   // Creating a RendererAccessibilityComplete should send the tree
   // to the browser.
   scoped_ptr<TestRendererAccessibilityComplete> accessibility(
-      new TestRendererAccessibilityComplete(view()));
+      new TestRendererAccessibilityComplete(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(5, CountAccessibilityNodesSentToBrowser());
 
@@ -364,7 +365,7 @@ TEST_F(RendererAccessibilityTest, HideAccessibilityObject) {
   LoadHTML(html.c_str());
 
   scoped_ptr<TestRendererAccessibilityComplete> accessibility(
-      new TestRendererAccessibilityComplete(view()));
+      new TestRendererAccessibilityComplete(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
 
@@ -416,7 +417,7 @@ TEST_F(RendererAccessibilityTest, ShowAccessibilityObject) {
   LoadHTML(html.c_str());
 
   scoped_ptr<TestRendererAccessibilityComplete> accessibility(
-      new TestRendererAccessibilityComplete(view()));
+      new TestRendererAccessibilityComplete(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
 
@@ -460,7 +461,7 @@ TEST_F(RendererAccessibilityTest, DetachAccessibilityObject) {
   LoadHTML(html.c_str());
 
   scoped_ptr<TestRendererAccessibilityComplete> accessibility(
-      new TestRendererAccessibilityComplete(view()));
+      new TestRendererAccessibilityComplete(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(7, CountAccessibilityNodesSentToBrowser());
 
@@ -528,7 +529,7 @@ TEST_F(RendererAccessibilityTest, EventOnObjectNotInTree) {
   LoadHTML(html.c_str());
 
   scoped_ptr<TestRendererAccessibilityComplete> accessibility(
-      new TestRendererAccessibilityComplete(view()));
+      new TestRendererAccessibilityComplete(frame()));
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
 

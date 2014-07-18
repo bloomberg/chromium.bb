@@ -4,6 +4,7 @@
 
 #include "content/renderer/accessibility/renderer_accessibility_focus_only.h"
 
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -26,8 +27,8 @@ const int kInitialId = 2;
 namespace content {
 
 RendererAccessibilityFocusOnly::RendererAccessibilityFocusOnly(
-    RenderViewImpl* render_view)
-    : RendererAccessibility(render_view),
+    RenderFrameImpl* render_frame)
+    : RendererAccessibility(render_frame),
       next_id_(kInitialId) {
 }
 
@@ -48,17 +49,12 @@ void RendererAccessibilityFocusOnly::FocusedNodeChanged(const WebNode& node) {
   HandleFocusedNodeChanged(node, true);
 }
 
-void RendererAccessibilityFocusOnly::DidFinishLoad(
-    blink::WebLocalFrame* frame) {
-  WebView* view = render_view()->GetWebView();
-  if (view->focusedFrame() != frame)
-    return;
-
-  WebDocument document = frame->document();
+void RendererAccessibilityFocusOnly::DidFinishLoad() {
   // Send an accessible tree to the browser, but do not post a native
   // focus event. This is important so that if focus is initially in an
   // editable text field, Windows will know to pop up the keyboard if the
   // user touches it and focus doesn't change.
+  const WebDocument& document = GetMainDocument();
   HandleFocusedNodeChanged(document.focusedElement(), false);
 }
 
@@ -74,13 +70,13 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
   // Check HasIMETextFocus first, because it will correctly handle
   // focus in a text box inside a ppapi plug-in. Otherwise fall back on
   // checking the focused node in Blink.
-  if (render_view_->HasIMETextFocus()) {
+  if (render_frame_->render_view()->HasIMETextFocus()) {
     node_has_focus = true;
     node_is_editable_text = true;
   } else {
     node_has_focus = !node.isNull();
     node_is_editable_text =
-        node_has_focus && render_view_->IsEditableNode(node);
+        node_has_focus && render_frame_->render_view()->IsEditableNode(node);
   }
 
   std::vector<AccessibilityHostMsg_EventParams> events;
@@ -109,7 +105,7 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
       (1 << ui::AX_STATE_FOCUSABLE);
   if (!node_has_focus)
     root.state |= (1 << ui::AX_STATE_FOCUSED);
-  root.location = gfx::Rect(render_view_->size());
+  root.location = gfx::Rect(render_frame_->render_view()->size());
   root.child_ids.push_back(next_id_);
 
   child.id = next_id_;
@@ -118,7 +114,7 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
   if (!node.isNull() && node.isElementNode()) {
     child.location = gfx::Rect(
         const_cast<WebNode&>(node).to<WebElement>().boundsInViewportSpace());
-  } else if (render_view_->HasIMETextFocus()) {
+  } else if (render_frame_->render_view()->HasIMETextFocus()) {
     child.location = root.location;
   } else {
     child.location = gfx::Rect();
