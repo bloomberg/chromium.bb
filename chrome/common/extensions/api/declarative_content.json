@@ -48,6 +48,39 @@
             "nodoc": true
           }
         }
+      },
+      {
+        "id": "RequestContentScript",
+        "description": "Declarative event action that injects a content script.",
+        "type": "object",
+        "properties": {
+          "css": {
+            "type": "array",
+            "optional": true,
+            "description": "Names of CSS files to be injected as a part of the content script.",
+            "items": { "type": "string" }
+          },
+          "js": {
+            "type": "array",
+            "optional": true,
+            "description": "Names of Javascript files to be injected as a part of the content script.",
+            "items": { "type": "string" }
+          },
+          "allFrames": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Whether the content script runs in all frames of the matching page, or only the top frame. Default is false."
+          },
+          "matchAboutBlank": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Whether to insert the content script on about:blank and about:srcdoc. Default is false."
+          },
+          "instanceType": {
+            "type": "string", "enum": ["declarativeContent.RequestContentScript"],
+            "nodoc": true
+          }
+        }
       }
     ],
     "functions": [
@@ -60,6 +93,7 @@
           "supportsRules": true,
           "conditions": ["declarativeContent.PageStateMatcher"],
           "actions": [
+            "declarativeContent.RequestContentScript",
             "declarativeContent.ShowPageAction"
           ]
         }

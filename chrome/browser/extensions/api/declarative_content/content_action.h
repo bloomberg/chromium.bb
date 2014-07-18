@@ -31,6 +31,7 @@ class ContentAction : public base::RefCounted<ContentAction> {
   // Type identifiers for concrete ContentActions.
   enum Type {
     ACTION_SHOW_PAGE_ACTION,
+    ACTION_REQUEST_CONTENT_SCRIPT,
   };
 
   struct ApplyInfo {

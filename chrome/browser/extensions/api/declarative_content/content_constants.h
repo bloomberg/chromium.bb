@@ -14,13 +14,17 @@ namespace declarative_content_constants {
 extern const char kOnPageChanged[];
 
 // Keys of dictionaries.
+extern const char kAllFrames[];
 extern const char kCss[];
 extern const char kInstanceType[];
+extern const char kJs[];
+extern const char kMatchAboutBlank[];
 extern const char kPageUrl[];
 
 // Values of dictionaries, in particular instance types
 extern const char kPageStateMatcherType[];
 extern const char kShowPageAction[];
+extern const char kRequestContentScript[];
 
 }  // namespace declarative_content_constants
 }  // namespace extensions

@@ -11,13 +11,17 @@ namespace declarative_content_constants {
 const char kOnPageChanged[] = "declarativeContent.onPageChanged";
 
 // Keys of dictionaries.
+const char kAllFrames[] = "allFrames";
 const char kCss[] = "css";
 const char kInstanceType[] = "instanceType";
+const char kJs[] = "js";
+const char kMatchAboutBlank[] = "matchAboutBlank";
 const char kPageUrl[] = "pageUrl";
 
 // Values of dictionaries, in particular instance types
 const char kPageStateMatcherType[] = "declarativeContent.PageStateMatcher";
 const char kShowPageAction[] = "declarativeContent.ShowPageAction";
+const char kRequestContentScript[] = "declarativeContent.RequestContentScript";
 
 }  // namespace declarative_content_constants
 }  // namespace extensions

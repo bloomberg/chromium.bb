@@ -60,6 +60,9 @@ binding.registerCustomHook( function(api) {
   declarativeContent.ShowPageAction = function(parameters) {
     setupInstance(this, parameters, 'ShowPageAction');
   };
+  declarativeContent.RequestContentScript = function(parameters) {
+    setupInstance(this, parameters, 'RequestContentScript');
+  };
 });
 
 exports.binding = binding.generate();

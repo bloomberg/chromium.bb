@@ -109,5 +109,181 @@ TEST(DeclarativeContentActionTest, ShowPageAction) {
   EXPECT_FALSE(page_action->GetIsVisible(tab_id));
 }
 
+TEST(DeclarativeContentActionTest, RequestContentScriptMissingScripts) {
+  TestExtensionEnvironment env;
+
+  std::string error;
+  bool bad_message = false;
+  scoped_refptr<const ContentAction> result = ContentAction::Create(
+      NULL,
+      *ParseJson(
+          "{\n"
+          "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
+          "  \"allFrames\": true,\n"
+          "  \"matchAboutBlank\": true\n"
+          "}"),
+      &error,
+      &bad_message);
+  EXPECT_THAT(error, testing::HasSubstr("Missing parameter is required"));
+  EXPECT_FALSE(bad_message);
+  ASSERT_FALSE(result.get());
+}
+
+TEST(DeclarativeContentActionTest, RequestContentScriptCSS) {
+  TestExtensionEnvironment env;
+
+  std::string error;
+  bool bad_message = false;
+  scoped_refptr<const ContentAction> result = ContentAction::Create(
+      NULL,
+      *ParseJson(
+          "{\n"
+          "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
+          "  \"css\": [\"style.css\"]\n"
+          "}"),
+      &error,
+      &bad_message);
+  EXPECT_EQ("", error);
+  EXPECT_FALSE(bad_message);
+  ASSERT_TRUE(result.get());
+  EXPECT_EQ(ContentAction::ACTION_REQUEST_CONTENT_SCRIPT, result->GetType());
+}
+
+TEST(DeclarativeContentActionTest, RequestContentScriptJS) {
+  TestExtensionEnvironment env;
+
+  std::string error;
+  bool bad_message = false;
+  scoped_refptr<const ContentAction> result = ContentAction::Create(
+      NULL,
+      *ParseJson(
+          "{\n"
+          "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
+          "  \"js\": [\"script.js\"]\n"
+          "}"),
+      &error,
+      &bad_message);
+  EXPECT_EQ("", error);
+  EXPECT_FALSE(bad_message);
+  ASSERT_TRUE(result.get());
+  EXPECT_EQ(ContentAction::ACTION_REQUEST_CONTENT_SCRIPT, result->GetType());
+}
+
+TEST(DeclarativeContentActionTest, RequestContentScriptCSSBadType) {
+  TestExtensionEnvironment env;
+
+  std::string error;
+  bool bad_message = false;
+  scoped_refptr<const ContentAction> result = ContentAction::Create(
+      NULL,
+      *ParseJson(
+          "{\n"
+          "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
+          "  \"css\": \"style.css\"\n"
+          "}"),
+      &error,
+      &bad_message);
+  EXPECT_TRUE(bad_message);
+  ASSERT_FALSE(result.get());
+}
+
+TEST(DeclarativeContentActionTest, RequestContentScriptJSBadType) {
+  TestExtensionEnvironment env;
+
+  std::string error;
+  bool bad_message = false;
+  scoped_refptr<const ContentAction> result = ContentAction::Create(
+      NULL,
+      *ParseJson(
+          "{\n"
+          "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
+          "  \"js\": \"script.js\"\n"
+          "}"),
+      &error,
+      &bad_message);
+  EXPECT_TRUE(bad_message);
+  ASSERT_FALSE(result.get());
+}
+
+TEST(DeclarativeContentActionTest, RequestContentScriptAllFrames) {
+  TestExtensionEnvironment env;
+
+  std::string error;
+  bool bad_message = false;
+  scoped_refptr<const ContentAction> result = ContentAction::Create(
+      NULL,
+      *ParseJson(
+          "{\n"
+          "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
+          "  \"js\": [\"script.js\"],\n"
+          "  \"allFrames\": true\n"
+          "}"),
+      &error,
+      &bad_message);
+  EXPECT_EQ("", error);
+  EXPECT_FALSE(bad_message);
+  ASSERT_TRUE(result.get());
+  EXPECT_EQ(ContentAction::ACTION_REQUEST_CONTENT_SCRIPT, result->GetType());
+}
+
+TEST(DeclarativeContentActionTest, RequestContentScriptMatchAboutBlank) {
+  TestExtensionEnvironment env;
+
+  std::string error;
+  bool bad_message = false;
+  scoped_refptr<const ContentAction> result = ContentAction::Create(
+      NULL,
+      *ParseJson(
+          "{\n"
+          "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
+          "  \"js\": [\"script.js\"],\n"
+          "  \"matchAboutBlank\": true\n"
+          "}"),
+      &error,
+      &bad_message);
+  EXPECT_EQ("", error);
+  EXPECT_FALSE(bad_message);
+  ASSERT_TRUE(result.get());
+  EXPECT_EQ(ContentAction::ACTION_REQUEST_CONTENT_SCRIPT, result->GetType());
+}
+
+TEST(DeclarativeContentActionTest, RequestContentScriptAllFramesBadType) {
+  TestExtensionEnvironment env;
+
+  std::string error;
+  bool bad_message = false;
+  scoped_refptr<const ContentAction> result = ContentAction::Create(
+      NULL,
+      *ParseJson(
+          "{\n"
+          "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
+          "  \"js\": [\"script.js\"],\n"
+          "  \"allFrames\": null\n"
+          "}"),
+      &error,
+      &bad_message);
+  EXPECT_TRUE(bad_message);
+  ASSERT_FALSE(result.get());
+}
+
+TEST(DeclarativeContentActionTest, RequestContentScriptMatchAboutBlankBadType) {
+  TestExtensionEnvironment env;
+
+  std::string error;
+  bool bad_message = false;
+  scoped_refptr<const ContentAction> result = ContentAction::Create(
+      NULL,
+      *ParseJson(
+          "{\n"
+          "  \"instanceType\": \"declarativeContent.RequestContentScript\",\n"
+          "  \"js\": [\"script.js\"],\n"
+          "  \"matchAboutBlank\": null\n"
+          "}"),
+      &error,
+      &bad_message);
+  EXPECT_TRUE(bad_message);
+  ASSERT_FALSE(result.get());
+}
+
 }  // namespace
 }  // namespace extensions

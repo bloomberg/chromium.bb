@@ -29,6 +29,7 @@ const char kInvalidInstanceTypeError[] =
     "An action has an invalid instanceType: %s";
 const char kNoPageAction[] =
     "Can't use declarativeContent.ShowPageAction without a page action";
+const char kMissingParameter[] = "Missing parameter is required: %s";
 
 #define INPUT_FORMAT_VALIDATE(test) do { \
     if (!(test)) { \
@@ -94,6 +95,108 @@ class ShowPageAction : public ContentAction {
   DISALLOW_COPY_AND_ASSIGN(ShowPageAction);
 };
 
+// Action that injects a content script.
+class RequestContentScript : public ContentAction {
+ public:
+  RequestContentScript(const std::vector<std::string>& css_file_names,
+                       const std::vector<std::string>& js_file_names,
+                       bool all_frames,
+                       bool match_about_blank)
+      : css_file_names_(css_file_names),
+        js_file_names_(js_file_names),
+        all_frames_(all_frames),
+        match_about_blank_(match_about_blank) {}
+
+  static scoped_refptr<ContentAction> Create(const Extension* extension,
+                                             const base::DictionaryValue* dict,
+                                             std::string* error,
+                                             bool* bad_message);
+
+  // Implementation of ContentAction:
+  virtual Type GetType() const OVERRIDE {
+    return ACTION_REQUEST_CONTENT_SCRIPT;
+  }
+
+  virtual void Apply(const std::string& extension_id,
+                     const base::Time& extension_install_time,
+                     ApplyInfo* apply_info) const OVERRIDE {
+    // TODO(markdittmer): Invoke UserScriptMaster declarative script loader:
+    // load new user script.
+  }
+
+  virtual void Revert(const std::string& extension_id,
+                      const base::Time& extension_install_time,
+                      ApplyInfo* apply_info) const OVERRIDE {
+    // TODO(markdittmer): Invoke UserScriptMaster declarative script loader:
+    // do not load user script if Apply() runs again on the same page.
+  }
+
+ private:
+  virtual ~RequestContentScript() {}
+
+  std::vector<std::string> css_file_names_;
+  std::vector<std::string> js_file_names_;
+  bool all_frames_;
+  bool match_about_blank_;
+
+  DISALLOW_COPY_AND_ASSIGN(RequestContentScript);
+};
+
+// Helper for getting JS collections into C++.
+static bool AppendJSStringsToCPPStrings(const base::ListValue& append_strings,
+                                        std::vector<std::string>* append_to) {
+  for (base::ListValue::const_iterator it = append_strings.begin();
+       it != append_strings.end();
+       ++it) {
+    std::string value;
+    if ((*it)->GetAsString(&value)) {
+      append_to->push_back(value);
+    } else {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+// static
+scoped_refptr<ContentAction> RequestContentScript::Create(
+    const Extension* extension,
+    const base::DictionaryValue* dict,
+    std::string* error,
+    bool* bad_message) {
+  std::vector<std::string> css_file_names;
+  std::vector<std::string> js_file_names;
+  bool all_frames = false;
+  bool match_about_blank = false;
+  const base::ListValue* list_value;
+
+  if (!dict->HasKey(keys::kCss) && !dict->HasKey(keys::kJs)) {
+    *error = base::StringPrintf(kMissingParameter, "css or js");
+    return scoped_refptr<ContentAction>();
+  }
+  if (dict->HasKey(keys::kCss)) {
+    INPUT_FORMAT_VALIDATE(dict->GetList(keys::kCss, &list_value));
+    INPUT_FORMAT_VALIDATE(
+        AppendJSStringsToCPPStrings(*list_value, &css_file_names));
+  }
+  if (dict->HasKey(keys::kJs)) {
+    INPUT_FORMAT_VALIDATE(dict->GetList(keys::kJs, &list_value));
+    INPUT_FORMAT_VALIDATE(
+        AppendJSStringsToCPPStrings(*list_value, &js_file_names));
+  }
+  if (dict->HasKey(keys::kAllFrames)) {
+    INPUT_FORMAT_VALIDATE(dict->GetBoolean(keys::kAllFrames, &all_frames));
+  }
+  if (dict->HasKey(keys::kMatchAboutBlank)) {
+    INPUT_FORMAT_VALIDATE(
+        dict->GetBoolean(keys::kMatchAboutBlank, &match_about_blank));
+  }
+
+  return scoped_refptr<ContentAction>(new RequestContentScript(
+      css_file_names, js_file_names, all_frames, match_about_blank));
+}
+
 struct ContentActionFactory {
   // Factory methods for ContentAction instances. |extension| is the extension
   // for which the action is being created. |dict| contains the json dictionary
@@ -113,6 +216,8 @@ struct ContentActionFactory {
   ContentActionFactory() {
     factory_methods[keys::kShowPageAction] =
         &ShowPageAction::Create;
+    factory_methods[keys::kRequestContentScript] =
+        &RequestContentScript::Create;
   }
 };
 
