@@ -259,13 +259,14 @@ MetadataCache.prototype.getInternal_ =
 
 /**
  * Fetches the metadata for one Entry. See comments to |get|.
+ * If required metadata is already in the cache, does not fetch it again.
  *
  * @param {Entry} entry The entry.
  * @param {string} type Metadata type.
  * @param {function(Object)} callback The metadata is passed to callback.
  *     The callback is called asynchronously.
  */
-MetadataCache.prototype.getOne = function(entry, type, callback, refresh) {
+MetadataCache.prototype.getOne = function(entry, type, callback) {
   this.getOneInternal_(entry, type, false, callback);
 };
 
