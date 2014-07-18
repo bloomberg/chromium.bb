@@ -6,7 +6,7 @@ Script execution paused.
 
 Dump scope sections:
 Catch
-    e: Error
+    e: Error: An exception
 Local
     innerFunctionLocalVar: 2012
     negInf: -Infinity

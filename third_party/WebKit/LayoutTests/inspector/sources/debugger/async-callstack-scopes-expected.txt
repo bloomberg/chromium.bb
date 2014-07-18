@@ -15,7 +15,7 @@ WindowGlobal
 ObjectWith Block
     foo: "bar2"
 Catch
-    e: Error
+    e: Error: An exception
 Local
     arguments: Arguments[1]
     innerFunctionLocalVar: 202

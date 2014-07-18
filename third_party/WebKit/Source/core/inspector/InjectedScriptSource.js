@@ -682,9 +682,11 @@ InjectedScript.prototype = {
     _createThrownValue: function(value, objectGroup, exceptionDetails)
     {
         var remoteObject = this._wrapObject(value, objectGroup);
-        try {
-            remoteObject.description = toStringDescription(value);
-        } catch (e) {}
+        if (!remoteObject.description){
+            try {
+                remoteObject.description = toStringDescription(value);
+            } catch (e) {}
+        }
         return { wasThrown: true, result: remoteObject, exceptionDetails: exceptionDetails, __proto__: null };
     },
 
@@ -1041,6 +1043,9 @@ InjectedScript.prototype = {
                 return "Symbol";
             }
         }
+
+        if (obj instanceof Error && !!obj.message)
+            return className + ": " + obj.message;
 
         return className;
     }

@@ -110,10 +110,10 @@ Error {stack: (...)}stack: (...)get stack: function () { [native code] }set stac
 [Error]0: Errorlength: 1__proto__: Array[0] console-format.html:13
 globals[4]
 Error {stack: (...)}stack: (...)get stack: function () { [native code] }set stack: function () { [native code] }__proto__: d
-Error {stack: (...), message: "my error message"}message: "my error message"stack: (...)get stack: function () { [native code] }set stack: function () { [native code] }__proto__: d console-format.html:12
-[Error]0: Errorlength: 1__proto__: Array[0] console-format.html:13
+Error: my error message {stack: (...), message: "my error message"}message: "my error message"stack: (...)get stack: function () { [native code] }set stack: function () { [native code] }__proto__: d console-format.html:12
+[Error: my error message]0: Error: my error messagelength: 1__proto__: Array[0] console-format.html:13
 globals[5]
-Error {stack: (...), message: "my error message"}message: "my error message"stack: (...)get stack: function () { [native code] }set stack: function () { [native code] }__proto__: d
+Error: my error message {stack: (...), message: "my error message"}message: "my error message"stack: (...)get stack: function () { [native code] }set stack: function () { [native code] }__proto__: d
 <p id="p">Tests that console logging dumps proper messages.</p> console-format.html:12
 [p#p]0: p#plength: 1__proto__: Array[0] console-format.html:13
 globals[6]
