@@ -1633,7 +1633,7 @@ void GraphicsContext::adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2
     }
 }
 
-PassOwnPtr<ImageBuffer> GraphicsContext::createCompatibleBuffer(const IntSize& size, OpacityMode opacityMode) const
+PassOwnPtr<ImageBuffer> GraphicsContext::createRasterBuffer(const IntSize& size, OpacityMode opacityMode) const
 {
     // Make the buffer larger if the context's transform is scaling it so we need a higher
     // resolution than one pixel per unit. Also set up a corresponding scale factor on the
@@ -1644,7 +1644,7 @@ PassOwnPtr<ImageBuffer> GraphicsContext::createCompatibleBuffer(const IntSize& s
 
     SkAlphaType alphaType = (opacityMode == Opaque) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
     SkImageInfo info = SkImageInfo::MakeN32(size.width(), size.height(), alphaType);
-    RefPtr<SkSurface> skSurface = adoptRef(m_canvas->newSurface(info));
+    RefPtr<SkSurface> skSurface = adoptRef(SkSurface::NewRaster(info));
     if (!skSurface)
         return nullptr;
     OwnPtr<ImageBufferSurface> surface = adoptPtr(new CompatibleImageBufferSurface(skSurface.release(), scaledSize, opacityMode));
