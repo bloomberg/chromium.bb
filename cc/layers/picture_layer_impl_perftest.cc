@@ -68,24 +68,46 @@ class PictureLayerImplPerfTest : public testing::Test {
     pending_layer_->DoPostCommitInitializationIfNeeded();
   }
 
-  void RunLayerRasterTileIteratorTest(const std::string& test_name,
-                                      int num_tiles,
-                                      const gfx::Size& viewport_size) {
+  void RunRasterIteratorConstructAndIterateTest(
+      const std::string& test_name,
+      int num_tiles,
+      const gfx::Size& viewport_size) {
     host_impl_.SetViewportSize(viewport_size);
     host_impl_.pending_tree()->UpdateDrawProperties();
 
     timer_.Reset();
     do {
       int count = num_tiles;
-      for (PictureLayerImpl::LayerRasterTileIterator it(pending_layer_, false);
-           it && count;
-           ++it) {
-        --count;
+      PictureLayerImpl::LayerRasterTileIterator it(pending_layer_, false);
+      while (count--) {
+        ASSERT_TRUE(it) << "count: " << count;
+        ASSERT_TRUE(*it != NULL) << "count: " << count;
+        ++it;
       }
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("layer_raster_tile_iterator",
+    perf_test::PrintResult("layer_raster_tile_iterator_construct_and_iterate",
+                           "",
+                           test_name,
+                           timer_.LapsPerSecond(),
+                           "runs/s",
+                           true);
+  }
+
+  void RunRasterIteratorConstructTest(const std::string& test_name,
+                                      const gfx::Rect& viewport) {
+    host_impl_.SetViewportSize(viewport.size());
+    pending_layer_->SetScrollOffset(gfx::Vector2d(viewport.x(), viewport.y()));
+    host_impl_.pending_tree()->UpdateDrawProperties();
+
+    timer_.Reset();
+    do {
+      PictureLayerImpl::LayerRasterTileIterator it(pending_layer_, false);
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
+
+    perf_test::PrintResult("layer_raster_tile_iterator_construct",
                            "",
                            test_name,
                            timer_.LapsPerSecond(),
@@ -163,7 +185,7 @@ class PictureLayerImplPerfTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImplPerfTest);
 };
 
-TEST_F(PictureLayerImplPerfTest, LayerRasterTileIterator) {
+TEST_F(PictureLayerImplPerfTest, LayerRasterTileIteratorConstructAndIterate) {
   SetupPendingTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
@@ -174,10 +196,32 @@ TEST_F(PictureLayerImplPerfTest, LayerRasterTileIterator) {
   pending_layer_->AddTiling(1.0f);
   pending_layer_->AddTiling(2.0f);
 
-  RunLayerRasterTileIteratorTest("32_100x100", 32, gfx::Size(100, 100));
-  RunLayerRasterTileIteratorTest("32_500x500", 32, gfx::Size(500, 500));
-  RunLayerRasterTileIteratorTest("64_100x100", 64, gfx::Size(100, 100));
-  RunLayerRasterTileIteratorTest("64_500x500", 64, gfx::Size(500, 500));
+  RunRasterIteratorConstructAndIterateTest(
+      "32_100x100", 32, gfx::Size(100, 100));
+  RunRasterIteratorConstructAndIterateTest(
+      "32_500x500", 32, gfx::Size(500, 500));
+  RunRasterIteratorConstructAndIterateTest(
+      "64_100x100", 64, gfx::Size(100, 100));
+  RunRasterIteratorConstructAndIterateTest(
+      "64_500x500", 64, gfx::Size(500, 500));
+}
+
+TEST_F(PictureLayerImplPerfTest, LayerRasterTileIteratorConstruct) {
+  SetupPendingTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
+
+  float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
+
+  pending_layer_->AddTiling(low_res_factor);
+  pending_layer_->AddTiling(0.3f);
+  pending_layer_->AddTiling(0.7f);
+  pending_layer_->AddTiling(1.0f);
+  pending_layer_->AddTiling(2.0f);
+
+  RunRasterIteratorConstructTest("0_0_100x100", gfx::Rect(0, 0, 100, 100));
+  RunRasterIteratorConstructTest("5000_0_100x100",
+                                 gfx::Rect(5000, 0, 100, 100));
+  RunRasterIteratorConstructTest("9999_0_100x100",
+                                 gfx::Rect(9999, 0, 100, 100));
 }
 
 TEST_F(PictureLayerImplPerfTest, LayerEvictionTileIteratorConstructAndIterate) {
