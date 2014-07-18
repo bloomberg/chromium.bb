@@ -614,6 +614,8 @@ WebInspector.targetManager.observeTargets({
             WebInspector.domModel = target.domModel;
         if (!WebInspector.consoleModel)
             WebInspector.consoleModel = target.consoleModel;
+        if (!WebInspector.networkManager)
+            WebInspector.networkManager = target.networkManager;
     },
 
     targetRemoved: function(target) { }
