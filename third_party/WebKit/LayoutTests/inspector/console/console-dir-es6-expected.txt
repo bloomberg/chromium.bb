@@ -1,5 +1,5 @@
 CONSOLE MESSAGE: line 15: [object Object]
-CONSOLE MESSAGE: line 18: 
+CONSOLE MESSAGE: line 18: Symbol()
 Tests that console logging dumps proper messages.
 
 Object

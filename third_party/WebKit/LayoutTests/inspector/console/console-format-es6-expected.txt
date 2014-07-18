@@ -1,8 +1,8 @@
 CONSOLE MESSAGE: line 11: [object Object]
 CONSOLE MESSAGE: line 12: [object Object]
-CONSOLE MESSAGE: line 11: 
+CONSOLE MESSAGE: line 11: Symbol()
 CONSOLE MESSAGE: line 12: Symbol()
-CONSOLE MESSAGE: line 11: 
+CONSOLE MESSAGE: line 11: Symbol(a)
 CONSOLE MESSAGE: line 12: Symbol(a)
 CONSOLE MESSAGE: line 11: [object Object]
 CONSOLE MESSAGE: line 12: [object Object]

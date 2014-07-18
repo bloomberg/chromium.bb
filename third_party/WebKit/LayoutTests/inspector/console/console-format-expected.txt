@@ -66,8 +66,8 @@ CONSOLE MESSAGE: line 12: [object Object]
 CONSOLE MESSAGE: line 13: [object Object]
 CONSOLE MESSAGE: line 12: 0
 CONSOLE MESSAGE: line 13: 0
-CONSOLE MESSAGE: line 12: 
-CONSOLE MESSAGE: line 13: 
+CONSOLE MESSAGE: line 12: [object Object]
+CONSOLE MESSAGE: line 13: [object Object]
 CONSOLE MESSAGE: line 12: function Object() { [native code] }
 CONSOLE MESSAGE: line 13: function Object() { [native code] }
 CONSOLE MESSAGE: line 12: [object Object]

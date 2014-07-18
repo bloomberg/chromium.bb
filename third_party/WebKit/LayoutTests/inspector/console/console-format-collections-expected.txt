@@ -6,8 +6,8 @@ CONSOLE MESSAGE: line 31: [object HTMLFormControlsCollection]
 CONSOLE MESSAGE: line 35: [object RadioNodeList]
 CONSOLE MESSAGE: line 41: 1,2,
 CONSOLE MESSAGE: line 44: [object Object]
-CONSOLE MESSAGE: line 51: [object Arguments]
-CONSOLE MESSAGE: line 55: c1 c2 c3
+CONSOLE MESSAGE: line 51: [object Object]
+CONSOLE MESSAGE: line 55: [object DOMTokenList]
 CONSOLE MESSAGE: line 15: [object HTMLCollection]
 CONSOLE MESSAGE: line 19: [object HTMLCollection]
 CONSOLE MESSAGE: line 23: [object HTMLOptionsCollection]
@@ -16,8 +16,8 @@ CONSOLE MESSAGE: line 31: [object HTMLFormControlsCollection]
 CONSOLE MESSAGE: line 35: [object RadioNodeList]
 CONSOLE MESSAGE: line 41: 1,2,
 CONSOLE MESSAGE: line 44: [object Object]
-CONSOLE MESSAGE: line 51: [object Arguments]
-CONSOLE MESSAGE: line 55: c1 c2 c3
+CONSOLE MESSAGE: line 51: [object Object]
+CONSOLE MESSAGE: line 55: [object DOMTokenList]
 Tests that console nicely formats HTML Collections, NodeLists and DOMTokenLists.
 
 HTMLCollection[1] console-format-collections.html:15

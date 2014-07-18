@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 11: 
+CONSOLE MESSAGE: line 11: Symbol()
 Tests that console properly displays information about ES6 Symbols.
 
 Symbol console-format-es6-symbols-error.html:11
