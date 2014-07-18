@@ -51,7 +51,7 @@ bool GbmSurface::Initialize() {
   if (!native_surface_)
     return false;
 
-  dumb_buffer_.reset(new DriBuffer(dri_));
+  dumb_buffer_ = new DriBuffer(dri_);
   if (!dumb_buffer_->Initialize(SkImageInfo::MakeN32Premul(size_.width(),
                                                            size_.height())))
     return false;
@@ -61,7 +61,7 @@ bool GbmSurface::Initialize() {
 
 uint32_t GbmSurface::GetFramebufferId() const {
   if (!buffers_[front_buffer_ ^ 1])
-    return dumb_buffer_->framebuffer();
+    return dumb_buffer_->GetFramebufferId();
 
   BufferData* data = BufferData::GetData(buffers_[front_buffer_ ^ 1]);
   CHECK(data);
@@ -70,7 +70,7 @@ uint32_t GbmSurface::GetFramebufferId() const {
 
 uint32_t GbmSurface::GetHandle() const {
   if (!buffers_[front_buffer_ ^ 1])
-    return dumb_buffer_->handle();
+    return dumb_buffer_->GetHandle();
 
   BufferData* data = BufferData::GetData(buffers_[front_buffer_ ^ 1]);
   CHECK(data);

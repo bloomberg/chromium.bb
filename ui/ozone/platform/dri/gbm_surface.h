@@ -6,7 +6,7 @@
 #define UI_OZONE_PLATFORM_DRI_GBM_SURFACE_H_
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/ozone/platform/dri/scanout_surface.h"
 
@@ -58,7 +58,7 @@ class GbmSurface : public ScanoutSurface {
   // after something draws into it. But modesetting needs to happen earlier,
   // before an actual window is created and draws. So, we create a dumb buffer
   // for this purpose.
-  scoped_ptr<DriBuffer> dumb_buffer_;
+  scoped_refptr<DriBuffer> dumb_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmSurface);
 };

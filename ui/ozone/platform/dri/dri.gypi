@@ -65,6 +65,7 @@
         'scoped_drm_types.h',
         'screen_manager.cc',
         'screen_manager.h',
+        'scanout_buffer.h',
         'scanout_surface.h',
         'virtual_terminal_manager.cc',
         'virtual_terminal_manager.h',

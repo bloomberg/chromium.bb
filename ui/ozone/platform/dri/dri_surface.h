@@ -6,7 +6,7 @@
 #define UI_OZONE_PLATFORM_DRI_DRI_SURFACE_H_
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/ozone/platform/dri/scanout_surface.h"
@@ -45,7 +45,7 @@ class DriSurface : public ScanoutSurface {
   DriWrapper* dri_;
 
   // The actual buffers used for painting.
-  scoped_ptr<DriBuffer> bitmaps_[2];
+  scoped_refptr<DriBuffer> bitmaps_[2];
 
   // Keeps track of which bitmap is |buffers_| is the frontbuffer.
   int front_buffer_;

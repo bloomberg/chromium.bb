@@ -8,8 +8,7 @@
 #include "base/macros.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkSurface.h"
-
-class SkCanvas;
+#include "ui/ozone/platform/dri/scanout_buffer.h"
 
 namespace ui {
 
@@ -18,21 +17,24 @@ class DriWrapper;
 // Wrapper for a DRM allocated buffer. Keeps track of the native properties of
 // the buffer and wraps the pixel memory into a SkSurface which can be used to
 // draw into using Skia.
-class DriBuffer {
+class DriBuffer : public ScanoutBuffer {
  public:
   DriBuffer(DriWrapper* dri);
-  ~DriBuffer();
-
-  uint32_t stride() const { return stride_; }
-  uint32_t handle() const { return handle_; }
-  uint32_t framebuffer() const { return framebuffer_; }
-  SkCanvas* canvas() { return surface_->getCanvas(); }
 
   // Allocates the backing pixels and wraps them in |surface_|. |info| is used
   // to describe the buffer characteristics (size, color format).
   bool Initialize(const SkImageInfo& info);
 
- private:
+  SkCanvas* GetCanvas() const;
+
+  // ScanoutBuffer:
+  virtual uint32_t GetFramebufferId() const OVERRIDE;
+  virtual uint32_t GetHandle() const OVERRIDE;
+  virtual gfx::Size GetSize() const OVERRIDE;
+
+ protected:
+  virtual ~DriBuffer();
+
   DriWrapper* dri_;  // Not owned.
 
   // Wrapper around the native pixel memory.
@@ -49,6 +51,20 @@ class DriBuffer {
   uint32_t framebuffer_;
 
   DISALLOW_COPY_AND_ASSIGN(DriBuffer);
+};
+
+class DriBufferGenerator : public ScanoutBufferGenerator {
+ public:
+  DriBufferGenerator(DriWrapper* dri);
+  virtual ~DriBufferGenerator();
+
+  // ScanoutBufferGenerator:
+  virtual scoped_refptr<ScanoutBuffer> Create(const gfx::Size& size) OVERRIDE;
+
+ private:
+  DriWrapper* dri_;  // Not owned.
+
+  DISALLOW_COPY_AND_ASSIGN(DriBufferGenerator);
 };
 
 }  // namespace ui
