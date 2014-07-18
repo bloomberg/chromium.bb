@@ -493,8 +493,6 @@ ImageView.prototype.replaceContent_ = function(
   this.viewport_.setImageSize(
       opt_width || this.contentCanvas_.width,
       opt_height || this.contentCanvas_.height);
-  this.viewport_.fitImage();
-  this.viewport_.update();
   this.draw();
 
   this.container_.appendChild(this.screenImage_);
@@ -846,7 +844,7 @@ ImageView.Effect.prototype.transform = function(element, viewport) {
  * @extends {ImageView.Effect}
  */
 ImageView.Effect.None = function() {
-  ImageView.Effect.call(this, 0);
+  ImageView.Effect.call(this, 0, 'easy-out');
 };
 
 /**
@@ -873,7 +871,7 @@ ImageView.Effect.None.prototype.transform = function(element, viewport) {
  */
 ImageView.Effect.Slide = function Slide(direction, opt_slow) {
   ImageView.Effect.call(this,
-      opt_slow ? 800 : ImageView.Effect.DEFAULT_DURATION, 'ease-in-out');
+      opt_slow ? 800 : ImageView.Effect.DEFAULT_DURATION, 'ease-out');
   this.direction_ = direction;
   this.slow_ = opt_slow;
   this.shift_ = opt_slow ? 100 : 40;
@@ -913,7 +911,7 @@ ImageView.Effect.Slide.prototype.transform = function(element, viewport) {
 ImageView.Effect.Zoom = function(
     previousImageWidth, previousImageHeight, imageCropRect, opt_duration) {
   ImageView.Effect.call(this,
-      opt_duration || ImageView.Effect.DEFAULT_DURATION);
+      opt_duration || ImageView.Effect.DEFAULT_DURATION, 'ease-out');
   this.previousImageWidth_ = previousImageWidth;
   this.previousImageHeight_ = previousImageHeight;
   this.imageCropRect_ = imageCropRect;

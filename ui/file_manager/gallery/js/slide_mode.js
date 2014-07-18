@@ -49,15 +49,11 @@ function SlideMode(container, content, toolbar, prompt,
 }
 
 /**
- * SlideMode extends cr.EventTarget.
- */
-SlideMode.prototype.__proto__ = cr.EventTarget.prototype;
-
-/**
  * List of available editor modes.
  * @type {Array.<ImageEditor.Mode>}
+ * @const
  */
-SlideMode.editorModes = [
+SlideMode.EDITOR_MODES = Object.freeze([
   new ImageEditor.Mode.InstantAutofix(),
   new ImageEditor.Mode.Crop(),
   new ImageEditor.Mode.Exposure(),
@@ -65,7 +61,24 @@ SlideMode.editorModes = [
       'rotate_left', 'GALLERY_ROTATE_LEFT', new Command.Rotate(-1)),
   new ImageEditor.Mode.OneClick(
       'rotate_right', 'GALLERY_ROTATE_RIGHT', new Command.Rotate(1))
-];
+]);
+
+/**
+ * Map of the key identifier and offset delta.
+ * @type {Object.<string, Array.<number>})
+ * @const
+ */
+SlideMode.KEY_OFFSET_MAP = Object.freeze({
+  'Up': Object.freeze([0, 20]),
+  'Down': Object.freeze([0, -20]),
+  'Left': Object.freeze([20, 0]),
+  'Right': Object.freeze([-20, 0])
+});
+
+/**
+ * SlideMode extends cr.EventTarget.
+ */
+SlideMode.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
  * @return {string} Mode name.
@@ -216,7 +229,7 @@ SlideMode.prototype.initDom_ = function() {
         toolbar: this.editBarMain_,
         mode: this.editBarModeWrapper_
       },
-      SlideMode.editorModes,
+      SlideMode.EDITOR_MODES,
       this.displayStringFunction_,
       this.onToolsVisibilityChanged_.bind(this));
 
@@ -334,7 +347,7 @@ SlideMode.prototype.leave = function(zoomToRect, callback) {
       callback();
     }.bind(this);
 
-  this.viewport_.setZoomIndex(0);
+  this.viewport_.resetView();
   if (this.getItemCount_() === 0) {
     this.showErrorBanner_(false);
     commitDone();
@@ -846,9 +859,14 @@ SlideMode.prototype.onKeyDown = function(event) {
       break;
 
     case 'U+001B':  // Escape
-      if (!this.isEditing())
+      if (this.isEditing()) {
+        this.toggleEditor(event);
+      } else if (this.viewport_.getZoomIndex() !== 0) {
+        this.viewport_.resetView();
+        this.imageView_.applyViewportChange();
+      } else {
         return false;  // Not handled.
-      this.toggleEditor(event);
+      }
       break;
 
     case 'Home':
@@ -861,6 +879,19 @@ SlideMode.prototype.onKeyDown = function(event) {
     case 'Down':
     case 'Left':
     case 'Right':
+      if (!this.isEditing() && this.viewport_.getZoomIndex() !== 0) {
+        var delta = SlideMode.KEY_OFFSET_MAP[keyID];
+        this.viewport_.setOffset(
+            ~~(this.viewport_.getOffsetX() +
+               delta[0] * this.viewport_.getZoom()),
+            ~~(this.viewport_.getOffsetY() +
+               delta[1] * this.viewport_.getZoom()),
+            true);
+        this.imageView_.applyViewportChange();
+      } else {
+        this.advanceWithKeyboard(keyID);
+      }
+      break;
     case 'MediaNextTrack':
     case 'MediaPreviousTrack':
       this.advanceWithKeyboard(keyID);
@@ -876,6 +907,13 @@ SlideMode.prototype.onKeyDown = function(event) {
     case 'Ctrl-U+00BD':  // Ctrl+'-' zoom out.
       if (!this.isEditing()) {
         this.viewport_.setZoomIndex(this.viewport_.getZoomIndex() - 1);
+        this.imageView_.applyViewportChange();
+      }
+      break;
+
+    case 'Ctrl-U+0030': // Ctrl+'0' zoom reset.
+      if (!this.isEditing()) {
+        this.viewport_.resetView();
         this.imageView_.applyViewportChange();
       }
       break;
@@ -1046,7 +1084,7 @@ SlideMode.prototype.isSlideshowOn_ = function() {
  */
 SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
   // Reset zoom.
-  this.viewport_.setZoomIndex(0);
+  this.viewport_.resetView();
   this.imageView_.applyViewportChange();
 
   // Set the attribute early to prevent the toolbar from flashing when
@@ -1201,7 +1239,7 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
 
   if (this.isEditing()) { // isEditing has just been flipped to a new value.
     // Reset zoom.
-    this.viewport_.setZoomIndex(0);
+    this.viewport_.resetView();
     this.imageView_.applyViewportChange();
     if (this.context_.readonlyDirName) {
       this.editor_.getPrompt().showAt(

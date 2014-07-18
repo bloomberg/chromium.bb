@@ -86,7 +86,7 @@ function Viewport() {
    */
   this.generation_ = 0;
 
-  this.update();
+  this.update_();
   Object.seal(this);
 }
 
@@ -112,8 +112,7 @@ Viewport.ZOOM_RATIOS = Object.freeze({
  */
 Viewport.prototype.setImageSize = function(width, height) {
   this.imageBounds_ = new Rect(width, height);
-  this.update();
-  this.invalidateCaches();
+  this.update_();
 };
 
 /**
@@ -122,8 +121,7 @@ Viewport.prototype.setImageSize = function(width, height) {
  */
 Viewport.prototype.setScreenSize = function(width, height) {
   this.screenBounds_ = new Rect(width, height);
-  this.update();
-  this.invalidateCaches();
+  this.update_();
 };
 
 /**
@@ -136,7 +134,7 @@ Viewport.prototype.setZoomIndex = function(zoomIndex) {
     return;
   this.zoomIndex_ = zoomIndex;
   this.zoom_ = Viewport.ZOOM_RATIOS[zoomIndex];
-  this.update();
+  this.update_();
 };
 
 /**
@@ -148,27 +146,11 @@ Viewport.prototype.getZoomIndex = function() {
 };
 
 /**
- * @return {number} Scale.
+ * Returns the value of zoom.
+ * @return {number} Zoom value.
  */
-Viewport.prototype.getScale = function() { return this.scale_; };
-
-/**
- * @param {number} scale The new scale.
- */
-Viewport.prototype.setScale = function(scale) {
-  if (this.scale_ == scale)
-    return;
-  this.scale_ = scale;
-  this.update();
-  this.invalidateCaches();
-};
-
-/**
- * @return {number} Best scale to fit the current image into the current screen.
- */
-Viewport.prototype.getFittingScale = function() {
-  return this.getFittingScaleForImageSize_(
-      this.imageBounds_.width, this.imageBounds_.height);
+Viewport.prototype.getZoom = function() {
+  return this.zoomIndex_;
 };
 
 /**
@@ -188,13 +170,6 @@ Viewport.prototype.getFittingScaleForImageSize_ = function(width, height) {
 };
 
 /**
- * Set the scale to fit the image into the screen.
- */
-Viewport.prototype.fitImage = function() {
-  this.setScale(this.getFittingScale());
-};
-
-/**
  * @return {number} X-offset of the viewport.
  */
 Viewport.prototype.getOffsetX = function() { return this.offsetX_; };
@@ -208,17 +183,13 @@ Viewport.prototype.getOffsetY = function() { return this.offsetY_; };
  * Set the image offset in the viewport.
  * @param {number} x X-offset.
  * @param {number} y Y-offset.
- * @param {boolean} ignoreClipping True if no clipping should be applied.
  */
-Viewport.prototype.setOffset = function(x, y, ignoreClipping) {
-  if (!ignoreClipping) {
-    x = this.clampOffsetX_(x);
-    y = this.clampOffsetY_(y);
-  }
-  if (this.offsetX_ == x && this.offsetY_ == y) return;
+Viewport.prototype.setOffset = function(x, y) {
+  if (this.offsetX_ == x && this.offsetY_ == y)
+    return;
   this.offsetX_ = x;
   this.offsetY_ = y;
-  this.invalidateCaches();
+  this.update_();
 };
 
 /**
@@ -250,11 +221,6 @@ Viewport.prototype.getDeviceBounds = function() {
 Viewport.prototype.getCacheGeneration = function() { return this.generation_; };
 
 /**
- * Called on event view port state change.
- */
-Viewport.prototype.invalidateCaches = function() { this.generation_++; };
-
-/**
  * @return {Rect} The image bounds in screen coordinates.
  */
 Viewport.prototype.getImageBoundsOnScreen = function() {
@@ -283,7 +249,7 @@ Viewport.prototype.getImageBoundsOnScreenClipped = function() {
  * @return {number} Size in image coordinates.
  */
 Viewport.prototype.screenToImageSize = function(size) {
-  return size / this.getScale();
+  return size / this.scale_;
 };
 
 /**
@@ -291,7 +257,7 @@ Viewport.prototype.screenToImageSize = function(size) {
  * @return {number} X in image coordinates.
  */
 Viewport.prototype.screenToImageX = function(x) {
-  return Math.round((x - this.imageBoundsOnScreen_.left) / this.getScale());
+  return Math.round((x - this.imageBoundsOnScreen_.left) / this.scale_);
 };
 
 /**
@@ -299,7 +265,7 @@ Viewport.prototype.screenToImageX = function(x) {
  * @return {number} Y in image coordinates.
  */
 Viewport.prototype.screenToImageY = function(y) {
-  return Math.round((y - this.imageBoundsOnScreen_.top) / this.getScale());
+  return Math.round((y - this.imageBoundsOnScreen_.top) / this.scale_);
 };
 
 /**
@@ -319,7 +285,7 @@ Viewport.prototype.screenToImageRect = function(rect) {
  * @return {number} Size in screen coordinates.
  */
 Viewport.prototype.imageToScreenSize = function(size) {
-  return size * this.getScale();
+  return size * this.scale_;
 };
 
 /**
@@ -327,7 +293,7 @@ Viewport.prototype.imageToScreenSize = function(size) {
  * @return {number} X in screen coordinates.
  */
 Viewport.prototype.imageToScreenX = function(x) {
-  return Math.round(this.imageBoundsOnScreen_.left + x * this.getScale());
+  return Math.round(this.imageBoundsOnScreen_.left + x * this.scale_);
 };
 
 /**
@@ -335,7 +301,7 @@ Viewport.prototype.imageToScreenX = function(x) {
  * @return {number} Y in screen coordinates.
  */
 Viewport.prototype.imageToScreenY = function(y) {
-  return Math.round(this.imageBoundsOnScreen_.top + y * this.getScale());
+  return Math.round(this.imageBoundsOnScreen_.top + y * this.scale_);
 };
 
 /**
@@ -383,7 +349,7 @@ Viewport.prototype.getMarginY_ = function() {
  * @private
  */
 Viewport.prototype.clampOffsetX_ = function(x) {
-  var limit = Math.round(Math.max(0, -this.getMarginX_() / this.getScale()));
+  var limit = Math.round(Math.max(0, -this.getMarginX_() / this.scale_));
   return ImageUtil.clamp(-limit, x, limit);
 };
 
@@ -393,7 +359,7 @@ Viewport.prototype.clampOffsetX_ = function(x) {
  * @private
  */
 Viewport.prototype.clampOffsetY_ = function(y) {
-  var limit = Math.round(Math.max(0, -this.getMarginY_() / this.getScale()));
+  var limit = Math.round(Math.max(0, -this.getMarginY_() / this.scale_));
   return ImageUtil.clamp(-limit, y, limit);
 };
 
@@ -410,24 +376,49 @@ Viewport.prototype.getCenteredRect_ = function(
 };
 
 /**
- * Recalculate the viewport parameters.
+ * Resets zoom and offset.
  */
-Viewport.prototype.update = function() {
-  var scale = this.getScale();
+Viewport.prototype.resetView = function() {
+  this.zoomIndex_ = 0;
+  this.zoom_ = 1;
+  this.offsetX_ = 0;
+  this.offsetY_ = 0;
+  this.update_();
+};
+
+/**
+ * Recalculate the viewport parameters.
+ * @private
+ */
+Viewport.prototype.update_ = function() {
+  // Update scale.
+  this.scale_ = this.getFittingScaleForImageSize_(
+      this.imageBounds_.width, this.imageBounds_.height);
+
+  // Limit offset values.
+  var zoomedWidht = ~~(this.imageBounds_.width * this.scale_ * this.zoom_);
+  var zoomedHeight = ~~(this.imageBounds_.height * this.scale_ * this.zoom_);
+  var dx = Math.max(zoomedWidht - this.screenBounds_.width, 0) / 2;
+  var dy = Math.max(zoomedHeight - this.screenBounds_.height, 0) /2;
+  this.offsetX_ = ImageUtil.clamp(-dx, this.offsetX_, dx);
+  this.offsetY_ = ImageUtil.clamp(-dy, this.offsetY_, dy);
 
   // Image bounds on screen.
   this.imageBoundsOnScreen_ = this.getCenteredRect_(
-      ~~(this.imageBounds_.width * scale * this.zoom_),
-      ~~(this.imageBounds_.height * scale * this.zoom_),
-      this.offsetX_,
-      this.offsetY_);
+      zoomedWidht, zoomedHeight, this.offsetX_, this.offsetY_);
 
   // Image bounds of element (that is not applied zoom and offset) on screen.
+  var oldBounds = this.imageElementBoundsOnScreen_;
   this.imageElementBoundsOnScreen_ = this.getCenteredRect_(
-      ~~(this.imageBounds_.width * scale),
-      ~~(this.imageBounds_.height * scale),
+      ~~(this.imageBounds_.width * this.scale_),
+      ~~(this.imageBounds_.height * this.scale_),
       0,
       0);
+  if (!oldBounds ||
+      this.imageElementBoundsOnScreen_.width != oldBounds.width ||
+      this.imageElementBoundsOnScreen_.height != oldBounds.height) {
+    this.generation_++;
+  }
 
   // Image bounds on screen cliped with the screen bounds.
   var left = Math.max(this.imageBoundsOnScreen_.left, 0);
@@ -445,7 +436,8 @@ Viewport.prototype.update = function() {
  * @return {string} Transformation description.
  */
 Viewport.prototype.getTransformation = function() {
-  return 'scale(' + (1 / window.devicePixelRatio * this.zoom_) + ')';
+  return 'translate(' + this.offsetX_ + 'px, ' + this.offsetY_ + 'px) ' +
+      'scale(' + (1 / window.devicePixelRatio * this.zoom_) + ')';
 };
 
 /**
@@ -472,7 +464,7 @@ Viewport.prototype.getInverseTransformForRotatedImage = function(orientation) {
   var previousImageHeight = this.imageBounds_.width;
   var oldScale = this.getFittingScaleForImageSize_(
       previousImageWidth, previousImageHeight);
-  var scaleRatio = oldScale / this.getScale();
+  var scaleRatio = oldScale / this.scale_;
   var degree = orientation ? '-90deg' : '90deg';
   return [
     'scale(' + scaleRatio + ')',
