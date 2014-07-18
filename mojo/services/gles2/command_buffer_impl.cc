@@ -11,7 +11,6 @@
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "gpu/command_buffer/service/gpu_control_service.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -90,7 +89,6 @@ bool CommandBufferImpl::DoInitialize(
   // only needs to be per-thread.
   scoped_refptr<gpu::gles2::ContextGroup> context_group =
       new gpu::gles2::ContextGroup(NULL,
-                                   NULL,
                                    new MemoryTrackerStub,
                                    new gpu::gles2::ShaderTranslatorCache,
                                    NULL,
@@ -119,9 +117,6 @@ bool CommandBufferImpl::DoInitialize(
                             disallowed_features,
                             attrib_vector))
     return false;
-
-  gpu_control_.reset(
-      new gpu::GpuControlService(context_group->image_manager(), NULL));
 
   command_buffer_->SetPutOffsetChangeCallback(base::Bind(
       &gpu::GpuScheduler::PutChanged, base::Unretained(scheduler_.get())));

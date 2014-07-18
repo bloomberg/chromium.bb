@@ -6,6 +6,7 @@
 #define UI_GL_GL_IMAGE_SURFACE_TEXTURE_H_
 
 #include "base/memory/ref_counted.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
 
@@ -15,9 +16,9 @@ class SurfaceTexture;
 
 class GL_EXPORT GLImageSurfaceTexture : public GLImage {
  public:
-  explicit GLImageSurfaceTexture(gfx::Size size);
+  explicit GLImageSurfaceTexture(const gfx::Size& size);
 
-  bool Initialize(gfx::GpuMemoryBufferHandle buffer);
+  bool Initialize(const gfx::GpuMemoryBufferHandle& handle);
 
   // Overridden from GLImage:
   virtual void Destroy() OVERRIDE;
@@ -34,7 +35,7 @@ class GL_EXPORT GLImageSurfaceTexture : public GLImage {
 
  private:
   scoped_refptr<SurfaceTexture> surface_texture_;
-  gfx::Size size_;
+  const gfx::Size size_;
   GLint texture_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageSurfaceTexture);

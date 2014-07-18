@@ -11,9 +11,9 @@ namespace gfx {
 
 class GL_EXPORT GLImageAndroidNativeBuffer : public GLImageEGL {
  public:
-  explicit GLImageAndroidNativeBuffer(gfx::Size size);
+  explicit GLImageAndroidNativeBuffer(const gfx::Size& size);
 
-  bool Initialize(gfx::GpuMemoryBufferHandle buffer);
+  bool Initialize(EGLClientBuffer native_buffer);
 
   // Overridden from GLImage:
   virtual void Destroy() OVERRIDE;

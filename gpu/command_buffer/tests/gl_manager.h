@@ -23,8 +23,6 @@ class GLSurface;
 namespace gpu {
 
 class CommandBufferService;
-class GpuControlService;
-class GpuMemoryBufferFactory;
 class GpuScheduler;
 class TransferBuffer;
 
@@ -35,7 +33,6 @@ class MailboxManager;
 class GLES2Decoder;
 class GLES2CmdHelper;
 class GLES2Implementation;
-class ImageFactory;
 class ImageManager;
 class ShareGroup;
 
@@ -59,10 +56,6 @@ class GLManager : private GpuControl {
     bool lose_context_when_out_of_memory;
     // Whether or not it's ok to lose the context.
     bool context_lost_allowed;
-    // Image manager to be used.
-    gles2::ImageManager* image_manager;
-    // GpuMemoryBuffer factory to be used.
-    GpuMemoryBufferFactory* gpu_memory_buffer_factory;
   };
   GLManager();
   virtual ~GLManager();
@@ -123,7 +116,6 @@ class GLManager : private GpuControl {
   scoped_refptr<gles2::MailboxManager> mailbox_manager_;
   scoped_refptr<gfx::GLShareGroup> share_group_;
   scoped_ptr<CommandBufferService> command_buffer_;
-  scoped_ptr<GpuControlService> gpu_control_service_;
   scoped_ptr<gles2::GLES2Decoder> decoder_;
   scoped_ptr<GpuScheduler> gpu_scheduler_;
   scoped_refptr<gfx::GLSurface> surface_;
@@ -134,8 +126,7 @@ class GLManager : private GpuControl {
   bool context_lost_allowed_;
 
   // Client GpuControl implementation.
-  GpuMemoryBufferFactory* gpu_memory_buffer_factory_;
-  base::ScopedPtrHashMap<int32, gfx::GpuMemoryBuffer> memory_buffers_;
+  base::ScopedPtrHashMap<int32, gfx::GpuMemoryBuffer> gpu_memory_buffers_;
 
   // Used on Android to virtualize GL for all contexts.
   static int use_count_;

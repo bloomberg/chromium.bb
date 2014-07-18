@@ -35,6 +35,7 @@ namespace gles2 {
 class ContextGroup;
 class ErrorState;
 class GLES2Util;
+class ImageManager;
 class Logger;
 class QueryManager;
 class VertexArrayManager;
@@ -165,6 +166,9 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
 
   // Gets the VertexArrayManager for this context.
   virtual VertexArrayManager* GetVertexArrayManager() = 0;
+
+  // Gets the ImageManager for this context.
+  virtual ImageManager* GetImageManager() = 0;
 
   // Process any pending queries. Returns false if there are no pending queries.
   virtual bool ProcessPendingQueries() = 0;

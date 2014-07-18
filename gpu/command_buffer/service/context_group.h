@@ -30,7 +30,6 @@ class ProgramCache;
 class BufferManager;
 class GLES2Decoder;
 class FramebufferManager;
-class ImageManager;
 class MailboxManager;
 class RenderbufferManager;
 class ProgramManager;
@@ -45,7 +44,6 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
  public:
   ContextGroup(
       MailboxManager* mailbox_manager,
-      ImageManager* image_manager,
       MemoryTracker* memory_tracker,
       ShaderTranslatorCache* shader_translator_cache,
       FeatureInfo* feature_info,
@@ -63,10 +61,6 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   MailboxManager* mailbox_manager() const {
     return mailbox_manager_.get();
-  }
-
-  ImageManager* image_manager() const {
-    return image_manager_.get();
   }
 
   MemoryTracker* memory_tracker() const {
@@ -183,7 +177,6 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   bool HaveContexts();
 
   scoped_refptr<MailboxManager> mailbox_manager_;
-  scoped_refptr<ImageManager> image_manager_;
   scoped_refptr<MemoryTracker> memory_tracker_;
   scoped_refptr<ShaderTranslatorCache> shader_translator_cache_;
   scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;

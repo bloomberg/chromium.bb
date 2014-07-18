@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -26,10 +27,6 @@ struct GPUCommandBufferConsoleMessage;
 
 namespace base {
 class SharedMemory;
-}
-
-namespace gfx {
-class GpuMemoryBuffer;
 }
 
 namespace gpu {
@@ -147,7 +144,8 @@ class CommandBufferProxyImpl
  private:
   typedef std::map<int32, scoped_refptr<gpu::Buffer> > TransferBufferMap;
   typedef base::hash_map<uint32, base::Closure> SignalTaskMap;
-  typedef std::map<int32, gfx::GpuMemoryBuffer*> GpuMemoryBufferMap;
+  typedef base::ScopedPtrHashMap<int32, gfx::GpuMemoryBuffer>
+      GpuMemoryBufferMap;
 
   // Send an IPC message over the GPU channel. This is private to fully
   // encapsulate the channel; all callers of this function must explicitly

@@ -14,6 +14,7 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
+#include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_memory_tracking.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -28,7 +29,6 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
-#include "gpu/command_buffer/service/gpu_control_service.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -118,7 +118,6 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     GpuCommandBufferStub* share_group,
     const gfx::GLSurfaceHandle& handle,
     gpu::gles2::MailboxManager* mailbox_manager,
-    gpu::gles2::ImageManager* image_manager,
     const gfx::Size& size,
     const gpu::gles2::DisallowedFeatures& disallowed_features,
     const std::vector<int32>& attribs,
@@ -160,7 +159,6 @@ GpuCommandBufferStub::GpuCommandBufferStub(
   } else {
     context_group_ = new gpu::gles2::ContextGroup(
         mailbox_manager,
-        image_manager,
         new GpuCommandBufferMemoryTracker(channel),
         channel_->gpu_channel_manager()->shader_translator_cache(),
         NULL,
@@ -540,9 +538,6 @@ void GpuCommandBufferStub::OnInitialize(
     return;
   }
 
-  gpu_control_service_.reset(
-      new gpu::GpuControlService(context_group_->image_manager(), NULL));
-
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableGPUServiceLogging)) {
     decoder_->set_log_commands(true);
@@ -920,30 +915,49 @@ void GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback(
 
 void GpuCommandBufferStub::OnRegisterGpuMemoryBuffer(
     int32 id,
-    gfx::GpuMemoryBufferHandle gpu_memory_buffer,
+    gfx::GpuMemoryBufferHandle handle,
     uint32 width,
     uint32 height,
     uint32 internalformat) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnRegisterGpuMemoryBuffer");
 #if defined(OS_ANDROID)
   // Verify that renderer is not trying to use a surface texture it doesn't own.
-  if (gpu_memory_buffer.type == gfx::SURFACE_TEXTURE_BUFFER &&
-      gpu_memory_buffer.surface_texture_id.secondary_id !=
-          channel()->client_id()) {
+  if (handle.type == gfx::SURFACE_TEXTURE_BUFFER &&
+      handle.surface_texture_id.secondary_id != channel()->client_id()) {
     LOG(ERROR) << "Illegal surface texture ID for renderer.";
     return;
   }
 #endif
-  if (gpu_control_service_) {
-    gpu_control_service_->RegisterGpuMemoryBuffer(
-        id, gpu_memory_buffer, width, height, internalformat);
+
+  GpuChannelManager* manager = channel_->gpu_channel_manager();
+  scoped_refptr<gfx::GLImage> image =
+      manager->gpu_memory_buffer_factory()->CreateImageForGpuMemoryBuffer(
+          handle,
+          gfx::Size(width, height),
+          internalformat,
+          channel()->client_id());
+  if (!image)
+    return;
+
+  // For Android specific workaround.
+  if (context_group_->feature_info()->workarounds().release_image_after_use)
+    image->SetReleaseAfterUse();
+
+  if (decoder_) {
+    gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
+    DCHECK(image_manager);
+    image_manager->AddImage(image.get(), id);
   }
 }
 
 void GpuCommandBufferStub::OnDestroyGpuMemoryBuffer(int32 id) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnDestroyGpuMemoryBuffer");
-  if (gpu_control_service_)
-    gpu_control_service_->UnregisterGpuMemoryBuffer(id);
+
+  if (decoder_) {
+    gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
+    DCHECK(image_manager);
+    image_manager->RemoveImage(id);
+  }
 }
 
 void GpuCommandBufferStub::SendConsoleMessage(

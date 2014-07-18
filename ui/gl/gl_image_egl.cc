@@ -8,8 +8,9 @@
 
 namespace gfx {
 
-GLImageEGL::GLImageEGL(gfx::Size size)
-    : egl_image_(EGL_NO_IMAGE_KHR), size_(size) {}
+GLImageEGL::GLImageEGL(const gfx::Size& size)
+    : egl_image_(EGL_NO_IMAGE_KHR), size_(size) {
+}
 
 GLImageEGL::~GLImageEGL() { Destroy(); }
 

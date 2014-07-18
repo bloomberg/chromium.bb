@@ -1,22 +1,25 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/client/gpu_memory_buffer_impl_shm.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
 
 #include "base/numerics/safe_math.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace content {
 
-GpuMemoryBufferImplShm::GpuMemoryBufferImplShm(const gfx::Size& size,
-                                               unsigned internalformat)
-    : GpuMemoryBufferImpl(size, internalformat) {}
+GpuMemoryBufferImplSharedMemory::GpuMemoryBufferImplSharedMemory(
+    const gfx::Size& size,
+    unsigned internalformat)
+    : GpuMemoryBufferImpl(size, internalformat) {
+}
 
-GpuMemoryBufferImplShm::~GpuMemoryBufferImplShm() {}
+GpuMemoryBufferImplSharedMemory::~GpuMemoryBufferImplSharedMemory() {
+}
 
 // static
-void GpuMemoryBufferImplShm::AllocateSharedMemoryForChildProcess(
+void GpuMemoryBufferImplSharedMemory::AllocateSharedMemoryForChildProcess(
     const gfx::Size& size,
     unsigned internalformat,
     base::ProcessHandle child_process,
@@ -35,8 +38,9 @@ void GpuMemoryBufferImplShm::AllocateSharedMemoryForChildProcess(
 }
 
 // static
-bool GpuMemoryBufferImplShm::IsLayoutSupported(const gfx::Size& size,
-                                               unsigned internalformat) {
+bool GpuMemoryBufferImplSharedMemory::IsLayoutSupported(
+    const gfx::Size& size,
+    unsigned internalformat) {
   base::CheckedNumeric<int> buffer_size = size.width();
   buffer_size *= size.height();
   buffer_size *= BytesPerPixel(internalformat);
@@ -44,7 +48,7 @@ bool GpuMemoryBufferImplShm::IsLayoutSupported(const gfx::Size& size,
 }
 
 // static
-bool GpuMemoryBufferImplShm::IsUsageSupported(unsigned usage) {
+bool GpuMemoryBufferImplSharedMemory::IsUsageSupported(unsigned usage) {
   switch (usage) {
     case GL_IMAGE_MAP_CHROMIUM:
       return true;
@@ -54,13 +58,14 @@ bool GpuMemoryBufferImplShm::IsUsageSupported(unsigned usage) {
 }
 
 // static
-bool GpuMemoryBufferImplShm::IsConfigurationSupported(const gfx::Size& size,
-                                                      unsigned internalformat,
-                                                      unsigned usage) {
+bool GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
+    const gfx::Size& size,
+    unsigned internalformat,
+    unsigned usage) {
   return IsLayoutSupported(size, internalformat) && IsUsageSupported(usage);
 }
 
-bool GpuMemoryBufferImplShm::Initialize() {
+bool GpuMemoryBufferImplSharedMemory::Initialize() {
   DCHECK(IsLayoutSupported(size_, internalformat_));
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
   if (!shared_memory->CreateAnonymous(size_.GetArea() *
@@ -71,7 +76,7 @@ bool GpuMemoryBufferImplShm::Initialize() {
   return true;
 }
 
-bool GpuMemoryBufferImplShm::InitializeFromHandle(
+bool GpuMemoryBufferImplSharedMemory::InitializeFromHandle(
     gfx::GpuMemoryBufferHandle handle) {
   DCHECK(IsLayoutSupported(size_, internalformat_));
   if (!base::SharedMemory::IsHandleValid(handle.handle))
@@ -81,7 +86,7 @@ bool GpuMemoryBufferImplShm::InitializeFromHandle(
   return true;
 }
 
-void* GpuMemoryBufferImplShm::Map() {
+void* GpuMemoryBufferImplSharedMemory::Map() {
   DCHECK(!mapped_);
   if (!shared_memory_->Map(size_.GetArea() * BytesPerPixel(internalformat_)))
     return NULL;
@@ -89,17 +94,17 @@ void* GpuMemoryBufferImplShm::Map() {
   return shared_memory_->memory();
 }
 
-void GpuMemoryBufferImplShm::Unmap() {
+void GpuMemoryBufferImplSharedMemory::Unmap() {
   DCHECK(mapped_);
   shared_memory_->Unmap();
   mapped_ = false;
 }
 
-uint32 GpuMemoryBufferImplShm::GetStride() const {
+uint32 GpuMemoryBufferImplSharedMemory::GetStride() const {
   return size_.width() * BytesPerPixel(internalformat_);
 }
 
-gfx::GpuMemoryBufferHandle GpuMemoryBufferImplShm::GetHandle() const {
+gfx::GpuMemoryBufferHandle GpuMemoryBufferImplSharedMemory::GetHandle() const {
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::SHARED_MEMORY_BUFFER;
   handle.handle = shared_memory_->handle();

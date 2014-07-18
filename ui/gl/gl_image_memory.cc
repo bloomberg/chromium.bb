@@ -1,11 +1,12 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gl/gl_image_shm.h"
+#include "ui/gl/gl_image_memory.h"
 
 #include "base/debug/trace_event.h"
-#include "base/process/process_handle.h"
+#include "base/logging.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/scoped_binders.h"
 
 #if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
@@ -14,7 +15,6 @@
 #endif
 
 namespace gfx {
-
 namespace {
 
 bool ValidFormat(unsigned internalformat) {
@@ -54,7 +54,7 @@ GLenum DataType(unsigned internalformat) {
   }
 }
 
-GLenum BytesPerPixel(unsigned internalformat) {
+int BytesPerPixel(unsigned internalformat) {
   switch (internalformat) {
     case GL_BGRA8_EXT:
     case GL_RGBA8_OES:
@@ -67,8 +67,9 @@ GLenum BytesPerPixel(unsigned internalformat) {
 
 }  // namespace
 
-GLImageShm::GLImageShm(gfx::Size size, unsigned internalformat)
-    : size_(size),
+GLImageMemory::GLImageMemory(const gfx::Size& size, unsigned internalformat)
+    : memory_(NULL),
+      size_(size),
       internalformat_(internalformat)
 #if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
     defined(USE_OZONE)
@@ -79,33 +80,22 @@ GLImageShm::GLImageShm(gfx::Size size, unsigned internalformat)
 {
 }
 
-GLImageShm::~GLImageShm() { Destroy(); }
+GLImageMemory::~GLImageMemory() {
+}
 
-bool GLImageShm::Initialize(gfx::GpuMemoryBufferHandle buffer) {
+bool GLImageMemory::Initialize(const unsigned char* memory) {
   if (!ValidFormat(internalformat_)) {
     DVLOG(0) << "Invalid format: " << internalformat_;
     return false;
   }
 
-  if (!base::SharedMemory::IsHandleValid(buffer.handle))
-    return false;
-
-  base::SharedMemory shared_memory(buffer.handle, true);
-
-  // Duplicate the handle.
-  base::SharedMemoryHandle duped_shared_memory_handle;
-  if (!shared_memory.ShareToProcess(base::GetCurrentProcessHandle(),
-                                    &duped_shared_memory_handle)) {
-    DVLOG(0) << "Failed to duplicate shared memory handle.";
-    return false;
-  }
-
-  shared_memory_.reset(
-      new base::SharedMemory(duped_shared_memory_handle, true));
+  DCHECK(memory);
+  DCHECK(!memory_);
+  memory_ = memory;
   return true;
 }
 
-void GLImageShm::Destroy() {
+void GLImageMemory::Destroy() {
 #if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
     defined(USE_OZONE)
   if (egl_image_ != EGL_NO_IMAGE_KHR) {
@@ -118,24 +108,17 @@ void GLImageShm::Destroy() {
     egl_texture_id_ = 0u;
   }
 #endif
+  memory_ = NULL;
 }
 
-gfx::Size GLImageShm::GetSize() { return size_; }
+gfx::Size GLImageMemory::GetSize() {
+  return size_;
+}
 
-bool GLImageShm::BindTexImage(unsigned target) {
-  TRACE_EVENT0("gpu", "GLImageShm::BindTexImage");
-  DCHECK(shared_memory_);
-  DCHECK(ValidFormat(internalformat_));
+bool GLImageMemory::BindTexImage(unsigned target) {
+  TRACE_EVENT0("gpu", "GLImageMemory::BindTexImage");
 
-  size_t size = size_.GetArea() * BytesPerPixel(internalformat_);
-  DCHECK(!shared_memory_->memory());
-  if (!shared_memory_->Map(size)) {
-    DVLOG(0) << "Failed to map shared memory.";
-    return false;
-  }
-
-  DCHECK(shared_memory_->memory());
-
+  DCHECK(memory_);
 #if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
     defined(USE_OZONE)
   if (target == GL_TEXTURE_EXTERNAL_OES) {
@@ -157,7 +140,7 @@ bool GLImageShm::BindTexImage(unsigned target) {
                      0,  // border
                      DataFormat(internalformat_),
                      DataType(internalformat_),
-                     shared_memory_->memory());
+                     memory_);
       }
 
       EGLint attrs[] = {EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
@@ -182,13 +165,12 @@ bool GLImageShm::BindTexImage(unsigned target) {
                       size_.height(),
                       DataFormat(internalformat_),
                       DataType(internalformat_),
-                      shared_memory_->memory());
+                      memory_);
     }
 
     glEGLImageTargetTexture2DOES(target, egl_image_);
     DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
-    shared_memory_->Unmap();
     return true;
   }
 #endif
@@ -202,10 +184,17 @@ bool GLImageShm::BindTexImage(unsigned target) {
                0,  // border
                DataFormat(internalformat_),
                DataType(internalformat_),
-               shared_memory_->memory());
+               memory_);
 
-  shared_memory_->Unmap();
   return true;
+}
+
+bool GLImageMemory::HasValidFormat() const {
+  return ValidFormat(internalformat_);
+}
+
+size_t GLImageMemory::Bytes() const {
+  return size_.GetArea() * BytesPerPixel(internalformat_);
 }
 
 }  // namespace gfx

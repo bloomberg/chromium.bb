@@ -10,17 +10,19 @@
 
 namespace gfx {
 
-GLImageSurfaceTexture::GLImageSurfaceTexture(gfx::Size size)
-    : size_(size), texture_id_(0) {}
+GLImageSurfaceTexture::GLImageSurfaceTexture(const gfx::Size& size)
+    : size_(size), texture_id_(0) {
+}
 
 GLImageSurfaceTexture::~GLImageSurfaceTexture() { Destroy(); }
 
-bool GLImageSurfaceTexture::Initialize(gfx::GpuMemoryBufferHandle buffer) {
+bool GLImageSurfaceTexture::Initialize(
+    const gfx::GpuMemoryBufferHandle& handle) {
   DCHECK(!surface_texture_);
   surface_texture_ =
       SurfaceTextureTracker::GetInstance()->AcquireSurfaceTexture(
-          buffer.surface_texture_id.primary_id,
-          buffer.surface_texture_id.secondary_id);
+          handle.surface_texture_id.primary_id,
+          handle.surface_texture_id.secondary_id);
   return !!surface_texture_;
 }
 

@@ -12,7 +12,7 @@ namespace gfx {
 
 class GL_EXPORT GLImageEGL : public GLImage {
  public:
-  explicit GLImageEGL(gfx::Size size);
+  explicit GLImageEGL(const gfx::Size& size);
 
   bool Initialize(EGLenum target, EGLClientBuffer buffer, const EGLint* attrs);
 
@@ -30,7 +30,7 @@ class GL_EXPORT GLImageEGL : public GLImage {
   virtual ~GLImageEGL();
 
   EGLImageKHR egl_image_;
-  gfx::Size size_;
+  const gfx::Size size_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLImageEGL);

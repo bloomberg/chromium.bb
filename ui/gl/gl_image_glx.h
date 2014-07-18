@@ -14,9 +14,9 @@ namespace gfx {
 
 class GL_EXPORT GLImageGLX : public GLImage {
  public:
-  explicit GLImageGLX(gfx::PluginWindowHandle window);
+  GLImageGLX(const gfx::Size& size, unsigned internalformat);
 
-  virtual bool Initialize();
+  bool Initialize(XID pixmap);
 
   // Overridden from GLImage:
   virtual void Destroy() OVERRIDE;
@@ -32,11 +32,9 @@ class GL_EXPORT GLImageGLX : public GLImage {
   virtual ~GLImageGLX();
 
  private:
-  XDisplay* display_;
-  gfx::PluginWindowHandle window_;
-  XID pixmap_;
   XID glx_pixmap_;
-  gfx::Size size_;
+  const gfx::Size size_;
+  unsigned internalformat_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageGLX);
 };

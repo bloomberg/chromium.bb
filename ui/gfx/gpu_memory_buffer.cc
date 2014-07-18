@@ -15,7 +15,11 @@ GpuMemoryBufferHandle::GpuMemoryBufferHandle()
 #endif
 #if defined(OS_ANDROID)
       ,
-      native_buffer(NULL)
+      buffer_id(0)
+#endif
+#if defined(USE_X11)
+      ,
+      pixmap(0)
 #endif
 {
 }

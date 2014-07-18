@@ -571,7 +571,6 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished, OnChannelEstablished)
     IPC_MESSAGE_HANDLER(GpuHostMsg_CommandBufferCreated, OnCommandBufferCreated)
     IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyCommandBuffer, OnDestroyCommandBuffer)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_ImageCreated, OnImageCreated)
     IPC_MESSAGE_HANDLER(GpuHostMsg_GpuMemoryBufferCreated,
                         OnGpuMemoryBufferCreated)
     IPC_MESSAGE_HANDLER(GpuHostMsg_DidCreateOffscreenContext,
@@ -656,31 +655,6 @@ void GpuProcessHost::CreateViewCommandBuffer(
     // and Send failing, if desired.
     callback.Run(CREATE_COMMAND_BUFFER_FAILED_AND_CHANNEL_LOST);
   }
-}
-
-void GpuProcessHost::CreateImage(gfx::PluginWindowHandle window,
-                                 int client_id,
-                                 int image_id,
-                                 const CreateImageCallback& callback) {
-  TRACE_EVENT0("gpu", "GpuProcessHost::CreateImage");
-
-  DCHECK(CalledOnValidThread());
-
-  if (Send(new GpuMsg_CreateImage(window, client_id, image_id))) {
-    create_image_requests_.push(callback);
-  } else {
-    callback.Run(gfx::Size());
-  }
-}
-
-void GpuProcessHost::DeleteImage(int client_id,
-                                 int image_id,
-                                 int sync_point) {
-  TRACE_EVENT0("gpu", "GpuProcessHost::DeleteImage");
-
-  DCHECK(CalledOnValidThread());
-
-  Send(new GpuMsg_DeleteImage(client_id, image_id, sync_point));
 }
 
 void GpuProcessHost::CreateGpuMemoryBuffer(
@@ -771,17 +745,6 @@ void GpuProcessHost::OnDestroyCommandBuffer(int32 surface_id) {
   if (it != surface_refs_.end()) {
     surface_refs_.erase(it);
   }
-}
-
-void GpuProcessHost::OnImageCreated(const gfx::Size size) {
-  TRACE_EVENT0("gpu", "GpuProcessHost::OnImageCreated");
-
-  if (create_image_requests_.empty())
-    return;
-
-  CreateImageCallback callback = create_image_requests_.front();
-  create_image_requests_.pop();
-  callback.Run(size);
 }
 
 void GpuProcessHost::OnGpuMemoryBufferCreated(

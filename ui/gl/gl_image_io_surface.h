@@ -8,15 +8,16 @@
 #include <IOSurface/IOSurfaceAPI.h>
 
 #include "base/mac/scoped_cftyperef.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gl_image.h"
 
 namespace gfx {
 
 class GL_EXPORT GLImageIOSurface : public GLImage {
  public:
-  explicit GLImageIOSurface(gfx::Size size);
+  explicit GLImageIOSurface(const gfx::Size& size);
 
-  bool Initialize(gfx::GpuMemoryBufferHandle buffer);
+  bool Initialize(const gfx::GpuMemoryBufferHandle& handle);
 
   // Overridden from GLImage:
   virtual void Destroy() OVERRIDE {}
@@ -33,7 +34,7 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
 
  private:
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
-  gfx::Size size_;
+  const gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(GLImageIOSurface);
 };

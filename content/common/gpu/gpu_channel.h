@@ -34,9 +34,6 @@ class WaitableEvent;
 
 namespace gpu {
 class PreemptionFlag;
-namespace gles2 {
-class ImageManager;
-}
 }
 
 namespace IPC {
@@ -114,12 +111,6 @@ class GpuChannel : public IPC::Listener, public IPC::Sender {
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id);
-
-  void CreateImage(
-      gfx::PluginWindowHandle window,
-      int32 image_id,
-      gfx::Size* size);
-  void DeleteImage(int32 image_id);
 
   gfx::GLShareGroup* share_group() const { return share_group_.get(); }
 
@@ -209,7 +200,6 @@ class GpuChannel : public IPC::Listener, public IPC::Sender {
   scoped_refptr<gfx::GLShareGroup> share_group_;
 
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
-  scoped_refptr<gpu::gles2::ImageManager> image_manager_;
 
   typedef IDMap<GpuCommandBufferStub, IDMapOwnPointer> StubMap;
   StubMap stubs_;

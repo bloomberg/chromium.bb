@@ -61,8 +61,6 @@ struct GpuListenerInfo {
 
 class CONTENT_EXPORT GpuChannelHostFactory {
  public:
-  typedef base::Callback<void(const gfx::Size)> CreateImageCallback;
-
   virtual ~GpuChannelHostFactory() {}
 
   virtual bool IsMainThread() = 0;
@@ -73,11 +71,6 @@ class CONTENT_EXPORT GpuChannelHostFactory {
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id) = 0;
-  virtual void CreateImage(
-      gfx::PluginWindowHandle window,
-      int32 image_id,
-      const CreateImageCallback& callback) = 0;
-  virtual void DeleteImage(int32 image_id, int32 sync_point) = 0;
   virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       size_t width,
       size_t height,

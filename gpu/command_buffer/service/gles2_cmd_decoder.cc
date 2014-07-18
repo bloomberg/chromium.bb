@@ -650,6 +650,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
   virtual VertexArrayManager* GetVertexArrayManager() OVERRIDE {
     return vertex_array_manager_.get();
   }
+  virtual ImageManager* GetImageManager() OVERRIDE {
+    return image_manager_.get();
+  }
   virtual bool ProcessPendingQueries() OVERRIDE;
   virtual bool HasMoreIdleWork() OVERRIDE;
   virtual void PerformIdleWork() OVERRIDE;
@@ -806,9 +809,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
     return group_->mailbox_manager();
   }
 
-  ImageManager* image_manager() {
-    return group_->image_manager();
-  }
+  ImageManager* image_manager() { return image_manager_.get(); }
 
   VertexArrayManager* vertex_array_manager() {
     return vertex_array_manager_.get();
@@ -1741,6 +1742,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   scoped_ptr<VertexArrayManager> vertex_array_manager_;
 
+  scoped_ptr<ImageManager> image_manager_;
+
   base::Callback<void(gfx::Size, float)> resize_callback_;
 
   WaitSyncPointCallback wait_sync_point_callback_;
@@ -2413,6 +2416,8 @@ bool GLES2DecoderImpl::Initialize(
 
   query_manager_.reset(new QueryManager(this, feature_info_.get()));
 
+  image_manager_.reset(new ImageManager);
+
   util_.set_num_compressed_texture_formats(
       validators_->compressed_texture_format.GetValues().size());
 
@@ -2677,10 +2682,6 @@ bool GLES2DecoderImpl::Initialize(
     context_->SetUnbindFboOnMakeCurrent();
   }
 
-  if (feature_info_->workarounds().release_image_after_use) {
-    image_manager()->SetReleaseAfterUse();
-  }
-
   // Only compositor contexts are known to use only the subset of GL
   // that can be safely migrated between the iGPU and the dGPU. Mark
   // those contexts as safe to forcibly transition between the GPUs.
@@ -2721,7 +2722,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
 #endif
 
   caps.post_sub_buffer = supports_post_sub_buffer_;
-  caps.map_image = !!image_manager();
+  caps.map_image = true;
 
   return caps;
 }

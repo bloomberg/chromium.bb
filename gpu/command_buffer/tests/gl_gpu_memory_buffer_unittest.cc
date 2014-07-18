@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "gpu/command_buffer/client/gpu_memory_buffer_factory.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
@@ -35,46 +34,10 @@ static const int kImageWidth = 32;
 static const int kImageHeight = 32;
 static const int kImageBytesPerPixel = 4;
 
-class MockGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
- public:
-  MockGpuMemoryBuffer(int width, int height) {}
-  virtual ~MockGpuMemoryBuffer() {
-    Die();
-  }
-
-  MOCK_METHOD0(Map, void*());
-  MOCK_METHOD0(Unmap, void());
-  MOCK_CONST_METHOD0(IsMapped, bool());
-  MOCK_CONST_METHOD0(GetStride, uint32());
-  MOCK_CONST_METHOD0(GetHandle, gfx::GpuMemoryBufferHandle());
-  MOCK_METHOD0(Die, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockGpuMemoryBuffer);
-};
-
-class MockGpuMemoryBufferFactory : public GpuMemoryBufferFactory {
- public:
-  MockGpuMemoryBufferFactory() {}
-  virtual ~MockGpuMemoryBufferFactory() {}
-
-  MOCK_METHOD4(CreateGpuMemoryBuffer,
-               gfx::GpuMemoryBuffer*(size_t, size_t, unsigned, unsigned));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockGpuMemoryBufferFactory);
-};
-
-class MockGpuMemoryBufferTest : public testing::Test {
+class GpuMemoryBufferTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    GLManager::Options options;
-    image_manager_ = new ImageManager;
-    gpu_memory_buffer_factory_.reset(new MockGpuMemoryBufferFactory);
-    options.image_manager = image_manager_.get();
-    options.gpu_memory_buffer_factory = gpu_memory_buffer_factory_.get();
-
-    gl_.Initialize(options);
+    gl_.Initialize(GLManager::Options());
     gl_.MakeCurrent();
 
     glGenTextures(2, texture_ids_);
@@ -101,60 +64,22 @@ class MockGpuMemoryBufferTest : public testing::Test {
     gl_.Destroy();
   }
 
-  scoped_refptr<ImageManager> image_manager_;
-  scoped_ptr<MockGpuMemoryBufferFactory> gpu_memory_buffer_factory_;
   GLManager gl_;
   GLuint texture_ids_[2];
   GLuint framebuffer_id_;
 };
 
 // An end to end test that tests the whole GpuMemoryBuffer lifecycle.
-TEST_F(MockGpuMemoryBufferTest, Lifecycle) {
-  size_t bytes = kImageWidth * kImageHeight * kImageBytesPerPixel;
+TEST_F(GpuMemoryBufferTest, Lifecycle) {
   uint8 pixels[1 * 4] = { 255u, 0u, 0u, 255u };
-
-  // Buffer is owned and freed by GpuMemoryBufferTracker.
-  StrictMock<MockGpuMemoryBuffer>* gpu_memory_buffer =
-      new StrictMock<MockGpuMemoryBuffer>(kImageWidth, kImageHeight);
-  base::SharedMemory shared_memory;
-  shared_memory.CreateAnonymous(bytes);
-
-  base::SharedMemoryHandle duped_shared_memory_handle;
-  shared_memory.ShareToProcess(base::GetCurrentProcessHandle(),
-                               &duped_shared_memory_handle);
-  gfx::GpuMemoryBufferHandle handle;
-  handle.type = gfx::SHARED_MEMORY_BUFFER;
-  handle.handle = duped_shared_memory_handle;
-
-  EXPECT_CALL(
-      *gpu_memory_buffer_factory_.get(),
-      CreateGpuMemoryBuffer(
-          kImageWidth, kImageHeight, GL_RGBA8_OES, GL_IMAGE_MAP_CHROMIUM))
-      .Times(1)
-      .WillOnce(Return(gpu_memory_buffer))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gpu_memory_buffer, GetHandle())
-      .Times(1)
-      .WillOnce(Return(handle))
-      .RetiresOnSaturation();
 
   // Create the image. This should add the image ID to the ImageManager.
   GLuint image_id = glCreateImageCHROMIUM(
       kImageWidth, kImageHeight, GL_RGBA8_OES, GL_IMAGE_MAP_CHROMIUM);
   EXPECT_NE(0u, image_id);
-  EXPECT_TRUE(image_manager_->LookupImage(image_id) != NULL);
+  EXPECT_TRUE(gl_.decoder()->GetImageManager()->LookupImage(image_id) != NULL);
 
-  EXPECT_CALL(*gpu_memory_buffer, IsMapped())
-      .WillOnce(Return(false))
-      .RetiresOnSaturation();
-
-  shared_memory.Map(bytes);
-  EXPECT_TRUE(shared_memory.memory());
-
-  EXPECT_CALL(*gpu_memory_buffer, Map())
-      .Times(1)
-      .WillOnce(Return(shared_memory.memory()))
-      .RetiresOnSaturation();
+  // Map image for writing.
   uint8* mapped_buffer = static_cast<uint8*>(glMapImageCHROMIUM(image_id));
   ASSERT_TRUE(mapped_buffer != NULL);
 
@@ -169,14 +94,7 @@ TEST_F(MockGpuMemoryBufferTest, Lifecycle) {
     }
   }
 
-  EXPECT_CALL(*gpu_memory_buffer, IsMapped())
-      .WillOnce(Return(true))
-      .RetiresOnSaturation();
-
   // Unmap the image.
-  EXPECT_CALL(*gpu_memory_buffer, Unmap())
-      .Times(1)
-      .RetiresOnSaturation();
   glUnmapImageCHROMIUM(image_id);
 
   // Bind the texture and the image.
@@ -200,9 +118,6 @@ TEST_F(MockGpuMemoryBufferTest, Lifecycle) {
   glReleaseTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id);
 
   // Destroy the image.
-  EXPECT_CALL(*gpu_memory_buffer, Die())
-      .Times(1)
-      .RetiresOnSaturation();
   glDestroyImageCHROMIUM(image_id);
 }
 

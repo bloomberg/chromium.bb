@@ -9,6 +9,7 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_image_android_native_buffer.h"
 
 namespace android_webview {
 
@@ -19,10 +20,8 @@ AwDrawGLFunctionTable* g_gl_draw_functions = NULL;
 
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
-  GpuMemoryBufferImpl(long buffer_id, gfx::Size size)
-      : buffer_id_(buffer_id),
-        size_(size),
-        mapped_(false) {
+  GpuMemoryBufferImpl(long buffer_id, const gfx::Size& size)
+      : buffer_id_(buffer_id), size_(size), mapped_(false) {
     DCHECK(buffer_id_);
   }
 
@@ -50,7 +49,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   virtual gfx::GpuMemoryBufferHandle GetHandle() const OVERRIDE {
     gfx::GpuMemoryBufferHandle handle;
     handle.type = gfx::ANDROID_NATIVE_BUFFER;
-    handle.native_buffer = g_gl_draw_functions->get_native_buffer(buffer_id_);
+    handle.buffer_id = buffer_id_;
     return handle;
   }
 
@@ -70,20 +69,41 @@ GpuMemoryBufferFactoryImpl::GpuMemoryBufferFactoryImpl() {
 GpuMemoryBufferFactoryImpl::~GpuMemoryBufferFactoryImpl() {
 }
 
-gfx::GpuMemoryBuffer* GpuMemoryBufferFactoryImpl::CreateGpuMemoryBuffer(
-    size_t width,
-    size_t height,
-    unsigned internalformat,
-    unsigned usage) {
+scoped_ptr<gfx::GpuMemoryBuffer>
+GpuMemoryBufferFactoryImpl::AllocateGpuMemoryBuffer(size_t width,
+                                                    size_t height,
+                                                    unsigned internalformat,
+                                                    unsigned usage) {
   // For Android WebView we assume the |internalformat| will always be
   // GL_RGBA8_OES.
   CHECK_EQ(static_cast<GLenum>(GL_RGBA8_OES), internalformat);
   CHECK(g_gl_draw_functions);
   long buffer_id = g_gl_draw_functions->create_graphic_buffer(width, height);
   if (!buffer_id)
-    return NULL;
+    return scoped_ptr<gfx::GpuMemoryBuffer>();
 
-  return new GpuMemoryBufferImpl(buffer_id, gfx::Size(width, height));
+  return make_scoped_ptr(
+             new GpuMemoryBufferImpl(buffer_id, gfx::Size(width, height)))
+      .PassAs<gfx::GpuMemoryBuffer>();
+}
+
+scoped_refptr<gfx::GLImage>
+GpuMemoryBufferFactoryImpl::CreateImageForGpuMemoryBuffer(
+    const gfx::GpuMemoryBufferHandle& handle,
+    const gfx::Size& size,
+    unsigned internalformat) {
+  DCHECK_EQ(gfx::ANDROID_NATIVE_BUFFER, handle.type);
+
+  EGLClientBuffer native_buffer =
+      g_gl_draw_functions->get_native_buffer(handle.buffer_id);
+  DCHECK(native_buffer);
+
+  scoped_refptr<gfx::GLImageAndroidNativeBuffer> image(
+      new gfx::GLImageAndroidNativeBuffer(size));
+  if (!image->Initialize(native_buffer))
+    return scoped_refptr<gfx::GLImage>();
+
+  return image;
 }
 
 // static

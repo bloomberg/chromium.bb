@@ -9,22 +9,21 @@
 
 namespace gfx {
 
-GLImageAndroidNativeBuffer::GLImageAndroidNativeBuffer(gfx::Size size)
+GLImageAndroidNativeBuffer::GLImageAndroidNativeBuffer(const gfx::Size& size)
     : GLImageEGL(size),
       release_after_use_(false),
       in_use_(false),
       target_(0),
       egl_image_for_unbind_(EGL_NO_IMAGE_KHR),
-      texture_id_for_unbind_(0) {}
+      texture_id_for_unbind_(0) {
+}
 
 GLImageAndroidNativeBuffer::~GLImageAndroidNativeBuffer() { Destroy(); }
 
-bool GLImageAndroidNativeBuffer::Initialize(gfx::GpuMemoryBufferHandle buffer) {
-  DCHECK(buffer.native_buffer);
-
+bool GLImageAndroidNativeBuffer::Initialize(EGLClientBuffer native_buffer) {
   EGLint attrs[] = {EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
   return GLImageEGL::Initialize(
-      EGL_NATIVE_BUFFER_ANDROID, buffer.native_buffer, attrs);
+      EGL_NATIVE_BUFFER_ANDROID, native_buffer, attrs);
 }
 
 void GLImageAndroidNativeBuffer::Destroy() {

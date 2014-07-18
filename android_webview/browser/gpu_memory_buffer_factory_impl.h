@@ -7,25 +7,29 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "gpu/command_buffer/client/gpu_memory_buffer_factory.h"
+#include "gpu/command_buffer/service/in_process_command_buffer.h"
 
 struct AwDrawGLFunctionTable;
 
 namespace android_webview {
 
-class GpuMemoryBufferFactoryImpl : public gpu::GpuMemoryBufferFactory {
+class GpuMemoryBufferFactoryImpl : public gpu::InProcessGpuMemoryBufferFactory {
  public:
   GpuMemoryBufferFactoryImpl();
   virtual ~GpuMemoryBufferFactoryImpl();
 
   static void SetAwDrawGLFunctionTable(AwDrawGLFunctionTable* table);
 
-  // Overridden from gpu::GpuMemoryBufferFactory:
-  virtual gfx::GpuMemoryBuffer* CreateGpuMemoryBuffer(
+  // Overridden from gpu::InProcessGpuMemoryBufferFactory:
+  virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       size_t width,
       size_t height,
       unsigned internalformat,
       unsigned usage) OVERRIDE;
+  virtual scoped_refptr<gfx::GLImage> CreateImageForGpuMemoryBuffer(
+      const gfx::GpuMemoryBufferHandle& handle,
+      const gfx::Size& size,
+      unsigned internalformat) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferFactoryImpl);

@@ -265,19 +265,6 @@ IPC_MESSAGE_CONTROL5(GpuMsg_CreateViewCommandBuffer,
                      GPUCreateCommandBufferConfig, /* init_params */
                      int32 /* route_id */)
 
-// Tells the GPU process to create a new image from a window. Images
-// can be bound to textures using CHROMIUM_texture_from_image.
-IPC_MESSAGE_CONTROL3(GpuMsg_CreateImage,
-                     gfx::PluginWindowHandle, /* window */
-                     int32, /* client_id */
-                     int32 /* image_id */)
-
-// Tells the GPU process to delete image.
-IPC_MESSAGE_CONTROL3(GpuMsg_DeleteImage,
-                     int32, /* client_id */
-                     int32, /* image_id */
-                     int32 /* sync_point */)
-
 // Tells the GPU process to create a new gpu memory buffer for |handle|.
 IPC_MESSAGE_CONTROL4(GpuMsg_CreateGpuMemoryBuffer,
                      gfx::GpuMemoryBufferHandle, /* handle */
@@ -371,10 +358,6 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_CommandBufferCreated,
 // command buffer.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_DestroyCommandBuffer,
                      int32 /* surface_id */)
-
-// Response from GPU to a GpuMsg_CreateImage message.
-IPC_MESSAGE_CONTROL1(GpuHostMsg_ImageCreated,
-                     gfx::Size /* size */)
 
 // Response from GPU to a GpuMsg_CreateGpuMemoryBuffer message.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_GpuMemoryBufferCreated,

@@ -32,10 +32,8 @@
 #include "url/gurl.h"
 
 namespace gpu {
-class GpuControlService;
 struct Mailbox;
 namespace gles2 {
-class ImageManager;
 class MailboxManager;
 }
 }
@@ -71,7 +69,6 @@ class GpuCommandBufferStub
       GpuCommandBufferStub* share_group,
       const gfx::GLSurfaceHandle& handle,
       gpu::gles2::MailboxManager* mailbox_manager,
-      gpu::gles2::ImageManager* image_manager,
       const gfx::Size& size,
       const gpu::gles2::DisallowedFeatures& disallowed_features,
       const std::vector<int32>& attribs,
@@ -200,7 +197,7 @@ class GpuCommandBufferStub
   void OnSetClientHasMemoryAllocationChangedCallback(bool has_callback);
 
   void OnRegisterGpuMemoryBuffer(int32 id,
-                                 gfx::GpuMemoryBufferHandle gpu_memory_buffer,
+                                 gfx::GpuMemoryBufferHandle handle,
                                  uint32 width,
                                  uint32 height,
                                  uint32 internalformat);
@@ -251,7 +248,6 @@ class GpuCommandBufferStub
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
   scoped_ptr<gpu::GpuScheduler> scheduler_;
   scoped_refptr<gfx::GLSurface> surface_;
-  scoped_ptr<gpu::GpuControlService> gpu_control_service_;
 
   scoped_ptr<GpuMemoryManagerClientState> memory_manager_client_state_;
   // The last memory allocation received from the GpuMemoryManager (used to

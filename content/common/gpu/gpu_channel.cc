@@ -25,12 +25,10 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
-#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/message_filter.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface.h"
 
 #if defined(OS_POSIX)
@@ -408,7 +406,6 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       client_id_(client_id),
       share_group_(share_group ? share_group : new gfx::GLShareGroup),
       mailbox_manager_(mailbox ? mailbox : new gpu::gles2::MailboxManager),
-      image_manager_(new gpu::gles2::ImageManager),
       watchdog_(watchdog),
       software_(software),
       handle_messages_scheduled_(false),
@@ -577,7 +574,6 @@ CreateCommandBufferResult GpuChannel::CreateViewCommandBuffer(
                                share_group,
                                window,
                                mailbox_manager_.get(),
-                               image_manager_.get(),
                                gfx::Size(),
                                disallowed_features_,
                                init_params.attribs,
@@ -601,39 +597,6 @@ CreateCommandBufferResult GpuChannel::CreateViewCommandBuffer(
 
 GpuCommandBufferStub* GpuChannel::LookupCommandBuffer(int32 route_id) {
   return stubs_.Lookup(route_id);
-}
-
-void GpuChannel::CreateImage(
-    gfx::PluginWindowHandle window,
-    int32 image_id,
-    gfx::Size* size) {
-  TRACE_EVENT1("gpu",
-               "GpuChannel::CreateImage",
-               "image_id",
-               image_id);
-
-  *size = gfx::Size();
-
-  if (image_manager_->LookupImage(image_id)) {
-    LOG(ERROR) << "CreateImage failed, image_id already in use.";
-    return;
-  }
-
-  scoped_refptr<gfx::GLImage> image = gfx::GLImage::CreateGLImage(window);
-  if (!image.get())
-    return;
-
-  image_manager_->AddImage(image.get(), image_id);
-  *size = image->GetSize();
-}
-
-void GpuChannel::DeleteImage(int32 image_id) {
-  TRACE_EVENT1("gpu",
-               "GpuChannel::DeleteImage",
-               "image_id",
-               image_id);
-
-  image_manager_->RemoveImage(image_id);
 }
 
 void GpuChannel::LoseAllContexts() {
@@ -781,7 +744,6 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       share_group,
       gfx::GLSurfaceHandle(),
       mailbox_manager_.get(),
-      image_manager_.get(),
       size,
       disallowed_features_,
       init_params.attribs,

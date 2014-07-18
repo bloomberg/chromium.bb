@@ -3,16 +3,13 @@
 // found in the LICENSE file.
 
 extern "C" {
-#include <X11/extensions/Xcomposite.h>
+#include <X11/Xlib.h>
 }
 
 #include "ui/gl/gl_image_glx.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface_glx.h"
 
@@ -27,113 +24,146 @@ struct ScopedPtrXFree {
   void operator()(void* x) const { ::XFree(x); }
 };
 
-int BindToTextureFormat(int depth) {
-  if (depth == 32)
-    return GLX_BIND_TO_TEXTURE_RGBA_EXT;
-
-  return GLX_BIND_TO_TEXTURE_RGB_EXT;
+bool ValidFormat(unsigned internalformat) {
+  switch (internalformat) {
+    case GL_BGRA8_EXT:
+      return true;
+    default:
+      return false;
+  }
 }
 
-int TextureFormat(int depth) {
-  if (depth == 32)
-    return GLX_TEXTURE_FORMAT_RGBA_EXT;
+int TextureFormat(unsigned internalformat) {
+  switch (internalformat) {
+    case GL_BGRA8_EXT:
+      return GLX_TEXTURE_FORMAT_RGBA_EXT;
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
 
-  return GLX_TEXTURE_FORMAT_RGB_EXT;
+int BindToTextureFormat(unsigned internalformat) {
+  switch (internalformat) {
+    case GL_BGRA8_EXT:
+      return GLX_BIND_TO_TEXTURE_RGBA_EXT;
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
+unsigned PixmapDepth(unsigned internalformat) {
+  switch (internalformat) {
+    case GL_BGRA8_EXT:
+      return 32u;
+    default:
+      NOTREACHED();
+      return 0u;
+  }
+}
+
+bool ActualPixmapGeometry(XID pixmap, gfx::Size* size, unsigned* depth) {
+  XID root_return;
+  int x_return;
+  int y_return;
+  unsigned width_return;
+  unsigned height_return;
+  unsigned border_width_return;
+  unsigned depth_return;
+  if (!XGetGeometry(gfx::GetXDisplay(),
+                    pixmap,
+                    &root_return,
+                    &x_return,
+                    &y_return,
+                    &width_return,
+                    &height_return,
+                    &border_width_return,
+                    &depth_return))
+    return false;
+
+  if (size)
+    *size = gfx::Size(width_return, height_return);
+  if (depth)
+    *depth = depth_return;
+  return true;
+}
+
+unsigned ActualPixmapDepth(XID pixmap) {
+  unsigned depth;
+  if (!ActualPixmapGeometry(pixmap, NULL, &depth))
+    return -1;
+
+  return depth;
+}
+
+gfx::Size ActualPixmapSize(XID pixmap) {
+  gfx::Size size;
+  if (!ActualPixmapGeometry(pixmap, &size, NULL))
+    return gfx::Size();
+
+  return size;
 }
 
 }  // namespace anonymous
 
-GLImageGLX::GLImageGLX(gfx::PluginWindowHandle window)
-    : display_(gfx::GetXDisplay()),
-      window_(window),
-      pixmap_(0),
-      glx_pixmap_(0) {}
+GLImageGLX::GLImageGLX(const gfx::Size& size, unsigned internalformat)
+    : glx_pixmap_(0), size_(size), internalformat_(internalformat) {
+}
 
 GLImageGLX::~GLImageGLX() { Destroy(); }
 
-bool GLImageGLX::Initialize() {
+bool GLImageGLX::Initialize(XID pixmap) {
   if (!GLSurfaceGLX::IsTextureFromPixmapSupported()) {
-    LOG(ERROR) << "GLX_EXT_texture_from_pixmap not supported.";
+    DVLOG(0) << "GLX_EXT_texture_from_pixmap not supported.";
     return false;
   }
 
-  XWindowAttributes attributes;
-  if (!XGetWindowAttributes(display_, window_, &attributes)) {
-    LOG(ERROR) << "XGetWindowAttributes failed for window " << window_ << ".";
+  if (!ValidFormat(internalformat_)) {
+    DVLOG(0) << "Invalid format: " << internalformat_;
     return false;
   }
 
-  XVisualInfo templ;
-  templ.visualid = XVisualIDFromVisual(attributes.visual);
-  int num_visinfo = 0;
-  scoped_ptr<XVisualInfo, ScopedPtrXFree> visinfo(
-      XGetVisualInfo(display_, VisualIDMask, &templ, &num_visinfo));
-  if (!visinfo.get()) {
-    LOG(ERROR) << "XGetVisualInfo failed for visual id " << templ.visualid
-               << ".";
-    return false;
-  }
-  if (!num_visinfo) {
-    LOG(ERROR) << "XGetVisualInfo returned 0 elements.";
-    return false;
-  }
+  DCHECK_EQ(PixmapDepth(internalformat_), ActualPixmapDepth(pixmap));
+  DCHECK_EQ(size_.ToString(), ActualPixmapSize(pixmap).ToString());
 
   int config_attribs[] = {
-      static_cast<int>(GLX_VISUAL_ID),     static_cast<int>(visinfo->visualid),
-      GLX_DRAWABLE_TYPE,                   GLX_PIXMAP_BIT,
-      GLX_BIND_TO_TEXTURE_TARGETS_EXT,     GLX_TEXTURE_2D_EXT,
-      BindToTextureFormat(visinfo->depth), GL_TRUE,
+      GLX_DRAWABLE_TYPE,                    GLX_PIXMAP_BIT,
+      GLX_BIND_TO_TEXTURE_TARGETS_EXT,      GLX_TEXTURE_2D_EXT,
+      BindToTextureFormat(internalformat_), GL_TRUE,
       0};
   int num_elements = 0;
-  scoped_ptr<GLXFBConfig, ScopedPtrXFree> config(glXChooseFBConfig(
-      display_, DefaultScreen(display_), config_attribs, &num_elements));
+  scoped_ptr<GLXFBConfig, ScopedPtrXFree> config(
+      glXChooseFBConfig(gfx::GetXDisplay(),
+                        DefaultScreen(gfx::GetXDisplay()),
+                        config_attribs,
+                        &num_elements));
   if (!config.get()) {
-    LOG(ERROR) << "glXChooseFBConfig failed.";
+    DVLOG(0) << "glXChooseFBConfig failed.";
     return false;
   }
   if (!num_elements) {
-    LOG(ERROR) << "glXChooseFBConfig returned 0 elements.";
-    return false;
-  }
-
-  // Create backing pixmap reference.
-  pixmap_ = XCompositeNameWindowPixmap(display_, window_);
-
-  XID root = 0;
-  int x = 0;
-  int y = 0;
-  unsigned int width = 0;
-  unsigned int height = 0;
-  unsigned int bw = 0;
-  unsigned int depth = 0;
-  if (!XGetGeometry(
-          display_, pixmap_, &root, &x, &y, &width, &height, &bw, &depth)) {
-    LOG(ERROR) << "XGetGeometry failed for pixmap " << pixmap_ << ".";
+    DVLOG(0) << "glXChooseFBConfig returned 0 elements.";
     return false;
   }
 
   int pixmap_attribs[] = {GLX_TEXTURE_TARGET_EXT, GLX_TEXTURE_2D_EXT,
-                          GLX_TEXTURE_FORMAT_EXT, TextureFormat(visinfo->depth),
-                          0};
-  glx_pixmap_ =
-      glXCreatePixmap(display_, *config.get(), pixmap_, pixmap_attribs);
+                          GLX_TEXTURE_FORMAT_EXT,
+                          TextureFormat(internalformat_), 0};
+  glx_pixmap_ = glXCreatePixmap(
+      gfx::GetXDisplay(), *config.get(), pixmap, pixmap_attribs);
   if (!glx_pixmap_) {
-    LOG(ERROR) << "glXCreatePixmap failed.";
+    DVLOG(0) << "glXCreatePixmap failed.";
     return false;
   }
 
-  size_ = gfx::Size(width, height);
   return true;
 }
 
 void GLImageGLX::Destroy() {
   if (glx_pixmap_) {
-    glXDestroyGLXPixmap(display_, glx_pixmap_);
+    glXDestroyGLXPixmap(gfx::GetXDisplay(), glx_pixmap_);
     glx_pixmap_ = 0;
-  }
-  if (pixmap_) {
-    XFreePixmap(display_, pixmap_);
-    pixmap_ = 0;
   }
 }
 
@@ -147,7 +177,7 @@ bool GLImageGLX::BindTexImage(unsigned target) {
   if (target != GL_TEXTURE_2D)
     return false;
 
-  glXBindTexImageEXT(display_, glx_pixmap_, GLX_FRONT_LEFT_EXT, 0);
+  glXBindTexImageEXT(gfx::GetXDisplay(), glx_pixmap_, GLX_FRONT_LEFT_EXT, 0);
   return true;
 }
 
@@ -155,7 +185,7 @@ void GLImageGLX::ReleaseTexImage(unsigned target) {
   DCHECK(glx_pixmap_);
   DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), target);
 
-  glXReleaseTexImageEXT(display_, glx_pixmap_, GLX_FRONT_LEFT_EXT);
+  glXReleaseTexImageEXT(gfx::GetXDisplay(), glx_pixmap_, GLX_FRONT_LEFT_EXT);
 }
 
 }  // namespace gfx

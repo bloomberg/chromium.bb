@@ -12,13 +12,13 @@
 
 namespace gfx {
 
-GLImageIOSurface::GLImageIOSurface(gfx::Size size)
-    : size_(size) {}
+GLImageIOSurface::GLImageIOSurface(const gfx::Size& size) : size_(size) {
+}
 
 GLImageIOSurface::~GLImageIOSurface() { Destroy(); }
 
-bool GLImageIOSurface::Initialize(gfx::GpuMemoryBufferHandle buffer) {
-  io_surface_.reset(IOSurfaceLookup(buffer.io_surface_id));
+bool GLImageIOSurface::Initialize(const gfx::GpuMemoryBufferHandle& handle) {
+  io_surface_.reset(IOSurfaceLookup(handle.io_surface_id));
   if (!io_surface_) {
     LOG(ERROR) << "IOSurface lookup failed";
     return false;

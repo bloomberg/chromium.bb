@@ -1,21 +1,25 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GL_GL_IMAGE_SHM_H_
-#define UI_GL_GL_IMAGE_SHM_H_
+#ifndef UI_GL_GL_IMAGE_MEMORY_H_
+#define UI_GL_GL_IMAGE_MEMORY_H_
 
-#include "base/memory/scoped_ptr.h"
-#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
+
+#if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
+    defined(USE_OZONE)
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#endif
 
 namespace gfx {
 
-class GL_EXPORT GLImageShm : public GLImage {
+class GL_EXPORT GLImageMemory : public GLImage {
  public:
-  GLImageShm(gfx::Size size, unsigned internalformat);
+  GLImageMemory(const gfx::Size& size, unsigned internalformat);
 
-  bool Initialize(gfx::GpuMemoryBufferHandle buffer);
+  bool Initialize(const unsigned char* memory);
 
   // Overridden from GLImage:
   virtual void Destroy() OVERRIDE;
@@ -28,21 +32,24 @@ class GL_EXPORT GLImageShm : public GLImage {
   virtual void DidModifyTexImage() OVERRIDE {}
 
  protected:
-  virtual ~GLImageShm();
+  virtual ~GLImageMemory();
+
+  bool HasValidFormat() const;
+  size_t Bytes() const;
 
  private:
-  scoped_ptr<base::SharedMemory> shared_memory_;
-  gfx::Size size_;
-  unsigned internalformat_;
+  const unsigned char* memory_;
+  const gfx::Size size_;
+  const unsigned internalformat_;
 #if defined(OS_WIN) || defined(USE_X11) || defined(OS_ANDROID) || \
     defined(USE_OZONE)
-  GLuint egl_texture_id_;
+  unsigned egl_texture_id_;
   EGLImageKHR egl_image_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(GLImageShm);
+  DISALLOW_COPY_AND_ASSIGN(GLImageMemory);
 };
 
 }  // namespace gfx
 
-#endif  // UI_GL_GL_IMAGE_SHM_H_
+#endif  // UI_GL_GL_IMAGE_MEMORY_H_

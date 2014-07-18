@@ -33,11 +33,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id) OVERRIDE;
-  virtual void CreateImage(
-      gfx::PluginWindowHandle window,
-      int32 image_id,
-      const CreateImageCallback& callback) OVERRIDE;
-  virtual void DeleteImage(int32 image_idu, int32 sync_point) OVERRIDE;
   virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
       size_t width,
       size_t height,
@@ -87,15 +82,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       const GPUCreateCommandBufferConfig& init_params);
   static void CommandBufferCreatedOnIO(CreateRequest* request,
                                        CreateCommandBufferResult result);
-  void CreateImageOnIO(
-      gfx::PluginWindowHandle window,
-      int32 image_id,
-      const CreateImageCallback& callback);
-  static void ImageCreatedOnIO(
-      const CreateImageCallback& callback, const gfx::Size size);
-  static void OnImageCreated(
-      const CreateImageCallback& callback, const gfx::Size size);
-  void DeleteImageOnIO(int32 image_id, int32 sync_point);
   static void AddFilterOnIO(int gpu_host_id,
                             scoped_refptr<IPC::MessageFilter> filter);
 

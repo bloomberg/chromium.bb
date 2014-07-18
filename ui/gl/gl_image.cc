@@ -4,16 +4,16 @@
 
 #include "ui/gl/gl_image.h"
 
-#include "base/logging.h"
-
 namespace gfx {
 
-GLImage::GLImage() {}
+GLImage::GLImage() {
+}
+
+GLImage::~GLImage() {
+}
 
 void GLImage::SetReleaseAfterUse() {
   // Default no-op implementation for workaround.
 }
-
-GLImage::~GLImage() {}
 
 }  // namespace gfx

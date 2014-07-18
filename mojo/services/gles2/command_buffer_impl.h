@@ -66,7 +66,6 @@ class CommandBufferImpl : public InterfaceImpl<CommandBuffer> {
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
   scoped_ptr<gpu::GpuScheduler> scheduler_;
-  scoped_ptr<gpu::GpuControlService> gpu_control_;
   scoped_refptr<gfx::GLSurface> surface_;
   base::RepeatingTimer<CommandBufferImpl> timer_;
 

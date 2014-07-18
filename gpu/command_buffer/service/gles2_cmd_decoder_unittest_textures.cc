@@ -25,6 +25,7 @@
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_image_stub.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_mock.h"
 #include "ui/gl/gl_surface_stub.h"
@@ -2147,8 +2148,9 @@ TEST_P(GLES2DecoderTest, BindTexImage2DCHROMIUM) {
   Texture* texture = texture_ref->texture();
   EXPECT_EQ(kServiceTextureId, texture->service_id());
 
-  group().image_manager()->AddImage(gfx::GLImage::CreateGLImage(0).get(), 1);
-  EXPECT_FALSE(group().image_manager()->LookupImage(1) == NULL);
+  scoped_refptr<gfx::GLImage> image(new gfx::GLImageStub);
+  GetImageManager()->AddImage(image.get(), 1);
+  EXPECT_FALSE(GetImageManager()->LookupImage(1) == NULL);
 
   GLsizei width;
   GLsizei height;
@@ -2185,7 +2187,8 @@ TEST_P(GLES2DecoderTest, BindTexImage2DCHROMIUM) {
 }
 
 TEST_P(GLES2DecoderTest, BindTexImage2DCHROMIUMCubeMapNotAllowed) {
-  group().image_manager()->AddImage(gfx::GLImage::CreateGLImage(0).get(), 1);
+  scoped_refptr<gfx::GLImage> image(new gfx::GLImageStub);
+  GetImageManager()->AddImage(image.get(), 1);
   DoBindTexture(GL_TEXTURE_CUBE_MAP, client_texture_id_, kServiceTextureId);
 
   BindTexImage2DCHROMIUM bind_tex_image_2d_cmd;
@@ -2195,7 +2198,8 @@ TEST_P(GLES2DecoderTest, BindTexImage2DCHROMIUMCubeMapNotAllowed) {
 }
 
 TEST_P(GLES2DecoderTest, OrphanGLImageWithTexImage2D) {
-  group().image_manager()->AddImage(gfx::GLImage::CreateGLImage(0).get(), 1);
+  scoped_refptr<gfx::GLImage> image(new gfx::GLImageStub);
+  GetImageManager()->AddImage(image.get(), 1);
   DoBindTexture(GL_TEXTURE_CUBE_MAP, client_texture_id_, kServiceTextureId);
 
   BindTexImage2DCHROMIUM bind_tex_image_2d_cmd;
@@ -2222,8 +2226,9 @@ TEST_P(GLES2DecoderTest, ReleaseTexImage2DCHROMIUM) {
   Texture* texture = texture_ref->texture();
   EXPECT_EQ(kServiceTextureId, texture->service_id());
 
-  group().image_manager()->AddImage(gfx::GLImage::CreateGLImage(0).get(), 1);
-  EXPECT_FALSE(group().image_manager()->LookupImage(1) == NULL);
+  scoped_refptr<gfx::GLImage> image(new gfx::GLImageStub);
+  GetImageManager()->AddImage(image.get(), 1);
+  EXPECT_FALSE(GetImageManager()->LookupImage(1) == NULL);
 
   GLsizei width;
   GLsizei height;
@@ -2304,7 +2309,7 @@ TEST_P(GLES2DecoderWithShaderTest, UseTexImage) {
 
   const int32 kImageId = 1;
   scoped_refptr<MockGLImage> image(new MockGLImage);
-  group().image_manager()->AddImage(image.get(), kImageId);
+  GetImageManager()->AddImage(image.get(), kImageId);
 
   // Bind image to texture.
   EXPECT_CALL(*image, BindTexImage(GL_TEXTURE_2D))

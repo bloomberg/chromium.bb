@@ -53,6 +53,9 @@ bool GpuChannelHost::IsValidGpuMemoryBuffer(
 #if defined(OS_ANDROID)
     case gfx::SURFACE_TEXTURE_BUFFER:
 #endif
+#if defined(USE_X11)
+    case gfx::X11_PIXMAP_BUFFER:
+#endif
       return true;
     default:
       return false;
@@ -307,6 +310,10 @@ gfx::GpuMemoryBufferHandle GpuChannelHost::ShareGpuMemoryBufferToGpuProcess(
 #endif
 #if defined(OS_ANDROID)
     case gfx::SURFACE_TEXTURE_BUFFER:
+      return source_handle;
+#endif
+#if defined(USE_X11)
+    case gfx::X11_PIXMAP_BUFFER:
       return source_handle;
 #endif
     default:

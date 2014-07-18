@@ -9,8 +9,8 @@
 #include "build/build_config.h"
 #include "ui/gfx/gfx_export.h"
 
-#if defined(OS_ANDROID)
-#include <third_party/khronos/EGL/egl.h>
+#if defined(USE_X11)
+#include "ui/gfx/x/x11_types.h"
 #endif
 
 namespace gfx {
@@ -21,7 +21,8 @@ enum GpuMemoryBufferType {
   IO_SURFACE_BUFFER,
   ANDROID_NATIVE_BUFFER,
   SURFACE_TEXTURE_BUFFER,
-  GPU_MEMORY_BUFFER_TYPE_LAST = SURFACE_TEXTURE_BUFFER
+  X11_PIXMAP_BUFFER,
+  GPU_MEMORY_BUFFER_TYPE_LAST = X11_PIXMAP_BUFFER
 };
 
 // TODO(alexst): Merge this with GpuMemoryBufferId as part of switchover to
@@ -54,8 +55,11 @@ struct GFX_EXPORT GpuMemoryBufferHandle {
   uint32 io_surface_id;
 #endif
 #if defined(OS_ANDROID)
-  EGLClientBuffer native_buffer;
+  long buffer_id;
   SurfaceTextureId surface_texture_id;
+#endif
+#if defined(USE_X11)
+  XID pixmap;
 #endif
 };
 
