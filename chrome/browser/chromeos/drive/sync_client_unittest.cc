@@ -478,7 +478,6 @@ TEST_F(SyncClientTest, Dependencies) {
 
   // Start syncing the child first.
   sync_client_->AddUpdateTask(ClientContext(USER_INITIATED), local_id2);
-  base::RunLoop().RunUntilIdle();
   // Start syncing the parent later.
   sync_client_->AddUpdateTask(ClientContext(USER_INITIATED), local_id1);
   base::RunLoop().RunUntilIdle();
