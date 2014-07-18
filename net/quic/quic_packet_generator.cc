@@ -13,6 +13,19 @@ using base::StringPiece;
 
 namespace net {
 
+namespace {
+
+// We want to put some space between a protected packet and the FEC packet to
+// avoid losing them both within the same loss episode. On the other hand,
+// we expect to be able to recover from any loss in about an RTT.
+// We resolve this tradeoff by sending an FEC packet atmost half an RTT,
+// or equivalently, half a cwnd, after the first protected packet. Since we
+// don't want to delay an FEC packet past half an RTT, we set the max FEC
+// group size to be half the current congestion window.
+const float kCongestionWindowMultiplierForFecGroupSize = 0.5;
+
+}  // namespace
+
 class QuicAckNotifier;
 
 QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
@@ -70,6 +83,14 @@ QuicPacketGenerator::~QuicPacketGenerator() {
         DCHECK(false) << "Cannot delete type: " << it->type;
     }
   }
+}
+
+// NetworkChangeVisitor method.
+void QuicPacketGenerator::OnCongestionWindowChange(
+    QuicByteCount congestion_window) {
+  packet_creator_.set_max_packets_per_fec_group(
+      static_cast<size_t>(kCongestionWindowMultiplierForFecGroupSize *
+                          congestion_window / kDefaultTCPMSS));
 }
 
 void QuicPacketGenerator::SetShouldSendAck(bool also_send_feedback,
@@ -166,6 +187,9 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
 
   // Try to close FEC group since we've either run out of data to send or we're
   // blocked. If not in batch mode, force close the group.
+  // TODO(jri): This method should be called with flush=false here
+  // once the timer-based FEC sending is done, to separate FEC sending from
+  // the end of batch operations.
   MaybeSendFecPacketAndCloseGroup(!InBatchMode());
 
   DCHECK(InBatchMode() || !packet_creator_.HasPendingFrames());
@@ -228,20 +252,17 @@ void QuicPacketGenerator::MaybeStartFecProtection() {
 
 void QuicPacketGenerator::MaybeSendFecPacketAndCloseGroup(bool force) {
   if (!packet_creator_.IsFecProtected() ||
-      packet_creator_.HasPendingFrames()) {
+      packet_creator_.HasPendingFrames() ||
+      !packet_creator_.ShouldSendFec(force)) {
     return;
   }
-
-  if (packet_creator_.ShouldSendFec(force)) {
-    // TODO(jri): SerializeFec can return a NULL packet, and this should
-    // cause an early return, with a call to
-    // delegate_->OnPacketGenerationError.
-    SerializedPacket serialized_fec = packet_creator_.SerializeFec();
-    DCHECK(serialized_fec.packet);
-    delegate_->OnSerializedPacket(serialized_fec);
-  }
-
-  // Turn FEC protection off if the creator does not have an FEC group open.
+  // TODO(jri): SerializeFec can return a NULL packet, and this should
+  // cause an early return, with a call to delegate_->OnPacketGenerationError.
+  SerializedPacket serialized_fec = packet_creator_.SerializeFec();
+  DCHECK(serialized_fec.packet);
+  delegate_->OnSerializedPacket(serialized_fec);
+  // Turn FEC protection off if creator's protection is on and the creator
+  // does not have an open FEC group.
   // Note: We only wait until the frames queued in the creator are flushed;
   // pending frames in the generator will not keep us from turning FEC off.
   if (!should_fec_protect_ && !packet_creator_.IsFecGroupOpen()) {

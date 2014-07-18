@@ -63,18 +63,22 @@ bool HasCryptoHandshake(const TransmissionInfo& transmission_info) {
 
 #define ENDPOINT (is_server_ ? "Server: " : " Client: ")
 
-QuicSentPacketManager::QuicSentPacketManager(bool is_server,
-                                             const QuicClock* clock,
-                                             QuicConnectionStats* stats,
-                                             CongestionFeedbackType type,
-                                             LossDetectionType loss_type)
+QuicSentPacketManager::QuicSentPacketManager(
+    bool is_server,
+    const QuicClock* clock,
+    QuicConnectionStats* stats,
+    CongestionControlType congestion_control_type,
+    LossDetectionType loss_type)
     : unacked_packets_(),
       is_server_(is_server),
       clock_(clock),
       stats_(stats),
       debug_delegate_(NULL),
-      send_algorithm_(
-          SendAlgorithmInterface::Create(clock, &rtt_stats_, type, stats)),
+      network_change_visitor_(NULL),
+      send_algorithm_(SendAlgorithmInterface::Create(clock,
+                                                     &rtt_stats_,
+                                                     congestion_control_type,
+                                                     stats)),
       loss_algorithm_(LossDetectionInterface::Create(loss_type)),
       largest_observed_(0),
       first_rto_transmission_(0),
@@ -103,7 +107,7 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
           QuicTime::Delta::FromSeconds(FLAGS_quic_recent_min_rtt_window_s));
     }
     send_algorithm_.reset(
-        SendAlgorithmInterface::Create(clock_, &rtt_stats_, kTCPBBR, stats_));
+        SendAlgorithmInterface::Create(clock_, &rtt_stats_, kBBR, stats_));
   }
   if (config.congestion_feedback() == kPACE ||
       (config.HasReceivedConnectionOptions() &&
@@ -119,6 +123,10 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
     loss_algorithm_.reset(LossDetectionInterface::Create(kTime));
   }
   send_algorithm_->SetFromConfig(config, is_server_);
+
+  if (network_change_visitor_ != NULL) {
+    network_change_visitor_->OnCongestionWindowChange(GetCongestionWindow());
+  }
 }
 
 // TODO(ianswett): Combine this method with OnPacketSent once packets are always
@@ -207,12 +215,15 @@ void QuicSentPacketManager::OnIncomingAck(
 
 void QuicSentPacketManager::MaybeInvokeCongestionEvent(
     bool rtt_updated, QuicByteCount bytes_in_flight) {
-  if (rtt_updated || !packets_acked_.empty() ||
-      !packets_lost_.empty()) {
-    send_algorithm_->OnCongestionEvent(
-        rtt_updated, bytes_in_flight, packets_acked_, packets_lost_);
-    packets_acked_.clear();
-    packets_lost_.clear();
+  if (!rtt_updated && packets_acked_.empty() && packets_lost_.empty()) {
+    return;
+  }
+  send_algorithm_->OnCongestionEvent(rtt_updated, bytes_in_flight,
+                                     packets_acked_, packets_lost_);
+  packets_acked_.clear();
+  packets_lost_.clear();
+  if (network_change_visitor_ != NULL) {
+    network_change_visitor_->OnCongestionWindowChange(GetCongestionWindow());
   }
 }
 
@@ -627,6 +638,10 @@ void QuicSentPacketManager::RetransmitAllPackets() {
       first_rto_transmission_ = unacked_packets_.largest_sent_packet() + 1;
     }
     ++consecutive_rto_count_;
+  }
+
+  if (network_change_visitor_ != NULL) {
+    network_change_visitor_->OnCongestionWindowChange(GetCongestionWindow());
   }
 }
 

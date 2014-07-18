@@ -25,6 +25,9 @@ class QuicSentPacketManagerPeer {
   static const LossDetectionInterface* GetLossAlgorithm(
       QuicSentPacketManager* sent_packet_manager);
 
+  static const SendAlgorithmInterface* GetCongestionControlAlgorithm(
+      QuicSentPacketManager* sent_packet_manager);
+
   static void SetLossAlgorithm(QuicSentPacketManager* sent_packet_manager,
                                LossDetectionInterface* loss_detector);
 
@@ -61,6 +64,9 @@ class QuicSentPacketManagerPeer {
       const QuicSentPacketManager* sent_packet_manager);
 
   static QuicByteCount GetBytesInFlight(
+      const QuicSentPacketManager* sent_packet_manager);
+
+  static QuicSentPacketManager::NetworkChangeVisitor* GetNetworkChangeVisitor(
       const QuicSentPacketManager* sent_packet_manager);
 
  private:

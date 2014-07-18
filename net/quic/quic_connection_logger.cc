@@ -146,10 +146,6 @@ base::Value* NetLogQuicCongestionFeedbackFrameCallback(
       dict->SetString("type", "TCP");
       dict->SetInteger("receive_window", frame->tcp.receive_window);
       break;
-    case kTCPBBR:
-      dict->SetString("type", "TCPBBR");
-      // TODO(rtenneti): Add support for BBR.
-      break;
   }
 
   return dict;

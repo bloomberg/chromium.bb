@@ -110,9 +110,6 @@ const int64 kDefaultMaxTimeForCryptoHandshakeSecs = 5;  // 5 secs.
 // Default ping timeout.
 const int64 kPingTimeoutSecs = 15;  // 15 secs.
 
-// Default max packets in an FEC group.
-const size_t kMaxPacketsPerFecGroup = 10;
-
 // We define an unsigned 16-bit floating point value, inspired by IEEE floats
 // (http://en.wikipedia.org/wiki/Half_precision_floating-point_format),
 // with 5-bit exponent (bias 1), 11-bit mantissa (effective 12 with hidden
@@ -718,7 +715,17 @@ enum CongestionFeedbackType {
   kTCP,  // Used to mimic TCP.
   kInterArrival,  // Use additional inter arrival information.
   kFixRate,  // Provided for testing.
-  kTCPBBR,  // BBR implementation based on TCP congestion feedback.
+};
+
+// Defines for all types of congestion control algorithms that can be used in
+// QUIC. Note that this is separate from the congestion feedback type -
+// some congestion control algorithms may use the same feedback type
+// (Reno and Cubic are the classic example for that).
+enum CongestionControlType {
+  kCubic,
+  kReno,
+  kFixRateCongestionControl,  // Provided for testing.
+  kBBR,
 };
 
 enum LossDetectionType {

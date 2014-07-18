@@ -18,18 +18,18 @@ class RttStats;
 SendAlgorithmInterface* SendAlgorithmInterface::Create(
     const QuicClock* clock,
     const RttStats* rtt_stats,
-    CongestionFeedbackType type,
+    CongestionControlType congestion_control_type,
     QuicConnectionStats* stats) {
-  switch (type) {
+  switch (congestion_control_type) {
     case kTCP:
       return new TcpCubicSender(clock, rtt_stats, kUseReno,
                                 kMaxTcpCongestionWindow, stats);
     case kInterArrival:
       LOG(DFATAL) << "InterArrivalSendAlgorithm no longer supported.";
       return NULL;
-    case kFixRate:
+    case kFixRateCongestionControl:
       return new FixRateSender(rtt_stats);
-    case kTCPBBR:
+    case kBBR:
       LOG(DFATAL) << "BbrTcpSender is not supported.";
       return NULL;
   }

@@ -109,4 +109,8 @@ QuicByteCount FixRateSender::GetSlowStartThreshold() const {
   return 0;
 }
 
+CongestionControlType FixRateSender::GetCongestionControlType() const {
+  return kFixRateCongestionControl;
+}
+
 }  // namespace net

@@ -29,7 +29,7 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
 
   static SendAlgorithmInterface* Create(const QuicClock* clock,
                                         const RttStats* rtt_stats,
-                                        CongestionFeedbackType type,
+                                        CongestionControlType type,
                                         QuicConnectionStats* stats);
 
   virtual ~SendAlgorithmInterface() {}
@@ -101,6 +101,8 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   // aka ssthresh.  Some send algorithms do not define a slow start
   // threshold and will return 0.
   virtual QuicByteCount GetSlowStartThreshold() const = 0;
+
+  virtual CongestionControlType GetCongestionControlType() const = 0;
 };
 
 }  // namespace net

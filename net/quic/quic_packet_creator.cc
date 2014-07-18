@@ -20,6 +20,15 @@ using std::vector;
 
 namespace net {
 
+namespace {
+
+// Default max packets in an FEC group.
+static const size_t kDefaultMaxPacketsPerFecGroup = 10;
+// Lowest max packets in an FEC group.
+static const size_t kLowestMaxPacketsPerFecGroup = 2;
+
+}  // namespace
+
 // A QuicRandom wrapper that gets a bucket of entropy and distributes it
 // bit-by-bit. Replenishes the bucket as needed. Not thread-safe. Expose this
 // class if single bit randomness is needed elsewhere.
@@ -67,7 +76,7 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
       fec_group_number_(0),
       send_version_in_packet_(!framer->is_server()),
       max_packet_length_(kDefaultMaxPacketSize),
-      max_packets_per_fec_group_(kMaxPacketsPerFecGroup),
+      max_packets_per_fec_group_(kDefaultMaxPacketsPerFecGroup),
       connection_id_length_(PACKET_8BYTE_CONNECTION_ID),
       next_sequence_number_length_(PACKET_1BYTE_SEQUENCE_NUMBER),
       sequence_number_length_(next_sequence_number_length_),
@@ -86,6 +95,13 @@ void QuicPacketCreator::OnBuiltFecProtectedPayload(
   }
 }
 
+void QuicPacketCreator::set_max_packets_per_fec_group(
+    size_t max_packets_per_fec_group) {
+  max_packets_per_fec_group_ = max(kLowestMaxPacketsPerFecGroup,
+                                   max_packets_per_fec_group);
+  DCHECK_LT(0u, max_packets_per_fec_group_);
+}
+
 bool QuicPacketCreator::ShouldSendFec(bool force_close) const {
   DCHECK(!HasPendingFrames());
   return fec_group_.get() != NULL && fec_group_->NumReceivedPackets() > 0 &&
@@ -94,7 +110,7 @@ bool QuicPacketCreator::ShouldSendFec(bool force_close) const {
 }
 
 bool QuicPacketCreator::IsFecGroupOpen() const {
-  return ShouldSendFec(true);
+  return fec_group_.get() != NULL;
 }
 
 void QuicPacketCreator::StartFecProtectingPackets() {

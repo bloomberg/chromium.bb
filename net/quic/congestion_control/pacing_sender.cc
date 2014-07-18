@@ -174,4 +174,8 @@ QuicByteCount PacingSender::GetSlowStartThreshold() const {
   return sender_->GetSlowStartThreshold();
 }
 
+CongestionControlType PacingSender::GetCongestionControlType() const {
+  return sender_->GetCongestionControlType();
+}
+
 }  // namespace net

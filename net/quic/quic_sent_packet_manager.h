@@ -72,6 +72,18 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
         QuicPacketSequenceNumber least_unacked_sent_packet) {}
   };
 
+  // Interface which gets callbacks from the QuicSentPacketManager when
+  // network-related state changes. Implementations must not mutate the
+  // state of the packet manager as a result of these callbacks.
+  class NET_EXPORT_PRIVATE NetworkChangeVisitor {
+   public:
+    virtual ~NetworkChangeVisitor() {}
+
+    // Called when congestion window may have changed.
+    virtual void OnCongestionWindowChange(QuicByteCount congestion_window) = 0;
+    // TODO(jri): Add OnRttStatsChange() to this class as well.
+  };
+
   // Struct to store the pending retransmission information.
   struct PendingRetransmission {
     PendingRetransmission(QuicPacketSequenceNumber sequence_number,
@@ -93,7 +105,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   QuicSentPacketManager(bool is_server,
                         const QuicClock* clock,
                         QuicConnectionStats* stats,
-                        CongestionFeedbackType congestion_type,
+                        CongestionControlType congestion_control_type,
                         LossDetectionType loss_type);
   virtual ~QuicSentPacketManager();
 
@@ -210,6 +222,12 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
     return largest_observed_;
   }
 
+  void set_network_change_visitor(NetworkChangeVisitor* visitor) {
+    DCHECK(!network_change_visitor_);
+    DCHECK(visitor);
+    network_change_visitor_ = visitor;
+  }
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::QuicSentPacketManagerPeer;
@@ -316,6 +334,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   const QuicClock* clock_;
   QuicConnectionStats* stats_;
   DebugDelegate* debug_delegate_;
+  NetworkChangeVisitor* network_change_visitor_;
   RttStats rtt_stats_;
   scoped_ptr<SendAlgorithmInterface> send_algorithm_;
   scoped_ptr<LossDetectionInterface> loss_algorithm_;

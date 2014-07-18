@@ -227,7 +227,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       time_of_last_sent_new_packet_(clock_->ApproximateNow()),
       sequence_number_of_last_sent_packet_(0),
       sent_packet_manager_(
-          is_server, clock_, &stats_, kTCP,
+          is_server, clock_, &stats_, kCubic,
           FLAGS_quic_use_time_loss_detection ? kTime : kNack),
       version_negotiation_state_(START_NEGOTIATION),
       is_server_(is_server),
@@ -246,6 +246,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
   framer_.set_visitor(this);
   framer_.set_received_entropy_calculator(&received_packet_manager_);
   stats_.connection_creation_time = clock_->ApproximateNow();
+  sent_packet_manager_.set_network_change_visitor(&packet_generator_);
 }
 
 QuicConnection::~QuicConnection() {
@@ -307,6 +308,9 @@ void QuicConnection::OnPublicResetPacket(
     debug_visitor_->OnPublicResetPacket(packet);
   }
   CloseConnection(QUIC_PUBLIC_RESET, true);
+
+  DVLOG(1) << ENDPOINT << "Connection " << connection_id()
+           << " closed via QUIC_PUBLIC_RESET from peer.";
 }
 
 bool QuicConnection::OnProtocolVersionMismatch(QuicVersion received_version) {

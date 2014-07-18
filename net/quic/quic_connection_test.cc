@@ -3945,6 +3945,21 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackAfterFECRecovery) {
   ProcessFecPacket(2, 1, true, !kEntropyFlag, packet);
 }
 
+TEST_P(QuicConnectionTest, NetworkChangeVisitorCallbacksChangeFecState) {
+  QuicPacketCreator* creator =
+      QuicConnectionPeer::GetPacketCreator(&connection_);
+  size_t max_packets_per_fec_group = creator->max_packets_per_fec_group();
+
+  QuicSentPacketManager::NetworkChangeVisitor* visitor =
+      QuicSentPacketManagerPeer::GetNetworkChangeVisitor(
+          QuicConnectionPeer::GetSentPacketManager(&connection_));
+  EXPECT_TRUE(visitor);
+
+  // Increase FEC group size by increasing congestion window to a large number.
+  visitor->OnCongestionWindowChange(1000 * kDefaultTCPMSS);
+  EXPECT_LT(max_packets_per_fec_group, creator->max_packets_per_fec_group());
+}
+
 class MockQuicConnectionDebugVisitor
     : public QuicConnectionDebugVisitor {
  public:

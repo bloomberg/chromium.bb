@@ -683,7 +683,6 @@ TEST_P(EndToEndTest, LargePostFec) {
   QuicPacketCreator* creator = QuicConnectionPeer::GetPacketCreator(
       client_->client()->session()->connection());
   EXPECT_TRUE(creator->IsFecEnabled());
-  EXPECT_EQ(kMaxPacketsPerFecGroup, creator->max_packets_per_fec_group());
 
   // Set FecPolicy to always protect data on all streams.
   client_->SetFecPolicy(FEC_PROTECT_ALWAYS);
@@ -716,7 +715,6 @@ TEST_P(EndToEndTest, ClientSpecifiedFecProtectionForHeaders) {
   QuicPacketCreator* creator = QuicConnectionPeer::GetPacketCreator(
       client_->client()->session()->connection());
   EXPECT_TRUE(creator->IsFecEnabled());
-  EXPECT_EQ(kMaxPacketsPerFecGroup, creator->max_packets_per_fec_group());
 
   // Verify that server headers stream is FEC protected.
   server_thread_->Pause();

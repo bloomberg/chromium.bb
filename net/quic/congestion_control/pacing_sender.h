@@ -60,6 +60,7 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
   virtual QuicByteCount GetCongestionWindow() const OVERRIDE;
   virtual bool InSlowStart() const OVERRIDE;
   virtual QuicByteCount GetSlowStartThreshold() const OVERRIDE;
+  virtual CongestionControlType GetCongestionControlType() const OVERRIDE;
 
  private:
   scoped_ptr<SendAlgorithmInterface> sender_;  // Underlying sender.

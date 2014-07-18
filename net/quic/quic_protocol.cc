@@ -533,10 +533,6 @@ ostream& operator<<(ostream& os,
       os << " receive_window: " << tcp.receive_window;
       break;
     }
-    case kTCPBBR: {
-      LOG(DFATAL) << "TCPBBR is not yet supported.";
-      break;
-    }
   }
   return os;
 }

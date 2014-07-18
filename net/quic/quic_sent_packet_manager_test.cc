@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::vector;
+using testing::AnyNumber;
 using testing::ElementsAre;
 using testing::Pair;
 using testing::Pointwise;
@@ -43,13 +44,15 @@ class MockDebugDelegate : public QuicSentPacketManager::DebugDelegate {
 class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
  protected:
   QuicSentPacketManagerTest()
-      : manager_(true, &clock_, &stats_, kFixRate, kNack),
-        send_algorithm_(new StrictMock<MockSendAlgorithm>) {
+      : manager_(true, &clock_, &stats_, kFixRateCongestionControl, kNack),
+        send_algorithm_(new StrictMock<MockSendAlgorithm>),
+        network_change_visitor_(new StrictMock<MockNetworkChangeVisitor>) {
     QuicSentPacketManagerPeer::SetSendAlgorithm(&manager_, send_algorithm_);
     // Disable tail loss probes for most tests.
     QuicSentPacketManagerPeer::SetMaxTailLossProbes(&manager_, 0);
     // Advance the time 1s so the send times are never QuicTime::Zero.
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1000));
+    manager_.set_network_change_visitor(network_change_visitor_.get());
   }
 
   virtual ~QuicSentPacketManagerTest() OVERRIDE {
@@ -89,11 +92,17 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
   void ExpectAck(QuicPacketSequenceNumber largest_observed) {
     EXPECT_CALL(*send_algorithm_, OnCongestionEvent(
         true, _, ElementsAre(Pair(largest_observed, _)), _));
+    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+        .WillOnce(Return(100 * kDefaultTCPMSS));
+    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
   }
 
   void ExpectUpdatedRtt(QuicPacketSequenceNumber largest_observed) {
     EXPECT_CALL(*send_algorithm_,
                 OnCongestionEvent(true, _, _, _));
+    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+        .WillOnce(Return(100 * kDefaultTCPMSS));
+    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
   }
 
   void ExpectAckAndLoss(bool rtt_updated,
@@ -102,6 +111,9 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     EXPECT_CALL(*send_algorithm_, OnCongestionEvent(
         rtt_updated, _, ElementsAre(Pair(largest_observed, _)),
         ElementsAre(Pair(lost_packet, _))));
+    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+        .WillOnce(Return(100 * kDefaultTCPMSS));
+    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
   }
 
   // |packets_acked| and |packets_lost| should be in sequence number order.
@@ -122,6 +134,10 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
                 OnCongestionEvent(rtt_updated, _,
                                   Pointwise(KeyEq(), ack_vector),
                                   Pointwise(KeyEq(), lost_vector)));
+    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+        .WillRepeatedly(Return(100 * kDefaultTCPMSS));
+    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_)).
+        Times(AnyNumber());
   }
 
   // Retransmits a packet as though it was a TLP retransmission, because TLP
@@ -253,6 +269,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
   MockClock clock_;
   QuicConnectionStats stats_;
   MockSendAlgorithm* send_algorithm_;
+  scoped_ptr<MockNetworkChangeVisitor> network_change_visitor_;
 };
 
 TEST_F(QuicSentPacketManagerTest, IsUnacked) {
@@ -414,6 +431,9 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckPreviousBeforeSend) {
 
   // Fire the RTO, which will mark 2 for retransmission (but will not send it).
   EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillOnce(Return(2 * kDefaultTCPMSS));
   manager_.OnRetransmissionTimeout();
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
 
@@ -872,6 +892,9 @@ TEST_F(QuicSentPacketManagerTest, TailLossProbeThenRTO) {
 
   // The final RTO abandons all of them.
   EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillOnce(Return(2 * kDefaultTCPMSS));
   manager_.OnRetransmissionTimeout();
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
   EXPECT_EQ(2u, stats_.tlp_count);
@@ -1123,6 +1146,9 @@ TEST_F(QuicSentPacketManagerTest, RetransmissionTimeout) {
   }
 
   EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillOnce(Return(2 * kDefaultTCPMSS));
   EXPECT_FALSE(manager_.MaybeRetransmitTailLossProbe());
   manager_.OnRetransmissionTimeout();
 }
@@ -1214,6 +1240,9 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeRTO) {
   EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
 
   // Retransmit the packet by invoking the retransmission timeout.
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillOnce(Return(2 * kDefaultTCPMSS));
   EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   clock_.AdvanceTime(expected_rto_delay);
   manager_.OnRetransmissionTimeout();
@@ -1257,6 +1286,9 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionDelayMin) {
     EXPECT_EQ(delay,
               QuicSentPacketManagerPeer::GetRetransmissionDelay(&manager_));
     delay = delay.Add(delay);
+    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+        .WillOnce(Return(2 * kDefaultTCPMSS));
     EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
     manager_.OnRetransmissionTimeout();
     RetransmitNextPacket(i + 2);
@@ -1282,6 +1314,9 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionDelay) {
     EXPECT_EQ(delay,
               QuicSentPacketManagerPeer::GetRetransmissionDelay(&manager_));
     delay = delay.Add(delay);
+    EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+    EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+        .WillOnce(Return(2 * kDefaultTCPMSS));
     EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
     manager_.OnRetransmissionTimeout();
     RetransmitNextPacket(i + 2);
@@ -1327,6 +1362,9 @@ TEST_F(QuicSentPacketManagerTest, NegotiateTimeLossDetection) {
   QuicConfig config;
   QuicConfigPeer::SetReceivedLossDetection(&config, kTIME);
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillOnce(Return(100 * kDefaultTCPMSS));
   manager_.SetFromConfig(config);
 
   EXPECT_EQ(kTime,
@@ -1344,6 +1382,9 @@ TEST_F(QuicSentPacketManagerTest, NegotiateTimeLossDetectionFromOptions) {
   options.push_back(kTIME);
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillOnce(Return(100 * kDefaultTCPMSS));
   manager_.SetFromConfig(config);
 
   EXPECT_EQ(kTime,
@@ -1359,6 +1400,9 @@ TEST_F(QuicSentPacketManagerTest, NegotiatePacingFromOptions) {
   QuicTagVector options;
   options.push_back(kPACE);
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange(_));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillOnce(Return(100 * kDefaultTCPMSS));
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   manager_.SetFromConfig(config);
 

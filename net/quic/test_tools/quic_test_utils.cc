@@ -368,6 +368,12 @@ MockAckNotifierDelegate::MockAckNotifierDelegate() {
 MockAckNotifierDelegate::~MockAckNotifierDelegate() {
 }
 
+MockNetworkChangeVisitor::MockNetworkChangeVisitor() {
+}
+
+MockNetworkChangeVisitor::~MockNetworkChangeVisitor() {
+}
+
 namespace {
 
 string HexDumpWithMarks(const char* data, int length,

@@ -748,23 +748,25 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthLeastAwaiting) {
   EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER,
             creator_.next_sequence_number_length());
 
-  creator_.set_max_packets_per_fec_group(1);
-  creator_.set_sequence_number(63);
+  size_t max_packets_per_fec_group = 10;
+  creator_.set_max_packets_per_fec_group(max_packets_per_fec_group);
+  creator_.set_sequence_number(64 - max_packets_per_fec_group);
   creator_.UpdateSequenceNumberLength(2, 10000);
   EXPECT_EQ(PACKET_1BYTE_SEQUENCE_NUMBER,
             creator_.next_sequence_number_length());
 
-  creator_.set_sequence_number(64 * 256 - 1);
+  creator_.set_sequence_number(64 * 256 - max_packets_per_fec_group);
   creator_.UpdateSequenceNumberLength(2, 10000);
   EXPECT_EQ(PACKET_2BYTE_SEQUENCE_NUMBER,
             creator_.next_sequence_number_length());
 
-  creator_.set_sequence_number(64 * 256 * 256 - 1);
+  creator_.set_sequence_number(64 * 256 * 256 - max_packets_per_fec_group);
   creator_.UpdateSequenceNumberLength(2, 10000);
   EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER,
             creator_.next_sequence_number_length());
 
-  creator_.set_sequence_number(GG_UINT64_C(64) * 256 * 256 * 256 * 256 - 1);
+  creator_.set_sequence_number(
+      GG_UINT64_C(64) * 256 * 256 * 256 * 256 - max_packets_per_fec_group);
   creator_.UpdateSequenceNumberLength(2, 10000);
   EXPECT_EQ(PACKET_6BYTE_SEQUENCE_NUMBER,
             creator_.next_sequence_number_length());

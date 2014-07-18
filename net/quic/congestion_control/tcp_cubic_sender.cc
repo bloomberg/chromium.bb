@@ -345,4 +345,8 @@ QuicTime::Delta TcpCubicSender::PrrTimeUntilSend(
   return QuicTime::Delta::Infinite();
 }
 
+CongestionControlType TcpCubicSender::GetCongestionControlType() const {
+  return reno_ ? kReno : kCubic;
+}
+
 }  // namespace net

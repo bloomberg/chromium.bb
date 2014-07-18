@@ -8,21 +8,26 @@
 #define NET_QUIC_CONGESTION_CONTROL_SEND_ALGORITHM_SIMULATOR_H_
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/format_macros.h"
+#include "base/strings/stringprintf.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
+using base::StringPrintf;
+
 namespace net {
 
 class SendAlgorithmSimulator {
  public:
   struct Sender {
-    Sender(SendAlgorithmInterface* send_algorithm,  RttStats* rtt_stats);
+    Sender(SendAlgorithmInterface* send_algorithm, RttStats* rtt_stats);
 
     void RecordStats() {
       QuicByteCount cwnd = send_algorithm->GetCongestionWindow();
@@ -32,6 +37,18 @@ class SendAlgorithmSimulator {
         max_cwnd_drop = std::max(max_cwnd_drop, last_cwnd - cwnd);
       }
       last_cwnd = cwnd;
+    }
+
+    std::string DebugString() {
+      return StringPrintf("observed goodput(bytes/s):%" PRId64
+                          " loss rate:%f"
+                          " cwnd:%" PRIu64
+                          " max_cwnd:%" PRIu64 " min_cwnd:%" PRIu64
+                          " max_cwnd_drop:%" PRIu64,
+                          last_transfer_bandwidth.ToBytesPerSecond(),
+                          last_transfer_loss_rate,
+                          send_algorithm->GetCongestionWindow(),
+                          max_cwnd, min_cwnd, max_cwnd_drop);
     }
 
     SendAlgorithmInterface* send_algorithm;
@@ -51,6 +68,7 @@ class SendAlgorithmSimulator {
     QuicByteCount last_cwnd;
 
     QuicBandwidth last_transfer_bandwidth;
+    float last_transfer_loss_rate;
   };
 
   struct Transfer {
@@ -58,12 +76,14 @@ class SendAlgorithmSimulator {
         : sender(sender),
           num_bytes(num_bytes),
           bytes_acked(0),
+          bytes_lost(0),
           bytes_in_flight(0),
           start_time(start_time) {}
 
     Sender* sender;
     QuicByteCount num_bytes;
     QuicByteCount bytes_acked;
+    QuicByteCount bytes_lost;
     QuicByteCount bytes_in_flight;
     QuicTime start_time;
   };

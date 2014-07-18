@@ -63,6 +63,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   virtual QuicByteCount GetCongestionWindow() const OVERRIDE;
   virtual bool InSlowStart() const OVERRIDE;
   virtual QuicByteCount GetSlowStartThreshold() const OVERRIDE;
+  virtual CongestionControlType GetCongestionControlType() const OVERRIDE;
   // End implementation of SendAlgorithmInterface.
 
  private:
