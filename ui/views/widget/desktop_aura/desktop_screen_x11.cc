@@ -20,7 +20,6 @@
 #include "ui/display/util/x11/edid_parser_x11.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/display_observer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/x/x11_types.h"
@@ -108,68 +107,6 @@ DesktopScreenX11::DesktopScreenX11()
 DesktopScreenX11::~DesktopScreenX11() {
   if (has_xrandr_ && ui::PlatformEventSource::GetInstance())
     ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
-}
-
-void DesktopScreenX11::ProcessDisplayChange(
-    const std::vector<gfx::Display>& incoming) {
-  std::vector<gfx::Display> old_displays = displays_;
-  displays_ = incoming;
-
-  typedef std::vector<gfx::Display>::const_iterator DisplayIt;
-  std::vector<gfx::Display>::const_iterator old_it = old_displays.begin();
-  for (; old_it != old_displays.end(); ++old_it) {
-    bool found = false;
-    for (std::vector<gfx::Display>::const_iterator new_it =
-             displays_.begin(); new_it != displays_.end(); ++new_it) {
-      if (old_it->id() == new_it->id()) {
-        found = true;
-        break;
-      }
-    }
-
-    if (!found) {
-      FOR_EACH_OBSERVER(gfx::DisplayObserver, observer_list_,
-                        OnDisplayRemoved(*old_it));
-    }
-  }
-
-  std::vector<gfx::Display>::const_iterator new_it = displays_.begin();
-  for (; new_it != displays_.end(); ++new_it) {
-    bool found = false;
-    for (std::vector<gfx::Display>::const_iterator old_it =
-         old_displays.begin(); old_it != old_displays.end(); ++old_it) {
-      if (new_it->id() != old_it->id())
-        continue;
-
-      uint32_t metrics = gfx::DisplayObserver::DISPLAY_METRIC_NONE;
-
-      if (new_it->bounds() != old_it->bounds())
-        metrics |= gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS;
-
-      if (new_it->rotation() != old_it->rotation())
-        metrics |= gfx::DisplayObserver::DISPLAY_METRIC_ROTATION;
-
-      if (new_it->work_area() != old_it->work_area())
-        metrics |= gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
-
-      if (new_it->device_scale_factor() != old_it->device_scale_factor())
-        metrics |= gfx::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
-
-      if (metrics != gfx::DisplayObserver::DISPLAY_METRIC_NONE) {
-        FOR_EACH_OBSERVER(gfx::DisplayObserver,
-                          observer_list_,
-                          OnDisplayMetricsChanged(*new_it, metrics));
-      }
-
-      found = true;
-      break;
-    }
-
-    if (!found) {
-      FOR_EACH_OBSERVER(gfx::DisplayObserver, observer_list_,
-                        OnDisplayAdded(*new_it));
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -273,11 +210,11 @@ gfx::Display DesktopScreenX11::GetPrimaryDisplay() const {
 }
 
 void DesktopScreenX11::AddObserver(gfx::DisplayObserver* observer) {
-  observer_list_.AddObserver(observer);
+  change_notifier_.AddObserver(observer);
 }
 
 void DesktopScreenX11::RemoveObserver(gfx::DisplayObserver* observer) {
-  observer_list_.RemoveObserver(observer);
+  change_notifier_.RemoveObserver(observer);
 }
 
 bool DesktopScreenX11::CanDispatchEvent(const ui::PlatformEvent& event) {
@@ -416,8 +353,10 @@ std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
 }
 
 void DesktopScreenX11::ConfigureTimerFired() {
-  std::vector<gfx::Display> new_displays = BuildDisplaysFromXRandRInfo();
-  ProcessDisplayChange(new_displays);
+  std::vector<gfx::Display> old_displays = displays_;
+  displays_ = BuildDisplaysFromXRandRInfo();
+
+  change_notifier_.NotifyDisplaysChanged(old_displays, displays_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -31,6 +31,7 @@
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "ui/base/cocoa/base_view.h"
 #include "ui/base/cocoa/remote_layer_api.h"
+#include "ui/gfx/display_observer.h"
 
 struct ViewHostMsg_TextInputState_Params;
 
@@ -219,7 +220,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       public BrowserCompositorViewMacClient,
       public IPC::Sender,
       public SoftwareFrameManagerClient,
-      public CompositingIOSurfaceLayerClient {
+      public CompositingIOSurfaceLayerClient,
+      public gfx::DisplayObserver {
  public:
   // The view will associate itself with the given widget. The native view must
   // be hooked up immediately to the view hierarchy, or else when it is
@@ -349,6 +351,12 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // CompositingIOSurfaceLayerClient implementation.
   virtual void AcceleratedLayerDidDrawFrame(bool succeeded) OVERRIDE;
+
+  // gfx::DisplayObserver implementation.
+  virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
+  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
+  virtual void OnDisplayMetricsChanged(const gfx::Display& display,
+                                       uint32_t metrics) OVERRIDE;
 
   // Forwards the mouse event to the renderer.
   void ForwardMouseEvent(const blink::WebMouseEvent& event);

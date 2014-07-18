@@ -11,9 +11,15 @@
 
 #include "base/logging.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/timer/timer.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/display_change_notifier.h"
 
 namespace {
+
+// The delay to handle the display configuration changes.
+// See comments in ScreenMac::HandleDisplayReconfiguration.
+const int64 kConfigureDelayMs = 500;
 
 gfx::Rect ConvertCoordinateSystem(NSRect ns_rect) {
   // Primary monitor is defined as the monitor with the menubar,
@@ -78,7 +84,12 @@ gfx::Display GetDisplayForScreen(NSScreen* screen) {
 
 class ScreenMac : public gfx::Screen {
  public:
-  ScreenMac() {}
+  ScreenMac() {
+    displays_ = BuildDisplaysFromQuartz();
+
+    CGDisplayRegisterReconfigurationCallback(
+        ScreenMac::DisplayReconfigurationCallBack, this);
+  }
 
   virtual bool IsDIPEnabled() OVERRIDE {
     return true;
@@ -109,6 +120,96 @@ class ScreenMac : public gfx::Screen {
   }
 
   virtual std::vector<gfx::Display> GetAllDisplays() const OVERRIDE {
+    return displays_;
+  }
+
+  virtual gfx::Display GetDisplayNearestWindow(
+      gfx::NativeView view) const OVERRIDE {
+    NSWindow* window = nil;
+#if !defined(USE_AURA)
+    window = [view window];
+#endif
+    if (!window)
+      return GetPrimaryDisplay();
+    NSScreen* match_screen = [window screen];
+    if (!match_screen)
+      return GetPrimaryDisplay();
+    return GetDisplayForScreen(match_screen);
+  }
+
+  virtual gfx::Display GetDisplayNearestPoint(
+      const gfx::Point& point) const OVERRIDE {
+    NSPoint ns_point = NSPointFromCGPoint(point.ToCGPoint());
+
+    NSArray* screens = [NSScreen screens];
+    NSScreen* primary = [screens objectAtIndex:0];
+    ns_point.y = NSMaxY([primary frame]) - ns_point.y;
+    for (NSScreen* screen in screens) {
+      if (NSMouseInRect(ns_point, [screen frame], NO))
+        return GetDisplayForScreen(screen);
+    }
+    return GetPrimaryDisplay();
+  }
+
+  // Returns the display that most closely intersects the provided bounds.
+  virtual gfx::Display GetDisplayMatching(
+      const gfx::Rect& match_rect) const OVERRIDE {
+    NSScreen* match_screen = GetMatchingScreen(match_rect);
+    return GetDisplayForScreen(match_screen);
+  }
+
+  // Returns the primary display.
+  virtual gfx::Display GetPrimaryDisplay() const OVERRIDE {
+    // Primary display is defined as the display with the menubar,
+    // which is always at index 0.
+    NSScreen* primary = [[NSScreen screens] objectAtIndex:0];
+    gfx::Display display = GetDisplayForScreen(primary);
+    return display;
+  }
+
+  virtual void AddObserver(gfx::DisplayObserver* observer) OVERRIDE {
+    change_notifier_.AddObserver(observer);
+  }
+
+  virtual void RemoveObserver(gfx::DisplayObserver* observer) OVERRIDE {
+    change_notifier_.RemoveObserver(observer);
+  }
+
+  static void DisplayReconfigurationCallBack(CGDirectDisplayID display,
+                                             CGDisplayChangeSummaryFlags flags,
+                                             void* userInfo) {
+    if (flags & kCGDisplayBeginConfigurationFlag)
+      return;
+
+    static_cast<ScreenMac*>(userInfo)->HandleDisplayReconfiguration();
+  }
+
+  void HandleDisplayReconfiguration() {
+    // Given that we need to rebuild the list of displays, we want to coalesce
+    // the events. For that, we use a timer that will be reset every time we get
+    // a new event and will be fulfilled kConfigureDelayMs after the latest.
+    if (configure_timer_.get() && configure_timer_->IsRunning()) {
+      configure_timer_->Reset();
+      return;
+    }
+
+    configure_timer_.reset(new base::OneShotTimer<ScreenMac>());
+    configure_timer_->Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
+        this,
+        &ScreenMac::ConfigureTimerFired);
+  }
+
+ private:
+  void ConfigureTimerFired() {
+    std::vector<gfx::Display> old_displays = displays_;
+    displays_ = BuildDisplaysFromQuartz();
+
+    change_notifier_.NotifyDisplaysChanged(old_displays, displays_);
+  }
+
+  std::vector<gfx::Display> BuildDisplaysFromQuartz() const {
     // Don't just return all online displays.  This would include displays
     // that mirror other displays, which are not desired in this list.  It's
     // tempting to use the count returned by CGGetActiveDisplayList, but active
@@ -157,59 +258,15 @@ class ScreenMac : public gfx::Screen {
     return displays;
   }
 
-  virtual gfx::Display GetDisplayNearestWindow(
-      gfx::NativeView view) const OVERRIDE {
-    NSWindow* window = nil;
-#if !defined(USE_AURA)
-    window = [view window];
-#endif
-    if (!window)
-      return GetPrimaryDisplay();
-    NSScreen* match_screen = [window screen];
-    if (!match_screen)
-      return GetPrimaryDisplay();
-    return GetDisplayForScreen(match_screen);
-  }
+  // The displays currently attached to the device.
+  std::vector<gfx::Display> displays_;
 
-  virtual gfx::Display GetDisplayNearestPoint(
-      const gfx::Point& point) const OVERRIDE {
-    NSPoint ns_point = NSPointFromCGPoint(point.ToCGPoint());
+  // The timer to delay configuring outputs. See also the comments in
+  // HandleDisplayReconfiguration().
+  scoped_ptr<base::OneShotTimer<ScreenMac> > configure_timer_;
 
-    NSArray* screens = [NSScreen screens];
-    NSScreen* primary = [screens objectAtIndex:0];
-    ns_point.y = NSMaxY([primary frame]) - ns_point.y;
-    for (NSScreen* screen in screens) {
-      if (NSMouseInRect(ns_point, [screen frame], NO))
-        return GetDisplayForScreen(screen);
-    }
-    return GetPrimaryDisplay();
-  }
+  gfx::DisplayChangeNotifier change_notifier_;
 
-  // Returns the display that most closely intersects the provided bounds.
-  virtual gfx::Display GetDisplayMatching(
-      const gfx::Rect& match_rect) const OVERRIDE {
-    NSScreen* match_screen = GetMatchingScreen(match_rect);
-    return GetDisplayForScreen(match_screen);
-  }
-
-  // Returns the primary display.
-  virtual gfx::Display GetPrimaryDisplay() const OVERRIDE {
-    // Primary display is defined as the display with the menubar,
-    // which is always at index 0.
-    NSScreen* primary = [[NSScreen screens] objectAtIndex:0];
-    gfx::Display display = GetDisplayForScreen(primary);
-    return display;
-  }
-
-  virtual void AddObserver(gfx::DisplayObserver* observer) OVERRIDE {
-    // TODO(oshima): crbug.com/122863.
-  }
-
-  virtual void RemoveObserver(gfx::DisplayObserver* observer) OVERRIDE {
-    // TODO(oshima): crbug.com/122863.
-  }
-
- private:
   DISALLOW_COPY_AND_ASSIGN(ScreenMac);
 };
 

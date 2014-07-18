@@ -537,10 +537,14 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
     delegated_frame_host_.reset(new DelegatedFrameHost(this));
   }
 
+  gfx::Screen::GetScreenFor(cocoa_view_)->AddObserver(this);
+
   render_widget_host_->SetView(this);
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
+  gfx::Screen::GetScreenFor(cocoa_view_)->RemoveObserver(this);
+
   // This is being called from |cocoa_view_|'s destructor, so invalidate the
   // pointer.
   cocoa_view_ = nil;
@@ -2261,6 +2265,24 @@ void RenderWidgetHostViewMac::AcceleratedLayerDidDrawFrame(bool succeeded) {
   SendPendingSwapAck();
   if (!succeeded)
     GotAcceleratedCompositingError();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// gfx::DisplayObserver, public:
+
+void RenderWidgetHostViewMac::OnDisplayAdded(const gfx::Display& display) {
+}
+
+void RenderWidgetHostViewMac::OnDisplayRemoved(const gfx::Display& display) {
+}
+
+void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
+    const gfx::Display& display, uint32_t metrics) {
+  gfx::Screen* screen = gfx::Screen::GetScreenFor(cocoa_view_);
+  if (display.id() != screen->GetDisplayNearestWindow(cocoa_view_).id())
+    return;
+
+  UpdateScreenInfo(cocoa_view_);
 }
 
 }  // namespace content

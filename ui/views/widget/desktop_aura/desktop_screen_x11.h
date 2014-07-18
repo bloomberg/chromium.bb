@@ -5,9 +5,9 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_SCREEN_X11_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_SCREEN_X11_H_
 
-#include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/gfx/display_change_notifier.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/views_export.h"
 
@@ -29,10 +29,6 @@ class VIEWS_EXPORT DesktopScreenX11 : public gfx::Screen,
   DesktopScreenX11();
 
   virtual ~DesktopScreenX11();
-
-  // Takes a set of displays and dispatches the screen change events to
-  // listeners. Exposed for testing.
-  void ProcessDisplayChange(const std::vector<gfx::Display>& displays);
 
   // Overridden from gfx::Screen:
   virtual bool IsDIPEnabled() OVERRIDE;
@@ -86,7 +82,7 @@ class VIEWS_EXPORT DesktopScreenX11 : public gfx::Screen,
   // Dispatch().
   scoped_ptr<base::OneShotTimer<DesktopScreenX11> > configure_timer_;
 
-  ObserverList<gfx::DisplayObserver> observer_list_;
+  gfx::DisplayChangeNotifier change_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopScreenX11);
 };

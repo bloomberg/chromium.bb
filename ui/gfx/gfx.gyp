@@ -152,6 +152,8 @@
         'color_utils.h',
         'display.cc',
         'display.h',
+        'display_change_notifier.cc',
+        'display_change_notifier.h',
         'display_observer.cc',
         'display_observer.h',
         'favicon_size.cc',

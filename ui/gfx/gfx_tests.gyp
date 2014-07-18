@@ -39,6 +39,7 @@
         'codec/png_codec_unittest.cc',
         'color_analysis_unittest.cc',
         'color_utils_unittest.cc',
+        'display_change_notifier_unittest.cc',
         'display_unittest.cc',
         'font_list_unittest.cc',
         'font_render_params_linux_unittest.cc',
@@ -123,6 +124,11 @@
         ['OS == "android"', {
           'dependencies': [
             '../../testing/android/native_test.gyp:native_test_native_code',
+          ],
+          # Do not run display_change_notifier_unittest.cc on Android because it
+          # does not compile display_observer.cc
+          'sources!': [
+            'display_change_notifier_unittest.cc',
           ],
         }],
         ['OS=="android" or OS=="ios"', {

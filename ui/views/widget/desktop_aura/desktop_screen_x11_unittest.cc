@@ -79,6 +79,12 @@ class DesktopScreenX11Test : public views::ViewsTestBase,
 
   DesktopScreenX11* screen() { return screen_.get(); }
 
+  void NotifyDisplaysChanged(const std::vector<gfx::Display>& displays) {
+    DesktopScreenX11* screen = screen_.get();
+    screen->change_notifier_.NotifyDisplaysChanged(screen->displays_, displays);
+    screen->displays_ = displays;
+  }
+
   void ResetDisplayChanges() {
     changed_display_.clear();
     added_display_.clear();
@@ -126,7 +132,7 @@ class DesktopScreenX11Test : public views::ViewsTestBase,
 TEST_F(DesktopScreenX11Test, BoundsChangeSingleMonitor) {
   std::vector<gfx::Display> displays;
   displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 1024, 768)));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
 
   EXPECT_EQ(1u, changed_display_.size());
   EXPECT_EQ(0u, added_display_.size());
@@ -138,7 +144,7 @@ TEST_F(DesktopScreenX11Test, AddMonitorToTheRight) {
   displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
   displays.push_back(gfx::Display(kSecondDisplay,
                                   gfx::Rect(640, 0, 1024, 768)));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
 
   EXPECT_EQ(0u, changed_display_.size());
   EXPECT_EQ(1u, added_display_.size());
@@ -149,7 +155,7 @@ TEST_F(DesktopScreenX11Test, AddMonitorToTheLeft) {
   std::vector<gfx::Display> displays;
   displays.push_back(gfx::Display(kSecondDisplay, gfx::Rect(0, 0, 1024, 768)));
   displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(1024, 0, 640, 480)));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
 
   EXPECT_EQ(1u, changed_display_.size());
   EXPECT_EQ(1u, added_display_.size());
@@ -161,13 +167,13 @@ TEST_F(DesktopScreenX11Test, RemoveMonitorOnRight) {
   displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
   displays.push_back(gfx::Display(kSecondDisplay,
                                   gfx::Rect(640, 0, 1024, 768)));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
 
   ResetDisplayChanges();
 
   displays.clear();
   displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
 
   EXPECT_EQ(0u, changed_display_.size());
   EXPECT_EQ(0u, added_display_.size());
@@ -179,13 +185,13 @@ TEST_F(DesktopScreenX11Test, RemoveMonitorOnLeft) {
   displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
   displays.push_back(gfx::Display(kSecondDisplay,
                                   gfx::Rect(640, 0, 1024, 768)));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
 
   ResetDisplayChanges();
 
   displays.clear();
   displays.push_back(gfx::Display(kSecondDisplay, gfx::Rect(0, 0, 1024, 768)));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
 
   EXPECT_EQ(1u, changed_display_.size());
   EXPECT_EQ(0u, added_display_.size());
@@ -197,7 +203,7 @@ TEST_F(DesktopScreenX11Test, GetDisplayNearestPoint) {
   displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
   displays.push_back(gfx::Display(kSecondDisplay,
                                   gfx::Rect(640, 0, 1024, 768)));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
 
   EXPECT_EQ(kSecondDisplay,
             screen()->GetDisplayNearestPoint(gfx::Point(650, 10)).id());
@@ -212,7 +218,7 @@ TEST_F(DesktopScreenX11Test, GetDisplayMatchingBasic) {
   displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
   displays.push_back(gfx::Display(kSecondDisplay,
                                   gfx::Rect(640, 0, 1024, 768)));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
 
   EXPECT_EQ(kSecondDisplay,
             screen()->GetDisplayMatching(gfx::Rect(700, 20, 100, 100)).id());
@@ -223,7 +229,7 @@ TEST_F(DesktopScreenX11Test, GetDisplayMatchingOverlap) {
   displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
   displays.push_back(gfx::Display(kSecondDisplay,
                                   gfx::Rect(640, 0, 1024, 768)));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
 
   EXPECT_EQ(kSecondDisplay,
             screen()->GetDisplayMatching(gfx::Rect(630, 20, 100, 100)).id());
@@ -234,7 +240,7 @@ TEST_F(DesktopScreenX11Test, GetPrimaryDisplay) {
   displays.push_back(gfx::Display(kFirstDisplay,
                                   gfx::Rect(640, 0, 1024, 768)));
   displays.push_back(gfx::Display(kSecondDisplay, gfx::Rect(0, 0, 640, 480)));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
 
   // The first display in the list is always the primary, even if other
   // displays are to the left in screen layout.
@@ -247,7 +253,7 @@ TEST_F(DesktopScreenX11Test, GetDisplayNearestWindow) {
   displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
   displays.push_back(gfx::Display(kSecondDisplay,
                                   gfx::Rect(640, 0, 1024, 768)));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
 
   Widget* window_one = BuildTopLevelDesktopWidget(gfx::Rect(10, 10, 10, 10),
       false);
@@ -357,28 +363,28 @@ TEST_F(DesktopScreenX11Test, RotationChange) {
   displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
   displays.push_back(
       gfx::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
   ResetDisplayChanges();
 
   displays[0].set_rotation(gfx::Display::ROTATE_90);
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
   EXPECT_EQ(1u, changed_display_.size());
 
   displays[1].set_rotation(gfx::Display::ROTATE_90);
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
   EXPECT_EQ(2u, changed_display_.size());
 
   displays[0].set_rotation(gfx::Display::ROTATE_270);
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
   EXPECT_EQ(3u, changed_display_.size());
 
   displays[0].set_rotation(gfx::Display::ROTATE_270);
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
   EXPECT_EQ(3u, changed_display_.size());
 
   displays[0].set_rotation(gfx::Display::ROTATE_0);
   displays[1].set_rotation(gfx::Display::ROTATE_0);
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
   EXPECT_EQ(5u, changed_display_.size());
 }
 
@@ -388,28 +394,28 @@ TEST_F(DesktopScreenX11Test, WorkareaChange) {
   displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
   displays.push_back(
       gfx::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
   ResetDisplayChanges();
 
   displays[0].set_work_area(gfx::Rect(0, 0, 300, 300));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
   EXPECT_EQ(1u, changed_display_.size());
 
   displays[1].set_work_area(gfx::Rect(0, 0, 300, 300));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
   EXPECT_EQ(2u, changed_display_.size());
 
   displays[0].set_work_area(gfx::Rect(0, 0, 300, 300));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
   EXPECT_EQ(2u, changed_display_.size());
 
   displays[1].set_work_area(gfx::Rect(0, 0, 300, 300));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
   EXPECT_EQ(2u, changed_display_.size());
 
   displays[0].set_work_area(gfx::Rect(0, 0, 640, 480));
   displays[1].set_work_area(gfx::Rect(640, 0, 1024, 768));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
   EXPECT_EQ(4u, changed_display_.size());
 }
 
@@ -419,28 +425,28 @@ TEST_F(DesktopScreenX11Test, DeviceScaleFactorChange) {
   displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
   displays.push_back(
       gfx::Display(kSecondDisplay, gfx::Rect(640, 0, 1024, 768)));
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
   ResetDisplayChanges();
 
   displays[0].set_device_scale_factor(2.5f);
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
   EXPECT_EQ(1u, changed_display_.size());
 
   displays[1].set_device_scale_factor(2.5f);
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
   EXPECT_EQ(2u, changed_display_.size());
 
   displays[0].set_device_scale_factor(2.5f);
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
   EXPECT_EQ(2u, changed_display_.size());
 
   displays[1].set_device_scale_factor(2.5f);
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
   EXPECT_EQ(2u, changed_display_.size());
 
   displays[0].set_device_scale_factor(1.f);
   displays[1].set_device_scale_factor(1.f);
-  screen()->ProcessDisplayChange(displays);
+  NotifyDisplaysChanged(displays);
   EXPECT_EQ(4u, changed_display_.size());
 }
 
