@@ -24,6 +24,8 @@
       'browser/ui/android/infobars/auto_login_prompter.h',
       'browser/ui/android/infobars/confirm_infobar.cc',
       'browser/ui/android/infobars/confirm_infobar.h',
+      'browser/ui/android/infobars/data_reduction_proxy_infobar.cc',
+      'browser/ui/android/infobars/data_reduction_proxy_infobar.h',
       'browser/ui/android/infobars/infobar_android.cc',
       'browser/ui/android/infobars/infobar_android.h',
       'browser/ui/android/infobars/infobar_container_android.cc',

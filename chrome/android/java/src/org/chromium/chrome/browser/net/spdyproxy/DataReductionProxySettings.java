@@ -95,6 +95,11 @@ public class DataReductionProxySettings {
         return nativeIsDataReductionProxyPromoAllowed(mNativeDataReductionProxySettings);
     }
 
+    /** Returns true if proxy alternative field trial is running. */
+    public boolean isIncludedInAltFieldTrial() {
+        return nativeIsIncludedInAltFieldTrial(mNativeDataReductionProxySettings);
+    }
+
     /**
      * Returns the current data reduction proxy origin.
      */
@@ -184,6 +189,8 @@ public class DataReductionProxySettings {
     private native boolean nativeIsDataReductionProxyAllowed(
             long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyPromoAllowed(
+            long nativeDataReductionProxySettingsAndroid);
+    private native boolean nativeIsIncludedInAltFieldTrial(
             long nativeDataReductionProxySettingsAndroid);
     private native String nativeGetDataReductionProxyOrigin(
             long nativeDataReductionProxySettingsAndroid);
