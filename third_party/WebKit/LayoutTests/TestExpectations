@@ -1310,3 +1310,7 @@ crbug.com/392764 [ Linux ] compositing/layer-creation/overlap-transformed-preser
 crbug.com/392764 [ Linux ] virtual/softwarecompositing/layer-creation/overlap-transformed-preserved-3d.html [ Failure ]
 # Linux32 only. There seems to be no way to selectively specify Linux32, so marking as flaky (it actually isn't).
 crbug.com/392764 [ Linux ] webaudio/distance-linear.html [ Pass Failure ]
+
+crbug.com/395103 [ Linux Release ] compositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ Failure ]
+crbug.com/395103 [ Linux Release ] virtual/gpu/compositedscrolling/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ Failure ]
+crbug.com/395103 [ Linux Release ] virtual/softwarecompositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ Failure ]
