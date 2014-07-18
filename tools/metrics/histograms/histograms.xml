@@ -11254,6 +11254,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="MemoryWarning.EvictedTabTimeSinceActive" units="ms">
+  <owner>lliabraa@chromium.org</owner>
+  <summary>
+    [iOS] When the OS sends a memory warning and the app evicts a tab, this
+    histogram records the time since the evicted tab was active.
+  </summary>
+</histogram>
+
+<histogram name="MemoryWarning.ProtectedTabTimeSinceActive" units="ms">
+  <owner>lliabraa@chromium.org</owner>
+  <summary>
+    [iOS] When the OS sends a memory warning and the app protects a tab, this
+    histogram records the time since the protected tab was active.
+  </summary>
+</histogram>
+
 <histogram name="Mist.SwitchResult" enum="MistSwitchResult">
   <owner>benchan@chromium.org</owner>
   <summary>
@@ -32154,6 +32170,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Tab.EvictedTabWasActive" enum="Boolean">
+  <owner>lliabraa@chromium.org</owner>
+  <summary>
+    [iOS] When switching to an evicted tab, this histogram records whether or
+    not the tab had ever been active. For example, the tab was opened via
+    &quot;Open in new tab&quot; but evicted before being viewed for the first
+    time.
+  </summary>
+</histogram>
+
 <histogram name="Tab.FormActivityCountEvictedHistogram">
   <owner>lliabraa@chromium.org</owner>
   <summary>
@@ -32269,6 +32295,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Each time a tab is brought to the foreground, this histogram indicates if
     this is the first viewing of the tab since Chrome was put into foreground,
     or if it was a return to a tab that has already been shown in this session.
+  </summary>
+</histogram>
+
+<histogram name="Tab.TimeSinceActive" units="ms">
+  <owner>lliabraa@chromium.org</owner>
+  <summary>
+    [iOS] When an existing tab becomes active, this histogram records the time
+    since it was made inactive.
+  </summary>
+</histogram>
+
+<histogram name="Tab.TimeSinceActiveEvicted" units="ms">
+  <owner>lliabraa@chromium.org</owner>
+  <summary>
+    [iOS] When an evicted tab becomes active, this histogram records the time
+    since it was made inactive.
   </summary>
 </histogram>
 
