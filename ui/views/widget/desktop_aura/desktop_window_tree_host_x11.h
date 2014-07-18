@@ -18,6 +18,7 @@
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
@@ -141,7 +142,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
                               const gfx::ImageSkia& app_icon) OVERRIDE;
   virtual void InitModalType(ui::ModalType modal_type) OVERRIDE;
   virtual void FlashFrame(bool flash_frame) OVERRIDE;
-  virtual void OnRootViewLayout() const OVERRIDE;
+  virtual void OnRootViewLayout() OVERRIDE;
   virtual void OnNativeWidgetFocus() OVERRIDE;
   virtual void OnNativeWidgetBlur() OVERRIDE;
   virtual bool IsAnimatingClosed() const OVERRIDE;
@@ -178,6 +179,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   // Called when |xwindow_|'s _NET_FRAME_EXTENTS property is updated.
   void OnFrameExtentsUpdated();
+
+  // Updates |xwindow_|'s minimum and maximum size.
+  void UpdateMinAndMaxSize();
 
   // Updates |xwindow_|'s _NET_WM_USER_TIME if |xwindow_| is active.
   void UpdateWMUserTime(const ui::PlatformEvent& event);
@@ -262,6 +266,12 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   // The bounds of our window before we were maximized.
   gfx::Rect restored_bounds_;
+
+  // |xwindow_|'s minimum size.
+  gfx::Size min_size_;
+
+  // |xwindow_|'s maximum size.
+  gfx::Size max_size_;
 
   // The window manager state bits.
   std::set< ::Atom> window_properties_;

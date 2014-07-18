@@ -143,7 +143,7 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
 
   virtual void FlashFrame(bool flash_frame) = 0;
 
-  virtual void OnRootViewLayout() const = 0;
+  virtual void OnRootViewLayout() = 0;
 
   // Called when the DesktopNativeWidgetAura's aura::Window is focused and
   // blurred.

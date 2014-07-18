@@ -927,7 +927,7 @@ ui::NativeTheme* DesktopNativeWidgetAura::GetNativeTheme() const {
   return DesktopWindowTreeHost::GetNativeTheme(content_window_);
 }
 
-void DesktopNativeWidgetAura::OnRootViewLayout() const {
+void DesktopNativeWidgetAura::OnRootViewLayout() {
   if (content_window_)
     desktop_window_tree_host_->OnRootViewLayout();
 }

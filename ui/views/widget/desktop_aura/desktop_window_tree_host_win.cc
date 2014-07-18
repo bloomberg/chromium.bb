@@ -413,7 +413,7 @@ void DesktopWindowTreeHostWin::FlashFrame(bool flash_frame) {
   message_handler_->FlashFrame(flash_frame);
 }
 
-void DesktopWindowTreeHostWin::OnRootViewLayout() const {
+void DesktopWindowTreeHostWin::OnRootViewLayout() {
 }
 
 void DesktopWindowTreeHostWin::OnNativeWidgetFocus() {

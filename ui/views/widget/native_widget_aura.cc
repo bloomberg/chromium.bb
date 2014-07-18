@@ -688,7 +688,7 @@ ui::NativeTheme* NativeWidgetAura::GetNativeTheme() const {
 #endif
 }
 
-void NativeWidgetAura::OnRootViewLayout() const {
+void NativeWidgetAura::OnRootViewLayout() {
 }
 
 void NativeWidgetAura::RepostNativeEvent(gfx::NativeEvent native_event) {

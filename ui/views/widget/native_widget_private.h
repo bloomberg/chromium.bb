@@ -223,7 +223,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual void EndMoveLoop() = 0;
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) = 0;
   virtual ui::NativeTheme* GetNativeTheme() const = 0;
-  virtual void OnRootViewLayout() const = 0;
+  virtual void OnRootViewLayout() = 0;
 
   // Repost an unhandled event to the native widget for default OS processing.
   virtual void RepostNativeEvent(gfx::NativeEvent native_event) = 0;

@@ -788,33 +788,8 @@ void DesktopWindowTreeHostX11::FlashFrame(bool flash_frame) {
   urgency_hint_set_ = flash_frame;
 }
 
-void DesktopWindowTreeHostX11::OnRootViewLayout() const {
-  if (!window_mapped_)
-    return;
-
-  XSizeHints hints;
-  long supplied_return;
-  XGetWMNormalHints(xdisplay_, xwindow_, &hints, &supplied_return);
-
-  gfx::Size minimum = native_widget_delegate_->GetMinimumSize();
-  if (minimum.IsEmpty()) {
-    hints.flags &= ~PMinSize;
-  } else {
-    hints.flags |= PMinSize;
-    hints.min_width = minimum.width();
-    hints.min_height = minimum.height();
-  }
-
-  gfx::Size maximum = native_widget_delegate_->GetMaximumSize();
-  if (maximum.IsEmpty()) {
-    hints.flags &= ~PMaxSize;
-  } else {
-    hints.flags |= PMaxSize;
-    hints.max_width = maximum.width();
-    hints.max_height = maximum.height();
-  }
-
-  XSetWMNormalHints(xdisplay_, xwindow_, &hints);
+void DesktopWindowTreeHostX11::OnRootViewLayout() {
+  UpdateMinAndMaxSize();
 }
 
 void DesktopWindowTreeHostX11::OnNativeWidgetFocus() {
@@ -868,6 +843,15 @@ void DesktopWindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {
     // X11 will send an XError at our process if have a 0 sized window.
     DCHECK_GT(bounds.width(), 0);
     DCHECK_GT(bounds.height(), 0);
+
+    if (bounds.width() < min_size_.width() ||
+        bounds.height() < min_size_.height() ||
+        (!max_size_.IsEmpty() &&
+         (bounds.width() > max_size_.width() ||
+          bounds.height() > max_size_.height()))) {
+      // Update the minimum and maximum sizes in case they have changed.
+      UpdateMinAndMaxSize();
+    }
 
     changes.width = bounds.width();
     changes.height = bounds.height();
@@ -1240,6 +1224,41 @@ void DesktopWindowTreeHostX11::OnFrameExtentsUpdated() {
   } else {
     native_window_frame_borders_ = gfx::Insets();
   }
+}
+
+void DesktopWindowTreeHostX11::UpdateMinAndMaxSize() {
+  if (!window_mapped_)
+    return;
+
+  gfx::Size minimum = native_widget_delegate_->GetMinimumSize();
+  gfx::Size maximum = native_widget_delegate_->GetMaximumSize();
+  if (min_size_ == minimum && max_size_ == maximum)
+    return;
+
+  min_size_ = minimum;
+  max_size_ = maximum;
+
+  XSizeHints hints;
+  long supplied_return;
+  XGetWMNormalHints(xdisplay_, xwindow_, &hints, &supplied_return);
+
+  if (minimum.IsEmpty()) {
+    hints.flags &= ~PMinSize;
+  } else {
+    hints.flags |= PMinSize;
+    hints.min_width = min_size_.width();
+    hints.min_height = min_size_.height();
+  }
+
+  if (maximum.IsEmpty()) {
+    hints.flags &= ~PMaxSize;
+  } else {
+    hints.flags |= PMaxSize;
+    hints.max_width = max_size_.width();
+    hints.max_height = max_size_.height();
+  }
+
+  XSetWMNormalHints(xdisplay_, xwindow_, &hints);
 }
 
 void DesktopWindowTreeHostX11::UpdateWMUserTime(
