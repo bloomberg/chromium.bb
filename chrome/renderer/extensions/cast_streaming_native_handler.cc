@@ -38,6 +38,7 @@ const char kInvalidDestination[] = "Invalid destination";
 const char kInvalidRtpParams[] = "Invalid value for RTP params";
 const char kInvalidAesKey[] = "Invalid value for AES key";
 const char kInvalidAesIvMask[] = "Invalid value for AES IV mask";
+const char kInvalidStreamArgs[] = "Invalid stream arguments";
 const char kUnableToConvertArgs[] = "Unable to convert arguments";
 const char kUnableToConvertParams[] = "Unable to convert params";
 
@@ -196,24 +197,40 @@ CastStreamingNativeHandler::~CastStreamingNativeHandler() {
 void CastStreamingNativeHandler::CreateCastSession(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(3, args.Length());
-  CHECK(args[0]->IsObject());
-  CHECK(args[1]->IsObject());
   CHECK(args[2]->IsFunction());
 
-  blink::WebDOMMediaStreamTrack track1 =
-      blink::WebDOMMediaStreamTrack::fromV8Value(args[0]);
-  if (track1.isNull())
+  v8::Isolate* isolate = context()->v8_context()->GetIsolate();
+  if ((args[0]->IsNull() || args[0]->IsUndefined()) &&
+      (args[1]->IsNull() || args[1]->IsUndefined())) {
+    isolate->ThrowException(v8::Exception::Error(
+        v8::String::NewFromUtf8(isolate, kInvalidStreamArgs)));
     return;
-  blink::WebDOMMediaStreamTrack track2 =
-      blink::WebDOMMediaStreamTrack::fromV8Value(args[1]);
-  if (track2.isNull())
-    return;
+  }
 
   scoped_refptr<CastSession> session(new CastSession());
-  scoped_ptr<CastRtpStream> stream1(
-      new CastRtpStream(track1.component(), session));
-  scoped_ptr<CastRtpStream> stream2(
-      new CastRtpStream(track2.component(), session));
+  scoped_ptr<CastRtpStream> stream1, stream2;
+  if (!args[0]->IsNull() && !args[0]->IsUndefined()) {
+    CHECK(args[0]->IsObject());
+    blink::WebDOMMediaStreamTrack track =
+        blink::WebDOMMediaStreamTrack::fromV8Value(args[0]);
+    if (track.isNull()) {
+      isolate->ThrowException(v8::Exception::Error(
+          v8::String::NewFromUtf8(isolate, kInvalidStreamArgs)));
+      return;
+    }
+    stream1.reset(new CastRtpStream(track.component(), session));
+  }
+  if (!args[1]->IsNull() && !args[1]->IsUndefined()) {
+    CHECK(args[1]->IsObject());
+    blink::WebDOMMediaStreamTrack track =
+        blink::WebDOMMediaStreamTrack::fromV8Value(args[1]);
+    if (track.isNull()) {
+      isolate->ThrowException(v8::Exception::Error(
+          v8::String::NewFromUtf8(isolate, kInvalidStreamArgs)));
+      return;
+    }
+    stream2.reset(new CastRtpStream(track.component(), session));
+  }
   scoped_ptr<CastUdpTransport> udp_transport(
       new CastUdpTransport(session));
 
@@ -239,19 +256,25 @@ void CastStreamingNativeHandler::CallCreateCallback(
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
 
-  const int stream1_id = last_transport_id_++;
-  rtp_stream_map_[stream1_id] =
-      linked_ptr<CastRtpStream>(stream1.release());
-  const int stream2_id = last_transport_id_++;
-  rtp_stream_map_[stream2_id] =
-      linked_ptr<CastRtpStream>(stream2.release());
+  v8::Handle<v8::Value> callback_args[3];
+  callback_args[0] = v8::Null(isolate);
+  callback_args[1] = v8::Null(isolate);
+
+  if (stream1) {
+    const int stream1_id = last_transport_id_++;
+    callback_args[0] = v8::Integer::New(isolate, stream1_id);
+    rtp_stream_map_[stream1_id] =
+        linked_ptr<CastRtpStream>(stream1.release());
+  }
+  if (stream2) {
+    const int stream2_id = last_transport_id_++;
+    callback_args[1] = v8::Integer::New(isolate, stream2_id);
+    rtp_stream_map_[stream2_id] =
+        linked_ptr<CastRtpStream>(stream2.release());
+  }
   const int udp_id = last_transport_id_++;
   udp_transport_map_[udp_id] =
       linked_ptr<CastUdpTransport>(udp_transport.release());
-
-  v8::Handle<v8::Value> callback_args[3];
-  callback_args[0] = v8::Integer::New(isolate, stream1_id);
-  callback_args[1] = v8::Integer::New(isolate, stream2_id);
   callback_args[2] = v8::Integer::New(isolate, udp_id);
   context()->CallFunction(create_callback_.NewHandle(isolate),
                           3, callback_args);

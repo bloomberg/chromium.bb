@@ -22,15 +22,18 @@ namespace cast.streaming.session {
 
   interface Functions {
     // Creates a Cast session using the provided audio and video track as
-    // source. This will create two RTP streams and a UDP transport that
-    // builds the session.
+    // source. The tracks must be of type MediaStreamTrack. This will
+    // create two RTP streams and a UDP transport that builds the session.
+    // Either |audioTrack| or |videoTrack| can be null but not both. This
+    // means creating a session with only audio or video. If a given
+    // track is null then the created stream ID will be null.
     //
     // |audioTrack| : the source audio track.
     // |videoTrack| : the source video track.
     // |callback| : Called when the sesion has been created.
-    [nocompile] static void create(
-        [instanceOf=MediaStreamTrack] object audioTrack,
-        [instanceOf=MediaStreamTrack] object videoTrack,
+    [nocompile,allowAmbiguousOptionalArguments] static void create(
+        [instanceOf=MediaStreamTrack] optional object audioTrack,
+        [instanceOf=MediaStreamTrack] optional object videoTrack,
         CreateCallback callback);
   };
 };

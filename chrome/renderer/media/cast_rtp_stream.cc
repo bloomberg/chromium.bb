@@ -8,6 +8,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "chrome/renderer/media/cast_session.h"
 #include "chrome/renderer/media/cast_udp_transport.h"
@@ -254,7 +255,13 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
       const media::VideoCaptureFormat& format,
       const base::TimeTicks& estimated_capture_time) {
     if (frame->coded_size() != expected_coded_size) {
-      error_callback.Run("Video frame resolution does not match config.");
+      error_callback.Run(
+          base::StringPrintf("Video frame resolution does not match config."
+                             " Expected %dx%d. Got %dx%d.",
+                             expected_coded_size.width(),
+                             expected_coded_size.height(),
+                             frame->coded_size().width(),
+                             frame->coded_size().height()));
       return;
     }
 
@@ -484,7 +491,7 @@ void CastRtpStream::Start(const CastRtpParams& params,
                           const base::Closure& start_callback,
                           const base::Closure& stop_callback,
                           const ErrorCallback& error_callback) {
-  VLOG(1) << "CastRtpStream::Start =  " << (IsAudio() ? "audio" : "video");
+  VLOG(1) << "CastRtpStream::Start = " << (IsAudio() ? "audio" : "video");
   stop_callback_ = stop_callback;
   error_callback_ = error_callback;
 
@@ -531,7 +538,7 @@ void CastRtpStream::Start(const CastRtpParams& params,
 }
 
 void CastRtpStream::Stop() {
-  VLOG(1) << "CastRtpStream::Stop =  " << (IsAudio() ? "audio" : "video");
+  VLOG(1) << "CastRtpStream::Stop = " << (IsAudio() ? "audio" : "video");
   audio_sink_.reset();
   video_sink_.reset();
   if (!stop_callback_.is_null())
@@ -539,17 +546,23 @@ void CastRtpStream::Stop() {
 }
 
 void CastRtpStream::ToggleLogging(bool enable) {
+  VLOG(1) << "CastRtpStream::ToggleLogging(" << enable << ") = "
+          << (IsAudio() ? "audio" : "video");
   cast_session_->ToggleLogging(IsAudio(), enable);
 }
 
 void CastRtpStream::GetRawEvents(
     const base::Callback<void(scoped_ptr<base::BinaryValue>)>& callback,
     const std::string& extra_data) {
+  VLOG(1) << "CastRtpStream::GetRawEvents = "
+          << (IsAudio() ? "audio" : "video");
   cast_session_->GetEventLogsAndReset(IsAudio(), extra_data, callback);
 }
 
 void CastRtpStream::GetStats(
     const base::Callback<void(scoped_ptr<base::DictionaryValue>)>& callback) {
+  VLOG(1) << "CastRtpStream::GetStats = "
+          << (IsAudio() ? "audio" : "video");
   cast_session_->GetStatsAndReset(IsAudio(), callback);
 }
 
@@ -558,6 +571,8 @@ bool CastRtpStream::IsAudio() const {
 }
 
 void CastRtpStream::DidEncounterError(const std::string& message) {
+  VLOG(1) << "CastRtpStream::DidEncounterError(" << message << ") = "
+          << (IsAudio() ? "audio" : "video");
   // Save the WeakPtr first because the error callback might delete this object.
   base::WeakPtr<CastRtpStream> ptr = weak_factory_.GetWeakPtr();
   error_callback_.Run(message);

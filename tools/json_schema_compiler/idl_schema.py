@@ -170,6 +170,8 @@ class Member(object):
     name = self.node.GetName()
     if self.node.GetProperty('deprecated'):
       properties['deprecated'] = self.node.GetProperty('deprecated')
+    if self.node.GetProperty('allowAmbiguousOptionalArguments'):
+      properties['allowAmbiguousOptionalArguments'] = True
     for property_name in ('OPTIONAL', 'nodoc', 'nocompile', 'nodart'):
       if self.node.GetProperty(property_name):
         properties[property_name.lower()] = True

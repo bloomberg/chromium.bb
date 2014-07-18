@@ -69,6 +69,11 @@ IN_PROC_BROWSER_TEST_F(CastStreamingApiTest, StopNoStart) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(CastStreamingApiTest, NullStream) {
+  ASSERT_TRUE(RunExtensionSubtest("cast_streaming", "null_stream.html"))
+      << message_;
+}
+
 namespace {
 
 // An in-process Cast receiver that examines the audio/video frames being

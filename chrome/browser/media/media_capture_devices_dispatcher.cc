@@ -118,7 +118,6 @@ bool IsBuiltInExtension(const GURL& origin) {
 
 // Returns true of the security origin is associated with casting.
 bool IsOriginForCasting(const GURL& origin) {
-#if defined(OFFICIAL_BUILD)
   // Whitelisted tab casting extensions.
   return
       // Dev
@@ -131,9 +130,6 @@ bool IsOriginForCasting(const GURL& origin) {
       origin.spec() == "chrome-extension://dliochdbjfkdbacpmhlcpmleaejidimm/" ||
       // Google Cast Stable
       origin.spec() == "chrome-extension://boadgeojelhgndaghljhdicfkmllpafd/";
-#else
-  return false;
-#endif
 }
 
 // Helper to get title of the calling application shown in the screen capture
