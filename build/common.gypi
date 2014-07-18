@@ -3986,7 +3986,6 @@
               ['_toolset=="target"', {
                 'cflags': [
                   '-fsanitize=address',
-                  '-Wno-error=macro-redefined',  # http://crbug.com/162783
                 ],
                 'ldflags': [
                   '-fsanitize=address',
@@ -4009,7 +4008,6 @@
                   '-fsanitize=undefined',
                   # -fsanitize=vptr is incompatible with -fno-rtti.
                   '-fno-sanitize=vptr',
-                  '-Wno-error=macro-redefined',  # http://crbug.com/162783
                 ],
                 'ldflags': [
                   '-fsanitize=undefined',
@@ -4033,7 +4031,6 @@
                   '-fsanitize=vptr',
                   '-fsanitize=null',  # Avoid dereferences on null pointer objects.
                   '-fsanitize-blacklist=<(ubsan_vptr_blacklist)',
-                  '-Wno-error=macro-redefined',  # http://crbug.com/162783
                 ],
                 'cflags_cc!': [
                   '-fno-rtti',
@@ -4629,8 +4626,6 @@
               # binaries on x86_64 host is problematic.
               # TODO(eugenis): re-enable.
               '-fsanitize=address',
-              '-Wno-error=macro-redefined',  # http://crbug.com/162783
-
             ],
             'ldflags!': [
               '-fsanitize=address',
@@ -4800,7 +4795,6 @@
               'OTHER_CFLAGS': [
                 '-fsanitize=address',
                 '-mllvm -asan-globals=0',  # http://crbug.com/352073
-                '-Wno-error=macro-redefined',  # http://crbug.com/162783
                 '-Wno-error=unused-function',  # http://crbug.com/162783
                 '-gline-tables-only',
               ],
