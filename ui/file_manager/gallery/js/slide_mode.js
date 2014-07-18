@@ -108,7 +108,7 @@ SlideMode.prototype.initDom_ = function() {
       util.createChild(this.options_, 'overwrite-original');
 
   this.overwriteOriginal_ = util.createChild(
-      overwriteOriginalBox, 'common white', 'input');
+      overwriteOriginalBox, '', 'input');
   this.overwriteOriginal_.type = 'checkbox';
   this.overwriteOriginal_.id = 'overwrite-checkbox';
   util.platform.getPreference(SlideMode.OVERWRITE_KEY, function(value) {

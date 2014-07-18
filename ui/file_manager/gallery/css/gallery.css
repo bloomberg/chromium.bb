@@ -9,6 +9,30 @@ body {
   margin: 0;
 }
 
+input:focus, button:focus {
+  outline: 1px solid rgb(77, 144, 254);
+}
+
+input[type='checkbox'] {
+  width: 15px;
+  height: 15px;
+  background: -webkit-image-set(
+      url(../../file_manager/foreground/images/common/checkbox_white_unchecked.png) 1x,
+      url(../../file_manager/foreground/images/common/2x/checkbox_white_unchecked.png) 2x)
+      -1px -1px;
+  -webkit-appearance: none;
+  display: inline-block;
+  margin: 1px 6px 1px 1px;
+  vertical-align: text-bottom;
+}
+
+input[type='checkbox']:checked {
+  background: -webkit-image-set(
+      url(../../file_manager/foreground/images/common/checkbox_white_checked.png) 1x,
+      url(../../file_manager/foreground/images/common/2x/checkbox_white_checked.png) 2x)
+      -1px -1px;
+}
+
 .gallery,
 .gallery .content {
   bottom: 0;
@@ -22,40 +46,6 @@ body {
 /* Common background for both mosaic and slide mode. */
 .gallery .content {
   background-color: black;
-}
-
-/* Close button */
-
-/* We actually want (left,top) to be (0,0) but for some weird reason
-   this triggers :hover style on page reload which is ugly. */
-.gallery > .back-button {
-  cursor: pointer;
-  left: 1px;
-  position: absolute;
-  top: 1px;
-  z-index: 200;
-}
-
-/* The close icon is in a nested div so that its opacity can be manipulated
-   independently from its parent (which can be dimmed when the crop frame
-   overlaps it) */
-.gallery > .back-button div {
-  background-image: -webkit-image-set(
-      url(../images/100/back_to_files.png) 1x,
-      url(../images/200/back_to_files.png) 2x);
-  background-position: center center;
-  background-repeat: no-repeat;
-  height: 40px;
-  opacity: 0;
-  width: 64px;
-}
-
-.gallery[tools] > .back-button div {
-  opacity: 0.5;
-}
-
-.gallery[tools] > .back-button div:hover {
-  opacity: 1;
 }
 
 /* Image container and canvas elements */
@@ -402,11 +392,6 @@ body {
   pointer-events: none;
 }
 
-.gallery .filename-spacer .overwrite-original input {
-  margin-bottom: -2px;
-  margin-right: 6px;
-}
-
 .gallery .filename-spacer .saved[highlighted] {
   -webkit-transform: scaleX(1.1) scaleY(1.1) rotate(0);
   opacity: 1;
@@ -485,7 +470,7 @@ body {
 }
 
 .gallery .ribbon-image[selected] {
-  border: 2px solid rgba(255, 233, 168, 1);
+  border: 2px solid rgb(77, 144, 254);
 }
 
 .gallery .toolbar .ribbon.fade-left {
@@ -582,6 +567,10 @@ body {
   margin: 6px 0;
   min-width: 40px;  /* Reset. */
   width: 40px;
+}
+
+.gallery .toolbar button:focus {
+  z-index: 11;
 }
 
 /* By default, labels are hidden. */
@@ -1048,24 +1037,6 @@ body {
 
 .gallery .prompt-wrapper[pos=top] .prompt {
   padding-right: 10px;
-}
-
-.gallery .prompt .back-button {
-  background-image: -webkit-image-set(
-      url(../images/100/butterbar_close_button.png) 1x,
-      url(../images/200/butterbar_close_button.png) 2x);
-  background-position: center center;
-  background-repeat: no-repeat;
-  height: 16px;
-  margin-left: 16px;
-  opacity: 0.65;
-  pointer-events: auto;
-  width: 16px;
-}
-
-.gallery .prompt .back-button:hover {
-  background-color: rgba(81, 81, 81, 1);
-  opacity: 1.0;
 }
 
 .gallery .share-menu {
