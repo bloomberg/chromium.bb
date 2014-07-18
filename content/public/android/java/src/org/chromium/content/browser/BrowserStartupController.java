@@ -94,20 +94,6 @@ public class BrowserStartupController {
     // Whether the async startup of the browser process is complete.
     private boolean mStartupDone;
 
-    // Use single-process mode that runs the renderer on a separate thread in
-    // the main application.
-    public static final int MAX_RENDERERS_SINGLE_PROCESS = 0;
-
-    // Cap on the maximum number of renderer processes that can be requested.
-    // This is currently set to account for:
-    //  13: The maximum number of sandboxed processes we have available
-    // - 1: The regular New Tab Page
-    // - 1: The incognito New Tab Page
-    // - 1: A regular incognito tab
-    // - 1: Safety buffer (http://crbug.com/251279)
-    public static final int MAX_RENDERERS_LIMIT =
-            ChildProcessLauncher.MAX_REGISTERED_SANDBOXED_SERVICES - 4;
-
     // This field is set after startup has been completed based on whether the startup was a success
     // or not. It is used when later requests to startup come in that happen after the initial set
     // of enqueued callbacks have been executed.
@@ -161,7 +147,7 @@ public class BrowserStartupController {
             // flag that indicates that we have kicked off starting the browser process.
             mHasStartedInitializingBrowserProcess = true;
 
-            prepareToStartBrowserProcess(MAX_RENDERERS_LIMIT);
+            prepareToStartBrowserProcess(false);
 
             setAsynchronousStartup(true);
             if (contentStart() > 0) {
@@ -178,15 +164,15 @@ public class BrowserStartupController {
      * <p/>
      * Note that this can only be called on the UI thread.
      *
-     * @param maxRenderers The maximum number of renderer processes the browser may
-     *                      create. Zero for single process mode.
+     * @param singleProcess true iff the browser should run single-process, ie. keep renderers in
+     *                      the browser process
      * @throws ProcessInitException
      */
-    public void startBrowserProcessesSync(int maxRenderers) throws ProcessInitException {
+    public void startBrowserProcessesSync(boolean singleProcess) throws ProcessInitException {
         // If already started skip to checking the result
         if (!mStartupDone) {
             if (!mHasStartedInitializingBrowserProcess) {
-                prepareToStartBrowserProcess(maxRenderers);
+                prepareToStartBrowserProcess(singleProcess);
             }
 
             setAsynchronousStartup(false);
@@ -260,8 +246,8 @@ public class BrowserStartupController {
     }
 
     @VisibleForTesting
-    void prepareToStartBrowserProcess(int maxRendererProcesses) throws ProcessInitException {
-        Log.i(TAG, "Initializing chromium process, renderers=" + maxRendererProcesses);
+    void prepareToStartBrowserProcess(boolean singleProcess) throws ProcessInitException {
+        Log.i(TAG, "Initializing chromium process, singleProcess=" + singleProcess);
 
         // Normally Main.java will have kicked this off asynchronously for Chrome. But other
         // ContentView apps like tests also need them so we make sure we've extracted resources
@@ -280,8 +266,7 @@ public class BrowserStartupController {
         // Now we really need to have the resources ready.
         resourceExtractor.waitForCompletion();
 
-        nativeSetCommandLineFlags(maxRendererProcesses,
-                nativeIsPluginEnabled() ? getPlugins() : null);
+        nativeSetCommandLineFlags(singleProcess, nativeIsPluginEnabled() ? getPlugins() : null);
         ContentMain.initApplicationContext(appContext);
     }
 
@@ -292,18 +277,15 @@ public class BrowserStartupController {
         ResourceExtractor resourceExtractor = ResourceExtractor.get(mContext);
         resourceExtractor.startExtractingResources();
         resourceExtractor.waitForCompletion();
-
-        // Having a single renderer should be sufficient for tests. We can't have more than
-        // MAX_RENDERERS_LIMIT.
-        nativeSetCommandLineFlags(1 /* maxRenderers */, null);
+        nativeSetCommandLineFlags(false, null);
     }
 
     private String getPlugins() {
         return PepperPluginManager.getPlugins(mContext);
     }
 
-    private static native void nativeSetCommandLineFlags(int maxRenderProcesses,
-            String pluginDescriptor);
+    private static native void nativeSetCommandLineFlags(
+            boolean singleProcess, String pluginDescriptor);
 
     // Is this an official build of Chrome? Only native code knows for sure. Official build
     // knowledge is needed very early in process startup.

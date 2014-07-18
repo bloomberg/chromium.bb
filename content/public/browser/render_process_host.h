@@ -279,8 +279,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // A value of zero means to use the default heuristic.
   static void SetMaxRendererProcessCount(size_t count);
 
-  // Returns the current max number of renderer processes used by the content
-  // module.
+  // Returns the current maximum number of renderer process hosts kept by the
+  // content module.
   static size_t GetMaxRendererProcessCount();
 };
 

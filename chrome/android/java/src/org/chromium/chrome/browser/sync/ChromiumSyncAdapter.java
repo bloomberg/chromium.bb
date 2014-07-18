@@ -112,8 +112,7 @@ public abstract class ChromiumSyncAdapter extends AbstractThreadedSyncAdapter {
     private void startBrowserProcessesSync(
             final BrowserStartupController.StartupCallback callback) {
         try {
-            BrowserStartupController.get(mApplication).startBrowserProcessesSync(
-                    BrowserStartupController.MAX_RENDERERS_LIMIT);
+            BrowserStartupController.get(mApplication).startBrowserProcessesSync(false);
         } catch (ProcessInitException e) {
             Log.e(TAG, "Unable to load native library.", e);
             System.exit(-1);

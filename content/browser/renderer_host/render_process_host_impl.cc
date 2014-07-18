@@ -394,15 +394,22 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
   if (g_max_renderer_count_override)
     return g_max_renderer_count_override;
 
-  // Defines the maximum number of renderer processes according to the
-  // amount of installed memory as reported by the OS. The calculation
-  // assumes that you want the renderers to use half of the installed
-  // RAM and assuming that each WebContents uses ~40MB.
-  // If you modify this assumption, you need to adjust the
-  // ThirtyFourTabs test to match the expected number of processes.
+#if defined(OS_ANDROID)
+  // On Android we don't maintain a limit of renderer process hosts - we are
+  // happy with keeping a lot of these, as long as the number of live renderer
+  // processes remains reasonable, and on Android the OS takes care of that.
+  return std::numeric_limits<size_t>::max();
+#endif
+
+  // On other platforms, we calculate the maximum number of renderer process
+  // hosts according to the amount of installed memory as reported by the OS.
+  // The calculation assumes that you want the renderers to use half of the
+  // installed RAM and assuming that each WebContents uses ~40MB.  If you modify
+  // this assumption, you need to adjust the ThirtyFourTabs test to match the
+  // expected number of processes.
   //
-  // With the given amounts of installed memory below on a 32-bit CPU,
-  // the maximum renderer count will roughly be as follows:
+  // With the given amounts of installed memory below on a 32-bit CPU, the
+  // maximum renderer count will roughly be as follows:
   //
   //   128 MB -> 3
   //   512 MB -> 6

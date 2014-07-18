@@ -51,8 +51,7 @@ public abstract class AwBrowserProcess {
             @Override
             public void run() {
                 try {
-                    BrowserStartupController.get(context).startBrowserProcessesSync(
-                                BrowserStartupController.MAX_RENDERERS_SINGLE_PROCESS);
+                    BrowserStartupController.get(context).startBrowserProcessesSync(true);
                     initializePlatformKeySystem();
                 } catch (ProcessInitException e) {
                     throw new RuntimeException("Cannot initialize WebView", e);

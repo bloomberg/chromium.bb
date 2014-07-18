@@ -562,6 +562,11 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess))
     return;
 
+  // On Android by default the number of renderer hosts is unlimited and process
+  // sharing doesn't happen. We set the override so that the test can run
+  // everywhere.
+  RenderProcessHost::SetMaxRendererProcessCount(kMaxRendererProcessCount);
+
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
@@ -607,6 +612,9 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
   }
 
   DrainMessageLoops();
+
+  // Disable the process limit override.
+  RenderProcessHost::SetMaxRendererProcessCount(0u);
 }
 
 // Test to ensure that HasWrongProcessForURL behaves properly for different

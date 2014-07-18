@@ -28,13 +28,13 @@ bool RegisterBrowserStartupController(JNIEnv* env) {
 
 static void SetCommandLineFlags(JNIEnv* env,
                                 jclass clazz,
-                                jint max_render_process_count,
+                                jboolean single_process,
                                 jstring plugin_descriptor) {
   std::string plugin_str =
       (plugin_descriptor == NULL
            ? std::string()
            : base::android::ConvertJavaStringToUTF8(env, plugin_descriptor));
-  SetContentCommandLineFlags(max_render_process_count, plugin_str);
+  SetContentCommandLineFlags(static_cast<bool>(single_process), plugin_str);
 }
 
 static jboolean IsOfficialBuild(JNIEnv* env, jclass clazz) {

@@ -27,7 +27,7 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
         private int mInitializedCounter = 0;
 
         @Override
-        void prepareToStartBrowserProcess(int numRenderers) throws ProcessInitException {
+        void prepareToStartBrowserProcess(boolean singleProcess) throws ProcessInitException {
             if (!mLibraryLoadSucceeds) {
                 throw new ProcessInitException(
                         LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED);
@@ -360,7 +360,7 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 try {
-                    mController.startBrowserProcessesSync(1);
+                    mController.startBrowserProcessesSync(false);
                 } catch (Exception e) {
                     fail("Browser should have started successfully");
                 }
@@ -392,7 +392,7 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
                 // to do both these in a since Runnable instance. This avoids the
                 // unpredictable race that happens in real situations.
                 try {
-                    mController.startBrowserProcessesSync(1);
+                    mController.startBrowserProcessesSync(false);
                 } catch (Exception e) {
                     fail("Browser should have started successfully");
                 }
@@ -421,7 +421,7 @@ public class BrowserStartupControllerTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 try {
-                    mController.startBrowserProcessesSync(1);
+                    mController.startBrowserProcessesSync(false);
                 } catch (Exception e) {
                     fail("Browser should have started successfully");
                 }

@@ -78,8 +78,7 @@ public class ContentShellActivity extends Activity {
 
         if (CommandLine.getInstance().hasSwitch(ContentSwitches.DUMP_RENDER_TREE)) {
             try {
-                BrowserStartupController.get(this).startBrowserProcessesSync(
-                       BrowserStartupController.MAX_RENDERERS_LIMIT);
+                BrowserStartupController.get(this).startBrowserProcessesSync(false);
             } catch (ProcessInitException e) {
                 Log.e(TAG, "Failed to load native library.", e);
                 System.exit(-1);

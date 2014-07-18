@@ -42,8 +42,7 @@ public class ChromeShellTestBase extends ActivityInstrumentationTestCase2<Chrome
             public void run() {
                 CommandLine.initFromFile("/data/local/tmp/chrome-shell-command-line");
                 try {
-                    BrowserStartupController.get(targetContext).startBrowserProcessesSync(
-                            BrowserStartupController.MAX_RENDERERS_LIMIT);
+                    BrowserStartupController.get(targetContext).startBrowserProcessesSync(false);
                 } catch (ProcessInitException e) {
                     Log.e(TAG, "Unable to load native library.", e);
                     fail("Unable to load native library");

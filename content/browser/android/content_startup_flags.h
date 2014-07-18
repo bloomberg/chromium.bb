@@ -12,7 +12,7 @@ namespace content {
 // Force-appends flags to the command line turning on Android-specific
 // features owned by Content. This is called as soon as possible during
 // initialization to make sure code sees the new flags.
-void SetContentCommandLineFlags(int max_render_process_count,
+void SetContentCommandLineFlags(bool single_process,
                                 const std::string& plugin_descriptor);
 
 }  // namespace content

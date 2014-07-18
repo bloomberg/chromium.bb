@@ -249,8 +249,7 @@ public class GCMDriver {
         // ChromeShellApplication.initCommandLine() as appropriate.
 
         try {
-            final int MAX_RENDERERS = 1;
-            BrowserStartupController.get(context).startBrowserProcessesSync(MAX_RENDERERS);
+            BrowserStartupController.get(context).startBrowserProcessesSync(false);
             if (sInstance != null) {
                 task.run();
             } else {

@@ -92,7 +92,8 @@ public class ChildProcessLauncher {
                 ChromiumLinkerParams chromiumLinkerParams) {
             synchronized (mConnectionLock) {
                 if (mFreeConnectionIndices.isEmpty()) {
-                    Log.w(TAG, "Ran out of service.");
+                    Log.e(TAG, "Ran out of services to allocate.");
+                    assert false;
                     return null;
                 }
                 int slot = mFreeConnectionIndices.remove(0);
