@@ -29,6 +29,29 @@ namespace gcdPrivate {
     DOMString deviceDescription;
   };
 
+  enum Status {
+    // populateWifiPassword was true and the password has not been prefetched.
+    wifiPasswordError,
+
+    // populateWifiPassword was true and the message cannot be parsed as a setup
+    // message.
+    setupParseError,
+
+    // Could not connect to the device.
+    connectionError,
+
+    // Error in establishing session.
+    sessionError,
+
+    // Success.
+    success
+  };
+
+  enum ConfirmationType {
+    displayCode,
+    audio
+  };
+
   callback CloudDeviceListCallback = void(GCDDevice[] devices);
 
   // |commandDefinitions| : Is "commandDefs" value of device described at
@@ -46,6 +69,31 @@ namespace gcdPrivate {
   // TODO(vitalybuka): consider to describe object in IDL.
   callback CommandListCallback = void(object[] commands);
 
+  // Called when the confirmation code is available or on error.
+  // |sessionId| is the session ID (identifies the session for future calls)
+  // |status| is the status (success or type of error)
+  // |code| is the confirmation code or empty on error
+  // |confirmationType| is the type of confirmation required
+  callback ConfirmationCodeCallback = void(long sessionId,
+                                           Status status,
+                                           DOMString code,
+                                           ConfirmationType type);
+
+  // Called to indicated the session is established.
+  // |status| is the status (success or type of error)
+  callback SessionEstablishedCallback = void(Status status);
+
+  // Called when the response to the message sent is available or on error.
+  // |status| is the status (success or type of error)
+  // |response| is the response object or null on error
+  callback MessageResponseCallback = void(Status status,
+                                          object response);
+
+  // Called as a response to |prefetchWifiPassword|
+  // |success| Denotes whether the password fetch has succeeded or failed.
+  callback SuccessCallback = void(boolean success);
+
+
   interface Functions {
     // Returns the list of cloud devices visible locally or available in the
     // cloud for user account.
@@ -56,31 +104,33 @@ namespace gcdPrivate {
     // onDeviceStateChanged and onDeviceRemoved events, or it will do nothing.
     static void queryForNewLocalDevices();
 
-    // Starts device setup process. Returns id of setup process. Id should be
-    // used as |setupId| in all subsequent setup related calls, and for
-    // filtering setup events.
-    static long startSetup(DOMString deviceId);
+    // Cache the WiFi password in the browser process for use during
+    // provisioning. This is done to allow the gathering of the wifi password to
+    // not be done while connected to the device's network. Callback is called
+    // with true if wifi password was cached and false if it was unavailable.
+    static void prefetchWifiPassword(DOMString ssid, SuccessCallback callback);
 
-    // Sets WiFi network as reply to |onGetWifiNetworks| event.
-    // |setupId| : The value returned by |startSetup|.
-    // |network| : The wifi network for device setup.
-    static void setWiFiNetwork(long setupId, DOMString network);
+    // Establish the session.
+    static void establishSession(DOMString ipAddress,
+                                 long port,
+                                 ConfirmationCodeCallback callback);
 
-    // Sets WiFi network password as reply to |onGetWifiPassword| event.
-    // |setupId| : The value returned by |startSetup|.
-    // |password| : The password for network selected with |setWiFiNetwork|.
-    static void setWiFiPassword(long setupId, DOMString password);
+    // Confirm that the code is correct. Device will still need to confirm.
+    static void confirmCode(long sessionId,
+                            SessionEstablishedCallback callback);
 
-    // Confirms that security code known to application match to the code known
-    // to device.
-    // |setupId| : The value returned by |startSetup|.
-    static void confirmCode(long setupId);
+    // Send an encrypted message to the device. |api| is the API path and
+    // |input| is the input object. If the message is a setup message with a
+    // wifi ssid specified but no password, the password cached from
+    // |prefetchWifiPassword| will be used and the call will fail if it's not
+    // available. For open networks use an empty string as the password.
+    static void sendMessage(long sessionId,
+                            DOMString api,
+                            object input,
+                            MessageResponseCallback callback);
 
-    // Stops registration process.
-    // This call triggers |onSetupError| event. App should wait this even before
-    // starting new registration.
-    // |setupId| : The value returned by |startSetup|.
-    static void stopSetup(long setupId);
+    // Terminate the session with the device.
+    static void terminateSession(long sessionId);
 
     // Returns command definitions.
     // |deviceId| : The device to get command definitions for.
@@ -133,32 +183,5 @@ namespace gcdPrivate {
     // Notifies that device has disappeared.
     // |deviceId| : The device has disappeared.
     static void onDeviceRemoved(DOMString deviceId);
-
-    // Notifies app that setup is waiting for a wifi network. App should reply
-    // with |setWiFiNetwork|.
-    // |setupId| : The value returned by |startSetup|.
-    static void onGetWifiNetwork(long setupId);
-
-    // Notifies app that setup is waiting for password for the network provided
-    // with |setWiFiNetwork|. Even will be called if setup flow would unable to
-    // get password from the system.
-    // App should reply with |setWiFiPassword|.
-    // |setupId| : The value returned by |startSetup|.
-    static void onGetWifiPassword(long setupId);
-
-    // Notifies app that setup is waiting for confirmation that code is the same
-    // as code known to device. App should reply with |confirmCode|, or
-    // |stopSetup| if code does not match.
-    // |confirmationCode| : The code to confirm.
-    // |setupId| : The value returned by |startSetup|.
-    static void onConfirmCode(long setupId, DOMString confirmationCode);
-
-    // Notifies app that setup is completed successfully.
-    // |setupId| : The value returned by |startSetup|.
-    static void onSetupSuccess(long setupId);
-
-    // Notifies app that setup is failed or stopped.
-    // |setupId| : The value returned by |startSetup|.
-    static void onSetupError(long setupId);
   };
 };

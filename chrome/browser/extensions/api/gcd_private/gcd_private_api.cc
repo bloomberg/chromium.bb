@@ -284,33 +284,25 @@ bool GcdPrivateQueryForNewLocalDevicesFunction::RunSync() {
   return true;
 }
 
-GcdPrivateStartSetupFunction::GcdPrivateStartSetupFunction() {
+GcdPrivatePrefetchWifiPasswordFunction::
+    GcdPrivatePrefetchWifiPasswordFunction() {
 }
 
-GcdPrivateStartSetupFunction::~GcdPrivateStartSetupFunction() {
+GcdPrivatePrefetchWifiPasswordFunction::
+    ~GcdPrivatePrefetchWifiPasswordFunction() {
 }
 
-bool GcdPrivateStartSetupFunction::RunAsync() {
+bool GcdPrivatePrefetchWifiPasswordFunction::RunAsync() {
   return false;
 }
 
-GcdPrivateSetWiFiNetworkFunction::GcdPrivateSetWiFiNetworkFunction() {
+GcdPrivateEstablishSessionFunction::GcdPrivateEstablishSessionFunction() {
 }
 
-GcdPrivateSetWiFiNetworkFunction::~GcdPrivateSetWiFiNetworkFunction() {
+GcdPrivateEstablishSessionFunction::~GcdPrivateEstablishSessionFunction() {
 }
 
-bool GcdPrivateSetWiFiNetworkFunction::RunAsync() {
-  return false;
-}
-
-GcdPrivateSetWiFiPasswordFunction::GcdPrivateSetWiFiPasswordFunction() {
-}
-
-GcdPrivateSetWiFiPasswordFunction::~GcdPrivateSetWiFiPasswordFunction() {
-}
-
-bool GcdPrivateSetWiFiPasswordFunction::RunAsync() {
+bool GcdPrivateEstablishSessionFunction::RunAsync() {
   return false;
 }
 
@@ -324,13 +316,23 @@ bool GcdPrivateConfirmCodeFunction::RunAsync() {
   return false;
 }
 
-GcdPrivateStopSetupFunction::GcdPrivateStopSetupFunction() {
+GcdPrivateSendMessageFunction::GcdPrivateSendMessageFunction() {
 }
 
-GcdPrivateStopSetupFunction::~GcdPrivateStopSetupFunction() {
+GcdPrivateSendMessageFunction::~GcdPrivateSendMessageFunction() {
 }
 
-bool GcdPrivateStopSetupFunction::RunAsync() {
+bool GcdPrivateSendMessageFunction::RunAsync() {
+  return false;
+}
+
+GcdPrivateTerminateSessionFunction::GcdPrivateTerminateSessionFunction() {
+}
+
+GcdPrivateTerminateSessionFunction::~GcdPrivateTerminateSessionFunction() {
+}
+
+bool GcdPrivateTerminateSessionFunction::RunAsync() {
   return false;
 }
 

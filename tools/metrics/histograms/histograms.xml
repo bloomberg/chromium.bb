@@ -38779,16 +38779,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="822" label="BLUETOOTHLOWENERGY_STOPCHARACTERISTICNOTIFICATIONS"/>
   <int value="823" label="GCDPRIVATE_GETCLOUDDEVICELIST"/>
   <int value="824" label="GCDPRIVATE_QUERYFORNEWLOCALDEVICES"/>
-  <int value="825" label="GCDPRIVATE_STARTSETUP"/>
-  <int value="826" label="GCDPRIVATE_SETWIFINETWORKS"/>
-  <int value="827" label="GCDPRIVATE_SETWIFICREDENTIALS"/>
+  <int value="825" label="GCDPRIVATE_PREFETCHWIFIPASSWORD"/>
+  <int value="826" label="GCDPRIVATE_ESTABLISHSESSION"/>
+  <int value="827" label="GCDPRIVATE_SENDMESSAGE"/>
   <int value="828" label="GCDPRIVATE_CONFIRMCODE"/>
-  <int value="829" label="GCDPRIVATE_STOPSETUP"/>
+  <int value="829" label="GCDPRIVATE_TERMINATESESSION"/>
   <int value="830" label="TABS_SETZOOM"/>
   <int value="831" label="TABS_GETZOOM"/>
   <int value="832" label="TABS_SETZOOMSETTINGS"/>
   <int value="833" label="TABS_GETZOOMSETTINGS"/>
-  <int value="834" label="GCDPRIVATE_GETCOMMANDDEFS"/>
+  <int value="834" label="GCDPRIVATE_GETCOMMANDDEFINITIONS"/>
   <int value="835" label="GCDPRIVATE_INSERTCOMMAND"/>
   <int value="836" label="GCDPRIVATE_GETCOMMAND"/>
   <int value="837" label="GCDPRIVATE_CANCELCOMMAND"/>
