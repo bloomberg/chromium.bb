@@ -279,8 +279,8 @@ enum QuicVersion {
   QUIC_VERSION_15 = 15,  // Revived packets in ReceivedPacketInfo.
   QUIC_VERSION_16 = 16,  // STOP_WAITING frame.
   QUIC_VERSION_18 = 18,  // PING frame.
-  QUIC_VERSION_19 = 19,  // Session level flow control.
-  QUIC_VERSION_20 = 20,  // Independent stream/session flow control windows.
+  QUIC_VERSION_19 = 19,  // Connection level flow control.
+  QUIC_VERSION_20 = 20,  // Independent stream/connection flow control windows.
   QUIC_VERSION_21 = 21,  // Headers/crypto streams are flow controlled.
 };
 

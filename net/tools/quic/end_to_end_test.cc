@@ -1325,7 +1325,7 @@ TEST_P(EndToEndTest, HeadersAndCryptoStreamsNoConnectionFlowControl) {
   QuicFlowController* server_connection_flow_controller =
       session->flow_controller();
   EXPECT_EQ(kSessionIFCW, QuicFlowControllerPeer::ReceiveWindowSize(
-                              server_connection_flow_controller));
+      server_connection_flow_controller));
   server_thread_->Resume();
 }
 

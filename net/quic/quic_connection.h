@@ -514,7 +514,7 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   bool peer_port_changed() const { return peer_port_changed_; }
 
-  const QuicReceivedPacketManager& received_packet_manager() {
+  const QuicReceivedPacketManager& received_packet_manager() const {
     return received_packet_manager_;
   }
 

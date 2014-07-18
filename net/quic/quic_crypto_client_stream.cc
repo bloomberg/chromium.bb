@@ -107,7 +107,7 @@ void QuicCryptoClientStream::OnHandshakeMessage(
 
     // |message| is an update from the server, so we treat it differently from a
     // handshake message.
-    HandleServerConfigUpdateMessage(&message);
+    HandleServerConfigUpdateMessage(message);
     return;
   }
 
@@ -135,13 +135,13 @@ bool QuicCryptoClientStream::WasChannelIDSent() const {
 }
 
 void QuicCryptoClientStream::HandleServerConfigUpdateMessage(
-    const CryptoHandshakeMessage* in) {
-  DCHECK(in->tag() == kSCUP);
+    const CryptoHandshakeMessage& server_config_update) {
+  DCHECK(server_config_update.tag() == kSCUP);
   string error_details;
   QuicCryptoClientConfig::CachedState* cached =
       crypto_config_->LookupOrCreate(server_id_);
   QuicErrorCode error = crypto_config_->ProcessServerConfigUpdate(
-      *in,
+      server_config_update,
       session()->connection()->clock()->WallNow(),
       cached,
       &crypto_negotiated_params_,
