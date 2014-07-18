@@ -33,7 +33,7 @@ GestureEventDataPacket::GestureSource ToGestureSource(
 }  // namespace
 
 GestureEventDataPacket::GestureEventDataPacket()
-    : gesture_count_(0), gesture_source_(UNDEFINED) {
+    : gesture_source_(UNDEFINED) {
 }
 
 GestureEventDataPacket::GestureEventDataPacket(
@@ -42,7 +42,6 @@ GestureEventDataPacket::GestureEventDataPacket(
     const gfx::PointF& touch_location,
     const gfx::PointF& raw_touch_location)
     : timestamp_(timestamp),
-      gesture_count_(0),
       touch_location_(touch_location),
       raw_touch_location_(raw_touch_location),
       gesture_source_(source) {
@@ -52,11 +51,10 @@ GestureEventDataPacket::GestureEventDataPacket(
 GestureEventDataPacket::GestureEventDataPacket(
     const GestureEventDataPacket& other)
     : timestamp_(other.timestamp_),
-      gesture_count_(other.gesture_count_),
+      gestures_(other.gestures_),
       touch_location_(other.touch_location_),
       raw_touch_location_(other.raw_touch_location_),
       gesture_source_(other.gesture_source_) {
-  std::copy(other.gestures_, other.gestures_ + other.gesture_count_, gestures_);
 }
 
 GestureEventDataPacket::~GestureEventDataPacket() {
@@ -65,18 +63,16 @@ GestureEventDataPacket::~GestureEventDataPacket() {
 GestureEventDataPacket& GestureEventDataPacket::operator=(
     const GestureEventDataPacket& other) {
   timestamp_ = other.timestamp_;
-  gesture_count_ = other.gesture_count_;
   gesture_source_ = other.gesture_source_;
   touch_location_ = other.touch_location_;
   raw_touch_location_ = other.raw_touch_location_;
-  std::copy(other.gestures_, other.gestures_ + other.gesture_count_, gestures_);
+  gestures_ = other.gestures_;
   return *this;
 }
 
 void GestureEventDataPacket::Push(const GestureEventData& gesture) {
   DCHECK_NE(ET_UNKNOWN, gesture.type());
-  CHECK_LT(gesture_count_, static_cast<size_t>(kMaxGesturesPerTouch));
-  gestures_[gesture_count_++] = gesture;
+  gestures_.push_back(gesture);
 }
 
 GestureEventDataPacket GestureEventDataPacket::FromTouch(

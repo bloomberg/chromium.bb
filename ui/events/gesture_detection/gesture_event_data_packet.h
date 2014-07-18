@@ -5,6 +5,8 @@
 #ifndef UI_EVENTS_GESTURE_DETECTION_GESTURE_EVENT_DATA_PACKET_H_
 #define UI_EVENTS_GESTURE_DETECTION_GESTURE_EVENT_DATA_PACKET_H_
 
+#include <vector>
+
 #include "ui/events/gesture_detection/gesture_detection_export.h"
 #include "ui/events/gesture_detection/gesture_event_data.h"
 
@@ -42,7 +44,7 @@ class GESTURE_DETECTION_EXPORT GestureEventDataPacket {
 
   const base::TimeTicks& timestamp() const { return timestamp_; }
   const GestureEventData& gesture(size_t i) const { return gestures_[i]; }
-  size_t gesture_count() const { return gesture_count_; }
+  size_t gesture_count() const { return gestures_.size(); }
   GestureSource gesture_source() const { return gesture_source_; }
   const gfx::PointF& touch_location() const { return touch_location_; }
   const gfx::PointF& raw_touch_location() const { return raw_touch_location_; }
@@ -53,10 +55,9 @@ class GESTURE_DETECTION_EXPORT GestureEventDataPacket {
                          const gfx::PointF& touch_location,
                          const gfx::PointF& raw_touch_location);
 
-  enum { kMaxGesturesPerTouch = 5 };
   base::TimeTicks timestamp_;
-  GestureEventData gestures_[kMaxGesturesPerTouch];
-  size_t gesture_count_;
+  // TODO(jdduke): This vector is in general very short. Optimize?
+  std::vector<GestureEventData> gestures_;
   gfx::PointF touch_location_;
   gfx::PointF raw_touch_location_;
   GestureSource gesture_source_;
