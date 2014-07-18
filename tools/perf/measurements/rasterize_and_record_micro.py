@@ -58,7 +58,7 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
 
   def MeasurePage(self, page, tab, results):
     try:
-      tab.WaitForJavaScriptExpression("document.readyState == 'complete'", 10)
+      tab.WaitForDocumentReadyStateToBeComplete()
     except TimeoutException:
       pass
     time.sleep(self.options.start_wait_time)
