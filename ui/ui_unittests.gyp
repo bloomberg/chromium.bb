@@ -60,6 +60,14 @@
         'base/cocoa/nsgraphics_context_additions_unittest.mm',
         'base/cocoa/tracking_area_unittest.mm',
         'base/dragdrop/os_exchange_data_provider_aurax11_unittest.cc',
+        'base/ime/candidate_window_unittest.cc',
+        'base/ime/chromeos/character_composer_unittest.cc',
+        'base/ime/composition_text_util_pango_unittest.cc',
+        'base/ime/input_method_base_unittest.cc',
+        'base/ime/input_method_chromeos_unittest.cc',
+        'base/ime/remote_input_method_win_unittest.cc',
+        'base/ime/win/imm32_manager_unittest.cc',
+        'base/ime/win/tsf_input_scope_unittest.cc',
         'base/models/list_model_unittest.cc',
         'base/models/list_selection_model_unittest.cc',
         'base/models/tree_node_model_unittest.cc',
@@ -76,9 +84,6 @@
       'conditions': [
         ['OS!="ios"', {
           'sources' : ['<@(_all_sources)'],
-          'includes': [
-            'base/ime/ime_unittests.gypi',
-          ],
         }, {  # OS=="ios"
           'sources' : [
             '<@(_common_sources)',
@@ -213,6 +218,17 @@
           ],
           'sources!': [
             'base/dragdrop/os_exchange_data_provider_aurax11_unittest.cc',
+          ],
+        }],
+        ['chromeos==0 or use_x11==0', {
+          'sources!': [
+            'base/ime/chromeos/character_composer_unittest.cc',
+            'base/ime/input_method_chromeos_unittest.cc',
+          ],
+        }],
+        ['use_x11==0', {
+          'sources!': [
+            'base/ime/composition_text_util_pango_unittest.cc',
           ],
         }],
       ],
