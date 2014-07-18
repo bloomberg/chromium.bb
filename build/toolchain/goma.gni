@@ -20,12 +20,3 @@ declare_args() {
     goma_dir = getenv("HOME") + "/goma"
   }
 }
-
-if (use_goma) {
-  # Define the toolchain for the GYP build when using goma.
-  make_goma_global_settings =
-    "['CC_wrapper', '$goma_dir/gomacc']," +
-    "['CXX_wrapper', '$goma_dir/gomacc']," +
-    "['CC.host_wrapper', '$goma_dir/gomacc']," +
-    "['CXX.host_wrapper', '$goma_dir/gomacc'],"
-}

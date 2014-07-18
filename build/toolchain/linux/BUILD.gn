@@ -7,9 +7,16 @@ import("//build/toolchain/clang.gni")
 import("//build/toolchain/gcc_toolchain.gni")
 import("//build/toolchain/goma.gni")
 
+if (use_goma) {
+  goma_prefix = "$goma_dir/gomacc "
+} else {
+  goma_prefix = ""
+}
+
 gcc_toolchain("arm") {
-  cc = "arm-linux-gnueabi-gcc"
-  cxx = "arm-linux-gnueabi-g++"
+  cc = "${goma_prefix}arm-linux-gnueabi-gcc"
+  cxx = "${goma_prefix}arm-linux-gnueabi-g++"
+
   ar = "arm-linux-gnueabi-ar"
   ld = cxx
 
@@ -26,8 +33,8 @@ gcc_toolchain("clang_x86") {
     prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
                          root_build_dir)
   }
-  cc = "$prefix/clang"
-  cxx = "$prefix/clang++"
+  cc = "${goma_prefix}$prefix/clang"
+  cxx = "${goma_prefix}$prefix/clang++"
 
   ar = "ar"
   ld = cxx
@@ -38,8 +45,8 @@ gcc_toolchain("clang_x86") {
 }
 
 gcc_toolchain("x86") {
-  cc = "gcc"
-  cxx = "g++"
+  cc = "${goma_prefix}gcc"
+  cxx = "$goma_prefix}g++"
 
   ar = "ar"
   ld = cxx
@@ -57,8 +64,8 @@ gcc_toolchain("clang_x64") {
     prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
                          root_build_dir)
   }
-  cc = "$prefix/clang"
-  cxx = "$prefix/clang++"
+  cc = "${goma_prefix}$prefix/clang"
+  cxx = "${goma_prefix}$prefix/clang++"
 
   ar = "ar"
   ld = cxx
@@ -69,8 +76,8 @@ gcc_toolchain("clang_x64") {
 }
 
 gcc_toolchain("x64") {
-  cc = "gcc"
-  cxx = "g++"
+  cc = "${goma_prefix}gcc"
+  cxx = "${goma_prefix}g++"
 
   ar = "ar"
   ld = cxx
