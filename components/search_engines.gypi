@@ -68,6 +68,17 @@
         'search_engines/util.cc',
         'search_engines/util.h',
       ],
+      'conditions': [
+        ['configuration_policy==0', {
+          'dependencies!': [
+            'policy'
+           ],
+           'sources!': [
+             'search_engines/default_search_policy_handler.cc',
+             'search_engines/default_search_policy_handler.h',
+           ],
+        }],
+      ],
     },
     {
       'target_name': 'search_engines_test_support',
