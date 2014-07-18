@@ -27,7 +27,7 @@
 
 #include "core/workers/WorkerRunLoop.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

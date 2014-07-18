@@ -31,7 +31,7 @@
 #include "config.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 
-namespace WebCore {
+namespace blink {
 
 #if ENABLE(ASSERT)
 
@@ -57,4 +57,4 @@ void NoExceptionStateAssertionChecker::throwSecurityError(const String&, const S
 
 #endif
 
-} // namespace WebCore
+} // namespace blink

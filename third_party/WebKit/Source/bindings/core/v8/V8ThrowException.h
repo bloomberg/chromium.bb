@@ -28,7 +28,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 enum V8ErrorType {
     v8RangeError,
@@ -61,6 +61,6 @@ public:
     static v8::Handle<v8::Value> throwTypeError(const String&, v8::Isolate*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8ThrowException_h

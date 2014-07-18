@@ -38,7 +38,7 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

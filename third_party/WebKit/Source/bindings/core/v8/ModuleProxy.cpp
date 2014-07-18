@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/V8Binding.h"
 
-namespace WebCore {
+namespace blink {
 
 ModuleProxy& ModuleProxy::moduleProxy()
 {

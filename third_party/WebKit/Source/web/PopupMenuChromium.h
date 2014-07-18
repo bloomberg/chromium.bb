@@ -34,7 +34,7 @@
 #include "platform/PopupMenu.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 class LocalFrame;
 class FrameView;
 class PopupMenuClient;
@@ -44,19 +44,19 @@ namespace blink {
 
 class PopupContainer;
 
-class PopupMenuChromium FINAL : public WebCore::PopupMenu {
+class PopupMenuChromium FINAL : public blink::PopupMenu {
 public:
-    PopupMenuChromium(WebCore::LocalFrame&, WebCore::PopupMenuClient*);
+    PopupMenuChromium(blink::LocalFrame&, blink::PopupMenuClient*);
     virtual ~PopupMenuChromium();
 
-    virtual void show(const WebCore::FloatQuad& controlPosition, const WebCore::IntSize& controlSize, int index) OVERRIDE;
+    virtual void show(const blink::FloatQuad& controlPosition, const blink::IntSize& controlSize, int index) OVERRIDE;
     virtual void hide() OVERRIDE;
     virtual void updateFromElement() OVERRIDE;
     virtual void disconnectClient() OVERRIDE;
 
 private:
-    WebCore::PopupMenuClient* m_popupClient;
-    RefPtr<WebCore::FrameView> m_frameView;
+    blink::PopupMenuClient* m_popupClient;
+    RefPtr<blink::FrameView> m_frameView;
     RefPtr<PopupContainer> m_popup;
 };
 

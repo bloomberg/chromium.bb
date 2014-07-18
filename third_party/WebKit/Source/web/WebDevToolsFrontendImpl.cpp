@@ -57,7 +57,7 @@
 #include "web/WebViewImpl.h"
 #include "wtf/OwnPtr.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -118,7 +118,7 @@ void WebDevToolsFrontendImpl::resume()
         m_inspectorFrontendDispatchTimer.startOneShot(0, FROM_HERE);
 }
 
-void WebDevToolsFrontendImpl::maybeDispatch(WebCore::Timer<WebDevToolsFrontendImpl>*)
+void WebDevToolsFrontendImpl::maybeDispatch(blink::Timer<WebDevToolsFrontendImpl>*)
 {
     while (!m_messages.isEmpty()) {
         Document* document = m_webViewImpl->page()->deprecatedLocalMainFrame()->document();

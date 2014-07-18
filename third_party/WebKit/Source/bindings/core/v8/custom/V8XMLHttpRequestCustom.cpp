@@ -49,7 +49,7 @@
 #include "wtf/ArrayBuffer.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 void V8XMLHttpRequest::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -248,4 +248,4 @@ void V8XMLHttpRequest::sendMethodCustom(const v8::FunctionCallbackInfo<v8::Value
     exceptionState.throwIfNeeded();
 }
 
-} // namespace WebCore
+} // namespace blink

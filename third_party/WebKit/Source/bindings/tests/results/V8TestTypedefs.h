@@ -13,7 +13,7 @@
 #include "bindings/tests/idls/TestTypedefs.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class V8TestTypedefs {
 public:

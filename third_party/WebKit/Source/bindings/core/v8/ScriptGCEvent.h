@@ -34,7 +34,7 @@
 #include "wtf/Vector.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 struct HeapInfo {
     HeapInfo()
@@ -94,6 +94,6 @@ private:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(ScriptGCEvent_h)

@@ -60,7 +60,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 class DataObject;
 class Frame;
 class RenderLayerCompositor;
@@ -82,7 +82,7 @@ class FullscreenController;
 class WebViewImpl FINAL : public WebView
     , public RefCounted<WebViewImpl>
     , public WebGestureCurveTarget
-    , public WebCore::PagePopupDriver
+    , public blink::PagePopupDriver
     , public PageWidgetEventHandler {
 public:
     static WebViewImpl* create(WebViewClient*);
@@ -262,32 +262,32 @@ public:
 
     // WebViewImpl
 
-    WebCore::HitTestResult coreHitTestResultAt(const WebPoint&);
+    blink::HitTestResult coreHitTestResultAt(const WebPoint&);
     void suppressInvalidations(bool enable);
-    void invalidateRect(const WebCore::IntRect&);
+    void invalidateRect(const blink::IntRect&);
 
     void setIgnoreInputEvents(bool newValue);
     void setBackgroundColorOverride(WebColor);
     void setZoomFactorOverride(float);
     WebDevToolsAgentPrivate* devToolsAgentPrivate() { return m_devToolsAgent.get(); }
 
-    WebCore::Color baseBackgroundColor() const { return m_baseBackgroundColor; }
+    blink::Color baseBackgroundColor() const { return m_baseBackgroundColor; }
 
     PageOverlayList* pageOverlays() const { return m_pageOverlays.get(); }
 
-    void setOverlayLayer(WebCore::GraphicsLayer*);
+    void setOverlayLayer(blink::GraphicsLayer*);
 
     const WebPoint& lastMouseDownPoint() const
     {
         return m_lastMouseDownPoint;
     }
 
-    WebCore::Frame* focusedWebCoreFrame() const;
+    blink::Frame* focusedWebCoreFrame() const;
 
     // Returns the currently focused Element or null if no element has focus.
-    WebCore::Element* focusedElement() const;
+    blink::Element* focusedElement() const;
 
-    static WebViewImpl* fromPage(WebCore::Page*);
+    static WebViewImpl* fromPage(blink::Page*);
 
     WebViewClient* client()
     {
@@ -306,7 +306,7 @@ public:
 
     // Returns the page object associated with this view. This may be null when
     // the page is shutting down, but will be valid at all other times.
-    WebCore::Page* page() const
+    blink::Page* page() const
     {
         return m_page.get();
     }
@@ -324,7 +324,7 @@ public:
     void mouseDoubleClick(const WebMouseEvent&);
 
     bool detectContentOnTouch(const WebPoint&);
-    bool startPageScaleAnimation(const WebCore::IntPoint& targetPosition, bool useAnchor, float newScale, double durationInSeconds);
+    bool startPageScaleAnimation(const blink::IntPoint& targetPosition, bool useAnchor, float newScale, double durationInSeconds);
 
     void hasTouchEventHandlers(bool);
 
@@ -339,7 +339,7 @@ public:
     // Keyboard event to the Right Mouse button down event.
     bool sendContextMenuEvent(const WebKeyboardEvent&);
 
-    void showContextMenuAtPoint(float x, float y, PassRefPtr<WebCore::ContextMenuProvider>);
+    void showContextMenuAtPoint(float x, float y, PassRefPtr<blink::ContextMenuProvider>);
 
     // Notifies the WebView that a load has been committed. isNewNavigation
     // will be true if a new session history item should be created for that
@@ -372,22 +372,22 @@ public:
         return m_shouldAutoResize;
     }
 
-    WebCore::IntSize minAutoSize() const
+    blink::IntSize minAutoSize() const
     {
         return m_minAutoSize;
     }
 
-    WebCore::IntSize maxAutoSize() const
+    blink::IntSize maxAutoSize() const
     {
         return m_maxAutoSize;
     }
 
     void updateMainFrameLayoutSize();
-    void updatePageDefinedViewportConstraints(const WebCore::ViewportDescription&);
+    void updatePageDefinedViewportConstraints(const blink::ViewportDescription&);
 
     // Start a system drag and drop operation.
     void startDragging(
-        WebCore::LocalFrame*,
+        blink::LocalFrame*,
         const WebDragData& dragData,
         WebDragOperationsMask mask,
         const WebImage& dragImage,
@@ -397,8 +397,8 @@ public:
     void popupOpened(PopupContainer*);
     void popupClosed(PopupContainer*);
     // PagePopupDriver functions.
-    virtual WebCore::PagePopup* openPagePopup(WebCore::PagePopupClient*, const WebCore::IntRect& originBoundsInRootView) OVERRIDE;
-    virtual void closePagePopup(WebCore::PagePopup*) OVERRIDE;
+    virtual blink::PagePopup* openPagePopup(blink::PagePopupClient*, const blink::IntRect& originBoundsInRootView) OVERRIDE;
+    virtual void closePagePopup(blink::PagePopup*) OVERRIDE;
 
     // Returns the input event we're currently processing. This is used in some
     // cases where the WebCore DOM event doesn't have the information we need.
@@ -407,12 +407,12 @@ public:
         return m_currentInputEvent;
     }
 
-    WebCore::GraphicsLayer* rootGraphicsLayer();
-    void setRootGraphicsLayer(WebCore::GraphicsLayer*);
+    blink::GraphicsLayer* rootGraphicsLayer();
+    void setRootGraphicsLayer(blink::GraphicsLayer*);
     void scheduleCompositingLayerSync();
     void scrollRootLayer();
-    WebCore::GraphicsLayerFactory* graphicsLayerFactory() const;
-    WebCore::RenderLayerCompositor* compositor() const;
+    blink::GraphicsLayerFactory* graphicsLayerFactory() const;
+    blink::RenderLayerCompositor* compositor() const;
     void registerForAnimations(WebLayer*);
     void scheduleAnimation();
 
@@ -423,8 +423,8 @@ public:
 
     // Returns true if the event leads to scrolling.
     static bool mapKeyCodeForScroll(int keyCode,
-                                   WebCore::ScrollDirection* scrollDirection,
-                                   WebCore::ScrollGranularity* scrollGranularity);
+                                   blink::ScrollDirection* scrollDirection,
+                                   blink::ScrollGranularity* scrollGranularity);
 
     // Called by a full frame plugin inside this view to inform it that its
     // zoom level has been updated.  The plugin should only call this function
@@ -433,21 +433,21 @@ public:
     void fullFramePluginZoomLevelChanged(double zoomLevel);
 
     void computeScaleAndScrollForBlockRect(const WebPoint& hitPoint, const WebRect& blockRect, float padding, float defaultScaleWhenAlreadyLegible, float& scale, WebPoint& scroll);
-    WebCore::Node* bestTapNode(const WebCore::PlatformGestureEvent& tapEvent);
-    void enableTapHighlightAtPoint(const WebCore::PlatformGestureEvent& tapEvent);
-    void enableTapHighlights(WillBeHeapVector<RawPtrWillBeMember<WebCore::Node> >&);
-    void computeScaleAndScrollForFocusedNode(WebCore::Node* focusedNode, float& scale, WebCore::IntPoint& scroll, bool& needAnimation);
+    blink::Node* bestTapNode(const blink::PlatformGestureEvent& tapEvent);
+    void enableTapHighlightAtPoint(const blink::PlatformGestureEvent& tapEvent);
+    void enableTapHighlights(WillBeHeapVector<RawPtrWillBeMember<blink::Node> >&);
+    void computeScaleAndScrollForFocusedNode(blink::Node* focusedNode, float& scale, blink::IntPoint& scroll, bool& needAnimation);
 
-    void animateDoubleTapZoom(const WebCore::IntPoint&);
+    void animateDoubleTapZoom(const blink::IntPoint&);
 
     void enableFakePageScaleAnimationForTesting(bool);
     bool fakeDoubleTapAnimationPendingForTesting() const { return m_doubleTapZoomPending; }
-    WebCore::IntPoint fakePageScaleAnimationTargetPositionForTesting() const { return m_fakePageScaleAnimationTargetPosition; }
+    blink::IntPoint fakePageScaleAnimationTargetPositionForTesting() const { return m_fakePageScaleAnimationTargetPosition; }
     float fakePageScaleAnimationPageScaleForTesting() const { return m_fakePageScaleAnimationPageScaleFactor; }
     bool fakePageScaleAnimationUseAnchorForTesting() const { return m_fakePageScaleAnimationUseAnchor; }
 
-    void enterFullScreenForElement(WebCore::Element*);
-    void exitFullScreenForElement(WebCore::Element*);
+    void enterFullScreenForElement(blink::Element*);
+    void exitFullScreenForElement(blink::Element*);
 
     void clearCompositedSelectionBounds();
 
@@ -477,7 +477,7 @@ public:
     // Returns the bounding box of the block type node touched by the WebRect.
     WebRect computeBlockBounds(const WebRect&, bool ignoreClipping);
 
-    WebCore::IntPoint clampOffsetAtScale(const WebCore::IntPoint& offset, float scale);
+    blink::IntPoint clampOffsetAtScale(const blink::IntPoint& offset, float scale);
 
     // Exposed for tests.
     WebVector<WebCompositionUnderline> compositionUnderlines() const;
@@ -496,13 +496,13 @@ private:
     float legibleScale() const;
     void refreshPageScaleFactorAfterLayout();
     void resumeTreeViewCommits();
-    void setUserAgentPageScaleConstraints(WebCore::PageScaleConstraints newConstraints);
+    void setUserAgentPageScaleConstraints(blink::PageScaleConstraints newConstraints);
     float clampPageScaleFactorToLimits(float) const;
-    WebCore::IntSize contentsSize() const;
+    blink::IntSize contentsSize() const;
 
     void resetSavedScrollAndScaleState();
 
-    void updateMainFrameScrollPosition(const WebCore::IntPoint& scrollPosition, bool programmaticScroll);
+    void updateMainFrameScrollPosition(const blink::IntPoint& scrollPosition, bool programmaticScroll);
 
     void performResize();
 
@@ -534,7 +534,7 @@ private:
 
     // Converts |pos| from window coordinates to contents coordinates and gets
     // the HitTestResult for it.
-    WebCore::HitTestResult hitTestResultForWindowPos(const WebCore::IntPoint&);
+    blink::HitTestResult hitTestResultForWindowPos(const blink::IntPoint&);
 
     // Consolidate some common code between starting a drag over a target and
     // updating a drag over a target. If we're starting a drag, |isEntering|
@@ -561,16 +561,16 @@ private:
     void pointerLockMouseEvent(const WebInputEvent&);
 
     // PageWidgetEventHandler functions
-    virtual void handleMouseLeave(WebCore::LocalFrame&, const WebMouseEvent&) OVERRIDE;
-    virtual void handleMouseDown(WebCore::LocalFrame&, const WebMouseEvent&) OVERRIDE;
-    virtual void handleMouseUp(WebCore::LocalFrame&, const WebMouseEvent&) OVERRIDE;
-    virtual bool handleMouseWheel(WebCore::LocalFrame&, const WebMouseWheelEvent&) OVERRIDE;
+    virtual void handleMouseLeave(blink::LocalFrame&, const WebMouseEvent&) OVERRIDE;
+    virtual void handleMouseDown(blink::LocalFrame&, const WebMouseEvent&) OVERRIDE;
+    virtual void handleMouseUp(blink::LocalFrame&, const WebMouseEvent&) OVERRIDE;
+    virtual bool handleMouseWheel(blink::LocalFrame&, const WebMouseWheelEvent&) OVERRIDE;
     virtual bool handleGestureEvent(const WebGestureEvent&) OVERRIDE;
     virtual bool handleKeyEvent(const WebKeyboardEvent&) OVERRIDE;
     virtual bool handleCharEvent(const WebKeyboardEvent&) OVERRIDE;
 
-    WebCore::InputMethodContext* inputMethodContext();
-    WebPlugin* focusedPluginIfInputMethodSupported(WebCore::LocalFrame*);
+    blink::InputMethodContext* inputMethodContext();
+    WebPlugin* focusedPluginIfInputMethodSupported(blink::LocalFrame*);
 
     WebViewClient* m_client; // Can be 0 (e.g. unittests, shared workers, etc.)
     WebAutofillClient* m_autofillClient;
@@ -590,11 +590,11 @@ private:
     // If true, automatically resize the render view around its content.
     bool m_shouldAutoResize;
     // The lower bound on the size when auto-resizing.
-    WebCore::IntSize m_minAutoSize;
+    blink::IntSize m_minAutoSize;
     // The upper bound on the size when auto-resizing.
-    WebCore::IntSize m_maxAutoSize;
+    blink::IntSize m_maxAutoSize;
 
-    OwnPtrWillBePersistent<WebCore::Page> m_page;
+    OwnPtrWillBePersistent<blink::Page> m_page;
 
     // An object that can be used to manipulate m_page->settings() without linking
     // against WebCore. This is lazily allocated the first time GetWebSettings()
@@ -602,7 +602,7 @@ private:
     OwnPtr<WebSettingsImpl> m_webSettings;
 
     // A copy of the web drop data object we received from the browser.
-    RefPtrWillBePersistent<WebCore::DataObject> m_currentDragData;
+    RefPtrWillBePersistent<blink::DataObject> m_currentDragData;
 
     // The point relative to the client area where the mouse was last pressed
     // down. This is used by the drag client to determine what was under the
@@ -630,7 +630,7 @@ private:
 
     // Used for testing purposes.
     bool m_enableFakePageScaleAnimationForTesting;
-    WebCore::IntPoint m_fakePageScaleAnimationTargetPosition;
+    blink::IntPoint m_fakePageScaleAnimationTargetPosition;
     float m_fakePageScaleAnimationPageScaleFactor;
     bool m_fakePageScaleAnimationUseAnchor;
 
@@ -683,15 +683,15 @@ private:
     OwnPtr<SettingsMap> m_inspectorSettingsMap;
 
     // If set, the (plugin) node which has mouse capture.
-    RefPtrWillBePersistent<WebCore::Node> m_mouseCaptureNode;
-    RefPtr<WebCore::UserGestureToken> m_mouseCaptureGestureToken;
+    RefPtrWillBePersistent<blink::Node> m_mouseCaptureNode;
+    RefPtr<blink::UserGestureToken> m_mouseCaptureGestureToken;
 
-    WebCore::IntRect m_rootLayerScrollDamage;
+    blink::IntRect m_rootLayerScrollDamage;
     WebLayerTreeView* m_layerTreeView;
     WebLayer* m_rootLayer;
-    WebCore::GraphicsLayer* m_rootGraphicsLayer;
-    WebCore::GraphicsLayer* m_rootTransformLayer;
-    OwnPtr<WebCore::GraphicsLayerFactory> m_graphicsLayerFactory;
+    blink::GraphicsLayer* m_rootGraphicsLayer;
+    blink::GraphicsLayer* m_rootTransformLayer;
+    OwnPtr<blink::GraphicsLayerFactory> m_graphicsLayerFactory;
     bool m_isAcceleratedCompositingActive;
     bool m_layerTreeViewCommitsDeferred;
     bool m_layerTreeViewClosed;

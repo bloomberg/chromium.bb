@@ -34,7 +34,7 @@
 #include "platform/Length.h"
 #include "wtf/Assertions.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -234,4 +234,4 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescri
     m_pageDefinedConstraints.layoutSize.setHeight(adjustedLayoutSizeHeight);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -33,7 +33,7 @@
 
 #include "platform/Timer.h"
 
-namespace WebCore {
+namespace blink {
 
 class V8GCForContextDispose {
 public:

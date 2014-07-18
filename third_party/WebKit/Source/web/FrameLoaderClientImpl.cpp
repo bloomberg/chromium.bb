@@ -97,7 +97,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -303,7 +303,7 @@ void FrameLoaderClientImpl::detachedFromParent()
     m_webFrame->setClient(0);
 
     client->frameDetached(m_webFrame);
-    // Clear our reference to WebCore::LocalFrame at the very end, in case the client
+    // Clear our reference to blink::LocalFrame at the very end, in case the client
     // refers to it.
     m_webFrame->setWebCoreFrame(nullptr);
 }
@@ -395,7 +395,7 @@ void FrameLoaderClientImpl::dispatchDidReceiveTitle(const String& title)
         m_webFrame->client()->didReceiveTitle(m_webFrame, title, WebTextDirectionLeftToRight);
 }
 
-void FrameLoaderClientImpl::dispatchDidChangeIcons(WebCore::IconType type)
+void FrameLoaderClientImpl::dispatchDidChangeIcons(blink::IconType type)
 {
     if (m_webFrame->client())
         m_webFrame->client()->didChangeIcon(m_webFrame, static_cast<WebIconURL::Type>(type));

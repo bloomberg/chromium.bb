@@ -9,7 +9,7 @@
 #include "bindings/core/v8/ScriptPromiseProperties.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class ScriptWrappable;
 
@@ -60,6 +60,6 @@ private:
 #undef V8_DECLARE_FIELD
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8HiddenValue_h

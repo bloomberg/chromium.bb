@@ -35,7 +35,7 @@
 #include "wtf/Forward.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class ScriptArguments;
 class ScriptCallStack;
@@ -53,6 +53,6 @@ PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStack(size_t maxStackSiz
 PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStackForConsole(ScriptState*, size_t maxStackSize = ScriptCallStack::maxCallStackSizeToCapture);
 PassRefPtrWillBeRawPtr<ScriptArguments> createScriptArguments(ScriptState*, const v8::FunctionCallbackInfo<v8::Value>& v8arguments, unsigned skipArgumentCount);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptCallStackFactory_h

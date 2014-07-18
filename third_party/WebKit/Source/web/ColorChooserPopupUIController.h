@@ -30,7 +30,7 @@
 #include "web/ColorChooserUIController.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 class ColorChooserClient;
 class PagePopup;
 }
@@ -39,10 +39,10 @@ namespace blink {
 
 class ChromeClientImpl;
 
-class ColorChooserPopupUIController FINAL : public ColorChooserUIController, public WebCore::PagePopupClient  {
+class ColorChooserPopupUIController FINAL : public ColorChooserUIController, public blink::PagePopupClient  {
 
 public:
-    ColorChooserPopupUIController(WebCore::LocalFrame*, ChromeClientImpl*, WebCore::ColorChooserClient*);
+    ColorChooserPopupUIController(blink::LocalFrame*, ChromeClientImpl*, blink::ColorChooserClient*);
     virtual ~ColorChooserPopupUIController();
 
     // ColorChooserUIController functions:
@@ -52,9 +52,9 @@ public:
     void endChooser() OVERRIDE;
 
     // PagePopupClient functions:
-    virtual WebCore::IntSize contentSize() OVERRIDE;
-    virtual void writeDocument(WebCore::SharedBuffer*) OVERRIDE;
-    virtual WebCore::Locale& locale() OVERRIDE;
+    virtual blink::IntSize contentSize() OVERRIDE;
+    virtual void writeDocument(blink::SharedBuffer*) OVERRIDE;
+    virtual blink::Locale& locale() OVERRIDE;
     virtual void setValueAndClosePopup(int, const String&) OVERRIDE;
     virtual void setValue(const String&) OVERRIDE;
     virtual void closePopup() OVERRIDE;
@@ -64,9 +64,9 @@ private:
     void openPopup();
 
     ChromeClientImpl* m_chromeClient;
-    WebCore::ColorChooserClient* m_client;
-    WebCore::PagePopup* m_popup;
-    WebCore::Locale& m_locale;
+    blink::ColorChooserClient* m_client;
+    blink::PagePopup* m_popup;
+    blink::Locale& m_locale;
 };
 }
 

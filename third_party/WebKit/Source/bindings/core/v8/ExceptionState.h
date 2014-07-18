@@ -37,7 +37,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 typedef int ExceptionCode;
 
@@ -140,6 +140,6 @@ public:
     virtual void throwRangeError(const String& message) OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ExceptionState_h

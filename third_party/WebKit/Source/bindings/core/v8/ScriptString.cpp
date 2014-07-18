@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/V8Binding.h"
 
-namespace WebCore {
+namespace blink {
 
 ScriptString::ScriptString()
     : m_isolate(0)
@@ -80,4 +80,4 @@ String ScriptString::flattenToString()
     return v8StringToWebCoreString<String>(v8Value(), Externalize);
 }
 
-} // namespace WebCore
+} // namespace blink

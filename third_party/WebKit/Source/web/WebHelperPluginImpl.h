@@ -39,9 +39,9 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 class HTMLObjectElement;
-} // namespace WebCore
+} // namespace blink
 
 namespace blink {
 
@@ -66,10 +66,10 @@ private:
     virtual ~WebHelperPluginImpl();
 
     bool initialize(const String& pluginType, WebLocalFrameImpl*);
-    void reallyDestroy(WebCore::Timer<WebHelperPluginImpl>*);
+    void reallyDestroy(blink::Timer<WebHelperPluginImpl>*);
 
-    WebCore::Timer<WebHelperPluginImpl> m_destructionTimer;
-    RefPtrWillBePersistent<WebCore::HTMLObjectElement> m_objectElement;
+    blink::Timer<WebHelperPluginImpl> m_destructionTimer;
+    RefPtrWillBePersistent<blink::HTMLObjectElement> m_objectElement;
     RefPtr<WebPluginContainerImpl> m_pluginContainer;
 };
 

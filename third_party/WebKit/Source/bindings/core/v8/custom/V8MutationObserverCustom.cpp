@@ -40,7 +40,7 @@
 #include "core/dom/MutationObserver.h"
 #include "core/dom/Node.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8MutationObserver::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -77,4 +77,4 @@ void V8MutationObserver::visitDOMWrapper(void* object, const v8::Persistent<v8::
     }
 }
 
-} // namespace WebCore
+} // namespace blink

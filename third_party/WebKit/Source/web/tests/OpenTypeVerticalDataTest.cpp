@@ -31,7 +31,7 @@
 #include "wtf/RefPtr.h"
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 

@@ -34,7 +34,7 @@
 #include "bindings/core/v8/PostMessage.h"
 #include "bindings/core/v8/V8Binding.h"
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: This stub should be replaced by generated code.
 void V8DedicatedWorkerGlobalScope::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -42,4 +42,4 @@ void V8DedicatedWorkerGlobalScope::postMessageMethodCustom(const v8::FunctionCal
     postMessageMethodCommon("WorkerGlobalScope", V8DedicatedWorkerGlobalScope::toNative(info.Holder()), info);
 }
 
-} // namespace WebCore
+} // namespace blink

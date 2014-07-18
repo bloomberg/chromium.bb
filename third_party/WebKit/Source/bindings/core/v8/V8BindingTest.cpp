@@ -15,7 +15,7 @@
 
 #define CHECK_TOV8VALUE(expected, value) check(expected, value, __FILE__, __LINE__)
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -195,4 +195,4 @@ TEST_F(V8ValueTraitsTest, v8Value)
 
 } // namespace
 
-} // namespace WebCore
+} // namespace blink

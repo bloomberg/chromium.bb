@@ -37,7 +37,7 @@
 
 namespace blink {
 
-WebMIDIPermissionRequest::WebMIDIPermissionRequest(WebCore::MIDIAccessInitializer* initializer)
+WebMIDIPermissionRequest::WebMIDIPermissionRequest(blink::MIDIAccessInitializer* initializer)
     : m_initializer(initializer)
 {
 }

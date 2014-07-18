@@ -53,7 +53,7 @@
 #include "bindings/core/v8/V8SVGPathSegMovetoRel.h"
 #include "bindings/core/v8/V8Window.h"
 
-namespace WebCore {
+namespace blink {
 
 v8::Handle<v8::Object> wrap(SVGPathSeg* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -102,4 +102,4 @@ v8::Handle<v8::Object> wrap(SVGPathSeg* impl, v8::Handle<v8::Object> creationCon
     return V8SVGPathSeg::createWrapper(impl, creationContext, isolate);
 }
 
-} // namespace WebCore
+} // namespace blink

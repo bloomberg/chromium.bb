@@ -74,14 +74,14 @@ public:
         m_frameFilePath.append("iframes_test.html");
     }
 
-    WebCore::KURL RegisterMockedUrl(const std::string& urlRoot, const WTF::String& filename)
+    blink::KURL RegisterMockedUrl(const std::string& urlRoot, const WTF::String& filename)
     {
         WebURLResponse response;
         response.initialize();
         response.setMIMEType("text/html");
         WTF::String localPath = m_baseFilePath;
         localPath.append(filename);
-        WebCore::KURL url = toKURL(urlRoot + filename.utf8().data());
+        blink::KURL url = toKURL(urlRoot + filename.utf8().data());
         Platform::current()->unitTestSupport()->registerMockedURL(url, response, localPath);
         return url;
     }
@@ -91,7 +91,7 @@ public:
         m_helper.initialize();
 
         std::string urlRoot = "http://www.test.com/";
-        WebCore::KURL url = RegisterMockedUrl(urlRoot, "iframes_test.html");
+        blink::KURL url = RegisterMockedUrl(urlRoot, "iframes_test.html");
         const char* iframeSupportFiles[] = {
             "invisible_iframe.html",
             "visible_iframe.html",
@@ -238,7 +238,7 @@ public:
             id.append("-Exposed");
         id.append(".html");
 
-        WebCore::KURL url = toKURL(id);
+        blink::KURL url = toKURL(id);
         WebURLRequest request;
         request.initialize();
         request.setURL(url);
@@ -293,7 +293,7 @@ protected:
 // Test a successful same-origin URL load.
 TEST_F(AssociatedURLLoaderTest, SameOriginSuccess)
 {
-    WebCore::KURL url = toKURL("http://www.test.com/SameOriginSuccess.html");
+    blink::KURL url = toKURL("http://www.test.com/SameOriginSuccess.html");
     WebURLRequest request;
     request.initialize();
     request.setURL(url);
@@ -317,7 +317,7 @@ TEST_F(AssociatedURLLoaderTest, SameOriginSuccess)
 TEST_F(AssociatedURLLoaderTest, SameOriginRestriction)
 {
     // This is cross-origin since the frame was loaded from www.test.com.
-    WebCore::KURL url = toKURL("http://www.other.com/SameOriginRestriction.html");
+    blink::KURL url = toKURL("http://www.other.com/SameOriginRestriction.html");
     WebURLRequest request;
     request.initialize();
     request.setURL(url);
@@ -328,7 +328,7 @@ TEST_F(AssociatedURLLoaderTest, SameOriginRestriction)
 TEST_F(AssociatedURLLoaderTest, CrossOriginSuccess)
 {
     // This is cross-origin since the frame was loaded from www.test.com.
-    WebCore::KURL url = toKURL("http://www.other.com/CrossOriginSuccess.html");
+    blink::KURL url = toKURL("http://www.other.com/CrossOriginSuccess.html");
     WebURLRequest request;
     request.initialize();
     request.setURL(url);
@@ -354,7 +354,7 @@ TEST_F(AssociatedURLLoaderTest, CrossOriginSuccess)
 TEST_F(AssociatedURLLoaderTest, CrossOriginWithAccessControlSuccess)
 {
     // This is cross-origin since the frame was loaded from www.test.com.
-    WebCore::KURL url = toKURL("http://www.other.com/CrossOriginWithAccessControlSuccess.html");
+    blink::KURL url = toKURL("http://www.other.com/CrossOriginWithAccessControlSuccess.html");
     WebURLRequest request;
     request.initialize();
     request.setURL(url);
@@ -381,7 +381,7 @@ TEST_F(AssociatedURLLoaderTest, CrossOriginWithAccessControlSuccess)
 TEST_F(AssociatedURLLoaderTest, CrossOriginWithAccessControlFailure)
 {
     // This is cross-origin since the frame was loaded from www.test.com.
-    WebCore::KURL url = toKURL("http://www.other.com/CrossOriginWithAccessControlFailure.html");
+    blink::KURL url = toKURL("http://www.other.com/CrossOriginWithAccessControlFailure.html");
     WebURLRequest request;
     request.initialize();
     request.setURL(url);
@@ -414,7 +414,7 @@ TEST_F(AssociatedURLLoaderTest, CrossOriginWithAccessControlFailure)
 TEST_F(AssociatedURLLoaderTest, CrossOriginWithAccessControlFailureBadStatusCode)
 {
     // This is cross-origin since the frame was loaded from www.test.com.
-    WebCore::KURL url = toKURL("http://www.other.com/CrossOriginWithAccessControlFailure.html");
+    blink::KURL url = toKURL("http://www.other.com/CrossOriginWithAccessControlFailure.html");
     WebURLRequest request;
     request.initialize();
     request.setURL(url);
@@ -443,9 +443,9 @@ TEST_F(AssociatedURLLoaderTest, CrossOriginWithAccessControlFailureBadStatusCode
 // Test a same-origin URL redirect and load.
 TEST_F(AssociatedURLLoaderTest, RedirectSuccess)
 {
-    WebCore::KURL url = toKURL("http://www.test.com/RedirectSuccess.html");
+    blink::KURL url = toKURL("http://www.test.com/RedirectSuccess.html");
     char redirect[] = "http://www.test.com/RedirectSuccess2.html";  // Same-origin
-    WebCore::KURL redirectURL = toKURL(redirect);
+    blink::KURL redirectURL = toKURL(redirect);
 
     WebURLRequest request;
     request.initialize();
@@ -482,9 +482,9 @@ TEST_F(AssociatedURLLoaderTest, RedirectSuccess)
 // Disabled, http://crbug.com/240912 .
 TEST_F(AssociatedURLLoaderTest, DISABLED_RedirectCrossOriginWithAccessControlFailure)
 {
-    WebCore::KURL url = toKURL("http://www.test.com/RedirectCrossOriginWithAccessControlFailure.html");
+    blink::KURL url = toKURL("http://www.test.com/RedirectCrossOriginWithAccessControlFailure.html");
     char redirect[] = "http://www.other.com/RedirectCrossOriginWithAccessControlFailure.html";  // Cross-origin
-    WebCore::KURL redirectURL = toKURL(redirect);
+    blink::KURL redirectURL = toKURL(redirect);
 
     WebURLRequest request;
     request.initialize();
@@ -514,9 +514,9 @@ TEST_F(AssociatedURLLoaderTest, DISABLED_RedirectCrossOriginWithAccessControlFai
 // Test that a cross origin redirect response with CORS headers that allow the requesting origin succeeds.
 TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlSuccess)
 {
-    WebCore::KURL url = toKURL("http://www.test.com/RedirectCrossOriginWithAccessControlSuccess.html");
+    blink::KURL url = toKURL("http://www.test.com/RedirectCrossOriginWithAccessControlSuccess.html");
     char redirect[] = "http://www.other.com/RedirectCrossOriginWithAccessControlSuccess.html";  // Cross-origin
-    WebCore::KURL redirectURL = toKURL(redirect);
+    blink::KURL redirectURL = toKURL(redirect);
 
     WebURLRequest request;
     request.initialize();
@@ -641,7 +641,7 @@ TEST_F(AssociatedURLLoaderTest, CrossOriginHeaderAllowResponseHeaders)
 {
     WebURLRequest request;
     request.initialize();
-    WebCore::KURL url = toKURL("http://www.other.com/CrossOriginHeaderAllowResponseHeaders.html");
+    blink::KURL url = toKURL("http://www.other.com/CrossOriginHeaderAllowResponseHeaders.html");
     request.setURL(url);
 
     WebString headerNameString(WebString::fromUTF8("non-whitelisted"));

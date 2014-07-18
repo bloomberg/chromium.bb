@@ -36,7 +36,7 @@
 #include "core/page/EventHandler.h"
 #include "core/rendering/HitTestResult.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

@@ -11,7 +11,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 
@@ -152,6 +152,6 @@ void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::trace(Visito
     ScriptPromisePropertyBase::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptPromiseProperty_h

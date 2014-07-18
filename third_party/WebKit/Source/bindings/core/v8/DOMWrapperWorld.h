@@ -40,7 +40,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class DOMDataStore;
 class ExecutionContext;
@@ -136,6 +136,6 @@ private:
     OwnPtr<DOMDataStore> m_domDataStore;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMWrapperWorld_h

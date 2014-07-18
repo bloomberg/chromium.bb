@@ -31,7 +31,7 @@
 #include "public/web/WebColorChooserClient.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 class ColorChooserClient;
 class LocalFrame;
 }
@@ -40,15 +40,15 @@ namespace blink {
 
 class WebColorChooser;
 
-class ColorChooserUIController : public WebColorChooserClient, public WebCore::ColorChooser {
+class ColorChooserUIController : public WebColorChooserClient, public blink::ColorChooser {
 public:
-    ColorChooserUIController(WebCore::LocalFrame*, WebCore::ColorChooserClient*);
+    ColorChooserUIController(blink::LocalFrame*, blink::ColorChooserClient*);
     virtual ~ColorChooserUIController();
 
     virtual void openUI();
 
     // ColorChooser functions:
-    virtual void setSelectedColor(const WebCore::Color&) OVERRIDE FINAL;
+    virtual void setSelectedColor(const blink::Color&) OVERRIDE FINAL;
     virtual void endChooser() OVERRIDE;
 
     // WebColorChooserClient functions:
@@ -61,8 +61,8 @@ protected:
 
 private:
 
-    WebCore::LocalFrame* m_frame;
-    WebCore::ColorChooserClient* m_client;
+    blink::LocalFrame* m_frame;
+    blink::ColorChooserClient* m_client;
 };
 
 }

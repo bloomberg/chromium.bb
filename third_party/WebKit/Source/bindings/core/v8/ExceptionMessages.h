@@ -35,7 +35,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Decimal;
 
@@ -159,6 +159,6 @@ private:
 template <> String ExceptionMessages::formatNumber<float>(float number);
 template <> String ExceptionMessages::formatNumber<double>(double number);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ExceptionMessages_h

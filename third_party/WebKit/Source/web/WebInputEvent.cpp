@@ -36,7 +36,7 @@
 #include "wtf/StringExtras.h"
 #include <ctype.h>
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

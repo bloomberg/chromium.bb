@@ -34,7 +34,7 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "platform/ScriptForbiddenScope.h"
 
-namespace WebCore {
+namespace blink {
 
 ScriptRegexp::ScriptRegexp(const String& pattern, TextCaseSensitivity caseSensitivity, MultilineMode multilineMode)
 {
@@ -104,4 +104,4 @@ int ScriptRegexp::match(const String& string, int startFrom, int* matchLength) c
     return matchOffset + startFrom;
 }
 
-} // namespace WebCore
+} // namespace blink

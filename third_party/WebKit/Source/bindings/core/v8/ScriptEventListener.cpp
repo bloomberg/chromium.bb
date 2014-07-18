@@ -43,7 +43,7 @@
 #include "core/frame/LocalFrame.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<V8LazyEventListener> createAttributeEventListener(Node* node, const QualifiedName& name, const AtomicString& value, const AtomicString& eventParameterName)
 {
@@ -179,4 +179,4 @@ bool eventListenerHandlerLocation(Document* document, EventListener* listener, S
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

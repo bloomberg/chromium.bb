@@ -38,7 +38,7 @@
 #include "wtf/PassRefPtr.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class DOMException;
 
@@ -135,7 +135,7 @@ private:
     ScriptValue m_promise;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // ScriptPromise_h

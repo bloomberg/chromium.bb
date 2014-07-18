@@ -30,30 +30,30 @@
 #include "platform/heap/Handle.h"
 #include "public/web/WebGeolocationController.h"
 
-namespace WebCore {
+namespace blink {
 class GeolocationPosition;
 }
 
 namespace blink {
 class WebGeolocationClient;
 
-class GeolocationClientProxy FINAL : public WebCore::GeolocationClient {
+class GeolocationClientProxy FINAL : public blink::GeolocationClient {
 public:
     GeolocationClientProxy(WebGeolocationClient* client);
     virtual ~GeolocationClientProxy();
-    void setController(WebCore::GeolocationController *controller);
+    void setController(blink::GeolocationController *controller);
     virtual void geolocationDestroyed() OVERRIDE;
     virtual void startUpdating() OVERRIDE;
     virtual void stopUpdating() OVERRIDE;
     virtual void setEnableHighAccuracy(bool) OVERRIDE;
-    virtual WebCore::GeolocationPosition* lastPosition() OVERRIDE;
+    virtual blink::GeolocationPosition* lastPosition() OVERRIDE;
 
-    virtual void requestPermission(WebCore::Geolocation*) OVERRIDE;
-    virtual void cancelPermissionRequest(WebCore::Geolocation*) OVERRIDE;
+    virtual void requestPermission(blink::Geolocation*) OVERRIDE;
+    virtual void cancelPermissionRequest(blink::Geolocation*) OVERRIDE;
 
 private:
     WebGeolocationClient* m_client;
-    WebCore::Persistent<WebCore::GeolocationPosition> m_lastPosition;
+    blink::Persistent<blink::GeolocationPosition> m_lastPosition;
 };
 
 } // namespace blink

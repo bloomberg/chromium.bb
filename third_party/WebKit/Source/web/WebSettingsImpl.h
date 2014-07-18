@@ -33,7 +33,7 @@
 
 #include "public/web/WebSettings.h"
 
-namespace WebCore {
+namespace blink {
 class InspectorController;
 class Settings;
 }
@@ -42,7 +42,7 @@ namespace blink {
 
 class WebSettingsImpl FINAL : public WebSettings {
 public:
-    explicit WebSettingsImpl(WebCore::Settings*, WebCore::InspectorController*);
+    explicit WebSettingsImpl(blink::Settings*, blink::InspectorController*);
     virtual ~WebSettingsImpl() { }
 
     virtual bool mainFrameResizesAreOrientationChanges() const OVERRIDE;
@@ -188,8 +188,8 @@ public:
     bool clobberUserAgentInitialScaleQuirk() const { return m_clobberUserAgentInitialScaleQuirk; }
 
 private:
-    WebCore::Settings* m_settings;
-    WebCore::InspectorController* m_inspectorController;
+    blink::Settings* m_settings;
+    blink::InspectorController* m_inspectorController;
     bool m_showFPSCounter;
     bool m_showPaintRects;
     bool m_renderVSyncNotificationEnabled;

@@ -33,7 +33,7 @@
 #include <bindings/npruntime.h>
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 // Convert a V8 Value of any type (string, bool, object, etc) to a NPVariant.
 void convertV8ObjectToNPVariant(v8::Local<v8::Value>, NPObject*, NPVariant*, v8::Isolate*);
@@ -61,6 +61,6 @@ private:
     v8::TryCatch m_tryCatch;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8NPUtils_h

@@ -40,7 +40,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<V8CustomXPathNSResolver> V8CustomXPathNSResolver::create(v8::Handle<v8::Object> resolver, v8::Isolate* isolate)
 {
@@ -95,4 +95,4 @@ void V8CustomXPathNSResolver::trace(Visitor* visitor)
     XPathNSResolver::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

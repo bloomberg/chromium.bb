@@ -29,7 +29,7 @@
 #if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "platform/DateTimeChooser.h"
 
-namespace WebCore {
+namespace blink {
 class DateTimeChooserClient;
 }
 
@@ -39,9 +39,9 @@ class ChromeClientImpl;
 class WebString;
 class WebViewClient;
 
-class ExternalDateTimeChooser FINAL : public WebCore::DateTimeChooser {
+class ExternalDateTimeChooser FINAL : public blink::DateTimeChooser {
 public:
-    static PassRefPtrWillBeRawPtr<ExternalDateTimeChooser> create(ChromeClientImpl*, WebViewClient*, WebCore::DateTimeChooserClient*, const WebCore::DateTimeChooserParameters&);
+    static PassRefPtrWillBeRawPtr<ExternalDateTimeChooser> create(ChromeClientImpl*, WebViewClient*, blink::DateTimeChooserClient*, const blink::DateTimeChooserParameters&);
     virtual ~ExternalDateTimeChooser();
 
     // The following functions are for DateTimeChooserCompletion.
@@ -50,13 +50,13 @@ public:
     void didCancelChooser();
 
 private:
-    ExternalDateTimeChooser(WebCore::DateTimeChooserClient*);
-    bool openDateTimeChooser(ChromeClientImpl*, WebViewClient*, const WebCore::DateTimeChooserParameters&);
+    ExternalDateTimeChooser(blink::DateTimeChooserClient*);
+    bool openDateTimeChooser(ChromeClientImpl*, WebViewClient*, const blink::DateTimeChooserParameters&);
 
     // DateTimeChooser function:
     virtual void endChooser() OVERRIDE;
 
-    WebCore::DateTimeChooserClient* m_client;
+    blink::DateTimeChooserClient* m_client;
 };
 
 }

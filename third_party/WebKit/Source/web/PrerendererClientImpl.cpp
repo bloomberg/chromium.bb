@@ -44,7 +44,7 @@ PrerendererClientImpl::PrerendererClientImpl(WebPrerendererClient* client)
 {
 }
 
-void PrerendererClientImpl::willAddPrerender(WebCore::Prerender* prerender)
+void PrerendererClientImpl::willAddPrerender(blink::Prerender* prerender)
 {
     if (!m_client)
         return;

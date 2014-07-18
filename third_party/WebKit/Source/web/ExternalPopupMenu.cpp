@@ -44,7 +44,7 @@
 #include "public/web/WebViewClient.h"
 #include "web/WebViewImpl.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -197,7 +197,7 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo* info)
         popupItem.enabled = m_popupMenuClient->itemIsEnabled(i);
         popupItem.checked = m_popupMenuClient->itemIsSelected(i);
         PopupMenuStyle style = m_popupMenuClient->itemStyle(i);
-        if (style.textDirection() == WebCore::RTL)
+        if (style.textDirection() == blink::RTL)
             popupItem.textDirection = WebTextDirectionRightToLeft;
         else
             popupItem.textDirection = WebTextDirectionLeftToRight;
@@ -207,7 +207,7 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo* info)
     info->itemHeight = m_popupMenuClient->menuStyle().font().fontMetrics().height();
     info->itemFontSize = static_cast<int>(m_popupMenuClient->menuStyle().font().fontDescription().computedSize());
     info->selectedIndex = m_popupMenuClient->selectedIndex();
-    info->rightAligned = m_popupMenuClient->menuStyle().textDirection() == WebCore::RTL;
+    info->rightAligned = m_popupMenuClient->menuStyle().textDirection() == blink::RTL;
     info->allowMultipleSelection = m_popupMenuClient->multiple();
     info->items.swap(items);
 }

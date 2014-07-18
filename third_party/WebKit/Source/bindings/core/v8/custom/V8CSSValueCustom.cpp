@@ -36,7 +36,7 @@
 #include "bindings/core/v8/V8WebKitCSSFilterValue.h"
 #include "bindings/core/v8/V8WebKitCSSTransformValue.h"
 
-namespace WebCore {
+namespace blink {
 
 v8::Handle<v8::Object> wrap(CSSValue* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -52,4 +52,4 @@ v8::Handle<v8::Object> wrap(CSSValue* impl, v8::Handle<v8::Object> creationConte
     return V8CSSValue::createWrapper(impl, creationContext, isolate);
 }
 
-} // namespace WebCore
+} // namespace blink

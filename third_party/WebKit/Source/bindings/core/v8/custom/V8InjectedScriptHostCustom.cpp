@@ -61,7 +61,7 @@
 #include "core/inspector/JavaScriptCallFrame.h"
 #include "platform/JSONValues.h"
 
-namespace WebCore {
+namespace blink {
 
 Node* InjectedScriptHost::scriptValueAsNode(ScriptState* scriptState, ScriptValue value)
 {
@@ -494,4 +494,4 @@ void V8InjectedScriptHost::suppressWarningsAndCallMethodCustom(const v8::Functio
     v8SetReturnValue(info, result);
 }
 
-} // namespace WebCore
+} // namespace blink

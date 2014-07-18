@@ -44,7 +44,7 @@
 #include "web/WebInputEventConversion.h"
 #include "wtf/CurrentTime.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

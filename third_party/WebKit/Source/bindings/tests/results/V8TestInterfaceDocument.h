@@ -14,7 +14,7 @@
 #include "bindings/tests/v8/V8Document.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class V8TestInterfaceDocument {
 public:

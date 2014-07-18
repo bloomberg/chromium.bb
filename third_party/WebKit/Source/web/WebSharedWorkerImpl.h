@@ -45,7 +45,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/WeakPtr.h"
 
-namespace WebCore {
+namespace blink {
 class ResourceResponse;
 }
 
@@ -60,34 +60,34 @@ class WebView;
 class WebWorker;
 class WebSharedWorkerClient;
 
-// This class is used by the worker process code to talk to the WebCore::SharedWorker implementation.
+// This class is used by the worker process code to talk to the blink::SharedWorker implementation.
 // It can't use it directly since it uses WebKit types, so this class converts the data types.
-// When the WebCore::SharedWorker object wants to call WebCore::WorkerReportingProxy, this class will
+// When the blink::SharedWorker object wants to call blink::WorkerReportingProxy, this class will
 // convert to Chrome data types first and then call the supplied WebCommonWorkerClient.
 class WebSharedWorkerImpl FINAL
-    : public WebCore::WorkerReportingProxy
-    , public WebCore::WorkerLoaderProxy
+    : public blink::WorkerReportingProxy
+    , public blink::WorkerLoaderProxy
     , public WebFrameClient
     , public WebSharedWorker {
 public:
     explicit WebSharedWorkerImpl(WebSharedWorkerClient*);
 
-    // WebCore::WorkerReportingProxy methods:
+    // blink::WorkerReportingProxy methods:
     virtual void reportException(
         const WTF::String&, int, int, const WTF::String&) OVERRIDE;
     virtual void reportConsoleMessage(
-        WebCore::MessageSource, WebCore::MessageLevel,
+        blink::MessageSource, blink::MessageLevel,
         const WTF::String&, int, const WTF::String&) OVERRIDE;
     virtual void postMessageToPageInspector(const WTF::String&) OVERRIDE;
     virtual void updateInspectorStateCookie(const WTF::String&) OVERRIDE;
-    virtual void workerGlobalScopeStarted(WebCore::WorkerGlobalScope*) OVERRIDE;
+    virtual void workerGlobalScopeStarted(blink::WorkerGlobalScope*) OVERRIDE;
     virtual void workerGlobalScopeClosed() OVERRIDE;
     virtual void workerGlobalScopeDestroyed() OVERRIDE;
     virtual void willDestroyWorkerGlobalScope() OVERRIDE { }
 
-    // WebCore::WorkerLoaderProxy methods:
-    virtual void postTaskToLoader(PassOwnPtr<WebCore::ExecutionContextTask>) OVERRIDE;
-    virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<WebCore::ExecutionContextTask>) OVERRIDE;
+    // blink::WorkerLoaderProxy methods:
+    virtual void postTaskToLoader(PassOwnPtr<blink::ExecutionContextTask>) OVERRIDE;
+    virtual bool postTaskToWorkerGlobalScope(PassOwnPtr<blink::ExecutionContextTask>) OVERRIDE;
 
     // WebFrameClient methods to support resource loading thru the 'shadow page'.
     virtual WebApplicationCacheHost* createApplicationCacheHost(WebLocalFrame*, WebApplicationCacheHostClient*) OVERRIDE;
@@ -113,8 +113,8 @@ private:
 
     WebSharedWorkerClient* client() { return m_client->get(); }
 
-    void setWorkerThread(PassRefPtr<WebCore::WorkerThread> thread) { m_workerThread = thread; }
-    WebCore::WorkerThread* workerThread() { return m_workerThread.get(); }
+    void setWorkerThread(PassRefPtr<blink::WorkerThread> thread) { m_workerThread = thread; }
+    blink::WorkerThread* workerThread() { return m_workerThread.get(); }
 
     // Shuts down the worker thread.
     void stopWorkerThread();
@@ -125,18 +125,18 @@ private:
     void didReceiveScriptLoaderResponse();
     void onScriptLoaderFinished();
 
-    static void connectTask(WebCore::ExecutionContext*, PassOwnPtr<WebMessagePortChannel>);
+    static void connectTask(blink::ExecutionContext*, PassOwnPtr<WebMessagePortChannel>);
     // Tasks that are run on the main thread.
     void workerGlobalScopeClosedOnMainThread();
     void workerGlobalScopeDestroyedOnMainThread();
 
     // 'shadow page' - created to proxy loading requests from the worker.
-    RefPtrWillBePersistent<WebCore::ExecutionContext> m_loadingDocument;
+    RefPtrWillBePersistent<blink::ExecutionContext> m_loadingDocument;
     WebView* m_webView;
     WebFrame* m_mainFrame;
     bool m_askedToTerminate;
 
-    RefPtr<WebCore::WorkerThread> m_workerThread;
+    RefPtr<blink::WorkerThread> m_workerThread;
 
     // This one's initialized and bound to the main thread.
     RefPtr<WeakReference<WebSharedWorkerClient> > m_client;

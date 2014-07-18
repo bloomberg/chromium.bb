@@ -55,7 +55,7 @@
 #include "web/WebViewImpl.h"
 #include <limits>
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -493,7 +493,7 @@ void PopupContainer::getPopupMenuInfo(WebPopupMenuInfo* info)
 
         outputItem.label = inputItem.label;
         outputItem.enabled = inputItem.enabled;
-        if (inputItem.textDirection == WebCore::RTL)
+        if (inputItem.textDirection == blink::RTL)
             outputItem.textDirection = WebTextDirectionRightToLeft;
         else
             outputItem.textDirection = WebTextDirectionLeftToRight;

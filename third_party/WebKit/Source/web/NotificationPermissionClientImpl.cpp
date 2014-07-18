@@ -12,7 +12,7 @@
 #include "public/web/WebNotificationPermissionCallback.h"
 #include "web/WebLocalFrameImpl.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

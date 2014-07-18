@@ -38,7 +38,7 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -422,7 +422,7 @@ void WebSettingsImpl::setShowPaintRects(bool show)
 
 void WebSettingsImpl::setEditingBehavior(EditingBehavior behavior)
 {
-    m_settings->setEditingBehaviorType(static_cast<WebCore::EditingBehaviorType>(behavior));
+    m_settings->setEditingBehaviorType(static_cast<blink::EditingBehaviorType>(behavior));
 }
 
 void WebSettingsImpl::setAcceleratedCompositingEnabled(bool enabled)

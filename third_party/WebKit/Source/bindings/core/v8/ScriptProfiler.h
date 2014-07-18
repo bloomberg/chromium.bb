@@ -38,7 +38,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExternalStringVisitor;
 class WrappedNodeVisitor;
@@ -81,6 +81,6 @@ public:
     static void setIdle(bool isIdle);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptProfiler_h

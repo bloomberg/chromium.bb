@@ -35,7 +35,7 @@
 #include "bindings/core/v8/custom/V8BlobCustomHelpers.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8File::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -118,4 +118,4 @@ void V8File::lastModifiedAttributeGetterCustom(const v8::PropertyCallbackInfo<v8
     v8SetReturnValue(info, floor(lastModified));
 }
 
-} // namespace WebCore
+} // namespace blink

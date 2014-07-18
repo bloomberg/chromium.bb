@@ -46,7 +46,7 @@
 #include "public/web/WebSecurityOrigin.h"
 #include "wtf/Vector.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

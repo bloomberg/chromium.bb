@@ -44,7 +44,7 @@
 #include "wtf/text/AtomicString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class LocalDOMWindow;
 class LocalFrame;
@@ -116,6 +116,6 @@ private:
     ScopedPersistent<v8::Object> m_document;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8WindowShell_h

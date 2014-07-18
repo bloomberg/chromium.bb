@@ -36,7 +36,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class ScriptString FINAL {
 public:
@@ -61,6 +61,6 @@ private:
     RefPtr<SharedPersistent<v8::String> > m_string;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptString_h

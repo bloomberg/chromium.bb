@@ -36,13 +36,13 @@
 namespace blink {
 class WebViewImpl;
 
-class BackForwardClientImpl FINAL : public WebCore::BackForwardClient {
+class BackForwardClientImpl FINAL : public blink::BackForwardClient {
 public:
     explicit BackForwardClientImpl(WebViewImpl*);
     virtual ~BackForwardClientImpl();
 
 private:
-    // WebCore::BackForwardList methods:
+    // blink::BackForwardList methods:
     virtual int backListCount() OVERRIDE;
     virtual int forwardListCount() OVERRIDE;
     virtual int backForwardListCount() OVERRIDE;

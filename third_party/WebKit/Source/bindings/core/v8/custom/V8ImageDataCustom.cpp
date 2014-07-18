@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/custom/V8Uint8ClampedArrayCustom.h"
 
-namespace WebCore {
+namespace blink {
 
 v8::Handle<v8::Object> wrap(ImageData* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -52,4 +52,4 @@ v8::Handle<v8::Object> wrap(ImageData* impl, v8::Handle<v8::Object> creationCont
     return wrapper;
 }
 
-} // namespace WebCore
+} // namespace blink

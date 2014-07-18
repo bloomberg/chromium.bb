@@ -57,7 +57,7 @@
 #include "modules/speech/SpeechRecognitionResultList.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 Dictionary::Dictionary()
     : m_isolate(0)
@@ -96,7 +96,7 @@ bool Dictionary::isUndefinedOrNull() const
 {
     if (m_options.IsEmpty())
         return true;
-    return WebCore::isUndefinedOrNull(m_options);
+    return blink::isUndefinedOrNull(m_options);
 }
 
 bool Dictionary::hasProperty(const String& key) const
@@ -141,7 +141,7 @@ bool Dictionary::get(const String& key, v8::Local<v8::Value>& value) const
 bool Dictionary::getWithUndefinedOrNullCheck(const String& key, String& value) const
 {
     v8::Local<v8::Value> v8Value;
-    if (!getKey(key, v8Value) || WebCore::isUndefinedOrNull(v8Value))
+    if (!getKey(key, v8Value) || blink::isUndefinedOrNull(v8Value))
         return false;
 
     TOSTRING_DEFAULT(V8StringResource<>, stringValue, v8Value, false);
@@ -152,7 +152,7 @@ bool Dictionary::getWithUndefinedOrNullCheck(const String& key, String& value) c
 bool Dictionary::getWithUndefinedOrNullCheck(const String& key, RefPtrWillBeMember<Element>& value) const
 {
     v8::Local<v8::Value> v8Value;
-    if (!getKey(key, v8Value) || WebCore::isUndefinedOrNull(v8Value))
+    if (!getKey(key, v8Value) || blink::isUndefinedOrNull(v8Value))
         return false;
 
     value = V8Element::toNativeWithTypeCheck(m_isolate, v8Value);
@@ -162,7 +162,7 @@ bool Dictionary::getWithUndefinedOrNullCheck(const String& key, RefPtrWillBeMemb
 bool Dictionary::getWithUndefinedOrNullCheck(const String& key, RefPtr<Path2D>& value) const
 {
     v8::Local<v8::Value> v8Value;
-    if (!getKey(key, v8Value) || WebCore::isUndefinedOrNull(v8Value))
+    if (!getKey(key, v8Value) || blink::isUndefinedOrNull(v8Value))
         return false;
 
     value = V8Path2D::toNativeWithTypeCheck(m_isolate, v8Value);
@@ -220,7 +220,7 @@ bool Dictionary::convert(ConversionContext& context, const String& key, Dictiona
     if (v8Value->IsObject())
         return get(key, value);
 
-    if (context.isNullable() && WebCore::isUndefinedOrNull(v8Value))
+    if (context.isNullable() && blink::isUndefinedOrNull(v8Value))
         return true;
 
     context.throwTypeError(ExceptionMessages::incorrectPropertyType(key, "does not have a Dictionary type."));
@@ -301,4 +301,4 @@ void Dictionary::ConversionContext::throwTypeError(const String& detail)
     exceptionState().throwTypeError(detail);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -43,7 +43,7 @@
 
 using namespace WTF;
 
-namespace WebCore {
+namespace blink {
 
 void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -115,4 +115,4 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
     exceptionState.throwIfNeeded();
 }
 
-} // namespace WebCore
+} // namespace blink

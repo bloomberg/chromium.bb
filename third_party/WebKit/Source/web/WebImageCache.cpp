@@ -33,7 +33,7 @@
 
 #include "platform/graphics/ImageDecodingStore.h"
 
-using WebCore::ImageDecodingStore;
+using blink::ImageDecodingStore;
 
 namespace blink {
 

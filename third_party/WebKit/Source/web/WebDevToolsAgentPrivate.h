@@ -33,7 +33,7 @@
 
 #include "public/web/WebDevToolsAgent.h"
 
-namespace WebCore {
+namespace blink {
 class Page;
 }
 
@@ -52,7 +52,7 @@ public:
     virtual void didCreateScriptContext(WebLocalFrameImpl*, int worldId) = 0;
 
     // DevTools may handle input event from WebViewImpl.
-    virtual bool handleInputEvent(WebCore::Page*, const WebInputEvent&) = 0;
+    virtual bool handleInputEvent(blink::Page*, const WebInputEvent&) = 0;
 
     // Notification from WebViewImpl after layout.
     virtual void didLayout() = 0;

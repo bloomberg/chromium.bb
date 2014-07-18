@@ -15,7 +15,7 @@
 #include "core/PrivateScriptSourcesForTesting.h"
 #endif
 
-namespace WebCore {
+namespace blink {
 
 static v8::Handle<v8::Value> compilePrivateScript(v8::Isolate* isolate, String className)
 {
@@ -188,4 +188,4 @@ bool PrivateScriptRunner::throwDOMExceptionInPrivateScriptIfNeeded(v8::Isolate* 
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

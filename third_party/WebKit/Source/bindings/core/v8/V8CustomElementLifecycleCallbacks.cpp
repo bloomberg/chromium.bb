@@ -42,7 +42,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 #define CALLBACK_LIST(V)                  \
     V(created, Created)                   \
@@ -260,4 +260,4 @@ void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function
     ScriptController::callFunction(executionContext(), callback, receiver, 0, 0, isolate);
 }
 
-} // namespace WebCore
+} // namespace blink

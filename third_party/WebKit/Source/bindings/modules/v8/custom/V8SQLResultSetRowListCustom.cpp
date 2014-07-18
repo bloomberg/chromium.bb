@@ -37,7 +37,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "modules/webdatabase/SQLResultSetRowList.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8SQLResultSetRowList::itemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -90,4 +90,4 @@ void V8SQLResultSetRowList::itemMethodCustom(const v8::FunctionCallbackInfo<v8::
     v8SetReturnValue(info, item);
 }
 
-} // namespace WebCore
+} // namespace blink

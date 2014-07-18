@@ -41,7 +41,7 @@
 #include "public/web/WebSerializedScriptValue.h"
 #include "web/WebLocalFrameImpl.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

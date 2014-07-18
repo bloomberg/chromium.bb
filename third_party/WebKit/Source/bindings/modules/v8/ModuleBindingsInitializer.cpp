@@ -14,7 +14,7 @@
 #include "modules/EventTargetModulesInterfaces.h"
 #include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 
-namespace WebCore {
+namespace blink {
 
 #define TRY_TO_WRAP_WITH_INTERFACE(interfaceName) \
     if (EventNames::interfaceName == desiredInterface) \
@@ -61,4 +61,4 @@ void ModuleBindingsInitializer::init()
     ModuleProxy::moduleProxy().registerDidLeaveScriptContextForRecursionScope(didLeaveScriptContextForModule);
 }
 
-} // namespace WebCore
+} // namespace blink

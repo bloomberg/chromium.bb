@@ -41,7 +41,7 @@
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebViewImpl.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -67,8 +67,8 @@ WebPluginScrollbarImpl::WebPluginScrollbarImpl(Orientation orientation,
 {
     m_scrollbar = Scrollbar::create(
         static_cast<ScrollableArea*>(m_group),
-        static_cast<WebCore::ScrollbarOrientation>(orientation),
-        WebCore::RegularScrollbar);
+        static_cast<blink::ScrollbarOrientation>(orientation),
+        blink::RegularScrollbar);
     m_group->scrollbarCreated(this);
 }
 
@@ -183,7 +183,7 @@ WebScrollbar::ScrollbarOverlayStyle WebPluginScrollbarImpl::scrollbarOverlayStyl
 
 WebScrollbar::Orientation WebPluginScrollbarImpl::orientation() const
 {
-    if (m_scrollbar->orientation() == WebCore::HorizontalScrollbar)
+    if (m_scrollbar->orientation() == blink::HorizontalScrollbar)
         return WebScrollbar::Horizontal;
     return WebScrollbar::Vertical;
 }
@@ -224,14 +224,14 @@ void WebPluginScrollbarImpl::setDocumentSize(int size)
 
 void WebPluginScrollbarImpl::scroll(ScrollDirection direction, ScrollGranularity granularity, float multiplier)
 {
-    WebCore::ScrollDirection dir;
+    blink::ScrollDirection dir;
     bool horizontal = m_scrollbar->orientation() == HorizontalScrollbar;
     if (direction == ScrollForward)
         dir = horizontal ? ScrollRight : ScrollDown;
     else
         dir = horizontal ? ScrollLeft : ScrollUp;
 
-    m_group->scroll(dir, static_cast<WebCore::ScrollGranularity>(granularity), multiplier);
+    m_group->scroll(dir, static_cast<blink::ScrollGranularity>(granularity), multiplier);
 }
 
 void WebPluginScrollbarImpl::paint(WebCanvas* canvas, const WebRect& rect)
@@ -295,7 +295,7 @@ bool WebPluginScrollbarImpl::onMouseDown(const WebInputEvent& event)
 bool WebPluginScrollbarImpl::onMouseUp(const WebInputEvent& event)
 {
     WebMouseEvent mouseup = static_cast<const WebMouseEvent&>(event);
-    if (m_scrollbar->pressedPart() == WebCore::NoPart)
+    if (m_scrollbar->pressedPart() == blink::NoPart)
         return false;
 
     m_scrollbar->mouseUp(PlatformMouseEventBuilder(m_scrollbar.get(), mouseup));
@@ -306,21 +306,21 @@ bool WebPluginScrollbarImpl::onMouseMove(const WebInputEvent& event)
 {
     WebMouseEvent mousemove = static_cast<const WebMouseEvent&>(event);
     if (m_scrollbar->frameRect().contains(mousemove.x, mousemove.y)
-        || m_scrollbar->pressedPart() != WebCore::NoPart) {
+        || m_scrollbar->pressedPart() != blink::NoPart) {
         mousemove.x -= m_scrollbar->x();
         mousemove.y -= m_scrollbar->y();
         m_scrollbar->mouseMoved(PlatformMouseEventBuilder(m_scrollbar.get(), mousemove));
         return true;
     }
 
-    if (m_scrollbar->hoveredPart() != WebCore::NoPart && !m_scrollbar->isOverlayScrollbar())
+    if (m_scrollbar->hoveredPart() != blink::NoPart && !m_scrollbar->isOverlayScrollbar())
         m_scrollbar->mouseExited();
     return false;
 }
 
 bool WebPluginScrollbarImpl::onMouseLeave(const WebInputEvent& event)
 {
-    if (m_scrollbar->hoveredPart() != WebCore::NoPart)
+    if (m_scrollbar->hoveredPart() != blink::NoPart)
         m_scrollbar->mouseExited();
 
     return false;
@@ -361,8 +361,8 @@ bool WebPluginScrollbarImpl::onKeyDown(const WebInputEvent& event)
 
         keyCode = keyboard.windowsKeyCode;
     }
-    WebCore::ScrollDirection scrollDirection;
-    WebCore::ScrollGranularity scrollGranularity;
+    blink::ScrollDirection scrollDirection;
+    blink::ScrollGranularity scrollGranularity;
     if (WebViewImpl::mapKeyCodeForScroll(keyCode, &scrollDirection, &scrollGranularity)) {
         // Will return false if scroll direction wasn't compatible with this scrollbar.
         return m_group->scroll(scrollDirection, scrollGranularity);

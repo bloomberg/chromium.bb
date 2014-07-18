@@ -36,7 +36,7 @@
 
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 
@@ -82,6 +82,6 @@ public:
     static void isValidConstructorMode(const v8::FunctionCallbackInfo<v8::Value>&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8ObjectConstructor_h

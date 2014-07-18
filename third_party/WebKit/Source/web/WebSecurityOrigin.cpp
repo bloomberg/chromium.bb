@@ -38,7 +38,7 @@
 #include "public/platform/WebURL.h"
 #include "wtf/PassRefPtr.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -128,18 +128,18 @@ bool WebSecurityOrigin::canAccessPasswordManager() const
     return m_private->canAccessPasswordManager();
 }
 
-WebSecurityOrigin::WebSecurityOrigin(const WTF::PassRefPtr<WebCore::SecurityOrigin>& origin)
+WebSecurityOrigin::WebSecurityOrigin(const WTF::PassRefPtr<blink::SecurityOrigin>& origin)
     : m_private(static_cast<WebSecurityOriginPrivate*>(origin.leakRef()))
 {
 }
 
-WebSecurityOrigin& WebSecurityOrigin::operator=(const WTF::PassRefPtr<WebCore::SecurityOrigin>& origin)
+WebSecurityOrigin& WebSecurityOrigin::operator=(const WTF::PassRefPtr<blink::SecurityOrigin>& origin)
 {
     assign(static_cast<WebSecurityOriginPrivate*>(origin.leakRef()));
     return *this;
 }
 
-WebSecurityOrigin::operator WTF::PassRefPtr<WebCore::SecurityOrigin>() const
+WebSecurityOrigin::operator WTF::PassRefPtr<blink::SecurityOrigin>() const
 {
     return PassRefPtr<SecurityOrigin>(const_cast<WebSecurityOriginPrivate*>(m_private));
 }

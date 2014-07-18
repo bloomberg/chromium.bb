@@ -13,7 +13,7 @@
 #include "wtf/ArrayBuffer.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 
@@ -40,6 +40,6 @@ void postMessageMethodCommon(const char* interfaceName, Type* instance, const v8
     exceptionState.throwIfNeeded();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PostMessage_h

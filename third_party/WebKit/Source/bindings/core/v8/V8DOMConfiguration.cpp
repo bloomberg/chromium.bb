@@ -32,7 +32,7 @@
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "platform/TraceEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8DOMConfiguration::installAttributes(v8::Handle<v8::ObjectTemplate> instanceTemplate, v8::Handle<v8::ObjectTemplate> prototype, const AttributeConfiguration* attributes, size_t attributeCount, v8::Isolate* isolate)
 {
@@ -153,4 +153,4 @@ v8::Handle<v8::FunctionTemplate> V8DOMConfiguration::domClassTemplate(v8::Isolat
     return result;
 }
 
-} // namespace WebCore
+} // namespace blink

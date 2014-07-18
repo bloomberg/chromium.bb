@@ -31,7 +31,7 @@
 #include "config.h"
 #include "bindings/core/v8/CustomElementBinding.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtr<CustomElementBinding> CustomElementBinding::create(v8::Isolate* isolate, v8::Handle<v8::Object> prototype, const WrapperTypeInfo* wrapperType)
 {
@@ -47,4 +47,4 @@ CustomElementBinding::CustomElementBinding(v8::Isolate* isolate, v8::Handle<v8::
     ASSERT(m_wrapperType);
 }
 
-} // namespace WebCore
+} // namespace blink

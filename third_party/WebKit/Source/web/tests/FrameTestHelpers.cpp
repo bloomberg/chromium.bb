@@ -71,7 +71,7 @@ TestWebFrameClient* testClientForFrame(WebFrame* frame)
 
 class QuitTask : public WebThread::Task {
 public:
-    void PostThis(WebCore::Timer<QuitTask>*)
+    void PostThis(blink::Timer<QuitTask>*)
     {
         // We don't just quit here because the SharedTimer may be part-way
         // through the current queue of tasks when runPendingTasks was called,
@@ -247,7 +247,7 @@ void pumpPendingRequestsDoNotUse(WebFrame* frame)
 void runPendingTasks()
 {
     // Pending tasks include Timers that have been scheduled.
-    WebCore::Timer<QuitTask> quitOnTimeout(new QuitTask, &QuitTask::PostThis);
+    blink::Timer<QuitTask> quitOnTimeout(new QuitTask, &QuitTask::PostThis);
     quitOnTimeout.startOneShot(0, FROM_HERE);
     Platform::current()->currentThread()->enterRunLoop();
 }

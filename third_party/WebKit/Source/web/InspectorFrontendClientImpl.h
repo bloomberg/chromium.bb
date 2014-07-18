@@ -34,7 +34,7 @@
 #include "core/inspector/InspectorFrontendClient.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 class InspectorFrontendHost;
 class Page;
 }
@@ -44,10 +44,10 @@ namespace blink {
 class WebDevToolsFrontendClient;
 class WebDevToolsFrontendImpl;
 
-class InspectorFrontendClientImpl FINAL : public WebCore::InspectorFrontendClient {
+class InspectorFrontendClientImpl FINAL : public blink::InspectorFrontendClient {
     WTF_MAKE_NONCOPYABLE(InspectorFrontendClientImpl);
 public:
-    InspectorFrontendClientImpl(WebCore::Page*, WebDevToolsFrontendClient*, WebDevToolsFrontendImpl*);
+    InspectorFrontendClientImpl(blink::Page*, WebDevToolsFrontendClient*, WebDevToolsFrontendImpl*);
     virtual ~InspectorFrontendClientImpl();
 
     // InspectorFrontendClient methods:
@@ -60,9 +60,9 @@ public:
     virtual bool isUnderTest() OVERRIDE;
 
 private:
-    WebCore::Page* m_frontendPage;
+    blink::Page* m_frontendPage;
     WebDevToolsFrontendClient* m_client;
-    RefPtr<WebCore::InspectorFrontendHost> m_frontendHost;
+    RefPtr<blink::InspectorFrontendHost> m_frontendHost;
 };
 
 } // namespace blink

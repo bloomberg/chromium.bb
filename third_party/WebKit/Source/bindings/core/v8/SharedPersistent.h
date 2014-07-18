@@ -36,7 +36,7 @@
 #include "wtf/RefCounted.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 template <typename T>
 class SharedPersistent : public RefCounted<SharedPersistent<T> > {
@@ -64,6 +64,6 @@ private:
     ScopedPersistent<T> m_value;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SharedPersistent_h

@@ -38,7 +38,7 @@
 #include "wtf/text/TextPosition.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class ErrorEvent;
 class ExceptionState;
@@ -112,6 +112,6 @@ private:
     OwnPtr<V8IsolateInterruptor> m_interruptor;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerScriptController_h

@@ -37,17 +37,17 @@
 namespace blink {
 class WebViewImpl;
 
-class DragClientImpl FINAL : public WebCore::DragClient {
+class DragClientImpl FINAL : public blink::DragClient {
 public:
     DragClientImpl(WebViewImpl* webView) : m_webView(webView) { }
 
-    virtual WebCore::DragDestinationAction actionMaskForDrag(WebCore::DragData*) OVERRIDE;
+    virtual blink::DragDestinationAction actionMaskForDrag(blink::DragData*) OVERRIDE;
     virtual void startDrag(
-        WebCore::DragImage*,
-        const WebCore::IntPoint& dragImageOrigin,
-        const WebCore::IntPoint& eventPos,
-        WebCore::DataTransfer*,
-        WebCore::LocalFrame* frame,
+        blink::DragImage*,
+        const blink::IntPoint& dragImageOrigin,
+        const blink::IntPoint& eventPos,
+        blink::DataTransfer*,
+        blink::LocalFrame* frame,
         bool isLinkDrag = false) OVERRIDE;
 
 private:

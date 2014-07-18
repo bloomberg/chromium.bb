@@ -39,7 +39,7 @@ namespace blink {
 
 WebMIDIClientMock::WebMIDIClientMock()
 {
-    m_clientMock.reset(new WebCore::MIDIClientMock());
+    m_clientMock.reset(new blink::MIDIClientMock());
 }
 
 void WebMIDIClientMock::setSysexPermission(bool allowed)

@@ -38,7 +38,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 class EventHandler;
 class IntSize;
 class Node;
@@ -56,22 +56,22 @@ namespace blink {
 class ViewportAnchor {
     STACK_ALLOCATED();
 public:
-    explicit ViewportAnchor(WebCore::EventHandler* eventHandler);
+    explicit ViewportAnchor(blink::EventHandler* eventHandler);
 
-    void setAnchor(const WebCore::IntRect& viewRect, const WebCore::FloatSize& anchorInViewCoords);
+    void setAnchor(const blink::IntRect& viewRect, const blink::FloatSize& anchorInViewCoords);
 
-    WebCore::IntPoint computeOrigin(const WebCore::IntSize& currentViewSize) const;
+    blink::IntPoint computeOrigin(const blink::IntSize& currentViewSize) const;
 
 private:
-    RawPtrWillBeMember<WebCore::EventHandler> m_eventHandler;
+    RawPtrWillBeMember<blink::EventHandler> m_eventHandler;
 
-    WebCore::IntRect m_viewRect;
+    blink::IntRect m_viewRect;
 
-    RefPtrWillBeMember<WebCore::Node> m_anchorNode;
-    WebCore::LayoutRect m_anchorNodeBounds;
+    RefPtrWillBeMember<blink::Node> m_anchorNode;
+    blink::LayoutRect m_anchorNodeBounds;
 
-    WebCore::FloatSize m_anchorInViewCoords;
-    WebCore::FloatSize m_anchorInNodeCoords;
+    blink::FloatSize m_anchorInViewCoords;
+    blink::FloatSize m_anchorInNodeCoords;
 };
 
 } // namespace blink

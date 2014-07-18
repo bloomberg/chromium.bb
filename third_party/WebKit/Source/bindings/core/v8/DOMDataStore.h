@@ -39,7 +39,7 @@
 #include "wtf/StdLibExtras.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class Node;
 
@@ -207,6 +207,6 @@ private:
     DOMWrapperMap<void> m_wrapperMap;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMDataStore_h

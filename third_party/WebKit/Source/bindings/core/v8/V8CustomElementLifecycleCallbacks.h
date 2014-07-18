@@ -39,7 +39,7 @@
 #include "wtf/PassRefPtr.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class CustomElementLifecycleCallbacks;
 class Element;

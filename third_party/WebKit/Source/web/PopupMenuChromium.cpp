@@ -37,7 +37,7 @@
 #include "core/frame/Settings.h"
 #include "web/PopupContainer.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

@@ -34,7 +34,7 @@
 #include "web/ChromeClientImpl.h"
 #include "web/WebViewImpl.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -45,7 +45,7 @@ enum ColorPickerPopupAction {
     ColorPickerPopupActionSetValue = 0
 };
 
-ColorChooserPopupUIController::ColorChooserPopupUIController(WebCore::LocalFrame* frame, ChromeClientImpl* chromeClient, ColorChooserClient* client)
+ColorChooserPopupUIController::ColorChooserPopupUIController(blink::LocalFrame* frame, ChromeClientImpl* chromeClient, ColorChooserClient* client)
     : ColorChooserUIController(frame, client)
     , m_chromeClient(chromeClient)
     , m_client(client)

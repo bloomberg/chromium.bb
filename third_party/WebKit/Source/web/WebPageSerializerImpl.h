@@ -48,7 +48,7 @@ namespace WTF{
 class TextEncoding;
 }
 
-namespace WebCore {
+namespace blink {
 class Document;
 class Element;
 class Node;
@@ -119,15 +119,15 @@ private:
     WebEntities m_xmlEntities;
 
     struct SerializeDomParam {
-        const WebCore::KURL& url;
+        const blink::KURL& url;
         const WTF::TextEncoding& textEncoding;
-        WebCore::Document* document;
+        blink::Document* document;
         const WTF::String& directoryName;
         bool isHTMLDocument; // document.isHTMLDocument()
         bool haveSeenDocType;
         bool haveAddedCharsetDeclaration;
         // This meta element need to be skipped when serializing DOM.
-        const WebCore::Element* skipMetaElement;
+        const blink::Element* skipMetaElement;
         // Flag indicates we are in script or style tag.
         bool isInScriptOrStyleTag;
         bool haveAddedXMLProcessingDirective;
@@ -138,28 +138,28 @@ private:
         // serialization stream.
         bool haveAddedContentsBeforeEnd;
 
-        SerializeDomParam(const WebCore::KURL&, const WTF::TextEncoding&, WebCore::Document*, const WTF::String& directoryName);
+        SerializeDomParam(const blink::KURL&, const WTF::TextEncoding&, blink::Document*, const WTF::String& directoryName);
     };
 
     // Collect all target frames which need to be serialized.
     void collectTargetFrames();
     // Before we begin serializing open tag of a element, we give the target
     // element a chance to do some work prior to add some additional data.
-    WTF::String preActionBeforeSerializeOpenTag(const WebCore::Element* element,
+    WTF::String preActionBeforeSerializeOpenTag(const blink::Element* element,
                                                     SerializeDomParam* param,
                                                     bool* needSkip);
     // After we finish serializing open tag of a element, we give the target
     // element a chance to do some post work to add some additional data.
-    WTF::String postActionAfterSerializeOpenTag(const WebCore::Element* element,
+    WTF::String postActionAfterSerializeOpenTag(const blink::Element* element,
                                                     SerializeDomParam* param);
     // Before we begin serializing end tag of a element, we give the target
     // element a chance to do some work prior to add some additional data.
-    WTF::String preActionBeforeSerializeEndTag(const WebCore::Element* element,
+    WTF::String preActionBeforeSerializeEndTag(const blink::Element* element,
                                                    SerializeDomParam* param,
                                                    bool* needSkip);
     // After we finish serializing end tag of a element, we give the target
     // element a chance to do some post work to add some additional data.
-    WTF::String postActionAfterSerializeEndTag(const WebCore::Element* element,
+    WTF::String postActionAfterSerializeEndTag(const blink::Element* element,
                                                    SerializeDomParam* param);
     // Save generated html content to data buffer.
     void saveHTMLContentToBuffer(const WTF::String& content,
@@ -177,13 +177,13 @@ private:
                               SerializeDomParam* param,
                               FlushOption);
     // Serialize open tag of an specified element.
-    void openTagToString(WebCore::Element*,
+    void openTagToString(blink::Element*,
                          SerializeDomParam* param);
     // Serialize end tag of an specified element.
-    void endTagToString(WebCore::Element*,
+    void endTagToString(blink::Element*,
                         SerializeDomParam* param);
     // Build content for a specified node
-    void buildContentForNode(WebCore::Node*,
+    void buildContentForNode(blink::Node*,
                              SerializeDomParam* param);
 };
 

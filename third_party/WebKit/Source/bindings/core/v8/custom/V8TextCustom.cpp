@@ -35,7 +35,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
 
-namespace WebCore {
+namespace blink {
 
 v8::Handle<v8::Object> wrap(Text* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -45,4 +45,4 @@ v8::Handle<v8::Object> wrap(Text* impl, v8::Handle<v8::Object> creationContext, 
     return V8Text::createWrapper(impl, creationContext, isolate);
 }
 
-} // namespace WebCore
+} // namespace blink

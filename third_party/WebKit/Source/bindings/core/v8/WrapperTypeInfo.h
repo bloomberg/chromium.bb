@@ -36,7 +36,7 @@
 #include "wtf/Assertions.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class ActiveDOMObject;
 class EventTarget;
@@ -245,6 +245,6 @@ inline WrapperConfiguration buildWrapperConfiguration(Node*, WrapperConfiguratio
     return configuration;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WrapperTypeInfo_h

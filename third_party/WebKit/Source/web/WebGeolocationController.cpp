@@ -32,7 +32,7 @@
 #include "public/web/WebGeolocationError.h"
 #include "public/web/WebGeolocationPosition.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

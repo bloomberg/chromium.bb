@@ -34,7 +34,7 @@
 #include "wtf/Noncopyable.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 template<typename T>
 class ScopedPersistent {
@@ -100,6 +100,6 @@ private:
     v8::Persistent<T> m_handle;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScopedPersistent_h

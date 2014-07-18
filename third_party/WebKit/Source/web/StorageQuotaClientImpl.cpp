@@ -48,7 +48,7 @@
 #include "web/WebLocalFrameImpl.h"
 #include "wtf/Threading.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

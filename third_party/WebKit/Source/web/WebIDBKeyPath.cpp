@@ -31,7 +31,7 @@
 #include "public/platform/WebVector.h"
 #include "wtf/Vector.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -90,20 +90,20 @@ WebString WebIDBKeyPath::string() const
     return m_private->string();
 }
 
-WebIDBKeyPath::WebIDBKeyPath(const WebCore::IDBKeyPath& value)
+WebIDBKeyPath::WebIDBKeyPath(const blink::IDBKeyPath& value)
     : m_private(new IDBKeyPath(value))
 {
     ASSERT(m_private.get());
 }
 
-WebIDBKeyPath& WebIDBKeyPath::operator=(const WebCore::IDBKeyPath& value)
+WebIDBKeyPath& WebIDBKeyPath::operator=(const blink::IDBKeyPath& value)
 {
     ASSERT(m_private.get());
     m_private.reset(new IDBKeyPath(value));
     return *this;
 }
 
-WebIDBKeyPath::operator const WebCore::IDBKeyPath&() const
+WebIDBKeyPath::operator const blink::IDBKeyPath&() const
 {
     ASSERT(m_private.get());
     return *(m_private.get());

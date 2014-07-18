@@ -35,7 +35,7 @@
 #include "public/platform/WebPoint.h"
 #include "public/web/WebHitTestResult.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

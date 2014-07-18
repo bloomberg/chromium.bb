@@ -38,10 +38,10 @@
 namespace blink {
 
 #if ENABLE(ASSERT)
-class WebScopedMicrotaskSuppression::Impl : public WebCore::V8RecursionScope::MicrotaskSuppression {
+class WebScopedMicrotaskSuppression::Impl : public blink::V8RecursionScope::MicrotaskSuppression {
 public:
     Impl(v8::Isolate* isolate)
-        : WebCore::V8RecursionScope::MicrotaskSuppression(isolate)
+        : blink::V8RecursionScope::MicrotaskSuppression(isolate)
     {
     }
 };

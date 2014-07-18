@@ -54,7 +54,7 @@
 #include "public/web/WebNode.h"
 #include "wtf/text/StringBuilder.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -961,8 +961,8 @@ WebAXObject WebAXObject::cellForColumnAndRow(unsigned column, unsigned row) cons
     if (!m_private->isAXTable())
         return WebAXObject();
 
-    WebCore::AXTableCell* cell = toAXTable(m_private.get())->cellForColumnAndRow(column, row);
-    return WebAXObject(static_cast<WebCore::AXObject*>(cell));
+    blink::AXTableCell* cell = toAXTable(m_private.get())->cellForColumnAndRow(column, row);
+    return WebAXObject(static_cast<blink::AXObject*>(cell));
 }
 
 WebAXObject WebAXObject::headerContainerObject() const
@@ -1014,7 +1014,7 @@ unsigned WebAXObject::rowIndex() const
     if (!m_private->isTableRow())
         return 0;
 
-    return WebCore::toAXTableRow(m_private.get())->rowIndex();
+    return blink::toAXTableRow(m_private.get())->rowIndex();
 }
 
 WebAXObject WebAXObject::rowHeader() const
@@ -1025,7 +1025,7 @@ WebAXObject WebAXObject::rowHeader() const
     if (!m_private->isTableRow())
         return WebAXObject();
 
-    return WebAXObject(WebCore::toAXTableRow(m_private.get())->headerObject());
+    return WebAXObject(blink::toAXTableRow(m_private.get())->headerObject());
 }
 
 unsigned WebAXObject::columnIndex() const
@@ -1036,7 +1036,7 @@ unsigned WebAXObject::columnIndex() const
     if (m_private->roleValue() != ColumnRole)
         return 0;
 
-    return WebCore::toAXTableColumn(m_private.get())->columnIndex();
+    return blink::toAXTableColumn(m_private.get())->columnIndex();
 }
 
 WebAXObject WebAXObject::columnHeader() const
@@ -1047,7 +1047,7 @@ WebAXObject WebAXObject::columnHeader() const
     if (m_private->roleValue() != ColumnRole)
         return WebAXObject();
 
-    return WebAXObject(WebCore::toAXTableColumn(m_private.get())->headerObject());
+    return WebAXObject(blink::toAXTableColumn(m_private.get())->headerObject());
 }
 
 unsigned WebAXObject::cellColumnIndex() const
@@ -1059,7 +1059,7 @@ unsigned WebAXObject::cellColumnIndex() const
         return 0;
 
     pair<unsigned, unsigned> columnRange;
-    WebCore::toAXTableCell(m_private.get())->columnIndexRange(columnRange);
+    blink::toAXTableCell(m_private.get())->columnIndexRange(columnRange);
     return columnRange.first;
 }
 
@@ -1072,7 +1072,7 @@ unsigned WebAXObject::cellColumnSpan() const
         return 0;
 
     pair<unsigned, unsigned> columnRange;
-    WebCore::toAXTableCell(m_private.get())->columnIndexRange(columnRange);
+    blink::toAXTableCell(m_private.get())->columnIndexRange(columnRange);
     return columnRange.second;
 }
 
@@ -1085,7 +1085,7 @@ unsigned WebAXObject::cellRowIndex() const
         return 0;
 
     pair<unsigned, unsigned> rowRange;
-    WebCore::toAXTableCell(m_private.get())->rowIndexRange(rowRange);
+    blink::toAXTableCell(m_private.get())->rowIndexRange(rowRange);
     return rowRange.first;
 }
 
@@ -1098,7 +1098,7 @@ unsigned WebAXObject::cellRowSpan() const
         return 0;
 
     pair<unsigned, unsigned> rowRange;
-    WebCore::toAXTableCell(m_private.get())->rowIndexRange(rowRange);
+    blink::toAXTableCell(m_private.get())->rowIndexRange(rowRange);
     return rowRange.second;
 }
 
@@ -1161,18 +1161,18 @@ void WebAXObject::scrollToGlobalPoint(const WebPoint& point) const
         m_private->scrollToGlobalPoint(point);
 }
 
-WebAXObject::WebAXObject(const WTF::PassRefPtr<WebCore::AXObject>& object)
+WebAXObject::WebAXObject(const WTF::PassRefPtr<blink::AXObject>& object)
     : m_private(object)
 {
 }
 
-WebAXObject& WebAXObject::operator=(const WTF::PassRefPtr<WebCore::AXObject>& object)
+WebAXObject& WebAXObject::operator=(const WTF::PassRefPtr<blink::AXObject>& object)
 {
     m_private = object;
     return *this;
 }
 
-WebAXObject::operator WTF::PassRefPtr<WebCore::AXObject>() const
+WebAXObject::operator WTF::PassRefPtr<blink::AXObject>() const
 {
     return m_private.get();
 }

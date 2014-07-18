@@ -42,7 +42,7 @@
 #include "core/html/HTMLOptionsCollection.h"
 #include "core/html/HTMLSelectElement.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -88,4 +88,4 @@ void V8HTMLOptionsCollection::lengthAttributeSetterCustom(v8::Local<v8::Value> v
     impl->setLength(newLength, exceptionState);
 }
 
-} // namespace WebCore
+} // namespace blink

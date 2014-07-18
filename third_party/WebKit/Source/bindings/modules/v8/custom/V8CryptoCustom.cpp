@@ -33,7 +33,7 @@
 #include "modules/crypto/Crypto.h"
 #include "wtf/ArrayBufferView.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8Crypto::getRandomValuesMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -61,4 +61,4 @@ void V8Crypto::getRandomValuesMethodCustom(const v8::FunctionCallbackInfo<v8::Va
     v8SetReturnValue(info, buffer);
 }
 
-} // namespace WebCore
+} // namespace blink

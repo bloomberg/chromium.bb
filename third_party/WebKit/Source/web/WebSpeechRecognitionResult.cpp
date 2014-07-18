@@ -45,11 +45,11 @@ void WebSpeechRecognitionResult::assign(const WebVector<WebString>& transcripts,
 {
     ASSERT(transcripts.size() == confidences.size());
 
-    WebCore::HeapVector<WebCore::Member<WebCore::SpeechRecognitionAlternative> > alternatives(transcripts.size());
+    blink::HeapVector<blink::Member<blink::SpeechRecognitionAlternative> > alternatives(transcripts.size());
     for (size_t i = 0; i < transcripts.size(); ++i)
-        alternatives[i] = WebCore::SpeechRecognitionAlternative::create(transcripts[i], confidences[i]);
+        alternatives[i] = blink::SpeechRecognitionAlternative::create(transcripts[i], confidences[i]);
 
-    m_private = WebCore::SpeechRecognitionResult::create(alternatives, final);
+    m_private = blink::SpeechRecognitionResult::create(alternatives, final);
 }
 
 void WebSpeechRecognitionResult::reset()
@@ -57,7 +57,7 @@ void WebSpeechRecognitionResult::reset()
     m_private.reset();
 }
 
-WebSpeechRecognitionResult::operator WebCore::SpeechRecognitionResult*() const
+WebSpeechRecognitionResult::operator blink::SpeechRecognitionResult*() const
 {
     return m_private.get();
 }

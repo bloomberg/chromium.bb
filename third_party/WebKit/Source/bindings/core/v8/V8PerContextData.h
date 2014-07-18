@@ -44,7 +44,7 @@
 #include "wtf/text/AtomicStringHash.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class CustomElementDefinition;
 class V8DOMActivityLogger;
@@ -135,6 +135,6 @@ public:
     static int contextDebugId(v8::Handle<v8::Context>);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8PerContextData_h

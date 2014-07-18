@@ -38,7 +38,7 @@
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
 
-namespace WebCore {
+namespace blink {
 
 
 class V8ArrayBufferView {
@@ -57,5 +57,5 @@ public:
 };
 
 
-} // namespace WebCore
+} // namespace blink
 #endif // V8ArrayBufferViewCustom_h

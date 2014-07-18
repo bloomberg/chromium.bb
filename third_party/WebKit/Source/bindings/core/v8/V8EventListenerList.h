@@ -35,7 +35,7 @@
 #include "bindings/core/v8/V8EventListener.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 
@@ -109,6 +109,6 @@ PassRefPtr<V8EventListener> V8EventListenerList::findOrCreateWrapper(v8::Local<v
     return wrapperPtr;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8EventListenerList_h

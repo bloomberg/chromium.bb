@@ -37,7 +37,7 @@
 #include "wtf/Noncopyable.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 // C++ calls into script contexts which are "owned" by WebKit (created in a
 // process where WebKit.cpp initializes v8) must declare their type:
@@ -121,6 +121,6 @@ private:
     ExecutionContext& m_executionContext;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8RecursionScope_h

@@ -40,14 +40,14 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore { class WebSocketChannel; }
+namespace blink { class WebSocketChannel; }
 
 namespace blink {
 
 class WebDocument;
 class WebURL;
 
-class WebSocketImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<WebSocketImpl>, public WebSocket, public WebCore::WebSocketChannelClient {
+class WebSocketImpl FINAL : public NoBaseWillBeGarbageCollectedFinalized<WebSocketImpl>, public WebSocket, public blink::WebSocketChannelClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebSocketImpl)
 public:
     WebSocketImpl(const WebDocument&, WebSocketClient*);
@@ -76,10 +76,10 @@ public:
     virtual void didStartClosingHandshake() OVERRIDE;
     virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;
 
-    virtual void trace(WebCore::Visitor*) OVERRIDE;
+    virtual void trace(blink::Visitor*) OVERRIDE;
 
 private:
-    RefPtrWillBeMember<WebCore::WebSocketChannel> m_private;
+    RefPtrWillBeMember<blink::WebSocketChannel> m_private;
     WebSocketClient* m_client;
     BinaryType m_binaryType;
     WebString m_subprotocol;

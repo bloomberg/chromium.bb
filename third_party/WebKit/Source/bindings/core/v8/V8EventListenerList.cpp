@@ -35,7 +35,7 @@
 #include "bindings/core/v8/V8Window.h"
 #include "bindings/core/v8/V8WorkerGlobalScopeEventListener.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<EventListener> V8EventListenerList::getEventListener(ScriptState* scriptState, v8::Local<v8::Value> value, bool isAttribute, ListenerLookupType lookup)
 {
@@ -51,4 +51,4 @@ PassRefPtr<EventListener> V8EventListenerList::getEventListener(ScriptState* scr
     return V8EventListenerList::findOrCreateWrapper<V8WorkerGlobalScopeEventListener>(value, isAttribute, scriptState);
 }
 
-} // namespace WebCore
+} // namespace blink

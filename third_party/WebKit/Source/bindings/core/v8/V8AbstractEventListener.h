@@ -38,7 +38,7 @@
 #include "wtf/RefCounted.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class Event;
 
@@ -153,6 +153,6 @@ private:
     v8::Isolate* m_isolate;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8AbstractEventListener_h

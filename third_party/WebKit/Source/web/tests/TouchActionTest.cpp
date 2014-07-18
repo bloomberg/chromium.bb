@@ -109,7 +109,7 @@ public:
     {
         URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL), "touch-action-tests.css");
         URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL), "touch-action-tests.js");
-        WebCore::RuntimeEnabledFeatures::setCSSTouchActionEnabled(true);
+        blink::RuntimeEnabledFeatures::setCSSTouchActionEnabled(true);
     }
 
     virtual void TearDown()
@@ -120,9 +120,9 @@ public:
 protected:
     void runTouchActionTest(std::string file);
     void runShadowDOMTest(std::string file);
-    void sendTouchEvent(WebView*, WebInputEvent::Type, WebCore::IntPoint clientPoint);
+    void sendTouchEvent(WebView*, WebInputEvent::Type, blink::IntPoint clientPoint);
     WebView* setupTest(std::string file, TouchActionTrackingWebViewClient&);
-    void runTestOnTree(WebCore::ContainerNode* root, WebView*, TouchActionTrackingWebViewClient&);
+    void runTestOnTree(blink::ContainerNode* root, WebView*, TouchActionTrackingWebViewClient&);
 
     std::string m_baseURL;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
@@ -144,7 +144,7 @@ void TouchActionTest::runTouchActionTest(std::string file)
     // scenario.
     WebView* webView = setupTest(file, client);
 
-    RefPtrWillBePersistent<WebCore::Document> document = static_cast<PassRefPtrWillBeRawPtr<WebCore::Document> >(webView->mainFrame()->document());
+    RefPtrWillBePersistent<blink::Document> document = static_cast<PassRefPtrWillBeRawPtr<blink::Document> >(webView->mainFrame()->document());
     runTestOnTree(document.get(), webView, client);
 
     m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
@@ -156,16 +156,16 @@ void TouchActionTest::runShadowDOMTest(std::string file)
 
     WebView* webView = setupTest(file, client);
 
-    WebCore::TrackExceptionState es;
+    blink::TrackExceptionState es;
 
     // Oilpan: see runTouchActionTest() comment why these are persistent references.
-    RefPtrWillBePersistent<WebCore::Document> document = static_cast<PassRefPtrWillBeRawPtr<WebCore::Document> >(webView->mainFrame()->document());
-    RefPtrWillBePersistent<WebCore::StaticNodeList> hostNodes = document->querySelectorAll("[shadow-host]", es);
+    RefPtrWillBePersistent<blink::Document> document = static_cast<PassRefPtrWillBeRawPtr<blink::Document> >(webView->mainFrame()->document());
+    RefPtrWillBePersistent<blink::StaticNodeList> hostNodes = document->querySelectorAll("[shadow-host]", es);
     ASSERT_FALSE(es.hadException());
     ASSERT_GE(hostNodes->length(), 1u);
 
     for (unsigned index = 0; index < hostNodes->length(); index++) {
-        WebCore::ShadowRoot* shadowRoot = WebCore::toElement(hostNodes->item(index))->shadowRoot();
+        blink::ShadowRoot* shadowRoot = blink::toElement(hostNodes->item(index))->shadowRoot();
         runTestOnTree(shadowRoot, webView, client);
     }
 
@@ -189,23 +189,23 @@ WebView* TouchActionTest::setupTest(std::string file, TouchActionTrackingWebView
 
     // Scroll to verify the code properly transforms windows to client co-ords.
     const int kScrollOffset = 100;
-    RefPtrWillBeRawPtr<WebCore::Document> document = static_cast<PassRefPtrWillBeRawPtr<WebCore::Document> >(webView->mainFrame()->document());
-    document->frame()->view()->setScrollOffset(WebCore::IntPoint(0, kScrollOffset));
+    RefPtrWillBeRawPtr<blink::Document> document = static_cast<PassRefPtrWillBeRawPtr<blink::Document> >(webView->mainFrame()->document());
+    document->frame()->view()->setScrollOffset(blink::IntPoint(0, kScrollOffset));
 
     return webView;
 }
 
-void TouchActionTest::runTestOnTree(WebCore::ContainerNode* root, WebView* webView, TouchActionTrackingWebViewClient& client)
+void TouchActionTest::runTestOnTree(blink::ContainerNode* root, WebView* webView, TouchActionTrackingWebViewClient& client)
 {
     // Find all elements to test the touch-action of in the document.
-    WebCore::TrackExceptionState es;
+    blink::TrackExceptionState es;
 
     // Oilpan: see runTouchActionTest() comment why these are persistent references.
-    RefPtrWillBePersistent<WebCore::StaticNodeList> nodes = root->querySelectorAll("[expected-action]", es);
+    RefPtrWillBePersistent<blink::StaticNodeList> nodes = root->querySelectorAll("[expected-action]", es);
     ASSERT_FALSE(es.hadException());
 
     for (unsigned index = 0; index < nodes->length(); index++) {
-        WebCore::Element* element = toElement(nodes->item(index));
+        blink::Element* element = toElement(nodes->item(index));
         element->scrollIntoViewIfNeeded();
         ASSERT_TRUE(nodes->item(index)->isElementNode());
 
@@ -224,13 +224,13 @@ void TouchActionTest::runTestOnTree(WebCore::ContainerNode* root, WebView* webVi
         // Note that we don't want the bounding box because our tests sometimes have elements with
         // multiple border boxes with other elements in between. Use the first border box (which
         // we can easily visualize in a browser for debugging).
-        RefPtrWillBePersistent<WebCore::ClientRectList> rects = element->getClientRects();
+        RefPtrWillBePersistent<blink::ClientRectList> rects = element->getClientRects();
         ASSERT_GE(rects->length(), 0u) << failureContext;
-        RefPtrWillBePersistent<WebCore::ClientRect> r = rects->item(0);
-        WebCore::FloatRect clientFloatRect = WebCore::FloatRect(r->left(), r->top(), r->width(), r->height());
-        WebCore::IntRect clientRect =  enclosedIntRect(clientFloatRect);
+        RefPtrWillBePersistent<blink::ClientRect> r = rects->item(0);
+        blink::FloatRect clientFloatRect = blink::FloatRect(r->left(), r->top(), r->width(), r->height());
+        blink::IntRect clientRect =  enclosedIntRect(clientFloatRect);
         for (int locIdx = 0; locIdx < 3; locIdx++) {
-            WebCore::IntPoint clientPoint;
+            blink::IntPoint clientPoint;
             std::stringstream contextStream;
             contextStream << failureContext << " (";
             switch (locIdx) {
@@ -253,9 +253,9 @@ void TouchActionTest::runTestOnTree(WebCore::ContainerNode* root, WebView* webVi
             contextStream << "=" << clientPoint.x() << "," << clientPoint.y() << ").";
             std::string failureContextPos = contextStream.str();
 
-            WebCore::LocalFrame* frame = root->document().frame();
-            WebCore::FrameView* frameView = frame->view();
-            WebCore::IntRect visibleRect = frameView->windowClipRect();
+            blink::LocalFrame* frame = root->document().frame();
+            blink::FrameView* frameView = frame->view();
+            blink::IntRect visibleRect = frameView->windowClipRect();
             ASSERT_TRUE(visibleRect.contains(clientPoint)) << failureContextPos
                 << " Test point not contained in visible area: " << visibleRect.x() << "," << visibleRect.y()
                 << "-" << visibleRect.maxX() << "," << visibleRect.maxY();
@@ -264,8 +264,8 @@ void TouchActionTest::runTestOnTree(WebCore::ContainerNode* root, WebView* webVi
             // we intended. This is the easiest way for a test to be broken, but has nothing really
             // to do with touch action.
             // Note that we can't use WebView's hit test API because it doesn't look into shadow DOM.
-            WebCore::IntPoint docPoint(frameView->windowToContents(clientPoint));
-            WebCore::HitTestResult result = frame->eventHandler().hitTestResultAtPoint(docPoint, WebCore::HitTestRequest::ReadOnly | WebCore::HitTestRequest::Active);
+            blink::IntPoint docPoint(frameView->windowToContents(clientPoint));
+            blink::HitTestResult result = frame->eventHandler().hitTestResultAtPoint(docPoint, blink::HitTestRequest::ReadOnly | blink::HitTestRequest::Active);
             ASSERT_EQ(element, result.innerElement()) << "Unexpected hit test result " << failureContextPos
                 << "  Got element: \"" << result.innerElement()->outerHTML().stripWhiteSpace().left(80).ascii().data() << "\""
                 << std::endl << "Document render tree:" << std::endl << externalRepresentation(root->document().frame()).utf8().data();
@@ -306,7 +306,7 @@ void TouchActionTest::runTestOnTree(WebCore::ContainerNode* root, WebView* webVi
         }
     }
 }
-void TouchActionTest::sendTouchEvent(WebView* webView, WebInputEvent::Type type, WebCore::IntPoint clientPoint)
+void TouchActionTest::sendTouchEvent(WebView* webView, WebInputEvent::Type type, blink::IntPoint clientPoint)
 {
     ASSERT_TRUE(type == WebInputEvent::TouchStart || type == WebInputEvent::TouchCancel);
 

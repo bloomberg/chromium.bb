@@ -67,7 +67,7 @@
     } while (false)
 
 
-using namespace WebCore;
+using namespace blink;
 using namespace blink;
 
 using ::testing::_;

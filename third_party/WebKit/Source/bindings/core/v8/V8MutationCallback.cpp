@@ -34,7 +34,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 V8MutationCallback::V8MutationCallback(v8::Handle<v8::Function> callback, v8::Handle<v8::Object> owner, ScriptState* scriptState)
     : ActiveDOMCallback(scriptState->executionContext())
@@ -81,4 +81,4 @@ void V8MutationCallback::setWeakCallback(const v8::WeakCallbackData<v8::Function
     data.GetParameter()->m_callback.clear();
 }
 
-} // namespace WebCore
+} // namespace blink

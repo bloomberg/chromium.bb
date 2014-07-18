@@ -36,7 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 V8EventListener::V8EventListener(v8::Local<v8::Object> listener, bool isAttribute, ScriptState* scriptState)
     : V8AbstractEventListener(isAttribute, scriptState)
@@ -88,4 +88,4 @@ v8::Local<v8::Value> V8EventListener::callListenerFunction(v8::Handle<v8::Value>
     return frame->script().callFunction(handlerFunction, receiver, WTF_ARRAY_LENGTH(parameters), parameters);
 }
 
-} // namespace WebCore
+} // namespace blink

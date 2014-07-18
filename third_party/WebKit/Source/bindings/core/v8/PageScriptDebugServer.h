@@ -37,7 +37,7 @@
 #include "wtf/RefCounted.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class Page;
 class ScriptController;
@@ -95,7 +95,7 @@ private:
     static v8::Isolate* s_mainThreadIsolate;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // PageScriptDebugServer_h

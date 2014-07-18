@@ -41,7 +41,7 @@
 #include "core/dom/ContextFeatures.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8ErrorEvent::errorAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
@@ -54,4 +54,4 @@ void V8ErrorEvent::errorAttributeGetterCustom(const v8::PropertyCallbackInfo<v8:
     v8SetReturnValueNull(info);
 }
 
-} // namespace WebCore
+} // namespace blink

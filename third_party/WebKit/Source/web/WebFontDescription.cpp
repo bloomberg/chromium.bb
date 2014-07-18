@@ -33,7 +33,7 @@
 
 #include "platform/fonts/FontDescription.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -50,7 +50,7 @@ WebFontDescription::WebFontDescription(const FontDescription& desc)
     wordSpacing = desc.wordSpacing();
 }
 
-WebFontDescription::operator WebCore::FontDescription() const
+WebFontDescription::operator blink::FontDescription() const
 {
     FontFamily fontFamily;
     fontFamily.setFamily(family);

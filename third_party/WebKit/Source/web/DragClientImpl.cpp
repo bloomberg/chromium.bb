@@ -47,7 +47,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/RefPtr.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

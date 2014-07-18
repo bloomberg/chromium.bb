@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/V8Binding.h"
 
-namespace WebCore {
+namespace blink {
 
 void ScriptFunction::callCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
@@ -29,4 +29,4 @@ v8::Handle<v8::Function> ScriptFunction::adoptByGarbageCollector(PassOwnPtr<Scri
     return createClosure(&ScriptFunction::callCallback, function.leakPtr()->releaseToV8GarbageCollector(), isolate);
 }
 
-} // namespace WebCore
+} // namespace blink

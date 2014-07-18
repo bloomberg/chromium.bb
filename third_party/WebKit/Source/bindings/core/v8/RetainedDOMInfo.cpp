@@ -34,7 +34,7 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/NodeTraversal.h"
 
-namespace WebCore {
+namespace blink {
 
 RetainedDOMInfo::RetainedDOMInfo(Node* root)
     : m_root(root)
@@ -58,7 +58,7 @@ bool RetainedDOMInfo::IsEquivalent(v8::RetainedObjectInfo* other)
         return true;
     if (strcmp(GetLabel(), other->GetLabel()))
         return false;
-    return static_cast<WebCore::RetainedObjectInfo*>(other)->GetEquivalenceClass() == this->GetEquivalenceClass();
+    return static_cast<blink::RetainedObjectInfo*>(other)->GetEquivalenceClass() == this->GetEquivalenceClass();
 }
 
 intptr_t RetainedDOMInfo::GetHash()
@@ -92,4 +92,4 @@ intptr_t RetainedDOMInfo::GetEquivalenceClass()
     return reinterpret_cast<intptr_t>(m_root);
 }
 
-} // namespace WebCore
+} // namespace blink

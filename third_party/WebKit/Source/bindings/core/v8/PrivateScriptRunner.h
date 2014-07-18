@@ -8,7 +8,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class LocalFrame;
@@ -24,6 +24,6 @@ public:
     static bool throwDOMExceptionInPrivateScriptIfNeeded(v8::Isolate*, ExceptionState&, v8::Handle<v8::Value>);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8PrivateScriptRunner_h

@@ -44,7 +44,7 @@
 #include <v8-profiler.h>
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 typedef HashMap<String, double> ProfileNameIdleTimeMap;
 
@@ -307,4 +307,4 @@ void ScriptProfiler::setIdle(bool isIdle)
         profiler->SetIdle(isIdle);
 }
 
-} // namespace WebCore
+} // namespace blink

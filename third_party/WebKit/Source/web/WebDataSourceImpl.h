@@ -45,11 +45,11 @@ namespace blink {
 
 class WebPluginLoadObserver;
 
-class WebDataSourceImpl FINAL : public WebCore::DocumentLoader, public WebDataSource {
+class WebDataSourceImpl FINAL : public blink::DocumentLoader, public WebDataSource {
 public:
-    static PassRefPtr<WebDataSourceImpl> create(WebCore::LocalFrame*, const WebCore::ResourceRequest&, const WebCore::SubstituteData&);
+    static PassRefPtr<WebDataSourceImpl> create(blink::LocalFrame*, const blink::ResourceRequest&, const blink::SubstituteData&);
 
-    static WebDataSourceImpl* fromDocumentLoader(WebCore::DocumentLoader* loader)
+    static WebDataSourceImpl* fromDocumentLoader(blink::DocumentLoader* loader)
     {
         return static_cast<WebDataSourceImpl*>(loader);
     }
@@ -70,13 +70,13 @@ public:
     virtual void setExtraData(ExtraData*) OVERRIDE;
     virtual void setNavigationStartTime(double) OVERRIDE;
 
-    static WebNavigationType toWebNavigationType(WebCore::NavigationType type);
+    static WebNavigationType toWebNavigationType(blink::NavigationType type);
 
     PassOwnPtr<WebPluginLoadObserver> releasePluginLoadObserver() { return m_pluginLoadObserver.release(); }
     static void setNextPluginLoadObserver(PassOwnPtr<WebPluginLoadObserver>);
 
 private:
-    WebDataSourceImpl(WebCore::LocalFrame*, const WebCore::ResourceRequest&, const WebCore::SubstituteData&);
+    WebDataSourceImpl(blink::LocalFrame*, const blink::ResourceRequest&, const blink::SubstituteData&);
     virtual ~WebDataSourceImpl();
 
     // Mutable because the const getters will magically sync these to the

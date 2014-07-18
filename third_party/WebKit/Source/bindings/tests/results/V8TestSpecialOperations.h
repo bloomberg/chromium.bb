@@ -13,7 +13,7 @@
 #include "bindings/tests/idls/TestSpecialOperations.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class V8TestSpecialOperations {
 public:

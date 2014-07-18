@@ -37,7 +37,7 @@
 #include "public/web/WebElement.h"
 #include "public/web/WebNode.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

@@ -61,7 +61,7 @@
 #include "web/WorkerPermissionClient.h"
 #include "wtf/Functional.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

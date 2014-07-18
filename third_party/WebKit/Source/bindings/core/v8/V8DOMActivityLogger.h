@@ -35,7 +35,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 
@@ -72,6 +72,6 @@ public:
 
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8DOMActivityLogger_h

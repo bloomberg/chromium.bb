@@ -49,7 +49,7 @@ class ArrayBufferContents;
 
 }
 
-namespace WebCore {
+namespace blink {
 
 class BlobDataHandle;
 class ExceptionState;
@@ -129,6 +129,6 @@ private:
     intptr_t m_externallyAllocatedMemory;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SerializedScriptValue_h

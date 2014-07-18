@@ -32,7 +32,7 @@
 #include "platform/TraceEvent.h"
 
 
-namespace WebCore {
+namespace blink {
 
 v8::Local<v8::Object> V8ObjectConstructor::newInstance(v8::Isolate* isolate, v8::Handle<v8::Function> function)
 {
@@ -66,4 +66,4 @@ void V8ObjectConstructor::isValidConstructorMode(const v8::FunctionCallbackInfo<
     v8SetReturnValue(info, info.This());
 }
 
-} // namespace WebCore
+} // namespace blink

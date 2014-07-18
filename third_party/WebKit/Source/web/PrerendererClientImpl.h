@@ -36,7 +36,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 class Prerender;
 }
 
@@ -44,15 +44,15 @@ namespace blink {
 
 class WebPrerendererClient;
 
-class PrerendererClientImpl FINAL : public NoBaseWillBeGarbageCollected<PrerendererClientImpl>, public WebCore::PrerendererClient {
+class PrerendererClientImpl FINAL : public NoBaseWillBeGarbageCollected<PrerendererClientImpl>, public blink::PrerendererClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PrerendererClientImpl);
     WTF_MAKE_NONCOPYABLE(PrerendererClientImpl);
 public:
     explicit PrerendererClientImpl(WebPrerendererClient*);
 
-    void willAddPrerender(WebCore::Prerender*) OVERRIDE;
+    void willAddPrerender(blink::Prerender*) OVERRIDE;
 
-    virtual void trace(WebCore::Visitor* visitor) OVERRIDE { WebCore::PrerendererClient::trace(visitor); }
+    virtual void trace(blink::Visitor* visitor) OVERRIDE { blink::PrerendererClient::trace(visitor); }
 
 private:
     WebPrerendererClient* m_client;

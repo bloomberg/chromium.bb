@@ -51,18 +51,18 @@
 #include <gtest/gtest.h>
 
 using namespace blink;
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 
-PassRefPtrWillBeRawPtr<WebCore::KeyboardEvent> createKeyboardEventWithLocation(WebCore::KeyboardEvent::KeyLocationCode location)
+PassRefPtrWillBeRawPtr<blink::KeyboardEvent> createKeyboardEventWithLocation(blink::KeyboardEvent::KeyLocationCode location)
 {
-    return WebCore::KeyboardEvent::create("keydown", true, true, 0, "", location, false, false, false, false, false);
+    return blink::KeyboardEvent::create("keydown", true, true, 0, "", location, false, false, false, false, false);
 }
 
-int getModifiersForKeyLocationCode(WebCore::KeyboardEvent::KeyLocationCode location)
+int getModifiersForKeyLocationCode(blink::KeyboardEvent::KeyLocationCode location)
 {
-    RefPtrWillBeRawPtr<WebCore::KeyboardEvent> event = createKeyboardEventWithLocation(location);
+    RefPtrWillBeRawPtr<blink::KeyboardEvent> event = createKeyboardEventWithLocation(location);
     blink::WebKeyboardEventBuilder convertedEvent(*event);
     return convertedEvent.modifiers;
 }
@@ -70,25 +70,25 @@ int getModifiersForKeyLocationCode(WebCore::KeyboardEvent::KeyLocationCode locat
 TEST(WebInputEventConversionTest, WebKeyboardEventBuilder)
 {
     // Test key location conversion.
-    int modifiers = getModifiersForKeyLocationCode(WebCore::KeyboardEvent::DOM_KEY_LOCATION_STANDARD);
+    int modifiers = getModifiersForKeyLocationCode(blink::KeyboardEvent::DOM_KEY_LOCATION_STANDARD);
     EXPECT_FALSE(modifiers & WebInputEvent::IsKeyPad || modifiers & WebInputEvent::IsLeft || modifiers & WebInputEvent::IsRight);
 
-    modifiers = getModifiersForKeyLocationCode(WebCore::KeyboardEvent::DOM_KEY_LOCATION_LEFT);
+    modifiers = getModifiersForKeyLocationCode(blink::KeyboardEvent::DOM_KEY_LOCATION_LEFT);
     EXPECT_TRUE(modifiers & WebInputEvent::IsLeft);
     EXPECT_FALSE(modifiers & WebInputEvent::IsKeyPad || modifiers & WebInputEvent::IsRight);
 
-    modifiers = getModifiersForKeyLocationCode(WebCore::KeyboardEvent::DOM_KEY_LOCATION_RIGHT);
+    modifiers = getModifiersForKeyLocationCode(blink::KeyboardEvent::DOM_KEY_LOCATION_RIGHT);
     EXPECT_TRUE(modifiers & WebInputEvent::IsRight);
     EXPECT_FALSE(modifiers & WebInputEvent::IsKeyPad || modifiers & WebInputEvent::IsLeft);
 
-    modifiers = getModifiersForKeyLocationCode(WebCore::KeyboardEvent::DOM_KEY_LOCATION_NUMPAD);
+    modifiers = getModifiersForKeyLocationCode(blink::KeyboardEvent::DOM_KEY_LOCATION_NUMPAD);
     EXPECT_TRUE(modifiers & WebInputEvent::IsKeyPad);
     EXPECT_FALSE(modifiers & WebInputEvent::IsLeft || modifiers & WebInputEvent::IsRight);
 }
 
 TEST(WebInputEventConversionTest, WebTouchEventBuilder)
 {
-    RefPtrWillBeRawPtr<WebCore::TouchEvent> event = WebCore::TouchEvent::create();
+    RefPtrWillBeRawPtr<blink::TouchEvent> event = blink::TouchEvent::create();
     WebMouseEventBuilder mouse(0, 0, *event);
     EXPECT_EQ(WebInputEvent::Undefined, mouse.type);
 }
@@ -252,7 +252,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     // which expect CSS pixel coordinates.
     {
         PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), LeftButton, PlatformEvent::MouseMoved, 1, false, false, false, false, 0);
-        RefPtrWillBeRawPtr<MouseEvent> mouseEvent = MouseEvent::create(WebCore::EventTypeNames::mousemove, domWindow, platformMouseEvent, 0, document);
+        RefPtrWillBeRawPtr<MouseEvent> mouseEvent = MouseEvent::create(blink::EventTypeNames::mousemove, domWindow, platformMouseEvent, 0, document);
         WebMouseEventBuilder webMouseBuilder(view, documentRenderView, *mouseEvent);
 
         EXPECT_EQ(10, webMouseBuilder.x);
@@ -265,7 +265,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
 
     {
         PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), NoButton, PlatformEvent::MouseMoved, 1, false, false, false, false, 0);
-        RefPtrWillBeRawPtr<MouseEvent> mouseEvent = MouseEvent::create(WebCore::EventTypeNames::mousemove, domWindow, platformMouseEvent, 0, document);
+        RefPtrWillBeRawPtr<MouseEvent> mouseEvent = MouseEvent::create(blink::EventTypeNames::mousemove, domWindow, platformMouseEvent, 0, document);
         WebMouseEventBuilder webMouseBuilder(view, documentRenderView, *mouseEvent);
         EXPECT_EQ(WebMouseEvent::ButtonNone, webMouseBuilder.button);
     }
@@ -287,7 +287,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         RefPtrWillBeRawPtr<Touch> touch = Touch::create(toLocalFrame(webViewImpl->page()->mainFrame()), document.get(), 0, FloatPoint(10, 9.5), FloatPoint(3.5, 2), FloatSize(4, 4.5), 0, 0);
         RefPtrWillBeRawPtr<TouchList> touchList = TouchList::create();
         touchList->append(touch);
-        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), WebCore::EventTypeNames::touchmove, domWindow, false, false, false, false, false);
+        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), blink::EventTypeNames::touchmove, domWindow, false, false, false, false, false);
 
         WebTouchEventBuilder webTouchBuilder(view, documentRenderView, *touchEvent);
         ASSERT_EQ(1u, webTouchBuilder.touchesLength);
@@ -484,7 +484,7 @@ TEST(WebInputEventConversionTest, InputEventsConversions)
         EXPECT_EQ(10.f, platformGestureBuilder.globalPosition().y());
         EXPECT_EQ(1, platformGestureBuilder.tapCount());
 
-        RefPtrWillBeRawPtr<WebCore::GestureEvent> coreGestureEvent = WebCore::GestureEvent::create(domWindow, platformGestureBuilder);
+        RefPtrWillBeRawPtr<blink::GestureEvent> coreGestureEvent = blink::GestureEvent::create(domWindow, platformGestureBuilder);
         WebGestureEventBuilder recreatedWebGestureEvent(view, documentRenderView, *coreGestureEvent);
         EXPECT_EQ(webGestureEvent.type, recreatedWebGestureEvent.type);
         EXPECT_EQ(webGestureEvent.x, recreatedWebGestureEvent.x);

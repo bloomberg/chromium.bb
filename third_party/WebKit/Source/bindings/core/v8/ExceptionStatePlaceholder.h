@@ -36,7 +36,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -51,7 +51,7 @@ public:
     virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) OVERRIDE { }
 };
 
-#define IGNORE_EXCEPTION (::WebCore::IgnorableExceptionState().returnThis())
+#define IGNORE_EXCEPTION (::blink::IgnorableExceptionState().returnThis())
 
 #if ENABLE(ASSERT)
 
@@ -68,14 +68,14 @@ private:
     int m_line;
 };
 
-#define ASSERT_NO_EXCEPTION (::WebCore::NoExceptionStateAssertionChecker(__FILE__, __LINE__).returnThis())
+#define ASSERT_NO_EXCEPTION (::blink::NoExceptionStateAssertionChecker(__FILE__, __LINE__).returnThis())
 
 #else
 
-#define ASSERT_NO_EXCEPTION (::WebCore::IgnorableExceptionState().returnThis())
+#define ASSERT_NO_EXCEPTION (::blink::IgnorableExceptionState().returnThis())
 
 #endif
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ExceptionStatePlaceholder_h

@@ -37,7 +37,7 @@
 #include "public/platform/WebScrollbar.h"
 #include "public/web/WebExternalPopupMenuClient.h"
 
-namespace WebCore {
+namespace blink {
 class FloatQuad;
 class LocalFrame;
 class FrameView;
@@ -55,14 +55,14 @@ class WebMouseEvent;
 
 // The ExternalPopupMenu connects the actual implementation of the popup menu
 // to the WebCore popup menu.
-class ExternalPopupMenu FINAL : public WebCore::PopupMenu, public WebExternalPopupMenuClient {
+class ExternalPopupMenu FINAL : public blink::PopupMenu, public WebExternalPopupMenuClient {
 public:
-    ExternalPopupMenu(WebCore::LocalFrame&, WebCore::PopupMenuClient*, WebViewImpl&);
+    ExternalPopupMenu(blink::LocalFrame&, blink::PopupMenuClient*, WebViewImpl&);
     virtual ~ExternalPopupMenu();
 
 private:
-    // WebCore::PopupMenu methods:
-    virtual void show(const WebCore::FloatQuad& controlPosition, const WebCore::IntSize&, int index) OVERRIDE;
+    // blink::PopupMenu methods:
+    virtual void show(const blink::FloatQuad& controlPosition, const blink::IntSize&, int index) OVERRIDE;
     virtual void hide() OVERRIDE;
     virtual void updateFromElement() OVERRIDE;
     virtual void disconnectClient() OVERRIDE;
@@ -73,16 +73,16 @@ private:
     virtual void didAcceptIndices(const WebVector<int>& indices) OVERRIDE;
     virtual void didCancel() OVERRIDE;
 
-    void dispatchEvent(WebCore::Timer<ExternalPopupMenu>*);
+    void dispatchEvent(blink::Timer<ExternalPopupMenu>*);
     // Fills |info| with the popup menu information contained in the
-    // WebCore::PopupMenuClient associated with this ExternalPopupMenu.
+    // blink::PopupMenuClient associated with this ExternalPopupMenu.
     void getPopupMenuInfo(WebPopupMenuInfo* info);
 
-    WebCore::PopupMenuClient* m_popupMenuClient;
-    RefPtr<WebCore::FrameView> m_frameView;
+    blink::PopupMenuClient* m_popupMenuClient;
+    RefPtr<blink::FrameView> m_frameView;
     WebViewImpl& m_webView;
     OwnPtr<WebMouseEvent> m_syntheticEvent;
-    WebCore::Timer<ExternalPopupMenu> m_dispatchEventTimer;
+    blink::Timer<ExternalPopupMenu> m_dispatchEventTimer;
     // The actual implementor of the show menu.
     WebExternalPopupMenu* m_webExternalPopupMenu;
 };

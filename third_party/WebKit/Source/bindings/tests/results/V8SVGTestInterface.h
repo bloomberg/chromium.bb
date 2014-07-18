@@ -13,7 +13,7 @@
 #include "bindings/tests/idls/SVGTestInterface.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class V8SVGTestInterface {
 public:

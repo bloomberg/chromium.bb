@@ -57,7 +57,7 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 
-using namespace WebCore;
+using namespace blink;
 
 static NSAttributedString* attributedSubstringFromRange(const Range* range)
 {

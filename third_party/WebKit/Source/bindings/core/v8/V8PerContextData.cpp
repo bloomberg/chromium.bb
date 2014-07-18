@@ -38,7 +38,7 @@
 
 #include <stdlib.h>
 
-namespace WebCore {
+namespace blink {
 
 V8PerContextData::V8PerContextData(v8::Handle<v8::Context> context)
     : m_isolate(context->GetIsolate())
@@ -214,4 +214,4 @@ void V8PerContextData::setCompiledPrivateScript(String className, v8::Handle<v8:
     m_compiledPrivateScript.Set(className, compiledObject);
 }
 
-} // namespace WebCore
+} // namespace blink

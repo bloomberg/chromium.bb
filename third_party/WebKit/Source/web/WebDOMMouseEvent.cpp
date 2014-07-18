@@ -33,7 +33,7 @@
 
 #include "core/events/MouseEvent.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

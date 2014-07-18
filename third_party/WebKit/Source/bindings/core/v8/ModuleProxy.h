@@ -7,7 +7,7 @@
 
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class Event;
 class EventTarget;
@@ -36,6 +36,6 @@ private:
     void (*m_didLeaveScriptContextForRecursionScope)(ExecutionContext&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ModuleProxy_h

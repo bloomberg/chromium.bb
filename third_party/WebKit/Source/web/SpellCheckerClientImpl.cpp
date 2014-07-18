@@ -38,7 +38,7 @@
 #include "web/WebTextCheckingCompletionImpl.h"
 #include "web/WebViewImpl.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -151,7 +151,7 @@ void SpellCheckerClientImpl::checkSpellingOfString(const String& text, int* miss
         *misspellingLength = spellLength;
 }
 
-void SpellCheckerClientImpl::requestCheckingOfString(WTF::PassRefPtr<WebCore::TextCheckingRequest> request)
+void SpellCheckerClientImpl::requestCheckingOfString(WTF::PassRefPtr<blink::TextCheckingRequest> request)
 {
     if (m_webView->spellCheckClient()) {
         const String& text = request->data().text();

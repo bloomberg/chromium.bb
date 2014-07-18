@@ -42,7 +42,7 @@
 
 #include <v8-debug.h>
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 
@@ -130,4 +130,4 @@ PassRefPtrWillBeRawPtr<ScriptArguments> createScriptArguments(ScriptState* scrip
     return ScriptArguments::create(scriptState, arguments);
 }
 
-} // namespace WebCore
+} // namespace blink

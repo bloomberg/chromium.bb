@@ -35,7 +35,7 @@
 
 struct NPObject;
 
-namespace WebCore {
+namespace blink {
 
 // These functions can be replaced by normal JS operation.
 // Getters
@@ -63,6 +63,6 @@ v8::Local<v8::Object> createV8ObjectForNPObject(NPObject*, NPObject* root, v8::I
 // cannot be referred to.
 void forgetV8ObjectForNPObject(NPObject*);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8NPObject_h

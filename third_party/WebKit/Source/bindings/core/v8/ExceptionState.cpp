@@ -35,7 +35,7 @@
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/ExceptionCode.h"
 
-namespace WebCore {
+namespace blink {
 
 void ExceptionState::clearException()
 {
@@ -185,4 +185,4 @@ String ExceptionState::addExceptionContext(const String& message) const
     return processedMessage;
 }
 
-} // namespace WebCore
+} // namespace blink

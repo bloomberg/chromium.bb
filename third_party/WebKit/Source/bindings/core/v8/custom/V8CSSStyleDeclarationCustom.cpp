@@ -50,7 +50,7 @@
 
 using namespace WTF;
 
-namespace WebCore {
+namespace blink {
 
 // Check for a CSS prefix.
 // Passed prefix is all lowercase.
@@ -229,4 +229,4 @@ void V8CSSStyleDeclaration::namedPropertySetterCustom(v8::Local<v8::String> name
     v8SetReturnValue(info, value);
 }
 
-} // namespace WebCore
+} // namespace blink

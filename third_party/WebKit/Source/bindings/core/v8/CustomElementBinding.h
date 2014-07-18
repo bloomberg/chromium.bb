@@ -35,7 +35,7 @@
 #include "wtf/PassOwnPtr.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 struct WrapperTypeInfo;
 

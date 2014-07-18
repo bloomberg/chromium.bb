@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/V8RecursionScope.h"
 
-namespace WebCore {
+namespace blink {
 
 ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* scriptState)
     : ActiveDOMObject(scriptState->executionContext())
@@ -99,4 +99,4 @@ void ScriptPromiseResolver::clear()
     }
 }
 
-} // namespace WebCore
+} // namespace blink

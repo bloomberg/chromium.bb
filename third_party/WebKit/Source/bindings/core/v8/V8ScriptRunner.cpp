@@ -36,7 +36,7 @@
 #include "core/fetch/ScriptResource.h"
 #include "platform/TraceEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -222,4 +222,4 @@ v8::Local<v8::Object> V8ScriptRunner::instantiateObjectInDocument(v8::Isolate* i
     return result;
 }
 
-} // namespace WebCore
+} // namespace blink

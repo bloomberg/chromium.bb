@@ -33,7 +33,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "web/PageOverlayList.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

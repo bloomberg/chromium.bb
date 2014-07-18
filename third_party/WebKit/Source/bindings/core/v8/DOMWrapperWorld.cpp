@@ -43,7 +43,7 @@
 #include "wtf/HashTraits.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 unsigned DOMWrapperWorld::isolatedWorldCount = 0;
 DOMWrapperWorld* DOMWrapperWorld::worldOfInitializingWindow = 0;
@@ -197,4 +197,4 @@ void DOMWrapperWorld::setIsolatedWorldContentSecurityPolicy(int worldId, const S
         isolatedWorldContentSecurityPolicies().remove(worldId);
 }
 
-} // namespace WebCore
+} // namespace blink

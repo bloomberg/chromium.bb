@@ -40,7 +40,7 @@
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "modules/speech/SpeechRecognitionResultList.h"
 
-namespace WebCore {
+namespace blink {
 
 template <>
 struct DictionaryHelperTraits<MIDIPort> {
@@ -86,4 +86,4 @@ template bool DictionaryHelper::convert(const Dictionary&, Dictionary::Conversio
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Member<MediaStream>& value);
 template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, RefPtrWillBeMember<Headers>& value);
 
-} // namespace WebCore
+} // namespace blink

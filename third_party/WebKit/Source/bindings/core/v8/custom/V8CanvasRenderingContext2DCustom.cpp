@@ -44,7 +44,7 @@
 #include "core/html/canvas/CanvasStyle.h"
 #include "platform/geometry/FloatRect.h"
 
-namespace WebCore {
+namespace blink {
 
 static v8::Handle<v8::Value> toV8Object(CanvasStyle* style, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -99,4 +99,4 @@ void V8CanvasRenderingContext2D::fillStyleAttributeSetterCustom(v8::Local<v8::Va
     }
 }
 
-} // namespace WebCore
+} // namespace blink

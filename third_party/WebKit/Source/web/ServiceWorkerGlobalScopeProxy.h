@@ -37,7 +37,7 @@
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 class ExecutionContext;
 }
 
@@ -61,10 +61,10 @@ class WebServiceWorkerRequest;
 // WorkerGlobalScope.
 class ServiceWorkerGlobalScopeProxy FINAL :
     public WebServiceWorkerContextProxy,
-    public WebCore::WorkerReportingProxy {
+    public blink::WorkerReportingProxy {
     WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeProxy);
 public:
-    static PassOwnPtr<ServiceWorkerGlobalScopeProxy> create(WebEmbeddedWorkerImpl&, WebCore::ExecutionContext&, WebServiceWorkerContextClient&);
+    static PassOwnPtr<ServiceWorkerGlobalScopeProxy> create(WebEmbeddedWorkerImpl&, blink::ExecutionContext&, WebServiceWorkerContextClient&);
     virtual ~ServiceWorkerGlobalScopeProxy();
 
     // WebServiceWorkerContextProxy overrides:
@@ -77,23 +77,23 @@ public:
 
     // WorkerReportingProxy overrides:
     virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL) OVERRIDE;
-    virtual void reportConsoleMessage(WebCore::MessageSource, WebCore::MessageLevel, const String& message, int lineNumber, const String& sourceURL) OVERRIDE;
+    virtual void reportConsoleMessage(blink::MessageSource, blink::MessageLevel, const String& message, int lineNumber, const String& sourceURL) OVERRIDE;
     virtual void postMessageToPageInspector(const String&) OVERRIDE;
     virtual void updateInspectorStateCookie(const String&) OVERRIDE;
-    virtual void workerGlobalScopeStarted(WebCore::WorkerGlobalScope*) OVERRIDE;
+    virtual void workerGlobalScopeStarted(blink::WorkerGlobalScope*) OVERRIDE;
     virtual void workerGlobalScopeClosed() OVERRIDE;
     virtual void willDestroyWorkerGlobalScope() OVERRIDE;
     virtual void workerGlobalScopeDestroyed() OVERRIDE;
 
 private:
-    ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl&, WebCore::ExecutionContext&, WebServiceWorkerContextClient&);
+    ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl&, blink::ExecutionContext&, WebServiceWorkerContextClient&);
 
     WebEmbeddedWorkerImpl& m_embeddedWorker;
-    WebCore::ExecutionContext& m_executionContext;
+    blink::ExecutionContext& m_executionContext;
 
     WebServiceWorkerContextClient& m_client;
 
-    WebCore::WorkerGlobalScope* m_workerGlobalScope;
+    blink::WorkerGlobalScope* m_workerGlobalScope;
 };
 
 } // namespace blink

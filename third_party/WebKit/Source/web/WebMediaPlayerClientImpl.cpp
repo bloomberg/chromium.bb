@@ -48,7 +48,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/text/CString.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -276,7 +276,7 @@ PassOwnPtr<MediaPlayer> WebMediaPlayerClientImpl::create(MediaPlayerClient* clie
 }
 
 #if OS(ANDROID)
-void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context, const IntRect& rect, uint8_t alpha)
+void WebMediaPlayerClientImpl::paintOnAndroid(blink::GraphicsContext* context, const IntRect& rect, uint8_t alpha)
 {
     OwnPtr<blink::WebGraphicsContext3DProvider> provider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!provider)
@@ -322,7 +322,7 @@ WebMediaPlayerClientImpl::WebMediaPlayerClientImpl(MediaPlayerClient* client)
     ASSERT(m_client);
 }
 
-WebCore::HTMLMediaElement& WebMediaPlayerClientImpl::mediaElement() const
+blink::HTMLMediaElement& WebMediaPlayerClientImpl::mediaElement() const
 {
     return *static_cast<HTMLMediaElement*>(m_client);
 }

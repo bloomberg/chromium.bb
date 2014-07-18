@@ -38,7 +38,7 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

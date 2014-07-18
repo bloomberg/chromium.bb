@@ -81,7 +81,7 @@
 #include "wtf/FastMalloc.h"
 #include <limits>
 
-namespace WebCore {
+namespace blink {
 
 // Allocates new storage via fastMalloc.
 // Returns 0 if array failed to convert for any reason.
@@ -828,4 +828,4 @@ void V8WebGLRenderingContext::vertexAttrib4fvMethodCustom(const v8::FunctionCall
     vertexAttribAndUniformHelperf(info, kVertexAttrib4v, exceptionState);
 }
 
-} // namespace WebCore
+} // namespace blink

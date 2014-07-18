@@ -30,7 +30,7 @@
 #include "public/web/WebGeolocationPermissionRequest.h"
 #include "wtf/HashMap.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

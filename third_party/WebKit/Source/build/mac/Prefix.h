@@ -57,14 +57,14 @@
 
 #include <type_traits>
 
-namespace WebCore {
+namespace blink {
 class TimerHeapReference;
 }
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
 inline _LIBCPP_INLINE_VISIBILITY
-const WebCore::TimerHeapReference& move(const WebCore::TimerHeapReference& t)
+const blink::TimerHeapReference& move(const blink::TimerHeapReference& t)
 {
     return t;
 }

@@ -40,7 +40,7 @@
 #include "core/xml/XSLTProcessor.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8XSLTProcessor::setParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -83,4 +83,4 @@ void V8XSLTProcessor::removeParameterMethodCustom(const v8::FunctionCallbackInfo
     impl->removeParameter(namespaceURI, localName);
 }
 
-} // namespace WebCore
+} // namespace blink

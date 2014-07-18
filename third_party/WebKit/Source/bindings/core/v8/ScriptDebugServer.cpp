@@ -48,7 +48,7 @@
 #include "wtf/dtoa/utils.h"
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -680,4 +680,4 @@ String ScriptDebugServer::preprocessEventListener(LocalFrame*, const String& sou
     return source;
 }
 
-} // namespace WebCore
+} // namespace blink

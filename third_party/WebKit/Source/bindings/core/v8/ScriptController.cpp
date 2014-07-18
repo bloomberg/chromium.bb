@@ -79,7 +79,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextPosition.h"
 
-namespace WebCore {
+namespace blink {
 
 bool ScriptController::canAccessFromCurrentOrigin(LocalFrame *frame)
 {
@@ -634,4 +634,4 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<Sc
     }
 }
 
-} // namespace WebCore
+} // namespace blink

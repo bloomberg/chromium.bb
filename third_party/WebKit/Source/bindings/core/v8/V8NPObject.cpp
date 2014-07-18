@@ -46,7 +46,7 @@
 #include "v8-util.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 enum InvokeFunctionType {
     InvokeMethod = 1,
@@ -492,4 +492,4 @@ void forgetV8ObjectForNPObject(NPObject* object)
     }
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -34,7 +34,7 @@
 #include "bindings/core/v8/custom/V8TypedArrayCustom.h"
 #include "wtf/Uint16Array.h"
 
-namespace WebCore {
+namespace blink {
 
 template<>
 class TypedArrayTraits<Uint16Array> {
@@ -110,6 +110,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& info, PassRefPtr<Uint16Arra
     v8SetReturnValueFast(info, impl.get(), wrappable);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

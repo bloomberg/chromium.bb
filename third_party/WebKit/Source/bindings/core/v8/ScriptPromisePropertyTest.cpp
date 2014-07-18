@@ -23,7 +23,7 @@
 #include <gtest/gtest.h>
 #include <v8.h>
 
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 

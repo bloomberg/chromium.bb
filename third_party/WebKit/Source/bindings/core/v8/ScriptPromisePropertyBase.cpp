@@ -9,7 +9,7 @@
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "core/dom/ExecutionContext.h"
 
-namespace WebCore {
+namespace blink {
 
 ScriptPromisePropertyBase::ScriptPromisePropertyBase(ExecutionContext* executionContext, Name name)
     : ContextLifecycleObserver(executionContext)
@@ -150,4 +150,4 @@ v8::Handle<v8::String> ScriptPromisePropertyBase::resolverName()
     return v8::Handle<v8::String>();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -11,7 +11,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef HashMap<String, OwnPtr<V8DOMActivityLogger> > DOMActivityLoggerMapForMainWorld;
 typedef HashMap<int, OwnPtr<V8DOMActivityLogger>, WTF::IntHash<int>, WTF::UnsignedWithZeroKeyHashTraits<int> > DOMActivityLoggerMapForIsolatedWorld;
@@ -107,4 +107,4 @@ V8DOMActivityLogger* V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld()
     return contextData->activityLogger();
 }
 
-} // namespace WebCore
+} // namespace blink

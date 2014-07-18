@@ -12,7 +12,7 @@
 #include "{{filename}}"
 {% endfor %}
 
-namespace WebCore {
+namespace blink {
 
 class {{v8_class}} FINAL : public {{cpp_class}}, public ActiveDOMCallback {
 public:

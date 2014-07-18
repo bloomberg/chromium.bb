@@ -33,7 +33,7 @@
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class V8DOMConfiguration {
 public:
@@ -147,6 +147,6 @@ public:
     static v8::Handle<v8::FunctionTemplate> domClassTemplate(v8::Isolate*, WrapperTypeInfo*, void (*)(v8::Handle<v8::FunctionTemplate>, v8::Isolate*));
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8DOMConfiguration_h

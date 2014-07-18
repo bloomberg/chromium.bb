@@ -40,7 +40,7 @@
 #include <v8.h>
 
 
-namespace WebCore {
+namespace blink {
 
 WorkerScriptDebugServer::WorkerScriptDebugServer(WorkerGlobalScope* workerGlobalScope)
     : ScriptDebugServer(v8::Isolate::GetCurrent())
@@ -113,4 +113,4 @@ void WorkerScriptDebugServer::quitMessageLoopOnPause()
     // Nothing to do here in case of workers since runMessageLoopOnPause will check for paused state after each debugger command.
 }
 
-} // namespace WebCore
+} // namespace blink

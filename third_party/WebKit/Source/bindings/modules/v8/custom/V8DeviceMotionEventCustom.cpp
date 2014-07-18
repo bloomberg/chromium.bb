@@ -30,7 +30,7 @@
 #include "modules/device_orientation/DeviceMotionData.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -116,4 +116,4 @@ void V8DeviceMotionEvent::initDeviceMotionEventMethodCustom(const v8::FunctionCa
     impl->initDeviceMotionEvent(type, bubbles, cancelable, deviceMotionData.get());
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -30,7 +30,7 @@
 #include "bindings/core/v8/custom/V8ArrayBufferViewCustom.h"
 #include "core/html/canvas/DataView.h"
 
-namespace WebCore {
+namespace blink {
 
 static void initializeScriptWrappableForInterface(DataView* object)
 {
@@ -40,13 +40,13 @@ static void initializeScriptWrappableForInterface(DataView* object)
         ASSERT_NOT_REACHED();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 // In ScriptWrappable::init, the use of a local function declaration has an issue on Windows:
 // the local declaration does not pick up the surrounding namespace. Therefore, we provide this function
 // in the global namespace.
 // (More info on the MSVC bug here: http://connect.microsoft.com/VisualStudio/feedback/details/664619/the-namespace-of-local-function-declarations-in-c)
-void webCoreInitializeScriptWrappableForInterface(WebCore::DataView* object)
+void webCoreInitializeScriptWrappableForInterface(blink::DataView* object)
 {
-    WebCore::initializeScriptWrappableForInterface(object);
+    blink::initializeScriptWrappableForInterface(object);
 }

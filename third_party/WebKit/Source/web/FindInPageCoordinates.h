@@ -33,7 +33,7 @@
 
 #include "platform/geometry/FloatRect.h"
 
-namespace WebCore {
+namespace blink {
 class Range;
 class RenderObject;
 }
@@ -53,8 +53,8 @@ namespace blink {
 // are scroll-independent, representing any contents scaled to the visible area of their container.
 // The provided methods support scroll:overflow and are CSS position and transform-friendly.
 
-WebCore::FloatRect findInPageRectFromAbsoluteRect(const WebCore::FloatRect&, const WebCore::RenderObject*);
-WebCore::FloatRect findInPageRectFromRange(WebCore::Range*);
+blink::FloatRect findInPageRectFromAbsoluteRect(const blink::FloatRect&, const blink::RenderObject*);
+blink::FloatRect findInPageRectFromRange(blink::Range*);
 
 } // namespace blink
 

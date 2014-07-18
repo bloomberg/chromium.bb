@@ -43,7 +43,7 @@ template <class C> inline void initializeScriptWrappableHelper(C* object)
     webCoreInitializeScriptWrappableForInterface(object);
 }
 
-namespace WebCore {
+namespace blink {
 
 /**
  * ScriptWrappable wraps a V8 object and its WrapperTypeInfo.
@@ -55,7 +55,7 @@ namespace WebCore {
  * The physical state space of ScriptWrappable is:
  * - uintptr_t m_wrapperOrTypeInfo;
  *   - if 0: the ScriptWrappable is uninitialized/empty.
- *   - if even: a pointer to WebCore::TypeInfo
+ *   - if even: a pointer to blink::TypeInfo
  *   - if odd: a pointer to v8::Persistent<v8::Object> + 1.
  *
  * In other words, one integer represents one of two object pointers,
@@ -279,6 +279,6 @@ private:
     }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptWrappable_h

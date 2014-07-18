@@ -43,7 +43,7 @@
 #include "bindings/core/v8/V8CSSViewportRule.h"
 #include "bindings/core/v8/V8WebKitCSSFilterRule.h"
 
-namespace WebCore {
+namespace blink {
 
 v8::Handle<v8::Object> wrap(CSSRule* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -80,4 +80,4 @@ v8::Handle<v8::Object> wrap(CSSRule* impl, v8::Handle<v8::Object> creationContex
     return V8CSSRule::createWrapper(impl, creationContext, isolate);
 }
 
-} // namespace WebCore
+} // namespace blink

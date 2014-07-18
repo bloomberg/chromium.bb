@@ -43,7 +43,7 @@
 #include "public/platform/Platform.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8InspectorFrontendHost::platformMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -179,5 +179,5 @@ void V8InspectorFrontendHost::recordPanelShownMethodCustom(const v8::FunctionCal
     histogramEnumeration("DevTools.PanelShown", info, 20);
 }
 
-} // namespace WebCore
+} // namespace blink
 

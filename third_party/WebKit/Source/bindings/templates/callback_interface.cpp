@@ -12,7 +12,7 @@
 #include "{{filename}}"
 {% endfor %}
 
-namespace WebCore {
+namespace blink {
 
 {{v8_class}}::{{v8_class}}(v8::Handle<v8::Function> callback, ScriptState* scriptState)
     : ActiveDOMCallback(scriptState->executionContext())
@@ -72,5 +72,5 @@ namespace WebCore {
 }
 
 {% endfor %}
-} // namespace WebCore
+} // namespace blink
 {% endfilter %}

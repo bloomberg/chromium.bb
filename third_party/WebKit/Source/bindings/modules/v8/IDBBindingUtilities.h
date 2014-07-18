@@ -37,7 +37,7 @@ class WebBlobInfo;
 
 }
 
-namespace WebCore {
+namespace blink {
 
 class IDBAny;
 class IDBKey;
@@ -62,6 +62,6 @@ ScriptValue deserializeScriptValue(ScriptState*, SerializedScriptValue*, const V
 void assertPrimaryKeyValidOrInjectable(ScriptState*, PassRefPtr<SharedBuffer>, const Vector<blink::WebBlobInfo>*, IDBKey*, const IDBKeyPath&);
 #endif
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IDBBindingUtilities_h

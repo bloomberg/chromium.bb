@@ -51,7 +51,7 @@
 #include "wtf/Uint8Array.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 static v8::Handle<v8::Value> deserializeIDBValueBuffer(v8::Isolate*, SharedBuffer*, const Vector<blink::WebBlobInfo>*);
 
@@ -178,7 +178,7 @@ static IDBKey* createIDBKeyFromValue(v8::Isolate* isolate, v8::Handle<v8::Value>
     if (value->IsUint8Array() && (allowExperimentalTypes || RuntimeEnabledFeatures::indexedDBExperimentalEnabled())) {
         // Per discussion in https://www.w3.org/Bugs/Public/show_bug.cgi?id=23332 the
         // input type is constrained to Uint8Array to match the output type.
-        ArrayBufferView* view = WebCore::V8ArrayBufferView::toNative(value->ToObject());
+        ArrayBufferView* view = blink::V8ArrayBufferView::toNative(value->ToObject());
         const char* start = static_cast<const char*>(view->baseAddress());
         size_t length = view->byteLength();
         return IDBKey::createBinary(SharedBuffer::create(start, length));
@@ -458,4 +458,4 @@ void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState, PassRefPtr<Shar
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

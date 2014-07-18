@@ -37,7 +37,7 @@
 #include "bindings/core/v8/custom/V8Uint8ClampedArrayCustom.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 using namespace WTF;
 
@@ -87,4 +87,4 @@ ArrayBufferView* V8ArrayBufferView::toNativeWithTypeCheck(v8::Isolate* isolate, 
     return V8ArrayBufferView::hasInstance(value, isolate) ? V8ArrayBufferView::toNative(v8::Handle<v8::Object>::Cast(value)) : 0;
 }
 
-} // namespace WebCore
+} // namespace blink

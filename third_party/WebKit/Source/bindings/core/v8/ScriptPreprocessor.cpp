@@ -41,7 +41,7 @@
 #include "core/frame/LocalFrame.h"
 #include "wtf/TemporaryChange.h"
 
-namespace WebCore {
+namespace blink {
 
 ScriptPreprocessor::ScriptPreprocessor(const ScriptSourceCode& preprocessorSourceCode, LocalFrame* frame)
     : m_isPreprocessing(false)
@@ -111,4 +111,4 @@ String ScriptPreprocessor::preprocessSourceCode(const String& sourceCode, const 
     return sourceCode;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -35,7 +35,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 DOMDataStore::DOMDataStore(bool isMainWorld)
     : m_isMainWorld(isMainWorld)
@@ -54,4 +54,4 @@ DOMDataStore& DOMDataStore::current(v8::Isolate* isolate)
     return DOMWrapperWorld::current(isolate).domDataStore();
 }
 
-} // namespace WebCore
+} // namespace blink

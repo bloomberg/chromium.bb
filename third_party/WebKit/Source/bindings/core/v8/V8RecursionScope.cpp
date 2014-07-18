@@ -34,7 +34,7 @@
 #include "bindings/core/v8/ModuleProxy.h"
 #include "core/dom/Microtask.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8RecursionScope::didLeaveScriptContext()
 {
@@ -42,4 +42,4 @@ void V8RecursionScope::didLeaveScriptContext()
     ModuleProxy::moduleProxy().didLeaveScriptContextForRecursionScope(m_executionContext);
 }
 
-} // namespace WebCore
+} // namespace blink

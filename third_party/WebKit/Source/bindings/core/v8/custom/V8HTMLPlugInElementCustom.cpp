@@ -38,7 +38,7 @@
 #include "bindings/core/v8/V8NPObject.h"
 #include "core/frame/UseCounter.h"
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: Consider moving getter/setter helpers to V8NPObject and renaming this file to V8PluginElementFunctions
 // to match JSC bindings naming convention.
@@ -184,4 +184,4 @@ void V8HTMLObjectElement::indexedPropertySetterCustom(uint32_t index, v8::Local<
     npObjectIndexedSetter<V8HTMLObjectElement>(index, value, info);
 }
 
-} // namespace WebCore
+} // namespace blink

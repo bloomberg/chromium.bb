@@ -32,7 +32,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 enum MultilineMode {
     MultilineDisabled,
@@ -52,6 +52,6 @@ private:
     ScopedPersistent<v8::RegExp> m_regex;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptRegexp_h

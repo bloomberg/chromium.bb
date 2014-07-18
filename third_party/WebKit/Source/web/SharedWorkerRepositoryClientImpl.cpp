@@ -52,7 +52,7 @@
 #include "public/web/WebSharedWorkerRepositoryClient.h"
 #include "web/WebLocalFrameImpl.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

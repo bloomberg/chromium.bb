@@ -12,25 +12,25 @@ namespace blink {
 // static
 void WebFontRendering::setUseDirectWrite(bool useDirectWrite)
 {
-    WebCore::FontCache::setUseDirectWrite(useDirectWrite);
+    blink::FontCache::setUseDirectWrite(useDirectWrite);
 }
 
 // static
 void WebFontRendering::setDirectWriteFactory(IDWriteFactory* factory)
 {
-    WebCore::FontCache::setDirectWriteFactory(factory);
+    blink::FontCache::setDirectWriteFactory(factory);
 }
 
 // static
 void WebFontRendering::setUseSubpixelPositioning(bool useSubpixelPositioning)
 {
-    WebCore::FontCache::setUseSubpixelPositioning(useSubpixelPositioning);
+    blink::FontCache::setUseSubpixelPositioning(useSubpixelPositioning);
 }
 
 // static
 void WebFontRendering::addSideloadedFontForTesting(SkTypeface* typeface)
 {
-    WebCore::FontCache::addSideloadedFontForTesting(typeface);
+    blink::FontCache::addSideloadedFontForTesting(typeface);
 }
 
 } // namespace blink

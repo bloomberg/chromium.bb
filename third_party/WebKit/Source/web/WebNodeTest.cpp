@@ -12,9 +12,9 @@
 
 namespace blink {
 
-using WebCore::Document;
-using WebCore::DummyPageHolder;
-using WebCore::IntSize;
+using blink::Document;
+using blink::DummyPageHolder;
+using blink::IntSize;
 
 class WebNodeTest : public testing::Test {
 protected:
@@ -28,7 +28,7 @@ private:
 
 void WebNodeTest::SetUp()
 {
-    m_pageHolder = WebCore::DummyPageHolder::create(IntSize(800, 600));
+    m_pageHolder = blink::DummyPageHolder::create(IntSize(800, 600));
 }
 
 TEST_F(WebNodeTest, GetElementsByHTMLTagName)

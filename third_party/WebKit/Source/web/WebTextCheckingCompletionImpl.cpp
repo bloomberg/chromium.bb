@@ -37,7 +37,7 @@
 #include "web/EditorClientImpl.h"
 #include "wtf/Assertions.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

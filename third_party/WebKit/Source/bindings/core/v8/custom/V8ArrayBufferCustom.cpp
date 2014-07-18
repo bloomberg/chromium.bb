@@ -35,7 +35,7 @@
 #include "wtf/ArrayBuffer.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 using namespace WTF;
 
@@ -79,7 +79,7 @@ ArrayBuffer* V8ArrayBuffer::toNative(v8::Handle<v8::Object> object)
     v8::Local<v8::ArrayBuffer> v8buffer = object.As<v8::ArrayBuffer>();
     if (v8buffer->IsExternal()) {
         RELEASE_ASSERT(toWrapperTypeInfo(object)->ginEmbedder == gin::kEmbedderBlink);
-        return reinterpret_cast<ArrayBuffer*>(WebCore::toNative(object));
+        return reinterpret_cast<ArrayBuffer*>(blink::toNative(object));
     }
 
     v8::ArrayBuffer::Contents v8Contents = v8buffer->Externalize();
@@ -88,7 +88,7 @@ ArrayBuffer* V8ArrayBuffer::toNative(v8::Handle<v8::Object> object)
     RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(contents);
     V8DOMWrapper::associateObjectWithWrapper<V8ArrayBuffer>(buffer.release(), &wrapperTypeInfo, object, v8::Isolate::GetCurrent(), WrapperConfiguration::Dependent);
 
-    return reinterpret_cast<ArrayBuffer*>(WebCore::toNative(object));
+    return reinterpret_cast<ArrayBuffer*>(blink::toNative(object));
 }
 
 ArrayBuffer* V8ArrayBuffer::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
@@ -102,4 +102,4 @@ v8::Handle<v8::Value> toV8NoInline(ArrayBuffer* impl, v8::Handle<v8::Object> cre
     return toV8(impl, creationContext, isolate);
 }
 
-} // namespace WebCore
+} // namespace blink

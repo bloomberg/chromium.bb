@@ -30,7 +30,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 
-namespace WebCore {
+namespace blink {
 
 static void domExceptionStackGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
@@ -125,4 +125,4 @@ v8::Handle<v8::Value> V8ThrowException::throwError(v8::Handle<v8::Value> excepti
     return v8::Undefined(isolate);
 }
 
-} // namespace WebCore
+} // namespace blink

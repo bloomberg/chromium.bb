@@ -37,7 +37,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 class Element;
 class LocalFrame;
 }
@@ -54,8 +54,8 @@ public:
     void willExitFullScreen();
     void didExitFullScreen();
 
-    void enterFullScreenForElement(WebCore::Element*);
-    void exitFullScreenForElement(WebCore::Element*);
+    void enterFullScreenForElement(blink::Element*);
+    void exitFullScreenForElement(blink::Element*);
 
     bool isFullscreen() { return m_fullScreenFrame; }
 
@@ -66,14 +66,14 @@ private:
     WebViewImpl* m_webViewImpl;
 
     float m_exitFullscreenPageScaleFactor;
-    WebCore::IntSize m_exitFullscreenScrollOffset;
-    WebCore::FloatPoint m_exitFullscreenPinchViewportOffset;
+    blink::IntSize m_exitFullscreenScrollOffset;
+    blink::FloatPoint m_exitFullscreenPinchViewportOffset;
 
     // If set, the WebView is transitioning to fullscreen for this element.
-    RefPtrWillBePersistent<WebCore::Element> m_provisionalFullScreenElement;
+    RefPtrWillBePersistent<blink::Element> m_provisionalFullScreenElement;
 
     // If set, the WebView is in fullscreen mode for an element in this frame.
-    RefPtr<WebCore::LocalFrame> m_fullScreenFrame;
+    RefPtr<blink::LocalFrame> m_fullScreenFrame;
 
     bool m_isCancelingFullScreen;
 };

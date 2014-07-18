@@ -291,17 +291,17 @@ namespace WTF {
 
 } // namespace WTF
 
-namespace WebCore {
+namespace blink {
 
 class JSONValue;
 
-} // namespace WebCore
+} // namespace blink
 
 namespace WTF {
 
     // FIXME: Disable pointer conversion checking against JSONValue.
     // The current CodeGeneratorInspector.py generates code which upcasts to JSONValue from undefined types.
-    template<typename From> class IsPointerConvertible<From, WebCore::JSONValue> {
+    template<typename From> class IsPointerConvertible<From, blink::JSONValue> {
     public:
         enum {
             Value = true

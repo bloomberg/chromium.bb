@@ -37,7 +37,7 @@
 #include <v8-util.h>
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 template<class KeyType>
 class DOMWrapperMap {
@@ -166,6 +166,6 @@ inline void DOMWrapperMap<void>::PersistentValueMapTraits::Dispose(
     releaseObject(v8::Local<v8::Object>::New(isolate, value));
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMWrapperMap_h

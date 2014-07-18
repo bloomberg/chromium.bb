@@ -168,7 +168,7 @@
 #undef pow
 #include <cmath> // for std::pow
 
-using namespace WebCore;
+using namespace blink;
 
 // The following constants control parameters for automated scaling of webpages
 // (such as due to a double tap gesture or find in page etc.). These are
@@ -232,13 +232,13 @@ static int webInputEventKeyStateToPlatformEventKeyState(int webInputEventKeyStat
 {
     int platformEventKeyState = 0;
     if (webInputEventKeyState & WebInputEvent::ShiftKey)
-        platformEventKeyState = platformEventKeyState | WebCore::PlatformEvent::ShiftKey;
+        platformEventKeyState = platformEventKeyState | blink::PlatformEvent::ShiftKey;
     if (webInputEventKeyState & WebInputEvent::ControlKey)
-        platformEventKeyState = platformEventKeyState | WebCore::PlatformEvent::CtrlKey;
+        platformEventKeyState = platformEventKeyState | blink::PlatformEvent::CtrlKey;
     if (webInputEventKeyState & WebInputEvent::AltKey)
-        platformEventKeyState = platformEventKeyState | WebCore::PlatformEvent::AltKey;
+        platformEventKeyState = platformEventKeyState | blink::PlatformEvent::AltKey;
     if (webInputEventKeyState & WebInputEvent::MetaKey)
-        platformEventKeyState = platformEventKeyState | WebCore::PlatformEvent::MetaKey;
+        platformEventKeyState = platformEventKeyState | blink::PlatformEvent::MetaKey;
     return platformEventKeyState;
 }
 
@@ -591,7 +591,7 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta, const WebFloatSize& veloci
 {
     if (m_flingSourceDevice == WebGestureDeviceTouchpad) {
         WebMouseWheelEvent syntheticWheel;
-        const float tickDivisor = WebCore::WheelEvent::TickMultiplier;
+        const float tickDivisor = blink::WheelEvent::TickMultiplier;
 
         syntheticWheel.deltaX = delta.width;
         syntheticWheel.deltaY = delta.height;
@@ -1434,8 +1434,8 @@ bool WebViewImpl::scrollViewWithKeyboard(int keyCode, int modifiers)
 }
 
 bool WebViewImpl::mapKeyCodeForScroll(int keyCode,
-                                      WebCore::ScrollDirection* scrollDirection,
-                                      WebCore::ScrollGranularity* scrollGranularity)
+                                      blink::ScrollDirection* scrollDirection,
+                                      blink::ScrollGranularity* scrollGranularity)
 {
     switch (keyCode) {
     case VKEY_LEFT:
@@ -1598,7 +1598,7 @@ WebLocalFrameImpl* WebViewImpl::localFrameRootTemporary() const
     // separate WebWidgets to be created by RenderWidgets, which are associated with *all*
     // local frame roots, not just the first one in the tree. Until then, this limits us
     // to having only one functioning connected LocalFrame subtree per process.
-    for (WebCore::Frame* frame = page()->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+    for (blink::Frame* frame = page()->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (frame->isLocalRoot())
             return WebLocalFrameImpl::fromFrame(toLocalFrame(frame));
     }
@@ -1832,12 +1832,12 @@ void WebViewImpl::themeChanged()
     view->invalidateRect(damagedRect);
 }
 
-void WebViewImpl::enterFullScreenForElement(WebCore::Element* element)
+void WebViewImpl::enterFullScreenForElement(blink::Element* element)
 {
     m_fullscreenController->enterFullScreenForElement(element);
 }
 
-void WebViewImpl::exitFullScreenForElement(WebCore::Element* element)
+void WebViewImpl::exitFullScreenForElement(blink::Element* element)
 {
     m_fullscreenController->exitFullScreenForElement(element);
 }
@@ -3568,7 +3568,7 @@ void WebViewImpl::getSmartClipData(WebRect rect, WebString& clipText, WebRect& c
     LocalFrame* frame = toLocalFrame(focusedWebCoreFrame());
     if (!frame)
         return;
-    SmartClipData clipData = WebCore::SmartClip(frame).dataForRect(rect);
+    SmartClipData clipData = blink::SmartClip(frame).dataForRect(rect);
     clipText = clipData.clipData();
     clipRect = clipData.rect();
 }
@@ -3578,7 +3578,7 @@ void WebViewImpl::extractSmartClipData(WebRect rect, WebString& clipText, WebStr
     LocalFrame* localFrame = toLocalFrame(focusedWebCoreFrame());
     if (!localFrame)
         return;
-    SmartClipData clipData = WebCore::SmartClip(localFrame).dataForRect(rect);
+    SmartClipData clipData = blink::SmartClip(localFrame).dataForRect(rect);
     clipText = clipData.clipData();
     clipRect = clipData.rect();
 
@@ -3683,7 +3683,7 @@ void WebView::injectStyleSheet(const WebString& sourceCode, const WebVector<WebS
     for (size_t i = 0; i < patternsIn.size(); ++i)
         patterns.append(patternsIn[i]);
 
-    InjectedStyleSheets::instance().add(sourceCode, patterns, static_cast<WebCore::StyleInjectionTarget>(injectIn));
+    InjectedStyleSheets::instance().add(sourceCode, patterns, static_cast<blink::StyleInjectionTarget>(injectIn));
 }
 
 void WebView::removeInjectedStyleSheets()
@@ -3816,7 +3816,7 @@ void WebViewImpl::removePageOverlay(WebPageOverlay* overlay)
         m_pageOverlays = nullptr;
 }
 
-void WebViewImpl::setOverlayLayer(WebCore::GraphicsLayer* layer)
+void WebViewImpl::setOverlayLayer(blink::GraphicsLayer* layer)
 {
     if (!m_rootGraphicsLayer)
         return;
@@ -3946,12 +3946,12 @@ void WebViewImpl::invalidateRect(const IntRect& rect)
         m_client->didInvalidateRect(rect);
 }
 
-WebCore::GraphicsLayerFactory* WebViewImpl::graphicsLayerFactory() const
+blink::GraphicsLayerFactory* WebViewImpl::graphicsLayerFactory() const
 {
     return m_graphicsLayerFactory.get();
 }
 
-WebCore::RenderLayerCompositor* WebViewImpl::compositor() const
+blink::RenderLayerCompositor* WebViewImpl::compositor() const
 {
     if (!page() || !page()->mainFrame())
         return 0;
@@ -3971,7 +3971,7 @@ void WebViewImpl::registerForAnimations(WebLayer* layer)
         m_layerTreeView->registerForAnimations(layer);
 }
 
-WebCore::GraphicsLayer* WebViewImpl::rootGraphicsLayer()
+blink::GraphicsLayer* WebViewImpl::rootGraphicsLayer()
 {
     return m_rootGraphicsLayer;
 }
@@ -4150,7 +4150,7 @@ void WebViewImpl::updateRootLayerTransform()
         m_rootTransformLayer = m_page->deprecatedLocalMainFrame()->view()->renderView()->compositor()->ensureRootTransformLayer();
 
     if (m_rootTransformLayer) {
-        WebCore::TransformationMatrix transform;
+        blink::TransformationMatrix transform;
         transform.translate(m_rootLayerOffset.width, m_rootLayerOffset.height);
         transform = transform.scale(m_rootLayerScale);
         m_rootTransformLayer->setTransform(transform);

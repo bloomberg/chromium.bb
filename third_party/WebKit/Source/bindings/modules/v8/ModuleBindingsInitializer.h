@@ -5,13 +5,13 @@
 #ifndef ModuleBindingsInitializer_h
 #define ModuleBindingsInitializer_h
 
-namespace WebCore {
+namespace blink {
 
 class ModuleBindingsInitializer {
 public:
     static void init();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

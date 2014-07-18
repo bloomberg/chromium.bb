@@ -37,7 +37,7 @@
 #include "wtf/RefPtr.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 // V8CustomXPathNSResolver does not create a persistent handle to the
 // given resolver object. So the lifetime of V8CustomXPathNSResolver
@@ -57,6 +57,6 @@ private:
     v8::Isolate* m_isolate;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8CustomXPathNSResolver_h

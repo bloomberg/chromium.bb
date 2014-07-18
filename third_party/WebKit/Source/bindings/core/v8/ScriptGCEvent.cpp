@@ -36,7 +36,7 @@
 
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 static GCEventData* isolateGCEventData()
 {
@@ -106,5 +106,5 @@ void ScriptGCEvent::gcEpilogueCallback(v8::GCType type, v8::GCCallbackFlags flag
     gcEventData->clear();
 }
 
-} // namespace WebCore
+} // namespace blink
 

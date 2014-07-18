@@ -43,7 +43,7 @@
 #include "core/html/HTMLUnknownElement.h"
 #include "core/svg/SVGElement.h"
 
-namespace WebCore {
+namespace blink {
 
 template<typename ElementType>
 v8::Handle<v8::Object> createDirectWrapper(ElementType*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
@@ -117,4 +117,4 @@ class CustomElementWrapper<HTMLElement, V8HTMLElement>;
 template
 class CustomElementWrapper<SVGElement, V8SVGElement>;
 
-} // namespace WebCore
+} // namespace blink

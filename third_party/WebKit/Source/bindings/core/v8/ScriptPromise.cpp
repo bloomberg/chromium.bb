@@ -36,7 +36,7 @@
 
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -164,4 +164,4 @@ ScriptPromise ScriptPromise::rejectWithDOMException(ScriptState* scriptState, Pa
     return reject(scriptState, V8ValueTraits<PassRefPtrWillBeRawPtr<DOMException> >::toV8Value(exception, scriptState->context()->Global(), scriptState->isolate()));
 }
 
-} // namespace WebCore
+} // namespace blink

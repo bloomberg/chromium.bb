@@ -33,7 +33,7 @@
 
 #include "core/events/MutationEvent.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

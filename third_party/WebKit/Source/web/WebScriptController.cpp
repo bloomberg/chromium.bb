@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/ScriptController.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

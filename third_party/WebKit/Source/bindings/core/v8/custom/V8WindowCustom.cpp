@@ -66,7 +66,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: There is a lot of duplication with SetTimeoutOrInterval() in V8WorkerGlobalScopeCustom.cpp.
 // We should refactor this.
@@ -538,4 +538,4 @@ v8::Handle<v8::Value> toV8(LocalDOMWindow* window, v8::Handle<v8::Object> creati
     return global;
 }
 
-} // namespace WebCore
+} // namespace blink

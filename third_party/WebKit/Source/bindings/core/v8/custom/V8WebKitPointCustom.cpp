@@ -36,7 +36,7 @@
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8WebKitPoint::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -60,4 +60,4 @@ void V8WebKitPoint::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&
     info.GetReturnValue().Set(wrapper);
 }
 
-} // namespace WebCore
+} // namespace blink

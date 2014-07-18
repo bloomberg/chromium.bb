@@ -38,7 +38,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLAllCollection.h"
 
-namespace WebCore {
+namespace blink {
 
 template<class CallbackInfo>
 static v8::Handle<v8::Value> getNamedItems(HTMLAllCollection* collection, AtomicString name, const CallbackInfo& info)
@@ -108,4 +108,4 @@ void V8HTMLAllCollection::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Va
     }
 }
 
-} // namespace WebCore
+} // namespace blink

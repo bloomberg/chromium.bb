@@ -38,7 +38,7 @@
 #include "wtf/Forward.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class ExecutionContext;
@@ -64,6 +64,6 @@ private:
     ScriptSourceCode m_code;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScheduledAction

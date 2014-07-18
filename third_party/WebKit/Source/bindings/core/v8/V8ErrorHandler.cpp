@@ -40,7 +40,7 @@
 #include "core/events/ErrorEvent.h"
 #include "core/frame/LocalFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 V8ErrorHandler::V8ErrorHandler(v8::Local<v8::Object> listener, bool isInline, ScriptState* scriptState)
     : V8EventListener(listener, isInline, scriptState)
@@ -93,4 +93,4 @@ bool V8ErrorHandler::shouldPreventDefault(v8::Local<v8::Value> returnValue)
     return returnValue->IsBoolean() && returnValue->BooleanValue();
 }
 
-} // namespace WebCore
+} // namespace blink

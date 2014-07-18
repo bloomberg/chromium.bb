@@ -34,7 +34,7 @@
 #include "bindings/core/v8/custom/V8TypedArrayCustom.h"
 #include "wtf/Uint8ClampedArray.h"
 
-namespace WebCore {
+namespace blink {
 
 template<>
 class TypedArrayTraits<Uint8ClampedArray> {
@@ -110,6 +110,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& info, PassRefPtr<Uint8Clamp
     v8SetReturnValueFast(info, impl.get(), wrappable);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

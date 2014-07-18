@@ -90,7 +90,7 @@
 #include "web/WebViewImpl.h"
 
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -334,7 +334,7 @@ int WebPluginContainerImpl::printBegin(const WebPrintParams& printParams) const
 }
 
 bool WebPluginContainerImpl::printPage(int pageNumber,
-                                       WebCore::GraphicsContext* gc)
+                                       blink::GraphicsContext* gc)
 {
     if (gc->paintingDisabled())
         return true;
@@ -656,8 +656,8 @@ bool WebPluginContainerImpl::paintCustomOverhangArea(GraphicsContext* context, c
 
 // Private methods -------------------------------------------------------------
 
-WebPluginContainerImpl::WebPluginContainerImpl(WebCore::HTMLPlugInElement* element, WebPlugin* webPlugin)
-    : WebCore::FrameDestructionObserver(element->document().frame())
+WebPluginContainerImpl::WebPluginContainerImpl(blink::HTMLPlugInElement* element, WebPlugin* webPlugin)
+    : blink::FrameDestructionObserver(element->document().frame())
     , m_element(element)
     , m_webPlugin(webPlugin)
     , m_webLayer(0)
@@ -921,7 +921,7 @@ void WebPluginContainerImpl::calculateGeometry(const IntRect& frameRect,
         cutOutRects[i].move(-frameRect.x(), -frameRect.y());
 }
 
-WebCore::IntRect WebPluginContainerImpl::windowClipRect() const
+blink::IntRect WebPluginContainerImpl::windowClipRect() const
 {
     // Start by clipping to our bounds.
     IntRect clipRect =

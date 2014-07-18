@@ -28,7 +28,7 @@
 
 #include "Source/bindings/core/v8/Dictionary.h"
 
-namespace WebCore {
+namespace blink {
 
 template <typename T>
 struct DictionaryHelperTraits {
@@ -58,13 +58,13 @@ bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::Convers
 
     v8::Local<v8::Value> v8Value;
     dictionary.get(key, v8Value);
-    if (context.isNullable() && WebCore::isUndefinedOrNull(v8Value))
+    if (context.isNullable() && blink::isUndefinedOrNull(v8Value))
         return true;
 
     context.throwTypeError(ExceptionMessages::incorrectPropertyType(key, "does not have a " + context.typeName() + " type."));
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DictionaryHelperForBindings_h

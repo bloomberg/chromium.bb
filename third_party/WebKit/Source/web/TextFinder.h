@@ -43,7 +43,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 class Range;
 }
 
@@ -78,7 +78,7 @@ public:
 
     // Returns the active match in the current frame. Could be a null range if
     // the local frame has no active match.
-    WebCore::Range* activeMatch() const { return m_activeMatch.get(); }
+    blink::Range* activeMatch() const { return m_activeMatch.get(); }
 
     void flushCurrentScoping();
 
@@ -93,18 +93,18 @@ public:
     class FindMatch {
         ALLOW_ONLY_INLINE_ALLOCATION();
     public:
-        RefPtrWillBeMember<WebCore::Range> m_range;
+        RefPtrWillBeMember<blink::Range> m_range;
 
         // 1-based index within this frame.
         int m_ordinal;
 
         // In find-in-page coordinates.
         // Lazily calculated by updateFindMatchRects.
-        WebCore::FloatRect m_rect;
+        blink::FloatRect m_rect;
 
-        FindMatch(PassRefPtrWillBeRawPtr<WebCore::Range>, int ordinal);
+        FindMatch(PassRefPtrWillBeRawPtr<blink::Range>, int ordinal);
 
-        void trace(WebCore::Visitor*);
+        void trace(blink::Visitor*);
     };
 
 private:
@@ -127,7 +127,7 @@ private:
     // Return the index in the find-in-page cache of the match closest to the
     // provided point in find-in-page coordinates, or -1 in case of error.
     // The squared distance to the closest match is returned in the distanceSquared parameter.
-    int nearestFindMatch(const WebCore::FloatPoint&, float& distanceSquared);
+    int nearestFindMatch(const blink::FloatPoint&, float& distanceSquared);
 
     // Select a find-in-page match marker in the current frame using a cache
     // match index returned by nearestFindMatch. Returns the ordinal of the new
@@ -144,10 +144,10 @@ private:
     void appendFindMatchRects(Vector<WebFloatRect>& frameRects);
 
     // Add a WebKit TextMatch-highlight marker to nodes in a range.
-    void addMarker(WebCore::Range*, bool activeMatch);
+    void addMarker(blink::Range*, bool activeMatch);
 
     // Sets the markers within a range as active or inactive.
-    void setMarkerActive(WebCore::Range*, bool active);
+    void setMarkerActive(blink::Range*, bool active);
 
     // Returns the ordinal of the first match in the frame specified. This
     // function enumerates the frames, starting with the main frame and up to (but
@@ -197,7 +197,7 @@ private:
     WebLocalFrameImpl* m_currentActiveMatchFrame;
 
     // The range of the active match for the current frame.
-    RefPtrWillBePersistent<WebCore::Range> m_activeMatch;
+    RefPtrWillBePersistent<blink::Range> m_activeMatch;
 
     // The index of the active match for the current frame.
     int m_activeMatchIndexInCurrentFrame;
@@ -207,7 +207,7 @@ private:
     //
     // This range is collapsed to the start position of the last successful
     // search; the new search should start from the next adjacent position.
-    RefPtrWillBePersistent<WebCore::Range> m_resumeScopingFromRange;
+    RefPtrWillBePersistent<blink::Range> m_resumeScopingFromRange;
 
     // Keeps track of the last string this frame searched for. This is used for
     // short-circuiting searches in the following scenarios: When a frame has
@@ -250,7 +250,7 @@ private:
 
     // Contents size when find-in-page match rects were last computed for this
     // frame's cache.
-    WebCore::IntSize m_contentsSizeForCurrentFindMatchRects;
+    blink::IntSize m_contentsSizeForCurrentFindMatchRects;
 
     // This flag is used by the scoping effort to determine if we need to figure
     // out which rectangle is the active match. Once we find the active

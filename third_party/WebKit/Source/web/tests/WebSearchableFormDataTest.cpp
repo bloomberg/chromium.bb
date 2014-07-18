@@ -43,7 +43,7 @@
 #include <gtest/gtest.h>
 
 using namespace blink;
-using namespace WebCore;
+using namespace blink;
 
 class WebSearchableFormDataTest : public testing::Test {
 protected:

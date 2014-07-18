@@ -38,7 +38,7 @@
 #include "wtf/text/CString.h"
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 using namespace std;
 
 class LocaleWinTest : public ::testing::Test {

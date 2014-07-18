@@ -37,7 +37,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLError* error)
 {
@@ -79,4 +79,4 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLEr
     return exceptionCatcher.HasCaught() || (!result.IsEmpty() && result->BooleanValue());
 }
 
-} // namespace WebCore
+} // namespace blink

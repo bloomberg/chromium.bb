@@ -63,7 +63,7 @@
 #include "modules/webaudio/ScriptProcessorNode.h"
 #include "modules/webaudio/WaveShaperNode.h"
 
-namespace WebCore {
+namespace blink {
 
 v8::Handle<v8::Object> wrap(AudioNode* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -111,6 +111,6 @@ v8::Handle<v8::Object> wrap(AudioNode* impl, v8::Handle<v8::Object> creationCont
     return V8AudioNode::createWrapper(impl, creationContext, isolate);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

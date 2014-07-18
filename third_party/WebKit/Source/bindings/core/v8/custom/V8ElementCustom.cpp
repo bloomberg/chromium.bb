@@ -43,7 +43,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/GetPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8Element::scrollLeftAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
@@ -233,4 +233,4 @@ void V8Element::animateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& i
     exceptionState.throwIfNeeded();
 }
 
-} // namespace WebCore
+} // namespace blink

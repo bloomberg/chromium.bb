@@ -40,7 +40,7 @@
 #include "core/events/ClipboardEvent.h"
 #include "core/events/Event.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8Event::clipboardDataAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
@@ -74,4 +74,4 @@ v8::Handle<v8::Object> wrap(Event* event, v8::Handle<v8::Object> creationContext
     return V8Event::createWrapper(event, creationContext, isolate);
 }
 
-} // namespace WebCore
+} // namespace blink

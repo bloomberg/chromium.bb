@@ -35,7 +35,7 @@
 #include <v8-util.h>
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 /**
  * A Traits class for v8::PersistentValueMap that uses wtf/HashMap as a
@@ -123,6 +123,6 @@ public:
     explicit V8PersistentValueMap(v8::Isolate* isolate) : v8::PersistentValueMap<KeyType, ValueType, Traits>(isolate) { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8PersistentValueMap_h

@@ -39,7 +39,7 @@
 #include "public/platform/Platform.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 static V8PerIsolateData* mainThreadPerIsolateData = 0;
 
@@ -230,4 +230,4 @@ v8::Handle<v8::FunctionTemplate> V8PerIsolateData::toStringTemplate()
     return m_toStringTemplate.newLocal(m_isolate);
 }
 
-} // namespace WebCore
+} // namespace blink

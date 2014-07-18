@@ -37,13 +37,13 @@
 
 namespace blink {
 
-WebColorSuggestion::WebColorSuggestion(const WebCore::ColorSuggestion& suggestion)
+WebColorSuggestion::WebColorSuggestion(const blink::ColorSuggestion& suggestion)
     : color(static_cast<WebColor>(suggestion.color.rgb()))
     , label(suggestion.label)
 {
 }
 
-WebColorSuggestion& WebColorSuggestion::operator=(const WebCore::ColorSuggestion& suggestion)
+WebColorSuggestion& WebColorSuggestion::operator=(const blink::ColorSuggestion& suggestion)
 {
     color = static_cast<WebColor>(suggestion.color.rgb());
     label = suggestion.label;

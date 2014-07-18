@@ -89,7 +89,7 @@
 // FIXME: consider crashing in debug mode on deserialization errors
 // NOTE: be sure to change wireFormatVersion as necessary!
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -2188,7 +2188,7 @@ private:
             return false;
         if (!readWebCoreString(&url))
             return false;
-        DOMFileSystem* fs = DOMFileSystem::create(m_scriptState->executionContext(), name, static_cast<WebCore::FileSystemType>(type), KURL(ParsedURLString, url));
+        DOMFileSystem* fs = DOMFileSystem::create(m_scriptState->executionContext(), name, static_cast<blink::FileSystemType>(type), KURL(ParsedURLString, url));
         *value = toV8(fs, m_scriptState->context()->Global(), isolate());
         return true;
     }
@@ -3062,4 +3062,4 @@ SerializedScriptValue::~SerializedScriptValue()
     }
 }
 
-} // namespace WebCore
+} // namespace blink

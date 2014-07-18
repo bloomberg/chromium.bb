@@ -50,7 +50,7 @@
 
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 V8LazyEventListener::V8LazyEventListener(const AtomicString& functionName, const AtomicString& eventParameterName, const String& code, const String sourceURL, const TextPosition& position, Node* node, v8::Isolate* isolate)
     : V8AbstractEventListener(true, isolate)
@@ -230,4 +230,4 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* context)
     setListenerObject(wrappedFunction);
 }
 
-} // namespace WebCore
+} // namespace blink

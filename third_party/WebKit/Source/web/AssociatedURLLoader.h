@@ -37,7 +37,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore { class DocumentThreadableLoader; }
+namespace blink { class DocumentThreadableLoader; }
 
 namespace blink {
 
@@ -64,7 +64,7 @@ private:
     WebURLLoaderOptions m_options;
     WebURLLoaderClient* m_client;
     OwnPtr<ClientAdapter> m_clientAdapter;
-    RefPtr<WebCore::DocumentThreadableLoader> m_loader;
+    RefPtr<blink::DocumentThreadableLoader> m_loader;
 };
 
 } // namespace blink

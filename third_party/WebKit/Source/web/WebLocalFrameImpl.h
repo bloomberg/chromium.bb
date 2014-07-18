@@ -43,7 +43,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 class GraphicsContext;
 class HTMLInputElement;
 class HistoryItem;
@@ -235,31 +235,31 @@ public:
     static WebLocalFrameImpl* create(WebFrameClient*);
     virtual ~WebLocalFrameImpl();
 
-    PassRefPtr<WebCore::LocalFrame> initializeWebCoreFrame(WebCore::FrameHost*, WebCore::FrameOwner*, const AtomicString& name, const AtomicString& fallbackName);
+    PassRefPtr<blink::LocalFrame> initializeWebCoreFrame(blink::FrameHost*, blink::FrameOwner*, const AtomicString& name, const AtomicString& fallbackName);
 
-    PassRefPtr<WebCore::LocalFrame> createChildFrame(
-        const WebCore::FrameLoadRequest&, WebCore::HTMLFrameOwnerElement*);
+    PassRefPtr<blink::LocalFrame> createChildFrame(
+        const blink::FrameLoadRequest&, blink::HTMLFrameOwnerElement*);
 
-    void didChangeContentsSize(const WebCore::IntSize&);
+    void didChangeContentsSize(const blink::IntSize&);
 
     void createFrameView();
 
-    static WebLocalFrameImpl* fromFrame(WebCore::LocalFrame*);
-    static WebLocalFrameImpl* fromFrame(WebCore::LocalFrame&);
-    static WebLocalFrameImpl* fromFrameOwnerElement(WebCore::Element*);
+    static WebLocalFrameImpl* fromFrame(blink::LocalFrame*);
+    static WebLocalFrameImpl* fromFrame(blink::LocalFrame&);
+    static WebLocalFrameImpl* fromFrameOwnerElement(blink::Element*);
 
     // If the frame hosts a PluginDocument, this method returns the WebPluginContainerImpl
     // that hosts the plugin.
-    static WebPluginContainerImpl* pluginContainerFromFrame(WebCore::LocalFrame*);
+    static WebPluginContainerImpl* pluginContainerFromFrame(blink::LocalFrame*);
 
     // If the frame hosts a PluginDocument, this method returns the WebPluginContainerImpl
     // that hosts the plugin. If the provided node is a plugin, then it runs its
     // WebPluginContainerImpl.
-    static WebPluginContainerImpl* pluginContainerFromNode(WebCore::LocalFrame*, const WebNode&);
+    static WebPluginContainerImpl* pluginContainerFromNode(blink::LocalFrame*, const WebNode&);
 
     WebViewImpl* viewImpl() const;
 
-    WebCore::FrameView* frameView() const { return frame() ? frame()->view() : 0; }
+    blink::FrameView* frameView() const { return frame() ? frame()->view() : 0; }
 
     // Getters for the impls corresponding to Get(Provisional)DataSource. They
     // may return 0 if there is no corresponding data source.
@@ -273,7 +273,7 @@ public:
 
     // Returns the active match in the current frame. Could be a null range if
     // the local frame has no active match.
-    WebCore::Range* activeMatch() const;
+    blink::Range* activeMatch() const;
 
     // When a Find operation ends, we want to set the selection to what was active
     // and set focus to the first focusable node we find (starting with the first
@@ -283,23 +283,23 @@ public:
     // allows us to navigate by pressing Enter after closing the Find box.
     void setFindEndstateFocusAndSelection();
 
-    void didFail(const WebCore::ResourceError&, bool wasProvisional);
+    void didFail(const blink::ResourceError&, bool wasProvisional);
 
     // Sets whether the WebLocalFrameImpl allows its document to be scrolled.
     // If the parameter is true, allow the document to be scrolled.
     // Otherwise, disallow scrolling.
     virtual void setCanHaveScrollbars(bool) OVERRIDE;
 
-    WebCore::LocalFrame* frame() const { return m_frame.get(); }
+    blink::LocalFrame* frame() const { return m_frame.get(); }
     WebFrameClient* client() const { return m_client; }
     void setClient(WebFrameClient* client) { m_client = client; }
 
     WebPermissionClient* permissionClient() { return m_permissionClient; }
     SharedWorkerRepositoryClientImpl* sharedWorkerRepositoryClient() const { return m_sharedWorkerRepositoryClient.get(); }
 
-    void setInputEventsTransformForEmulation(const WebCore::IntSize&, float);
+    void setInputEventsTransformForEmulation(const blink::IntSize&, float);
 
-    static void selectWordAroundPosition(WebCore::LocalFrame*, WebCore::VisiblePosition);
+    static void selectWordAroundPosition(blink::LocalFrame*, blink::VisiblePosition);
 
     // Returns the text finder object if it already exists.
     // Otherwise creates it and then returns.
@@ -312,7 +312,7 @@ public:
     void invalidateAll() const;
 
     // Returns a hit-tested VisiblePosition for the given point
-    WebCore::VisiblePosition visiblePositionForWindowPoint(const WebPoint&);
+    blink::VisiblePosition visiblePositionForWindowPoint(const WebPoint&);
 
 private:
     friend class FrameLoaderClientImpl;
@@ -320,9 +320,9 @@ private:
     explicit WebLocalFrameImpl(WebFrameClient*);
 
     // Sets the local WebCore frame and registers destruction observers.
-    void setWebCoreFrame(PassRefPtr<WebCore::LocalFrame>);
+    void setWebCoreFrame(PassRefPtr<blink::LocalFrame>);
 
-    void loadJavaScriptURL(const WebCore::KURL&);
+    void loadJavaScriptURL(const blink::KURL&);
 
     WebPlugin* focusedPluginIfInputMethodSupported();
 
@@ -331,7 +331,7 @@ private:
     // The embedder retains a reference to the WebCore LocalFrame while it is active in the DOM. This
     // reference is released when the frame is removed from the DOM or the entire page is closed.
     // FIXME: These will need to change to WebFrame when we introduce WebFrameProxy.
-    RefPtr<WebCore::LocalFrame> m_frame;
+    RefPtr<blink::LocalFrame> m_frame;
 
     // Indicate whether the current LocalFrame is local or remote. Remote frames are
     // rendered in a different process from their parent frames.
@@ -349,7 +349,7 @@ private:
     OwnPtrWillBePersistent<ChromePrintContext> m_printContext;
 
     // Stores the additional input events offset and scale when device metrics emulation is enabled.
-    WebCore::IntSize m_inputEventsOffsetForEmulation;
+    blink::IntSize m_inputEventsOffsetForEmulation;
     float m_inputEventsScaleFactorForEmulation;
 
     UserMediaClientImpl m_userMediaClientImpl;

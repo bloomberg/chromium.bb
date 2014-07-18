@@ -32,7 +32,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class ScriptResource;
 class ScriptSourceCode;
@@ -55,6 +55,6 @@ public:
 
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8ScriptRunner_h

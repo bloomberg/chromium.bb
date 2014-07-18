@@ -30,7 +30,7 @@
 
 #include "modules/indexeddb/IDBKey.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

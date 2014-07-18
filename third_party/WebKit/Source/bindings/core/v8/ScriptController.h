@@ -44,7 +44,7 @@
 
 struct NPObject;
 
-namespace WebCore {
+namespace blink {
 
 class DOMWrapperWorld;
 class ExecutionContext;
@@ -171,6 +171,6 @@ private:
     NPObject* m_windowScriptNPObject;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptController_h

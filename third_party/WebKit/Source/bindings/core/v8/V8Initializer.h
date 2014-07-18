@@ -28,7 +28,7 @@
 
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class V8Initializer {
 public:
@@ -36,6 +36,6 @@ public:
     static void initializeWorker(v8::Isolate*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8Initializer_h

@@ -12,7 +12,7 @@
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/tests/idls/TestCallbackInterface.h"
 
-namespace WebCore {
+namespace blink {
 
 class V8TestCallbackInterface FINAL : public TestCallbackInterface, public ActiveDOMCallback {
 public:

@@ -38,7 +38,7 @@
 #include "core/dom/NodeFilter.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 V8NodeFilterCondition::V8NodeFilterCondition(v8::Handle<v8::Value> filter, v8::Handle<v8::Object> owner, ScriptState* scriptState)
     : m_scriptState(scriptState)
@@ -103,4 +103,4 @@ void V8NodeFilterCondition::setWeakCallback(const v8::WeakCallbackData<v8::Value
     data.GetParameter()->m_filter.clear();
 }
 
-} // namespace WebCore
+} // namespace blink

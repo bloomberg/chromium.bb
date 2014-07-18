@@ -40,7 +40,7 @@
 #include <gtest/gtest.h>
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -257,4 +257,4 @@ TEST_F(ScriptPromiseTest, rejectWithExceptionState)
 
 } // namespace
 
-} // namespace WebCore
+} // namespace blink

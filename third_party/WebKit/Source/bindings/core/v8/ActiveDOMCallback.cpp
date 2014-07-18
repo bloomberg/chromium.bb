@@ -35,7 +35,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerGlobalScope.h"
 
-namespace WebCore {
+namespace blink {
 
 ActiveDOMCallback::ActiveDOMCallback(ExecutionContext* context)
     : ContextLifecycleObserver(context)
@@ -63,4 +63,4 @@ bool ActiveDOMCallback::isScriptControllerTerminating() const
     return false;
 }
 
-} // namespace WebCore
+} // namespace blink

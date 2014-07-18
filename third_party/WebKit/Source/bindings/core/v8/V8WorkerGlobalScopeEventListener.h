@@ -35,7 +35,7 @@
 #include "wtf/PassRefPtr.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class Event;
 
@@ -56,6 +56,6 @@ private:
     v8::Local<v8::Object> getReceiverObject(Event*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8WorkerGlobalScopeEventListener_h

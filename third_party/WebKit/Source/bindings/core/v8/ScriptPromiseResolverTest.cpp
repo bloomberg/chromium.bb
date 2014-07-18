@@ -15,7 +15,7 @@
 #include <gtest/gtest.h>
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -317,4 +317,4 @@ TEST_F(ScriptPromiseResolverTest, rejectVoid)
 
 } // namespace
 
-} // namespace WebCore
+} // namespace blink

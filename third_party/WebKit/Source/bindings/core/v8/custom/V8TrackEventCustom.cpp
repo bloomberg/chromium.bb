@@ -37,7 +37,7 @@
 #include "core/html/track/TrackBase.h"
 #include "core/html/track/TrackEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8TrackEvent::trackAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
@@ -66,4 +66,4 @@ void V8TrackEvent::trackAttributeGetterCustom(const v8::PropertyCallbackInfo<v8:
     v8SetReturnValueNull(info);
 }
 
-} // namespace WebCore
+} // namespace blink

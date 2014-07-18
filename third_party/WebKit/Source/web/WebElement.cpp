@@ -43,7 +43,7 @@
 #include "wtf/PassRefPtr.h"
 
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -155,7 +155,7 @@ WebImage WebElement::imageContents()
     if (isNull())
         return WebImage();
 
-    WebCore::Image* image = unwrap<Element>()->imageContents();
+    blink::Image* image = unwrap<Element>()->imageContents();
     if (!image)
         return WebImage();
 

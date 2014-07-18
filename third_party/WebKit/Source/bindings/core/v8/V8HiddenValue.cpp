@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
 
-namespace WebCore {
+namespace blink {
 
 #define V8_DEFINE_METHOD(name) \
 v8::Handle<v8::String> V8HiddenValue::name(v8::Isolate* isolate)    \
@@ -43,4 +43,4 @@ v8::Local<v8::Value> V8HiddenValue::getHiddenValueFromMainWorldWrapper(v8::Isola
     return wrapper.IsEmpty() ? v8::Local<v8::Value>() : getHiddenValue(isolate, wrapper, key);
 }
 
-} // namespace WebCore
+} // namespace blink

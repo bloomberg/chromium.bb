@@ -40,7 +40,7 @@
 #include "bindings/core/v8/custom/V8ArrayBufferCustom.h"
 #include "core/events/MessageEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 // Ensures a wrapper is created for the data to return now so that V8 knows how
 // much memory is used via the wrapper. To keep the wrapper alive, it's set to
@@ -161,4 +161,4 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
     }
 }
 
-} // namespace WebCore
+} // namespace blink

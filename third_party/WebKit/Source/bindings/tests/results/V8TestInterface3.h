@@ -13,7 +13,7 @@
 #include "bindings/tests/idls/TestInterface3.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class V8TestInterface3 {
 public:

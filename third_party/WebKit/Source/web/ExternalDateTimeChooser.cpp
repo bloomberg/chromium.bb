@@ -35,7 +35,7 @@
 #include "web/ChromeClientImpl.h"
 #include "wtf/text/AtomicString.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -72,13 +72,13 @@ ExternalDateTimeChooser::~ExternalDateTimeChooser()
 {
 }
 
-ExternalDateTimeChooser::ExternalDateTimeChooser(WebCore::DateTimeChooserClient* client)
+ExternalDateTimeChooser::ExternalDateTimeChooser(blink::DateTimeChooserClient* client)
     : m_client(client)
 {
     ASSERT(client);
 }
 
-PassRefPtrWillBeRawPtr<ExternalDateTimeChooser> ExternalDateTimeChooser::create(ChromeClientImpl* chromeClient, WebViewClient* webViewClient, WebCore::DateTimeChooserClient* client, const WebCore::DateTimeChooserParameters& parameters)
+PassRefPtrWillBeRawPtr<ExternalDateTimeChooser> ExternalDateTimeChooser::create(ChromeClientImpl* chromeClient, WebViewClient* webViewClient, blink::DateTimeChooserClient* client, const blink::DateTimeChooserParameters& parameters)
 {
     ASSERT(chromeClient);
     RefPtrWillBeRawPtr<ExternalDateTimeChooser> chooser = adoptRefWillBeNoop(new ExternalDateTimeChooser(client));

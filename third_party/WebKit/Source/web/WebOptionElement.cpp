@@ -37,7 +37,7 @@
 #include "public/platform/WebString.h"
 #include "wtf/PassRefPtr.h"
 
-using namespace WebCore;
+using namespace blink;
 using namespace HTMLNames;
 
 namespace blink {

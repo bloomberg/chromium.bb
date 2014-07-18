@@ -29,7 +29,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 StringCacheMapTraits::MapType* StringCacheMapTraits::MapFromWeakCallbackData(
     const v8::WeakCallbackData<v8::String, WeakCallbackDataType>& data)
@@ -129,4 +129,4 @@ void StringCache::InvalidateLastString()
     m_lastV8String.Reset();
 }
 
-} // namespace WebCore
+} // namespace blink

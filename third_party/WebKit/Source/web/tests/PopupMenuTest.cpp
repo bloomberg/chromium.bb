@@ -68,7 +68,7 @@
 #include "web/tests/URLTestHelpers.h"
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 using namespace blink;
 using blink::URLTestHelpers::toKURL;
 

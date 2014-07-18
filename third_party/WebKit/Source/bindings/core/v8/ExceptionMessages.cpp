@@ -34,7 +34,7 @@
 #include "platform/Decimal.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 String ExceptionMessages::failedToConstruct(const char* type, const String& detail)
 {
@@ -171,4 +171,4 @@ String ExceptionMessages::formatNumber<double>(double number)
     return formatPotentiallyNonFiniteNumber(number);
 }
 
-} // namespace WebCore
+} // namespace blink

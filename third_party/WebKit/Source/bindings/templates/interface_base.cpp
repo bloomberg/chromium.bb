@@ -12,7 +12,7 @@
 #include "{{filename}}"
 {% endfor %}
 
-namespace WebCore {
+namespace blink {
 
 static void initializeScriptWrappableForInterface({{cpp_class}}* object)
 {
@@ -22,7 +22,7 @@ static void initializeScriptWrappableForInterface({{cpp_class}}* object)
         ASSERT_NOT_REACHED();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 {#
 In ScriptWrappable::init, the use of a local function declaration has an
@@ -32,12 +32,12 @@ More info on the MSVC bug here (Bug 664619):
 The namespace of local function declarations in C++ by Uray M. János
 http://connect.microsoft.com/VisualStudio/feedback/details/664619/the-namespace-of-local-function-declarations-in-c
 #}
-void webCoreInitializeScriptWrappableForInterface(WebCore::{{cpp_class}}* object)
+void webCoreInitializeScriptWrappableForInterface(blink::{{cpp_class}}* object)
 {
-    WebCore::initializeScriptWrappableForInterface(object);
+    blink::initializeScriptWrappableForInterface(object);
 }
 
-namespace WebCore {
+namespace blink {
 {% set to_active_dom_object = '%s::toActiveDOMObject' % v8_class
                               if is_active_dom_object else '0' %}
 {% set to_event_target = '%s::toEventTarget' % v8_class
@@ -161,5 +161,5 @@ template <typename T> void V8_USE(T) { }
 {% block wrap %}{% endblock %}
 {% block create_wrapper %}{% endblock %}
 {% block deref_object_and_to_v8_no_inline %}{% endblock %}
-} // namespace WebCore
+} // namespace blink
 {% endfilter %}

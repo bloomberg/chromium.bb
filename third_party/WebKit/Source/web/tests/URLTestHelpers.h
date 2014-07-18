@@ -40,10 +40,10 @@ class WebURL;
 
 namespace URLTestHelpers {
 
-inline WebCore::KURL toKURL(const std::string& url)
+inline blink::KURL toKURL(const std::string& url)
 {
     WTF::String wtfString(url.c_str());
-    return WebCore::KURL(WebCore::ParsedURLString, wtfString);
+    return blink::KURL(blink::ParsedURLString, wtfString);
 }
 
 // Helper functions for mock URLs. These functions set up the desired URL and mimeType, with a 200 OK return status.

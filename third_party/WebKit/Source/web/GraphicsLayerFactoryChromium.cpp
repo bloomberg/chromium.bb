@@ -29,7 +29,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "web/WebViewImpl.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

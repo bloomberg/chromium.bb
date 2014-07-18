@@ -33,7 +33,7 @@
 
 #include "platform/text/TextCheckerClient.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

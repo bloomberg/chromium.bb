@@ -46,7 +46,7 @@
 #include "wtf/text/AtomicString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class LocalDOMWindow;
 class Document;
@@ -997,6 +997,6 @@ private:
     v8::TryCatch& m_block;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8Binding_h

@@ -34,7 +34,7 @@
 #include "bindings/core/v8/RetainedObjectInfo.h"
 #include <v8-profiler.h>
 
-namespace WebCore {
+namespace blink {
 
 class Node;
 
@@ -57,6 +57,6 @@ private:
     Node* m_root;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RetainedDOMInfo_h

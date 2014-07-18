@@ -50,7 +50,7 @@
 #include "core/dom/custom/CustomElementException.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>&);
 
@@ -300,4 +300,4 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& in
     v8SetReturnValueFast(info, element.release(), document);
 }
 
-} // namespace WebCore
+} // namespace blink

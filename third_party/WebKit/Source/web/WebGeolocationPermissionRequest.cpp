@@ -32,7 +32,7 @@
 #include "public/platform/WebURL.h"
 #include "public/web/WebSecurityOrigin.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

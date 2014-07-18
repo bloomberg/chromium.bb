@@ -38,7 +38,7 @@
 #include "wtf/PassRefPtr.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class Node;
 class ExceptionState;
@@ -83,6 +83,6 @@ private:
     ScopedPersistent<v8::Value> m_filter;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8NodeFilterCondition_h

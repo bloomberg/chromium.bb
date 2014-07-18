@@ -11,7 +11,7 @@
 #include "public/platform/WebCryptoKeyAlgorithm.h"
 #include "wtf/Uint8Array.h"
 
-namespace WebCore {
+namespace blink {
 
 class DictionaryBuilder : public blink::WebCryptoKeyAlgorithmDictionary {
 public:
@@ -65,4 +65,4 @@ void V8CryptoKey::algorithmAttributeGetterCustom(const v8::PropertyCallbackInfo<
     v8SetReturnValue(info, builder.dictionary().v8Value());
 }
 
-} // namespace WebCore
+} // namespace blink

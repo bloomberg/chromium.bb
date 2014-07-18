@@ -38,7 +38,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class JSONValue;
 
@@ -157,6 +157,6 @@ private:
     RefPtr<SharedPersistent<v8::Value> > m_value;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptValue_h

@@ -34,7 +34,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "web/WebMediaPlayerClientImpl.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

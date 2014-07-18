@@ -46,7 +46,7 @@
 #include <gtest/gtest.h>
 
 using namespace blink;
-using WebCore::Document;
+using blink::Document;
 using blink::URLTestHelpers::toKURL;
 
 namespace {

@@ -41,7 +41,7 @@
 #include "core/inspector/InspectorCounters.h"
 #include "core/workers/WorkerGlobalScope.h"
 
-namespace WebCore {
+namespace blink {
 
 V8AbstractEventListener::V8AbstractEventListener(bool isAttribute, ScriptState* scriptState)
     : EventListener(JSEventListenerType)
@@ -184,4 +184,4 @@ void V8AbstractEventListener::setWeakCallback(const v8::WeakCallbackData<v8::Obj
     data.GetParameter()->m_listener.clear();
 }
 
-} // namespace WebCore
+} // namespace blink

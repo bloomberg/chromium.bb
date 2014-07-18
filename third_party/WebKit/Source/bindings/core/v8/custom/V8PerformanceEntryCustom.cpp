@@ -40,7 +40,7 @@
 #include "core/timing/PerformanceResourceTiming.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 v8::Handle<v8::Object> wrap(PerformanceEntry* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -57,4 +57,4 @@ v8::Handle<v8::Object> wrap(PerformanceEntry* impl, v8::Handle<v8::Object> creat
     return V8PerformanceEntry::createWrapper(impl, creationContext, isolate);
 }
 
-} // namespace WebCore
+} // namespace blink

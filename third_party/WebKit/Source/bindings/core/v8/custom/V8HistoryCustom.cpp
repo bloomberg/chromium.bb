@@ -39,7 +39,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/History.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8History::stateAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
@@ -91,4 +91,4 @@ void V8History::replaceStateMethodCustom(const v8::FunctionCallbackInfo<v8::Valu
     exceptionState.throwIfNeeded();
 }
 
-} // namespace WebCore
+} // namespace blink

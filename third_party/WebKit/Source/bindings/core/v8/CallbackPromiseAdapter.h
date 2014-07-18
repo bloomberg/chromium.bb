@@ -34,7 +34,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "public/platform/WebCallbacks.h"
 
-namespace WebCore {
+namespace blink {
 
 // This class provides an easy way to convert from a Script-exposed
 // class (i.e. a class that has a toV8() overload) that uses Promises
@@ -90,6 +90,6 @@ private:
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

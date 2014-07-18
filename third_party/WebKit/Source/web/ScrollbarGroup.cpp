@@ -32,7 +32,7 @@
 #include "public/platform/WebRect.h"
 #include "web/WebPluginScrollbarImpl.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -91,7 +91,7 @@ void ScrollbarGroup::setLastMousePosition(const IntPoint& point)
     m_lastMousePosition = point;
 }
 
-int ScrollbarGroup::scrollSize(WebCore::ScrollbarOrientation orientation) const
+int ScrollbarGroup::scrollSize(blink::ScrollbarOrientation orientation) const
 {
     WebPluginScrollbarImpl* webScrollbar = orientation == HorizontalScrollbar ? m_horizontalScrollbar : m_verticalScrollbar;
     if (!webScrollbar)

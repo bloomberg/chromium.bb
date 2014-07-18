@@ -196,7 +196,7 @@
 #include "wtf/HashMap.h"
 #include <algorithm>
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -275,7 +275,7 @@ WebPluginContainerImpl* WebLocalFrameImpl::pluginContainerFromFrame(LocalFrame* 
     return toWebPluginContainerImpl(pluginDocument->pluginWidget());
 }
 
-WebPluginContainerImpl* WebLocalFrameImpl::pluginContainerFromNode(WebCore::LocalFrame* frame, const WebNode& node)
+WebPluginContainerImpl* WebLocalFrameImpl::pluginContainerFromNode(blink::LocalFrame* frame, const WebNode& node)
 {
     WebPluginContainerImpl* pluginContainer = pluginContainerFromFrame(frame);
     if (pluginContainer)
@@ -883,7 +883,7 @@ void WebLocalFrameImpl::loadHTMLString(const WebData& data, const WebURL& baseUR
 void WebLocalFrameImpl::sendPings(const WebNode& linkNode, const WebURL& destinationURL)
 {
     ASSERT(frame());
-    const WebCore::Node* node = linkNode.constUnwrap<Node>();
+    const blink::Node* node = linkNode.constUnwrap<Node>();
     if (isHTMLAnchorElement(node))
         toHTMLAnchorElement(node)->sendPings(destinationURL);
 }
@@ -1173,7 +1173,7 @@ void WebLocalFrameImpl::selectRange(const WebPoint& base, const WebPoint& extent
 void WebLocalFrameImpl::selectRange(const WebRange& webRange)
 {
     if (RefPtrWillBeRawPtr<Range> range = static_cast<PassRefPtrWillBeRawPtr<Range> >(webRange))
-        frame()->selection().setSelectedRange(range.get(), WebCore::VP_DEFAULT_AFFINITY, FrameSelection::NonDirectional, NotUserTriggered);
+        frame()->selection().setSelectedRange(range.get(), blink::VP_DEFAULT_AFFINITY, FrameSelection::NonDirectional, NotUserTriggered);
 }
 
 void WebLocalFrameImpl::moveRangeSelection(const WebPoint& base, const WebPoint& extent)
@@ -1471,7 +1471,7 @@ WebString WebLocalFrameImpl::renderTreeAsText(RenderAsTextControls toShow) const
 
 WebString WebLocalFrameImpl::markerTextForListItem(const WebElement& webElement) const
 {
-    return WebCore::markerTextForListItem(const_cast<Element*>(webElement.constUnwrap<Element>()));
+    return blink::markerTextForListItem(const_cast<Element*>(webElement.constUnwrap<Element>()));
 }
 
 void WebLocalFrameImpl::printPagesWithBoundaries(WebCanvas* canvas, const WebSize& pageSizeInPixels)
@@ -1536,7 +1536,7 @@ WebLocalFrameImpl::~WebLocalFrameImpl()
     cancelPendingScopingEffort();
 }
 
-void WebLocalFrameImpl::setWebCoreFrame(PassRefPtr<WebCore::LocalFrame> frame)
+void WebLocalFrameImpl::setWebCoreFrame(PassRefPtr<blink::LocalFrame> frame)
 {
     m_frame = frame;
 
@@ -1832,7 +1832,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::activeMatchFrame() const
     return 0;
 }
 
-WebCore::Range* WebLocalFrameImpl::activeMatch() const
+blink::Range* WebLocalFrameImpl::activeMatch() const
 {
     if (m_textFinder)
         return m_textFinder->activeMatch();

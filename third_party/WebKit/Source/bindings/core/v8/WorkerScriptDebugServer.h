@@ -34,7 +34,7 @@
 #include "bindings/core/v8/ScriptDebugServer.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class WorkerGlobalScope;
 class WorkerThread;
@@ -60,6 +60,6 @@ private:
     WorkerGlobalScope* m_workerGlobalScope;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerScriptDebugServer_h

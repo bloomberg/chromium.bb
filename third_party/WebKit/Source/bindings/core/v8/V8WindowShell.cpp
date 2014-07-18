@@ -66,7 +66,7 @@
 #include <v8-debug.h>
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 static void checkDocumentWrapper(v8::Handle<v8::Object> wrapper, Document* document)
 {

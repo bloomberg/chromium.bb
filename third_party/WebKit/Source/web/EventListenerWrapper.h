@@ -33,7 +33,7 @@
 
 #include "core/events/EventListener.h"
 
-namespace WebCore {
+namespace blink {
 class ExecutionContext;
 }
 
@@ -43,13 +43,13 @@ class WebDOMEventListener;
 
 // FIXME: Remove the DeprecatedEventListenerWrapper class below once Chromium
 // switched to using WebDOMEvent.
-class EventListenerWrapper FINAL : public WebCore::EventListener {
+class EventListenerWrapper FINAL : public blink::EventListener {
 public:
     EventListenerWrapper(WebDOMEventListener*);
     virtual ~EventListenerWrapper();
 
-    virtual bool operator==(const WebCore::EventListener&) OVERRIDE;
-    virtual void handleEvent(WebCore::ExecutionContext*, WebCore::Event*) OVERRIDE;
+    virtual bool operator==(const blink::EventListener&) OVERRIDE;
+    virtual void handleEvent(blink::ExecutionContext*, blink::Event*) OVERRIDE;
 
     void webDOMEventListenerDeleted();
 

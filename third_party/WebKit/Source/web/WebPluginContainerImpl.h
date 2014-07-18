@@ -43,7 +43,7 @@
 
 struct NPObject;
 
-namespace WebCore {
+namespace blink {
 class GestureEvent;
 class HTMLPlugInElement;
 class IntRect;
@@ -66,9 +66,9 @@ class WebPlugin;
 class WebPluginLoadObserver;
 class WebExternalTextureLayer;
 
-class WebPluginContainerImpl FINAL : public WebCore::PluginView, public WebPluginContainer, public WebCore::FrameDestructionObserver {
+class WebPluginContainerImpl FINAL : public blink::PluginView, public WebPluginContainer, public blink::FrameDestructionObserver {
 public:
-    static PassRefPtr<WebPluginContainerImpl> create(WebCore::HTMLPlugInElement* element, WebPlugin* webPlugin)
+    static PassRefPtr<WebPluginContainerImpl> create(blink::HTMLPlugInElement* element, WebPlugin* webPlugin)
     {
         return adoptRef(new WebPluginContainerImpl(element, webPlugin));
     }
@@ -83,16 +83,16 @@ public:
     virtual bool wantsWheelEvents() OVERRIDE;
 
     // Widget methods
-    virtual void setFrameRect(const WebCore::IntRect&) OVERRIDE;
-    virtual void paint(WebCore::GraphicsContext*, const WebCore::IntRect&) OVERRIDE;
-    virtual void invalidateRect(const WebCore::IntRect&) OVERRIDE;
+    virtual void setFrameRect(const blink::IntRect&) OVERRIDE;
+    virtual void paint(blink::GraphicsContext*, const blink::IntRect&) OVERRIDE;
+    virtual void invalidateRect(const blink::IntRect&) OVERRIDE;
     virtual void setFocus(bool) OVERRIDE;
     virtual void show() OVERRIDE;
     virtual void hide() OVERRIDE;
-    virtual void handleEvent(WebCore::Event*) OVERRIDE;
+    virtual void handleEvent(blink::Event*) OVERRIDE;
     virtual void frameRectsChanged() OVERRIDE;
     virtual void setParentVisible(bool) OVERRIDE;
-    virtual void setParent(WebCore::Widget*) OVERRIDE;
+    virtual void setParent(blink::Widget*) OVERRIDE;
     virtual void widgetPositionsUpdated() OVERRIDE;
     virtual bool isPluginContainer() const OVERRIDE { return true; }
     virtual void eventListenersRemoved() OVERRIDE;
@@ -137,7 +137,7 @@ public:
     // Sets up printing at the specified WebPrintParams. Returns the number of pages to be printed at these settings.
     int printBegin(const WebPrintParams&) const;
     // Prints the page specified by pageNumber (0-based index) into the supplied canvas.
-    bool printPage(int pageNumber, WebCore::GraphicsContext* gc);
+    bool printPage(int pageNumber, blink::GraphicsContext* gc);
     // Ends the print operation.
     void printEnd();
 
@@ -149,10 +149,10 @@ public:
     bool executeEditCommand(const WebString& name, const WebString& value);
 
     // Resource load events for the plugin's source data:
-    virtual void didReceiveResponse(const WebCore::ResourceResponse&) OVERRIDE;
+    virtual void didReceiveResponse(const blink::ResourceResponse&) OVERRIDE;
     virtual void didReceiveData(const char *data, int dataLength) OVERRIDE;
     virtual void didFinishLoading() OVERRIDE;
-    virtual void didFailLoading(const WebCore::ResourceError&) OVERRIDE;
+    virtual void didFailLoading(const blink::ResourceError&) OVERRIDE;
 
     void willDestroyPluginLoadObserver(WebPluginLoadObserver*);
 
@@ -161,39 +161,39 @@ public:
     void willStartLiveResize();
     void willEndLiveResize();
 
-    bool paintCustomOverhangArea(WebCore::GraphicsContext*, const WebCore::IntRect&, const WebCore::IntRect&, const WebCore::IntRect&);
+    bool paintCustomOverhangArea(blink::GraphicsContext*, const blink::IntRect&, const blink::IntRect&, const blink::IntRect&);
 
 #if ENABLE(OILPAN)
     virtual void detach() OVERRIDE;
 #endif
 
 private:
-    WebPluginContainerImpl(WebCore::HTMLPlugInElement* element, WebPlugin* webPlugin);
+    WebPluginContainerImpl(blink::HTMLPlugInElement* element, WebPlugin* webPlugin);
     virtual ~WebPluginContainerImpl();
 
-    void handleMouseEvent(WebCore::MouseEvent*);
-    void handleDragEvent(WebCore::MouseEvent*);
-    void handleWheelEvent(WebCore::WheelEvent*);
-    void handleKeyboardEvent(WebCore::KeyboardEvent*);
-    void handleTouchEvent(WebCore::TouchEvent*);
-    void handleGestureEvent(WebCore::GestureEvent*);
+    void handleMouseEvent(blink::MouseEvent*);
+    void handleDragEvent(blink::MouseEvent*);
+    void handleWheelEvent(blink::WheelEvent*);
+    void handleKeyboardEvent(blink::KeyboardEvent*);
+    void handleTouchEvent(blink::TouchEvent*);
+    void handleGestureEvent(blink::GestureEvent*);
 
-    void synthesizeMouseEventIfPossible(WebCore::TouchEvent*);
+    void synthesizeMouseEventIfPossible(blink::TouchEvent*);
 
     void focusPlugin();
 
-    void calculateGeometry(const WebCore::IntRect& frameRect,
-                           WebCore::IntRect& windowRect,
-                           WebCore::IntRect& clipRect,
-                           Vector<WebCore::IntRect>& cutOutRects);
-    WebCore::IntRect windowClipRect() const;
-    void windowCutOutRects(const WebCore::IntRect& frameRect,
-                           Vector<WebCore::IntRect>& cutOutRects);
+    void calculateGeometry(const blink::IntRect& frameRect,
+                           blink::IntRect& windowRect,
+                           blink::IntRect& clipRect,
+                           Vector<blink::IntRect>& cutOutRects);
+    blink::IntRect windowClipRect() const;
+    void windowCutOutRects(const blink::IntRect& frameRect,
+                           Vector<blink::IntRect>& cutOutRects);
 
     // FIXME: Oilpan: consider moving Widget to the heap and turn this
     // into a traced member. For the time being, it is a bare pointer
     // of its owning PlugInElement and managed as such.
-    WebCore::HTMLPlugInElement* m_element;
+    blink::HTMLPlugInElement* m_element;
     WebPlugin* m_webPlugin;
     Vector<WebPluginLoadObserver*> m_pluginLoadObservers;
 
@@ -207,7 +207,7 @@ private:
     bool m_wantsWheelEvents;
 };
 
-DEFINE_TYPE_CASTS(WebPluginContainerImpl, WebCore::Widget, widget, widget->isPluginContainer(), widget.isPluginContainer());
+DEFINE_TYPE_CASTS(WebPluginContainerImpl, blink::Widget, widget, widget->isPluginContainer(), widget.isPluginContainer());
 // Unlike Widget, we need not worry about object type for container.
 // WebPluginContainerImpl is the only subclass of WebPluginContainer.
 DEFINE_TYPE_CASTS(WebPluginContainerImpl, WebPluginContainer, container, true, true);

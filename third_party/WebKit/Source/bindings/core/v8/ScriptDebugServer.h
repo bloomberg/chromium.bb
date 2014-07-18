@@ -45,7 +45,7 @@
 #include <v8-debug.h>
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class ScriptState;
 class ScriptController;
@@ -157,7 +157,7 @@ private:
     bool m_runningNestedMessageLoop;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // ScriptDebugServer_h

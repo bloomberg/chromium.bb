@@ -12,7 +12,7 @@
 #include "wtf/RefCounted.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 
@@ -67,6 +67,6 @@ private:
     ScopedPersistent<v8::Object> m_mainWorldWrapper;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptPromisePropertyBase_h

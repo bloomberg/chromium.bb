@@ -36,7 +36,7 @@
 
 // Gtest will automatically pick up this function if included to print out
 // FloatPoints, rather than just spitting out their memory.
-namespace WebCore {
+namespace blink {
 inline void PrintTo(const FloatPoint& point, ::std::ostream* os)
 {
     *os << "FloatPoint("

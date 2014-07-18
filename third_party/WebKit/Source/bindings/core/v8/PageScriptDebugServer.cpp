@@ -52,7 +52,7 @@
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 static LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Handle<v8::Context> context)
 {
@@ -320,4 +320,4 @@ void PageScriptDebugServer::unmuteWarningsAndDeprecations()
     UseCounter::unmuteForInspector();
 }
 
-} // namespace WebCore
+} // namespace blink

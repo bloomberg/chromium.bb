@@ -38,7 +38,7 @@
 #include "bindings/core/v8/V8Node.h"
 #include "core/html/HTMLCollection.h"
 
-namespace WebCore {
+namespace blink {
 
 v8::Handle<v8::Object> wrap(HTMLCollection* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -57,4 +57,4 @@ v8::Handle<v8::Object> wrap(HTMLCollection* impl, v8::Handle<v8::Object> creatio
     return V8HTMLCollection::createWrapper(impl, creationContext, isolate);
 }
 
-} // namespace WebCore
+} // namespace blink

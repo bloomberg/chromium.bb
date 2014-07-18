@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class NotificationPermissionClientImpl : public NoBaseWillBeGarbageCollectedFinalized<NotificationPermissionClientImpl>, public WebCore::NotificationPermissionClient {
+class NotificationPermissionClientImpl : public NoBaseWillBeGarbageCollectedFinalized<NotificationPermissionClientImpl>, public blink::NotificationPermissionClient {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NotificationPermissionClientImpl);
 public:
     static PassOwnPtrWillBeRawPtr<NotificationPermissionClientImpl> create();
@@ -17,10 +17,10 @@ public:
     virtual ~NotificationPermissionClientImpl();
 
     // NotificationPermissionClient implementation.
-    virtual void requestPermission(WebCore::ExecutionContext*, PassOwnPtr<WebCore::NotificationPermissionCallback>) OVERRIDE;
+    virtual void requestPermission(blink::ExecutionContext*, PassOwnPtr<blink::NotificationPermissionCallback>) OVERRIDE;
 
     // NoBaseWillBeGarbageCollectedFinalized implementation.
-    virtual void trace(WebCore::Visitor* visitor) OVERRIDE { WebCore::NotificationPermissionClient::trace(visitor); }
+    virtual void trace(blink::Visitor* visitor) OVERRIDE { blink::NotificationPermissionClient::trace(visitor); }
 
 private:
     NotificationPermissionClientImpl();

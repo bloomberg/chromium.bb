@@ -33,7 +33,7 @@
 
 #include "core/V8SVGElementWrapperFactory.h" // FIXME: should be bindings/core/v8
 
-namespace WebCore {
+namespace blink {
 
 v8::Handle<v8::Object> wrap(SVGElement* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -41,4 +41,4 @@ v8::Handle<v8::Object> wrap(SVGElement* impl, v8::Handle<v8::Object> creationCon
     return createV8SVGWrapper(impl, creationContext, isolate);
 }
 
-} // namespace WebCore
+} // namespace blink

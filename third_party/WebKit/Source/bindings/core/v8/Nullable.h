@@ -7,7 +7,7 @@
 
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 template <typename T>
 class Nullable {
@@ -46,6 +46,6 @@ private:
     bool m_isNull;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Nullable_h

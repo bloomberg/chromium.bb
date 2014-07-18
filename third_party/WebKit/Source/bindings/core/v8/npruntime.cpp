@@ -38,7 +38,7 @@
 
 #include <stdlib.h>
 
-using namespace WebCore;
+using namespace blink;
 
 // FIXME: Consider removing locks if we're singlethreaded already.
 // The static initializer here should work okay, but we want to avoid

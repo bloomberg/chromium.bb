@@ -35,7 +35,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8-profiler.h>
 
-namespace WebCore {
+namespace blink {
 
 class ScriptHeapSnapshot FINAL : public RefCounted<ScriptHeapSnapshot> {
 public:
@@ -63,6 +63,6 @@ private:
     const v8::HeapSnapshot* m_snapshot;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptHeapSnapshot_h

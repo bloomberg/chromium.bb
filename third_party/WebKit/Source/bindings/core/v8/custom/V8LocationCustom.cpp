@@ -31,7 +31,7 @@
 #include "config.h"
 #include "bindings/core/v8/V8Location.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8Location::valueOfMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -43,4 +43,4 @@ void V8Location::valueOfMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& 
     v8SetReturnValue(info, info.This());
 }
 
-} // namespace WebCore
+} // namespace blink

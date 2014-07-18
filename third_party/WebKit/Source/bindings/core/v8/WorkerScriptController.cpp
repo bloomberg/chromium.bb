@@ -56,7 +56,7 @@
 #include "public/platform/WebWorkerRunLoop.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class WorkerScriptController::WorkerGlobalScopeExecutionState FINAL {
     STACK_ALLOCATED();
@@ -319,4 +319,4 @@ void WorkerScriptController::rethrowExceptionFromImportedScript(PassRefPtrWillBe
     exceptionState.rethrowV8Exception(V8ThrowException::createError(v8GeneralError, errorMessage, m_isolate));
 }
 
-} // namespace WebCore
+} // namespace blink

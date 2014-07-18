@@ -36,7 +36,7 @@
 #include "public/web/WebEmbeddedWorkerStartData.h"
 #include "public/web/WebFrameClient.h"
 
-namespace WebCore {
+namespace blink {
 class WorkerScriptLoader;
 class WorkerThread;
 }
@@ -98,7 +98,7 @@ private:
     // Kept around only while main script loading is ongoing.
     OwnPtr<Loader> m_mainScriptLoader;
 
-    RefPtr<WebCore::WorkerThread> m_workerThread;
+    RefPtr<blink::WorkerThread> m_workerThread;
     OwnPtr<LoaderProxy> m_loaderProxy;
     OwnPtr<ServiceWorkerGlobalScopeProxy> m_workerGlobalScopeProxy;
 

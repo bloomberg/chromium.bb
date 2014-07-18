@@ -43,7 +43,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 static void setTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& info, bool singleShot)
 {
@@ -120,4 +120,4 @@ v8::Handle<v8::Value> toV8(WorkerGlobalScope* impl, v8::Handle<v8::Object> creat
     return global;
 }
 
-} // namespace WebCore
+} // namespace blink

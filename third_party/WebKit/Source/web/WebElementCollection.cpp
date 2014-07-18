@@ -37,7 +37,7 @@
 #include "public/web/WebElement.h"
 #include "wtf/PassRefPtr.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

@@ -35,7 +35,7 @@
 #include "wtf/PassRefPtr.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class HTMLElement;
 class SVGElement;
@@ -51,6 +51,6 @@ private:
     static v8::Handle<v8::Object> wrap(PassRefPtrWillBeRawPtr<ElementType>, v8::Handle<v8::Object> creationContext, v8::Isolate*, v8::Handle<v8::Object> (*createSpecificWrapper)(ElementType* element, v8::Handle<v8::Object> creationContext, v8::Isolate*));
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CustomElementWrapper_h

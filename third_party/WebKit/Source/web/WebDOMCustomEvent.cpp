@@ -36,7 +36,7 @@
 #include "public/platform/WebString.h"
 #include "public/web/WebSerializedScriptValue.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

@@ -39,7 +39,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 class LocalFrame;
 class FramelessScrollView;
 class KeyboardEvent;
@@ -60,7 +60,7 @@ class WebRange;
 struct WebRect;
 class WebTouchEvent;
 
-class WebPopupMenuImpl : public WebPopupMenu, public WebCore::FramelessScrollViewClient, public WebContentLayerClient, public RefCounted<WebPopupMenuImpl> {
+class WebPopupMenuImpl : public WebPopupMenu, public blink::FramelessScrollViewClient, public WebContentLayerClient, public RefCounted<WebPopupMenuImpl> {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     // WebWidget functions:
@@ -95,7 +95,7 @@ public:
         WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) OVERRIDE FINAL;
 
     // WebPopupMenuImpl
-    void initialize(WebCore::FramelessScrollView* widget, const WebRect& bounds);
+    void initialize(blink::FramelessScrollView* widget, const WebRect& bounds);
 
     WebWidgetClient* client() { return m_client; }
 
@@ -116,16 +116,16 @@ public:
     WebPopupMenuImpl(WebWidgetClient*);
     ~WebPopupMenuImpl();
 
-    // WebCore::HostWindow methods:
-    virtual void invalidateContentsAndRootView(const WebCore::IntRect&) OVERRIDE FINAL;
-    virtual void invalidateContentsForSlowScroll(const WebCore::IntRect&) OVERRIDE FINAL;
+    // blink::HostWindow methods:
+    virtual void invalidateContentsAndRootView(const blink::IntRect&) OVERRIDE FINAL;
+    virtual void invalidateContentsForSlowScroll(const blink::IntRect&) OVERRIDE FINAL;
     virtual void scheduleAnimation() OVERRIDE FINAL;
-    virtual void scroll(const WebCore::IntRect& clipRect) OVERRIDE FINAL;
-    virtual WebCore::IntRect rootViewToScreen(const WebCore::IntRect&) const OVERRIDE FINAL;
+    virtual void scroll(const blink::IntRect& clipRect) OVERRIDE FINAL;
+    virtual blink::IntRect rootViewToScreen(const blink::IntRect&) const OVERRIDE FINAL;
     virtual WebScreenInfo screenInfo() const OVERRIDE FINAL;
 
-    // WebCore::FramelessScrollViewClient methods:
-    virtual void popupClosed(WebCore::FramelessScrollView*) OVERRIDE FINAL;
+    // blink::FramelessScrollViewClient methods:
+    virtual void popupClosed(blink::FramelessScrollView*) OVERRIDE FINAL;
 
     WebWidgetClient* m_client;
     WebSize m_size;
@@ -137,13 +137,13 @@ public:
 
     // This is a non-owning ref. The popup will notify us via popupClosed()
     // before it is destroyed.
-    WebCore::FramelessScrollView* m_widget;
+    blink::FramelessScrollView* m_widget;
 };
 
 DEFINE_TYPE_CASTS(WebPopupMenuImpl, WebWidget, widget, widget->isPopupMenu(), widget.isPopupMenu());
 // WebPopupMenuImpl is the only implementation of FramelessScrollViewClient, so
 // no need for further checking.
-DEFINE_TYPE_CASTS(WebPopupMenuImpl, WebCore::FramelessScrollViewClient, client, true, true);
+DEFINE_TYPE_CASTS(WebPopupMenuImpl, blink::FramelessScrollViewClient, client, true, true);
 
 } // namespace blink
 

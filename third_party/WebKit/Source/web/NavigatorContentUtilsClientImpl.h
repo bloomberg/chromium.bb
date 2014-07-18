@@ -12,14 +12,14 @@ namespace blink {
 
 class WebViewImpl;
 
-class NavigatorContentUtilsClientImpl FINAL : public WebCore::NavigatorContentUtilsClient {
+class NavigatorContentUtilsClientImpl FINAL : public blink::NavigatorContentUtilsClient {
 public:
     static PassOwnPtr<NavigatorContentUtilsClientImpl> create(WebViewImpl*);
     virtual ~NavigatorContentUtilsClientImpl() { }
 
-    virtual void registerProtocolHandler(const String& scheme, const WebCore::KURL& baseURL, const WebCore::KURL&, const String& title) OVERRIDE;
-    virtual CustomHandlersState isProtocolHandlerRegistered(const String& scheme, const WebCore::KURL& baseURL, const WebCore::KURL&) OVERRIDE;
-    virtual void unregisterProtocolHandler(const String& scheme, const WebCore::KURL& baseURL, const WebCore::KURL&) OVERRIDE;
+    virtual void registerProtocolHandler(const String& scheme, const blink::KURL& baseURL, const blink::KURL&, const String& title) OVERRIDE;
+    virtual CustomHandlersState isProtocolHandlerRegistered(const String& scheme, const blink::KURL& baseURL, const blink::KURL&) OVERRIDE;
+    virtual void unregisterProtocolHandler(const String& scheme, const blink::KURL& baseURL, const blink::KURL&) OVERRIDE;
 
 private:
     explicit NavigatorContentUtilsClientImpl(WebViewImpl*);

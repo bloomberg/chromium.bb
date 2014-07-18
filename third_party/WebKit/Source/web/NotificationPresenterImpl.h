@@ -39,19 +39,19 @@ namespace blink {
 
 class WebNotificationPresenter;
 
-class NotificationPresenterImpl FINAL : public WebCore::NotificationClient {
+class NotificationPresenterImpl FINAL : public blink::NotificationClient {
 public:
     NotificationPresenterImpl() : m_presenter(0) { }
 
     void initialize(WebNotificationPresenter* presenter);
     bool isInitialized();
 
-    // WebCore::NotificationPresenter implementation.
-    virtual bool show(WebCore::Notification*) OVERRIDE;
-    virtual void close(WebCore::Notification*) OVERRIDE;
-    virtual void notificationObjectDestroyed(WebCore::Notification*) OVERRIDE;
-    virtual WebCore::NotificationClient::Permission checkPermission(WebCore::ExecutionContext*) OVERRIDE;
-    virtual void requestPermission(WebCore::ExecutionContext*, WTF::PassOwnPtr<WebCore::NotificationPermissionCallback>) OVERRIDE;
+    // blink::NotificationPresenter implementation.
+    virtual bool show(blink::Notification*) OVERRIDE;
+    virtual void close(blink::Notification*) OVERRIDE;
+    virtual void notificationObjectDestroyed(blink::Notification*) OVERRIDE;
+    virtual blink::NotificationClient::Permission checkPermission(blink::ExecutionContext*) OVERRIDE;
+    virtual void requestPermission(blink::ExecutionContext*, WTF::PassOwnPtr<blink::NotificationPermissionCallback>) OVERRIDE;
 
 private:
     // WebNotificationPresenter that this object delegates to.

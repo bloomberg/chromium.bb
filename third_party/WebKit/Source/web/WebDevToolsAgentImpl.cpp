@@ -74,7 +74,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace OverlayZOrders {
 // Use 99 as a big z-order number so that highlight is above other overlays.
@@ -295,7 +295,7 @@ void WebDevToolsAgentImpl::didComposite()
 
 void WebDevToolsAgentImpl::didCreateScriptContext(WebLocalFrameImpl* webframe, int worldId)
 {
-    if (WebCore::LocalFrame* frame = webframe->frame())
+    if (blink::LocalFrame* frame = webframe->frame())
         frame->script().setWorldDebugId(worldId, m_debuggerId);
     // Skip non main world contexts.
     if (worldId)
@@ -303,7 +303,7 @@ void WebDevToolsAgentImpl::didCreateScriptContext(WebLocalFrameImpl* webframe, i
     m_webViewDidLayoutOnceAfterLoad = false;
 }
 
-bool WebDevToolsAgentImpl::handleInputEvent(WebCore::Page* page, const WebInputEvent& inputEvent)
+bool WebDevToolsAgentImpl::handleInputEvent(blink::Page* page, const WebInputEvent& inputEvent)
 {
     if (!m_attached && !m_generatingEvent)
         return false;
@@ -316,13 +316,13 @@ bool WebDevToolsAgentImpl::handleInputEvent(WebCore::Page* page, const WebInputE
         PlatformGestureEventBuilder gestureEvent(frameView, static_cast<const WebGestureEvent&>(inputEvent));
         float pageScaleFactor = page->pageScaleFactor();
         if (gestureEvent.type() == PlatformEvent::GesturePinchBegin) {
-            m_lastPinchAnchorCss = adoptPtr(new WebCore::IntPoint(frameView->scrollPosition() + gestureEvent.position()));
-            m_lastPinchAnchorDip = adoptPtr(new WebCore::IntPoint(gestureEvent.position()));
+            m_lastPinchAnchorCss = adoptPtr(new blink::IntPoint(frameView->scrollPosition() + gestureEvent.position()));
+            m_lastPinchAnchorDip = adoptPtr(new blink::IntPoint(gestureEvent.position()));
             m_lastPinchAnchorDip->scale(pageScaleFactor, pageScaleFactor);
         }
         if (gestureEvent.type() == PlatformEvent::GesturePinchUpdate && m_lastPinchAnchorCss) {
             float newPageScaleFactor = pageScaleFactor * gestureEvent.scale();
-            WebCore::IntPoint anchorCss(*m_lastPinchAnchorDip.get());
+            blink::IntPoint anchorCss(*m_lastPinchAnchorDip.get());
             anchorCss.scale(1.f / newPageScaleFactor, 1.f / newPageScaleFactor);
             m_webViewImpl->setPageScaleFactor(newPageScaleFactor);
             m_webViewImpl->setMainFrameScrollOffset(*m_lastPinchAnchorCss.get() - toIntSize(anchorCss));
@@ -663,7 +663,7 @@ void WebDevToolsAgentImpl::hideHighlight()
     m_webViewImpl->removePageOverlay(this);
 }
 
-void WebDevToolsAgentImpl::sendMessageToFrontend(PassRefPtr<WebCore::JSONObject> message)
+void WebDevToolsAgentImpl::sendMessageToFrontend(PassRefPtr<blink::JSONObject> message)
 {
     m_frontendMessageQueue.append(message);
 }

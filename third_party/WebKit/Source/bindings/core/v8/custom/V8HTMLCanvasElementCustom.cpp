@@ -45,7 +45,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -148,4 +148,4 @@ void V8HTMLCanvasElement::toDataURLMethodCustom(const v8::FunctionCallbackInfo<v
     v8SetReturnValueStringOrUndefined(info, result, info.GetIsolate());
 }
 
-} // namespace WebCore
+} // namespace blink

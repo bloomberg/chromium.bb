@@ -36,7 +36,7 @@
 #include "wtf/RefCounted.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class ScriptFunction : public V8GarbageCollected<ScriptFunction> {
 public:
@@ -51,6 +51,6 @@ private:
     static void callCallback(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

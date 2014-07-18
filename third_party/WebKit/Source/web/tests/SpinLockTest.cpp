@@ -39,7 +39,7 @@
 
 #include <gtest/gtest.h>
 
-using WebCore::Task;
+using blink::Task;
 
 namespace {
 

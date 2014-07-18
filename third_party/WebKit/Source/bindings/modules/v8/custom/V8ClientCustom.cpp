@@ -8,7 +8,7 @@
 #include "bindings/core/v8/PostMessage.h"
 #include "bindings/core/v8/V8Binding.h"
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: This stub should be replaced by generated code.
 void V8Client::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -16,4 +16,4 @@ void V8Client::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     postMessageMethodCommon("Client", V8Client::toNative(info.Holder()), info);
 }
 
-} // namespace WebCore
+} // namespace blink

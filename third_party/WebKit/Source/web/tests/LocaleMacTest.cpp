@@ -33,7 +33,7 @@
 #include "wtf/text/CString.h"
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 
 class LocaleMacTest : public ::testing::Test {
 protected:

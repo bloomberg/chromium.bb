@@ -38,8 +38,8 @@
 #include "public/platform/linux/WebFontInfo.h"
 #endif
 
-using WebCore::FontDescription;
-using WebCore::FontPlatformData;
+using blink::FontDescription;
+using blink::FontPlatformData;
 
 namespace blink {
 

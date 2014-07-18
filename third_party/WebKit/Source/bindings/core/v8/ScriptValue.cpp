@@ -35,7 +35,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "platform/JSONValues.h"
 
-namespace WebCore {
+namespace blink {
 
 ScriptValue::~ScriptValue()
 {
@@ -78,4 +78,4 @@ PassRefPtr<JSONValue> ScriptValue::toJSONValue(ScriptState* scriptState) const
     return v8ToJSONValue(scriptState->isolate(), v8Value(), JSONValue::maxDepth);
 }
 
-} // namespace WebCore
+} // namespace blink

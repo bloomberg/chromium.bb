@@ -34,7 +34,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/custom/V8BlobCustomHelpers.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -76,4 +76,4 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8SetReturnValue(info, blob.release());
 }
 
-} // namespace WebCore
+} // namespace blink

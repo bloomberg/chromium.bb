@@ -42,7 +42,7 @@ class WebDevToolsAgentClient;
 class WebDevToolsAgentImpl;
 class WebViewImpl;
 
-class InspectorClientImpl FINAL : public WebCore::InspectorClient, public WebCore::InspectorFrontendChannel {
+class InspectorClientImpl FINAL : public blink::InspectorClient, public blink::InspectorFrontendChannel {
 public:
     explicit InspectorClientImpl(WebViewImpl*);
     virtual ~InspectorClientImpl();
@@ -51,7 +51,7 @@ public:
     virtual void highlight() OVERRIDE;
     virtual void hideHighlight() OVERRIDE;
 
-    virtual void sendMessageToFrontend(PassRefPtr<WebCore::JSONObject>) OVERRIDE;
+    virtual void sendMessageToFrontend(PassRefPtr<blink::JSONObject>) OVERRIDE;
     virtual void flush() OVERRIDE;
 
     virtual void updateInspectorStateCookie(const WTF::String&) OVERRIDE;
@@ -67,13 +67,13 @@ public:
     virtual void setContinuousPaintingEnabled(bool) OVERRIDE;
     virtual void setShowScrollBottleneckRects(bool) OVERRIDE;
     virtual void resetScrollAndPageScaleFactor() OVERRIDE;
-    virtual void showContextMenu(float x, float y, PassRefPtr<WebCore::ContextMenuProvider>) OVERRIDE;
+    virtual void showContextMenu(float x, float y, PassRefPtr<blink::ContextMenuProvider>) OVERRIDE;
 
     virtual void getAllocatedObjects(HashSet<const void*>&) OVERRIDE;
     virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&) OVERRIDE;
 
-    virtual void dispatchKeyEvent(const WebCore::PlatformKeyboardEvent&) OVERRIDE;
-    virtual void dispatchMouseEvent(const WebCore::PlatformMouseEvent&) OVERRIDE;
+    virtual void dispatchKeyEvent(const blink::PlatformKeyboardEvent&) OVERRIDE;
+    virtual void dispatchMouseEvent(const blink::PlatformMouseEvent&) OVERRIDE;
 
     virtual void setTraceEventCallback(const String& categoryFilter, TraceEventCallback) OVERRIDE;
     virtual void resetTraceEventCallback() OVERRIDE;

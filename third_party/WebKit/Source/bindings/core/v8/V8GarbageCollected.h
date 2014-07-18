@@ -33,7 +33,7 @@
 
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 template<typename T>
 class V8GarbageCollected {
@@ -84,6 +84,6 @@ private:
     bool m_releasedToV8GarbageCollector;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8GarbageCollected_h

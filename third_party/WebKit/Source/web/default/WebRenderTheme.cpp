@@ -34,8 +34,8 @@
 #include "core/rendering/RenderThemeChromiumDefault.h"
 #include "public/web/WebView.h"
 
-using WebCore::RenderTheme;
-using WebCore::RenderThemeChromiumDefault;
+using blink::RenderTheme;
+using blink::RenderThemeChromiumDefault;
 
 namespace blink {
 

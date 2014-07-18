@@ -39,7 +39,7 @@
 #include "bindings/core/v8/custom/V8ArrayBufferViewCustom.h"
 #include "wtf/DateMath.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace V8BlobCustomHelpers {
 
@@ -138,4 +138,4 @@ bool processBlobParts(v8::Local<v8::Object> blobParts, bool normalizeLineEndings
 
 } // namespace V8BlobCustomHelpers
 
-} // namespace WebCore
+} // namespace blink

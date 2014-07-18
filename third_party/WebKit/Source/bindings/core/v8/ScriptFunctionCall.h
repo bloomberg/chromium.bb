@@ -36,7 +36,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 class ScriptValue;
 
 class ScriptCallArgumentHandler {
@@ -71,6 +71,6 @@ protected:
     String m_name;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptFunctionCall

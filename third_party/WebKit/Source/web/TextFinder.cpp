@@ -51,7 +51,7 @@
 #include "web/WebViewImpl.h"
 #include "wtf/CurrentTime.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -61,7 +61,7 @@ TextFinder::FindMatch::FindMatch(PassRefPtrWillBeRawPtr<Range> range, int ordina
 {
 }
 
-void TextFinder::FindMatch::trace(WebCore::Visitor* visitor)
+void TextFinder::FindMatch::trace(blink::Visitor* visitor)
 {
     visitor->trace(m_range);
 }

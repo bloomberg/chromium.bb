@@ -33,7 +33,7 @@
 
 #include "platform/fonts/GlyphPageTreeNode.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

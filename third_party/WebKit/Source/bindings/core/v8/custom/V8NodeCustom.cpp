@@ -54,7 +54,7 @@
 #include "core/events/EventListener.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 // These functions are custom to prevent a wrapper lookup of the return value which is always
 // part of the arguments.
@@ -91,4 +91,4 @@ v8::Handle<v8::Object> wrap(Node* impl, v8::Handle<v8::Object> creationContext, 
     ASSERT_NOT_REACHED();
     return V8Node::createWrapper(impl, creationContext, isolate);
 }
-} // namespace WebCore
+} // namespace blink

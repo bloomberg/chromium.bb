@@ -37,7 +37,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 class RenderLayer;
 class RenderObject;
 class Node;
@@ -49,9 +49,9 @@ struct WebFloatRect;
 struct WebRect;
 class WebViewImpl;
 
-class LinkHighlight FINAL : public WebContentLayerClient, public WebAnimationDelegate, WebCore::LinkHighlightClient {
+class LinkHighlight FINAL : public WebContentLayerClient, public WebAnimationDelegate, blink::LinkHighlightClient {
 public:
-    static PassOwnPtr<LinkHighlight> create(WebCore::Node*, WebViewImpl*);
+    static PassOwnPtr<LinkHighlight> create(blink::Node*, WebViewImpl*);
     virtual ~LinkHighlight();
 
     WebContentLayer* contentLayer();
@@ -72,27 +72,27 @@ public:
     virtual WebLayer* layer() OVERRIDE;
     virtual void clearCurrentGraphicsLayer() OVERRIDE;
 
-    WebCore::GraphicsLayer* currentGraphicsLayerForTesting() const { return m_currentGraphicsLayer; }
+    blink::GraphicsLayer* currentGraphicsLayerForTesting() const { return m_currentGraphicsLayer; }
 
 private:
-    LinkHighlight(WebCore::Node*, WebViewImpl*);
+    LinkHighlight(blink::Node*, WebViewImpl*);
 
     void releaseResources();
-    void computeQuads(WebCore::Node*, WTF::Vector<WebCore::FloatQuad>&) const;
+    void computeQuads(blink::Node*, WTF::Vector<blink::FloatQuad>&) const;
 
-    WebCore::RenderLayer* computeEnclosingCompositingLayer();
+    blink::RenderLayer* computeEnclosingCompositingLayer();
     void clearGraphicsLayerLinkHighlightPointer();
     // This function computes the highlight path, and returns true if it has changed
     // size since the last call to this function.
-    bool computeHighlightLayerPathAndPosition(WebCore::RenderLayer*);
+    bool computeHighlightLayerPathAndPosition(blink::RenderLayer*);
 
     OwnPtr<WebContentLayer> m_contentLayer;
     OwnPtr<WebLayer> m_clipLayer;
-    WebCore::Path m_path;
+    blink::Path m_path;
 
-    RefPtrWillBePersistent<WebCore::Node> m_node;
+    RefPtrWillBePersistent<blink::Node> m_node;
     WebViewImpl* m_owningWebViewImpl;
-    WebCore::GraphicsLayer* m_currentGraphicsLayer;
+    blink::GraphicsLayer* m_currentGraphicsLayer;
 
     bool m_geometryNeedsUpdate;
     bool m_isAnimating;

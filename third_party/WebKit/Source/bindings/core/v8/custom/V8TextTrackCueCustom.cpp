@@ -32,11 +32,11 @@
 
 #include "bindings/core/v8/V8VTTCue.h"
 
-namespace WebCore {
+namespace blink {
 
 v8::Handle<v8::Value> toV8(TextTrackCue* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(toVTTCue(impl), creationContext, isolate);
 }
 
-} // namespace WebCore
+} // namespace blink

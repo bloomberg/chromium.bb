@@ -43,7 +43,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/workers/WorkerGlobalScope.h"
 
-namespace WebCore {
+namespace blink {
 
 V8WorkerGlobalScopeEventListener::V8WorkerGlobalScopeEventListener(v8::Local<v8::Object> listener, bool isInline, ScriptState* scriptState)
     : V8EventListener(listener, isInline, scriptState)
@@ -112,4 +112,4 @@ v8::Local<v8::Object> V8WorkerGlobalScopeEventListener::getReceiverObject(Event*
     return v8::Local<v8::Object>::New(isolate(), v8::Handle<v8::Object>::Cast(value));
 }
 
-} // namespace WebCore
+} // namespace blink

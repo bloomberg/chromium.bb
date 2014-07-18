@@ -45,7 +45,7 @@
 #include "core/html/track/TrackBase.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 template <>
 bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, v8::Local<v8::Value>& value)
@@ -273,7 +273,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Mess
 
     ASSERT(dictionary.isolate());
     ASSERT(dictionary.isolate() == v8::Isolate::GetCurrent());
-    if (WebCore::isUndefinedOrNull(v8Value))
+    if (blink::isUndefinedOrNull(v8Value))
         return true;
     bool success = false;
     value = toRefPtrWillBeMemberNativeArray<MessagePort, V8MessagePort>(v8Value, key, dictionary.isolate(), &success);
@@ -312,7 +312,7 @@ bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::Convers
     if (!dictionary.get(key, v8Value))
         return true;
 
-    if (context.isNullable() && WebCore::isUndefinedOrNull(v8Value))
+    if (context.isNullable() && blink::isUndefinedOrNull(v8Value))
         return true;
 
     if (!v8Value->IsArray()) {
@@ -399,7 +399,7 @@ bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::Convers
     if (!dictionary.get(key, v8Value))
         return true;
 
-    if (context.isNullable() && WebCore::isUndefinedOrNull(v8Value))
+    if (context.isNullable() && blink::isUndefinedOrNull(v8Value))
         return true;
 
     if (!v8Value->IsArray()) {
@@ -435,7 +435,7 @@ bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::Convers
     if (!dictionary.get(key, v8Value))
         return true;
 
-    if (context.isNullable() && WebCore::isUndefinedOrNull(v8Value))
+    if (context.isNullable() && blink::isUndefinedOrNull(v8Value))
         return true;
 
     if (!v8Value->IsArray()) {
@@ -607,7 +607,7 @@ bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::Convers
     if (!dictionary.get(key, v8Value))
         return true;
 
-    if (context.isNullable() && WebCore::isUndefinedOrNull(v8Value)) {
+    if (context.isNullable() && blink::isUndefinedOrNull(v8Value)) {
         value = Nullable<T>();
         return true;
     }
@@ -652,4 +652,4 @@ bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::Convers
     return DictionaryHelper::get(dictionary, key, value);
 }
 
-} // namespace WebCore
+} // namespace blink

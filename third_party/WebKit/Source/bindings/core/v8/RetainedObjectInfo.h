@@ -33,13 +33,13 @@
 
 #include <v8-profiler.h>
 
-namespace WebCore {
+namespace blink {
 
 class RetainedObjectInfo : public v8::RetainedObjectInfo {
 public:
     virtual intptr_t GetEquivalenceClass() = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RetainedObjectInfo_h

@@ -36,7 +36,7 @@
 #include "platform/mac/NSScrollerImpDetails.h"
 #include "platform/scroll/ScrollbarThemeMacCommon.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

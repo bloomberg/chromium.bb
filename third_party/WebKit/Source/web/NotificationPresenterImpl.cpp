@@ -39,7 +39,7 @@
 #include "public/web/WebNotificationPresenter.h"
 #include "public/web/WebSecurityOrigin.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

@@ -32,7 +32,7 @@
 #include "wtf/ArrayBuffer.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class V8ArrayBufferDeallocationObserver FINAL: public WTF::ArrayBufferDeallocationObserver {
 public:
@@ -155,6 +155,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& info, PassRefPtr< ArrayBuff
     v8SetReturnValueFast(info, impl.get(), wrappable);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8ArrayBufferCustom_h

@@ -45,7 +45,7 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -208,10 +208,10 @@ void WebSocketImpl::didClose(ClosingHandshakeCompletionStatus status, unsigned s
     m_client->didClose(m_bufferedAmount - m_bufferedAmountAfterClose, static_cast<WebSocketClient::ClosingHandshakeCompletionStatus>(status), code, WebString(reason));
 }
 
-void WebSocketImpl::trace(WebCore::Visitor* visitor)
+void WebSocketImpl::trace(blink::Visitor* visitor)
 {
     visitor->trace(m_private);
-    WebCore::WebSocketChannelClient::trace(visitor);
+    blink::WebSocketChannelClient::trace(visitor);
 }
 
 } // namespace blink

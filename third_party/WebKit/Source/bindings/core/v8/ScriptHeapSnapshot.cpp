@@ -38,7 +38,7 @@
 #include <v8-profiler.h>
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 ScriptHeapSnapshot::~ScriptHeapSnapshot()
 {
@@ -76,4 +76,4 @@ void ScriptHeapSnapshot::writeJSON(ScriptHeapSnapshot::OutputStream* stream)
     m_snapshot->Serialize(&outputStream, v8::HeapSnapshot::kJSON);
 }
 
-} // namespace WebCore
+} // namespace blink

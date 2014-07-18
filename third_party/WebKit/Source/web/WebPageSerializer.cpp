@@ -59,7 +59,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/StringConcatenate.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 

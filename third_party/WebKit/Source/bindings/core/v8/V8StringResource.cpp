@@ -30,7 +30,7 @@
 #include "core/inspector/BindingVisitors.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 template<class StringClass> struct StringTraits {
     static const StringClass& fromStringResource(WebCoreStringResourceBase*);
@@ -176,4 +176,4 @@ String int32ToWebCoreString(int value)
     return String::number(value);
 }
 
-} // namespace WebCore
+} // namespace blink

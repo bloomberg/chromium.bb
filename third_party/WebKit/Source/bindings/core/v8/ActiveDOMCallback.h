@@ -34,7 +34,7 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 
@@ -54,6 +54,6 @@ public:
     bool isScriptControllerTerminating() const;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ActiveDOMCallback_h

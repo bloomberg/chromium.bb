@@ -56,7 +56,7 @@
 #include "core/xml/XPathResult.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -83,4 +83,4 @@ void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     v8SetReturnValueFast(info, result.release(), document.get());
 }
 
-} // namespace WebCore
+} // namespace blink

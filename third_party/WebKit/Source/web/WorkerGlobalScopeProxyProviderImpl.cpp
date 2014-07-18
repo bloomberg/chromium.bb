@@ -48,11 +48,11 @@
 #include "web/WebViewImpl.h"
 #include "web/WorkerPermissionClient.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
-WebCore::WorkerGlobalScopeProxy* WorkerGlobalScopeProxyProviderImpl::createWorkerGlobalScopeProxy(Worker* worker)
+blink::WorkerGlobalScopeProxy* WorkerGlobalScopeProxyProviderImpl::createWorkerGlobalScopeProxy(Worker* worker)
 {
     if (worker->executionContext()->isDocument()) {
         Document* document = toDocument(worker->executionContext());

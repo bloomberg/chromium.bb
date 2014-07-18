@@ -34,7 +34,7 @@
 #include "core/page/SpellCheckerClient.h"
 #include "platform/text/TextCheckerClient.h"
 
-namespace WebCore {
+namespace blink {
 class LocalFrame;
 class HTMLInputElement;
 }
@@ -42,7 +42,7 @@ class HTMLInputElement;
 namespace blink {
 class WebViewImpl;
 
-class SpellCheckerClientImpl FINAL : public WebCore::SpellCheckerClient, public WebCore::TextCheckerClient {
+class SpellCheckerClientImpl FINAL : public blink::SpellCheckerClient, public blink::TextCheckerClient {
 public:
     SpellCheckerClientImpl(WebViewImpl*);
 
@@ -51,17 +51,17 @@ public:
     virtual bool isContinuousSpellCheckingEnabled() OVERRIDE;
     virtual void toggleContinuousSpellChecking() OVERRIDE;
     virtual bool isGrammarCheckingEnabled() OVERRIDE;
-    virtual bool shouldEraseMarkersAfterChangeSelection(WebCore::TextCheckingType) const OVERRIDE;
+    virtual bool shouldEraseMarkersAfterChangeSelection(blink::TextCheckingType) const OVERRIDE;
     virtual void checkSpellingOfString(const String&, int* misspellingLocation, int* misspellingLength) OVERRIDE;
-    virtual void checkGrammarOfString(const String&, WTF::Vector<WebCore::GrammarDetail>&,
+    virtual void checkGrammarOfString(const String&, WTF::Vector<blink::GrammarDetail>&,
         int* badGrammarLocation, int* badGrammarLength) OVERRIDE;
     virtual WTF::String getAutoCorrectSuggestionForMisspelledWord(const WTF::String&) OVERRIDE;
     virtual void updateSpellingUIWithMisspelledWord(const WTF::String&) OVERRIDE;
     virtual void showSpellingUI(bool show) OVERRIDE;
     virtual bool spellingUIIsShowing() OVERRIDE;
-    virtual void requestCheckingOfString(WTF::PassRefPtr<WebCore::TextCheckingRequest>) OVERRIDE;
+    virtual void requestCheckingOfString(WTF::PassRefPtr<blink::TextCheckingRequest>) OVERRIDE;
 
-    virtual WebCore::TextCheckerClient& textChecker() OVERRIDE { return *this; }
+    virtual blink::TextCheckerClient& textChecker() OVERRIDE { return *this; }
 
 private:
     // Returns whether or not the focused control needs spell-checking.

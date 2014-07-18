@@ -33,7 +33,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class StringCacheMapTraits : public V8PersistentValueMapTraits<StringImpl*, v8::String, true> {
 public:
@@ -97,6 +97,6 @@ private:
     RefPtr<StringImpl> m_lastStringImpl;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8ValueCache_h

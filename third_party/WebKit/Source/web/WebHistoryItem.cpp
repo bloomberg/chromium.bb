@@ -43,7 +43,7 @@
 #include "public/web/WebSerializedScriptValue.h"
 #include "wtf/text/StringHash.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

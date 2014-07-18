@@ -35,7 +35,7 @@
 #include "core/EventTargetHeaders.h"
 #include "core/EventTargetInterfaces.h"
 
-namespace WebCore {
+namespace blink {
 
 #define TRY_TO_WRAP_WITH_INTERFACE(interfaceName) \
     if (EventTargetNames::interfaceName == desiredInterface) \
@@ -56,4 +56,4 @@ v8::Handle<v8::Value> toV8(EventTarget* impl, v8::Handle<v8::Object> creationCon
 
 #undef TRY_TO_WRAP_WITH_INTERFACE
 
-} // namespace WebCore
+} // namespace blink

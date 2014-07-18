@@ -44,26 +44,26 @@ class PageScaleConstraintsSet {
 public:
     PageScaleConstraintsSet();
 
-    WebCore::PageScaleConstraints defaultConstraints() const;
+    blink::PageScaleConstraints defaultConstraints() const;
 
     // Settings defined in the website's viewport tag, if viewport tag support
     // is enabled.
-    const WebCore::PageScaleConstraints& pageDefinedConstraints() const { return m_pageDefinedConstraints; }
-    void updatePageDefinedConstraints(const WebCore::ViewportDescription&, WebCore::Length legacyFallbackWidth);
-    void adjustForAndroidWebViewQuirks(const WebCore::ViewportDescription&, int layoutFallbackWidth, float deviceScaleFactor, bool supportTargetDensityDPI, bool wideViewportQuirkEnabled, bool useWideViewport, bool loadWithOverviewMode, bool nonUserScalableQuirkEnabled);
+    const blink::PageScaleConstraints& pageDefinedConstraints() const { return m_pageDefinedConstraints; }
+    void updatePageDefinedConstraints(const blink::ViewportDescription&, blink::Length legacyFallbackWidth);
+    void adjustForAndroidWebViewQuirks(const blink::ViewportDescription&, int layoutFallbackWidth, float deviceScaleFactor, bool supportTargetDensityDPI, bool wideViewportQuirkEnabled, bool useWideViewport, bool loadWithOverviewMode, bool nonUserScalableQuirkEnabled);
 
     // Constraints may also be set from Chromium -- this overrides any
     // page-defined values.
-    const WebCore::PageScaleConstraints& userAgentConstraints() const { return m_userAgentConstraints; }
-    void setUserAgentConstraints(const WebCore::PageScaleConstraints&);
+    const blink::PageScaleConstraints& userAgentConstraints() const { return m_userAgentConstraints; }
+    void setUserAgentConstraints(const blink::PageScaleConstraints&);
 
     // Actual computed values, taking into account the above plus the current
     // viewport size and document width.
-    const WebCore::PageScaleConstraints& finalConstraints() const { return m_finalConstraints; }
+    const blink::PageScaleConstraints& finalConstraints() const { return m_finalConstraints; }
     void computeFinalConstraints();
-    void adjustFinalConstraintsToContentsSize(WebCore::IntSize contentsSize, int nonOverlayScrollbarWidth);
+    void adjustFinalConstraintsToContentsSize(blink::IntSize contentsSize, int nonOverlayScrollbarWidth);
 
-    void didChangeContentsSize(WebCore::IntSize contentsSize, float pageScaleFactor);
+    void didChangeContentsSize(blink::IntSize contentsSize, float pageScaleFactor);
 
     // This should be set to true on each page load to note that the page scale
     // factor needs to be reset to its initial value.
@@ -73,24 +73,24 @@ public:
     // This is set when one of the inputs to finalConstraints changes.
     bool constraintsDirty() const { return m_constraintsDirty; }
 
-    void didChangeViewSize(const WebCore::IntSize&);
+    void didChangeViewSize(const blink::IntSize&);
 
-    WebCore::IntSize mainFrameSize(const WebCore::IntSize& contentsSize) const;
+    blink::IntSize mainFrameSize(const blink::IntSize& contentsSize) const;
 
 private:
-    WebCore::PageScaleConstraints computeConstraintsStack() const;
+    blink::PageScaleConstraints computeConstraintsStack() const;
 
-    WebCore::PageScaleConstraints m_pageDefinedConstraints;
-    WebCore::PageScaleConstraints m_userAgentConstraints;
-    WebCore::PageScaleConstraints m_finalConstraints;
+    blink::PageScaleConstraints m_pageDefinedConstraints;
+    blink::PageScaleConstraints m_userAgentConstraints;
+    blink::PageScaleConstraints m_finalConstraints;
 
     int m_lastContentsWidth;
-    WebCore::IntSize m_viewSize;
+    blink::IntSize m_viewSize;
 
     bool m_needsReset;
     bool m_constraintsDirty;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PageScaleConstraintsSet_h

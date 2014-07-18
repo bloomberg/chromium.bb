@@ -37,7 +37,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class Event;
 class LocalFrame;
@@ -81,6 +81,6 @@ private:
     TextPosition m_position;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8LazyEventListener_h

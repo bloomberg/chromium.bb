@@ -34,7 +34,7 @@
 #include "core/dom/custom/CustomElement.h"
 #include "public/platform/WebString.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

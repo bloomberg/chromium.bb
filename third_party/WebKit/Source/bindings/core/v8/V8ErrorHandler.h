@@ -35,7 +35,7 @@
 #include "wtf/PassRefPtr.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class ErrorEvent;
 class LocalFrame;
@@ -56,6 +56,6 @@ private:
     virtual bool shouldPreventDefault(v8::Local<v8::Value> returnValue) OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8ErrorHandler_h

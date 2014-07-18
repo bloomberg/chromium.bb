@@ -34,7 +34,7 @@
 #include "wtf/Vector.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class Node;
 

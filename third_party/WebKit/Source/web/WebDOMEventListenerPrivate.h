@@ -34,7 +34,7 @@
 #include "public/platform/WebString.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 class EventTarget;
 }
 
@@ -49,12 +49,12 @@ public:
     ~WebDOMEventListenerPrivate();
 
     EventListenerWrapper* createEventListenerWrapper(
-        const WebString& eventType, bool useCapture, WebCore::EventTarget*);
+        const WebString& eventType, bool useCapture, blink::EventTarget*);
 
     // Gets the ListenerEventWrapper for a specific node.
     // Used by WebNode::removeDOMEventListener().
     EventListenerWrapper* getEventListenerWrapper(
-        const WebString& eventType, bool useCapture, WebCore::EventTarget*);
+        const WebString& eventType, bool useCapture, blink::EventTarget*);
 
     // Called by the WebDOMEventListener when it is about to be deleted.
     void webDOMEventListenerDeleted();
@@ -65,7 +65,7 @@ public:
     struct ListenerInfo {
         ListenerInfo(const WebString& eventType, bool useCapture,
                      EventListenerWrapper* eventListenerWrapper,
-                     WebCore::EventTarget* target)
+                     blink::EventTarget* target)
             : eventType(eventType)
             , useCapture(useCapture)
             , eventListenerWrapper(eventListenerWrapper)
@@ -76,7 +76,7 @@ public:
         WebString eventType;
         bool useCapture;
         EventListenerWrapper* eventListenerWrapper;
-        WebCore::EventTarget* target;
+        blink::EventTarget* target;
     };
 
 private:

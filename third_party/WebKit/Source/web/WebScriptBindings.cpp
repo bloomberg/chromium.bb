@@ -34,7 +34,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "public/platform/WebString.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

@@ -9,7 +9,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 template <typename T>
 class RefVector : public RefCounted<RefVector<T> > {
@@ -35,6 +35,6 @@ private:
     RefVector(const RefVector& o) : m_vector(o.m_vector) { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RefVector_h

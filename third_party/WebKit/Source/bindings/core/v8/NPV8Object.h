@@ -37,7 +37,7 @@
 #include <bindings/npruntime.h>
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class LocalDOMWindow;
 
@@ -72,6 +72,6 @@ V8NPObject* npObjectToV8NPObject(NPObject*);
 
 void disposeUnderlyingV8Object(NPObject*, v8::Isolate*);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NPV8Object_h

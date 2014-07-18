@@ -58,7 +58,7 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -139,7 +139,7 @@ WebNodeList WebNode::childNodes()
 
 WebString WebNode::createMarkup() const
 {
-    return WebCore::createMarkup(m_private.get());
+    return blink::createMarkup(m_private.get());
 }
 
 bool WebNode::isLink() const
@@ -242,7 +242,7 @@ WebPluginContainer* WebNode::pluginContainer() const
     if (isHTMLObjectElement(coreNode) || isHTMLEmbedElement(coreNode)) {
         RenderObject* object = coreNode.renderer();
         if (object && object->isWidget()) {
-            Widget* widget = WebCore::toRenderWidget(object)->widget();
+            Widget* widget = blink::toRenderWidget(object)->widget();
             if (widget && widget->isPluginContainer())
                 return toWebPluginContainerImpl(widget);
         }

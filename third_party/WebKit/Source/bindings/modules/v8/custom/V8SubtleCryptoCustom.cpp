@@ -10,7 +10,7 @@
 #include "bindings/core/v8/custom/V8ArrayBufferViewCustom.h"
 #include "bindings/modules/v8/V8CryptoKey.h"
 
-namespace WebCore {
+namespace blink {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Overload resolution for verify()
@@ -122,4 +122,4 @@ void V8SubtleCrypto::verifyMethodCustom(const v8::FunctionCallbackInfo<v8::Value
     exceptionState.throwIfNeeded();
 }
 
-} // namespace WebCore
+} // namespace blink

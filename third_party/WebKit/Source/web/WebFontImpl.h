@@ -34,13 +34,13 @@
 #include "platform/fonts/Font.h"
 #include "public/web/WebFont.h"
 
-namespace WebCore { class FontDescription; }
+namespace blink { class FontDescription; }
 
 namespace blink {
 
 class WebFontImpl FINAL : public WebFont {
 public:
-    WebFontImpl(const WebCore::FontDescription&);
+    WebFontImpl(const blink::FontDescription&);
 
     virtual WebFontDescription fontDescription() const OVERRIDE;
 
@@ -58,7 +58,7 @@ public:
         int height, int from = 0, int to = -1) const OVERRIDE;
 
 private:
-    WebCore::Font m_font;
+    blink::Font m_font;
 };
 
 } // namespace blink

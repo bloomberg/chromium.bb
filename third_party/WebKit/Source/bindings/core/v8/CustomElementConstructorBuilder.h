@@ -41,7 +41,7 @@
 #include "wtf/text/AtomicString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class CustomElementDefinition;
 class Dictionary;

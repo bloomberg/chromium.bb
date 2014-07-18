@@ -36,7 +36,7 @@
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebVector.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

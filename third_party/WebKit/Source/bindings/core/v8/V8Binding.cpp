@@ -71,7 +71,7 @@
 #include "wtf/unicode/CharacterNames.h"
 #include "wtf/unicode/Unicode.h"
 
-namespace WebCore {
+namespace blink {
 
 v8::Handle<v8::Value> throwError(V8ErrorType errorType, const String& message, v8::Isolate* isolate)
 {
@@ -936,4 +936,4 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(Executio
     return InspectorFunctionCallEvent::data(context, scriptId, resourceName, lineNumber);
 }
 
-} // namespace WebCore
+} // namespace blink

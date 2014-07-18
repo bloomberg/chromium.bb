@@ -39,7 +39,7 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8Window.h"
 
-namespace WebCore {
+namespace blink {
 
 static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper, Node* impl, v8::Isolate* isolate)
 {
@@ -99,4 +99,4 @@ bool V8DOMWrapper::isDOMWrapper(v8::Handle<v8::Value> value)
     return typeInfo->ginEmbedder == gin::kEmbedderBlink;
 }
 
-} // namespace WebCore
+} // namespace blink

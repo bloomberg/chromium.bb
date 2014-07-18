@@ -29,7 +29,7 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/V8Binding.h"
 
-namespace WebCore {
+namespace blink {
 
 ArrayValue& ArrayValue::operator=(const ArrayValue& other)
 {
@@ -40,7 +40,7 @@ ArrayValue& ArrayValue::operator=(const ArrayValue& other)
 
 bool ArrayValue::isUndefinedOrNull() const
 {
-    return m_array.IsEmpty() || WebCore::isUndefinedOrNull(m_array);
+    return m_array.IsEmpty() || blink::isUndefinedOrNull(m_array);
 }
 
 bool ArrayValue::length(size_t& length) const
@@ -70,4 +70,4 @@ bool ArrayValue::get(size_t index, Dictionary& value) const
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

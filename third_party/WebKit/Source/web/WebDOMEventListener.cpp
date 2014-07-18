@@ -33,7 +33,7 @@
 
 #include "web/WebDOMEventListenerPrivate.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

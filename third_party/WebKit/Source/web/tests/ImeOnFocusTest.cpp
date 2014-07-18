@@ -57,14 +57,14 @@ public:
     }
 
 protected:
-    void sendGestureTap(WebView*, WebCore::IntPoint);
-    void runImeOnFocusTest(std::string, int, WebCore::IntPoint tapPoint = WebCore::IntPoint(-1, -1));
+    void sendGestureTap(WebView*, blink::IntPoint);
+    void runImeOnFocusTest(std::string, int, blink::IntPoint tapPoint = blink::IntPoint(-1, -1));
 
     std::string m_baseURL;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
 };
 
-void ImeOnFocusTest::sendGestureTap(WebView* webView, WebCore::IntPoint clientPoint)
+void ImeOnFocusTest::sendGestureTap(WebView* webView, blink::IntPoint clientPoint)
 {
     WebGestureEvent webGestureEvent;
     webGestureEvent.type = WebInputEvent::GestureTap;
@@ -80,7 +80,7 @@ void ImeOnFocusTest::sendGestureTap(WebView* webView, WebCore::IntPoint clientPo
     FrameTestHelpers::runPendingTasks();
 }
 
-void ImeOnFocusTest::runImeOnFocusTest(std::string file, int expectedImeRequestCount, WebCore::IntPoint tapPoint)
+void ImeOnFocusTest::runImeOnFocusTest(std::string file, int expectedImeRequestCount, blink::IntPoint tapPoint)
 {
     ImeRequestTrackingWebViewClient client;
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL), WebString::fromUTF8(file));
@@ -109,7 +109,7 @@ TEST_F(ImeOnFocusTest, OnAutofocus)
 
 TEST_F(ImeOnFocusTest, OnUserGesture)
 {
-    runImeOnFocusTest("ime-on-focus-on-user-gesture.html", 1, WebCore::IntPoint(50, 50));
+    runImeOnFocusTest("ime-on-focus-on-user-gesture.html", 1, blink::IntPoint(50, 50));
 }
 
 }

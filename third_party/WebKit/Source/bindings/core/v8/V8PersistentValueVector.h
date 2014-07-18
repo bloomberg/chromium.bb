@@ -35,7 +35,7 @@
 #include <v8-util.h>
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class WTFVectorPersistentValueVectorTraits {
 public:
@@ -72,6 +72,6 @@ public:
     explicit V8PersistentValueVector(v8::Isolate* isolate) : v8::PersistentValueVector<ValueType, WTFVectorPersistentValueVectorTraits>(isolate) { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8PersistentValueVector_h

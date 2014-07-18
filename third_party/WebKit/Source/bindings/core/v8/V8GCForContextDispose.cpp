@@ -34,7 +34,7 @@
 #include "wtf/StdLibExtras.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 V8GCForContextDispose::V8GCForContextDispose()
     : m_pseudoIdleTimer(this, &V8GCForContextDispose::pseudoIdleTimerFired)
@@ -76,4 +76,4 @@ void V8GCForContextDispose::pseudoIdleTimerFired(Timer<V8GCForContextDispose>*)
     m_didDisposeContextForMainFrame = false;
 }
 
-} // namespace WebCore
+} // namespace blink

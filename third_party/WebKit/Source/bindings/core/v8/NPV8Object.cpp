@@ -45,9 +45,9 @@
 #include "wtf/text/WTFString.h"
 #include <stdio.h>
 
-using namespace WebCore;
+using namespace blink;
 
-namespace WebCore {
+namespace blink {
 
 const WrapperTypeInfo* npObjectTypeInfo()
 {
@@ -200,7 +200,7 @@ void disposeUnderlyingV8Object(NPObject* npObject, v8::Isolate* isolate)
     v8NpObject->rootObject = 0;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 bool _NPN_Invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPVariant* arguments, uint32_t argumentCount, NPVariant* result)
 {

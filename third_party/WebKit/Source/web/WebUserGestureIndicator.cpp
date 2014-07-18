@@ -34,7 +34,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "public/web/WebUserGestureToken.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

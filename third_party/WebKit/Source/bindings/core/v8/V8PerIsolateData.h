@@ -38,7 +38,7 @@
 #include "wtf/Vector.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class DOMDataStore;
 class GCEventData;
@@ -133,6 +133,6 @@ private:
     bool m_performingMicrotaskCheckpoint;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8PerIsolateData_h

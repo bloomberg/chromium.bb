@@ -41,7 +41,7 @@
 
 #include <stdlib.h>
 
-namespace WebCore {
+namespace blink {
 
 void convertV8ObjectToNPVariant(v8::Local<v8::Value> object, NPObject* owner, NPVariant* result, v8::Isolate* isolate)
 {
@@ -168,4 +168,4 @@ ExceptionCatcher::~ExceptionCatcher()
         topHandler->handler(topHandler->data, *v8::String::Utf8Value(m_tryCatch.Exception()));
 }
 
-} // namespace WebCore
+} // namespace blink

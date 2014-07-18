@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/V8Binding.h"
 
-namespace WebCore {
+namespace blink {
 
 class BlobData;
 class ExceptionState;
@@ -88,6 +88,6 @@ bool processBlobParts(v8::Local<v8::Object> blobParts, bool normalizeLineEndings
 
 } // namespace V8BlobCustomHelpers
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8BlobCustomHelpers_h

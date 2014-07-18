@@ -44,7 +44,7 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntPoint.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

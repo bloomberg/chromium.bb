@@ -56,14 +56,14 @@
 #include <vector>
 
 using namespace blink;
-using WebCore::LocalFrame;
-using WebCore::FrameView;
-using WebCore::IntPoint;
-using WebCore::IntRect;
-using WebCore::IntSize;
-using WebCore::Page;
-using WebCore::PageScaleConstraints;
-using WebCore::ViewportDescription;
+using blink::LocalFrame;
+using blink::FrameView;
+using blink::IntPoint;
+using blink::IntRect;
+using blink::IntSize;
+using blink::Page;
+using blink::PageScaleConstraints;
+using blink::ViewportDescription;
 using blink::FrameTestHelpers::runPendingTasks;
 
 namespace {
@@ -105,15 +105,15 @@ class UseMockScrollbarSettings {
 public:
     UseMockScrollbarSettings()
     {
-        WebCore::Settings::setMockScrollbarsEnabled(true);
-        WebCore::RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
-        EXPECT_TRUE(WebCore::ScrollbarTheme::theme()->usesOverlayScrollbars());
+        blink::Settings::setMockScrollbarsEnabled(true);
+        blink::RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
+        EXPECT_TRUE(blink::ScrollbarTheme::theme()->usesOverlayScrollbars());
     }
 
     ~UseMockScrollbarSettings()
     {
-        WebCore::Settings::setMockScrollbarsEnabled(false);
-        WebCore::RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(false);
+        blink::Settings::setMockScrollbarsEnabled(false);
+        blink::RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(false);
     }
 };
 
@@ -129,7 +129,7 @@ static PageScaleConstraints runViewportTest(Page* page, int initialWidth, int in
     IntSize initialViewportSize(initialWidth, initialHeight);
     toLocalFrame(page->mainFrame())->view()->setFrameRect(IntRect(IntPoint::zero(), initialViewportSize));
     ViewportDescription description = page->viewportDescription();
-    PageScaleConstraints constraints = description.resolve(initialViewportSize, WebCore::Length(980, WebCore::Fixed));
+    PageScaleConstraints constraints = description.resolve(initialViewportSize, blink::Length(980, blink::Fixed));
 
     constraints.fitToContentsWidth(constraints.layoutSize.width(), initialWidth);
     return constraints;

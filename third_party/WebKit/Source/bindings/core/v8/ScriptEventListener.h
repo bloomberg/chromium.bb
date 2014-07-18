@@ -35,7 +35,7 @@
 #include "bindings/core/v8/V8LazyEventListener.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class EventListener;
@@ -50,6 +50,6 @@ ScriptValue eventListenerHandler(Document*, EventListener*);
 ScriptState* eventListenerHandlerScriptState(LocalFrame*, EventListener*);
 bool eventListenerHandlerLocation(Document*, EventListener*, String& sourceName, String& scriptId, int& lineNumber);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptEventListener_h

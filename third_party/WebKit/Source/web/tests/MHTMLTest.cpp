@@ -50,10 +50,10 @@
 #include <gtest/gtest.h>
 
 using namespace blink;
-using WebCore::Document;
-using WebCore::LocalFrame;
-using WebCore::Page;
-using WebCore::KURL;
+using blink::Document;
+using blink::LocalFrame;
+using blink::Page;
+using blink::KURL;
 using blink::URLTestHelpers::toKURL;
 
 namespace {
@@ -109,7 +109,7 @@ TEST_F(MHTMLTest, CheckDomain)
 
     EXPECT_STREQ(kFileURL, frame->domWindow()->location().href().ascii().data());
 
-    WebCore::SecurityOrigin* origin = document->securityOrigin();
+    blink::SecurityOrigin* origin = document->securityOrigin();
     EXPECT_STRNE("localhost", origin->domain().ascii().data());
 }
 

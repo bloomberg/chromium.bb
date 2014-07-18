@@ -42,7 +42,7 @@
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -153,7 +153,7 @@ void FullscreenController::didExitFullScreen()
     m_fullScreenFrame.clear();
 }
 
-void FullscreenController::enterFullScreenForElement(WebCore::Element* element)
+void FullscreenController::enterFullScreenForElement(blink::Element* element)
 {
     if (m_webViewImpl->settingsImpl()->disallowFullscreenForNonMediaElements() && !isHTMLMediaElement(element))
         return;
@@ -179,7 +179,7 @@ void FullscreenController::enterFullScreenForElement(WebCore::Element* element)
     }
 }
 
-void FullscreenController::exitFullScreenForElement(WebCore::Element* element)
+void FullscreenController::exitFullScreenForElement(blink::Element* element)
 {
     // The client is exiting full screen, so don't send a notification.
     if (m_isCancelingFullScreen)

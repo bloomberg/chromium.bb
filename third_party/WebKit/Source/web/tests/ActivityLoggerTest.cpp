@@ -13,10 +13,10 @@
 #include <gtest/gtest.h>
 #include <v8.h>
 
-using WebCore::ScriptController;
-using WebCore::ScriptSourceCode;
-using WebCore::V8DOMActivityLogger;
-using WebCore::toCoreStringWithUndefinedOrNullCheck;
+using blink::ScriptController;
+using blink::ScriptSourceCode;
+using blink::V8DOMActivityLogger;
+using blink::toCoreStringWithUndefinedOrNullCheck;
 using blink::FrameTestHelpers::WebViewHelper;
 using blink::FrameTestHelpers::pumpPendingRequestsDoNotUse;
 

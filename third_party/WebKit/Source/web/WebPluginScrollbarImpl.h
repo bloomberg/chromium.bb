@@ -30,7 +30,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 class IntPoint;
 class IntRect;
 class Scrollbar;
@@ -46,14 +46,14 @@ public:
     virtual ~WebPluginScrollbarImpl();
 
     void setScrollOffset(int);
-    void invalidateScrollbarRect(const WebCore::IntRect&);
+    void invalidateScrollbarRect(const blink::IntRect&);
     // FIXME: Combine this with the other getTickmarks method
-    void getTickmarks(Vector<WebCore::IntRect>&) const;
-    WebCore::IntPoint convertFromContainingViewToScrollbar(const WebCore::IntPoint& parentPoint) const;
+    void getTickmarks(Vector<blink::IntRect>&) const;
+    blink::IntPoint convertFromContainingViewToScrollbar(const blink::IntPoint& parentPoint) const;
     void scrollbarStyleChanged();
 
     int scrollOffset() { return m_scrollOffset; }
-    WebCore::Scrollbar* scrollbar() { return m_scrollbar.get(); }
+    blink::Scrollbar* scrollbar() { return m_scrollbar.get(); }
 
     // blink::WebScrollbar methods
     virtual bool isOverlay() const OVERRIDE;
@@ -96,7 +96,7 @@ private:
     WebPluginScrollbarClient* m_client;
 
     int m_scrollOffset;
-    RefPtr<WebCore::Scrollbar> m_scrollbar;
+    RefPtr<blink::Scrollbar> m_scrollbar;
 };
 
 } // namespace blink

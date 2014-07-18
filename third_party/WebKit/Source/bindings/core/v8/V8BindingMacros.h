@@ -31,7 +31,7 @@
 #ifndef V8BindingMacros_h
 #define V8BindingMacros_h
 
-namespace WebCore {
+namespace blink {
 
 // Naming scheme:
 // TO*_RETURNTYPE[_ARGTYPE]...
@@ -111,6 +111,6 @@ namespace WebCore {
     if (UNLIKELY(!var.prepare()))                  \
         return retVal;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8BindingMacros_h

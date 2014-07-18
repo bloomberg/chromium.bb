@@ -43,7 +43,7 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/TraceEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 ScheduledAction::ScheduledAction(ScriptState* scriptState, v8::Handle<v8::Function> function, int argc, v8::Handle<v8::Value> argv[], v8::Isolate* isolate)
     : m_scriptState(scriptState)
@@ -120,4 +120,4 @@ void ScheduledAction::createLocalHandlesForArgs(Vector<v8::Handle<v8::Value> >* 
         handles->append(m_info.Get(i));
 }
 
-} // namespace WebCore
+} // namespace blink

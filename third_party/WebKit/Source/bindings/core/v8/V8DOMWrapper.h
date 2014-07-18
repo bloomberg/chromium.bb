@@ -37,7 +37,7 @@
 #include "wtf/text/AtomicString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 struct WrapperTypeInfo;
 
@@ -176,6 +176,6 @@ private:
     v8::Handle<v8::Context> m_context;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8DOMWrapper_h

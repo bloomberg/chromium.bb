@@ -34,7 +34,7 @@
 #include "public/web/WebDOMEventListener.h"
 #include "web/EventListenerWrapper.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

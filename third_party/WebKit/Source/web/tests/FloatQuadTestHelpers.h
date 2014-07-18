@@ -37,7 +37,7 @@
 
 // Gtest will automatically pick up this function if included to print out
 // FloatQuads, rather than just spitting out their memory.
-namespace WebCore {
+namespace blink {
 inline void PrintTo(const FloatQuad& quad, ::std::ostream* os)
 {
     *os << "FloatQuad("

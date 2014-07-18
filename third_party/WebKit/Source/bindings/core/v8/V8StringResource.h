@@ -31,7 +31,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class ExternalStringVisitor;
 
@@ -292,6 +292,6 @@ template<> inline String V8StringResource<TreatNullAndUndefinedAsNullString>::fa
     return String();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8StringResource_h

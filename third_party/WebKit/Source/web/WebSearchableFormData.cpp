@@ -44,7 +44,7 @@
 #include "public/web/WebInputElement.h"
 #include "wtf/text/TextEncoding.h"
 
-using namespace WebCore;
+using namespace blink;
 using namespace HTMLNames;
 
 namespace {

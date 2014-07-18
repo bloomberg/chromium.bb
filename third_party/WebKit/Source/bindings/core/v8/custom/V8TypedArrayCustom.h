@@ -38,7 +38,7 @@
 #include "wtf/ArrayBuffer.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 template<typename T>
 class TypedArrayTraits
@@ -141,7 +141,7 @@ v8::Handle<v8::Object> V8TypedArray<TypedArray>::createWrapper(PassRefPtr<TypedA
     ASSERT(!DOMDataStore::containsWrapper<Binding>(impl.get(), isolate));
 
     RefPtr<ArrayBuffer> buffer = impl->buffer();
-    v8::Local<v8::Value> v8Buffer = WebCore::toV8(buffer.get(), creationContext, isolate);
+    v8::Local<v8::Value> v8Buffer = blink::toV8(buffer.get(), creationContext, isolate);
 
     ASSERT(v8Buffer->IsArrayBuffer());
 

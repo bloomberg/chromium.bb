@@ -35,7 +35,7 @@
 #include "wtf/PassRefPtr.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class Event;
 class LocalFrame;
@@ -57,6 +57,6 @@ protected:
     virtual v8::Local<v8::Value> callListenerFunction(v8::Handle<v8::Value> jsEvent, Event*) OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // V8EventListener_h

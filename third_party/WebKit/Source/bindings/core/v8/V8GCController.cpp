@@ -53,7 +53,7 @@
 #include "platform/TraceEvent.h"
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: This should use opaque GC roots.
 static void addReferencesForNodeWithEventListeners(v8::Isolate* isolate, Node* node, const v8::Persistent<v8::Object>& wrapper)
@@ -448,4 +448,4 @@ void V8GCController::reportDOMMemoryUsageToV8(v8::Isolate* isolate)
     lastUsageReportedToV8 = currentUsage;
 }
 
-} // namespace WebCore
+} // namespace blink

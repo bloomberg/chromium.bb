@@ -51,7 +51,7 @@
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -127,7 +127,7 @@ private:
         return FloatSize(0, 0);
     }
 
-    virtual void setCursor(const WebCore::Cursor& cursor) OVERRIDE
+    virtual void setCursor(const blink::Cursor& cursor) OVERRIDE
     {
         if (m_popup->m_webView->client())
             m_popup->m_webView->client()->didChangeCursor(WebCursorInfo(cursor));

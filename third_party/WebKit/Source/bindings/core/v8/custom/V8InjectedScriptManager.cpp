@@ -44,7 +44,7 @@
 #include "core/inspector/InjectedScriptHost.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 struct InjectedScriptManager::CallbackData {
     ScopedPersistent<v8::Object> handle;
@@ -122,4 +122,4 @@ void InjectedScriptManager::setWeakCallback(const v8::WeakCallbackData<v8::Objec
     delete data.GetParameter();
 }
 
-} // namespace WebCore
+} // namespace blink

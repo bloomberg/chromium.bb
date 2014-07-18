@@ -35,7 +35,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class ScriptController;
 class ScriptSourceCode;
@@ -57,6 +57,6 @@ private:
     bool m_isPreprocessing;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptPreprocessor_h

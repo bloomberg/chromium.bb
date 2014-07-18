@@ -40,7 +40,7 @@
 
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 void ScriptCallArgumentHandler::appendArgument(const ScriptValue& argument)
 {
@@ -189,4 +189,4 @@ ScriptValue ScriptFunctionCall::construct(bool& hadException, bool reportExcepti
     return ScriptValue(m_scriptState.get(), result);
 }
 
-} // namespace WebCore
+} // namespace blink

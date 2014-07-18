@@ -9,7 +9,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<ScriptState> ScriptState::create(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
 {

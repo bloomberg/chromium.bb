@@ -52,7 +52,7 @@
 #include "wtf/text/WTFString.h"
 #include <v8-debug.h>
 
-namespace WebCore {
+namespace blink {
 
 static LocalFrame* findFrame(v8::Local<v8::Object> host, v8::Local<v8::Value> data, v8::Isolate* isolate)
 {
@@ -248,4 +248,4 @@ void V8Initializer::initializeWorker(v8::Isolate* isolate)
     v8::SetResourceConstraints(isolate, &resourceConstraints);
 }
 
-} // namespace WebCore
+} // namespace blink

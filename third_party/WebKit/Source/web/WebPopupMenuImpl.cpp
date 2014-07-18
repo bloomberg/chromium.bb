@@ -57,7 +57,7 @@
 #include "web/WebInputEventConversion.h"
 #include <skia/ext/platform_canvas.h>
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -121,7 +121,7 @@ void WebPopupMenuImpl::handleMouseMove(const WebMouseEvent& event)
 
         // We cannot call setToolTipText() in PopupContainer, because PopupContainer is in WebCore, and we cannot refer to WebKit from Webcore.
         PopupContainer* container = static_cast<PopupContainer*>(m_widget);
-        client()->setToolTipText(container->getSelectedItemToolTip(), container->menuStyle().textDirection() == WebCore::RTL ? WebTextDirectionRightToLeft : WebTextDirectionLeftToRight);
+        client()->setToolTipText(container->getSelectedItemToolTip(), container->menuStyle().textDirection() == blink::RTL ? WebTextDirectionRightToLeft : WebTextDirectionLeftToRight);
     }
 }
 
@@ -367,7 +367,7 @@ void WebPopupMenuImpl::setTextDirection(WebTextDirection)
 
 
 //-----------------------------------------------------------------------------
-// WebCore::HostWindow
+// blink::HostWindow
 
 void WebPopupMenuImpl::invalidateContentsAndRootView(const IntRect& paintRect)
 {
@@ -406,7 +406,7 @@ WebScreenInfo WebPopupMenuImpl::screenInfo() const
 }
 
 //-----------------------------------------------------------------------------
-// WebCore::FramelessScrollViewClient
+// blink::FramelessScrollViewClient
 
 void WebPopupMenuImpl::popupClosed(FramelessScrollView* widget)
 {

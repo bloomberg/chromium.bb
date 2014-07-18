@@ -28,7 +28,7 @@
 
 #include "modules/geolocation/GeolocationPosition.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 

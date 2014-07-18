@@ -66,7 +66,7 @@
 #include "wtf/PassRefPtr.h"
 #include <v8.h>
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -287,7 +287,7 @@ WebVector<WebDraggableRegion> WebDocument::draggableRegions() const
         for (size_t i = 0; i < regions.size(); i++) {
             const AnnotatedRegionValue& value = regions[i];
             draggableRegions[i].draggable = value.draggable;
-            draggableRegions[i].bounds = WebCore::IntRect(value.bounds);
+            draggableRegions[i].bounds = blink::IntRect(value.bounds);
         }
     }
     return draggableRegions;

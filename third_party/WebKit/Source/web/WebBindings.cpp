@@ -51,7 +51,7 @@
 #include "public/web/WebRange.h"
 #include "wtf/ArrayBufferView.h"
 
-using namespace WebCore;
+using namespace blink;
 
 namespace blink {
 
@@ -185,7 +185,7 @@ void WebBindings::unregisterObject(NPObject* object)
 
 void WebBindings::dropV8WrapperForObject(NPObject* object)
 {
-    WebCore::forgetV8ObjectForNPObject(object);
+    blink::forgetV8ObjectForNPObject(object);
 }
 
 NPUTF8* WebBindings::utf8FromIdentifier(NPIdentifier identifier)
@@ -376,17 +376,17 @@ NPObject* WebBindings::makeStringArray(const WebVector<WebString>& data)
 
 void WebBindings::pushExceptionHandler(ExceptionHandler handler, void* data)
 {
-    WebCore::pushExceptionHandler(handler, data);
+    blink::pushExceptionHandler(handler, data);
 }
 
 void WebBindings::popExceptionHandler()
 {
-    WebCore::popExceptionHandler();
+    blink::popExceptionHandler();
 }
 
 void WebBindings::toNPVariant(v8::Local<v8::Value> object, NPObject* root, NPVariant* result)
 {
-    WebCore::convertV8ObjectToNPVariant(object, root, result, v8::Isolate::GetCurrent());
+    blink::convertV8ObjectToNPVariant(object, root, result, v8::Isolate::GetCurrent());
 }
 
 v8::Handle<v8::Value> WebBindings::toV8Value(const NPVariant* variant)
