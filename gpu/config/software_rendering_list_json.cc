@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "8.7",
+  "version": "8.8",
   "entries": [
     {
       "id": 1,
@@ -1163,7 +1163,7 @@ LONG_STRING_CONST(
             "type": "android",
             "version": {
               "op": ">=",
-              "value": "4.5"
+              "value": "4.4.99"
             }
           }
         }
