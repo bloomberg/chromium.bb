@@ -532,7 +532,6 @@ ViewManagerClientImpl::ViewManagerClientImpl(ApplicationConnection* connection,
       dispatcher_(NULL) {}
 
 ViewManagerClientImpl::~ViewManagerClientImpl() {
-  delegate_->OnViewManagerDisconnected(this);
   while (!nodes_.empty()) {
     IdToNodeMap::iterator it = nodes_.begin();
     if (OwnsNode(it->second->id()))
@@ -547,6 +546,7 @@ ViewManagerClientImpl::~ViewManagerClientImpl() {
     else
       views_.erase(it);
   }
+  delegate_->OnViewManagerDisconnected(this);
 }
 
 Id ViewManagerClientImpl::CreateNode() {

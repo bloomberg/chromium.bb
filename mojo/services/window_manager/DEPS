@@ -3,6 +3,7 @@ include_rules = [
   "+mojo/service_manager",
   "+mojo/services/native_viewport",
   "+mojo/services/public",
+  "+ui/aura",
   "+ui/gfx",
   "+ui/gl",
   "+ui/wm",

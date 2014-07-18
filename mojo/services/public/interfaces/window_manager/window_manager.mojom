@@ -7,7 +7,10 @@ module mojo {
 [Client=WindowManagerClient]
 interface WindowManagerService {
   OpenWindow() => (uint32 node_id);
+  OpenWindowWithURL(string url) => (uint32 node_id);
   SetCapture(uint32 node_id) => (bool success);
+  FocusWindow(uint32 node_id) => (bool success);
+  ActivateWindow(uint32 node_id) => (bool success);
 };
 
 [Client=WindowManagerService]
@@ -19,6 +22,9 @@ interface WindowManagerClient {
   // TODO(beng): how is the WM supposed to know if a node is known to a client
   //             or not?
   OnCaptureChanged(uint32 old_capture_node_id, uint32 new_capture_node_id);
+
+  OnFocusChanged(uint32 old_focused_node_id, uint32 new_focused_node_id);
+  OnActiveWindowChanged(uint32 old_focused_window, uint32 new_focused_window);
 };
 
 }

@@ -21,13 +21,25 @@ class WindowManagerServiceImpl : public InterfaceImpl<WindowManagerService> {
   virtual ~WindowManagerServiceImpl();
 
   void NotifyReady();
+  void NotifyNodeFocused(view_manager::Id new_focused_id,
+                         view_manager::Id old_focused_id);
+  void NotifyWindowActivated(view_manager::Id new_active_id,
+                             view_manager::Id old_active_id);
 
  private:
   // Overridden from WindowManagerService:
   virtual void OpenWindow(
       const Callback<void(view_manager::Id)>& callback) MOJO_OVERRIDE;
+  virtual void OpenWindowWithURL(
+      const String& url,
+      const Callback<void(view_manager::Id)>& callback) MOJO_OVERRIDE;
   virtual void SetCapture(view_manager::Id node,
                           const Callback<void(bool)>& callback) MOJO_OVERRIDE;
+  virtual void FocusWindow(view_manager::Id node,
+                           const Callback<void(bool)>& callback) MOJO_OVERRIDE;
+  virtual void ActivateWindow(
+      view_manager::Id node,
+      const Callback<void(bool)>& callback) MOJO_OVERRIDE;
 
   // Overridden from InterfaceImpl:
   virtual void OnConnectionEstablished() MOJO_OVERRIDE;

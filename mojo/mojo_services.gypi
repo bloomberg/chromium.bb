@@ -813,6 +813,7 @@
             'mojo_shell_test_support',
             'mojo_system_impl',
             'mojo_view_manager_bindings',
+            'mojo_view_manager_lib',
           ],
           'sources': [
             'services/window_manager/window_manager_api_unittest.cc',
