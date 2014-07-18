@@ -447,8 +447,8 @@ class MockQueuedMintRequest : public IdentityMintRequestQueue::Request {
   MOCK_METHOD1(StartMintToken, void(IdentityMintRequestQueue::MintType));
 };
 
-AccountIds CreateIds(std::string email, std::string obfid) {
-  AccountIds ids;
+gaia::AccountIds CreateIds(std::string email, std::string obfid) {
+  gaia::AccountIds ids;
   ids.account_key = email;
   ids.email = email;
   ids.gaia = obfid;
@@ -462,7 +462,7 @@ class IdentityGetAccountsFunctionTest : public ExtensionBrowserTest {
   }
 
  protected:
-  void SetAccountState(AccountIds ids, bool is_signed_in) {
+  void SetAccountState(gaia::AccountIds ids, bool is_signed_in) {
     IdentityAPI::GetFactoryInstance()->Get(profile())->SetAccountStateForTest(
         ids, is_signed_in);
   }
@@ -707,7 +707,7 @@ class GetAuthTokenFunctionTest : public AsyncExtensionBrowserTest {
 #endif
   }
 
-  void SetAccountState(AccountIds ids, bool is_signed_in) {
+  void SetAccountState(gaia::AccountIds ids, bool is_signed_in) {
     IdentityAPI::GetFactoryInstance()->Get(profile())->SetAccountStateForTest(
         ids, is_signed_in);
   }
@@ -889,9 +889,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
-
-  EXPECT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
-            id_api()->GetAuthStatusForTest().state());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -907,9 +904,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
-
-  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
-            id_api()->GetAuthStatusForTest());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,

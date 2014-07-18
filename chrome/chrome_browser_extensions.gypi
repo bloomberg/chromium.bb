@@ -576,8 +576,6 @@
       'browser/extensions/api/hotword_private/hotword_private_api.h',
       'browser/extensions/api/i18n/i18n_api.cc',
       'browser/extensions/api/i18n/i18n_api.h',
-      'browser/extensions/api/identity/account_tracker.cc',
-      'browser/extensions/api/identity/account_tracker.h',
       'browser/extensions/api/identity/extension_token_key.cc',
       'browser/extensions/api/identity/extension_token_key.h',
       'browser/extensions/api/identity/gaia_web_auth_flow.cc',

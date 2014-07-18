@@ -14,15 +14,15 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/extensions/api/identity/account_tracker.h"
 #include "chrome/browser/extensions/api/identity/extension_token_key.h"
 #include "chrome/browser/extensions/api/identity/gaia_web_auth_flow.h"
 #include "chrome/browser/extensions/api/identity/identity_mint_queue.h"
 #include "chrome/browser/extensions/api/identity/identity_signin_flow.h"
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chrome/browser/signin/signin_global_error.h"
+#include "chrome/browser/signin/profile_identity_provider.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "google_apis/gaia/account_tracker.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -83,7 +83,7 @@ class IdentityTokenCacheValue {
 };
 
 class IdentityAPI : public BrowserContextKeyedAPI,
-                    public AccountTracker::Observer {
+                    public gaia::AccountTracker::Observer {
  public:
   typedef std::map<ExtensionTokenKey, IdentityTokenCacheValue> CachedTokens;
 
@@ -112,24 +112,20 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   std::vector<std::string> GetAccounts() const;
   std::string FindAccountKeyByGaiaId(const std::string& gaia_id);
 
-  // Global error reporting.
-  void ReportAuthError(const GoogleServiceAuthError& error);
-  GoogleServiceAuthError GetAuthStatusForTest() const;
-
   // BrowserContextKeyedAPI implementation.
   virtual void Shutdown() OVERRIDE;
   static BrowserContextKeyedAPIFactory<IdentityAPI>* GetFactoryInstance();
 
-  // AccountTracker::Observer implementation:
-  virtual void OnAccountAdded(const AccountIds& ids) OVERRIDE;
-  virtual void OnAccountRemoved(const AccountIds& ids) OVERRIDE;
-  virtual void OnAccountSignInChanged(const AccountIds& ids,
+  // gaia::AccountTracker::Observer implementation:
+  virtual void OnAccountAdded(const gaia::AccountIds& ids) OVERRIDE;
+  virtual void OnAccountRemoved(const gaia::AccountIds& ids) OVERRIDE;
+  virtual void OnAccountSignInChanged(const gaia::AccountIds& ids,
                                       bool is_signed_in) OVERRIDE;
 
   void AddShutdownObserver(ShutdownObserver* observer);
   void RemoveShutdownObserver(ShutdownObserver* observer);
 
-  void SetAccountStateForTest(AccountIds ids, bool is_signed_in);
+  void SetAccountStateForTest(gaia::AccountIds ids, bool is_signed_in);
 
  private:
   friend class BrowserContextKeyedAPIFactory<IdentityAPI>;
@@ -141,7 +137,8 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   content::BrowserContext* browser_context_;
   IdentityMintRequestQueue mint_queue_;
   CachedTokens token_cache_;
-  AccountTracker account_tracker_;
+  ProfileIdentityProvider profile_identity_provider_;
+  gaia::AccountTracker account_tracker_;
   ObserverList<ShutdownObserver> shutdown_observer_list_;
 };
 

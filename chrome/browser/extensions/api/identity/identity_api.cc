@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/extensions/api/identity.h"
 #include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
 #include "chrome/common/pref_names.h"
@@ -130,7 +131,15 @@ const base::Time& IdentityTokenCacheValue::expiration_time() const {
 
 IdentityAPI::IdentityAPI(content::BrowserContext* context)
     : browser_context_(context),
-      account_tracker_(Profile::FromBrowserContext(context)) {
+      profile_identity_provider_(
+          SigninManagerFactory::GetForProfile(
+              Profile::FromBrowserContext(context)),
+          ProfileOAuth2TokenServiceFactory::GetForProfile(
+              Profile::FromBrowserContext(context)),
+          LoginUIServiceFactory::GetForProfile(
+              Profile::FromBrowserContext(context))),
+      account_tracker_(&profile_identity_provider_,
+                       g_browser_process->system_request_context()) {
   account_tracker_.AddObserver(this);
 }
 
@@ -173,11 +182,11 @@ const IdentityAPI::CachedTokens& IdentityAPI::GetAllCachedTokens() {
 
 std::vector<std::string> IdentityAPI::GetAccounts() const {
   const std::string primary_account_id = GetPrimaryAccountId(browser_context_);
-  const std::vector<AccountIds> ids = account_tracker_.GetAccounts();
+  const std::vector<gaia::AccountIds> ids = account_tracker_.GetAccounts();
   std::vector<std::string> gaia_ids;
 
   if (switches::IsExtensionsMultiAccount()) {
-    for (std::vector<AccountIds>::const_iterator it = ids.begin();
+    for (std::vector<gaia::AccountIds>::const_iterator it = ids.begin();
          it != ids.end();
          ++it) {
       gaia_ids.push_back(it->gaia);
@@ -190,16 +199,7 @@ std::vector<std::string> IdentityAPI::GetAccounts() const {
 }
 
 std::string IdentityAPI::FindAccountKeyByGaiaId(const std::string& gaia_id) {
-  return account_tracker_.FindAccountKeyByGaiaId(gaia_id);
-}
-
-void IdentityAPI::ReportAuthError(const GoogleServiceAuthError& error) {
-  account_tracker_.ReportAuthError(GetPrimaryAccountId(browser_context_),
-                                   error);
-}
-
-GoogleServiceAuthError IdentityAPI::GetAuthStatusForTest() const {
-  return account_tracker_.GetAuthStatus();
+  return account_tracker_.FindAccountIdsByGaiaId(gaia_id).account_key;
 }
 
 void IdentityAPI::Shutdown() {
@@ -216,11 +216,13 @@ BrowserContextKeyedAPIFactory<IdentityAPI>* IdentityAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-void IdentityAPI::OnAccountAdded(const AccountIds& ids) {}
+void IdentityAPI::OnAccountAdded(const gaia::AccountIds& ids) {
+}
 
-void IdentityAPI::OnAccountRemoved(const AccountIds& ids) {}
+void IdentityAPI::OnAccountRemoved(const gaia::AccountIds& ids) {
+}
 
-void IdentityAPI::OnAccountSignInChanged(const AccountIds& ids,
+void IdentityAPI::OnAccountSignInChanged(const gaia::AccountIds& ids,
                                          bool is_signed_in) {
   api::identity::AccountInfo account_info;
   account_info.id = ids.gaia;
@@ -242,7 +244,8 @@ void IdentityAPI::RemoveShutdownObserver(ShutdownObserver* observer) {
   shutdown_observer_list_.RemoveObserver(observer);
 }
 
-void IdentityAPI::SetAccountStateForTest(AccountIds ids, bool is_signed_in) {
+void IdentityAPI::SetAccountStateForTest(gaia::AccountIds ids,
+                                         bool is_signed_in) {
   account_tracker_.SetAccountStateForTest(ids, is_signed_in);
 }
 
@@ -533,9 +536,7 @@ void IdentityGetAuthTokenFunction::OnMintTokenFailure(
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
-      extensions::IdentityAPI::GetFactoryInstance()
-          ->Get(GetProfile())
-          ->ReportAuthError(error);
+      // TODO(courage): flush ticket and retry once
       if (should_prompt_for_signin_) {
         // Display a login prompt and try again (once).
         StartSigninFlow();
