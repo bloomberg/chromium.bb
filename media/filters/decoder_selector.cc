@@ -62,7 +62,13 @@ DecoderSelector<StreamType>::DecoderSelector(
 template <DemuxerStream::Type StreamType>
 DecoderSelector<StreamType>::~DecoderSelector() {
   DVLOG(2) << __FUNCTION__;
-  DCHECK(select_decoder_cb_.is_null());
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (!select_decoder_cb_.is_null())
+    ReturnNullDecoder();
+
+  decoder_.reset();
+  decrypted_stream_.reset();
 }
 
 template <DemuxerStream::Type StreamType>
@@ -109,21 +115,6 @@ void DecoderSelector<StreamType>::SelectDecoder(
       base::Bind(&DecoderSelector<StreamType>::DecryptingDecoderInitDone,
                  weak_ptr_factory_.GetWeakPtr()),
       output_cb_);
-}
-
-template <DemuxerStream::Type StreamType>
-void DecoderSelector<StreamType>::Abort() {
-  DVLOG(2) << __FUNCTION__;
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  // Invalidate all weak pointers so that pending callbacks won't fire.
-  weak_ptr_factory_.InvalidateWeakPtrs();
-
-  decoder_.reset();
-  decrypted_stream_.reset();
-
-  if (!select_decoder_cb_.is_null())
-    ReturnNullDecoder();
 }
 
 template <DemuxerStream::Type StreamType>

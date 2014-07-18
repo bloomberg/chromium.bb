@@ -59,9 +59,7 @@ DecoderStream<StreamType>::~DecoderStream() {
   FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  // TODO(xhwang): Fold DecoderSelector::Abort() into the dtor.
-  if (state_ == STATE_INITIALIZING)
-    decoder_selector_->Abort();
+  decoder_selector_.reset();
 
   if (!init_cb_.is_null()) {
     task_runner_->PostTask(FROM_HERE,

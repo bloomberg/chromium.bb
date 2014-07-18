@@ -26,7 +26,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
  public:
   enum DecryptorCapability {
     kNoDecryptor,
-    // Used to test Abort() during DecryptingAudioDecoder::Initialize() and
+    // Used to test destruction during DecryptingAudioDecoder::Initialize() and
     // DecryptingDemuxerStream::Initialize(). We don't need this for normal
     // AudioDecoders since we use MockAudioDecoder.
     kHoldSetDecryptor,
@@ -120,11 +120,11 @@ class AudioDecoderSelectorTest : public ::testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  void SelectDecoderAndAbort() {
+  void SelectDecoderAndDestroy() {
     SelectDecoder();
 
     EXPECT_CALL(*this, OnDecoderSelected(IsNull(), IsNull()));
-    decoder_selector_->Abort();
+    decoder_selector_.reset();
     message_loop_.RunUntilIdle();
   }
 
@@ -178,13 +178,13 @@ TEST_F(AudioDecoderSelectorTest, ClearStream_NoDecryptor_OneClearDecoder) {
 }
 
 TEST_F(AudioDecoderSelectorTest,
-       Abort_ClearStream_NoDecryptor_OneClearDecoder) {
+       Destroy_ClearStream_NoDecryptor_OneClearDecoder) {
   UseClearStream();
   InitializeDecoderSelector(kNoDecryptor, 1);
 
   EXPECT_CALL(*decoder_1_, Initialize(_, _, _));
 
-  SelectDecoderAndAbort();
+  SelectDecoderAndDestroy();
 }
 
 // The stream is not encrypted and we have multiple clear decoders. The first
@@ -203,7 +203,7 @@ TEST_F(AudioDecoderSelectorTest, ClearStream_NoDecryptor_MultipleClearDecoder) {
 }
 
 TEST_F(AudioDecoderSelectorTest,
-       Abort_ClearStream_NoDecryptor_MultipleClearDecoder) {
+       Destroy_ClearStream_NoDecryptor_MultipleClearDecoder) {
   UseClearStream();
   InitializeDecoderSelector(kNoDecryptor, 2);
 
@@ -211,7 +211,7 @@ TEST_F(AudioDecoderSelectorTest,
       .WillOnce(RunCallback<1>(DECODER_ERROR_NOT_SUPPORTED));
   EXPECT_CALL(*decoder_2_, Initialize(_, _, _));
 
-  SelectDecoderAndAbort();
+  SelectDecoderAndDestroy();
 }
 
 // There is a decryptor but the stream is not encrypted. The decoder will be
@@ -227,13 +227,13 @@ TEST_F(AudioDecoderSelectorTest, ClearStream_HasDecryptor) {
   SelectDecoder();
 }
 
-TEST_F(AudioDecoderSelectorTest, Abort_ClearStream_HasDecryptor) {
+TEST_F(AudioDecoderSelectorTest, Destroy_ClearStream_HasDecryptor) {
   UseClearStream();
   InitializeDecoderSelector(kDecryptOnly, 1);
 
   EXPECT_CALL(*decoder_1_, Initialize(_, _, _));
 
-  SelectDecoderAndAbort();
+  SelectDecoderAndDestroy();
 }
 
 // The stream is encrypted and there's no decryptor. No decoder can be selected.
@@ -258,11 +258,11 @@ TEST_F(AudioDecoderSelectorTest, EncryptedStream_DecryptOnly_NoClearDecoder) {
 }
 
 TEST_F(AudioDecoderSelectorTest,
-       Abort_EncryptedStream_DecryptOnly_NoClearDecoder) {
+       Destroy_EncryptedStream_DecryptOnly_NoClearDecoder) {
   UseEncryptedStream();
   InitializeDecoderSelector(kHoldSetDecryptor, 0);
 
-  SelectDecoderAndAbort();
+  SelectDecoderAndDestroy();
 }
 
 // Decryptor can do decryption-only and there's a decoder available. The decoder
@@ -279,13 +279,13 @@ TEST_F(AudioDecoderSelectorTest, EncryptedStream_DecryptOnly_OneClearDecoder) {
 }
 
 TEST_F(AudioDecoderSelectorTest,
-       Abort_EncryptedStream_DecryptOnly_OneClearDecoder) {
+       Destroy_EncryptedStream_DecryptOnly_OneClearDecoder) {
   UseEncryptedStream();
   InitializeDecoderSelector(kDecryptOnly, 1);
 
   EXPECT_CALL(*decoder_1_, Initialize(_, _, _));
 
-  SelectDecoderAndAbort();
+  SelectDecoderAndDestroy();
 }
 
 // Decryptor can only do decryption and there are multiple decoders available.
@@ -306,7 +306,7 @@ TEST_F(AudioDecoderSelectorTest,
 }
 
 TEST_F(AudioDecoderSelectorTest,
-       Abort_EncryptedStream_DecryptOnly_MultipleClearDecoder) {
+       Destroy_EncryptedStream_DecryptOnly_MultipleClearDecoder) {
   UseEncryptedStream();
   InitializeDecoderSelector(kDecryptOnly, 2);
 
@@ -314,7 +314,7 @@ TEST_F(AudioDecoderSelectorTest,
       .WillOnce(RunCallback<1>(DECODER_ERROR_NOT_SUPPORTED));
   EXPECT_CALL(*decoder_2_, Initialize(_, _, _));
 
-  SelectDecoderAndAbort();
+  SelectDecoderAndDestroy();
 }
 
 // Decryptor can do decryption and decoding. A DecryptingAudioDecoder will be
@@ -329,11 +329,11 @@ TEST_F(AudioDecoderSelectorTest, EncryptedStream_DecryptAndDecode) {
   SelectDecoder();
 }
 
-TEST_F(AudioDecoderSelectorTest, Abort_EncryptedStream_DecryptAndDecode) {
+TEST_F(AudioDecoderSelectorTest, Destroy_EncryptedStream_DecryptAndDecode) {
   UseEncryptedStream();
   InitializeDecoderSelector(kHoldSetDecryptor, 1);
 
-  SelectDecoderAndAbort();
+  SelectDecoderAndDestroy();
 }
 
 }  // namespace media

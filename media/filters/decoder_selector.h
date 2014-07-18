@@ -57,6 +57,9 @@ class MEDIA_EXPORT DecoderSelector {
       const scoped_refptr<base::SingleThreadTaskRunner>& message_loop,
       ScopedVector<Decoder> decoders,
       const SetDecryptorReadyCB& set_decryptor_ready_cb);
+
+  // Aborts pending Decoder selection and fires |select_decoder_cb| with
+  // NULL and NULL immediately if it's pending.
   ~DecoderSelector();
 
   // Initializes and selects a Decoder that can decode the |stream|.
@@ -66,10 +69,6 @@ class MEDIA_EXPORT DecoderSelector {
                      bool low_delay,
                      const SelectDecoderCB& select_decoder_cb,
                      const typename Decoder::OutputCB& output_cb);
-
-  // Aborts pending Decoder selection and fires |select_decoder_cb| with
-  // NULL and NULL immediately if it's pending.
-  void Abort();
 
  private:
   void DecryptingDecoderInitDone(PipelineStatus status);
