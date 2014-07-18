@@ -119,7 +119,7 @@ std::string GetBlacklistUrlPrefix() {
 SuggestionsService::SuggestionsService(
     net::URLRequestContextGetter* url_request_context,
     scoped_ptr<SuggestionsStore> suggestions_store,
-    scoped_ptr<ThumbnailManager> thumbnail_manager,
+    scoped_ptr<ImageManager> thumbnail_manager,
     scoped_ptr<BlacklistStore> blacklist_store)
     : suggestions_store_(suggestions_store.Pass()),
       blacklist_store_(blacklist_store.Pass()),
@@ -187,7 +187,7 @@ void SuggestionsService::FetchSuggestionsDataNoTimeout(
 void SuggestionsService::GetPageThumbnail(
     const GURL& url,
     base::Callback<void(const GURL&, const SkBitmap*)> callback) {
-  thumbnail_manager_->GetPageThumbnail(url, callback);
+  thumbnail_manager_->GetImageForURL(url, callback);
 }
 
 void SuggestionsService::BlacklistURL(
@@ -315,7 +315,7 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
     suggestions_store_->ClearSuggestions();
   } else if (suggestions.ParseFromString(suggestions_data)) {
     LogResponseState(RESPONSE_VALID);
-    thumbnail_manager_->InitializeThumbnailMap(suggestions);
+    thumbnail_manager_->Initialize(suggestions);
     suggestions_store_->StoreSuggestions(suggestions);
   } else {
     LogResponseState(RESPONSE_INVALID);

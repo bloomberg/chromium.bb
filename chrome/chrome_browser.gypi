@@ -1137,6 +1137,7 @@
       'browser/search/search.h',
       'browser/search/suggestions/blacklist_store.cc',
       'browser/search/suggestions/blacklist_store.h',
+      'browser/search/suggestions/image_manager.h',
       'browser/search/suggestions/suggestions_service.cc',
       'browser/search/suggestions/suggestions_service.h',
       'browser/search/suggestions/suggestions_service_factory.cc',

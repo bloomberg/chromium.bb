@@ -43,7 +43,7 @@ class ThumbnailManagerTest : public testing::Test {
 
 namespace suggestions {
 
-TEST_F(ThumbnailManagerTest, InitializeThumbnailMapTest) {
+TEST_F(ThumbnailManagerTest, InitializeTest) {
   SuggestionsProfile suggestions_profile;
   ChromeSuggestion* suggestion = suggestions_profile.add_suggestions();
   suggestion->set_url(kTestUrl);
@@ -52,7 +52,7 @@ TEST_F(ThumbnailManagerTest, InitializeThumbnailMapTest) {
   TestingProfile profile;
   scoped_ptr<ThumbnailManager> thumbnail_manager(
       CreateThumbnailManager(&profile));
-  thumbnail_manager->InitializeThumbnailMap(suggestions_profile);
+  thumbnail_manager->Initialize(suggestions_profile);
 
   GURL output;
   EXPECT_TRUE(thumbnail_manager->GetThumbnailURL(GURL(kTestUrl), &output));

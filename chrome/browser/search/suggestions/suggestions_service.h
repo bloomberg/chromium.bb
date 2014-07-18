@@ -15,8 +15,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chrome/browser/search/suggestions/image_manager.h"
 #include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
-#include "chrome/browser/search/suggestions/thumbnail_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "ui/gfx/image/image_skia.h"
@@ -51,7 +51,7 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
 
   SuggestionsService(net::URLRequestContextGetter* url_request_context,
                      scoped_ptr<SuggestionsStore> suggestions_store,
-                     scoped_ptr<ThumbnailManager> thumbnail_manager,
+                     scoped_ptr<ImageManager> thumbnail_manager,
                      scoped_ptr<BlacklistStore> blacklist_store);
   virtual ~SuggestionsService();
 
@@ -163,7 +163,7 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   std::vector<ResponseCallback> waiting_requestors_;
 
   // Used to obtain server thumbnails, if available.
-  scoped_ptr<ThumbnailManager> thumbnail_manager_;
+  scoped_ptr<ImageManager> thumbnail_manager_;
 
   net::URLRequestContextGetter* url_request_context_;
 

@@ -4,13 +4,16 @@
 
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/blacklist_store.h"
+#include "chrome/browser/search/suggestions/image_manager.h"
 #include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
 #include "chrome/browser/search/suggestions/suggestions_service.h"
 #include "chrome/browser/search/suggestions/suggestions_store.h"
+#include "chrome/browser/search/suggestions/thumbnail_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/leveldb_proto/proto_database.h"
@@ -73,7 +76,7 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
       db.PassAs<leveldb_proto::ProtoDatabase<ThumbnailData> >(), database_dir));
   return new SuggestionsService(
       the_profile->GetRequestContext(), suggestions_store.Pass(),
-      thumbnail_manager.Pass(), blacklist_store.Pass());
+      thumbnail_manager.PassAs<ImageManager>(), blacklist_store.Pass());
 }
 
 void SuggestionsServiceFactory::RegisterProfilePrefs(

@@ -14,6 +14,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search/suggestions/blacklist_store.h"
+#include "chrome/browser/search/suggestions/image_manager.h"
 #include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/search/suggestions/suggestions_store.h"
@@ -32,6 +33,7 @@ using testing::DoAll;
 using ::testing::Eq;
 using ::testing::Return;
 using testing::SetArgPointee;
+using ::testing::NiceMock;
 using ::testing::StrictMock;
 using ::testing::_;
 
@@ -100,12 +102,12 @@ class MockSuggestionsStore : public suggestions::SuggestionsStore {
   MOCK_METHOD0(ClearSuggestions, void());
 };
 
-class MockThumbnailManager : public suggestions::ThumbnailManager {
+class MockImageManager : public suggestions::ImageManager {
  public:
-  MockThumbnailManager() {}
-  virtual ~MockThumbnailManager() {}
-  MOCK_METHOD1(InitializeThumbnailMap, void(const SuggestionsProfile&));
-  MOCK_METHOD2(GetPageThumbnail,
+  MockImageManager() {}
+  virtual ~MockImageManager() {}
+  MOCK_METHOD1(Initialize, void(const SuggestionsProfile&));
+  MOCK_METHOD2(GetImageForURL,
                void(const GURL&,
                     base::Callback<void(const GURL&, const SkBitmap*)>));
 };
@@ -184,11 +186,11 @@ class SuggestionsServiceTest : public testing::Test {
   // SuggestionsStore in |mock_suggestions_store_|.
   SuggestionsService* CreateSuggestionsServiceWithMocks() {
     mock_suggestions_store_ = new StrictMock<MockSuggestionsStore>();
-    mock_thumbnail_manager_ = new StrictMock<MockThumbnailManager>();
+    mock_thumbnail_manager_ = new NiceMock<MockImageManager>();
     mock_blacklist_store_ = new MockBlacklistStore();
     return new SuggestionsService(
         request_context_, scoped_ptr<SuggestionsStore>(mock_suggestions_store_),
-        scoped_ptr<ThumbnailManager>(mock_thumbnail_manager_),
+        scoped_ptr<ImageManager>(mock_thumbnail_manager_),
         scoped_ptr<BlacklistStore>(mock_blacklist_store_));
   }
 
@@ -248,7 +250,7 @@ class SuggestionsServiceTest : public testing::Test {
   net::FakeURLFetcherFactory factory_;
   // Only used if the SuggestionsService is built with mocks. Not owned.
   MockSuggestionsStore* mock_suggestions_store_;
-  MockThumbnailManager* mock_thumbnail_manager_;
+  MockImageManager* mock_thumbnail_manager_;
   MockBlacklistStore* mock_blacklist_store_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
 

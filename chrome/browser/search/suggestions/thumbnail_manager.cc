@@ -18,7 +18,8 @@ namespace {
 SkBitmap* DecodeThumbnail(const std::vector<unsigned char>& encoded_data) {
   return gfx::JPEGCodec::Decode(&encoded_data[0], encoded_data.size());
 }
-}
+
+}  // namespace
 
 namespace suggestions {
 
@@ -45,8 +46,7 @@ ThumbnailManager::ThumbnailRequest::ThumbnailRequest(chrome::BitmapFetcher* f)
 
 ThumbnailManager::ThumbnailRequest::~ThumbnailRequest() { delete fetcher; }
 
-void ThumbnailManager::InitializeThumbnailMap(
-    const SuggestionsProfile& suggestions) {
+void ThumbnailManager::Initialize(const SuggestionsProfile& suggestions) {
   thumbnail_url_map_.clear();
   for (int i = 0; i < suggestions.suggestions_size(); ++i) {
     const ChromeSuggestion& suggestion = suggestions.suggestions(i);
@@ -56,7 +56,7 @@ void ThumbnailManager::InitializeThumbnailMap(
   }
 }
 
-void ThumbnailManager::GetPageThumbnail(
+void ThumbnailManager::GetImageForURL(
     const GURL& url,
     base::Callback<void(const GURL&, const SkBitmap*)> callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -68,7 +68,7 @@ void ThumbnailManager::GetPageThumbnail(
     return;
   }
 
-  // |database_| can be null if something went wrong in initialization.
+  // |database_| can be NULL if something went wrong in initialization.
   if (database_.get() && !database_ready_) {
     // Once database is initialized, it will serve pending requests from either
     // cache or network.

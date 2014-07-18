@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
+#include "chrome/browser/search/suggestions/image_manager.h"
 #include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "ui/gfx/image/image_skia.h"
@@ -31,7 +32,8 @@ class ThumbnailData;
 
 // A class used to fetch server thumbnails asynchronously and manage the caching
 // layer (both in memory and on disk).
-class ThumbnailManager : public chrome::BitmapFetcherDelegate {
+class ThumbnailManager : public ImageManager,
+                         public chrome::BitmapFetcherDelegate {
  public:
   typedef std::vector<ThumbnailData> ThumbnailVector;
 
@@ -41,25 +43,21 @@ class ThumbnailManager : public chrome::BitmapFetcherDelegate {
       const base::FilePath& database_dir);
   virtual ~ThumbnailManager();
 
-  // Initializes the |thumbnail_url_map_| with the proper mapping from website
-  // URL to thumbnail URL.
-  void InitializeThumbnailMap(const SuggestionsProfile& suggestions);
-
-  // Retrieves stored thumbnail for website |url| asynchronously. Calls
-  // |callback| with Bitmap pointer if found, and NULL otherwise. Should be
-  // called from the UI thread.
-  void GetPageThumbnail(
+  // Overrides from ImageManager.
+  virtual void Initialize(const SuggestionsProfile& suggestions) OVERRIDE;
+  // Should be called from the UI thread.
+  virtual void GetImageForURL(
       const GURL& url,
-      base::Callback<void(const GURL&, const SkBitmap*)> callback);
+      base::Callback<void(const GURL&, const SkBitmap*)> callback) OVERRIDE;
 
  private:
   friend class MockThumbnailManager;
   friend class ThumbnailManagerBrowserTest;
-  FRIEND_TEST_ALL_PREFIXES(ThumbnailManagerTest, InitializeThumbnailMapTest);
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailManagerTest, InitializeTest);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailManagerBrowserTest,
-                           GetPageThumbnailNetworkCacheHit);
+                           GetImageForURLNetworkCacheHit);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailManagerBrowserTest,
-                           GetPageThumbnailNetworkCacheNotInitialized);
+                           GetImageForURLNetworkCacheNotInitialized);
 
   // Used for testing.
   ThumbnailManager();

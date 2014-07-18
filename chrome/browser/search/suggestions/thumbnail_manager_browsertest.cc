@@ -81,7 +81,7 @@ class ThumbnailManagerBrowserTest : public InProcessBrowserTest {
     suggestion->set_url(kTestBitmapUrl);
     suggestion->set_thumbnail(test_server_.GetURL(kTestImagePath).spec());
 
-    test_thumbnail_manager_->InitializeThumbnailMap(suggestions_profile);
+    test_thumbnail_manager_->Initialize(suggestions_profile);
 
     // Initialize empty database.
     test_fake_db->InitCallback(true);
@@ -89,7 +89,7 @@ class ThumbnailManagerBrowserTest : public InProcessBrowserTest {
 
     base::RunLoop run_loop;
     // Fetch existing URL.
-    test_thumbnail_manager_->GetPageThumbnail(
+    test_thumbnail_manager_->GetImageForURL(
         GURL(kTestBitmapUrl),
         base::Bind(&ThumbnailManagerBrowserTest::OnTestThumbnailAvailable,
                    base::Unretained(this), &run_loop));
@@ -115,7 +115,7 @@ class ThumbnailManagerBrowserTest : public InProcessBrowserTest {
     suggestion->set_url(kTestUrl1);
     suggestion->set_thumbnail(test_server_.GetURL(kTestImagePath).spec());
 
-    thumbnail_manager->InitializeThumbnailMap(suggestions_profile);
+    thumbnail_manager->Initialize(suggestions_profile);
 
     // Initialize empty database.
     fake_db->InitCallback(true);
@@ -170,12 +170,12 @@ class ThumbnailManagerBrowserTest : public InProcessBrowserTest {
   scoped_ptr<ThumbnailManager> thumbnail_manager_;
 };
 
-IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest, GetPageThumbnailNetwork) {
+IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest, GetImageForURLNetwork) {
   InitializeDefaultThumbnailMapAndDatabase(thumbnail_manager_.get(), fake_db_);
 
   base::RunLoop run_loop;
   // Fetch existing URL.
-  thumbnail_manager_->GetPageThumbnail(
+  thumbnail_manager_->GetImageForURL(
       GURL(kTestUrl1),
       base::Bind(&ThumbnailManagerBrowserTest::OnThumbnailAvailable,
                  base::Unretained(this), &run_loop));
@@ -186,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest, GetPageThumbnailNetwork) {
 
   base::RunLoop run_loop2;
   // Fetch non-existing URL.
-  thumbnail_manager_->GetPageThumbnail(
+  thumbnail_manager_->GetImageForURL(
       GURL(kTestUrl2),
       base::Bind(&ThumbnailManagerBrowserTest::OnThumbnailAvailable,
                  base::Unretained(this), &run_loop2));
@@ -197,14 +197,14 @@ IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest, GetPageThumbnailNetwork) {
 }
 
 IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest,
-                       GetPageThumbnailNetworkMultiple) {
+                       GetImageForURLNetworkMultiple) {
   InitializeDefaultThumbnailMapAndDatabase(thumbnail_manager_.get(), fake_db_);
 
   // Fetch non-existing URL, and add more while request is in flight.
   base::RunLoop run_loop;
   for (int i = 0; i < 5; i++) {
     // Fetch existing URL.
-    thumbnail_manager_->GetPageThumbnail(
+    thumbnail_manager_->GetImageForURL(
         GURL(kTestUrl1),
         base::Bind(&ThumbnailManagerBrowserTest::OnThumbnailAvailable,
                    base::Unretained(this), &run_loop));
@@ -216,13 +216,13 @@ IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest,
-                       GetPageThumbnailNetworkInvalid) {
+                       GetImageForURLNetworkInvalid) {
   SuggestionsProfile suggestions_profile;
   ChromeSuggestion* suggestion = suggestions_profile.add_suggestions();
   suggestion->set_url(kTestUrl1);
   suggestion->set_thumbnail(test_server_.GetURL(kInvalidImagePath).spec());
 
-  thumbnail_manager_->InitializeThumbnailMap(suggestions_profile);
+  thumbnail_manager_->Initialize(suggestions_profile);
 
   // Database will be initialized and loaded without anything in it.
   fake_db_->InitCallback(true);
@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest,
 
   base::RunLoop run_loop;
   // Fetch existing URL that has invalid thumbnail.
-  thumbnail_manager_->GetPageThumbnail(
+  thumbnail_manager_->GetImageForURL(
       GURL(kTestUrl1),
       base::Bind(&ThumbnailManagerBrowserTest::OnThumbnailAvailable,
                  base::Unretained(this), &run_loop));
@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest,
-                       GetPageThumbnailNetworkCacheHit) {
+                       GetImageForURLNetworkCacheHit) {
   InitializeTestBitmapData();
 
   SuggestionsProfile suggestions_profile;
@@ -254,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest,
   AddEntry(GetSampleThumbnailData(kTestUrl1), &db_model_);
   FakeDB<ThumbnailData>* fake_db = new FakeDB<ThumbnailData>(&db_model_);
   thumbnail_manager_.reset(CreateThumbnailManager(fake_db));
-  thumbnail_manager_->InitializeThumbnailMap(suggestions_profile);
+  thumbnail_manager_->Initialize(suggestions_profile);
   fake_db->InitCallback(true);
   fake_db->LoadCallback(true);
   // Expect something in the cache.
@@ -262,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(ThumbnailManagerBrowserTest,
   EXPECT_FALSE(bitmap->isNull());
 
   base::RunLoop run_loop;
-  thumbnail_manager_->GetPageThumbnail(
+  thumbnail_manager_->GetImageForURL(
       GURL(kTestUrl1),
       base::Bind(&ThumbnailManagerBrowserTest::OnThumbnailAvailable,
                  base::Unretained(this), &run_loop));
