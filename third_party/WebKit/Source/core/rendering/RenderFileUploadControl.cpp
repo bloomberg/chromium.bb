@@ -30,6 +30,7 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderButton.h"
 #include "core/rendering/RenderTheme.h"
+#include "core/rendering/TextRunConstructor.h"
 #include "platform/fonts/Font.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/text/PlatformLocale.h"

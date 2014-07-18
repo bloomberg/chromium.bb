@@ -1680,6 +1680,8 @@
             'rendering/TableLayout.h',
             'rendering/TextAutosizer.cpp',
             'rendering/TextAutosizer.h',
+            'rendering/TextRunConstructor.cpp',
+            'rendering/TextRunConstructor.h',
             'rendering/TrailingFloatsRootInlineBox.h',
             'rendering/VerticalPositionCache.h',
             'rendering/break_lines.cpp',

@@ -159,31 +159,6 @@ public:
         return obj->isFloating() || (obj->isOutOfFlowPositioned() && !obj->style()->isOriginalDisplayInlineType() && !obj->container()->isRenderInline());
     }
 
-    // Direction resolved from string value.
-    static TextRun constructTextRun(RenderObject* context, const Font&, const String&, RenderStyle*,
-        TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, TextRunFlags = DefaultTextRunFlags);
-    static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, unsigned length, RenderStyle*,
-        TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
-
-    // Explicit direction.
-    static TextRun constructTextRun(RenderObject* context, const Font&, const String&, RenderStyle*, TextDirection,
-        TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, TextRunFlags = DefaultTextRunFlags);
-
-    static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, RenderStyle*, TextDirection,
-        TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
-
-    static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, unsigned length, RenderStyle*, TextDirection,
-        TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
-
-    static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, RenderStyle*,
-        TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
-
-    static TextRun constructTextRun(RenderObject* context, const Font&, const LChar* characters, int length, RenderStyle*, TextDirection,
-        TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
-
-    static TextRun constructTextRun(RenderObject* context, const Font&, const UChar* characters, int length, RenderStyle*, TextDirection,
-        TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
-
     RenderMultiColumnFlowThread* multiColumnFlowThread() const { return m_rareData ? m_rareData->m_multiColumnFlowThread : 0; }
     void resetMultiColumnFlowThread()
     {

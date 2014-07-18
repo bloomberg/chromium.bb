@@ -25,6 +25,7 @@
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderTheme.h"
+#include "core/rendering/TextRunConstructor.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "wtf/unicode/CharacterNames.h"
 

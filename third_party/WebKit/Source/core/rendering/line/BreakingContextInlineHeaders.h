@@ -32,6 +32,7 @@
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderObjectInlines.h"
 #include "core/rendering/RenderRubyRun.h"
+#include "core/rendering/TextRunConstructor.h"
 #include "core/rendering/break_lines.h"
 #include "core/rendering/line/LineBreaker.h"
 #include "core/rendering/line/LineInfo.h"
@@ -497,7 +498,7 @@ inline float firstPositiveWidth(const WordMeasurements& wordMeasurements)
 inline float measureHyphenWidth(RenderText* renderer, const Font& font, TextDirection textDirection)
 {
     RenderStyle* style = renderer->style();
-    return font.width(RenderBlockFlow::constructTextRun(renderer, font,
+    return font.width(constructTextRun(renderer, font,
         style->hyphenString().string(), style, style->direction()));
 }
 
@@ -513,7 +514,7 @@ ALWAYS_INLINE float textWidth(RenderText* text, unsigned from, unsigned len, con
     if (isFixedPitch || (!from && len == text->textLength()) || text->style()->hasTextCombine())
         return text->width(from, len, font, xPos, text->style()->direction(), fallbackFonts, &glyphOverflow);
 
-    TextRun run = RenderBlockFlow::constructTextRun(text, font, text, from, len, text->style());
+    TextRun run = constructTextRun(text, font, text, from, len, text->style());
     run.setCharacterScanForCodePath(!text->canUseSimpleFontCodePath());
     run.setTabSize(!collapseWhiteSpace, text->style()->tabSize());
     run.setXPos(xPos);
@@ -587,9 +588,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     // Non-zero only when kerning is enabled, in which case we measure
     // words with their trailing space, then subtract its width.
     float wordTrailingSpaceWidth = (font.fontDescription().typesettingFeatures() & Kerning) ?
-        font.width(RenderBlockFlow::constructTextRun(
-            renderText, font, &space, 1, style,
-            style->direction())) + wordSpacing
+        font.width(constructTextRun(renderText, font, &space, 1, style, style->direction())) + wordSpacing
         : 0;
 
     UChar lastCharacter = m_renderTextInfo.m_lineBreakIterator.lastCharacter();

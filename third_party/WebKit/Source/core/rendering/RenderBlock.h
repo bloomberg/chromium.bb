@@ -54,14 +54,6 @@ typedef Vector<WordMeasurement, 64> WordMeasurements;
 
 enum ContainingBlockState { NewContainingBlock, SameContainingBlock };
 
-enum TextRunFlag {
-    DefaultTextRunFlags = 0,
-    RespectDirection = 1 << 0,
-    RespectDirectionOverride = 1 << 1
-};
-
-typedef unsigned TextRunFlags;
-
 class RenderBlock : public RenderBox {
 public:
     friend class LineLayoutState;

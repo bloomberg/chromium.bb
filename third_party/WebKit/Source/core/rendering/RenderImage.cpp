@@ -43,6 +43,7 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/TextRunConstructor.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"
@@ -130,7 +131,7 @@ bool RenderImage::setImageSizeForAltText(ImageResource* newImage /* = 0 */)
         FontCachePurgePreventer fontCachePurgePreventer;
 
         const Font& font = style()->font();
-        IntSize paddedTextSize(paddingWidth + std::min(ceilf(font.width(RenderBlockFlow::constructTextRun(this, font, m_altText, style()))), maxAltTextWidth), paddingHeight + std::min(font.fontMetrics().height(), maxAltTextHeight));
+        IntSize paddedTextSize(paddingWidth + std::min(ceilf(font.width(constructTextRun(this, font, m_altText, style()))), maxAltTextWidth), paddingHeight + std::min(font.fontMetrics().height(), maxAltTextHeight));
         imageSize = imageSize.expandedTo(paddedTextSize);
     }
 
@@ -331,7 +332,7 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
 
                 // Only draw the alt text if it'll fit within the content box,
                 // and only if it fits above the error image.
-                TextRun textRun = RenderBlockFlow::constructTextRun(this, font, m_altText, style(), TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, DefaultTextRunFlags | RespectDirection);
+                TextRun textRun = constructTextRun(this, font, m_altText, style(), TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, DefaultTextRunFlags | RespectDirection);
                 float textWidth = font.width(textRun);
                 TextRunPaintInfo textRunPaintInfo(textRun);
                 textRunPaintInfo.bounds = FloatRect(textRectOrigin, FloatSize(textWidth, fontMetrics.height()));

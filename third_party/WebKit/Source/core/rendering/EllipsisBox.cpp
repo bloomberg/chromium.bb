@@ -23,8 +23,9 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderBlockFlow.h"
+#include "core/rendering/RenderBlock.h"
 #include "core/rendering/RootInlineBox.h"
+#include "core/rendering/TextRunConstructor.h"
 #include "core/rendering/style/ShadowList.h"
 #include "platform/fonts/Font.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -67,7 +68,7 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
     if (hasShadow)
         context->setDrawLooper(shadowList->createDrawLooper(DrawLooperBuilder::ShadowIgnoresAlpha, isHorizontal()));
 
-    TextRun textRun = RenderBlockFlow::constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion);
+    TextRun textRun = constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion);
     TextRunPaintInfo textRunPaintInfo(textRun);
     textRunPaintInfo.bounds = boxRect;
     context->drawText(font, textRunPaintInfo, textOrigin);
@@ -117,7 +118,7 @@ IntRect EllipsisBox::selectionRect()
 {
     RenderStyle* style = renderer().style(isFirstLineStyle());
     const Font& font = style->font();
-    return enclosingIntRect(font.selectionRectForText(RenderBlockFlow::constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), IntPoint(logicalLeft(), logicalTop() + root().selectionTopAdjustedForPrecedingBlock()), root().selectionHeightAdjustedForPrecedingBlock()));
+    return enclosingIntRect(font.selectionRectForText(constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), IntPoint(logicalLeft(), logicalTop() + root().selectionTopAdjustedForPrecedingBlock()), root().selectionHeightAdjustedForPrecedingBlock()));
 }
 
 void EllipsisBox::paintSelection(GraphicsContext* context, const FloatPoint& boxOrigin, RenderStyle* style, const Font& font)
@@ -140,7 +141,7 @@ void EllipsisBox::paintSelection(GraphicsContext* context, const FloatPoint& box
     const FloatPoint localOrigin(boxOrigin.x(), boxOrigin.y() - deltaY);
     FloatRect clipRect(localOrigin, FloatSize(m_logicalWidth, h.toFloat()));
     context->clip(clipRect);
-    context->drawHighlightForText(font, RenderBlockFlow::constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), localOrigin, h, c);
+    context->drawHighlightForText(font, constructTextRun(&renderer(), font, m_str, style, TextRun::AllowTrailingExpansion), localOrigin, h, c);
 }
 
 bool EllipsisBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom)

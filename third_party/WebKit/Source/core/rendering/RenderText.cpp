@@ -38,6 +38,7 @@
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/TextRunConstructor.h"
 #include "core/rendering/break_lines.h"
 #include "platform/fonts/Character.h"
 #include "platform/fonts/FontCache.h"
@@ -744,7 +745,7 @@ ALWAYS_INLINE float RenderText::widthFromCache(const Font& f, int start, int len
         return w;
     }
 
-    TextRun run = RenderBlockFlow::constructTextRun(const_cast<RenderText*>(this), f, this, start, len, style(), textDirection);
+    TextRun run = constructTextRun(const_cast<RenderText*>(this), f, this, start, len, style(), textDirection);
     run.setCharactersLength(textLength() - start);
     ASSERT(run.charactersLength() >= run.length());
 
@@ -801,7 +802,7 @@ void RenderText::trimmedPrefWidths(float leadWidth,
         const Font& font = style()->font(); // FIXME: This ignores first-line.
         if (stripFrontSpaces) {
             const UChar space = ' ';
-            float spaceWidth = font.width(RenderBlockFlow::constructTextRun(this, font, &space, 1, style(), direction));
+            float spaceWidth = font.width(constructTextRun(this, font, &space, 1, style(), direction));
             maxWidth -= spaceWidth;
         } else {
             maxWidth += font.fontDescription().wordSpacing();
@@ -875,7 +876,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth)
 static inline float hyphenWidth(RenderText* renderer, const Font& font, TextDirection direction)
 {
     RenderStyle* style = renderer->style();
-    return font.width(RenderBlockFlow::constructTextRun(renderer, font, style->hyphenString().string(), style, direction));
+    return font.width(constructTextRun(renderer, font, style->hyphenString().string(), style, direction));
 }
 
 void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const SimpleFontData*>& fallbackFonts, GlyphOverflow& glyphOverflow)
@@ -1025,7 +1026,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             if (isSpace && (f.fontDescription().typesettingFeatures() & Kerning)) {
                 ASSERT(textDirection >=0 && textDirection <= 1);
                 if (!cachedWordTrailingSpaceWidth[textDirection])
-                    cachedWordTrailingSpaceWidth[textDirection] = f.width(RenderBlockFlow::constructTextRun(this, f, &space, 1, styleToUse, textDirection)) + wordSpacing;
+                    cachedWordTrailingSpaceWidth[textDirection] = f.width(constructTextRun(this, f, &space, 1, styleToUse, textDirection)) + wordSpacing;
                 wordTrailingSpaceWidth = cachedWordTrailingSpaceWidth[textDirection];
             }
 
@@ -1096,7 +1097,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
                     m_maxWidth = currMaxWidth;
                 currMaxWidth = 0;
             } else {
-                TextRun run = RenderBlockFlow::constructTextRun(this, f, this, i, 1, styleToUse, textDirection);
+                TextRun run = constructTextRun(this, f, this, i, 1, styleToUse, textDirection);
                 run.setCharactersLength(len - i);
                 ASSERT(run.charactersLength() >= run.length());
                 run.setTabSize(!style()->collapseWhiteSpace(), style()->tabSize());
@@ -1504,7 +1505,7 @@ float RenderText::width(unsigned from, unsigned len, const Font& f, float xPos, 
             w = widthFromCache(f, from, len, xPos, textDirection, fallbackFonts, glyphOverflow);
         }
     } else {
-        TextRun run = RenderBlockFlow::constructTextRun(const_cast<RenderText*>(this), f, this, from, len, style(), textDirection);
+        TextRun run = constructTextRun(const_cast<RenderText*>(this), f, this, from, len, style(), textDirection);
         run.setCharactersLength(textLength() - from);
         ASSERT(run.charactersLength() >= run.length());
 

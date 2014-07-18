@@ -31,6 +31,7 @@
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderRubyRun.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/TextRunConstructor.h"
 #include "core/rendering/TrailingFloatsRootInlineBox.h"
 #include "core/rendering/VerticalPositionCache.h"
 #include "core/rendering/line/BreakingContextInlineHeaders.h"
@@ -1315,7 +1316,7 @@ static inline void stripTrailingSpace(float& inlineMax, float& inlineMin, Render
         RenderText* t = toRenderText(trailingSpaceChild);
         const UChar space = ' ';
         const Font& font = t->style()->font(); // FIXME: This ignores first-line.
-        float spaceWidth = font.width(RenderBlockFlow::constructTextRun(t, font, &space, 1, t->style(), LTR));
+        float spaceWidth = font.width(constructTextRun(t, font, &space, 1, t->style(), LTR));
         inlineMax -= spaceWidth + font.fontDescription().wordSpacing();
         if (inlineMin > inlineMax)
             inlineMin = inlineMax;
