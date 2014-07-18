@@ -148,7 +148,8 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
           "machine name",
           "Chromium 10k",
           "Chrome 10k",
-          sync_pb::SyncEnums_DeviceType_TYPE_LINUX)));
+          sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+          "device_id")));
   ON_CALL(*service, GetLocalSyncCacheGUID()).WillByDefault(
       testing::Return(std::string(kSessionTags[0])));
   EXPECT_CALL(*service, AddObserver(testing::_)).Times(testing::AnyNumber());

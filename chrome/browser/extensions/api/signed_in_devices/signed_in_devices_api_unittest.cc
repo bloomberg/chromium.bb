@@ -39,15 +39,19 @@ TEST(SignedInDevicesAPITest, GetSignedInDevices) {
   scoped_refptr<Extension> extension_test =
       extension_prefs.AddExtension(extension_name);
 
-  DeviceInfo device_info1(
-      base::GenerateGUID(),
-      "abc Device", "XYZ v1", "XYZ SyncAgent v1",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+  DeviceInfo device_info1(base::GenerateGUID(),
+                          "abc Device",
+                          "XYZ v1",
+                          "XYZ SyncAgent v1",
+                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+                          "device_id");
 
-  DeviceInfo device_info2(
-      base::GenerateGUID(),
-      "def Device", "XYZ v2", "XYZ SyncAgent v2",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+  DeviceInfo device_info2(base::GenerateGUID(),
+                          "def Device",
+                          "XYZ v2",
+                          "XYZ SyncAgent v2",
+                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+                          "device_id");
 
   std::vector<DeviceInfo*> devices;
   devices.push_back(&device_info1);
@@ -74,10 +78,12 @@ TEST(SignedInDevicesAPITest, GetSignedInDevices) {
 
   // Add a third device and make sure the first 2 ids are retained and a new
   // id is generated for the third device.
-  DeviceInfo device_info3(
-      base::GenerateGUID(),
-      "def Device", "jkl v2", "XYZ SyncAgent v2",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+  DeviceInfo device_info3(base::GenerateGUID(),
+                          "def Device",
+                          "jkl v2",
+                          "XYZ SyncAgent v2",
+                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+                          "device_id");
 
   devices.push_back(&device_info3);
 
@@ -132,7 +138,8 @@ DeviceInfo* CreateDeviceInfo(const DeviceInfo& device_info) {
                         device_info.client_name(),
                         device_info.chrome_version(),
                         device_info.sync_user_agent(),
-                        device_info.device_type());
+                        device_info.device_type(),
+                        device_info.signin_scoped_device_id());
 }
 
 std::string GetPublicId(const base::DictionaryValue* dictionary) {
@@ -168,15 +175,19 @@ TEST_F(ExtensionSignedInDevicesTest, GetAll) {
       static_cast<ProfileSyncServiceMockForExtensionTests*>(
           ProfileSyncServiceFactory::GetForProfile(profile()));
 
-  DeviceInfo device_info1(
-      base::GenerateGUID(),
-      "abc Device", "XYZ v1", "XYZ SyncAgent v1",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+  DeviceInfo device_info1(base::GenerateGUID(),
+                          "abc Device",
+                          "XYZ v1",
+                          "XYZ SyncAgent v1",
+                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+                          "device_id");
 
-  DeviceInfo device_info2(
-      base::GenerateGUID(),
-      "def Device", "XYZ v2", "XYZ SyncAgent v2",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
+  DeviceInfo device_info2(base::GenerateGUID(),
+                          "def Device",
+                          "XYZ v2",
+                          "XYZ SyncAgent v2",
+                          sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+                          "device_id");
 
   std::vector<DeviceInfo*> devices;
   devices.push_back(CreateDeviceInfo(device_info1));

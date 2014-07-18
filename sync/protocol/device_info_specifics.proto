@@ -38,4 +38,8 @@ message DeviceInfoSpecifics {
   // Last time when pre-sync data on the device was saved. The device can be
   // restored to state back to this time. In millisecond since UNIX epoch.
   optional int64 backup_timestamp = 6;
+
+  // Device_id that is stable until user signs out. This device_id is used for
+  // annotating login scoped refresh token.
+  optional string signin_scoped_device_id = 7;
 }
