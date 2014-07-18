@@ -29,22 +29,16 @@ AndroidStatement* HistoryBackend::QueryHistoryAndBookmarks(
   return statement;
 }
 
-void HistoryBackend::UpdateHistoryAndBookmarks(
-    scoped_refptr<UpdateRequest> request,
+int HistoryBackend::UpdateHistoryAndBookmarks(
     const HistoryAndBookmarkRow& row,
     const std::string& selection,
     const std::vector<base::string16>& selection_args) {
-  if (request->canceled())
-    return;
-
   int count = 0;
-  bool result = false;
   if (android_provider_backend_) {
-    result = android_provider_backend_->UpdateHistoryAndBookmarks(row,
-        selection, selection_args, &count);
+    android_provider_backend_->UpdateHistoryAndBookmarks(
+        row, selection, selection_args, &count);
   }
-
-  request->ForwardResult(request->handle(), result, count);
+  return count;
 }
 
 void HistoryBackend::DeleteHistoryAndBookmarks(
@@ -113,21 +107,16 @@ SearchTermID HistoryBackend::InsertSearchTerm(const SearchRow& row) {
   return id;
 }
 
-void HistoryBackend::UpdateSearchTerms(
-    scoped_refptr<UpdateRequest> request,
+int HistoryBackend::UpdateSearchTerms(
     const SearchRow& row,
     const std::string& selection,
     const std::vector<base::string16> selection_args) {
-  if (request->canceled())
-    return;
-
   int count = 0;
-  bool result = false;
   if (android_provider_backend_) {
-    result =  android_provider_backend_->UpdateSearchTerms(row, selection,
-        selection_args, &count);
+    android_provider_backend_->UpdateSearchTerms(
+        row, selection, selection_args, &count);
   }
-  request->ForwardResult(request->handle(), result, count);
+  return count;
 }
 
 void HistoryBackend::DeleteSearchTerms(

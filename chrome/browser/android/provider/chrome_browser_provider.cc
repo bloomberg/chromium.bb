@@ -817,17 +817,18 @@ class UpdateBookmarksFromAPITask : public HistoryProviderTask {
           const std::vector<base::string16>& selection_args) {
     RunAsyncRequestOnUIThreadBlocking(
         base::Bind(&AndroidHistoryProviderService::UpdateHistoryAndBookmarks,
-                   base::Unretained(service()), row, selection,
-                   selection_args, cancelable_consumer(),
+                   base::Unretained(service()),
+                   row,
+                   selection,
+                   selection_args,
                    base::Bind(&UpdateBookmarksFromAPITask::OnBookmarksUpdated,
-                              base::Unretained(this))));
+                              base::Unretained(this)),
+                   cancelable_tracker()));
     return result_;
   }
 
  private:
-  void OnBookmarksUpdated(AndroidHistoryProviderService::Handle handle,
-                          bool succeeded,
-                          int updated_row_count) {
+  void OnBookmarksUpdated(int updated_row_count) {
     result_ = updated_row_count;
     RequestCompleted();
   }
@@ -1063,15 +1064,12 @@ class UpdateSearchTermsFromAPITask : public SearchTermTask {
         internal_row,
         selection,
         selection_args,
-        cancelable_consumer(),
         base::Bind(&UpdateSearchTermsFromAPITask::OnSearchTermsUpdated,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        cancelable_tracker());
   }
 
-
-  void OnSearchTermsUpdated(AndroidHistoryProviderService::Handle handle,
-                            bool succeeded,
-                            int updated_row_count) {
+  void OnSearchTermsUpdated(int updated_row_count) {
     result_ = updated_row_count;
     RequestCompleted();
   }

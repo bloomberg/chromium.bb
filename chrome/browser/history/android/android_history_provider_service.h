@@ -29,12 +29,9 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
   // complete. The pointer is NULL if the creation failed.
   typedef base::Callback<void(history::AndroidStatement*)> QueryCallback;
 
-  typedef base::Callback<void(
-                    Handle,                // handle
-                    bool,                  // true if the update succeeded.
-                    int)>                  // the number of row updated.
-                    UpdateCallback;
-  typedef CancelableRequest<UpdateCallback> UpdateRequest;
+  // Callback invoked when a method updating rows in the database complete.
+  // The parameter is the number of rows updated or 0 if the update failed.
+  typedef base::Callback<void(int)> UpdateCallback;
 
   // Callback invoked when a method inserting rows in the database complete.
   // The value is the new row id or 0 if the insertion failed.
@@ -75,12 +72,12 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
   // |row| is the value to update.
   // |selection| is the SQL WHERE clause without 'WHERE'.
   // |selection_args| is the arguments for the WHERE clause.
-  Handle UpdateHistoryAndBookmarks(
+  base::CancelableTaskTracker::TaskId UpdateHistoryAndBookmarks(
       const history::HistoryAndBookmarkRow& row,
       const std::string& selection,
       const std::vector<base::string16>& selection_args,
-      CancelableRequestConsumerBase* consumer,
-      const UpdateCallback& callback);
+      const UpdateCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
   // Deletes the specified rows and invokes the |callback| to return the number
   // of row deleted on success.
@@ -138,11 +135,12 @@ class AndroidHistoryProviderService : public CancelableRequestProvider {
   // |row| is the value need to update.
   // |selection| is the SQL WHERE clause without 'WHERE'.
   // |selection_args| is the arguments for WHERE clause.
-  Handle UpdateSearchTerms(const history::SearchRow& row,
-                           const std::string& selection,
-                           const std::vector<base::string16>& selection_args,
-                           CancelableRequestConsumerBase* consumer,
-                           const UpdateCallback& callback);
+  base::CancelableTaskTracker::TaskId UpdateSearchTerms(
+      const history::SearchRow& row,
+      const std::string& selection,
+      const std::vector<base::string16>& selection_args,
+      const UpdateCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
   // Deletes the matched rows and the number of deleted rows is returned to
   // the |callback| on success.

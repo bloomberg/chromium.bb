@@ -301,8 +301,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       const std::vector<base::string16>& selection_args,
       const std::string& sort_order);
 
-  void UpdateHistoryAndBookmarks(
-      scoped_refptr<UpdateRequest> request,
+  // Returns the number of row updated by the update query.
+  //
+  // |row| is the value to update.
+  // |selection| is the SQL WHERE clause without 'WHERE'.
+  // |selection_args| is the arguments for the WHERE clause.
+  int UpdateHistoryAndBookmarks(
       const HistoryAndBookmarkRow& row,
       const std::string& selection,
       const std::vector<base::string16>& selection_args);
@@ -329,10 +333,14 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Inserts the given values and returns the SearchTermID of the inserted row.
   SearchTermID InsertSearchTerm(const SearchRow& row);
 
-  void UpdateSearchTerms(scoped_refptr<UpdateRequest> request,
-                         const SearchRow& row,
-                         const std::string& selection,
-                         const std::vector<base::string16> selection_args);
+  // Returns the number of row updated by the update query.
+  //
+  // |row| is the value to update.
+  // |selection| is the SQL WHERE clause without 'WHERE'.
+  // |selection_args| is the arguments for the WHERE clause.
+  int UpdateSearchTerms(const SearchRow& row,
+                        const std::string& selection,
+                        const std::vector<base::string16> selection_args);
 
   void DeleteSearchTerms(scoped_refptr<DeleteRequest> request,
                          const std::string& selection,

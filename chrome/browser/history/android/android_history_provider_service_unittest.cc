@@ -116,10 +116,8 @@ class CallbackHelper : public base::RefCountedThreadSafe<CallbackHelper> {
     base::MessageLoop::current()->Quit();
   }
 
-  void OnUpdated(AndroidHistoryProviderService::Handle handle,
-                 bool success,
-                 int count) {
-    success_ = success;
+  void OnUpdated(int count) {
+    success_ = count != 0;
     count_ = count;
     base::MessageLoop::current()->Quit();
   }
@@ -198,9 +196,12 @@ TEST_F(AndroidHistoryProviderServiceTest, TestHistoryAndBookmark) {
   // Update the row.
   HistoryAndBookmarkRow update_row;
   update_row.set_visit_count(3);
-  service_->UpdateHistoryAndBookmarks(update_row, std::string(),
-      std::vector<base::string16>(), &cancelable_consumer_,
-      Bind(&CallbackHelper::OnUpdated, callback.get()));
+  service_->UpdateHistoryAndBookmarks(
+      update_row,
+      std::string(),
+      std::vector<base::string16>(),
+      Bind(&CallbackHelper::OnUpdated, callback.get()),
+      &cancelable_tracker_);
   base::MessageLoop::current()->Run();
   EXPECT_TRUE(callback->success());
   EXPECT_EQ(1, callback->count());
@@ -263,9 +264,11 @@ TEST_F(AndroidHistoryProviderServiceTest, TestSearchTerm) {
   // Update the row.
   SearchRow update_row;
   update_row.set_search_time(Time::Now());
-  service_->UpdateSearchTerms(update_row, std::string(),
-      std::vector<base::string16>(), &cancelable_consumer_,
-      Bind(&CallbackHelper::OnUpdated, callback.get()));
+  service_->UpdateSearchTerms(update_row,
+                              std::string(),
+                              std::vector<base::string16>(),
+                              Bind(&CallbackHelper::OnUpdated, callback.get()),
+                              &cancelable_tracker_);
   base::MessageLoop::current()->Run();
   EXPECT_TRUE(callback->success());
   EXPECT_EQ(1, callback->count());

@@ -47,25 +47,31 @@ AndroidHistoryProviderService::QueryHistoryAndBookmarks(
   }
 }
 
-AndroidHistoryProviderService::Handle
+base::CancelableTaskTracker::TaskId
 AndroidHistoryProviderService::UpdateHistoryAndBookmarks(
     const history::HistoryAndBookmarkRow& row,
     const std::string& selection,
     const std::vector<base::string16>& selection_args,
-    CancelableRequestConsumerBase* consumer,
-    const UpdateCallback& callback) {
-  UpdateRequest* request = new UpdateRequest(callback);
-  AddRequest(request, consumer);
+    const UpdateCallback& callback,
+    base::CancelableTaskTracker* tracker) {
   HistoryService* hs =
       HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
-    hs->Schedule(HistoryService::PRIORITY_NORMAL,
-            &HistoryBackend::UpdateHistoryAndBookmarks, NULL, request, row,
-            selection, selection_args);
+    DCHECK(hs->thread_) << "History service being called after cleanup";
+    DCHECK(hs->thread_checker_.CalledOnValidThread());
+    return tracker->PostTaskAndReplyWithResult(
+        hs->thread_->message_loop_proxy().get(),
+        FROM_HERE,
+        base::Bind(&HistoryBackend::UpdateHistoryAndBookmarks,
+                   hs->history_backend_.get(),
+                   row,
+                   selection,
+                   selection_args),
+        callback);
   } else {
-    request->ForwardResultAsync(request->handle(), false, 0);
+    callback.Run(0);
+    return base::CancelableTaskTracker::kBadTaskId;
   }
-  return request->handle();
 }
 
 AndroidHistoryProviderService::Handle
@@ -192,25 +198,31 @@ AndroidHistoryProviderService::InsertSearchTerm(
   }
 }
 
-AndroidHistoryProviderService::Handle
+base::CancelableTaskTracker::TaskId
 AndroidHistoryProviderService::UpdateSearchTerms(
     const history::SearchRow& row,
     const std::string& selection,
     const std::vector<base::string16>& selection_args,
-    CancelableRequestConsumerBase* consumer,
-    const UpdateCallback& callback) {
-  UpdateRequest* request = new UpdateRequest(callback);
-  AddRequest(request, consumer);
+    const UpdateCallback& callback,
+    base::CancelableTaskTracker* tracker) {
   HistoryService* hs =
       HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
-    hs->Schedule(HistoryService::PRIORITY_NORMAL,
-            &HistoryBackend::UpdateSearchTerms, NULL, request, row, selection,
-            selection_args);
+    DCHECK(hs->thread_) << "History service being called after cleanup";
+    DCHECK(hs->thread_checker_.CalledOnValidThread());
+    return tracker->PostTaskAndReplyWithResult(
+        hs->thread_->message_loop_proxy().get(),
+        FROM_HERE,
+        base::Bind(&HistoryBackend::UpdateSearchTerms,
+                   hs->history_backend_.get(),
+                   row,
+                   selection,
+                   selection_args),
+        callback);
   } else {
-    request->ForwardResultAsync(request->handle(), false, 0);
+    callback.Run(0);
+    return base::CancelableTaskTracker::kBadTaskId;
   }
-  return request->handle();
 }
 
 AndroidHistoryProviderService::Handle
