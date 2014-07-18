@@ -220,11 +220,11 @@ base::debug::TraceEventSyntheticDelay* GetOrCreateDelay(
     base::subtle::AtomicWord* impl_ptr) {
   base::debug::TraceEventSyntheticDelay* delay_impl =
       reinterpret_cast<base::debug::TraceEventSyntheticDelay*>(
-          base::subtle::NoBarrier_Load(impl_ptr));
+          base::subtle::Acquire_Load(impl_ptr));
   if (!delay_impl) {
     delay_impl = base::debug::TraceEventSyntheticDelayRegistry::GetInstance()
                      ->GetOrCreateDelay(name);
-    base::subtle::NoBarrier_Store(
+    base::subtle::Release_Store(
         impl_ptr, reinterpret_cast<base::subtle::AtomicWord>(delay_impl));
   }
   return delay_impl;
