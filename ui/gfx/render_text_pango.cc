@@ -355,9 +355,11 @@ void RenderTextPango::SetupPangoAttributes(PangoLayout* layout) {
     const size_t italic_end = styles()[ITALIC].GetRange(italic).end();
     const size_t style_end = std::min(bold_end, italic_end);
     if (style != font_list().GetFontStyle()) {
+      // TODO(derat): Don't interpret gfx::FontList font descriptions as Pango
+      // font descriptions: http://crbug.com/393067
       FontList derived_font_list = font_list().DeriveWithStyle(style);
-      ScopedPangoFontDescription desc(pango_font_description_from_string(
-          derived_font_list.GetFontDescriptionString().c_str()));
+      ScopedPangoFontDescription desc(
+          derived_font_list.GetFontDescriptionString());
 
       PangoAttribute* pango_attr = pango_attr_font_desc_new(desc.get());
       pango_attr->start_index =

@@ -62,27 +62,15 @@ TEST_F(FontRenderParamsTest, Default) {
       kFontconfigFileFooter));
 
   FontRenderParams params = GetDefaultFontRenderParams();
-#if defined(OS_CHROMEOS)
-  // Chrome OS uses its own defaults for everything except subpixel rendering,
-  // which comes from Fontconfig.
-  EXPECT_TRUE(params.antialiasing);
-  EXPECT_TRUE(params.autohinter);
-  EXPECT_TRUE(params.use_bitmaps);
-  EXPECT_EQ(FontRenderParams::HINTING_SLIGHT, params.hinting);
-#else
-  // Desktop Linux gets all settings from fontconfig.
   EXPECT_TRUE(params.antialiasing);
   EXPECT_FALSE(params.autohinter);
   EXPECT_TRUE(params.use_bitmaps);
   EXPECT_EQ(FontRenderParams::HINTING_FULL, params.hinting);
-#endif
   EXPECT_FALSE(params.subpixel_positioning);
   EXPECT_EQ(FontRenderParams::SUBPIXEL_RENDERING_RGB,
             params.subpixel_rendering);
 }
 
-// Chrome OS ignores most Fontconfig settings.
-#if !defined(OS_CHROMEOS)
 TEST_F(FontRenderParamsTest, Size) {
   // Fontconfig needs to know about at least one font to return a match.
   ASSERT_TRUE(LoadSystemFont("arial.ttf"));
@@ -129,6 +117,5 @@ TEST_F(FontRenderParamsTest, Size) {
   EXPECT_EQ(FontRenderParams::SUBPIXEL_RENDERING_RGB,
             params.subpixel_rendering);
 }
-#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace gfx

@@ -74,19 +74,19 @@ std::string* PlatformFontPango::default_font_description_ = NULL;
 
 PlatformFontPango::PlatformFontPango() {
   if (!default_font_) {
-    std::string desc_string;
+    scoped_ptr<ScopedPangoFontDescription> description;
 #if defined(OS_CHROMEOS)
-    // Font name must have been provided by way of SetDefaultFontDescription().
     CHECK(default_font_description_);
-    desc_string = *default_font_description_;
+    description.reset(
+        new ScopedPangoFontDescription(*default_font_description_));
 #else
     const gfx::LinuxFontDelegate* delegate = gfx::LinuxFontDelegate::instance();
-    desc_string = delegate ? delegate->GetDefaultFontDescription() : "sans 10";
+    if (delegate)
+      description = delegate->GetDefaultPangoFontDescription();
 #endif
-
-    ScopedPangoFontDescription desc(
-        pango_font_description_from_string(desc_string.c_str()));
-    default_font_ = new Font(desc.get());
+    if (!description || !description->get())
+      description.reset(new ScopedPangoFontDescription("sans 10"));
+    default_font_ = new Font(description->get());
   }
 
   InitFromPlatformFont(

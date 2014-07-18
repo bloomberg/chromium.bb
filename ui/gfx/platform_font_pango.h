@@ -35,7 +35,8 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   static void ReloadDefaultFont();
 
 #if defined(OS_CHROMEOS)
-  // Sets the default font.
+  // Sets the default font. |font_description| is a Pango font description that
+  // will be passed to pango_font_description_from_string().
   static void SetDefaultFontDescription(const std::string& font_description);
 #endif
 
@@ -120,6 +121,7 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   static Font* default_font_;
 
 #if defined(OS_CHROMEOS)
+  // A Pango font description.
   static std::string* default_font_description_;
 #endif
 

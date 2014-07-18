@@ -7,12 +7,15 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
 
-// Allows a Linux platform specific overriding of font preferences.
+class ScopedPangoFontDescription;
+
+// Allows a Linux platform-specific overriding of font preferences.
 class GFX_EXPORT LinuxFontDelegate {
  public:
   virtual ~LinuxFontDelegate() {}
@@ -29,19 +32,12 @@ class GFX_EXPORT LinuxFontDelegate {
   // running with the "--ash" flag.)
   static const LinuxFontDelegate* instance();
 
-  // Whether we should antialias our text.
-  virtual bool UseAntialiasing() const = 0;
+  // Returns the default font rendering settings.
+  virtual FontRenderParams GetDefaultFontRenderParams() const = 0;
 
-  // What sort of text hinting should we apply?
-  virtual FontRenderParams::Hinting GetHintingStyle() const = 0;
-
-  // What sort of subpixel rendering should we perform.
-  virtual FontRenderParams::SubpixelRendering
-      GetSubpixelRenderingStyle() const = 0;
-
-  // Returns the Pango description for the default UI font. The format matches
-  // that returned by pango_font_description_to_string().
-  virtual std::string GetDefaultFontDescription() const = 0;
+  // Returns the Pango description for the default UI font.
+  virtual scoped_ptr<ScopedPangoFontDescription>
+      GetDefaultPangoFontDescription() const = 0;
 
   // Returns the resolution (as pixels-per-inch) that should be used to convert
   // font sizes between points and pixels. -1 is returned if the DPI is unset.

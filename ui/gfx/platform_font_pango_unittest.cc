@@ -26,15 +26,13 @@ TEST(PlatformFontPangoTest, FamilyList) {
   g_type_init();
 #endif
 
-  ScopedPangoFontDescription desc(
-      pango_font_description_from_string("Arial,Times New Roman, 13px"));
+  ScopedPangoFontDescription desc("Arial,Times New Roman, 13px");
   scoped_refptr<gfx::PlatformFontPango> font(
       new gfx::PlatformFontPango(desc.get()));
   EXPECT_EQ("Arial", font->GetFontName());
   EXPECT_EQ(13, font->GetFontSize());
 
-  ScopedPangoFontDescription desc2(
-      pango_font_description_from_string("Times New Roman,Arial, 15px"));
+  ScopedPangoFontDescription desc2("Times New Roman,Arial, 15px");
   scoped_refptr<gfx::PlatformFontPango> font2(
       new gfx::PlatformFontPango(desc2.get()));
   EXPECT_EQ("Times New Roman", font2->GetFontName());

@@ -6,23 +6,14 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "ui/gfx/linux_font_delegate.h"
 #include "ui/gfx/switches.h"
 
 #include <fontconfig/fontconfig.h>
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include "ui/gfx/linux_font_delegate.h"
-#endif
-
 namespace gfx {
 
 namespace {
-
-bool SubpixelPositioningRequested(bool for_web_contents) {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      for_web_contents ? switches::kEnableWebkitTextSubpixelPositioning
-                       : switches::kEnableBrowserTextSubpixelPositioning);
-}
 
 // Converts Fontconfig FC_HINT_STYLE to FontRenderParams::Hinting.
 FontRenderParams::Hinting ConvertFontconfigHintStyle(int hint_style) {
@@ -139,40 +130,21 @@ FontRenderParams GetCustomFontRenderParams(
     const int* pixel_size,
     const int* point_size,
     std::string* family_out) {
-  FontRenderParams params;
   if (family_out)
     family_out->clear();
 
-#if defined(OS_CHROMEOS)
-  // Use reasonable defaults.
-  params.antialiasing = true;
-  params.autohinter = true;
-  params.use_bitmaps = true;
-  params.hinting = FontRenderParams::HINTING_SLIGHT;
-
-  // Query Fontconfig to get the family name and subpixel rendering setting.
-  // In general, we try to limit Chrome OS's dependency on Fontconfig, but it's
-  // used to configure fonts for different scripts and to disable subpixel
-  // rendering on systems that use external displays.
-  // TODO(derat): Decide if we should just use Fontconfig wholeheartedly on
-  // Chrome OS; Blink is using it, after all.
-  FontRenderParams fc_params;
-  QueryFontconfig(family_list, pixel_size, point_size, &fc_params, family_out);
-  params.subpixel_rendering = fc_params.subpixel_rendering;
-#else
   // Start with the delegate's settings, but let Fontconfig have the final say.
-  // TODO(derat): Figure out if we need to query the delegate at all. Does
-  // GtkSettings always get overridden by Fontconfig in GTK apps?
+  FontRenderParams params;
   const LinuxFontDelegate* delegate = LinuxFontDelegate::instance();
-  if (delegate) {
-    params.antialiasing = delegate->UseAntialiasing();
-    params.hinting = delegate->GetHintingStyle();
-    params.subpixel_rendering = delegate->GetSubpixelRenderingStyle();
-  }
+  if (delegate)
+    params = delegate->GetDefaultFontRenderParams();
   QueryFontconfig(family_list, pixel_size, point_size, &params, family_out);
-#endif
 
-  params.subpixel_positioning = SubpixelPositioningRequested(for_web_contents);
+  // Fontconfig doesn't support configuring subpixel positioning; check a flag.
+  params.subpixel_positioning = CommandLine::ForCurrentProcess()->HasSwitch(
+      for_web_contents ?
+      switches::kEnableWebkitTextSubpixelPositioning :
+      switches::kEnableBrowserTextSubpixelPositioning);
 
   // To enable subpixel positioning, we need to disable hinting.
   if (params.subpixel_positioning)

@@ -26,6 +26,11 @@ class ScopedPangoFontDescription {
     DCHECK(description);
   }
 
+  explicit ScopedPangoFontDescription(const std::string& str)
+      : description_(pango_font_description_from_string(str.c_str())) {
+    DCHECK(description_);
+  }
+
   ~ScopedPangoFontDescription() {
     pango_font_description_free(description_);
   }

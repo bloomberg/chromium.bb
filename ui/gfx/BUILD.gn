@@ -416,6 +416,7 @@ test("gfx_unittests") {
     "//testing/gtest",
     "//ui/base",
     "//ui/gfx/geometry",
+    "//ui/resources:ui_test_pak",
   ]
 
   if (use_pango) {
