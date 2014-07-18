@@ -23,6 +23,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/android/content_settings/popup_blocked_infobar_delegate.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/infobars/infobar_container_android.h"
@@ -47,6 +48,38 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/Tab_jni.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
+#include "ui/base/window_open_disposition.h"
+
+using content::GlobalRequestID;
+using content::NavigationController;
+using content::WebContents;
+
+namespace {
+
+WebContents* CreateTargetContents(const chrome::NavigateParams& params,
+                                  const GURL& url) {
+  Profile* profile = params.initiating_profile;
+
+  if (profile->IsOffTheRecord() || params.disposition == OFF_THE_RECORD) {
+    profile = profile->GetOffTheRecordProfile();
+  }
+  WebContents::CreateParams create_params(
+      profile, tab_util::GetSiteInstanceForNewTab(profile, url));
+  if (params.source_contents) {
+    create_params.initial_size =
+        params.source_contents->GetContainerBounds().size();
+    if (params.should_set_opener)
+      create_params.opener = params.source_contents;
+  }
+  if (params.disposition == NEW_BACKGROUND_TAB)
+    create_params.initially_hidden = true;
+
+  WebContents* target_contents = WebContents::Create(create_params);
+
+  return target_contents;
+}
+
+}  // namespace
 
 TabAndroid* TabAndroid::FromWebContents(content::WebContents* web_contents) {
   CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(web_contents);
@@ -170,7 +203,31 @@ void TabAndroid::SetSyncId(int sync_id) {
 }
 
 void TabAndroid::HandlePopupNavigation(chrome::NavigateParams* params) {
-  NOTIMPLEMENTED();
+  if (params->disposition != SUPPRESS_OPEN &&
+      params->disposition != SAVE_TO_DISK &&
+      params->disposition != IGNORE_ACTION) {
+    if (!params->url.is_empty()) {
+      bool was_blocked = false;
+      GURL url(params->url);
+      NavigationController::LoadURLParams load_url_params(url);
+      MakeLoadURLParams(params, &load_url_params);
+      if (params->disposition == CURRENT_TAB) {
+        web_contents_.get()->GetController().LoadURLWithParams(load_url_params);
+      } else {
+        params->target_contents = CreateTargetContents(*params, url);
+        params->target_contents->GetController().LoadURLWithParams(
+            load_url_params);
+        web_contents_delegate_->AddNewContents(params->source_contents,
+                                               params->target_contents,
+                                               params->disposition,
+                                               params->window_bounds,
+                                               params->user_gesture,
+                                               &was_blocked);
+        if (was_blocked)
+          params->target_contents = NULL;
+      }
+    }
+  }
 }
 
 bool TabAndroid::ShouldWelcomePageLinkToTermsOfService() {
@@ -195,6 +252,32 @@ bool TabAndroid::HasPrerenderedUrl(GURL gurl) {
     }
   }
   return false;
+}
+
+void TabAndroid::MakeLoadURLParams(
+    chrome::NavigateParams* params,
+    NavigationController::LoadURLParams* load_url_params) {
+  load_url_params->referrer = params->referrer;
+  load_url_params->frame_tree_node_id = params->frame_tree_node_id;
+  load_url_params->redirect_chain = params->redirect_chain;
+  load_url_params->transition_type = params->transition;
+  load_url_params->extra_headers = params->extra_headers;
+  load_url_params->should_replace_current_entry =
+      params->should_replace_current_entry;
+
+  if (params->transferred_global_request_id != GlobalRequestID()) {
+    load_url_params->transferred_global_request_id =
+        params->transferred_global_request_id;
+  }
+  load_url_params->is_renderer_initiated = params->is_renderer_initiated;
+
+  // Only allows the browser-initiated navigation to use POST.
+  if (params->uses_post && !params->is_renderer_initiated) {
+    load_url_params->load_type =
+        NavigationController::LOAD_TYPE_BROWSER_INITIATED_HTTP_POST;
+    load_url_params->browser_initiated_post_data =
+        params->browser_initiated_post_data;
+  }
 }
 
 void TabAndroid::SwapTabContents(content::WebContents* old_contents,

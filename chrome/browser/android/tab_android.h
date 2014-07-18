@@ -100,6 +100,10 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   bool HasPrerenderedUrl(GURL gurl);
 
+  void MakeLoadURLParams(
+      chrome::NavigateParams* params,
+      content::NavigationController::LoadURLParams* load_url_params);
+
   // CoreTabHelperDelegate ----------------------------------------------------
 
   virtual void SwapTabContents(content::WebContents* old_contents,

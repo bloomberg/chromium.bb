@@ -323,6 +323,8 @@ void ChromeWebContentsDelegateAndroid::AddNewContents(
         user_gesture);
   }
 
+  if (was_blocked)
+    *was_blocked = !handled;
   if (!handled)
     delete new_contents;
 }
