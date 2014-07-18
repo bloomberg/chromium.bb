@@ -159,6 +159,7 @@ TestConnectionFactoryImpl::TestConnectionFactoryImpl(
                             net::BackoffEntry::Policy(),
                             NULL,
                             NULL,
+                            NULL,
                             &dummy_recorder_),
       connect_result_(net::ERR_UNEXPECTED),
       num_expected_attempts_(0),

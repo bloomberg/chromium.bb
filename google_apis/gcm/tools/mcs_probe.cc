@@ -303,6 +303,7 @@ void MCSProbe::Start() {
       new ConnectionFactoryImpl(endpoints,
                                 kDefaultBackoffPolicy,
                                 network_session_,
+                                NULL,
                                 &net_log_,
                                 &recorder_));
   gcm_store_.reset(

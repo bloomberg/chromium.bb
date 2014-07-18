@@ -24,6 +24,7 @@
 #include "google_apis/gcm/protocol/checkin.pb.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "url/gurl.h"
 
@@ -236,13 +237,15 @@ scoped_ptr<MCSClient> GCMInternalsBuilder::BuildMCSClient(
 scoped_ptr<ConnectionFactory> GCMInternalsBuilder::BuildConnectionFactory(
       const std::vector<GURL>& endpoints,
       const net::BackoffEntry::Policy& backoff_policy,
-      scoped_refptr<net::HttpNetworkSession> network_session,
+      const scoped_refptr<net::HttpNetworkSession>& gcm_network_session,
+      const scoped_refptr<net::HttpNetworkSession>& http_network_session,
       net::NetLog* net_log,
       GCMStatsRecorder* recorder) {
   return make_scoped_ptr<ConnectionFactory>(
       new ConnectionFactoryImpl(endpoints,
                                 backoff_policy,
-                                network_session,
+                                gcm_network_session,
+                                http_network_session,
                                 net_log,
                                 recorder));
 }
@@ -371,6 +374,9 @@ void GCMClientImpl::InitializeMCSClient(
       endpoints,
       kDefaultBackoffPolicy,
       network_session_,
+      url_request_context_getter_->GetURLRequestContext()
+          ->http_transaction_factory()
+          ->GetSession(),
       net_log_.net_log(),
       &recorder_);
   connection_factory_->SetConnectionListener(this);
