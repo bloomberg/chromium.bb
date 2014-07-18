@@ -4901,6 +4901,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSIONS_POLICY_CONTROLLED" desc="The text in the extensions UI informing the user that an extension is policy controlled">
         (This extension is managed and cannot be removed or disabled.)
       </message>
+      <message name="IDS_EXTENSIONS_DEPENDENT_EXTENSIONS" desc="The text in the extensions UI informing the user that an extension is depended on by on other installed extensions">
+        The following extensions depend on this extension:
+      </message>
       <message name="IDS_EXTENSIONS_LOCKED_SUPERVISED_USER" desc="The error message (either shown in the extensions UI or logged) informing a supervised user that extensions cannot be changed.">
         Applications and extensions cannot be modified by supervised users.
       </message>
@@ -10213,6 +10216,9 @@ Chrome ran out of memory.
         </message>
         <message name="IDS_OPTIONS_INSTALL_LOCATION_ENTERPRISE" desc="The text explaining the the installation of the extension came from an enterprise policy.">
           Installed by enterprise policy.
+        </message>
+        <message name="IDS_OPTIONS_INSTALL_LOCATION_SHARED_MODULE" desc="The text explaining the the installation of the extension was because of extensions that depend on this shared module">
+          Installed because of dependent extension(s).
         </message>
 
         <!-- Extension blacklist state -->

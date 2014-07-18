@@ -112,34 +112,6 @@ namespace {
 // Wait this many seconds after an extensions becomes idle before updating it.
 const int kUpdateIdleDelay = 5;
 
-bool IsCWSSharedModule(const Extension* extension) {
-  return extension->from_webstore() &&
-         SharedModuleInfo::IsSharedModule(extension);
-}
-
-class SharedModuleProvider : public extensions::ManagementPolicy::Provider {
- public:
-  SharedModuleProvider() {}
-  virtual ~SharedModuleProvider() {}
-
-  virtual std::string GetDebugPolicyProviderName() const OVERRIDE {
-    return "SharedModuleProvider";
-  }
-
-  virtual bool UserMayModifySettings(const Extension* extension,
-                                     base::string16* error) const OVERRIDE {
-    return !IsCWSSharedModule(extension);
-  }
-
-  virtual bool MustRemainEnabled(const Extension* extension,
-                                 base::string16* error) const OVERRIDE {
-    return IsCWSSharedModule(extension);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SharedModuleProvider);
-};
-
 }  // namespace
 
 // ExtensionService.
@@ -355,8 +327,6 @@ ExtensionService::ExtensionService(Profile* profile,
       new extensions::ExtensionActionStorageManager(profile_));
 #endif
 
-  shared_module_policy_provider_.reset(new SharedModuleProvider);
-
   // How long is the path to the Extensions directory?
   UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ExtensionRootPathLength",
                               install_directory_.value().length(), 0, 500, 100);
@@ -471,9 +441,6 @@ void ExtensionService::Init() {
     // TODO(erikkay) this should probably be deferred to a future point
     // rather than running immediately at startup.
     CheckForExternalUpdates();
-
-    system_->management_policy()->RegisterProvider(
-        shared_module_policy_provider_.get());
 
     LoadGreylistFromPrefs();
   }

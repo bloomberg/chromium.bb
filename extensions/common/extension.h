@@ -342,19 +342,19 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     return (creation_flags_ & WAS_INSTALLED_BY_CUSTODIAN) != 0;
   }
 
-  // App-related.
+  // Type-related queries.
   bool is_app() const;
   bool is_platform_app() const;
   bool is_hosted_app() const;
   bool is_legacy_packaged_app() const;
   bool is_extension() const;
+  bool is_shared_module() const;
+  bool is_theme() const;
+
   bool can_be_incognito_enabled() const;
 
   void AddWebExtentPattern(const URLPattern& pattern);
   const URLPatternSet& web_extent() const { return extent_; }
-
-  // Theme-related.
-  bool is_theme() const;
 
  private:
   friend class base::RefCountedThreadSafe<Extension>;

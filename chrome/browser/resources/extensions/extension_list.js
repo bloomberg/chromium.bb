@@ -85,7 +85,8 @@ cr.define('options', function() {
       if (!extension.enabled || extension.terminated)
         node.classList.add('inactive-extension');
 
-      if (extension.managedInstall) {
+      if (extension.managedInstall ||
+          extension.dependentExtensions.length > 0) {
         node.classList.add('may-not-modify');
         node.classList.add('may-not-remove');
       } else if (extension.suspiciousInstall || extension.corruptInstall) {
@@ -236,12 +237,13 @@ cr.define('options', function() {
         // The 'Enabled' checkbox.
         var enable = node.querySelector('.enable-checkbox');
         enable.hidden = false;
-        var managedOrHosedExtension = extension.managedInstall ||
-                                      extension.suspiciousInstall ||
-                                      extension.corruptInstall;
-        enable.querySelector('input').disabled = managedOrHosedExtension;
+        var enableCheckboxDisabled = extension.managedInstall ||
+                                     extension.suspiciousInstall ||
+                                     extension.corruptInstall ||
+                                     extension.dependentExtensions.length > 0;
+        enable.querySelector('input').disabled = enableCheckboxDisabled;
 
-        if (!managedOrHosedExtension) {
+        if (!enableCheckboxDisabled) {
           enable.addEventListener('click', function(e) {
             // When e.target is the label instead of the checkbox, it doesn't
             // have the checked property and the state of the checkbox is
@@ -310,6 +312,18 @@ cr.define('options', function() {
           // Then the 'This is a corrupt extension' message.
           node.querySelector('.corrupt-install-message').hidden = false;
         }
+      }
+
+      if (extension.dependentExtensions.length > 0) {
+        var dependentMessage =
+            node.querySelector('.dependent-extensions-message');
+        dependentMessage.hidden = false;
+        var dependentList = dependentMessage.querySelector('ul');
+        extension.dependentExtensions.forEach(function(id) {
+          var li = document.createElement('li');
+          li.innerText = id;
+          dependentList.appendChild(li);
+        });
       }
 
       // Then active views.

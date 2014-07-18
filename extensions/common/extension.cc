@@ -411,11 +411,11 @@ void Extension::AddInstallWarnings(
 }
 
 bool Extension::is_app() const {
-  return manifest_->is_app();
+  return manifest()->is_app();
 }
 
 bool Extension::is_platform_app() const {
-  return manifest_->is_platform_app();
+  return manifest()->is_platform_app();
 }
 
 bool Extension::is_hosted_app() const {
@@ -430,6 +430,14 @@ bool Extension::is_extension() const {
   return manifest()->is_extension();
 }
 
+bool Extension::is_shared_module() const {
+  return manifest()->is_shared_module();
+}
+
+bool Extension::is_theme() const {
+  return manifest()->is_theme();
+}
+
 bool Extension::can_be_incognito_enabled() const {
   // Only component platform apps are supported in incognito.
   return !is_platform_app() || location() == Manifest::COMPONENT;
@@ -441,10 +449,6 @@ void Extension::AddWebExtentPattern(const URLPattern& pattern) {
     return;
 
   extent_.AddPattern(pattern);
-}
-
-bool Extension::is_theme() const {
-  return manifest()->is_theme();
 }
 
 // static

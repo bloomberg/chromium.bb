@@ -41,6 +41,7 @@
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/path_util.h"
+#include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -264,6 +265,20 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetBoolean("homepageProvided",
       ManifestURL::GetHomepageURL(extension).is_valid());
 
+  // Add dependent extensions.
+  base::ListValue* dependents_list = new base::ListValue;
+  if (extension->is_shared_module()) {
+    scoped_ptr<ExtensionSet> dependent_extensions =
+        extension_service_->shared_module_service()->GetDependentExtensions(
+            extension);
+    for (ExtensionSet::const_iterator i = dependent_extensions->begin();
+         i != dependent_extensions->end();
+         i++) {
+      dependents_list->Append(new base::StringValue((*i)->id()));
+    }
+  }
+  extension_data->Set("dependentExtensions", dependents_list);
+
   // Extensions only want all URL access if:
   // - The feature is enabled.
   // - The extension has access to enough urls that we can't just let it run
@@ -288,6 +303,9 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   } else if (extension->location() == Manifest::EXTERNAL_REGISTRY) {
     location_text = l10n_util::GetStringUTF16(
         IDS_OPTIONS_INSTALL_LOCATION_3RD_PARTY);
+  } else if (extension->is_shared_module()) {
+    location_text = l10n_util::GetStringUTF16(
+        IDS_OPTIONS_INSTALL_LOCATION_SHARED_MODULE);
   }
   extension_data->SetString("locationText", location_text);
 
@@ -491,6 +509,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VISIT_WEBSTORE));
   source->AddString("extensionSettingsPolicyControlled",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_POLICY_CONTROLLED));
+  source->AddString("extensionSettingsDependentExtensions",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_DEPENDENT_EXTENSIONS));
   source->AddString("extensionSettingsManagedMode",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_SUPERVISED_USER));
   source->AddString("extensionSettingsCorruptInstall",
