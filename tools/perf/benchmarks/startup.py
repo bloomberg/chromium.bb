@@ -7,7 +7,8 @@ import page_sets
 from telemetry import benchmark
 
 
-@benchmark.Disabled('android', 'snowleopard') # crbug.com/336913
+@benchmark.Enabled('has tabs')
+@benchmark.Disabled('snowleopard') # crbug.com/336913
 class StartupColdBlankPage(benchmark.Benchmark):
   tag = 'cold'
   test = startup.Startup
