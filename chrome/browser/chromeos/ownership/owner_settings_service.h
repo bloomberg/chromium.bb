@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_OWNERSHIP_OWNER_SETTINGS_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_OWNERSHIP_OWNER_SETTINGS_SERVICE_H_
 
+#include <deque>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -21,6 +23,8 @@
 class Profile;
 
 namespace chromeos {
+
+class SessionManagerOperation;
 
 // This class reloads owner key from profile NSS slots.
 //
@@ -43,6 +47,14 @@ class OwnerSettingsService : public DeviceSettingsService::PrivateKeyDelegate,
   virtual bool AssembleAndSignPolicyAsync(
       scoped_ptr<enterprise_management::PolicyData> policy,
       const AssembleAndSignPolicyCallback& callback) OVERRIDE;
+  virtual void SignAndStoreAsync(
+      scoped_ptr<enterprise_management::ChromeDeviceSettingsProto> settings,
+      const base::Closure& callback) OVERRIDE;
+  virtual void SetManagementSettingsAsync(
+      enterprise_management::PolicyData::ManagementMode management_mode,
+      const std::string& request_token,
+      const std::string& device_id,
+      const base::Closure& callback) OVERRIDE;
 
   // NotificationObserver implementation:
   virtual void Observe(int type,
@@ -74,7 +86,24 @@ class OwnerSettingsService : public DeviceSettingsService::PrivateKeyDelegate,
   void ReloadPrivateKey();
 
   // Called when ReloadPrivateKey() completes it's work.
-  void OnPrivateKeyLoaded(scoped_ptr<crypto::RSAPrivateKey> private_key);
+  void OnPrivateKeyLoaded(scoped_refptr<PublicKey> public_key,
+                          scoped_refptr<PrivateKey> private_key);
+
+  // Puts request to perform sign-and-store operation in the queue.
+  void EnqueueSignAndStore(scoped_ptr<enterprise_management::PolicyData> policy,
+                           const base::Closure& callback);
+
+  // Performs next operation in the queue.
+  void StartNextOperation();
+
+  // Called when sign-and-store operation completes it's work.
+  void HandleCompletedOperation(const base::Closure& callback,
+                                SessionManagerOperation* operation,
+                                DeviceSettingsService::Status status);
+
+  // Called when it's not possible to store settings.
+  void HandleError(DeviceSettingsService::Status status,
+                   const base::Closure& callback);
 
   // Returns testing instance of OwnerKeyUtil when it's set, otherwise
   // returns |owner_key_util_|.
@@ -88,6 +117,11 @@ class OwnerSettingsService : public DeviceSettingsService::PrivateKeyDelegate,
   // Profile this service instance belongs to.
   Profile* profile_;
 
+  // User ID this service instance belongs to.
+  std::string user_id_;
+
+  scoped_refptr<PublicKey> public_key_;
+
   scoped_refptr<PrivateKey> private_key_;
 
   scoped_refptr<OwnerKeyUtil> owner_key_util_;
@@ -99,6 +133,10 @@ class OwnerSettingsService : public DeviceSettingsService::PrivateKeyDelegate,
 
   // Whether TPM token still needs to be initialized.
   bool waiting_for_tpm_token_;
+
+  // The queue of pending sign-and-store operations. The first operation on the
+  // queue is currently active; it gets removed and destroyed once it completes.
+  std::deque<SessionManagerOperation*> pending_operations_;
 
   content::NotificationRegistrar registrar_;
 

@@ -113,13 +113,10 @@ void DeviceSettingsService::Load() {
 void DeviceSettingsService::SignAndStore(
     scoped_ptr<em::ChromeDeviceSettingsProto> new_settings,
     const base::Closure& callback) {
-  scoped_ptr<em::PolicyData> new_policy = AssemblePolicy(*new_settings);
-  if (!new_policy) {
-    HandleError(STORE_POLICY_ERROR, callback);
-    return;
-  }
-
-  EnqueueSignAndStore(new_policy.Pass(), callback);
+  if (!delegate_)
+    HandleError(STORE_KEY_UNAVAILABLE, callback);
+  else
+    delegate_->SignAndStoreAsync(new_settings.Pass(), callback);
 }
 
 void DeviceSettingsService::SetManagementSettings(
@@ -127,24 +124,12 @@ void DeviceSettingsService::SetManagementSettings(
     const std::string& request_token,
     const std::string& device_id,
     const base::Closure& callback) {
-  if (!CheckManagementModeTransition(management_mode)) {
-    LOG(ERROR) << "Invalid management mode transition: current mode = "
-               << GetManagementMode() << ", new mode = " << management_mode;
-    HandleError(STORE_POLICY_ERROR, callback);
-    return;
+  if (!delegate_) {
+    HandleError(STORE_KEY_UNAVAILABLE, callback);
+  } else {
+    delegate_->SetManagementSettingsAsync(
+        management_mode, request_token, device_id, callback);
   }
-
-  scoped_ptr<em::PolicyData> policy = AssemblePolicy(*device_settings_);
-  if (!policy) {
-    HandleError(STORE_POLICY_ERROR, callback);
-    return;
-  }
-
-  policy->set_management_mode(management_mode);
-  policy->set_request_token(request_token);
-  policy->set_device_id(device_id);
-
-  EnqueueSignAndStore(policy.Pass(), callback);
 }
 
 void DeviceSettingsService::Store(scoped_ptr<em::PolicyFetchResponse> policy,
@@ -240,18 +225,6 @@ void DeviceSettingsService::EnqueueLoad(bool force_key_load) {
                      base::Closure()));
   operation->set_force_key_load(force_key_load);
   operation->set_username(username_);
-  operation->set_delegate(delegate_);
-  Enqueue(operation);
-}
-
-void DeviceSettingsService::EnqueueSignAndStore(
-    scoped_ptr<em::PolicyData> policy,
-    const base::Closure& callback) {
-  SignAndStoreSettingsOperation* operation = new SignAndStoreSettingsOperation(
-      base::Bind(&DeviceSettingsService::HandleCompletedOperation,
-                 weak_factory_.GetWeakPtr(),
-                 callback),
-      policy.Pass());
   operation->set_delegate(delegate_);
   Enqueue(operation);
 }
@@ -365,63 +338,9 @@ void DeviceSettingsService::HandleError(Status status,
     callback.Run();
 }
 
-scoped_ptr<em::PolicyData> DeviceSettingsService::AssemblePolicy(
-    const em::ChromeDeviceSettingsProto& settings) const {
-  scoped_ptr<em::PolicyData> policy(new em::PolicyData());
-  if (policy_data_) {
-    // Preserve management settings.
-    if (policy_data_->has_management_mode())
-      policy->set_management_mode(policy_data_->management_mode());
-    if (policy_data_->has_request_token())
-      policy->set_request_token(policy_data_->request_token());
-    if (policy_data_->has_device_id())
-      policy->set_device_id(policy_data_->device_id());
-  } else {
-    // If there's no previous policy data, this is the first time the device
-    // setting is set. We set the management mode to NOT_MANAGED initially.
-    policy->set_management_mode(em::PolicyData::NOT_MANAGED);
-  }
-  policy->set_policy_type(policy::dm_protocol::kChromeDevicePolicyType);
-  policy->set_timestamp((base::Time::Now() - base::Time::UnixEpoch()).
-                        InMilliseconds());
-  policy->set_username(username_);
-  if (!settings.SerializeToString(policy->mutable_policy_value()))
-    return scoped_ptr<em::PolicyData>();
-
-  return policy.Pass();
-}
-
-em::PolicyData::ManagementMode DeviceSettingsService::GetManagementMode()
-    const {
-  if (policy_data_ && policy_data_->has_management_mode())
-    return policy_data_->management_mode();
-  return em::PolicyData::NOT_MANAGED;
-}
-
-bool DeviceSettingsService::CheckManagementModeTransition(
-    em::PolicyData::ManagementMode new_mode) const {
-  em::PolicyData::ManagementMode current_mode = GetManagementMode();
-
-  // Mode is not changed.
-  if (current_mode == new_mode)
-    return true;
-
-  switch (current_mode) {
-    case em::PolicyData::NOT_MANAGED:
-      // For consumer management enrollment.
-      return new_mode == em::PolicyData::CONSUMER_MANAGED;
-
-    case em::PolicyData::ENTERPRISE_MANAGED:
-      // Management mode cannot be set when it is currently ENTERPRISE_MANAGED.
-      return false;
-
-    case em::PolicyData::CONSUMER_MANAGED:
-      // For consumer management unenrollment.
-      return new_mode == em::PolicyData::NOT_MANAGED;
-  }
-
-  NOTREACHED();
-  return false;
+void DeviceSettingsService::OnSignAndStoreOperationCompleted(Status status) {
+  store_status_ = status;
+  FOR_EACH_OBSERVER(Observer, observers_, DeviceSettingsUpdated());
 }
 
 ScopedTestDeviceSettingsService::ScopedTestDeviceSettingsService() {

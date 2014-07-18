@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "crypto/scoped_nss_types.h"
@@ -22,10 +23,6 @@
 
 namespace crypto {
 class RSAPrivateKey;
-}
-
-namespace enterprise_management {
-class ChromeDeviceSettingsProto;
 }
 
 namespace chromeos {
@@ -103,6 +100,25 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
     virtual bool AssembleAndSignPolicyAsync(
         scoped_ptr<enterprise_management::PolicyData> policy,
         const AssembleAndSignPolicyCallback& callback) = 0;
+
+    // Signs |settings| with the private half of the owner key and sends
+    // the resulting policy blob to session manager for storage. The
+    // result of the operation is reported through |callback|. If
+    // successful, the updated device settings are present in
+    // policy_data() and device_settings() when the callback runs.
+    virtual void SignAndStoreAsync(
+        scoped_ptr<enterprise_management::ChromeDeviceSettingsProto> settings,
+        const base::Closure& callback) = 0;
+
+    // Sets the management related settings in PolicyData. Note that if
+    // |management_mode| is NOT_MANAGED, |request_token| and |device_id|
+    // should be empty strings. The result of the operation is reported
+    // through |callback|.
+    virtual void SetManagementSettingsAsync(
+        enterprise_management::PolicyData::ManagementMode management_mode,
+        const std::string& request_token,
+        const std::string& device_id,
+        const base::Closure& callback) = 0;
   };
 
   // Manage singleton instance.
@@ -123,6 +139,10 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   // Prevents the service from making further calls to session_manager_client
   // and stops any pending operations.
   void UnsetSessionManager();
+
+  SessionManagerClient* session_manager_client() const {
+    return session_manager_client_;
+  }
 
   // Returns the currently active device settings. Returns NULL if the device
   // settings have not been retrieved from session_manager yet.
@@ -155,9 +175,7 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
       scoped_ptr<enterprise_management::ChromeDeviceSettingsProto> new_settings,
       const base::Closure& callback);
 
-  // Sets the management related settings in PolicyData. Note that if
-  // |management_mode| is NOT_MANAGED, |request_token| and |device_id| should be
-  // empty strings.
+  // Sets the management related settings in PolicyData.
   void SetManagementSettings(
       enterprise_management::PolicyData::ManagementMode management_mode,
       const std::string& request_token,
@@ -197,15 +215,14 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   virtual void PropertyChangeComplete(bool success) OVERRIDE;
 
  private:
+  friend class OwnerSettingsService;
+
   // Enqueues a new operation. Takes ownership of |operation| and starts it
   // right away if there is no active operation currently.
   void Enqueue(SessionManagerOperation* operation);
 
   // Enqueues a load operation.
   void EnqueueLoad(bool force_key_load);
-
-  void EnqueueSignAndStore(scoped_ptr<enterprise_management::PolicyData> policy,
-                           const base::Closure& callback);
 
   // Makes sure there's a reload operation so changes to the settings (and key,
   // in case force_key_load is set) are getting picked up.
@@ -223,18 +240,18 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   // Updates status and invokes the callback immediately.
   void HandleError(Status status, const base::Closure& callback);
 
-  // Assembles PolicyData based on |settings| and the current |policy_data_|
-  // and |username_|.
-  scoped_ptr<enterprise_management::PolicyData> AssemblePolicy(
-      const enterprise_management::ChromeDeviceSettingsProto& settings) const;
+  // Called by OwnerSettingsService when sign-and-store operation completes.
+  void OnSignAndStoreOperationCompleted(Status status);
 
-  // Returns the current management mode.
-  enterprise_management::PolicyData::ManagementMode GetManagementMode() const;
+  void set_policy_data(
+      scoped_ptr<enterprise_management::PolicyData> policy_data) {
+    policy_data_ = policy_data.Pass();
+  }
 
-  // Returns true if it is okay to transfer from the current mode to the new
-  // mode. This function should be called in SetManagementMode().
-  bool CheckManagementModeTransition(
-      enterprise_management::PolicyData::ManagementMode new_mode) const;
+  void set_device_settings(scoped_ptr<
+      enterprise_management::ChromeDeviceSettingsProto> device_settings) {
+    device_settings_ = device_settings.Pass();
+  }
 
   SessionManagerClient* session_manager_client_;
   scoped_refptr<OwnerKeyUtil> owner_key_util_;
