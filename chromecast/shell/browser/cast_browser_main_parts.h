@@ -43,9 +43,6 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   }
 
  private:
-  static CastBrowserMainParts* GetInstance();
-
-  static CastBrowserMainParts* instance_;
   scoped_ptr<CastBrowserContext> browser_context_;
   scoped_ptr<CastService> cast_service_;
   URLRequestContextFactory* const url_request_context_factory_;

@@ -14,9 +14,6 @@
 namespace chromecast {
 namespace shell {
 
-// static
-CastBrowserMainParts* CastBrowserMainParts::instance_ = NULL;
-
 namespace {
 
 struct DefaultCommandLineSwitch {
@@ -50,13 +47,9 @@ CastBrowserMainParts::CastBrowserMainParts(
       url_request_context_factory_(url_request_context_factory) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   AddDefaultCommandLineSwitches(command_line);
-  DCHECK(instance_ == NULL);
-  instance_ = this;
 }
 
 CastBrowserMainParts::~CastBrowserMainParts() {
-  DCHECK(instance_ == this);
-  instance_ = NULL;
 }
 
 void CastBrowserMainParts::PreMainMessageLoopStart() {
@@ -89,12 +82,6 @@ bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
 void CastBrowserMainParts::PostMainMessageLoopRun() {
   cast_service_->Stop();
   browser_context_.reset();
-}
-
-// static
-CastBrowserMainParts* CastBrowserMainParts::GetInstance() {
-  DCHECK(instance_ != NULL);
-  return instance_;
 }
 
 }  // namespace shell
