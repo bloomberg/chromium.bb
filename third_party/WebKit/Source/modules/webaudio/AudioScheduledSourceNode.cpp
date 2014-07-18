@@ -29,14 +29,22 @@
 #include "modules/webaudio/AudioScheduledSourceNode.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/EventModules.h"
 #include "modules/webaudio/AudioContext.h"
 #include "platform/audio/AudioUtilities.h"
-#include <algorithm>
 #include "wtf/MathExtras.h"
+#include <algorithm>
 
 namespace WebCore {
+
+#if !ENABLE(OILPAN)
+// We need a dedicated specialization for AudioScheduledSourceNode because it
+// doesn't inherit from RefCounted.
+template<> struct CrossThreadCopierBase<false, false, false, PassRefPtr<AudioScheduledSourceNode> > : public CrossThreadCopierPassThrough<PassRefPtr<AudioScheduledSourceNode> > {
+};
+#endif
 
 const double AudioScheduledSourceNode::UnknownTime = -1;
 
@@ -179,30 +187,14 @@ void AudioScheduledSourceNode::finish()
         m_playbackState = FINISHED_STATE;
     }
 
-    if (m_hasEndedListener) {
-        // |task| will keep the AudioScheduledSourceNode alive until the listener has been handled.
-        OwnPtr<NotifyEndedTask> task = adoptPtr(new NotifyEndedTask(this));
-        callOnMainThread(&AudioScheduledSourceNode::notifyEndedDispatch, task.leakPtr());
+    if (m_hasEndedListener && context()->executionContext()) {
+        context()->executionContext()->postTask(createCrossThreadTask(&AudioScheduledSourceNode::notifyEnded, PassRefPtrWillBeRawPtr<AudioScheduledSourceNode>(this)));
     }
 }
 
-void AudioScheduledSourceNode::notifyEndedDispatch(void* userData)
+void AudioScheduledSourceNode::notifyEnded()
 {
-    OwnPtr<NotifyEndedTask> task = adoptPtr(static_cast<NotifyEndedTask*>(userData));
-
-    task->notifyEnded();
-}
-
-AudioScheduledSourceNode::NotifyEndedTask::NotifyEndedTask(PassRefPtr<AudioScheduledSourceNode> sourceNode)
-    : m_scheduledNode(sourceNode)
-{
-}
-
-void AudioScheduledSourceNode::NotifyEndedTask::notifyEnded()
-{
-    RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::ended);
-    event->setTarget(m_scheduledNode.get());
-    m_scheduledNode->dispatchEvent(event.get());
+    dispatchEvent(Event::create(EventTypeNames::ended));
 }
 
 } // namespace WebCore

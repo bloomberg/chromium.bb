@@ -54,17 +54,6 @@ public:
         FINISHED_STATE = 3
     };
 
-    // This helper class handles the lifetime of an AudioScheduledSourceNode with an onended event
-    // listener. This keeps the node alive until the event listener is processed.
-    class NotifyEndedTask {
-    public:
-        NotifyEndedTask(PassRefPtr<AudioScheduledSourceNode> scheduledNode);
-        void notifyEnded();
-
-    private:
-        RefPtr<AudioScheduledSourceNode> m_scheduledNode;
-    };
-
     AudioScheduledSourceNode(AudioContext*, float sampleRate);
 
     // Scheduling.
@@ -96,7 +85,7 @@ protected:
     // Called when we have no more sound to play or the noteOff() time has been reached.
     virtual void finish();
 
-    static void notifyEndedDispatch(void*);
+    void notifyEnded();
 
     PlaybackState m_playbackState;
 
