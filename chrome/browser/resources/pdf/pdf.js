@@ -134,6 +134,22 @@ function PDFViewer() {
 
   // Setup the keyboard event listener.
   document.onkeydown = this.handleKeyEvent_.bind(this);
+
+  // Set up the zoom API.
+  if (chrome.tabs) {
+    chrome.tabs.setZoomSettings({mode: 'manual', scope: 'per-tab'},
+                                this.afterZoom_.bind(this));
+    chrome.tabs.onZoomChange.addListener(function(zoomChangeInfo) {
+      // If the zoom level is close enough to the current zoom level, don't
+      // change it. This avoids us getting into an infinite loop of zoom changes
+      // due to floating point error.
+      var MIN_ZOOM_DELTA = 0.01;
+      var zoomDelta = Math.abs(this.viewport_.zoom -
+                               zoomChangeInfo.newZoomFactor);
+      if (zoomDelta > MIN_ZOOM_DELTA)
+        this.viewport_.setZoom(zoomChangeInfo.newZoomFactor);
+    }.bind(this));
+  }
 }
 
 PDFViewer.prototype = {
@@ -203,22 +219,6 @@ PDFViewer.prototype = {
         if (fromScriptingAPI) {
           position.y += Viewport.SCROLL_INCREMENT;
           this.viewport.position = position;
-        }
-        return;
-      case 187:  // +/= key.
-      case 107:  // Numpad + key.
-        if (e.ctrlKey || e.metaKey) {
-          this.viewport_.zoomIn();
-          // Since we do the zooming of the page.
-          e.preventDefault();
-        }
-        return;
-      case 189:  // -/_ key.
-      case 109:  // Numpad - key.
-        if (e.ctrlKey || e.metaKey) {
-          this.viewport_.zoomOut();
-          // Since we do the zooming of the page.
-          e.preventDefault();
         }
         return;
       case 83:  // s key.
@@ -381,12 +381,32 @@ PDFViewer.prototype = {
   afterZoom_: function() {
     var position = this.viewport_.position;
     var zoom = this.viewport_.zoom;
+    if (chrome.tabs && !this.setZoomInProgress_) {
+      this.setZoomInProgress_ = true;
+      chrome.tabs.setZoom(zoom, this.setZoomComplete_.bind(this, zoom));
+    }
     this.plugin_.postMessage({
       type: 'viewport',
       zoom: zoom,
       xOffset: position.x,
       yOffset: position.y
     });
+  },
+
+  /**
+   * @private
+   * A callback that's called after chrome.tabs.setZoom is complete. This will
+   * call chrome.tabs.setZoom again if the zoom level has changed since it was
+   * last called.
+   * @param {number} lastZoom the zoom level that chrome.tabs.setZoom was called
+   *     with.
+   */
+  setZoomComplete_: function(lastZoom) {
+    var zoom = this.viewport_.zoom;
+    if (zoom != lastZoom)
+      chrome.tabs.setZoom(zoom, this.setZoomComplete_.bind(this, zoom));
+    else
+      this.setZoomInProgress_ = false;
   },
 
   /**
