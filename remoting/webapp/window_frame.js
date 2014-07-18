@@ -112,7 +112,6 @@ remoting.WindowFrame.prototype.disconnectSession_ = function() {
   // that causes it to get stuck in full-screen mode without this.
   if (chrome.app.window.current().isFullscreen()) {
     chrome.app.window.current().restore();
-    chrome.app.window.current().restore();
   }
   remoting.disconnect();
 };
@@ -129,7 +128,6 @@ remoting.WindowFrame.prototype.maximizeOrRestoreWindow_ = function() {
     // Restore twice: once to exit full-screen and once to exit maximized.
     // If the app is not full-screen, or went full-screen without first
     // being maximized, then the second restore has no effect.
-    chrome.app.window.current().restore();
     chrome.app.window.current().restore();
   } else if (this.isConnected_) {
     chrome.app.window.current().fullscreen();

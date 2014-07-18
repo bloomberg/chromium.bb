@@ -94,6 +94,7 @@ remoting.FullscreenAppsV2.prototype.removeListener = function(callback) {
 
 remoting.FullscreenAppsV2.prototype.syncWithMaximize = function(sync) {
   if (sync && chrome.app.window.current().isMaximized()) {
+    chrome.app.window.current().restore();
     this.activate(true);
   }
   this.hookingWindowEvents_ = sync;
@@ -107,11 +108,19 @@ remoting.FullscreenAppsV2.prototype.onFullscreened_ = function() {
 
 remoting.FullscreenAppsV2.prototype.onMaximized_ = function() {
   if (this.hookingWindowEvents_) {
+    chrome.app.window.current().restore();
     this.activate(true);
   }
 };
 
 remoting.FullscreenAppsV2.prototype.onRestored_ = function() {
+  // TODO(jamiewalch): ChromeOS generates a spurious onRestore event if
+  // fullscreen() is called from an onMaximized handler (crbug.com/394819),
+  // so ignore the callback if the window is still full-screen.
+  if (this.isActive()) {
+    return;
+  }
+
   document.body.classList.remove('fullscreen');
   if (this.hookingWindowEvents_) {
     this.activate(false);
