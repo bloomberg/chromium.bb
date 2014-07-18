@@ -15,6 +15,8 @@
         '../athena.gyp:athena_content_lib',
         '../resources/athena_resources.gyp:athena_resources',
         '../../apps/shell/app_shell.gyp:app_shell_lib',
+	# debug_widow.cc depends on this. Remove this once debug_window
+	# is removed.
         '../../ash/ash_resources.gyp:ash_resources',
         '../../chromeos/chromeos.gyp:power_manager_proto',
         '../../components/components.gyp:autocomplete',
