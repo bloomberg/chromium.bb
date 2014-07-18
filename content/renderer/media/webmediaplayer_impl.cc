@@ -963,6 +963,9 @@ void WebMediaPlayerImpl::OnPipelineMetadata(
 
   pipeline_metadata_ = metadata;
 
+  UMA_HISTOGRAM_ENUMERATION("Media.VideoRotation",
+                            metadata.video_rotation,
+                            media::VIDEO_ROTATION_MAX + 1);
   SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
 
   if (hasVideo()) {
