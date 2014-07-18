@@ -853,10 +853,10 @@ void ProfileImpl::OnPrefsLoaded(bool success) {
   prefs_->SetBoolean(prefs::kSessionExitedCleanly, true);
 
 #if defined(OS_ANDROID) && defined(FULL_SAFE_BROWSING)
-  // Force safe browsing to false in the case we need to roll back for users
-  // enrolled in Finch trial before.
+  // Clear safe browsing setting in the case we need to roll back
+  // for users enrolled in Finch trial before.
   if (!SafeBrowsingService::IsEnabledByFieldTrial())
-    prefs_->SetBoolean(prefs::kSafeBrowsingEnabled, false);
+    prefs_->ClearPref(prefs::kSafeBrowsingEnabled);
 #endif
 
   g_browser_process->profile_manager()->InitProfileUserPrefs(this);
