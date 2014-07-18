@@ -35,6 +35,7 @@
 #include "platform/LayoutTestSupport.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/harfbuzz/FontPlatformDataHarfBuzz.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "public/platform/linux/WebFontInfo.h"
 #include "public/platform/linux/WebFontRenderStyle.h"
 #include "public/platform/linux/WebSandboxSupport.h"
@@ -72,7 +73,8 @@ void FontPlatformData::setSubpixelRendering(bool useSubpixelRendering)
     useSkiaSubpixelRendering = useSubpixelRendering;
 }
 
-void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext*) const
+void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context)
+    const
 {
     paint->setAntiAlias(m_style.useAntiAlias);
     paint->setHinting(static_cast<SkPaint::Hinting>(m_style.hintStyle));
@@ -81,10 +83,13 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext*) const
     if (m_style.useAntiAlias)
         paint->setLCDRenderText(m_style.useSubpixelRendering);
 
+    // Do not enable subpixel text on low-dpi if full hinting is requested.
+    bool useSubpixelText = RuntimeEnabledFeatures::subpixelFontScalingEnabled()
+        && context && (paint->getHinting() != SkPaint::kFull_Hinting
+            || context->deviceScaleFactor() > 1.0f);
+
     // TestRunner specifically toggles the subpixel positioning flag.
-    if (RuntimeEnabledFeatures::subpixelFontScalingEnabled()
-        && paint->getHinting() != SkPaint::kFull_Hinting
-        && !LayoutTestSupport::isRunningLayoutTest())
+    if (useSubpixelText && !LayoutTestSupport::isRunningLayoutTest())
         paint->setSubpixelText(true);
     else
         paint->setSubpixelText(m_style.useSubpixelPositioning);

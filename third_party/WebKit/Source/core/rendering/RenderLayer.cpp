@@ -1809,7 +1809,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     bool shouldPaintContent = m_hasVisibleContent && isSelfPaintingLayer && !isPaintingOverlayScrollbars;
 
     float deviceScaleFactor = WebCore::deviceScaleFactor(renderer()->frame());
-    context->setUseHighResMarkers(deviceScaleFactor > 1.5f);
+    context->setDeviceScaleFactor(deviceScaleFactor);
 
     GraphicsContext* transparencyLayerContext = context;
 

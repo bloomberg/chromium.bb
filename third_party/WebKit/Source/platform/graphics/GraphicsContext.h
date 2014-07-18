@@ -197,9 +197,10 @@ public:
     CompositeOperator compositeOperation() const { return immutableState()->compositeOperator(); }
     blink::WebBlendMode blendModeOperation() const { return immutableState()->blendMode(); }
 
-    // Change the way document markers are rendered.
-    // Any deviceScaleFactor higher than 1.5 is enough to justify setting this flag.
-    void setUseHighResMarkers(bool isHighRes) { m_useHighResMarker = isHighRes; }
+    // Speicy the device scale factor which may change the way document markers
+    // and fonts are rendered.
+    void setDeviceScaleFactor(float factor) { m_deviceScaleFactor = factor; }
+    float deviceScaleFactor() const { return m_deviceScaleFactor; }
 
     // If true we are (most likely) rendering to a web page and the
     // canvas has been prepared with an opaque background. If false,
@@ -513,12 +514,12 @@ private:
 
     unsigned m_disabledState;
 
+    float m_deviceScaleFactor;
+
     // Activation for the above region tracking features
     bool m_trackOpaqueRegion : 1;
     bool m_trackTextRegion : 1;
 
-    // Are we on a high DPI display? If so, spelling and grammar markers are larger.
-    bool m_useHighResMarker : 1;
     // FIXME: Make this go away: crbug.com/236892
     bool m_updatingControlTints : 1;
     bool m_accelerated : 1;

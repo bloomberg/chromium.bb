@@ -123,9 +123,9 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisabledMode disableContextOr
     , m_disableDestructionChecks(false)
 #endif
     , m_disabledState(disableContextOrPainting)
+    , m_deviceScaleFactor(1.0f)
     , m_trackOpaqueRegion(false)
     , m_trackTextRegion(false)
-    , m_useHighResMarker(false)
     , m_updatingControlTints(false)
     , m_accelerated(false)
     , m_isCertainlyOpaque(true)
@@ -725,7 +725,8 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt, float widt
     if (contextDisabled())
         return;
 
-    int deviceScaleFactor = m_useHighResMarker ? 2 : 1;
+    // Use 2x resources for a device scale factor of 1.5 or above.
+    int deviceScaleFactor = m_deviceScaleFactor > 1.5f ? 2 : 1;
 
     // Create the pattern we'll use to draw the underline.
     int index = style == DocumentMarkerGrammarLineStyle ? 1 : 0;
