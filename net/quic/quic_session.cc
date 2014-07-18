@@ -106,6 +106,9 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
       goaway_received_(false),
       goaway_sent_(false),
       has_pending_handshake_(false) {
+}
+
+void QuicSession::InitializeSession() {
   if (connection_->version() <= QUIC_VERSION_19) {
     flow_controller_.reset(new QuicFlowController(
         connection_.get(), 0, is_server(), kDefaultFlowControlSendWindow,

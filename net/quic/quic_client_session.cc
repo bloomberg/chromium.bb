@@ -132,21 +132,15 @@ void QuicClientSession::StreamRequest::OnRequestCompleteFailure(int rv) {
   ResetAndReturn(&callback_).Run(rv);
 }
 
-QuicClientSession::QuicClientSession(
-    QuicConnection* connection,
-    scoped_ptr<DatagramClientSocket> socket,
-    scoped_ptr<QuicDefaultPacketWriter> writer,
-    QuicStreamFactory* stream_factory,
-    QuicCryptoClientStreamFactory* crypto_client_stream_factory,
-    scoped_ptr<QuicServerInfo> server_info,
-    const QuicServerId& server_id,
-    const QuicConfig& config,
-    QuicCryptoClientConfig* crypto_config,
-    base::TaskRunner* task_runner,
-    NetLog* net_log)
-    : QuicClientSessionBase(connection,
-                            config),
-      server_host_port_(server_id.host_port_pair()),
+QuicClientSession::QuicClientSession(QuicConnection* connection,
+                                     scoped_ptr<DatagramClientSocket> socket,
+                                     scoped_ptr<QuicDefaultPacketWriter> writer,
+                                     QuicStreamFactory* stream_factory,
+                                     scoped_ptr<QuicServerInfo> server_info,
+                                     const QuicConfig& config,
+                                     base::TaskRunner* task_runner,
+                                     NetLog* net_log)
+    : QuicClientSessionBase(connection, config),
       require_confirmation_(false),
       stream_factory_(stream_factory),
       socket_(socket.Pass()),
@@ -161,6 +155,15 @@ QuicClientSession::QuicClientSession(
       num_packets_read_(0),
       going_away_(false),
       weak_factory_(this) {
+  connection->set_debug_visitor(&logger_);
+}
+
+void QuicClientSession::InitializeSession(
+    const QuicServerId& server_id,
+    QuicCryptoClientConfig* crypto_config,
+    QuicCryptoClientStreamFactory* crypto_client_stream_factory) {
+  QuicClientSessionBase::InitializeSession();
+  server_host_port_.reset(new HostPortPair(server_id.host_port_pair()));
   crypto_stream_.reset(
       crypto_client_stream_factory ?
           crypto_client_stream_factory->CreateQuicCryptoClientStream(
@@ -169,7 +172,6 @@ QuicClientSession::QuicClientSession(
                                      new ProofVerifyContextChromium(net_log_),
                                      crypto_config));
 
-  connection->set_debug_visitor(&logger_);
   // TODO(rch): pass in full host port proxy pair
   net_log_.BeginEvent(
       NetLog::TYPE_QUIC_SESSION,
@@ -437,6 +439,7 @@ int QuicClientSession::CryptoConnect(bool require_confirmation,
   require_confirmation_ = require_confirmation;
   handshake_start_ = base::TimeTicks::Now();
   RecordHandshakeState(STATE_STARTED);
+  DCHECK(flow_controller());
   if (!crypto_stream_->CryptoConnect()) {
     // TODO(wtc): change crypto_stream_.CryptoConnect() to return a
     // QuicErrorCode and map it to a net error code.
@@ -500,7 +503,7 @@ bool QuicClientSession::CanPool(const std::string& hostname) const {
 
   if (ssl_info.channel_id_sent &&
       ServerBoundCertService::GetDomainForHost(hostname) !=
-      ServerBoundCertService::GetDomainForHost(server_host_port_.host())) {
+      ServerBoundCertService::GetDomainForHost(server_host_port_->host())) {
     return false;
   }
 

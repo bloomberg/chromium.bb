@@ -92,6 +92,15 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   // not the *available* window.  Some send algorithms may not use a congestion
   // window and will return 0.
   virtual QuicByteCount GetCongestionWindow() const = 0;
+
+  // Whether the send algorithm is currently in slow start.  When true, the
+  // BandwidthEstimate is expected to be too low.
+  virtual bool InSlowStart() const = 0;
+
+  // Returns the size of the slow start congestion window in bytes,
+  // aka ssthresh.  Some send algorithms do not define a slow start
+  // threshold and will return 0.
+  virtual QuicByteCount GetSlowStartThreshold() const = 0;
 };
 
 }  // namespace net

@@ -174,10 +174,12 @@ class VerifyNonceIsValidAndUniqueCallback
         case STRIKE_REGISTER_FAILURE:
           client_nonce_error = CLIENT_NONCE_STRIKE_REGISTER_FAILURE;
           break;
-        case NONCE_OK:
         case NONCE_UNKNOWN_FAILURE:
+          client_nonce_error = CLIENT_NONCE_UNKNOWN_FAILURE;
+          break;
+        case NONCE_OK:
         default:
-          LOG(WARNING) << "Unexpected nonce error: " << nonce_error;
+          LOG(DFATAL) << "Unexpected client nonce error: " << nonce_error;
           client_nonce_error = CLIENT_NONCE_UNKNOWN_FAILURE;
           break;
       }
@@ -1485,17 +1487,17 @@ HandshakeFailureReason QuicCryptoServerConfig::ValidateServerNonce(
     case NONCE_OK:
       return HANDSHAKE_OK;
     case NONCE_INVALID_FAILURE:
+    case NONCE_INVALID_ORBIT_FAILURE:
       return SERVER_NONCE_INVALID_FAILURE;
     case NONCE_NOT_UNIQUE_FAILURE:
       return SERVER_NONCE_NOT_UNIQUE_FAILURE;
     case NONCE_INVALID_TIME_FAILURE:
       return SERVER_NONCE_INVALID_TIME_FAILURE;
     case NONCE_UNKNOWN_FAILURE:
-    case NONCE_INVALID_ORBIT_FAILURE:
     case STRIKE_REGISTER_TIMEOUT:
     case STRIKE_REGISTER_FAILURE:
     default:
-      LOG(WARNING) << "Unexpected nonce error: " << nonce_error;
+      LOG(DFATAL) << "Unexpected server nonce error: " << nonce_error;
       return SERVER_NONCE_NOT_UNIQUE_FAILURE;
   }
 }

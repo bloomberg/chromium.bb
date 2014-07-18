@@ -58,12 +58,14 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
   virtual bool HasReliableBandwidthEstimate() const OVERRIDE;
   virtual QuicTime::Delta RetransmissionDelay() const OVERRIDE;
   virtual QuicByteCount GetCongestionWindow() const OVERRIDE;
+  virtual bool InSlowStart() const OVERRIDE;
+  virtual QuicByteCount GetSlowStartThreshold() const OVERRIDE;
 
  private:
   scoped_ptr<SendAlgorithmInterface> sender_;  // Underlying sender.
   QuicTime::Delta alarm_granularity_;
   uint32 initial_packet_burst_;
-  uint32 burst_tokens_;
+  mutable uint32 burst_tokens_;
   // Send time of the last packet considered delayed.
   QuicTime last_delayed_packet_sent_time_;
   QuicTime next_packet_send_time_;  // When can the next packet be sent.

@@ -29,11 +29,11 @@ class QuicSpdyClientStreamTest : public TestWithParam<QuicVersion> {
   QuicSpdyClientStreamTest()
       : connection_(new StrictMock<MockConnection>(
             false, SupportedVersions(GetParam()))),
-        session_(QuicServerId("example.com", 80, false, PRIVACY_MODE_DISABLED),
-                 DefaultQuicConfig(),
-                 connection_,
-                 &crypto_config_),
+        session_(DefaultQuicConfig(), connection_),
         body_("hello world") {
+    session_.InitializeSession(
+        QuicServerId("example.com", 80, false, PRIVACY_MODE_DISABLED),
+        &crypto_config_);
     crypto_config_.SetDefaults();
 
     headers_.SetResponseFirstlineFromStringPieces("HTTP/1.1", "200", "Ok");

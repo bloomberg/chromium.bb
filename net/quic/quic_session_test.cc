@@ -125,7 +125,9 @@ class TestSession : public QuicSession {
       : QuicSession(connection,
                     DefaultQuicConfig()),
         crypto_stream_(this),
-        writev_consumes_all_data_(false) {}
+        writev_consumes_all_data_(false) {
+    InitializeSession();
+  }
 
   virtual TestCryptoStream* GetCryptoStream() OVERRIDE {
     return &crypto_stream_;

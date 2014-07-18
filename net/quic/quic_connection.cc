@@ -1069,6 +1069,7 @@ const QuicConnectionStats& QuicConnection::GetStats() {
   stats_.estimated_bandwidth =
       sent_packet_manager_.BandwidthEstimate().ToBytesPerSecond();
   stats_.congestion_window = sent_packet_manager_.GetCongestionWindow();
+  stats_.slow_start_threshold = sent_packet_manager_.GetSlowStartThreshold();
   stats_.max_packet_size = packet_generator_.max_packet_length();
   return stats_;
 }

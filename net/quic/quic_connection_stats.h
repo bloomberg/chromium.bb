@@ -56,6 +56,7 @@ struct NET_EXPORT_PRIVATE QuicConnectionStats {
   uint32 max_packet_size;  // In bytes.
   uint64 estimated_bandwidth;  // In bytes per second.
   uint32 congestion_window;  // In bytes
+  uint32 slow_start_threshold;  // In bytes
 
   // Reordering stats for received packets.
   // Number of packets received out of sequence number order.

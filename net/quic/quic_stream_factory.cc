@@ -854,11 +854,11 @@ int QuicStreamFactory::CreateSession(
   }
 
   *session = new QuicClientSession(
-      connection, socket.Pass(), writer.Pass(), this,
-      quic_crypto_client_stream_factory_, server_info.Pass(), server_id,
-      config, &crypto_config_,
-      base::MessageLoop::current()->message_loop_proxy().get(),
+      connection, socket.Pass(), writer.Pass(), this, server_info.Pass(),
+      config, base::MessageLoop::current()->message_loop_proxy().get(),
       net_log.net_log());
+  (*session)->InitializeSession(server_id, &crypto_config_,
+                                quic_crypto_client_stream_factory_);
   all_sessions_[*session] = server_id;  // owning pointer
   return OK;
 }

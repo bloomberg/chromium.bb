@@ -183,11 +183,10 @@ bool QuicClient::StartConnect() {
   }
 
   session_.reset(new QuicClientSession(
-      server_id_,
       config_,
       new QuicConnection(GenerateConnectionId(), server_address_, helper_.get(),
-                         writer_.get(), false, supported_versions_),
-      &crypto_config_));
+                         writer_.get(), false, supported_versions_)));
+  session_->InitializeSession(server_id_, &crypto_config_);
   return session_->CryptoConnect();
 }
 

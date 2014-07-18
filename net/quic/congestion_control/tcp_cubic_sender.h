@@ -37,8 +37,6 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
                  QuicConnectionStats* stats);
   virtual ~TcpCubicSender();
 
-  bool InSlowStart() const;
-
   // Start implementation of SendAlgorithmInterface.
   virtual void SetFromConfig(const QuicConfig& config, bool is_server) OVERRIDE;
   virtual void OnIncomingQuicCongestionFeedbackFrame(
@@ -63,6 +61,8 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   virtual bool HasReliableBandwidthEstimate() const OVERRIDE;
   virtual QuicTime::Delta RetransmissionDelay() const OVERRIDE;
   virtual QuicByteCount GetCongestionWindow() const OVERRIDE;
+  virtual bool InSlowStart() const OVERRIDE;
+  virtual QuicByteCount GetSlowStartThreshold() const OVERRIDE;
   // End implementation of SendAlgorithmInterface.
 
  private:

@@ -50,6 +50,8 @@ class NET_EXPORT_PRIVATE FixRateSender : public SendAlgorithmInterface {
   virtual bool HasReliableBandwidthEstimate() const OVERRIDE;
   virtual QuicTime::Delta RetransmissionDelay() const OVERRIDE;
   virtual QuicByteCount GetCongestionWindow() const OVERRIDE;
+  virtual bool InSlowStart() const OVERRIDE;
+  virtual QuicByteCount GetSlowStartThreshold() const OVERRIDE;
   // End implementation of SendAlgorithmInterface.
 
  private:

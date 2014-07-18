@@ -104,6 +104,10 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
     STATE_RECV_SHLO,
   };
 
+  // Handles new server config and optional source-address token provided by the
+  // server during a connection.
+  void HandleServerConfigUpdateMessage(const CryptoHandshakeMessage* in);
+
   // DoHandshakeLoop performs a step of the handshake state machine. Note that
   // |in| may be NULL if the call did not result from a received message.
   void DoHandshakeLoop(const CryptoHandshakeMessage* in);

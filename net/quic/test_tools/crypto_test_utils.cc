@@ -183,9 +183,10 @@ int CryptoTestUtils::HandshakeWithFakeServer(
   PacketSavingConnection* server_conn =
       new PacketSavingConnection(true, client_conn->supported_versions());
   TestSession server_session(server_conn, DefaultQuicConfig());
-
+  server_session.InitializeSession();
   QuicCryptoServerConfig crypto_config(QuicCryptoServerConfig::TESTING,
                                        QuicRandom::GetInstance());
+
   SetupCryptoServerConfigForTest(
       server_session.connection()->clock(),
       server_session.connection()->random_generator(),

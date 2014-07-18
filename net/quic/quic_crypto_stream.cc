@@ -43,11 +43,6 @@ void QuicCryptoStream::OnHandshakeMessage(
 
 uint32 QuicCryptoStream::ProcessRawData(const char* data,
                                         uint32 data_len) {
-  // Do not process handshake messages after the handshake is confirmed.
-  if (handshake_confirmed()) {
-    CloseConnection(QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE);
-    return 0;
-  }
   if (!crypto_framer_.ProcessInput(StringPiece(data, data_len))) {
     CloseConnection(crypto_framer_.error());
     return 0;

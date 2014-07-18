@@ -302,6 +302,7 @@ bool PacketSavingConnection::SendOrQueuePacket(
 
 MockSession::MockSession(QuicConnection* connection)
     : QuicSession(connection, DefaultQuicConfig()) {
+  InitializeSession();
   ON_CALL(*this, WritevData(_, _, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
 }
@@ -311,7 +312,9 @@ MockSession::~MockSession() {
 
 TestSession::TestSession(QuicConnection* connection, const QuicConfig& config)
     : QuicSession(connection, config),
-      crypto_stream_(NULL) {}
+      crypto_stream_(NULL) {
+  InitializeSession();
+}
 
 TestSession::~TestSession() {}
 
@@ -325,10 +328,10 @@ QuicCryptoStream* TestSession::GetCryptoStream() {
 
 TestClientSession::TestClientSession(QuicConnection* connection,
                                      const QuicConfig& config)
-    : QuicClientSessionBase(connection,
-                            config),
+    : QuicClientSessionBase(connection, config),
       crypto_stream_(NULL) {
-    EXPECT_CALL(*this, OnProofValid(_)).Times(AnyNumber());
+  EXPECT_CALL(*this, OnProofValid(_)).Times(AnyNumber());
+  InitializeSession();
 }
 
 TestClientSession::~TestClientSession() {}

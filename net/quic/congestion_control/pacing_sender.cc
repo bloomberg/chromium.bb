@@ -41,10 +41,6 @@ void PacingSender::OnCongestionEvent(bool rtt_updated,
   if (rtt_updated) {
     has_valid_rtt_ = true;
   }
-  if (bytes_in_flight == 0) {
-    // Add more burst tokens anytime the connection is entering quiescence.
-    burst_tokens_ = initial_packet_burst_;
-  }
   sender_->OnCongestionEvent(
       rtt_updated, bytes_in_flight, acked_packets, lost_packets);
 }
@@ -71,9 +67,9 @@ bool PacingSender::OnPacketSent(
   }
   // The next packet should be sent as soon as the current packets has
   // been transferred.  We pace at twice the rate of the underlying
-  // sender's bandwidth estimate to help ensure that pacing doesn't become
-  // a bottleneck.
-  const float kPacingAggression = 2;
+  // sender's bandwidth estimate during slow start and 1.25x during congestion
+  // avoidance to ensure pacing doesn't prevent us from filling the window.
+  const float kPacingAggression = sender_->InSlowStart() ? 2 : 1.25;
   QuicTime::Delta delay =
       BandwidthEstimate().Scale(kPacingAggression).TransferTime(bytes);
   // If the last send was delayed, and the alarm took a long time to get
@@ -121,6 +117,10 @@ QuicTime::Delta PacingSender::TimeUntilSend(
     // Don't pace if we don't have an updated RTT estimate.
     return time_until_send;
   }
+  if (bytes_in_flight == 0) {
+    // Add more burst tokens anytime the connection is entering quiescence.
+    burst_tokens_ = initial_packet_burst_;
+  }
   if (burst_tokens_ > 0) {
     // Don't pace if we have burst tokens available.
     return time_until_send;
@@ -164,6 +164,14 @@ QuicTime::Delta PacingSender::RetransmissionDelay() const {
 
 QuicByteCount PacingSender::GetCongestionWindow() const {
   return sender_->GetCongestionWindow();
+}
+
+bool PacingSender::InSlowStart() const {
+  return sender_->InSlowStart();
+}
+
+QuicByteCount PacingSender::GetSlowStartThreshold() const {
+  return sender_->GetSlowStartThreshold();
 }
 
 }  // namespace net

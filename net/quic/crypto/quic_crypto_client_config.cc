@@ -529,21 +529,16 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   return QUIC_NO_ERROR;
 }
 
-QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
-    const CryptoHandshakeMessage& rej,
+QuicErrorCode QuicCryptoClientConfig::CacheNewServerConfig(
+    const CryptoHandshakeMessage& message,
     QuicWallTime now,
+    const vector<string>& cached_certs,
     CachedState* cached,
-    QuicCryptoNegotiatedParameters* out_params,
     string* error_details) {
   DCHECK(error_details != NULL);
 
-  if (rej.tag() != kREJ) {
-    *error_details = "Message is not REJ";
-    return QUIC_CRYPTO_INTERNAL_ERROR;
-  }
-
   StringPiece scfg;
-  if (!rej.GetStringPiece(kSCFG, &scfg)) {
+  if (!message.GetStringPiece(kSCFG, &scfg)) {
     *error_details = "Missing SCFG";
     return QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
   }
@@ -554,21 +549,16 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
   }
 
   StringPiece token;
-  if (rej.GetStringPiece(kSourceAddressTokenTag, &token)) {
+  if (message.GetStringPiece(kSourceAddressTokenTag, &token)) {
     cached->set_source_address_token(token);
   }
 
-  StringPiece nonce;
-  if (rej.GetStringPiece(kServerNonceTag, &nonce)) {
-    out_params->server_nonce = nonce.as_string();
-  }
-
   StringPiece proof, cert_bytes;
-  bool has_proof = rej.GetStringPiece(kPROF, &proof);
-  bool has_cert = rej.GetStringPiece(kCertificateTag, &cert_bytes);
+  bool has_proof = message.GetStringPiece(kPROF, &proof);
+  bool has_cert = message.GetStringPiece(kCertificateTag, &cert_bytes);
   if (has_proof && has_cert) {
     vector<string> certs;
-    if (!CertCompressor::DecompressChain(cert_bytes, out_params->cached_certs,
+    if (!CertCompressor::DecompressChain(cert_bytes, cached_certs,
                                          common_cert_sets, &certs)) {
       *error_details = "Certificate data invalid";
       return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
@@ -586,6 +576,33 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
       *error_details = "Proof missing";
       return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
     }
+  }
+
+  return QUIC_NO_ERROR;
+}
+
+QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
+    const CryptoHandshakeMessage& rej,
+    QuicWallTime now,
+    CachedState* cached,
+    QuicCryptoNegotiatedParameters* out_params,
+    string* error_details) {
+  DCHECK(error_details != NULL);
+
+  if (rej.tag() != kREJ) {
+    *error_details = "Message is not REJ";
+    return QUIC_CRYPTO_INTERNAL_ERROR;
+  }
+
+  QuicErrorCode error = CacheNewServerConfig(rej, now, out_params->cached_certs,
+                                             cached, error_details);
+  if (error != QUIC_NO_ERROR) {
+    return error;
+  }
+
+  StringPiece nonce;
+  if (rej.GetStringPiece(kServerNonceTag, &nonce)) {
+    out_params->server_nonce = nonce.as_string();
   }
 
   const uint32* reject_reasons;
@@ -684,6 +701,23 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
   }
 
   return QUIC_NO_ERROR;
+}
+
+QuicErrorCode QuicCryptoClientConfig::ProcessServerConfigUpdate(
+    const CryptoHandshakeMessage& server_config_update,
+    QuicWallTime now,
+    CachedState* cached,
+    QuicCryptoNegotiatedParameters* out_params,
+    string* error_details) {
+  DCHECK(error_details != NULL);
+
+  if (server_config_update.tag() != kSCUP) {
+    *error_details = "ServerConfigUpdate must have kSCUP tag.";
+    return QUIC_INVALID_CRYPTO_MESSAGE_TYPE;
+  }
+
+  return CacheNewServerConfig(server_config_update, now,
+                              out_params->cached_certs, cached, error_details);
 }
 
 ProofVerifier* QuicCryptoClientConfig::proof_verifier() const {

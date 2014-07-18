@@ -80,8 +80,9 @@ QuicAckFrame MakeAckFrameWithNackRanges(
 
 TestSession::TestSession(QuicConnection* connection,
                          const QuicConfig& config)
-  : QuicSession(connection, config),
-    crypto_stream_(NULL) {
+    : QuicSession(connection, config),
+      crypto_stream_(NULL) {
+  InitializeSession();
 }
 
 TestSession::~TestSession() {}

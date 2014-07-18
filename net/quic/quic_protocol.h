@@ -528,12 +528,14 @@ enum QuicErrorCode {
   // A handshake message arrived, but we are still validating the
   // previous handshake message.
   QUIC_CRYPTO_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO = 54,
+  // A server config update arrived before the handshake is complete.
+  QUIC_CRYPTO_UPDATE_BEFORE_HANDSHAKE_COMPLETE = 65,
   // This connection involved a version negotiation which appears to have been
   // tampered with.
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 65,
+  QUIC_LAST_ERROR = 66,
 };
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {

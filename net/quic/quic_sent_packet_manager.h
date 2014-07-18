@@ -52,6 +52,24 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
     virtual void OnSpuriousPacketRetransmition(
         TransmissionType transmission_type,
         QuicByteCount byte_size) {}
+
+    virtual void OnSentPacket(
+        QuicPacketSequenceNumber sequence_number,
+        QuicTime sent_time,
+        QuicByteCount bytes) {}
+
+    virtual void OnRetransmittedPacket(
+        QuicPacketSequenceNumber old_sequence_number,
+        QuicPacketSequenceNumber new_sequence_number,
+        TransmissionType transmission_type,
+        QuicTime time) {}
+
+    virtual void OnIncomingAck(
+        const ReceivedPacketInfo& received_info,
+        QuicTime ack_receive_time,
+        QuicPacketSequenceNumber largest_observed,
+        bool largest_observed_acked,
+        QuicPacketSequenceNumber least_unacked_sent_packet) {}
   };
 
   // Struct to store the pending retransmission information.
@@ -172,6 +190,11 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // not the *available* window.  Some send algorithms may not use a congestion
   // window and will return 0.
   QuicByteCount GetCongestionWindow() const;
+
+  // Returns the size of the slow start congestion window in bytes,
+  // aka ssthresh.  Some send algorithms do not define a slow start
+  // threshold and will return 0.
+  QuicByteCount GetSlowStartThreshold() const;
 
   // Enables pacing if it has not already been enabled, and if
   // FLAGS_enable_quic_pacing is set.

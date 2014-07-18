@@ -38,11 +38,10 @@ class ToolsQuicClientSessionTest
       : connection_(new PacketSavingConnection(false,
                                                SupportedVersions(GetParam()))) {
     crypto_config_.SetDefaults();
-    session_.reset(new QuicClientSession(
+    session_.reset(new QuicClientSession(DefaultQuicConfig(), connection_));
+    session_->InitializeSession(
         QuicServerId(kServerHostname, kPort, false, PRIVACY_MODE_DISABLED),
-        DefaultQuicConfig(),
-        connection_,
-        &crypto_config_));
+        &crypto_config_);
     session_->config()->SetDefaults();
   }
 

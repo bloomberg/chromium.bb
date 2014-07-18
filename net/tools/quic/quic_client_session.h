@@ -25,10 +25,7 @@ namespace tools {
 
 class QuicClientSession : public QuicClientSessionBase {
  public:
-  QuicClientSession(const QuicServerId& server_id,
-                    const QuicConfig& config,
-                    QuicConnection* connection,
-                    QuicCryptoClientConfig* crypto_config);
+  QuicClientSession(const QuicConfig& config, QuicConnection* connection);
   virtual ~QuicClientSession();
 
   // QuicClientSessionBase methods:
@@ -36,6 +33,9 @@ class QuicClientSession : public QuicClientSessionBase {
       const QuicCryptoClientConfig::CachedState& cached) OVERRIDE;
   virtual void OnProofVerifyDetailsAvailable(
       const ProofVerifyDetails& verify_details) OVERRIDE;
+
+  void InitializeSession(const QuicServerId& server_id,
+                         QuicCryptoClientConfig* config);
 
   // QuicSession methods:
   virtual QuicSpdyClientStream* CreateOutgoingDataStream() OVERRIDE;
@@ -55,7 +55,7 @@ class QuicClientSession : public QuicClientSessionBase {
   virtual QuicDataStream* CreateIncomingDataStream(QuicStreamId id) OVERRIDE;
 
  private:
-  QuicCryptoClientStream crypto_stream_;
+  scoped_ptr<QuicCryptoClientStream> crypto_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClientSession);
 };

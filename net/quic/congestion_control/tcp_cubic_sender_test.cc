@@ -207,6 +207,9 @@ TEST_F(TcpCubicSenderTest, ExponentialSlowStart) {
 }
 
 TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
+  EXPECT_EQ(kDefaultMaxCongestionWindowTCP * kDefaultTCPMSS,
+            sender_->GetSlowStartThreshold());
+
   // Make sure that we fall out of slow start when we send ACK train longer
   // than half the RTT, in this test case 30ms, which is more than 30 calls to
   // Ack2Packets in one round.
@@ -238,8 +241,10 @@ TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
   }
   SendAvailableSendWindow();
   AckNPackets(2);
+  QuicByteCount expected_ss_tresh = expected_send_window;
   expected_send_window += kDefaultTCPMSS;
   EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+  EXPECT_EQ(expected_ss_tresh, sender_->GetSlowStartThreshold());
   EXPECT_EQ(140u, sender_->slowstart_threshold());
 
   // Now RTO and ensure slow start gets reset.

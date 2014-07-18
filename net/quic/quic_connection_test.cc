@@ -3563,6 +3563,10 @@ TEST_P(QuicConnectionTest, CheckSendStats) {
   EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillOnce(
       Return(QuicBandwidth::Zero()));
 
+  const uint32 kSlowStartThreshold = 23u;
+  EXPECT_CALL(*send_algorithm_, GetSlowStartThreshold()).WillOnce(
+      Return(kSlowStartThreshold));
+
   const QuicConnectionStats& stats = connection_.GetStats();
   EXPECT_EQ(3 * first_packet_size + 2 * second_packet_size - kQuicVersionSize,
             stats.bytes_sent);
@@ -3571,6 +3575,9 @@ TEST_P(QuicConnectionTest, CheckSendStats) {
             stats.bytes_retransmitted);
   EXPECT_EQ(3u, stats.packets_retransmitted);
   EXPECT_EQ(1u, stats.rto_count);
+  EXPECT_EQ(kMaxPacketSize, stats.congestion_window);
+  EXPECT_EQ(kSlowStartThreshold, stats.slow_start_threshold);
+  EXPECT_EQ(kDefaultMaxPacketSize, stats.max_packet_size);
 }
 
 TEST_P(QuicConnectionTest, CheckReceiveStats) {
@@ -3585,6 +3592,9 @@ TEST_P(QuicConnectionTest, CheckReceiveStats) {
 
   EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillOnce(
       Return(QuicBandwidth::Zero()));
+  const uint32 kSlowStartThreshold = 23u;
+  EXPECT_CALL(*send_algorithm_, GetSlowStartThreshold()).WillOnce(
+      Return(kSlowStartThreshold));
 
   const QuicConnectionStats& stats = connection_.GetStats();
   EXPECT_EQ(received_bytes, stats.bytes_received);
@@ -3592,6 +3602,8 @@ TEST_P(QuicConnectionTest, CheckReceiveStats) {
 
   EXPECT_EQ(1u, stats.packets_revived);
   EXPECT_EQ(1u, stats.packets_dropped);
+
+  EXPECT_EQ(kSlowStartThreshold, stats.slow_start_threshold);
 }
 
 TEST_P(QuicConnectionTest, TestFecGroupLimits) {

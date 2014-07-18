@@ -101,4 +101,12 @@ QuicByteCount FixRateSender::GetCongestionWindow() const {
   return 0;
 }
 
+bool FixRateSender::InSlowStart() const {
+  return false;
+}
+
+QuicByteCount FixRateSender::GetSlowStartThreshold() const {
+  return 0;
+}
+
 }  // namespace net

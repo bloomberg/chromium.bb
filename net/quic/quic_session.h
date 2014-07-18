@@ -54,6 +54,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   };
 
   QuicSession(QuicConnection* connection, const QuicConfig& config);
+  void InitializeSession();
 
   virtual ~QuicSession();
 

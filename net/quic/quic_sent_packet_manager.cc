@@ -20,6 +20,11 @@ using std::max;
 using std::min;
 
 namespace net {
+
+// The length of the recent min rtt window in seconds. Windowing is disabled for
+// values less than or equal to 0.
+int32 FLAGS_quic_recent_min_rtt_window_s = 60;
+
 namespace {
 static const int kDefaultRetransmissionTimeMs = 500;
 // TCP RFC calls for 1 second RTO however Linux differs from this default and
@@ -43,6 +48,8 @@ static const size_t kNumMinRttSamplesAfterQuiescence = 2;
 
 // Number of unpaced packets to send after quiescence.
 static const size_t kInitialUnpacedBurst = 10;
+
+// Use a 1 minute window for Recent Min RTT with BBR.
 
 bool HasCryptoHandshake(const TransmissionInfo& transmission_info) {
   if (transmission_info.retransmittable_frames == NULL) {
@@ -91,6 +98,10 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   // TODO(ianswett): BBR is currently a server only feature.
   if (config.HasReceivedConnectionOptions() &&
       ContainsQuicTag(config.ReceivedConnectionOptions(), kTBBR)) {
+    if (FLAGS_quic_recent_min_rtt_window_s > 0) {
+      rtt_stats_.set_recent_min_rtt_window(
+          QuicTime::Delta::FromSeconds(FLAGS_quic_recent_min_rtt_window_s));
+    }
     send_algorithm_.reset(
         SendAlgorithmInterface::Create(clock_, &rtt_stats_, kTCPBBR, stats_));
   }
@@ -144,6 +155,13 @@ void QuicSentPacketManager::OnRetransmittedPacket(
   unacked_packets_.OnRetransmittedPacket(old_sequence_number,
                                          new_sequence_number,
                                          transmission_type);
+
+  if (debug_delegate_ != NULL) {
+    debug_delegate_->OnRetransmittedPacket(old_sequence_number,
+        new_sequence_number,
+        transmission_type,
+        clock_->ApproximateNow());
+  }
 }
 
 void QuicSentPacketManager::OnIncomingAck(
@@ -176,6 +194,14 @@ void QuicSentPacketManager::OnIncomingAck(
     consecutive_rto_count_ = 0;
     consecutive_tlp_count_ = 0;
     consecutive_crypto_retransmission_count_ = 0;
+  }
+
+  if (debug_delegate_ != NULL) {
+    debug_delegate_->OnIncomingAck(received_info,
+        ack_receive_time,
+        largest_observed_,
+        largest_observed_acked,
+        GetLeastUnackedSentPacket());
   }
 }
 
@@ -487,6 +513,10 @@ bool QuicSentPacketManager::OnPacketSent(
                                     has_retransmittable_data);
   unacked_packets_.SetSent(sequence_number, sent_time, bytes, in_flight);
 
+  if (debug_delegate_ != NULL) {
+    debug_delegate_->OnSentPacket(sequence_number, sent_time, bytes);
+  }
+
   // Reset the retransmission timer anytime a pending packet is sent.
   return in_flight;
 }
@@ -796,6 +826,10 @@ bool QuicSentPacketManager::HasReliableBandwidthEstimate() const {
 
 QuicByteCount QuicSentPacketManager::GetCongestionWindow() const {
   return send_algorithm_->GetCongestionWindow();
+}
+
+QuicByteCount QuicSentPacketManager::GetSlowStartThreshold() const {
+  return send_algorithm_->GetSlowStartThreshold();
 }
 
 void QuicSentPacketManager::MaybeEnablePacing() {

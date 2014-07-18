@@ -14,16 +14,20 @@ using std::string;
 namespace net {
 namespace tools {
 
-QuicClientSession::QuicClientSession(
-    const QuicServerId& server_id,
-    const QuicConfig& config,
-    QuicConnection* connection,
-    QuicCryptoClientConfig* crypto_config)
-    : QuicClientSessionBase(connection, config),
-      crypto_stream_(server_id, this, NULL, crypto_config) {
+QuicClientSession::QuicClientSession(const QuicConfig& config,
+                                     QuicConnection* connection)
+    : QuicClientSessionBase(connection, config) {
 }
 
 QuicClientSession::~QuicClientSession() {
+}
+
+void QuicClientSession::InitializeSession(
+    const QuicServerId& server_id,
+    QuicCryptoClientConfig* crypto_config) {
+  QuicClientSessionBase::InitializeSession();
+  crypto_stream_.reset(
+      new QuicCryptoClientStream(server_id, this, NULL, crypto_config));
 }
 
 void QuicClientSession::OnProofValid(
@@ -35,7 +39,7 @@ void QuicClientSession::OnProofVerifyDetailsAvailable(
 }
 
 QuicSpdyClientStream* QuicClientSession::CreateOutgoingDataStream() {
-  if (!crypto_stream_.encryption_established()) {
+  if (!crypto_stream_->encryption_established()) {
     DVLOG(1) << "Encryption not active so no outgoing stream created.";
     return NULL;
   }
@@ -56,15 +60,16 @@ QuicSpdyClientStream* QuicClientSession::CreateOutgoingDataStream() {
 }
 
 QuicCryptoClientStream* QuicClientSession::GetCryptoStream() {
-  return &crypto_stream_;
+  return crypto_stream_.get();
 }
 
 bool QuicClientSession::CryptoConnect() {
-  return crypto_stream_.CryptoConnect();
+  DCHECK(flow_controller());
+  return crypto_stream_->CryptoConnect();
 }
 
 int QuicClientSession::GetNumSentClientHellos() const {
-  return crypto_stream_.num_sent_client_hellos();
+  return crypto_stream_->num_sent_client_hellos();
 }
 
 QuicDataStream* QuicClientSession::CreateIncomingDataStream(

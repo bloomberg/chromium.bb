@@ -57,10 +57,6 @@ TcpCubicSender::~TcpCubicSender() {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.FinalTcpCwnd", congestion_window_);
 }
 
-bool TcpCubicSender::InSlowStart() const {
-  return congestion_window_ < slowstart_threshold_;
-}
-
 void TcpCubicSender::SetFromConfig(const QuicConfig& config, bool is_server) {
   if (is_server && config.HasReceivedInitialCongestionWindow()) {
     // Set the initial window size.
@@ -211,6 +207,14 @@ QuicTime::Delta TcpCubicSender::RetransmissionDelay() const {
 
 QuicByteCount TcpCubicSender::GetCongestionWindow() const {
   return congestion_window_ * kMaxSegmentSize;
+}
+
+bool TcpCubicSender::InSlowStart() const {
+  return congestion_window_ < slowstart_threshold_;
+}
+
+QuicByteCount TcpCubicSender::GetSlowStartThreshold() const {
+  return slowstart_threshold_ * kMaxSegmentSize;
 }
 
 bool TcpCubicSender::IsCwndLimited(QuicByteCount bytes_in_flight) const {

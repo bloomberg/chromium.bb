@@ -95,7 +95,27 @@ QuicCryptoClientStream::~QuicCryptoClientStream() {
 
 void QuicCryptoClientStream::OnHandshakeMessage(
     const CryptoHandshakeMessage& message) {
+  DVLOG(1) << "Client: Received " << message.DebugString();
+
   QuicCryptoStream::OnHandshakeMessage(message);
+
+  if (message.tag() == kSCUP) {
+    if (!handshake_confirmed()) {
+      CloseConnection(QUIC_CRYPTO_UPDATE_BEFORE_HANDSHAKE_COMPLETE);
+      return;
+    }
+
+    // |message| is an update from the server, so we treat it differently from a
+    // handshake message.
+    HandleServerConfigUpdateMessage(&message);
+    return;
+  }
+
+  // Do not process handshake messages after the handshake is confirmed.
+  if (handshake_confirmed()) {
+    CloseConnection(QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE);
+    return;
+  }
 
   DoHandshakeLoop(&message);
 }
@@ -114,6 +134,26 @@ bool QuicCryptoClientStream::WasChannelIDSent() const {
   return channel_id_sent_;
 }
 
+void QuicCryptoClientStream::HandleServerConfigUpdateMessage(
+    const CryptoHandshakeMessage* in) {
+  DCHECK(in->tag() == kSCUP);
+  string error_details;
+  QuicCryptoClientConfig::CachedState* cached =
+      crypto_config_->LookupOrCreate(server_id_);
+  QuicErrorCode error = crypto_config_->ProcessServerConfigUpdate(
+      *in,
+      session()->connection()->clock()->WallNow(),
+      cached,
+      &crypto_negotiated_params_,
+      &error_details);
+
+  if (error != QUIC_NO_ERROR) {
+    CloseConnectionWithDetails(
+        error, "Server config update invalid: " + error_details);
+    return;
+  }
+}
+
 // kMaxClientHellos is the maximum number of times that we'll send a client
 // hello. The value 3 accounts for:
 //   * One failure due to an incorrect or missing source-address token.
@@ -128,10 +168,6 @@ void QuicCryptoClientStream::DoHandshakeLoop(
   string error_details;
   QuicCryptoClientConfig::CachedState* cached =
       crypto_config_->LookupOrCreate(server_id_);
-
-  if (in != NULL) {
-    DVLOG(1) << "Client: Received " << in->DebugString();
-  }
 
   for (;;) {
     const State state = next_state_;
