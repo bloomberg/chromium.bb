@@ -17,6 +17,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/font_render_params.h"
+#include "ui/gfx/linux_font_delegate.h"
 #include "ui/gfx/platform_font_pango.h"
 #include "ui/gfx/text_utils.h"
 
@@ -84,38 +85,24 @@ cairo_font_options_t* CreateCairoFontOptions(const FontRenderParams& params) {
   return cairo_font_options;
 }
 
-// Returns the resolution (DPI) used by pango. A negative value means the
-// resolution hasn't been set.
-double GetPangoResolution() {
-  static double resolution;
-  static bool determined_resolution = false;
-  if (!determined_resolution) {
-    determined_resolution = true;
-    PangoContext* default_context = GetPangoContext();
-    resolution = pango_cairo_context_get_resolution(default_context);
-    g_object_unref(default_context);
+// Returns the DPI that should be used by Pango.
+double GetPangoDPI() {
+  static double dpi = -1.0;
+  if (dpi < 0.0) {
+    const gfx::LinuxFontDelegate* delegate = gfx::LinuxFontDelegate::instance();
+    if (delegate)
+      dpi = delegate->GetFontDPI();
+    if (dpi <= 0.0)
+      dpi = 96.0;
   }
-  return resolution;
+  return dpi;
 }
 
 // Returns the number of pixels in a point.
 // - multiply a point size by this to get pixels ("device units")
 // - divide a pixel size by this to get points
-float GetPixelsInPoint() {
-  static float pixels_in_point = 1.0;
-  static bool determined_value = false;
-
-  if (!determined_value) {
-    // http://goo.gl/UIh5m: "This is a scale factor between points specified in
-    // a PangoFontDescription and Cairo units.  The default value is 96, meaning
-    // that a 10 point font will be 13 units high. (10 * 96. / 72. = 13.3)."
-    double pango_dpi = GetPangoResolution();
-    if (pango_dpi <= 0)
-      pango_dpi = 96.0;
-    pixels_in_point = pango_dpi / 72.0;  // 72 points in an inch
-    determined_value = true;
-  }
-
+double GetPixelsInPoint() {
+  static double pixels_in_point = GetPangoDPI() / 72.0;  // 72 points in an inch
   return pixels_in_point;
 }
 
@@ -173,14 +160,10 @@ void SetUpPangoLayout(
     pango_layout_set_width(layout, -1);
   }
 
-  // Set the resolution to match that used by Gtk. If we don't set the
-  // resolution and the resolution differs from the default, Gtk and Chrome end
-  // up drawing at different sizes.
-  double resolution = GetPangoResolution();
-  if (resolution > 0) {
-    pango_cairo_context_set_resolution(pango_layout_get_context(layout),
-                                       resolution);
-  }
+  // Set the layout's resolution to match the resolution used to convert from
+  // points to pixels.
+  pango_cairo_context_set_resolution(pango_layout_get_context(layout),
+                                     GetPangoDPI());
 
   // Set text and accelerator character if needed.
   if (flags & Canvas::SHOW_PREFIX) {

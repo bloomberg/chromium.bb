@@ -42,6 +42,10 @@ class GFX_EXPORT LinuxFontDelegate {
   // Returns the Pango description for the default UI font. The format matches
   // that returned by pango_font_description_to_string().
   virtual std::string GetDefaultFontDescription() const = 0;
+
+  // Returns the resolution (as pixels-per-inch) that should be used to convert
+  // font sizes between points and pixels. -1 is returned if the DPI is unset.
+  virtual double GetFontDPI() const = 0;
 };
 
 }  // namespace gfx

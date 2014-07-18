@@ -659,6 +659,16 @@ std::string Gtk2UI::GetDefaultFontDescription() const {
   return default_font_description_;
 }
 
+double Gtk2UI::GetFontDPI() const {
+  GtkSettings* gtk_settings = gtk_settings_get_default();
+  CHECK(gtk_settings);
+  gint dpi = -1;
+  g_object_get(gtk_settings, "gtk-xft-dpi", &dpi, NULL);
+
+  // GTK multiplies the DPI by 1024 before storing it.
+  return (dpi > 0) ? dpi / 1024.0 : dpi;
+}
+
 ui::SelectFileDialog* Gtk2UI::CreateSelectFileDialog(
     ui::SelectFileDialog::Listener* listener,
     ui::SelectFilePolicy* policy) const {

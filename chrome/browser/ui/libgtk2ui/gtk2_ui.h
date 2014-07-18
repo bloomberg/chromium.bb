@@ -70,6 +70,7 @@ class Gtk2UI : public views::LinuxUI {
   virtual gfx::FontRenderParams::SubpixelRendering
       GetSubpixelRenderingStyle() const OVERRIDE;
   virtual std::string GetDefaultFontDescription() const OVERRIDE;
+  virtual double GetFontDPI() const OVERRIDE;
 
   // ui::LinuxShellDialog:
   virtual ui::SelectFileDialog* CreateSelectFileDialog(
