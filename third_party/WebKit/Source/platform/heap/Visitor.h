@@ -586,8 +586,9 @@ template<typename T> bool ObjectAliveTrait<T>::isAlive(Visitor* visitor, T* obj)
 
 class GarbageCollectedMixin {
 public:
-    virtual void adjustAndMark(Visitor*) const = 0;
-    virtual bool isAlive(Visitor*) const = 0;
+    virtual void adjustAndMark(Visitor*) const { };
+    virtual bool isAlive(Visitor*) const { return true; };
+    virtual void trace(Visitor*) { }
 };
 
 #define USING_GARBAGE_COLLECTED_MIXIN(TYPE) \

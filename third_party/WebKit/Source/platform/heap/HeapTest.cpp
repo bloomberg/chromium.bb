@@ -4841,4 +4841,44 @@ TEST(HeapTest, ObjectDeadBit)
     DeadBitTester::test();
 }
 
+class MixinWithGarbageCollectionInConstructor : public GarbageCollectedMixin {
+public:
+    MixinWithGarbageCollectionInConstructor()
+    {
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+    }
+};
+
+class ClassWithGarbageCollectingMixinConstructor
+    : public GarbageCollected<ClassWithGarbageCollectingMixinConstructor>
+    , public MixinWithGarbageCollectionInConstructor {
+    USING_GARBAGE_COLLECTED_MIXIN(ClassWithGarbageCollectingMixinConstructor);
+public:
+    ClassWithGarbageCollectingMixinConstructor() : m_wrapper(IntWrapper::create(32))
+    {
+    }
+
+    virtual void trace(Visitor* visitor)
+    {
+        visitor->trace(m_wrapper);
+    }
+
+    void verify()
+    {
+        EXPECT_EQ(32, m_wrapper->value());
+    }
+
+private:
+    Member<IntWrapper> m_wrapper;
+};
+
+// Regression test for out of bounds call through vtable.
+// Passes if it doesn't crash.
+TEST(HeapTest, GarbageCollectionDuringMixinConstruction)
+{
+    ClassWithGarbageCollectingMixinConstructor* a =
+        new ClassWithGarbageCollectingMixinConstructor();
+    a->verify();
+}
+
 } // WebCore namespace

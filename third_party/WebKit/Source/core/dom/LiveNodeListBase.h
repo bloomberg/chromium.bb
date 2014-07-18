@@ -94,7 +94,7 @@ protected:
     template <class NodeListType>
     static Element* traverseMatchingElementsBackwardToOffset(const NodeListType&, unsigned offset, Element& currentElement, unsigned& currentOffset);
 
-    void trace(Visitor* visitor) { visitor->trace(m_ownerNode); }
+    virtual void trace(Visitor* visitor) { visitor->trace(m_ownerNode); }
 
 private:
     RefPtrWillBeMember<ContainerNode> m_ownerNode; // Cannot be null.

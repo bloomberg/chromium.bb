@@ -350,6 +350,8 @@ public:
     virtual void stop() OVERRIDE;
 
     void setSavingImage(bool isSaving) { m_savingImage = isSaving; }
+
+    virtual void trace(Visitor* visitor) OVERRIDE { CanvasRenderingContext::trace(visitor); }
 protected:
     friend class WebGLDrawBuffers;
     friend class WebGLFramebuffer;

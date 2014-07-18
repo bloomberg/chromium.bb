@@ -216,7 +216,10 @@ class HeapSupplement : public SupplementBase<T, true> { };
 
 // FIXME: Oilpan: Move GarbageCollectedMixin to SupplementableBase<T, true> once PersistentHeapSupplementable is removed again.
 template<typename T>
-class HeapSupplementable : public SupplementableBase<T, true>, public GarbageCollectedMixin { };
+class GC_PLUGIN_IGNORE("http://crbug.com/395036") HeapSupplementable : public SupplementableBase<T, true>, public GarbageCollectedMixin {
+public:
+    virtual void trace(Visitor* visitor) { SupplementableBase<T, true>::trace(visitor); }
+};
 
 template<typename T>
 class PersistentHeapSupplementable : public SupplementableBase<T, true> {

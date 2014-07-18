@@ -56,7 +56,6 @@ public:
     virtual void boundaryEventOccurred(PlatformSpeechSynthesisUtterance*, SpeechBoundary, unsigned charIndex) = 0;
     virtual void voicesDidChange() = 0;
 
-    virtual void trace(Visitor*) { }
 protected:
     virtual ~PlatformSpeechSynthesizerClient() { }
 };
