@@ -494,7 +494,7 @@ static void appendPathCommandAndPoints(PathApplyInfo* info, const String& comman
     info->array->addItem(JSONString::create(command));
     for (unsigned i = 0; i < length; i++) {
         point = info->shapeOutsideInfo->shapeToRendererPoint(points[i]);
-        point = info->view->contentsToRootView(roundedIntPoint(info->renderer->localToAbsolute(point))) + info->rootView->scrollOffset();
+        point = info->view->contentsToRootView(roundedIntPoint(info->renderer->localToAbsolute(point)));
         info->array->addItem(JSONBasicValue::create(point.x()));
         info->array->addItem(JSONBasicValue::create(point.y()));
     }
