@@ -27,7 +27,6 @@ class URLRequestContext;
 namespace content {
 
 class IndexedDBBackingStore;
-class IndexedDBContextImpl;
 struct IndexedDBPendingConnection;
 
 class CONTENT_EXPORT IndexedDBFactory
@@ -36,52 +35,53 @@ class CONTENT_EXPORT IndexedDBFactory
   typedef std::multimap<GURL, IndexedDBDatabase*> OriginDBMap;
   typedef OriginDBMap::const_iterator OriginDBMapIterator;
 
-  explicit IndexedDBFactory(IndexedDBContextImpl* context);
+  virtual void ReleaseDatabase(const IndexedDBDatabase::Identifier& identifier,
+                               bool forcedClose) = 0;
 
-  void ReleaseDatabase(const IndexedDBDatabase::Identifier& identifier,
-                       bool forcedClose);
+  virtual void GetDatabaseNames(scoped_refptr<IndexedDBCallbacks> callbacks,
+                                const GURL& origin_url,
+                                const base::FilePath& data_directory,
+                                net::URLRequestContext* request_context) = 0;
+  virtual void Open(const base::string16& name,
+                    const IndexedDBPendingConnection& connection,
+                    net::URLRequestContext* request_context,
+                    const GURL& origin_url,
+                    const base::FilePath& data_directory) = 0;
 
-  void GetDatabaseNames(scoped_refptr<IndexedDBCallbacks> callbacks,
-                        const GURL& origin_url,
-                        const base::FilePath& data_directory,
-                        net::URLRequestContext* request_context);
-  void Open(const base::string16& name,
-            const IndexedDBPendingConnection& connection,
-            net::URLRequestContext* request_context,
-            const GURL& origin_url,
-            const base::FilePath& data_directory);
+  virtual void DeleteDatabase(const base::string16& name,
+                              net::URLRequestContext* request_context,
+                              scoped_refptr<IndexedDBCallbacks> callbacks,
+                              const GURL& origin_url,
+                              const base::FilePath& data_directory) = 0;
 
-  void DeleteDatabase(const base::string16& name,
-                      net::URLRequestContext* request_context,
-                      scoped_refptr<IndexedDBCallbacks> callbacks,
-                      const GURL& origin_url,
-                      const base::FilePath& data_directory);
+  virtual void HandleBackingStoreFailure(const GURL& origin_url) = 0;
+  virtual void HandleBackingStoreCorruption(
+      const GURL& origin_url,
+      const IndexedDBDatabaseError& error) = 0;
 
-  void HandleBackingStoreFailure(const GURL& origin_url);
-  void HandleBackingStoreCorruption(const GURL& origin_url,
-                                    const IndexedDBDatabaseError& error);
+  virtual std::pair<OriginDBMapIterator, OriginDBMapIterator>
+      GetOpenDatabasesForOrigin(const GURL& origin_url) const = 0;
 
-  std::pair<OriginDBMapIterator, OriginDBMapIterator> GetOpenDatabasesForOrigin(
-      const GURL& origin_url) const;
-
-  void ForceClose(const GURL& origin_url);
+  virtual void ForceClose(const GURL& origin_url) = 0;
 
   // Called by the IndexedDBContext destructor so the factory can do cleanup.
-  void ContextDestroyed();
+  virtual void ContextDestroyed() = 0;
 
   // Called by the IndexedDBActiveBlobRegistry.
   virtual void ReportOutstandingBlobs(const GURL& origin_url,
-                                      bool blobs_outstanding);
+                                      bool blobs_outstanding) = 0;
 
   // Called by an IndexedDBDatabase when it is actually deleted.
-  void DatabaseDeleted(const IndexedDBDatabase::Identifier& identifier);
+  virtual void DatabaseDeleted(
+      const IndexedDBDatabase::Identifier& identifier) = 0;
 
-  size_t GetConnectionCount(const GURL& origin_url) const;
+  virtual size_t GetConnectionCount(const GURL& origin_url) const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<IndexedDBFactory>;
 
-  virtual ~IndexedDBFactory();
+  IndexedDBFactory() {}
+  virtual ~IndexedDBFactory() {}
 
   virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
       const GURL& origin_url,
@@ -90,7 +90,7 @@ class CONTENT_EXPORT IndexedDBFactory
       blink::WebIDBDataLoss* data_loss,
       std::string* data_loss_reason,
       bool* disk_full,
-      leveldb::Status* status);
+      leveldb::Status* status) = 0;
 
   virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStoreHelper(
       const GURL& origin_url,
@@ -100,54 +100,9 @@ class CONTENT_EXPORT IndexedDBFactory
       std::string* data_loss_message,
       bool* disk_full,
       bool first_time,
-      leveldb::Status* status);
-
-  void ReleaseBackingStore(const GURL& origin_url, bool immediate);
-  void CloseBackingStore(const GURL& origin_url);
-  IndexedDBContextImpl* context() const { return context_; }
+      leveldb::Status* status) = 0;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest,
-                           BackingStoreReleasedOnForcedClose);
-  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest,
-                           BackingStoreReleaseDelayedOnClose);
-  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest, DatabaseFailedOpen);
-  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest,
-                           DeleteDatabaseClosesBackingStore);
-  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest,
-                           ForceCloseReleasesBackingStore);
-  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest,
-                           GetDatabaseNamesClosesBackingStore);
-  FRIEND_TEST_ALL_PREFIXES(IndexedDBTest,
-                           ForceCloseOpenDatabasesOnCommitFailure);
-
-  // Called internally after a database is closed, with some delay. If this
-  // factory has the last reference, it will be released.
-  void MaybeCloseBackingStore(const GURL& origin_url);
-  bool HasLastBackingStoreReference(const GURL& origin_url) const;
-
-  // Testing helpers, so unit tests don't need to grovel through internal state.
-  bool IsDatabaseOpen(const GURL& origin_url,
-                      const base::string16& name) const;
-  bool IsBackingStoreOpen(const GURL& origin_url) const;
-  bool IsBackingStorePendingClose(const GURL& origin_url) const;
-  void RemoveDatabaseFromMaps(const IndexedDBDatabase::Identifier& identifier);
-
-  IndexedDBContextImpl* context_;
-
-  typedef std::map<IndexedDBDatabase::Identifier,
-                   IndexedDBDatabase*> IndexedDBDatabaseMap;
-  IndexedDBDatabaseMap database_map_;
-  OriginDBMap origin_dbs_;
-
-  typedef std::map<GURL, scoped_refptr<IndexedDBBackingStore> >
-      IndexedDBBackingStoreMap;
-  IndexedDBBackingStoreMap backing_store_map_;
-
-  std::set<scoped_refptr<IndexedDBBackingStore> > session_only_backing_stores_;
-  IndexedDBBackingStoreMap backing_stores_with_active_blobs_;
-  std::set<GURL> backends_opened_since_boot_;
-
   DISALLOW_COPY_AND_ASSIGN(IndexedDBFactory);
 };
 

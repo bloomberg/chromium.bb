@@ -14,6 +14,7 @@
 #include "base/task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
+#include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/browser/indexed_db/leveldb/leveldb_factory.h"
@@ -173,10 +174,10 @@ class TestableIndexedDBBackingStore : public IndexedDBBackingStore {
   DISALLOW_COPY_AND_ASSIGN(TestableIndexedDBBackingStore);
 };
 
-class TestIDBFactory : public IndexedDBFactory {
+class TestIDBFactory : public IndexedDBFactoryImpl {
  public:
   explicit TestIDBFactory(IndexedDBContextImpl* idb_context)
-      : IndexedDBFactory(idb_context) {}
+      : IndexedDBFactoryImpl(idb_context) {}
 
   scoped_refptr<TestableIndexedDBBackingStore> OpenBackingStoreForTest(
       const GURL& origin,

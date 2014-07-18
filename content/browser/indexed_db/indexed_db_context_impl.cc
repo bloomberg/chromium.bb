@@ -23,7 +23,7 @@
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
-#include "content/browser/indexed_db/indexed_db_factory.h"
+#include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_quota_client.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
@@ -123,7 +123,7 @@ IndexedDBFactory* IndexedDBContextImpl::GetIDBFactory() {
     // Prime our cache of origins with existing databases so we can
     // detect when dbs are newly created.
     GetOriginSet();
-    factory_ = new IndexedDBFactory(this);
+    factory_ = new IndexedDBFactoryImpl(this);
   }
   return factory_;
 }

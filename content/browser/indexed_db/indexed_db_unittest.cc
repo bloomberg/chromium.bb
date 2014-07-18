@@ -9,6 +9,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
+#include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "content/public/browser/storage_partition.h"
@@ -247,7 +248,8 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
   scoped_refptr<IndexedDBContextImpl> context = new IndexedDBContextImpl(
       temp_dir.path(), special_storage_policy_, NULL, task_runner_);
 
-  scoped_refptr<IndexedDBFactory> factory = context->GetIDBFactory();
+  scoped_refptr<IndexedDBFactoryImpl> factory =
+      static_cast<IndexedDBFactoryImpl*>(context->GetIDBFactory());
 
   scoped_refptr<MockIndexedDBCallbacks> callbacks(new MockIndexedDBCallbacks());
   scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(

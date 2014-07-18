@@ -7,7 +7,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
-#include "content/browser/indexed_db/indexed_db_factory.h"
+#include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,9 +15,9 @@ namespace content {
 
 namespace {
 
-class MockIDBFactory : public IndexedDBFactory {
+class MockIDBFactory : public IndexedDBFactoryImpl {
  public:
-  MockIDBFactory() : IndexedDBFactory(NULL), duplicate_calls_(false) {}
+  MockIDBFactory() : IndexedDBFactoryImpl(NULL), duplicate_calls_(false) {}
 
   virtual void ReportOutstandingBlobs(const GURL& origin_url,
                                       bool blobs_outstanding) OVERRIDE {

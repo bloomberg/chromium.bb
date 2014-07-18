@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/indexed_db_factory.h"
+#include "content/browser/indexed_db/indexed_db_factory_impl.h"
 
 #include <vector>
 
@@ -24,12 +24,14 @@ namespace content {
 
 const int64 kBackingStoreGracePeriodMs = 2000;
 
-IndexedDBFactory::IndexedDBFactory(IndexedDBContextImpl* context)
-    : context_(context) {}
+IndexedDBFactoryImpl::IndexedDBFactoryImpl(IndexedDBContextImpl* context)
+    : context_(context) {
+}
 
-IndexedDBFactory::~IndexedDBFactory() {}
+IndexedDBFactoryImpl::~IndexedDBFactoryImpl() {
+}
 
-void IndexedDBFactory::RemoveDatabaseFromMaps(
+void IndexedDBFactoryImpl::RemoveDatabaseFromMaps(
     const IndexedDBDatabase::Identifier& identifier) {
   IndexedDBDatabaseMap::iterator it = database_map_.find(identifier);
   DCHECK(it != database_map_.end());
@@ -47,10 +49,9 @@ void IndexedDBFactory::RemoveDatabaseFromMaps(
   }
 }
 
-void IndexedDBFactory::ReleaseDatabase(
+void IndexedDBFactoryImpl::ReleaseDatabase(
     const IndexedDBDatabase::Identifier& identifier,
     bool forcedClose) {
-
   DCHECK(!database_map_.find(identifier)->second->backing_store());
 
   RemoveDatabaseFromMaps(identifier);
@@ -61,8 +62,8 @@ void IndexedDBFactory::ReleaseDatabase(
   ReleaseBackingStore(identifier.first, forcedClose);
 }
 
-void IndexedDBFactory::ReleaseBackingStore(const GURL& origin_url,
-                                           bool immediate) {
+void IndexedDBFactoryImpl::ReleaseBackingStore(const GURL& origin_url,
+                                               bool immediate) {
   if (immediate) {
     IndexedDBBackingStoreMap::iterator it =
         backing_stores_with_active_blobs_.find(origin_url);
@@ -90,17 +91,18 @@ void IndexedDBFactory::ReleaseBackingStore(const GURL& origin_url,
   backing_store_map_[origin_url]->close_timer()->Start(
       FROM_HERE,
       base::TimeDelta::FromMilliseconds(kBackingStoreGracePeriodMs),
-      base::Bind(&IndexedDBFactory::MaybeCloseBackingStore, this, origin_url));
+      base::Bind(
+          &IndexedDBFactoryImpl::MaybeCloseBackingStore, this, origin_url));
 }
 
-void IndexedDBFactory::MaybeCloseBackingStore(const GURL& origin_url) {
+void IndexedDBFactoryImpl::MaybeCloseBackingStore(const GURL& origin_url) {
   // Another reference may have opened since the maybe-close was posted, so it
   // is necessary to check again.
   if (HasLastBackingStoreReference(origin_url))
     CloseBackingStore(origin_url);
 }
 
-void IndexedDBFactory::CloseBackingStore(const GURL& origin_url) {
+void IndexedDBFactoryImpl::CloseBackingStore(const GURL& origin_url) {
   IndexedDBBackingStoreMap::iterator it = backing_store_map_.find(origin_url);
   DCHECK(it != backing_store_map_.end());
   // Stop the timer (if it's running) - this may happen if the timer was started
@@ -109,8 +111,8 @@ void IndexedDBFactory::CloseBackingStore(const GURL& origin_url) {
   backing_store_map_.erase(it);
 }
 
-bool IndexedDBFactory::HasLastBackingStoreReference(const GURL& origin_url)
-    const {
+bool IndexedDBFactoryImpl::HasLastBackingStoreReference(
+    const GURL& origin_url) const {
   IndexedDBBackingStore* ptr;
   {
     // Scope so that the implicit scoped_refptr<> is freed.
@@ -122,7 +124,7 @@ bool IndexedDBFactory::HasLastBackingStoreReference(const GURL& origin_url)
   return ptr->HasOneRef();
 }
 
-void IndexedDBFactory::ForceClose(const GURL& origin_url) {
+void IndexedDBFactoryImpl::ForceClose(const GURL& origin_url) {
   std::pair<OriginDBMapIterator, OriginDBMapIterator> range =
       GetOpenDatabasesForOrigin(origin_url);
 
@@ -136,7 +138,7 @@ void IndexedDBFactory::ForceClose(const GURL& origin_url) {
     ReleaseBackingStore(origin_url, true /* immediate */);
 }
 
-void IndexedDBFactory::ContextDestroyed() {
+void IndexedDBFactoryImpl::ContextDestroyed() {
   // Timers on backing stores hold a reference to this factory. When the
   // context (which nominally owns this factory) is destroyed during thread
   // termination the timers must be stopped so that this factory and the
@@ -150,8 +152,8 @@ void IndexedDBFactory::ContextDestroyed() {
   context_ = NULL;
 }
 
-void IndexedDBFactory::ReportOutstandingBlobs(const GURL& origin_url,
-                                              bool blobs_outstanding) {
+void IndexedDBFactoryImpl::ReportOutstandingBlobs(const GURL& origin_url,
+                                                  bool blobs_outstanding) {
   if (!context_)
     return;
   if (blobs_outstanding) {
@@ -171,12 +173,12 @@ void IndexedDBFactory::ReportOutstandingBlobs(const GURL& origin_url,
   }
 }
 
-void IndexedDBFactory::GetDatabaseNames(
+void IndexedDBFactoryImpl::GetDatabaseNames(
     scoped_refptr<IndexedDBCallbacks> callbacks,
     const GURL& origin_url,
     const base::FilePath& data_directory,
     net::URLRequestContext* request_context) {
-  IDB_TRACE("IndexedDBFactory::GetDatabaseNames");
+  IDB_TRACE("IndexedDBFactoryImpl::GetDatabaseNames");
   // TODO(dgrogan): Plumb data_loss back to script eventually?
   blink::WebIDBDataLoss data_loss;
   std::string data_loss_message;
@@ -216,13 +218,13 @@ void IndexedDBFactory::GetDatabaseNames(
   ReleaseBackingStore(origin_url, false /* immediate */);
 }
 
-void IndexedDBFactory::DeleteDatabase(
+void IndexedDBFactoryImpl::DeleteDatabase(
     const base::string16& name,
     net::URLRequestContext* request_context,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     const GURL& origin_url,
     const base::FilePath& data_directory) {
-  IDB_TRACE("IndexedDBFactory::DeleteDatabase");
+  IDB_TRACE("IndexedDBFactoryImpl::DeleteDatabase");
   IndexedDBDatabase::Identifier unique_identifier(origin_url, name);
   IndexedDBDatabaseMap::iterator it = database_map_.find(unique_identifier);
   if (it != database_map_.end()) {
@@ -282,7 +284,7 @@ void IndexedDBFactory::DeleteDatabase(
   ReleaseBackingStore(origin_url, false /* immediate */);
 }
 
-void IndexedDBFactory::DatabaseDeleted(
+void IndexedDBFactoryImpl::DatabaseDeleted(
     const IndexedDBDatabase::Identifier& identifier) {
   // NULL after ContextDestroyed() called, and in some unit tests.
   if (!context_)
@@ -290,7 +292,7 @@ void IndexedDBFactory::DatabaseDeleted(
   context_->DatabaseDeleted(identifier.first);
 }
 
-void IndexedDBFactory::HandleBackingStoreFailure(const GURL& origin_url) {
+void IndexedDBFactoryImpl::HandleBackingStoreFailure(const GURL& origin_url) {
   // NULL after ContextDestroyed() called, and in some unit tests.
   if (!context_)
     return;
@@ -298,7 +300,7 @@ void IndexedDBFactory::HandleBackingStoreFailure(const GURL& origin_url) {
                        IndexedDBContextImpl::FORCE_CLOSE_BACKING_STORE_FAILURE);
 }
 
-void IndexedDBFactory::HandleBackingStoreCorruption(
+void IndexedDBFactoryImpl::HandleBackingStoreCorruption(
     const GURL& origin_url,
     const IndexedDBDatabaseError& error) {
   // Make a copy of origin_url as this is likely a reference to a member of a
@@ -317,17 +319,17 @@ void IndexedDBFactory::HandleBackingStoreCorruption(
     DLOG(ERROR) << "Unable to delete backing store: " << s.ToString();
 }
 
-bool IndexedDBFactory::IsDatabaseOpen(const GURL& origin_url,
-                                      const base::string16& name) const {
+bool IndexedDBFactoryImpl::IsDatabaseOpen(const GURL& origin_url,
+                                          const base::string16& name) const {
   return !!database_map_.count(IndexedDBDatabase::Identifier(origin_url, name));
 }
 
-bool IndexedDBFactory::IsBackingStoreOpen(const GURL& origin_url) const {
+bool IndexedDBFactoryImpl::IsBackingStoreOpen(const GURL& origin_url) const {
   return backing_store_map_.find(origin_url) != backing_store_map_.end();
 }
 
-bool IndexedDBFactory::IsBackingStorePendingClose(const GURL& origin_url)
-    const {
+bool IndexedDBFactoryImpl::IsBackingStorePendingClose(
+    const GURL& origin_url) const {
   IndexedDBBackingStoreMap::const_iterator it =
       backing_store_map_.find(origin_url);
   if (it == backing_store_map_.end())
@@ -335,7 +337,8 @@ bool IndexedDBFactory::IsBackingStorePendingClose(const GURL& origin_url)
   return it->second->close_timer()->IsRunning();
 }
 
-scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStoreHelper(
+scoped_refptr<IndexedDBBackingStore>
+IndexedDBFactoryImpl::OpenBackingStoreHelper(
     const GURL& origin_url,
     const base::FilePath& data_directory,
     net::URLRequestContext* request_context,
@@ -356,7 +359,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStoreHelper(
                                      status);
 }
 
-scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
+scoped_refptr<IndexedDBBackingStore> IndexedDBFactoryImpl::OpenBackingStore(
     const GURL& origin_url,
     const base::FilePath& data_directory,
     net::URLRequestContext* request_context,
@@ -408,12 +411,12 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
   return 0;
 }
 
-void IndexedDBFactory::Open(const base::string16& name,
-                            const IndexedDBPendingConnection& connection,
-                            net::URLRequestContext* request_context,
-                            const GURL& origin_url,
-                            const base::FilePath& data_directory) {
-  IDB_TRACE("IndexedDBFactory::Open");
+void IndexedDBFactoryImpl::Open(const base::string16& name,
+                                const IndexedDBPendingConnection& connection,
+                                net::URLRequestContext* request_context,
+                                const GURL& origin_url,
+                                const base::FilePath& data_directory) {
+  IDB_TRACE("IndexedDBFactoryImpl::Open");
   scoped_refptr<IndexedDBDatabase> database;
   IndexedDBDatabase::Identifier unique_identifier(origin_url, name);
   IndexedDBDatabaseMap::iterator it = database_map_.find(unique_identifier);
@@ -483,13 +486,13 @@ void IndexedDBFactory::Open(const base::string16& name,
   }
 }
 
-std::pair<IndexedDBFactory::OriginDBMapIterator,
-          IndexedDBFactory::OriginDBMapIterator>
-IndexedDBFactory::GetOpenDatabasesForOrigin(const GURL& origin_url) const {
+std::pair<IndexedDBFactoryImpl::OriginDBMapIterator,
+          IndexedDBFactoryImpl::OriginDBMapIterator>
+IndexedDBFactoryImpl::GetOpenDatabasesForOrigin(const GURL& origin_url) const {
   return origin_dbs_.equal_range(origin_url);
 }
 
-size_t IndexedDBFactory::GetConnectionCount(const GURL& origin_url) const {
+size_t IndexedDBFactoryImpl::GetConnectionCount(const GURL& origin_url) const {
   size_t count(0);
 
   std::pair<OriginDBMapIterator, OriginDBMapIterator> range =

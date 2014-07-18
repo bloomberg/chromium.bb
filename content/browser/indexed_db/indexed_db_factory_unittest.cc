@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/indexed_db_factory.h"
+#include "content/browser/indexed_db/indexed_db_factory_impl.h"
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -26,10 +26,10 @@ namespace content {
 
 namespace {
 
-class MockIDBFactory : public IndexedDBFactory {
+class MockIDBFactory : public IndexedDBFactoryImpl {
  public:
   explicit MockIDBFactory(IndexedDBContextImpl* context)
-      : IndexedDBFactory(context) {}
+      : IndexedDBFactoryImpl(context) {}
   scoped_refptr<IndexedDBBackingStore> TestOpenBackingStore(
       const GURL& origin,
       const base::FilePath& data_directory) {
@@ -199,10 +199,10 @@ TEST_F(IndexedDBFactoryTest, RejectLongOrigins) {
   EXPECT_TRUE(diskStore2);
 }
 
-class DiskFullFactory : public IndexedDBFactory {
+class DiskFullFactory : public IndexedDBFactoryImpl {
  public:
   explicit DiskFullFactory(IndexedDBContextImpl* context)
-      : IndexedDBFactory(context) {}
+      : IndexedDBFactoryImpl(context) {}
 
  private:
   virtual ~DiskFullFactory() {}
