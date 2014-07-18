@@ -4,27 +4,8 @@
 
 {
   'conditions': [
-    ['OS=="linux" or OS=="android"', {
-      'variables': {
-        'host_arch': '<!pymod_do_main(detect_host_arch)',
-      },
-      'conditions': [
-        ['host_arch=="x86_64"', {
-          'cflags!': ['-m32', '-march=pentium4', '-msse2', '-mfpmath=sse'],
-          'ldflags!': ['-m32'],
-          'cflags': ['-O2'],
-          'include_dirs!': ['/usr/include32'],
-          'conditions': [
-            ['target_arch=="ia32" and sysroot!=""', {
-              'cflags!': ['--sysroot=<(sysroot)'],
-            }],
-          ],
-        }],
-      ],
-    }],
     ['OS=="android"', {
       'toolsets': ['host'],
-      'defines': ['__ANDROID__'],
     }],
     ['clang==1', {
       'cflags': ['-Wno-tautological-constant-out-of-range-compare'],
