@@ -209,6 +209,7 @@ skia::RefPtr<SkImageFilter> RenderSurfaceFilters::BuildImageFilter(
             SkIntToScalar(op.drop_shadow_offset().x()),
             SkIntToScalar(op.drop_shadow_offset().y()),
             SkIntToScalar(op.amount()),
+            SkIntToScalar(op.amount()),
             op.drop_shadow_color(),
             image_filter.get()));
         break;
