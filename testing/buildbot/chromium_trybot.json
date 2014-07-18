@@ -190,5 +190,6 @@
   ],
 
   "filter_builders": [
+    "linux_chromium_clang_dbg"
   ]
 }
