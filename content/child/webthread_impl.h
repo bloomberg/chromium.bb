@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
+#include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 
@@ -22,6 +23,11 @@ class CONTENT_EXPORT WebThreadBase : public blink::WebThread {
   virtual void removeTaskObserver(TaskObserver* observer);
 
   virtual bool isCurrentThread() const = 0;
+
+  typedef void (*SharedTimerFunction)();
+  virtual void setSharedTimerFiredFunction(SharedTimerFunction timerFunction) {}
+  virtual void setSharedTimerFireInterval(double) {}
+  virtual void stopSharedTimer() {}
 
  protected:
   WebThreadBase();
@@ -48,7 +54,19 @@ class CONTENT_EXPORT WebThreadImpl : public WebThreadBase {
 
   virtual bool isCurrentThread() const OVERRIDE;
 
+  virtual void setSharedTimerFiredFunction(
+      SharedTimerFunction timerFunction) OVERRIDE;
+  virtual void setSharedTimerFireInterval(double interval_seconds) OVERRIDE;
+  virtual void stopSharedTimer() OVERRIDE;
+
  private:
+  void OnTimeout() {
+    if (shared_timer_function_)
+      shared_timer_function_();
+  }
+  base::OneShotTimer<WebThreadImpl> shared_timer_;
+  SharedTimerFunction shared_timer_function_;
+
   scoped_ptr<base::Thread> thread_;
 };
 

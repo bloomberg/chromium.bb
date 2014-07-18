@@ -12,6 +12,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/platform/WebWorkerRunLoop.h"
 
 namespace content {
@@ -39,10 +40,14 @@ class CONTENT_EXPORT WorkerTaskRunner {
   void OnWorkerRunLoopStarted(const blink::WebWorkerRunLoop& loop);
   void OnWorkerRunLoopStopped(const blink::WebWorkerRunLoop& loop);
 
+  void OnWorkerThreadStarted(blink::WebThread* thread);
+  void OnWorkerThreadStopped(blink::WebThread* thread);
+
  private:
   friend class WorkerTaskRunnerTest;
 
   typedef std::map<int, blink::WebWorkerRunLoop> IDToLoopMap;
+  typedef std::map<int, blink::WebThread*> IDToThreadMap;
 
   ~WorkerTaskRunner();
 
@@ -51,6 +56,7 @@ class CONTENT_EXPORT WorkerTaskRunner {
 
   base::AtomicSequenceNumber id_sequence_;
   IDToLoopMap loop_map_;
+  IDToThreadMap thread_map_;
   base::Lock loop_map_lock_;
 };
 
