@@ -31,13 +31,19 @@ bool VerifyDictionary(
 TEST(IdMappingHelperTest, SetIdsForDevices) {
   ScopedVector<DeviceInfo> devices;
 
-  devices.push_back(new DeviceInfo(
-      base::GenerateGUID(), "abc Device", "XYZ v1", "XYZ SyncAgent v1",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX));
+  devices.push_back(new DeviceInfo(base::GenerateGUID(),
+                                   "abc Device",
+                                   "XYZ v1",
+                                   "XYZ SyncAgent v1",
+                                   sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+                                   "device_id1"));
 
-  devices.push_back(new DeviceInfo(
-      base::GenerateGUID(), "def Device", "XYZ v1", "XYZ SyncAgent v1",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX));
+  devices.push_back(new DeviceInfo(base::GenerateGUID(),
+                                   "def Device",
+                                   "XYZ v1",
+                                   "XYZ SyncAgent v1",
+                                   sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+                                   "device_id2"));
 
   base::DictionaryValue dictionary;
 
@@ -52,9 +58,12 @@ TEST(IdMappingHelperTest, SetIdsForDevices) {
   EXPECT_NE(public_id1, public_id2);
 
   // Now add a third device.
-  devices.push_back(new DeviceInfo(
-      base::GenerateGUID(), "ghi Device", "XYZ v1", "XYZ SyncAgent v1",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX));
+  devices.push_back(new DeviceInfo(base::GenerateGUID(),
+                                   "ghi Device",
+                                   "XYZ v1",
+                                   "XYZ SyncAgent v1",
+                                   sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+                                   "device_id3"));
 
   CreateMappingForUnmappedDevices(&(devices.get()), &dictionary);
 

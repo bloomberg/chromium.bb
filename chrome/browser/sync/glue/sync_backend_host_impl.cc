@@ -9,12 +9,14 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/sync/glue/sync_backend_host_core.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/object_id_invalidation_map.h"
 #include "components/network_time/network_time_tracker.h"
+#include "components/signin/core/browser/signin_client.h"
 #include "components/sync_driver/sync_frontend.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "content/public/browser/browser_thread.h"
@@ -132,6 +134,12 @@ void SyncBackendHostImpl::Initialize(
         InternalComponentsFactory::FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE;
   }
 
+  SigninClient* signin_client =
+      ChromeSigninClientFactory::GetForProfile(profile_);
+  DCHECK(signin_client);
+  std::string signin_scoped_device_id =
+      signin_client->GetSigninScopedDeviceId();
+
   scoped_ptr<DoInitializeOptions> init_opts(new DoInitializeOptions(
       registrar_->sync_thread()->message_loop(),
       registrar_.get(),
@@ -153,7 +161,8 @@ void SyncBackendHostImpl::Initialize(
       scoped_ptr<InternalComponentsFactory>(
           new syncer::InternalComponentsFactoryImpl(factory_switches)).Pass(),
       unrecoverable_error_handler.Pass(),
-      report_unrecoverable_error_function));
+      report_unrecoverable_error_function,
+      signin_scoped_device_id));
   InitCore(init_opts.Pass());
 }
 

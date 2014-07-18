@@ -70,7 +70,8 @@ DoInitializeOptions::DoInitializeOptions(
     scoped_ptr<syncer::InternalComponentsFactory> internal_components_factory,
     scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
     syncer::ReportUnrecoverableErrorFunction
-        report_unrecoverable_error_function)
+        report_unrecoverable_error_function,
+    const std::string& signin_scoped_device_id)
     : sync_loop(sync_loop),
       registrar(registrar),
       routing_info(routing_info),
@@ -88,8 +89,8 @@ DoInitializeOptions::DoInitializeOptions(
           restored_keystore_key_for_bootstrapping),
       internal_components_factory(internal_components_factory.Pass()),
       unrecoverable_error_handler(unrecoverable_error_handler.Pass()),
-      report_unrecoverable_error_function(
-          report_unrecoverable_error_function) {
+      report_unrecoverable_error_function(report_unrecoverable_error_function),
+      signin_scoped_device_id(signin_scoped_device_id) {
 }
 
 DoInitializeOptions::~DoInitializeOptions() {}
@@ -402,6 +403,8 @@ void SyncBackendHostCore::DoInitialize(
   sync_loop_ = options->sync_loop;
   DCHECK(sync_loop_);
 
+  signin_scoped_device_id_ = options->signin_scoped_device_id;
+
   // Finish initializing the HttpBridgeFactory.  We do this here because
   // building the user agent may block on some platforms.
   chrome::VersionInfo version_info;
@@ -506,6 +509,7 @@ void SyncBackendHostCore::DoInitialProcessControlTypes() {
       new SyncedDeviceTracker(sync_manager_->GetUserShare(),
                               sync_manager_->cache_guid()));
   synced_device_tracker_->InitLocalDeviceInfo(
+      signin_scoped_device_id_,
       base::Bind(&SyncBackendHostCore::DoFinishInitialProcessControlTypes,
                  weak_ptr_factory_.GetWeakPtr()));
 }

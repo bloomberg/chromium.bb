@@ -28,7 +28,8 @@ class DeviceInfo {
              const std::string& client_name,
              const std::string& chrome_version,
              const std::string& sync_user_agent,
-             const sync_pb::SyncEnums::DeviceType device_type);
+             const sync_pb::SyncEnums::DeviceType device_type,
+             const std::string& signin_scoped_device_id);
   ~DeviceInfo();
 
   // Sync specific unique identifier for the device. Note if a device
@@ -53,6 +54,10 @@ class DeviceInfo {
 
   // Device Type.
   sync_pb::SyncEnums::DeviceType device_type() const;
+
+  // Device_id that is stable until user signs out. This device_id is used for
+  // annotating login scoped refresh token.
+  const std::string& signin_scoped_device_id() const;
 
   // Gets the OS in string form.
   std::string GetOSString() const;
@@ -79,6 +84,7 @@ class DeviceInfo {
   // it as parameter to the callback.
   static void CreateLocalDeviceInfo(
       const std::string& guid,
+      const std::string& signin_scoped_device_id,
       base::Callback<void(const DeviceInfo& local_info)> callback);
 
   // Gets the local device name and passes it as a parameter to callback.
@@ -98,6 +104,7 @@ class DeviceInfo {
 
   static void CreateLocalDeviceInfoContinuation(
       const std::string& guid,
+      const std::string& signin_scoped_device_id,
       base::Callback<void(const DeviceInfo& local_info)> callback,
       const std::string& session_name);
 
@@ -110,6 +117,8 @@ class DeviceInfo {
   const std::string sync_user_agent_;
 
   const sync_pb::SyncEnums::DeviceType device_type_;
+
+  std::string signin_scoped_device_id_;
 
   // Exposing |guid| would lead to a stable unique id for a device which
   // can potentially be used for tracking. Public ids are privacy safe

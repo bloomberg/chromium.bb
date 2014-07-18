@@ -255,7 +255,8 @@ class SessionsSyncManagerTest
                        "Wayne Gretzky's Hacking Box",
                        "Chromium 10k",
                        "Chrome 10k",
-                       sync_pb::SyncEnums_DeviceType_TYPE_LINUX));
+                       sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+                       "device_id"));
   }
 
   virtual std::string GetLocalSyncCacheGUID() const OVERRIDE {
