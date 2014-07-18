@@ -105,13 +105,30 @@ class TesterTest(unittest.TestCase):
             ])
 
     def test_coverage_works(self):
+        # This is awkward; by design, running test-webkitpy -c will
+        # create a .coverage file in Tools/Scripts, so we need to be
+        # careful not to clobber an existing one, and to clean up.
+        # FIXME: This design needs to change since it means we can't actually
+        # run this method itself under coverage properly.
         filesystem = FileSystem()
         executive = Executive()
         module_path = filesystem.path_to_module(self.__module__)
         script_dir = module_path[0:module_path.find('webkitpy') - 1]
-        proc = executive.popen([sys.executable, filesystem.join(script_dir, 'test-webkitpy'), '-c', STUBS_CLASS + '.test_empty'],
-                               stdout=executive.PIPE, stderr=executive.PIPE)
-        out, _ = proc.communicate()
-        retcode = proc.returncode
-        self.assertEqual(retcode, 0)
-        self.assertIn('Cover', out)
+        coverage_file = filesystem.join(script_dir, '.coverage')
+        coverage_file_orig = None
+        if filesystem.exists(coverage_file):
+            coverage_file_orig = coverage_file + '.orig'
+            filesystem.move(coverage_file, coverage_file_orig)
+
+        try:
+            proc = executive.popen([sys.executable, filesystem.join(script_dir, 'test-webkitpy'), '-c', STUBS_CLASS + '.test_empty'],
+                                stdout=executive.PIPE, stderr=executive.PIPE)
+            out, _ = proc.communicate()
+            retcode = proc.returncode
+            self.assertEqual(retcode, 0)
+            self.assertIn('Cover', out)
+        finally:
+            if coverage_file_orig:
+                filesystem.move(coverage_file_orig, coverage_file)
+            elif filesystem.exists(coverage_file):
+                filesystem.remove(coverage_file)
