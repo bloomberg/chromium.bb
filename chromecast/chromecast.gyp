@@ -76,9 +76,6 @@
         '../webkit/webkit_resources.gyp:webkit_resources',
         '../webkit/webkit_resources.gyp:webkit_strings',
       ],
-      'variables': {
-        'repack_path': '../tools/grit/grit/format/repack.py',
-      },
       'actions': [
         {
           'action_name': 'repack_cast_shell_pack',
@@ -95,16 +92,9 @@
               '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
             ],
+            'pak_output': '<(PRODUCT_DIR)/cast_shell.pak',
           },
-          'inputs': [
-            '<(repack_path)',
-            '<@(pak_inputs)',
-          ],
-          'action': ['python', '<(repack_path)', '<@(_outputs)',
-                     '<@(pak_inputs)'],
-          'outputs': [
-             '<(PRODUCT_DIR)/cast_shell.pak',
-          ],
+          'includes': [ '../build/repack_action.gypi' ],
         },
       ],
     },
