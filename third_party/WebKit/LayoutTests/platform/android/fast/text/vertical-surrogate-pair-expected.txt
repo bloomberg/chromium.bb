@@ -7,8 +7,8 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 239x19
           text run at (0,0) width 239: "These two glyphs should look the same:"
       RenderBlock {DIV} at (0,36) size 784x57
-        RenderText {#text} at (0,1) size 37x55
-          text run at (0,1) width 37: "\x{D842}\x{DF9F}"
+        RenderText {#text} at (0,1) size 36x55
+          text run at (0,1) width 36: "\x{D842}\x{DF9F}"
       RenderBlock {DIV} at (0,93) size 57x55
         RenderText {#text} at (1,0) size 55x55
           text run at (1,0) width 55: "\x{D842}\x{DF9F}"
