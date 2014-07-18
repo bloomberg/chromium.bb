@@ -280,6 +280,42 @@ void RenderBlockFlow::setColumnCountAndHeight(unsigned count, LayoutUnit pageLog
     }
 }
 
+void RenderBlockFlow::setBreakAtLineToAvoidWidow(int lineToBreak)
+{
+    ASSERT(lineToBreak >= 0);
+    ensureRareData();
+    ASSERT(!m_rareData->m_didBreakAtLineToAvoidWidow);
+    m_rareData->m_lineBreakToAvoidWidow = lineToBreak;
+}
+
+void RenderBlockFlow::setDidBreakAtLineToAvoidWidow()
+{
+    ASSERT(!shouldBreakAtLineToAvoidWidow());
+
+    // This function should be called only after a break was applied to avoid widows
+    // so assert |m_rareData| exists.
+    ASSERT(m_rareData);
+
+    m_rareData->m_didBreakAtLineToAvoidWidow = true;
+}
+
+void RenderBlockFlow::clearDidBreakAtLineToAvoidWidow()
+{
+    if (!m_rareData)
+        return;
+
+    m_rareData->m_didBreakAtLineToAvoidWidow = false;
+}
+
+void RenderBlockFlow::clearShouldBreakAtLineToAvoidWidow() const
+{
+    ASSERT(shouldBreakAtLineToAvoidWidow());
+    if (!m_rareData)
+        return;
+
+    m_rareData->m_lineBreakToAvoidWidow = -1;
+}
+
 bool RenderBlockFlow::isSelfCollapsingBlock() const
 {
     m_hasOnlySelfCollapsingChildren = RenderBlock::isSelfCollapsingBlock();
@@ -557,7 +593,7 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
     // Now we have a final top position. See if it really does end up being different from our estimate.
     // clearFloatsIfNeeded can also mark the child as needing a layout even though we didn't move. This happens
     // when collapseMargins dynamically adds overhanging floats because of a child with negative margins.
-    if (logicalTopAfterClear != logicalTopEstimate || child->needsLayout() || (paginated && childRenderBlock && childRenderBlock->shouldBreakAtLineToAvoidWidow())) {
+    if (logicalTopAfterClear != logicalTopEstimate || child->needsLayout() || (paginated && childRenderBlockFlow && childRenderBlockFlow->shouldBreakAtLineToAvoidWidow())) {
         SubtreeLayoutScope layoutScope(*child);
         if (child->shrinkToAvoidFloats()) {
             // The child's width depends on the line width.

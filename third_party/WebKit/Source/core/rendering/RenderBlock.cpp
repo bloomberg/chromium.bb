@@ -86,7 +86,6 @@ struct SameSizeAsRenderBlock : public RenderBox {
 
 struct SameSizeAsRenderBlockRareData {
     int pageLogicalOffset;
-    uint32_t bitfields;
 };
 
 COMPILE_ASSERT(sizeof(RenderBlock) == sizeof(SameSizeAsRenderBlock), RenderBlock_should_stay_small);
@@ -4379,44 +4378,6 @@ void RenderBlock::setPageLogicalOffset(LayoutUnit logicalOffset)
         m_rareData = adoptPtr(new RenderBlockRareData());
     }
     m_rareData->m_pageLogicalOffset = logicalOffset;
-}
-
-void RenderBlock::setBreakAtLineToAvoidWidow(int lineToBreak)
-{
-    ASSERT(lineToBreak >= 0);
-    if (!m_rareData)
-        m_rareData = adoptPtr(new RenderBlockRareData());
-
-    ASSERT(!m_rareData->m_didBreakAtLineToAvoidWidow);
-    m_rareData->m_lineBreakToAvoidWidow = lineToBreak;
-}
-
-void RenderBlock::setDidBreakAtLineToAvoidWidow()
-{
-    ASSERT(!shouldBreakAtLineToAvoidWidow());
-
-    // This function should be called only after a break was applied to avoid widows
-    // so assert |m_rareData| exists.
-    ASSERT(m_rareData);
-
-    m_rareData->m_didBreakAtLineToAvoidWidow = true;
-}
-
-void RenderBlock::clearDidBreakAtLineToAvoidWidow()
-{
-    if (!m_rareData)
-        return;
-
-    m_rareData->m_didBreakAtLineToAvoidWidow = false;
-}
-
-void RenderBlock::clearShouldBreakAtLineToAvoidWidow() const
-{
-    ASSERT(shouldBreakAtLineToAvoidWidow());
-    if (!m_rareData)
-        return;
-
-    m_rareData->m_lineBreakToAvoidWidow = -1;
 }
 
 void RenderBlock::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accumulatedOffset) const
