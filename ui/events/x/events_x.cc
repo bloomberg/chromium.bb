@@ -189,6 +189,7 @@ int GetEventFlagsFromXKeyEvent(XEvent* xevent) {
 #endif
 
   return GetEventFlagsFromXState(xevent->xkey.state) |
+      (xevent->xkey.send_event ? ui::EF_FINAL : 0) |
       (IsKeypadKey(XLookupKeysym(&xevent->xkey, 0)) ? ui::EF_NUMPAD_KEY : 0) |
       (IsFunctionKey(XLookupKeysym(&xevent->xkey, 0)) ?
           ui::EF_FUNCTION_KEY : 0) |
@@ -201,6 +202,7 @@ int GetEventFlagsFromXGenericEvent(XEvent* xevent) {
   DCHECK((xievent->evtype == XI_KeyPress) ||
          (xievent->evtype == XI_KeyRelease));
   return GetEventFlagsFromXState(xievent->mods.effective) |
+         (xevent->xkey.send_event ? ui::EF_FINAL : 0) |
          (IsKeypadKey(
               XkbKeycodeToKeysym(xievent->display, xievent->detail, 0, 0))
               ? ui::EF_NUMPAD_KEY

@@ -102,6 +102,8 @@ enum KeyEventFlags {
                                     // (Linux X11 only)
   EF_IS_REPEAT          = 1 << 18,
   EF_FUNCTION_KEY       = 1 << 19,  // Key originates from function key row
+  EF_FINAL              = 1 << 20,  // Do not remap; the event was created with
+                                    // the desired final values.
 };
 
 // Flags specific to mouse events

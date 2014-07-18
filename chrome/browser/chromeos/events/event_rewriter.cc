@@ -165,17 +165,6 @@ void UpdateX11Button(int ui_flag, unsigned int* x_button) {
 }
 #endif  // defined(USE_X11)
 
-bool IsSendEvent(const ui::Event& event) {
-#if defined(USE_X11)
-  // Do not rewrite an event sent by ui_controls::SendKeyPress(). See
-  // crbug.com/136465.
-  XEvent* xev = event.native_event();
-  if (xev && xev->xany.send_event)
-    return true;
-#endif
-  return false;
-}
-
 }  // namespace
 
 EventRewriter::EventRewriter(ash::StickyKeysController* sticky_keys_controller)
@@ -395,8 +384,9 @@ ui::EventRewriteStatus EventRewriter::RewriteKeyEvent(
   if (key_event.source_device_id() != ui::ED_UNKNOWN_DEVICE)
     DeviceKeyPressedOrReleased(key_event.source_device_id());
   MutableKeyState state = {key_event.flags(), key_event.key_code()};
-  bool is_send_event = IsSendEvent(key_event);
-  if (!is_send_event) {
+  // Do not rewrite an event sent by ui_controls::SendKeyPress(). See
+  // crbug.com/136465.
+  if (!(key_event.flags() & ui::EF_FINAL)) {
     RewriteModifierKeys(key_event, &state);
     RewriteNumPadKeys(key_event, &state);
   }
@@ -407,7 +397,7 @@ ui::EventRewriteStatus EventRewriter::RewriteKeyEvent(
     if (status == ui::EVENT_REWRITE_DISCARD)
       return ui::EVENT_REWRITE_DISCARD;
   }
-  if (!is_send_event) {
+  if (!(key_event.flags() & ui::EF_FINAL)) {
     RewriteExtendedKeys(key_event, &state);
     RewriteFunctionKeys(key_event, &state);
   }

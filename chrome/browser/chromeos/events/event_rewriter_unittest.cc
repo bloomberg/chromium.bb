@@ -1699,8 +1699,6 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
-#if defined(USE_X11)
-  // TODO(kpschoedel): pending alternative to xevent.xany.send_event
   // Remap Control to Alt.
   TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
@@ -1713,7 +1711,17 @@ TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
   rewriter.set_pref_service_for_testing(&prefs);
 
   // Send left control press.
-  std::string rewritten_event;
+  {
+    ui::KeyEvent keyevent(
+        ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, ui::EF_FINAL, false);
+    scoped_ptr<ui::Event> new_event;
+    // Control should NOT be remapped to Alt if EF_FINAL is set.
+    EXPECT_EQ(ui::EVENT_REWRITE_CONTINUE,
+              rewriter.RewriteEvent(keyevent, &new_event));
+    EXPECT_FALSE(new_event);
+  }
+#if defined(USE_X11)
+  // Send left control press, using XI2 native events.
   {
     ui::ScopedXI2Event xev;
     xev.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, 0);
