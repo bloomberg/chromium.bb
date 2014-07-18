@@ -228,8 +228,12 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
             switches::kCrashDumpsDir));
   }
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableLeakDetection))
-    command_line->AppendSwitch(switches::kEnableLeakDetection);
+          switches::kEnableLeakDetection)) {
+    command_line->AppendSwitchASCII(
+        switches::kEnableLeakDetection,
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kEnableLeakDetection));
+  }
   if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kRegisterFontFiles)) {
     command_line->AppendSwitchASCII(

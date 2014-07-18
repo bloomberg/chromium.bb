@@ -21,6 +21,10 @@ const char kContentShellDataPath[] = "data-path";
 // The directory breakpad should store minidumps in.
 const char kCrashDumpsDir[] = "crash-dumps-dir";
 
+// When specified to "enable-leak-detection" command-line option,
+// causes the leak detector to cause immediate crash when found leak.
+const char kCrashOnFailure[] = "crash-on-failure";
+
 // Request pages to be dumped as text once they finished loading.
 const char kDumpRenderTree[] = "dump-render-tree";
 

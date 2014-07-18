@@ -212,6 +212,7 @@ class WebKitTestController : public base::NonThreadSafe,
   NotificationRegistrar registrar_;
 
   const bool is_leak_detection_enabled_;
+  bool crash_when_leak_found_;
 
 #if defined(OS_ANDROID)
   // Because of the nested message pump implementation, Android needs to allow

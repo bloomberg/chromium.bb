@@ -202,9 +202,18 @@ WebKitTestController::WebKitTestController()
     : main_window_(NULL),
       test_phase_(BETWEEN_TESTS),
       is_leak_detection_enabled_(CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableLeakDetection)) {
+          switches::kEnableLeakDetection)),
+      crash_when_leak_found_(false) {
   CHECK(!instance_);
   instance_ = this;
+
+  if (is_leak_detection_enabled_) {
+    std::string switchValue =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kEnableLeakDetection);
+    crash_when_leak_found_ = switchValue == switches::kCrashOnFailure;
+  }
+
   printer_.reset(new WebKitTestResultPrinter(&std::cout, &std::cerr));
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEncodeBinary))
     printer_->set_encode_binary_data(true);
@@ -680,6 +689,8 @@ void WebKitTestController::OnLeakDetectionDone(
   printer_->AddErrorMessage(
       base::StringPrintf("#LEAK - renderer pid %d (%s)", current_pid_,
                          result.detail.c_str()));
+  CHECK(!crash_when_leak_found_);
+
   DiscardMainWindow();
 }
 
