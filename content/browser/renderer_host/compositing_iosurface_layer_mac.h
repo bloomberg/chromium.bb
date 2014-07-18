@@ -11,14 +11,80 @@
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 
+@class CompositingIOSurfaceLayer;
+
 namespace content {
 class CompositingIOSurfaceMac;
 class CompositingIOSurfaceContext;
-class CompositingIOSurfaceLayerHelper;
 
+// The interface through which the CompositingIOSurfaceLayer calls back into
+// the structrue that created it (RenderWidgetHostViewMac or
+// BrowserCompositorViewMac).
 class CompositingIOSurfaceLayerClient {
  public:
   virtual void AcceleratedLayerDidDrawFrame(bool succeeded) = 0;
+};
+
+// CompositingIOSurfaceLayerHelper provides C++ functionality needed for the
+// CompositingIOSurfaceLayer class, and does most of the heavy lifting for the
+// class.
+// TODO(ccameron): This class should own CompositingIOSurfaceLayer, rather than
+// vice versa.
+class CompositingIOSurfaceLayerHelper {
+ public:
+  CompositingIOSurfaceLayerHelper(CompositingIOSurfaceLayerClient* client,
+                                  CompositingIOSurfaceLayer* layer);
+  ~CompositingIOSurfaceLayerHelper();
+
+  // Called when the CompositingIOSurfaceLayer gets a new frame.
+  void GotNewFrame();
+
+  // Called whenever -[CompositingIOSurfaceLayer setNeedsDisplay] is called.
+  void SetNeedsDisplay();
+
+  // Called whenever -[CompositingIOSurfaceLayer canDrawInCGLContext] is called,
+  // to determine if a new frame should be drawn.
+  bool CanDraw();
+
+  // Called whenever -[CompositingIOSurfaceLayer drawInCGLContext] draws a
+  // frame.
+  void DidDraw(bool success);
+
+ private:
+  // Immediately draw a frame (disregarding vsync) and ensure that the frame is
+  // acknowledged.
+  void ImmediatelyForceDisplayAndAck();
+
+  // Called whenever the frame provided in GotNewFrame should be acknowledged
+  // (this may be because it was drawn, or it may be to unblock the
+  // compositor).
+  void AckPendingFrame(bool success);
+
+  void TimerFired();
+
+  // The client that the owning layer was created with.
+  content::CompositingIOSurfaceLayerClient* const client_;
+
+  // The layer that owns this helper.
+  CompositingIOSurfaceLayer* const layer_;
+
+  // Used to track when canDrawInCGLContext should return YES. This can be
+  // in response to receiving a new compositor frame, or from any of the events
+  // that cause setNeedsDisplay to be called on the layer.
+  bool needs_display_;
+
+  // This is set when a frame is received, and un-set when the frame is drawn.
+  bool has_pending_frame_;
+
+  // Incremented every time that this layer is asked to draw but does not have
+  // new content to draw.
+  uint64 did_not_draw_counter_;
+
+  // The browser places back-pressure on the GPU by not acknowledging swap
+  // calls until they appear on the screen. This can lead to hangs if the
+  // view is moved offscreen (among other things). Prevent hangs by always
+  // acknowledging the frame after timeout of 1/6th of a second  has passed.
+  base::DelayTimer<CompositingIOSurfaceLayerHelper> timer_;
 };
 
 }  // namespace content
@@ -26,28 +92,10 @@ class CompositingIOSurfaceLayerClient {
 // The CoreAnimation layer for drawing accelerated content.
 @interface CompositingIOSurfaceLayer : CAOpenGLLayer {
  @private
-  content::CompositingIOSurfaceLayerClient* client_;
   scoped_refptr<content::CompositingIOSurfaceMac> iosurface_;
   scoped_refptr<content::CompositingIOSurfaceContext> context_;
 
-  // The browser places back-pressure on the GPU by not acknowledging swap
-  // calls until they appear on the screen. This can lead to hangs if the
-  // view is moved offscreen (among other things). Prevent hangs by always
-  // acknowledging the frame after timeout of 1/6th of a second  has passed.
   scoped_ptr<content::CompositingIOSurfaceLayerHelper> helper_;
-  scoped_ptr<base::DelayTimer<content::CompositingIOSurfaceLayerHelper>> timer_;
-
-  // Used to track when canDrawInCGLContext should return YES. This can be
-  // in response to receiving a new compositor frame, or from any of the events
-  // that cause setNeedsDisplay to be called on the layer.
-  BOOL needs_display_;
-
-  // This is set when a frame is received, and un-set when the frame is drawn.
-  BOOL has_pending_frame_;
-
-  // Incremented every time that this layer is asked to draw but does not have
-  // new content to draw.
-  uint64 did_not_draw_counter_;
 }
 
 - (content::CompositingIOSurfaceMac*)iosurface;
@@ -58,7 +106,8 @@ class CompositingIOSurfaceLayerClient {
         withScaleFactor:(float)scale_factor
              withClient:(content::CompositingIOSurfaceLayerClient*)client;
 
-// Mark that the client is no longer valid and cannot be called back into.
+// Mark that the client is no longer valid and cannot be called back into. This
+// must be called before the layer is destroyed.
 - (void)resetClient;
 
 // Called when a new frame is received.

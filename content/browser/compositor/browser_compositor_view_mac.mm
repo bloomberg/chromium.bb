@@ -40,12 +40,12 @@ namespace {
 
 // The number of placeholder objects allocated. If this reaches zero, then
 // the BrowserCompositorViewCocoa being held on to for recycling,
-// |g_recyclable_cocoa_view|, will be freed.
+// |g_recyclable_internal_view|, will be freed.
 uint32 g_placeholder_count = 0;
 
 // A spare BrowserCompositorViewCocoa kept around for recycling.
-base::LazyInstance<base::scoped_nsobject<BrowserCompositorViewCocoa>>
-  g_recyclable_cocoa_view;
+base::LazyInstance<scoped_ptr<BrowserCompositorViewMacInternal>>
+  g_recyclable_internal_view;
 
 }  // namespace
 
@@ -56,29 +56,26 @@ BrowserCompositorViewMac::BrowserCompositorViewMac(
   // TODO(ccameron): If there exists a frame in flight (swap has been called
   // by the compositor, but the frame has not arrived from the GPU process
   // yet), then that frame may inappropriately flash in the new view.
-  swap(g_recyclable_cocoa_view.Get(), cocoa_view_);
-  if (!cocoa_view_)
-    cocoa_view_.reset([[BrowserCompositorViewCocoa alloc] init]);
-  [cocoa_view_ setClient:client_];
+  internal_view_ = g_recyclable_internal_view.Get().Pass();
+  if (!internal_view_)
+    internal_view_.reset(new BrowserCompositorViewMacInternal);
+  internal_view_->SetClient(client_);
 }
 
 BrowserCompositorViewMac::~BrowserCompositorViewMac() {
   // Make this BrowserCompositorViewCocoa recyclable for future instances.
-  [cocoa_view_ setClient:NULL];
-  [g_recyclable_cocoa_view.Get() destroyCompositor];
-  swap(g_recyclable_cocoa_view.Get(), cocoa_view_);
+  internal_view_->ResetClient();
+  g_recyclable_internal_view.Get() = internal_view_.Pass();
 
   // If there are no placeholders allocated, destroy the recyclable
   // BrowserCompositorViewCocoa that we just populated.
-  if (!g_placeholder_count) {
-    [g_recyclable_cocoa_view.Get() destroyCompositor];
-    g_recyclable_cocoa_view.Get().reset();
-  }
+  if (!g_placeholder_count)
+    g_recyclable_internal_view.Get().reset();
 }
 
 ui::Compositor* BrowserCompositorViewMac::GetCompositor() const {
-  DCHECK(cocoa_view_);
-  return [cocoa_view_ compositor];
+  DCHECK(internal_view_);
+  return internal_view_->compositor();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,10 +91,8 @@ BrowserCompositorViewPlaceholderMac::~BrowserCompositorViewPlaceholderMac() {
 
   // If there are no placeholders allocated, destroy the recyclable
   // BrowserCompositorViewCocoa.
-  if (!g_placeholder_count) {
-    [g_recyclable_cocoa_view.Get() destroyCompositor];
-    g_recyclable_cocoa_view.Get().reset();
-  }
+  if (!g_placeholder_count)
+    g_recyclable_internal_view.Get().reset();
 }
 
 }  // namespace content

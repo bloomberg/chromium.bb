@@ -18,8 +18,6 @@
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/size.h"
 
-@class BrowserCompositorViewCocoa;
-
 // Additions to the NSView interface for compositor frames.
 @interface NSView (BrowserCompositorView)
 - (void)gotAcceleratedIOSurfaceFrame:(IOSurfaceID)surface_handle
@@ -35,6 +33,8 @@
 
 
 namespace content {
+
+class BrowserCompositorViewMacInternal;
 
 // The interface through which BrowserCompositorViewMac calls back into
 // RenderWidgetHostViewMac (or any other structure that wishes to draw a
@@ -74,7 +74,7 @@ class BrowserCompositorViewMac {
 
  private:
   BrowserCompositorViewMacClient* client_;
-  base::scoped_nsobject<BrowserCompositorViewCocoa> cocoa_view_;
+  scoped_ptr<BrowserCompositorViewMacInternal> internal_view_;
 };
 
 // A class to keep around whenever a BrowserCompositorViewMac may be created.
