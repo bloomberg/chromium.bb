@@ -80,6 +80,11 @@ TEST(Blit, ScrollCanvas) {
                     gfx::Vector2d(0, 0));
   VerifyCanvasValues<5, 5>(canvas.get(), initial_values);
 
+  // Scroll with a empty clip and make sure it's a NOP.
+  gfx::Rect empty_clip(1, 1, 0, 0);
+  gfx::ScrollCanvas(canvas.get(), empty_clip, gfx::Vector2d(0, 1));
+  VerifyCanvasValues<5, 5>(canvas.get(), initial_values);
+
   // Scroll the center 3 pixels up one.
   gfx::Rect center_three(1, 1, 3, 3);
   gfx::ScrollCanvas(canvas.get(), center_three, gfx::Vector2d(0, -1));
