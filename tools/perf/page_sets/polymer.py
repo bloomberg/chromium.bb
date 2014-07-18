@@ -216,6 +216,9 @@ class PolymerPageSet(page_set_module.PageSet):
       self.AddPage(PolymerSampler(self, p))
 
     # Polymer Sampler subpages that are interesting to scroll
-    SCROLLABLE_PAGES = ['core-scroll-header-panel']
+    SCROLLABLE_PAGES = [
+        # crbug.com/394756
+        # 'core-scroll-header-panel',
+        ]
     for p in SCROLLABLE_PAGES:
       self.AddPage(PolymerSampler(self, p, scrolling_page=True))
