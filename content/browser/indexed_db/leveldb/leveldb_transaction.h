@@ -24,7 +24,6 @@ class LevelDBWriteBatch;
 class CONTENT_EXPORT LevelDBTransaction
     : public base::RefCounted<LevelDBTransaction> {
  public:
-
   void Put(const base::StringPiece& key, std::string* value);
   void Remove(const base::StringPiece& key);
   virtual leveldb::Status Get(const base::StringPiece& key,

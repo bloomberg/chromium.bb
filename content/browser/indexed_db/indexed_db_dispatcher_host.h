@@ -96,7 +96,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   void HoldBlobDataHandle(
       const std::string& uuid,
-      scoped_ptr<webkit_blob::BlobDataHandle>& blob_data_handle);
+      scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle);
   void DropBlobDataHandle(const std::string& uuid);
 
  private:

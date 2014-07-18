@@ -53,7 +53,7 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
       int64 database_id,
       int64 object_store_id,
       const IndexedDBKey& key,
-      IndexedDBValue& value,
+      IndexedDBValue* value,
       ScopedVector<webkit_blob::BlobDataHandle>* handles,
       RecordIdentifier* record) OVERRIDE;
 
@@ -152,6 +152,7 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
   friend class base::RefCounted<IndexedDBFakeBackingStore>;
   virtual ~IndexedDBFakeBackingStore();
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(IndexedDBFakeBackingStore);
 };
 

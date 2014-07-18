@@ -101,7 +101,7 @@ class LevelDBTraceTansaction : public LevelDBTransaction {
  private:
   virtual ~LevelDBTraceTansaction() {}
 
-  const static std::string s_class_name;
+  static const std::string s_class_name;
 
   FunctionTracer commit_tracer_;
   FunctionTracer get_tracer_;
@@ -152,7 +152,7 @@ class LevelDBTraceIteratorImpl : public LevelDBIteratorImpl {
     return LevelDBIteratorImpl::Value();
   }
 
-  const static std::string s_class_name;
+  static const std::string s_class_name;
 
   mutable FunctionTracer is_valid_tracer_;
   mutable FunctionTracer seek_to_last_tracer_;

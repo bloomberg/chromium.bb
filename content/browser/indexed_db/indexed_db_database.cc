@@ -848,7 +848,7 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
                                 id(),
                                 params->object_store_id,
                                 *key,
-                                params->value,
+                                &params->value,
                                 &params->handles,
                                 &record_identifier);
   if (!s.ok()) {

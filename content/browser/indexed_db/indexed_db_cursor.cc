@@ -170,7 +170,7 @@ void IndexedDBCursor::CursorPrefetchIterationOperation(
   }
 
   callbacks->OnSuccessWithPrefetch(
-      found_keys, found_primary_keys, found_values);
+      found_keys, found_primary_keys, &found_values);
 }
 
 leveldb::Status IndexedDBCursor::PrefetchReset(int used_prefetches,

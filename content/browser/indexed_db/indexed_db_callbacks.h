@@ -83,7 +83,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
   virtual void OnSuccessWithPrefetch(
       const std::vector<IndexedDBKey>& keys,
       const std::vector<IndexedDBKey>& primary_keys,
-      std::vector<IndexedDBValue>& values);
+      std::vector<IndexedDBValue>* values);
 
   // IndexedDBDatabase::Get (with key injection)
   virtual void OnSuccess(IndexedDBValue* value,

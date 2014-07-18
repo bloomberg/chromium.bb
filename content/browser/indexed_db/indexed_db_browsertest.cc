@@ -548,9 +548,8 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
         failure_method = FAIL_METHOD_GET;
       else if (fail_method == "Commit")
         failure_method = FAIL_METHOD_COMMIT;
-      else {
+      else
         NOTREACHED() << "Unknown method: \"" << fail_method << "\"";
-      }
     } else if (fail_class == "LevelDBIterator") {
       failure_class = FAIL_CLASS_LEVELDB_ITERATOR;
       if (fail_method == "Seek")

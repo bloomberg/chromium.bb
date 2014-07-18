@@ -211,7 +211,7 @@ uint32 IndexedDBDispatcherHost::TransactionIdToProcessId(
 
 void IndexedDBDispatcherHost::HoldBlobDataHandle(
     const std::string& uuid,
-    scoped_ptr<webkit_blob::BlobDataHandle>& blob_data_handle) {
+    scoped_ptr<webkit_blob::BlobDataHandle> blob_data_handle) {
   DCHECK(!ContainsKey(blob_data_handle_map_, uuid));
   blob_data_handle_map_[uuid] = blob_data_handle.release();
 }

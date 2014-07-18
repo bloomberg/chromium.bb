@@ -865,7 +865,7 @@ leveldb::Status IndexedDBBackingStore::DestroyBackingStore(
 
 bool IndexedDBBackingStore::ReadCorruptionInfo(const base::FilePath& path_base,
                                                const GURL& origin_url,
-                                               std::string& message) {
+                                               std::string* message) {
   const base::FilePath info_path =
       path_base.Append(ComputeCorruptionFileName(origin_url));
 
@@ -892,7 +892,7 @@ bool IndexedDBBackingStore::ReadCorruptionInfo(const base::FilePath& path_base,
       if (val && val->GetType() == base::Value::TYPE_DICTIONARY) {
         base::DictionaryValue* dict_val =
             static_cast<base::DictionaryValue*>(val.get());
-        success = dict_val->GetString("message", &message);
+        success = dict_val->GetString("message", message);
       }
     }
     file.Close();
@@ -991,7 +991,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
   bool is_schema_known = false;
   if (db) {
     std::string corruption_message;
-    if (ReadCorruptionInfo(path_base, origin_url, corruption_message)) {
+    if (ReadCorruptionInfo(path_base, origin_url, &corruption_message)) {
       LOG(ERROR) << "IndexedDB recovering from a corrupted (and deleted) "
                     "database.";
       HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_FAILED_PRIOR_CORRUPTION,
@@ -1874,7 +1874,7 @@ leveldb::Status IndexedDBBackingStore::PutRecord(
     int64 database_id,
     int64 object_store_id,
     const IndexedDBKey& key,
-    IndexedDBValue& value,
+    IndexedDBValue* value,
     ScopedVector<webkit_blob::BlobDataHandle>* handles,
     RecordIdentifier* record_identifier) {
   IDB_TRACE("IndexedDBBackingStore::PutRecord");
@@ -1894,13 +1894,13 @@ leveldb::Status IndexedDBBackingStore::PutRecord(
 
   std::string v;
   EncodeVarInt(version, &v);
-  v.append(value.bits);
+  v.append(value->bits);
 
   leveldb_transaction->Put(object_store_data_key, &v);
   s = transaction->PutBlobInfoIfNeeded(database_id,
                                        object_store_id,
                                        object_store_data_key,
-                                       &value.blob_info,
+                                       &value->blob_info,
                                        handles);
   if (!s.ok())
     return s;
@@ -2174,14 +2174,14 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
   ChainedBlobWriterImpl(
       int64 database_id,
       IndexedDBBackingStore* backing_store,
-      WriteDescriptorVec& blobs,
+      WriteDescriptorVec* blobs,
       scoped_refptr<IndexedDBBackingStore::BlobWriteCallback> callback)
       : waiting_for_callback_(false),
         database_id_(database_id),
         backing_store_(backing_store),
         callback_(callback),
         aborted_(false) {
-    blobs_.swap(blobs);
+    blobs_.swap(*blobs);
     iter_ = blobs_.begin();
     backing_store->task_runner()->PostTask(
         FROM_HERE, base::Bind(&ChainedBlobWriterImpl::WriteNextFile, this));
@@ -2810,21 +2810,21 @@ leveldb::Status IndexedDBBackingStore::PutIndexDataForRecord(
 static bool FindGreatestKeyLessThanOrEqual(LevelDBTransaction* transaction,
                                            const std::string& target,
                                            std::string* found_key,
-                                           leveldb::Status& s) {
+                                           leveldb::Status* s) {
   scoped_ptr<LevelDBIterator> it = transaction->CreateIterator();
-  s = it->Seek(target);
-  if (!s.ok())
+  *s = it->Seek(target);
+  if (!s->ok())
     return false;
 
   if (!it->IsValid()) {
-    s = it->SeekToLast();
-    if (!s.ok() || !it->IsValid())
+    *s = it->SeekToLast();
+    if (!s->ok() || !it->IsValid())
       return false;
   }
 
   while (CompareIndexKeys(it->Key(), target) > 0) {
-    s = it->Prev();
-    if (!s.ok() || !it->IsValid())
+    *s = it->Prev();
+    if (!s->ok() || !it->IsValid())
       return false;
   }
 
@@ -2832,8 +2832,8 @@ static bool FindGreatestKeyLessThanOrEqual(LevelDBTransaction* transaction,
     *found_key = it->Key().as_string();
 
     // There can be several index keys that compare equal. We want the last one.
-    s = it->Next();
-  } while (s.ok() && it->IsValid() && !CompareIndexKeys(it->Key(), target));
+    *s = it->Next();
+  } while (s->ok() && it->IsValid() && !CompareIndexKeys(it->Key(), target));
 
   return true;
 }
@@ -3627,7 +3627,7 @@ bool ObjectStoreCursorOptions(
       if (!FindGreatestKeyLessThanOrEqual(transaction,
                                           cursor_options->high_key,
                                           &cursor_options->high_key,
-                                          s))
+                                          &s))
         return false;
       cursor_options->high_open = false;
     }
@@ -3641,7 +3641,7 @@ bool ObjectStoreCursorOptions(
       std::string found_high_key;
       // TODO(cmumford): Handle this error (crbug.com/363397)
       if (!FindGreatestKeyLessThanOrEqual(
-              transaction, cursor_options->high_key, &found_high_key, s))
+              transaction, cursor_options->high_key, &found_high_key, &s))
         return false;
 
       // If the target key should not be included, but we end up with a smaller
@@ -3703,7 +3703,7 @@ bool IndexCursorOptions(
       if (!FindGreatestKeyLessThanOrEqual(transaction,
                                           cursor_options->high_key,
                                           &cursor_options->high_key,
-                                          s))
+                                          &s))
         return false;
       cursor_options->high_open = false;
     }
@@ -3716,7 +3716,7 @@ bool IndexCursorOptions(
     // Seek to the *last* key in the set of non-unique keys
     // TODO(cmumford): Handle this error (crbug.com/363397)
     if (!FindGreatestKeyLessThanOrEqual(
-            transaction, cursor_options->high_key, &found_high_key, s))
+            transaction, cursor_options->high_key, &found_high_key, &s))
       return false;
 
     // If the target key should not be included, but we end up with a smaller
@@ -4040,7 +4040,7 @@ leveldb::Status IndexedDBBackingStore::Transaction::CommitPhaseOne(
   if (new_files_to_write.size()) {
     // This kicks off the writes of the new blobs, if any.
     // This call will zero out new_blob_entries and new_files_to_write.
-    WriteNewBlobs(new_blob_entries, new_files_to_write, callback);
+    WriteNewBlobs(&new_blob_entries, &new_files_to_write, callback);
     // Remove the add journal, if any; once the blobs are written, and we
     // commit, this will do the cleanup.
     ClearBlobJournal(transaction_.get(), BlobJournalKey::Encode());
@@ -4114,14 +4114,14 @@ class IndexedDBBackingStore::Transaction::BlobWriteCallbackWrapper
 };
 
 void IndexedDBBackingStore::Transaction::WriteNewBlobs(
-    BlobEntryKeyValuePairVec& new_blob_entries,
-    WriteDescriptorVec& new_files_to_write,
+    BlobEntryKeyValuePairVec* new_blob_entries,
+    WriteDescriptorVec* new_files_to_write,
     scoped_refptr<BlobWriteCallback> callback) {
-  DCHECK_GT(new_files_to_write.size(), 0UL);
+  DCHECK_GT(new_files_to_write->size(), 0UL);
   DCHECK_GT(database_id_, 0);
   BlobEntryKeyValuePairVec::iterator blob_entry_iter;
-  for (blob_entry_iter = new_blob_entries.begin();
-       blob_entry_iter != new_blob_entries.end();
+  for (blob_entry_iter = new_blob_entries->begin();
+       blob_entry_iter != new_blob_entries->end();
        ++blob_entry_iter) {
     // Add the new blob-table entry for each blob to the main transaction, or
     // remove any entry that may exist if there's no new one.
