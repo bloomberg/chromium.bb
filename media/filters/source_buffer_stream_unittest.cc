@@ -286,7 +286,10 @@ class SourceBufferStreamTest : public testing::Test {
       if (status != SourceBufferStream::kSuccess)
         break;
 
-      ss << buffer->GetDecodeTimestamp().InMilliseconds();
+      ss << buffer->timestamp().InMilliseconds();
+
+      if (buffer->GetDecodeTimestamp() != buffer->timestamp())
+        ss << "|" << buffer->GetDecodeTimestamp().InMilliseconds();
 
       // Handle preroll buffers.
       if (EndsWith(timestamps[i], "P", true)) {
@@ -425,15 +428,27 @@ class SourceBufferStreamTest : public testing::Test {
   // StringToBufferQueue() allows for the generation of StreamParserBuffers from
   // coded strings of timestamps separated by spaces.  Supported syntax:
   //
-  // ## or ##Dyy:
-  // Generates a StreamParserBuffer with decode timestamp ##.  E.g., "0 1 2 3".
-  // The form with the 'D' sets the decode timestamp to ## and the duration to
-  // yy milliseconds.
+  // xx:
+  // Generates a StreamParserBuffer with decode and presentation timestamp xx.
+  // E.g., "0 1 2 3".
   //
-  // ##K or ##DyyK:
-  // Indicates the buffer with timestamp ## reflects a keyframe.  E.g., "0K 1".
-  // The form with the 'D' indicates a buffer with timestamp ##, duration yy,
-  // and is marked as a keyframe.
+  // pp|dd:
+  // Generates a StreamParserBuffer with presentation timestamp pp and decode
+  // timestamp dd. E.g., "0|0 3|1 1|2 2|3".
+  //
+  // ##Dzz
+  // Specifies the duration for a buffer. ## represents one of the 2 timestamp
+  // formats above. zz specifies the duration of the buffer in milliseconds.
+  // If the duration isn't specified with this syntax then the buffer duration
+  // is determined by the difference between the decode timestamp in ## and
+  // the decode timestamp of the previous buffer in the string. If the string
+  // only contains 1 buffer then the duration must be explicitly specified with
+  // this format.
+  //
+  // ##K:
+  // Indicates the buffer with timestamp ## reflects a keyframe. ##
+  // can be any of the 3 timestamp formats above.
+  // E.g., "0K 1|2K 2|4D2K".
   //
   // S(a# ... y# z#)
   // Indicates a splice frame buffer should be created with timestamp z#.  The
@@ -489,7 +504,6 @@ class SourceBufferStreamTest : public testing::Test {
         timestamps[i] = timestamps[i].substr(0, timestamps[i].length() - 1);
       }
 
-      int time_in_ms = 0;
       int duration_in_ms = 0;
       size_t duration_pos = timestamps[i].find('D');
       if (duration_pos != std::string::npos) {
@@ -498,18 +512,32 @@ class SourceBufferStreamTest : public testing::Test {
         timestamps[i] = timestamps[i].substr(0, duration_pos);
       }
 
-      CHECK(base::StringToInt(timestamps[i], &time_in_ms));
+      std::vector<std::string> buffer_timestamps;
+      base::SplitString(timestamps[i], '|', &buffer_timestamps);
+
+      if (buffer_timestamps.size() == 1)
+        buffer_timestamps.push_back(buffer_timestamps[0]);
+
+      CHECK_EQ(2u, buffer_timestamps.size());
+
+      int pts_in_ms = 0;
+      int dts_in_ms = 0;
+      CHECK(base::StringToInt(buffer_timestamps[0], &pts_in_ms));
+      CHECK(base::StringToInt(buffer_timestamps[1], &dts_in_ms));
 
       // Create buffer. Buffer type and track ID are meaningless to these tests.
       scoped_refptr<StreamParserBuffer> buffer =
           StreamParserBuffer::CopyFrom(&kDataA, kDataSize, is_keyframe,
                                        DemuxerStream::AUDIO, 0);
-      base::TimeDelta timestamp =
-          base::TimeDelta::FromMilliseconds(time_in_ms);
-      buffer->set_timestamp(timestamp);
+      buffer->set_timestamp(base::TimeDelta::FromMilliseconds(pts_in_ms));
+
+      if (dts_in_ms != pts_in_ms) {
+        buffer->SetDecodeTimestamp(
+            base::TimeDelta::FromMilliseconds(dts_in_ms));
+      }
+
       if (duration_in_ms)
         buffer->set_duration(base::TimeDelta::FromMilliseconds(duration_in_ms));
-      buffer->SetDecodeTimestamp(timestamp);
 
       // Simulate preroll buffers by just generating another buffer and sticking
       // it as the preroll.
@@ -522,10 +550,17 @@ class SourceBufferStreamTest : public testing::Test {
       }
 
       if (splice_frame) {
+        // Make sure that splice frames aren't used with content where decode
+        // and presentation timestamps can differ. (i.e., B-frames)
+        CHECK_EQ(buffer->GetDecodeTimestamp().InMicroseconds(),
+                 buffer->timestamp().InMicroseconds());
         if (!pre_splice_buffers.empty()) {
           // Enforce strictly monotonically increasing timestamps.
           CHECK_GT(
-              timestamp.InMicroseconds(),
+              buffer->timestamp().InMicroseconds(),
+              pre_splice_buffers.back()->timestamp().InMicroseconds());
+          CHECK_GT(
+              buffer->GetDecodeTimestamp().InMicroseconds(),
               pre_splice_buffers.back()->GetDecodeTimestamp().InMicroseconds());
         }
         buffer->SetConfigId(splice_config_id);
@@ -3885,6 +3920,15 @@ TEST_F(SourceBufferStreamTest, Audio_PrerollFrame) {
   Seek(0);
   NewSegmentAppend("0K 3P 6K");
   CheckExpectedBuffers("0K 3P 6K");
+  CheckNoNextBuffer();
+}
+
+TEST_F(SourceBufferStreamTest, BFrames) {
+  Seek(0);
+  NewSegmentAppend("0K 120|30 30|60 60|90 90|120");
+  CheckExpectedRangesByTimestamp("{ [0,150) }");
+
+  CheckExpectedBuffers("0K 120|30 30|60 60|90 90|120");
   CheckNoNextBuffer();
 }
 
