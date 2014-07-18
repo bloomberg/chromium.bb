@@ -198,9 +198,9 @@ void ExistingUserController::UpdateLoginDisplay(const UserList& users) {
                              &show_users_on_signin);
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
     // TODO(xiyuan): Clean user profile whose email is not in whitelist.
-    bool meets_locally_managed_requirements =
-        (*it)->GetType() != user_manager::USER_TYPE_LOCALLY_MANAGED ||
-        UserManager::Get()->AreLocallyManagedUsersAllowed();
+    bool meets_supervised_requirements =
+        (*it)->GetType() != user_manager::USER_TYPE_SUPERVISED ||
+        UserManager::Get()->AreSupervisedUsersAllowed();
     bool meets_whitelist_requirements =
         LoginUtils::IsWhitelisted((*it)->email(), NULL) ||
         (*it)->GetType() != user_manager::USER_TYPE_REGULAR;
@@ -209,7 +209,7 @@ void ExistingUserController::UpdateLoginDisplay(const UserList& users) {
     bool meets_show_users_requirements =
         show_users_on_signin ||
         (*it)->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
-    if (meets_locally_managed_requirements &&
+    if (meets_supervised_requirements &&
         meets_whitelist_requirements &&
         meets_show_users_requirements) {
       filtered_users.push_back(*it);
@@ -453,8 +453,8 @@ void ExistingUserController::PerformLogin(
 
   is_login_in_progress_ = true;
   if (gaia::ExtractDomainName(user_context.GetUserID()) ==
-      chromeos::login::kLocallyManagedUserDomain) {
-    login_performer_->LoginAsLocallyManagedUser(user_context);
+      chromeos::login::kSupervisedUserDomain) {
+    login_performer_->LoginAsSupervisedUser(user_context);
   } else {
     login_performer_->PerformLogin(user_context, auth_mode);
   }
@@ -818,7 +818,7 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
 
   UserManager* user_manager = UserManager::Get();
   if (user_manager->IsCurrentUserNew() &&
-      user_manager->IsLoggedInAsLocallyManagedUser()) {
+      user_manager->IsLoggedInAsSupervisedUser()) {
     // Supervised users should launch into empty desktop on first run.
     CommandLine::ForCurrentProcess()->AppendSwitch(::switches::kSilentLaunch);
   }
@@ -1134,7 +1134,7 @@ void ExistingUserController::ShowError(int error_id,
     if (num_login_attempts_ > 1) {
       const User* user =
           UserManager::Get()->FindUser(last_login_attempt_username_);
-      if (user && (user->GetType() == user_manager::USER_TYPE_LOCALLY_MANAGED))
+      if (user && (user->GetType() == user_manager::USER_TYPE_SUPERVISED))
         error_id = IDS_LOGIN_ERROR_AUTHENTICATING_2ND_TIME_SUPERVISED;
     }
   }

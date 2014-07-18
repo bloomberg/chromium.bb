@@ -395,7 +395,7 @@ void UserCardView::AddUserContent(user::LoginStatus login_status,
   if (login_status != user::LOGGED_IN_GUEST &&
       (multiprofile_index || !IsMultiAccountSupportedAndUserActive())) {
     base::string16 user_email_string =
-        login_status == user::LOGGED_IN_LOCALLY_MANAGED
+        login_status == user::LOGGED_IN_SUPERVISED
             ? l10n_util::GetStringUTF16(
                   IDS_ASH_STATUS_TRAY_LOCALLY_MANAGED_LABEL)
             : base::UTF8ToUTF16(

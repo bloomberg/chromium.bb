@@ -75,7 +75,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
         .WillRepeatedly(testing::Return(true));
     EXPECT_CALL(*mock_user_manager_, IsLoggedInAsRegularUser())
         .WillRepeatedly(testing::Return(false));
-    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsLocallyManagedUser())
+    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsSupervisedUser())
         .WillRepeatedly(testing::Return(false));
   }
 

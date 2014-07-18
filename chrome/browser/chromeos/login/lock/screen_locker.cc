@@ -30,7 +30,7 @@
 #include "chrome/browser/chromeos/login/auth/login_performer.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
-#include "chrome/browser/chromeos/login/managed/supervised_user_authentication.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
@@ -251,7 +251,7 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
 
   // Special case: supervised users. Use special authenticator.
   if (const User* user = FindUnlockUser(user_context.GetUserID())) {
-    if (user->GetType() == user_manager::USER_TYPE_LOCALLY_MANAGED) {
+    if (user->GetType() == user_manager::USER_TYPE_SUPERVISED) {
       UserContext updated_context = UserManager::Get()
                                         ->GetSupervisedUserManager()
                                         ->GetAuthentication()

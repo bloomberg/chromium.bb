@@ -23,9 +23,9 @@ class HIDDetectionScreenActor;
 class HostPairingScreenActor;
 class KioskAutolaunchScreenActor;
 class KioskEnableScreenActor;
-class LocallyManagedUserCreationScreenHandler;
 class NetworkScreenActor;
 class ResetScreenActor;
+class SupervisedUserCreationScreenHandler;
 class TermsOfServiceScreenActor;
 class UpdateScreenActor;
 class UserImageScreenActor;
@@ -50,8 +50,8 @@ class OobeDisplay {
     SCREEN_USER_IMAGE_PICKER,
     SCREEN_TPM_ERROR,
     SCREEN_PASSWORD_CHANGED,
-    SCREEN_CREATE_MANAGED_USER_DIALOG,
-    SCREEN_CREATE_MANAGED_USER_FLOW,
+    SCREEN_CREATE_SUPERVISED_USER_DIALOG,
+    SCREEN_CREATE_SUPERVISED_USER_FLOW,
     SCREEN_TERMS_OF_SERVICE,
     SCREEN_WRONG_HWID,
     SCREEN_AUTO_ENROLLMENT_CHECK,
@@ -82,8 +82,8 @@ class OobeDisplay {
   virtual AutoEnrollmentCheckScreenActor*
       GetAutoEnrollmentCheckScreenActor() = 0;
   virtual HIDDetectionScreenActor* GetHIDDetectionScreenActor() = 0;
-  virtual LocallyManagedUserCreationScreenHandler*
-      GetLocallyManagedUserCreationScreenActor() = 0;
+  virtual SupervisedUserCreationScreenHandler*
+      GetSupervisedUserCreationScreenActor() = 0;
   virtual AppLaunchSplashScreenActor* GetAppLaunchSplashScreenActor() = 0;
   virtual ControllerPairingScreenActor* GetControllerPairingScreenActor() = 0;
   virtual HostPairingScreenActor* GetHostPairingScreenActor() = 0;

@@ -33,7 +33,7 @@ void AddAccountUITweaksLocalizedValues(
       UserManager::Get()->IsLoggedInAsGuest());
 
   localized_strings->SetBoolean("loggedInAsLocallyManagedUser",
-      UserManager::Get()->IsLoggedInAsLocallyManagedUser());
+      UserManager::Get()->IsLoggedInAsSupervisedUser());
 
   localized_strings->SetBoolean("loggedInAsPublicAccount",
       UserManager::Get()->IsLoggedInAsPublicAccount());

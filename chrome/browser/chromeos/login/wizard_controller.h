@@ -37,18 +37,18 @@ class ControllerPairingScreen;
 class EnrollmentScreen;
 class ErrorScreen;
 class EulaScreen;
+struct Geoposition;
 class HIDDetectionScreen;
 class HostPairingScreen;
-struct Geoposition;
 class KioskAutolaunchScreen;
 class KioskEnableScreen;
-class LocallyManagedUserCreationScreen;
 class LoginDisplayHost;
 class LoginScreenContext;
 class NetworkScreen;
 class OobeDisplay;
 class ResetScreen;
 class SimpleGeolocationProvider;
+class SupervisedUserCreationScreen;
 class TermsOfServiceScreen;
 class TimeZoneProvider;
 struct TimeZoneResponseData;
@@ -145,7 +145,7 @@ class WizardController : public ScreenObserver {
   TermsOfServiceScreen* GetTermsOfServiceScreen();
   WrongHWIDScreen* GetWrongHWIDScreen();
   AutoEnrollmentCheckScreen* GetAutoEnrollmentCheckScreen();
-  LocallyManagedUserCreationScreen* GetLocallyManagedUserCreationScreen();
+  SupervisedUserCreationScreen* GetSupervisedUserCreationScreen();
   HIDDetectionScreen* GetHIDDetectionScreen();
   ControllerPairingScreen* GetControllerPairingScreen();
   HostPairingScreen* GetHostPairingScreen();
@@ -172,7 +172,7 @@ class WizardController : public ScreenObserver {
   static const char kTermsOfServiceScreenName[];
   static const char kAutoEnrollmentCheckScreenName[];
   static const char kWrongHWIDScreenName[];
-  static const char kLocallyManagedUserCreationScreenName[];
+  static const char kSupervisedUserCreationScreenName[];
   static const char kAppLaunchSplashScreenName[];
   static const char kHIDDetectionScreenName[];
   static const char kControllerPairingScreenName[];
@@ -194,7 +194,7 @@ class WizardController : public ScreenObserver {
   void ShowTermsOfServiceScreen();
   void ShowWrongHWIDScreen();
   void ShowAutoEnrollmentCheckScreen();
-  void ShowLocallyManagedUserCreationScreen();
+  void ShowSupervisedUserCreationScreen();
   void ShowHIDDetectionScreen();
   void ShowControllerPairingScreen();
   void ShowHostPairingScreen();
@@ -332,8 +332,7 @@ class WizardController : public ScreenObserver {
   scoped_ptr<TermsOfServiceScreen> terms_of_service_screen_;
   scoped_ptr<WrongHWIDScreen> wrong_hwid_screen_;
   scoped_ptr<AutoEnrollmentCheckScreen> auto_enrollment_check_screen_;
-  scoped_ptr<LocallyManagedUserCreationScreen>
-      locally_managed_user_creation_screen_;
+  scoped_ptr<SupervisedUserCreationScreen> supervised_user_creation_screen_;
   scoped_ptr<HIDDetectionScreen> hid_detection_screen_;
   scoped_ptr<ControllerPairingScreen> controller_pairing_screen_;
   scoped_ptr<HostPairingScreen> host_pairing_screen_;

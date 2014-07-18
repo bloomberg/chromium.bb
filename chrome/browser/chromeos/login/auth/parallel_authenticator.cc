@@ -300,13 +300,13 @@ void ParallelAuthenticator::AuthenticateToUnlock(
                  scoped_refptr<ParallelAuthenticator>(this)));
 }
 
-void ParallelAuthenticator::LoginAsLocallyManagedUser(
+void ParallelAuthenticator::LoginAsSupervisedUser(
     const UserContext& user_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // TODO(nkostylev): Pass proper value for |user_is_new| or remove (not used).
   current_state_.reset(
       new AuthAttemptState(user_context,
-                           user_manager::USER_TYPE_LOCALLY_MANAGED,
+                           user_manager::USER_TYPE_SUPERVISED,
                            false,    // unlock
                            false,    // online_complete
                            false));  // user_is_new
@@ -655,7 +655,7 @@ void ParallelAuthenticator::Resolve() {
           FROM_HERE,
           base::Bind(&ParallelAuthenticator::OnAuthSuccess, this));
       break;
-    case LOCALLY_MANAGED_USER_LOGIN:
+    case SUPERVISED_USER_LOGIN:
       current_state_->user_context.SetIsUsingOAuth(false);
       BrowserThread::PostTask(
           BrowserThread::UI,
@@ -800,8 +800,8 @@ ParallelAuthenticator::ResolveCryptohomeSuccessState() {
     return PUBLIC_ACCOUNT_LOGIN;
   if (current_state_->user_type == user_manager::USER_TYPE_KIOSK_APP)
     return KIOSK_ACCOUNT_LOGIN;
-  if (current_state_->user_type == user_manager::USER_TYPE_LOCALLY_MANAGED)
-    return LOCALLY_MANAGED_USER_LOGIN;
+  if (current_state_->user_type == user_manager::USER_TYPE_SUPERVISED)
+    return SUPERVISED_USER_LOGIN;
 
   if (!VerifyOwner())
     return CONTINUE;

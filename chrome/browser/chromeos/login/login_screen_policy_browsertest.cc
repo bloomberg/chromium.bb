@@ -31,7 +31,7 @@ class LoginScreenPolicyTest : public policy::DevicePolicyCrosBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(LoginScreenPolicyTest, DisableSupervisedUsers) {
-  EXPECT_FALSE(chromeos::UserManager::Get()->AreLocallyManagedUsersAllowed());
+  EXPECT_FALSE(chromeos::UserManager::Get()->AreSupervisedUsersAllowed());
 
   scoped_refptr<content::MessageLoopRunner> runner(
       new content::MessageLoopRunner);
@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenPolicyTest, DisableSupervisedUsers) {
 
   runner->Run();
 
-  EXPECT_TRUE(chromeos::UserManager::Get()->AreLocallyManagedUsersAllowed());
+  EXPECT_TRUE(chromeos::UserManager::Get()->AreSupervisedUsersAllowed());
 }
 
 }  // namespace chromeos

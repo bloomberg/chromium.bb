@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
 
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
@@ -10,12 +10,12 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/camera_detector.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/managed/managed_user_creation_controller.h"
-#include "chrome/browser/chromeos/login/managed/managed_user_creation_controller_new.h"
-#include "chrome/browser/chromeos/login/managed/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller_new.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -83,9 +83,9 @@ void ConfigureErrorScreen(ErrorScreen* screen,
 
 } // namespace
 
-LocallyManagedUserCreationScreen::LocallyManagedUserCreationScreen(
+SupervisedUserCreationScreen::SupervisedUserCreationScreen(
     ScreenObserver* observer,
-    LocallyManagedUserCreationScreenHandler* actor)
+    SupervisedUserCreationScreenHandler* actor)
     : WizardScreen(observer),
       weak_factory_(this),
       actor_(actor),
@@ -100,7 +100,7 @@ LocallyManagedUserCreationScreen::LocallyManagedUserCreationScreen(
     actor_->SetDelegate(this);
 }
 
-LocallyManagedUserCreationScreen::~LocallyManagedUserCreationScreen() {
+SupervisedUserCreationScreen::~SupervisedUserCreationScreen() {
   CameraPresenceNotifier::GetInstance()->RemoveObserver(this);
   if (sync_service_)
     sync_service_->RemoveObserver(this);
@@ -111,12 +111,12 @@ LocallyManagedUserCreationScreen::~LocallyManagedUserCreationScreen() {
   NetworkPortalDetector::Get()->RemoveObserver(this);
 }
 
-void LocallyManagedUserCreationScreen::PrepareToShow() {
+void SupervisedUserCreationScreen::PrepareToShow() {
   if (actor_)
     actor_->PrepareToShow();
 }
 
-void LocallyManagedUserCreationScreen::Show() {
+void SupervisedUserCreationScreen::Show() {
   CameraPresenceNotifier::GetInstance()->AddObserver(this);
   if (actor_) {
     actor_->Show();
@@ -133,11 +133,11 @@ void LocallyManagedUserCreationScreen::Show() {
   on_error_screen_ = false;
 }
 
-void LocallyManagedUserCreationScreen::OnPageSelected(const std::string& page) {
+void SupervisedUserCreationScreen::OnPageSelected(const std::string& page) {
   last_page_ = page;
 }
 
-void LocallyManagedUserCreationScreen::OnPortalDetectionCompleted(
+void SupervisedUserCreationScreen::OnPortalDetectionCompleted(
     const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalState& state)  {
   if (state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE) {
@@ -146,13 +146,12 @@ void LocallyManagedUserCreationScreen::OnPortalDetectionCompleted(
     on_error_screen_ = true;
     ErrorScreen* screen = get_screen_observer()->GetErrorScreen();
     ConfigureErrorScreen(screen, network, state.status);
-    screen->SetUIState(ErrorScreen::UI_STATE_LOCALLY_MANAGED);
+    screen->SetUIState(ErrorScreen::UI_STATE_SUPERVISED);
     get_screen_observer()->ShowErrorScreen();
   }
 }
 
-void LocallyManagedUserCreationScreen::
-    ShowManagerInconsistentStateErrorScreen() {
+void SupervisedUserCreationScreen::ShowManagerInconsistentStateErrorScreen() {
   if (!actor_)
     return;
   actor_->ShowErrorPage(
@@ -164,12 +163,12 @@ void LocallyManagedUserCreationScreen::
           IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE_BUTTON));
 }
 
-void LocallyManagedUserCreationScreen::ShowInitialScreen() {
+void SupervisedUserCreationScreen::ShowInitialScreen() {
   if (actor_)
     actor_->ShowIntroPage();
 }
 
-void LocallyManagedUserCreationScreen::Hide() {
+void SupervisedUserCreationScreen::Hide() {
   CameraPresenceNotifier::GetInstance()->RemoveObserver(this);
   if (actor_)
     actor_->Hide();
@@ -177,25 +176,25 @@ void LocallyManagedUserCreationScreen::Hide() {
     NetworkPortalDetector::Get()->RemoveObserver(this);
 }
 
-std::string LocallyManagedUserCreationScreen::GetName() const {
-  return WizardController::kLocallyManagedUserCreationScreenName;
+std::string SupervisedUserCreationScreen::GetName() const {
+  return WizardController::kSupervisedUserCreationScreenName;
 }
 
-void LocallyManagedUserCreationScreen::AbortFlow() {
+void SupervisedUserCreationScreen::AbortFlow() {
   controller_->CancelCreation();
 }
 
-void LocallyManagedUserCreationScreen::FinishFlow() {
+void SupervisedUserCreationScreen::FinishFlow() {
   controller_->FinishCreation();
 }
 
-void LocallyManagedUserCreationScreen::AuthenticateManager(
+void SupervisedUserCreationScreen::AuthenticateManager(
     const std::string& manager_id,
     const std::string& manager_password) {
   // Make sure no two controllers exist at the same time.
   controller_.reset();
 
-  controller_.reset(new ManagedUserCreationControllerNew(this, manager_id));
+  controller_.reset(new SupervisedUserCreationControllerNew(this, manager_id));
 
   UserContext user_context(manager_id);
   user_context.SetKey(Key(manager_password));
@@ -203,20 +202,20 @@ void LocallyManagedUserCreationScreen::AuthenticateManager(
                                                       SigninSpecifics());
 }
 
-void LocallyManagedUserCreationScreen::CreateManagedUser(
+void SupervisedUserCreationScreen::CreateSupervisedUser(
     const base::string16& display_name,
-    const std::string& managed_user_password) {
+    const std::string& supervised_user_password) {
   DCHECK(controller_.get());
   int image;
   if (selected_image_ == User::kExternalImageIndex)
     // TODO(dzhioev): crbug/249660
-    image = ManagedUserCreationController::kDummyAvatarIndex;
+    image = SupervisedUserCreationController::kDummyAvatarIndex;
   else
     image = selected_image_;
-  controller_->StartCreation(display_name, managed_user_password, image);
+  controller_->StartCreation(display_name, supervised_user_password, image);
 }
 
-void LocallyManagedUserCreationScreen::ImportManagedUser(
+void SupervisedUserCreationScreen::ImportSupervisedUser(
     const std::string& user_id) {
   DCHECK(controller_.get());
   DCHECK(existing_users_.get());
@@ -232,7 +231,7 @@ void LocallyManagedUserCreationScreen::ImportManagedUser(
   std::string encryption_key;
   std::string avatar;
   bool exists;
-  int avatar_index = ManagedUserCreationController::kDummyAvatarIndex;
+  int avatar_index = SupervisedUserCreationController::kDummyAvatarIndex;
   user_info->GetString(SupervisedUserSyncService::kName, &display_name);
   user_info->GetString(SupervisedUserSyncService::kMasterKey, &master_key);
   user_info->GetString(SupervisedUserSyncService::kPasswordSignatureKey,
@@ -281,7 +280,7 @@ void LocallyManagedUserCreationScreen::ImportManagedUser(
 
 // TODO(antrim): Code duplication with previous method will be removed once
 // password sync is implemented.
-void LocallyManagedUserCreationScreen::ImportManagedUserWithPassword(
+void SupervisedUserCreationScreen::ImportSupervisedUserWithPassword(
     const std::string& user_id,
     const std::string& password) {
   DCHECK(controller_.get());
@@ -296,7 +295,7 @@ void LocallyManagedUserCreationScreen::ImportManagedUserWithPassword(
   std::string master_key;
   std::string avatar;
   bool exists;
-  int avatar_index = ManagedUserCreationController::kDummyAvatarIndex;
+  int avatar_index = SupervisedUserCreationController::kDummyAvatarIndex;
   user_info->GetString(SupervisedUserSyncService::kName, &display_name);
   user_info->GetString(SupervisedUserSyncService::kMasterKey, &master_key);
   user_info->GetString(SupervisedUserSyncService::kChromeOsAvatar, &avatar);
@@ -323,12 +322,12 @@ void LocallyManagedUserCreationScreen::ImportManagedUserWithPassword(
                            master_key);
 }
 
-void LocallyManagedUserCreationScreen::OnManagerLoginFailure() {
+void SupervisedUserCreationScreen::OnManagerLoginFailure() {
   if (actor_)
     actor_->ShowManagerPasswordError();
 }
 
-void LocallyManagedUserCreationScreen::OnManagerFullyAuthenticated(
+void SupervisedUserCreationScreen::OnManagerFullyAuthenticated(
     Profile* manager_profile) {
   DCHECK(controller_.get());
   // For manager user, move desktop to locked container so that windows created
@@ -348,37 +347,37 @@ void LocallyManagedUserCreationScreen::OnManagerFullyAuthenticated(
   OnSupervisedUsersChanged();
 }
 
-void LocallyManagedUserCreationScreen::OnSupervisedUsersChanged() {
+void SupervisedUserCreationScreen::OnSupervisedUsersChanged() {
   CHECK(sync_service_);
   sync_service_->GetSupervisedUsersAsync(
-      base::Bind(&LocallyManagedUserCreationScreen::OnGetManagedUsers,
+      base::Bind(&SupervisedUserCreationScreen::OnGetSupervisedUsers,
                  weak_factory_.GetWeakPtr()));
 }
 
-void LocallyManagedUserCreationScreen::OnManagerCryptohomeAuthenticated() {
+void SupervisedUserCreationScreen::OnManagerCryptohomeAuthenticated() {
   if (actor_) {
     actor_->ShowStatusMessage(true /* progress */, l10n_util::GetStringUTF16(
-            IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_AUTH_PROGRESS_MESSAGE));
+        IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_AUTH_PROGRESS_MESSAGE));
   }
 }
 
-void LocallyManagedUserCreationScreen::OnActorDestroyed(
-    LocallyManagedUserCreationScreenHandler* actor) {
+void SupervisedUserCreationScreen::OnActorDestroyed(
+    SupervisedUserCreationScreenHandler* actor) {
   if (actor_ == actor)
     actor_ = NULL;
 }
 
-void LocallyManagedUserCreationScreen::OnCreationError(
-    ManagedUserCreationController::ErrorCode code) {
+void SupervisedUserCreationScreen::OnCreationError(
+    SupervisedUserCreationController::ErrorCode code) {
   base::string16 title;
   base::string16 message;
   base::string16 button;
   // TODO(antrim) : find out which errors do we really have.
   // We might reuse some error messages from ordinary user flow.
   switch (code) {
-    case ManagedUserCreationController::CRYPTOHOME_NO_MOUNT:
-    case ManagedUserCreationController::CRYPTOHOME_FAILED_MOUNT:
-    case ManagedUserCreationController::CRYPTOHOME_FAILED_TPM:
+    case SupervisedUserCreationController::CRYPTOHOME_NO_MOUNT:
+    case SupervisedUserCreationController::CRYPTOHOME_FAILED_MOUNT:
+    case SupervisedUserCreationController::CRYPTOHOME_FAILED_TPM:
       title = l10n_util::GetStringUTF16(
           IDS_CREATE_LOCALLY_MANAGED_USER_TPM_ERROR_TITLE);
       message = l10n_util::GetStringUTF16(
@@ -386,8 +385,8 @@ void LocallyManagedUserCreationScreen::OnCreationError(
       button = l10n_util::GetStringUTF16(
           IDS_CREATE_LOCALLY_MANAGED_USER_TPM_ERROR_BUTTON);
       break;
-    case ManagedUserCreationController::CLOUD_SERVER_ERROR:
-    case ManagedUserCreationController::TOKEN_WRITE_FAILED:
+    case SupervisedUserCreationController::CLOUD_SERVER_ERROR:
+    case SupervisedUserCreationController::TOKEN_WRITE_FAILED:
       title = l10n_util::GetStringUTF16(
           IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR_TITLE);
       message = l10n_util::GetStringUTF16(
@@ -395,28 +394,28 @@ void LocallyManagedUserCreationScreen::OnCreationError(
       button = l10n_util::GetStringUTF16(
           IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR_BUTTON);
       break;
-    case ManagedUserCreationController::NO_ERROR:
+    case SupervisedUserCreationController::NO_ERROR:
       NOTREACHED();
   }
   if (actor_)
     actor_->ShowErrorPage(title, message, button);
 }
 
-void LocallyManagedUserCreationScreen::OnCreationTimeout() {
+void SupervisedUserCreationScreen::OnCreationTimeout() {
   if (actor_) {
     actor_->ShowStatusMessage(false /* error */, l10n_util::GetStringUTF16(
         IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_CREATION_TIMEOUT_MESSAGE));
   }
 }
 
-void LocallyManagedUserCreationScreen::OnLongCreationWarning() {
+void SupervisedUserCreationScreen::OnLongCreationWarning() {
   if (actor_) {
     actor_->ShowStatusMessage(true /* progress */, l10n_util::GetStringUTF16(
         IDS_PROFILES_CREATE_SUPERVISED_JUST_SIGNED_IN));
   }
 }
 
-bool LocallyManagedUserCreationScreen::FindUserByDisplayName(
+bool SupervisedUserCreationScreen::FindUserByDisplayName(
     const base::string16& display_name,
     std::string *out_id) const {
   if (!existing_users_.get())
@@ -441,8 +440,8 @@ bool LocallyManagedUserCreationScreen::FindUserByDisplayName(
 // TODO(antrim) : this is an explicit code duplications with UserImageScreen.
 // It should be removed by issue 251179.
 
-void LocallyManagedUserCreationScreen::ApplyPicture() {
-  std::string user_id = controller_->GetManagedUserId();
+void SupervisedUserCreationScreen::ApplyPicture() {
+  std::string user_id = controller_->GetSupervisedUserId();
   UserManager* user_manager = UserManager::Get();
   UserImageManager* image_manager = user_manager->GetUserImageManager(user_id);
   switch (selected_image_) {
@@ -467,17 +466,17 @@ void LocallyManagedUserCreationScreen::ApplyPicture() {
   actor_->ShowTutorialPage();
 }
 
-void LocallyManagedUserCreationScreen::OnCreationSuccess() {
+void SupervisedUserCreationScreen::OnCreationSuccess() {
   ApplyPicture();
 }
 
-void LocallyManagedUserCreationScreen::OnCameraPresenceCheckDone(
+void SupervisedUserCreationScreen::OnCameraPresenceCheckDone(
     bool is_camera_present) {
   if (actor_)
     actor_->SetCameraPresent(is_camera_present);
 }
 
-void LocallyManagedUserCreationScreen::OnGetManagedUsers(
+void SupervisedUserCreationScreen::OnGetSupervisedUsers(
     const base::DictionaryValue* users) {
   // Copy for passing to WebUI, contains only id, name and avatar URL.
   scoped_ptr<base::ListValue> ui_users(new base::ListValue());
@@ -496,7 +495,7 @@ void LocallyManagedUserCreationScreen::OnGetManagedUsers(
     base::DictionaryValue* ui_copy =
         static_cast<base::DictionaryValue*>(new base::DictionaryValue());
 
-    int avatar_index = ManagedUserCreationController::kDummyAvatarIndex;
+    int avatar_index = SupervisedUserCreationController::kDummyAvatarIndex;
     std::string chromeos_avatar;
     if (local_copy->GetString(SupervisedUserSyncService::kChromeOsAvatar,
                               &chromeos_avatar) &&
@@ -544,10 +543,10 @@ void LocallyManagedUserCreationScreen::OnGetManagedUsers(
     existing_users_->Set(it.key(), local_copy);
     ui_users->Append(ui_copy);
   }
-  actor_->ShowExistingManagedUsers(ui_users.get());
+  actor_->ShowExistingSupervisedUsers(ui_users.get());
 }
 
-void LocallyManagedUserCreationScreen::OnPhotoTaken(
+void SupervisedUserCreationScreen::OnPhotoTaken(
     const std::string& raw_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   user_photo_ = gfx::ImageSkia();
@@ -561,7 +560,7 @@ void LocallyManagedUserCreationScreen::OnPhotoTaken(
   image_decoder_->Start(task_runner);
 }
 
-void LocallyManagedUserCreationScreen::OnImageDecoded(
+void SupervisedUserCreationScreen::OnImageDecoded(
     const ImageDecoder* decoder,
     const SkBitmap& decoded_image) {
   DCHECK_EQ(image_decoder_.get(), decoder);
@@ -570,12 +569,12 @@ void LocallyManagedUserCreationScreen::OnImageDecoded(
     ApplyPicture();
 }
 
-void LocallyManagedUserCreationScreen::OnDecodeImageFailed(
+void SupervisedUserCreationScreen::OnDecodeImageFailed(
     const ImageDecoder* decoder) {
   NOTREACHED() << "Failed to decode PNG image from WebUI";
 }
 
-void LocallyManagedUserCreationScreen::OnImageSelected(
+void SupervisedUserCreationScreen::OnImageSelected(
     const std::string& image_type,
     const std::string& image_url) {
   if (image_url.empty())
@@ -591,7 +590,7 @@ void LocallyManagedUserCreationScreen::OnImageSelected(
   }
 }
 
-void LocallyManagedUserCreationScreen::OnImageAccepted() {
+void SupervisedUserCreationScreen::OnImageAccepted() {
 }
 
 }  // namespace chromeos

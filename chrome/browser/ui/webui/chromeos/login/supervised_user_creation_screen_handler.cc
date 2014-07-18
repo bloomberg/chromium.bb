@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/login/locally_managed_user_creation_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
 
 #include "ash/audio/sounds.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
@@ -29,8 +29,7 @@ const char kJsScreenPath[] = "login.LocallyManagedUserCreationScreen";
 
 namespace chromeos {
 
-LocallyManagedUserCreationScreenHandler::
-LocallyManagedUserCreationScreenHandler()
+SupervisedUserCreationScreenHandler::SupervisedUserCreationScreenHandler()
     : BaseScreenHandler(kJsScreenPath),
       delegate_(NULL) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
@@ -41,14 +40,13 @@ LocallyManagedUserCreationScreenHandler()
                       bundle.GetRawDataResource(IDR_SOUND_CAMERA_SNAP_WAV));
 }
 
-LocallyManagedUserCreationScreenHandler::
-    ~LocallyManagedUserCreationScreenHandler() {
+SupervisedUserCreationScreenHandler::~SupervisedUserCreationScreenHandler() {
   if (delegate_) {
     delegate_->OnActorDestroyed(this);
   }
 }
 
-void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
+void SupervisedUserCreationScreenHandler::DeclareLocalizedValues(
     LocalizedValuesBuilder* builder) {
   builder->Add(
       "managedUserCreationFlowRetryButtonTitle",
@@ -156,60 +154,59 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
                IDS_OPTIONS_PHOTO_DISCARD_ACCESSIBLE_TEXT);
 }
 
-void LocallyManagedUserCreationScreenHandler::Initialize() {}
+void SupervisedUserCreationScreenHandler::Initialize() {}
 
-void LocallyManagedUserCreationScreenHandler::RegisterMessages() {
+void SupervisedUserCreationScreenHandler::RegisterMessages() {
   AddCallback("finishLocalManagedUserCreation",
-              &LocallyManagedUserCreationScreenHandler::
-                  HandleFinishLocalManagedUserCreation);
+              &SupervisedUserCreationScreenHandler::
+                  HandleFinishLocalSupervisedUserCreation);
   AddCallback("abortLocalManagedUserCreation",
-              &LocallyManagedUserCreationScreenHandler::
-                  HandleAbortLocalManagedUserCreation);
+              &SupervisedUserCreationScreenHandler::
+                  HandleAbortLocalSupervisedUserCreation);
   AddCallback("checkLocallyManagedUserName",
-              &LocallyManagedUserCreationScreenHandler::
-                  HandleCheckLocallyManagedUserName);
+              &SupervisedUserCreationScreenHandler::
+                  HandleCheckSupervisedUserName);
   AddCallback("authenticateManagerInLocallyManagedUserCreationFlow",
-              &LocallyManagedUserCreationScreenHandler::
+              &SupervisedUserCreationScreenHandler::
                   HandleAuthenticateManager);
   AddCallback("specifyLocallyManagedUserCreationFlowUserData",
-              &LocallyManagedUserCreationScreenHandler::
-                  HandleCreateManagedUser);
+              &SupervisedUserCreationScreenHandler::
+                  HandleCreateSupervisedUser);
   AddCallback("managerSelectedOnLocallyManagedUserCreationFlow",
-              &LocallyManagedUserCreationScreenHandler::
+              &SupervisedUserCreationScreenHandler::
                   HandleManagerSelected);
   AddCallback("userSelectedForImportInManagedUserCreationFlow",
-              &LocallyManagedUserCreationScreenHandler::
+              &SupervisedUserCreationScreenHandler::
                   HandleImportUserSelected);
   AddCallback("importSupervisedUser",
-              &LocallyManagedUserCreationScreenHandler::
+              &SupervisedUserCreationScreenHandler::
                   HandleImportSupervisedUser);
   AddCallback("importSupervisedUserWithPassword",
-              &LocallyManagedUserCreationScreenHandler::
+              &SupervisedUserCreationScreenHandler::
                   HandleImportSupervisedUserWithPassword);
 
 
   // TODO(antrim) : this is an explicit code duplications with UserImageScreen.
   // It should be removed by issue 251179.
   AddCallback("supervisedUserGetImages",
-              &LocallyManagedUserCreationScreenHandler::
-                  HandleGetImages);
+              &SupervisedUserCreationScreenHandler::HandleGetImages);
 
   AddCallback("supervisedUserPhotoTaken",
-              &LocallyManagedUserCreationScreenHandler::HandlePhotoTaken);
+              &SupervisedUserCreationScreenHandler::HandlePhotoTaken);
   AddCallback("supervisedUserTakePhoto",
-              &LocallyManagedUserCreationScreenHandler::HandleTakePhoto);
+              &SupervisedUserCreationScreenHandler::HandleTakePhoto);
   AddCallback("supervisedUserDiscardPhoto",
-              &LocallyManagedUserCreationScreenHandler::HandleDiscardPhoto);
+              &SupervisedUserCreationScreenHandler::HandleDiscardPhoto);
   AddCallback("supervisedUserSelectImage",
-              &LocallyManagedUserCreationScreenHandler::HandleSelectImage);
+              &SupervisedUserCreationScreenHandler::HandleSelectImage);
   AddCallback("currentSupervisedUserPage",
-              &LocallyManagedUserCreationScreenHandler::
+              &SupervisedUserCreationScreenHandler::
                   HandleCurrentSupervisedUserPage);
 }
 
-void LocallyManagedUserCreationScreenHandler::PrepareToShow() {}
+void SupervisedUserCreationScreenHandler::PrepareToShow() {}
 
-void LocallyManagedUserCreationScreenHandler::Show() {
+void SupervisedUserCreationScreenHandler::Show() {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   scoped_ptr<base::ListValue> users_list(new base::ListValue());
   const UserList& users = UserManager::Get()->GetUsers();
@@ -230,24 +227,24 @@ void LocallyManagedUserCreationScreenHandler::Show() {
     users_list->Append(user_dict);
   }
   data->Set("managers", users_list.release());
-  ShowScreen(OobeUI::kScreenManagedUserCreationFlow, data.get());
+  ShowScreen(OobeUI::kScreenSupervisedUserCreationFlow, data.get());
 
   if (!delegate_)
     return;
 }
 
-void LocallyManagedUserCreationScreenHandler::Hide() {
+void SupervisedUserCreationScreenHandler::Hide() {
 }
 
-void LocallyManagedUserCreationScreenHandler::ShowIntroPage() {
+void SupervisedUserCreationScreenHandler::ShowIntroPage() {
   CallJS("showIntroPage");
 }
 
-void LocallyManagedUserCreationScreenHandler::ShowManagerPasswordError() {
+void SupervisedUserCreationScreenHandler::ShowManagerPasswordError() {
   CallJS("showManagerPasswordError");
 }
 
-void LocallyManagedUserCreationScreenHandler::ShowStatusMessage(
+void SupervisedUserCreationScreenHandler::ShowStatusMessage(
     bool is_progress,
     const base::string16& message) {
   if (is_progress)
@@ -256,49 +253,49 @@ void LocallyManagedUserCreationScreenHandler::ShowStatusMessage(
     CallJS("showStatusError", message);
 }
 
-void LocallyManagedUserCreationScreenHandler::ShowUsernamePage() {
+void SupervisedUserCreationScreenHandler::ShowUsernamePage() {
   CallJS("showUsernamePage");
 }
 
-void LocallyManagedUserCreationScreenHandler::ShowTutorialPage() {
+void SupervisedUserCreationScreenHandler::ShowTutorialPage() {
   CallJS("showTutorialPage");
 }
 
-void LocallyManagedUserCreationScreenHandler::ShowErrorPage(
+void SupervisedUserCreationScreenHandler::ShowErrorPage(
     const base::string16& title,
     const base::string16& message,
     const base::string16& button_text) {
   CallJS("showErrorPage", title, message, button_text);
 }
 
-void LocallyManagedUserCreationScreenHandler::SetDelegate(Delegate* delegate) {
+void SupervisedUserCreationScreenHandler::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
-void LocallyManagedUserCreationScreenHandler::
-    HandleFinishLocalManagedUserCreation() {
+void SupervisedUserCreationScreenHandler::
+    HandleFinishLocalSupervisedUserCreation() {
   delegate_->FinishFlow();
 }
 
-void LocallyManagedUserCreationScreenHandler::
-    HandleAbortLocalManagedUserCreation() {
+void SupervisedUserCreationScreenHandler::
+    HandleAbortLocalSupervisedUserCreation() {
   delegate_->AbortFlow();
 }
 
-void LocallyManagedUserCreationScreenHandler::HandleManagerSelected(
+void SupervisedUserCreationScreenHandler::HandleManagerSelected(
     const std::string& manager_id) {
   if (!delegate_)
     return;
   WallpaperManager::Get()->SetUserWallpaperNow(manager_id);
 }
 
-void LocallyManagedUserCreationScreenHandler::HandleImportUserSelected(
+void SupervisedUserCreationScreenHandler::HandleImportUserSelected(
     const std::string& user_id) {
   if (!delegate_)
     return;
 }
 
-void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
+void SupervisedUserCreationScreenHandler::HandleCheckSupervisedUserName(
     const base::string16& name) {
   std::string user_id;
   if (NULL != UserManager::Get()->GetSupervisedUserManager()->
@@ -318,7 +315,7 @@ void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
   }
 }
 
-void LocallyManagedUserCreationScreenHandler::HandleCreateManagedUser(
+void SupervisedUserCreationScreenHandler::HandleCreateSupervisedUser(
     const base::string16& new_raw_user_name,
     const std::string& new_user_password) {
   if (!delegate_)
@@ -350,10 +347,10 @@ void LocallyManagedUserCreationScreenHandler::HandleCreateManagedUser(
   ShowStatusMessage(true /* progress */, l10n_util::GetStringUTF16(
       IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_CREATION_PROGRESS_MESSAGE));
 
-  delegate_->CreateManagedUser(new_user_name, new_user_password);
+  delegate_->CreateSupervisedUser(new_user_name, new_user_password);
 }
 
-void LocallyManagedUserCreationScreenHandler::HandleImportSupervisedUser(
+void SupervisedUserCreationScreenHandler::HandleImportSupervisedUser(
     const std::string& user_id) {
   if (!delegate_)
     return;
@@ -361,10 +358,10 @@ void LocallyManagedUserCreationScreenHandler::HandleImportSupervisedUser(
   ShowStatusMessage(true /* progress */, l10n_util::GetStringUTF16(
       IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_CREATION_PROGRESS_MESSAGE));
 
-  delegate_->ImportManagedUser(user_id);
+  delegate_->ImportSupervisedUser(user_id);
 }
 
-void LocallyManagedUserCreationScreenHandler::
+void SupervisedUserCreationScreenHandler::
     HandleImportSupervisedUserWithPassword(
         const std::string& user_id,
         const std::string& password) {
@@ -374,16 +371,16 @@ void LocallyManagedUserCreationScreenHandler::
   ShowStatusMessage(true /* progress */, l10n_util::GetStringUTF16(
       IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_CREATION_PROGRESS_MESSAGE));
 
-  delegate_->ImportManagedUserWithPassword(user_id, password);
+  delegate_->ImportSupervisedUserWithPassword(user_id, password);
 }
 
-void LocallyManagedUserCreationScreenHandler::HandleAuthenticateManager(
+void SupervisedUserCreationScreenHandler::HandleAuthenticateManager(
     const std::string& raw_manager_username,
     const std::string& manager_password) {
   const std::string manager_username =
       gaia::SanitizeEmail(raw_manager_username);
 
-  UserFlow* flow = new LocallyManagedUserCreationFlow(manager_username);
+  UserFlow* flow = new SupervisedUserCreationFlow(manager_username);
   UserManager::Get()->SetUserFlow(manager_username, flow);
 
   delegate_->AuthenticateManager(manager_username, manager_password);
@@ -391,7 +388,7 @@ void LocallyManagedUserCreationScreenHandler::HandleAuthenticateManager(
 
 // TODO(antrim) : this is an explicit code duplications with UserImageScreen.
 // It should be removed by issue 251179.
-void LocallyManagedUserCreationScreenHandler::HandleGetImages() {
+void SupervisedUserCreationScreenHandler::HandleGetImages() {
   base::ListValue image_urls;
   for (int i = kFirstDefaultImageIndex; i < kDefaultImagesCount; ++i) {
     scoped_ptr<base::DictionaryValue> image_data(new base::DictionaryValue);
@@ -406,7 +403,7 @@ void LocallyManagedUserCreationScreenHandler::HandleGetImages() {
   CallJS("setDefaultImages", image_urls);
 }
 
-void LocallyManagedUserCreationScreenHandler::HandlePhotoTaken
+void SupervisedUserCreationScreenHandler::HandlePhotoTaken
     (const std::string& image_url) {
   std::string mime_type, charset, raw_data;
   if (!net::DataURL::Parse(GURL(image_url), &mime_type, &charset, &raw_data))
@@ -417,37 +414,37 @@ void LocallyManagedUserCreationScreenHandler::HandlePhotoTaken
     delegate_->OnPhotoTaken(raw_data);
 }
 
-void LocallyManagedUserCreationScreenHandler::HandleTakePhoto() {
+void SupervisedUserCreationScreenHandler::HandleTakePhoto() {
   ash::PlaySystemSoundIfSpokenFeedback(SOUND_CAMERA_SNAP);
 }
 
-void LocallyManagedUserCreationScreenHandler::HandleDiscardPhoto() {
+void SupervisedUserCreationScreenHandler::HandleDiscardPhoto() {
   ash::PlaySystemSoundIfSpokenFeedback(SOUND_OBJECT_DELETE);
 }
 
-void LocallyManagedUserCreationScreenHandler::HandleSelectImage(
+void SupervisedUserCreationScreenHandler::HandleSelectImage(
     const std::string& image_url,
     const std::string& image_type) {
   if (delegate_)
     delegate_->OnImageSelected(image_type, image_url);
 }
 
-void LocallyManagedUserCreationScreenHandler::HandleCurrentSupervisedUserPage(
+void SupervisedUserCreationScreenHandler::HandleCurrentSupervisedUserPage(
     const std::string& page) {
   if (delegate_)
     delegate_->OnPageSelected(page);
 }
 
-void LocallyManagedUserCreationScreenHandler::ShowPage(
+void SupervisedUserCreationScreenHandler::ShowPage(
     const std::string& page) {
   CallJS("showPage", page);
 }
 
-void LocallyManagedUserCreationScreenHandler::SetCameraPresent(bool present) {
+void SupervisedUserCreationScreenHandler::SetCameraPresent(bool present) {
   CallJS("setCameraPresent", present);
 }
 
-void LocallyManagedUserCreationScreenHandler::ShowExistingManagedUsers(
+void SupervisedUserCreationScreenHandler::ShowExistingSupervisedUsers(
     const base::ListValue* users) {
   CallJS("setExistingManagedUsers", *users);
 }

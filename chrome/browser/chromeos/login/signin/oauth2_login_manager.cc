@@ -138,8 +138,8 @@ void OAuth2LoginManager::OnRefreshTokenAvailable(
 
   // Do not validate tokens for supervised users, as they don't actually have
   // oauth2 token.
-  if (UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
-    VLOG(1) << "Logged in as managed user, skip token validation.";
+  if (UserManager::Get()->IsLoggedInAsSupervisedUser()) {
+    VLOG(1) << "Logged in as supervised user, skip token validation.";
     return;
   }
   // Only restore session cookies for the primary account in the profile.

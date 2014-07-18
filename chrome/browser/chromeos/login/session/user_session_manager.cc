@@ -598,13 +598,13 @@ void UserSessionManager::InitProfilePreferences(Profile* profile,
   if (UserManager::Get()->IsCurrentUserNew())
     SetFirstLoginPrefs(profile->GetPrefs());
 
-  if (UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
+  if (UserManager::Get()->IsLoggedInAsSupervisedUser()) {
     User* active_user = UserManager::Get()->GetActiveUser();
-    std::string managed_user_sync_id =
+    std::string supervised_user_sync_id =
         UserManager::Get()->GetSupervisedUserManager()->
             GetUserSyncId(active_user->email());
     profile->GetPrefs()->SetString(prefs::kSupervisedUserId,
-                                   managed_user_sync_id);
+                                   supervised_user_sync_id);
   } else if (UserManager::Get()->IsLoggedInAsRegularUser()) {
     // Make sure that the google service username is properly set (we do this
     // on every sign in, not just the first login, to deal with existing

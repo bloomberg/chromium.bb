@@ -1,15 +1,15 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_SUPERVISED_USER_AUTHENTICATION_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_SUPERVISED_USER_AUTHENTICATION_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_AUTHENTICATION_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_AUTHENTICATION_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/managed/supervised_user_login_flow.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_login_flow.h"
 #include "chromeos/login/auth/user_context.h"
 
 namespace chromeos {
@@ -121,4 +121,4 @@ class SupervisedUserAuthentication {
 
 } // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_SUPERVISED_USER_AUTHENTICATION_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_AUTHENTICATION_H_

@@ -43,8 +43,8 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   // Must be called on the UI thread.
   virtual void AuthenticateToUnlock(const UserContext& user_context) = 0;
 
-  // Initiates locally managed user login.
-  virtual void LoginAsLocallyManagedUser(
+  // Initiates supervised user login.
+  virtual void LoginAsSupervisedUser(
       const UserContext& user_context) = 0;
 
   // Initiates retail mode login.

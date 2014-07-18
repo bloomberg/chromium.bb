@@ -21,9 +21,8 @@ USER_MANAGER_EXPORT typedef enum {
   // Public account user, logs in without authentication. Available only if
   // enabled through policy.
   USER_TYPE_PUBLIC_ACCOUNT = 3,
-  // Supervised (aka locally managed) user, logs in only with local
-  // authentication.
-  USER_TYPE_LOCALLY_MANAGED = 4,
+  // Supervised user, logs in only with local authentication.
+  USER_TYPE_SUPERVISED = 4,
   // Kiosk app robot, logs in without authentication.
   USER_TYPE_KIOSK_APP = 5,
   // Maximum histogram value.

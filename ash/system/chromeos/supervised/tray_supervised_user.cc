@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/managed/tray_locally_managed_user.h"
+#include "ash/system/chromeos/supervised/tray_supervised_user.h"
 
 #include "ash/shell.h"
 #include "ash/system/chromeos/label_tray_view.h"
@@ -22,21 +22,21 @@ using message_center::Notification;
 
 namespace ash {
 
-const char TrayLocallyManagedUser::kNotificationId[] =
+const char TraySupervisedUser::kNotificationId[] =
     "chrome://user/locally-managed";
 
-TrayLocallyManagedUser::TrayLocallyManagedUser(SystemTray* system_tray)
+TraySupervisedUser::TraySupervisedUser(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       tray_view_(NULL),
       status_(ash::user::LOGGED_IN_NONE) {
 }
 
-TrayLocallyManagedUser::~TrayLocallyManagedUser() {
+TraySupervisedUser::~TraySupervisedUser() {
 }
 
-void TrayLocallyManagedUser::UpdateMessage() {
+void TraySupervisedUser::UpdateMessage() {
   base::string16 message = Shell::GetInstance()->system_tray_delegate()->
-      GetLocallyManagedUserMessage();
+      GetSupervisedUserMessage();
   if (tray_view_)
     tray_view_->SetMessage(message);
   if (message_center::MessageCenter::Get()->FindVisibleNotificationById(
@@ -44,10 +44,10 @@ void TrayLocallyManagedUser::UpdateMessage() {
     CreateOrUpdateNotification(message);
 }
 
-views::View* TrayLocallyManagedUser::CreateDefaultView(
+views::View* TraySupervisedUser::CreateDefaultView(
     user::LoginStatus status) {
   CHECK(tray_view_ == NULL);
-  if (status != ash::user::LOGGED_IN_LOCALLY_MANAGED)
+  if (status != ash::user::LOGGED_IN_SUPERVISED)
     return NULL;
 
   tray_view_ = new LabelTrayView(this, IDR_AURA_UBER_TRAY_MANAGED_USER);
@@ -55,27 +55,27 @@ views::View* TrayLocallyManagedUser::CreateDefaultView(
   return tray_view_;
 }
 
-void TrayLocallyManagedUser::DestroyDefaultView() {
+void TraySupervisedUser::DestroyDefaultView() {
   tray_view_ = NULL;
 }
 
-void TrayLocallyManagedUser::OnViewClicked(views::View* sender) {
-  Shell::GetInstance()->system_tray_delegate()->ShowLocallyManagedUserInfo();
+void TraySupervisedUser::OnViewClicked(views::View* sender) {
+  Shell::GetInstance()->system_tray_delegate()->ShowSupervisedUserInfo();
 }
 
-void TrayLocallyManagedUser::UpdateAfterLoginStatusChange(
+void TraySupervisedUser::UpdateAfterLoginStatusChange(
     user::LoginStatus status) {
   if (status == status_)
     return;
-  if (status == ash::user::LOGGED_IN_LOCALLY_MANAGED &&
+  if (status == ash::user::LOGGED_IN_SUPERVISED &&
       status_ != ash::user::LOGGED_IN_LOCKED) {
     SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
-    CreateOrUpdateNotification(delegate->GetLocallyManagedUserMessage());
+    CreateOrUpdateNotification(delegate->GetSupervisedUserMessage());
   }
   status_ = status;
 }
 
-void TrayLocallyManagedUser::CreateOrUpdateNotification(
+void TraySupervisedUser::CreateOrUpdateNotification(
     const base::string16& new_message) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   scoped_ptr<Notification> notification(
@@ -84,7 +84,7 @@ void TrayLocallyManagedUser::CreateOrUpdateNotification(
           base::string16() /* no title */,
           new_message,
           bundle.GetImageNamed(IDR_AURA_UBER_TRAY_MANAGED_USER),
-          system_notifier::kNotifierLocallyManagedUser,
+          system_notifier::kNotifierSupervisedUser,
           base::Closure() /* null callback */));
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }

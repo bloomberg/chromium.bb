@@ -409,11 +409,11 @@ void UserManagerImpl::UserLoggedIn(const std::string& user_id,
     if (user && user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
       PublicAccountUserLoggedIn(user);
     } else if ((user &&
-                user->GetType() == user_manager::USER_TYPE_LOCALLY_MANAGED) ||
+                user->GetType() == user_manager::USER_TYPE_SUPERVISED) ||
                (!user &&
                 gaia::ExtractDomainName(user_id) ==
-                    chromeos::login::kLocallyManagedUserDomain)) {
-      LocallyManagedUserLoggedIn(user_id);
+                    chromeos::login::kSupervisedUserDomain)) {
+      SupervisedUserLoggedIn(user_id);
     } else if (browser_restart && user_id == g_browser_process->local_state()->
                    GetString(kPublicAccountPendingDataRemoval)) {
       PublicAccountUserLoggedIn(User::CreatePublicAccountUser(user_id));
@@ -515,7 +515,7 @@ void UserManagerImpl::RemoveUser(const std::string& user_id,
 
   const User* user = FindUser(user_id);
   if (!user || (user->GetType() != user_manager::USER_TYPE_REGULAR &&
-                user->GetType() != user_manager::USER_TYPE_LOCALLY_MANAGED))
+                user->GetType() != user_manager::USER_TYPE_SUPERVISED))
     return;
 
   // Sanity check: we must not remove single user unless it's an enterprise
@@ -578,10 +578,10 @@ void UserManagerImpl::RemoveUserFromList(const std::string& user_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RemoveNonCryptohomeData(user_id);
   if (user_loading_stage_ == STAGE_LOADED) {
-    DeleteUser(RemoveRegularOrLocallyManagedUserFromList(user_id));
+    DeleteUser(RemoveRegularOrSupervisedUserFromList(user_id));
   } else if (user_loading_stage_ == STAGE_LOADING) {
     DCHECK(gaia::ExtractDomainName(user_id) ==
-           chromeos::login::kLocallyManagedUserDomain);
+           chromeos::login::kSupervisedUserDomain);
     // Special case, removing partially-constructed supervised user during user
     // list loading.
     ListPrefUpdate users_update(g_browser_process->local_state(),
@@ -784,7 +784,7 @@ void UserManagerImpl::Observe(int type,
       if (IsUserLoggedIn() &&
           !IsLoggedInAsGuest() &&
           !IsLoggedInAsKioskApp()) {
-        if (IsLoggedInAsLocallyManagedUser())
+        if (IsLoggedInAsSupervisedUser())
           SupervisedUserPasswordServiceFactory::GetForProfile(profile);
         if (IsLoggedInAsRegularUser())
           ManagerPasswordServiceFactory::GetForProfile(profile);
@@ -927,10 +927,10 @@ bool UserManagerImpl::IsLoggedInAsGuest() const {
          active_user_->GetType() == user_manager::USER_TYPE_GUEST;
 }
 
-bool UserManagerImpl::IsLoggedInAsLocallyManagedUser() const {
+bool UserManagerImpl::IsLoggedInAsSupervisedUser() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return IsUserLoggedIn() &&
-         active_user_->GetType() == user_manager::USER_TYPE_LOCALLY_MANAGED;
+         active_user_->GetType() == user_manager::USER_TYPE_SUPERVISED;
 }
 
 bool UserManagerImpl::IsLoggedInAsKioskApp() const {
@@ -1050,7 +1050,7 @@ void UserManagerImpl::EnsureUsersLoaded() {
     UpdatePublicAccountDisplayName(*it);
   }
 
-  // Load regular users and locally managed users.
+  // Load regular users and supervised users.
   std::vector<std::string> regular_users;
   std::set<std::string> regular_users_set;
   ParseUserList(*prefs_regular_users, public_sessions_set,
@@ -1059,8 +1059,8 @@ void UserManagerImpl::EnsureUsersLoaded() {
        it != regular_users.end(); ++it) {
     User* user = NULL;
     const std::string domain = gaia::ExtractDomainName(*it);
-    if (domain == chromeos::login::kLocallyManagedUserDomain)
-      user = User::CreateLocallyManagedUser(*it);
+    if (domain == chromeos::login::kSupervisedUserDomain)
+      user = User::CreateSupervisedUser(*it);
     else
       user = User::CreateRegularUser(*it);
     user->set_oauth_token_status(LoadUserOAuthStatus(*it));
@@ -1201,7 +1201,7 @@ void UserManagerImpl::AddUserRecord(User* user) {
 
 void UserManagerImpl::RegularUserLoggedIn(const std::string& user_id) {
   // Remove the user from the user list.
-  active_user_ = RemoveRegularOrLocallyManagedUserFromList(user_id);
+  active_user_ = RemoveRegularOrSupervisedUserFromList(user_id);
 
   // If the user was not found on the user list, create a new user.
   is_current_user_new_ = !active_user_;
@@ -1233,16 +1233,16 @@ void UserManagerImpl::RegularUserLoggedInAsEphemeral(
   WallpaperManager::Get()->SetUserWallpaperNow(user_id);
 }
 
-void UserManagerImpl::LocallyManagedUserLoggedIn(
+void UserManagerImpl::SupervisedUserLoggedIn(
     const std::string& user_id) {
   // TODO(nkostylev): Refactor, share code with RegularUserLoggedIn().
 
   // Remove the user from the user list.
-  active_user_ = RemoveRegularOrLocallyManagedUserFromList(user_id);
+  active_user_ = RemoveRegularOrSupervisedUserFromList(user_id);
   // If the user was not found on the user list, create a new user.
   if (!active_user_) {
     is_current_user_new_ = true;
-    active_user_ = User::CreateLocallyManagedUser(user_id);
+    active_user_ = User::CreateSupervisedUser(user_id);
     // Leaving OAuth token status at the default state = unknown.
     WallpaperManager::Get()->SetUserWallpaperNow(user_id);
   } else {
@@ -1441,7 +1441,7 @@ void UserManagerImpl::RemoveNonCryptohomeData(const std::string& user_id) {
   multi_profile_user_controller_->RemoveCachedValues(user_id);
 }
 
-User* UserManagerImpl::RemoveRegularOrLocallyManagedUserFromList(
+User* UserManagerImpl::RemoveRegularOrSupervisedUserFromList(
     const std::string& user_id) {
   ListPrefUpdate prefs_users_update(g_browser_process->local_state(),
                                     kRegularUsers);
@@ -1454,7 +1454,7 @@ User* UserManagerImpl::RemoveRegularOrLocallyManagedUserFromList(
       it = users_.erase(it);
     } else {
       if ((*it)->GetType() == user_manager::USER_TYPE_REGULAR ||
-          (*it)->GetType() == user_manager::USER_TYPE_LOCALLY_MANAGED) {
+          (*it)->GetType() == user_manager::USER_TYPE_SUPERVISED) {
         prefs_users_update->Append(new base::StringValue(user_email));
       }
       ++it;
@@ -1630,11 +1630,11 @@ void UserManagerImpl::ResetUserFlow(const std::string& user_id) {
   }
 }
 
-bool UserManagerImpl::AreLocallyManagedUsersAllowed() const {
-  bool locally_managed_users_allowed = false;
+bool UserManagerImpl::AreSupervisedUsersAllowed() const {
+  bool supervised_users_allowed = false;
   cros_settings_->GetBoolean(kAccountsPrefSupervisedUsersEnabled,
-                             &locally_managed_users_allowed);
-  return locally_managed_users_allowed;
+                             &supervised_users_allowed);
+  return supervised_users_allowed;
 }
 
 UserFlow* UserManagerImpl::GetDefaultUserFlow() const {
@@ -1691,8 +1691,8 @@ void UserManagerImpl::UpdateLoginState() {
     login_user_type = LoginState::LOGGED_IN_USER_RETAIL_MODE;
   else if (active_user_->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT)
     login_user_type = LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT;
-  else if (active_user_->GetType() == user_manager::USER_TYPE_LOCALLY_MANAGED)
-    login_user_type = LoginState::LOGGED_IN_USER_LOCALLY_MANAGED;
+  else if (active_user_->GetType() == user_manager::USER_TYPE_SUPERVISED)
+    login_user_type = LoginState::LOGGED_IN_USER_SUPERVISED;
   else if (active_user_->GetType() == user_manager::USER_TYPE_KIOSK_APP)
     login_user_type = LoginState::LOGGED_IN_USER_KIOSK_APP;
   else

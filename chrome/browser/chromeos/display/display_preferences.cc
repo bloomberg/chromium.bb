@@ -101,7 +101,7 @@ bool UserCanSaveDisplayPreference() {
   UserManager* user_manager = UserManager::Get();
   return user_manager->IsUserLoggedIn() &&
       (user_manager->IsLoggedInAsRegularUser() ||
-       user_manager->IsLoggedInAsLocallyManagedUser() ||
+       user_manager->IsLoggedInAsSupervisedUser() ||
        user_manager->IsLoggedInAsKioskApp());
 }
 

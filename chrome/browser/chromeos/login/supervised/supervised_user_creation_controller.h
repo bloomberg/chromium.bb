@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_MANAGED_USER_CREATION_CONTROLLER_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_MANAGED_USER_CREATION_CONTROLLER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_CREATION_CONTROLLER_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_CREATION_CONTROLLER_H_
 
 #include <string>
 
@@ -13,16 +13,14 @@
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/managed/managed_user_authenticator.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_authenticator.h"
 #include "chrome/browser/supervised_user/supervised_user_registration_utility.h"
 
 class Profile;
 
 namespace chromeos {
 
-// ManagedUserCreationController is used to locally managed user
-// creation.
-class ManagedUserCreationController {
+class SupervisedUserCreationController {
  public:
   // This constant is used to indicate that user does not have one of default
   // avatars: either he has no chromeos avatar at all, or has an external
@@ -50,12 +48,12 @@ class ManagedUserCreationController {
 
   // All UI initialization is deferred till Init() call.
   // |Consumer| is not owned by controller, and it is expected that it wouldn't
-  // be deleted before ManagedUserCreationController.
-  explicit ManagedUserCreationController(StatusConsumer* consumer);
-  virtual ~ManagedUserCreationController();
+  // be deleted before SupervisedUserCreationController.
+  explicit SupervisedUserCreationController(StatusConsumer* consumer);
+  virtual ~SupervisedUserCreationController();
 
-  // Returns the current locally managed user controller if it has been created.
-  static ManagedUserCreationController* current_controller() {
+  // Returns the current supervised user controller if it has been created.
+  static SupervisedUserCreationController* current_controller() {
     return current_controller_;
   }
 
@@ -92,19 +90,19 @@ class ManagedUserCreationController {
   virtual Profile* GetManagerProfile() = 0;
   virtual void CancelCreation() = 0;
   virtual void FinishCreation() = 0;
-  virtual std::string GetManagedUserId() = 0;
+  virtual std::string GetSupervisedUserId() = 0;
 
  protected:
   // Pointer to the current instance of the controller to be used by
   // automation tests.
-  static ManagedUserCreationController* current_controller_;
+  static SupervisedUserCreationController* current_controller_;
 
   StatusConsumer* consumer_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ManagedUserCreationController);
+  DISALLOW_COPY_AND_ASSIGN(SupervisedUserCreationController);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_MANAGED_USER_CREATION_CONTROLLER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_CREATION_CONTROLLER_H_

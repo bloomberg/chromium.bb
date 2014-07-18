@@ -80,7 +80,7 @@ class ParallelAuthenticator : public Authenticator,
                              // but offline succeeded.
     GUEST_LOGIN = 17,        // Logged in guest mode.
     PUBLIC_ACCOUNT_LOGIN = 18,        // Logged into a public account.
-    LOCALLY_MANAGED_USER_LOGIN = 19,  // Logged in as a locally managed user.
+    SUPERVISED_USER_LOGIN = 19,       // Logged in as a supervised user.
     LOGIN_FAILED = 20,       // Login denied.
     OWNER_REQUIRED = 21,     // Login is restricted to the owner only.
     FAILED_USERNAME_HASH = 22,        // Failed GetSanitizedUsername request.
@@ -112,10 +112,10 @@ class ParallelAuthenticator : public Authenticator,
   // AuthenticateToLogin does.
   virtual void AuthenticateToUnlock(const UserContext& user_context) OVERRIDE;
 
-  // Initiates locally managed user login.
+  // Initiates supervised user login.
   // Creates cryptohome if missing or mounts existing one and
   // notifies consumer on the success/failure.
-  virtual void LoginAsLocallyManagedUser(
+  virtual void LoginAsSupervisedUser(
       const UserContext& user_context) OVERRIDE;
 
   // Initiates retail mode login.

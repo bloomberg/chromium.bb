@@ -31,8 +31,8 @@ class TrackedPreferenceValidationDelegate;
 namespace chromeos {
 class KioskTest;
 class LocaleChangeGuard;
-class ManagedUserTestBase;
 class Preferences;
+class SupervisedUserTestBase;
 }
 #endif
 
@@ -143,7 +143,7 @@ class ProfileImpl : public Profile {
  private:
 #if defined(OS_CHROMEOS)
   friend class chromeos::KioskTest;
-  friend class chromeos::ManagedUserTestBase;
+  friend class chromeos::SupervisedUserTestBase;
 #endif
   friend class Profile;
   friend class BetterSessionRestoreCrashTest;

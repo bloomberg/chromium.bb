@@ -58,7 +58,7 @@ class MockUserManager : public UserManager {
   MOCK_CONST_METHOD0(IsLoggedInAsDemoUser, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsPublicAccount, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsGuest, bool(void));
-  MOCK_CONST_METHOD0(IsLoggedInAsLocallyManagedUser, bool(void));
+  MOCK_CONST_METHOD0(IsLoggedInAsSupervisedUser, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsKioskApp, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsStub, bool(void));
   MOCK_CONST_METHOD0(IsSessionStarted, bool(void));
@@ -74,7 +74,7 @@ class MockUserManager : public UserManager {
   MOCK_METHOD2(SetUserFlow, void(const std::string&, UserFlow*));
   MOCK_METHOD1(ResetUserFlow, void(const std::string&));
 
-  MOCK_CONST_METHOD0(AreLocallyManagedUsersAllowed, bool(void));
+  MOCK_CONST_METHOD0(AreSupervisedUsersAllowed, bool(void));
 
   // You can't mock these functions easily because nobody can create
   // User objects but the UserManagerImpl and us.

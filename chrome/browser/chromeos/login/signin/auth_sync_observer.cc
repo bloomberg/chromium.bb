@@ -45,7 +45,7 @@ void AuthSyncObserver::Shutdown() {
 
 void AuthSyncObserver::OnStateChanged() {
   DCHECK(UserManager::Get()->IsLoggedInAsRegularUser() ||
-         UserManager::Get()->IsLoggedInAsLocallyManagedUser());
+         UserManager::Get()->IsLoggedInAsSupervisedUser());
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   User* user = ProfileHelper::Get()->GetUserByProfile(profile_);
@@ -66,7 +66,7 @@ void AuthSyncObserver::OnStateChanged() {
     User::OAuthTokenStatus old_status = user->oauth_token_status();
     UserManager::Get()->SaveUserOAuthStatus(email,
         User::OAUTH2_TOKEN_STATUS_INVALID);
-    if (user->GetType() == user_manager::USER_TYPE_LOCALLY_MANAGED &&
+    if (user->GetType() == user_manager::USER_TYPE_SUPERVISED &&
         old_status != User::OAUTH2_TOKEN_STATUS_INVALID) {
        // Attempt to restore token from file.
        UserManager::Get()->GetSupervisedUserManager()->LoadSupervisedUserToken(
@@ -77,7 +77,7 @@ void AuthSyncObserver::OnStateChanged() {
            base::UserMetricsAction("ManagedUsers_Chromeos_Sync_Invalidated"));
     }
   } else if (state == GoogleServiceAuthError::NONE) {
-    if (user->GetType() == user_manager::USER_TYPE_LOCALLY_MANAGED &&
+    if (user->GetType() == user_manager::USER_TYPE_SUPERVISED &&
         user->oauth_token_status() == User::OAUTH2_TOKEN_STATUS_INVALID) {
       LOG(ERROR) <<
           "Got an incorrectly invalidated token case, restoring token status.";

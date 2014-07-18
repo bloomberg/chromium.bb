@@ -28,7 +28,7 @@ class MockAuthenticator : public Authenticator {
   virtual void AuthenticateToLogin(Profile* profile,
                                    const UserContext& user_context) OVERRIDE;
   virtual void AuthenticateToUnlock(const UserContext& user_context) OVERRIDE;
-  virtual void LoginAsLocallyManagedUser(
+  virtual void LoginAsSupervisedUser(
       const UserContext& user_context) OVERRIDE;
   virtual void LoginRetailMode() OVERRIDE;
   virtual void LoginOffTheRecord() OVERRIDE;

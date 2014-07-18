@@ -95,7 +95,7 @@ class FakeUserManager : public UserManager {
   virtual bool IsLoggedInAsDemoUser() const OVERRIDE;
   virtual bool IsLoggedInAsPublicAccount() const OVERRIDE;
   virtual bool IsLoggedInAsGuest() const OVERRIDE;
-  virtual bool IsLoggedInAsLocallyManagedUser() const OVERRIDE;
+  virtual bool IsLoggedInAsSupervisedUser() const OVERRIDE;
   virtual bool IsLoggedInAsKioskApp() const OVERRIDE;
   virtual bool IsLoggedInAsStub() const OVERRIDE;
   virtual bool IsSessionStarted() const OVERRIDE;
@@ -112,7 +112,7 @@ class FakeUserManager : public UserManager {
   virtual void RemoveSessionStateObserver(
       UserSessionStateObserver* obs) OVERRIDE {}
   virtual void NotifyLocalStateChanged() OVERRIDE {}
-  virtual bool AreLocallyManagedUsersAllowed() const OVERRIDE;
+  virtual bool AreSupervisedUsersAllowed() const OVERRIDE;
 
   void set_owner_email(const std::string& owner_email) {
     owner_email_ = owner_email;

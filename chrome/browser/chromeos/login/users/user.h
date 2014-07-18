@@ -149,7 +149,7 @@ class User : public user_manager::UserInfo {
   static User* CreateRegularUser(const std::string& email);
   static User* CreateGuestUser();
   static User* CreateKioskAppUser(const std::string& kiosk_app_username);
-  static User* CreateLocallyManagedUser(const std::string& username);
+  static User* CreateSupervisedUser(const std::string& username);
   static User* CreateRetailModeUser();
   static User* CreatePublicAccountUser(const std::string& email);
 

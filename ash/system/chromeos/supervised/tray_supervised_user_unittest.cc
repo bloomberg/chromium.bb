@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/managed/tray_locally_managed_user.h"
+#include "ash/system/chromeos/supervised/tray_supervised_user.h"
 
 #include "ash/shell.h"
 #include "ash/system/user/login_status.h"
@@ -17,57 +17,57 @@ using message_center::NotificationList;
 
 namespace ash {
 
-class TrayLocallyManagedUserTest : public test::AshTestBase {
+class TraySupervisedUserTest : public test::AshTestBase {
  public:
-  TrayLocallyManagedUserTest() {}
-  virtual ~TrayLocallyManagedUserTest() {}
+  TraySupervisedUserTest() {}
+  virtual ~TraySupervisedUserTest() {}
 
  protected:
   message_center::Notification* GetPopup();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TrayLocallyManagedUserTest);
+  DISALLOW_COPY_AND_ASSIGN(TraySupervisedUserTest);
 };
 
-message_center::Notification* TrayLocallyManagedUserTest::GetPopup() {
+message_center::Notification* TraySupervisedUserTest::GetPopup() {
   NotificationList::PopupNotifications popups =
       message_center::MessageCenter::Get()->GetPopupNotifications();
   for (NotificationList::PopupNotifications::const_iterator iter =
            popups.begin(); iter != popups.end(); ++iter) {
-    if ((*iter)->id() == TrayLocallyManagedUser::kNotificationId)
+    if ((*iter)->id() == TraySupervisedUser::kNotificationId)
       return *iter;
   }
   return NULL;
 }
 
-class TrayLocallyManagedUserInitialTest : public TrayLocallyManagedUserTest {
+class TraySupervisedUserInitialTest : public TraySupervisedUserTest {
  public:
-  TrayLocallyManagedUserInitialTest() {}
-  virtual ~TrayLocallyManagedUserInitialTest() {}
+  TraySupervisedUserInitialTest() {}
+  virtual ~TraySupervisedUserInitialTest() {}
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TrayLocallyManagedUserInitialTest);
+  DISALLOW_COPY_AND_ASSIGN(TraySupervisedUserInitialTest);
 };
 
-void TrayLocallyManagedUserInitialTest::SetUp() {
+void TraySupervisedUserInitialTest::SetUp() {
   test::TestSystemTrayDelegate::SetInitialLoginStatus(
-      user::LOGGED_IN_LOCALLY_MANAGED);
+      user::LOGGED_IN_SUPERVISED);
   test::AshTestBase::SetUp();
 }
 
-void TrayLocallyManagedUserInitialTest::TearDown() {
+void TraySupervisedUserInitialTest::TearDown() {
   test::AshTestBase::TearDown();
   // SetInitialLoginStatus() is reset in AshTestHelper::TearDown().
 }
 
-TEST_F(TrayLocallyManagedUserTest, LocallyManagedUserHasNotification) {
+TEST_F(TraySupervisedUserTest, SupervisedUserHasNotification) {
   test::TestSystemTrayDelegate* delegate =
       static_cast<test::TestSystemTrayDelegate*>(
           ash::Shell::GetInstance()->system_tray_delegate());
-  delegate->SetLoginStatus(user::LOGGED_IN_LOCALLY_MANAGED);
+  delegate->SetLoginStatus(user::LOGGED_IN_SUPERVISED);
 
   message_center::Notification* notification = GetPopup();
   ASSERT_NE(static_cast<message_center::Notification*>(NULL), notification);
@@ -75,8 +75,8 @@ TEST_F(TrayLocallyManagedUserTest, LocallyManagedUserHasNotification) {
             notification->rich_notification_data().priority);
 }
 
-TEST_F(TrayLocallyManagedUserInitialTest, LocallyManagedUserNoCrash) {
-  // Initial login status is already LOCALLY_MANAGED, which should create
+TEST_F(TraySupervisedUserInitialTest, SupervisedUserNoCrash) {
+  // Initial login status is already SUPERVISED, which should create
   // the notification and should not cause crashes.
   message_center::Notification* notification = GetPopup();
   ASSERT_NE(static_cast<message_center::Notification*>(NULL), notification);

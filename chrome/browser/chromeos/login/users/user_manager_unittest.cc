@@ -133,7 +133,7 @@ class UserManagerTest : public testing::Test {
 
   void SetDeviceSettings(bool ephemeral_users_enabled,
                          const std::string &owner,
-                         bool locally_managed_users_enabled) {
+                         bool supervised_users_enabled) {
     base::FundamentalValue
         ephemeral_users_enabled_value(ephemeral_users_enabled);
     stub_settings_provider_.Set(kAccountsPrefEphemeralUsersEnabled,
@@ -141,7 +141,7 @@ class UserManagerTest : public testing::Test {
     base::StringValue owner_value(owner);
     stub_settings_provider_.Set(kDeviceOwner, owner_value);
     stub_settings_provider_.Set(kAccountsPrefSupervisedUsersEnabled,
-        base::FundamentalValue(locally_managed_users_enabled));
+        base::FundamentalValue(supervised_users_enabled));
   }
 
   void RetrieveTrustedDevicePolicies() {

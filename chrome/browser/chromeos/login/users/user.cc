@@ -71,17 +71,17 @@ class KioskAppUser : public User {
   DISALLOW_COPY_AND_ASSIGN(KioskAppUser);
 };
 
-class LocallyManagedUser : public User {
+class SupervisedUser : public User {
  public:
-  explicit LocallyManagedUser(const std::string& username);
-  virtual ~LocallyManagedUser();
+  explicit SupervisedUser(const std::string& username);
+  virtual ~SupervisedUser();
 
   // Overridden from User:
   virtual user_manager::UserType GetType() const OVERRIDE;
   virtual std::string display_email() const OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(LocallyManagedUser);
+  DISALLOW_COPY_AND_ASSIGN(SupervisedUser);
 };
 
 class RetailModeUser : public User {
@@ -178,8 +178,8 @@ User* User::CreateKioskAppUser(const std::string& kiosk_app_username) {
   return new KioskAppUser(kiosk_app_username);
 }
 
-User* User::CreateLocallyManagedUser(const std::string& username) {
-  return new LocallyManagedUser(username);
+User* User::CreateSupervisedUser(const std::string& username) {
+  return new SupervisedUser(username);
 }
 
 User* User::CreateRetailModeUser() {
@@ -267,18 +267,18 @@ user_manager::UserType KioskAppUser::GetType() const {
   return user_manager::USER_TYPE_KIOSK_APP;
 }
 
-LocallyManagedUser::LocallyManagedUser(const std::string& username)
+SupervisedUser::SupervisedUser(const std::string& username)
     : User(username) {
   set_can_lock(true);
 }
 
-LocallyManagedUser::~LocallyManagedUser() {}
+SupervisedUser::~SupervisedUser() {}
 
-user_manager::UserType LocallyManagedUser::GetType() const {
-  return user_manager::USER_TYPE_LOCALLY_MANAGED;
+user_manager::UserType SupervisedUser::GetType() const {
+  return user_manager::USER_TYPE_SUPERVISED;
 }
 
-std::string LocallyManagedUser::display_email() const {
+std::string SupervisedUser::display_email() const {
   return base::UTF16ToUTF8(display_name());
 }
 
@@ -309,7 +309,7 @@ bool User::has_gaia_account() const {
     case user_manager::USER_TYPE_GUEST:
     case user_manager::USER_TYPE_RETAIL_MODE:
     case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
-    case user_manager::USER_TYPE_LOCALLY_MANAGED:
+    case user_manager::USER_TYPE_SUPERVISED:
     case user_manager::USER_TYPE_KIOSK_APP:
       return false;
     default:

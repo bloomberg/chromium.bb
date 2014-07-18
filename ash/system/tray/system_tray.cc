@@ -47,7 +47,6 @@
 #include "ash/system/chromeos/audio/tray_audio_chromeos.h"
 #include "ash/system/chromeos/brightness/tray_brightness.h"
 #include "ash/system/chromeos/enterprise/tray_enterprise.h"
-#include "ash/system/chromeos/managed/tray_locally_managed_user.h"
 #include "ash/system/chromeos/network/tray_network.h"
 #include "ash/system/chromeos/network/tray_sms.h"
 #include "ash/system/chromeos/network/tray_vpn.h"
@@ -57,6 +56,7 @@
 #include "ash/system/chromeos/screen_security/screen_share_tray_item.h"
 #include "ash/system/chromeos/session/tray_session_length_limit.h"
 #include "ash/system/chromeos/settings/tray_settings.h"
+#include "ash/system/chromeos/supervised/tray_supervised_user.h"
 #include "ash/system/chromeos/tray_caps_lock.h"
 #include "ash/system/chromeos/tray_display.h"
 #include "ash/system/chromeos/tray_tracing.h"
@@ -173,7 +173,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
 #if defined(OS_CHROMEOS)
   AddTrayItem(new TraySessionLengthLimit(this));
   AddTrayItem(new TrayEnterprise(this));
-  AddTrayItem(new TrayLocallyManagedUser(this));
+  AddTrayItem(new TraySupervisedUser(this));
   AddTrayItem(new TrayIME(this));
   AddTrayItem(tray_accessibility_);
   AddTrayItem(new TrayTracing(this));

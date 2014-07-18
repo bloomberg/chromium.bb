@@ -44,7 +44,7 @@ KeyedService* SupervisedUserPasswordServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile= static_cast<Profile*>(context);
   User* user = ProfileHelper::Get()->GetUserByProfile(profile);
-  if (user->GetType() != user_manager::USER_TYPE_LOCALLY_MANAGED)
+  if (user->GetType() != user_manager::USER_TYPE_SUPERVISED)
     return NULL;
   SupervisedUserPasswordService* result = new SupervisedUserPasswordService();
   result->Init(

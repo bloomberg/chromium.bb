@@ -901,7 +901,7 @@ void BrowserOptionsHandler::InitializePage() {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (!connector->IsEnterpriseManaged() &&
       !chromeos::UserManager::Get()->IsLoggedInAsGuest() &&
-      !chromeos::UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
+      !chromeos::UserManager::Get()->IsLoggedInAsSupervisedUser()) {
     web_ui()->CallJavascriptFunction(
         "BrowserOptions.enableFactoryResetSection");
   }

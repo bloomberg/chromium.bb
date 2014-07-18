@@ -131,7 +131,7 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
 
   // Only USER_TYPE_REGULAR users have user cloud policy.
   // USER_TYPE_RETAIL_MODE, USER_TYPE_KIOSK_APP, USER_TYPE_GUEST and
-  // USER_TYPE_LOCALLY_MANAGED are not signed in and can't authenticate the
+  // USER_TYPE_SUPERVISED are not signed in and can't authenticate the
   // policy registration.
   // USER_TYPE_PUBLIC_ACCOUNT gets its policy from the
   // DeviceLocalAccountPolicyService.

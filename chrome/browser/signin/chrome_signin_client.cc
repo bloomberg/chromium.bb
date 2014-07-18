@@ -113,7 +113,7 @@ bool ChromeSigninClient::CanRevokeCredentials() {
 #if defined(OS_CHROMEOS)
   // UserManager may not exist in unit_tests.
   if (chromeos::UserManager::IsInitialized() &&
-      chromeos::UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
+      chromeos::UserManager::Get()->IsLoggedInAsSupervisedUser()) {
     // Don't allow revoking credentials for Chrome OS supervised users.
     // See http://crbug.com/332032
     LOG(ERROR) << "Attempt to revoke supervised user refresh "

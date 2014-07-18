@@ -407,8 +407,8 @@ ash::user::LoginStatus SystemTrayDelegateChromeOS::GetUserLoginStatus() const {
       return ash::user::LOGGED_IN_RETAIL_MODE;
     case LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT:
       return ash::user::LOGGED_IN_PUBLIC;
-    case LoginState::LOGGED_IN_USER_LOCALLY_MANAGED:
-      return ash::user::LOGGED_IN_LOCALLY_MANAGED;
+    case LoginState::LOGGED_IN_USER_SUPERVISED:
+      return ash::user::LOGGED_IN_SUPERVISED;
     case LoginState::LOGGED_IN_USER_KIOSK_APP:
       return ash::user::LOGGED_IN_KIOSK_APP;
   }
@@ -433,29 +433,28 @@ const base::string16 SystemTrayDelegateChromeOS::GetEnterpriseMessage() const {
                                     base::UTF8ToUTF16(GetEnterpriseDomain()));
 }
 
-const std::string SystemTrayDelegateChromeOS::GetLocallyManagedUserManager()
-    const {
-  if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
+const std::string SystemTrayDelegateChromeOS::GetSupervisedUserManager() const {
+  if (GetUserLoginStatus() != ash::user::LOGGED_IN_SUPERVISED)
     return std::string();
   return UserManager::Get()->GetSupervisedUserManager()->GetManagerDisplayEmail(
       chromeos::UserManager::Get()->GetActiveUser()->email());
 }
 
 const base::string16
-SystemTrayDelegateChromeOS::GetLocallyManagedUserManagerName() const {
-  if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
+SystemTrayDelegateChromeOS::GetSupervisedUserManagerName() const {
+  if (GetUserLoginStatus() != ash::user::LOGGED_IN_SUPERVISED)
     return base::string16();
   return UserManager::Get()->GetSupervisedUserManager()->GetManagerDisplayName(
       chromeos::UserManager::Get()->GetActiveUser()->email());
 }
 
-const base::string16 SystemTrayDelegateChromeOS::GetLocallyManagedUserMessage()
+const base::string16 SystemTrayDelegateChromeOS::GetSupervisedUserMessage()
     const {
-  if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
+  if (GetUserLoginStatus() != ash::user::LOGGED_IN_SUPERVISED)
     return base::string16();
   return l10n_util::GetStringFUTF16(
       IDS_USER_IS_LOCALLY_MANAGED_BY_NOTICE,
-      base::UTF8ToUTF16(GetLocallyManagedUserManager()));
+      base::UTF8ToUTF16(GetSupervisedUserManager()));
 }
 
 bool SystemTrayDelegateChromeOS::SystemShouldUpgrade() const {
@@ -574,7 +573,7 @@ void SystemTrayDelegateChromeOS::ShowPublicAccountInfo() {
   chrome::ShowPolicy(displayer.browser());
 }
 
-void SystemTrayDelegateChromeOS::ShowLocallyManagedUserInfo() {
+void SystemTrayDelegateChromeOS::ShowSupervisedUserInfo() {
   // TODO(antrim): find out what should we show in this case.
   // http://crbug.com/229762
 }

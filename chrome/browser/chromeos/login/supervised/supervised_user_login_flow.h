@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_SUPERVISED_USER_LOGIN_FLOW_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_SUPERVISED_USER_LOGIN_FLOW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_LOGIN_FLOW_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_LOGIN_FLOW_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -15,7 +15,7 @@
 
 namespace chromeos {
 
-// UserFlow implementation for signing in locally managed user.
+// UserFlow implementation for signing in supervised user.
 class SupervisedUserLoginFlow
     : public ExtendedUserFlow,
       public ExtendedAuthenticator::NewAuthStatusConsumer {
@@ -62,4 +62,4 @@ class SupervisedUserLoginFlow
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_SUPERVISED_USER_LOGIN_FLOW_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_LOGIN_FLOW_H_

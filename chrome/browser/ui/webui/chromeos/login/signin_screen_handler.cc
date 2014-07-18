@@ -677,7 +677,7 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("launchDemoUser", &SigninScreenHandler::HandleLaunchDemoUser);
   AddCallback("launchIncognito", &SigninScreenHandler::HandleLaunchIncognito);
   AddCallback("showLocallyManagedUserCreationScreen",
-              &SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen);
+              &SigninScreenHandler::HandleShowSupervisedUserCreationScreen);
   AddCallback("launchPublicAccount",
               &SigninScreenHandler::HandleLaunchPublicAccount);
   AddRawCallback("offlineLogin", &SigninScreenHandler::HandleOfflineLogin);
@@ -1002,14 +1002,14 @@ void SigninScreenHandler::HandleLaunchIncognito() {
     delegate_->Login(context, SigninSpecifics());
 }
 
-void SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen() {
-  if (!UserManager::Get()->AreLocallyManagedUsersAllowed()) {
+void SigninScreenHandler::HandleShowSupervisedUserCreationScreen() {
+  if (!UserManager::Get()->AreSupervisedUsersAllowed()) {
     LOG(ERROR) << "Managed users not allowed.";
     return;
   }
   scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
   LoginDisplayHostImpl::default_host()->
-      StartWizard(WizardController::kLocallyManagedUserCreationScreenName,
+      StartWizard(WizardController::kSupervisedUserCreationScreenName,
       params.Pass());
 }
 

@@ -688,7 +688,7 @@ bool ShelfWidget::ShelfAlignmentAllowed() {
       return true;
     case user::LOGGED_IN_LOCKED:
     case user::LOGGED_IN_PUBLIC:
-    case user::LOGGED_IN_LOCALLY_MANAGED:
+    case user::LOGGED_IN_SUPERVISED:
     case user::LOGGED_IN_GUEST:
     case user::LOGGED_IN_RETAIL_MODE:
     case user::LOGGED_IN_KIOSK_APP:

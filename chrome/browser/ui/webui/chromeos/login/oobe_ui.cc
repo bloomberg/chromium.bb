@@ -26,12 +26,12 @@
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_app_menu_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/locally_managed_user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
@@ -140,7 +140,8 @@ const char OobeUI::kScreenErrorMessage[] = "error-message";
 const char OobeUI::kScreenUserImagePicker[] = "user-image";
 const char OobeUI::kScreenTpmError[] = "tpm-error-message";
 const char OobeUI::kScreenPasswordChanged[] = "password-changed";
-const char OobeUI::kScreenManagedUserCreationFlow[] = "managed-user-creation";
+const char OobeUI::kScreenSupervisedUserCreationFlow[] =
+    "managed-user-creation";
 const char OobeUI::kScreenTermsOfService[] = "terms-of-service";
 const char OobeUI::kScreenWrongHWID[] = "wrong-hwid";
 const char OobeUI::kScreenAutoEnrollmentCheck[] = "auto-enrollment-check";
@@ -164,7 +165,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
       kiosk_enable_screen_actor_(NULL),
       wrong_hwid_screen_actor_(NULL),
       auto_enrollment_check_screen_actor_(NULL),
-      locally_managed_user_creation_screen_actor_(NULL),
+      supervised_user_creation_screen_actor_(NULL),
       error_screen_handler_(NULL),
       signin_screen_handler_(NULL),
       terms_of_service_screen_actor_(NULL),
@@ -215,12 +216,11 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   kiosk_enable_screen_actor_ = kiosk_enable_screen_handler;
   AddScreenHandler(kiosk_enable_screen_handler);
 
-  LocallyManagedUserCreationScreenHandler*
-      locally_managed_user_creation_screen_handler =
-          new LocallyManagedUserCreationScreenHandler();
-  locally_managed_user_creation_screen_actor_ =
-      locally_managed_user_creation_screen_handler;
-  AddScreenHandler(locally_managed_user_creation_screen_handler);
+  SupervisedUserCreationScreenHandler* supervised_user_creation_screen_handler =
+      new SupervisedUserCreationScreenHandler();
+  supervised_user_creation_screen_actor_ =
+      supervised_user_creation_screen_handler;
+  AddScreenHandler(supervised_user_creation_screen_handler);
 
   WrongHWIDScreenHandler* wrong_hwid_screen_handler =
       new WrongHWIDScreenHandler();
@@ -381,9 +381,9 @@ ErrorScreenActor* OobeUI::GetErrorScreenActor() {
   return error_screen_handler_;
 }
 
-LocallyManagedUserCreationScreenHandler*
-    OobeUI::GetLocallyManagedUserCreationScreenActor() {
-  return locally_managed_user_creation_screen_actor_;
+SupervisedUserCreationScreenHandler*
+    OobeUI::GetSupervisedUserCreationScreenActor() {
+  return supervised_user_creation_screen_actor_;
 }
 
 AppLaunchSplashScreenActor*
@@ -438,8 +438,8 @@ void OobeUI::InitializeScreenMaps() {
   screen_names_[SCREEN_USER_IMAGE_PICKER] = kScreenUserImagePicker;
   screen_names_[SCREEN_TPM_ERROR] = kScreenTpmError;
   screen_names_[SCREEN_PASSWORD_CHANGED] = kScreenPasswordChanged;
-  screen_names_[SCREEN_CREATE_MANAGED_USER_FLOW] =
-      kScreenManagedUserCreationFlow;
+  screen_names_[SCREEN_CREATE_SUPERVISED_USER_FLOW] =
+      kScreenSupervisedUserCreationFlow;
   screen_names_[SCREEN_TERMS_OF_SERVICE] = kScreenTermsOfService;
   screen_names_[SCREEN_WRONG_HWID] = kScreenWrongHWID;
   screen_names_[SCREEN_AUTO_ENROLLMENT_CHECK] = kScreenAutoEnrollmentCheck;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/managed/managed_user_test_base.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_test_base.h"
 
 #include <string>
 
@@ -14,8 +14,8 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/managed/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
@@ -56,7 +56,7 @@ const char kStubEthernetGuid[] = "eth0";
 
 }
 
-ManagedUsersSyncTestAdapter::ManagedUsersSyncTestAdapter(Profile* profile)
+SupervisedUsersSyncTestAdapter::SupervisedUsersSyncTestAdapter(Profile* profile)
     : processor_(), next_sync_data_id_(0) {
   service_ = SupervisedUserSyncServiceFactory::GetForProfile(profile);
   processor_ = new syncer::FakeSyncChangeProcessor();
@@ -68,7 +68,7 @@ ManagedUsersSyncTestAdapter::ManagedUsersSyncTestAdapter(Profile* profile)
 }
 
 scoped_ptr< ::sync_pb::ManagedUserSpecifics>
-ManagedUsersSyncTestAdapter::GetFirstChange() {
+SupervisedUsersSyncTestAdapter::GetFirstChange() {
   scoped_ptr< ::sync_pb::ManagedUserSpecifics> result(
       new ::sync_pb::ManagedUserSpecifics);
   CHECK(HasChanges())
@@ -79,7 +79,7 @@ ManagedUsersSyncTestAdapter::GetFirstChange() {
   return result.Pass();
 }
 
-void ManagedUsersSyncTestAdapter::AddChange(
+void SupervisedUsersSyncTestAdapter::AddChange(
     const ::sync_pb::ManagedUserSpecifics& proto,
     bool update) {
   sync_pb::EntitySpecifics specifics;
@@ -103,8 +103,8 @@ void ManagedUsersSyncTestAdapter::AddChange(
   service_->ProcessSyncChanges(FROM_HERE, change_list);
 }
 
-ManagedUsersSharedSettingsSyncTestAdapter::
-    ManagedUsersSharedSettingsSyncTestAdapter(Profile* profile)
+SupervisedUsersSharedSettingsSyncTestAdapter::
+    SupervisedUsersSharedSettingsSyncTestAdapter(Profile* profile)
     : processor_(), next_sync_data_id_(0) {
   service_ =
       SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(profile);
@@ -117,7 +117,7 @@ ManagedUsersSharedSettingsSyncTestAdapter::
 }
 
 scoped_ptr< ::sync_pb::ManagedUserSharedSettingSpecifics>
-ManagedUsersSharedSettingsSyncTestAdapter::GetFirstChange() {
+SupervisedUsersSharedSettingsSyncTestAdapter::GetFirstChange() {
   scoped_ptr< ::sync_pb::ManagedUserSharedSettingSpecifics> result(
       new ::sync_pb::ManagedUserSharedSettingSpecifics);
   CHECK(HasChanges())
@@ -128,7 +128,7 @@ ManagedUsersSharedSettingsSyncTestAdapter::GetFirstChange() {
   return result.Pass();
 }
 
-void ManagedUsersSharedSettingsSyncTestAdapter::AddChange(
+void SupervisedUsersSharedSettingsSyncTestAdapter::AddChange(
     const ::sync_pb::ManagedUserSharedSettingSpecifics& proto,
     bool update) {
   sync_pb::EntitySpecifics specifics;
@@ -152,7 +152,7 @@ void ManagedUsersSharedSettingsSyncTestAdapter::AddChange(
   service_->ProcessSyncChanges(FROM_HERE, change_list);
 }
 
-void ManagedUsersSharedSettingsSyncTestAdapter::AddChange(
+void SupervisedUsersSharedSettingsSyncTestAdapter::AddChange(
     const std::string& mu_id,
     const std::string& key,
     const base::Value& value,
@@ -164,7 +164,7 @@ void ManagedUsersSharedSettingsSyncTestAdapter::AddChange(
   AddChange(data.GetSpecifics().managed_user_shared_setting(), update);
 }
 
-ManagedUserTestBase::ManagedUserTestBase()
+SupervisedUserTestBase::SupervisedUserTestBase()
     : LoginManagerTest(true),
       mock_async_method_caller_(NULL),
       mock_homedir_methods_(NULL),
@@ -172,10 +172,10 @@ ManagedUserTestBase::ManagedUserTestBase()
       registration_utility_stub_(NULL) {
 }
 
-ManagedUserTestBase::~ManagedUserTestBase() {
+SupervisedUserTestBase::~SupervisedUserTestBase() {
 }
 
-void ManagedUserTestBase::SetUpInProcessBrowserTestFixture() {
+void SupervisedUserTestBase::SetUpInProcessBrowserTestFixture() {
   LoginManagerTest::SetUpInProcessBrowserTestFixture();
   mock_async_method_caller_ = new cryptohome::MockAsyncMethodCaller;
   mock_async_method_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
@@ -203,11 +203,11 @@ void ManagedUserTestBase::SetUpInProcessBrowserTestFixture() {
                                                           online_state);
 }
 
-void ManagedUserTestBase::CleanUpOnMainThread() {
+void SupervisedUserTestBase::CleanUpOnMainThread() {
   LoginManagerTest::CleanUpOnMainThread();
 }
 
-void ManagedUserTestBase::TearDown() {
+void SupervisedUserTestBase::TearDown() {
   cryptohome::AsyncMethodCaller::Shutdown();
   cryptohome::HomedirMethods::Shutdown();
   mock_homedir_methods_ = NULL;
@@ -215,15 +215,15 @@ void ManagedUserTestBase::TearDown() {
   LoginManagerTest::TearDown();
 }
 
-void ManagedUserTestBase::TearDownInProcessBrowserTestFixture() {
+void SupervisedUserTestBase::TearDownInProcessBrowserTestFixture() {
   NetworkPortalDetector::Shutdown();
 }
 
-void ManagedUserTestBase::JSEval(const std::string& script) {
+void SupervisedUserTestBase::JSEval(const std::string& script) {
   EXPECT_TRUE(content::ExecuteScript(web_contents(), script)) << script;
 }
 
-void ManagedUserTestBase::JSExpectAsync(const std::string& function) {
+void SupervisedUserTestBase::JSExpectAsync(const std::string& function) {
   bool result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       web_contents(),
@@ -234,7 +234,7 @@ void ManagedUserTestBase::JSExpectAsync(const std::string& function) {
   EXPECT_TRUE(result);
 }
 
-void ManagedUserTestBase::JSSetTextField(const std::string& element_selector,
+void SupervisedUserTestBase::JSSetTextField(const std::string& element_selector,
                                          const std::string& value) {
   std::string function =
       StringPrintf("document.querySelector('%s').value = '%s'",
@@ -243,13 +243,13 @@ void ManagedUserTestBase::JSSetTextField(const std::string& element_selector,
   JSEval(function);
 }
 
-void ManagedUserTestBase::PrepareUsers() {
+void SupervisedUserTestBase::PrepareUsers() {
   RegisterUser(kTestManager);
   RegisterUser(kTestOtherUser);
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
-void ManagedUserTestBase::StartFlowLoginAsManager() {
+void SupervisedUserTestBase::StartFlowLoginAsManager() {
   // Navigate to supervised user creation screen.
   JSEval("chrome.send('showLocallyManagedUserCreationScreen')");
 
@@ -312,7 +312,7 @@ void ManagedUserTestBase::StartFlowLoginAsManager() {
   JSExpect(StringPrintf("%s == 'username'", kCurrentPage));
 }
 
-void ManagedUserTestBase::FillNewUserData(const std::string& display_name) {
+void SupervisedUserTestBase::FillNewUserData(const std::string& display_name) {
   JSExpect("$('managed-user-creation-next-button').disabled");
   JSSetTextField("#managed-user-creation-name", display_name);
   JSEval("$('managed-user-creation').checkUserName_()");
@@ -328,7 +328,7 @@ void ManagedUserTestBase::FillNewUserData(const std::string& display_name) {
   JSExpect("!$('managed-user-creation-next-button').disabled");
 }
 
-void ManagedUserTestBase::StartUserCreation(
+void SupervisedUserTestBase::StartUserCreation(
     const std::string& button_id,
     const std::string& expected_display_name) {
   EXPECT_CALL(*mock_homedir_methods_, MountEx(_, _, _, _)).Times(1);
@@ -353,7 +353,7 @@ void ManagedUserTestBase::StartUserCreation(
   JSEval("$('managed-user-creation-gotit-button').click()");
 }
 
-void ManagedUserTestBase::SigninAsSupervisedUser(
+void SupervisedUserTestBase::SigninAsSupervisedUser(
     bool check_homedir_calls,
     int user_index,
     const std::string& expected_display_name) {
@@ -371,14 +371,14 @@ void ManagedUserTestBase::SigninAsSupervisedUser(
     ::testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
   Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
   shared_settings_adapter_.reset(
-      new ManagedUsersSharedSettingsSyncTestAdapter(profile));
+      new SupervisedUsersSharedSettingsSyncTestAdapter(profile));
 
   // Check ChromeOS preference is initialized.
   EXPECT_TRUE(
       static_cast<ProfileImpl*>(profile)->chromeos_preferences_);
 }
 
-void ManagedUserTestBase::SigninAsManager(int user_index) {
+void SupervisedUserTestBase::SigninAsManager(int user_index) {
   // Log in as supervised user, make sure that everything works.
   ASSERT_EQ(3UL, UserManager::Get()->GetUsers().size());
 
@@ -387,11 +387,11 @@ void ManagedUserTestBase::SigninAsManager(int user_index) {
   LoginUser(user->email());
   Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
   shared_settings_adapter_.reset(
-      new ManagedUsersSharedSettingsSyncTestAdapter(profile));
-  managed_users_adapter_.reset(new ManagedUsersSyncTestAdapter(profile));
+      new SupervisedUsersSharedSettingsSyncTestAdapter(profile));
+  supervised_users_adapter_.reset(new SupervisedUsersSyncTestAdapter(profile));
 }
 
-void ManagedUserTestBase::RemoveSupervisedUser(
+void SupervisedUserTestBase::RemoveSupervisedUser(
     unsigned long original_user_count,
     int user_index,
     const std::string& expected_display_name) {

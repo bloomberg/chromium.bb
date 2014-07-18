@@ -18,25 +18,29 @@ const char* kAlwaysShownNotifierIds[] = {
   kNotifierDisplayError,
   kNotifierNetworkError,
   kNotifierPower,
+  // Note: Order doesn't matter here, so keep this in alphabetic order, don't
+  // just add your stuff at the end!
   NULL
 };
 
 const char* kAshSystemNotifiers[] = {
+  kNotifierBluetooth,
   kNotifierDisplay,
-  kNotifierDisplayResolutionChange,
   kNotifierDisplayError,
+  kNotifierDisplayResolutionChange,
   kNotifierLocale,
-  kNotifierLocallyManagedUser,
   kNotifierMultiProfileFirstRun,
   kNotifierNetwork,
   kNotifierNetworkError,
   kNotifierNetworkPortalDetector,
+  kNotifierPower,
   kNotifierScreenshot,
   kNotifierScreenCapture,
   kNotifierScreenShare,
   kNotifierSessionLengthTimeout,
-  kNotifierPower,
-  kNotifierBluetooth,
+  kNotifierSupervisedUser,
+  // Note: Order doesn't matter here, so keep this in alphabetic order, don't
+  // just add your stuff at the end!
   NULL
 };
 
@@ -56,10 +60,9 @@ bool MatchSystemNotifierId(const message_center::NotifierId& notifier_id,
 
 const char kNotifierBluetooth[] = "ash.bluetooth";
 const char kNotifierDisplay[] = "ash.display";
-const char kNotifierDisplayResolutionChange[] = "ash.display.resolution-change";
 const char kNotifierDisplayError[] = "ash.display.error";
+const char kNotifierDisplayResolutionChange[] = "ash.display.resolution-change";
 const char kNotifierLocale[] = "ash.locale";
-const char kNotifierLocallyManagedUser[] = "ash.locally-managed-user";
 const char kNotifierMultiProfileFirstRun[] = "ash.multi-profile.first-run";
 const char kNotifierNetwork[] = "ash.network";
 const char kNotifierNetworkError[] = "ash.network.error";
@@ -69,6 +72,7 @@ const char kNotifierScreenshot[] = "ash.screenshot";
 const char kNotifierScreenCapture[] = "ash.screen-capture";
 const char kNotifierScreenShare[] = "ash.screen-share";
 const char kNotifierSessionLengthTimeout[] = "ash.session-length-timeout";
+const char kNotifierSupervisedUser[] = "ash.locally-managed-user";
 
 bool ShouldAlwaysShowPopups(const message_center::NotifierId& notifier_id) {
   return MatchSystemNotifierId(notifier_id, kAlwaysShownNotifierIds);

@@ -75,7 +75,7 @@ class OobeUI : public OobeDisplay,
   static const char kScreenUserImagePicker[];
   static const char kScreenTpmError[];
   static const char kScreenPasswordChanged[];
-  static const char kScreenManagedUserCreationFlow[];
+  static const char kScreenSupervisedUserCreationFlow[];
   static const char kScreenTermsOfService[];
   static const char kScreenWrongHWID[];
   static const char kScreenAutoEnrollmentCheck[];
@@ -105,8 +105,8 @@ class OobeUI : public OobeDisplay,
   virtual WrongHWIDScreenActor* GetWrongHWIDScreenActor() OVERRIDE;
   virtual AutoEnrollmentCheckScreenActor*
       GetAutoEnrollmentCheckScreenActor() OVERRIDE;
-  virtual LocallyManagedUserCreationScreenHandler*
-      GetLocallyManagedUserCreationScreenActor() OVERRIDE;
+  virtual SupervisedUserCreationScreenHandler*
+      GetSupervisedUserCreationScreenActor() OVERRIDE;
   virtual AppLaunchSplashScreenActor*
       GetAppLaunchSplashScreenActor() OVERRIDE;
   virtual bool IsJSReady(const base::Closure& display_is_ready_callback)
@@ -192,8 +192,8 @@ class OobeUI : public OobeDisplay,
   KioskEnableScreenActor* kiosk_enable_screen_actor_;
   WrongHWIDScreenActor* wrong_hwid_screen_actor_;
   AutoEnrollmentCheckScreenActor* auto_enrollment_check_screen_actor_;
-  LocallyManagedUserCreationScreenHandler*
-      locally_managed_user_creation_screen_actor_;
+  SupervisedUserCreationScreenHandler*
+      supervised_user_creation_screen_actor_;
   AppLaunchSplashScreenActor* app_launch_splash_screen_actor_;
   ControllerPairingScreenActor* controller_pairing_screen_actor_;
   HostPairingScreenActor* host_pairing_screen_actor_;

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/managed/managed_user_authenticator.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_authenticator.h"
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
@@ -26,8 +26,8 @@ namespace chromeos {
 namespace {
 
 // Records status and calls resolver->Resolve().
-void TriggerResolve(ManagedUserAuthenticator::AuthAttempt* attempt,
-                    scoped_refptr<ManagedUserAuthenticator> resolver,
+void TriggerResolve(SupervisedUserAuthenticator::AuthAttempt* attempt,
+                    scoped_refptr<SupervisedUserAuthenticator> resolver,
                     bool success,
                     cryptohome::MountError return_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -36,8 +36,8 @@ void TriggerResolve(ManagedUserAuthenticator::AuthAttempt* attempt,
 }
 
 // Records status and calls resolver->Resolve().
-void TriggerResolveResult(ManagedUserAuthenticator::AuthAttempt* attempt,
-                          scoped_refptr<ManagedUserAuthenticator> resolver,
+void TriggerResolveResult(SupervisedUserAuthenticator::AuthAttempt* attempt,
+                          scoped_refptr<SupervisedUserAuthenticator> resolver,
                           bool success,
                           const std::string& result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -48,8 +48,8 @@ void TriggerResolveResult(ManagedUserAuthenticator::AuthAttempt* attempt,
 // Calls TriggerResolve while adding login time marker.
 void TriggerResolveWithLoginTimeMarker(
     const std::string& marker_name,
-    ManagedUserAuthenticator::AuthAttempt* attempt,
-    scoped_refptr<ManagedUserAuthenticator> resolver,
+    SupervisedUserAuthenticator::AuthAttempt* attempt,
+    scoped_refptr<SupervisedUserAuthenticator> resolver,
     bool success,
     cryptohome::MountError return_code) {
   chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(marker_name, false);
@@ -57,8 +57,8 @@ void TriggerResolveWithLoginTimeMarker(
 }
 
 // Calls cryptohome's mount method.
-void Mount(ManagedUserAuthenticator::AuthAttempt* attempt,
-           scoped_refptr<ManagedUserAuthenticator> resolver,
+void Mount(SupervisedUserAuthenticator::AuthAttempt* attempt,
+           scoped_refptr<SupervisedUserAuthenticator> resolver,
            int flags,
            const std::string& system_salt) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -82,8 +82,8 @@ void Mount(ManagedUserAuthenticator::AuthAttempt* attempt,
 }
 
 // Calls cryptohome's addKey method.
-void AddKey(ManagedUserAuthenticator::AuthAttempt* attempt,
-            scoped_refptr<ManagedUserAuthenticator> resolver,
+void AddKey(SupervisedUserAuthenticator::AuthAttempt* attempt,
+            scoped_refptr<SupervisedUserAuthenticator> resolver,
             const std::string& plain_text_master_key,
             const std::string& system_salt) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -106,60 +106,61 @@ void AddKey(ManagedUserAuthenticator::AuthAttempt* attempt,
 
 }  // namespace
 
-ManagedUserAuthenticator::ManagedUserAuthenticator(AuthStatusConsumer* consumer)
+SupervisedUserAuthenticator::SupervisedUserAuthenticator(
+    AuthStatusConsumer* consumer)
     : consumer_(consumer) {}
 
-void ManagedUserAuthenticator::AuthenticateToMount(
+void SupervisedUserAuthenticator::AuthenticateToMount(
     const std::string& username,
     const std::string& password) {
   std::string canonicalized = gaia::CanonicalizeEmail(username);
 
-  current_state_.reset(new ManagedUserAuthenticator::AuthAttempt(
+  current_state_.reset(new SupervisedUserAuthenticator::AuthAttempt(
       canonicalized, password, false));
 
   SystemSaltGetter::Get()->GetSystemSalt(
       base::Bind(&Mount,
                  current_state_.get(),
-                 scoped_refptr<ManagedUserAuthenticator>(this),
+                 scoped_refptr<SupervisedUserAuthenticator>(this),
                  cryptohome::MOUNT_FLAGS_NONE));
 }
 
-void ManagedUserAuthenticator::AuthenticateToCreate(
+void SupervisedUserAuthenticator::AuthenticateToCreate(
     const std::string& username,
     const std::string& password) {
   std::string canonicalized = gaia::CanonicalizeEmail(username);
 
-  current_state_.reset(new ManagedUserAuthenticator::AuthAttempt(
+  current_state_.reset(new SupervisedUserAuthenticator::AuthAttempt(
       canonicalized, password, false));
 
   SystemSaltGetter::Get()->GetSystemSalt(
       base::Bind(&Mount,
                  current_state_.get(),
-                 scoped_refptr<ManagedUserAuthenticator>(this),
+                 scoped_refptr<SupervisedUserAuthenticator>(this),
                  cryptohome::CREATE_IF_MISSING));
 }
 
-void ManagedUserAuthenticator::AddMasterKey(
+void SupervisedUserAuthenticator::AddMasterKey(
     const std::string& username,
     const std::string& password,
     const std::string& master_key) {
   std::string canonicalized = gaia::CanonicalizeEmail(username);
 
-  current_state_.reset(new ManagedUserAuthenticator::AuthAttempt(
+  current_state_.reset(new SupervisedUserAuthenticator::AuthAttempt(
       canonicalized, password, true));
 
   SystemSaltGetter::Get()->GetSystemSalt(
       base::Bind(&AddKey,
                  current_state_.get(),
-                 scoped_refptr<ManagedUserAuthenticator>(this),
+                 scoped_refptr<SupervisedUserAuthenticator>(this),
                  master_key));
 }
 
-void ManagedUserAuthenticator::OnAuthenticationSuccess(
+void SupervisedUserAuthenticator::OnAuthenticationSuccess(
     const std::string& mount_hash,
     bool add_key) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  VLOG(1) << "Locally managed user authentication success";
+  VLOG(1) << "Supervised user authentication success";
   if (consumer_) {
     if (add_key)
       consumer_->OnAddKeySuccess();
@@ -168,17 +169,17 @@ void ManagedUserAuthenticator::OnAuthenticationSuccess(
   }
 }
 
-void ManagedUserAuthenticator::OnAuthenticationFailure(
-    ManagedUserAuthenticator::AuthState state) {
+void SupervisedUserAuthenticator::OnAuthenticationFailure(
+    SupervisedUserAuthenticator::AuthState state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LOG(WARNING) << "Locally managed user authentication failure";
+  LOG(WARNING) << "Supervised user authentication failure";
   if (consumer_)
     consumer_->OnAuthenticationFailure(state);
 }
 
-void ManagedUserAuthenticator::Resolve() {
+void SupervisedUserAuthenticator::Resolve() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ManagedUserAuthenticator::AuthState state = ResolveState();
+  SupervisedUserAuthenticator::AuthState state = ResolveState();
   VLOG(1) << "Resolved state to: " << state;
   switch (state) {
     case CONTINUE:
@@ -192,8 +193,9 @@ void ManagedUserAuthenticator::Resolve() {
       BrowserThread::PostTask(
           BrowserThread::UI,
           FROM_HERE,
-          base::Bind(
-              &ManagedUserAuthenticator::OnAuthenticationFailure, this, state));
+          base::Bind(&SupervisedUserAuthenticator::OnAuthenticationFailure,
+                     this,
+                     state));
       break;
     case NO_MOUNT:
       // In this case, whether login succeeded or not, we can't log
@@ -202,8 +204,9 @@ void ManagedUserAuthenticator::Resolve() {
       BrowserThread::PostTask(
           BrowserThread::UI,
           FROM_HERE,
-          base::Bind(
-              &ManagedUserAuthenticator::OnAuthenticationFailure, this, state));
+          base::Bind(&SupervisedUserAuthenticator::OnAuthenticationFailure,
+                     this,
+                     state));
       break;
     case FAILED_TPM:
       // In this case, we tried to create/mount cryptohome and failed
@@ -212,15 +215,16 @@ void ManagedUserAuthenticator::Resolve() {
       BrowserThread::PostTask(
           BrowserThread::UI,
           FROM_HERE,
-          base::Bind(
-              &ManagedUserAuthenticator::OnAuthenticationFailure, this, state));
+          base::Bind(&SupervisedUserAuthenticator::OnAuthenticationFailure,
+                     this,
+                     state));
       break;
     case SUCCESS:
-      VLOG(2) << "Locally managed user login";
+      VLOG(2) << "Supervised user login";
       BrowserThread::PostTask(
           BrowserThread::UI,
           FROM_HERE,
-          base::Bind(&ManagedUserAuthenticator::OnAuthenticationSuccess,
+          base::Bind(&SupervisedUserAuthenticator::OnAuthenticationSuccess,
                      this,
                      current_state_->hash(),
                      current_state_->add_key));
@@ -231,9 +235,10 @@ void ManagedUserAuthenticator::Resolve() {
   }
 }
 
-ManagedUserAuthenticator::~ManagedUserAuthenticator() {}
+SupervisedUserAuthenticator::~SupervisedUserAuthenticator() {}
 
-ManagedUserAuthenticator::AuthState ManagedUserAuthenticator::ResolveState() {
+SupervisedUserAuthenticator::AuthState
+SupervisedUserAuthenticator::ResolveState() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // If we haven't mounted the user's home dir yet, we can't be done.
   // We never get past here if a cryptohome op is still pending.
@@ -255,8 +260,8 @@ ManagedUserAuthenticator::AuthState ManagedUserAuthenticator::ResolveState() {
   return state;
 }
 
-ManagedUserAuthenticator::AuthState
-    ManagedUserAuthenticator::ResolveCryptohomeFailureState() {
+SupervisedUserAuthenticator::AuthState
+    SupervisedUserAuthenticator::ResolveCryptohomeFailureState() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (current_state_->cryptohome_code() ==
       cryptohome::MOUNT_ERROR_TPM_NEEDS_REBOOT) {
@@ -274,15 +279,16 @@ ManagedUserAuthenticator::AuthState
   return FAILED_MOUNT;
 }
 
-ManagedUserAuthenticator::AuthState
-    ManagedUserAuthenticator::ResolveCryptohomeSuccessState() {
+SupervisedUserAuthenticator::AuthState
+    SupervisedUserAuthenticator::ResolveCryptohomeSuccessState() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return SUCCESS;
 }
 
-ManagedUserAuthenticator::AuthAttempt::AuthAttempt(const std::string& username,
-                                                   const std::string& password,
-                                                   bool add_key_attempt)
+SupervisedUserAuthenticator::AuthAttempt::AuthAttempt(
+    const std::string& username,
+    const std::string& password,
+    bool add_key_attempt)
     : username(username),
       password(password),
       add_key(add_key_attempt),
@@ -291,9 +297,9 @@ ManagedUserAuthenticator::AuthAttempt::AuthAttempt(const std::string& username,
       hash_obtained_(false),
       cryptohome_code_(cryptohome::MOUNT_ERROR_NONE) {}
 
-ManagedUserAuthenticator::AuthAttempt::~AuthAttempt() {}
+SupervisedUserAuthenticator::AuthAttempt::~AuthAttempt() {}
 
-void ManagedUserAuthenticator::AuthAttempt::RecordCryptohomeStatus(
+void SupervisedUserAuthenticator::AuthAttempt::RecordCryptohomeStatus(
     bool cryptohome_outcome,
     cryptohome::MountError cryptohome_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -302,35 +308,35 @@ void ManagedUserAuthenticator::AuthAttempt::RecordCryptohomeStatus(
   cryptohome_code_ = cryptohome_code;
 }
 
-void ManagedUserAuthenticator::AuthAttempt::RecordHash(
+void SupervisedUserAuthenticator::AuthAttempt::RecordHash(
     const std::string& hash) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   hash_obtained_ = true;
   hash_ = hash;
 }
 
-bool ManagedUserAuthenticator::AuthAttempt::cryptohome_complete() {
+bool SupervisedUserAuthenticator::AuthAttempt::cryptohome_complete() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return cryptohome_complete_;
 }
 
-bool ManagedUserAuthenticator::AuthAttempt::cryptohome_outcome() {
+bool SupervisedUserAuthenticator::AuthAttempt::cryptohome_outcome() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return cryptohome_outcome_;
 }
 
 cryptohome::MountError
-    ManagedUserAuthenticator::AuthAttempt::cryptohome_code() {
+    SupervisedUserAuthenticator::AuthAttempt::cryptohome_code() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return cryptohome_code_;
 }
 
-bool ManagedUserAuthenticator::AuthAttempt::hash_obtained() {
+bool SupervisedUserAuthenticator::AuthAttempt::hash_obtained() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return hash_obtained_;
 }
 
-std::string ManagedUserAuthenticator::AuthAttempt::hash() {
+std::string SupervisedUserAuthenticator::AuthAttempt::hash() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return hash_;
 }

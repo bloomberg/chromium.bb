@@ -1,8 +1,8 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_MANAGED_USER_TEST_BASE_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_MANAGED_USER_TEST_BASE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_TEST_BASE_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_TEST_BASE_H_
 
 #include <string>
 
@@ -27,9 +27,9 @@ const char kTestManagerPassword[] = "password";
 const char kTestSupervisedUserDisplayName[] = "John Doe";
 const char kTestSupervisedUserPassword[] = "simplepassword";
 
-class ManagedUsersSyncTestAdapter {
+class SupervisedUsersSyncTestAdapter {
  public:
-  explicit ManagedUsersSyncTestAdapter(Profile* profile);
+  explicit SupervisedUsersSyncTestAdapter(Profile* profile);
 
   bool HasChanges() { return !processor_->changes().empty(); }
 
@@ -42,9 +42,9 @@ class ManagedUsersSyncTestAdapter {
   int next_sync_data_id_;
 };
 
-class ManagedUsersSharedSettingsSyncTestAdapter {
+class SupervisedUsersSharedSettingsSyncTestAdapter {
  public:
-  explicit ManagedUsersSharedSettingsSyncTestAdapter(Profile* profile);
+  explicit SupervisedUsersSharedSettingsSyncTestAdapter(Profile* profile);
 
   bool HasChanges() { return !processor_->changes().empty(); }
 
@@ -64,10 +64,10 @@ class ManagedUsersSharedSettingsSyncTestAdapter {
   int next_sync_data_id_;
 };
 
-class ManagedUserTestBase : public chromeos::LoginManagerTest {
+class SupervisedUserTestBase : public chromeos::LoginManagerTest {
  public:
-  ManagedUserTestBase();
-  virtual ~ManagedUserTestBase();
+  SupervisedUserTestBase();
+  virtual ~SupervisedUserTestBase();
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
   virtual void CleanUpOnMainThread() OVERRIDE;
@@ -102,14 +102,14 @@ class ManagedUserTestBase : public chromeos::LoginManagerTest {
   NetworkPortalDetectorTestImpl* network_portal_detector_;
   SupervisedUserRegistrationUtilityStub* registration_utility_stub_;
   scoped_ptr<ScopedTestingSupervisedUserRegistrationUtility> scoped_utility_;
-  scoped_ptr<ManagedUsersSharedSettingsSyncTestAdapter>
+  scoped_ptr<SupervisedUsersSharedSettingsSyncTestAdapter>
       shared_settings_adapter_;
-  scoped_ptr<ManagedUsersSyncTestAdapter> managed_users_adapter_;
+  scoped_ptr<SupervisedUsersSyncTestAdapter> supervised_users_adapter_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ManagedUserTestBase);
+  DISALLOW_COPY_AND_ASSIGN(SupervisedUserTestBase);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_MANAGED_USER_TEST_BASE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_TEST_BASE_H_

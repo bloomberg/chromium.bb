@@ -10,9 +10,9 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/managed/managed_user_test_base.h"
-#include "chrome/browser/chromeos/login/managed/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_test_base.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
@@ -37,23 +37,23 @@
 #include "sync/protocol/sync.pb.h"
 
 using testing::_;
-using chromeos::ManagedUserTestBase;
+using chromeos::SupervisedUserTestBase;
 using chromeos::kTestSupervisedUserDisplayName;
 using chromeos::kTestManager;
 
 namespace chromeos {
 
-class SupervisedUserPasswordTest : public ManagedUserTestBase {
+class SupervisedUserPasswordTest : public SupervisedUserTestBase {
  public:
-  SupervisedUserPasswordTest() : ManagedUserTestBase() {}
+  SupervisedUserPasswordTest() : SupervisedUserTestBase() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserPasswordTest);
 };
 
-class SupervisedUserPasswordManagerTest : public ManagedUserTestBase {
+class SupervisedUserPasswordManagerTest : public SupervisedUserTestBase {
  public:
-  SupervisedUserPasswordManagerTest() : ManagedUserTestBase() {}
+  SupervisedUserPasswordManagerTest() : SupervisedUserTestBase() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserPasswordManagerTest);
@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
 // update, and performs migration.
 IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
                        DISABLED_PRE_PasswordChangeFromManagerTest) {
-  const User* managed_user = UserManager::Get()->GetUsers().at(0);
+  const User* supervised_user = UserManager::Get()->GetUsers().at(0);
 
   SigninAsManager(1);
 
@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
 
   std::string sync_id =
       UserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
-          managed_user->email());
+          supervised_user->email());
 
   ::sync_pb::ManagedUserSpecifics managed_user_proto;
 
@@ -142,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
   managed_user_proto.set_password_signature_key("signature_key");
   managed_user_proto.set_password_encryption_key("encryption_key");
 
-  managed_users_adapter_->AddChange(managed_user_proto, false);
+  supervised_users_adapter_->AddChange(managed_user_proto, false);
   content::RunAllPendingInMessageLoop();
 
   base::DictionaryValue password;
@@ -211,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
 // performs the migration.
 IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
                        DISABLED_PRE_PasswordChangeUserAndManagerTest) {
-  const User* managed_user = UserManager::Get()->GetUsers().at(0);
+  const User* supervised_user = UserManager::Get()->GetUsers().at(0);
 
   SigninAsManager(1);
 
@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
 
   std::string sync_id =
       UserManager::Get()->GetSupervisedUserManager()->GetUserSyncId(
-          managed_user->email());
+          supervised_user->email());
 
   ::sync_pb::ManagedUserSpecifics managed_user_proto;
 
@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
   managed_user_proto.set_password_signature_key("signature_key");
   managed_user_proto.set_password_encryption_key("encryption_key");
 
-  managed_users_adapter_->AddChange(managed_user_proto, false);
+  supervised_users_adapter_->AddChange(managed_user_proto, false);
   content::RunAllPendingInMessageLoop();
 
   base::DictionaryValue password;

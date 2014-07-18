@@ -46,8 +46,8 @@ class AuthenticatedUserEmailRetriever;
 class CaptivePortalWindowProxy;
 class CoreOobeActor;
 class GaiaScreenHandler;
-class LocallyManagedUserCreationScreenHandler;
 class NativeWindowDelegate;
+class SupervisedUserCreationScreenHandler;
 class User;
 class UserContext;
 
@@ -246,8 +246,8 @@ class SigninScreenHandler
   };
 
   friend class GaiaScreenHandler;
-  friend class LocallyManagedUserCreationScreenHandler;
   friend class ReportDnsCacheClearedOnUIThread;
+  friend class SupervisedUserCreationScreenHandler;
 
   void ShowImpl();
 
@@ -351,7 +351,7 @@ class SigninScreenHandler
   void HandleLoginScreenUpdate();
   void HandleShowLoadingTimeoutError();
   void HandleUpdateOfflineLogin(bool offline_login_active);
-  void HandleShowLocallyManagedUserCreationScreen();
+  void HandleShowSupervisedUserCreationScreen();
   void HandleFocusPod(const std::string& user_id);
   void HandleLaunchKioskApp(const std::string& app_id, bool diagnostic_mode);
   void HandleRetrieveAuthenticatedUserEmail(double attempt_token);

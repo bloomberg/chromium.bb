@@ -99,7 +99,7 @@ bool LoginState::IsGuestUser() const {
     case LOGGED_IN_USER_NONE:
     case LOGGED_IN_USER_REGULAR:
     case LOGGED_IN_USER_OWNER:
-    case LOGGED_IN_USER_LOCALLY_MANAGED:
+    case LOGGED_IN_USER_SUPERVISED:
     case LOGGED_IN_USER_KIOSK_APP:
       return false;
     case LOGGED_IN_USER_GUEST:
@@ -125,7 +125,7 @@ bool LoginState::UserHasNetworkProfile() const {
 bool LoginState::IsUserAuthenticated() const {
   return logged_in_user_type_ == LOGGED_IN_USER_REGULAR ||
          logged_in_user_type_ == LOGGED_IN_USER_OWNER ||
-         logged_in_user_type_ == LOGGED_IN_USER_LOCALLY_MANAGED;
+         logged_in_user_type_ == LOGGED_IN_USER_SUPERVISED;
 }
 
 bool LoginState::IsUserGaiaAuthenticated() const {

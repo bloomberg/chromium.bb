@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_LOCALLY_MANAGED_USER_CREATION_FLOW_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_LOCALLY_MANAGED_USER_CREATION_FLOW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_CREATION_FLOW_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_CREATION_FLOW_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -15,11 +15,11 @@ class Profile;
 
 namespace chromeos {
 
-// UserFlow implementation for creating new locally managed user.
-class LocallyManagedUserCreationFlow : public ExtendedUserFlow {
+// UserFlow implementation for creating new supervised user.
+class SupervisedUserCreationFlow : public ExtendedUserFlow {
  public:
-  explicit LocallyManagedUserCreationFlow(const std::string& manager_id);
-  virtual ~LocallyManagedUserCreationFlow();
+  explicit SupervisedUserCreationFlow(const std::string& manager_id);
+  virtual ~SupervisedUserCreationFlow();
 
   virtual bool CanLockScreen() OVERRIDE;
   virtual bool ShouldShowSettings() OVERRIDE;
@@ -50,9 +50,9 @@ class LocallyManagedUserCreationFlow : public ExtendedUserFlow {
 
   Profile* manager_profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocallyManagedUserCreationFlow);
+  DISALLOW_COPY_AND_ASSIGN(SupervisedUserCreationFlow);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_LOCALLY_MANAGED_USER_CREATION_FLOW_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_CREATION_FLOW_H_

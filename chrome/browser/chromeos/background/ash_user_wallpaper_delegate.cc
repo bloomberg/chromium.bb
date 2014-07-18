@@ -102,7 +102,7 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
     if (user_type != LoginState::LOGGED_IN_USER_REGULAR &&
         user_type != LoginState::LOGGED_IN_USER_OWNER &&
         user_type != LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT &&
-        user_type != LoginState::LOGGED_IN_USER_LOCALLY_MANAGED) {
+        user_type != LoginState::LOGGED_IN_USER_SUPERVISED) {
       return false;
     }
     const User* user = chromeos::UserManager::Get()->GetActiveUser();

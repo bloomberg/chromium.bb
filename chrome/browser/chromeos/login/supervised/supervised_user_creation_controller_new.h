@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_MANAGED_USER_CREATION_CONTROLLER_NEW_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_MANAGED_USER_CREATION_CONTROLLER_NEW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_CREATION_CONTROLLER_NEW_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_CREATION_CONTROLLER_NEW_H_
 
 #include <string>
 
@@ -14,7 +14,7 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/auth/extended_authenticator.h"
-#include "chrome/browser/chromeos/login/managed/managed_user_creation_controller.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller.h"
 #include "chrome/browser/supervised_user/supervised_user_registration_utility.h"
 
 class Profile;
@@ -23,9 +23,9 @@ namespace chromeos {
 
 class UserContext;
 
-// LMU Creation process:
+// Supervised user creation process:
 // 0. Manager is logged in
-// 1. Generate ID for new LMU
+// 1. Generate ID for new supervised user
 // 2. Start "transaction" in Local State.
 // 3, Generate keys for user : master key, salt, encryption and signature keys.
 // 4. Create local cryptohome (errors could arise)
@@ -33,19 +33,19 @@ class UserContext;
 // 6. Store cloud token in cryptohome (actually, error could arise).
 // 7. Mark "transaction" as completed.
 // 8. End manager session.
-class ManagedUserCreationControllerNew
-    : public ManagedUserCreationController,
+class SupervisedUserCreationControllerNew
+    : public SupervisedUserCreationController,
       public ExtendedAuthenticator::NewAuthStatusConsumer {
  public:
   // All UI initialization is deferred till Init() call.
   // |Consumer| is not owned by controller, and it is expected that it wouldn't
-  // be deleted before ManagedUserCreationControllerNew.
-  ManagedUserCreationControllerNew(StatusConsumer* consumer,
-                                   const std::string& manager_id);
-  virtual ~ManagedUserCreationControllerNew();
+  // be deleted before SupervisedUserCreationControllerNew.
+  SupervisedUserCreationControllerNew(StatusConsumer* consumer,
+                                      const std::string& manager_id);
+  virtual ~SupervisedUserCreationControllerNew();
 
-  // Returns the current locally managed user controller if it has been created.
-  static ManagedUserCreationControllerNew* current_controller() {
+  // Returns the current supervised user controller if it has been created.
+  static SupervisedUserCreationControllerNew* current_controller() {
     return current_controller_;
   }
 
@@ -85,7 +85,7 @@ class ManagedUserCreationControllerNew
 
   virtual void CancelCreation() OVERRIDE;
   virtual void FinishCreation() OVERRIDE;
-  virtual std::string GetManagedUserId() OVERRIDE;
+  virtual std::string GetSupervisedUserId() OVERRIDE;
 
  private:
   enum Stage {
@@ -145,7 +145,7 @@ class ManagedUserCreationControllerNew
     scoped_ptr<SupervisedUserRegistrationUtility> registration_utility;
   };
 
-  // ManagedUserAuthenticator::StatusConsumer overrides.
+  // SupervisedUserAuthenticator::StatusConsumer overrides.
   virtual void OnAuthenticationFailure(ExtendedAuthenticator::AuthState error)
       OVERRIDE;
 
@@ -162,13 +162,13 @@ class ManagedUserCreationControllerNew
   void RegistrationCallback(const GoogleServiceAuthError& error,
                             const std::string& token);
 
-  // Completion callback for StoreManagedUserFiles method.
+  // Completion callback for StoreSupervisedUserFiles method.
   // Called on the UI thread.
-  void OnManagedUserFilesStored(bool success);
+  void OnSupervisedUserFilesStored(bool success);
 
   // Pointer to the current instance of the controller to be used by
   // automation tests.
-  static ManagedUserCreationControllerNew* current_controller_;
+  static SupervisedUserCreationControllerNew* current_controller_;
 
   // Current stage of user creation.
   Stage stage_;
@@ -180,14 +180,14 @@ class ManagedUserCreationControllerNew
   scoped_ptr<UserCreationContext> creation_context_;
 
   // Timer for showing warning if creation process takes too long.
-  base::OneShotTimer<ManagedUserCreationControllerNew> timeout_timer_;
+  base::OneShotTimer<SupervisedUserCreationControllerNew> timeout_timer_;
 
   // Factory of callbacks.
-  base::WeakPtrFactory<ManagedUserCreationControllerNew> weak_factory_;
+  base::WeakPtrFactory<SupervisedUserCreationControllerNew> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ManagedUserCreationControllerNew);
+  DISALLOW_COPY_AND_ASSIGN(SupervisedUserCreationControllerNew);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_MANAGED_USER_CREATION_CONTROLLER_NEW_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_CREATION_CONTROLLER_NEW_H_

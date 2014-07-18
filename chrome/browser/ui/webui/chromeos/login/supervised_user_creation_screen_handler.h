@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_LOCALLY_MANAGED_USER_CREATION_SCREEN_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_LOCALLY_MANAGED_USER_CREATION_SCREEN_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SUPERVISED_USER_CREATION_SCREEN_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SUPERVISED_USER_CREATION_SCREEN_HANDLER_H_
 
 #include <string>
 
@@ -19,7 +19,7 @@ class ListValue;
 
 namespace chromeos {
 
-class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
+class SupervisedUserCreationScreenHandler : public BaseScreenHandler {
  public:
   class Delegate {
    public:
@@ -28,18 +28,18 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
     // This method is called, when actor is being destroyed. Note, if Delegate
     // is destroyed earlier then it has to call SetDelegate(NULL).
     virtual void OnActorDestroyed(
-        LocallyManagedUserCreationScreenHandler* actor) = 0;
+        SupervisedUserCreationScreenHandler* actor) = 0;
 
-    // Starts managed user creation flow, with manager identified by
+    // Starts supervised user creation flow, with manager identified by
     // |manager_id| and |manager_password|.
     virtual void AuthenticateManager(const std::string& manager_id,
                                      const std::string& manager_password) = 0;
 
-    // Starts managed user creation flow, with supervised user that would have
-    // |display_name| and authenticated by the |managed_user_password|.
-    virtual void CreateManagedUser(
+    // Starts supervised user creation flow, with supervised user that would
+    // have |display_name| and authenticated by the |supervised_user_password|.
+    virtual void CreateSupervisedUser(
         const base::string16& display_name,
-        const std::string& managed_user_password) = 0;
+        const std::string& supervised_user_password) = 0;
 
     // Look up if user with name |display_name| already exist and can be
     // imported. Returns user ID in |out_id|. Returns true if user was found,
@@ -47,12 +47,12 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
     virtual bool FindUserByDisplayName(const base::string16& display_name,
                                        std::string *out_id) const = 0;
 
-    // Starts managed user import flow for user identified with |user_id|.
-    virtual void ImportManagedUser(const std::string& user_id) = 0;
-    // Starts managed user import flow for user identified with |user_id| and
+    // Starts supervised user import flow for user identified with |user_id|.
+    virtual void ImportSupervisedUser(const std::string& user_id) = 0;
+    // Starts supervised user import flow for user identified with |user_id| and
     // additional |password|.
-    virtual void ImportManagedUserWithPassword(const std::string& user_id,
-                                               const std::string& password) = 0;
+    virtual void ImportSupervisedUserWithPassword(
+        const std::string& user_id, const std::string& password) = 0;
 
     virtual void AbortFlow() = 0;
     virtual void FinishFlow() = 0;
@@ -64,8 +64,8 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
     virtual void OnPageSelected(const std::string& page) = 0;
   };
 
-  LocallyManagedUserCreationScreenHandler();
-  virtual ~LocallyManagedUserCreationScreenHandler();
+  SupervisedUserCreationScreenHandler();
+  virtual ~SupervisedUserCreationScreenHandler();
 
   virtual void PrepareToShow();
   virtual void Show();
@@ -92,7 +92,7 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
 
   void SetCameraPresent(bool enabled);
 
-  void ShowExistingManagedUsers(const base::ListValue* users);
+  void ShowExistingSupervisedUsers(const base::ListValue* users);
 
   // BaseScreenHandler implementation:
   virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;
@@ -103,19 +103,19 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
 
  private:
   // WebUI message handlers.
-  void HandleCheckLocallyManagedUserName(const base::string16& name);
+  void HandleCheckSupervisedUserName(const base::string16& name);
 
   void HandleManagerSelected(const std::string& manager_id);
   void HandleImportUserSelected(const std::string& user_id);
 
-  void HandleFinishLocalManagedUserCreation();
-  void HandleAbortLocalManagedUserCreation();
-  void HandleRetryLocalManagedUserCreation(const base::ListValue* args);
+  void HandleFinishLocalSupervisedUserCreation();
+  void HandleAbortLocalSupervisedUserCreation();
+  void HandleRetryLocalSupervisedUserCreation(const base::ListValue* args);
   void HandleCurrentSupervisedUserPage(const std::string& current_page);
 
   void HandleAuthenticateManager(const std::string& raw_manager_username,
                                  const std::string& manager_password);
-  void HandleCreateManagedUser(const base::string16& new_raw_user_name,
+  void HandleCreateSupervisedUser(const base::string16& new_raw_user_name,
                                const std::string& new_user_password);
   void HandleImportSupervisedUser(const std::string& user_id);
   void HandleImportSupervisedUserWithPassword(const std::string& user_id,
@@ -132,9 +132,9 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
 
   Delegate* delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocallyManagedUserCreationScreenHandler);
+  DISALLOW_COPY_AND_ASSIGN(SupervisedUserCreationScreenHandler);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_LOCALLY_MANAGED_USER_CREATION_SCREEN_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SUPERVISED_USER_CREATION_SCREEN_HANDLER_H_

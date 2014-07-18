@@ -105,7 +105,7 @@ class UserManagerImpl
   virtual bool IsLoggedInAsDemoUser() const OVERRIDE;
   virtual bool IsLoggedInAsPublicAccount() const OVERRIDE;
   virtual bool IsLoggedInAsGuest() const OVERRIDE;
-  virtual bool IsLoggedInAsLocallyManagedUser() const OVERRIDE;
+  virtual bool IsLoggedInAsSupervisedUser() const OVERRIDE;
   virtual bool IsLoggedInAsKioskApp() const OVERRIDE;
   virtual bool IsLoggedInAsStub() const OVERRIDE;
   virtual bool IsSessionStarted() const OVERRIDE;
@@ -123,7 +123,7 @@ class UserManagerImpl
   virtual UserFlow* GetUserFlow(const std::string& user_id) const OVERRIDE;
   virtual void SetUserFlow(const std::string& user_id, UserFlow* flow) OVERRIDE;
   virtual void ResetUserFlow(const std::string& user_id) OVERRIDE;
-  virtual bool AreLocallyManagedUsersAllowed() const OVERRIDE;
+  virtual bool AreSupervisedUsersAllowed() const OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -202,8 +202,8 @@ class UserManagerImpl
   // Indicates that a regular user just logged in as ephemeral.
   void RegularUserLoggedInAsEphemeral(const std::string& user_id);
 
-  // Indicates that a locally managed user just logged in.
-  void LocallyManagedUserLoggedIn(const std::string& user_id);
+  // Indicates that a supervised user just logged in.
+  void SupervisedUserLoggedIn(const std::string& user_id);
 
   // Indicates that a user just logged into a public session.
   void PublicAccountUserLoggedIn(User* user);
@@ -237,10 +237,10 @@ class UserManagerImpl
   // avatar, OAuth token status, display name, display email).
   void RemoveNonCryptohomeData(const std::string& user_id);
 
-  // Removes a regular or locally managed user from the user list.
+  // Removes a regular or supervised user from the user list.
   // Returns the user if found or NULL otherwise.
   // Also removes the user from the persistent user list.
-  User* RemoveRegularOrLocallyManagedUserFromList(const std::string& user_id);
+  User* RemoveRegularOrSupervisedUserFromList(const std::string& user_id);
 
   // If data for a public account is marked as pending removal and the user is
   // no longer logged into that account, removes the data.

@@ -16,7 +16,7 @@ const char* kSignInUser = "sign-in-user-id";
 // Should match cros constant in platform/libchromeos/chromeos/cryptohome.h
 const char* kGuestUserName = "$guest";
 
-const char* kLocallyManagedUserDomain = "locally-managed.localhost";
+const char* kSupervisedUserDomain = "locally-managed.localhost";
 
 const char* kRetailModeUserName = "demouser@";
 

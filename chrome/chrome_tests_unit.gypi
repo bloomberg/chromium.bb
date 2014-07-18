@@ -782,10 +782,10 @@
         'browser/chromeos/login/auth/parallel_authenticator_unittest.cc',
         'browser/chromeos/login/existing_user_controller_auto_login_unittest.cc',
         'browser/chromeos/login/hwid_checker_unittest.cc',
-        'browser/chromeos/login/managed/supervised_user_authentication_unittest.cc',
         'browser/chromeos/login/saml/saml_offline_signin_limiter_unittest.cc',
         'browser/chromeos/login/screens/screen_context_unittest.cc',
         'browser/chromeos/login/signin/merge_session_load_page_unittest.cc',
+        'browser/chromeos/login/supervised/supervised_user_authentication_unittest.cc',
         'browser/chromeos/login/users/multi_profile_user_controller_unittest.cc',
         'browser/chromeos/login/users/user_manager_unittest.cc',
         'browser/chromeos/login/users/wallpaper/wallpaper_manager_unittest.cc',
@@ -2755,7 +2755,7 @@
         }],
         ['enable_managed_users!=1', {
           'sources/': [
-            ['exclude', '^browser/managed_mode/'],
+            ['exclude', '^browser/supervised_user/'],
           ],
         }],
         ['safe_browsing!=1', {

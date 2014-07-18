@@ -27,7 +27,7 @@ const char kKeyDisplayName[] = "displayName";
 const char kKeyEmailAddress[] = "emailAddress";
 const char kKeyEnterpriseDomain[] = "enterpriseDomain";
 const char kKeyPublicAccount[] = "publicAccount";
-const char kKeyLocallyManagedUser[] = "locallyManagedUser";
+const char kKeySupervisedUser[] = "locallyManagedUser";
 const char kKeySignedIn[] = "signedIn";
 const char kKeyCanRemove[] = "canRemove";
 const char kKeyIsOwner[] = "isOwner";
@@ -63,14 +63,14 @@ void UserSelectionScreen::FillUserDictionary(
   const std::string& user_id = user->email();
   const bool is_public_account =
       user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
-  const bool is_locally_managed_user =
-      user->GetType() == user_manager::USER_TYPE_LOCALLY_MANAGED;
+  const bool is_supervised_user =
+      user->GetType() == user_manager::USER_TYPE_SUPERVISED;
 
   user_dict->SetString(kKeyUsername, user_id);
   user_dict->SetString(kKeyEmailAddress, user->display_email());
   user_dict->SetString(kKeyDisplayName, user->GetDisplayName());
   user_dict->SetBoolean(kKeyPublicAccount, is_public_account);
-  user_dict->SetBoolean(kKeyLocallyManagedUser, is_locally_managed_user);
+  user_dict->SetBoolean(kKeySupervisedUser, is_supervised_user);
   user_dict->SetInteger(kKeyInitialAuthType, auth_type);
   user_dict->SetBoolean(kKeySignedIn, user->is_logged_in());
   user_dict->SetBoolean(kKeyIsOwner, is_owner);
@@ -114,12 +114,12 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(const User* user) {
     return false;
 
   const User::OAuthTokenStatus token_status = user->oauth_token_status();
-  const bool is_locally_managed_user =
-      user->GetType() == user_manager::USER_TYPE_LOCALLY_MANAGED;
+  const bool is_supervised_user =
+      user->GetType() == user_manager::USER_TYPE_SUPERVISED;
   const bool is_public_session =
       user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
 
-  if (is_locally_managed_user &&
+  if (is_supervised_user &&
       token_status == User::OAUTH_TOKEN_STATUS_UNKNOWN) {
     return false;
   }

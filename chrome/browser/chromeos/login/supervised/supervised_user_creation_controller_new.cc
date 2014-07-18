@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/managed/managed_user_creation_controller_new.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller_new.h"
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -15,8 +15,8 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/auth/mount_manager.h"
-#include "chrome/browser/chromeos/login/managed/locally_managed_user_constants.h"
-#include "chrome/browser/chromeos/login/managed/supervised_user_authentication.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_constants.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
@@ -39,8 +39,8 @@ namespace {
 
 const int kUserCreationTimeoutSeconds = 30;  // 30 seconds.
 
-bool StoreManagedUserFiles(const std::string& token,
-                           const base::FilePath& base_path) {
+bool StoreSupervisedUserFiles(const std::string& token,
+                              const base::FilePath& base_path) {
   if (!base::SysInfo::IsRunningOnChromeOS()) {
     // If running on desktop, cryptohome stub does not create home directory.
     base::CreateDirectory(base_path);
@@ -52,33 +52,35 @@ bool StoreManagedUserFiles(const std::string& token,
 
 }  // namespace
 
-ManagedUserCreationControllerNew::ManagedUserCreationControllerNew(
-    ManagedUserCreationControllerNew::StatusConsumer* consumer,
+SupervisedUserCreationControllerNew::SupervisedUserCreationControllerNew(
+    SupervisedUserCreationControllerNew::StatusConsumer* consumer,
     const std::string& manager_id)
-    : ManagedUserCreationController(consumer),
+    : SupervisedUserCreationController(consumer),
       stage_(STAGE_INITIAL),
       weak_factory_(this) {
   creation_context_.reset(
-      new ManagedUserCreationControllerNew::UserCreationContext());
+      new SupervisedUserCreationControllerNew::UserCreationContext());
   creation_context_->manager_id = manager_id;
 }
 
-ManagedUserCreationControllerNew::~ManagedUserCreationControllerNew() {}
+SupervisedUserCreationControllerNew::~SupervisedUserCreationControllerNew() {}
 
-ManagedUserCreationControllerNew::UserCreationContext::UserCreationContext() {}
+SupervisedUserCreationControllerNew::UserCreationContext::
+    UserCreationContext() {}
 
-ManagedUserCreationControllerNew::UserCreationContext::~UserCreationContext() {}
+SupervisedUserCreationControllerNew::UserCreationContext::
+    ~UserCreationContext() {}
 
-void ManagedUserCreationControllerNew::SetManagerProfile(
+void SupervisedUserCreationControllerNew::SetManagerProfile(
     Profile* manager_profile) {
   creation_context_->manager_profile = manager_profile;
 }
 
-Profile* ManagedUserCreationControllerNew::GetManagerProfile() {
+Profile* SupervisedUserCreationControllerNew::GetManagerProfile() {
   return creation_context_->manager_profile;
 }
 
-void ManagedUserCreationControllerNew::StartCreation(
+void SupervisedUserCreationControllerNew::StartCreation(
     const base::string16& display_name,
     const std::string& password,
     int avatar_index) {
@@ -90,7 +92,7 @@ void ManagedUserCreationControllerNew::StartCreation(
   StartCreationImpl();
 }
 
-void ManagedUserCreationControllerNew::StartImport(
+void SupervisedUserCreationControllerNew::StartImport(
     const base::string16& display_name,
     const std::string& password,
     int avatar_index,
@@ -109,7 +111,7 @@ void ManagedUserCreationControllerNew::StartImport(
   StartCreationImpl();
 }
 
-void ManagedUserCreationControllerNew::StartImport(
+void SupervisedUserCreationControllerNew::StartImport(
     const base::string16& display_name,
     int avatar_index,
     const std::string& sync_id,
@@ -139,7 +141,7 @@ void ManagedUserCreationControllerNew::StartImport(
   StartCreationImpl();
 }
 
-void ManagedUserCreationControllerNew::StartCreationImpl() {
+void SupervisedUserCreationControllerNew::StartCreationImpl() {
   DCHECK(creation_context_);
   DCHECK_EQ(STAGE_INITIAL, stage_);
   VLOG(1) << "Starting supervised user creation";
@@ -199,17 +201,17 @@ void ManagedUserCreationControllerNew::StartCreationImpl() {
       FROM_HERE,
       base::TimeDelta::FromSeconds(kUserCreationTimeoutSeconds),
       this,
-      &ManagedUserCreationControllerNew::CreationTimedOut);
+      &SupervisedUserCreationControllerNew::CreationTimedOut);
   authenticator_ = new ExtendedAuthenticator(this);
   UserContext user_context;
   user_context.SetKey(Key(creation_context_->master_key));
   authenticator_->TransformKeyIfNeeded(
       user_context,
-      base::Bind(&ManagedUserCreationControllerNew::OnKeyTransformedIfNeeded,
+      base::Bind(&SupervisedUserCreationControllerNew::OnKeyTransformedIfNeeded,
                  weak_factory_.GetWeakPtr()));
 }
 
-void ManagedUserCreationControllerNew::OnKeyTransformedIfNeeded(
+void SupervisedUserCreationControllerNew::OnKeyTransformedIfNeeded(
     const UserContext& user_context) {
   VLOG(1) << " Phase 2.1 : Got hashed master key";
   creation_context_->salted_master_key = user_context.GetKey()->GetSecret();
@@ -227,22 +229,22 @@ void ManagedUserCreationControllerNew::OnKeyTransformedIfNeeded(
   authenticator_->CreateMount(
       creation_context_->local_user_id,
       keys,
-      base::Bind(&ManagedUserCreationControllerNew::OnMountSuccess,
+      base::Bind(&SupervisedUserCreationControllerNew::OnMountSuccess,
                  weak_factory_.GetWeakPtr()));
 }
 
-void ManagedUserCreationControllerNew::OnAuthenticationFailure(
+void SupervisedUserCreationControllerNew::OnAuthenticationFailure(
     ExtendedAuthenticator::AuthState error) {
   timeout_timer_.Stop();
   ErrorCode code = NO_ERROR;
   switch (error) {
-    case ManagedUserAuthenticator::NO_MOUNT:
+    case SupervisedUserAuthenticator::NO_MOUNT:
       code = CRYPTOHOME_NO_MOUNT;
       break;
-    case ManagedUserAuthenticator::FAILED_MOUNT:
+    case SupervisedUserAuthenticator::FAILED_MOUNT:
       code = CRYPTOHOME_FAILED_MOUNT;
       break;
-    case ManagedUserAuthenticator::FAILED_TPM:
+    case SupervisedUserAuthenticator::FAILED_TPM:
       code = CRYPTOHOME_FAILED_TPM;
       break;
     default:
@@ -253,7 +255,7 @@ void ManagedUserCreationControllerNew::OnAuthenticationFailure(
     consumer_->OnCreationError(code);
 }
 
-void ManagedUserCreationControllerNew::OnMountSuccess(
+void SupervisedUserCreationControllerNew::OnMountSuccess(
     const std::string& mount_hash) {
   DCHECK(creation_context_);
   DCHECK_EQ(KEYS_GENERATED, stage_);
@@ -284,11 +286,11 @@ void ManagedUserCreationControllerNew::OnMountSuccess(
       context,
       password_key,
       true,
-      base::Bind(&ManagedUserCreationControllerNew::OnAddKeySuccess,
+      base::Bind(&SupervisedUserCreationControllerNew::OnAddKeySuccess,
                  weak_factory_.GetWeakPtr()));
 }
 
-void ManagedUserCreationControllerNew::OnAddKeySuccess() {
+void SupervisedUserCreationControllerNew::OnAddKeySuccess() {
   DCHECK(creation_context_);
   DCHECK_EQ(KEYS_GENERATED, stage_);
   stage_ = CRYPTOHOME_CREATED;
@@ -320,11 +322,11 @@ void ManagedUserCreationControllerNew::OnAddKeySuccess() {
   creation_context_->registration_utility->Register(
       creation_context_->sync_user_id,
       info,
-      base::Bind(&ManagedUserCreationControllerNew::RegistrationCallback,
+      base::Bind(&SupervisedUserCreationControllerNew::RegistrationCallback,
                  weak_factory_.GetWeakPtr()));
 }
 
-void ManagedUserCreationControllerNew::RegistrationCallback(
+void SupervisedUserCreationControllerNew::RegistrationCallback(
     const GoogleServiceAuthError& error,
     const std::string& token) {
   DCHECK(creation_context_);
@@ -338,20 +340,23 @@ void ManagedUserCreationControllerNew::RegistrationCallback(
     PostTaskAndReplyWithResult(
         content::BrowserThread::GetBlockingPool(),
         FROM_HERE,
-        base::Bind(&StoreManagedUserFiles,
+        base::Bind(&StoreSupervisedUserFiles,
                    creation_context_->token,
                    MountManager::GetHomeDir(creation_context_->mount_hash)),
-        base::Bind(&ManagedUserCreationControllerNew::OnManagedUserFilesStored,
+        base::Bind(&SupervisedUserCreationControllerNew::
+                        OnSupervisedUserFilesStored,
                    weak_factory_.GetWeakPtr()));
   } else {
     stage_ = STAGE_ERROR;
-    LOG(ERROR) << "Managed user creation failed. Error code " << error.state();
+    LOG(ERROR) << "Supervised user creation failed. Error code "
+               << error.state();
     if (consumer_)
       consumer_->OnCreationError(CLOUD_SERVER_ERROR);
   }
 }
 
-void ManagedUserCreationControllerNew::OnManagedUserFilesStored(bool success) {
+void SupervisedUserCreationControllerNew::OnSupervisedUserFilesStored(
+    bool success) {
   DCHECK(creation_context_);
   DCHECK_EQ(DASHBOARD_CREATED, stage_);
 
@@ -379,22 +384,22 @@ void ManagedUserCreationControllerNew::OnManagedUserFilesStored(bool success) {
     consumer_->OnCreationSuccess();
 }
 
-void ManagedUserCreationControllerNew::CreationTimedOut() {
+void SupervisedUserCreationControllerNew::CreationTimedOut() {
   LOG(ERROR) << "Supervised user creation timed out. stage = " << stage_;
   if (consumer_)
     consumer_->OnCreationTimeout();
 }
 
-void ManagedUserCreationControllerNew::FinishCreation() {
+void SupervisedUserCreationControllerNew::FinishCreation() {
   chrome::AttemptUserExit();
 }
 
-void ManagedUserCreationControllerNew::CancelCreation() {
+void SupervisedUserCreationControllerNew::CancelCreation() {
   creation_context_->registration_utility.reset();
   chrome::AttemptUserExit();
 }
 
-std::string ManagedUserCreationControllerNew::GetManagedUserId() {
+std::string SupervisedUserCreationControllerNew::GetSupervisedUserId() {
   DCHECK(creation_context_);
   return creation_context_->local_user_id;
 }

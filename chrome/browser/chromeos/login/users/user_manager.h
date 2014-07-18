@@ -262,8 +262,8 @@ class UserManager {
   // Returns true if we're logged in as a Guest.
   virtual bool IsLoggedInAsGuest() const = 0;
 
-  // Returns true if we're logged in as a locally managed user.
-  virtual bool IsLoggedInAsLocallyManagedUser() const = 0;
+  // Returns true if we're logged in as a supervised user.
+  virtual bool IsLoggedInAsSupervisedUser() const = 0;
 
   // Returns true if we're logged in as a kiosk app.
   virtual bool IsLoggedInAsKioskApp() const = 0;
@@ -309,8 +309,8 @@ class UserManager {
 
   virtual void NotifyLocalStateChanged() = 0;
 
-  // Returns true if locally managed users allowed.
-  virtual bool AreLocallyManagedUsersAllowed() const = 0;
+  // Returns true if supervised users allowed.
+  virtual bool AreSupervisedUsersAllowed() const = 0;
 
  private:
   friend class ScopedUserManagerEnabler;

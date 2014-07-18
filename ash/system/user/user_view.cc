@@ -451,7 +451,7 @@ void UserView::AddUserCard(user::LoginStatus login) {
     is_user_card_button_ = true;
   }
   AddChildViewAt(user_card_view_, 0);
-  // Card for locally managed user can consume more space than currently
+  // Card for supervised user can consume more space than currently
   // available. In that case we should increase system bubble's width.
   if (login == user::LOGGED_IN_PUBLIC)
     bubble_view->SetWidth(GetPreferredSize().width());

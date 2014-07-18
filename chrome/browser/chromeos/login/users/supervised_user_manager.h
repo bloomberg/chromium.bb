@@ -58,7 +58,7 @@ class SupervisedUserManager {
   // and persists that to user list. Also links this user identified by
   // |sync_user_id| to manager with a |manager_id|.
   // Returns created user, or existing user if there already
-  // was locally managed user with such display name.
+  // was a supervised user with such display name.
   // TODO(antrim): Refactor into a single struct to have only 1 getter.
   virtual const User* CreateUserRecord(
       const std::string& manager_id,
@@ -105,7 +105,7 @@ class SupervisedUserManager {
   // Add user id to supervised user creation transaction record.
   virtual void SetCreationTransactionUserId(const std::string& user_id) = 0;
 
-  // Remove locally managed user creation transaction record.
+  // Remove supervised user creation transaction record.
   virtual void CommitCreationTransaction() = 0;
 
   // Return object that handles specifics of supervised user authentication.

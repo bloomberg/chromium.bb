@@ -70,7 +70,7 @@ void FakeLoginUtils::PrepareProfile(const UserContext& user_context,
   profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                  user_context.GetUserID());
 
-  if (UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
+  if (UserManager::Get()->IsLoggedInAsSupervisedUser()) {
     User* active_user = UserManager::Get()->GetActiveUser();
     std::string supervised_user_sync_id =
         UserManager::Get()->GetSupervisedUserManager()->

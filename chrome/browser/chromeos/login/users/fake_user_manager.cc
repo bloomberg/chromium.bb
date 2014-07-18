@@ -247,7 +247,7 @@ bool FakeUserManager::IsLoggedInAsGuest() const {
   return false;
 }
 
-bool FakeUserManager::IsLoggedInAsLocallyManagedUser() const {
+bool FakeUserManager::IsLoggedInAsSupervisedUser() const {
   return false;
 }
 
@@ -279,7 +279,7 @@ UserFlow* FakeUserManager::GetUserFlow(const std::string& email) const {
   return NULL;
 }
 
-bool FakeUserManager::AreLocallyManagedUsersAllowed() const {
+bool FakeUserManager::AreSupervisedUsersAllowed() const {
   return true;
 }
 

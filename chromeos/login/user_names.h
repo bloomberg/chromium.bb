@@ -27,8 +27,8 @@ CHROMEOS_EXPORT extern const char* kSignInUser;
 // Username for Guest session user.
 CHROMEOS_EXPORT extern const char* kGuestUserName;
 
-// Domain that is used for all locally managed users.
-CHROMEOS_EXPORT extern const char* kLocallyManagedUserDomain;
+// Domain that is used for all supervised users.
+CHROMEOS_EXPORT extern const char* kSupervisedUserDomain;
 
 // The retail mode user has a magic, domainless e-mail address.
 CHROMEOS_EXPORT extern const char* kRetailModeUserName;

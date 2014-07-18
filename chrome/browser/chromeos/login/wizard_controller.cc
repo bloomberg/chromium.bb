@@ -32,7 +32,6 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
-#include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
 #include "chrome/browser/chromeos/login/screens/controller_pairing_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
@@ -47,6 +46,7 @@
 #include "chrome/browser/chromeos/login/screens/user_image_screen.h"
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/oobe_display.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
@@ -158,7 +158,7 @@ const char WizardController::kTermsOfServiceScreenName[] = "tos";
 const char WizardController::kAutoEnrollmentCheckScreenName[] =
   "auto-enrollment-check";
 const char WizardController::kWrongHWIDScreenName[] = "wrong-hwid";
-const char WizardController::kLocallyManagedUserCreationScreenName[] =
+const char WizardController::kSupervisedUserCreationScreenName[] =
   "locally-managed-user-creation-flow";
 const char WizardController::kAppLaunchSplashScreenName[] =
   "app-launch-splash";
@@ -374,14 +374,14 @@ chromeos::AutoEnrollmentCheckScreen*
   return auto_enrollment_check_screen_.get();
 }
 
-chromeos::LocallyManagedUserCreationScreen*
-    WizardController::GetLocallyManagedUserCreationScreen() {
-  if (!locally_managed_user_creation_screen_.get()) {
-    locally_managed_user_creation_screen_.reset(
-        new chromeos::LocallyManagedUserCreationScreen(
-            this, oobe_display_->GetLocallyManagedUserCreationScreenActor()));
+chromeos::SupervisedUserCreationScreen*
+    WizardController::GetSupervisedUserCreationScreen() {
+  if (!supervised_user_creation_screen_.get()) {
+    supervised_user_creation_screen_.reset(
+        new chromeos::SupervisedUserCreationScreen(
+            this, oobe_display_->GetSupervisedUserCreationScreenActor()));
   }
-  return locally_managed_user_creation_screen_.get();
+  return supervised_user_creation_screen_.get();
 }
 
 chromeos::HIDDetectionScreen* WizardController::GetHIDDetectionScreen() {
@@ -558,11 +558,11 @@ void WizardController::ShowAutoEnrollmentCheckScreen() {
   SetCurrentScreen(screen);
 }
 
-void WizardController::ShowLocallyManagedUserCreationScreen() {
+void WizardController::ShowSupervisedUserCreationScreen() {
   VLOG(1) << "Showing Locally managed user creation screen screen.";
   SetStatusAreaVisible(true);
-  LocallyManagedUserCreationScreen* screen =
-      GetLocallyManagedUserCreationScreen();
+  SupervisedUserCreationScreen* screen =
+      GetSupervisedUserCreationScreen();
   SetCurrentScreen(screen);
 }
 
@@ -935,8 +935,8 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
     ShowWrongHWIDScreen();
   } else if (screen_name == kAutoEnrollmentCheckScreenName) {
     ShowAutoEnrollmentCheckScreen();
-  } else if (screen_name == kLocallyManagedUserCreationScreenName) {
-    ShowLocallyManagedUserCreationScreen();
+  } else if (screen_name == kSupervisedUserCreationScreenName) {
+    ShowSupervisedUserCreationScreen();
   } else if (screen_name == kAppLaunchSplashScreenName) {
     AutoLaunchKioskApp();
   } else if (screen_name == kHIDDetectionScreenName) {

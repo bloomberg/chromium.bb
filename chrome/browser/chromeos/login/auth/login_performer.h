@@ -71,8 +71,8 @@ class LoginPerformer : public AuthStatusConsumer,
   void PerformLogin(const UserContext& user_context,
                     AuthorizationMode auth_mode);
 
-  // Performs locally managed user login with a given |user_context|.
-  void LoginAsLocallyManagedUser(const UserContext& user_context);
+  // Performs supervised user login with a given |user_context|.
+  void LoginAsSupervisedUser(const UserContext& user_context);
 
   // Performs retail mode login.
   void LoginRetailMode();

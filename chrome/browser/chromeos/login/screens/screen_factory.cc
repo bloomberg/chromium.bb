@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/screens/screen_factory.h"
 
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
-#include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_image_screen.h"
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
 
 namespace chromeos {
 
@@ -24,10 +24,10 @@ const char ScreenFactory::kEnrollmentScreenId[] = "enroll";
 const char ScreenFactory::kErrorScreenId[] = "error-message";
 const char ScreenFactory::kEulaScreenId[] = "eula";
 const char ScreenFactory::kKioskAutolaunchScreenId[] = "autolaunch";
-const char ScreenFactory::kLocallyManagedUserCreationScreenId[] =
-  "locally-managed-user-creation-flow";
 const char ScreenFactory::kNetworkScreenId[] = "network";
 const char ScreenFactory::kResetScreenId[] = "reset";
+const char ScreenFactory::kSupervisedUserCreationScreenId[] =
+  "locally-managed-user-creation-flow";
 const char ScreenFactory::kTermsOfServiceScreenId[] = "tos";
 const char ScreenFactory::kUpdateScreenId[] = "update";
 const char ScreenFactory::kUserImageScreenId[] = "image";
@@ -75,10 +75,10 @@ BaseScreen* ScreenFactory::CreateScreenImpl(const std::string& id) {
     return new WrongHWIDScreen(
         observer_,
         oobe_display_->GetWrongHWIDScreenActor());
-  } else if (id == kLocallyManagedUserCreationScreenId) {
-    return new LocallyManagedUserCreationScreen(
+  } else if (id == kSupervisedUserCreationScreenId) {
+    return new SupervisedUserCreationScreen(
         observer_,
-        oobe_display_->GetLocallyManagedUserCreationScreenActor());
+        oobe_display_->GetSupervisedUserCreationScreenActor());
   } else if (id == kErrorScreenId) {
     return new ErrorScreen(observer_, oobe_display_->GetErrorScreenActor());
   }

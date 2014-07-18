@@ -41,22 +41,22 @@ const User* FakeSupervisedUserManager::FindBySyncId(
 }
 
 std::string FakeSupervisedUserManager::GetUserSyncId(
-    const std::string& managed_user_id) const {
+    const std::string& supervised_user_id) const {
   return std::string();
 }
 
 base::string16 FakeSupervisedUserManager::GetManagerDisplayName(
-    const std::string& managed_user_id) const {
+    const std::string& supervised_user_id) const {
   return base::string16();
 }
 
 std::string FakeSupervisedUserManager::GetManagerUserId(
-    const std::string& managed_user_id) const {
+    const std::string& supervised_user_id) const {
   return std::string();
 }
 
 std::string FakeSupervisedUserManager::GetManagerDisplayEmail(
-    const std::string& managed_user_id) const {
+    const std::string& supervised_user_id) const {
   return std::string();
 }
 

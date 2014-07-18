@@ -48,7 +48,7 @@ void MockAuthenticator::AuthenticateToUnlock(
   AuthenticateToLogin(NULL /* not used */, user_context);
 }
 
-void MockAuthenticator::LoginAsLocallyManagedUser(
+void MockAuthenticator::LoginAsSupervisedUser(
     const UserContext& user_context) {
   UserContext new_user_context = user_context;
   new_user_context.SetUserIDHash(user_context.GetUserID());

@@ -1,20 +1,20 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_LOCALLY_MANAGED_USER_CREATION_SCREEN_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_LOCALLY_MANAGED_USER_CREATION_SCREEN_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_CREATION_SCREEN_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_CREATION_SCREEN_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/camera_presence_notifier.h"
-#include "chrome/browser/chromeos/login/managed/managed_user_creation_controller.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_service.h"
-#include "chrome/browser/ui/webui/chromeos/login/locally_managed_user_creation_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -24,20 +24,20 @@ namespace chromeos {
 
 class NetworkState;
 
-// Class that controls screen showing ui for locally managed user creation.
-class LocallyManagedUserCreationScreen
+// Class that controls screen showing ui for supervised user creation.
+class SupervisedUserCreationScreen
     : public WizardScreen,
-      public LocallyManagedUserCreationScreenHandler::Delegate,
-      public ManagedUserCreationController::StatusConsumer,
+      public SupervisedUserCreationScreenHandler::Delegate,
+      public SupervisedUserCreationController::StatusConsumer,
       public SupervisedUserSyncServiceObserver,
       public ImageDecoder::Delegate,
       public NetworkPortalDetector::Observer,
       public CameraPresenceNotifier::Observer {
  public:
-  LocallyManagedUserCreationScreen(
+  SupervisedUserCreationScreen(
       ScreenObserver* observer,
-      LocallyManagedUserCreationScreenHandler* actor);
-  virtual ~LocallyManagedUserCreationScreen();
+      SupervisedUserCreationScreenHandler* actor);
+  virtual ~SupervisedUserCreationScreen();
 
   // Makes screen to show message about inconsistency in manager login flow
   // (e.g. password change detected, invalid OAuth token, etc).
@@ -77,14 +77,14 @@ class LocallyManagedUserCreationScreen
   virtual void Hide() OVERRIDE;
   virtual std::string GetName() const OVERRIDE;
 
-  // LocallyManagedUserCreationScreenHandler::Delegate implementation:
-  virtual void OnActorDestroyed(LocallyManagedUserCreationScreenHandler* actor)
+  // SupervisedUserCreationScreenHandler::Delegate implementation:
+  virtual void OnActorDestroyed(SupervisedUserCreationScreenHandler* actor)
       OVERRIDE;
-  virtual void CreateManagedUser(
+  virtual void CreateSupervisedUser(
       const base::string16& display_name,
-      const std::string& managed_user_password) OVERRIDE;
-  virtual void ImportManagedUser(const std::string& user_id) OVERRIDE;
-  virtual void ImportManagedUserWithPassword(
+      const std::string& supervised_user_password) OVERRIDE;
+  virtual void ImportSupervisedUser(const std::string& user_id) OVERRIDE;
+  virtual void ImportSupervisedUserWithPassword(
       const std::string& user_id,
       const std::string& password) OVERRIDE;
   virtual void AuthenticateManager(
@@ -96,8 +96,8 @@ class LocallyManagedUserCreationScreen
                                      std::string *out_id) const OVERRIDE;
   virtual void OnPageSelected(const std::string& page) OVERRIDE;
 
-  // LocallyManagedUserController::StatusConsumer overrides.
-  virtual void OnCreationError(ManagedUserCreationController::ErrorCode code)
+  // SupervisedUserController::StatusConsumer overrides.
+  virtual void OnCreationError(SupervisedUserCreationController::ErrorCode code)
       OVERRIDE;
   virtual void OnCreationTimeout() OVERRIDE;
   virtual void OnCreationSuccess() OVERRIDE;
@@ -111,7 +111,7 @@ class LocallyManagedUserCreationScreen
   // TODO(antrim) : this is an explicit code duplications with UserImageScreen.
   // It should be removed by issue 251179.
 
-  // LocallyManagedUserCreationScreenHandler::Delegate (image) implementation:
+  // SupervisedUserCreationScreenHandler::Delegate (image) implementation:
   virtual void OnPhotoTaken(const std::string& raw_data) OVERRIDE;
   virtual void OnImageSelected(const std::string& image_url,
                                const std::string& image_type) OVERRIDE;
@@ -123,12 +123,12 @@ class LocallyManagedUserCreationScreen
 
  private:
   void ApplyPicture();
-  void OnGetManagedUsers(const base::DictionaryValue* users);
+  void OnGetSupervisedUsers(const base::DictionaryValue* users);
 
-  base::WeakPtrFactory<LocallyManagedUserCreationScreen> weak_factory_;
-  LocallyManagedUserCreationScreenHandler* actor_;
+  base::WeakPtrFactory<SupervisedUserCreationScreen> weak_factory_;
+  SupervisedUserCreationScreenHandler* actor_;
 
-  scoped_ptr<ManagedUserCreationController> controller_;
+  scoped_ptr<SupervisedUserCreationController> controller_;
   scoped_ptr<base::DictionaryValue> existing_users_;
 
   bool on_error_screen_;
@@ -141,10 +141,10 @@ class LocallyManagedUserCreationScreen
   bool apply_photo_after_decoding_;
   int selected_image_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocallyManagedUserCreationScreen);
+  DISALLOW_COPY_AND_ASSIGN(SupervisedUserCreationScreen);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_LOCALLY_MANAGED_USER_CREATION_SCREEN_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_CREATION_SCREEN_H_
 

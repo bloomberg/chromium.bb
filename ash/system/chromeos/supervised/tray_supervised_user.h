@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_LOCALLY_MANAGED_TRAY_LOCALLY_MANAGED_USER_H
-#define ASH_SYSTEM_CHROMEOS_LOCALLY_MANAGED_TRAY_LOCALLY_MANAGED_USER_H
+#ifndef ASH_SYSTEM_CHROMEOS_SUPERVISED_TRAY_SUPERVISED_USER_H
+#define ASH_SYSTEM_CHROMEOS_SUPERVISED_TRAY_SUPERVISED_USER_H
 
 #include "ash/ash_export.h"
 #include "ash/system/tray/system_tray_item.h"
@@ -14,11 +14,11 @@ namespace ash {
 class LabelTrayView;
 class SystemTray;
 
-class ASH_EXPORT TrayLocallyManagedUser : public SystemTrayItem,
+class ASH_EXPORT TraySupervisedUser : public SystemTrayItem,
                                           public ViewClickListener {
  public:
-  explicit TrayLocallyManagedUser(SystemTray* system_tray);
-  virtual ~TrayLocallyManagedUser();
+  explicit TraySupervisedUser(SystemTray* system_tray);
+  virtual ~TraySupervisedUser();
 
   // If message is not empty updates content of default view, otherwise hides
   // tray items.
@@ -33,7 +33,7 @@ class ASH_EXPORT TrayLocallyManagedUser : public SystemTrayItem,
   virtual void OnViewClicked(views::View* sender) OVERRIDE;
 
  private:
-  friend class TrayLocallyManagedUserTest;
+  friend class TraySupervisedUserTest;
 
   static const char kNotificationId[];
 
@@ -43,9 +43,9 @@ class ASH_EXPORT TrayLocallyManagedUser : public SystemTrayItem,
   // Previous login status to avoid showing notification upon unlock.
   user::LoginStatus status_;
 
-  DISALLOW_COPY_AND_ASSIGN(TrayLocallyManagedUser);
+  DISALLOW_COPY_AND_ASSIGN(TraySupervisedUser);
 };
 
 } // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_LOCALLY_MANAGED_TRAY_LOCALLY_MANAGED_USER_H
+#endif  // ASH_SYSTEM_CHROMEOS_SUPERVISED_TRAY_SUPERVISED_USER_H

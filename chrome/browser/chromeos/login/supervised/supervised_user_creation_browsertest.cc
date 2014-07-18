@@ -10,9 +10,9 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/managed/managed_user_test_base.h"
-#include "chrome/browser/chromeos/login/managed/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_test_base.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
@@ -37,34 +37,34 @@
 #include "sync/protocol/sync.pb.h"
 
 using testing::_;
-using chromeos::ManagedUserTestBase;
+using chromeos::SupervisedUserTestBase;
 using chromeos::kTestSupervisedUserDisplayName;
 using chromeos::kTestManager;
 
 namespace chromeos {
 
-class SupervisedUserCreationTest : public ManagedUserTestBase {
+class SupervisedUserCreationTest : public SupervisedUserTestBase {
  public:
-  SupervisedUserCreationTest() : ManagedUserTestBase() {}
+  SupervisedUserCreationTest() : SupervisedUserTestBase() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserCreationTest);
 };
 
-class SupervisedUserTransactionCleanupTest : public ManagedUserTestBase {
+class SupervisedUserTransactionCleanupTest : public SupervisedUserTestBase {
  public:
-  SupervisedUserTransactionCleanupTest() : ManagedUserTestBase() {}
+  SupervisedUserTransactionCleanupTest() : SupervisedUserTestBase() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserTransactionCleanupTest);
 };
 
-class SupervisedUserOwnerCreationTest : public ManagedUserTestBase {
+class SupervisedUserOwnerCreationTest : public SupervisedUserTestBase {
  public:
-  SupervisedUserOwnerCreationTest() : ManagedUserTestBase() {}
+  SupervisedUserOwnerCreationTest() : SupervisedUserTestBase() {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    ManagedUserTestBase::SetUpInProcessBrowserTestFixture();
+    SupervisedUserTestBase::SetUpInProcessBrowserTestFixture();
     cros_settings_provider_.reset(new StubCrosSettingsProvider());
     cros_settings_provider_->Set(kDeviceOwner, base::StringValue(kTestManager));
   }

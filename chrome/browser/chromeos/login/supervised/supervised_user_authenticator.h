@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_MANAGED_USER_AUTHENTICATOR_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_MANAGED_USER_AUTHENTICATOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_AUTHENTICATOR_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_AUTHENTICATOR_H_
 
 #include <string>
 
@@ -15,13 +15,13 @@
 
 namespace chromeos {
 
-// Authenticates locally managed users against the cryptohome.
+// Authenticates supervised users against the cryptohome.
 //
 // Typical flow:
 // AuthenticateToMount() calls a Cryptohome to perform offline login,
 // AuthenticateToCreate() calls a Cryptohome to create new cryptohome.
-class ManagedUserAuthenticator
-    : public base::RefCountedThreadSafe<ManagedUserAuthenticator> {
+class SupervisedUserAuthenticator
+    : public base::RefCountedThreadSafe<SupervisedUserAuthenticator> {
  public:
   enum AuthState {
     CONTINUE,      // State indeterminate; try again when more info available.
@@ -80,7 +80,7 @@ class ManagedUserAuthenticator
     virtual void OnAddKeySuccess() = 0;
   };
 
-  explicit ManagedUserAuthenticator(AuthStatusConsumer* consumer);
+  explicit SupervisedUserAuthenticator(AuthStatusConsumer* consumer);
 
   void AuthenticateToMount(const std::string& username,
                            const std::string& password);
@@ -94,9 +94,9 @@ class ManagedUserAuthenticator
   void Resolve();
 
  private:
-  friend class base::RefCountedThreadSafe<ManagedUserAuthenticator>;
+  friend class base::RefCountedThreadSafe<SupervisedUserAuthenticator>;
 
-  ~ManagedUserAuthenticator();
+  ~SupervisedUserAuthenticator();
 
   AuthState ResolveState();
   AuthState ResolveCryptohomeFailureState();
@@ -107,9 +107,9 @@ class ManagedUserAuthenticator
   scoped_ptr<AuthAttempt> current_state_;
   AuthStatusConsumer* consumer_;
 
-  DISALLOW_COPY_AND_ASSIGN(ManagedUserAuthenticator);
+  DISALLOW_COPY_AND_ASSIGN(SupervisedUserAuthenticator);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_MANAGED_USER_AUTHENTICATOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SUPERVISED_SUPERVISED_USER_AUTHENTICATOR_H_

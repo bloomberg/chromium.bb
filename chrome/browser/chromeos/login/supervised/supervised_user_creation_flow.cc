@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_flow.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_creation_flow.h"
 
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -15,16 +15,16 @@ namespace chromeos {
 
 namespace {
 
-LocallyManagedUserCreationScreen* GetScreen(LoginDisplayHost* host) {
+SupervisedUserCreationScreen* GetScreen(LoginDisplayHost* host) {
   DCHECK(host);
   DCHECK(host->GetWizardController());
-  DCHECK(host->GetWizardController()->GetLocallyManagedUserCreationScreen());
-  return host->GetWizardController()->GetLocallyManagedUserCreationScreen();
+  DCHECK(host->GetWizardController()->GetSupervisedUserCreationScreen());
+  return host->GetWizardController()->GetSupervisedUserCreationScreen();
 }
 
 } // namespace
 
-LocallyManagedUserCreationFlow::LocallyManagedUserCreationFlow(
+SupervisedUserCreationFlow::SupervisedUserCreationFlow(
     const std::string& manager_id)
         : ExtendedUserFlow(manager_id),
         token_validated_(false),
@@ -32,25 +32,25 @@ LocallyManagedUserCreationFlow::LocallyManagedUserCreationFlow(
         session_started_(false),
         manager_profile_(NULL) {}
 
-LocallyManagedUserCreationFlow::~LocallyManagedUserCreationFlow() {}
+SupervisedUserCreationFlow::~SupervisedUserCreationFlow() {}
 
-bool LocallyManagedUserCreationFlow::CanLockScreen() {
+bool SupervisedUserCreationFlow::CanLockScreen() {
   return false;
 }
 
-bool LocallyManagedUserCreationFlow::ShouldShowSettings() {
+bool SupervisedUserCreationFlow::ShouldShowSettings() {
   return false;
 }
 
-bool LocallyManagedUserCreationFlow::ShouldLaunchBrowser() {
+bool SupervisedUserCreationFlow::ShouldLaunchBrowser() {
   return false;
 }
 
-bool LocallyManagedUserCreationFlow::ShouldSkipPostLoginScreens() {
+bool SupervisedUserCreationFlow::ShouldSkipPostLoginScreens() {
   return true;
 }
 
-void LocallyManagedUserCreationFlow::HandleOAuthTokenStatusChange(
+void SupervisedUserCreationFlow::HandleOAuthTokenStatusChange(
     User::OAuthTokenStatus status) {
   if (status == User::OAUTH_TOKEN_STATUS_UNKNOWN)
     return;
@@ -70,7 +70,7 @@ void LocallyManagedUserCreationFlow::HandleOAuthTokenStatusChange(
   }
 }
 
-bool LocallyManagedUserCreationFlow::HandleLoginFailure(
+bool SupervisedUserCreationFlow::HandleLoginFailure(
     const AuthFailure& failure) {
   if (failure.reason() == AuthFailure::COULD_NOT_MOUNT_CRYPTOHOME)
     GetScreen(host())->OnManagerLoginFailure();
@@ -79,15 +79,15 @@ bool LocallyManagedUserCreationFlow::HandleLoginFailure(
   return true;
 }
 
-void LocallyManagedUserCreationFlow::HandleLoginSuccess(
+void SupervisedUserCreationFlow::HandleLoginSuccess(
     const UserContext& context) {}
 
-bool LocallyManagedUserCreationFlow::HandlePasswordChangeDetected() {
+bool SupervisedUserCreationFlow::HandlePasswordChangeDetected() {
   GetScreen(host())->ShowManagerInconsistentStateErrorScreen();
   return true;
 }
 
-void LocallyManagedUserCreationFlow::LaunchExtraSteps(
+void SupervisedUserCreationFlow::LaunchExtraSteps(
     Profile* profile) {
   logged_in_ = true;
   manager_profile_ = profile;

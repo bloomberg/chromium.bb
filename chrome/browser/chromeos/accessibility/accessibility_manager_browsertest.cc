@@ -49,9 +49,9 @@ const char kTestUserName[] = "owner@invalid.domain";
 
 const int kTestAutoclickDelayMs = 2000;
 
-// Test user name for locally managed user. The domain part must be matched
-// with chromeos::login::kLocallyManagedUserDomain.
-const char kTestLocallyManagedUserName[] = "test@locally-managed.localhost";
+// Test user name for supervised user. The domain part must be matched with
+// chromeos::login::kSupervisedUserDomain.
+const char kTestSupervisedUserName[] = "test@locally-managed.localhost";
 
 class MockAccessibilityObserver {
  public:
@@ -566,7 +566,7 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(kTestUserName,
                       chromeos::login::kGuestUserName,
                       // chromeos::login::kRetailModeUserName,
-                      kTestLocallyManagedUserName));
+                      kTestSupervisedUserName));
 
 IN_PROC_BROWSER_TEST_P(AccessibilityManagerUserTypeTest,
                        EnableOnLoginScreenAndLogin) {

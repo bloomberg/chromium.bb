@@ -46,27 +46,27 @@ void UpdateAuthParams(base::DictionaryValue* params, bool has_users) {
   params->SetBoolean("createAccount", allow_new_user && allow_guest);
   params->SetBoolean("guestSignin", allow_guest);
 
-  // Allow locally managed user creation only if:
+  // Allow supervised user creation only if:
   // 1. Enterprise managed device > is allowed by policy.
   // 2. Consumer device > owner exists.
   // 3. New users are allowed by owner.
   // 4. Supervised users are allowed by owner.
-  bool managed_users_allowed =
-      UserManager::Get()->AreLocallyManagedUsersAllowed();
-  bool managed_users_can_create = true;
+  bool supervised_users_allowed =
+      UserManager::Get()->AreSupervisedUsersAllowed();
+  bool supervised_users_can_create = true;
   int message_id = -1;
   if (!has_users) {
-    managed_users_can_create = false;
+    supervised_users_can_create = false;
     message_id = IDS_CREATE_LOCALLY_MANAGED_USER_NO_MANAGER_TEXT;
   }
-  if (!allow_new_user || !managed_users_allowed) {
-    managed_users_can_create = false;
+  if (!allow_new_user || !supervised_users_allowed) {
+    supervised_users_can_create = false;
     message_id = IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_RESTRICTED_TEXT;
   }
 
-  params->SetBoolean("managedUsersEnabled", managed_users_allowed);
-  params->SetBoolean("managedUsersCanCreate", managed_users_can_create);
-  if (!managed_users_can_create) {
+  params->SetBoolean("managedUsersEnabled", supervised_users_allowed);
+  params->SetBoolean("managedUsersCanCreate", supervised_users_can_create);
+  if (!supervised_users_can_create) {
     params->SetString("managedUsersRestrictionReason",
                       l10n_util::GetStringUTF16(message_id));
   }

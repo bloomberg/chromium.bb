@@ -11,7 +11,7 @@ namespace chromeos {
 
 // Checks if the current log-in state and the profile is GAIA-authenticated and
 // thus has access to Google services. This excludes, for example, public
-// accounts, locally managed users, guest or incognito profiles.
+// accounts, supervised users, guest or incognito profiles.
 bool IsProfileAssociatedWithGaiaAccount(Profile* profile);
 
 } // namespace chromeos

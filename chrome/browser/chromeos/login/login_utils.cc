@@ -108,7 +108,7 @@ bool NeedRestartToApplyPerSessionFlags(const CommandLine& user_flags) {
     return false;
 
   // Only restart if needed and if not going into managed mode.
-  if (UserManager::Get()->IsLoggedInAsLocallyManagedUser())
+  if (UserManager::Get()->IsLoggedInAsSupervisedUser())
     return false;
 
   if (about_flags::AreSwitchesIdenticalToCurrentCommandLine(
