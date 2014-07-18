@@ -166,7 +166,7 @@ void LaunchInstance::OnReceivedResponse(URLResponsePtr response) {
     } else {
       navigation::ResponseDetailsPtr nav_response(
           navigation::ResponseDetails::New());
-      nav_response->loader_handle = url_loader_.PassMessagePipe();
+      nav_response->loader = url_loader_.Pass();
       nav_response->response = response.Pass();
       String response_url = nav_response->response->url;
       callback_.Run(handler_url, response_url, nav_response.Pass());
