@@ -261,7 +261,7 @@ void ShellDesktopController::CreateRootWindow() {
 
 void ShellDesktopController::InitWindowManager() {
   wm::FocusController* focus_controller =
-      new wm::FocusController(new AppsFocusRules());
+      new wm::FocusController(CreateFocusRules());
   aura::client::SetFocusClient(host_->window(), focus_controller);
   host_->window()->AddPreTargetHandler(focus_controller);
   aura::client::SetActivationClient(host_->window(), focus_controller);
@@ -293,6 +293,10 @@ void ShellDesktopController::InitWindowManager() {
   user_activity_notifier_.reset(
       new ui::UserActivityPowerManagerNotifier(user_activity_detector_.get()));
 #endif
+}
+
+wm::FocusRules* ShellDesktopController::CreateFocusRules() {
+  return new AppsFocusRules();
 }
 
 void ShellDesktopController::DestroyRootWindow() {

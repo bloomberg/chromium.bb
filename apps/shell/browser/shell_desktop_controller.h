@@ -42,6 +42,7 @@ class UserActivityPowerManagerNotifier;
 namespace wm {
 class CompoundEventFilter;
 class CursorManager;
+class FocusRules;
 class InputMethodEventFilter;
 class UserActivityDetector;
 }
@@ -102,6 +103,9 @@ class ShellDesktopController : public aura::client::WindowTreeClient,
   // Creates and sets the aura clients and window manager stuff. Subclass may
   // initialize different sets of the clients.
   virtual void InitWindowManager();
+
+  // Creates a focus rule that is to be used in the InitWindowManager.
+  virtual wm::FocusRules* CreateFocusRules();
 
  private:
   // Closes and destroys the root window hosting the app.

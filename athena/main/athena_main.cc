@@ -17,6 +17,7 @@
 #include "athena/main/debug/debug_window.h"
 #include "athena/main/placeholder.h"
 #include "athena/main/url_search_provider.h"
+#include "athena/screen/public/screen_manager.h"
 #include "athena/virtual_keyboard/public/virtual_keyboard_bindings.h"
 #include "athena/virtual_keyboard/public/virtual_keyboard_manager.h"
 #include "base/command_line.h"
@@ -56,6 +57,20 @@ class VirtualKeyboardObserver : public keyboard::KeyboardControllerObserver {
   }
 
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardObserver);
+};
+
+class AthenaDesktopController : public apps::ShellDesktopController {
+ public:
+  AthenaDesktopController() {}
+  virtual ~AthenaDesktopController() {}
+
+ private:
+  // apps::ShellDesktopController:
+  virtual wm::FocusRules* CreateFocusRules() OVERRIDE {
+    return athena::ScreenManager::CreateFocusRules();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(AthenaDesktopController);
 };
 
 class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
@@ -100,7 +115,7 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
   virtual apps::ShellDesktopController* CreateDesktopController() OVERRIDE {
     // TODO(mukai): create Athena's own ShellDesktopController subclass so that
     // it can initialize its own window manager logic.
-    apps::ShellDesktopController* desktop = new apps::ShellDesktopController();
+    apps::ShellDesktopController* desktop = new AthenaDesktopController();
     desktop->SetAppWindowController(new athena::AthenaAppWindowController());
     return desktop;
   }

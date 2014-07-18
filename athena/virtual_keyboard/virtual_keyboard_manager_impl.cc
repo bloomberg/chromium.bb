@@ -76,8 +76,8 @@ class VirtualKeyboardManagerImpl : public VirtualKeyboardManager {
 
  private:
   void Init() {
-    container_ = athena::ScreenManager::Get()->CreateContainer(
-        "VirtualKeyboardContainer");
+    athena::ScreenManager::ContainerParams params("VirtualKeyboardContainer");
+    container_ = athena::ScreenManager::Get()->CreateContainer(params);
     container_->SetLayoutManager(new FillLayoutManager(container_));
     keyboard::SetOverrideContentUrl(GURL(keyboard::kKeyboardURL));
 

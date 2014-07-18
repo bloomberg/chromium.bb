@@ -262,10 +262,11 @@ void HomeCardImpl::UpdateVirtualKeyboardBounds(
 
 void HomeCardImpl::Init() {
   InstallAccelerators();
-
-  aura::Window* container =
-      ScreenManager::Get()->CreateContainer("HomeCardContainer");
+  ScreenManager::ContainerParams params("HomeCardContainer");
+  params.can_activate_children = true;
+  aura::Window* container = ScreenManager::Get()->CreateContainer(params);
   layout_manager_ = new HomeCardLayoutManager(this);
+
   container->SetLayoutManager(layout_manager_);
   wm::SetChildWindowVisibilityChangesAnimated(container);
 

@@ -14,13 +14,35 @@
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/capture_controller.h"
 
 namespace athena {
 namespace {
 
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(ScreenManager::ContainerParams,
+                                 kContainerParamsKey,
+                                 NULL);
+
 ScreenManager* instance = NULL;
+
+class AthenaFocusRules : public wm::BaseFocusRules {
+ public:
+  AthenaFocusRules() {}
+  virtual ~AthenaFocusRules() {}
+
+  // wm::BaseFocusRules:
+  virtual bool SupportsChildActivation(aura::Window* window) const OVERRIDE {
+    ScreenManager::ContainerParams* params =
+        window->GetProperty(kContainerParamsKey);
+    return params && params->can_activate_children;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AthenaFocusRules);
+};
 
 class AthenaWindowTreeClient : public aura::client::WindowTreeClient {
  public:
@@ -78,16 +100,6 @@ class AthenaScreenPositionClient : public aura::client::ScreenPositionClient {
   DISALLOW_COPY_AND_ASSIGN(AthenaScreenPositionClient);
 };
 
-aura::Window* CreateContainerInternal(aura::Window* parent,
-                                      const std::string& name) {
-  aura::Window* container = new aura::Window(NULL);
-  container->Init(aura::WINDOW_LAYER_NOT_DRAWN);
-  container->SetName(name);
-  parent->AddChild(container);
-  container->Show();
-  return container;
-}
-
 class ScreenManagerImpl : public ScreenManager {
  public:
   explicit ScreenManagerImpl(aura::Window* root_window);
@@ -98,8 +110,8 @@ class ScreenManagerImpl : public ScreenManager {
  private:
   // ScreenManager:
   virtual aura::Window* CreateDefaultContainer(
-      const std::string& name) OVERRIDE;
-  virtual aura::Window* CreateContainer(const std::string& name) OVERRIDE;
+      const ContainerParams& params) OVERRIDE;
+  virtual aura::Window* CreateContainer(const ContainerParams& params) OVERRIDE;
   virtual aura::Window* GetContext() OVERRIDE { return root_window_; }
   virtual void SetBackgroundImage(const gfx::ImageSkia& image) OVERRIDE;
 
@@ -116,9 +128,10 @@ class ScreenManagerImpl : public ScreenManager {
 };
 
 void ScreenManagerImpl::Init() {
+  // TODO(oshima): Move the background out from ScreenManager.
   root_window_->SetLayoutManager(new FillLayoutManager(root_window_));
-  background_window_ =
-      CreateContainerInternal(root_window_, "AthenaBackground");
+  background_window_ = CreateContainer(ContainerParams("AthenaBackground"));
+
   background_window_->SetLayoutManager(
       new FillLayoutManager(background_window_));
   background_controller_.reset(new BackgroundController(background_window_));
@@ -128,8 +141,8 @@ void ScreenManagerImpl::Init() {
 }
 
 aura::Window* ScreenManagerImpl::CreateDefaultContainer(
-    const std::string& name) {
-  aura::Window* container = CreateContainerInternal(root_window_, name);
+    const ContainerParams& params) {
+  aura::Window* container = CreateContainer(params);
   window_tree_client_.reset(new AthenaWindowTreeClient(container));
   aura::client::SetWindowTreeClient(root_window_, window_tree_client_.get());
 
@@ -140,8 +153,15 @@ aura::Window* ScreenManagerImpl::CreateDefaultContainer(
   return container;
 }
 
-aura::Window* ScreenManagerImpl::CreateContainer(const std::string& name) {
-  return CreateContainerInternal(root_window_, name);
+aura::Window* ScreenManagerImpl::CreateContainer(
+    const ContainerParams& params) {
+  aura::Window* container = new aura::Window(NULL);
+  container->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  container->SetName(params.name);
+  root_window_->AddChild(container);
+  container->Show();
+  container->SetProperty(kContainerParamsKey, new ContainerParams(params));
+  return container;
 }
 
 void ScreenManagerImpl::SetBackgroundImage(const gfx::ImageSkia& image) {
@@ -163,6 +183,11 @@ ScreenManagerImpl::~ScreenManagerImpl() {
 
 }  // namespace
 
+ScreenManager::ContainerParams::ContainerParams(const std::string& n)
+    : name(n),
+      can_activate_children(false) {
+}
+
 // static
 ScreenManager* ScreenManager::Create(aura::Window* root_window) {
   (new ScreenManagerImpl(root_window))->Init();
@@ -181,6 +206,11 @@ void ScreenManager::Shutdown() {
   DCHECK(instance);
   delete instance;
   DCHECK(!instance);
+}
+
+// static
+wm::FocusRules* ScreenManager::CreateFocusRules() {
+  return new AthenaFocusRules();
 }
 
 }  // namespace athena

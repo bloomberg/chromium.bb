@@ -168,8 +168,8 @@ class DebugWidget {
 
  private:
   void CreateContainer() {
-    container_ =
-        athena::ScreenManager::Get()->CreateContainer("DebugContainer");
+    athena::ScreenManager::ContainerParams params("DebugContainer");
+    container_ = athena::ScreenManager::Get()->CreateContainer(params);
   }
 
   void CreateWidget() {

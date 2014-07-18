@@ -127,9 +127,10 @@ class AthenaContainerLayoutManager : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(AthenaContainerLayoutManager);
 };
 
-WindowManagerImpl::WindowManagerImpl()
-    : container_(
-          ScreenManager::Get()->CreateDefaultContainer("MainContainer")) {
+WindowManagerImpl::WindowManagerImpl() {
+  ScreenManager::ContainerParams params("DefaultContainer");
+  params.can_activate_children = true;
+  container_.reset(ScreenManager::Get()->CreateDefaultContainer(params));
   container_->SetLayoutManager(new AthenaContainerLayoutManager);
   container_->AddObserver(this);
   instance = this;
