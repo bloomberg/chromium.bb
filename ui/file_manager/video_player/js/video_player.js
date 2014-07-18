@@ -135,6 +135,8 @@ function VideoPlayer() {
   this.videos_ = null;
   this.currentPos_ = 0;
 
+  this.currentCast_ = null;
+
   Object.seal(this);
 }
 
@@ -272,11 +274,24 @@ VideoPlayer.prototype.loadVideo_ = function(url, title, opt_callback) {
   this.controls.inactivityWatcher.disabled = false;
   this.controls.decodeErrorOccured = false;
 
-  this.videoElement_ = document.createElement('video');
-  document.querySelector('#video-container').appendChild(this.videoElement_);
-  this.controls.attachMedia(this.videoElement_);
+  if (this.currentCast_) {
+    videoPlayerElement.setAttribute('casting', true);
+    this.videoElement_ = new CastVideoElement();
+    this.controls.attachMedia(this.videoElement_);
 
-  this.videoElement_.src = url;
+    document.querySelector('#cast-name-label').textContent =
+        loadTimeData.getString('VIDEO_PLAYER_PLAYING_ON');;
+    document.querySelector('#cast-name').textContent = this.currentCast_.name;
+  } else {
+    videoPlayerElement.removeAttribute('casting');
+
+    this.videoElement_ = document.createElement('video');
+    document.querySelector('#video-container').appendChild(this.videoElement_);
+
+    this.controls.attachMedia(this.videoElement_);
+    this.videoElement_.src = url;
+  }
+
   this.videoElement_.load();
 
   if (opt_callback) {
@@ -304,7 +319,7 @@ VideoPlayer.prototype.playFirstVideo = function() {
  */
 VideoPlayer.prototype.unloadVideo = function() {
   // Detach the previous video element, if exists.
-  if (this.videoElement_)
+  if (this.videoElement_ && this.videoElement_.parentNode)
     this.videoElement_.parentNode.removeChild(this.videoElement_);
   this.videoElement_ = null;
 };
@@ -380,6 +395,19 @@ VideoPlayer.prototype.reloadCurrentVideo_ = function(opt_callback) {
 };
 
 /**
+ * Invokes when a menuitem in the cast menu is selected.
+ * @param {Object} cast Selected element in the list of casts.
+ */
+VideoPlayer.prototype.onCastSelected_ = function(cast) {
+  // If the selected item is same as the current item, do nothing.
+  if ((this.currentCast_ && this.currentCast_.name) === (cast && cast.name))
+    return;
+
+  this.currentCast_ = cast || null;
+  this.reloadCurrentVideo_();
+};
+
+/**
  * Set the list of casts.
  * @param {Array.<Object>} casts List of casts.
  */
@@ -388,14 +416,27 @@ VideoPlayer.prototype.setCastList = function(casts) {
   var menu = document.querySelector('#cast-menu');
   menu.innerHTML = '';
 
+  // TODO(yoshiki): Handle the case that the current cast disapears.
+
   if (casts.length === 0) {
     button.classList.add('hidden');
+    if (!this.currentCast_) {
+      this.currentCast_ = null;
+      this.reloadCurrentVideo_();
+    }
     return;
   }
 
+  var item = new cr.ui.MenuItem();
+  item.label = loadTimeData.getString('VIDEO_PLAYER_PLAY_THIS_COMPUTER');
+  item.addEventListener('activate', this.onCastSelected_.wrap(this, null));
+  menu.appendChild(item);
+
   for (var i = 0; i < casts.length; i++) {
     var item = new cr.ui.MenuItem();
-    item.textContent = casts[i].name;
+    item.label = casts[i].name;
+    item.addEventListener('activate',
+                          this.onCastSelected_.wrap(this, casts[i]));
     menu.appendChild(item);
   }
   button.classList.remove('hidden');

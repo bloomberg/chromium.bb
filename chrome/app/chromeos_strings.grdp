@@ -980,6 +980,14 @@ Press any key to continue exploring.
     Failed to retrieve space info
   </message>
 
+<!-- Video Player -->
+  <message name="IDS_VIDEO_PLAYER_PLAY_THIS_COMPUTER" desc="Message of menu item which is shown at the top of the list of Chromecasts. This menuitem is to play the video on this computer (locally), intead of on TVs with Chromecast.">
+    This computer
+  </message>
+  <message name="IDS_VIDEO_PLAYER_PLAYING_ON" desc="Message is shown ahead of the name of the current chromecast which plays the video now. For example, if this message is 'Playing on' and the Chromecast name is 'Foocast', 'Playing on Foocast' is shown.">
+    Playing on
+  </message>
+
 <!-- Imageburn Strings -->
   <message name="IDS_CHECKING_FOR_UPDATES" desc="Notification for checking for update">
     Checking for updates
