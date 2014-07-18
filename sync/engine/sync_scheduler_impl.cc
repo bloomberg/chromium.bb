@@ -398,6 +398,15 @@ void SyncSchedulerImpl::ScheduleInvalidationNudge(
   ScheduleNudgeImpl(desired_delay, nudge_location);
 }
 
+void SyncSchedulerImpl::ScheduleInitialSyncNudge(syncer::ModelType model_type) {
+  DCHECK(CalledOnValidThread());
+
+  SDVLOG(2) << "Scheduling non-blocking initial sync for "
+            << ModelTypeToString(model_type);
+  nudge_tracker_.RecordInitialSyncRequired(model_type);
+  ScheduleNudgeImpl(TimeDelta::FromSeconds(0), FROM_HERE);
+}
+
 // TODO(zea): Consider adding separate throttling/backoff for datatype
 // refresh requests.
 void SyncSchedulerImpl::ScheduleNudgeImpl(

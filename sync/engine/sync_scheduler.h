@@ -119,6 +119,14 @@ class SYNC_EXPORT_PRIVATE SyncScheduler
       scoped_ptr<InvalidationInterface> invalidation,
       const tracked_objects::Location& nudge_location) = 0;
 
+  // Requests a non-blocking initial sync request for the specified type.
+  //
+  // Many types can only complete initial sync while the scheduler is in
+  // configure mode, but a few of them are able to perform their initial sync
+  // while the scheduler is in normal mode.  This non-blocking initial sync
+  // can be requested through this function.
+  virtual void ScheduleInitialSyncNudge(syncer::ModelType model_type) = 0;
+
   // Change status of notifications in the SyncSessionContext.
   virtual void SetNotificationsEnabled(bool notifications_enabled) = 0;
 

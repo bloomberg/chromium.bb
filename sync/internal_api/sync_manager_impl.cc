@@ -901,9 +901,8 @@ void SyncManagerImpl::RequestNudgeForDataTypes(
 }
 
 void SyncManagerImpl::NudgeForInitialDownload(syncer::ModelType type) {
-  // TODO(rlarocque): Initial downloads should have a separate nudge type.
   DCHECK(thread_checker_.CalledOnValidThread());
-  RefreshTypes(ModelTypeSet(type));
+  scheduler_->ScheduleInitialSyncNudge(type);
 }
 
 void SyncManagerImpl::NudgeForCommit(syncer::ModelType type) {

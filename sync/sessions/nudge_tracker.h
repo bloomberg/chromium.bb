@@ -62,6 +62,9 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
   void RecordRemoteInvalidation(syncer::ModelType type,
                                 scoped_ptr<InvalidationInterface> invalidation);
 
+  // Take note that an initial sync is pending for this type.
+  void RecordInitialSyncRequired(syncer::ModelType type);
+
   // These functions should be called to keep this class informed of the status
   // of the connection to the invalidations server.
   void OnInvalidationsEnabled();

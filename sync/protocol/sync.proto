@@ -477,6 +477,17 @@ message GetUpdateTriggers {
   // This flag is set if the invalidation server reports that it may have
   // dropped some invalidations at some point.  Introduced in M33.
   optional bool server_dropped_hints = 6;
+
+  // This flag is set if this GetUpdate request is due at least in part due
+  // to the fact that this type has not finished initial sync yet, and the
+  // client would like to initialize itself with the server data.
+  //
+  // Only some types support performing an initial sync as part of a normal
+  // GetUpdate request.  Many types must be in configure mode when fetching
+  // initial sync data.
+  //
+  // Introduced in M38.
+  optional bool initial_sync_in_progress = 7;
 }
 
 message GarbageCollectionDirective {

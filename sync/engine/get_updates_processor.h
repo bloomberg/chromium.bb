@@ -93,6 +93,7 @@ class SYNC_EXPORT_PRIVATE GetUpdatesProcessor {
 
   FRIEND_TEST_ALL_PREFIXES(GetUpdatesProcessorTest, BookmarkNudge);
   FRIEND_TEST_ALL_PREFIXES(GetUpdatesProcessorTest, NotifyMany);
+  FRIEND_TEST_ALL_PREFIXES(GetUpdatesProcessorTest, InitialSyncRequest);
   FRIEND_TEST_ALL_PREFIXES(GetUpdatesProcessorTest, ConfigureTest);
   FRIEND_TEST_ALL_PREFIXES(GetUpdatesProcessorTest, PollTest);
   FRIEND_TEST_ALL_PREFIXES(GetUpdatesProcessorTest, RetryTest);

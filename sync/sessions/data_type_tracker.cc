@@ -14,7 +14,8 @@ namespace sessions {
 DataTypeTracker::DataTypeTracker()
     : local_nudge_count_(0),
       local_refresh_request_count_(0),
-      payload_buffer_size_(NudgeTracker::kDefaultMaxPayloadsPerType) {
+      payload_buffer_size_(NudgeTracker::kDefaultMaxPayloadsPerType),
+      initial_sync_required_(false) {
 }
 
 DataTypeTracker::~DataTypeTracker() { }
@@ -86,6 +87,10 @@ void DataTypeTracker::RecordRemoteInvalidation(
   }
 }
 
+void DataTypeTracker::RecordInitialSyncRequired() {
+  initial_sync_required_ = true;
+}
+
 void DataTypeTracker::RecordSuccessfulSyncCycle() {
   // If we were throttled, then we would have been excluded from this cycle's
   // GetUpdates and Commit actions.  Our state remains unchanged.
@@ -111,6 +116,8 @@ void DataTypeTracker::RecordSuccessfulSyncCycle() {
     last_dropped_invalidation_->Acknowledge();
     last_dropped_invalidation_.reset();
   }
+
+  initial_sync_required_ = false;
 }
 
 // This limit will take effect on all future invalidations received.
@@ -124,7 +131,8 @@ bool DataTypeTracker::IsSyncRequired() const {
 
 bool DataTypeTracker::IsGetUpdatesRequired() const {
   return !IsThrottled() &&
-      (HasRefreshRequestPending() || HasPendingInvalidation());
+         (HasRefreshRequestPending() || HasPendingInvalidation() ||
+          IsInitialSyncRequired());
 }
 
 bool DataTypeTracker::HasLocalChangePending() const {
@@ -137,6 +145,10 @@ bool DataTypeTracker::HasRefreshRequestPending() const {
 
 bool DataTypeTracker::HasPendingInvalidation() const {
   return !pending_invalidations_.empty() || last_dropped_invalidation_;
+}
+
+bool DataTypeTracker::IsInitialSyncRequired() const {
+  return initial_sync_required_;
 }
 
 void DataTypeTracker::SetLegacyNotificationHint(
@@ -178,6 +190,7 @@ void DataTypeTracker::FillGetUpdatesTriggersMessage(
   msg->set_client_dropped_hints(last_dropped_invalidation_);
   msg->set_local_modification_nudges(local_nudge_count_);
   msg->set_datatype_refresh_nudges(local_refresh_request_count_);
+  msg->set_initial_sync_in_progress(initial_sync_required_);
 }
 
 bool DataTypeTracker::IsThrottled() const {

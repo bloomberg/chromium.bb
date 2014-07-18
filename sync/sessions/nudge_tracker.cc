@@ -106,6 +106,12 @@ void NudgeTracker::RecordRemoteInvalidation(
   tracker_it->second->RecordRemoteInvalidation(invalidation.Pass());
 }
 
+void NudgeTracker::RecordInitialSyncRequired(syncer::ModelType type) {
+  TypeTrackerMap::iterator tracker_it = type_trackers_.find(type);
+  DCHECK(tracker_it != type_trackers_.end());
+  tracker_it->second->RecordInitialSyncRequired();
+}
+
 void NudgeTracker::OnInvalidationsEnabled() {
   invalidations_enabled_ = true;
 }
@@ -228,6 +234,7 @@ sync_pb::GetUpdatesCallerInfo::GetUpdatesSource NudgeTracker::GetLegacySource()
   bool has_invalidation_pending = false;
   bool has_refresh_request_pending = false;
   bool has_commit_pending = false;
+  bool is_initial_sync_required = false;
   bool has_retry = IsRetryRequired();
 
   for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
@@ -242,11 +249,18 @@ sync_pb::GetUpdatesCallerInfo::GetUpdatesSource NudgeTracker::GetLegacySource()
     if (!tracker.IsThrottled() && tracker.HasLocalChangePending()) {
       has_commit_pending = true;
     }
+    if (!tracker.IsThrottled() && tracker.IsInitialSyncRequired()) {
+      is_initial_sync_required = true;
+    }
   }
 
   if (has_invalidation_pending) {
     return sync_pb::GetUpdatesCallerInfo::NOTIFICATION;
   } else if (has_refresh_request_pending) {
+    return sync_pb::GetUpdatesCallerInfo::DATATYPE_REFRESH;
+  } else if (is_initial_sync_required) {
+    // Not quite accurate, but good enough for our purposes.  This setting of
+    // SOURCE is just a backward-compatibility hack anyway.
     return sync_pb::GetUpdatesCallerInfo::DATATYPE_REFRESH;
   } else if (has_commit_pending) {
     return sync_pb::GetUpdatesCallerInfo::LOCAL;

@@ -36,6 +36,7 @@ class FakeSyncScheduler : public SyncScheduler {
       const tracked_objects::Location& nudge_location) OVERRIDE;
   virtual void ScheduleConfiguration(
       const ConfigurationParams& params) OVERRIDE;
+  virtual void ScheduleInitialSyncNudge(syncer::ModelType model_type) OVERRIDE;
   virtual void SetNotificationsEnabled(bool notifications_enabled) OVERRIDE;
 
   virtual base::TimeDelta GetSessionsCommitDelay() const OVERRIDE;

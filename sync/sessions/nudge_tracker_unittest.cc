@@ -137,6 +137,27 @@ TEST_F(NudgeTrackerTest, SourcePriorities) {
             nudge_tracker_.GetLegacySource());
 }
 
+TEST_F(NudgeTrackerTest, SourcePriority_InitialSyncRequest) {
+  nudge_tracker_.RecordInitialSyncRequired(BOOKMARKS);
+
+  // For lack of a better source, we describe an initial sync request as having
+  // source DATATYPE_REFRESH.
+  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::DATATYPE_REFRESH,
+            nudge_tracker_.GetLegacySource());
+
+  // This should never happen in practice.  But, if it did, we'd want the
+  // initial sync required to keep the source set to DATATYPE_REFRESH.
+  nudge_tracker_.RecordLocalChange(ModelTypeSet(BOOKMARKS));
+  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::DATATYPE_REFRESH,
+            nudge_tracker_.GetLegacySource());
+
+  // It should be safe to let NOTIFICATIONs override it.
+  nudge_tracker_.RecordRemoteInvalidation(BOOKMARKS,
+                                          BuildInvalidation(1, "hint"));
+  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::NOTIFICATION,
+            nudge_tracker_.GetLegacySource());
+}
+
 // Verifies the management of invalidation hints and GU trigger fields.
 TEST_F(NudgeTrackerTest, HintCoalescing) {
   // Easy case: record one hint.
@@ -344,6 +365,12 @@ TEST_F(NudgeTrackerTest, WriteRefreshRequestedTypesToProto) {
 TEST_F(NudgeTrackerTest, IsSyncRequired) {
   EXPECT_FALSE(nudge_tracker_.IsSyncRequired());
 
+  // Initial sync request.
+  nudge_tracker_.RecordInitialSyncRequired(BOOKMARKS);
+  EXPECT_TRUE(nudge_tracker_.IsSyncRequired());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker_.IsSyncRequired());
+
   // Local changes.
   nudge_tracker_.RecordLocalChange(ModelTypeSet(SESSIONS));
   EXPECT_TRUE(nudge_tracker_.IsSyncRequired());
@@ -366,6 +393,12 @@ TEST_F(NudgeTrackerTest, IsSyncRequired) {
 
 // Basic tests for the IsGetUpdatesRequired() flag.
 TEST_F(NudgeTrackerTest, IsGetUpdatesRequired) {
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
+
+  // Initial sync request.
+  nudge_tracker_.RecordInitialSyncRequired(BOOKMARKS);
+  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired());
+  nudge_tracker_.RecordSuccessfulSyncCycle();
   EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
 
   // Local changes.

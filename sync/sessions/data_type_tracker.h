@@ -39,6 +39,9 @@ class DataTypeTracker {
   // Tracks that we received invalidation notifications for this type.
   void RecordRemoteInvalidation(scoped_ptr<InvalidationInterface> incoming);
 
+  // Takes note that initial sync is pending for this type.
+  void RecordInitialSyncRequired();
+
   // Records that a sync cycle has been performed successfully.
   // Generally, this means that all local changes have been committed and all
   // remote changes have been downloaded, so we can clear any flags related to
@@ -66,6 +69,9 @@ class DataTypeTracker {
 
   // Returns true if an explicit refresh request is still outstanding.
   bool HasRefreshRequestPending() const;
+
+  // Returns true if this type is requesting an initial sync.
+  bool IsInitialSyncRequired() const;
 
   // Fills in the legacy invalidaiton payload information fields.
   void SetLegacyNotificationHint(
@@ -107,6 +113,10 @@ class DataTypeTracker {
   ScopedVector<InvalidationInterface> pending_invalidations_;
 
   size_t payload_buffer_size_;
+
+  // Set to true if this type is ready for, but has not yet completed initial
+  // sync.
+  bool initial_sync_required_;
 
   // If !unthrottle_time_.is_null(), this type is throttled and may not download
   // or commit data until the specified time.
