@@ -4,13 +4,12 @@
 
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 
-#include <assert.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include <algorithm>
 
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
+#include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 namespace internal {
@@ -31,7 +30,7 @@ void* FixedBuffer::Allocate(size_t delta) {
   delta = internal::Align(delta);
 
   if (delta == 0 || delta > size_ - cursor_) {
-    assert(false);
+    MOJO_DCHECK(false) << "Not reached";
     return NULL;
   }
 

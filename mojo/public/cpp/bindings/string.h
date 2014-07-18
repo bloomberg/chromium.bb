@@ -5,13 +5,11 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_STRING_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_STRING_H_
 
-#include <assert.h>
-
 #include <string>
 
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
-#include "mojo/public/cpp/system/macros.h"
+#include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 
@@ -125,7 +123,7 @@ template <size_t N>
 class TypeConverter<String, char[N]> {
  public:
   static String ConvertFrom(const char input[N]) {
-    assert(input);
+    MOJO_DCHECK(input);
     return String(input, N-1);
   }
 };
@@ -135,7 +133,7 @@ template <size_t N>
 class TypeConverter<String, const char[N]> {
  public:
   static String ConvertFrom(const char input[N]) {
-    assert(input);
+    MOJO_DCHECK(input);
     return String(input, N-1);
   }
 };

@@ -4,10 +4,11 @@
 
 #include "mojo/public/cpp/bindings/message.h"
 
-#include <assert.h>
 #include <stdlib.h>
 
 #include <algorithm>
+
+#include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 
@@ -27,13 +28,13 @@ Message::~Message() {
 }
 
 void Message::AllocUninitializedData(uint32_t num_bytes) {
-  assert(!data_);
+  MOJO_DCHECK(!data_);
   data_num_bytes_ = num_bytes;
   data_ = static_cast<internal::MessageData*>(malloc(num_bytes));
 }
 
 void Message::AdoptData(uint32_t num_bytes, internal::MessageData* data) {
-  assert(!data_);
+  MOJO_DCHECK(!data_);
   data_num_bytes_ = num_bytes;
   data_ = data;
 }

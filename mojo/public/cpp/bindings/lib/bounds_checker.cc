@@ -4,10 +4,9 @@
 
 #include "mojo/public/cpp/bindings/lib/bounds_checker.h"
 
-#include <assert.h>
-
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
-#include "mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/environment/logging.h"
+#include "mojo/public/cpp/system/handle.h"
 
 namespace mojo {
 namespace internal {
@@ -22,13 +21,13 @@ BoundsChecker::BoundsChecker(const void* data, uint32_t data_num_bytes,
     // The calculation of |data_end_| overflowed.
     // It shouldn't happen but if it does, set the range to empty so
     // IsValidRange() and ClaimMemory() always fail.
-    assert(false);  // Not reached.
+    MOJO_DCHECK(false) << "Not reached";
     data_end_ = data_begin_;
   }
   if (handle_end_ < num_handles) {
     // Assigning |num_handles| to |handle_end_| overflowed.
     // It shouldn't happen but if it does, set the handle index range to empty.
-    assert(false);  // Not reached.
+    MOJO_DCHECK(false) << "Not reached";
     handle_end_ = 0;
   }
 }

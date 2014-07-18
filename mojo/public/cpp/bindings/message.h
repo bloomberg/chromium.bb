@@ -5,11 +5,10 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_MESSAGE_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_MESSAGE_H_
 
-#include <assert.h>
-
 #include <vector>
 
 #include "mojo/public/cpp/bindings/lib/message_internal.h"
+#include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 
@@ -46,12 +45,12 @@ class Message {
   // Access the request_id field (if present).
   bool has_request_id() const { return data_->header.num_fields >= 3; }
   uint64_t request_id() const {
-    assert(has_request_id());
+    MOJO_DCHECK(has_request_id());
     return static_cast<const internal::MessageHeaderWithRequestID*>(
         &data_->header)->request_id;
   }
   void set_request_id(uint64_t request_id) {
-    assert(has_request_id());
+    MOJO_DCHECK(has_request_id());
     static_cast<internal::MessageHeaderWithRequestID*>(&data_->header)->
         request_id = request_id;
   }
@@ -64,7 +63,7 @@ class Message {
     return reinterpret_cast<uint8_t*>(data_) + data_->header.num_bytes;
   }
   uint32_t payload_num_bytes() const {
-    assert(data_num_bytes_ >= data_->header.num_bytes);
+    MOJO_DCHECK(data_num_bytes_ >= data_->header.num_bytes);
     return data_num_bytes_ - data_->header.num_bytes;
   }
 

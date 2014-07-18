@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/message_header_validator.h"
 #include "mojo/public/cpp/environment/environment.h"
+#include "mojo/public/cpp/environment/logging.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
@@ -31,7 +32,7 @@ class InterfaceImplState : public ErrorHandler {
   explicit InterfaceImplState(InterfaceImplBase<Interface>* instance)
       : router_(NULL),
         proxy_(NULL) {
-    assert(instance);
+    MOJO_DCHECK(instance);
     stub_.set_sink(instance);
   }
 
@@ -53,7 +54,7 @@ class InterfaceImplState : public ErrorHandler {
 
   void Bind(ScopedMessagePipeHandle handle,
             const MojoAsyncWaiter* waiter) {
-    assert(!router_);
+    MOJO_DCHECK(!router_);
 
     FilterChain filters;
     filters.Append<MessageHeaderValidator>();
@@ -70,7 +71,7 @@ class InterfaceImplState : public ErrorHandler {
   }
 
   bool WaitForIncomingMethodCall() {
-    assert(router_);
+    MOJO_DCHECK(router_);
     return router_->WaitForIncomingMessage();
   }
 

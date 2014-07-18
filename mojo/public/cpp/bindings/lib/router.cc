@@ -4,6 +4,8 @@
 
 #include "mojo/public/cpp/bindings/lib/router.h"
 
+#include "mojo/public/cpp/environment/logging.h"
+
 namespace mojo {
 namespace internal {
 
@@ -19,7 +21,7 @@ class ResponderThunk : public MessageReceiver {
 
   // MessageReceiver implementation:
   virtual bool Accept(Message* message) MOJO_OVERRIDE {
-    assert(message->has_flag(kMessageIsResponse));
+    MOJO_DCHECK(message->has_flag(kMessageIsResponse));
 
     bool result = false;
 
@@ -73,13 +75,13 @@ Router::~Router() {
 }
 
 bool Router::Accept(Message* message) {
-  assert(!message->has_flag(kMessageExpectsResponse));
+  MOJO_DCHECK(!message->has_flag(kMessageExpectsResponse));
   return connector_.Accept(message);
 }
 
 bool Router::AcceptWithResponder(Message* message,
                                  MessageReceiver* responder) {
-  assert(message->has_flag(kMessageExpectsResponse));
+  MOJO_DCHECK(message->has_flag(kMessageExpectsResponse));
 
   // Reserve 0 in case we want it to convey special meaning in the future.
   uint64_t request_id = next_request_id_++;
@@ -117,7 +119,7 @@ bool Router::HandleIncomingMessage(Message* message) {
     uint64_t request_id = message->request_id();
     ResponderMap::iterator it = responders_.find(request_id);
     if (it == responders_.end()) {
-      assert(testing_mode_);
+      MOJO_DCHECK(testing_mode_);
       return false;
     }
     MessageReceiver* responder = it->second;

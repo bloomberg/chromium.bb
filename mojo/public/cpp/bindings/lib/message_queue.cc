@@ -4,10 +4,8 @@
 
 #include "mojo/public/cpp/bindings/lib/message_queue.h"
 
-#include <assert.h>
-#include <stddef.h>
-
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 namespace internal {
@@ -25,7 +23,7 @@ bool MessageQueue::IsEmpty() const {
 }
 
 Message* MessageQueue::Peek() {
-  assert(!queue_.empty());
+  MOJO_DCHECK(!queue_.empty());
   return queue_.front();
 }
 
@@ -35,13 +33,13 @@ void MessageQueue::Push(Message* message) {
 }
 
 void MessageQueue::Pop(Message* message) {
-  assert(!queue_.empty());
+  MOJO_DCHECK(!queue_.empty());
   queue_.front()->Swap(message);
   Pop();
 }
 
 void MessageQueue::Pop() {
-  assert(!queue_.empty());
+  MOJO_DCHECK(!queue_.empty());
   delete queue_.front();
   queue_.pop();
 }

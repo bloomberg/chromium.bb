@@ -4,10 +4,10 @@
 
 #include "mojo/public/cpp/bindings/lib/connector.h"
 
-#include <assert.h>
-#include <stdlib.h>
+#include <stddef.h>
 
 #include "mojo/public/cpp/bindings/error_handler.h"
+#include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 namespace internal {
@@ -66,7 +66,7 @@ bool Connector::WaitForIncomingMessage() {
 }
 
 bool Connector::Accept(Message* message) {
-  assert(message_pipe_.is_valid());
+  MOJO_DCHECK(message_pipe_.is_valid());
 
   if (error_)
     return false;
@@ -112,7 +112,7 @@ void Connector::CallOnHandleReady(void* closure, MojoResult result) {
 }
 
 void Connector::OnHandleReady(MojoResult result) {
-  assert(async_wait_id_ != 0);
+  MOJO_DCHECK(async_wait_id_ != 0);
   async_wait_id_ = 0;
   if (result != MOJO_RESULT_OK) {
     NotifyError();

@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/lib/bounds_checker.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
+#include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 template <typename T> class Array;
@@ -267,12 +268,12 @@ class Array_Data {
   size_t size() const { return header_.num_elements; }
 
   Ref at(size_t offset) {
-    assert(offset < static_cast<size_t>(header_.num_elements));
+    MOJO_DCHECK(offset < static_cast<size_t>(header_.num_elements));
     return Traits::ToRef(storage(), offset);
   }
 
   ConstRef at(size_t offset) const {
-    assert(offset < static_cast<size_t>(header_.num_elements));
+    MOJO_DCHECK(offset < static_cast<size_t>(header_.num_elements));
     return Traits::ToConstRef(storage(), offset);
   }
 

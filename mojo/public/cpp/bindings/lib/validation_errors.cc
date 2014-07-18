@@ -4,8 +4,6 @@
 
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
 
-#include <assert.h>
-
 #include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
@@ -50,12 +48,12 @@ void ReportValidationError(ValidationError error) {
 
 ValidationErrorObserverForTesting::ValidationErrorObserverForTesting()
     : last_error_(VALIDATION_ERROR_NONE) {
-  assert(!g_validation_error_observer);
+  MOJO_DCHECK(!g_validation_error_observer);
   g_validation_error_observer = this;
 }
 
 ValidationErrorObserverForTesting::~ValidationErrorObserverForTesting() {
-  assert(g_validation_error_observer == this);
+  MOJO_DCHECK(g_validation_error_observer == this);
   g_validation_error_observer = NULL;
 }
 

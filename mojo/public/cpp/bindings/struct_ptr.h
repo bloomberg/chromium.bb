@@ -5,10 +5,9 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_STRUCT_PTR_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_STRUCT_PTR_H_
 
-#include <assert.h>
-
 #include <new>
 
+#include "mojo/public/cpp/environment/logging.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
@@ -55,11 +54,11 @@ class StructPtr {
   bool is_null() const { return ptr_ == NULL; }
 
   Struct& operator*() const {
-    assert(ptr_);
+    MOJO_DCHECK(ptr_);
     return *ptr_;
   }
   Struct* operator->() const {
-    assert(ptr_);
+    MOJO_DCHECK(ptr_);
     return ptr_;
   }
   Struct* get() const { return ptr_; }
@@ -76,7 +75,10 @@ class StructPtr {
 
  private:
   friend class internal::StructHelper<Struct>;
-  void Initialize() { assert(!ptr_); ptr_ = new Struct(); }
+  void Initialize() {
+    MOJO_DCHECK(!ptr_);
+    ptr_ = new Struct();
+  }
 
   void Take(StructPtr* other) {
     reset();
@@ -116,11 +118,11 @@ class InlinedStructPtr {
   bool is_null() const { return is_null_; }
 
   Struct& operator*() const {
-    assert(!is_null_);
+    MOJO_DCHECK(!is_null_);
     return value_;
   }
   Struct* operator->() const {
-    assert(!is_null_);
+    MOJO_DCHECK(!is_null_);
     return &value_;
   }
   Struct* get() const { return &value_; }

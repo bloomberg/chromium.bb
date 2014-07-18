@@ -5,13 +5,12 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_PTR_INTERNAL_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_INTERFACE_PTR_INTERNAL_H_
 
-#include <assert.h>
-
 #include <algorithm>  // For |std::swap()|.
 
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/message_header_validator.h"
 #include "mojo/public/cpp/bindings/lib/router.h"
+#include "mojo/public/cpp/environment/logging.h"
 
 struct MojoAsyncWaiter;
 
@@ -46,10 +45,10 @@ class InterfacePtrState {
   }
 
   void Bind(ScopedMessagePipeHandle handle, const MojoAsyncWaiter* waiter) {
-    assert(!proxy_);
-    assert(!router_);
-    assert(!handle_.is_valid());
-    assert(!waiter_);
+    MOJO_DCHECK(!proxy_);
+    MOJO_DCHECK(!router_);
+    MOJO_DCHECK(!handle_.is_valid());
+    MOJO_DCHECK(!waiter_);
 
     handle_ = handle.Pass();
     waiter_ = waiter;
@@ -58,7 +57,7 @@ class InterfacePtrState {
   bool WaitForIncomingMethodCall() {
     ConfigureProxyIfNecessary();
 
-    assert(router_);
+    MOJO_DCHECK(router_);
     return router_->WaitForIncomingMessage();
   }
 
@@ -73,7 +72,7 @@ class InterfacePtrState {
   void set_client(typename Interface::Client* client) {
     ConfigureProxyIfNecessary();
 
-    assert(proxy_);
+    MOJO_DCHECK(proxy_);
     proxy_->stub.set_sink(client);
   }
 
@@ -84,7 +83,7 @@ class InterfacePtrState {
   void set_error_handler(ErrorHandler* error_handler) {
     ConfigureProxyIfNecessary();
 
-    assert(router_);
+    MOJO_DCHECK(router_);
     router_->set_error_handler(error_handler);
   }
 
@@ -107,12 +106,12 @@ class InterfacePtrState {
   void ConfigureProxyIfNecessary() {
     // The proxy has been configured.
     if (proxy_) {
-      assert(router_);
+      MOJO_DCHECK(router_);
       return;
     }
     // The object hasn't been bound.
     if (!waiter_) {
-      assert(!handle_.is_valid());
+      MOJO_DCHECK(!handle_.is_valid());
       return;
     }
 

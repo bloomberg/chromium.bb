@@ -4,11 +4,10 @@
 
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
 
-#include <assert.h>
-
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/bounds_checker.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
+#include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 namespace internal {
@@ -44,7 +43,7 @@ void EncodePointer(const void* ptr, uint64_t* offset) {
 
   const char* p_obj = reinterpret_cast<const char*>(ptr);
   const char* p_slot = reinterpret_cast<const char*>(offset);
-  assert(p_obj > p_slot);
+  MOJO_DCHECK(p_obj > p_slot);
 
   *offset = static_cast<uint64_t>(p_obj - p_slot);
 }
@@ -75,7 +74,7 @@ void DecodeHandle(Handle* handle, std::vector<Handle>* handles) {
     *handle = Handle();
     return;
   }
-  assert(handle->value() < handles->size());
+  MOJO_DCHECK(handle->value() < handles->size());
   // Just leave holes in the vector so we don't screw up other indices.
   *handle = FetchAndReset(&handles->at(handle->value()));
 }
@@ -84,7 +83,7 @@ bool ValidateStructHeader(const void* data,
                           uint32_t min_num_bytes,
                           uint32_t min_num_fields,
                           BoundsChecker* bounds_checker) {
-  assert(min_num_bytes >= sizeof(StructHeader));
+  MOJO_DCHECK(min_num_bytes >= sizeof(StructHeader));
 
   if (!IsAligned(data)) {
     ReportValidationError(VALIDATION_ERROR_MISALIGNED_OBJECT);

@@ -4,9 +4,9 @@
 
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
 
-#include <assert.h>
-
 #include <algorithm>
+
+#include "mojo/public/cpp/environment/logging.h"
 
 namespace mojo {
 namespace internal {
@@ -34,14 +34,14 @@ FilterChain::~FilterChain() {
 }
 
 void FilterChain::SetSink(MessageReceiver* sink) {
-  assert(!sink_);
+  MOJO_DCHECK(!sink_);
   sink_ = sink;
   if (!filters_.empty())
     filters_.back()->set_sink(sink);
 }
 
 MessageReceiver* FilterChain::GetHead() {
-  assert(sink_);
+  MOJO_DCHECK(sink_);
   return filters_.empty() ? sink_ : filters_.front();
 }
 
