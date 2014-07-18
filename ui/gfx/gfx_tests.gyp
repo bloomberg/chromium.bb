@@ -41,6 +41,7 @@
         'color_utils_unittest.cc',
         'display_unittest.cc',
         'font_list_unittest.cc',
+        'font_render_params_linux_unittest.cc',
         'geometry/box_unittest.cc',
         'geometry/cubic_bezier_unittest.cc',
         'geometry/insets_unittest.cc',

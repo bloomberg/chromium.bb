@@ -417,6 +417,8 @@
       'target_name': 'gfx_test_support',
       'type': 'static_library',
       'sources': [
+        'test/fontconfig_util_linux.cc',
+        'test/fontconfig_util_linux.h',
         'test/gfx_util.cc',
         'test/gfx_util.h',
         'test/ui_cocoa_test_helper.h',
@@ -439,6 +441,11 @@
           # The cocoa files don't apply to iOS.
           'sources/': [
             ['exclude', 'cocoa']
+          ],
+        }],
+        ['OS=="linux"', {
+          'dependencies': [
+            '../../build/linux/system.gyp:fontconfig',
           ],
         }],
       ],

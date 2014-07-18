@@ -360,6 +360,8 @@ component("gfx") {
 
 source_set("gfx_test_support") {
   sources = [
+    "test/fontconfig_util_linux.cc",
+    "test/fontconfig_util_linux.h",
     "test/gfx_util.cc",
     "test/gfx_util.h",
     "test/ui_cocoa_test_helper.h",
@@ -380,10 +382,14 @@ source_set("gfx_test_support") {
       "test/ui_cocoa_test_helper.mm",
     ]
   }
+  if (is_linux) {
+    configs += [ "//build/config/linux:fontconfig" ]
+  }
 }
 
 test("gfx_unittests") {
   sources = [
+    "font_render_params_linux_unittest.cc",
     "geometry/box_unittest.cc",
     "geometry/cubic_bezier_unittest.cc",
     "geometry/insets_unittest.cc",
@@ -409,6 +415,14 @@ test("gfx_unittests") {
     "//ui/base",
     "//ui/gfx/geometry",
   ]
+
+  if (use_pango) {
+    sources += [ "platform_font_pango_unittest.cc" ]
+    configs += [
+      "//build/config/linux:pangocairo",
+      "//build/config/linux:pangoft2",
+    ]
+  }
 }
 
 if (is_android) {

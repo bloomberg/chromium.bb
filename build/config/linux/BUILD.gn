@@ -47,6 +47,10 @@ pkg_config("pangocairo") {
   packages = [ "pangocairo" ]
 }
 
+pkg_config("pangoft2") {
+  packages = [ "pangoft2" ]
+}
+
 pkg_config("udev") {
   packages = [ "libudev" ]
 }
