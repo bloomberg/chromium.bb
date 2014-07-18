@@ -1326,3 +1326,6 @@ crbug.com/392764 [ Linux ] webaudio/distance-linear.html [ Pass Failure ]
 crbug.com/395103 [ Linux ] compositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ NeedsRebaseline ]
 crbug.com/395103 [ Linux ] virtual/gpu/compositedscrolling/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ NeedsRebaseline ]
 crbug.com/395103 [ Linux ] virtual/softwarecompositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ NeedsRebaseline ]
+
+# Flaky
+crbug.com/395127 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_measure_navigation_timing.htm [ Failure Pass ]
