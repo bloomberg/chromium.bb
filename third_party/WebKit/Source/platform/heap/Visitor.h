@@ -584,7 +584,7 @@ template<typename T> bool ObjectAliveTrait<T>::isAlive(Visitor* visitor, T* obj)
 // Note that this is only enabled for Member<B>. For Member<A> which we can
 // compute the object header addr statically, this dynamic dispatch is not used.
 
-class GarbageCollectedMixin {
+class PLATFORM_EXPORT GarbageCollectedMixin {
 public:
     virtual void adjustAndMark(Visitor*) const { };
     virtual bool isAlive(Visitor*) const { return true; };
