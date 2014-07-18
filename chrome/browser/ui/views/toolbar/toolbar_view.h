@@ -13,6 +13,7 @@
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
+#include "chrome/browser/ui/toolbar/wrench_menu_badge_controller.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/views/accessible_pane_view.h"
@@ -49,7 +50,8 @@ class ToolbarView : public views::AccessiblePaneView,
                     public CommandObserver,
                     public views::ButtonListener,
                     public views::WidgetObserver,
-                    public views::ViewTargeterDelegate {
+                    public views::ViewTargeterDelegate,
+                    public WrenchMenuBadgeController::Delegate {
  public:
   // The view class name.
   static const char kViewClassName[];
@@ -192,14 +194,10 @@ class ToolbarView : public views::AccessiblePaneView,
   virtual bool DoesIntersectRect(const views::View* target,
                                  const gfx::Rect& rect) const OVERRIDE;
 
-  // Returns true if we should show the upgrade recommended dot.
-  bool ShouldShowUpgradeRecommended();
-
-  // Returns true if we should show the background page badge.
-  bool ShouldShowBackgroundPageBadge();
-
-  // Returns true if we should show the warning for incompatible software.
-  bool ShouldShowIncompatibilityWarning();
+  // WrenchMenuBadgeController::Delegate:
+  virtual void UpdateBadgeSeverity(WrenchMenuBadgeController::BadgeType type,
+                                   WrenchIconPainter::Severity severity,
+                                   bool animate) OVERRIDE;
 
   // Returns the number of pixels above the location bar in non-normal display.
   int PopupTopSpacing() const;
@@ -221,12 +219,6 @@ class ToolbarView : public views::AccessiblePaneView,
   // |auto_update_enabled| is set to true when auto-upate is on.
   void ShowOutdatedInstallNotification(bool auto_update_enabled);
 
-  // Updates the badge and the accessible name of the app menu (Wrench).
-  void UpdateAppMenuState();
-
-  // Updates the severity level on the wrench menu button.
-  void UpdateWrenchButtonSeverity();
-
   void OnShowHomeButtonChanged();
 
   int content_shadow_height() const;
@@ -240,6 +232,8 @@ class ToolbarView : public views::AccessiblePaneView,
   BrowserActionsContainer* browser_actions_;
   WrenchToolbarButton* app_menu_;
   Browser* browser_;
+
+  WrenchMenuBadgeController badge_controller_;
 
   // Controls whether or not a home button should be shown on the toolbar.
   BooleanPrefMember show_home_button_;

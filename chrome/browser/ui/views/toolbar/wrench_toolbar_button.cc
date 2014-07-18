@@ -20,6 +20,7 @@ WrenchToolbarButton::~WrenchToolbarButton() {
 void WrenchToolbarButton::SetSeverity(WrenchIconPainter::Severity severity,
                                       bool animate) {
   wrench_icon_painter_->SetSeverity(severity, animate);
+  SchedulePaint();
 }
 
 gfx::Size WrenchToolbarButton::GetPreferredSize() const {

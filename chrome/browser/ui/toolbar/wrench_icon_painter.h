@@ -8,8 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/global_error/global_error.h"
-#include "chrome/browser/upgrade_detector.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -45,17 +43,6 @@ class WrenchIconPainter : gfx::AnimationDelegate {
    protected:
     virtual ~Delegate() {}
   };
-
-  // Map an upgrade level to a severity level.
-  static Severity SeverityFromUpgradeLevel(
-      UpgradeDetector::UpgradeNotificationAnnoyanceLevel level);
-
-  // Checks if the wrench icon should be animated for the given upgrade level.
-  static bool ShouldAnimateUpgradeLevel(
-      UpgradeDetector::UpgradeNotificationAnnoyanceLevel level);
-
-  // Get the severity level for global errors.
-  static Severity GlobalErrorSeverity();
 
   explicit WrenchIconPainter(Delegate* delegate);
   virtual ~WrenchIconPainter();

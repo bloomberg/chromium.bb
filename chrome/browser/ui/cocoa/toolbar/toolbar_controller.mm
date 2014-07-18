@@ -41,19 +41,14 @@
 #import "chrome/browser/ui/cocoa/toolbar/wrench_toolbar_button_cell.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
-#include "chrome/browser/ui/global_error/global_error_service.h"
-#include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
-#include "chrome/browser/upgrade_detector.h"
+#include "chrome/browser/ui/toolbar/wrench_menu_badge_controller.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_fixer/url_fixer.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -99,7 +94,8 @@ const CGFloat kWrenchMenuLeftPadding = 3.0;
 - (void)browserActionsContainerDragFinished:(NSNotification*)notification;
 - (void)browserActionsVisibilityChanged:(NSNotification*)notification;
 - (void)adjustLocationSizeBy:(CGFloat)dX animate:(BOOL)animate;
-- (void)updateWrenchButtonSeverity;
+- (void)updateWrenchButtonSeverity:(WrenchIconPainter::Severity)severity
+                           animate:(BOOL)animate;
 @end
 
 namespace ToolbarControllerInternal {
@@ -107,29 +103,23 @@ namespace ToolbarControllerInternal {
 // A class registered for C++ notifications. This is used to detect changes in
 // preferences and upgrade available notifications. Bridges the notification
 // back to the ToolbarController.
-class NotificationBridge
-    : public content::NotificationObserver {
+class NotificationBridge : public WrenchMenuBadgeController::Delegate {
  public:
   explicit NotificationBridge(ToolbarController* controller)
-      : controller_(controller) {
-    registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-                   content::NotificationService::AllSources());
-    registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
-                   content::Source<Profile>([controller browser]->profile()));
+      : controller_(controller),
+        badge_controller_([controller browser]->profile(), this) {
+  }
+  virtual ~NotificationBridge() {
   }
 
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    switch (type) {
-      case chrome::NOTIFICATION_UPGRADE_RECOMMENDED:
-      case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
-        [controller_ updateWrenchButtonSeverity];
-        break;
-      default:
-        NOTREACHED();
-    }
+  void UpdateBadgeSeverity() {
+    badge_controller_.UpdateDelegate();
+  }
+
+  virtual void UpdateBadgeSeverity(WrenchMenuBadgeController::BadgeType type,
+                                   WrenchIconPainter::Severity severity,
+                                   bool animate) OVERRIDE {
+    [controller_ updateWrenchButtonSeverity:severity animate:animate];
   }
 
   void OnPreferenceChanged(const std::string& pref_name) {
@@ -139,7 +129,9 @@ class NotificationBridge
  private:
   ToolbarController* controller_;  // weak, owns us
 
-  content::NotificationRegistrar registrar_;
+  WrenchMenuBadgeController badge_controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationBridge);
 };
 
 }  // namespace ToolbarControllerInternal
@@ -252,7 +244,9 @@ class NotificationBridge
   [[wrenchButton_ cell] setImageID:IDR_TOOLS_P
                     forButtonState:image_button_cell::kPressedState];
 
-  [self updateWrenchButtonSeverity];
+  notificationBridge_.reset(
+      new ToolbarControllerInternal::NotificationBridge(self));
+  notificationBridge_->UpdateBadgeSeverity();
 
   [wrenchButton_ setOpenMenuOnClick:YES];
 
@@ -269,10 +263,9 @@ class NotificationBridge
   locationBarView_.reset(new LocationBarViewMac(locationBar_, commands_,
                                                 profile_, browser_));
   [locationBar_ setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
+
   // Register pref observers for the optional home and page/options buttons
   // and then add them to the toolbar based on those prefs.
-  notificationBridge_.reset(
-      new ToolbarControllerInternal::NotificationBridge(self));
   PrefService* prefs = profile_->GetPrefs();
   showHomeButton_.Init(
       prefs::kShowHomeButton, prefs,
@@ -575,26 +568,11 @@ class NotificationBridge
   return wrenchMenuController_;
 }
 
-- (void)updateWrenchButtonSeverity {
+- (void)updateWrenchButtonSeverity:(WrenchIconPainter::Severity)severity
+                           animate:(BOOL)animate {
   WrenchToolbarButtonCell* cell =
       base::mac::ObjCCastStrict<WrenchToolbarButtonCell>([wrenchButton_ cell]);
-  if (UpgradeDetector::GetInstance()->notify_upgrade()) {
-    UpgradeDetector::UpgradeNotificationAnnoyanceLevel level =
-        UpgradeDetector::GetInstance()->upgrade_notification_stage();
-    [cell setSeverity:WrenchIconPainter::SeverityFromUpgradeLevel(level)
-        shouldAnimate:WrenchIconPainter::ShouldAnimateUpgradeLevel(level)];
-    return;
-  }
-
-  GlobalError* error = GlobalErrorServiceFactory::GetForProfile(
-      browser_->profile())->GetHighestSeverityGlobalErrorWithWrenchMenuItem();
-  if (error) {
-    [cell setSeverity:WrenchIconPainter::GlobalErrorSeverity()
-        shouldAnimate:YES];
-    return;
-  }
-
-  [cell setSeverity:WrenchIconPainter::SEVERITY_NONE shouldAnimate:YES];
+  [cell setSeverity:severity shouldAnimate:animate];
 }
 
 - (void)prefChanged:(const std::string&)prefName {

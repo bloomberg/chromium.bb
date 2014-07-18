@@ -1561,6 +1561,8 @@
       'browser/ui/toolbar/encoding_menu_controller.h',
       'browser/ui/toolbar/recent_tabs_sub_menu_model.cc',
       'browser/ui/toolbar/recent_tabs_sub_menu_model.h',
+      'browser/ui/toolbar/wrench_menu_badge_controller.cc',
+      'browser/ui/toolbar/wrench_menu_badge_controller.h',
       'browser/ui/toolbar/wrench_icon_painter.cc',
       'browser/ui/toolbar/wrench_icon_painter.h',
       'browser/ui/toolbar/wrench_menu_model.cc',

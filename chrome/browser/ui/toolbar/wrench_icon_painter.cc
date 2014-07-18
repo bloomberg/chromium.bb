@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/toolbar/wrench_icon_painter.h"
 
+#include <algorithm>
+
 #include "grit/theme_resources.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/multi_animation.h"
@@ -29,47 +31,6 @@ double GetStaggeredValue(double value, int index) {
 }
 
 }  // namespace
-
-// static
-WrenchIconPainter::Severity WrenchIconPainter::SeverityFromUpgradeLevel(
-    UpgradeDetector::UpgradeNotificationAnnoyanceLevel level) {
-  switch (level) {
-    case UpgradeDetector::UPGRADE_ANNOYANCE_NONE:
-      return SEVERITY_NONE;
-    case UpgradeDetector::UPGRADE_ANNOYANCE_LOW:
-      return SEVERITY_LOW;
-    case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
-      return SEVERITY_MEDIUM;
-    case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
-      return SEVERITY_HIGH;
-    case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
-      return SEVERITY_HIGH;
-    case UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL:
-      return SEVERITY_HIGH;
-  }
-  NOTREACHED();
-  return SEVERITY_NONE;
-}
-
-// static
-bool WrenchIconPainter::ShouldAnimateUpgradeLevel(
-    UpgradeDetector::UpgradeNotificationAnnoyanceLevel level) {
-  bool should_animate = true;
-  if (level == UpgradeDetector::UPGRADE_ANNOYANCE_LOW) {
-    // Only animate low severity upgrades once.
-    static bool should_animate_low_severity = true;
-    should_animate = should_animate_low_severity;
-    should_animate_low_severity = false;
-  }
-  return should_animate;
-}
-
-// static
-WrenchIconPainter::Severity WrenchIconPainter::GlobalErrorSeverity() {
-  // If you change this make sure to also change the menu icon and the bubble
-  // icon.
-  return SEVERITY_MEDIUM;
-}
 
 WrenchIconPainter::WrenchIconPainter(Delegate* delegate)
     : delegate_(delegate),
