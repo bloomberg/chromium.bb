@@ -1111,6 +1111,7 @@ paladin.add_config('x86-generic-asan-paladin',
 
 paladin.add_config('mipsel-o32-generic-paladin',
   brillo_non_testable,
+  non_testable_builder,
   boards=['mipsel-o32-generic'],
   important=False,
   paladin_builder_name='mipsel-o32-generic paladin',
