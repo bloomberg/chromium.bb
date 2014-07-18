@@ -9,7 +9,7 @@ import shutil
 import sys
 import zipfile
 
-from adb_profile_chrome import util
+from profile_chrome import util
 
 from pylib import constants
 

@@ -5,8 +5,8 @@
 import os
 import json
 
-from adb_profile_chrome import chrome_controller
-from adb_profile_chrome import controllers_unittest
+from profile_chrome import chrome_controller
+from profile_chrome import controllers_unittest
 
 
 class ChromeControllerTest(controllers_unittest.BaseControllerTest):

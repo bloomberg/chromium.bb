@@ -4,6 +4,7 @@
 
 import exceptions
 
+
 # pylint: disable=R0201
 class BaseController(object):
   def StartTracing(self, _):

@@ -5,9 +5,9 @@
 import os
 import json
 
-from adb_profile_chrome import controllers_unittest
-from adb_profile_chrome import perf_controller
-from adb_profile_chrome import ui
+from profile_chrome import controllers_unittest
+from profile_chrome import perf_controller
+from profile_chrome import ui
 
 from pylib import constants
 

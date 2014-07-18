@@ -7,10 +7,11 @@ import os
 import re
 import time
 
-from adb_profile_chrome import controllers
+from profile_chrome import controllers
 
 from pylib import pexpect
 from pylib.device import intent
+
 
 _HEAP_PROFILE_MMAP_PROPERTY = 'heapprof.mmap'
 

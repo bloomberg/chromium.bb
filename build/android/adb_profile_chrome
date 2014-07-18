@@ -5,4 +5,4 @@
 # found in the LICENSE file.
 #
 # Start / stop profiling in chrome.
-exec $(dirname $0)/../../tools/android/adb_profile_chrome.py $@
+exec $(dirname $0)/../../tools/profile_chrome.py $@

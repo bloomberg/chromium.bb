@@ -4,7 +4,7 @@
 
 import unittest
 
-from adb_profile_chrome import profiler
+from profile_chrome import profiler
 
 from pylib import android_commands
 from pylib.device import device_utils
