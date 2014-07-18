@@ -396,7 +396,7 @@
       # See http://clang.llvm.org/docs/UsersManual.html
       'ubsan%': 0,
 
-      # Enable building with UBsan's vptr (Clang's -fsanitize=vptr -fsanitize=null options).
+      # Enable building with UBsan's vptr (Clang's -fsanitize=vptr option).
       # -fsanitize=vptr only works with clang, but ubsan_vptr=1 implies clang=1
       'ubsan_vptr%': 0,
       'ubsan_vptr_blacklist%': '<(PRODUCT_DIR)/../../tools/ubsan_vptr/blacklist.txt',
@@ -4031,7 +4031,6 @@
               ['_toolset=="target"', {
                 'cflags': [
                   '-fsanitize=vptr',
-                  '-fsanitize=null',  # Avoid dereferences on null pointer objects.
                   '-fsanitize-blacklist=<(ubsan_vptr_blacklist)',
                 ],
                 'cflags_cc!': [
@@ -4041,7 +4040,7 @@
                   '-fno-rtti',
                 ],
                 'ldflags': [
-                  '-fsanitize=vptr',  # -fsanitize=null is not necessary.
+                  '-fsanitize=vptr',
                 ],
                 'defines': [
                   'UNDEFINED_SANITIZER',
