@@ -76,9 +76,8 @@ class DeviceCloudPolicyStoreChromeOS
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
-  // Run enrollment sanity check and UMA stats only upon the first policy
-  // read/update.
-  bool first_update_;
+  // Whether enterprise enrollment validation has yet been done.
+  bool enrollment_validation_done_;
 
   base::WeakPtrFactory<DeviceCloudPolicyStoreChromeOS> weak_factory_;
 
