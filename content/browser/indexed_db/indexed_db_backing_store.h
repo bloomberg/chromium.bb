@@ -50,17 +50,8 @@ namespace content {
 class IndexedDBFactory;
 class LevelDBComparator;
 class LevelDBDatabase;
+class LevelDBFactory;
 struct IndexedDBValue;
-
-class LevelDBFactory {
- public:
-  virtual ~LevelDBFactory() {}
-  virtual leveldb::Status OpenLevelDB(const base::FilePath& file_name,
-                                      const LevelDBComparator* comparator,
-                                      scoped_ptr<LevelDBDatabase>* db,
-                                      bool* is_disk_full) = 0;
-  virtual leveldb::Status DestroyLevelDB(const base::FilePath& file_name) = 0;
-};
 
 class CONTENT_EXPORT IndexedDBBackingStore
     : public base::RefCounted<IndexedDBBackingStore> {

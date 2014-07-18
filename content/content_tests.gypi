@@ -502,6 +502,8 @@
         'browser/indexed_db/indexed_db_quota_client_unittest.cc',
         'browser/indexed_db/indexed_db_transaction_unittest.cc',
         'browser/indexed_db/indexed_db_unittest.cc',
+        'browser/indexed_db/leveldb/mock_leveldb_factory.cc',
+        'browser/indexed_db/leveldb/mock_leveldb_factory.h',
         'browser/indexed_db/mock_indexed_db_callbacks.cc',
         'browser/indexed_db/mock_indexed_db_callbacks.h',
         'browser/indexed_db/mock_indexed_db_database_callbacks.cc',

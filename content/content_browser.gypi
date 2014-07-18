@@ -748,6 +748,7 @@
       'browser/indexed_db/leveldb/leveldb_comparator.h',
       'browser/indexed_db/leveldb/leveldb_database.cc',
       'browser/indexed_db/leveldb/leveldb_database.h',
+      'browser/indexed_db/leveldb/leveldb_factory.h',
       'browser/indexed_db/leveldb/leveldb_iterator.h',
       'browser/indexed_db/leveldb/leveldb_iterator_impl.cc',
       'browser/indexed_db/leveldb/leveldb_iterator_impl.h',
