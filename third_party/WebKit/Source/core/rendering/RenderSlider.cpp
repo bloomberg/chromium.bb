@@ -25,6 +25,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/SliderThumbElement.h"
+#include "core/rendering/RenderSliderThumb.h"
 #include "wtf/MathExtras.h"
 
 using std::min;

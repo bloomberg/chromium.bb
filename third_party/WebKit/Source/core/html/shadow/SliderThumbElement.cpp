@@ -29,7 +29,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #include "config.h"
 #include "core/html/shadow/SliderThumbElement.h"
 
@@ -44,18 +43,13 @@
 #include "core/page/EventHandler.h"
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderSlider.h"
+#include "core/rendering/RenderSliderContainer.h"
+#include "core/rendering/RenderSliderThumb.h"
 #include "core/rendering/RenderTheme.h"
 
 namespace WebCore {
 
 using namespace HTMLNames;
-
-inline static Decimal sliderPosition(HTMLInputElement* element)
-{
-    const StepRange stepRange(element->createStepRange(RejectAny));
-    const Decimal oldValue = parseToDecimalForNumberType(element->value(), stepRange.defaultValue());
-    return stepRange.proportionFromValue(stepRange.clampValue(oldValue));
-}
 
 inline static bool hasVerticalAppearance(HTMLInputElement* input)
 {
@@ -64,129 +58,6 @@ inline static bool hasVerticalAppearance(HTMLInputElement* input)
 
     return sliderStyle->appearance() == SliderVerticalPart;
 }
-
-// --------------------------------
-
-RenderSliderThumb::RenderSliderThumb(SliderThumbElement* element)
-    : RenderBlockFlow(element)
-{
-}
-
-void RenderSliderThumb::updateAppearance(RenderStyle* parentStyle)
-{
-    if (parentStyle->appearance() == SliderVerticalPart)
-        style()->setAppearance(SliderThumbVerticalPart);
-    else if (parentStyle->appearance() == SliderHorizontalPart)
-        style()->setAppearance(SliderThumbHorizontalPart);
-    else if (parentStyle->appearance() == MediaSliderPart)
-        style()->setAppearance(MediaSliderThumbPart);
-    else if (parentStyle->appearance() == MediaVolumeSliderPart)
-        style()->setAppearance(MediaVolumeSliderThumbPart);
-    else if (parentStyle->appearance() == MediaFullScreenVolumeSliderPart)
-        style()->setAppearance(MediaFullScreenVolumeSliderThumbPart);
-    if (style()->hasAppearance())
-        RenderTheme::theme().adjustSliderThumbSize(style(), toElement(node()));
-}
-
-bool RenderSliderThumb::isSliderThumb() const
-{
-    return true;
-}
-
-// --------------------------------
-
-// FIXME: Find a way to cascade appearance and adjust heights, and get rid of this class.
-// http://webkit.org/b/62535
-class RenderSliderContainer : public RenderFlexibleBox {
-public:
-    RenderSliderContainer(SliderContainerElement* element)
-        : RenderFlexibleBox(element) { }
-public:
-    virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
-
-private:
-    virtual void layout() OVERRIDE;
-};
-
-void RenderSliderContainer::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
-{
-    HTMLInputElement* input = toHTMLInputElement(node()->shadowHost());
-    bool isVertical = hasVerticalAppearance(input);
-
-    if (input->renderer()->isSlider() && !isVertical && input->list()) {
-        int offsetFromCenter = RenderTheme::theme().sliderTickOffsetFromTrackCenter();
-        LayoutUnit trackHeight = 0;
-        if (offsetFromCenter < 0)
-            trackHeight = -2 * offsetFromCenter;
-        else {
-            int tickLength = RenderTheme::theme().sliderTickSize().height();
-            trackHeight = 2 * (offsetFromCenter + tickLength);
-        }
-        float zoomFactor = style()->effectiveZoom();
-        if (zoomFactor != 1.0)
-            trackHeight *= zoomFactor;
-
-        // FIXME: The trackHeight should have been added before updateLogicalHeight was called to avoid this hack.
-        updateIntrinsicContentLogicalHeight(trackHeight);
-
-        RenderBox::computeLogicalHeight(trackHeight, logicalTop, computedValues);
-        return;
-    }
-    if (isVertical)
-        logicalHeight = RenderSlider::defaultTrackLength;
-
-    // FIXME: The trackHeight should have been added before updateLogicalHeight was called to avoid this hack.
-    updateIntrinsicContentLogicalHeight(logicalHeight);
-
-    RenderBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
-}
-
-void RenderSliderContainer::layout()
-{
-    HTMLInputElement* input = toHTMLInputElement(node()->shadowHost());
-    bool isVertical = hasVerticalAppearance(input);
-    style()->setFlexDirection(isVertical ? FlowColumn : FlowRow);
-    TextDirection oldTextDirection = style()->direction();
-    if (isVertical) {
-        // FIXME: Work around rounding issues in RTL vertical sliders. We want them to
-        // render identically to LTR vertical sliders. We can remove this work around when
-        // subpixel rendering is enabled on all ports.
-        style()->setDirection(LTR);
-    }
-
-    Element* thumbElement = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb());
-    Element* trackElement = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderTrack());
-    RenderBox* thumb = thumbElement ? thumbElement->renderBox() : 0;
-    RenderBox* track = trackElement ? trackElement->renderBox() : 0;
-
-    SubtreeLayoutScope layoutScope(*this);
-    // Force a layout to reset the position of the thumb so the code below doesn't move the thumb to the wrong place.
-    // FIXME: Make a custom Render class for the track and move the thumb positioning code there.
-    if (track)
-        layoutScope.setChildNeedsLayout(track);
-
-    RenderFlexibleBox::layout();
-
-    style()->setDirection(oldTextDirection);
-    // These should always exist, unless someone mutates the shadow DOM (e.g., in the inspector).
-    if (!thumb || !track)
-        return;
-
-    double percentageOffset = sliderPosition(input).toDouble();
-    LayoutUnit availableExtent = isVertical ? track->contentHeight() : track->contentWidth();
-    availableExtent -= isVertical ? thumb->height() : thumb->width();
-    LayoutUnit offset = percentageOffset * availableExtent;
-    LayoutPoint thumbLocation = thumb->location();
-    if (isVertical)
-        thumbLocation.setY(thumbLocation.y() + track->contentHeight() - thumb->height() - offset);
-    else if (style()->isLeftToRightDirection())
-        thumbLocation.setX(thumbLocation.x() + offset);
-    else
-        thumbLocation.setX(thumbLocation.x() - offset);
-    thumb->setLocation(thumbLocation);
-}
-
-// --------------------------------
 
 inline SliderThumbElement::SliderThumbElement(Document& document)
     : HTMLDivElement(document)
