@@ -12,11 +12,6 @@
         '../../build/win_precompile.gypi',
       ],
       'target_defaults': {
-        # This and the force include below is a workaround for intsafe.h in
-        # VS 2010.
-        'msvs_system_include_dirs': [
-          '<(DEPTH)/build',
-        ],
         'msvs_settings': {
           'VCLinkerTool': {
             'AdditionalDependencies': [
@@ -29,9 +24,6 @@
               'API-MS-WIN-CORE-WINRT-L1-1-0.DLL',
               'API-MS-WIN-CORE-WINRT-STRING-L1-1-0.DLL',
             ],
-          },
-          'VCCLCompilerTool': {
-            'ForcedIncludeFiles': [ 'intsafe_workaround.h', ],
           },
         },
       },

@@ -65,7 +65,6 @@ static_library("sdch") {
   logging_file = rebase_path("logging_forward.h", root_build_dir)
   if (is_win) {
     cflags = [
-      "/FI", rebase_path("//build/intsafe_workaround.h", root_build_dir),
       "/FI", logging_file,
     ]
   } else {
