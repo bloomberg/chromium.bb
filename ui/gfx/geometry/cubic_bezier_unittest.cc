@@ -136,5 +136,33 @@ TEST(CubicBezierTest, Range) {
   EXPECT_EQ(1.f, max);
 }
 
+TEST(CubicBezierTest, Slope) {
+  CubicBezier function(0.25, 0.0, 0.75, 1.0);
+
+  double epsilon = 0.00015;
+
+  EXPECT_NEAR(function.Slope(0), 0, epsilon);
+  EXPECT_NEAR(function.Slope(0.05), 0.42170, epsilon);
+  EXPECT_NEAR(function.Slope(0.1), 0.69778, epsilon);
+  EXPECT_NEAR(function.Slope(0.15), 0.89121, epsilon);
+  EXPECT_NEAR(function.Slope(0.2), 1.03184, epsilon);
+  EXPECT_NEAR(function.Slope(0.25), 1.13576, epsilon);
+  EXPECT_NEAR(function.Slope(0.3), 1.21239, epsilon);
+  EXPECT_NEAR(function.Slope(0.35), 1.26751, epsilon);
+  EXPECT_NEAR(function.Slope(0.4), 1.30474, epsilon);
+  EXPECT_NEAR(function.Slope(0.45), 1.32628, epsilon);
+  EXPECT_NEAR(function.Slope(0.5), 1.33333, epsilon);
+  EXPECT_NEAR(function.Slope(0.55), 1.32628, epsilon);
+  EXPECT_NEAR(function.Slope(0.6), 1.30474, epsilon);
+  EXPECT_NEAR(function.Slope(0.65), 1.26751, epsilon);
+  EXPECT_NEAR(function.Slope(0.7), 1.21239, epsilon);
+  EXPECT_NEAR(function.Slope(0.75), 1.13576, epsilon);
+  EXPECT_NEAR(function.Slope(0.8), 1.03184, epsilon);
+  EXPECT_NEAR(function.Slope(0.85), 0.89121, epsilon);
+  EXPECT_NEAR(function.Slope(0.9), 0.69778, epsilon);
+  EXPECT_NEAR(function.Slope(0.95), 0.42170, epsilon);
+  EXPECT_NEAR(function.Slope(1), 0, epsilon);
+}
+
 }  // namespace
 }  // namespace gfx

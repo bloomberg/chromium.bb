@@ -45,6 +45,10 @@ void CubicBezierTimingFunction::Range(float* min, float* max) const {
   *max = static_cast<float>(max_d);
 }
 
+float CubicBezierTimingFunction::Velocity(double x) const {
+  return static_cast<float>(bezier_.Slope(x));
+}
+
 // These numbers come from
 // http://www.w3.org/TR/css3-transitions/#transition-timing-function_tag.
 scoped_ptr<TimingFunction> EaseTimingFunction::Create() {

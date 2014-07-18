@@ -24,6 +24,8 @@ class CC_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
 
   void SetInitialValue(const gfx::Vector2dF& initial_value);
   gfx::Vector2dF GetValue(double t) const;
+  gfx::Vector2dF target_value() const { return target_value_; }
+  void UpdateTarget(double t, const gfx::Vector2dF& new_target);
 
   // AnimationCurve implementation
   virtual double Duration() const OVERRIDE;
@@ -36,7 +38,10 @@ class CC_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
 
   gfx::Vector2dF initial_value_;
   gfx::Vector2dF target_value_;
-  base::TimeDelta duration_;
+  base::TimeDelta total_animation_duration_;
+
+  // Time from animation start to most recent UpdateTarget.
+  base::TimeDelta last_retarget_;
 
   scoped_ptr<TimingFunction> timing_function_;
 

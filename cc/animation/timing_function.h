@@ -22,6 +22,7 @@ class CC_EXPORT TimingFunction : public FloatAnimationCurve {
   // The smallest and largest values returned by GetValue for inputs in
   // [0, 1].
   virtual void Range(float* min, float* max) const = 0;
+  virtual float Velocity(double time) const = 0;
 
  protected:
   TimingFunction();
@@ -41,6 +42,7 @@ class CC_EXPORT CubicBezierTimingFunction : public TimingFunction {
   virtual scoped_ptr<AnimationCurve> Clone() const OVERRIDE;
 
   virtual void Range(float* min, float* max) const OVERRIDE;
+  virtual float Velocity(double time) const OVERRIDE;
 
  protected:
   CubicBezierTimingFunction(double x1, double y1, double x2, double y2);

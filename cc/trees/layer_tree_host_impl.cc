@@ -2302,9 +2302,25 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     const gfx::Point& viewport_point,
     const gfx::Vector2dF& scroll_delta) {
-  if (CurrentlyScrollingLayer()) {
-    // TODO(skobes): Update the target of the existing animation.
-    return ScrollIgnored;
+  if (LayerImpl* layer_impl = CurrentlyScrollingLayer()) {
+    Animation* animation =
+        layer_impl->layer_animation_controller()->GetAnimation(
+            Animation::ScrollOffset);
+    if (!animation)
+      return ScrollIgnored;
+
+    ScrollOffsetAnimationCurve* curve =
+        animation->curve()->ToScrollOffsetAnimationCurve();
+
+    gfx::Vector2dF new_target = curve->target_value() + scroll_delta;
+    new_target.SetToMax(gfx::Vector2dF());
+    new_target.SetToMin(layer_impl->MaxScrollOffset());
+
+    curve->UpdateTarget(
+        animation->TrimTimeToCurrentIteration(CurrentFrameTimeTicks()),
+        new_target);
+
+    return ScrollStarted;
   }
   // ScrollAnimated is only used for wheel scrolls. We use the same bubbling
   // behavior as ScrollBy to determine which layer to animate, but we do not
@@ -2341,7 +2357,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
       curve->SetInitialValue(current_offset);
 
       scoped_ptr<Animation> animation =
-          Animation::Create(curve->Clone().Pass(),
+          Animation::Create(curve.PassAs<AnimationCurve>(),
                             AnimationIdProvider::NextAnimationId(),
                             AnimationIdProvider::NextGroupId(),
                             Animation::ScrollOffset);

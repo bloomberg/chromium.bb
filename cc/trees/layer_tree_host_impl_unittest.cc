@@ -6670,7 +6670,7 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformReflectedInNextDraw) {
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
-  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  SetupScrollAndContentsLayers(gfx::Size(100, 150));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
   DrawFrame();
 
@@ -6693,10 +6693,21 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
   float y = scrolling_layer->TotalScrollOffset().y();
   EXPECT_TRUE(y > 1 && y < 49);
 
+  // Update target.
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)));
+
   host_impl_->Animate(start_time + base::TimeDelta::FromMilliseconds(200));
   host_impl_->UpdateAnimationState(true);
 
-  EXPECT_EQ(gfx::Vector2dF(0, 50), scrolling_layer->TotalScrollOffset());
+  y = scrolling_layer->TotalScrollOffset().y();
+  EXPECT_TRUE(y > 50 && y < 100);
+  EXPECT_EQ(scrolling_layer, host_impl_->CurrentlyScrollingLayer());
+
+  host_impl_->Animate(start_time + base::TimeDelta::FromMilliseconds(250));
+  host_impl_->UpdateAnimationState(true);
+
+  EXPECT_EQ(gfx::Vector2dF(0, 100), scrolling_layer->TotalScrollOffset());
   EXPECT_EQ(NULL, host_impl_->CurrentlyScrollingLayer());
 }
 

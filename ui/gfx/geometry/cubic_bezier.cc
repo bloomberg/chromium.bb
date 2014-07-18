@@ -16,19 +16,26 @@ namespace {
 static const double kBezierEpsilon = 1e-7;
 static const int MAX_STEPS = 30;
 
-static double eval_bezier(double x1, double x2, double t) {
-  const double x1_times_3 = 3.0 * x1;
-  const double x2_times_3 = 3.0 * x2;
-  const double h3 = x1_times_3;
-  const double h1 = x1_times_3 - x2_times_3 + 1.0;
-  const double h2 = x2_times_3 - 6.0 * x1;
+static double eval_bezier(double p1, double p2, double t) {
+  const double p1_times_3 = 3.0 * p1;
+  const double p2_times_3 = 3.0 * p2;
+  const double h3 = p1_times_3;
+  const double h1 = p1_times_3 - p2_times_3 + 1.0;
+  const double h2 = p2_times_3 - 6.0 * p1;
   return t * (t * (t * h1 + h2) + h3);
 }
 
+static double eval_bezier_derivative(double p1, double p2, double t) {
+  const double h1 = 9.0 * p1 - 9.0 * p2 + 3.0;
+  const double h2 = 6.0 * p2 - 12.0 * p1;
+  const double h3 = 3.0 * p1;
+  return t * (t * h1 + h2) + h3;
+}
+
+// Finds t such that eval_bezier(x1, x2, t) = x.
+// There is a unique solution if x1 and x2 lie within (0, 1).
 static double bezier_interp(double x1,
-                            double y1,
                             double x2,
-                            double y2,
                             double x) {
   DCHECK_GE(1.0, x1);
   DCHECK_LE(0.0, x1);
@@ -39,10 +46,6 @@ static double bezier_interp(double x1,
   x2 = std::min(std::max(x2, 0.0), 1.0);
   x = std::min(std::max(x, 0.0), 1.0);
 
-  // Step 1. Find the t corresponding to the given x. I.e., we want t such that
-  // eval_bezier(x1, x2, t) = x. There is a unique solution if x1 and x2 lie
-  // within (0, 1).
-  //
   // We're just going to do bisection for now (for simplicity), but we could
   // easily do some newton steps if this turns out to be a bottleneck.
   double t = 0.0;
@@ -58,8 +61,7 @@ static double bezier_interp(double x1,
   // because we exceeded MAX_STEPS. Do a DCHECK here to confirm.
   DCHECK_GT(kBezierEpsilon, std::abs(eval_bezier(x1, x2, t) - x));
 
-  // Step 2. Return the interpolated y values at the t we computed above.
-  return eval_bezier(y1, y2, t);
+  return t;
 }
 
 }  // namespace
@@ -75,7 +77,14 @@ CubicBezier::~CubicBezier() {
 }
 
 double CubicBezier::Solve(double x) const {
-  return bezier_interp(x1_, y1_, x2_, y2_, x);
+  return eval_bezier(y1_, y2_, bezier_interp(x1_, x2_, x));
+}
+
+double CubicBezier::Slope(double x) const {
+  double t = bezier_interp(x1_, x2_, x);
+  double dx_dt = eval_bezier_derivative(x1_, x2_, t);
+  double dy_dt = eval_bezier_derivative(y1_, y2_, t);
+  return dy_dt / dx_dt;
 }
 
 void CubicBezier::Range(double* min, double* max) const {
@@ -85,6 +94,8 @@ void CubicBezier::Range(double* min, double* max) const {
     return;
 
   // Represent the function's derivative in the form at^2 + bt + c.
+  // (Technically this is (dy/dt)*(1/3), which is suitable for finding zeros
+  // but does not actually give the slope of the curve.)
   double a = 3 * (y1_ - y2_) + 1;
   double b = 2 * (y2_ - 2 * y1_);
   double c = y1_;

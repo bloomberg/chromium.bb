@@ -119,5 +119,30 @@ TEST(ScrollOffsetAnimationCurveTest, Clone) {
   EXPECT_NEAR(37.4168f, value.y(), 0.00015f);
 }
 
+TEST(ScrollOffsetAnimationCurveTest, UpdateTarget) {
+  gfx::Vector2dF initial_value(0.f, 0.f);
+  gfx::Vector2dF target_value(0.f, 3600.f);
+  scoped_ptr<ScrollOffsetAnimationCurve> curve(
+      ScrollOffsetAnimationCurve::Create(
+          target_value, EaseInOutTimingFunction::Create().Pass()));
+  curve->SetInitialValue(initial_value);
+  EXPECT_EQ(1.0, curve->Duration());
+  EXPECT_EQ(1800.0, curve->GetValue(0.5).y());
+  EXPECT_EQ(3600.0, curve->GetValue(1.0).y());
+
+  curve->UpdateTarget(0.5, gfx::Vector2dF(0.0, 9900.0));
+
+  EXPECT_EQ(2.0, curve->Duration());
+  EXPECT_EQ(1800.0, curve->GetValue(0.5).y());
+  EXPECT_NEAR(5566.49, curve->GetValue(1.0).y(), 0.01);
+  EXPECT_EQ(9900.0, curve->GetValue(2.0).y());
+
+  curve->UpdateTarget(1.0, gfx::Vector2dF(0.0, 7200.0));
+
+  EXPECT_NEAR(1.674, curve->Duration(), 0.01);
+  EXPECT_NEAR(5566.49, curve->GetValue(1.0).y(), 0.01);
+  EXPECT_EQ(7200.0, curve->GetValue(1.674).y());
+}
+
 }  // namespace
 }  // namespace cc
