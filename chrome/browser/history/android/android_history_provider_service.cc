@@ -74,24 +74,29 @@ AndroidHistoryProviderService::UpdateHistoryAndBookmarks(
   }
 }
 
-AndroidHistoryProviderService::Handle
+base::CancelableTaskTracker::TaskId
 AndroidHistoryProviderService::DeleteHistoryAndBookmarks(
     const std::string& selection,
     const std::vector<base::string16>& selection_args,
-    CancelableRequestConsumerBase* consumer,
-    const DeleteCallback& callback) {
-  DeleteRequest* request = new DeleteRequest(callback);
-  AddRequest(request, consumer);
+    const DeleteCallback& callback,
+    base::CancelableTaskTracker* tracker) {
   HistoryService* hs =
       HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
-    hs->Schedule(HistoryService::PRIORITY_NORMAL,
-            &HistoryBackend::DeleteHistoryAndBookmarks, NULL, request,
-            selection, selection_args);
+    DCHECK(hs->thread_) << "History service being called after cleanup";
+    DCHECK(hs->thread_checker_.CalledOnValidThread());
+    return tracker->PostTaskAndReplyWithResult(
+        hs->thread_->message_loop_proxy().get(),
+        FROM_HERE,
+        base::Bind(&HistoryBackend::DeleteHistoryAndBookmarks,
+                   hs->history_backend_.get(),
+                   selection,
+                   selection_args),
+        callback);
   } else {
-    request->ForwardResultAsync(request->handle(), false, 0);
+    callback.Run(0);
+    return base::CancelableTaskTracker::kBadTaskId;
   }
-  return request->handle();
 }
 
 base::CancelableTaskTracker::TaskId
@@ -117,24 +122,29 @@ AndroidHistoryProviderService::InsertHistoryAndBookmark(
   }
 }
 
-AndroidHistoryProviderService::Handle
+base::CancelableTaskTracker::TaskId
 AndroidHistoryProviderService::DeleteHistory(
     const std::string& selection,
     const std::vector<base::string16>& selection_args,
-    CancelableRequestConsumerBase* consumer,
-    const DeleteCallback& callback) {
-  DeleteRequest* request = new DeleteRequest(callback);
-  AddRequest(request, consumer);
+    const DeleteCallback& callback,
+    base::CancelableTaskTracker* tracker) {
   HistoryService* hs =
       HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
-    hs->Schedule(HistoryService::PRIORITY_NORMAL,
-            &HistoryBackend::DeleteHistory, NULL, request, selection,
-            selection_args);
+    DCHECK(hs->thread_) << "History service being called after cleanup";
+    DCHECK(hs->thread_checker_.CalledOnValidThread());
+    return tracker->PostTaskAndReplyWithResult(
+        hs->thread_->message_loop_proxy().get(),
+        FROM_HERE,
+        base::Bind(&HistoryBackend::DeleteHistory,
+                   hs->history_backend_.get(),
+                   selection,
+                   selection_args),
+        callback);
   } else {
-    request->ForwardResultAsync(request->handle(), false, 0);
+    callback.Run(0);
+    return base::CancelableTaskTracker::kBadTaskId;
   }
-  return request->handle();
 }
 
 base::CancelableTaskTracker::TaskId
@@ -225,24 +235,29 @@ AndroidHistoryProviderService::UpdateSearchTerms(
   }
 }
 
-AndroidHistoryProviderService::Handle
+base::CancelableTaskTracker::TaskId
 AndroidHistoryProviderService::DeleteSearchTerms(
     const std::string& selection,
     const std::vector<base::string16>& selection_args,
-    CancelableRequestConsumerBase* consumer,
-    const DeleteCallback& callback) {
-  DeleteRequest* request = new DeleteRequest(callback);
-  AddRequest(request, consumer);
+    const DeleteCallback& callback,
+    base::CancelableTaskTracker* tracker) {
   HistoryService* hs =
       HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs) {
-    hs->Schedule(HistoryService::PRIORITY_NORMAL,
-            &HistoryBackend::DeleteSearchTerms, NULL, request, selection,
-            selection_args);
+    DCHECK(hs->thread_) << "History service being called after cleanup";
+    DCHECK(hs->thread_checker_.CalledOnValidThread());
+    return tracker->PostTaskAndReplyWithResult(
+        hs->thread_->message_loop_proxy().get(),
+        FROM_HERE,
+        base::Bind(&HistoryBackend::DeleteSearchTerms,
+                   hs->history_backend_.get(),
+                   selection,
+                   selection_args),
+        callback);
   } else {
-    request->ForwardResultAsync(request->handle(), false, 0);
+    callback.Run(0);
+    return base::CancelableTaskTracker::kBadTaskId;
   }
-  return request->handle();
 }
 
 base::CancelableTaskTracker::TaskId

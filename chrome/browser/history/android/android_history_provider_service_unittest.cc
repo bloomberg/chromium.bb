@@ -122,10 +122,8 @@ class CallbackHelper : public base::RefCountedThreadSafe<CallbackHelper> {
     base::MessageLoop::current()->Quit();
   }
 
-  void OnDeleted(AndroidHistoryProviderService::Handle handle,
-                 bool success,
-                 int count) {
-    success_ = success;
+  void OnDeleted(int count) {
+    success_ = count != 0;
     count_ = count;
     base::MessageLoop::current()->Quit();
   }
@@ -207,9 +205,11 @@ TEST_F(AndroidHistoryProviderServiceTest, TestHistoryAndBookmark) {
   EXPECT_EQ(1, callback->count());
 
   // Delete the row.
-  service_->DeleteHistoryAndBookmarks(std::string(),
+  service_->DeleteHistoryAndBookmarks(
+      std::string(),
       std::vector<base::string16>(),
-      &cancelable_consumer_, Bind(&CallbackHelper::OnDeleted, callback.get()));
+      Bind(&CallbackHelper::OnDeleted, callback.get()),
+      &cancelable_tracker_);
   base::MessageLoop::current()->Run();
   EXPECT_TRUE(callback->success());
   EXPECT_EQ(1, callback->count());
@@ -274,8 +274,10 @@ TEST_F(AndroidHistoryProviderServiceTest, TestSearchTerm) {
   EXPECT_EQ(1, callback->count());
 
   // Delete the row.
-  service_->DeleteSearchTerms(std::string(), std::vector<base::string16>(),
-      &cancelable_consumer_, Bind(&CallbackHelper::OnDeleted, callback.get()));
+  service_->DeleteSearchTerms(std::string(),
+                              std::vector<base::string16>(),
+                              Bind(&CallbackHelper::OnDeleted, callback.get()),
+                              &cancelable_tracker_);
   base::MessageLoop::current()->Run();
   EXPECT_TRUE(callback->success());
   EXPECT_EQ(1, callback->count());

@@ -41,36 +41,25 @@ int HistoryBackend::UpdateHistoryAndBookmarks(
   return count;
 }
 
-void HistoryBackend::DeleteHistoryAndBookmarks(
-    scoped_refptr<DeleteRequest> request,
+int HistoryBackend::DeleteHistoryAndBookmarks(
     const std::string& selection,
     const std::vector<base::string16>& selection_args) {
-  if (request->canceled())
-    return;
-
   int count = 0;
-  bool result = false;
-  if (android_provider_backend_)
-    result = android_provider_backend_->DeleteHistoryAndBookmarks(selection,
-        selection_args, &count);
-
-  request->ForwardResult(request->handle(), result, count);
+  if (android_provider_backend_) {
+    android_provider_backend_->DeleteHistoryAndBookmarks(
+        selection, selection_args, &count);
+  }
+  return count;
 }
 
-void HistoryBackend::DeleteHistory(
-    scoped_refptr<DeleteRequest> request,
+int HistoryBackend::DeleteHistory(
     const std::string& selection,
     const std::vector<base::string16>& selection_args) {
-  if (request->canceled())
-    return;
-
   int count = 0;
-  bool result = false;
   if (android_provider_backend_) {
-    result = android_provider_backend_->DeleteHistory(selection, selection_args,
-                                                      &count);
+    android_provider_backend_->DeleteHistory(selection, selection_args, &count);
   }
-  request->ForwardResult(request->handle(), result, count);
+  return count;
 }
 
 // Statement -------------------------------------------------------------------
@@ -119,21 +108,15 @@ int HistoryBackend::UpdateSearchTerms(
   return count;
 }
 
-void HistoryBackend::DeleteSearchTerms(
-    scoped_refptr<DeleteRequest> request,
+int HistoryBackend::DeleteSearchTerms(
     const std::string& selection,
     const std::vector<base::string16> selection_args) {
-  if (request->canceled())
-    return;
-
   int count = 0;
-  bool result = false;
   if (android_provider_backend_) {
-    result = android_provider_backend_->DeleteSearchTerms(selection,
-        selection_args, &count);
+    android_provider_backend_->DeleteSearchTerms(
+        selection, selection_args, &count);
   }
-
-  request->ForwardResult(request->handle(), result, count);
+  return count;
 }
 
 AndroidStatement* HistoryBackend::QuerySearchTerms(

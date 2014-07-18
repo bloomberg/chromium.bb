@@ -311,14 +311,19 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       const std::string& selection,
       const std::vector<base::string16>& selection_args);
 
-  void DeleteHistoryAndBookmarks(
-      scoped_refptr<DeleteRequest> request,
+  // Deletes the specified rows and returns the number of rows deleted.
+  //
+  // |selection| is the SQL WHERE clause without 'WHERE'.
+  // |selection_args| is the arguments for the WHERE clause.
+  //
+  // If |selection| is empty all history and bookmarks are deleted.
+  int DeleteHistoryAndBookmarks(
       const std::string& selection,
       const std::vector<base::string16>& selection_args);
 
-  void DeleteHistory(scoped_refptr<DeleteRequest> request,
-                     const std::string& selection,
-                     const std::vector<base::string16>& selection_args);
+  // Deletes the matched history and returns the number of rows deleted.
+  int DeleteHistory(const std::string& selection,
+                    const std::vector<base::string16>& selection_args);
 
   // Statement ----------------------------------------------------------------
   // Move the statement's current position.
@@ -342,9 +347,14 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                         const std::string& selection,
                         const std::vector<base::string16> selection_args);
 
-  void DeleteSearchTerms(scoped_refptr<DeleteRequest> request,
-                         const std::string& selection,
-                         const std::vector<base::string16> selection_args);
+  // Deletes the matched rows and returns the number of deleted rows.
+  //
+  // |selection| is the SQL WHERE clause without 'WHERE'.
+  // |selection_args| is the arguments for WHERE clause.
+  //
+  // If |selection| is empty all search terms will be deleted.
+  int DeleteSearchTerms(const std::string& selection,
+                        const std::vector<base::string16> selection_args);
 
   // Returns the result of the given query.
   //

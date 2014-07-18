@@ -851,17 +851,17 @@ class RemoveBookmarksFromAPITask : public HistoryProviderTask {
           const std::vector<base::string16>& selection_args) {
     RunAsyncRequestOnUIThreadBlocking(
         base::Bind(&AndroidHistoryProviderService::DeleteHistoryAndBookmarks,
-                   base::Unretained(service()), selection, selection_args,
-                   cancelable_consumer(),
+                   base::Unretained(service()),
+                   selection,
+                   selection_args,
                    base::Bind(&RemoveBookmarksFromAPITask::OnBookmarksRemoved,
-                              base::Unretained(this))));
+                              base::Unretained(this)),
+                   cancelable_tracker()));
     return result_;
   }
 
  private:
-  void OnBookmarksRemoved(AndroidHistoryProviderService::Handle handle,
-                          bool succeeded,
-                          int removed_row_count) {
+  void OnBookmarksRemoved(int removed_row_count) {
     result_ = removed_row_count;
     RequestCompleted();
   }
@@ -884,17 +884,17 @@ class RemoveHistoryFromAPITask : public HistoryProviderTask {
           const std::vector<base::string16>& selection_args) {
     RunAsyncRequestOnUIThreadBlocking(
         base::Bind(&AndroidHistoryProviderService::DeleteHistory,
-                   base::Unretained(service()), selection,
-                   selection_args, cancelable_consumer(),
+                   base::Unretained(service()),
+                   selection,
+                   selection_args,
                    base::Bind(&RemoveHistoryFromAPITask::OnHistoryRemoved,
-                              base::Unretained(this))));
+                              base::Unretained(this)),
+                   cancelable_tracker()));
     return result_;
   }
 
  private:
-  void OnHistoryRemoved(AndroidHistoryProviderService::Handle handle,
-                        bool succeeded,
-                        int removed_row_count) {
+  void OnHistoryRemoved(int removed_row_count) {
     result_ = removed_row_count;
     RequestCompleted();
   }
@@ -1094,20 +1094,19 @@ class RemoveSearchTermsFromAPITask : public SearchTermTask {
 
   int Run(const std::string& selection,
           const std::vector<base::string16>& selection_args) {
-    RunAsyncRequestOnUIThreadBlocking(
-        base::Bind(&AndroidHistoryProviderService::DeleteSearchTerms,
-                   base::Unretained(service()), selection, selection_args,
-                   cancelable_consumer(),
-                   base::Bind(
-                       &RemoveSearchTermsFromAPITask::OnSearchTermsDeleted,
-                       base::Unretained(this))));
+    RunAsyncRequestOnUIThreadBlocking(base::Bind(
+        &AndroidHistoryProviderService::DeleteSearchTerms,
+        base::Unretained(service()),
+        selection,
+        selection_args,
+        base::Bind(&RemoveSearchTermsFromAPITask::OnSearchTermsDeleted,
+                   base::Unretained(this)),
+        cancelable_tracker()));
     return result_;
   }
 
  private:
-  void OnSearchTermsDeleted(AndroidHistoryProviderService::Handle handle,
-                            bool succeeded,
-                            int deleted_row_count) {
+  void OnSearchTermsDeleted(int deleted_row_count) {
     result_ = deleted_row_count;
     RequestCompleted();
   }
