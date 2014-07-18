@@ -5708,6 +5708,11 @@ bool CSSPropertyParser::parseReflect(CSSPropertyID propId, bool important)
     return true;
 }
 
+static bool isFlexBasisMiddleArg(double flexGrow, double flexShrink, double unsetValue, int argSize)
+{
+    return flexGrow != unsetValue && flexShrink == unsetValue &&  argSize == 3;
+}
+
 bool CSSPropertyParser::parseFlex(CSSParserValueList* args, bool important)
 {
     if (!args || !args->size() || args->size() > 3)
@@ -5730,7 +5735,7 @@ bool CSSPropertyParser::parseFlex(CSSParserValueList* args, bool important)
                 // We only allow 3 numbers without units if the last value is 0. E.g., flex:1 1 1 is invalid.
                 return false;
             }
-        } else if (!flexBasis && (arg->id == CSSValueAuto || validUnit(arg, FLength | FPercent | FNonNeg)))
+        } else if (!flexBasis && (arg->id == CSSValueAuto || (validUnit(arg, FLength | FPercent | FNonNeg) && !isFlexBasisMiddleArg(flexGrow, flexShrink, unsetValue, args->size()))))
             flexBasis = parseValidPrimitive(arg->id, arg);
         else {
             // Not a valid arg for flex.
