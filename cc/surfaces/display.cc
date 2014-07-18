@@ -102,6 +102,7 @@ bool Display::Draw() {
   gfx::Rect device_clip_rect = device_viewport_rect;
   bool disable_picture_quad_image_filtering = false;
 
+  renderer_->DecideRenderPassAllocationsForFrame(frame_data->render_pass_list);
   renderer_->DrawFrame(&frame_data->render_pass_list,
                        device_scale_factor,
                        device_viewport_rect,
