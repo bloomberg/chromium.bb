@@ -306,6 +306,7 @@ protected:
 
 private:
     bool adjustScrollbarExistence(ComputeScrollbarExistenceOption = FirstPass);
+    void adjustScrollbarOpacity();
 
     RefPtr<Scrollbar> m_horizontalScrollbar;
     RefPtr<Scrollbar> m_verticalScrollbar;

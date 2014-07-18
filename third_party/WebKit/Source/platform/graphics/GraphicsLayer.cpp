@@ -894,6 +894,8 @@ void GraphicsLayer::setContentsOpaque(bool opaque)
     m_contentsOpaque = opaque;
     m_layer->layer()->setOpaque(m_contentsOpaque);
     m_opaqueRectTrackingContentLayerDelegate->setOpaque(m_contentsOpaque);
+    if (m_contentsLayer)
+        m_contentsLayer->setOpaque(opaque);
 }
 
 void GraphicsLayer::setMaskLayer(GraphicsLayer* maskLayer)

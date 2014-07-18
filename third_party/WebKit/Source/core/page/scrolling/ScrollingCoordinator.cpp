@@ -346,9 +346,7 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
         // Root layer non-overlay scrollbars should be marked opaque to disable
         // blending.
         bool isOpaqueScrollbar = !scrollbar->isOverlayScrollbar();
-        if (!scrollbarGraphicsLayer->contentsOpaque())
-            scrollbarGraphicsLayer->setContentsOpaque(isMainFrame && isOpaqueScrollbar);
-        scrollbarLayer->layer()->setOpaque(scrollbarGraphicsLayer->contentsOpaque());
+        scrollbarGraphicsLayer->setContentsOpaque(isMainFrame && isOpaqueScrollbar);
 
         WebLayer* scrollLayer = toWebLayer(scrollableArea->layerForScrolling());
         WebLayer* containerLayer = toWebLayer(scrollableArea->layerForContainer());
