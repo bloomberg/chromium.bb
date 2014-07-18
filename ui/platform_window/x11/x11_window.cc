@@ -14,6 +14,7 @@
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/events/x/touch_factory_x11.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
@@ -47,6 +48,7 @@ X11Window::X11Window(PlatformWindowDelegate* delegate)
       atom_cache_(xdisplay_, kAtomsToCache),
       window_mapped_(false) {
   CHECK(delegate_);
+  TouchFactory::SetTouchDeviceListFromCommandLine();
 }
 
 X11Window::~X11Window() {
@@ -61,6 +63,50 @@ void X11Window::Destroy() {
   PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
   XDestroyWindow(xdisplay_, xwindow_);
   xwindow_ = None;
+}
+
+void X11Window::ProcessXInput2Event(XEvent* xev) {
+  if (!TouchFactory::GetInstance()->ShouldProcessXI2Event(xev))
+    return;
+  EventType event_type = EventTypeFromNative(xev);
+  switch (event_type) {
+    case ET_KEY_PRESSED:
+    case ET_KEY_RELEASED: {
+      KeyEvent key_event(xev, false);
+      delegate_->DispatchEvent(&key_event);
+      break;
+    }
+    case ET_MOUSE_PRESSED:
+    case ET_MOUSE_MOVED:
+    case ET_MOUSE_DRAGGED:
+    case ET_MOUSE_RELEASED: {
+      MouseEvent mouse_event(xev);
+      delegate_->DispatchEvent(&mouse_event);
+      break;
+    }
+    case ET_MOUSEWHEEL: {
+      MouseWheelEvent wheel_event(xev);
+      delegate_->DispatchEvent(&wheel_event);
+      break;
+    }
+    case ET_SCROLL_FLING_START:
+    case ET_SCROLL_FLING_CANCEL:
+    case ET_SCROLL: {
+      ScrollEvent scroll_event(xev);
+      delegate_->DispatchEvent(&scroll_event);
+      break;
+    }
+    case ET_TOUCH_MOVED:
+    case ET_TOUCH_PRESSED:
+    case ET_TOUCH_CANCELLED:
+    case ET_TOUCH_RELEASED: {
+      TouchEvent touch_event(xev);
+      delegate_->DispatchEvent(&touch_event);
+      break;
+    }
+    default:
+      break;
+  }
 }
 
 void X11Window::Show() {
@@ -100,6 +146,11 @@ void X11Window::Show() {
   XISetMask(mask, XI_TouchBegin);
   XISetMask(mask, XI_TouchUpdate);
   XISetMask(mask, XI_TouchEnd);
+  XISetMask(mask, XI_ButtonPress);
+  XISetMask(mask, XI_ButtonRelease);
+  XISetMask(mask, XI_Motion);
+  XISetMask(mask, XI_KeyPress);
+  XISetMask(mask, XI_KeyRelease);
 
   XIEventMask evmask;
   evmask.deviceid = XIAllDevices;
@@ -290,6 +341,11 @@ uint32_t X11Window::DispatchEvent(const PlatformEvent& event) {
                    &reply_event);
         XFlush(xdisplay_);
       }
+      break;
+    }
+
+    case GenericEvent: {
+      ProcessXInput2Event(xev);
       break;
     }
   }

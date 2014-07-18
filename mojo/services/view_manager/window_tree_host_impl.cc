@@ -6,6 +6,7 @@
 #include "mojo/services/view_manager/window_tree_host_impl.h"
 #include "mojo/public/c/gles2/gles2.h"
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
+#include "mojo/services/public/cpp/input_events/input_events_type_converters.h"
 #include "mojo/services/view_manager/context_factory_impl.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
@@ -185,38 +186,10 @@ void WindowTreeHostImpl::OnDestroyed(const mojo::Callback<void()>& callback) {
 
 void WindowTreeHostImpl::OnEvent(EventPtr event,
                                  const mojo::Callback<void()>& callback) {
-  switch (event->action) {
-    case ui::ET_MOUSE_PRESSED:
-    case ui::ET_MOUSE_DRAGGED:
-    case ui::ET_MOUSE_RELEASED:
-    case ui::ET_MOUSE_MOVED:
-    case ui::ET_MOUSE_ENTERED:
-    case ui::ET_MOUSE_EXITED: {
-      gfx::Point location(event->location->x, event->location->y);
-      ui::MouseEvent ev(static_cast<ui::EventType>(event->action), location,
-                        location, event->flags, 0);
-      SendEventToProcessor(&ev);
-      break;
-    }
-    case ui::ET_MOUSEWHEEL: {
-      gfx::Vector2d offset(event->wheel_data->x_offset,
-                           event->wheel_data->y_offset);
-      gfx::Point location(event->location->x, event->location->y);
-      ui::MouseWheelEvent ev(offset, location, location, event->flags, 0);
-      SendEventToProcessor(&ev);
-      break;
-    }
-    case ui::ET_KEY_PRESSED:
-    case ui::ET_KEY_RELEASED: {
-      ui::KeyEvent ev(
-          static_cast<ui::EventType>(event->action),
-          static_cast<ui::KeyboardCode>(event->key_data->key_code),
-          event->flags, event->key_data->is_char);
-      SendEventToProcessor(&ev);
-      break;
-    }
-    // TODO(beng): touch, etc.
-  }
+  scoped_ptr<ui::Event> ui_event =
+      TypeConverter<EventPtr, scoped_ptr<ui::Event> >::ConvertTo(event);
+  if (ui_event)
+    SendEventToProcessor(ui_event.get());
   callback.Run();
 };
 

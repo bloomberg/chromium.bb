@@ -26,6 +26,8 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
  private:
   void Destroy();
 
+  void ProcessXInput2Event(XEvent* xevent);
+
   // PlatformWindow:
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;

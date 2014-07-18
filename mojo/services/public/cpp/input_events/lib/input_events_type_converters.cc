@@ -98,6 +98,20 @@ TypeConverter<EventPtr, scoped_ptr<ui::Event> >::ConvertTo(
                                              input->flags));
       break;
     }
+    case ui::ET_TOUCH_MOVED:
+    case ui::ET_TOUCH_PRESSED:
+    case ui::ET_TOUCH_CANCELLED:
+    case ui::ET_TOUCH_RELEASED: {
+      gfx::Point location(input->location->x, input->location->y);
+      ui_event.reset(new ui::TouchEvent(
+                         static_cast<ui::EventType>(input->action),
+                         location,
+                         input->flags,
+                         input->touch_data->pointer_id,
+                         base::TimeDelta::FromInternalValue(input->time_stamp),
+                         0.f, 0.f, 0.f, 0.f));
+      break;
+    }
     default:
       // TODO: support other types.
       // NOTIMPLEMENTED();
