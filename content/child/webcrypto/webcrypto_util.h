@@ -67,29 +67,16 @@ CONTENT_EXPORT blink::WebCryptoAlgorithm CreateRsaHashedImportAlgorithm(
     blink::WebCryptoAlgorithmId id,
     blink::WebCryptoAlgorithmId hash_id);
 
+bool CreateSecretKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
+                              unsigned int keylen_bytes,
+                              blink::WebCryptoKeyAlgorithm* key_algorithm);
+
 // Returns true if the set bits in b make up a subset of the set bits in a.
 bool ContainsKeyUsages(blink::WebCryptoKeyUsageMask a,
                        blink::WebCryptoKeyUsageMask b);
 
-bool KeyUsageAllows(const blink::WebCryptoKey& key,
-                    const blink::WebCryptoKeyUsage usage);
-
 bool IsAlgorithmRsa(blink::WebCryptoAlgorithmId alg_id);
 bool IsAlgorithmAsymmetric(blink::WebCryptoAlgorithmId alg_id);
-
-Status GetAesGcmTagLengthInBits(const blink::WebCryptoAesGcmParams* params,
-                                unsigned int* tag_length_bits);
-
-Status GetAesKeyGenLengthInBits(const blink::WebCryptoAesKeyGenParams* params,
-                                unsigned int* keylen_bits);
-
-Status GetHmacKeyGenLengthInBits(const blink::WebCryptoHmacKeyGenParams* params,
-                                 unsigned int* keylen_bits);
-
-Status VerifyAesKeyLengthForImport(unsigned int keylen_bytes);
-
-Status CheckKeyCreationUsages(blink::WebCryptoKeyUsageMask all_possible_usages,
-                              blink::WebCryptoKeyUsageMask actual_usages);
 
 }  // namespace webcrypto
 

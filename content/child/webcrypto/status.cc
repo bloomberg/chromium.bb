@@ -58,6 +58,11 @@ Status Status::ErrorJwkExtInconsistent() {
       "specified by the Web Crypto call");
 }
 
+Status Status::ErrorJwkUnrecognizedAlgorithm() {
+  return Status(blink::WebCryptoErrorTypeData,
+                "The JWK \"alg\" property was not recognized");
+}
+
 Status Status::ErrorJwkAlgorithmInconsistent() {
   return Status(blink::WebCryptoErrorTypeData,
                 "The JWK \"alg\" property was inconsistent with that specified "
@@ -94,9 +99,9 @@ Status Status::ErrorJwkUseAndKeyopsInconsistent() {
                 "but are inconsistent with each other.");
 }
 
-Status Status::ErrorJwkUnexpectedKty(const std::string& expected) {
+Status Status::ErrorJwkUnrecognizedKty() {
   return Status(blink::WebCryptoErrorTypeData,
-                "The JWK \"kty\" property was not \"" + expected + "\"");
+                "The JWK \"kty\" property was unrecognized");
 }
 
 Status Status::ErrorJwkIncorrectKeyLength() {
@@ -113,16 +118,6 @@ Status Status::ErrorJwkIncompleteOptionalRsaPrivateKey() {
 
 Status Status::ErrorImportEmptyKeyData() {
   return Status(blink::WebCryptoErrorTypeData, "No key data was provided");
-}
-
-Status Status::ErrorUnsupportedImportKeyFormat() {
-  return Status(blink::WebCryptoErrorTypeNotSupported,
-                "Unsupported import key format for algorithm");
-}
-
-Status Status::ErrorUnsupportedExportKeyFormat() {
-  return Status(blink::WebCryptoErrorTypeNotSupported,
-                "Unsupported export key format for algorithm");
 }
 
 Status Status::ErrorImportAesKeyLength() {

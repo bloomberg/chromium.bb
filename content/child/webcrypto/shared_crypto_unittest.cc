@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/child/webcrypto/shared_crypto.h"
+
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -16,7 +18,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "content/child/webcrypto/algorithm_dispatch.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/status.h"
 #include "content/child/webcrypto/webcrypto_util.h"
@@ -32,7 +33,6 @@
 #include <nss.h>
 #include <pk11pub.h>
 
-#include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
 #endif
 
@@ -122,7 +122,6 @@ bool SupportsRsaOaep() {
 #if defined(USE_OPENSSL)
   return false;
 #else
-  crypto::EnsureNSSInit();
   // TODO(eroman): Exclude version test for OS_CHROMEOS
 #if defined(USE_NSS)
   if (!NSS_VersionCheck("3.16.2"))
@@ -136,7 +135,6 @@ bool SupportsRsaOaep() {
 bool SupportsRsaKeyImport() {
 // TODO(eroman): Exclude version test for OS_CHROMEOS
 #if defined(USE_NSS)
-  crypto::EnsureNSSInit();
   if (!NSS_VersionCheck("3.16.2")) {
     LOG(WARNING) << "RSA key import is not supported by this version of NSS. "
                     "Skipping some tests";
@@ -447,8 +445,9 @@ const char* const kPublicKeyModulusHex =
     "6B6F64C4EF22E1E1F20D0CE8CFFB2249BD9A2137";
 const char* const kPublicKeyExponentHex = "010001";
 
-// TODO(eroman): Remove unnecessary test fixture.
 class SharedCryptoTest : public testing::Test {
+ protected:
+  virtual void SetUp() OVERRIDE { Init(); }
 };
 
 blink::WebCryptoKey ImportSecretKeyFromRaw(
@@ -891,39 +890,41 @@ TEST_F(SharedCryptoTest, HMACSampleSets) {
 
     bool signature_match = false;
     EXPECT_EQ(Status::Success(),
-              Verify(algorithm,
-                     key,
-                     CryptoData(output),
-                     CryptoData(test_message),
-                     &signature_match));
+              VerifySignature(algorithm,
+                              key,
+                              CryptoData(output),
+                              CryptoData(test_message),
+                              &signature_match));
     EXPECT_TRUE(signature_match);
 
     // Ensure truncated signature does not verify by passing one less byte.
-    EXPECT_EQ(Status::Success(),
-              Verify(algorithm,
-                     key,
-                     CryptoData(Uint8VectorStart(output), output.size() - 1),
-                     CryptoData(test_message),
-                     &signature_match));
+    EXPECT_EQ(
+        Status::Success(),
+        VerifySignature(algorithm,
+                        key,
+                        CryptoData(Uint8VectorStart(output), output.size() - 1),
+                        CryptoData(test_message),
+                        &signature_match));
     EXPECT_FALSE(signature_match);
 
     // Ensure truncated signature does not verify by passing no bytes.
     EXPECT_EQ(Status::Success(),
-              Verify(algorithm,
-                     key,
-                     CryptoData(),
-                     CryptoData(test_message),
-                     &signature_match));
+              VerifySignature(algorithm,
+                              key,
+                              CryptoData(),
+                              CryptoData(test_message),
+                              &signature_match));
     EXPECT_FALSE(signature_match);
 
     // Ensure extra long signature does not cause issues and fails.
     const unsigned char kLongSignature[1024] = {0};
-    EXPECT_EQ(Status::Success(),
-              Verify(algorithm,
-                     key,
-                     CryptoData(kLongSignature, sizeof(kLongSignature)),
-                     CryptoData(test_message),
-                     &signature_match));
+    EXPECT_EQ(
+        Status::Success(),
+        VerifySignature(algorithm,
+                        key,
+                        CryptoData(kLongSignature, sizeof(kLongSignature)),
+                        CryptoData(test_message),
+                        &signature_match));
     EXPECT_FALSE(signature_match);
   }
 }
@@ -1008,21 +1009,10 @@ TEST_F(SharedCryptoTest, AesCbcFailures) {
 
   // Fail exporting the key in SPKI and PKCS#8 formats (not allowed for secret
   // keys).
-  EXPECT_EQ(Status::ErrorUnsupportedExportKeyFormat(),
+  EXPECT_EQ(Status::ErrorUnexpectedKeyType(),
             ExportKey(blink::WebCryptoKeyFormatSpki, key, &output));
-  EXPECT_EQ(Status::ErrorUnsupportedExportKeyFormat(),
+  EXPECT_EQ(Status::ErrorUnexpectedKeyType(),
             ExportKey(blink::WebCryptoKeyFormatPkcs8, key, &output));
-}
-
-TEST_F(SharedCryptoTest, ImportAesCbcSpkiFailure) {
-  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
-  ASSERT_EQ(Status::ErrorUnsupportedImportKeyFormat(),
-            ImportKey(blink::WebCryptoKeyFormatSpki,
-                      CryptoData(HexStringToBytes(kPublicKeySpkiDerHex)),
-                      CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
-                      true,
-                      blink::WebCryptoKeyUsageEncrypt,
-                      &key));
 }
 
 TEST_F(SharedCryptoTest, MAYBE(AesCbcSampleSets)) {
@@ -1377,15 +1367,15 @@ TEST_F(SharedCryptoTest, ImportJwkFailures) {
             ImportKeyJwk(
                 CryptoData(bad_json_vec), algorithm, false, usage_mask, &key));
 
-  // Fail on JWK alg present but incorrect (expecting A128CBC).
+  // Fail on JWK alg present but unrecognized.
   dict.SetString("alg", "A127CBC");
-  EXPECT_EQ(Status::ErrorJwkAlgorithmInconsistent(),
+  EXPECT_EQ(Status::ErrorJwkUnrecognizedAlgorithm(),
             ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 
   // Fail on invalid kty.
   dict.SetString("kty", "foo");
-  EXPECT_EQ(Status::ErrorJwkUnexpectedKty("oct"),
+  EXPECT_EQ(Status::ErrorJwkUnrecognizedKty(),
             ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 
@@ -1744,19 +1734,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkInputConsistency)) {
 
   // Fail: Input algorithm (AES-CBC) is inconsistent with JWK value
   // (HMAC SHA256).
-  dict.Clear();
-  dict.SetString("kty", "oct");
-  dict.SetString("alg", "HS256");
-  dict.SetString("k", "l3nZEgZCeX8XRwJdWyK3rGB8qwjhdY8vOkbIvh4lxTuMao9Y_--hdg");
-  EXPECT_EQ(
-      Status::ErrorJwkAlgorithmInconsistent(),
-      ImportKeyJwkFromDict(dict,
-                           CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
-                           extractable,
-                           blink::WebCryptoKeyUsageEncrypt,
-                           &key));
-  // Fail: Input usage (encrypt) is inconsistent with JWK value (use=sig).
-  EXPECT_EQ(Status::ErrorJwkUseInconsistent(),
+  EXPECT_EQ(Status::ErrorJwkAlgorithmInconsistent(),
             ImportKeyJwk(CryptoData(json_vec),
                          CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
                          extractable,
@@ -2059,7 +2037,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportSpki)) {
                 &key));
 
   // Failing case: Import RSA key but provide an inconsistent input algorithm.
-  EXPECT_EQ(Status::ErrorUnsupportedImportKeyFormat(),
+  EXPECT_EQ(Status::DataError(),
             ImportKey(blink::WebCryptoKeyFormatSpki,
                       CryptoData(HexStringToBytes(kPublicKeySpkiDerHex)),
                       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
@@ -2076,7 +2054,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportSpki)) {
 
   // Failing case: Try to export a previously imported RSA public key in raw
   // format (not allowed for a public key).
-  EXPECT_EQ(Status::ErrorUnsupportedExportKeyFormat(),
+  EXPECT_EQ(Status::ErrorUnexpectedKeyType(),
             ExportKey(blink::WebCryptoKeyFormatRaw, key, &output));
 
   // Failing case: Try to export a non-extractable key
@@ -2159,7 +2137,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportPkcs8)) {
   // and usage. Several issues here:
   //   * AES-CBC doesn't support PKCS8 key format
   //   * AES-CBC doesn't support "sign" usage
-  EXPECT_EQ(Status::ErrorUnsupportedImportKeyFormat(),
+  EXPECT_EQ(Status::ErrorCreateKeyBadUsages(),
             ImportKey(blink::WebCryptoKeyFormatPkcs8,
                       CryptoData(HexStringToBytes(kPrivateKeyPkcs8DerHex)),
                       CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
@@ -2719,33 +2697,33 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSsaSignVerifyFailures)) {
             Sign(algorithm, private_key, CryptoData(data), &signature));
 
   // Ensure truncated signature does not verify by passing one less byte.
-  EXPECT_EQ(
-      Status::Success(),
-      Verify(algorithm,
-             public_key,
-             CryptoData(Uint8VectorStart(signature), signature.size() - 1),
-             CryptoData(data),
-             &signature_match));
+  EXPECT_EQ(Status::Success(),
+            VerifySignature(
+                algorithm,
+                public_key,
+                CryptoData(Uint8VectorStart(signature), signature.size() - 1),
+                CryptoData(data),
+                &signature_match));
   EXPECT_FALSE(signature_match);
 
   // Ensure truncated signature does not verify by passing no bytes.
   EXPECT_EQ(Status::Success(),
-            Verify(algorithm,
-                   public_key,
-                   CryptoData(),
-                   CryptoData(data),
-                   &signature_match));
+            VerifySignature(algorithm,
+                            public_key,
+                            CryptoData(),
+                            CryptoData(data),
+                            &signature_match));
   EXPECT_FALSE(signature_match);
 
   // Ensure corrupted signature does not verify.
   std::vector<uint8> corrupt_sig = signature;
   corrupt_sig[corrupt_sig.size() / 2] ^= 0x1;
   EXPECT_EQ(Status::Success(),
-            Verify(algorithm,
-                   public_key,
-                   CryptoData(corrupt_sig),
-                   CryptoData(data),
-                   &signature_match));
+            VerifySignature(algorithm,
+                            public_key,
+                            CryptoData(corrupt_sig),
+                            CryptoData(data),
+                            &signature_match));
   EXPECT_FALSE(signature_match);
 
   // Ensure signatures that are greater than the modulus size fail.
@@ -2753,11 +2731,11 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSsaSignVerifyFailures)) {
   DCHECK_GT(long_message_size_bytes, kModulusLengthBits / 8);
   const unsigned char kLongSignature[long_message_size_bytes] = {0};
   EXPECT_EQ(Status::Success(),
-            Verify(algorithm,
-                   public_key,
-                   CryptoData(kLongSignature, sizeof(kLongSignature)),
-                   CryptoData(data),
-                   &signature_match));
+            VerifySignature(algorithm,
+                            public_key,
+                            CryptoData(kLongSignature, sizeof(kLongSignature)),
+                            CryptoData(data),
+                            &signature_match));
   EXPECT_FALSE(signature_match);
 
   // Ensure that signing and verifying with an incompatible algorithm fails.
@@ -2766,11 +2744,11 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSsaSignVerifyFailures)) {
   EXPECT_EQ(Status::ErrorUnexpected(),
             Sign(algorithm, private_key, CryptoData(data), &signature));
   EXPECT_EQ(Status::ErrorUnexpected(),
-            Verify(algorithm,
-                   public_key,
-                   CryptoData(signature),
-                   CryptoData(data),
-                   &signature_match));
+            VerifySignature(algorithm,
+                            public_key,
+                            CryptoData(signature),
+                            CryptoData(data),
+                            &signature_match));
 
   // Some crypto libraries (NSS) can automatically select the RSA SSA inner hash
   // based solely on the contents of the input signature data. In the Web Crypto
@@ -2811,11 +2789,12 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSsaSignVerifyFailures)) {
 
   bool is_match;
   EXPECT_EQ(Status::Success(),
-            Verify(CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5),
-                   public_key_256,
-                   CryptoData(signature),
-                   CryptoData(data),
-                   &is_match));
+            VerifySignature(
+                CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5),
+                public_key_256,
+                CryptoData(signature),
+                CryptoData(data),
+                &is_match));
   EXPECT_FALSE(is_match);
 }
 
@@ -2866,11 +2845,11 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSignVerifyKnownAnswer)) {
 
     bool is_match = false;
     ASSERT_EQ(Status::Success(),
-              Verify(algorithm,
-                     public_key,
-                     CryptoData(test_signature),
-                     CryptoData(test_message),
-                     &is_match));
+              VerifySignature(algorithm,
+                              public_key,
+                              CryptoData(test_signature),
+                              CryptoData(test_message),
+                              &is_match));
     EXPECT_TRUE(is_match);
   }
 }
@@ -3104,11 +3083,11 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwRawSymkeyUnwrapSignVerifyHmac)) {
 
   bool verify_result;
   ASSERT_EQ(Status::Success(),
-            Verify(CreateAlgorithm(blink::WebCryptoAlgorithmIdHmac),
-                   key,
-                   CryptoData(signature),
-                   CryptoData(test_message),
-                   &verify_result));
+            VerifySignature(CreateAlgorithm(blink::WebCryptoAlgorithmIdHmac),
+                            key,
+                            CryptoData(signature),
+                            CryptoData(test_message),
+                            &verify_result));
 }
 
 TEST_F(SharedCryptoTest, MAYBE(AesKwRawSymkeyWrapUnwrapErrors)) {
@@ -3451,6 +3430,8 @@ TEST_F(SharedCryptoTest, MAYBE(UnwrapAesCbc192)) {
 
 class SharedCryptoRsaOaepTest : public ::testing::Test {
  public:
+  SharedCryptoRsaOaepTest() { Init(); }
+
   scoped_ptr<base::DictionaryValue> CreatePublicKeyJwkDict() {
     scoped_ptr<base::DictionaryValue> jwk(new base::DictionaryValue());
     jwk->SetString("kty", "RSA");
@@ -3552,7 +3533,7 @@ TEST_F(SharedCryptoRsaOaepTest, ImportPublicJwkWithMismatchedTypeFails) {
   jwk->SetString("alg", "RSA-OAEP");
 
   blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
-  ASSERT_EQ(Status::ErrorJwkUnexpectedKty("RSA"),
+  ASSERT_EQ(Status::ErrorJwkPropertyMissing("k"),
             ImportKeyJwkFromDict(*jwk.get(),
                                  CreateRsaHashedImportAlgorithm(
                                      blink::WebCryptoAlgorithmIdRsaOaep,

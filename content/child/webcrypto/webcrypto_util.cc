@@ -160,15 +160,35 @@ blink::WebCryptoAlgorithm CreateRsaHashedImportAlgorithm(
       id, new blink::WebCryptoRsaHashedImportParams(CreateAlgorithm(hash_id)));
 }
 
+bool CreateSecretKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
+                              unsigned int keylen_bytes,
+                              blink::WebCryptoKeyAlgorithm* key_algorithm) {
+  switch (algorithm.id()) {
+    case blink::WebCryptoAlgorithmIdHmac: {
+      blink::WebCryptoAlgorithm hash = GetInnerHashAlgorithm(algorithm);
+      if (hash.isNull())
+        return false;
+      if (keylen_bytes > UINT_MAX / 8)
+        return false;
+      *key_algorithm =
+          blink::WebCryptoKeyAlgorithm::createHmac(hash.id(), keylen_bytes * 8);
+      return true;
+    }
+    case blink::WebCryptoAlgorithmIdAesKw:
+    case blink::WebCryptoAlgorithmIdAesCbc:
+    case blink::WebCryptoAlgorithmIdAesCtr:
+    case blink::WebCryptoAlgorithmIdAesGcm:
+      *key_algorithm = blink::WebCryptoKeyAlgorithm::createAes(
+          algorithm.id(), keylen_bytes * 8);
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool ContainsKeyUsages(blink::WebCryptoKeyUsageMask a,
                        blink::WebCryptoKeyUsageMask b) {
   return (a & b) == b;
-}
-
-// TODO(eroman): Move this helper to WebCryptoKey.
-bool KeyUsageAllows(const blink::WebCryptoKey& key,
-                    const blink::WebCryptoKeyUsage usage) {
-  return ((key.usages() & usage) != 0);
 }
 
 bool IsAlgorithmRsa(blink::WebCryptoAlgorithmId alg_id) {
@@ -180,84 +200,6 @@ bool IsAlgorithmAsymmetric(blink::WebCryptoAlgorithmId alg_id) {
   // TODO(padolph): include all other asymmetric algorithms once they are
   // defined, e.g. EC and DH.
   return IsAlgorithmRsa(alg_id);
-}
-
-// The WebCrypto spec defines the default value for the tag length, as well as
-// the allowed values for tag length.
-Status GetAesGcmTagLengthInBits(const blink::WebCryptoAesGcmParams* params,
-                                unsigned int* tag_length_bits) {
-  *tag_length_bits = 128;
-  if (params->hasTagLengthBits())
-    *tag_length_bits = params->optionalTagLengthBits();
-
-  if (*tag_length_bits != 32 && *tag_length_bits != 64 &&
-      *tag_length_bits != 96 && *tag_length_bits != 104 &&
-      *tag_length_bits != 112 && *tag_length_bits != 120 &&
-      *tag_length_bits != 128)
-    return Status::ErrorInvalidAesGcmTagLength();
-
-  return Status::Success();
-}
-
-Status GetAesKeyGenLengthInBits(const blink::WebCryptoAesKeyGenParams* params,
-                                unsigned int* keylen_bits) {
-  *keylen_bits = params->lengthBits();
-
-  if (*keylen_bits == 128 || *keylen_bits == 256)
-    return Status::Success();
-
-  // BoringSSL does not support 192-bit AES.
-  if (*keylen_bits == 192)
-    return Status::ErrorAes192BitUnsupported();
-
-  return Status::ErrorGenerateKeyLength();
-}
-
-Status GetHmacKeyGenLengthInBits(const blink::WebCryptoHmacKeyGenParams* params,
-                                 unsigned int* keylen_bits) {
-  if (!params->hasLengthBits()) {
-    switch (params->hash().id()) {
-      case blink::WebCryptoAlgorithmIdSha1:
-      case blink::WebCryptoAlgorithmIdSha256:
-        *keylen_bits = 512;
-        return Status::Success();
-      case blink::WebCryptoAlgorithmIdSha384:
-      case blink::WebCryptoAlgorithmIdSha512:
-        *keylen_bits = 1024;
-        return Status::Success();
-      default:
-        return Status::ErrorUnsupported();
-    }
-  }
-
-  if (params->optionalLengthBits() % 8)
-    return Status::ErrorGenerateKeyLength();
-
-  *keylen_bits = params->optionalLengthBits();
-
-  // TODO(eroman): NSS fails when generating a zero-length secret key.
-  if (*keylen_bits == 0)
-    return Status::ErrorGenerateKeyLength();
-
-  return Status::Success();
-}
-
-Status VerifyAesKeyLengthForImport(unsigned int keylen_bytes) {
-  if (keylen_bytes == 16 || keylen_bytes == 32)
-    return Status::Success();
-
-  // BoringSSL does not support 192-bit AES.
-  if (keylen_bytes == 24)
-    return Status::ErrorAes192BitUnsupported();
-
-  return Status::ErrorImportAesKeyLength();
-}
-
-Status CheckKeyCreationUsages(blink::WebCryptoKeyUsageMask all_possible_usages,
-                              blink::WebCryptoKeyUsageMask actual_usages) {
-  if (!ContainsKeyUsages(all_possible_usages, actual_usages))
-    return Status::ErrorCreateKeyBadUsages();
-  return Status::Success();
 }
 
 }  // namespace webcrypto
