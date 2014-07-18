@@ -30651,6 +30651,63 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The calling application (if any).</summary>
 </histogram>
 
+<histogram name="Startup.OSX.AwakeFromNib" units="milliseconds">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed between main entry and the invocation of
+    -[AppControllerMac awakeFromNib].
+  </summary>
+</histogram>
+
+<histogram name="Startup.OSX.DockIconWillFinishBouncing" units="milliseconds">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed between main entry and the invocation of
+    -[AppControllerMac didFinishLaunching:]. At that point, the dock icon will
+    finish its current animation and stop bouncing.
+  </summary>
+</histogram>
+
+<histogram name="Startup.OSX.PostMainMessageLoopStart" units="milliseconds">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed between main entry and the invocation of
+    ChromeBrowserMainPartsMac::PostMainMessageLoopStart.
+  </summary>
+</histogram>
+
+<histogram name="Startup.OSX.PostProfileInit" units="milliseconds">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed between main entry and the invocation of
+    ChromeBrowserMainPartsMac::PostProfileInit.
+  </summary>
+</histogram>
+
+<histogram name="Startup.OSX.PreMainMessageLoopStart" units="milliseconds">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed between main entry and the invocation of
+    ChromeBrowserMainPartsMac::PreMainMessageLoopStart.
+  </summary>
+</histogram>
+
+<histogram name="Startup.OSX.PreProfileInit" units="milliseconds">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed between main entry and the invocation of
+    ChromeBrowserMainPartsMac::PreProfileInit.
+  </summary>
+</histogram>
+
+<histogram name="Startup.OSX.WillFinishLaunching" units="milliseconds">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed between main entry and the invocation of
+    -[AppControllerMac willFinishLaunching:].
+  </summary>
+</histogram>
+
 <histogram name="Startup.ShowAppListColdStart" units="milliseconds">
   <owner>jeremy@chromium.org</owner>
   <summary>

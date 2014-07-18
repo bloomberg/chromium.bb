@@ -229,6 +229,12 @@ void OnInitialPageLoadComplete() {
   g_startup_stats_collection_finished = true;
 }
 
+const base::Time* MainEntryPointTime() {
+  if (!g_main_entry_time_was_recorded)
+    return NULL;
+  return MainEntryPointTimeInternal();
+}
+
 ScopedSlowStartupUMA::~ScopedSlowStartupUMA() {
   if (g_startup_stats_collection_finished)
     return;

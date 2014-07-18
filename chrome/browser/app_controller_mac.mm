@@ -30,6 +30,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/mac/mac_startup_profiler.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -281,6 +282,8 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 // the profile is loaded or any preferences have been registered). Defer any
 // user-data initialization until -applicationDidFinishLaunching:.
 - (void)awakeFromNib {
+  MacStartupProfiler::GetInstance()->Profile(
+      MacStartupProfiler::AWAKE_FROM_NIB);
   // We need to register the handlers early to catch events fired on launch.
   NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
   [em setEventHandler:self
@@ -360,7 +363,8 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 // (NSApplicationDelegate protocol) This is the Apple-approved place to override
 // the default handlers.
 - (void)applicationWillFinishLaunching:(NSNotification*)notification {
-  // Nothing here right now.
+  MacStartupProfiler::GetInstance()->Profile(
+      MacStartupProfiler::WILL_FINISH_LAUNCHING);
 }
 
 - (BOOL)tryToTerminateApplication:(NSApplication*)app {
@@ -734,6 +738,10 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 // This is called after profiles have been loaded and preferences registered.
 // It is safe to access the default profile here.
 - (void)applicationDidFinishLaunching:(NSNotification*)notify {
+  MacStartupProfiler::GetInstance()->Profile(
+      MacStartupProfiler::DID_FINISH_LAUNCHING);
+  MacStartupProfiler::GetInstance()->RecordMetrics();
+
   // Notify BrowserList to keep the application running so it doesn't go away
   // when all the browser windows get closed.
   chrome::IncrementKeepAliveCount();

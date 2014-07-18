@@ -52,6 +52,11 @@ void OnBrowserStartupComplete(bool is_first_run);
 // stats.
 void OnInitialPageLoadComplete();
 
+// Returns the time of main entry recorded from RecordMainEntryPointTime.
+// Returns NULL if that method has not yet been called.
+// This method is expected to be called from the UI thread.
+const base::Time* MainEntryPointTime();
+
 // Scoper that records the time period before it's destructed in a histogram
 // with the given name. The histogram is only recorded for slow chrome startups.
 // Useful for trying to figure out what parts of Chrome cause slow startup.

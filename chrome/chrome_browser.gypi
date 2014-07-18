@@ -668,6 +668,8 @@
       'browser/mac/keystone_glue.mm',
       'browser/mac/keystone_registration.h',
       'browser/mac/keystone_registration.mm',
+      'browser/mac/mac_startup_profiler.cc',
+      'browser/mac/mac_startup_profiler.h',
       'browser/mac/master_prefs.h',
       'browser/mac/master_prefs.mm',
       'browser/mac/obsolete_system.cc',
