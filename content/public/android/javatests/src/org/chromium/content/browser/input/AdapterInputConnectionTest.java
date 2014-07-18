@@ -9,6 +9,8 @@ import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.text.Editable;
+import android.text.Selection;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
@@ -27,6 +29,7 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
     private AdapterInputConnection mConnection;
     private TestInputMethodManagerWrapper mWrapper;
     private Editable mEditable;
+    private TestImeAdapter mImeAdapter;
 
     @Override
     public void setUp() throws Exception {
@@ -35,11 +38,11 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
         mWrapper = new TestInputMethodManagerWrapper(getActivity());
         ImeAdapterDelegate delegate = new TestImeAdapterDelegate();
-        ImeAdapter imeAdapter = new TestImeAdapter(mWrapper, delegate);
+        mImeAdapter = new TestImeAdapter(mWrapper, delegate);
         EditorInfo info = new EditorInfo();
         mEditable = Editable.Factory.getInstance().newEditable("");
         mConnection = new AdapterInputConnection(
-                getContentViewCore().getContainerView(), imeAdapter, mEditable, info);
+                getContentViewCore().getContainerView(), mImeAdapter, mEditable, info);
     }
 
     @MediumTest
@@ -82,9 +85,58 @@ public class AdapterInputConnectionTest extends ContentShellTestBase {
         mWrapper.verifyUpdateSelectionCall(0, 4, 4, 0 ,4);
     }
 
+    @MediumTest
+    @Feature({"TextInput", "Main"})
+    public void testDeleteSurroundingText() throws Throwable {
+        // Tests back deletion of a single character with empty input.
+        mConnection.deleteSurroundingText(1, 0);
+        assertEquals(0, mImeAdapter.getDeleteSurroundingTextCallCount());
+        Integer[] keyEvents = mImeAdapter.getKeyEvents();
+        assertEquals(1, keyEvents.length);
+        assertEquals(KeyEvent.KEYCODE_DEL, keyEvents[0].intValue());
+
+        // Tests forward deletion of a single character with non-empty input.
+        mEditable.replace(0, mEditable.length(), " hello");
+        Selection.setSelection(mEditable, 0, 0);
+        mConnection.deleteSurroundingText(0, 1);
+        assertEquals(0, mImeAdapter.getDeleteSurroundingTextCallCount());
+        keyEvents = mImeAdapter.getKeyEvents();
+        assertEquals(2, keyEvents.length);
+        assertEquals(KeyEvent.KEYCODE_FORWARD_DEL, keyEvents[1].intValue());
+
+        // Tests back deletion of multiple characters with non-empty input.
+        mEditable.replace(0, mEditable.length(), "hello ");
+        Selection.setSelection(mEditable, mEditable.length(), mEditable.length());
+        mConnection.deleteSurroundingText(2, 0);
+        assertEquals(1, mImeAdapter.getDeleteSurroundingTextCallCount());
+        assertEquals(2, mImeAdapter.getKeyEvents().length);
+    }
+
     private static class TestImeAdapter extends ImeAdapter {
+        private final ArrayList<Integer> mKeyEventQueue = new ArrayList<Integer>();
+        private int mDeleteSurroundingTextCounter;
+
         public TestImeAdapter(InputMethodManagerWrapper wrapper, ImeAdapterDelegate embedder) {
             super(wrapper, embedder);
+        }
+
+        @Override
+        public boolean deleteSurroundingText(int beforeLength, int afterLength) {
+            ++mDeleteSurroundingTextCounter;
+            return true;
+        }
+
+        @Override
+        public void sendKeyEventWithKeyCode(int keyCode, int flags) {
+            mKeyEventQueue.add(keyCode);
+        }
+
+        public int getDeleteSurroundingTextCallCount() {
+            return mDeleteSurroundingTextCounter;
+        }
+
+        public Integer[] getKeyEvents() {
+            return mKeyEventQueue.toArray(new Integer[mKeyEventQueue.size()]);
         }
     }
 
