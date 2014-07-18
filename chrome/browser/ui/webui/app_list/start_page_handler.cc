@@ -35,7 +35,7 @@ namespace app_list {
 namespace {
 
 #if defined(OS_CHROMEOS)
-const char kOldHotwordExtensionVersionString[] = "0.1.1.5019";
+const char kOldHotwordExtensionVersionString[] = "0.1.1.5023";
 #endif
 
 scoped_ptr<base::DictionaryValue> CreateAppInfo(
