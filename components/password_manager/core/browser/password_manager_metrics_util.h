@@ -28,6 +28,7 @@ enum UIDisplayDisposition {
   MANUAL_WITH_PASSWORD_PENDING,
   MANUAL_MANAGE_PASSWORDS,
   MANUAL_BLACKLISTED,
+  AUTOMATIC_GENERATED_PASSWORD_CONFIRMATION,
   NUM_DISPLAY_DISPOSITIONS
 };
 
@@ -42,6 +43,7 @@ enum UIDismissalReason {
   CLICKED_MANAGE,
   CLICKED_DONE,
   CLICKED_UNBLACKLIST,
+  CLICKED_OK,
   NUM_UI_RESPONSES,
 
   // If we add the omnibox icon _without_ intending to display the bubble,

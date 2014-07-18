@@ -70,7 +70,21 @@ void ManagePasswordsViewTest::SetupPendingPassword() {
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
           NULL, &client, &driver, *test_form(), false));
-  controller()->OnPasswordSubmitted(test_form_manager.release());
+  controller()->OnPasswordSubmitted(test_form_manager.Pass());
+
+  // Wait for the command execution triggered by the automatic popup to pop up
+  // the bubble.
+  content::RunAllPendingInMessageLoop();
+  controller()->UpdateIconAndBubbleState(view());
+}
+
+void ManagePasswordsViewTest::SetupAutomaticPassword() {
+  password_manager::StubPasswordManagerClient client;
+  password_manager::StubPasswordManagerDriver driver;
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
+      new password_manager::PasswordFormManager(
+          NULL, &client, &driver, *test_form(), false));
+  controller()->OnAutomaticPasswordSave(test_form_manager.Pass());
 
   // Wait for the command execution triggered by the automatic popup to pop up
   // the bubble.

@@ -74,8 +74,6 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   TestPasswordManagerClient(scoped_ptr<PrefService> prefs)
       : prefs_(prefs.Pass()), driver_(this), is_sync_enabled_(false) {}
 
-  virtual void PromptUserToSavePassword(PasswordFormManager* form_to_save)
-      OVERRIDE {}
   virtual PasswordStore* GetPasswordStore() OVERRIDE { return NULL; }
   virtual PrefService* GetPrefs() OVERRIDE { return prefs_.get(); }
   virtual PasswordManagerDriver* GetDriver() OVERRIDE { return &driver_; }

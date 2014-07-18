@@ -461,12 +461,17 @@ void PasswordManager::OnPasswordFormsRendered(
     if (ShouldPromptUserToSavePassword()) {
       if (logger)
         logger->LogMessage(Logger::STRING_DECISION_ASK);
-      client_->PromptUserToSavePassword(provisional_save_manager_.release());
+      client_->PromptUserToSavePassword(provisional_save_manager_.Pass());
     } else {
       if (logger)
         logger->LogMessage(Logger::STRING_DECISION_SAVE);
       provisional_save_manager_->Save();
-      provisional_save_manager_.reset();
+
+      if (provisional_save_manager_->HasGeneratedPassword()) {
+        client_->AutomaticPasswordSave(provisional_save_manager_.Pass());
+      } else {
+        provisional_save_manager_.reset();
+      }
     }
   }
 }

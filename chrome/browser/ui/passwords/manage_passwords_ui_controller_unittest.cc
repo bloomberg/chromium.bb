@@ -102,10 +102,10 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordAutofilled) {
 TEST_F(ManagePasswordsUIControllerTest, PasswordSubmitted) {
   password_manager::StubPasswordManagerClient client;
   password_manager::StubPasswordManagerDriver driver;
-  password_manager::PasswordFormManager* test_form_manager =
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
-          NULL, &client, &driver, test_form(), false);
-  controller()->OnPasswordSubmitted(test_form_manager);
+          NULL, &client, &driver, test_form(), false));
+  controller()->OnPasswordSubmitted(test_form_manager.Pass());
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE,
             controller()->state());
   EXPECT_TRUE(controller()->PasswordPendingUserDecision());
@@ -117,16 +117,17 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmitted) {
 
   ManagePasswordsIconMock mock;
   controller()->UpdateIconAndBubbleState(&mock);
-  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, mock.state());
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE,
+            mock.state());
 }
 
 TEST_F(ManagePasswordsUIControllerTest, PasswordSaved) {
   password_manager::StubPasswordManagerClient client;
   password_manager::StubPasswordManagerDriver driver;
-  password_manager::PasswordFormManager* test_form_manager =
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
-          NULL, &client, &driver, test_form(), false);
-  controller()->OnPasswordSubmitted(test_form_manager);
+          NULL, &client, &driver, test_form(), false));
+  controller()->OnPasswordSubmitted(test_form_manager.Pass());
 
   ManagePasswordsIconMock mock;
   controller()->UpdateIconAndBubbleState(&mock);
@@ -138,10 +139,10 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSaved) {
 TEST_F(ManagePasswordsUIControllerTest, PasswordBlacklisted) {
   password_manager::StubPasswordManagerClient client;
   password_manager::StubPasswordManagerDriver driver;
-  password_manager::PasswordFormManager* test_form_manager =
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
-          NULL, &client, &driver, test_form(), false);
-  controller()->OnPasswordSubmitted(test_form_manager);
+          NULL, &client, &driver, test_form(), false));
+  controller()->OnPasswordSubmitted(test_form_manager.Pass());
 
   ManagePasswordsIconMock mock;
   controller()->UpdateIconAndBubbleState(&mock);
@@ -153,13 +154,14 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordBlacklisted) {
 TEST_F(ManagePasswordsUIControllerTest, QuickNavigations) {
   password_manager::StubPasswordManagerClient client;
   password_manager::StubPasswordManagerDriver driver;
-  password_manager::PasswordFormManager* test_form_manager =
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
-          NULL, &client, &driver, test_form(), false);
-  controller()->OnPasswordSubmitted(test_form_manager);
+          NULL, &client, &driver, test_form(), false));
+  controller()->OnPasswordSubmitted(test_form_manager.Pass());
   ManagePasswordsIconMock mock;
   controller()->UpdateIconAndBubbleState(&mock);
-  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, mock.state());
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE,
+            mock.state());
 
   // Fake-navigate within a second. We expect the bubble's state to persist
   // if a navigation occurs too quickly for a user to reasonably have been
@@ -172,19 +174,21 @@ TEST_F(ManagePasswordsUIControllerTest, QuickNavigations) {
                                      content::FrameNavigateParams());
   controller()->UpdateIconAndBubbleState(&mock);
 
-  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, mock.state());
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE,
+            mock.state());
 }
 
 TEST_F(ManagePasswordsUIControllerTest, SlowNavigations) {
   password_manager::StubPasswordManagerClient client;
   password_manager::StubPasswordManagerDriver driver;
-  password_manager::PasswordFormManager* test_form_manager =
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
-          NULL, &client, &driver, test_form(), false);
-  controller()->OnPasswordSubmitted(test_form_manager);
+          NULL, &client, &driver, test_form(), false));
+  controller()->OnPasswordSubmitted(test_form_manager.Pass());
   ManagePasswordsIconMock mock;
   controller()->UpdateIconAndBubbleState(&mock);
-  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, mock.state());
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE,
+            mock.state());
 
   // Fake-navigate after a second. We expect the bubble's state to be reset
   // if a navigation occurs after this limit.
@@ -205,10 +209,10 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmittedToNonWebbyURL) {
 
   password_manager::StubPasswordManagerClient client;
   password_manager::StubPasswordManagerDriver driver;
-  password_manager::PasswordFormManager* test_form_manager =
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
-          NULL, &client, &driver, test_form(), false);
-  controller()->OnPasswordSubmitted(test_form_manager);
+          NULL, &client, &driver, test_form(), false));
+  controller()->OnPasswordSubmitted(test_form_manager.Pass());
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->state());
   EXPECT_FALSE(controller()->PasswordPendingUserDecision());
 
@@ -294,4 +298,19 @@ TEST_F(ManagePasswordsUIControllerTest, BlacklistedElsewhere) {
   ManagePasswordsIconMock mock;
   controller()->UpdateIconAndBubbleState(&mock);
   EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, mock.state());
+}
+
+TEST_F(ManagePasswordsUIControllerTest, AutomaticPasswordSave) {
+  password_manager::StubPasswordManagerClient client;
+  password_manager::StubPasswordManagerDriver driver;
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
+      new password_manager::PasswordFormManager(
+          NULL, &client, &driver, test_form(), false));
+
+  controller()->OnAutomaticPasswordSave(test_form_manager.Pass());
+  EXPECT_EQ(password_manager::ui::CONFIRMATION_STATE, controller()->state());
+
+  ManagePasswordsIconMock mock;
+  controller()->UpdateIconAndBubbleState(&mock);
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, mock.state());
 }

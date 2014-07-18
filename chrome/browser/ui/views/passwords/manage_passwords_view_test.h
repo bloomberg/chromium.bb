@@ -36,6 +36,9 @@ class ManagePasswordsViewTest : public InProcessBrowserTest {
   // Put the controller, icon, and bubble into a managing-password state.
   void SetupManagingPasswords();
 
+  // Put the controller, icon, and bubble into the confirmation state.
+  void SetupAutomaticPassword();
+
   // Put the controller, icon, and bubble into a pending-password state.
   void SetupPendingPassword();
 

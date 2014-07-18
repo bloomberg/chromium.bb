@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -15,13 +17,31 @@
 
 using autofill::PasswordFormMap;
 using content::WebContents;
+namespace metrics_util = password_manager::metrics_util;
+
+namespace {
+
+void SetupLinkifiedText(const base::string16& string_with_separator,
+                        base::string16* text,
+                        gfx::Range* link_range) {
+  std::vector<base::string16> pieces;
+  base::SplitStringDontTrim(string_with_separator,
+                            '|',  // separator
+                            &pieces);
+  DCHECK_EQ(3u, pieces.size());
+  *link_range = gfx::Range(pieces[0].size(),
+                           pieces[0].size() + pieces[1].size());
+  *text = JoinString(pieces, base::string16());
+}
+
+}  // namespace
 
 ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       display_disposition_(
-          password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING),
-      dismissal_reason_(password_manager::metrics_util::NOT_DISPLAYED) {
+          metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING),
+      dismissal_reason_(metrics_util::NOT_DISPLAYED) {
   ManagePasswordsUIController* controller =
       ManagePasswordsUIController::FromWebContents(web_contents);
 
@@ -33,12 +53,21 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     pending_credentials_ = controller->PendingCredentials();
   best_matches_ = controller->best_matches();
 
-  if (password_manager::ui::IsPendingState(state_))
+  if (password_manager::ui::IsPendingState(state_)) {
     title_ = l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD);
-  else if (state_ == password_manager::ui::BLACKLIST_STATE)
+  } else if (state_ == password_manager::ui::BLACKLIST_STATE) {
     title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_BLACKLISTED_TITLE);
-  else
+  } else if (state_ == password_manager::ui::CONFIRMATION_STATE) {
+    title_ =
+        l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TITLE);
+  } else {
     title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_TITLE);
+  }
+
+  SetupLinkifiedText(
+      l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT),
+      &save_confirmation_text_,
+      &save_confirmation_link_range_);
 
   manage_link_ =
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK);
@@ -50,41 +79,42 @@ void ManagePasswordsBubbleModel::OnBubbleShown(
     ManagePasswordsBubble::DisplayReason reason) {
   if (reason == ManagePasswordsBubble::USER_ACTION) {
     if (password_manager::ui::IsPendingState(state_)) {
-      display_disposition_ =
-          password_manager::metrics_util::MANUAL_WITH_PASSWORD_PENDING;
+      display_disposition_ = metrics_util::MANUAL_WITH_PASSWORD_PENDING;
     } else if (state_ == password_manager::ui::BLACKLIST_STATE) {
-      display_disposition_ = password_manager::metrics_util::MANUAL_BLACKLISTED;
+      display_disposition_ = metrics_util::MANUAL_BLACKLISTED;
     } else {
-      display_disposition_ =
-          password_manager::metrics_util::MANUAL_MANAGE_PASSWORDS;
+      display_disposition_ = metrics_util::MANUAL_MANAGE_PASSWORDS;
     }
   } else {
-    DCHECK(password_manager::ui::IsPendingState(state_));
-    display_disposition_ =
-        password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING;
+    if (state_ == password_manager::ui::CONFIRMATION_STATE) {
+      display_disposition_ =
+          metrics_util::AUTOMATIC_GENERATED_PASSWORD_CONFIRMATION;
+    } else {
+      display_disposition_ = metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING;
+    }
   }
-  password_manager::metrics_util::LogUIDisplayDisposition(display_disposition_);
+  metrics_util::LogUIDisplayDisposition(display_disposition_);
 
   // Default to a dismissal reason of "no interaction". If the user interacts
   // with the button in such a way that it closes, we'll reset this value
   // accordingly.
-  dismissal_reason_ = password_manager::metrics_util::NO_DIRECT_INTERACTION;
+  dismissal_reason_ = metrics_util::NO_DIRECT_INTERACTION;
 }
 
 void ManagePasswordsBubbleModel::OnBubbleHidden() {
-  if (dismissal_reason_ == password_manager::metrics_util::NOT_DISPLAYED)
+  if (dismissal_reason_ == metrics_util::NOT_DISPLAYED)
     return;
 
-  password_manager::metrics_util::LogUIDismissalReason(dismissal_reason_);
+  metrics_util::LogUIDismissalReason(dismissal_reason_);
 }
 
 void ManagePasswordsBubbleModel::OnNopeClicked() {
-  dismissal_reason_ = password_manager::metrics_util::CLICKED_NOPE;
+  dismissal_reason_ = metrics_util::CLICKED_NOPE;
   state_ = password_manager::ui::PENDING_PASSWORD_STATE;
 }
 
 void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
-  dismissal_reason_ = password_manager::metrics_util::CLICKED_NEVER;
+  dismissal_reason_ = metrics_util::CLICKED_NEVER;
   ManagePasswordsUIController* manage_passwords_ui_controller =
       ManagePasswordsUIController::FromWebContents(web_contents());
   manage_passwords_ui_controller->NeverSavePassword();
@@ -92,7 +122,7 @@ void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
 }
 
 void ManagePasswordsBubbleModel::OnUnblacklistClicked() {
-  dismissal_reason_ = password_manager::metrics_util::CLICKED_UNBLACKLIST;
+  dismissal_reason_ = metrics_util::CLICKED_UNBLACKLIST;
   ManagePasswordsUIController* manage_passwords_ui_controller =
       ManagePasswordsUIController::FromWebContents(web_contents());
   manage_passwords_ui_controller->UnblacklistSite();
@@ -100,7 +130,7 @@ void ManagePasswordsBubbleModel::OnUnblacklistClicked() {
 }
 
 void ManagePasswordsBubbleModel::OnSaveClicked() {
-  dismissal_reason_ = password_manager::metrics_util::CLICKED_SAVE;
+  dismissal_reason_ = metrics_util::CLICKED_SAVE;
   ManagePasswordsUIController* manage_passwords_ui_controller =
       ManagePasswordsUIController::FromWebContents(web_contents());
   manage_passwords_ui_controller->SavePassword();
@@ -108,13 +138,29 @@ void ManagePasswordsBubbleModel::OnSaveClicked() {
 }
 
 void ManagePasswordsBubbleModel::OnDoneClicked() {
-  dismissal_reason_ = password_manager::metrics_util::CLICKED_DONE;
+  dismissal_reason_ = metrics_util::CLICKED_DONE;
+}
+
+// TODO(gcasto): Is it worth having this be separate from OnDoneClicked()?
+// User intent is pretty similar in both cases.
+void ManagePasswordsBubbleModel::OnOKClicked() {
+  dismissal_reason_ = metrics_util::CLICKED_OK;
 }
 
 void ManagePasswordsBubbleModel::OnManageLinkClicked() {
-  dismissal_reason_ = password_manager::metrics_util::CLICKED_MANAGE;
+  dismissal_reason_ = metrics_util::CLICKED_MANAGE;
   ManagePasswordsUIController::FromWebContents(web_contents())
       ->NavigateToPasswordManagerSettingsPage();
+}
+
+// TODO(gcasto): Is it worth having a new dismissal reason to distinguish
+// the two management cases? User intention is pretty similar between the two,
+// but the context in which they are shown is pretty different since one is
+// from an explict action and the other isn't.
+void ManagePasswordsBubbleModel::OnRemoteManageLinkClicked() {
+  dismissal_reason_ = metrics_util::CLICKED_MANAGE;
+  ManagePasswordsUIController::FromWebContents(web_contents())
+      ->NavigateToAccountCentralManagementPage();
 }
 
 void ManagePasswordsBubbleModel::OnPasswordAction(

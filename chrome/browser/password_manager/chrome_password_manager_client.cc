@@ -109,18 +109,28 @@ bool ChromePasswordManagerClient::IsSyncAccountCredential(
 }
 
 void ChromePasswordManagerClient::PromptUserToSavePassword(
-    password_manager::PasswordFormManager* form_to_save) {
+    scoped_ptr<password_manager::PasswordFormManager> form_to_save) {
   if (IsTheHotNewBubbleUIEnabled()) {
     ManagePasswordsUIController* manage_passwords_ui_controller =
         ManagePasswordsUIController::FromWebContents(web_contents());
-    manage_passwords_ui_controller->OnPasswordSubmitted(form_to_save);
+    manage_passwords_ui_controller->OnPasswordSubmitted(form_to_save.Pass());
   } else {
     std::string uma_histogram_suffix(
         password_manager::metrics_util::GroupIdToString(
             password_manager::metrics_util::MonitoredDomainGroupId(
                 form_to_save->realm(), GetPrefs())));
     SavePasswordInfoBarDelegate::Create(
-        web_contents(), form_to_save, uma_histogram_suffix);
+        web_contents(), form_to_save.Pass(), uma_histogram_suffix);
+  }
+}
+
+void ChromePasswordManagerClient::AutomaticPasswordSave(
+    scoped_ptr<password_manager::PasswordFormManager> saved_form) {
+  if (IsTheHotNewBubbleUIEnabled()) {
+    ManagePasswordsUIController* manage_passwords_ui_controller =
+        ManagePasswordsUIController::FromWebContents(web_contents());
+    manage_passwords_ui_controller->OnAutomaticPasswordSave(
+        saved_form.Pass());
   }
 }
 

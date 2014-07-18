@@ -35,7 +35,13 @@ class ManagePasswordsUIController
   // can handle later requests to save or blacklist that login information.
   // This stores the provided object in form_manager_ and triggers the UI to
   // prompt the user about whether they would like to save the password.
-  void OnPasswordSubmitted(password_manager::PasswordFormManager* form_manager);
+  void OnPasswordSubmitted(
+      scoped_ptr<password_manager::PasswordFormManager> form_manager);
+
+  // Called when the password will be saved automatically, but we still wish to
+  // visually inform the user that the save has occured.
+  void OnAutomaticPasswordSave(
+      scoped_ptr<password_manager::PasswordFormManager> form_manager);
 
   // Called when a form is autofilled with login information, so we can manage
   // password credentials for the current site which are stored in
@@ -71,6 +77,11 @@ class ManagePasswordsUIController
   // Open a new tab, pointing to the password manager settings page.
   virtual void NavigateToPasswordManagerSettingsPage();
 
+  // Open a new tab, pointing to the Google manage passwords website.
+  // TODO(gcasto): Change this to navigate to account central once passwords
+  // are visible there. Currently goes to the Chrome support page.
+  virtual void NavigateToAccountCentralManagementPage();
+
   virtual const autofill::PasswordForm& PendingCredentials() const;
 
   // Set the state of the Omnibox icon, and possibly show the associated bubble
@@ -83,7 +94,7 @@ class ManagePasswordsUIController
   // or not to save it.
   bool PasswordPendingUserDecision() const;
 
-  const autofill::PasswordFormMap best_matches() const {
+  const autofill::ConstPasswordFormMap best_matches() const {
     return password_form_map_;
   }
 
@@ -103,11 +114,10 @@ class ManagePasswordsUIController
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
 
-  // All previously stored credentials for a specific site. Set by
-  // OnPasswordSubmitted(), OnPasswordAutofilled(), or
-  // OnBlacklistBlockedAutofill(). Protected, not private, so we can mess with
-  // the value in ManagePasswordsUIControllerMock.
-  autofill::PasswordFormMap password_form_map_;
+  // All previously stored credentials for a specific site.
+  // Protected, not private, so we can mess with the value in
+  // ManagePasswordsUIControllerMock.
+  autofill::ConstPasswordFormMap password_form_map_;
 
   // We create copies of PasswordForm objects that come in via OnLoginsChanged()
   // and store them in this vector as well as in |password_form_map_| to ensure

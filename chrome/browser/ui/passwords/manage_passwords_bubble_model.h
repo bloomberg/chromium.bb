@@ -10,6 +10,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/gfx/range/range.h"
 
 class ManagePasswordsIconController;
 
@@ -53,8 +54,15 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // Called by the view code when the "Done" button is clicked by the user.
   void OnDoneClicked();
 
+  // Called by the view code when the "OK" button is clicked by the user.
+  void OnOKClicked();
+
   // Called by the view code when the manage link is clicked by the user.
   void OnManageLinkClicked();
+
+  // Called by the view code when the manage in Google link is clicked by the
+  // user.
+  void OnRemoteManageLinkClicked();
 
   // Called by the view code to delete or add a password form to the
   // PasswordStore.
@@ -67,10 +75,16 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   const autofill::PasswordForm& pending_credentials() const {
     return pending_credentials_;
   }
-  const autofill::PasswordFormMap& best_matches() const {
+  const autofill::ConstPasswordFormMap& best_matches() const {
     return best_matches_;
   }
   const base::string16& manage_link() const { return manage_link_; }
+  const base::string16& save_confirmation_text() const {
+    return save_confirmation_text_;
+  }
+  const gfx::Range& save_confirmation_link_range() const {
+    return save_confirmation_link_range_;
+  }
 
 #if defined(UNIT_TEST)
   // Gets and sets the reason the bubble was displayed.
@@ -92,8 +106,10 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   password_manager::ui::State state_;
   base::string16 title_;
   autofill::PasswordForm pending_credentials_;
-  autofill::PasswordFormMap best_matches_;
+  autofill::ConstPasswordFormMap best_matches_;
   base::string16 manage_link_;
+  base::string16 save_confirmation_text_;
+  gfx::Range save_confirmation_link_range_;
 
   password_manager::metrics_util::UIDisplayDisposition display_disposition_;
   password_manager::metrics_util::UIDismissalReason dismissal_reason_;

@@ -220,6 +220,8 @@ struct PasswordForm {
 // Map username to PasswordForm* for convenience. See password_form_manager.h.
 typedef std::map<base::string16, PasswordForm*> PasswordFormMap;
 
+typedef std::map<base::string16, const PasswordForm*> ConstPasswordFormMap;
+
 // For testing.
 std::ostream& operator<<(std::ostream& os,
                          const autofill::PasswordForm& form);

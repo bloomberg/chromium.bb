@@ -42,7 +42,13 @@ class PasswordManagerClient {
   // Informs the embedder of a password form that can be saved if the user
   // allows it. The embedder is not required to prompt the user if it decides
   // that this form doesn't need to be saved.
-  virtual void PromptUserToSavePassword(PasswordFormManager* form_to_save) = 0;
+  virtual void PromptUserToSavePassword(
+      scoped_ptr<PasswordFormManager> form_to_save) = 0;
+
+  // Called when a password is saved in an automated fashion. Embedder may
+  // inform the user that this save has occured.
+  virtual void AutomaticPasswordSave(
+      scoped_ptr<PasswordFormManager> saved_form_manager) = 0;
 
   // Called when a password is autofilled. |best_matches| contains the
   // PasswordForm into which a password was filled: the client may choose to

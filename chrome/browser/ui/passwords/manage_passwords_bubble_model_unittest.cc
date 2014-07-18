@@ -53,7 +53,7 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
     model_->OnBubbleShown(ManagePasswordsBubble::USER_ACTION);
 
     base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
-    autofill::PasswordFormMap map;
+    autofill::ConstPasswordFormMap map;
     map[kTestUsername] = &test_form_;
     controller()->SetPasswordFormMap(map);
     controller()->SetState(password_manager::ui::BLACKLIST_STATE);

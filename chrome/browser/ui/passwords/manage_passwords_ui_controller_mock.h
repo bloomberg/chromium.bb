@@ -43,7 +43,7 @@ class ManagePasswordsUIControllerMock
   virtual const autofill::PasswordForm& PendingCredentials() const OVERRIDE;
 
   // Sneaky setters for testing.
-  void SetPasswordFormMap(const autofill::PasswordFormMap& map) {
+  void SetPasswordFormMap(const autofill::ConstPasswordFormMap& map) {
     password_form_map_ = map;
   }
   void SetState(password_manager::ui::State state) { state_ = state; }

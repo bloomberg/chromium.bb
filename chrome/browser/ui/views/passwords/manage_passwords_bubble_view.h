@@ -14,6 +14,7 @@
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
+#include "ui/views/controls/styled_label_listener.h"
 
 class ManagePasswordsIconView;
 
@@ -126,6 +127,29 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
 
     views::BlueButton* unblacklist_button_;
     views::LabelButton* done_button_;
+  };
+
+  // A view confirming to the user that a password was saved and offering a link
+  // to the Google account manager.
+  class SaveConfirmationView : public views::View,
+                               public views::ButtonListener,
+                               public views::StyledLabelListener {
+   public:
+    explicit SaveConfirmationView(ManagePasswordsBubbleView* parent);
+    virtual ~SaveConfirmationView();
+
+   private:
+    // views::ButtonListener:
+    virtual void ButtonPressed(views::Button* sender,
+                               const ui::Event& event) OVERRIDE;
+
+    // views::StyledLabelListener implementation
+    virtual void StyledLabelLinkClicked(const gfx::Range& range,
+                                        int event_flags) OVERRIDE;
+
+    ManagePasswordsBubbleView* parent_;
+
+    views::LabelButton* ok_button_;
   };
 
   // Shows the bubble.

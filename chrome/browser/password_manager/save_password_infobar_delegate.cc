@@ -22,7 +22,7 @@
 // static
 void SavePasswordInfoBarDelegate::Create(
     content::WebContents* web_contents,
-    password_manager::PasswordFormManager* form_to_save,
+    scoped_ptr<password_manager::PasswordFormManager> form_to_save,
     const std::string& uma_histogram_suffix) {
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   // Don't show the password manager infobar if this form is for a google
@@ -46,7 +46,7 @@ void SavePasswordInfoBarDelegate::Create(
   InfoBarService::FromWebContents(web_contents)->AddInfoBar(
       SavePasswordInfoBarDelegate::CreateInfoBar(
           scoped_ptr<SavePasswordInfoBarDelegate>(
-              new SavePasswordInfoBarDelegate(form_to_save,
+              new SavePasswordInfoBarDelegate(form_to_save.Pass(),
                                               uma_histogram_suffix))));
 }
 
@@ -82,10 +82,10 @@ void SavePasswordInfoBarDelegate::SetUseAdditionalPasswordAuthentication(
 }
 
 SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
-    password_manager::PasswordFormManager* form_to_save,
+    scoped_ptr<password_manager::PasswordFormManager> form_to_save,
     const std::string& uma_histogram_suffix)
     : ConfirmInfoBarDelegate(),
-      form_to_save_(form_to_save),
+      form_to_save_(form_to_save.Pass()),
       infobar_response_(password_manager::metrics_util::NO_RESPONSE),
       uma_histogram_suffix_(uma_histogram_suffix) {
   if (!uma_histogram_suffix_.empty()) {

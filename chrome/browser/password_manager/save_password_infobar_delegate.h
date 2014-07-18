@@ -32,9 +32,10 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   // "group_X" suffixes used in the histogram names for infobar usage reporting;
   // if empty, the usage is not reported, otherwise the suffix is used to choose
   // the right histogram.
-  static void Create(content::WebContents* web_contents,
-                     password_manager::PasswordFormManager* form_to_save,
-                     const std::string& uma_histogram_suffix);
+  static void Create(
+      content::WebContents* web_contents,
+      scoped_ptr<password_manager::PasswordFormManager> form_to_save,
+      const std::string& uma_histogram_suffix);
 
   virtual ~SavePasswordInfoBarDelegate();
 
@@ -45,7 +46,7 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   SavePasswordInfoBarDelegate(
-      password_manager::PasswordFormManager* form_to_save,
+      scoped_ptr<password_manager::PasswordFormManager> form_to_save,
       const std::string& uma_histogram_suffix);
 
   // Returns a save password infobar that owns |delegate|.
