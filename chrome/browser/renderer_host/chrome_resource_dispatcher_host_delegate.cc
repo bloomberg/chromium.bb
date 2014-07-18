@@ -162,7 +162,7 @@ void UpdatePrerenderNetworkBytesCallback(int render_process_id,
     prerender_manager->AddProfileNetworkBytesIfEnabled(bytes);
 }
 
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_EXTENSIONS)
 void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamHandle> stream,
                                      int64 expected_content_size,
                                      int render_process_id,
@@ -195,7 +195,9 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamHandle> stream,
       extension_id, web_contents, stream.Pass(), view_id,
       expected_content_size);
 }
+#endif  // !defined(ENABLE_EXTENSIONS)
 
+#if !defined(OS_ANDROID)
 void LaunchURL(const GURL& url, int render_process_id, int render_view_id,
                bool user_gesture) {
   // If there is no longer a WebContents, the request may have raced with tab
@@ -565,7 +567,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
     const std::string& mime_type,
     GURL* origin,
     std::string* payload) {
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_EXTENSIONS)
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   ProfileIOData* io_data =
       ProfileIOData::FromResourceContext(info->GetContext());
@@ -608,7 +610,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
 void ChromeResourceDispatcherHostDelegate::OnStreamCreated(
     net::URLRequest* request,
     scoped_ptr<content::StreamHandle> stream) {
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_EXTENSIONS)
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   std::map<net::URLRequest*, StreamTargetInfo>::iterator ix =
       stream_target_info_.find(request);
