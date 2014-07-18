@@ -31,6 +31,32 @@ namespace {
 // IsFallbackFontAllowed function in skia/ext/SkFontHost_fontconfig_direct.cpp.
 const char* kFallbackFontFamilyName = "sans";
 
+// Creates a SkTypeface for the passed-in Font::FontStyle and family. If a
+// fallback typeface is used instead of the requested family, |family| will be
+// updated to contain the fallback's family name.
+skia::RefPtr<SkTypeface> CreateSkTypeface(int style, std::string* family) {
+  DCHECK(family);
+
+  int skia_style = SkTypeface::kNormal;
+  if (gfx::Font::BOLD & style)
+    skia_style |= SkTypeface::kBold;
+  if (gfx::Font::ITALIC & style)
+    skia_style |= SkTypeface::kItalic;
+
+  skia::RefPtr<SkTypeface> typeface = skia::AdoptRef(SkTypeface::CreateFromName(
+      family->c_str(), static_cast<SkTypeface::Style>(skia_style)));
+  if (!typeface) {
+    // A non-scalable font such as .pcf is specified. Fall back to a default
+    // scalable font.
+    typeface = skia::AdoptRef(SkTypeface::CreateFromName(
+        kFallbackFontFamilyName, static_cast<SkTypeface::Style>(skia_style)));
+    CHECK(typeface) << "Could not find any font: " << family << ", "
+                    << kFallbackFontFamilyName;
+    *family = kFallbackFontFamilyName;
+  }
+  return typeface;
+}
+
 }  // namespace
 
 namespace gfx {
@@ -139,27 +165,20 @@ Font PlatformFontPango::DeriveFont(int size_delta, int style) const {
   DCHECK_GT(new_size, 0);
 
   // If the style changed, we may need to load a new face.
-  skia::RefPtr<SkTypeface> typeface = typeface_;
-  if (style != style_) {
-    int skstyle = SkTypeface::kNormal;
-    if (gfx::Font::BOLD & style)
-      skstyle |= SkTypeface::kBold;
-    if (gfx::Font::ITALIC & style)
-      skstyle |= SkTypeface::kItalic;
-    typeface = skia::AdoptRef(SkTypeface::CreateFromName(
-        font_family_.c_str(), static_cast<SkTypeface::Style>(skstyle)));
-  }
+  std::string new_family = font_family_;
+  skia::RefPtr<SkTypeface> typeface =
+      (style == style_) ? typeface_ : CreateSkTypeface(style, &new_family);
 
-  // If the size changed, get updated rendering settings.
+  // If the size or family changed, get updated rendering settings.
   FontRenderParams render_params = font_render_params_;
-  if (size_delta != 0) {
-    const std::vector<std::string> family_list(1, font_family_);
+  if (size_delta != 0 || new_family != font_family_) {
+    const std::vector<std::string> family_list(1, new_family);
     render_params = GetCustomFontRenderParams(
         false, &family_list, &new_size, NULL, NULL);
   }
 
   return Font(new PlatformFontPango(typeface,
-                                    font_family_,
+                                    new_family,
                                     new_size,
                                     style,
                                     render_params));
@@ -254,21 +273,8 @@ void PlatformFontPango::InitFromDetails(
     const FontRenderParams& render_params) {
   DCHECK_GT(font_size_pixels, 0);
 
-  typeface_ = typeface;
   font_family_ = font_family;
-  if (!typeface_) {
-    typeface_ = skia::AdoptRef(
-        SkTypeface::CreateFromName(font_family.c_str(), SkTypeface::kNormal));
-    if (!typeface_) {
-      // A non-scalable font such as .pcf is specified. Fall back to a default
-      // scalable font.
-      typeface_ = skia::AdoptRef(SkTypeface::CreateFromName(
-          kFallbackFontFamilyName, SkTypeface::kNormal));
-      CHECK(typeface_) << "Could not find any font: " << font_family << ", "
-                       << kFallbackFontFamilyName;
-      font_family_ = kFallbackFontFamilyName;
-    }
-  }
+  typeface_ = typeface ? typeface : CreateSkTypeface(style, &font_family_);
 
   font_size_pixels_ = font_size_pixels;
   style_ = style;
