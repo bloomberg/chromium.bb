@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/extensions/extension_install_dialog_view.h"
+
 #include <vector>
 
 #include "base/basictypes.h"
@@ -12,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bundle_installer.h"
-#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_prompt_experiment.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
@@ -28,10 +29,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/animation/animation_delegate.h"
-#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/text_utils.h"
-#include "ui/gfx/transform.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -40,22 +38,22 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
-#include "ui/views/window/dialog_delegate.h"
 
 using content::OpenURLParams;
 using content::Referrer;
 using extensions::BundleInstaller;
 
 namespace {
+
+// Width of the bullet column in BulletedView.
+const int kBulletWidth = 20;
 
 // Size of extension icon in top left of dialog.
 const int kIconSize = 64;
@@ -98,9 +96,6 @@ enum ExperimentLinkAction {
   NUM_LINK_ACTIONS
 };
 
-typedef std::vector<base::string16> PermissionDetails;
-class ExpandableContainerView;
-
 void AddResourceIcon(const gfx::ImageSkia* skia_image, void* data) {
   views::View* parent = static_cast<views::View*>(data);
   views::ImageView* image_view = new views::ImageView();
@@ -117,159 +112,28 @@ base::string16 PrepareForDisplay(const base::string16& message,
       message) : message;
 }
 
-// A custom scrollable view implementation for the dialog.
-class CustomScrollableView : public views::View {
- public:
-  CustomScrollableView();
-  virtual ~CustomScrollableView();
-
- private:
-  virtual void Layout() OVERRIDE;
-
-  DISALLOW_COPY_AND_ASSIGN(CustomScrollableView);
-};
-
-// Implements the extension installation dialog for TOOLKIT_VIEWS.
-class ExtensionInstallDialogView : public views::DialogDelegateView,
-                                   public views::LinkListener,
-                                   public views::ButtonListener {
- public:
-  ExtensionInstallDialogView(
-      content::PageNavigator* navigator,
-      ExtensionInstallPrompt::Delegate* delegate,
-      scoped_refptr<ExtensionInstallPrompt::Prompt> prompt);
-  virtual ~ExtensionInstallDialogView();
-
-  // Called when one of the child elements has expanded/collapsed.
-  void ContentsChanged();
-
- private:
-  // views::DialogDelegateView:
-  virtual int GetDialogButtons() const OVERRIDE;
-  virtual base::string16 GetDialogButtonLabel(
-      ui::DialogButton button) const OVERRIDE;
-  virtual int GetDefaultDialogButton() const OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual base::string16 GetWindowTitle() const OVERRIDE;
-  virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE;
-
-  // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
-
-  // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
-
-  // Experimental: Toggles inline permission explanations with an animation.
-  void ToggleInlineExplanations();
-
-  // Creates a layout consisting of dialog header, extension name and icon.
-  views::GridLayout* CreateLayout(
-      views::View* parent,
-      int left_column_width,
-      int column_set_id,
-      bool single_detail_row) const;
-
-  bool is_inline_install() const {
-    return prompt_->type() == ExtensionInstallPrompt::INLINE_INSTALL_PROMPT;
-  }
-
-  bool is_bundle_install() const {
-    return prompt_->type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT;
-  }
-
-  bool is_external_install() const {
-    return prompt_->type() == ExtensionInstallPrompt::EXTERNAL_INSTALL_PROMPT;
-  }
-
-  // Updates the histogram that holds installation accepted/aborted data.
-  void UpdateInstallResultHistogram(bool accepted) const;
-
-  // Updates the histogram that holds data about whether "Show details" or
-  // "Show permissions" links were shown and/or clicked.
-  void UpdateLinkActionHistogram(int action_type) const;
-
-  content::PageNavigator* navigator_;
-  ExtensionInstallPrompt::Delegate* delegate_;
-  scoped_refptr<ExtensionInstallPrompt::Prompt> prompt_;
-
-  // The scroll view containing all the details for the dialog (including all
-  // collapsible/expandable sections).
-  views::ScrollView* scroll_view_;
-
-  // The container view for the scroll view.
-  CustomScrollableView* scrollable_;
-
-  // The container for the simpler view with only the dialog header and the
-  // extension icon. Used for the experiment where the permissions are
-  // initially hidden when the dialog shows.
-  CustomScrollableView* scrollable_header_only_;
-
-  // The preferred size of the dialog.
-  gfx::Size dialog_size_;
-
-  // Experimental: "Show details" link to expand inline explanations and reveal
-  // permision dialog.
-  views::Link* show_details_link_;
-
-  // Experimental: Label for showing information about the checkboxes.
-  views::Label* checkbox_info_label_;
-
-  // Experimental: Contains pointers to inline explanation views.
-  typedef std::vector<ExpandableContainerView*> InlineExplanations;
-  InlineExplanations inline_explanations_;
-
-  // Experimental: Number of unchecked checkboxes in the permission list.
-  // If this becomes zero, the accept button is enabled, otherwise disabled.
-  int unchecked_boxes_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogView);
-};
-
-// A simple view that prepends a view with a bullet with the help of a grid
-// layout.
-class BulletedView : public views::View {
- public:
-  explicit BulletedView(views::View* view);
- private:
-  DISALLOW_COPY_AND_ASSIGN(BulletedView);
-};
+}  // namespace
 
 BulletedView::BulletedView(views::View* view) {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
   views::ColumnSet* column_set = layout->AddColumnSet(0);
+  column_set->AddColumn(views::GridLayout::CENTER,
+                        views::GridLayout::LEADING,
+                        0,
+                        views::GridLayout::FIXED,
+                        kBulletWidth,
+                        0);
   column_set->AddColumn(views::GridLayout::LEADING,
                         views::GridLayout::LEADING,
                         0,
                         views::GridLayout::USE_PREF,
-                        0, // no fixed width
+                        0,  // No fixed width.
                         0);
-   column_set->AddColumn(views::GridLayout::LEADING,
-                         views::GridLayout::LEADING,
-                         0,
-                         views::GridLayout::USE_PREF,
-                         0,  // no fixed width
-                         0);
   layout->StartRow(0, 0);
   layout->AddView(new views::Label(PrepareForDisplay(base::string16(), true)));
   layout->AddView(view);
 }
-
-// A simple view that prepends a view with a checkbox with the help of a grid
-// layout. Used for the permission experiment.
-// TODO(meacer): Remove once the experiment is completed.
-class CheckboxedView : public views::View {
- public:
-  CheckboxedView(views::View* view, views::ButtonListener* listener);
- private:
-  DISALLOW_COPY_AND_ASSIGN(CheckboxedView);
-};
 
 CheckboxedView::CheckboxedView(views::View* view,
                                views::ButtonListener* listener) {
@@ -280,13 +144,13 @@ CheckboxedView::CheckboxedView(views::View* view,
                         views::GridLayout::LEADING,
                         0,
                         views::GridLayout::USE_PREF,
-                        0, // no fixed width
+                        0,  // No fixed width.
                         0);
    column_set->AddColumn(views::GridLayout::LEADING,
                          views::GridLayout::LEADING,
                          0,
                          views::GridLayout::USE_PREF,
-                         0,  // no fixed width
+                         0,  // No fixed width.
                          0);
   layout->StartRow(0, 0);
   views::Checkbox* checkbox = new views::Checkbox(base::string16());
@@ -299,90 +163,6 @@ CheckboxedView::CheckboxedView(views::View* view,
                   views::GridLayout::LEADING, views::GridLayout::CENTER);
 }
 
-// A view to display text with an expandable details section.
-class ExpandableContainerView : public views::View,
-                                public views::ButtonListener,
-                                public views::LinkListener,
-                                public gfx::AnimationDelegate {
- public:
-  ExpandableContainerView(ExtensionInstallDialogView* owner,
-                          const base::string16& description,
-                          const PermissionDetails& details,
-                          int horizontal_space,
-                          bool parent_bulleted,
-                          bool show_expand_link,
-                          bool lighter_color_details);
-  virtual ~ExpandableContainerView();
-
-  // views::View:
-  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
-
-  // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE;
-
-  // views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
-
-  // gfx::AnimationDelegate:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
-
-  // Expand/Collapse the detail section for this ExpandableContainerView.
-  void ToggleDetailLevel();
-
-  // Expand the detail section without any animation.
-  // TODO(meacer): Remove once the experiment is completed.
-  void ExpandWithoutAnimation();
-
- private:
-  // A view which displays all the details of an IssueAdviceInfoEntry.
-  class DetailsView : public views::View {
-   public:
-    explicit DetailsView(int horizontal_space, bool parent_bulleted,
-                         bool lighter_color);
-    virtual ~DetailsView() {}
-
-    // views::View:
-    virtual gfx::Size GetPreferredSize() const OVERRIDE;
-
-    void AddDetail(const base::string16& detail);
-
-    // Animates this to be a height proportional to |state|.
-    void AnimateToState(double state);
-
-   private:
-    views::GridLayout* layout_;
-    double state_;
-
-    // Whether the detail text should be shown with a lighter color.
-    bool lighter_color_;
-
-    DISALLOW_COPY_AND_ASSIGN(DetailsView);
-  };
-
-  // The dialog that owns |this|. It's also an ancestor in the View hierarchy.
-  ExtensionInstallDialogView* owner_;
-
-  // A view for showing |issue_advice.details|.
-  DetailsView* details_view_;
-
-  // The 'more details' link shown under the heading (changes to 'hide details'
-  // when the details section is expanded).
-  views::Link* more_details_;
-
-  gfx::SlideAnimation slide_animation_;
-
-  // The up/down arrow next to the 'more detail' link (points up/down depending
-  // on whether the details section is expanded).
-  views::ImageButton* arrow_toggle_;
-
-  // Whether the details section is expanded.
-  bool expanded_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExpandableContainerView);
-};
-
 void ShowExtensionInstallDialogImpl(
     const ExtensionInstallPrompt::ShowParams& show_params,
     ExtensionInstallPrompt::Delegate* delegate,
@@ -392,8 +172,6 @@ void ShowExtensionInstallDialogImpl(
       new ExtensionInstallDialogView(show_params.navigator, delegate, prompt),
       show_params.parent_window)->Show();
 }
-
-}  // namespace
 
 CustomScrollableView::CustomScrollableView() {}
 CustomScrollableView::~CustomScrollableView() {}
@@ -636,14 +414,16 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
         permission_label->SetMultiLine(true);
         permission_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-        permission_label->SizeToFit(left_column_width);
 
         if (prompt->experiment()->show_checkboxes()) {
+          permission_label->SizeToFit(left_column_width);
           layout->AddView(new CheckboxedView(permission_label, this));
           ++unchecked_boxes_;
         } else {
+          permission_label->SizeToFit(left_column_width - kBulletWidth);
           layout->AddView(new BulletedView(permission_label));
         }
+
         // If we have more details to provide, show them in collapsed form.
         if (!prompt->GetPermissionsDetails(i).empty()) {
           layout->StartRow(0, column_set_id);
@@ -1064,12 +844,6 @@ void ExtensionInstallDialogView::UpdateLinkActionHistogram(int action_type)
   }
 }
 
-// static
-ExtensionInstallPrompt::ShowDialogCallback
-ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
-  return base::Bind(&ShowExtensionInstallDialogImpl);
-}
-
 // ExpandableContainerView::DetailsView ----------------------------------------
 
 ExpandableContainerView::DetailsView::DetailsView(int horizontal_space,
@@ -1282,4 +1056,10 @@ void ExpandableContainerView::ToggleDetailLevel() {
 void ExpandableContainerView::ExpandWithoutAnimation() {
   expanded_ = true;
   details_view_->AnimateToState(1.0);
+}
+
+// static
+ExtensionInstallPrompt::ShowDialogCallback
+ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
+  return base::Bind(&ShowExtensionInstallDialogImpl);
 }

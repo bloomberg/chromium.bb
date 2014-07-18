@@ -1430,6 +1430,7 @@
         'browser/ui/views/autofill/autofill_dialog_view_tester_views.cc',
         'browser/ui/views/autofill/autofill_dialog_view_tester_views.h',
         'browser/ui/views/autofill/autofill_popup_base_view_browsertest.cc',
+        'browser/ui/views/extensions/extension_install_dialog_view_browsertest.cc',
         'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',
         'browser/ui/views/frame/browser_view_browsertest.cc',
         'browser/ui/views/frame/browser_window_property_manager_browsertest_win.cc',
