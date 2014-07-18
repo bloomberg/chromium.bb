@@ -1,0 +1,16 @@
+# THIS FILE IS GENERATED AUTOMATICALLY BY IGNORER-BOT. PLEASE DO NOT EDIT.
+#
+# This file contains a list of ignored failed tests. Each line that starts with
+# a hash (#) or empty is ignored. Other lines are parsed by the test runner to
+# ignore failures of specified tests on particular platforms. Each such line has
+# the following format:
+#
+#   crbug.com/ISSUE [ PLATFORM1, PLATFORM2, ... ] TESTNAME
+#
+# where
+#  - ISSUE is the id of the associated issue for the flaky test;
+#  - PLATFORM1, PLATFORM2 etc. are each formated as a list of platform flags
+#    separated by whitespace, e.g. "OS_WIN CPU_32_BITS MODE_RELEASE" and limit
+#    on which platforms the test is disabled (note that square brackets and
+#    commas are part of the syntax and do NOT denote this section as optional);
+#  - TESTNAME is a name of the test to be ignored.
