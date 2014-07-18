@@ -1320,7 +1320,7 @@ static GridSpan dirtiedGridAreas(const Vector<LayoutUnit>& coordinates, LayoutUn
 
 class GridItemsSorter {
 public:
-    bool operator()(const std::pair<RenderBox*, size_t> firstChild, const std::pair<RenderBox*, size_t> secondChild) const
+    bool operator()(const std::pair<RenderBox*, size_t>& firstChild, const std::pair<RenderBox*, size_t>& secondChild) const
     {
         if (firstChild.first->style()->order() != secondChild.first->style()->order())
             return firstChild.first->style()->order() < secondChild.first->style()->order();
