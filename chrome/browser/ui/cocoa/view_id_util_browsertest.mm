@@ -7,7 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/devtools/devtools_window_testing.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -47,7 +47,7 @@ class ViewIDTest : public InProcessBrowserTest {
     chrome::ShowFindBar(browser());
 
     // Make sure docked devtools is created to test VIEW_ID_DEV_TOOLS_DOCKED
-    DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), true);
+    DevToolsWindow::OpenDevToolsWindowForTest(browser(), true);
 
     // Make sure download shelf is created to test VIEW_ID_DOWNLOAD_SHELF
     browser()->window()->GetDownloadShelf()->Show();

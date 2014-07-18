@@ -1019,8 +1019,6 @@
         'browser/devtools/device/adb/mock_adb_server.h',
         'browser/devtools/device/port_forwarding_browsertest.cc',
         'browser/devtools/device/usb/android_usb_browsertest.cc',
-        'browser/devtools/devtools_window_testing.cc',
-        'browser/devtools/devtools_window_testing.h',
         'browser/devtools/devtools_sanity_browsertest.cc',
         'browser/dom_distiller/dom_distiller_viewer_source_browsertest.cc',
         'browser/dom_distiller/tab_utils_browsertest.cc',

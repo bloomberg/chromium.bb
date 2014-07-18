@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -25,11 +24,17 @@ class DevToolsControllerTest : public InProcessBrowserTest {
  protected:
   void OpenDevToolsWindow() {
     devtools_window_ =
-        DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), true);
+        DevToolsWindow::OpenDevToolsWindowForTest(browser(), true);
   }
 
   void CloseDevToolsWindow() {
-    DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window_);
+    content::WindowedNotificationObserver close_observer(
+        content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+        content::Source<content::WebContents>(
+            devtools_window_->web_contents_for_test()));
+    DevToolsWindow::ToggleDevToolsWindow(
+        browser(), DevToolsToggleAction::Toggle());
+    close_observer.Wait();
   }
 
   content::WebContents* web_contents() {
