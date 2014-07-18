@@ -75,11 +75,16 @@ const CString utf8FilePath(Blob* blob)
 static const size_t kMaxOutstandingRequestsPerThread = 100;
 static const double progressNotificationIntervalMS = 50;
 
+// FIXME: Oilpan: if ExecutionContext is moved to the heap, consider
+// making this object an ExecutionContext supplement (only.)
 class FileReader::ThrottlingController FINAL : public NoBaseWillBeGarbageCollectedFinalized<FileReader::ThrottlingController>, public WillBeHeapSupplement<LocalFrame>, public WillBeHeapSupplement<WorkerClients> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileReader::ThrottlingController);
 public:
     static ThrottlingController* from(ExecutionContext* context)
     {
+        if (!context)
+            return 0;
+
         if (context->isDocument()) {
             Document* document = toDocument(context);
             if (!document->frame())
@@ -108,6 +113,49 @@ public:
     ~ThrottlingController() { }
 
     enum FinishReaderType { DoNotRunPendingReaders, RunPendingReaders };
+
+    static void pushReader(ExecutionContext* context, FileReader* reader)
+    {
+        ThrottlingController* controller = from(context);
+        if (!controller)
+            return;
+
+        controller->pushReader(reader);
+    }
+
+    static FinishReaderType removeReader(ExecutionContext* context, FileReader* reader)
+    {
+        ThrottlingController* controller = from(context);
+        if (!controller)
+            return DoNotRunPendingReaders;
+
+        return controller->removeReader(reader);
+    }
+
+    static void finishReader(ExecutionContext* context, FileReader* reader, FinishReaderType nextStep)
+    {
+        ThrottlingController* controller = from(context);
+        if (!controller)
+            return;
+
+        controller->finishReader(reader, nextStep);
+    }
+
+    void trace(Visitor* visitor)
+    {
+#if ENABLE(OILPAN)
+        visitor->trace(m_pendingReaders);
+        visitor->trace(m_runningReaders);
+#endif
+        WillBeHeapSupplement<LocalFrame>::trace(visitor);
+        WillBeHeapSupplement<WorkerClients>::trace(visitor);
+    }
+
+private:
+    ThrottlingController()
+        : m_maxRunningReaders(kMaxOutstandingRequestsPerThread)
+    {
+    }
 
     void pushReader(FileReader* reader)
     {
@@ -143,22 +191,6 @@ public:
     {
         if (nextStep == RunPendingReaders)
             executeReaders();
-    }
-
-    void trace(Visitor* visitor)
-    {
-#if ENABLE(OILPAN)
-        visitor->trace(m_pendingReaders);
-        visitor->trace(m_runningReaders);
-#endif
-        WillBeHeapSupplement<LocalFrame>::trace(visitor);
-        WillBeHeapSupplement<WorkerClients>::trace(visitor);
-    }
-
-private:
-    ThrottlingController()
-        : m_maxRunningReaders(kMaxOutstandingRequestsPerThread)
-    {
     }
 
     void executeReaders()
@@ -209,7 +241,7 @@ const AtomicString& FileReader::interfaceName() const
 void FileReader::stop()
 {
     if (hasPendingActivity())
-        throttlingController()->finishReader(this, throttlingController()->removeReader(this));
+        ThrottlingController::finishReader(executionContext(), this, ThrottlingController::removeReader(executionContext(), this));
     terminate();
 }
 
@@ -285,6 +317,11 @@ void FileReader::readInternal(Blob* blob, FileReaderLoader::ReadType type, Excep
         return;
     }
 
+    if (!ThrottlingController::from(executionContext())) {
+        exceptionState.throwDOMException(AbortError, "Reading from a Document-detached FileReader is not supported.");
+        return;
+    }
+
     // "Snapshot" the Blob data rather than the Blob itself as ongoing
     // read operations should not be affected if close() is called on
     // the Blob being read.
@@ -294,7 +331,7 @@ void FileReader::readInternal(Blob* blob, FileReaderLoader::ReadType type, Excep
     m_state = LOADING;
     m_loadingState = LoadingStatePending;
     m_error = nullptr;
-    throttlingController()->pushReader(this);
+    ThrottlingController::pushReader(executionContext(), this);
 }
 
 void FileReader::executePendingRead()
@@ -338,14 +375,14 @@ void FileReader::doAbort()
     m_error = FileError::create(FileError::ABORT_ERR);
 
     // Unregister the reader.
-    ThrottlingController::FinishReaderType finalStep = throttlingController()->removeReader(this);
+    ThrottlingController::FinishReaderType finalStep = ThrottlingController::removeReader(executionContext(), this);
 
     fireEvent(EventTypeNames::error);
     fireEvent(EventTypeNames::abort);
     fireEvent(EventTypeNames::loadend);
 
     // All possible events have fired and we're done, no more pending activity.
-    throttlingController()->finishReader(this, finalStep);
+    ThrottlingController::finishReader(executionContext(), this, finalStep);
 }
 
 void FileReader::terminate()
@@ -392,13 +429,13 @@ void FileReader::didFinishLoading()
     m_state = DONE;
 
     // Unregister the reader.
-    ThrottlingController::FinishReaderType finalStep = throttlingController()->removeReader(this);
+    ThrottlingController::FinishReaderType finalStep = ThrottlingController::removeReader(executionContext(), this);
 
     fireEvent(EventTypeNames::load);
     fireEvent(EventTypeNames::loadend);
 
     // All possible events have fired and we're done, no more pending activity.
-    throttlingController()->finishReader(this, finalStep);
+    ThrottlingController::finishReader(executionContext(), this, finalStep);
 }
 
 void FileReader::didFail(FileError::ErrorCode errorCode)
@@ -414,13 +451,13 @@ void FileReader::didFail(FileError::ErrorCode errorCode)
     m_error = FileError::create(static_cast<FileError::ErrorCode>(errorCode));
 
     // Unregister the reader.
-    ThrottlingController::FinishReaderType finalStep = throttlingController()->removeReader(this);
+    ThrottlingController::FinishReaderType finalStep = ThrottlingController::removeReader(executionContext(), this);
 
     fireEvent(EventTypeNames::error);
     fireEvent(EventTypeNames::loadend);
 
     // All possible events have fired and we're done, no more pending activity.
-    throttlingController()->finishReader(this, finalStep);
+    ThrottlingController::finishReader(executionContext(), this, finalStep);
 }
 
 void FileReader::fireEvent(const AtomicString& type)
@@ -434,11 +471,6 @@ void FileReader::fireEvent(const AtomicString& type)
         dispatchEvent(ProgressEvent::create(type, true, m_loader->bytesLoaded(), m_loader->totalBytes()));
     else
         dispatchEvent(ProgressEvent::create(type, false, m_loader->bytesLoaded(), 0));
-}
-
-FileReader::ThrottlingController* FileReader::throttlingController()
-{
-    return FileReader::ThrottlingController::from(executionContext());
 }
 
 PassRefPtr<ArrayBuffer> FileReader::arrayBufferResult() const

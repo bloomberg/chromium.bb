@@ -100,16 +100,15 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    class ThrottlingController;
+    explicit FileReader(ExecutionContext*);
 
-    FileReader(ExecutionContext*);
+    class ThrottlingController;
 
     void terminate();
     void readInternal(Blob*, FileReaderLoader::ReadType, ExceptionState&);
     void fireErrorEvent(int httpStatusCode);
     void fireEvent(const AtomicString& type);
 
-    ThrottlingController* throttlingController();
     void executePendingRead();
 
     ReadyState m_state;
