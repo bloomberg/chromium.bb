@@ -307,7 +307,7 @@
               {
                 "name": "result",
                 "type": "string",
-                "enum": ["success", "user_gesture_required", "unknown_error", "feature_disabled", "unsupported_extension_type", "missing_dependencies", "install_error", "user_cancelled", "invalid_id", "blacklisted", "blocked_by_policy", "install_in_progress"],
+                "enum": ["success", "user_gesture_required", "unknown_error", "feature_disabled", "unsupported_extension_type", "missing_dependencies", "install_error", "user_cancelled", "invalid_id", "blacklisted", "blocked_by_policy", "install_in_progress", "launch_in_progress"],
                 "description": "Whether an attempt to launch an app succeeded, or the reason for failure."
               }
             ]

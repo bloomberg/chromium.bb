@@ -116,6 +116,8 @@ class EphemeralAppLauncher : public extensions::WebstoreStandaloneInstaller,
   void OnInstallChecked(int check_failures);
 
   // WebstoreStandaloneInstaller implementation.
+  virtual void InitInstallData(
+      extensions::ActiveInstallData* install_data) const OVERRIDE;
   virtual bool CheckRequestorAlive() const OVERRIDE;
   virtual const GURL& GetRequestorURL() const OVERRIDE;
   virtual bool ShouldShowPostInstallUI() const OVERRIDE;

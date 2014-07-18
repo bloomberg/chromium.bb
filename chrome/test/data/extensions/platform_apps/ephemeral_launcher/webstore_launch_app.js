@@ -47,16 +47,16 @@ var tests = [
   // progress.
   function pendingInstall() {
     // First initiate a full install of the app.
-    var manifest = getManifest(kDefaultAppManifestPath);
+    var manifest = getManifest(kAppWithPermissionsManifestPath);
     chrome.webstorePrivate.beginInstallWithManifest3(
-        { "id": kDefaultAppId, "manifest": manifest },
+        { "id": kAppWithPermissionsId, "manifest": manifest },
         callbackPass(function(result) {
           assertEq(result, "");
 
           // Attempt to launch the app ephemerally.
           chrome.test.runWithUserGesture(function() {
             chrome.webstorePrivate.launchEphemeralApp(
-                kDefaultAppId,
+                kAppWithPermissionsId,
                 callbackFail(kInstallInProgressError, function(result) {
                   assertEq(kInstallInProgressCode, result);
                 }));

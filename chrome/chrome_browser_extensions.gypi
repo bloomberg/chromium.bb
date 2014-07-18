@@ -11,6 +11,8 @@
     'chrome_browser_extensions_extensions_sources': [
       'browser/apps/ephemeral_app_service.cc',
       'browser/apps/ephemeral_app_service.h',
+      'browser/extensions/active_install_data.h',
+      'browser/extensions/active_install_data.cc',
       'browser/extensions/app_icon_loader.h',
       'browser/extensions/app_icon_loader_impl.cc',
       'browser/extensions/app_icon_loader_impl.h',

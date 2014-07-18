@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_install_checker.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/test_blacklist.h"
 #include "chrome/browser/extensions/webstore_installer_test.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -24,6 +25,7 @@ using extensions::Extension;
 using extensions::ExtensionPrefs;
 using extensions::ExtensionRegistry;
 using extensions::ExtensionSystem;
+using extensions::InstallTracker;
 namespace webstore_install = extensions::webstore_install;
 
 namespace {
@@ -242,10 +244,17 @@ class EphemeralAppLauncherTest : public WebstoreInstallerTest {
   void RunLaunchTest(const std::string& id,
                      webstore_install::Result expected_result,
                      bool expect_install_initiated) {
+    InstallTracker* tracker = InstallTracker::Get(profile());
+    ASSERT_TRUE(tracker);
+    bool was_install_active = !!tracker->GetActiveInstall(id);
+
     scoped_refptr<EphemeralAppLauncherForTest> launcher(
         new EphemeralAppLauncherForTest(id, profile()));
     StartLauncherAndCheckResult(
         launcher.get(), expected_result, expect_install_initiated);
+
+    // Verify that the install was deregistered from the InstallTracker.
+    EXPECT_EQ(was_install_active, !!tracker->GetActiveInstall(id));
   }
 
   void ValidateAppInstalledEphemerally(const std::string& id) {
@@ -518,4 +527,21 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest,
   ASSERT_TRUE(app);
 
   RunLaunchTest(app->id(), webstore_install::REQUIREMENT_VIOLATIONS, false);
+}
+
+// Verifies that a launch will fail if the app is currently being installed.
+IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest, InstallInProgress) {
+  extensions::ActiveInstallData install_data(kDefaultAppId);
+  InstallTracker::Get(profile())->AddActiveInstall(install_data);
+
+  RunLaunchTest(kDefaultAppId, webstore_install::INSTALL_IN_PROGRESS, false);
+}
+
+// Verifies that a launch will fail if a duplicate launch is in progress.
+IN_PROC_BROWSER_TEST_F(EphemeralAppLauncherTest, DuplicateLaunchInProgress) {
+  extensions::ActiveInstallData install_data(kDefaultAppId);
+  install_data.is_ephemeral = true;
+  InstallTracker::Get(profile())->AddActiveInstall(install_data);
+
+  RunLaunchTest(kDefaultAppId, webstore_install::LAUNCH_IN_PROGRESS, false);
 }

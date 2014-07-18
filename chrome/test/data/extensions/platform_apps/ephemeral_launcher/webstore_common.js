@@ -19,6 +19,8 @@ var kUnsupportedExtensionTypeError =
 // App ids.
 var kDefaultAppId = "kbiancnbopdghkfedjhfdoegjadfjeal";
 var kDefaultAppManifestPath = "app/manifest.json";
+var kAppWithPermissionsId = "mbfcnecjknjpipkfkoangpfnhhlpamki";
+var kAppWithPermissionsManifestPath = "app_with_permissions/manifest.json";
 var kExtensionId = "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeid";
 
 var assertEq = chrome.test.assertEq;

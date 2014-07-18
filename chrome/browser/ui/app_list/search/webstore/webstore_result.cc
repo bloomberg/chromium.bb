@@ -82,6 +82,7 @@ WebstoreResult::WebstoreResult(Profile* profile,
   set_title(base::UTF8ToUTF16(localized_name_));
   SetDefaultDetails();
 
+  InitAndStartObserving();
   UpdateActions();
 
   icon_ = gfx::ImageSkia(
@@ -93,8 +94,6 @@ WebstoreResult::WebstoreResult(Profile* profile,
                         IDR_WEBSTORE_ICON_32),
       gfx::Size(kIconSize, kIconSize));
   SetIcon(icon_);
-
-  StartObserving();
 }
 
 WebstoreResult::~WebstoreResult() {
@@ -122,6 +121,23 @@ void WebstoreResult::InvokeAction(int action_index, int event_flags) {
 scoped_ptr<ChromeSearchResult> WebstoreResult::Duplicate() {
   return scoped_ptr<ChromeSearchResult>(new WebstoreResult(
       profile_, app_id_, localized_name_, icon_url_, controller_)).Pass();
+}
+
+void WebstoreResult::InitAndStartObserving() {
+  DCHECK(!install_tracker_ && !extension_registry_);
+
+  install_tracker_ = extensions::InstallTrackerFactory::GetForProfile(profile_);
+  extension_registry_ = extensions::ExtensionRegistry::Get(profile_);
+
+  const extensions::ActiveInstallData* install_data =
+      install_tracker_->GetActiveInstall(app_id_);
+  if (install_data) {
+    SetPercentDownloaded(install_data->percent_downloaded);
+    SetIsInstalling(true);
+  }
+
+  install_tracker_->AddObserver(this);
+  extension_registry_->AddObserver(this);
 }
 
 void WebstoreResult::UpdateActions() {
@@ -206,7 +222,7 @@ void WebstoreResult::InstallCallback(bool success, const std::string& error) {
     return;
   }
 
-  // Success handling is continued in OnExtensionWillBeInstalled.
+  // Success handling is continued in OnExtensionInstalled.
   SetPercentDownloaded(100);
 }
 
@@ -216,16 +232,6 @@ void WebstoreResult::LaunchCallback(extensions::webstore_install::Result result,
     LOG(ERROR) << "Failed to launch app, error=" << error;
 
   SetIsInstalling(false);
-}
-
-void WebstoreResult::StartObserving() {
-  DCHECK(!install_tracker_ && !extension_registry_);
-
-  install_tracker_ = extensions::InstallTrackerFactory::GetForProfile(profile_);
-  install_tracker_->AddObserver(this);
-
-  extension_registry_ = extensions::ExtensionRegistry::Get(profile_);
-  extension_registry_->AddObserver(this);
 }
 
 void WebstoreResult::StopObservingInstall() {
@@ -248,20 +254,18 @@ void WebstoreResult::OnDownloadProgress(const std::string& extension_id,
   SetPercentDownloaded(percent_downloaded);
 }
 
-void WebstoreResult::OnExtensionWillBeInstalled(
+void WebstoreResult::OnExtensionInstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
-    bool is_update,
-    bool from_ephemeral,
-    const std::string& old_name) {
+    bool is_update) {
   if (extension->id() != app_id_)
     return;
 
   SetIsInstalling(false);
+  UpdateActions();
 
   if (extensions::util::IsExtensionInstalledPermanently(extension->id(),
                                                         profile_)) {
-    UpdateActions();
     NotifyItemInstalled();
   }
 }

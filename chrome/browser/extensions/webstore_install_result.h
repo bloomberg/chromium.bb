@@ -20,6 +20,9 @@ enum Result {
   // The operation was aborted as the requestor is no longer alive.
   ABORTED,
 
+  // An installation of the same extension is in progress.
+  INSTALL_IN_PROGRESS,
+
   // The installation is not permitted.
   NOT_PERMITTED,
 
@@ -59,7 +62,10 @@ enum Result {
   LAUNCH_FEATURE_DISABLED,
 
   // The launch feature is not supported for the extension type.
-  LAUNCH_UNSUPPORTED_EXTENSION_TYPE
+  LAUNCH_UNSUPPORTED_EXTENSION_TYPE,
+
+  // A launch of the same extension is in progress.
+  LAUNCH_IN_PROGRESS
 };
 
 }  // namespace webstore_install

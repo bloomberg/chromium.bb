@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "chrome/browser/extensions/active_install_data.h"
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -171,6 +172,8 @@ class WebstorePrivateBeginInstallWithManifest3Function
 
   scoped_ptr<SigninTracker> signin_tracker_;
 
+  scoped_ptr<ScopedActiveInstall> scoped_active_install_;
+
   // The authuser query parameter value which should be used with CRX download
   // requests. This is empty if authuser should not be set on download requests.
   std::string authuser_;
@@ -200,6 +203,7 @@ class WebstorePrivateCompleteInstallFunction
 
  private:
   scoped_ptr<WebstoreInstaller::Approval> approval_;
+  scoped_ptr<ScopedActiveInstall> scoped_active_install_;
 
   void OnInstallSuccess(const std::string& id);
 };

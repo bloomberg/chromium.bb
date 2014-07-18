@@ -224,17 +224,25 @@ bool EphemeralAppLauncher::CanLaunchInstalledApp(
 }
 
 void EphemeralAppLauncher::EnableInstalledApp(const Extension* extension) {
+  // Check whether an install is already in progress.
+  webstore_install::Result result = webstore_install::UNKNOWN_ERROR;
+  std::string error;
+  if (!EnsureUniqueInstall(&result, &error)) {
+    InvokeCallback(result, error);
+    return;
+  }
+
+  // Keep this object alive until the enable flow is complete. Either
+  // ExtensionEnableFlowFinished() or ExtensionEnableFlowAborted() will be
+  // called.
+  AddRef();
+
   extension_enable_flow_.reset(
       new ExtensionEnableFlow(profile(), extension->id(), this));
   if (web_contents())
     extension_enable_flow_->StartForWebContents(web_contents());
   else
     extension_enable_flow_->StartForNativeWindow(parent_window_);
-
-  // Keep this object alive until the enable flow is complete. Either
-  // ExtensionEnableFlowFinished() or ExtensionEnableFlowAborted() will be
-  // called.
-  AddRef();
 }
 
 void EphemeralAppLauncher::MaybeLaunchApp() {
@@ -292,8 +300,9 @@ bool EphemeralAppLauncher::LaunchHostedApp(const Extension* extension) const {
 void EphemeralAppLauncher::InvokeCallback(webstore_install::Result result,
                                           const std::string& error) {
   if (!launch_callback_.is_null()) {
-    launch_callback_.Run(result, error);
+    LaunchCallback callback = launch_callback_;
     launch_callback_.Reset();
+    callback.Run(result, error);
   }
 }
 
@@ -337,6 +346,11 @@ void EphemeralAppLauncher::OnInstallChecked(int check_failures) {
 
   // Proceed with the normal install flow.
   ProceedWithInstallPrompt();
+}
+
+void EphemeralAppLauncher::InitInstallData(
+    extensions::ActiveInstallData* install_data) const {
+  install_data->is_ephemeral = true;
 }
 
 bool EphemeralAppLauncher::CheckRequestorAlive() const {
@@ -439,10 +453,13 @@ void EphemeralAppLauncher::WebContentsDestroyed() {
 
 void EphemeralAppLauncher::ExtensionEnableFlowFinished() {
   MaybeLaunchApp();
-  Release();  // Matches the AddRef in EnableInstalledApp().
+
+  // CompleteInstall will call Release.
+  WebstoreStandaloneInstaller::CompleteInstall(webstore_install::SUCCESS,
+                                               std::string());
 }
 
 void EphemeralAppLauncher::ExtensionEnableFlowAborted(bool user_initiated) {
-  InvokeCallback(webstore_install::USER_CANCELLED, kUserCancelledError);
-  Release();  // Matches the AddRef in EnableInstalledApp().
+  // CompleteInstall will call Release.
+  CompleteInstall(webstore_install::USER_CANCELLED, kUserCancelledError);
 }

@@ -11,25 +11,32 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/pref_names.h"
 
 namespace extensions {
 
 InstallTracker::InstallTracker(Profile* profile,
-                               extensions::ExtensionPrefs* prefs) {
+                               extensions::ExtensionPrefs* prefs)
+    : extension_registry_observer_(this) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
                  content::Source<Profile>(profile));
-  AppSorting* sorting = prefs->app_sorting();
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
-      content::Source<AppSorting>(sorting));
   registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
       content::Source<Profile>(profile));
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
 
-  pref_change_registrar_.Init(prefs->pref_service());
-  pref_change_registrar_.Add(pref_names::kExtensions,
-                             base::Bind(&InstallTracker::OnAppsReordered,
-                                        base::Unretained(this)));
+  // Prefs may be null in tests.
+  if (prefs) {
+    AppSorting* sorting = prefs->app_sorting();
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
+                   content::Source<AppSorting>(sorting));
+    pref_change_registrar_.Init(prefs->pref_service());
+    pref_change_registrar_.Add(
+        pref_names::kExtensions,
+        base::Bind(&InstallTracker::OnAppsReordered, base::Unretained(this)));
+  }
 }
 
 InstallTracker::~InstallTracker() {
@@ -49,8 +56,38 @@ void InstallTracker::RemoveObserver(InstallObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+const ActiveInstallData* InstallTracker::GetActiveInstall(
+    const std::string& extension_id) const {
+  ActiveInstallsMap::const_iterator install_data =
+      active_installs_.find(extension_id);
+  if (install_data == active_installs_.end())
+    return NULL;
+  else
+    return &(install_data->second);
+}
+
+void InstallTracker::AddActiveInstall(const ActiveInstallData& install_data) {
+  DCHECK(!install_data.extension_id.empty());
+  DCHECK(active_installs_.find(install_data.extension_id) ==
+         active_installs_.end());
+  active_installs_.insert(
+      std::make_pair(install_data.extension_id, install_data));
+}
+
+void InstallTracker::RemoveActiveInstall(const std::string& extension_id) {
+  active_installs_.erase(extension_id);
+}
+
 void InstallTracker::OnBeginExtensionInstall(
     const InstallObserver::ExtensionInstallParams& params) {
+  ActiveInstallsMap::iterator install_data =
+      active_installs_.find(params.extension_id);
+  if (install_data == active_installs_.end()) {
+    ActiveInstallData install_data(params.extension_id);
+    install_data.is_ephemeral = params.is_ephemeral;
+    active_installs_.insert(std::make_pair(params.extension_id, install_data));
+  }
+
   FOR_EACH_OBSERVER(InstallObserver, observers_,
                     OnBeginExtensionInstall(params));
 }
@@ -62,6 +99,14 @@ void InstallTracker::OnBeginExtensionDownload(const std::string& extension_id) {
 
 void InstallTracker::OnDownloadProgress(const std::string& extension_id,
                                         int percent_downloaded) {
+  ActiveInstallsMap::iterator install_data =
+      active_installs_.find(extension_id);
+  if (install_data != active_installs_.end()) {
+    install_data->second.percent_downloaded = percent_downloaded;
+  } else {
+    NOTREACHED();
+  }
+
   FOR_EACH_OBSERVER(InstallObserver, observers_,
                     OnDownloadProgress(extension_id, percent_downloaded));
 }
@@ -79,6 +124,7 @@ void InstallTracker::OnFinishCrxInstall(const std::string& extension_id,
 
 void InstallTracker::OnInstallFailure(
     const std::string& extension_id) {
+  RemoveActiveInstall(extension_id);
   FOR_EACH_OBSERVER(InstallObserver, observers_,
                     OnInstallFailure(extension_id));
 }
@@ -112,6 +158,13 @@ void InstallTracker::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+void InstallTracker::OnExtensionInstalled(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    bool is_update) {
+  RemoveActiveInstall(extension->id());
 }
 
 void InstallTracker::OnAppsReordered() {

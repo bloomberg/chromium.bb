@@ -43,6 +43,10 @@ class WebstoreResult : public ChromeSearchResult,
   virtual ChromeSearchResultType GetType() OVERRIDE;
 
  private:
+  // Set the initial state and start observing both InstallObserver and
+  // ExtensionRegistryObserver.
+  void InitAndStartObserving();
+
   void UpdateActions();
   void SetDefaultDetails();
   void OnIconLoaded();
@@ -51,9 +55,6 @@ class WebstoreResult : public ChromeSearchResult,
   void InstallCallback(bool success, const std::string& error);
   void LaunchCallback(extensions::webstore_install::Result result,
                       const std::string& error);
-
-  // Start observing both InstallObserver and ExtensionRegistryObserver.
-  void StartObserving();
 
   void StopObservingInstall();
   void StopObservingRegistry();
@@ -64,12 +65,10 @@ class WebstoreResult : public ChromeSearchResult,
   virtual void OnShutdown() OVERRIDE;
 
   // extensions::ExtensionRegistryObserver overides:
-  virtual void OnExtensionWillBeInstalled(
+  virtual void OnExtensionInstalled(
       content::BrowserContext* browser_context,
       const extensions::Extension* extension,
-      bool is_update,
-      bool from_ephemeral,
-      const std::string& old_name) OVERRIDE;
+      bool is_update) OVERRIDE;
   virtual void OnShutdown(extensions::ExtensionRegistry* registry) OVERRIDE;
 
   Profile* profile_;
