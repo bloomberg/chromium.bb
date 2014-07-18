@@ -1,5 +1,41 @@
 /* Copyright 2014 The Chromium Authors. All rights reserved.
    Use of this source code is governed by a BSD-style license that can be
    found in the LICENSE file.
-   TODO(mathp): Add some CSS here.
 */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: url(/roboto.woff) format('woff');
+}
+
+body {
+  font-family: 'Roboto';
+  font-size: 1em;
+}
+
+p {
+  margin: 1em;
+  text-align: justify;
+}
+
+a {
+  color: black;
+}
+
+.colored {
+  color: rgb(66, 133, 244);
+}
+
+.label {
+  display: inline-block;
+  padding: 0.5em;
+  text-align: center;
+  width: 41%;
+}
+
+.label a {
+  font-weight: bold;
+  text-decoration: none;
+  text-transform: uppercase;
+}

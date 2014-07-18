@@ -1214,6 +1214,17 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         </message>
       </if>
 
+      <!-- Contextual Search -->
+      <message name="IDS_CONTEXTUAL_SEARCH_PROMO_DESCRIPTION" desc="Description of the Contextual Search feature.">
+        Enabling "Tap to Search" provides an easy way to search for terms on a web page by simply tapping on them.  The word tapped and surrounding page will be sent to Google.
+      </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_PROMO_OPTIN" desc="Text for the button the user clicks to opt in.">
+        Yes, please
+      </message>
+      <message name="IDS_CONTEXTUAL_SEARCH_PROMO_OPTOUT" desc="Text for the button the user clicks to opt out.">
+        No, thanks
+      </message>
+
       <!-- Update bubble -->
       <message name="IDS_REINSTALL_APP" desc="Text for the button the user clicks to reinstall the app.">
         Reinstall Chromium

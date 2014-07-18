@@ -5,14 +5,15 @@
      found in the LICENSE file. -->
 <head>
   <script src="promo.js"></script>
+  <script src="../../../../ui/webui/resources/js/util.js"></script>
+  <script src="../../../../ui/webui/resources/js/load_time_data.js"></script>
   <link rel="stylesheet" href="promo.css">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, user-scalable=no">
 </head>
 <body>
-  <!--TODO(mathp): Update this text. -->
-  <p>Hello, world!</p>
-  <p><a href="#optin">Yes</a></p>
-  <p><a href="#optout">No</a></p>
+  <p i18n-content="description"></p>
+  <div class='label'><a class='colored' href="#optin" i18n-content="optIn"></a></div>
+  <div class='label'><a href="#optout" i18n-content="optOut"></a></div>
 </body>
 </html>

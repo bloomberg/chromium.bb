@@ -26,11 +26,16 @@ class ContextualSearchPromoSource : public content::URLDataSource {
   virtual std::string GetMimeType(
       const std::string& path_and_query) const OVERRIDE;
   virtual bool ShouldDenyXFrameOptions() const OVERRIDE;
+  virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE;
 
   // Sends unmodified resource bytes.
   void SendResource(
       int resource_id,
       const content::URLDataSource::GotDataCallback& callback);
+
+  // Sends HTML with localized strings.
+  void SendHtmlWithStrings(
+    const content::URLDataSource::GotDataCallback& callback);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContextualSearchPromoSource);
