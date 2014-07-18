@@ -1,0 +1,9 @@
+Test that interrupting a smooth scroll on an overflow:scroll element works with both scroll behaviors and with input
+
+This is a testharness.js-based test.
+FAIL instant scroll assert_equals: expected 3500 but got 7000
+FAIL smooth scroll assert_equals: expected 3500 but got 7000
+FAIL touch scroll assert_equals: expected 3500 but got 7000
+FAIL wheel scroll assert_equals: expected 3500 but got 7000
+Harness: the test ran to completion.
+

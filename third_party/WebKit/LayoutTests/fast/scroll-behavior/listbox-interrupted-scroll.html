@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script>
+  <script src="resources/scroll-interruption-test.js"></script>
+  <script type="text/javascript">
+    const numItems = 500;
+
+    function jsScroll(y) {
+      document.getElementById('listbox').scrollTop = {y: y, behavior: 'smooth'};
+    }
+
+    function initializeContents(listbox) {
+      for (var i = 0; i < numItems; i++) {
+        var option = document.createElement('option');
+        option.appendChild(document.createTextNode(i));
+        listbox.appendChild(option);
+      }
+    }
+
+    function convertIndexToScrollOffset(index, listbox, approximateItemHeight) {
+      var scrollOffset = Math.floor(index * approximateItemHeight);
+
+      // The scroll offset set on a list box can get rounded to the nearest whole-item
+      // offset. We set and then readback the scroll offset to get the rounded value
+      // (so that the scroll offsets used during the test won't be subject to further
+      // rounding).
+      listbox.scrollTop = scrollOffset;
+      scrollOffset = listbox.scrollTop;
+      return scrollOffset;
+    }
+
+    function initializeTest(indexTargets, targets, innerPoint, listbox) {
+      var approximateItemHeight = listbox.clientHeight / listbox.size;
+
+      // Convert from listbox item index to scroll offset.
+      targets.y_min = convertIndexToScrollOffset(indexTargets.index_min, listbox, approximateItemHeight);
+      targets.y_mid = convertIndexToScrollOffset(indexTargets.index_mid, listbox, approximateItemHeight);
+      targets.y_max = convertIndexToScrollOffset(indexTargets.index_max, listbox, approximateItemHeight);
+
+      var boundingRect = listbox.getBoundingClientRect();
+      innerPoint.x = (boundingRect.left + boundingRect.right)/2;
+      innerPoint.y = (boundingRect.top + boundingRect.bottom)/2;
+    }
+
+    function doTest() {
+      var indexTargets = {index_min: 3, index_mid: 200, index_max: 400};
+      var targets = {};
+      var innerPoint = {};
+      var element = document.getElementById('listbox');
+      initializeContents(element);
+      initializeTest(indexTargets, targets, innerPoint, element);
+      var scrollInterruptionTest = new SmoothScrollInterruptionTest(element,
+                                                                    innerPoint,
+                                                                    targets,
+                                                                    jsScroll);
+      scrollInterruptionTest.run();
+    }
+
+    window.addEventListener('load', doTest, false);
+  </script>
+</head>
+
+<body>
+  <p>Test that interrupting a smooth scroll on a listbox works with both scroll behaviors and with input</p>
+  <select size="4" id="listbox"></select>
+</body>
+</html>
