@@ -46,6 +46,20 @@ PASS badParamsTouch.webkitRadiusX is 0
 PASS badParamsTouch.webkitRadiusY is 0
 FAIL badParamsTouch.webkitRotationAngle should be NaN. Was 0.
 FAIL badParamsTouch.webkitForce should be NaN. Was 0.
+PASS detachedTouch = document.implementation.createDocument('a', 'b').createTouch() is non-null.
+PASS detachedTouch.target is null
+PASS detachedTouch.identifier is 0
+PASS detachedTouch.pageX is 0
+PASS detachedTouch.pageY is 0
+PASS detachedTouch.screenX is 0
+PASS detachedTouch.screenY is 0
+PASS detachedTouch.radiusX is 0
+PASS detachedTouch.radiusY is 0
+FAIL detachedTouch.force should be NaN. Was 0.
+PASS detachedTouch.webkitRadiusX is 0
+PASS detachedTouch.webkitRadiusY is 0
+FAIL detachedTouch.webkitRotationAngle should be NaN. Was 0.
+FAIL detachedTouch.webkitForce should be NaN. Was 0.
 PASS successfullyParsed is true
 
 TEST COMPLETE

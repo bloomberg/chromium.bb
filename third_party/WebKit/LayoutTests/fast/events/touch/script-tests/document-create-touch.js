@@ -57,4 +57,22 @@ shouldBe("badParamsTouch.webkitRadiusX", "0");
 shouldBe("badParamsTouch.webkitRadiusY", "0");
 shouldBeNaN("badParamsTouch.webkitRotationAngle");
 shouldBeNaN("badParamsTouch.webkitForce");
+
+// Should not crash when invoked on a detached Document.
+var detachedTouch;
+shouldBeNonNull("detachedTouch = document.implementation.createDocument('a', 'b').createTouch()");
+shouldBeNull("detachedTouch.target");
+shouldBe("detachedTouch.identifier", "0");
+shouldBe("detachedTouch.pageX", "0");
+shouldBe("detachedTouch.pageY", "0");
+shouldBe("detachedTouch.screenX", "0");
+shouldBe("detachedTouch.screenY", "0");
+shouldBe("detachedTouch.radiusX", "0");
+shouldBe("detachedTouch.radiusY", "0");
+shouldBeNaN("detachedTouch.force");
+shouldBe("detachedTouch.webkitRadiusX", "0");
+shouldBe("detachedTouch.webkitRadiusY", "0");
+shouldBeNaN("detachedTouch.webkitRotationAngle");
+shouldBeNaN("detachedTouch.webkitForce");
+
 isSuccessfullyParsed();

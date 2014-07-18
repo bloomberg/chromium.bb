@@ -55,7 +55,7 @@ Touch::Touch(LocalFrame* frame, EventTarget* target, unsigned identifier, const 
     , m_force(force)
 {
     ScriptWrappable::init(this);
-    float scaleFactor = frame->pageZoomFactor();
+    float scaleFactor = frame ? frame->pageZoomFactor() : 1.0f;
     m_absoluteLocation = roundedLayoutPoint(pagePos.scaledBy(scaleFactor));
 }
 
