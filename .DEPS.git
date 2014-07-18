@@ -52,7 +52,7 @@ deps = {
     'src/third_party/brotli/src':
         Var('git_url') + '/external/font-compression-reference.git@6cef49677dc4c650ef6e3f56041e0a41803afa8c',
     'src/third_party/cacheinvalidation/src':
-        Var('git_url') + '/external/google-cache-invalidation-api/src.git@bf41949f62d571cae38acf525fbc552537c6e74b',
+        Var('git_url') + '/external/google-cache-invalidation-api/src.git@50c0a8563b62f6e3b780da14f82246d192f9c1e0',
     'src/third_party/cld_2/src':
         Var('git_url') + '/external/cld2.git@d076f5eda223ac568639d6288f2e2d70d908f282',
     'src/third_party/colorama/src':
