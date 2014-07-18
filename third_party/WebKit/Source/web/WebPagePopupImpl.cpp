@@ -280,8 +280,10 @@ WebSize WebPagePopupImpl::size()
     return m_popupClient->contentSize();
 }
 
-void WebPagePopupImpl::animate(double)
+void WebPagePopupImpl::beginFrame(const WebBeginFrameArgs& frameTime)
 {
+    // FIXME: This should use frameTime.lastFrameTimeMonotonic but doing so
+    // breaks tests.
     PageWidgetDelegate::animate(m_page.get(), monotonicallyIncreasingTime());
 }
 

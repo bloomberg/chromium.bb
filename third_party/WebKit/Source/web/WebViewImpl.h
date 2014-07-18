@@ -98,7 +98,9 @@ public:
     virtual void didEnterFullScreen() OVERRIDE;
     virtual void willExitFullScreen() OVERRIDE;
     virtual void didExitFullScreen() OVERRIDE;
-    virtual void animate(double) OVERRIDE;
+
+    virtual void beginFrame(const WebBeginFrameArgs&) OVERRIDE;
+
     virtual void layout() OVERRIDE;
     virtual void paint(WebCanvas*, const WebRect&) OVERRIDE;
 #if OS(ANDROID)

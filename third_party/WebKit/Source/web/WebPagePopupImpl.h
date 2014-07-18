@@ -70,7 +70,7 @@ public:
 private:
     // WebWidget functions
     virtual WebSize size() OVERRIDE;
-    virtual void animate(double) OVERRIDE;
+    virtual void beginFrame(const WebBeginFrameArgs&) OVERRIDE;
     virtual void layout() OVERRIDE;
     virtual void willCloseLayerTreeView() OVERRIDE;
     virtual void paint(WebCanvas*, const WebRect&) OVERRIDE;

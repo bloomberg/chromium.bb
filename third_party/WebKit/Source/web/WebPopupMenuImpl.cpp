@@ -204,7 +204,7 @@ void WebPopupMenuImpl::willEndLiveResize()
 {
 }
 
-void WebPopupMenuImpl::animate(double)
+void WebPopupMenuImpl::beginFrame(const WebBeginFrameArgs&)
 {
 }
 

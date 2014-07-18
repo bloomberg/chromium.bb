@@ -121,6 +121,7 @@
 #include "public/web/WebAXObject.h"
 #include "public/web/WebActiveWheelFlingParameters.h"
 #include "public/web/WebAutofillClient.h"
+#include "public/web/WebBeginFrameArgs.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebHitTestResult.h"
 #include "public/web/WebInputElement.h"
@@ -1722,10 +1723,11 @@ void WebViewImpl::didExitFullScreen()
     m_fullscreenController->didExitFullScreen();
 }
 
-void WebViewImpl::animate(double monotonicFrameBeginTime)
+void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
 {
-    TRACE_EVENT0("blink", "WebViewImpl::animate");
+    TRACE_EVENT0("blink", "WebViewImpl::beginFrame");
 
+    double monotonicFrameBeginTime = frameTime.lastFrameTimeMonotonic;
     if (!monotonicFrameBeginTime)
         monotonicFrameBeginTime = monotonicallyIncreasingTime();
 

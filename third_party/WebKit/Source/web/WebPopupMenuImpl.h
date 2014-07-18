@@ -69,7 +69,7 @@ public:
     virtual void willStartLiveResize() OVERRIDE FINAL;
     virtual void resize(const WebSize&) OVERRIDE FINAL;
     virtual void willEndLiveResize() OVERRIDE FINAL;
-    virtual void animate(double frameBeginTime) OVERRIDE FINAL;
+    virtual void beginFrame(const WebBeginFrameArgs&) OVERRIDE FINAL;
     virtual void layout() OVERRIDE FINAL;
     virtual void paint(WebCanvas*, const WebRect&) OVERRIDE FINAL;
     virtual void themeChanged() OVERRIDE FINAL;
