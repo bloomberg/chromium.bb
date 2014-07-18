@@ -28,7 +28,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -266,13 +265,6 @@ void NavigateToURLBlockUntilNavigationsComplete(Browser* browser,
       number_of_navigations,
       CURRENT_TAB,
       BROWSER_TEST_WAIT_FOR_NAVIGATION);
-}
-
-void WaitUntilDevToolsWindowLoaded(DevToolsWindow* window) {
-  scoped_refptr<content::MessageLoopRunner> runner =
-      new content::MessageLoopRunner;
-  window->SetLoadCompletedCallback(runner->QuitClosure());
-  runner->Run();
 }
 
 base::FilePath GetTestFilePath(const base::FilePath& dir,

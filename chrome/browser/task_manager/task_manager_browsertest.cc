@@ -8,7 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -731,38 +731,37 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsNewDockedWindow) {
   ShowTaskManager();  // Task manager shown BEFORE dev tools window.
 
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
-  DevToolsWindow::OpenDevToolsWindowForTest(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
-      true);
+  DevToolsWindow* devtools =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), true);
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsNewUndockedWindow) {
   ShowTaskManager();  // Task manager shown BEFORE dev tools window.
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
-  DevToolsWindow::OpenDevToolsWindowForTest(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
-      false);
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+  DevToolsWindow* devtools =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), false);
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(3, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(3, MatchAnyTab()));
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsOldDockedWindow) {
-  DevToolsWindow::OpenDevToolsWindowForTest(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
-      true);
-
+  DevToolsWindow* devtools =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), true);
   ShowTaskManager();  // Task manager shown AFTER dev tools window.
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsOldUnockedWindow) {
-  DevToolsWindow::OpenDevToolsWindowForTest(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
-      false);
+  DevToolsWindow* devtools =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), false);
   ShowTaskManager();  // Task manager shown AFTER dev tools window.
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(3, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(3, MatchAnyTab()));
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
 }
