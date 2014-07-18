@@ -86,10 +86,10 @@ class SCM:
     def find_checkout_root(self, path):
         SCM._subclass_must_implement()
 
-    def add(self, path, return_exit_code=False):
-        self.add_list([path], return_exit_code)
+    def add(self, path, return_exit_code=False, recurse=True):
+        self.add_list([path], return_exit_code, recurse)
 
-    def add_list(self, paths, return_exit_code=False):
+    def add_list(self, paths, return_exit_code=False, recurse=True):
         self._subclass_must_implement()
 
     def delete(self, path):

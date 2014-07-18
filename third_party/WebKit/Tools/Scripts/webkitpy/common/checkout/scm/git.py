@@ -117,7 +117,7 @@ class Git(SCM):
     def _status_regexp(self, expected_types):
         return '^(?P<status>[%s])\t(?P<filename>.+)$' % expected_types
 
-    def add_list(self, paths, return_exit_code=False):
+    def add_list(self, paths, return_exit_code=False, recurse=True):
         return self._run_git(["add"] + paths, return_exit_code=return_exit_code)
 
     def delete_list(self, paths):

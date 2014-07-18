@@ -380,6 +380,11 @@ class GitSVNTest(SCMTestBase):
         # --quiet doesn't make git svn silent
         self._run_silent(['git', 'svn', 'clone', '-T', 'trunk', self.svn_repo_url, self.git_checkout_path])
         self._chdir(self.git_checkout_path)
+        self.git_v2 = self._run(['git', '--version']).startswith('git version 2')
+        if self.git_v2:
+            # The semantics of 'git svn clone -T' changed in v2 (apparently), so the branch names are different.
+            # This works around it, for compatibility w/ v1.
+            self._run_silent(['git', 'branch', 'trunk', 'origin/trunk'])
 
     def _tear_down_gitsvn_checkout(self):
         self._rmtree(self.git_checkout_path)
@@ -486,7 +491,11 @@ class GitSVNTest(SCMTestBase):
         self.assertEqual(self.scm._upstream_branch(), 'my-branch')
 
     def test_remote_branch_ref(self):
-        self.assertEqual(self.scm._remote_branch_ref(), 'refs/remotes/trunk')
+        remote_branch_ref = self.scm._remote_branch_ref()
+        if self.git_v2:
+            self.assertEqual(remote_branch_ref, 'refs/remotes/origin/trunk')
+        else:
+            self.assertEqual(remote_branch_ref, 'refs/remotes/trunk')
 
     def test_create_patch_local_plus_working_copy(self):
         self._one_local_commit_plus_working_copy_changes()
