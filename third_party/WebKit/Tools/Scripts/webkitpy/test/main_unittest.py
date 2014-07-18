@@ -63,12 +63,15 @@ class TesterTest(unittest.TestCase):
         tester.printer.stream = errors
         tester.finder.find_names = lambda args, run_all: []
         oc = OutputCapture()
+        orig_argv = sys.argv[:]
         try:
+            sys.argv = sys.argv[0:1]
             oc.capture_output()
             self.assertFalse(tester.run())
         finally:
             _, _, logs = oc.restore_output()
             root_logger.handlers = root_handlers
+            sys.argv = orig_argv
 
         self.assertIn('No tests to run', errors.getvalue())
         self.assertIn('No tests to run', logs)
