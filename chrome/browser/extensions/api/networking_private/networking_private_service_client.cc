@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_api.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
 #include "chrome/common/extensions/api/networking_private.h"
 #include "chrome/common/extensions/api/networking_private/networking_private_crypto.h"
@@ -18,7 +19,6 @@
 #include "content/public/browser/utility_process_host.h"
 
 using content::BrowserThread;
-using extensions::api::networking_private::VerificationProperties;
 
 namespace extensions {
 
@@ -26,49 +26,54 @@ namespace {
 
 const char kNetworkingPrivateSequenceTokenName[] = "NetworkingPrivate";
 
+bool GetVerificationCredentials(
+    const NetworkingPrivateDelegate::VerificationProperties& properties,
+    NetworkingPrivateServiceClient::CryptoVerify::Credentials* credentials) {
+  std::vector<std::string> data_parts;
+  data_parts.push_back(properties.device_ssid);
+  data_parts.push_back(properties.device_serial);
+  data_parts.push_back(properties.device_bssid);
+  data_parts.push_back(properties.public_key);
+  data_parts.push_back(properties.nonce);
+  credentials->unsigned_data = JoinString(data_parts, ",");
+  if (!base::Base64Decode(properties.signed_data, &credentials->signed_data)) {
+    LOG(ERROR) << "Failed to decode signed data: " << properties.signed_data;
+    return false;
+  }
+  credentials->certificate = properties.certificate;
+  credentials->device_bssid = properties.device_bssid;
+  if (!base::Base64Decode(properties.public_key, &credentials->public_key)) {
+    LOG(ERROR) << "Failed to decode public key";
+    return false;
+  }
+  return true;
+}
+
 // Implementation of Verify* methods using NetworkingPrivateCrypto.
 // TODO(mef): Move this into NetworkingPrivateCrypto class.
 class CryptoVerifyImpl : public NetworkingPrivateServiceClient::CryptoVerify {
-  bool VerifyDestination(const VerificationProperties& properties) {
-    std::vector<std::string> data_parts;
-    data_parts.push_back(properties.device_ssid);
-    data_parts.push_back(properties.device_serial);
-    data_parts.push_back(properties.device_bssid);
-    data_parts.push_back(properties.public_key);
-    data_parts.push_back(properties.nonce);
-    std::string unsigned_data = JoinString(data_parts, ",");
-    std::string signed_data;
-    if (!base::Base64Decode(properties.signed_data, &signed_data))
-      return false;
+  bool VerifyCredentials(const Credentials& credentials) {
     NetworkingPrivateCrypto crypto;
-    return crypto.VerifyCredentials(properties.certificate,
-                                    signed_data,
-                                    unsigned_data,
-                                    properties.device_bssid);
+    return crypto.VerifyCredentials(credentials.certificate,
+                                    credentials.signed_data,
+                                    credentials.unsigned_data,
+                                    credentials.device_bssid);
   }
 
-  virtual void VerifyDestination(scoped_ptr<base::ListValue> args,
+  // NetworkingPrivateServiceClient::CryptoVerify
+
+  virtual void VerifyDestination(const Credentials& credentials,
                                  bool* verified,
                                  std::string* error) OVERRIDE {
-    using api::networking_private::VerifyDestination::Params;
-    scoped_ptr<Params> params = Params::Create(*args);
-    *verified = VerifyDestination(params->properties);
+    *verified = VerifyCredentials(credentials);
   }
 
   virtual void VerifyAndEncryptCredentials(
-      scoped_ptr<base::ListValue> args,
+      const std::string& network_guid,
+      const Credentials& credentials,
       const VerifyAndEncryptCredentialsCallback& callback) OVERRIDE {
-    using api::networking_private::VerifyAndEncryptCredentials::Params;
-    scoped_ptr<Params> params = Params::Create(*args);
-    std::string public_key;
-
-    if (!VerifyDestination(params->properties)) {
+    if (!VerifyCredentials(credentials)) {
       callback.Run("", "VerifyError");
-      return;
-    }
-
-    if (!base::Base64Decode(params->properties.public_key, &public_key)) {
-      callback.Run("", "DecodeError");
       return;
     }
 
@@ -78,30 +83,23 @@ class CryptoVerifyImpl : public NetworkingPrivateServiceClient::CryptoVerify {
     // Start getting credentials. On Windows |callback| will be called
     // asynchronously on a different thread after |credentials_getter|
     // is deleted.
-    credentials_getter->Start(params->network_guid, public_key, callback);
+    credentials_getter->Start(network_guid, credentials.public_key, callback);
   }
 
-  virtual void VerifyAndEncryptData(scoped_ptr<base::ListValue> args,
+  virtual void VerifyAndEncryptData(const Credentials& credentials,
+                                    const std::string& data,
                                     std::string* base64_encoded_ciphertext,
                                     std::string* error) OVERRIDE {
-    using api::networking_private::VerifyAndEncryptData::Params;
-    scoped_ptr<Params> params = Params::Create(*args);
-
-    if (!VerifyDestination(params->properties)) {
+    if (!VerifyCredentials(credentials)) {
       *error = "VerifyError";
       return;
     }
 
-    std::string public_key;
-    if (!base::Base64Decode(params->properties.public_key, &public_key)) {
-      *error = "DecodeError";
-      return;
-    }
-
     NetworkingPrivateCrypto crypto;
-    std::vector<uint8> public_key_data(public_key.begin(), public_key.end());
+    std::vector<uint8> public_key_data(
+      credentials.public_key.begin(), credentials.public_key.end());
     std::vector<uint8> ciphertext;
-    if (!crypto.EncryptByteString(public_key_data, params->data, &ciphertext)) {
+    if (!crypto.EncryptByteString(public_key_data, data, &ciphertext)) {
       *error = "EncryptError";
       return;
     }
@@ -132,6 +130,9 @@ void AfterVerifyAndEncryptCredentialsRelay(
 }
 
 }  // namespace
+
+NetworkingPrivateServiceClient::CryptoVerify::Credentials::Credentials() {}
+NetworkingPrivateServiceClient::CryptoVerify::Credentials::~Credentials() {}
 
 NetworkingPrivateServiceClient::NetworkingPrivateServiceClient(
     wifi::WiFiService* wifi_service,
@@ -225,130 +226,103 @@ void NetworkingPrivateServiceClient::RemoveServiceCallbacks(
   callbacks_map_.Remove(callback_id);
 }
 
-void NetworkingPrivateServiceClient::GetProperties(
-    const std::string& network_guid,
-    const DictionaryResultCallback& callback,
-    const ErrorCallback& error_callback) {
-  ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->error_callback = error_callback;
-  service_callbacks->get_properties_callback = callback;
+// NetworkingPrivateServiceClient implementation
 
-  base::DictionaryValue* properties = new base::DictionaryValue();
+void NetworkingPrivateServiceClient::GetProperties(
+    const std::string& guid,
+    const DictionaryCallback& success_callback,
+    const FailureCallback& failure_callback) {
+  ServiceCallbacks* service_callbacks = AddServiceCallbacks();
+  service_callbacks->failure_callback = failure_callback;
+  service_callbacks->get_properties_callback = success_callback;
+
+  scoped_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
   std::string* error = new std::string;
 
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&WiFiService::GetProperties,
                  base::Unretained(wifi_service_.get()),
-                 network_guid,
-                 properties,
+                 guid,
+                 properties.get(),
                  error),
       base::Bind(&NetworkingPrivateServiceClient::AfterGetProperties,
                  weak_factory_.GetWeakPtr(),
                  service_callbacks->id,
-                 network_guid,
-                 base::Owned(properties),
+                 guid,
+                 base::Passed(&properties),
                  base::Owned(error)));
 }
 
 void NetworkingPrivateServiceClient::GetManagedProperties(
-    const std::string& network_guid,
-    const DictionaryResultCallback& callback,
-    const ErrorCallback& error_callback) {
+    const std::string& guid,
+    const DictionaryCallback& success_callback,
+    const FailureCallback& failure_callback) {
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->error_callback = error_callback;
-  service_callbacks->get_properties_callback = callback;
+  service_callbacks->failure_callback = failure_callback;
+  service_callbacks->get_properties_callback = success_callback;
 
-  base::DictionaryValue* properties = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
   std::string* error = new std::string;
 
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&WiFiService::GetManagedProperties,
                  base::Unretained(wifi_service_.get()),
-                 network_guid,
-                 properties,
+                 guid,
+                 properties.get(),
                  error),
       base::Bind(&NetworkingPrivateServiceClient::AfterGetProperties,
                  weak_factory_.GetWeakPtr(),
                  service_callbacks->id,
-                 network_guid,
-                 base::Owned(properties),
+                 guid,
+                 base::Passed(&properties),
                  base::Owned(error)));
 }
 
 void NetworkingPrivateServiceClient::GetState(
-    const std::string& network_guid,
-    const DictionaryResultCallback& callback,
-    const ErrorCallback& error_callback) {
+    const std::string& guid,
+    const DictionaryCallback& success_callback,
+    const FailureCallback& failure_callback) {
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->error_callback = error_callback;
-  service_callbacks->get_properties_callback = callback;
+  service_callbacks->failure_callback = failure_callback;
+  service_callbacks->get_properties_callback = success_callback;
 
-  base::DictionaryValue* properties = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
   std::string* error = new std::string;
 
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&WiFiService::GetState,
                  base::Unretained(wifi_service_.get()),
-                 network_guid,
-                 properties,
+                 guid,
+                 properties.get(),
                  error),
       base::Bind(&NetworkingPrivateServiceClient::AfterGetProperties,
                  weak_factory_.GetWeakPtr(),
                  service_callbacks->id,
-                 network_guid,
-                 base::Owned(properties),
+                 guid,
+                 base::Passed(&properties),
                  base::Owned(error)));
 }
 
-void NetworkingPrivateServiceClient::GetVisibleNetworks(
-    const std::string& network_type,
-    const ListResultCallback& callback) {
-  ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->get_visible_networks_callback = callback;
-
-  base::ListValue* networks = new base::ListValue();
-
-  task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&WiFiService::GetVisibleNetworks,
-                 base::Unretained(wifi_service_.get()),
-                 network_type,
-                 networks,
-                 false),
-      base::Bind(&NetworkingPrivateServiceClient::AfterGetVisibleNetworks,
-                 weak_factory_.GetWeakPtr(),
-                 service_callbacks->id,
-                 base::Owned(networks)));
-}
-
-void NetworkingPrivateServiceClient::RequestNetworkScan() {
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&WiFiService::RequestNetworkScan,
-                 base::Unretained(wifi_service_.get())));
-}
-
 void NetworkingPrivateServiceClient::SetProperties(
-    const std::string& network_guid,
-    const base::DictionaryValue& properties,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    const std::string& guid,
+    scoped_ptr<base::DictionaryValue> properties,
+    const VoidCallback& success_callback,
+    const FailureCallback& failure_callback) {
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->error_callback = error_callback;
-  service_callbacks->set_properties_callback = callback;
+  service_callbacks->failure_callback = failure_callback;
+  service_callbacks->set_properties_callback = success_callback;
 
-  scoped_ptr<base::DictionaryValue> properties_ptr(properties.DeepCopy());
   std::string* error = new std::string;
 
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&WiFiService::SetProperties,
                  base::Unretained(wifi_service_.get()),
-                 network_guid,
-                 base::Passed(&properties_ptr),
+                 guid,
+                 base::Passed(&properties),
                  error),
       base::Bind(&NetworkingPrivateServiceClient::AfterSetProperties,
                  weak_factory_.GetWeakPtr(),
@@ -358,14 +332,13 @@ void NetworkingPrivateServiceClient::SetProperties(
 
 void NetworkingPrivateServiceClient::CreateNetwork(
     bool shared,
-    const base::DictionaryValue& properties,
-    const StringResultCallback& callback,
-    const ErrorCallback& error_callback) {
+    scoped_ptr<base::DictionaryValue> properties,
+    const StringCallback& success_callback,
+    const FailureCallback& failure_callback) {
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->error_callback = error_callback;
-  service_callbacks->create_network_callback = callback;
+  service_callbacks->failure_callback = failure_callback;
+  service_callbacks->create_network_callback = success_callback;
 
-  scoped_ptr<base::DictionaryValue> properties_ptr(properties.DeepCopy());
   std::string* network_guid = new std::string;
   std::string* error = new std::string;
 
@@ -374,7 +347,7 @@ void NetworkingPrivateServiceClient::CreateNetwork(
       base::Bind(&WiFiService::CreateNetwork,
                  base::Unretained(wifi_service_.get()),
                  shared,
-                 base::Passed(&properties_ptr),
+                 base::Passed(&properties),
                  network_guid,
                  error),
       base::Bind(&NetworkingPrivateServiceClient::AfterCreateNetwork,
@@ -384,13 +357,41 @@ void NetworkingPrivateServiceClient::CreateNetwork(
                  base::Owned(error)));
 }
 
-void NetworkingPrivateServiceClient::StartConnect(
-    const std::string& network_guid,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+void NetworkingPrivateServiceClient::GetNetworks(
+    const std::string& network_type,
+    bool configured_only,
+    bool visible_only,
+    int limit,
+    const NetworkListCallback& success_callback,
+    const FailureCallback& failure_callback) {
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->error_callback = error_callback;
-  service_callbacks->start_connect_callback = callback;
+  service_callbacks->failure_callback = failure_callback;
+  service_callbacks->get_visible_networks_callback = success_callback;
+
+  scoped_ptr<base::ListValue> networks(new base::ListValue);
+
+  // TODO(stevenjb/mef): Apply filters (configured, visible, limit).
+
+  task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&WiFiService::GetVisibleNetworks,
+                 base::Unretained(wifi_service_.get()),
+                 network_type,
+                 networks.get(),
+                 false),
+      base::Bind(&NetworkingPrivateServiceClient::AfterGetVisibleNetworks,
+                 weak_factory_.GetWeakPtr(),
+                 service_callbacks->id,
+                 base::Passed(&networks)));
+}
+
+void NetworkingPrivateServiceClient::StartConnect(
+    const std::string& guid,
+    const VoidCallback& success_callback,
+    const FailureCallback& failure_callback) {
+  ServiceCallbacks* service_callbacks = AddServiceCallbacks();
+  service_callbacks->failure_callback = failure_callback;
+  service_callbacks->start_connect_callback = success_callback;
 
   std::string* error = new std::string;
 
@@ -398,7 +399,7 @@ void NetworkingPrivateServiceClient::StartConnect(
       FROM_HERE,
       base::Bind(&WiFiService::StartConnect,
                  base::Unretained(wifi_service_.get()),
-                 network_guid,
+                 guid,
                  error),
       base::Bind(&NetworkingPrivateServiceClient::AfterStartConnect,
                  weak_factory_.GetWeakPtr(),
@@ -407,12 +408,12 @@ void NetworkingPrivateServiceClient::StartConnect(
 }
 
 void NetworkingPrivateServiceClient::StartDisconnect(
-    const std::string& network_guid,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    const std::string& guid,
+    const VoidCallback& success_callback,
+    const FailureCallback& failure_callback) {
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->error_callback = error_callback;
-  service_callbacks->start_disconnect_callback = callback;
+  service_callbacks->failure_callback = failure_callback;
+  service_callbacks->start_disconnect_callback = success_callback;
 
   std::string* error = new std::string;
 
@@ -420,7 +421,7 @@ void NetworkingPrivateServiceClient::StartDisconnect(
       FROM_HERE,
       base::Bind(&WiFiService::StartDisconnect,
                  base::Unretained(wifi_service_.get()),
-                 network_guid,
+                 guid,
                  error),
       base::Bind(&NetworkingPrivateServiceClient::AfterStartDisconnect,
                  weak_factory_.GetWeakPtr(),
@@ -429,12 +430,18 @@ void NetworkingPrivateServiceClient::StartDisconnect(
 }
 
 void NetworkingPrivateServiceClient::VerifyDestination(
-    scoped_ptr<base::ListValue> args,
-    const BoolResultCallback& callback,
-    const CryptoErrorCallback& error_callback) {
+    const VerificationProperties& verification_properties,
+    const BoolCallback& success_callback,
+    const FailureCallback& failure_callback) {
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->crypto_error_callback = error_callback;
-  service_callbacks->verify_destination_callback = callback;
+  service_callbacks->failure_callback = failure_callback;
+  service_callbacks->verify_destination_callback = success_callback;
+
+  CryptoVerify::Credentials credentials;
+  if (!GetVerificationCredentials(verification_properties, &credentials)) {
+    failure_callback.Run(networking_private::kErrorEncryptionError);
+    return;
+  }
 
   bool* result = new bool;
   std::string* error = new std::string;
@@ -443,7 +450,7 @@ void NetworkingPrivateServiceClient::VerifyDestination(
       FROM_HERE,
       base::Bind(&CryptoVerify::VerifyDestination,
                  base::Unretained(crypto_verify_.get()),
-                 base::Passed(&args),
+                 credentials,
                  result,
                  error),
       base::Bind(&NetworkingPrivateServiceClient::AfterVerifyDestination,
@@ -454,12 +461,19 @@ void NetworkingPrivateServiceClient::VerifyDestination(
 }
 
 void NetworkingPrivateServiceClient::VerifyAndEncryptCredentials(
-    scoped_ptr<base::ListValue> args,
-    const StringResultCallback& callback,
-    const CryptoErrorCallback& error_callback) {
+    const std::string& guid,
+    const VerificationProperties& verification_properties,
+    const StringCallback& success_callback,
+    const FailureCallback& failure_callback) {
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->crypto_error_callback = error_callback;
-  service_callbacks->verify_and_encrypt_credentials_callback = callback;
+  service_callbacks->failure_callback = failure_callback;
+  service_callbacks->verify_and_encrypt_credentials_callback = success_callback;
+
+  CryptoVerify::Credentials credentials;
+  if (!GetVerificationCredentials(verification_properties, &credentials)) {
+    failure_callback.Run(networking_private::kErrorEncryptionError);
+    return;
+  }
 
   CryptoVerify::VerifyAndEncryptCredentialsCallback callback_relay(base::Bind(
       &AfterVerifyAndEncryptCredentialsRelay,
@@ -472,17 +486,25 @@ void NetworkingPrivateServiceClient::VerifyAndEncryptCredentials(
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&CryptoVerify::VerifyAndEncryptCredentials,
                                     base::Unretained(crypto_verify_.get()),
-                                    base::Passed(&args),
+                                    guid,
+                                    credentials,
                                     callback_relay));
 }
 
 void NetworkingPrivateServiceClient::VerifyAndEncryptData(
-    scoped_ptr<base::ListValue> args,
-    const StringResultCallback& callback,
-    const CryptoErrorCallback& error_callback) {
+    const VerificationProperties& verification_properties,
+    const std::string& data,
+    const StringCallback& success_callback,
+    const FailureCallback& failure_callback) {
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
-  service_callbacks->crypto_error_callback = error_callback;
-  service_callbacks->verify_and_encrypt_data_callback = callback;
+  service_callbacks->failure_callback = failure_callback;
+  service_callbacks->verify_and_encrypt_data_callback = success_callback;
+
+  CryptoVerify::Credentials credentials;
+  if (!GetVerificationCredentials(verification_properties, &credentials)) {
+    failure_callback.Run(networking_private::kErrorEncryptionError);
+    return;
+  }
 
   std::string* result = new std::string;
   std::string* error = new std::string;
@@ -491,7 +513,8 @@ void NetworkingPrivateServiceClient::VerifyAndEncryptData(
       FROM_HERE,
       base::Bind(&CryptoVerify::VerifyAndEncryptData,
                  base::Unretained(crypto_verify_.get()),
-                 base::Passed(&args),
+                 credentials,
+                 data,
                  result,
                  error),
       base::Bind(&NetworkingPrivateServiceClient::AfterVerifyAndEncryptData,
@@ -501,31 +524,78 @@ void NetworkingPrivateServiceClient::VerifyAndEncryptData(
                  base::Owned(error)));
 }
 
+void NetworkingPrivateServiceClient::SetWifiTDLSEnabledState(
+    const std::string& ip_or_mac_address,
+    bool enabled,
+    const StringCallback& success_callback,
+    const FailureCallback& failure_callback) {
+  failure_callback.Run(networking_private::kErrorNotSupported);
+}
+
+void NetworkingPrivateServiceClient::GetWifiTDLSStatus(
+    const std::string& ip_or_mac_address,
+    const StringCallback& success_callback,
+    const FailureCallback& failure_callback) {
+  failure_callback.Run(networking_private::kErrorNotSupported);
+}
+
+void NetworkingPrivateServiceClient::GetCaptivePortalStatus(
+    const std::string& guid,
+    const StringCallback& success_callback,
+    const FailureCallback& failure_callback) {
+  failure_callback.Run(networking_private::kErrorNotSupported);
+}
+
+scoped_ptr<base::ListValue>
+NetworkingPrivateServiceClient::GetEnabledNetworkTypes() {
+  scoped_ptr<base::ListValue> network_list;
+  return network_list.Pass();
+}
+
+bool NetworkingPrivateServiceClient::EnableNetworkType(
+    const std::string& type) {
+  return false;
+}
+
+bool NetworkingPrivateServiceClient::DisableNetworkType(
+    const std::string& type) {
+  return false;
+}
+
+bool NetworkingPrivateServiceClient::RequestScan() {
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&WiFiService::RequestNetworkScan,
+                 base::Unretained(wifi_service_.get())));
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void NetworkingPrivateServiceClient::AfterGetProperties(
     ServiceCallbacksID callback_id,
     const std::string& network_guid,
-    const base::DictionaryValue* properties,
+    scoped_ptr<base::DictionaryValue> properties,
     const std::string* error) {
   ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
   DCHECK(service_callbacks);
   if (!error->empty()) {
-    DCHECK(!service_callbacks->error_callback.is_null());
-    service_callbacks->error_callback.Run(*error,
-                                          scoped_ptr<base::DictionaryValue>());
+    DCHECK(!service_callbacks->failure_callback.is_null());
+    service_callbacks->failure_callback.Run(*error);
   } else {
     DCHECK(!service_callbacks->get_properties_callback.is_null());
-    service_callbacks->get_properties_callback.Run(network_guid, *properties);
+    service_callbacks->get_properties_callback.Run(properties.Pass());
   }
   RemoveServiceCallbacks(callback_id);
 }
 
 void NetworkingPrivateServiceClient::AfterGetVisibleNetworks(
     ServiceCallbacksID callback_id,
-    const base::ListValue* networks) {
+    scoped_ptr<base::ListValue> networks) {
   ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
   DCHECK(service_callbacks);
   DCHECK(!service_callbacks->get_visible_networks_callback.is_null());
-  service_callbacks->get_visible_networks_callback.Run(*networks);
+  service_callbacks->get_visible_networks_callback.Run(networks.Pass());
   RemoveServiceCallbacks(callback_id);
 }
 
@@ -535,9 +605,8 @@ void NetworkingPrivateServiceClient::AfterSetProperties(
   ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
   DCHECK(service_callbacks);
   if (!error->empty()) {
-    DCHECK(!service_callbacks->error_callback.is_null());
-    service_callbacks->error_callback.Run(*error,
-                                          scoped_ptr<base::DictionaryValue>());
+    DCHECK(!service_callbacks->failure_callback.is_null());
+    service_callbacks->failure_callback.Run(*error);
   } else {
     DCHECK(!service_callbacks->set_properties_callback.is_null());
     service_callbacks->set_properties_callback.Run();
@@ -552,9 +621,8 @@ void NetworkingPrivateServiceClient::AfterCreateNetwork(
   ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
   DCHECK(service_callbacks);
   if (!error->empty()) {
-    DCHECK(!service_callbacks->error_callback.is_null());
-    service_callbacks->error_callback.Run(*error,
-                                          scoped_ptr<base::DictionaryValue>());
+    DCHECK(!service_callbacks->failure_callback.is_null());
+    service_callbacks->failure_callback.Run(*error);
   } else {
     DCHECK(!service_callbacks->create_network_callback.is_null());
     service_callbacks->create_network_callback.Run(*network_guid);
@@ -568,9 +636,8 @@ void NetworkingPrivateServiceClient::AfterStartConnect(
   ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
   DCHECK(service_callbacks);
   if (!error->empty()) {
-    DCHECK(!service_callbacks->error_callback.is_null());
-    service_callbacks->error_callback.Run(*error,
-                                          scoped_ptr<base::DictionaryValue>());
+    DCHECK(!service_callbacks->failure_callback.is_null());
+    service_callbacks->failure_callback.Run(*error);
   } else {
     DCHECK(!service_callbacks->start_connect_callback.is_null());
     service_callbacks->start_connect_callback.Run();
@@ -584,9 +651,8 @@ void NetworkingPrivateServiceClient::AfterStartDisconnect(
   ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
   DCHECK(service_callbacks);
   if (!error->empty()) {
-    DCHECK(!service_callbacks->error_callback.is_null());
-    service_callbacks->error_callback.Run(*error,
-                                          scoped_ptr<base::DictionaryValue>());
+    DCHECK(!service_callbacks->failure_callback.is_null());
+    service_callbacks->failure_callback.Run(*error);
   } else {
     DCHECK(!service_callbacks->start_disconnect_callback.is_null());
     service_callbacks->start_disconnect_callback.Run();
@@ -601,8 +667,8 @@ void NetworkingPrivateServiceClient::AfterVerifyDestination(
   ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
   DCHECK(service_callbacks);
   if (!error->empty()) {
-    DCHECK(!service_callbacks->crypto_error_callback.is_null());
-    service_callbacks->crypto_error_callback.Run(*error, *error);
+    DCHECK(!service_callbacks->failure_callback.is_null());
+    service_callbacks->failure_callback.Run(*error);
   } else {
     DCHECK(!service_callbacks->verify_destination_callback.is_null());
     service_callbacks->verify_destination_callback.Run(*result);
@@ -618,8 +684,8 @@ void NetworkingPrivateServiceClient::AfterVerifyAndEncryptCredentials(
   ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
   DCHECK(service_callbacks);
   if (!error.empty()) {
-    DCHECK(!service_callbacks->crypto_error_callback.is_null());
-    service_callbacks->crypto_error_callback.Run(error, error);
+    DCHECK(!service_callbacks->failure_callback.is_null());
+    service_callbacks->failure_callback.Run(error);
   } else {
     DCHECK(
         !service_callbacks->verify_and_encrypt_credentials_callback.is_null());
@@ -636,8 +702,8 @@ void NetworkingPrivateServiceClient::AfterVerifyAndEncryptData(
   ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
   DCHECK(service_callbacks);
   if (!error->empty()) {
-    DCHECK(!service_callbacks->crypto_error_callback.is_null());
-    service_callbacks->crypto_error_callback.Run(*error, *error);
+    DCHECK(!service_callbacks->failure_callback.is_null());
+    service_callbacks->failure_callback.Run(*error);
   } else {
     DCHECK(!service_callbacks->verify_and_encrypt_data_callback.is_null());
     service_callbacks->verify_and_encrypt_data_callback.Run(*result);

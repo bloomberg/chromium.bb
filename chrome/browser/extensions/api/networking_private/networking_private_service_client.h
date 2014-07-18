@@ -17,6 +17,7 @@
 #include "base/supports_user_data.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/networking_private/networking_private_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/wifi/wifi_service.h"
 #include "content/public/browser/utility_process_host.h"
@@ -35,12 +36,14 @@ namespace extensions {
 
 using wifi::WiFiService;
 
-// The client wrapper for the WiFiService and CryptoVerify interfaces to invoke
-// them on worker thread. Observes |OnNetworkChanged| notifications and posts
-// them to WiFiService on worker thread to |UpdateConnectedNetwork|. Always used
-// from UI thread only.
+// Windows / Mac NetworkingPrivateApi implementation. This implements
+// WiFiService and CryptoVerify interfaces and invokes them on the worker
+// thread. Observes |OnNetworkChanged| notifications and posts them to
+// WiFiService on the worker thread to |UpdateConnectedNetwork|. Created and
+// called from the UI thread.
 class NetworkingPrivateServiceClient
     : public KeyedService,
+      public NetworkingPrivateDelegate,
       net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // Interface for Verify* methods implementation.
@@ -50,22 +53,36 @@ class NetworkingPrivateServiceClient
         void(const std::string& key_data, const std::string& error)>
         VerifyAndEncryptCredentialsCallback;
 
+    // TODO(stevenjb): Remove this when addressing crbug.com/394481
+    struct Credentials {
+      Credentials();
+      ~Credentials();
+      std::string certificate;
+      std::string signed_data;
+      std::string unsigned_data;
+      std::string device_bssid;
+      std::string public_key;
+    };
+
     CryptoVerify() {}
     virtual ~CryptoVerify() {}
 
     static CryptoVerify* Create();
 
-    virtual void VerifyDestination(scoped_ptr<base::ListValue> args,
+    virtual void VerifyDestination(const Credentials& credentials,
                                    bool* verified,
                                    std::string* error) = 0;
 
     virtual void VerifyAndEncryptCredentials(
-        scoped_ptr<base::ListValue> args,
+        const std::string& network_guid,
+        const Credentials& credentials,
         const VerifyAndEncryptCredentialsCallback& callback) = 0;
 
-    virtual void VerifyAndEncryptData(scoped_ptr<base::ListValue> args,
+    virtual void VerifyAndEncryptData(const Credentials& credentials,
+                                      const std::string& data,
                                       std::string* base64_encoded_ciphertext,
                                       std::string* error) = 0;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(CryptoVerify);
   };
@@ -85,120 +102,78 @@ class NetworkingPrivateServiceClient
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  // An error callback used by most of API functions to receive error results
-  // from the NetworkingPrivateServiceClient.
-  typedef base::Callback<
-      void(const std::string& error_name,
-           scoped_ptr<base::DictionaryValue> error_data)> ErrorCallback;
-
-  // An error callback used by most of Crypto Verify* API functions to receive
-  // error results from the NetworkingPrivateServiceClient.
-  // TODO(mef): Cleanup networking_private_api.* to make consistent
-  // NetworkingPrivateXXXFunction naming and error callbacks.
-  typedef base::Callback<
-      void(const std::string& error_name,
-           const std::string& error)> CryptoErrorCallback;
-
-  // Callback used to return bool result from VerifyDestination function.
-  typedef base::Callback<void(bool result)> BoolResultCallback;
-
-  // Callback used to return string result from VerifyAndEncryptData function.
-  typedef base::Callback<void(const std::string& result)> StringResultCallback;
-
-  // Callback used to return Dictionary of network properties.
-  typedef base::Callback<
-      void(const std::string& network_guid,
-           const base::DictionaryValue& dictionary)> DictionaryResultCallback;
-
-  // Callback used to return List of visibile networks.
-  typedef base::Callback<
-      void(const base::ListValue& network_list)> ListResultCallback;
-
   // Takes ownership of |wifi_service| and |crypto_verify|. They are accessed
   // and deleted on the worker thread. The deletion task is posted during the
   // NetworkingPrivateServiceClient shutdown.
   NetworkingPrivateServiceClient(wifi::WiFiService* wifi_service,
                                  CryptoVerify* crypto_verify);
 
-  // KeyedService method override.
+  // KeyedService
   virtual void Shutdown() OVERRIDE;
 
-  // Gets the properties of the network with id |network_guid|. See note on
-  // |callback| and |error_callback|, in class description above.
-  void GetProperties(const std::string& network_guid,
-                     const DictionaryResultCallback& callback,
-                     const ErrorCallback& error_callback);
-
-  // Gets the merged properties of the network with id |network_guid| from these
-  // sources: User settings, shared settings, user policy, device policy and
-  // the currently active settings. See note on
-  // |callback| and |error_callback|, in class description above.
-  void GetManagedProperties(const std::string& network_guid,
-                            const DictionaryResultCallback& callback,
-                            const ErrorCallback& error_callback);
-
-  // Gets the cached read-only properties of the network with id |network_guid|.
-  // This is meant to be a higher performance function than |GetProperties|,
-  // which requires a round trip to query the networking subsystem. It only
-  // returns a subset of the properties returned by |GetProperties|. See note on
-  // |callback| and |error_callback|, in class description above.
-  void GetState(const std::string& network_guid,
-                const DictionaryResultCallback& callback,
-                const ErrorCallback& error_callback);
-
-  // Start connect to the network with id |network_guid|. See note on
-  // |callback| and |error_callback|, in class description above.
-  void StartConnect(const std::string& network_guid,
-                    const base::Closure& callback,
-                    const ErrorCallback& error_callback);
-
-  // Start disconnect from the network with id |network_guid|. See note on
-  // |callback| and |error_callback|, in class description above.
-  void StartDisconnect(const std::string& network_guid,
-                       const base::Closure& callback,
-                       const ErrorCallback& error_callback);
-
-  // Sets the |properties| of the network with id |network_guid|. See note on
-  // |callback| and |error_callback|, in class description above.
-  void SetProperties(const std::string& network_guid,
-                     const base::DictionaryValue& properties,
-                     const base::Closure& callback,
-                     const ErrorCallback& error_callback);
-
-  // Creates a new network configuration from |properties|. If |shared| is true,
-  // share this network configuration with other users. If a matching configured
-  // network already exists, this will fail. On success invokes |callback| with
-  // the |network_guid| of the new network. See note on |callback| and
-  // error_callback|, in class description above.
-  void CreateNetwork(bool shared,
-                     const base::DictionaryValue& properties,
-                     const StringResultCallback& callback,
-                     const ErrorCallback& error_callback);
-
-  // Requests network scan. Broadcasts NetworkListChangedEvent upon completion.
-  void RequestNetworkScan();
-
-  // Gets the list of visible networks of |network_type| and calls |callback|.
-  void GetVisibleNetworks(const std::string& network_type,
-                          const ListResultCallback& callback);
-
-  // Verify that Chromecast provides valid cryptographically signed properties.
-  void VerifyDestination(scoped_ptr<base::ListValue> args,
-                         const BoolResultCallback& callback,
-                         const CryptoErrorCallback& error_callback);
-
-  // Verify that Chromecast provides valid cryptographically signed properties.
-  // If valid, then get WiFi credentials from the system and encrypt them using
-  // Chromecast's public key.
-  void VerifyAndEncryptCredentials(scoped_ptr<base::ListValue> args,
-                                   const StringResultCallback& callback,
-                                   const CryptoErrorCallback& error_callback);
-
-  // Verify that Chromecast provides valid cryptographically signed properties.
-  // If valid, then encrypt data using Chromecast's public key.
-  void VerifyAndEncryptData(scoped_ptr<base::ListValue> args,
-                            const StringResultCallback& callback,
-                            const CryptoErrorCallback& error_callback);
+  // NetworkingPrivateDelegate
+  virtual void GetProperties(const std::string& guid,
+                             const DictionaryCallback& success_callback,
+                             const FailureCallback& failure_callback) OVERRIDE;
+  virtual void GetManagedProperties(
+      const std::string& guid,
+      const DictionaryCallback& success_callback,
+      const FailureCallback& failure_callback) OVERRIDE;
+  virtual void GetState(const std::string& guid,
+                        const DictionaryCallback& success_callback,
+                        const FailureCallback& failure_callback) OVERRIDE;
+  virtual void SetProperties(const std::string& guid,
+                             scoped_ptr<base::DictionaryValue> properties_dict,
+                             const VoidCallback& success_callback,
+                             const FailureCallback& failure_callback) OVERRIDE;
+  virtual void CreateNetwork(bool shared,
+                             scoped_ptr<base::DictionaryValue> properties_dict,
+                             const StringCallback& success_callback,
+                             const FailureCallback& failure_callback) OVERRIDE;
+  virtual void GetNetworks(const std::string& network_type,
+                           bool configured_only,
+                           bool visible_only,
+                           int limit,
+                           const NetworkListCallback& success_callback,
+                           const FailureCallback& failure_callback) OVERRIDE;
+  virtual void StartConnect(const std::string& guid,
+                            const VoidCallback& success_callback,
+                            const FailureCallback& failure_callback) OVERRIDE;
+  virtual void StartDisconnect(
+      const std::string& guid,
+      const VoidCallback& success_callback,
+      const FailureCallback& failure_callback) OVERRIDE;
+  virtual void VerifyDestination(
+      const VerificationProperties& verification_properties,
+      const BoolCallback& success_callback,
+      const FailureCallback& failure_callback) OVERRIDE;
+  virtual void VerifyAndEncryptCredentials(
+      const std::string& guid,
+      const VerificationProperties& verification_properties,
+      const StringCallback& success_callback,
+      const FailureCallback& failure_callback) OVERRIDE;
+  virtual void VerifyAndEncryptData(
+      const VerificationProperties& verification_properties,
+      const std::string& data,
+      const StringCallback& success_callback,
+      const FailureCallback& failure_callback) OVERRIDE;
+  virtual void SetWifiTDLSEnabledState(
+      const std::string& ip_or_mac_address,
+      bool enabled,
+      const StringCallback& success_callback,
+      const FailureCallback& failure_callback) OVERRIDE;
+  virtual void GetWifiTDLSStatus(
+      const std::string& ip_or_mac_address,
+      const StringCallback& success_callback,
+      const FailureCallback& failure_callback) OVERRIDE;
+  virtual void GetCaptivePortalStatus(
+      const std::string& guid,
+      const StringCallback& success_callback,
+      const FailureCallback& failure_callback) OVERRIDE;
+  virtual scoped_ptr<base::ListValue> GetEnabledNetworkTypes() OVERRIDE;
+  virtual bool EnableNetworkType(const std::string& type) OVERRIDE;
+  virtual bool DisableNetworkType(const std::string& type) OVERRIDE;
+  virtual bool RequestScan() OVERRIDE;
 
   // Adds observer to network events.
   void AddObserver(Observer* network_events_observer);
@@ -220,18 +195,17 @@ class NetworkingPrivateServiceClient
     ServiceCallbacks();
     ~ServiceCallbacks();
 
-    DictionaryResultCallback get_properties_callback;
-    base::Closure start_connect_callback;
-    base::Closure start_disconnect_callback;
-    base::Closure set_properties_callback;
-    StringResultCallback create_network_callback;
-    ListResultCallback get_visible_networks_callback;
-    ErrorCallback error_callback;
+    DictionaryCallback get_properties_callback;
+    VoidCallback start_connect_callback;
+    VoidCallback start_disconnect_callback;
+    VoidCallback set_properties_callback;
+    StringCallback create_network_callback;
+    NetworkListCallback get_visible_networks_callback;
+    FailureCallback failure_callback;
 
-    BoolResultCallback verify_destination_callback;
-    StringResultCallback verify_and_encrypt_data_callback;
-    StringResultCallback verify_and_encrypt_credentials_callback;
-    CryptoErrorCallback crypto_error_callback;
+    BoolCallback verify_destination_callback;
+    StringCallback verify_and_encrypt_data_callback;
+    StringCallback verify_and_encrypt_credentials_callback;
 
     ServiceCallbacksID id;
   };
@@ -242,7 +216,7 @@ class NetworkingPrivateServiceClient
   // Callback wrappers.
   void AfterGetProperties(ServiceCallbacksID callback_id,
                           const std::string& network_guid,
-                          const base::DictionaryValue* properties,
+                          scoped_ptr<base::DictionaryValue> properties,
                           const std::string* error);
   void AfterSetProperties(ServiceCallbacksID callback_id,
                           const std::string* error);
@@ -250,7 +224,7 @@ class NetworkingPrivateServiceClient
                           const std::string* network_guid,
                           const std::string* error);
   void AfterGetVisibleNetworks(ServiceCallbacksID callback_id,
-                               const base::ListValue* network_list);
+                               scoped_ptr<base::ListValue> networks);
   void AfterStartConnect(ServiceCallbacksID callback_id,
                          const std::string* error);
   void AfterStartDisconnect(ServiceCallbacksID callback_id,

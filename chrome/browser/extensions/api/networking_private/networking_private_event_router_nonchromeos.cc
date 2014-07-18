@@ -81,7 +81,7 @@ void NetworkingPrivateEventRouterImpl::Shutdown() {
     return;
   listening_ = false;
   NetworkingPrivateServiceClient* process_client =
-      NetworkingPrivateServiceClientFactory::GetForProfile(profile_);
+      NetworkingPrivateServiceClientFactory::GetForBrowserContext(profile_);
   process_client->RemoveObserver(this);
 }
 
@@ -110,13 +110,13 @@ void NetworkingPrivateEventRouterImpl::StartOrStopListeningForNetworkChanges() {
 
   if (should_listen && !listening_) {
     NetworkingPrivateServiceClient* process_client =
-        NetworkingPrivateServiceClientFactory::GetForProfile(profile_);
+        NetworkingPrivateServiceClientFactory::GetForBrowserContext(profile_);
     process_client->AddObserver(this);
   }
 
   if (!should_listen && listening_) {
     NetworkingPrivateServiceClient* process_client =
-        NetworkingPrivateServiceClientFactory::GetForProfile(profile_);
+        NetworkingPrivateServiceClientFactory::GetForBrowserContext(profile_);
     process_client->RemoveObserver(this);
   }
 

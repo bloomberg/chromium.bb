@@ -111,23 +111,24 @@ class TestListener : public content::NotificationObserver {
 // That will eliminate the need for mock implementation.
 class CryptoVerifyStub
     : public extensions::NetworkingPrivateServiceClient::CryptoVerify {
-  virtual void VerifyDestination(scoped_ptr<base::ListValue> args,
+  virtual void VerifyDestination(const Credentials& verification_properties,
                                  bool* verified,
                                  std::string* error) OVERRIDE {
     *verified = true;
   }
 
   virtual void VerifyAndEncryptCredentials(
-      scoped_ptr<base::ListValue> args,
-      const extensions::NetworkingPrivateServiceClient::CryptoVerify::
-      VerifyAndEncryptCredentialsCallback& callback) OVERRIDE {
+      const std::string& network_guid,
+      const Credentials& credentials,
+      const VerifyAndEncryptCredentialsCallback& callback) OVERRIDE {
     callback.Run("encrypted_credentials", "");
   }
 
-  virtual void VerifyAndEncryptData(scoped_ptr<base::ListValue> args,
-                                    std::string* encoded_data,
+  virtual void VerifyAndEncryptData(const Credentials& verification_properties,
+                                    const std::string& data,
+                                    std::string* base64_encoded_ciphertext,
                                     std::string* error) OVERRIDE {
-    *encoded_data = "encrypted_data";
+    *base64_encoded_ciphertext = "encrypted_data";
   }
 };
 #endif  // defined(OS_CHROMEOS)

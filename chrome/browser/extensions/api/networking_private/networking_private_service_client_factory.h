@@ -8,7 +8,9 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class Profile;
+namespace context {
+class BrowserContext;
+}
 
 namespace extensions {
 
@@ -17,7 +19,8 @@ class NetworkingPrivateServiceClient;
 class NetworkingPrivateServiceClientFactory
     : public BrowserContextKeyedServiceFactory {
  public:
-  static NetworkingPrivateServiceClient* GetForProfile(Profile* profile);
+  static NetworkingPrivateServiceClient* GetForBrowserContext(
+      content::BrowserContext* browser_context);
 
   static NetworkingPrivateServiceClientFactory* GetInstance();
 
@@ -29,7 +32,7 @@ class NetworkingPrivateServiceClientFactory
 
   // BrowserContextKeyedServiceFactory:
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* browser_context) const OVERRIDE;
   virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 

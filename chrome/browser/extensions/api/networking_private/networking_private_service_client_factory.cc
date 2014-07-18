@@ -4,20 +4,26 @@
 
 #include "chrome/browser/extensions/api/networking_private/networking_private_service_client_factory.h"
 
+#include "chrome/browser/extensions/api/networking_private/networking_private_delegate.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_service_client.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_system_provider.h"
-#include "extensions/browser/extensions_browser_client.h"
 
 namespace extensions {
 
 // static
+NetworkingPrivateDelegate* NetworkingPrivateDelegate::GetForBrowserContext(
+    content::BrowserContext* browser_context) {
+  return NetworkingPrivateServiceClientFactory::GetForBrowserContext(
+      browser_context);
+}
+
+// static
 NetworkingPrivateServiceClient*
-  NetworkingPrivateServiceClientFactory::GetForProfile(Profile* profile) {
+NetworkingPrivateServiceClientFactory::GetForBrowserContext(
+    content::BrowserContext* browser_context) {
   return static_cast<NetworkingPrivateServiceClient*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(browser_context, true));
 }
 
 // static
@@ -30,7 +36,6 @@ NetworkingPrivateServiceClientFactory::NetworkingPrivateServiceClientFactory()
     : BrowserContextKeyedServiceFactory(
         "NetworkingPrivateServiceClient",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
 }
 
 NetworkingPrivateServiceClientFactory
@@ -38,7 +43,7 @@ NetworkingPrivateServiceClientFactory
 }
 
 KeyedService* NetworkingPrivateServiceClientFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
+    content::BrowserContext* browser_context) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return new NetworkingPrivateServiceClient(
       wifi::WiFiService::Create(),

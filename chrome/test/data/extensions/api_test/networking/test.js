@@ -11,9 +11,9 @@ var assertEq = chrome.test.assertEq;
 // Test properties for the verification API.
 var verificationProperties = {
   "certificate": "certificate",
-  "publicKey": "public_key",
+  "publicKey": "cHVibGljX2tleQ==",  // Base64("public_key")
   "nonce": "nonce",
-  "signedData": "signed_data",
+  "signedData": "c2lnbmVkX2RhdGE=",  // Base64("signed_data")
   "deviceSerial": "device_serial",
   "deviceSsid": "Device 0123",
   "deviceBssid": "00:01:02:03:04:05"
