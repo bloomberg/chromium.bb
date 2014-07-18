@@ -205,8 +205,10 @@ const struct UmaEnumCommandIdPair {
   { 56, IDC_SPELLCHECK_LANGUAGES_FIRST },
   { 57, IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE },
   { 58, IDC_SPELLCHECK_SUGGESTION_0 },
+  { 59, IDC_SPELLCHECK_ADD_TO_DICTIONARY },
+  { 60, IDC_SPELLPANEL_TOGGLE },
   // Add new items here and use |enum_id| from the next line.
-  { 59, 0 },  // Must be the last. Increment |enum_id| when new IDC was added.
+  { 61, 0 },  // Must be the last. Increment |enum_id| when new IDC was added.
 };
 
 // Collapses large ranges of ids before looking for UMA enum.
