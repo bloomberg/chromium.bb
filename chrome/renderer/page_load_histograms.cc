@@ -628,12 +628,6 @@ void DumpDeprecatedHistograms(const WebPerformance& performance,
     PLT_HISTOGRAM("PLT.BeginToFinish_ContentPrefetcherReferrer",
                   begin_to_finish_all_loads);
   }
-  if (document_state->was_after_preconnect_request()) {
-    PLT_HISTOGRAM("PLT.BeginToFinishDoc_AfterPreconnectRequest",
-                  begin_to_finish_doc);
-    PLT_HISTOGRAM("PLT.BeginToFinish_AfterPreconnectRequest",
-                  begin_to_finish_all_loads);
-  }
 
   const bool use_webrequest_histogram =
       ChromeContentRendererClient::WasWebRequestUsedBySomeExtensions();

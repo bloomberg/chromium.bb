@@ -21084,7 +21084,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="PLT.BeginToFinish_AfterPreconnectRequest" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated as of http://crrev.com/392823002
+  </obsolete>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     PLT.BeginToFinish, but for pages requested just after a new preconnect
     request.
@@ -21353,7 +21356,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="PLT.BeginToFinishDoc_AfterPreconnectRequest"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated as of http://crrev.com/392823002
+  </obsolete>
+  <owner>kouhei@chromium.org</owner>
   <summary>
     PLT.BeginToFinishDoc, but for pages requested just after a new preconnect
     request.
