@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_ACCESSIBILITY_RENDERER_ACCESSIBILITY_H_
 
 #include "content/common/accessibility_messages.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 
 namespace blink {
@@ -14,7 +14,7 @@ class WebDocument;
 };
 
 namespace content {
-class RenderViewImpl;
+class RenderFrameImpl;
 
 enum RendererAccessibilityType {
   // Turns on Blink accessibility and provides a full accessibility
@@ -34,9 +34,9 @@ enum RendererAccessibilityType {
 // by automation tools, and Windows 8 uses them to determine when the
 // on-screen keyboard should be shown.
 //
-// An instance of this class (or rather, a subclass) belongs to RenderViewImpl.
+// An instance of this class (or rather, a subclass) belongs to RenderFrameImpl.
 // Accessibility is initialized based on the AccessibilityMode of
-// RenderViewImpl; it lazily starts as Off or EditableTextOnly depending on
+// RenderFrameImpl; it lazily starts as Off or EditableTextOnly depending on
 // the operating system, and switches to Complete if assistive technology is
 // detected or a flag is set.
 //
@@ -58,14 +58,15 @@ enum RendererAccessibilityType {
 //       to support opening the on-screen keyboard in response to
 //       touch events on Windows 8 in Metro mode.
 //
-class CONTENT_EXPORT RendererAccessibility : public RenderViewObserver {
+class CONTENT_EXPORT RendererAccessibility : public RenderFrameObserver {
  public:
-  explicit RendererAccessibility(RenderViewImpl* render_view);
+  explicit RendererAccessibility(RenderFrameImpl* render_frame);
   virtual ~RendererAccessibility();
 
   // Called when an accessibility notification occurs in Blink.
   virtual void HandleWebAccessibilityEvent(
       const blink::WebAXObject& obj, blink::WebAXEvent event) = 0;
+  virtual void FocusedNodeChanged(const blink::WebNode& node) = 0;
 
   // Gets the type of this RendererAccessibility object. Primarily intended for
   // testing.
@@ -76,8 +77,8 @@ class CONTENT_EXPORT RendererAccessibility : public RenderViewObserver {
   // no view or frame.
   blink::WebDocument GetMainDocument();
 
-  // The RenderViewImpl that owns us.
-  RenderViewImpl* render_view_;
+  // The RenderFrameImpl that owns us.
+  RenderFrameImpl* render_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererAccessibility);
 };

@@ -19,6 +19,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -181,10 +182,10 @@ void DumpAccessibilityTreeTest::RunTest(
   NavigateToURL(shell(), url);
   waiter.WaitForNotification();
 
-  RenderWidgetHostViewBase* host_view = static_cast<RenderWidgetHostViewBase*>(
-      shell()->web_contents()->GetRenderWidgetHostView());
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      shell()->web_contents());
   AccessibilityTreeFormatter formatter(
-      host_view->GetBrowserAccessibilityManager()->GetRoot());
+      web_contents->GetRootBrowserAccessibilityManager()->GetRoot());
 
   // Parse filters in the test file.
   std::vector<Filter> filters;

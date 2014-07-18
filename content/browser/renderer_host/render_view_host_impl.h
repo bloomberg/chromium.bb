@@ -25,13 +25,10 @@
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/window_open_disposition.h"
 
 class SkBitmap;
 class FrameMsg_Navigate;
-struct AccessibilityHostMsg_EventParams;
-struct AccessibilityHostMsg_LocationChangeParams;
 struct MediaPlayerAction;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_ShowPopup_Params;
@@ -408,30 +405,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Set the opener to null in the renderer process.
   void DisownOpener();
 
-  // Turn on accessibility testing. The given callback will be run
-  // every time an accessibility notification is received from the
-  // renderer process, and the accessibility tree it sent can be
-  // retrieved using accessibility_tree_for_testing().
-  void SetAccessibilityCallbackForTesting(
-      const base::Callback<void(ui::AXEvent, int)>& callback);
-
-  // Only valid if SetAccessibilityCallbackForTesting was called and
-  // the callback was run at least once. Returns a snapshot of the
-  // accessibility tree received from the renderer as of the last time
-  // an accessibility notification was received.
-  const ui::AXTree& ax_tree_for_testing() {
-    CHECK(ax_tree_.get());
-    return *ax_tree_.get();
-  }
-
-  // Set accessibility callbacks.
-  void SetAccessibilityLayoutCompleteCallbackForTesting(
-      const base::Closure& callback);
-  void SetAccessibilityLoadCompleteCallbackForTesting(
-      const base::Closure& callback);
-  void SetAccessibilityOtherCallbackForTesting(
-      const base::Closure& callback);
-
   bool is_waiting_for_beforeunload_ack() {
     return is_waiting_for_beforeunload_ack_;
   }
@@ -512,10 +485,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnUpdateInspectorSetting(const std::string& key,
                                 const std::string& value);
   void OnClosePageACK();
-  void OnAccessibilityEvents(
-      const std::vector<AccessibilityHostMsg_EventParams>& params);
-  void OnAccessibilityLocationChanges(
-      const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
   void OnDidZoomURL(double zoom_level, const GURL& url);
   void OnRunFileChooser(const FileChooserParams& params);
   void OnFocusedNodeTouched(bool editable);
@@ -607,12 +576,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // the case of a cross-site transition ( = true).
   // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.
   bool unload_ack_is_for_cross_site_transition_;
-
-  // Accessibility callback for testing.
-  base::Callback<void(ui::AXEvent, int)> accessibility_testing_callback_;
-
-  // The most recently received accessibility tree - for testing only.
-  scoped_ptr<ui::AXTree> ax_tree_;
 
   // True if the render view can be shut down suddenly.
   bool sudden_termination_allowed_;

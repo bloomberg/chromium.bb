@@ -651,9 +651,8 @@ gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
   if (!host)
     return static_cast<gfx::NativeViewAccessible>(NULL);
   HWND hwnd = host->GetAcceleratedWidget();
-
-  CreateBrowserAccessibilityManagerIfNeeded();
-  BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
+  BrowserAccessibilityManager* manager =
+      host_->GetOrCreateRootBrowserAccessibilityManager();
   if (manager)
     return manager->GetRoot()->ToBrowserAccessibilityWin();
 #endif
@@ -1043,8 +1042,10 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
 #if defined(OS_WIN)
 void RenderWidgetHostViewAura::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {
-  if (GetBrowserAccessibilityManager()) {
-    GetBrowserAccessibilityManager()->ToBrowserAccessibilityManagerWin()
+  BrowserAccessibilityManager* manager =
+      host_->GetRootBrowserAccessibilityManager();
+  if (manager) {
+    manager->ToBrowserAccessibilityManagerWin()
         ->set_parent_iaccessible(accessible_parent);
   }
 }
@@ -1191,22 +1192,21 @@ InputEventAckState RenderWidgetHostViewAura::FilterInputEvent(
              : INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
-void RenderWidgetHostViewAura::CreateBrowserAccessibilityManagerIfNeeded() {
+BrowserAccessibilityManager*
+RenderWidgetHostViewAura::CreateBrowserAccessibilityManager(
+    BrowserAccessibilityDelegate* delegate) {
+  BrowserAccessibilityManager* manager = NULL;
 #if defined(OS_WIN)
-  if (!GetBrowserAccessibilityManager()) {
-    gfx::NativeViewAccessible accessible_parent =
-        host_->GetParentNativeViewAccessible();
-    SetBrowserAccessibilityManager(new BrowserAccessibilityManagerWin(
-        legacy_render_widget_host_HWND_, accessible_parent,
-        BrowserAccessibilityManagerWin::GetEmptyDocument(), host_));
-  }
+  gfx::NativeViewAccessible accessible_parent =
+      host_->GetParentNativeViewAccessible();
+  manager = new BrowserAccessibilityManagerWin(
+      legacy_render_widget_host_HWND_, accessible_parent,
+      BrowserAccessibilityManagerWin::GetEmptyDocument(), delegate);
 #else
-  if (!GetBrowserAccessibilityManager()) {
-    SetBrowserAccessibilityManager(
-        BrowserAccessibilityManager::Create(
-            BrowserAccessibilityManager::GetEmptyDocument(), host_));
-  }
+  manager = BrowserAccessibilityManager::Create(
+      BrowserAccessibilityManager::GetEmptyDocument(), delegate);
 #endif
+  return manager;
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewAura::GetCompositingSurface() {
@@ -2048,7 +2048,8 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
       host_->SetInputMethodActive(false);
     }
 
-    BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
+    BrowserAccessibilityManager* manager =
+        host_->GetRootBrowserAccessibilityManager();
     if (manager)
       manager->OnWindowFocused();
   } else if (window_ == lost_focus) {
@@ -2064,7 +2065,8 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
     if (overscroll_controller_)
       overscroll_controller_->Cancel();
 
-    BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
+    BrowserAccessibilityManager* manager =
+        host_->GetRootBrowserAccessibilityManager();
     if (manager)
       manager->OnWindowBlurred();
 
@@ -2310,7 +2312,7 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
 
       BrowserAccessibilityManagerWin* manager =
           static_cast<BrowserAccessibilityManagerWin*>(
-              GetBrowserAccessibilityManager());
+              host_->GetRootBrowserAccessibilityManager());
       if (manager)
         manager->SetAccessibleHWND(legacy_render_widget_host_HWND_);
     }

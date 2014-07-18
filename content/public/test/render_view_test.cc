@@ -198,8 +198,7 @@ void RenderViewTest::SetUp() {
                              false,  // hidden
                              false,  // never_visible
                              1,      // next_page_id
-                             blink::WebScreenInfo(),
-                             AccessibilityModeOff);
+                             blink::WebScreenInfo());
   view->AddRef();
   view_ = view;
 }

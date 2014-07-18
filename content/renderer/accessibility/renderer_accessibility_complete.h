@@ -37,18 +37,17 @@ class RenderViewImpl;
 class CONTENT_EXPORT RendererAccessibilityComplete
     : public RendererAccessibility {
  public:
-  explicit RendererAccessibilityComplete(RenderViewImpl* render_view);
+  explicit RendererAccessibilityComplete(RenderFrameImpl* render_frame);
   virtual ~RendererAccessibilityComplete();
 
-  // RenderView::Observer implementation.
+  // RenderFrameObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void FocusedNodeChanged(const blink::WebNode& node) OVERRIDE;
-  virtual void DidFinishLoad(blink::WebLocalFrame* frame) OVERRIDE;
 
   // RendererAccessibility.
   virtual void HandleWebAccessibilityEvent(
       const blink::WebAXObject& obj, blink::WebAXEvent event) OVERRIDE;
   virtual RendererAccessibilityType GetType() OVERRIDE;
+  virtual void FocusedNodeChanged(const blink::WebNode& node) OVERRIDE;
 
   void HandleAXEvent(const blink::WebAXObject& obj, ui::AXEvent event);
 

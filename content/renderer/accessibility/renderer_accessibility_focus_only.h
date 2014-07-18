@@ -9,7 +9,7 @@
 
 namespace content {
 
-// This is an accsessibility implementation that only handles whatever
+// This is an accessibility implementation that only handles whatever
 // node has focus, ignoring everything else. It's here because on Windows 8,
 // we need to use accessibility APIs to tell the operating system when a
 // touch should pop up the on-screen keyboard, but it's not worth the
@@ -49,17 +49,17 @@ namespace content {
 // bounds.
 class RendererAccessibilityFocusOnly : public RendererAccessibility {
  public:
-  explicit RendererAccessibilityFocusOnly(RenderViewImpl* render_view);
+  explicit RendererAccessibilityFocusOnly(RenderFrameImpl* render_frame);
   virtual ~RendererAccessibilityFocusOnly();
 
   // RendererAccessibility implementation.
   virtual void HandleWebAccessibilityEvent(
       const blink::WebAXObject& obj, blink::WebAXEvent event) OVERRIDE;
   virtual RendererAccessibilityType GetType() OVERRIDE;
-
-  // RenderView::Observer implementation.
   virtual void FocusedNodeChanged(const blink::WebNode& node) OVERRIDE;
-  virtual void DidFinishLoad(blink::WebLocalFrame* frame) OVERRIDE;
+
+  // RenderFrameObserver implementation.
+  virtual void DidFinishLoad() OVERRIDE;
 
  private:
   void HandleFocusedNodeChanged(const blink::WebNode& node,

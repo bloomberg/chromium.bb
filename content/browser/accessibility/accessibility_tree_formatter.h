@@ -16,7 +16,7 @@
 
 namespace content {
 
-class RenderViewHost;
+class WebContents;
 
 // A utility class for formatting platform-specific accessibility information,
 // for use in testing, debugging, and developer tools.
@@ -27,7 +27,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   explicit AccessibilityTreeFormatter(BrowserAccessibility* root);
   virtual ~AccessibilityTreeFormatter();
 
-  static AccessibilityTreeFormatter* Create(RenderViewHost* rvh);
+  static AccessibilityTreeFormatter* Create(WebContents* wc);
 
   // Populates the given DictionaryValue with the accessibility tree.
   // The dictionary contains a key/value pair for each attribute of the node,

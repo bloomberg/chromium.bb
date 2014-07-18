@@ -26,6 +26,9 @@
 
 #define IPC_MESSAGE_START FrameMsgStart
 
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(AccessibilityMode,
+                              AccessibilityModeOff,
+                              AccessibilityModeComplete)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::JavaScriptMessageType,
                               content::JAVASCRIPT_MESSAGE_TYPE_ALERT,
                               content::JAVASCRIPT_MESSAGE_TYPE_PROMPT)
@@ -391,6 +394,10 @@ IPC_MESSAGE_ROUTED1(FrameMsg_TextSurroundingSelectionRequest,
 // Tells the renderer to insert a link to the specified stylesheet. This is
 // needed to support navigation transitions.
 IPC_MESSAGE_ROUTED1(FrameMsg_AddStyleSheetByURL, std::string)
+
+// Change the accessibility mode in the renderer process.
+IPC_MESSAGE_ROUTED1(FrameMsg_SetAccessibilityMode,
+                    AccessibilityMode)
 
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
