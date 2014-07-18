@@ -4,6 +4,9 @@
 
 #include "apps/launcher.h"
 
+#include <utility>
+#include <set>
+
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"

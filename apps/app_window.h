@@ -5,6 +5,9 @@
 #ifndef APPS_APP_WINDOW_H_
 #define APPS_APP_WINDOW_H_
 
+#include <string>
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sessions/session_id.h"

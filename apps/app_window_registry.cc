@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "apps/app_window.h"
 #include "apps/app_window_registry.h"
+
+#include <string>
+#include <vector>
+
+#include "apps/app_window.h"
 #include "apps/apps_client.h"
 #include "apps/ui/native_app_window.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"

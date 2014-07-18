@@ -4,6 +4,8 @@
 
 #include "apps/custom_launcher_page_contents.h"
 
+#include <string>
+
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "content/public/browser/browser_context.h"

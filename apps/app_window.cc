@@ -5,6 +5,8 @@
 #include "apps/app_window.h"
 
 #include <algorithm>
+#include <string>
+#include <vector>
 
 #include "apps/app_window_geometry_cache.h"
 #include "apps/app_window_registry.h"

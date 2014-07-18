@@ -4,6 +4,9 @@
 
 #include "apps/app_window_contents.h"
 
+#include <utility>
+#include <string>
+
 #include "apps/ui/native_app_window.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/extensions/api/app_window.h"

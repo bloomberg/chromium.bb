@@ -6,6 +6,8 @@
 #define APPS_APP_WINDOW_REGISTRY_H_
 
 #include <list>
+#include <string>
+#include <set>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
