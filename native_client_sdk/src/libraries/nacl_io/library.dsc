@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['bionic', 'newlib', 'glibc', 'pnacl', 'linux'],
+  'TOOLS': ['newlib', 'glibc', 'bionic', 'pnacl', 'linux'],
   'SEARCH': [
     '.',
     'pepper',

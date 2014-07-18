@@ -1,6 +1,6 @@
 {
   'DISABLE_PACKAGE': True,
-  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
+  'TOOLS': ['newlib', 'glibc', 'bionic', 'pnacl', 'win', 'linux'],
   'TARGETS': [
     {
       'NAME' : 'mouse_lock',

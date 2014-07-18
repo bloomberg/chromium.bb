@@ -87,6 +87,11 @@ def StepTestSDK():
     ])
 
   cmd.extend([sys.executable, 'test_sdk.py'])
+
+  # TODO(noelallen): crbug 386332
+  # For Bionic SDK, only build do a build test until we have hardware.
+  if 'bionic' in os.getenv('BUILDBOT_BUILDERNAME', ''):
+    cmd.extend(['build_examples', 'copy_tests', 'build_tests'])
   Run(cmd, cwd=SCRIPT_DIR)
 
 
@@ -111,9 +116,6 @@ def main(args):
     # TODO(sbc): Remove this once buildbot script have been updated
     # to pass --build-only argument.
     if os.getenv('BUILDBOT_BUILDERNAME', '').endswith('build'):
-      options.build_only = True
-    # TODO(noelallen): Enable testing on bionic when we have an ARM solution.
-    if 'bionic' in os.getenv('BUILDBOT_BUILDERNAME', ''):
       options.build_only = True
 
   StepArmRunHooks()

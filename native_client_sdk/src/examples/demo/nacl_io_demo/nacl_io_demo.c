@@ -41,6 +41,16 @@
 #define va_copy(d, s) ((d) = (s))
 #endif
 
+/**
+ * The location of MAX is inconsitantly between LIBCs, so instead
+ * we define it here for consistency.
+ */
+static int larger_int_of(int a, int b) {
+  if (a > b)
+    return a;
+  return b;
+}
+
 typedef struct {
   const char* name;
   HandleFunc function;
@@ -312,8 +322,8 @@ static void* EchoThread(void* user_data) {
   int fd1 = open("/dev/jspipe1", O_RDWR | O_NONBLOCK);
   int fd2 = open("/dev/jspipe2", O_RDWR | O_NONBLOCK);
   int fd3 = open("/dev/jspipe3", O_RDWR | O_NONBLOCK);
-  int nfds = MAX(fd1, fd2);
-  nfds = MAX(nfds, fd3);
+  int nfds = larger_int_of(fd1, fd2);
+  nfds = larger_int_of(nfds, fd3);
   while (1) {
     fd_set readfds;
     FD_ZERO(&readfds);

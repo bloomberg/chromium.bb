@@ -1,6 +1,6 @@
 {
   'DISABLE': True,
-  'TOOLS': ['newlib', 'glibc', 'linux', 'win'],
+  'TOOLS': ['newlib', 'glibc', 'bionic', 'linux', 'win'],
   'SEARCH': [
     '../../../../third_party/libjpeg',
   ],

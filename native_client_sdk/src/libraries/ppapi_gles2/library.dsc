@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['bionic', 'newlib', 'glibc', 'pnacl', 'linux', 'win'],
+  'TOOLS': ['newlib', 'glibc', 'bionic', 'pnacl', 'linux', 'win'],
   'SEARCH' : [
     '../../../../ppapi/lib/gl/gles2',
     '../../../../ppapi/lib/gl/include/EGL',
