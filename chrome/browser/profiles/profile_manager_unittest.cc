@@ -886,6 +886,98 @@ TEST_F(ProfileManagerTest, ActiveProfileDeleted) {
   EXPECT_EQ(profile_name2, local_state->GetString(prefs::kProfileLastUsed));
 }
 
+TEST_F(ProfileManagerTest, LastProfileDeleted) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ASSERT_TRUE(profile_manager);
+
+  // Create and load a profile.
+  const std::string profile_name1 = "New Profile 1";
+  base::FilePath dest_path1 = temp_dir_.path().AppendASCII(profile_name1);
+
+  MockObserver mock_observer;
+  EXPECT_CALL(mock_observer, OnProfileCreated(
+      testing::NotNull(), NotFail())).Times(testing::AtLeast(1));
+
+  CreateProfileAsync(profile_manager, profile_name1, false, &mock_observer);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1u, profile_manager->GetLoadedProfiles().size());
+  EXPECT_EQ(1u, profile_manager->GetProfileInfoCache().GetNumberOfProfiles());
+
+  // Set it as the active profile.
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetString(prefs::kProfileLastUsed, profile_name1);
+
+  // Delete the active profile.
+  profile_manager->ScheduleProfileForDeletion(dest_path1,
+                                              ProfileManager::CreateCallback());
+  // Spin the message loop so that all the callbacks can finish running.
+  base::RunLoop().RunUntilIdle();
+
+  // A new profile should have been created
+  const std::string profile_name2 = "Profile 1";
+  base::FilePath dest_path2 = temp_dir_.path().AppendASCII(profile_name2);
+
+  EXPECT_EQ(dest_path2, profile_manager->GetLastUsedProfile()->GetPath());
+  EXPECT_EQ(profile_name2, local_state->GetString(prefs::kProfileLastUsed));
+  EXPECT_EQ(dest_path2,
+      profile_manager->GetProfileInfoCache().GetPathOfProfileAtIndex(0));
+}
+
+TEST_F(ProfileManagerTest, LastProfileDeletedWithGuestActiveProfile) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ASSERT_TRUE(profile_manager);
+
+  // Create and load a profile.
+  const std::string profile_name1 = "New Profile 1";
+  base::FilePath dest_path1 = temp_dir_.path().AppendASCII(profile_name1);
+
+  MockObserver mock_observer;
+  EXPECT_CALL(mock_observer, OnProfileCreated(
+      testing::NotNull(), NotFail())).Times(testing::AtLeast(2));
+
+  CreateProfileAsync(profile_manager, profile_name1, false, &mock_observer);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1u, profile_manager->GetLoadedProfiles().size());
+  EXPECT_EQ(1u, profile_manager->GetProfileInfoCache().GetNumberOfProfiles());
+
+  // Create the profile and register it.
+  const std::string guest_profile_name =
+      ProfileManager::GetGuestProfilePath().BaseName().MaybeAsASCII();
+
+  TestingProfile::Builder builder;
+  builder.SetGuestSession();
+  builder.SetPath(ProfileManager::GetGuestProfilePath());
+  TestingProfile* guest_profile = builder.Build().release();
+  guest_profile->set_profile_name(guest_profile_name);
+  // Registering the profile passes ownership to the ProfileManager.
+  profile_manager->RegisterTestingProfile(guest_profile, false, false);
+
+  // The Guest profile does not get added to the ProfileInfoCache.
+  EXPECT_EQ(2u, profile_manager->GetLoadedProfiles().size());
+  EXPECT_EQ(1u, profile_manager->GetProfileInfoCache().GetNumberOfProfiles());
+
+  // Set the Guest profile as the active profile.
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetString(prefs::kProfileLastUsed, guest_profile_name);
+
+  // Delete the other profile.
+  profile_manager->ScheduleProfileForDeletion(dest_path1,
+                                              ProfileManager::CreateCallback());
+  // Spin the message loop so that all the callbacks can finish running.
+  base::RunLoop().RunUntilIdle();
+
+  // A new profile should have been created.
+  const std::string profile_name2 = "Profile 1";
+  base::FilePath dest_path2 = temp_dir_.path().AppendASCII(profile_name2);
+
+  EXPECT_EQ(3u, profile_manager->GetLoadedProfiles().size());
+  EXPECT_EQ(1u, profile_manager->GetProfileInfoCache().GetNumberOfProfiles());
+  EXPECT_EQ(dest_path2,
+      profile_manager->GetProfileInfoCache().GetPathOfProfileAtIndex(0));
+}
+
 TEST_F(ProfileManagerTest, ProfileDisplayNameResetsDefaultName) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;

@@ -650,8 +650,11 @@ void ProfileManager::ScheduleProfileForDeletion(
   PrefService* local_state = g_browser_process->local_state();
   ProfileInfoCache& cache = GetProfileInfoCache();
 
-  if (profile_dir.BaseName().MaybeAsASCII() ==
-      local_state->GetString(prefs::kProfileLastUsed)) {
+  const std::string last_used_profile =
+      local_state->GetString(prefs::kProfileLastUsed);
+
+  if (last_used_profile == profile_dir.BaseName().MaybeAsASCII() ||
+      last_used_profile == GetGuestProfilePath().BaseName().MaybeAsASCII()) {
     // Update the last used profile pref before closing browser windows. This
     // way the correct last used profile is set for any notification observers.
     base::FilePath last_non_supervised_profile_path;
