@@ -30,7 +30,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 
@@ -50,6 +50,6 @@ private:
     double m_confidence;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SpeechRecognitionAlternative_h

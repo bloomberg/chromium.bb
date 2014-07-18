@@ -32,7 +32,7 @@
 #include "wtf/text/StringHash.h"
 #include <gtest/gtest.h>
 
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 

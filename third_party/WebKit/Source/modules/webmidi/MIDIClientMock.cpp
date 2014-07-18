@@ -33,7 +33,7 @@
 
 #include "modules/webmidi/MIDIAccessInitializer.h"
 
-namespace WebCore {
+namespace blink {
 
 MIDIClientMock::MIDIClientMock()
     : m_allowed(false)

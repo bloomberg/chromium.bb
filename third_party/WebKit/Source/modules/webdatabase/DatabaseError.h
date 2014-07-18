@@ -28,7 +28,7 @@
 
 #include "wtf/EnumClass.h"
 
-namespace WebCore {
+namespace blink {
 
 ENUM_CLASS(DatabaseError) {
     None = 0,
@@ -36,6 +36,6 @@ ENUM_CLASS(DatabaseError) {
     InvalidDatabaseState
 } ENUM_CLASS_END(DatabaseError);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DatabaseError_h

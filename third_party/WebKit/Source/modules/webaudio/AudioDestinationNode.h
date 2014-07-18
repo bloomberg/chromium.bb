@@ -31,7 +31,7 @@
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioNode.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioBus;
 class AudioContext;
@@ -93,6 +93,6 @@ protected:
     LocalAudioInputProvider m_localAudioInputProvider;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioDestinationNode_h

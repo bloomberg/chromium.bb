@@ -32,7 +32,7 @@
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class MediaStreamTrack;
 class RTCPeerConnection;
@@ -63,6 +63,6 @@ private:
     Persistent<RTCPeerConnection> m_requester;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCStatsRequestImpl_h

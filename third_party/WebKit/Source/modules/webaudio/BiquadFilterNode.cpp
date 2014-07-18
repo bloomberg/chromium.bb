@@ -28,7 +28,7 @@
 
 #include "modules/webaudio/BiquadFilterNode.h"
 
-namespace WebCore {
+namespace blink {
 
 BiquadFilterNode::BiquadFilterNode(AudioContext* context, float sampleRate)
     : AudioBasicProcessorNode(context, sampleRate)
@@ -111,6 +111,6 @@ void BiquadFilterNode::getFrequencyResponse(const Float32Array* frequencyHz,
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

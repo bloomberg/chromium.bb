@@ -31,7 +31,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class IDBTransaction;
@@ -61,6 +61,6 @@ private:
     TransactionList m_transactions;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IDBPendingTransactionMonitor_h

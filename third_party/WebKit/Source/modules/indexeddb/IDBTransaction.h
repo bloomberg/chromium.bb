@@ -38,7 +38,7 @@
 #include "public/platform/WebIDBTypes.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class DOMError;
 class ExceptionState;
@@ -144,6 +144,6 @@ private:
     IDBDatabaseMetadata m_previousMetadata;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IDBTransaction_h

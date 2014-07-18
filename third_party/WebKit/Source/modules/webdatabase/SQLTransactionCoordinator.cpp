@@ -35,7 +35,7 @@
 #include "modules/webdatabase/DatabaseBackend.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
 
-namespace WebCore {
+namespace blink {
 
 static String getDatabaseIdentifier(SQLTransactionBackend* transaction)
 {
@@ -151,4 +151,4 @@ void SQLTransactionCoordinator::shutdown()
     m_coordinationInfoMap.clear();
 }
 
-} // namespace WebCore
+} // namespace blink

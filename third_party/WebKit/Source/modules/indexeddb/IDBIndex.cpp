@@ -42,7 +42,7 @@ using blink::WebIDBCallbacks;
 using blink::WebIDBCursor;
 using blink::WebIDBDatabase;
 
-namespace WebCore {
+namespace blink {
 
 IDBIndex::IDBIndex(const IDBIndexMetadata& metadata, IDBObjectStore* objectStore, IDBTransaction* transaction)
     : m_metadata(metadata)
@@ -227,4 +227,4 @@ bool IDBIndex::isDeleted() const
     return m_deleted || m_objectStore->isDeleted();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -32,7 +32,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioContext;
 class AudioNodeInput;
@@ -149,6 +149,6 @@ private:
     WillBeHeapHashSet<RefPtrWillBeMember<AudioParam> > m_params;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioNodeOutput_h

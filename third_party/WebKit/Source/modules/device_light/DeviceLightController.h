@@ -8,7 +8,7 @@
 #include "core/dom/DocumentSupplementable.h"
 #include "core/frame/DeviceSingleWindowEventController.h"
 
-namespace WebCore {
+namespace blink {
 
 class Event;
 
@@ -34,6 +34,6 @@ private:
     virtual bool isNullEvent(Event*) const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DeviceLightController_h

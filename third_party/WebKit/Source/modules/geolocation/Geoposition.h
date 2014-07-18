@@ -31,7 +31,7 @@
 #include "modules/geolocation/Coordinates.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class Geoposition : public GarbageCollectedFinalized<Geoposition>, public ScriptWrappable {
 public:
@@ -61,6 +61,6 @@ private:
     DOMTimeStamp m_timestamp;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Geoposition_h

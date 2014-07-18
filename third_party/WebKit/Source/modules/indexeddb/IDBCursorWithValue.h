@@ -32,7 +32,7 @@
 #include "public/platform/WebIDBTypes.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class IDBAny;
 class IDBRequest;
@@ -55,6 +55,6 @@ private:
 
 DEFINE_TYPE_CASTS(IDBCursorWithValue, IDBCursor, cursor, cursor->isCursorWithValue(), cursor.isCursorWithValue());
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IDBCursorWithValue_h

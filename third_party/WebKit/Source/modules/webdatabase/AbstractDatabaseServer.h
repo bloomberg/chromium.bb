@@ -32,7 +32,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class DatabaseBackendBase;
 class DatabaseContext;
@@ -55,6 +55,6 @@ protected:
     virtual ~AbstractDatabaseServer() { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AbstractDatabaseServer_h

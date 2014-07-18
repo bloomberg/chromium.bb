@@ -28,7 +28,7 @@
 
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class AbstractSQLStatementBackend;
 
@@ -43,6 +43,6 @@ public:
     virtual bool hasErrorCallback() = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AbstractSQLStatement_h

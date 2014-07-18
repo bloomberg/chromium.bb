@@ -41,7 +41,7 @@
 
 using blink::WebIDBDatabase;
 
-namespace WebCore {
+namespace blink {
 
 IDBTransaction* IDBTransaction::create(ExecutionContext* context, int64_t id, const Vector<String>& objectStoreNames, blink::WebIDBTransactionMode mode, IDBDatabase* db)
 {
@@ -404,4 +404,4 @@ blink::WebIDBDatabase* IDBTransaction::backendDB() const
     return m_database->backend();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -28,7 +28,7 @@
 
 #include "modules/EventModules.h"
 
-namespace WebCore {
+namespace blink {
 
 class SpeechSynthesisEvent FINAL : public Event {
 public:
@@ -55,6 +55,6 @@ private:
     String m_name;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SpeechSynthesisEvent_h

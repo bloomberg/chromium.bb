@@ -30,7 +30,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/ThreadSafeRefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class AbstractSQLTransactionBackend;
 
@@ -48,6 +48,6 @@ public:
     virtual void setBackend(AbstractSQLTransactionBackend*) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AbstractSQLTransaction_h

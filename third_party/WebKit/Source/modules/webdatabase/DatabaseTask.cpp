@@ -34,7 +34,7 @@
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseThread.h"
 
-namespace WebCore {
+namespace blink {
 
 DatabaseTask::DatabaseTask(DatabaseBackend* database, TaskSynchronizer* synchronizer)
     : m_database(database)
@@ -188,4 +188,4 @@ const char* DatabaseBackend::DatabaseTableNamesTask::debugTaskName() const
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

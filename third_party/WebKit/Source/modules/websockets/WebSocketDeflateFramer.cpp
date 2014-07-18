@@ -36,7 +36,7 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebSocketExtensionDeflateFrame FINAL : public WebSocketExtensionProcessor {
     WTF_MAKE_FAST_ALLOCATED;
@@ -225,4 +225,4 @@ void WebSocketDeflateFramer::didFail()
     resetInflateContext();
 }
 
-} // namespace WebCore
+} // namespace blink

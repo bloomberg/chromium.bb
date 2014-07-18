@@ -12,7 +12,7 @@
 #include "modules/EventModulesNames.h"
 #include "modules/EventTargetModulesNames.h"
 
-namespace WebCore {
+namespace blink {
 
 void ModulesInitializer::initEventNames()
 {
@@ -37,4 +37,4 @@ void ModulesInitializer::initBindings()
     ModuleBindingsInitializer::init();
 }
 
-} // namespace WebCore
+} // namespace blink

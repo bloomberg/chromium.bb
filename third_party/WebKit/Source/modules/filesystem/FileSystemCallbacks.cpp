@@ -53,7 +53,7 @@
 #include "platform/FileMetadata.h"
 #include "public/platform/WebFileWriter.h"
 
-namespace WebCore {
+namespace blink {
 
 FileSystemCallbacksBase::FileSystemCallbacksBase(PassOwnPtr<ErrorCallback> errorCallback, DOMFileSystemBase* fileSystem, ExecutionContext* context)
     : m_errorCallback(errorCallback)

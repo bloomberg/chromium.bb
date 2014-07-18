@@ -30,7 +30,7 @@
 #include "public/platform/WebSourceInfo.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class SourceInfo : public GarbageCollectedFinalized<SourceInfo>, public ScriptWrappable {
 public:
@@ -51,6 +51,6 @@ private:
 
 typedef HeapVector<Member<SourceInfo> > SourceInfoVector;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SourceInfo_h

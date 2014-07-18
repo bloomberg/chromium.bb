@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/gamepad/GamepadCommon.h"
 
-namespace WebCore {
+namespace blink {
 
 GamepadCommon::GamepadCommon()
     : m_index(0)
@@ -45,4 +45,4 @@ void GamepadCommon::setAxes(unsigned count, const double* data)
         std::copy(data, data + count, m_axes.begin());
 }
 
-} // namespace WebCore
+} // namespace blink

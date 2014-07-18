@@ -37,7 +37,7 @@
 #include "core/fileapi/FileError.h"
 #include "public/platform/WebFileWriter.h"
 
-namespace WebCore {
+namespace blink {
 
 FileWriterBase::~FileWriterBase()
 {
@@ -67,4 +67,4 @@ void FileWriterBase::seekInternal(long long position)
     m_position = position;
 }
 
-} // namespace WebCore
+} // namespace blink

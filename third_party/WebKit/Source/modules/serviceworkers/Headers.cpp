@@ -15,7 +15,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<Headers> Headers::create()
 {
@@ -327,4 +327,4 @@ void Headers::trace(Visitor* visitor)
     visitor->trace(m_headerList);
 }
 
-} // namespace WebCore
+} // namespace blink

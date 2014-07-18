@@ -30,7 +30,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class PositionError : public GarbageCollectedFinalized<PositionError>, public ScriptWrappable {
 public:
@@ -64,6 +64,6 @@ private:
     bool m_isFatal;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PositionError_h

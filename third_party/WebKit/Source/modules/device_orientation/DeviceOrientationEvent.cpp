@@ -28,7 +28,7 @@
 
 #include "modules/device_orientation/DeviceOrientationData.h"
 
-namespace WebCore {
+namespace blink {
 
 DeviceOrientationEvent::~DeviceOrientationEvent()
 {
@@ -103,4 +103,4 @@ void DeviceOrientationEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -33,7 +33,7 @@
 #include "platform/mediastream/MediaStreamSource.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioSourceProvider;
 class ExceptionState;
@@ -104,6 +104,6 @@ private:
 
 typedef HeapVector<Member<MediaStreamTrack> > MediaStreamTrackVector;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaStreamTrack_h

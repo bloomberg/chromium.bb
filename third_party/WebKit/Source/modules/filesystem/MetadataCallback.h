@@ -31,7 +31,7 @@
 #ifndef MetadataCallback_h
 #define MetadataCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class Metadata;
 

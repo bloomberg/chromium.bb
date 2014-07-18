@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/indexeddb/IDBKey.h"
 
-namespace WebCore {
+namespace blink {
 
 IDBKey::~IDBKey()
 {
@@ -109,4 +109,4 @@ bool IDBKey::isEqual(const IDBKey* other) const
     return !compare(other);
 }
 
-} // namespace WebCore
+} // namespace blink

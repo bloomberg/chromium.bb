@@ -36,7 +36,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioBus;
 class ExceptionState;
@@ -78,6 +78,6 @@ protected:
     Vector<RefPtr<Float32Array> > m_channels;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioBuffer_h

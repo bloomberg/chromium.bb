@@ -36,7 +36,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebSocketChannelClient : public WillBeGarbageCollectedMixin {
 public:
@@ -58,6 +58,6 @@ protected:
     WebSocketChannelClient() { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebSocketChannelClient_h

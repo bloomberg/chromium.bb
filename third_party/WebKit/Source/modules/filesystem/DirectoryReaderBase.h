@@ -35,7 +35,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class DirectoryReaderBase : public GarbageCollectedFinalized<DirectoryReaderBase> {
 public:
@@ -65,6 +65,6 @@ protected:
     bool m_hasMoreEntries;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DirectoryReaderBase_h

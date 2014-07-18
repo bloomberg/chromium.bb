@@ -68,7 +68,7 @@
 #include "public/platform/WebRTCStatsRequest.h"
 #include "public/platform/WebRTCVoidRequest.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -790,4 +790,4 @@ void RTCPeerConnection::trace(Visitor* visitor)
     EventTargetWithInlineData::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

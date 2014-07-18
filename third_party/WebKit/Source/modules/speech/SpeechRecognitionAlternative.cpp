@@ -27,7 +27,7 @@
 
 #include "modules/speech/SpeechRecognitionAlternative.h"
 
-namespace WebCore {
+namespace blink {
 
 SpeechRecognitionAlternative* SpeechRecognitionAlternative::create(const String& transcript, double confidence)
 {
@@ -41,4 +41,4 @@ SpeechRecognitionAlternative::SpeechRecognitionAlternative(const String& transcr
     ScriptWrappable::init(this);
 }
 
-} // namespace WebCore
+} // namespace blink

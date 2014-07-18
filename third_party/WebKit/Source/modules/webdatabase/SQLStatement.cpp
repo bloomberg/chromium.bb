@@ -40,7 +40,7 @@
 #include "modules/webdatabase/SQLTransaction.h"
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtrWillBeRawPtr<SQLStatement> SQLStatement::create(Database* database,
     PassOwnPtr<SQLStatementCallback> callback, PassOwnPtr<SQLStatementErrorCallback> errorCallback)
@@ -104,4 +104,4 @@ bool SQLStatement::performCallback(SQLTransaction* transaction)
     return callbackError;
 }
 
-} // namespace WebCore
+} // namespace blink

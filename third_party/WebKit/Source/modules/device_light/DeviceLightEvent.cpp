@@ -5,7 +5,7 @@
 #include "config.h"
 #include "modules/device_light/DeviceLightEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 DeviceLightEvent::~DeviceLightEvent()
 {
@@ -36,7 +36,7 @@ const AtomicString& DeviceLightEvent::interfaceName() const
     return EventNames::DeviceLightEvent;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 
 

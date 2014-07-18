@@ -11,7 +11,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class Dictionary;
 class ExceptionState;
@@ -64,6 +64,6 @@ private:
     Guard m_guard;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Headers_h

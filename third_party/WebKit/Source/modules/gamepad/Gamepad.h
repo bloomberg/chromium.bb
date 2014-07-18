@@ -32,7 +32,7 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebGamepad.h"
 
-namespace WebCore {
+namespace blink {
 
 class Gamepad FINAL : public GarbageCollectedFinalized<Gamepad>, public GamepadCommon, public ScriptWrappable {
 public:
@@ -52,6 +52,6 @@ private:
     GamepadButtonVector m_buttons;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Gamepad_h

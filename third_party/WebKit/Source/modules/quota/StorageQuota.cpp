@@ -44,7 +44,7 @@
 #include "public/platform/WebStorageQuotaCallbacks.h"
 #include "public/platform/WebStorageQuotaType.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -117,4 +117,4 @@ StorageQuota::~StorageQuota()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

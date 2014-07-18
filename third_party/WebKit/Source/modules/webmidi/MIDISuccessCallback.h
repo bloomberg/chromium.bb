@@ -33,7 +33,7 @@
 
 #include "modules/webmidi/MIDIOptions.h"
 
-namespace WebCore {
+namespace blink {
 
 class MIDIAccess;
 
@@ -43,6 +43,6 @@ public:
     virtual void handleEvent(MIDIAccess*, bool) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MIDISuccessCallback_h

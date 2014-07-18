@@ -38,7 +38,7 @@
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class CryptoResult;
 class KeyAlgorithm;
@@ -74,6 +74,6 @@ protected:
     const blink::WebCryptoKey m_key;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

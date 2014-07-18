@@ -26,7 +26,7 @@
 #ifndef PositionErrorCallback_h
 #define PositionErrorCallback_h
 
-namespace WebCore {
+namespace blink {
 
     class PositionError;
 
@@ -36,6 +36,6 @@ namespace WebCore {
         virtual void handleEvent(PositionError*) = 0;
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PositionErrorCallback_h

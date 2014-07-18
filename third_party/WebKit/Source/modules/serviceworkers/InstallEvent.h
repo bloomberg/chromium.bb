@@ -35,7 +35,7 @@
 #include "modules/serviceworkers/InstallPhaseEvent.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 
@@ -58,6 +58,6 @@ private:
     InstallEvent(const AtomicString& type, const EventInit&, PassRefPtr<WaitUntilObserver>);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InstallEvent_h

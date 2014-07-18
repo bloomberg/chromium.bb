@@ -35,7 +35,7 @@
 #include "wtf/ASCIICType.h"
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 WebSocketExtensionParser::ParserStateBackup::~ParserStateBackup()
 {
@@ -160,4 +160,4 @@ bool WebSocketExtensionParser::parseExtension(String& extensionToken, HashMap<St
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

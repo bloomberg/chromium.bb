@@ -33,7 +33,7 @@
 
 #include "modules/quota/DeprecatedStorageQuota.h"
 
-namespace WebCore {
+namespace blink {
 
 WorkerNavigatorStorageQuota::WorkerNavigatorStorageQuota()
 {
@@ -85,4 +85,4 @@ void WorkerNavigatorStorageQuota::trace(Visitor* visitor)
     WillBeHeapSupplement<WorkerNavigator>::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

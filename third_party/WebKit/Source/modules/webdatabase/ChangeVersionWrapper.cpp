@@ -33,7 +33,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 ChangeVersionWrapper::ChangeVersionWrapper(const String& oldVersion, const String& newVersion)
     : m_oldVersion(oldVersion.isolatedCopy())
@@ -90,4 +90,4 @@ void ChangeVersionWrapper::handleCommitFailedAfterPostflight(SQLTransactionBacke
     transaction->database()->setCachedVersion(m_oldVersion);
 }
 
-} // namespace WebCore
+} // namespace blink

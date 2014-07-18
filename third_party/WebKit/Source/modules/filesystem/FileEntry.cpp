@@ -37,7 +37,7 @@
 #include "modules/filesystem/FileCallback.h"
 #include "modules/filesystem/FileWriterCallback.h"
 
-namespace WebCore {
+namespace blink {
 
 FileEntry::FileEntry(DOMFileSystemBase* fileSystem, const String& fullPath)
     : Entry(fileSystem, fullPath)

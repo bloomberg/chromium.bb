@@ -30,7 +30,7 @@
 #include "core/html/MediaKeyError.h"
 #include "modules/EventModules.h"
 
-namespace WebCore {
+namespace blink {
 
 struct MediaKeyMessageEventInit : public EventInit {
     MediaKeyMessageEventInit();
@@ -68,6 +68,6 @@ private:
     String m_destinationURL;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

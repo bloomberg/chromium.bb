@@ -47,7 +47,7 @@
 #include <v8.h>
 
 using blink::WebBlobInfo;
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 

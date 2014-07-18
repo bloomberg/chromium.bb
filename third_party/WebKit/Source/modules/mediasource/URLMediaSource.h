@@ -33,7 +33,7 @@
 
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class MediaSource;
 class ExecutionContext;
@@ -43,6 +43,6 @@ public:
     static String createObjectURL(ExecutionContext*, MediaSource*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

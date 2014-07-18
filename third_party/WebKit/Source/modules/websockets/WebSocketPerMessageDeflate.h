@@ -37,7 +37,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 // WebSocketPerMessageDeflate is a deflater / inflater for a WebSocket message with DEFLATE algorithm.
 // See http://tools.ietf.org/html/draft-ietf-hybi-permessage-compression-08

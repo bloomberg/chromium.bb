@@ -32,7 +32,7 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "wtf/ThreadingPrimitives.h"
 
-namespace WebCore {
+namespace blink {
 
 // A helper class to safely dereference the callback objects held by
 // SQLStatement and SQLTransaction on the proper thread. The 'wrapped'
@@ -132,6 +132,6 @@ private:
     RefPtrWillBeMember<ExecutionContext> m_executionContext;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SQLCallbackWrapper_h

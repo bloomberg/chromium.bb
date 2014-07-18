@@ -27,7 +27,7 @@
 
 #include "modules/speech/SpeechRecognitionError.h"
 
-namespace WebCore {
+namespace blink {
 
 static String ErrorCodeToString(SpeechRecognitionError::ErrorCode code)
 {
@@ -96,4 +96,4 @@ SpeechRecognitionErrorInit::SpeechRecognitionErrorInit()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

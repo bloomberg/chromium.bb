@@ -26,7 +26,7 @@
 #ifndef PositionCallback_h
 #define PositionCallback_h
 
-namespace WebCore {
+namespace blink {
 
     class Geoposition;
 
@@ -36,6 +36,6 @@ namespace WebCore {
         virtual void handleEvent(Geoposition*) = 0;
     };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PositionCallback_h

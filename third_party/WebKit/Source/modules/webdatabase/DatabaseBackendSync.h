@@ -29,7 +29,7 @@
 #include "modules/webdatabase/DatabaseBackendBase.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class DatabaseServer;
 
@@ -52,6 +52,6 @@ protected:
     friend class DatabaseServer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DatabaseBackendSync_h

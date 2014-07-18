@@ -36,7 +36,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Database;
 class DocumentLoader;
@@ -80,6 +80,6 @@ private:
     bool m_enabled;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InspectorDatabaseAgent_h)

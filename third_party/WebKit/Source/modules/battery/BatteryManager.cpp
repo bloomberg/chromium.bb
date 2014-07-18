@@ -11,7 +11,7 @@
 #include "modules/battery/BatteryStatus.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<BatteryManager> BatteryManager::create(ExecutionContext* context)
 {
@@ -149,4 +149,4 @@ void BatteryManager::trace(Visitor* visitor)
     EventTargetWithInlineData::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

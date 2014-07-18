@@ -40,7 +40,7 @@
 #include "wtf/MathExtras.h"
 #include "wtf/Uint8Array.h"
 
-namespace WebCore {
+namespace blink {
 
 const double RealtimeAnalyser::DefaultSmoothingTimeConstant  = 0.8;
 const double RealtimeAnalyser::DefaultMinDecibels = -100;
@@ -321,6 +321,6 @@ void RealtimeAnalyser::getByteTimeDomainData(Uint8Array* destinationArray)
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

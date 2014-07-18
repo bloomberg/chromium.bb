@@ -30,7 +30,7 @@
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioBuffer;
 class AudioBufferCallback;
@@ -56,6 +56,6 @@ private:
     OwnPtr<blink::WebThread> m_thread;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AsyncAudioDecoder_h

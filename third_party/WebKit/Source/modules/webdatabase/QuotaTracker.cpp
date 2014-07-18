@@ -35,7 +35,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"
 
-namespace WebCore {
+namespace blink {
 
 QuotaTracker& QuotaTracker::instance()
 {
@@ -86,4 +86,4 @@ void QuotaTracker::resetSpaceAvailableToOrigin(const String& originIdentifier)
     m_spaceAvailableToOrigins.remove(originIdentifier);
 }
 
-} // namespace WebCore
+} // namespace blink

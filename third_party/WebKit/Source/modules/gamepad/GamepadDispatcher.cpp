@@ -9,7 +9,7 @@
 #include "public/platform/Platform.h"
 #include "wtf/TemporaryChange.h"
 
-namespace WebCore {
+namespace blink {
 
 GamepadDispatcher& GamepadDispatcher::instance()
 {
@@ -60,4 +60,4 @@ void GamepadDispatcher::stopListening()
     blink::Platform::current()->setGamepadListener(0);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -36,7 +36,7 @@
 #include "modules/filesystem/EntryBase.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class DirectoryEntry;
 class EntryCallback;
@@ -61,6 +61,6 @@ protected:
     Entry(DOMFileSystemBase*, const String& fullPath);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Entry_h

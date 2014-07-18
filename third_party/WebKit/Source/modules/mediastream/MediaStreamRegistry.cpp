@@ -30,7 +30,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 MediaStreamRegistry& MediaStreamRegistry::registry()
 {
@@ -70,4 +70,4 @@ MediaStreamRegistry::MediaStreamRegistry()
     HTMLMediaElement::setMediaStreamRegistry(this);
 }
 
-} // namespace WebCore
+} // namespace blink

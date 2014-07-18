@@ -15,7 +15,7 @@
 #include "modules/webmidi/MIDIOptions.h"
 #include "modules/webmidi/MIDIPort.h"
 
-namespace WebCore {
+namespace blink {
 
 MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState, const MIDIOptions& options)
     : ScriptPromiseResolver(scriptState)
@@ -95,4 +95,4 @@ ExecutionContext* MIDIAccessInitializer::executionContext() const
     return scriptState()->executionContext();
 }
 
-} // namespace WebCore
+} // namespace blink

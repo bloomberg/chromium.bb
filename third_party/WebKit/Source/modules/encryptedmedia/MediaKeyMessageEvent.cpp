@@ -28,7 +28,7 @@
 
 #include "wtf/Uint8Array.h"
 
-namespace WebCore {
+namespace blink {
 
 MediaKeyMessageEventInit::MediaKeyMessageEventInit()
 {
@@ -61,4 +61,4 @@ void MediaKeyMessageEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

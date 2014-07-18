@@ -35,7 +35,7 @@
 #include "modules/mediastream/MediaStream.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 String URLMediaStream::createObjectURL(ExecutionContext* executionContext, MediaStream* stream)
 {
@@ -48,4 +48,4 @@ String URLMediaStream::createObjectURL(ExecutionContext* executionContext, Media
 }
 
 
-} // namespace WebCore
+} // namespace blink

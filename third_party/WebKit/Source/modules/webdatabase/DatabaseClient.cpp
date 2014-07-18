@@ -38,7 +38,7 @@
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/InspectorDatabaseAgent.h"
 
-namespace WebCore {
+namespace blink {
 
 DatabaseClient::DatabaseClient()
     : m_inspectorAgent(0)
@@ -84,4 +84,4 @@ void provideDatabaseClientToWorker(WorkerClients* workerClients, PassOwnPtrWillB
     workerClients->provideSupplement(DatabaseClient::supplementName(), client);
 }
 
-} // namespace WebCore
+} // namespace blink

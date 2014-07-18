@@ -12,7 +12,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/WebServiceWorkerProvider.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtrWillBeRawPtr<ServiceWorkerContainerClient> ServiceWorkerContainerClient::create(PassOwnPtr<blink::WebServiceWorkerProvider> provider)
 {
@@ -58,4 +58,4 @@ void provideServiceWorkerContainerClientToWorker(WorkerClients* clients, PassOwn
     clients->provideSupplement(ServiceWorkerContainerClient::supplementName(), ServiceWorkerContainerClient::create(provider));
 }
 
-} // namespace WebCore
+} // namespace blink

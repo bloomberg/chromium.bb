@@ -36,7 +36,7 @@ namespace blink {
 class WebContentDecryptionModule;
 }
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class ExecutionContext;

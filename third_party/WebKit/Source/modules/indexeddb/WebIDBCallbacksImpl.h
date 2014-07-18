@@ -46,7 +46,7 @@ class WebIDBKeyPath;
 struct WebIDBMetadata;
 }
 
-namespace WebCore {
+namespace blink {
 class IDBRequest;
 
 class WebIDBCallbacksImpl FINAL : public blink::WebIDBCallbacks {
@@ -75,6 +75,6 @@ private:
     Persistent<IDBRequest> m_request;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebIDBCallbacksImpl_h

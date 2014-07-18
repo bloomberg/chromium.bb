@@ -30,7 +30,7 @@
 #include "modules/filesystem/DOMFileSystemSync.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class EntryCallback;
 class EntrySync;
@@ -56,6 +56,6 @@ private:
     ~WorkerGlobalScopeFileSystem();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerGlobalScopeFileSystem_h

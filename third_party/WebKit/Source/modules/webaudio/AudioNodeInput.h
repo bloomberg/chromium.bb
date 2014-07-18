@@ -31,7 +31,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioNode;
 class AudioNodeOutput;
@@ -97,6 +97,6 @@ private:
     RefPtr<AudioBus> m_internalSummingBus;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioNodeInput_h

@@ -43,7 +43,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class DOMError;
 class ExceptionState;
@@ -155,6 +155,6 @@ private:
     Member<IDBDatabaseCallbacks> m_databaseCallbacks;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IDBDatabase_h

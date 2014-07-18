@@ -13,7 +13,7 @@ namespace WTF {
 class ArrayBufferView;
 }
 
-namespace WebCore {
+namespace blink {
 
 class Blob;
 class DOMFormData;
@@ -49,6 +49,6 @@ private:
     Navigator& m_navigator;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigatorBeacon_h

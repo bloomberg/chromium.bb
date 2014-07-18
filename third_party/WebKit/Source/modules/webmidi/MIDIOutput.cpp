@@ -38,7 +38,7 @@
 #include "core/timing/Performance.h"
 #include "modules/webmidi/MIDIAccess.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -236,4 +236,4 @@ void MIDIOutput::trace(Visitor* visitor)
     MIDIPort::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

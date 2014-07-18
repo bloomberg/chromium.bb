@@ -54,7 +54,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<Database> Database::create(ExecutionContext*, PassRefPtrWillBeRawPtr<DatabaseBackendBase> backend)
 {
@@ -249,4 +249,4 @@ void Database::reportCommitTransactionResult(int errorSite, int webSqlErrorCode,
 }
 
 
-} // namespace WebCore
+} // namespace blink

@@ -9,7 +9,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class ScriptState;
@@ -34,6 +34,6 @@ private:
     HashSet<OwnPtr<Loader> > m_loaders;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FetchManager_h

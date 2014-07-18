@@ -34,7 +34,7 @@
 #include "modules/EventModules.h"
 #include "wtf/Uint8Array.h"
 
-namespace WebCore {
+namespace blink {
 
 struct MIDIMessageEventInit : public EventInit {
     MIDIMessageEventInit()
@@ -97,6 +97,6 @@ private:
     RefPtr<Uint8Array> m_data;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MIDIMessageEvent_h

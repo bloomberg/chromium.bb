@@ -5,7 +5,7 @@
 #include "config.h"
 #include "modules/push_messaging/PushEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 PushEventInit::PushEventInit()
 {
@@ -39,4 +39,4 @@ const AtomicString& PushEvent::interfaceName() const
     return EventNames::PushEvent;
 }
 
-} // namespace WebCore
+} // namespace blink

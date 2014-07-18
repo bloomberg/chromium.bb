@@ -29,7 +29,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class DOMError;
 class IDBDatabase;
@@ -64,6 +64,6 @@ private:
     WeakMember<IDBDatabase> m_database;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IDBDatabaseCallbacks_h

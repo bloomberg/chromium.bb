@@ -35,7 +35,7 @@
 #include "modules/EventModules.h"
 #include "modules/mediasource/SourceBuffer.h"
 
-namespace WebCore {
+namespace blink {
 
 SourceBufferList::SourceBufferList(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
     : m_executionContext(context)
@@ -98,4 +98,4 @@ void SourceBufferList::trace(Visitor* visitor)
     EventTargetWithInlineData::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

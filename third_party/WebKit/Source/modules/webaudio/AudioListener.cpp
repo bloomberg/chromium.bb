@@ -35,7 +35,7 @@
 #include "modules/webaudio/PannerNode.h"
 #include "platform/audio/AudioBus.h"
 
-namespace WebCore {
+namespace blink {
 
 AudioListener::AudioListener()
     : m_position(0, 0, 0)
@@ -143,6 +143,6 @@ void AudioListener::setSpeedOfSound(double speedOfSound)
     markPannersAsDirty(PannerNode::DopplerRateDirty);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

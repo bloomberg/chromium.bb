@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/speech/SpeechRecognitionController.h"
 
-namespace WebCore {
+namespace blink {
 
 const char* SpeechRecognitionController::supplementName()
 {
@@ -53,4 +53,4 @@ void provideSpeechRecognitionTo(Page& page, PassOwnPtr<SpeechRecognitionClient> 
     SpeechRecognitionController::provideTo(page, SpeechRecognitionController::supplementName(), SpeechRecognitionController::create(client));
 }
 
-} // namespace WebCore
+} // namespace blink

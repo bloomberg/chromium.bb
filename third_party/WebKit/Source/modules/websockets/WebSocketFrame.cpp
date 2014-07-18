@@ -27,7 +27,7 @@
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 // Constants for hybi-10 frame format.
 // These are bitmasks for frame composition / decomposition.
@@ -195,4 +195,4 @@ WebSocketFrame::WebSocketFrame(OpCode opCode, const char* payload, size_t payloa
 {
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -38,7 +38,7 @@
 #error SQLite version 3.6.16 or newer is required
 #endif
 
-namespace WebCore {
+namespace blink {
 
 SQLiteStatement::SQLiteStatement(SQLiteDatabase& db, const String& sql)
     : m_database(db)
@@ -273,4 +273,4 @@ int64_t SQLiteStatement::getColumnInt64(int col)
     return sqlite3_column_int64(m_statement, col);
 }
 
-} // namespace WebCore
+} // namespace blink

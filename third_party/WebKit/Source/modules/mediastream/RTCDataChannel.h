@@ -37,7 +37,7 @@ class WebRTCPeerConnectionHandler;
 struct WebRTCDataChannelInit;
 }
 
-namespace WebCore {
+namespace blink {
 
 class Blob;
 class ExceptionState;
@@ -124,6 +124,6 @@ private:
     WeakMember<RTCPeerConnection> m_connection;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCDataChannel_h

@@ -29,7 +29,7 @@
 
 #include "core/dom/Document.h"
 
-namespace WebCore {
+namespace blink {
 
 SpeechGrammar* SpeechGrammar::create()
 {
@@ -60,4 +60,4 @@ SpeechGrammar::SpeechGrammar(const KURL& src, double weight)
     ScriptWrappable::init(this);
 }
 
-} // namespace WebCore
+} // namespace blink

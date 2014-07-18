@@ -8,7 +8,7 @@
 #include "modules/EventModules.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 struct DeviceLightEventInit : public EventInit {
     DeviceLightEventInit()
@@ -51,6 +51,6 @@ private:
 
 DEFINE_TYPE_CASTS(DeviceLightEvent, Event, event, event->interfaceName() == EventNames::DeviceLightEvent, event.interfaceName() == EventNames::DeviceLightEvent);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DeviceLightEvent_h

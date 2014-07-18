@@ -43,7 +43,7 @@
 #include "wtf/text/StringBuilder.h"
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -726,4 +726,4 @@ bool normalizeAlgorithm(const Dictionary& raw, blink::WebCryptoOperation op, bli
     return parseAlgorithm(raw, op, algorithm, ErrorContext(), error);
 }
 
-} // namespace WebCore
+} // namespace blink

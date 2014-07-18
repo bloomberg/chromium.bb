@@ -39,7 +39,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class SQLTransactionBackend;
 
@@ -77,6 +77,6 @@ private:
     void processPendingTransactions(CoordinationInfo&);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SQLTransactionCoordinator_h

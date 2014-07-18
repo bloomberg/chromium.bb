@@ -37,7 +37,7 @@
 #include "modules/gamepad/WebKitGamepadList.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 template<typename T>
 static void sampleGamepad(unsigned index, T& gamepad, const blink::WebGamepad& webGamepad)
@@ -290,4 +290,4 @@ void NavigatorGamepad::pageVisibilityChanged()
         m_dispatchOneEventRunner.runAsync();
 }
 
-} // namespace WebCore
+} // namespace blink

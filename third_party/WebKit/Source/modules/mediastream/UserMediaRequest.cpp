@@ -45,7 +45,7 @@
 #include "platform/mediastream/MediaStreamCenter.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
 
-namespace WebCore {
+namespace blink {
 
 static blink::WebMediaConstraints parseOptions(const Dictionary& options, const String& mediaType, ExceptionState& exceptionState)
 {
@@ -185,4 +185,4 @@ void UserMediaRequest::contextDestroyed()
     ContextLifecycleObserver::contextDestroyed();
 }
 
-} // namespace WebCore
+} // namespace blink

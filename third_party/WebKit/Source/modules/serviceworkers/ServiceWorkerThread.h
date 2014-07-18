@@ -33,7 +33,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerThread.h"
 
-namespace WebCore {
+namespace blink {
 
 class WorkerThreadStartupData;
 
@@ -49,6 +49,6 @@ private:
     ServiceWorkerThread(WorkerLoaderProxy&, WorkerReportingProxy&, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData>);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ServiceWorkerThread_h

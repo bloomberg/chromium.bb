@@ -34,7 +34,7 @@
 #include "core/dom/DOMError.h"
 #include "core/dom/ExceptionCode.h"
 
-namespace WebCore {
+namespace blink {
 
 DeprecatedStorageQuotaCallbacksImpl::DeprecatedStorageQuotaCallbacksImpl(PassOwnPtr<StorageUsageCallback> usageCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
     : m_usageCallback(usageCallback)
@@ -70,4 +70,4 @@ void DeprecatedStorageQuotaCallbacksImpl::didFail(blink::WebStorageQuotaError er
         m_errorCallback->handleEvent(DOMError::create(static_cast<ExceptionCode>(error)).get());
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -8,7 +8,7 @@
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class Geolocation;
 class Geoposition;
@@ -60,6 +60,6 @@ private:
     bool m_useCachedPosition;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GeoNotifier_h

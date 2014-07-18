@@ -13,7 +13,7 @@ namespace blink {
 class WebServiceWorkerProvider;
 }
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 
@@ -48,6 +48,6 @@ protected:
 
 void provideServiceWorkerContainerClientToWorker(WorkerClients*, PassOwnPtr<blink::WebServiceWorkerProvider>);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ServiceWorkerContainerClient_h

@@ -42,7 +42,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 struct MIDIOptions;
@@ -99,6 +99,6 @@ private:
     MIDIOutputVector m_outputs;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MIDIAccess_h

@@ -34,7 +34,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 class FetchManager;
 class Request;
@@ -77,6 +77,6 @@ private:
     OwnPtr<FetchManager> m_fetchManager;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ServiceWorkerGlobalScope_h

@@ -35,7 +35,7 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebSocketExtensionParser {
 public:
@@ -79,6 +79,6 @@ private:
     String m_currentToken;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebSocketExtensionParser_h

@@ -33,7 +33,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class GeolocationInspectorAgent;
 class GeolocationClient;
@@ -94,6 +94,6 @@ private:
     GeolocationInspectorAgent* m_inspectorAgent;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GeolocationController_h

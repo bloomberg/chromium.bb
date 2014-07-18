@@ -29,7 +29,7 @@
 #include "modules/webaudio/DelayProcessor.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioParam;
 class ExceptionState;
@@ -49,6 +49,6 @@ private:
     DelayProcessor* delayProcessor() { return static_cast<DelayProcessor*>(processor()); }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DelayNode_h

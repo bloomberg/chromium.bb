@@ -31,7 +31,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioBus;
 class AudioContext;
@@ -78,6 +78,6 @@ private:
     void notifyComplete();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // OfflineAudioDestinationNode_h

@@ -35,7 +35,7 @@
 #include "modules/device_orientation/DeviceOrientationData.h"
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 DeviceOrientationDispatcher& DeviceOrientationDispatcher::instance()
 {
@@ -73,4 +73,4 @@ DeviceOrientationData* DeviceOrientationDispatcher::latestDeviceOrientationData(
     return m_lastDeviceOrientationData.get();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -31,7 +31,7 @@
 #ifndef StorageUsageCallback_h
 #define StorageUsageCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class StorageUsageCallback {
 public:

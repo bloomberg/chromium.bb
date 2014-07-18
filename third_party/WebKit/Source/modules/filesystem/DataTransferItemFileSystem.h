@@ -33,7 +33,7 @@
 
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class DataTransferItem;
 class Entry;
@@ -48,6 +48,6 @@ private:
     ~DataTransferItemFileSystem();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DataTransferItemFileSystem_h

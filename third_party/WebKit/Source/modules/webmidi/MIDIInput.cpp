@@ -35,7 +35,7 @@
 #include "modules/webmidi/MIDIMessageEvent.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 MIDIInput* MIDIInput::create(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, const String& version)
 {
@@ -70,4 +70,4 @@ void MIDIInput::trace(Visitor* visitor)
     MIDIPort::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

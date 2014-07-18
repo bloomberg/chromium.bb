@@ -27,7 +27,7 @@
 
 #include "modules/speech/SpeechRecognitionEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 SpeechRecognitionEventInit::SpeechRecognitionEventInit()
     : resultIndex(0)
@@ -97,4 +97,4 @@ void SpeechRecognitionEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -29,7 +29,7 @@
 #include "modules/mediastream/RTCPeerConnection.h"
 #include "modules/mediastream/RTCStatsCallback.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<RTCStatsRequestImpl> RTCStatsRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtr<RTCStatsCallback> callback, MediaStreamTrack* selector)
 {
@@ -85,4 +85,4 @@ void RTCStatsRequestImpl::clear()
     m_requester.clear();
 }
 
-} // namespace WebCore
+} // namespace blink

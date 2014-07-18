@@ -18,7 +18,7 @@ namespace blink {
 class WebServiceWorkerRequest;
 }
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class FetchHeaderList;
@@ -45,24 +45,24 @@ public:
         bool isURL() const { return m_type == URLReferrer; }
         void setNone()
         {
-            m_referrer = WebCore::Referrer();
+            m_referrer = blink::Referrer();
             m_type = NoneReferrer;
         }
-        void setClient(const WebCore::Referrer& referrer)
+        void setClient(const blink::Referrer& referrer)
         {
             m_referrer = referrer;
             m_type = ClientReferrer;
         }
-        void setURL(const WebCore::Referrer& referrer)
+        void setURL(const blink::Referrer& referrer)
         {
             m_referrer = referrer;
             m_type = URLReferrer;
         }
-        WebCore::Referrer referrer() const { return m_referrer; }
+        blink::Referrer referrer() const { return m_referrer; }
     private:
         enum Type { NoneReferrer, ClientReferrer, URLReferrer };
         Type m_type;
-        WebCore::Referrer m_referrer;
+        blink::Referrer m_referrer;
     };
 
     static PassRefPtrWillBeRawPtr<FetchRequestData> create(ExecutionContext*);
@@ -114,6 +114,6 @@ private:
     Tainting m_responseTainting;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FetchRequestData_h

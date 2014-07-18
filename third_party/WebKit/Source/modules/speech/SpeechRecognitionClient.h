@@ -28,7 +28,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Page;
 class SpeechGrammarList;
@@ -45,6 +45,6 @@ public:
 
 void provideSpeechRecognitionTo(Page&, PassOwnPtr<SpeechRecognitionClient>);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SpeechRecognitionClient_h

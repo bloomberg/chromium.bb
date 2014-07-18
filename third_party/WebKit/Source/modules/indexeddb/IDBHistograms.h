@@ -29,7 +29,7 @@
 #ifndef IDBHistograms_h
 #define IDBHistograms_h
 
-namespace WebCore {
+namespace blink {
 
 enum IndexedDatabaseMethods {
     IDBCreateObjectStoreCall,

@@ -8,7 +8,7 @@
 #include "bindings/core/v8/Dictionary.h"
 #include <limits.h>
 
-namespace WebCore {
+namespace blink {
 
 PositionOptions* PositionOptions::create(const Dictionary& options)
 {
@@ -49,4 +49,4 @@ PositionOptions::PositionOptions(const Dictionary& options)
     }
 }
 
-} // namespace WebCore
+} // namespace blink

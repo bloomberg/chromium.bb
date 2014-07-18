@@ -35,7 +35,7 @@
 #include "public/platform/WebRTCICECandidate.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class Dictionary;
 class ExceptionState;
@@ -62,6 +62,6 @@ private:
     blink::WebRTCICECandidate m_webCandidate;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCIceCandidate_h

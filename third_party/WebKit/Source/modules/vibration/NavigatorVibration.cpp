@@ -26,7 +26,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebVibration.h"
 
-namespace WebCore {
+namespace blink {
 
 // Maximum number of entries in a vibration pattern.
 const unsigned kVibrationPatternLengthMax = 99;
@@ -173,4 +173,4 @@ const char* NavigatorVibration::supplementName()
     return "NavigatorVibration";
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -7,13 +7,13 @@
 
 #include "modules/EventTargetModules.h"
 
-namespace WebCore {
+namespace blink {
 
 class DOMWindowDeviceLight {
 public:
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(devicelight);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMWindowDeviceLight_h

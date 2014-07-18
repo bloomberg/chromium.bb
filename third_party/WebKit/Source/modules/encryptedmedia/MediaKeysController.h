@@ -12,7 +12,7 @@ namespace blink {
 class WebContentDecryptionModule;
 }
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class MediaKeysClient;
@@ -33,7 +33,7 @@ private:
     MediaKeysClient* m_client;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaKeysController_h
 

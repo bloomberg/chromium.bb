@@ -34,7 +34,7 @@
 
 const unsigned RenderingQuantum = 128;
 
-namespace WebCore {
+namespace blink {
 
 WaveShaperDSPKernel::WaveShaperDSPKernel(WaveShaperProcessor* processor)
     : AudioDSPKernel(processor)
@@ -204,6 +204,6 @@ double WaveShaperDSPKernel::latencyTime() const
     return static_cast<double>(latencyFrames) / sampleRate();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

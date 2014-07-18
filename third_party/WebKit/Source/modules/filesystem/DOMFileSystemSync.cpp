@@ -46,7 +46,7 @@
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemCallbacks.h"
 
-namespace WebCore {
+namespace blink {
 
 class FileWriterBase;
 

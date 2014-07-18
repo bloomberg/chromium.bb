@@ -36,7 +36,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class PeriodicWave : public RefCountedWillBeGarbageCollectedFinalized<PeriodicWave>, public ScriptWrappable {
 public:
@@ -90,6 +90,6 @@ private:
     Vector<OwnPtr<AudioFloatArray> > m_bandLimitedTables;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PeriodicWave_h

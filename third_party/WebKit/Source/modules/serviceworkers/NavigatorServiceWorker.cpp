@@ -11,7 +11,7 @@
 #include "core/frame/Navigator.h"
 #include "modules/serviceworkers/ServiceWorkerContainer.h"
 
-namespace WebCore {
+namespace blink {
 
 NavigatorServiceWorker::NavigatorServiceWorker(Navigator& navigator)
     : DOMWindowProperty(navigator.frame())
@@ -80,4 +80,4 @@ void NavigatorServiceWorker::trace(Visitor* visitor)
     WillBeHeapSupplement<Navigator>::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

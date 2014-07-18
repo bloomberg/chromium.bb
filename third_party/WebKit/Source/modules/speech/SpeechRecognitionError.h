@@ -29,7 +29,7 @@
 #include "modules/EventModules.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 struct SpeechRecognitionErrorInit : public EventInit {
     SpeechRecognitionErrorInit();
@@ -76,6 +76,6 @@ private:
     String m_message;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SpeechRecognitionError_h

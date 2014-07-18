@@ -40,7 +40,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 SQLStatementSync::SQLStatementSync(const String& statement, const Vector<SQLValue>& arguments, int permissions)
     : m_statement(statement)
@@ -137,4 +137,4 @@ PassRefPtrWillBeRawPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db,
     return resultSet.release();
 }
 
-} // namespace WebCore
+} // namespace blink

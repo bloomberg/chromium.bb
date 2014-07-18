@@ -36,7 +36,7 @@
 #include "public/platform/Platform.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 const size_t renderQuantumSize = 128;
 
@@ -157,6 +157,6 @@ void OfflineAudioDestinationNode::trace(Visitor* visitor)
     AudioDestinationNode::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

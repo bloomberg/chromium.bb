@@ -41,7 +41,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class ScriptState;
 class ScriptPromiseResolver;
@@ -96,6 +96,6 @@ private:
     ProxyState m_proxyState;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ServiceWorker_h

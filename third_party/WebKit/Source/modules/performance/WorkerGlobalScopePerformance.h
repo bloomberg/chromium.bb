@@ -35,7 +35,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class WorkerGlobalScope;
 
@@ -57,6 +57,6 @@ private:
     PersistentWillBeMember<WorkerPerformance> m_performance;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerGlobalScopePerformance_h

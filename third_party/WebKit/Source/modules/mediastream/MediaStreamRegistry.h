@@ -30,7 +30,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 class MediaStream;
@@ -53,6 +53,6 @@ private:
     HashMap<String, RefPtr<MediaStreamDescriptor> > m_streamDescriptors;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaStreamRegistry_h

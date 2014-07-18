@@ -42,7 +42,7 @@
 #include "public/platform/WebCryptoAlgorithm.h"
 #include "wtf/ArrayBufferView.h"
 
-namespace WebCore {
+namespace blink {
 
 // Seems like the generated bindings should take care of these however it
 // currently doesn't. See also http://crbug.com/264520
@@ -397,4 +397,4 @@ ScriptPromise SubtleCrypto::unwrapKey(ScriptState* scriptState, const String& ra
     return promise;
 }
 
-} // namespace WebCore
+} // namespace blink

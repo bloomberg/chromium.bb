@@ -36,7 +36,7 @@
 #include "modules/webdatabase/DatabaseSync.h"
 #include "modules/webdatabase/SQLTransactionSyncCallback.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<SQLTransactionSync> SQLTransactionSync::create(DatabaseSync* db, PassOwnPtr<SQLTransactionSyncCallback> callback, bool readOnly)
 {
@@ -56,4 +56,4 @@ SQLTransactionSync* SQLTransactionSync::from(SQLTransactionBackendSync* backend)
     return static_cast<SQLTransactionSync*>(backend);
 }
 
-} // namespace WebCore
+} // namespace blink

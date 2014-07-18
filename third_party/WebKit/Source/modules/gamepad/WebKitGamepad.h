@@ -10,7 +10,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebKitGamepad FINAL : public GarbageCollectedFinalized<WebKitGamepad>, public GamepadCommon, public ScriptWrappable {
 public:
@@ -32,6 +32,6 @@ private:
     FloatVector m_buttons;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebKitGamepad_h

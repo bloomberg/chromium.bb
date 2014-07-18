@@ -39,7 +39,7 @@ class WebGamepad;
 class WebGamepads;
 }
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class Gamepad;
@@ -94,6 +94,6 @@ private:
     AsyncMethodRunner<NavigatorGamepad> m_dispatchOneEventRunner;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigatorGamepad_h

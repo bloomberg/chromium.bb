@@ -26,7 +26,7 @@
 #ifndef DatabaseBase_h
 #define DatabaseBase_h
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 
@@ -35,6 +35,6 @@ protected:
     DatabaseBase(ExecutionContext*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DatabaseBase_h

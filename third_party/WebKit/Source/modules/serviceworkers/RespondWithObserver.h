@@ -10,7 +10,7 @@
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class Response;
@@ -50,6 +50,6 @@ private:
     State m_state;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RespondWithObserver_h

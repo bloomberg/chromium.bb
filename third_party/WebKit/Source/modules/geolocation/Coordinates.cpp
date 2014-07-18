@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/geolocation/Coordinates.h"
 
-namespace WebCore {
+namespace blink {
 
 double Coordinates::altitude(bool& isNull) const
 {
@@ -64,4 +64,4 @@ double Coordinates::speed(bool& isNull) const
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink

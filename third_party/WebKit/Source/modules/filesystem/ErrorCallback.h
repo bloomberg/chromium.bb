@@ -31,7 +31,7 @@
 #ifndef ErrorCallback_h
 #define ErrorCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class FileError;
 

@@ -41,7 +41,7 @@
 #include "public/platform/WebRTCPeerConnectionHandler.h"
 #include "public/platform/WebRTCPeerConnectionHandlerClient.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class MediaStreamTrack;
@@ -178,6 +178,6 @@ private:
     bool m_closed;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCPeerConnection_h

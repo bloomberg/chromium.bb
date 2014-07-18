@@ -69,7 +69,7 @@
 //     Note: unlike with SQLTransaction, there is no JS representation of SQLStatement.
 //     Hence, there is no GC dependency at play here.
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<SQLStatementBackend> SQLStatementBackend::create(PassOwnPtrWillBeRawPtr<AbstractSQLStatement> frontend,
     const String& statement, const Vector<SQLValue>& arguments, int permissions)
@@ -238,4 +238,4 @@ bool SQLStatementBackend::lastExecutionFailedDueToQuota() const
     return m_error && m_error->code() == SQLError::QUOTA_ERR;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -29,11 +29,11 @@
 #include "core/dom/ExecutionContext.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 DatabaseBase::DatabaseBase(ExecutionContext* executionContext)
 {
     ASSERT_UNUSED(executionContext, executionContext->isContextThread());
 }
 
-} // namespace WebCore
+} // namespace blink

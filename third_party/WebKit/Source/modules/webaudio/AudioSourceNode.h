@@ -31,7 +31,7 @@
 
 #include "modules/webaudio/AudioNode.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioSourceNode : public AudioNode {
 public:
@@ -45,6 +45,6 @@ protected:
     virtual double latencyTime() const OVERRIDE FINAL { return 0; }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioSourceNode_h

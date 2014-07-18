@@ -33,7 +33,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class Navigator;
@@ -67,6 +67,6 @@ private:
     OwnPtr<NavigatorContentUtilsClient> m_client;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigatorContentUtils_h

@@ -13,7 +13,7 @@
 #include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace DeviceOrientationInspectorAgentState {
 static const char alpha[] = "alpha";
@@ -82,4 +82,4 @@ void DeviceOrientationInspectorAgent::didCommitLoadForMainFrame()
     restore();
 }
 
-} // namespace WebCore
+} // namespace blink

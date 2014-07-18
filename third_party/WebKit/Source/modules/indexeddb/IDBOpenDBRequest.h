@@ -29,7 +29,7 @@
 #include "modules/indexeddb/IDBRequest.h"
 #include "public/platform/WebIDBDatabase.h"
 
-namespace WebCore {
+namespace blink {
 
 class IDBDatabaseCallbacks;
 
@@ -64,6 +64,6 @@ private:
     int64_t m_version;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IDBOpenDBRequest_h

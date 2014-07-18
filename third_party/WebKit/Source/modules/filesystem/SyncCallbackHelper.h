@@ -47,7 +47,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 template <typename ResultType, typename CallbackArg>
 struct HelperResultType {
@@ -171,6 +171,6 @@ typedef SyncCallbackHelper<MetadataCallback, Metadata*, Metadata> MetadataSyncCa
 typedef SyncCallbackHelper<VoidCallback, EmptyType*, EmptyType> VoidSyncCallbackHelper;
 typedef SyncCallbackHelper<FileSystemCallback, DOMFileSystem*, DOMFileSystemSync> FileSystemSyncCallbackHelper;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SyncCallbackHelper_h

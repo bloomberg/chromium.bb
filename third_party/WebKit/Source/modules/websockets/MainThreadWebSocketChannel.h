@@ -47,7 +47,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 class BlobDataHandle;
 class Document;
@@ -248,6 +248,6 @@ private:
     WebSocketDeflateFramer m_deflateFramer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MainThreadWebSocketChannel_h

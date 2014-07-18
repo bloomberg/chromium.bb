@@ -27,7 +27,7 @@
 
 #if ENABLE(WEB_AUDIO)
 
-namespace WebCore {
+namespace blink {
 
 class AudioBuffer;
 

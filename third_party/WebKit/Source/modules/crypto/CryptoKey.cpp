@@ -38,7 +38,7 @@
 #include "public/platform/WebCryptoKeyAlgorithm.h"
 #include "public/platform/WebString.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -215,4 +215,4 @@ bool CryptoKey::parseUsageMask(const Vector<String>& usages, blink::WebCryptoKey
     return true;
 }
 
-} // namespace WebCore
+} // namespace blink

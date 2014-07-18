@@ -39,7 +39,7 @@
 #include "modules/quota/StorageQuotaCallback.h"
 #include "modules/quota/StorageUsageCallback.h"
 
-namespace WebCore {
+namespace blink {
 
 DeprecatedStorageInfo::DeprecatedStorageInfo()
 {
@@ -95,4 +95,4 @@ void DeprecatedStorageInfo::trace(Visitor* visitor)
     visitor->trace(m_persistentStorage);
 }
 
-} // namespace WebCore
+} // namespace blink

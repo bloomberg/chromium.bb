@@ -9,7 +9,7 @@
 #include "platform/Supplementable.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class LocalFrame;
@@ -30,6 +30,6 @@ public:
 
 void proviceNotificationPermissionClientTo(LocalFrame&, PassOwnPtrWillBeRawPtr<NotificationPermissionClient>);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NotificationPermissionClient_h

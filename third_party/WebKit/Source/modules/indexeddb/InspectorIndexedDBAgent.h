@@ -35,7 +35,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Page;
 
@@ -64,6 +64,6 @@ private:
     Page* m_page;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InspectorIndexedDBAgent_h)

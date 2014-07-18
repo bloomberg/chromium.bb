@@ -38,7 +38,7 @@
 
 const unsigned DefaultNumberOfOutputChannels = 1;
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<ChannelMergerNode> ChannelMergerNode::create(AudioContext* context, float sampleRate, unsigned numberOfInputs)
 {
@@ -132,6 +132,6 @@ void ChannelMergerNode::checkNumberOfChannelsForInput(AudioNodeInput* input)
     AudioNode::checkNumberOfChannelsForInput(input);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

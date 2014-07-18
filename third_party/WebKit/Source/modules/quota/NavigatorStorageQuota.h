@@ -36,7 +36,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class Navigator;
@@ -67,6 +67,6 @@ private:
     mutable PersistentWillBeMember<DeprecatedStorageQuota> m_persistentStorage;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigatorStorageQuota_h

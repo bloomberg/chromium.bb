@@ -33,7 +33,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class RTCErrorCallback {
 public:
@@ -41,6 +41,6 @@ public:
     virtual void handleEvent(const String& errorInformation) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCErrorCallback_h

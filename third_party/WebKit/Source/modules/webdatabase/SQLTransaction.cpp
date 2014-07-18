@@ -46,7 +46,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<SQLTransaction> SQLTransaction::create(Database* db, PassOwnPtr<SQLTransactionCallback> callback,
     PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback,
@@ -321,4 +321,4 @@ PassOwnPtr<SQLTransactionErrorCallback> SQLTransaction::releaseErrorCallback()
     return m_errorCallbackWrapper.unwrap();
 }
 
-} // namespace WebCore
+} // namespace blink

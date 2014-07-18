@@ -32,7 +32,7 @@
 #include "modules/indexeddb/IDBIndex.h"
 #include "modules/indexeddb/IDBObjectStore.h"
 
-namespace WebCore {
+namespace blink {
 
 IDBAny* IDBAny::createUndefined()
 {
@@ -244,4 +244,4 @@ void IDBAny::trace(Visitor* visitor)
     visitor->trace(m_idbKey);
 }
 
-} // namespace WebCore
+} // namespace blink

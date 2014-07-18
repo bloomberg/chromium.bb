@@ -34,7 +34,7 @@
 #include "modules/EventTargetModules.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class MIDIAccess;
 
@@ -77,6 +77,6 @@ private:
     Member<MIDIAccess> m_access;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MIDIPort_h

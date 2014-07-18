@@ -40,7 +40,7 @@
 #include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileEntrySync.h"
 
-namespace WebCore {
+namespace blink {
 
 class DirectoryReaderSync::EntriesCallbackHelper : public EntriesCallback {
 public:

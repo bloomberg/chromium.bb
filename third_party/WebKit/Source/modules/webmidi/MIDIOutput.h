@@ -34,7 +34,7 @@
 #include "modules/webmidi/MIDIPort.h"
 #include "wtf/Uint8Array.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class MIDIAccess;
@@ -61,6 +61,6 @@ private:
 
 typedef HeapVector<Member<MIDIOutput> > MIDIOutputVector;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MIDIOutput_h

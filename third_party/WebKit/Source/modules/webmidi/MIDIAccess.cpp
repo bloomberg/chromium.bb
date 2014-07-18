@@ -42,7 +42,7 @@
 #include "platform/AsyncMethodRunner.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 MIDIAccess::MIDIAccess(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>& ports, ExecutionContext* executionContext)
     : ActiveDOMObject(executionContext)
@@ -129,4 +129,4 @@ void MIDIAccess::trace(Visitor* visitor)
     EventTargetWithInlineData::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

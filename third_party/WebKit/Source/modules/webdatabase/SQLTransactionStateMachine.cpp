@@ -29,7 +29,7 @@
 #include "platform/Logging.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 #if !LOG_DISABLED
 const char* nameForSQLTransactionState(SQLTransactionState state)
@@ -67,4 +67,4 @@ const char* nameForSQLTransactionState(SQLTransactionState state)
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

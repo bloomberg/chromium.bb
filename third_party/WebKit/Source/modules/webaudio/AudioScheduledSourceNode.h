@@ -31,7 +31,7 @@
 
 #include "modules/webaudio/AudioSourceNode.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioBus;
 
@@ -102,6 +102,6 @@ protected:
     static const double UnknownTime;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioScheduledSourceNode_h

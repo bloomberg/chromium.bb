@@ -7,7 +7,7 @@
 
 #include "platform/Supplementable.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class NetworkInformation;
@@ -35,6 +35,6 @@ private:
     RefPtrWillBeMember<NetworkInformation> m_connection;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerNavigatorNetworkInformation_h

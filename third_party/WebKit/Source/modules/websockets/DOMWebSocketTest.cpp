@@ -28,7 +28,7 @@ using testing::InSequence;
 using testing::Ref;
 using testing::Return;
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -791,4 +791,4 @@ INSTANTIATE_TEST_CASE_P(DOMWebSocketInvalidClosingCode, DOMWebSocketInvalidClosi
 
 } // namespace
 
-} // namespace WebCore
+} // namespace blink

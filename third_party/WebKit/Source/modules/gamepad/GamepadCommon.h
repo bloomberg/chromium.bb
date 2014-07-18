@@ -30,7 +30,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class GamepadCommon {
 public:
@@ -65,6 +65,6 @@ protected:
     DoubleVector m_axes;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GamepadCommon_h

@@ -39,7 +39,7 @@
 #include "public/platform/WebURL.h"
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 static const int kMaxRecursionDepth = 3;
 static const double progressNotificationIntervalMS = 50;
@@ -325,4 +325,4 @@ void FileWriter::trace(Visitor* visitor)
     EventTargetWithInlineData::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -61,7 +61,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 DOMWebSocket::EventQueue::EventQueue(EventTarget* target)
     : m_state(Active)
@@ -707,4 +707,4 @@ void DOMWebSocket::trace(Visitor* visitor)
     EventTargetWithInlineData::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

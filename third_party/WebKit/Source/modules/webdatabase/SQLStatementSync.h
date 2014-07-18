@@ -38,7 +38,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class DatabaseSync;
 class ExceptionState;
@@ -56,6 +56,6 @@ private:
     int m_permissions;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SQLStatementSync_h

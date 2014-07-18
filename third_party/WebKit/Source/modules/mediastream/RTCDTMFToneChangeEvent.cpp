@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/mediastream/RTCDTMFToneChangeEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<RTCDTMFToneChangeEvent> RTCDTMFToneChangeEvent::create()
 {
@@ -82,5 +82,5 @@ void RTCDTMFToneChangeEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink
 

@@ -26,7 +26,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class Navigator;
@@ -70,6 +70,6 @@ private:
     VibrationPattern m_pattern;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigatorVibration_h

@@ -28,7 +28,7 @@
 #ifndef SQLStatementCallback_h
 #define SQLStatementCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class SQLTransaction;
 class SQLResultSet;

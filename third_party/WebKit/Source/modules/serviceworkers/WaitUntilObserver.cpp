@@ -17,7 +17,7 @@
 #include "wtf/RefPtr.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class WaitUntilObserver::ThenFunction FINAL : public ScriptFunction {
 public:
@@ -123,4 +123,4 @@ void WaitUntilObserver::decrementPendingActivity()
     observeContext(0);
 }
 
-} // namespace WebCore
+} // namespace blink

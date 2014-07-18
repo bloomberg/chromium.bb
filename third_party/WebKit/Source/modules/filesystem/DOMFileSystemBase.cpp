@@ -51,7 +51,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 const char DOMFileSystemBase::persistentPathPrefix[] = "persistent";
 const char DOMFileSystemBase::temporaryPathPrefix[] = "temporary";
@@ -335,4 +335,4 @@ bool DOMFileSystemBase::waitForAdditionalResult(int callbacksId)
     return fileSystem()->waitForAdditionalResult(callbacksId);
 }
 
-} // namespace WebCore
+} // namespace blink

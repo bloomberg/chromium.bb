@@ -39,7 +39,7 @@
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class DatabaseCallback;
 class ExceptionState;
@@ -98,6 +98,6 @@ private:
     friend class DatabaseServer; // FIXME: remove this when the backend has been split out.
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -23,7 +23,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Dictionary;
 class ExceptionState;
@@ -43,6 +43,6 @@ private:
     ~NavigatorMediaStream();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigatorMediaStream_h

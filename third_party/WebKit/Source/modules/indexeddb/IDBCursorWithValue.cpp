@@ -30,7 +30,7 @@
 
 using blink::WebIDBCursor;
 
-namespace WebCore {
+namespace blink {
 
 IDBCursorWithValue* IDBCursorWithValue::create(PassOwnPtr<blink::WebIDBCursor> backend, blink::WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
 {
@@ -47,4 +47,4 @@ IDBCursorWithValue::~IDBCursorWithValue()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

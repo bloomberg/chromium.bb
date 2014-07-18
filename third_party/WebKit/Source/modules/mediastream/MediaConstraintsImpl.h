@@ -33,7 +33,7 @@
 
 #include "public/platform/WebMediaConstraints.h"
 
-namespace WebCore {
+namespace blink {
 
 class Dictionary;
 class ExceptionState;
@@ -45,7 +45,7 @@ blink::WebMediaConstraints create(const Dictionary&, ExceptionState&);
 
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaConstraintsImpl_h
 

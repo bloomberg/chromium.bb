@@ -41,7 +41,7 @@
 #include "public/platform/WebDatabaseObserver.h"
 #include "wtf/Functional.h"
 
-namespace WebCore {
+namespace blink {
 
 static void databaseModified(DatabaseBackendBase* database)
 {

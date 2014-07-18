@@ -31,7 +31,7 @@
 #ifndef InternalsSpeechSynthesis_h
 #define InternalsSpeechSynthesis_h
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class Internals;
@@ -41,6 +41,6 @@ public:
     static void enableMockSpeechSynthesizer(Internals&, Document*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InternalsSpeechSynthesis_h

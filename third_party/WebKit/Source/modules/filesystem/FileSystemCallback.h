@@ -31,7 +31,7 @@
 #ifndef FileSystemCallback_h
 #define FileSystemCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class DOMFileSystem;
 

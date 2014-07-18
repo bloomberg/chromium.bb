@@ -38,7 +38,7 @@
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class AbstractSQLTransaction;
 class DatabaseBackend;
@@ -132,6 +132,6 @@ private:
     OwnPtr<SQLiteTransaction> m_sqliteTransaction;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SQLTransactionBackend_h

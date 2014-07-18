@@ -32,7 +32,7 @@
 #include "modules/webaudio/AudioNodeInput.h"
 #include "wtf/Threading.h"
 
-namespace WebCore {
+namespace blink {
 
 inline AudioNodeOutput::AudioNodeOutput(AudioNode* node, unsigned numberOfChannels)
     : m_node(node)
@@ -229,6 +229,6 @@ void AudioNodeOutput::enable()
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

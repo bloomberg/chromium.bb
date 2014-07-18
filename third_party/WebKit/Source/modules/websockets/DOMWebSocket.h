@@ -44,7 +44,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/AtomicStringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class Blob;
 class ExceptionState;
@@ -130,7 +130,7 @@ protected:
     explicit DOMWebSocket(ExecutionContext*);
 
 private:
-    // FIXME: This should inherit WebCore::EventQueue.
+    // FIXME: This should inherit blink::EventQueue.
     class EventQueue FINAL : public RefCountedWillBeGarbageCollectedFinalized<EventQueue> {
     public:
         static PassRefPtrWillBeRawPtr<EventQueue> create(EventTarget* target)
@@ -233,6 +233,6 @@ private:
     Timer<DOMWebSocket> m_bufferedAmountConsumeTimer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMWebSocket_h

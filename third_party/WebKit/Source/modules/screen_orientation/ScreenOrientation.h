@@ -13,7 +13,7 @@
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class LocalFrame;
@@ -61,6 +61,6 @@ private:
     unsigned short m_angle;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScreenOrientation_h

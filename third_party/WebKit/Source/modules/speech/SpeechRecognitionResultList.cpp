@@ -27,7 +27,7 @@
 
 #include "modules/speech/SpeechRecognitionResultList.h"
 
-namespace WebCore {
+namespace blink {
 
 SpeechRecognitionResultList* SpeechRecognitionResultList::create(const HeapVector<Member<SpeechRecognitionResult> >& results)
 {
@@ -53,4 +53,4 @@ void SpeechRecognitionResultList::trace(Visitor* visitor)
     visitor->trace(m_results);
 }
 
-} // namespace WebCore
+} // namespace blink

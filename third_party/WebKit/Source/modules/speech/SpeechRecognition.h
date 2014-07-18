@@ -34,7 +34,7 @@
 #include "wtf/Compiler.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
@@ -116,6 +116,6 @@ private:
     HeapVector<Member<SpeechRecognitionResult> > m_finalResults;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SpeechRecognition_h

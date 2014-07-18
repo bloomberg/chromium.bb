@@ -36,7 +36,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/workers/SharedWorker.h"
 
-namespace WebCore {
+namespace blink {
 
 SharedWorkerPerformance::SharedWorkerPerformance()
     : m_timeOrigin(monotonicallyIncreasingTime())
@@ -75,5 +75,5 @@ double SharedWorkerPerformance::getWorkerStart(ExecutionContext* context, Shared
     return m_timeOrigin - navigationStart;
 }
 
-} // namespace WebCore
+} // namespace blink
 

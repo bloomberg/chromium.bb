@@ -16,7 +16,7 @@
 #include "wtf/RefPtr.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class RespondWithObserver::ThenFunction FINAL : public ScriptFunction {
 public:
@@ -121,4 +121,4 @@ RespondWithObserver::RespondWithObserver(ExecutionContext* context, int eventID)
 {
 }
 
-} // namespace WebCore
+} // namespace blink

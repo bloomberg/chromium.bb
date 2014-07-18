@@ -35,7 +35,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class Page;
@@ -67,6 +67,6 @@ private:
     bool m_enabled;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InspectorFileSystemAgent_h

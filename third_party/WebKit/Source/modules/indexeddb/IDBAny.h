@@ -39,7 +39,7 @@ class WebBlobInfo;
 
 }
 
-namespace WebCore {
+namespace blink {
 
 class DOMStringList;
 class IDBCursor;
@@ -152,6 +152,6 @@ private:
     const int64_t m_integer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IDBAny_h

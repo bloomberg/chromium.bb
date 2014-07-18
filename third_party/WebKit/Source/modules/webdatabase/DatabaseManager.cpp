@@ -45,7 +45,7 @@
 #include "modules/webdatabase/DatabaseTask.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
-namespace WebCore {
+namespace blink {
 
 DatabaseManager& DatabaseManager::manager()
 {
@@ -279,4 +279,4 @@ void DatabaseManager::logErrorMessage(ExecutionContext* context, const String& m
     context->addConsoleMessage(StorageMessageSource, ErrorMessageLevel, message);
 }
 
-} // namespace WebCore
+} // namespace blink

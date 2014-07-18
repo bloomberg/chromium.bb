@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/gamepad/GamepadList.h"
 
-namespace WebCore {
+namespace blink {
 
 GamepadList::GamepadList()
 {
@@ -56,4 +56,4 @@ void GamepadList::trace(Visitor* visitor)
     }
 }
 
-} // namespace WebCore
+} // namespace blink

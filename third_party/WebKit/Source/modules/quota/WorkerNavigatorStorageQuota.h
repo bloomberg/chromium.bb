@@ -37,7 +37,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class WorkerNavigatorStorageQuota FINAL : public NoBaseWillBeGarbageCollected<WorkerNavigatorStorageQuota>, public WillBeHeapSupplement<WorkerNavigator> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorStorageQuota);
@@ -59,6 +59,6 @@ private:
     mutable PersistentWillBeMember<DeprecatedStorageQuota> m_persistentStorage;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerNavigatorStorageQuota_h

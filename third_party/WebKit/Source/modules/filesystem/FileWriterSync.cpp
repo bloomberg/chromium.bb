@@ -38,7 +38,7 @@
 #include "public/platform/WebFileWriter.h"
 #include "public/platform/WebURL.h"
 
-namespace WebCore {
+namespace blink {
 
 void FileWriterSync::write(Blob* data, ExceptionState& exceptionState)
 {
@@ -141,4 +141,4 @@ FileWriterSync::~FileWriterSync()
 }
 
 
-} // namespace WebCore
+} // namespace blink

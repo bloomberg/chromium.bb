@@ -29,7 +29,7 @@
 
 #include "platform/speech/PlatformSpeechSynthesisUtterance.h"
 
-namespace WebCore {
+namespace blink {
 
 PlatformSpeechSynthesizerMock* PlatformSpeechSynthesizerMock::create(PlatformSpeechSynthesizerClient* client)
 {
@@ -113,4 +113,4 @@ void PlatformSpeechSynthesizerMock::trace(Visitor* visitor)
     PlatformSpeechSynthesizer::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

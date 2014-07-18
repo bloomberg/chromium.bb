@@ -8,7 +8,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class DOMFileSystem;
 class InspectorFrontendHost;
@@ -22,6 +22,6 @@ private:
     ~InspectorFrontendHostFileSystem();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // !defined(InspectorFrontendHostFileSystem_h)

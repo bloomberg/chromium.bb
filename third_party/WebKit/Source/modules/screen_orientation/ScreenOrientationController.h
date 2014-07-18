@@ -15,7 +15,7 @@ namespace blink {
 class WebScreenOrientationClient;
 }
 
-namespace WebCore {
+namespace blink {
 
 class FrameView;
 class ScreenOrientation;
@@ -59,6 +59,6 @@ private:
     LocalFrame& m_frame;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScreenOrientationController_h

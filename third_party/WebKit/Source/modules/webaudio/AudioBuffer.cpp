@@ -39,7 +39,7 @@
 #include "platform/audio/AudioFileReader.h"
 #include "modules/webaudio/AudioContext.h"
 
-namespace WebCore {
+namespace blink {
 
 float AudioBuffer::minAllowedSampleRate()
 {
@@ -213,6 +213,6 @@ void AudioBuffer::zero()
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

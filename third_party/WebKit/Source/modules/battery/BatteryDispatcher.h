@@ -14,7 +14,7 @@ namespace blink {
 class WebBatteryStatus;
 }
 
-namespace WebCore {
+namespace blink {
 
 class BatteryDispatcher FINAL : public DeviceEventDispatcherBase, public blink::WebBatteryStatusListener {
 public:

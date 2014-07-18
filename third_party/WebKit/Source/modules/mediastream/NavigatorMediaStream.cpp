@@ -37,7 +37,7 @@
 #include "modules/mediastream/UserMediaController.h"
 #include "modules/mediastream/UserMediaRequest.h"
 
-namespace WebCore {
+namespace blink {
 
 NavigatorMediaStream::NavigatorMediaStream()
 {
@@ -85,4 +85,4 @@ void NavigatorMediaStream::getMediaDevices(Navigator& navigator, PassOwnPtr<Medi
     request->start();
 }
 
-} // namespace WebCore
+} // namespace blink

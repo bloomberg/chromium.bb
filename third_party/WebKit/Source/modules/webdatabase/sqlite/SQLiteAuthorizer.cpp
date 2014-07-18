@@ -31,9 +31,9 @@
 
 #include <sqlite3.h>
 
-namespace WebCore {
+namespace blink {
 
 const int SQLAuthAllow = SQLITE_OK;
 const int SQLAuthDeny = SQLITE_DENY;
 
-} // namespace WebCore
+} // namespace blink

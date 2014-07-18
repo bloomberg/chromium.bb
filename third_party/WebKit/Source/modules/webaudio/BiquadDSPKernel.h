@@ -29,7 +29,7 @@
 #include "platform/audio/Biquad.h"
 #include "modules/webaudio/BiquadProcessor.h"
 
-namespace WebCore {
+namespace blink {
 
 class BiquadProcessor;
 
@@ -71,6 +71,6 @@ private:
     mutable Mutex m_processLock;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BiquadDSPKernel_h

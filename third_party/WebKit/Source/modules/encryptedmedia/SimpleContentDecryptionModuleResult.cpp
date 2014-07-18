@@ -14,7 +14,7 @@
 #include "public/platform/WebString.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 ExceptionCode WebCdmExceptionToExceptionCode(blink::WebContentDecryptionModuleException cdmException)
 {
@@ -78,4 +78,4 @@ void SimpleContentDecryptionModuleResult::completeWithDOMException(ExceptionCode
     m_resolver.clear();
 }
 
-} // namespace WebCore
+} // namespace blink

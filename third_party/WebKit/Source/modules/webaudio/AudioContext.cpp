@@ -76,7 +76,7 @@
 // FIXME: check the proper way to reference an undefined thread ID
 const WTF::ThreadIdentifier UndefinedThreadIdentifier = 0xffffffff;
 
-namespace WebCore {
+namespace blink {
 
 bool AudioContext::isSampleRateRangeGood(float sampleRate)
 {
@@ -968,6 +968,6 @@ void AudioContext::trace(Visitor* visitor)
     EventTargetWithInlineData::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

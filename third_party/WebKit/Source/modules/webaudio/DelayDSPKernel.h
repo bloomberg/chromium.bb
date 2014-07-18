@@ -28,7 +28,7 @@
 #include "platform/audio/AudioDelayDSPKernel.h"
 #include "modules/webaudio/DelayProcessor.h"
 
-namespace WebCore {
+namespace blink {
 
 class DelayProcessor;
 
@@ -45,6 +45,6 @@ private:
     DelayProcessor* delayProcessor() { return static_cast<DelayProcessor*>(processor()); }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DelayDSPKernel_h

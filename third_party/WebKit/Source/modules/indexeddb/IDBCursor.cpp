@@ -46,7 +46,7 @@
 using blink::WebIDBCursor;
 using blink::WebIDBDatabase;
 
-namespace WebCore {
+namespace blink {
 
 IDBCursor* IDBCursor::create(PassOwnPtr<blink::WebIDBCursor> backend, blink::WebIDBCursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
 {
@@ -416,4 +416,4 @@ const AtomicString& IDBCursor::directionToString(unsigned short direction)
     }
 }
 
-} // namespace WebCore
+} // namespace blink

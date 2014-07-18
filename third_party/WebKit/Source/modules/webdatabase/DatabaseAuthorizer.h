@@ -35,7 +35,7 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 extern const int SQLAuthAllow;
 extern const int SQLAuthDeny;
@@ -121,6 +121,6 @@ private:
     HashSet<String, CaseFoldingHash> m_whitelistedFunctions;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DatabaseAuthorizer_h

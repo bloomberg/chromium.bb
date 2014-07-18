@@ -29,7 +29,7 @@
 #include "modules/mediastream/RTCDataChannel.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class RTCDataChannelEvent FINAL : public Event {
 public:
@@ -51,6 +51,6 @@ private:
     PersistentWillBeMember<RTCDataChannel> m_channel;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCDataChannelEvent_h

@@ -34,7 +34,7 @@
 #include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 MediaStreamTrackSourcesRequestImpl* MediaStreamTrackSourcesRequestImpl::create(ExecutionContext& context, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
 {
@@ -78,4 +78,4 @@ void MediaStreamTrackSourcesRequestImpl::trace(Visitor* visitor)
     MediaStreamTrackSourcesRequest::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

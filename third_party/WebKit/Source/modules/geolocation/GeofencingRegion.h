@@ -9,7 +9,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class GeofencingRegion : public GarbageCollectedFinalized<GeofencingRegion>, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(GeofencingRegion);
@@ -27,6 +27,6 @@ private:
     String m_id;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

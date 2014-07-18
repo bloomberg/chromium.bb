@@ -41,7 +41,7 @@ namespace blink {
 class WebFileSystem;
 }
 
-namespace WebCore {
+namespace blink {
 
 class DirectoryEntry;
 class DirectoryReaderBase;
@@ -129,6 +129,6 @@ protected:
 
 inline bool operator==(const DOMFileSystemBase& a, const DOMFileSystemBase& b) { return a.name() == b.name() && a.type() == b.type() && a.rootURL() == b.rootURL(); }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMFileSystemBase_h

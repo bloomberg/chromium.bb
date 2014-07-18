@@ -28,7 +28,7 @@
 
 #include "modules/mediastream/MediaDeviceInfo.h"
 
-namespace WebCore {
+namespace blink {
 
 class MediaDeviceInfoCallback {
 public:
@@ -36,6 +36,6 @@ public:
     virtual void handleEvent(const MediaDeviceInfoVector&) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaDeviceInfoCallback_h

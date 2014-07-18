@@ -34,7 +34,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebIDBDatabaseCallbacksImpl FINAL : public blink::WebIDBDatabaseCallbacks {
 public:
@@ -53,6 +53,6 @@ private:
     Persistent<IDBDatabaseCallbacks> m_callbacks;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebIDBDatabaseCallbacksImpl_h

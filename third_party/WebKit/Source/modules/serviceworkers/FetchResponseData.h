@@ -13,7 +13,7 @@
 
 namespace blink { class WebServiceWorkerResponse; }
 
-namespace WebCore {
+namespace blink {
 
 class BlobDataHandle;
 class FetchHeaderList;
@@ -64,6 +64,6 @@ private:
     RefPtrWillBeMember<FetchResponseData> m_internalResponse;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FetchResponseData_h

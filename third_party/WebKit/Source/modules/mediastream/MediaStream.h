@@ -33,7 +33,7 @@
 #include "platform/Timer.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -115,6 +115,6 @@ private:
 
 typedef HeapVector<Member<MediaStream> > MediaStreamVector;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaStream_h

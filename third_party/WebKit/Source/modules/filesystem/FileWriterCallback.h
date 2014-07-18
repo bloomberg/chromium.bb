@@ -31,7 +31,7 @@
 #ifndef FileWriterCallback_h
 #define FileWriterCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class FileWriter;
 

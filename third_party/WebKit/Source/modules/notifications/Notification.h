@@ -41,7 +41,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class Dictionary;
 class ExecutionContext;
@@ -128,6 +128,6 @@ private:
     AsyncMethodRunner<Notification> m_asyncRunner;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Notification_h

@@ -37,7 +37,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 DraggedIsolatedFileSystem::~DraggedIsolatedFileSystem()
 {
@@ -76,4 +76,4 @@ void DraggedIsolatedFileSystem::trace(Visitor* visitor)
     WillBeHeapSupplement<DataObject>::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

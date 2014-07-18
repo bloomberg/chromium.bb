@@ -29,7 +29,7 @@
 #include "modules/webaudio/RealtimeAnalyser.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -73,6 +73,6 @@ private:
     RealtimeAnalyser m_analyser;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AnalyserNode_h

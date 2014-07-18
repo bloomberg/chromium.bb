@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/webmidi/MIDIConnectionEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 MIDIConnectionEvent::MIDIConnectionEvent()
 {
@@ -73,4 +73,4 @@ void MIDIConnectionEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

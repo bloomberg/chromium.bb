@@ -14,7 +14,7 @@
 #include "platform/PlatformScreen.h"
 #include "public/platform/WebScreenOrientationClient.h"
 
-namespace WebCore {
+namespace blink {
 
 ScreenOrientationController::~ScreenOrientationController()
 {
@@ -176,4 +176,4 @@ void ScreenOrientationController::trace(Visitor* visitor)
     WillBeHeapSupplement<LocalFrame>::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

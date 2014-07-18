@@ -29,7 +29,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/indexeddb/IDBTransaction.h"
 
-namespace WebCore {
+namespace blink {
 
 const char* IDBPendingTransactionMonitor::supplementName()
 {

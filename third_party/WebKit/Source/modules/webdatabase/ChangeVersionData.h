@@ -28,7 +28,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ChangeVersionData {
 public:
@@ -43,6 +43,6 @@ private:
     String m_newVersion;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ChangeVersionData_h

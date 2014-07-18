@@ -11,7 +11,7 @@
 #include "modules/geolocation/PositionErrorCallback.h"
 #include "modules/geolocation/PositionOptions.h"
 
-namespace WebCore {
+namespace blink {
 
 GeoNotifier::GeoNotifier(Geolocation* geolocation, PassOwnPtr<PositionCallback> successCallback, PassOwnPtr<PositionErrorCallback> errorCallback, PositionOptions* options)
     // FIXME : m_geolocation should be removed, it makes circular dependancy.
@@ -101,4 +101,4 @@ void GeoNotifier::timerFired(Timer<GeoNotifier>*)
     m_geolocation->requestTimedOut(this);
 }
 
-} // namespace WebCore
+} // namespace blink

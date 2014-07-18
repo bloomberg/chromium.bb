@@ -15,7 +15,7 @@ namespace blink {
 class WebPushClient;
 } // namespace blink
 
-namespace WebCore {
+namespace blink {
 
 class PushController FINAL : public NoBaseWillBeGarbageCollected<PushController>, public WillBeHeapSupplement<Page> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PushController);
@@ -39,6 +39,6 @@ private:
 
 void providePushControllerTo(Page&, blink::WebPushClient*);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PushController_h

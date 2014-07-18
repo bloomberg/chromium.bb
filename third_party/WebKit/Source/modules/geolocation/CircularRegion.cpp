@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 
-namespace WebCore {
+namespace blink {
 
 CircularRegionInit::CircularRegionInit(const Dictionary& init)
     : latitude(0)
@@ -34,4 +34,4 @@ CircularRegion::CircularRegion(const CircularRegionInit& init)
     ScriptWrappable::init(this);
 }
 
-} // namespace WebCore
+} // namespace blink

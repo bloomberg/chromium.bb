@@ -32,7 +32,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class IDBKey : public GarbageCollectedFinalized<IDBKey> {
 public:
@@ -157,6 +157,6 @@ private:
     const double m_number;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IDBKey_h

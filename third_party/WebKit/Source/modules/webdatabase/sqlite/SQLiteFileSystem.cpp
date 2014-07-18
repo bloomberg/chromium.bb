@@ -37,7 +37,7 @@
 
 // SQLiteFileSystem::registerSQLiteVFS() is implemented in the
 // platform-specific files SQLiteFileSystemChromium{Win|Posix}.cpp
-namespace WebCore {
+namespace blink {
 
 SQLiteFileSystem::SQLiteFileSystem()
 {
@@ -52,4 +52,4 @@ int SQLiteFileSystem::openDatabase(const String& filename, sqlite3** database, b
     return sqlite3_open_v2(filename.utf8().data(), database, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, "chromium_vfs");
 }
 
-} // namespace WebCore
+} // namespace blink

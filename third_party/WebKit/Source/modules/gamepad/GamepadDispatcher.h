@@ -14,7 +14,7 @@ namespace blink {
 class WebGamepads;
 }
 
-namespace WebCore {
+namespace blink {
 
 class NavigatorGamepad;
 
@@ -48,6 +48,6 @@ private:
     ConnectionChange m_latestChange;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -31,7 +31,7 @@
 
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<DatabaseAuthorizer> DatabaseAuthorizer::create(const String& databaseInfoTableName)
 {
@@ -425,4 +425,4 @@ int DatabaseAuthorizer::updateDeletesBasedOnTableName(const String& tableName)
     return allow;
 }
 
-} // namespace WebCore
+} // namespace blink

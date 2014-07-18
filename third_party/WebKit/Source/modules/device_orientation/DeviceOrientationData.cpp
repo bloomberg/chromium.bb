@@ -27,7 +27,7 @@
 #include "modules/device_orientation/DeviceOrientationData.h"
 #include "public/platform/WebDeviceOrientationData.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<DeviceOrientationData> DeviceOrientationData::create()
 {
@@ -113,4 +113,4 @@ bool DeviceOrientationData::canProvideEventData() const
     return canProvideAlpha() || canProvideBeta() || canProvideGamma();
 }
 
-} // namespace WebCore
+} // namespace blink

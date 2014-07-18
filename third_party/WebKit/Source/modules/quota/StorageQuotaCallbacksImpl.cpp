@@ -35,7 +35,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "modules/quota/StorageInfo.h"
 
-namespace WebCore {
+namespace blink {
 
 StorageQuotaCallbacksImpl::StorageQuotaCallbacksImpl(PassRefPtr<ScriptPromiseResolver> resolver)
     : m_resolver(resolver)
@@ -61,4 +61,4 @@ void StorageQuotaCallbacksImpl::didFail(blink::WebStorageQuotaError error)
     m_resolver->reject(DOMError::create(static_cast<ExceptionCode>(error)).get());
 }
 
-} // namespace WebCore
+} // namespace blink

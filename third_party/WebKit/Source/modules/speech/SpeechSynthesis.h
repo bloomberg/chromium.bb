@@ -34,7 +34,7 @@
 #include "platform/speech/PlatformSpeechSynthesisUtterance.h"
 #include "platform/speech/PlatformSpeechSynthesizer.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class PlatformSpeechSynthesizerClient;
@@ -93,6 +93,6 @@ private:
     virtual const AtomicString& interfaceName() const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SpeechSynthesisEvent_h

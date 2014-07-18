@@ -35,7 +35,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class SourceBuffer;
 class GenericEventQueue;
@@ -75,6 +75,6 @@ private:
     HeapVector<Member<SourceBuffer> > m_list;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -31,7 +31,7 @@
 #ifndef DatabaseCallback_h
 #define DatabaseCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class Database;
 class DatabaseSync;

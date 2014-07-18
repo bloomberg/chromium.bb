@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/websockets/ThreadableWebSocketChannelClientWrapper.h"
 
-namespace WebCore {
+namespace blink {
 
 ThreadableWebSocketChannelClientWrapper::ThreadableWebSocketChannelClientWrapper(WebSocketChannelClient* client)
     : m_client(client)
@@ -95,4 +95,4 @@ void ThreadableWebSocketChannelClientWrapper::trace(Visitor* visitor)
     visitor->trace(m_client);
 }
 
-} // namespace WebCore
+} // namespace blink

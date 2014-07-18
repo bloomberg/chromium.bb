@@ -9,7 +9,7 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebPushError.h"
 
-namespace WebCore {
+namespace blink {
 
 class ScriptPromiseResolver;
 
@@ -24,6 +24,6 @@ private:
     PushError() WTF_DELETED_FUNCTION;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PushError_h

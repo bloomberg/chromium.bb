@@ -9,7 +9,7 @@
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class BatteryStatus FINAL : public RefCountedWillBeGarbageCollected<BatteryStatus> {
 public:
@@ -33,6 +33,6 @@ private:
     double m_level;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BatteryStatus_h

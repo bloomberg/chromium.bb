@@ -28,7 +28,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class GeolocationError : public GarbageCollectedFinalized<GeolocationError> {
 public:
@@ -57,6 +57,6 @@ private:
     String m_message;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GeolocationError_h

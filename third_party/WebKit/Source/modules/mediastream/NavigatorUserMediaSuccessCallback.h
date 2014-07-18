@@ -25,7 +25,7 @@
 #ifndef NavigatorUserMediaSuccessCallback_h
 #define NavigatorUserMediaSuccessCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class MediaStream;
 
@@ -35,6 +35,6 @@ public:
     virtual void handleEvent(MediaStream*) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigatorUserMediaSuccessCallback_h

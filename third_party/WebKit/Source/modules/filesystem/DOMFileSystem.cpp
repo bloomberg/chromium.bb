@@ -50,7 +50,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 // static
 DOMFileSystem* DOMFileSystem::create(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
@@ -158,4 +158,4 @@ void DOMFileSystem::createFile(const FileEntry* fileEntry, PassOwnPtr<FileCallba
     fileSystem()->createSnapshotFileAndReadMetadata(fileSystemURL, SnapshotFileCallback::create(this, fileEntry->name(), fileSystemURL, successCallback, errorCallback, m_context));
 }
 
-} // namespace WebCore
+} // namespace blink

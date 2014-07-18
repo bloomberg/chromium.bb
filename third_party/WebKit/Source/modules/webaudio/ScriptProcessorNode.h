@@ -32,7 +32,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioBuffer;
 class AudioContext;
@@ -92,6 +92,6 @@ private:
     mutable Mutex m_processEventLock;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScriptProcessorNode_h

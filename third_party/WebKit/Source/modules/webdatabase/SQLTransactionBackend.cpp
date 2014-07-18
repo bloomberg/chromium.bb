@@ -338,7 +338,7 @@
 //     - state CleanupAndTerminate calls doCleanup().
 
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<SQLTransactionBackend> SQLTransactionBackend::create(DatabaseBackend* db,
     PassRefPtrWillBeRawPtr<AbstractSQLTransaction> frontend,
@@ -833,4 +833,4 @@ SQLTransactionState SQLTransactionBackend::sendToFrontendState()
     return SQLTransactionState::Idle;
 }
 
-} // namespace WebCore
+} // namespace blink

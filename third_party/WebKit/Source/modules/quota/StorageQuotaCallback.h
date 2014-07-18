@@ -31,7 +31,7 @@
 #ifndef StorageQuotaCallback_h
 #define StorageQuotaCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class StorageQuotaCallback {
 public:

@@ -31,7 +31,7 @@
 #ifndef MIDIErrorCallback_h
 #define MIDIErrorCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class DOMError;
 
@@ -41,6 +41,6 @@ public:
     virtual void handleEvent(DOMError*) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MIDIErrorCallback_h

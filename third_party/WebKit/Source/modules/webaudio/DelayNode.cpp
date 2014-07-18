@@ -33,7 +33,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 const double maximumAllowedDelayTime = 180;
 
@@ -58,6 +58,6 @@ AudioParam* DelayNode::delayTime()
     return delayProcessor()->delayTime();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

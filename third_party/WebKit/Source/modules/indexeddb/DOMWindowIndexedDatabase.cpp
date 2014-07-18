@@ -31,7 +31,7 @@
 #include "core/page/Page.h"
 #include "modules/indexeddb/IDBFactory.h"
 
-namespace WebCore {
+namespace blink {
 
 DOMWindowIndexedDatabase::DOMWindowIndexedDatabase(LocalDOMWindow& window)
     : DOMWindowProperty(window.frame())
@@ -99,4 +99,4 @@ IDBFactory* DOMWindowIndexedDatabase::indexedDB()
     return m_idbFactory.get();
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -35,7 +35,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/performance/WorkerPerformance.h"
 
-namespace WebCore {
+namespace blink {
 
 WorkerGlobalScopePerformance::WorkerGlobalScopePerformance()
 {
@@ -74,4 +74,4 @@ void WorkerGlobalScopePerformance::trace(Visitor* visitor)
     WillBeHeapSupplement<WorkerGlobalScope>::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

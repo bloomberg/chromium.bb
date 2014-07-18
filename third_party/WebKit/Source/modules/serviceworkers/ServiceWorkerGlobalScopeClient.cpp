@@ -34,7 +34,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerGlobalScope.h"
 
-namespace WebCore {
+namespace blink {
 
 const char* ServiceWorkerGlobalScopeClient::supplementName()
 {
@@ -51,4 +51,4 @@ void provideServiceWorkerGlobalScopeClientToWorker(WorkerClients* clients, PassO
     clients->provideSupplement(ServiceWorkerGlobalScopeClient::supplementName(), client);
 }
 
-} // namespace WebCore
+} // namespace blink

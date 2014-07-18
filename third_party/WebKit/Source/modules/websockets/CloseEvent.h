@@ -33,7 +33,7 @@
 
 #include "modules/EventModules.h"
 
-namespace WebCore {
+namespace blink {
 
 struct CloseEventInit : public EventInit {
     CloseEventInit()
@@ -105,6 +105,6 @@ private:
     String m_reason;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // CloseEvent_h

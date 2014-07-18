@@ -28,7 +28,7 @@
 
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class NotificationPermissionCallback {
 public:
@@ -36,6 +36,6 @@ public:
     virtual void handleEvent(const String& permission) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NotificationPermissionCallback_h

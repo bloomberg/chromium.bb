@@ -39,7 +39,7 @@
 
 struct sqlite3;
 
-namespace WebCore {
+namespace blink {
 
 class DatabaseAuthorizer;
 class SQLiteStatement;
@@ -146,6 +146,6 @@ private:
     int m_lastChangesCount;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -36,7 +36,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class Navigator;
@@ -58,6 +58,6 @@ private:
     static const char* supplementName();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigatorDoNotTrack_h

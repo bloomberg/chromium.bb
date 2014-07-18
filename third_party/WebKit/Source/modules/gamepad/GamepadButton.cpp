@@ -5,7 +5,7 @@
 #include "config.h"
 #include "modules/gamepad/Gamepad.h"
 
-namespace WebCore {
+namespace blink {
 
 GamepadButton* GamepadButton::create()
 {
@@ -27,4 +27,4 @@ void GamepadButton::trace(Visitor* visitor)
 {
 }
 
-} // namespace WebCore
+} // namespace blink

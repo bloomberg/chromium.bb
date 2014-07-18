@@ -34,7 +34,7 @@
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 
-namespace WebCore {
+namespace blink {
 
 AudioBasicProcessorNode::AudioBasicProcessorNode(AudioContext* context, float sampleRate)
     : AudioNode(context, sampleRate)
@@ -140,6 +140,6 @@ double AudioBasicProcessorNode::latencyTime() const
     return m_processor->latencyTime();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

@@ -35,7 +35,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class Database;
 class ExecutionContext;
@@ -71,6 +71,6 @@ private:
 void provideDatabaseClientTo(Page&, PassOwnPtrWillBeRawPtr<DatabaseClient>);
 void provideDatabaseClientToWorker(WorkerClients*, PassOwnPtrWillBeRawPtr<DatabaseClient>);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DatabaseClient_h

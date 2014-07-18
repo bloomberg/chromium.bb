@@ -46,7 +46,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/CString.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<DatabaseSync> DatabaseSync::create(ExecutionContext*, PassRefPtrWillBeRawPtr<DatabaseBackendBase> backend)
 {
@@ -210,4 +210,4 @@ DatabaseSync::TransactionObserver::~TransactionObserver()
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink

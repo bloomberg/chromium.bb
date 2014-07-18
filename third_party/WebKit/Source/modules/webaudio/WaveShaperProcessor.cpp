@@ -30,7 +30,7 @@
 
 #include "modules/webaudio/WaveShaperDSPKernel.h"
 
-namespace WebCore {
+namespace blink {
 
 WaveShaperProcessor::WaveShaperProcessor(float sampleRate, size_t numberOfChannels)
     : AudioDSPKernelProcessor(sampleRate, numberOfChannels)
@@ -96,6 +96,6 @@ void WaveShaperProcessor::process(const AudioBus* source, AudioBus* destination,
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

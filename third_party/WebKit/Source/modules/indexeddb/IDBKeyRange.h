@@ -30,7 +30,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/indexeddb/IDBKey.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -80,6 +80,6 @@ private:
     UpperBoundType m_upperType;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IDBKeyRange_h

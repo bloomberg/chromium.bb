@@ -38,7 +38,7 @@
 #include "platform/heap/glue/PendingGCRunner.h"
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 DatabaseThread::DatabaseThread()
     : m_transactionClient(adoptPtr(new SQLTransactionClient()))
@@ -171,4 +171,4 @@ void DatabaseThread::scheduleTask(PassOwnPtr<DatabaseTask> task)
     m_thread->postTask(task.leakPtr());
 }
 
-} // namespace WebCore
+} // namespace blink

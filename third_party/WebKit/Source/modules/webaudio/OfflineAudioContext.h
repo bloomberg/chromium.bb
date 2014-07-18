@@ -27,7 +27,7 @@
 
 #include "modules/webaudio/AudioContext.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -41,6 +41,6 @@ private:
     OfflineAudioContext(Document*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // OfflineAudioContext_h

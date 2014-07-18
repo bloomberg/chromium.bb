@@ -35,7 +35,7 @@
 #include "core/page/Page.h"
 #include "core/workers/WorkerGlobalScope.h"
 
-namespace WebCore {
+namespace blink {
 
 const char* StorageQuotaClient::supplementName()
 {
@@ -54,4 +54,4 @@ void provideStorageQuotaClientTo(Page& page, PassOwnPtrWillBeRawPtr<StorageQuota
     page.provideSupplement(StorageQuotaClient::supplementName(), client);
 }
 
-} // namespace WebCore
+} // namespace blink

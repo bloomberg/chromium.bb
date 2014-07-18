@@ -33,7 +33,7 @@
 #include "modules/webdatabase/DatabaseSync.h"
 #include "modules/webdatabase/DatabaseTracker.h"
 
-namespace WebCore {
+namespace blink {
 
 String DatabaseServer::fullPathForDatabase(SecurityOrigin* origin, const String& name, bool createIfDoesNotExist)
 {
@@ -78,4 +78,4 @@ PassRefPtrWillBeRawPtr<DatabaseBackendBase> DatabaseServer::createDatabase(Datab
     return database.release();
 }
 
-} // namespace WebCore
+} // namespace blink

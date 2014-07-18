@@ -34,7 +34,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<InstallPhaseEvent> InstallPhaseEvent::create()
 {
@@ -77,4 +77,4 @@ void InstallPhaseEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

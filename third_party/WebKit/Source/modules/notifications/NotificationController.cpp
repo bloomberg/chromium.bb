@@ -31,7 +31,7 @@
 #include "modules/notifications/NotificationClient.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 NotificationController::NotificationController(PassOwnPtr<NotificationClient> client)
     : m_client(client)
@@ -71,4 +71,4 @@ void provideNotification(LocalFrame& frame, PassOwnPtr<NotificationClient> clien
     NotificationController::provideTo(frame, NotificationController::supplementName(), NotificationController::create(client));
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -36,7 +36,7 @@ class WebRTCDTMFSenderHandler;
 class WebRTCPeerConnectionHandler;
 }
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class MediaStreamTrack;
@@ -94,6 +94,6 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<Event> > m_scheduledEvents;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCDTMFSender_h

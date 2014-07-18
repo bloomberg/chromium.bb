@@ -36,7 +36,7 @@
 #include "modules/filesystem/Entry.h"
 #include "modules/filesystem/ErrorCallback.h"
 
-namespace WebCore {
+namespace blink {
 
 class DirectoryReader::EntriesCallbackHelper : public EntriesCallback {
 public:

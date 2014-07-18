@@ -30,7 +30,7 @@
 #include "modules/indexeddb/IndexedDBClient.h"
 #include "platform/Supplementable.h"
 
-namespace WebCore {
+namespace blink {
 
 class IDBFactory;
 class LocalDOMWindow;
@@ -58,6 +58,6 @@ private:
     PersistentWillBeMember<IDBFactory> m_idbFactory;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMWindowIndexedDatabase_h

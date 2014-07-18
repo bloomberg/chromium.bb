@@ -45,7 +45,7 @@
 #include "public/platform/WebCryptoAlgorithm.h"
 #include "wtf/ArrayBufferView.h"
 
-namespace WebCore {
+namespace blink {
 
 class CryptoResultImpl::WeakResolver : public ScriptPromiseResolver {
 public:
@@ -193,4 +193,4 @@ ScriptPromise CryptoResultImpl::promise()
     return m_resolver ? m_resolver->promise() : ScriptPromise();
 }
 
-} // namespace WebCore
+} // namespace blink

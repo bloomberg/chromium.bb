@@ -30,7 +30,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioBuffer;
 
@@ -54,6 +54,6 @@ private:
     RefPtrWillBeMember<AudioBuffer> m_renderedBuffer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // OfflineAudioCompletionEvent_h

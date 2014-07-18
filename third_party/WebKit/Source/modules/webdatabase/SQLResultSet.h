@@ -34,7 +34,7 @@
 #include "modules/webdatabase/SQLResultSetRowList.h"
 #include "wtf/ThreadSafeRefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -63,6 +63,6 @@ private:
     bool m_isValid;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SQLResultSet_h

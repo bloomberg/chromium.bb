@@ -33,7 +33,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 struct WebSocketFrame {
     // RFC6455 opcodes.
@@ -86,6 +86,6 @@ struct WebSocketFrame {
     size_t payloadLength;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebSocketFrame_h

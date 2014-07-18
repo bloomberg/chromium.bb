@@ -38,7 +38,7 @@
 #include "wtf/MathExtras.h"
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 const double DefaultGrainDuration = 0.020; // 20ms
 
@@ -480,6 +480,6 @@ void AudioBufferSourceNode::trace(Visitor* visitor)
     AudioScheduledSourceNode::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

@@ -31,7 +31,7 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioBus;
 
@@ -92,6 +92,6 @@ private:
     double m_maxDecibels;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RealtimeAnalyser_h

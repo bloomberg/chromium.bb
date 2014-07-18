@@ -35,7 +35,7 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 const char DOMFilePath::separator = '/';
 const char DOMFilePath::root[] = "/";
@@ -144,4 +144,4 @@ bool DOMFilePath::isValidName(const String& name)
     return isValidPath(name);
 }
 
-} // namespace WebCore
+} // namespace blink

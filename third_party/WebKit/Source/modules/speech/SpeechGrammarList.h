@@ -30,7 +30,7 @@
 #include "modules/speech/SpeechGrammar.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 
@@ -52,6 +52,6 @@ private:
     HeapVector<Member<SpeechGrammar> > m_grammars;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SpeechGrammarList_h

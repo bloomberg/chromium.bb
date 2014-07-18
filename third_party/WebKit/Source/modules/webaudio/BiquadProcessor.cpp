@@ -30,7 +30,7 @@
 
 #include "modules/webaudio/BiquadDSPKernel.h"
 
-namespace WebCore {
+namespace blink {
 
 BiquadProcessor::BiquadProcessor(AudioContext* context, float sampleRate, size_t numberOfChannels, bool autoInitialize)
     : AudioDSPKernelProcessor(sampleRate, numberOfChannels)
@@ -133,6 +133,6 @@ void BiquadProcessor::getFrequencyResponse(int nFrequencies,
     responseKernel->getFrequencyResponse(nFrequencies, frequencyHz, magResponse, phaseResponse);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

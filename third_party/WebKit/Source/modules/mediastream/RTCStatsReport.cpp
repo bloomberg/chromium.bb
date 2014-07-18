@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/mediastream/RTCStatsReport.h"
 
-namespace WebCore {
+namespace blink {
 
 RTCStatsReport* RTCStatsReport::create(const String& id, const String& type, double timestamp)
 {
@@ -65,4 +65,4 @@ void RTCStatsReport::addStatistic(const String& name, const String& value)
     m_stats.add(name, value);
 }
 
-} // namespace WebCore
+} // namespace blink

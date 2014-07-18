@@ -39,7 +39,7 @@
 struct z_stream_s;
 typedef z_stream_s z_stream;
 
-namespace WebCore {
+namespace blink {
 
 class WebSocketDeflater {
     WTF_MAKE_FAST_ALLOCATED;

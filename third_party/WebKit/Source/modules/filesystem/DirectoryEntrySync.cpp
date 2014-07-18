@@ -38,7 +38,7 @@
 #include "modules/filesystem/FileEntrySync.h"
 #include "modules/filesystem/SyncCallbackHelper.h"
 
-namespace WebCore {
+namespace blink {
 
 DirectoryEntrySync::DirectoryEntrySync(DOMFileSystemBase* fileSystem, const String& fullPath)
     : EntrySync(fileSystem, fullPath)

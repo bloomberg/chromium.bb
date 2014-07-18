@@ -44,7 +44,7 @@
 #include "public/platform/WebStorageQuotaCallbacks.h"
 #include "public/platform/WebStorageQuotaType.h"
 
-namespace WebCore {
+namespace blink {
 
 DeprecatedStorageQuota::DeprecatedStorageQuota(Type type)
     : m_type(type)
@@ -98,4 +98,4 @@ DeprecatedStorageQuota::~DeprecatedStorageQuota()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

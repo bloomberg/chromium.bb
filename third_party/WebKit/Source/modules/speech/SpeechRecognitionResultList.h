@@ -30,7 +30,7 @@
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class SpeechRecognitionResultList : public GarbageCollectedFinalized<SpeechRecognitionResultList>, public ScriptWrappable {
 public:
@@ -47,6 +47,6 @@ private:
     HeapVector<Member<SpeechRecognitionResult> > m_results;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SpeechRecognitionResultList_h

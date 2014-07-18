@@ -28,7 +28,7 @@
 #include "modules/EventModules.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 class MediaStreamTrack;
 
@@ -53,6 +53,6 @@ private:
     PersistentWillBeMember<MediaStreamTrack> m_track;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaStreamTrackEvent_h

@@ -29,7 +29,7 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebMediaDeviceInfo.h"
 
-namespace WebCore {
+namespace blink {
 
 class MediaDeviceInfo FINAL : public GarbageCollectedFinalized<MediaDeviceInfo> {
 public:
@@ -50,6 +50,6 @@ private:
 
 typedef HeapVector<Member<MediaDeviceInfo> > MediaDeviceInfoVector;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaDeviceInfo_h

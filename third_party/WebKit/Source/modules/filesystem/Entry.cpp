@@ -41,7 +41,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 Entry::Entry(DOMFileSystemBase* fileSystem, const String& fullPath)
     : EntryBase(fileSystem, fullPath)
@@ -79,4 +79,4 @@ void Entry::trace(Visitor* visitor)
     EntryBase::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -35,7 +35,7 @@
 #include "platform/weborigin/KURL.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 MediaSourceRegistry& MediaSourceRegistry::registry()
 {
@@ -77,4 +77,4 @@ MediaSourceRegistry::MediaSourceRegistry()
     HTMLMediaSource::setRegistry(this);
 }
 
-} // namespace WebCore
+} // namespace blink

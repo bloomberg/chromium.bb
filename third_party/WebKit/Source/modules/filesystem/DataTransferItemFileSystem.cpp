@@ -45,7 +45,7 @@
 #include "platform/AsyncFileSystemCallbacks.h"
 #include "platform/FileMetadata.h"
 
-namespace WebCore {
+namespace blink {
 
 // static
 Entry* DataTransferItemFileSystem::webkitGetAsEntry(ExecutionContext* executionContext, DataTransferItem& item)
@@ -79,4 +79,4 @@ Entry* DataTransferItemFileSystem::webkitGetAsEntry(ExecutionContext* executionC
     return FileEntry::create(domFileSystem, virtualPath);
 }
 
-} // namespace WebCore
+} // namespace blink

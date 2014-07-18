@@ -41,7 +41,7 @@ const unsigned PeriodicWaveSize = 4096; // This must be a power of two.
 const unsigned NumberOfRanges = 36; // There should be 3 * log2(PeriodicWaveSize) 1/3 octave ranges.
 const float CentsPerRange = 1200 / 3; // 1/3 Octave.
 
-namespace WebCore {
+namespace blink {
 
 using namespace VectorMath;
 
@@ -300,6 +300,6 @@ void PeriodicWave::generateBasicWaveform(int shape)
     createBandLimitedTables(realP, imagP, halfSize);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

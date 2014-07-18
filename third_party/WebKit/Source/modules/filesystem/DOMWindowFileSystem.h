@@ -28,7 +28,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalDOMWindow;
 class EntryCallback;
@@ -52,6 +52,6 @@ private:
     ~DOMWindowFileSystem();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMWindowFileSystem_h

@@ -37,7 +37,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 class Database;
 class InspectorFrontend;
 
@@ -61,6 +61,6 @@ private:
     String m_version;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InspectorDatabaseResource_h

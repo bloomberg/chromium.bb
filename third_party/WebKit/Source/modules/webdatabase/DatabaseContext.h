@@ -34,7 +34,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class Database;
 class DatabaseBackendBase;
@@ -100,6 +100,6 @@ private:
     bool m_hasRequestedTermination;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DatabaseContext_h

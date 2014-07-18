@@ -51,7 +51,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> ServiceWorkerGlobalScope::create(ServiceWorkerThread* thread, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
 {
@@ -129,4 +129,4 @@ void ServiceWorkerGlobalScope::logExceptionToConsole(const String& errorMessage,
     addMessageToWorkerConsole(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, callStack, 0);
 }
 
-} // namespace WebCore
+} // namespace blink

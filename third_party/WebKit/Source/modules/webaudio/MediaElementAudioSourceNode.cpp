@@ -39,7 +39,7 @@
 const unsigned minSampleRate = 8000;
 const unsigned maxSampleRate = 192000;
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<MediaElementAudioSourceNode> MediaElementAudioSourceNode::create(AudioContext* context, HTMLMediaElement* mediaElement)
 {
@@ -158,6 +158,6 @@ void MediaElementAudioSourceNode::trace(Visitor* visitor)
     AudioSourceProviderClient::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

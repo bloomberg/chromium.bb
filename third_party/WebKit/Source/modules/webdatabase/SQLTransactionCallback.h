@@ -29,7 +29,7 @@
 #ifndef SQLTransactionCallback_h
 #define SQLTransactionCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class SQLTransaction;
 

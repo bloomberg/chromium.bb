@@ -20,7 +20,7 @@
 #include "public/platform/WebServiceWorkerRequest.h"
 #include "public/platform/WebURLRequest.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -271,4 +271,4 @@ void Request::trace(Visitor* visitor)
     visitor->trace(m_headers);
 }
 
-} // namespace WebCore
+} // namespace blink

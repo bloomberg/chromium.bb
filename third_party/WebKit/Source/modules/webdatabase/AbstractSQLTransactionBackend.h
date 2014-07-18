@@ -36,7 +36,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class AbstractSQLTransactionBackend : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<AbstractSQLTransactionBackend> {
 public:
@@ -54,6 +54,6 @@ public:
 
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AbstractSQLTransactionBackend_h

@@ -37,7 +37,7 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFileWriterClient.h"
 
-namespace WebCore {
+namespace blink {
 
 class Blob;
 class ExceptionState;
@@ -70,6 +70,6 @@ private:
 #endif
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FileWriter_h

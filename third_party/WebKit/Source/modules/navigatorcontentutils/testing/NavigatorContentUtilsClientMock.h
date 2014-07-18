@@ -9,7 +9,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 
@@ -27,8 +27,8 @@ public:
 private:
     typedef struct {
         String scheme;
-        WebCore::KURL baseURL;
-        WebCore::KURL url;
+        blink::KURL baseURL;
+        blink::KURL url;
         String title;
     } ProtocolInfo;
 

@@ -32,7 +32,7 @@
 #include "modules/webaudio/AudioNode.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioContext;
 
@@ -55,6 +55,6 @@ private:
     ChannelMergerNode(AudioContext*, float sampleRate, unsigned numberOfInputs);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ChannelMergerNode_h

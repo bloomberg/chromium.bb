@@ -30,7 +30,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioContext;
 class AudioNodeOutput;
@@ -88,6 +88,6 @@ protected:
     bool m_renderingStateNeedUpdating;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioSummingJunction_h

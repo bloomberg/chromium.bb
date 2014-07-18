@@ -40,7 +40,7 @@ namespace blink {
 class WebDeviceMotionData;
 }
 
-namespace WebCore {
+namespace blink {
 
 class DeviceMotionController;
 class DeviceMotionData;
@@ -68,6 +68,6 @@ private:
     RefPtrWillBePersistent<DeviceMotionData> m_lastDeviceMotionData;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DeviceMotionDispatcher_h

@@ -35,7 +35,7 @@
 #include "platform/FileMetadata.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class Metadata : public GarbageCollectedFinalized<Metadata>, public ScriptWrappable {
 public:

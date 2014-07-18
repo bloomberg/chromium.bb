@@ -11,7 +11,7 @@
 #include "modules/device_orientation/DeviceMotionDispatcher.h"
 #include "modules/device_orientation/DeviceMotionEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 DeviceMotionController::DeviceMotionController(Document& document)
     : DeviceSingleWindowEventController(document)
@@ -69,4 +69,4 @@ const AtomicString& DeviceMotionController::eventTypeName() const
     return EventTypeNames::devicemotion;
 }
 
-} // namespace WebCore
+} // namespace blink

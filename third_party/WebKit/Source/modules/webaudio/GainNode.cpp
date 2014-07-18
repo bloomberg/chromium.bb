@@ -32,7 +32,7 @@
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 
-namespace WebCore {
+namespace blink {
 
 GainNode::GainNode(AudioContext* context, float sampleRate)
     : AudioNode(context, sampleRate)
@@ -114,6 +114,6 @@ void GainNode::trace(Visitor* visitor)
     AudioNode::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

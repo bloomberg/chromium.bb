@@ -34,7 +34,7 @@
 #include "platform/Logging.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 DefaultAudioDestinationNode::DefaultAudioDestinationNode(AudioContext* context)
     : AudioDestinationNode(context, AudioDestination::hardwareSampleRate())
@@ -119,6 +119,6 @@ void DefaultAudioDestinationNode::setChannelCount(unsigned long channelCount, Ex
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

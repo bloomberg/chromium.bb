@@ -53,7 +53,7 @@
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 // Created and destroyed on the worker thread. All setters of this class are
 // called on the main thread, while all getters are called on the worker
@@ -623,4 +623,4 @@ void WorkerThreadableWebSocketChannel::Bridge::trace(Visitor* visitor)
     visitor->trace(m_peer);
 }
 
-} // namespace WebCore
+} // namespace blink

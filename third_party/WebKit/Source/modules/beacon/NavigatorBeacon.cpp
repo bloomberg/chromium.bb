@@ -16,7 +16,7 @@
 #include "core/loader/BeaconLoader.h"
 #include "wtf/ArrayBufferView.h"
 
-namespace WebCore {
+namespace blink {
 
 NavigatorBeacon::NavigatorBeacon(Navigator& navigator)
     : m_transmittedBytes(0)
@@ -158,4 +158,4 @@ bool NavigatorBeacon::sendBeacon(ExecutionContext* context, const String& urlstr
     return result;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -33,7 +33,7 @@
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
 
-namespace WebCore {
+namespace blink {
 
 const int SQLResultDone = SQLITE_DONE;
 const int SQLResultOk = SQLITE_OK;
@@ -426,4 +426,4 @@ void SQLiteDatabase::trace(Visitor* visitor)
     visitor->trace(m_authorizer);
 }
 
-} // namespace WebCore
+} // namespace blink

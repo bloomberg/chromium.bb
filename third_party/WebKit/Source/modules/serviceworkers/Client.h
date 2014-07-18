@@ -10,7 +10,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class Client FINAL : public RefCountedWillBeGarbageCollected<Client>, public ScriptWrappable {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Client);
@@ -29,6 +29,6 @@ private:
     unsigned m_id;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Client_h

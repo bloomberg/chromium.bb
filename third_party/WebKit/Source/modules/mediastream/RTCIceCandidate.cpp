@@ -36,7 +36,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 
-namespace WebCore {
+namespace blink {
 
 RTCIceCandidate* RTCIceCandidate::create(const Dictionary& dictionary, ExceptionState& exceptionState)
 {
@@ -102,4 +102,4 @@ void RTCIceCandidate::setSdpMLineIndex(unsigned short sdpMLineIndex)
     m_webCandidate.setSdpMLineIndex(sdpMLineIndex);
 }
 
-} // namespace WebCore
+} // namespace blink

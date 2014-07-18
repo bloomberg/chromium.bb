@@ -31,7 +31,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalDOMWindow;
 
@@ -54,6 +54,6 @@ private:
     PersistentWillBeMember<SpeechSynthesis> m_speechSynthesis;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMWindowSpeechSynthesis_h

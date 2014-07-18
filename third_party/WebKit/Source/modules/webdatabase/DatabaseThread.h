@@ -40,7 +40,7 @@
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/ThreadingPrimitives.h"
 
-namespace WebCore {
+namespace blink {
 
 class DatabaseBackend;
 class DatabaseTask;
@@ -96,6 +96,6 @@ private:
     OwnPtr<MessageLoopInterruptor> m_messageLoopInterruptor;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DatabaseThread_h

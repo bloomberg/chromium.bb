@@ -25,7 +25,7 @@
 #include "config.h"
 #include "modules/mediastream/RTCDataChannelEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<RTCDataChannelEvent> RTCDataChannelEvent::create()
 {
@@ -70,4 +70,4 @@ void RTCDataChannelEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

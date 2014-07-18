@@ -31,7 +31,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class DeviceRotationRate : public RefCountedWillBeGarbageCollectedFinalized<DeviceRotationRate>, public ScriptWrappable {
 public:
@@ -51,6 +51,6 @@ private:
     RefPtrWillBeMember<DeviceMotionData::RotationRate> m_rotationRate;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DeviceRotationRate_h

@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 
-namespace WebCore {
+namespace blink {
 
 struct RegistrationOptionList  {
     explicit RegistrationOptionList(const Dictionary& options)
@@ -20,6 +20,6 @@ struct RegistrationOptionList  {
     String scope;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RegistrationOptionList_h

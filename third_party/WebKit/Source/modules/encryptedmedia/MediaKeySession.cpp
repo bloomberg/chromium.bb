@@ -47,7 +47,7 @@
 #include "public/platform/WebURL.h"
 #include "wtf/Uint8Array.h"
 
-namespace WebCore {
+namespace blink {
 
 // A class holding a pending action.
 class MediaKeySession::PendingAction : public GarbageCollectedFinalized<MediaKeySession::PendingAction> {

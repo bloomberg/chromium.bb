@@ -28,7 +28,7 @@
 
 #include "wtf/EnumClass.h"
 
-namespace WebCore {
+namespace blink {
 
 typedef int DatabaseGuid;
 
@@ -37,6 +37,6 @@ ENUM_CLASS(DatabaseType) {
     Sync
 } ENUM_CLASS_END(DatabaseType);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DatabaseBasicTypes_h

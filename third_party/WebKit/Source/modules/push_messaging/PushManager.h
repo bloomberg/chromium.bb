@@ -9,7 +9,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class ScriptPromise;
@@ -31,6 +31,6 @@ private:
     PushManager();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PushManager_h

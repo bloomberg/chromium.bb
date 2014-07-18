@@ -53,7 +53,7 @@
 using blink::WebMediaSource;
 using blink::WebSourceBuffer;
 
-namespace WebCore {
+namespace blink {
 
 static bool throwExceptionIfClosedOrUpdating(bool isOpen, bool isUpdating, ExceptionState& exceptionState)
 {
@@ -565,4 +565,4 @@ URLRegistry& MediaSource::registry() const
     return MediaSourceRegistry::registry();
 }
 
-} // namespace WebCore
+} // namespace blink

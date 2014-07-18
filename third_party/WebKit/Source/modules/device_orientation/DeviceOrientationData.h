@@ -33,7 +33,7 @@ namespace blink {
 class WebDeviceOrientationData;
 }
 
-namespace WebCore {
+namespace blink {
 
 class DeviceOrientationData : public RefCountedWillBeGarbageCollected<DeviceOrientationData> {
 public:
@@ -67,6 +67,6 @@ private:
     bool m_absolute;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DeviceOrientationData_h

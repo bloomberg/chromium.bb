@@ -31,7 +31,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class SQLValue {
 public:
@@ -53,6 +53,6 @@ private:
     String m_string;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

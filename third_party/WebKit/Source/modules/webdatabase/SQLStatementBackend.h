@@ -35,7 +35,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class AbstractSQLStatement;
 class DatabaseBackend;
@@ -79,6 +79,6 @@ private:
     int m_permissions;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SQLStatementBackend_h

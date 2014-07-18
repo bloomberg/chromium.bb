@@ -36,7 +36,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class MIDIAccessorClient;
 
@@ -66,6 +66,6 @@ private:
     OwnPtr<blink::WebMIDIAccessor> m_accessor;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MIDIAccessor_h

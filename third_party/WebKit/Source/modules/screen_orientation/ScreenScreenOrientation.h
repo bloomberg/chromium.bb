@@ -7,7 +7,7 @@
 
 #include "platform/Supplementable.h"
 
-namespace WebCore {
+namespace blink {
 
 class ScreenOrientation;
 class Screen;
@@ -31,6 +31,6 @@ private:
     PersistentWillBeMember<ScreenOrientation> m_orientation;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ScreenScreenOrientation_h

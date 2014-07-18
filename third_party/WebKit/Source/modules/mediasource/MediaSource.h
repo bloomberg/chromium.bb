@@ -45,7 +45,7 @@ namespace blink {
 class WebSourceBuffer;
 }
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class GenericEventQueue;
@@ -137,6 +137,6 @@ private:
     bool m_isAddedToRegistry;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

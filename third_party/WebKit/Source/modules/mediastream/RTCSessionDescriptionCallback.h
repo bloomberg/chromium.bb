@@ -31,7 +31,7 @@
 #ifndef RTCSessionDescriptionCallback_h
 #define RTCSessionDescriptionCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class RTCSessionDescription;
 
@@ -41,6 +41,6 @@ public:
     virtual void handleEvent(RTCSessionDescription*) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCSessionDescriptionCallback_h

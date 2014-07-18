@@ -36,7 +36,7 @@
 #include "modules/webdatabase/DatabaseError.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ChangeVersionData;
 class DatabaseCallback;
@@ -95,6 +95,6 @@ private:
     friend class SQLTransaction;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Database_h

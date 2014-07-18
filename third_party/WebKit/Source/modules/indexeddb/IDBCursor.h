@@ -42,7 +42,7 @@ class WebBlobInfo;
 
 } // namespace blink
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class IDBAny;
@@ -114,6 +114,6 @@ private:
     OwnPtr<Vector<blink::WebBlobInfo> > m_blobInfo;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IDBCursor_h

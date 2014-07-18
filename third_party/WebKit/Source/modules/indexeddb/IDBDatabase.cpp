@@ -50,7 +50,7 @@
 
 using blink::WebIDBDatabase;
 
-namespace WebCore {
+namespace blink {
 
 const char IDBDatabase::indexDeletedErrorMessage[] = "The index or its object store has been deleted.";
 const char IDBDatabase::isKeyCursorErrorMessage[] = "The cursor is a key cursor.";
@@ -477,4 +477,4 @@ ExecutionContext* IDBDatabase::executionContext() const
     return ActiveDOMObject::executionContext();
 }
 
-} // namespace WebCore
+} // namespace blink

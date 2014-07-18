@@ -25,7 +25,7 @@
 #include "config.h"
 #include "modules/mediastream/UserMediaController.h"
 
-namespace WebCore {
+namespace blink {
 
 const char* UserMediaController::supplementName()
 {
@@ -49,4 +49,4 @@ void provideUserMediaTo(LocalFrame& frame, UserMediaClient* client)
     UserMediaController::provideTo(frame, UserMediaController::supplementName(), UserMediaController::create(client));
 }
 
-} // namespace WebCore
+} // namespace blink

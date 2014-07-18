@@ -46,7 +46,7 @@
 #include "wtf/Functional.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -189,4 +189,4 @@ void provideLocalFileSystemToWorker(WorkerClients* clients, PassOwnPtr<FileSyste
     clients->provideSupplement(LocalFileSystem::supplementName(), LocalFileSystem::create(client));
 }
 
-} // namespace WebCore
+} // namespace blink

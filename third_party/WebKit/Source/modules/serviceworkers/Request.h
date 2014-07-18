@@ -17,7 +17,7 @@
 
 namespace blink { class WebServiceWorkerRequest; }
 
-namespace WebCore {
+namespace blink {
 
 class RequestInit;
 class ResourceRequest;
@@ -58,6 +58,6 @@ private:
     RefPtrWillBeMember<Headers> m_headers;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Request_h

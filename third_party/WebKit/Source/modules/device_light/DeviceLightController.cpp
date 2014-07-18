@@ -11,7 +11,7 @@
 #include "modules/device_light/DeviceLightEvent.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 DeviceLightController::DeviceLightController(Document& document)
     : DeviceSingleWindowEventController(document)
@@ -70,4 +70,4 @@ const AtomicString& DeviceLightController::eventTypeName() const
     return EventTypeNames::devicelight;
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -64,15 +64,15 @@
 #include "wtf/text/Base64.h"
 #include "wtf/text/TextEncoding.h"
 
-using WebCore::TypeBuilder::Array;
+using blink::TypeBuilder::Array;
 
-typedef WebCore::InspectorBackendDispatcher::FileSystemCommandHandler::RequestFileSystemRootCallback RequestFileSystemRootCallback;
-typedef WebCore::InspectorBackendDispatcher::FileSystemCommandHandler::RequestDirectoryContentCallback RequestDirectoryContentCallback;
-typedef WebCore::InspectorBackendDispatcher::FileSystemCommandHandler::RequestMetadataCallback RequestMetadataCallback;
-typedef WebCore::InspectorBackendDispatcher::FileSystemCommandHandler::RequestFileContentCallback RequestFileContentCallback;
-typedef WebCore::InspectorBackendDispatcher::FileSystemCommandHandler::DeleteEntryCallback DeleteEntryCallback;
+typedef blink::InspectorBackendDispatcher::FileSystemCommandHandler::RequestFileSystemRootCallback RequestFileSystemRootCallback;
+typedef blink::InspectorBackendDispatcher::FileSystemCommandHandler::RequestDirectoryContentCallback RequestDirectoryContentCallback;
+typedef blink::InspectorBackendDispatcher::FileSystemCommandHandler::RequestMetadataCallback RequestMetadataCallback;
+typedef blink::InspectorBackendDispatcher::FileSystemCommandHandler::RequestFileContentCallback RequestFileContentCallback;
+typedef blink::InspectorBackendDispatcher::FileSystemCommandHandler::DeleteEntryCallback DeleteEntryCallback;
 
-namespace WebCore {
+namespace blink {
 
 namespace FileSystemAgentState {
 static const char fileSystemAgentEnabled[] = "fileSystemAgentEnabled";
@@ -728,4 +728,4 @@ ExecutionContext* InspectorFileSystemAgent::assertExecutionContextForOrigin(Erro
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink

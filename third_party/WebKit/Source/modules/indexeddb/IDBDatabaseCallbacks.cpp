@@ -28,7 +28,7 @@
 
 #include "modules/indexeddb/IDBDatabase.h"
 
-namespace WebCore {
+namespace blink {
 
 IDBDatabaseCallbacks* IDBDatabaseCallbacks::create()
 {
@@ -80,4 +80,4 @@ void IDBDatabaseCallbacks::onComplete(int64_t transactionId)
         m_database->onComplete(transactionId);
 }
 
-} // namespace WebCore
+} // namespace blink

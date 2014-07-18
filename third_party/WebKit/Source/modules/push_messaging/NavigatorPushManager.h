@@ -8,7 +8,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class Navigator;
 class PushManager;
@@ -31,6 +31,6 @@ private:
     PersistentWillBeMember<PushManager> m_pushManager;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigatorPushManager_h

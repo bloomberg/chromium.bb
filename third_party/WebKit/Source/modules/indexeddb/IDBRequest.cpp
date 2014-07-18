@@ -43,7 +43,7 @@
 
 using blink::WebIDBCursor;
 
-namespace WebCore {
+namespace blink {
 
 IDBRequest* IDBRequest::create(ScriptState* scriptState, IDBAny* source, IDBTransaction* transaction)
 {
@@ -544,4 +544,4 @@ void IDBRequest::dequeueEvent(Event* event)
     }
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -8,7 +8,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<DOMException> PushError::from(ScriptPromiseResolver*, WebType* webErrorRaw)
 {
@@ -23,4 +23,4 @@ PassRefPtrWillBeRawPtr<DOMException> PushError::from(ScriptPromiseResolver*, Web
     return DOMException::create(UnknownError);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -38,7 +38,7 @@
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class IDBObjectStore;
@@ -84,6 +84,6 @@ private:
     bool m_deleted;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IDBIndex_h

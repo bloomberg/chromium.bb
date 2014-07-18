@@ -29,7 +29,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 enum IDBKeyPathParseError {
     IDBKeyPathParseErrorNone,
@@ -76,6 +76,6 @@ private:
     Vector<String> m_array;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IDBKeyPath_h

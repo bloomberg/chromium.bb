@@ -29,7 +29,7 @@
 #include "modules/webdatabase/SQLTransactionState.h"
 #include "wtf/ThreadSafeRefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 template<typename T>
 class SQLTransactionStateMachine {
@@ -103,6 +103,6 @@ void SQLTransactionStateMachine<T>::runStateMachine()
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SQLTransactionStateMachine_h

@@ -36,7 +36,7 @@
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
 
-namespace WebCore {
+namespace blink {
 
 class AsyncFileSystemCallbacks;
 class CallbackWrapper;
@@ -79,6 +79,6 @@ private:
     OwnPtr<FileSystemClient> m_client;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LocalFileSystem_h

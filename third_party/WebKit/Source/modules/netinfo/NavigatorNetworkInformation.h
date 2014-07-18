@@ -8,7 +8,7 @@
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/Supplementable.h"
 
-namespace WebCore {
+namespace blink {
 
 class Navigator;
 class NetworkInformation;
@@ -36,6 +36,6 @@ private:
     RefPtrWillBeMember<NetworkInformation> m_connection;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigatorNetworkInformation_h

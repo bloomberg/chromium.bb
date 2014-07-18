@@ -37,7 +37,7 @@
 #include "wtf/MathExtras.h"
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 #if !ENABLE(OILPAN)
 // We need a dedicated specialization for AudioScheduledSourceNode because it
@@ -197,6 +197,6 @@ void AudioScheduledSourceNode::notifyEnded()
     dispatchEvent(Event::create(EventTypeNames::ended));
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

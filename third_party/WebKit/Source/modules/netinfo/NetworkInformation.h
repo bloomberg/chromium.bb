@@ -10,7 +10,7 @@
 #include "core/page/NetworkStateNotifier.h"
 #include "public/platform/WebConnectionType.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 
@@ -58,6 +58,6 @@ private:
     bool m_contextStopped;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NetworkInformation_h

@@ -36,7 +36,7 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class DatabaseBackendBase;
 class DatabaseContext;
@@ -82,6 +82,6 @@ private:
     mutable OwnPtr<DatabaseOriginMap> m_openDatabaseMap;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DatabaseTracker_h

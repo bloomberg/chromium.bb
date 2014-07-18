@@ -35,7 +35,7 @@
 #include "core/testing/Internals.h"
 #include "modules/vibration/NavigatorVibration.h"
 
-namespace WebCore {
+namespace blink {
 
 bool InternalsVibration::isVibrating(Internals&, Document* document)
 {
@@ -49,4 +49,4 @@ Vector<unsigned> InternalsVibration::pendingVibrationPattern(Internals&, Documen
     return NavigatorVibration::from(*document->page()).pattern();
 }
 
-} // namespace WebCore
+} // namespace blink

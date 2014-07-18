@@ -35,7 +35,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 
-namespace WebCore {
+namespace blink {
 
 static bool verifyType(const String& type)
 {
@@ -101,4 +101,4 @@ blink::WebRTCSessionDescription RTCSessionDescription::webSessionDescription()
     return m_webSessionDescription;
 }
 
-} // namespace WebCore
+} // namespace blink

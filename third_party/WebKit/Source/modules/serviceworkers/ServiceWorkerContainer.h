@@ -48,7 +48,7 @@ class WebServiceWorkerProvider;
 class WebServiceWorker;
 }
 
-namespace WebCore {
+namespace blink {
 
 class Dictionary;
 class ExecutionContext;
@@ -99,6 +99,6 @@ private:
     RefPtrWillBeMember<ReadyProperty> m_ready;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ServiceWorkerContainer_h

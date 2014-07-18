@@ -37,7 +37,7 @@
 #include "wtf/StdLibExtras.h"
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 using namespace VectorMath;
 
@@ -347,6 +347,6 @@ void OscillatorNode::trace(Visitor* visitor)
     AudioScheduledSourceNode::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

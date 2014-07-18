@@ -29,7 +29,7 @@
 #include "config.h"
 #include "modules/webdatabase/sqlite/SQLValue.h"
 
-namespace WebCore {
+namespace blink {
 
 SQLValue::SQLValue(const SQLValue& val)
     : m_type(val.m_type)

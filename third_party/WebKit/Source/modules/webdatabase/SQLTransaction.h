@@ -38,7 +38,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AbstractSQLTransactionBackend;
 class Database;
@@ -109,6 +109,6 @@ private:
     bool m_readOnly;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SQLTransaction_h

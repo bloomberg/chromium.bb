@@ -45,7 +45,7 @@
 // Very large FFTs will have worse phase errors. Given these constraints 32768 is a good compromise.
 const size_t MaxFFTSize = 32768;
 
-namespace WebCore {
+namespace blink {
 
 ConvolverNode::ConvolverNode(AudioContext* context, float sampleRate)
     : AudioNode(context, sampleRate)
@@ -185,6 +185,6 @@ void ConvolverNode::trace(Visitor* visitor)
     AudioNode::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

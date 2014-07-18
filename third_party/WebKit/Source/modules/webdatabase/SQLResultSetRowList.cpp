@@ -29,7 +29,7 @@
 #include "config.h"
 #include "modules/webdatabase/SQLResultSetRowList.h"
 
-namespace WebCore {
+namespace blink {
 
 unsigned SQLResultSetRowList::length() const
 {

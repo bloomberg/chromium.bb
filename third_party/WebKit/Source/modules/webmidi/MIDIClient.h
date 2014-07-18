@@ -33,7 +33,7 @@
 
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 class MIDIAccessInitializer;
@@ -48,6 +48,6 @@ public:
 
 void provideMIDITo(LocalFrame&, PassOwnPtr<MIDIClient>);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MIDIClient_h

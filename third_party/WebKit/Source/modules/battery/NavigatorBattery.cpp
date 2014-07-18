@@ -8,7 +8,7 @@
 #include "core/frame/LocalFrame.h"
 #include "modules/battery/BatteryManager.h"
 
-namespace WebCore {
+namespace blink {
 
 NavigatorBattery::NavigatorBattery()
 {
@@ -52,4 +52,4 @@ void NavigatorBattery::trace(Visitor* visitor)
     WillBeHeapSupplement<Navigator>::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

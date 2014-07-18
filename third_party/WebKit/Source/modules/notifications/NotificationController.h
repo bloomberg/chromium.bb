@@ -30,7 +30,7 @@
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class NotificationClient;
 class NotificationPermissionClient;
@@ -58,6 +58,6 @@ private:
 
 void provideNotification(LocalFrame&, PassOwnPtr<NotificationClient>);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NotificationController_h

@@ -14,7 +14,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class MIDIAccess;
 class Navigator;
@@ -69,7 +69,7 @@ private:
     Vector<PortDescriptor> m_portDescriptors;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // MIDIAccessInitializer_h

@@ -36,7 +36,7 @@
 #include "modules/notifications/NotificationPermissionCallback.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class Notification;
@@ -72,6 +72,6 @@ public:
     virtual Permission checkPermission(ExecutionContext*) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NotificationClient_h

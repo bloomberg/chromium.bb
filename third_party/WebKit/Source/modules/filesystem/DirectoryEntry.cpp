@@ -37,7 +37,7 @@
 #include "modules/filesystem/EntryCallback.h"
 #include "modules/filesystem/ErrorCallback.h"
 
-namespace WebCore {
+namespace blink {
 
 DirectoryEntry::DirectoryEntry(DOMFileSystemBase* fileSystem, const String& fullPath)
     : Entry(fileSystem, fullPath)

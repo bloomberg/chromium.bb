@@ -28,7 +28,7 @@
 
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class GeolocationPosition : public GarbageCollected<GeolocationPosition> {
 public:
@@ -106,6 +106,6 @@ private:
     bool m_canProvideSpeed;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GeolocationPosition_h

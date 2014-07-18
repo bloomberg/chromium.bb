@@ -35,7 +35,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Threading.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioContext;
 
@@ -141,6 +141,6 @@ private:
     mutable Mutex m_processLock;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioBufferSourceNode_h

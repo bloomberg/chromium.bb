@@ -29,7 +29,7 @@
 
 #include "platform/Supplementable.h"
 
-namespace WebCore {
+namespace blink {
 
 class IDBFactory;
 class IndexedDBClient;
@@ -55,6 +55,6 @@ private:
     PersistentWillBeMember<IDBFactory> m_idbFactory;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerGlobalScopeIndexedDatabase_h

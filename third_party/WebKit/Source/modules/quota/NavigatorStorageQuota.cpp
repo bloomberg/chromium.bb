@@ -35,7 +35,7 @@
 #include "modules/quota/DeprecatedStorageQuota.h"
 #include "modules/quota/StorageQuota.h"
 
-namespace WebCore {
+namespace blink {
 
 NavigatorStorageQuota::NavigatorStorageQuota(LocalFrame* frame)
     : DOMWindowProperty(frame)
@@ -105,4 +105,4 @@ void NavigatorStorageQuota::trace(Visitor* visitor)
     WillBeHeapSupplement<Navigator>::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

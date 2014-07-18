@@ -35,7 +35,7 @@
 #include "modules/filesystem/FileSystemFlags.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class DirectoryReaderSync;
 class ExceptionState;

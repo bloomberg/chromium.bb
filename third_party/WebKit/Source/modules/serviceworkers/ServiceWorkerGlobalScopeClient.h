@@ -44,7 +44,7 @@ namespace blink {
 class WebURL;
 };
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class Response;
@@ -74,6 +74,6 @@ protected:
 
 void provideServiceWorkerGlobalScopeClientToWorker(WorkerClients*, PassOwnPtrWillBeRawPtr<ServiceWorkerGlobalScopeClient>);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ServiceWorkerGlobalScopeClient_h

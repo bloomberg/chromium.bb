@@ -33,7 +33,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class RTCStatsResponse FINAL : public RTCStatsResponseBase, public ScriptWrappable {
 public:
@@ -55,6 +55,6 @@ private:
     HashMap<String, int> m_idmap;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCStatsResponse_h

@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/device_orientation/DeviceRotationRate.h"
 
-namespace WebCore {
+namespace blink {
 
 DeviceRotationRate::DeviceRotationRate(PassRefPtrWillBeRawPtr<DeviceMotionData::RotationRate> rotationRate)
     : m_rotationRate(rotationRate)
@@ -66,4 +66,4 @@ double DeviceRotationRate::gamma(bool& isNull) const
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink

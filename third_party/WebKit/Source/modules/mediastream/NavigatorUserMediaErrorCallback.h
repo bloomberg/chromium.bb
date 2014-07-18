@@ -27,7 +27,7 @@
 
 #include "modules/mediastream/NavigatorUserMediaError.h"
 
-namespace WebCore {
+namespace blink {
 
 class NavigatorUserMediaErrorCallback {
 public:
@@ -35,6 +35,6 @@ public:
     virtual void handleEvent(NavigatorUserMediaError*) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigatorUserMediaErrorCallback_h

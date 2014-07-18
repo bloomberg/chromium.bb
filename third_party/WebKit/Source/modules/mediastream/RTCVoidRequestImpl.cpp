@@ -35,7 +35,7 @@
 #include "modules/mediastream/RTCErrorCallback.h"
 #include "modules/mediastream/RTCPeerConnection.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<RTCVoidRequestImpl> RTCVoidRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<RTCErrorCallback> errorCallback)
 {
@@ -87,4 +87,4 @@ void RTCVoidRequestImpl::clear()
     m_requester.clear();
 }
 
-} // namespace WebCore
+} // namespace blink

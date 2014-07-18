@@ -35,7 +35,7 @@
 
 #define DEBUG_AUDIONODE_REFERENCES 0
 
-namespace WebCore {
+namespace blink {
 
 class AudioContext;
 class AudioNodeInput;
@@ -250,6 +250,6 @@ protected:
     AudioBus::ChannelInterpretation m_channelInterpretation;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioNode_h

@@ -10,7 +10,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class RequestInit {
     STACK_ALLOCATED();

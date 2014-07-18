@@ -27,7 +27,7 @@
 
 #include "modules/mediastream/MediaStreamTrack.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<MediaStreamTrackEvent> MediaStreamTrackEvent::create()
 {
@@ -72,4 +72,4 @@ void MediaStreamTrackEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

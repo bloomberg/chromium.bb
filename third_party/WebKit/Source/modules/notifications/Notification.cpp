@@ -40,7 +40,7 @@
 #include "modules/notifications/NotificationClient.h"
 #include "modules/notifications/NotificationController.h"
 
-namespace WebCore {
+namespace blink {
 
 Notification* Notification::create(ExecutionContext* context, const String& title, const Dictionary& options)
 {
@@ -201,4 +201,4 @@ bool Notification::hasPendingActivity() const
     return m_state == NotificationStateShowing || m_asyncRunner.isActive();
 }
 
-} // namespace WebCore
+} // namespace blink

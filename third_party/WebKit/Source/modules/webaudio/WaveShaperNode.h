@@ -30,7 +30,7 @@
 #include "modules/webaudio/WaveShaperProcessor.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -54,6 +54,6 @@ private:
     WaveShaperProcessor* waveShaperProcessor() { return static_cast<WaveShaperProcessor*>(processor()); }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WaveShaperNode_h

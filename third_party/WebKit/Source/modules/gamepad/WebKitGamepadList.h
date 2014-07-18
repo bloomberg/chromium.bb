@@ -11,7 +11,7 @@
 #include "public/platform/WebGamepads.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class WebKitGamepadList FINAL : public GarbageCollectedFinalized<WebKitGamepadList>, public ScriptWrappable {
 public:
@@ -32,6 +32,6 @@ private:
     Member<WebKitGamepad> m_items[blink::WebGamepads::itemsLengthCap];
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WebKitGamepadList_h

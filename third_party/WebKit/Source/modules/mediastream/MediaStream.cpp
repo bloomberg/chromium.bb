@@ -33,7 +33,7 @@
 #include "platform/mediastream/MediaStreamCenter.h"
 #include "platform/mediastream/MediaStreamSource.h"
 
-namespace WebCore {
+namespace blink {
 
 static bool containsSource(MediaStreamTrackVector& trackVector, MediaStreamSource* source)
 {
@@ -398,4 +398,4 @@ void MediaStream::trace(Visitor* visitor)
     EventTargetWithInlineData::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

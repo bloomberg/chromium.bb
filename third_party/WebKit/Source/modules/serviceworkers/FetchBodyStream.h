@@ -16,7 +16,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ScriptState;
 
@@ -67,6 +67,6 @@ private:
     RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FetchBodyStream_h

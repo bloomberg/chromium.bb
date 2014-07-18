@@ -10,7 +10,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "modules/screen_orientation/ScreenOrientation.h"
 
-namespace WebCore {
+namespace blink {
 
 LockOrientationCallback::LockOrientationCallback(PassRefPtr<ScriptPromiseResolver> resolver)
     : m_resolver(resolver)
@@ -49,4 +49,4 @@ void LockOrientationCallback::onError(blink::WebLockOrientationError error)
     m_resolver->reject(DOMException::create(code, msg));
 }
 
-} // namespace WebCore
+} // namespace blink

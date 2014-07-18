@@ -40,7 +40,7 @@
 #include "modules/geolocation/testing/GeolocationClientMock.h"
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 void InternalsGeolocation::setGeolocationClientMock(Internals&, Document* document)
 {
@@ -97,4 +97,4 @@ GeolocationClientMock* InternalsGeolocation::geolocationClient(Document* documen
     return static_cast<GeolocationClientMock*>(controller->client());
 }
 
-} // namespace WebCore
+} // namespace blink

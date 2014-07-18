@@ -29,7 +29,7 @@
 #ifndef SQLStatementErrorCallback_h
 #define SQLStatementErrorCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class SQLTransaction;
 class SQLError;

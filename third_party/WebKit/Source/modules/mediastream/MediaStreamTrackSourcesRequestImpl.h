@@ -34,7 +34,7 @@ class WebSourceInfo;
 template<typename T> class WebVector;
 }
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class MediaStreamTrackSourcesCallback;
@@ -59,6 +59,6 @@ private:
     SourceInfoVector m_sourceInfos;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaStreamTrackSourcesRequestImpl_h

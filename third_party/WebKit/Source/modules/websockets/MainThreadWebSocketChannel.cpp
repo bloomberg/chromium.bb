@@ -55,7 +55,7 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 const double TCPMaximumSegmentLifetime = 2 * 60.0;
 
@@ -875,4 +875,4 @@ void MainThreadWebSocketChannel::trace(Visitor* visitor)
     SocketStreamHandleClient::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

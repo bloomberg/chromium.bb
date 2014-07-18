@@ -79,7 +79,7 @@
 // The ref counting mechanims will automatically destruct the un-added
 // (and un-returned) databases instances.
 
-namespace WebCore {
+namespace blink {
 
 static const char versionKey[] = "WebKitDatabaseVersionKey";
 static const char infoTableName[] = "__WebKitDatabaseInfoTable__";
@@ -672,4 +672,4 @@ ExecutionContext* DatabaseBackendBase::executionContext() const
     return databaseContext()->executionContext();
 }
 
-} // namespace WebCore
+} // namespace blink

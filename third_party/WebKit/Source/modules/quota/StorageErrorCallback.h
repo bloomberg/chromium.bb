@@ -35,7 +35,7 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class DOMError;
 
@@ -63,6 +63,6 @@ public:
     };
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StorageErrorCallback_h

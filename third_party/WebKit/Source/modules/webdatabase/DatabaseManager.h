@@ -36,7 +36,7 @@
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class AbstractDatabaseServer;
 class Database;
@@ -114,6 +114,6 @@ private:
     Mutex m_contextMapLock;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DatabaseManager_h

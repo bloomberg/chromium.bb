@@ -12,7 +12,7 @@
 #include "public/platform/WebMediaPlayerClient.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class HTMLMediaElement;

@@ -33,7 +33,7 @@
 
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class MIDIAccessorClient {
 public:
@@ -44,6 +44,6 @@ public:
     virtual void didReceiveMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStamp) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MIDIAccessorClient_h

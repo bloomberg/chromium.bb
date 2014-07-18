@@ -39,7 +39,7 @@
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class Dictionary;
 class Document;
@@ -207,6 +207,6 @@ private:
     GeoNotifierSet m_requestsAwaitingCachedPosition;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Geolocation_h

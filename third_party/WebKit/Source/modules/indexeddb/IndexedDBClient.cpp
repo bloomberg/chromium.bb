@@ -5,7 +5,7 @@
 #include "config.h"
 #include "modules/indexeddb/IndexedDBClient.h"
 
-namespace WebCore {
+namespace blink {
 
 static CreateIndexedDBClient* idbClientCreateFunction = 0;
 
@@ -22,4 +22,4 @@ IndexedDBClient* IndexedDBClient::create()
     return idbClientCreateFunction();
 }
 
-} // namespace WebCore
+} // namespace blink

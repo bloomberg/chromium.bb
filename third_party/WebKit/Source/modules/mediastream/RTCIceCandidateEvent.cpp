@@ -27,7 +27,7 @@
 
 #include "modules/mediastream/RTCIceCandidate.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<RTCIceCandidateEvent> RTCIceCandidateEvent::create()
 {
@@ -71,5 +71,5 @@ void RTCIceCandidateEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink
 

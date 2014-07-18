@@ -35,7 +35,7 @@
 #include <sqlite3.h>
 #include "public/platform/Platform.h"
 
-using namespace WebCore;
+using namespace blink;
 
 // Defined in Chromium's codebase in third_party/sqlite/src/os_win.c
 extern "C" {
@@ -138,7 +138,7 @@ void* chromiumDlOpen(sqlite3_vfs*, const char*)
 
 } // namespace
 
-namespace WebCore {
+namespace blink {
 
 void SQLiteFileSystem::registerSQLiteVFS()
 {
@@ -166,4 +166,4 @@ void SQLiteFileSystem::registerSQLiteVFS()
     sqlite3_vfs_register(&chromium_vfs, 0);
 }
 
-} // namespace WebCore
+} // namespace blink

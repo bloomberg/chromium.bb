@@ -33,7 +33,7 @@
 
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class Internals;
@@ -44,6 +44,6 @@ public:
     static Vector<unsigned> pendingVibrationPattern(Internals&, Document*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InternalsVibration_h

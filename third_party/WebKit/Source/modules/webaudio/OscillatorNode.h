@@ -33,7 +33,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Threading.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioContext;
 class PeriodicWave;
@@ -105,6 +105,6 @@ private:
     RefPtrWillBeMember<PeriodicWave> m_periodicWave;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // OscillatorNode_h

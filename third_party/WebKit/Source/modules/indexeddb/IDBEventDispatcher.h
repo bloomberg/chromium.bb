@@ -33,7 +33,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class Event;
 class EventTarget;
@@ -46,6 +46,6 @@ private:
     IDBEventDispatcher();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IDBEventDispatcher_h

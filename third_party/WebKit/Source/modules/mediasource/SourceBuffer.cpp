@@ -52,7 +52,7 @@
 
 using blink::WebSourceBuffer;
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -721,4 +721,4 @@ void SourceBuffer::trace(Visitor* visitor)
     EventTargetWithInlineData::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

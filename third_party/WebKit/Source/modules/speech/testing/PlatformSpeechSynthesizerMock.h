@@ -30,7 +30,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/speech/PlatformSpeechSynthesizer.h"
 
-namespace WebCore {
+namespace blink {
 
 class PlatformSpeechSynthesizerMock FINAL : public PlatformSpeechSynthesizer {
 public:
@@ -55,6 +55,6 @@ private:
     Member<PlatformSpeechSynthesisUtterance> m_utterance;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PlatformSpeechSynthesizer_h

@@ -38,7 +38,7 @@ class WebContentDecryptionModule;
 class WebString;
 }
 
-namespace WebCore {
+namespace blink {
 
 class ScriptState;
 class ScriptPromise;

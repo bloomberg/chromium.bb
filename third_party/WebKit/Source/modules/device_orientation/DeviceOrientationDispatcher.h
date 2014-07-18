@@ -40,7 +40,7 @@ namespace blink {
 class WebDeviceOrientationData;
 }
 
-namespace WebCore {
+namespace blink {
 
 class DeviceOrientationController;
 class DeviceOrientationData;
@@ -68,6 +68,6 @@ private:
     RefPtrWillBePersistent<DeviceOrientationData> m_lastDeviceOrientationData;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DeviceOrientationDispatcher_h

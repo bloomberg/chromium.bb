@@ -35,7 +35,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class StorageErrorCallback;
@@ -67,6 +67,6 @@ private:
     Type m_type;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DeprecatedStorageQuota_h

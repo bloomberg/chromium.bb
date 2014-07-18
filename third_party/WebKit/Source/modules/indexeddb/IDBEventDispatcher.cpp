@@ -32,7 +32,7 @@
 #include "modules/EventModules.h"
 #include "modules/EventTargetModules.h"
 
-namespace WebCore {
+namespace blink {
 
 bool IDBEventDispatcher::dispatch(Event* event, WillBeHeapVector<RefPtrWillBeMember<EventTarget> >& eventTargets)
 {
@@ -67,4 +67,4 @@ doneDispatching:
     return !event->defaultPrevented();
 }
 
-} // namespace WebCore
+} // namespace blink

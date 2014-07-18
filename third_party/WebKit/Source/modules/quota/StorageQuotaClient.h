@@ -36,7 +36,7 @@
 #include "public/platform/WebStorageQuotaType.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class Page;
@@ -60,6 +60,6 @@ public:
 
 void provideStorageQuotaClientTo(Page&, PassOwnPtrWillBeRawPtr<StorageQuotaClient>);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StorageQuotaClient_h

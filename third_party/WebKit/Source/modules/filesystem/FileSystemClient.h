@@ -35,7 +35,7 @@
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class LocalFrame;
@@ -49,13 +49,13 @@ public:
     virtual ~FileSystemClient() { }
 
     virtual bool requestFileSystemAccessSync(ExecutionContext*) = 0;
-    virtual void requestFileSystemAccessAsync(ExecutionContext*, PassOwnPtr<WebCore::PermissionCallbacks>) = 0;
+    virtual void requestFileSystemAccessAsync(ExecutionContext*, PassOwnPtr<blink::PermissionCallbacks>) = 0;
 };
 
 void provideLocalFileSystemTo(LocalFrame&, PassOwnPtr<FileSystemClient>);
 
 void provideLocalFileSystemToWorker(WorkerClients*, PassOwnPtr<FileSystemClient>);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FileSystemClient_h

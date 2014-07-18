@@ -41,7 +41,7 @@ namespace blink {
 class WebRTCSessionDescription;
 }
 
-namespace WebCore {
+namespace blink {
 
 class RTCErrorCallback;
 class RTCPeerConnection;
@@ -69,6 +69,6 @@ private:
     Persistent<RTCPeerConnection> m_requester;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCSessionDescriptionRequestImpl_h

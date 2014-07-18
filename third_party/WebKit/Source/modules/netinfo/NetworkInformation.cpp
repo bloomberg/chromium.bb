@@ -37,7 +37,7 @@ String connectionTypeToString(blink::WebConnectionType type)
 
 } // namespace
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<NetworkInformation> NetworkInformation::create(ExecutionContext* context)
 {
@@ -149,4 +149,4 @@ NetworkInformation::NetworkInformation(ExecutionContext* context)
     ScriptWrappable::init(this);
 }
 
-} // namespace WebCore
+} // namespace blink

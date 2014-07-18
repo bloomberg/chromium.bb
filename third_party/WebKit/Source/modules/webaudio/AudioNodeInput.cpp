@@ -32,7 +32,7 @@
 #include "modules/webaudio/AudioNodeOutput.h"
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 inline AudioNodeInput::AudioNodeInput(AudioNode& node)
     : AudioSummingJunction(node.context())
@@ -230,6 +230,6 @@ AudioBus* AudioNodeInput::pull(AudioBus* inPlaceBus, size_t framesToProcess)
     return internalSummingBus;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

@@ -36,7 +36,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 
@@ -60,6 +60,6 @@ private:
     StorageQuota();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // StorageQuota_h

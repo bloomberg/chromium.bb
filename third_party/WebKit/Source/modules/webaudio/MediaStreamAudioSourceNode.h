@@ -35,7 +35,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/Threading.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioContext;
 
@@ -73,7 +73,7 @@ private:
     unsigned m_sourceNumberOfChannels;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)
 

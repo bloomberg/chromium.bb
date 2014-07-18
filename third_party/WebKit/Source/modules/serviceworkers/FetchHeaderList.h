@@ -13,7 +13,7 @@
 #include "wtf/text/WTFString.h"
 #include <utility>
 
-namespace WebCore {
+namespace blink {
 
 class Header;
 
@@ -52,6 +52,6 @@ private:
     Vector<OwnPtr<Header> > m_headerList;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FetchHeaderList_h

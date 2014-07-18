@@ -38,7 +38,7 @@
 #include "modules/webdatabase/SQLTransactionClient.h"
 #include "modules/webdatabase/SQLTransactionCoordinator.h"
 
-namespace WebCore {
+namespace blink {
 
 DatabaseBackend::DatabaseBackend(DatabaseContext* databaseContext, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
     : DatabaseBackendBase(databaseContext, name, expectedVersion, displayName, estimatedSize, DatabaseType::Async)
@@ -168,4 +168,4 @@ SQLTransactionCoordinator* DatabaseBackend::transactionCoordinator() const
     return databaseContext()->databaseThread()->transactionCoordinator();
 }
 
-} // namespace WebCore
+} // namespace blink

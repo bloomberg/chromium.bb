@@ -36,7 +36,7 @@
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class DOMFileSystem;
 
@@ -62,6 +62,6 @@ private:
     PersistentWillBeMember<DOMFileSystem> m_filesystem;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DraggedIsolatedFileSystem_h

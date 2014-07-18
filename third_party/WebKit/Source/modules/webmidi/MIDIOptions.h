@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 
-namespace WebCore {
+namespace blink {
 
 struct MIDIOptions  {
     explicit MIDIOptions(const Dictionary& options)
@@ -45,6 +45,6 @@ struct MIDIOptions  {
     bool sysex;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MIDIOptions_h

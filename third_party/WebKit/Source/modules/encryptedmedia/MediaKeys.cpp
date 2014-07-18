@@ -55,7 +55,7 @@ const char* kPersistent = "persistent";
 } // namespace
 #endif
 
-namespace WebCore {
+namespace blink {
 
 static bool isKeySystemSupportedWithContentType(const String& keySystem, const String& contentType)
 {

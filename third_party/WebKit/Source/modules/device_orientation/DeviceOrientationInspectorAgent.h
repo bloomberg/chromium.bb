@@ -8,7 +8,7 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class DeviceOrientationController;
 class Page;
@@ -37,7 +37,7 @@ private:
     Page& m_page;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 
 #endif // !defined(DeviceOrientationInspectorAgent_h)

@@ -49,7 +49,7 @@
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 static LayoutSize sizeFor(HTMLImageElement* image)
 {
@@ -336,4 +336,4 @@ void ImageBitmapFactories::ImageBitmapLoader::trace(Visitor* visitor)
     visitor->trace(m_factory);
 }
 
-} // namespace WebCore
+} // namespace blink

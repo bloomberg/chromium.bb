@@ -36,7 +36,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 struct IDBVersionChangeEventInit : public EventInit {
     IDBVersionChangeEventInit();
@@ -81,6 +81,6 @@ private:
     String m_dataLossMessage;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IDBVersionChangeEvent_h

@@ -28,7 +28,7 @@
 #include "core/frame/Navigator.h"
 #include "modules/geolocation/Geolocation.h"
 
-namespace WebCore {
+namespace blink {
 
 NavigatorGeolocation::NavigatorGeolocation(LocalFrame* frame)
     : DOMWindowProperty(frame)
@@ -72,4 +72,4 @@ void NavigatorGeolocation::trace(Visitor* visitor)
     WillBeHeapSupplement<Navigator>::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -31,7 +31,7 @@
 #include "modules/speech/SpeechRecognitionResultList.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 
@@ -73,6 +73,6 @@ private:
     PersistentWillBeMember<SpeechRecognitionResultList> m_results;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SpeechRecognitionEvent_h

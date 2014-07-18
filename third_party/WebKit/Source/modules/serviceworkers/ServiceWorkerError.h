@@ -36,7 +36,7 @@
 #include "public/platform/WebServiceWorkerError.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ScriptPromiseResolver;
 
@@ -51,6 +51,6 @@ private:
     ServiceWorkerError() WTF_DELETED_FUNCTION;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ServiceWorkerError_h

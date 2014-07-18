@@ -9,7 +9,7 @@
 #include "modules/serviceworkers/Request.h"
 #include "modules/serviceworkers/RespondWithObserver.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class Request;
@@ -45,6 +45,6 @@ private:
     bool m_isReload;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FetchEvent_h

@@ -35,7 +35,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/mediastream/RTCVoidRequest.h"
 
-namespace WebCore {
+namespace blink {
 
 class RTCErrorCallback;
 class RTCPeerConnection;
@@ -64,6 +64,6 @@ private:
     Persistent<RTCPeerConnection> m_requester;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCVoidRequestImpl_h

@@ -28,7 +28,7 @@
 
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class Dictionary;
 
@@ -49,6 +49,6 @@ private:
     unsigned m_timeout;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PositionOptions_h

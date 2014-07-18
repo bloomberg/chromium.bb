@@ -30,7 +30,7 @@
 #include "wtf/Deque.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ChangeVersionData;
 class Database;
@@ -79,6 +79,6 @@ private:
     friend class Database;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DatabaseBackend_h

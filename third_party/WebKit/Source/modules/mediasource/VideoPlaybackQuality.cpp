@@ -35,7 +35,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/timing/Performance.h"
 
-namespace WebCore {
+namespace blink {
 
 VideoPlaybackQuality* VideoPlaybackQuality::create(
     const Document& document, unsigned totalVideoFrames, unsigned droppedVideoFrames, unsigned corruptedVideoFrames)

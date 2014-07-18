@@ -34,7 +34,7 @@
 #include "modules/mediastream/MediaDevicesRequest.h"
 #include "modules/mediastream/UserMediaRequest.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalFrame;
 
@@ -51,6 +51,6 @@ protected:
 
 void provideUserMediaTo(LocalFrame&, UserMediaClient*);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // UserMediaClient_h

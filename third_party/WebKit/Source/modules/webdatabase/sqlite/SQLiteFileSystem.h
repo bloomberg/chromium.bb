@@ -36,7 +36,7 @@
 
 struct sqlite3;
 
-namespace WebCore {
+namespace blink {
 
 class SQLiteDatabase;
 
@@ -62,6 +62,6 @@ private:
     SQLiteFileSystem();
 }; // class SQLiteFileSystem
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

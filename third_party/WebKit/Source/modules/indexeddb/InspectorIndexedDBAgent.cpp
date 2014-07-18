@@ -63,22 +63,22 @@
 #include "public/platform/WebIDBTypes.h"
 #include "wtf/Vector.h"
 
-using WebCore::TypeBuilder::Array;
-using WebCore::TypeBuilder::IndexedDB::DatabaseWithObjectStores;
-using WebCore::TypeBuilder::IndexedDB::DataEntry;
-using WebCore::TypeBuilder::IndexedDB::Key;
-using WebCore::TypeBuilder::IndexedDB::KeyPath;
-using WebCore::TypeBuilder::IndexedDB::KeyRange;
-using WebCore::TypeBuilder::IndexedDB::ObjectStore;
-using WebCore::TypeBuilder::IndexedDB::ObjectStoreIndex;
+using blink::TypeBuilder::Array;
+using blink::TypeBuilder::IndexedDB::DatabaseWithObjectStores;
+using blink::TypeBuilder::IndexedDB::DataEntry;
+using blink::TypeBuilder::IndexedDB::Key;
+using blink::TypeBuilder::IndexedDB::KeyPath;
+using blink::TypeBuilder::IndexedDB::KeyRange;
+using blink::TypeBuilder::IndexedDB::ObjectStore;
+using blink::TypeBuilder::IndexedDB::ObjectStoreIndex;
 
-typedef WebCore::InspectorBackendDispatcher::IndexedDBCommandHandler::RequestDatabaseNamesCallback RequestDatabaseNamesCallback;
-typedef WebCore::InspectorBackendDispatcher::IndexedDBCommandHandler::RequestDatabaseCallback RequestDatabaseCallback;
-typedef WebCore::InspectorBackendDispatcher::IndexedDBCommandHandler::RequestDataCallback RequestDataCallback;
-typedef WebCore::InspectorBackendDispatcher::CallbackBase RequestCallback;
-typedef WebCore::InspectorBackendDispatcher::IndexedDBCommandHandler::ClearObjectStoreCallback ClearObjectStoreCallback;
+typedef blink::InspectorBackendDispatcher::IndexedDBCommandHandler::RequestDatabaseNamesCallback RequestDatabaseNamesCallback;
+typedef blink::InspectorBackendDispatcher::IndexedDBCommandHandler::RequestDatabaseCallback RequestDatabaseCallback;
+typedef blink::InspectorBackendDispatcher::IndexedDBCommandHandler::RequestDataCallback RequestDataCallback;
+typedef blink::InspectorBackendDispatcher::CallbackBase RequestCallback;
+typedef blink::InspectorBackendDispatcher::IndexedDBCommandHandler::ClearObjectStoreCallback ClearObjectStoreCallback;
 
-namespace WebCore {
+namespace blink {
 
 namespace IndexedDBAgentState {
 static const char indexedDBAgentEnabled[] = "indexedDBAgentEnabled";
@@ -774,4 +774,4 @@ void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const S
     clearObjectStore->start(idbFactory, document->securityOrigin(), databaseName);
 }
 
-} // namespace WebCore
+} // namespace blink

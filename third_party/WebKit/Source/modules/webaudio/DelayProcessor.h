@@ -30,7 +30,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioDSPKernel;
 
@@ -50,6 +50,6 @@ private:
     double m_maxDelayTime;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DelayProcessor_h

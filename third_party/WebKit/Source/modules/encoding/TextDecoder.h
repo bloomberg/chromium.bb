@@ -38,7 +38,7 @@
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -66,6 +66,6 @@ private:
     bool m_bomSeen;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // TextDecoder_h

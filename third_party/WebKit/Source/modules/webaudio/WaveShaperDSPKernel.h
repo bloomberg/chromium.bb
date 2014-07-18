@@ -32,7 +32,7 @@
 #include "modules/webaudio/WaveShaperProcessor.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class WaveShaperProcessor;
 
@@ -70,6 +70,6 @@ protected:
     OwnPtr<DownSampler> m_downSampler2;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WaveShaperDSPKernel_h

@@ -38,7 +38,7 @@
 #include <gtest/gtest.h>
 #include <iterator>
 
-using namespace WebCore;
+using namespace blink;
 
 namespace {
 

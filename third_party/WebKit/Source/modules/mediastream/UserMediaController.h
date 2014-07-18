@@ -29,7 +29,7 @@
 #include "modules/mediastream/UserMediaClient.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class MediaDevicesRequest;
 class UserMediaRequest;
@@ -80,6 +80,6 @@ inline void UserMediaController::cancelMediaDevicesRequest(MediaDevicesRequest* 
     m_client->cancelMediaDevicesRequest(request);
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // UserMediaController_h

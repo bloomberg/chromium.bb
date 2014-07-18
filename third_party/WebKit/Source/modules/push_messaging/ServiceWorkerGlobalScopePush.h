@@ -7,13 +7,13 @@
 
 #include "core/events/EventTarget.h"
 
-namespace WebCore {
+namespace blink {
 
 class ServiceWorkerGlobalScopePush {
 public:
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(push);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ServiceWorkerGlobalScopePush_h

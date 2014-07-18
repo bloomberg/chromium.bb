@@ -28,7 +28,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 MediaDeviceInfo* MediaDeviceInfo::create(const blink::WebMediaDeviceInfo& webMediaDeviceInfo)
 {
@@ -71,4 +71,4 @@ String MediaDeviceInfo::groupId() const
     return m_webMediaDeviceInfo.groupId();
 }
 
-} // namespace WebCore
+} // namespace blink

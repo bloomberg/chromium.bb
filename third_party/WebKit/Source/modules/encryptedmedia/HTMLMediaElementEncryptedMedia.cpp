@@ -16,7 +16,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/Uint8Array.h"
 
-namespace WebCore {
+namespace blink {
 
 static void throwExceptionIfMediaKeyExceptionOccurred(const String& keySystem, const String& sessionId, blink::WebMediaPlayer::MediaKeyException exception, ExceptionState& exceptionState)
 {
@@ -356,4 +356,4 @@ void HTMLMediaElementEncryptedMedia::trace(Visitor* visitor)
     WillBeHeapSupplement<HTMLMediaElement>::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

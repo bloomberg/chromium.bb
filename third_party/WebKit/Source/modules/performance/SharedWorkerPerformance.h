@@ -33,7 +33,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class SharedWorker;
@@ -55,6 +55,6 @@ private:
     double m_timeOrigin;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SharedWorkerPerformance_h

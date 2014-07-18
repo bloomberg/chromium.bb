@@ -34,7 +34,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/ThreadingPrimitives.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioContext;
 class HTMLMediaElement;
@@ -75,7 +75,7 @@ private:
     RefPtr<MediaElementAudioSourceNode> m_keepAliveWhileLocking;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)
 

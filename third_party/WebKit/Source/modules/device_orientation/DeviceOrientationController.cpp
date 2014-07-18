@@ -11,7 +11,7 @@
 #include "modules/device_orientation/DeviceOrientationDispatcher.h"
 #include "modules/device_orientation/DeviceOrientationEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 DeviceOrientationController::DeviceOrientationController(Document& document)
     : DeviceSingleWindowEventController(document)
@@ -103,4 +103,4 @@ void DeviceOrientationController::trace(Visitor* visitor)
     DocumentSupplement::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

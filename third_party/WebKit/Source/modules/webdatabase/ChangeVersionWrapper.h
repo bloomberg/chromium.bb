@@ -32,7 +32,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class SQLErrorData;
 
@@ -54,6 +54,6 @@ private:
     OwnPtr<SQLErrorData> m_sqlError;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ChangeVersionWrapper_h

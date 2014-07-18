@@ -34,7 +34,7 @@
 #include "platform/Timer.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class GeolocationClientMock;
@@ -52,6 +52,6 @@ private:
     static GeolocationClientMock* geolocationClient(Document*);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InternalsGeolocation_h

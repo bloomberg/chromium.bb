@@ -34,7 +34,7 @@
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 
-namespace WebCore {
+namespace blink {
 
 AnalyserNode::AnalyserNode(AudioContext* context, float sampleRate)
     : AudioBasicInspectorNode(context, sampleRate, 2)
@@ -113,6 +113,6 @@ void AnalyserNode::setSmoothingTimeConstant(double k, ExceptionState& exceptionS
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

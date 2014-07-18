@@ -57,7 +57,7 @@
 
 using blink::WebSocketHandle;
 
-namespace WebCore {
+namespace blink {
 
 class NewWebSocketChannelImpl::BlobLoader FINAL : public NoBaseWillBeGarbageCollectedFinalized<NewWebSocketChannelImpl::BlobLoader>, public FileReaderLoaderClient {
 public:
@@ -565,4 +565,4 @@ void NewWebSocketChannelImpl::trace(Visitor* visitor)
     WebSocketChannel::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

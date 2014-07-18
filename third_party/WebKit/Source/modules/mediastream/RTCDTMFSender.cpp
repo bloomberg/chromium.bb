@@ -36,7 +36,7 @@
 #include "public/platform/WebRTCDTMFSenderHandler.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
 
-namespace WebCore {
+namespace blink {
 
 static const long minToneDurationMs = 70;
 static const long defaultToneDurationMs = 100;
@@ -172,4 +172,4 @@ void RTCDTMFSender::trace(Visitor* visitor)
     EventTargetWithInlineData::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

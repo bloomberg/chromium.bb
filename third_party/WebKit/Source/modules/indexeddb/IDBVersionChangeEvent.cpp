@@ -28,7 +28,7 @@
 
 #include "bindings/modules/v8/IDBBindingUtilities.h"
 
-namespace WebCore {
+namespace blink {
 
 
 IDBVersionChangeEventInit::IDBVersionChangeEventInit()
@@ -86,4 +86,4 @@ void IDBVersionChangeEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

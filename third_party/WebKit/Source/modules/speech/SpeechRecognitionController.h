@@ -30,7 +30,7 @@
 #include "modules/speech/SpeechRecognitionClient.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class SpeechRecognitionController FINAL : public NoBaseWillBeGarbageCollectedFinalized<SpeechRecognitionController>, public WillBeHeapSupplement<Page> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognitionController);
@@ -57,6 +57,6 @@ private:
     OwnPtr<SpeechRecognitionClient> m_client;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SpeechRecognitionController_h

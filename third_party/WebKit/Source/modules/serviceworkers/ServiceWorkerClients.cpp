@@ -14,7 +14,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 
@@ -57,4 +57,4 @@ ScriptPromise ServiceWorkerClients::getServiced(ScriptState* scriptState)
     return resolver->promise();
 }
 
-} // namespace WebCore
+} // namespace blink

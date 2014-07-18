@@ -32,7 +32,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/speech/PlatformSpeechSynthesisUtterance.h"
 
-namespace WebCore {
+namespace blink {
 
 class SpeechSynthesisUtterance FINAL : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<SpeechSynthesisUtterance>, public PlatformSpeechSynthesisUtteranceClient, public ContextLifecycleObserver, public EventTargetWithInlineData {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SpeechSynthesisUtterance>);
@@ -87,6 +87,6 @@ private:
     Member<SpeechSynthesisVoice> m_voice;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SpeechSynthesisUtterance_h

@@ -10,7 +10,7 @@
 #include "platform/network/HTTPParsers.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<FetchHeaderList> FetchHeaderList::create()
 {
@@ -177,4 +177,4 @@ bool FetchHeaderList::isForbiddenResponseHeaderName(const String& name)
     return equalIgnoringCase(name, "set-cookie") || equalIgnoringCase(name, "set-cookie2");
 }
 
-} // namespace WebCore
+} // namespace blink

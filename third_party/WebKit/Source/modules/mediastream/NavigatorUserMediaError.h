@@ -28,7 +28,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class NavigatorUserMediaError FINAL : public GarbageCollectedFinalized<NavigatorUserMediaError>, public ScriptWrappable {
 public:
@@ -62,6 +62,6 @@ private:
     String m_constraintName;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigatorUserMediaError_h

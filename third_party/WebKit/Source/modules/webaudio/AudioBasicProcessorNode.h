@@ -29,7 +29,7 @@
 #include "wtf/Forward.h"
 #include "wtf/Threading.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioBus;
 class AudioNodeInput;
@@ -60,6 +60,6 @@ protected:
     OwnPtr<AudioProcessor> m_processor;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioBasicProcessorNode_h

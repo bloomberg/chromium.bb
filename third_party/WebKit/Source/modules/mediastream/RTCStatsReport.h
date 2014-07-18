@@ -31,7 +31,7 @@
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class RTCStatsReport FINAL : public GarbageCollectedFinalized<RTCStatsReport>, public ScriptWrappable {
 public:
@@ -61,6 +61,6 @@ private:
     HashMap<String, String> m_stats;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCStatsReport_h

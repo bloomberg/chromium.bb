@@ -9,7 +9,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
 
-namespace WebCore {
+namespace blink {
 
 const char* NotificationPermissionClient::supplementName()
 {

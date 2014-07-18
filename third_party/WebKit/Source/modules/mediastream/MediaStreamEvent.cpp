@@ -25,7 +25,7 @@
 #include "config.h"
 #include "modules/mediastream/MediaStreamEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 MediaStreamEventInit::MediaStreamEventInit()
     : stream(nullptr)
@@ -92,5 +92,5 @@ void MediaStreamEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink
 

@@ -26,7 +26,7 @@
 #ifndef GeolocationClient_h
 #define GeolocationClient_h
 
-namespace WebCore {
+namespace blink {
 
 class Geolocation;
 class GeolocationController;
@@ -54,6 +54,6 @@ protected:
 
 void provideGeolocationTo(LocalFrame&, GeolocationClient*);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GeolocationClient_h

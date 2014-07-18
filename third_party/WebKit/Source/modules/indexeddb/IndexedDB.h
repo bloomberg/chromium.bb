@@ -26,7 +26,7 @@
 #ifndef IndexedDB_h
 #define IndexedDB_h
 
-namespace WebCore {
+namespace blink {
 
 namespace IndexedDB {
 
@@ -37,6 +37,6 @@ enum CursorType {
 
 } // namespace IndexedDB
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IndexedDB_h

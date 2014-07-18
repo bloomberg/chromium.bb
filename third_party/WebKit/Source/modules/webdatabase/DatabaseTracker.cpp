@@ -46,7 +46,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/StdLibExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 static void databaseClosed(DatabaseBackendBase* database)
 {

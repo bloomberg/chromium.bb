@@ -9,7 +9,7 @@
 #include "platform/NotImplemented.h"
 #include "public/platform/Platform.h"
 
-namespace WebCore {
+namespace blink {
 
 BatteryDispatcher& BatteryDispatcher::instance()
 {

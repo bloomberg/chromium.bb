@@ -35,7 +35,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class DeprecatedStorageInfo;
 class LocalDOMWindow;
@@ -57,6 +57,6 @@ private:
     mutable PersistentWillBeMember<DeprecatedStorageInfo> m_storageInfo;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMWindowQuota_h

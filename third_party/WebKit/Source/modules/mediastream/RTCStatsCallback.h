@@ -25,7 +25,7 @@
 #ifndef RTCStatsCallback_h
 #define RTCStatsCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class RTCStatsResponse;
 
@@ -35,6 +35,6 @@ public:
     virtual void handleEvent(RTCStatsResponse*) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCStatsCallback_h

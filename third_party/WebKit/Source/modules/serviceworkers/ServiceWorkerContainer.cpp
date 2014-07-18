@@ -53,7 +53,7 @@
 using blink::WebServiceWorker;
 using blink::WebServiceWorkerProvider;
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<ServiceWorkerContainer> ServiceWorkerContainer::create(ExecutionContext* executionContext)
 {
@@ -261,4 +261,4 @@ ServiceWorkerContainer::ServiceWorkerContainer(ExecutionContext* executionContex
     }
 }
 
-} // namespace WebCore
+} // namespace blink

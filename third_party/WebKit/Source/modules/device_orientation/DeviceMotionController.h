@@ -8,7 +8,7 @@
 #include "core/dom/DocumentSupplementable.h"
 #include "core/frame/DeviceSingleWindowEventController.h"
 
-namespace WebCore {
+namespace blink {
 
 class DeviceMotionData;
 class Event;
@@ -35,6 +35,6 @@ private:
     virtual bool isNullEvent(Event*) const OVERRIDE;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DeviceMotionController_h

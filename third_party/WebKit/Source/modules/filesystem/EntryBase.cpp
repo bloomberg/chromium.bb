@@ -35,7 +35,7 @@
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
-namespace WebCore {
+namespace blink {
 
 EntryBase::EntryBase(DOMFileSystemBase* fileSystem, const String& fullPath)
     : m_fileSystem(fileSystem)
@@ -66,4 +66,4 @@ void EntryBase::trace(Visitor* visitor)
     visitor->trace(m_fileSystem);
 }
 
-} // namespace WebCore
+} // namespace blink

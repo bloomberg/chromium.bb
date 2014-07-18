@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 
-namespace WebCore {
+namespace blink {
 
 struct FileSystemFlags  {
     explicit FileSystemFlags(const Dictionary& options)

@@ -11,7 +11,7 @@
 #include "public/platform/WebString.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<Client> Client::create(unsigned id)
 {
@@ -38,4 +38,4 @@ void Client::postMessage(ExecutionContext* context, PassRefPtr<SerializedScriptV
     ServiceWorkerGlobalScopeClient::from(context)->postMessageToClient(m_id, messageString, webChannels.release());
 }
 
-} // namespace WebCore
+} // namespace blink

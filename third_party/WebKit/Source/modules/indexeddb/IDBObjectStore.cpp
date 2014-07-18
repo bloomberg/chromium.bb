@@ -53,7 +53,7 @@ using blink::WebIDBCursor;
 using blink::WebIDBDatabase;
 using blink::WebVector;
 
-namespace WebCore {
+namespace blink {
 
 IDBObjectStore::IDBObjectStore(const IDBObjectStoreMetadata& metadata, IDBTransaction* transaction)
     : m_metadata(metadata)
@@ -690,4 +690,4 @@ WebIDBDatabase* IDBObjectStore::backendDB() const
     return m_transaction->backendDB();
 }
 
-} // namespace WebCore
+} // namespace blink

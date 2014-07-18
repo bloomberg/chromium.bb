@@ -8,7 +8,7 @@
 #include "core/dom/DocumentSupplementable.h"
 #include "core/frame/DeviceSingleWindowEventController.h"
 
-namespace WebCore {
+namespace blink {
 
 class DeviceOrientationData;
 class Event;
@@ -47,6 +47,6 @@ private:
     RefPtrWillBeMember<DeviceOrientationData> m_overrideOrientationData;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DeviceOrientationController_h

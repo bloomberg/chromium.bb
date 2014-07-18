@@ -35,7 +35,7 @@
 #include "modules/mediasource/MediaSource.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 String URLMediaSource::createObjectURL(ExecutionContext* executionContext, MediaSource* source)
 {
@@ -47,4 +47,4 @@ String URLMediaSource::createObjectURL(ExecutionContext* executionContext, Media
     return DOMURL::createPublicURL(executionContext, source);
 }
 
-} // namespace WebCore
+} // namespace blink

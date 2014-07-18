@@ -38,7 +38,7 @@
 #include "wtf/Forward.h"
 #include "wtf/WeakPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ScriptPromiseResolver;
 ExceptionCode webCryptoErrorToExceptionCode(blink::WebCryptoErrorType);
@@ -81,6 +81,6 @@ private:
     volatile int m_cancelled;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

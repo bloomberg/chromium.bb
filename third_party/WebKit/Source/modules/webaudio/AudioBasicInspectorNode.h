@@ -27,7 +27,7 @@
 
 #include "modules/webaudio/AudioNode.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 
@@ -49,6 +49,6 @@ private:
     bool m_needAutomaticPull; // When setting to true, AudioBasicInspectorNode will be pulled automaticlly by AudioContext before the end of each render quantum.
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioBasicInspectorNode_h

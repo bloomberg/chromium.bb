@@ -33,7 +33,7 @@
 #include "modules/indexeddb/IDBFactory.h"
 #include "modules/indexeddb/IndexedDBClient.h"
 
-namespace WebCore {
+namespace blink {
 
 WorkerGlobalScopeIndexedDatabase::WorkerGlobalScopeIndexedDatabase()
 {
@@ -76,4 +76,4 @@ void WorkerGlobalScopeIndexedDatabase::trace(Visitor* visitor)
     WillBeHeapSupplement<WorkerGlobalScope>::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

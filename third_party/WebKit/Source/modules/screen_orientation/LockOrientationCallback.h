@@ -11,7 +11,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class ScriptPromiseResolver;
 
@@ -31,6 +31,6 @@ private:
     RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // LockOrientationCallback_h

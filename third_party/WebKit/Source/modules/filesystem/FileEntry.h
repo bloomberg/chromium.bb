@@ -34,7 +34,7 @@
 #include "modules/filesystem/Entry.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class DOMFileSystemBase;
 class FileCallback;

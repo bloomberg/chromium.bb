@@ -36,7 +36,7 @@
 #include "wtf/MathExtras.h"
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 void AudioParamTimeline::setValueAtTime(float value, double time)
 {
@@ -376,6 +376,6 @@ float AudioParamTimeline::valuesForTimeRangeImpl(
     return value;
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

@@ -34,7 +34,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class HTMLVideoElement;
 class VideoPlaybackQuality;

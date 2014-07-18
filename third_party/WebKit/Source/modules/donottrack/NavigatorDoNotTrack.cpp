@@ -35,7 +35,7 @@
 #include "core/frame/Navigator.h"
 #include "core/loader/FrameLoaderClient.h"
 
-namespace WebCore {
+namespace blink {
 
 NavigatorDoNotTrack::NavigatorDoNotTrack(LocalFrame* frame)
     : DOMWindowProperty(frame)
@@ -73,4 +73,4 @@ String NavigatorDoNotTrack::doNotTrack()
     return frame()->loader().client()->doNotTrackValue();
 }
 
-} // namespace WebCore
+} // namespace blink

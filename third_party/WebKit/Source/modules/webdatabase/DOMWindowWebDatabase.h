@@ -31,7 +31,7 @@
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class LocalDOMWindow;
 class Database;
@@ -48,6 +48,6 @@ private:
     ~DOMWindowWebDatabase() { };
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMWindowWebDatabase_h

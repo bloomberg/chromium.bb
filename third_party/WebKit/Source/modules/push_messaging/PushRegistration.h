@@ -11,7 +11,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class ScriptPromiseResolver;
 
@@ -39,6 +39,6 @@ private:
     String m_pushRegistrationId;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // PushRegistration_h

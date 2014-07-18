@@ -37,7 +37,7 @@
 #include "wtf/ArrayPiece.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class CryptoKey;
 class Dictionary;
@@ -70,6 +70,6 @@ private:
     SubtleCrypto();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

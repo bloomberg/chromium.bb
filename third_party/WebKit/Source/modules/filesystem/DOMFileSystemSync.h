@@ -35,7 +35,7 @@
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class DirectoryEntrySync;
 class File;

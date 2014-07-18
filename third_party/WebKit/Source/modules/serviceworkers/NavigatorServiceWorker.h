@@ -9,7 +9,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class Navigator;
@@ -38,6 +38,6 @@ private:
     RefPtrWillBeMember<ServiceWorkerContainer> m_serviceWorker;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigatorServiceWorker_h

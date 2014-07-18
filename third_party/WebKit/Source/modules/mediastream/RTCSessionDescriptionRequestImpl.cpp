@@ -39,7 +39,7 @@
 #include "public/platform/WebRTCSessionDescription.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtr<RTCSessionDescriptionRequestImpl> RTCSessionDescriptionRequestImpl::create(ExecutionContext* context, RTCPeerConnection* requester, PassOwnPtr<RTCSessionDescriptionCallback> successCallback, PassOwnPtr<RTCErrorCallback> errorCallback)
 {
@@ -90,4 +90,4 @@ void RTCSessionDescriptionRequestImpl::clear()
     m_requester.clear();
 }
 
-} // namespace WebCore
+} // namespace blink

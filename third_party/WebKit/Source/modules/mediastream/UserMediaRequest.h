@@ -39,7 +39,7 @@
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Dictionary;
 class Document;
@@ -85,6 +85,6 @@ private:
     OwnPtr<NavigatorUserMediaErrorCallback> m_errorCallback;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // UserMediaRequest_h

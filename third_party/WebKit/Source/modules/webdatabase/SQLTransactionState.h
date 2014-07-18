@@ -28,7 +28,7 @@
 
 #include "wtf/EnumClass.h"
 
-namespace WebCore {
+namespace blink {
 
 ENUM_CLASS(SQLTransactionState) {
     End = 0,
@@ -47,6 +47,6 @@ ENUM_CLASS(SQLTransactionState) {
     NumberOfStates // Always keep this at the end of the list.
 } ENUM_CLASS_END(SQLTransactionState);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SQLTransactionState_h

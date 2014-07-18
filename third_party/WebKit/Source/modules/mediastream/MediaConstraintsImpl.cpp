@@ -40,7 +40,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 namespace MediaConstraintsImpl {
 
 static bool parse(const Dictionary& constraintsDictionary, blink::WebVector<blink::WebMediaConstraint>& optional, blink::WebVector<blink::WebMediaConstraint>& mandatory)
@@ -134,4 +134,4 @@ blink::WebMediaConstraints create()
 }
 
 } // namespace MediaConstraintsImpl
-} // namespace WebCore
+} // namespace blink

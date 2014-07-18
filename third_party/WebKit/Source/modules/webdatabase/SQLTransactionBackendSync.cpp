@@ -49,7 +49,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 SQLTransactionBackendSync::SQLTransactionBackendSync(DatabaseSync* db, PassOwnPtr<SQLTransactionSyncCallback> callback, bool readOnly)
     : m_database(db)
@@ -257,4 +257,4 @@ void SQLTransactionBackendSync::rollback()
     ASSERT(!m_database->sqliteDatabase().transactionInProgress());
 }
 
-} // namespace WebCore
+} // namespace blink

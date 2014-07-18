@@ -29,7 +29,7 @@
 #include "modules/webaudio/AudioParam.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class DynamicsCompressor;
 
@@ -74,6 +74,6 @@ private:
     RefPtrWillBeMember<AudioParam> m_release;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DynamicsCompressorNode_h

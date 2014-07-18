@@ -43,7 +43,7 @@
 #include "public/platform/WebString.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 class ServiceWorker::ThenFunction FINAL : public ScriptFunction {
 public:
@@ -238,4 +238,4 @@ ServiceWorker::ServiceWorker(ExecutionContext* executionContext, PassOwnPtr<blin
     m_outerWorker->setProxy(this);
 }
 
-} // namespace WebCore
+} // namespace blink

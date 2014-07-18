@@ -9,7 +9,7 @@
 #include "modules/serviceworkers/FetchHeaderList.h"
 #include "public/platform/WebServiceWorkerResponse.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<FetchResponseData> FetchResponseData::create()
 {
@@ -110,4 +110,4 @@ void FetchResponseData::trace(Visitor* visitor)
     visitor->trace(m_internalResponse);
 }
 
-} // namespace WebCore
+} // namespace blink

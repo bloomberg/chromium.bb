@@ -44,7 +44,7 @@ namespace blink {
 class WebSourceBuffer;
 }
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class FileReaderLoader;
@@ -143,6 +143,6 @@ private:
     OwnPtr<FileReaderLoader> m_loader;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

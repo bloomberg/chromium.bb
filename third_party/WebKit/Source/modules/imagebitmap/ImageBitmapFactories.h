@@ -41,7 +41,7 @@
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class Blob;
 class CanvasRenderingContext2D;
@@ -123,6 +123,6 @@ private:
     PersistentHeapHashSetWillBeHeapHashSet<Member<ImageBitmapLoader> > m_pendingLoaders;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ImageBitmapFactories_h

@@ -33,7 +33,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 // DOMFileSystem path utilities. All methods in this class are static.
 class DOMFilePath {
@@ -79,6 +79,6 @@ private:
     DOMFilePath() { }
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DOMFilePath_h

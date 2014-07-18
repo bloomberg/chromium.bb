@@ -29,7 +29,7 @@
 #include "modules/webdatabase/AbstractDatabaseServer.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class DatabaseServer FINAL : public AbstractDatabaseServer {
 public:
@@ -52,6 +52,6 @@ protected:
         bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DatabaseServer_h

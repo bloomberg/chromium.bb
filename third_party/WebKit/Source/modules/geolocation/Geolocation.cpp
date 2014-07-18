@@ -38,7 +38,7 @@
 #include "modules/geolocation/GeolocationPosition.h"
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 static const char permissionDeniedErrorMessage[] = "User denied Geolocation";
 static const char failedToStartServiceErrorMessage[] = "Failed to start Geolocation service";
@@ -605,4 +605,4 @@ ScriptPromise Geolocation::getRegisteredRegions(ScriptState* scriptState) const
     return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
 }
 
-} // namespace WebCore
+} // namespace blink

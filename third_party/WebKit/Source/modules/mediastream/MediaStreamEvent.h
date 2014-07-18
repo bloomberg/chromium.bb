@@ -29,7 +29,7 @@
 #include "modules/mediastream/MediaStream.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 
 struct MediaStreamEventInit : public EventInit {
     MediaStreamEventInit();
@@ -60,6 +60,6 @@ private:
     PersistentWillBeMember<MediaStream> m_stream;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaStreamEvent_h

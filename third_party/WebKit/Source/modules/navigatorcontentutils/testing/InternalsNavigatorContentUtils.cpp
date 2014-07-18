@@ -10,7 +10,7 @@
 #include "modules/navigatorcontentutils/NavigatorContentUtils.h"
 #include "modules/navigatorcontentutils/testing/NavigatorContentUtilsClientMock.h"
 
-namespace WebCore {
+namespace blink {
 
 void InternalsNavigatorContentUtils::setNavigatorContentUtilsClientMock(Internals&, Document* document)
 {
@@ -19,4 +19,4 @@ void InternalsNavigatorContentUtils::setNavigatorContentUtilsClientMock(Internal
     navigatorContentUtils->setClientForTest(adoptPtr(new NavigatorContentUtilsClientMock()));
 }
 
-} // namespace WebCore
+} // namespace blink

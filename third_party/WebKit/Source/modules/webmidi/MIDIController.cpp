@@ -34,7 +34,7 @@
 #include "modules/webmidi/MIDIAccessInitializer.h"
 #include "modules/webmidi/MIDIClient.h"
 
-namespace WebCore {
+namespace blink {
 
 const char* MIDIController::supplementName()
 {
@@ -71,4 +71,4 @@ void provideMIDITo(LocalFrame& frame, PassOwnPtr<MIDIClient> client)
     MIDIController::provideTo(frame, MIDIController::supplementName(), MIDIController::create(client));
 }
 
-} // namespace WebCore
+} // namespace blink

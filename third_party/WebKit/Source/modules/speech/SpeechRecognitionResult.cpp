@@ -27,7 +27,7 @@
 
 #include "modules/speech/SpeechRecognitionResult.h"
 
-namespace WebCore {
+namespace blink {
 
 SpeechRecognitionResult::~SpeechRecognitionResult()
 {
@@ -58,4 +58,4 @@ void SpeechRecognitionResult::trace(Visitor* visitor)
     visitor->trace(m_alternatives);
 }
 
-} // namespace WebCore
+} // namespace blink

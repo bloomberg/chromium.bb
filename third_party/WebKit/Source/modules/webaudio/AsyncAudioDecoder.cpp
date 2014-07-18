@@ -38,7 +38,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 AsyncAudioDecoder::AsyncAudioDecoder()
     : m_thread(adoptPtr(blink::Platform::current()->createThread("Audio Decoder")))
@@ -87,6 +87,6 @@ void AsyncAudioDecoder::notifyComplete(ArrayBuffer* audioData, AudioBufferCallba
         errorCallback->handleEvent(audioBuffer.get());
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

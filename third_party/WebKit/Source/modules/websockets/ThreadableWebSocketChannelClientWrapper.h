@@ -38,7 +38,7 @@
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class ThreadableWebSocketChannelClientWrapper : public ThreadSafeRefCountedWillBeGarbageCollected<ThreadableWebSocketChannelClientWrapper> {
 public:
@@ -62,6 +62,6 @@ private:
     RawPtrWillBeMember<WebSocketChannelClient> m_client;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ThreadableWebSocketChannelClientWrapper_h

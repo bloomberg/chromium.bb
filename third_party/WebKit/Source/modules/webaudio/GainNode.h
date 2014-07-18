@@ -30,7 +30,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/Threading.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioContext;
 
@@ -67,6 +67,6 @@ private:
     AudioFloatArray m_sampleAccurateGainValues;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GainNode_h

@@ -29,7 +29,7 @@
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseTracker.h"
 
-namespace WebCore {
+namespace blink {
 
 DatabaseBackendSync::DatabaseBackendSync(DatabaseContext* databaseContext, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize)
     : DatabaseBackendBase(databaseContext, name, expectedVersion, displayName, estimatedSize, DatabaseType::Sync)
@@ -64,4 +64,4 @@ bool DatabaseBackendSync::openAndVerifyVersion(bool setVersionInNewDatabase, Dat
     return performOpenAndVerify(setVersionInNewDatabase, error, errorMessage);
 }
 
-} // namespace WebCore
+} // namespace blink

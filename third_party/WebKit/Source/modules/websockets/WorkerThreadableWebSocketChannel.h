@@ -49,7 +49,7 @@ namespace blink {
 class WebWaitableEvent;
 }
 
-namespace WebCore {
+namespace blink {
 
 class BlobDataHandle;
 class KURL;
@@ -205,6 +205,6 @@ private:
     unsigned m_lineNumberAtConnection;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerThreadableWebSocketChannel_h

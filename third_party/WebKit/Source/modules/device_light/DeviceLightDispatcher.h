@@ -9,7 +9,7 @@
 #include "public/platform/WebDeviceLightListener.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class DeviceLightController;
 
@@ -34,6 +34,6 @@ private:
     double m_lastDeviceLightData;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DeviceLightDispatcher_h

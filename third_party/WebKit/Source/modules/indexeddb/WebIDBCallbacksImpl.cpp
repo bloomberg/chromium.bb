@@ -51,7 +51,7 @@ using blink::WebIDBKeyPath;
 using blink::WebIDBMetadata;
 using blink::WebVector;
 
-namespace WebCore {
+namespace blink {
 
 // static
 PassOwnPtr<WebIDBCallbacksImpl> WebIDBCallbacksImpl::create(IDBRequest* request)

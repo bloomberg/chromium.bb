@@ -12,7 +12,7 @@
 #include "modules/EventTargetModules.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class BatteryStatus;
 

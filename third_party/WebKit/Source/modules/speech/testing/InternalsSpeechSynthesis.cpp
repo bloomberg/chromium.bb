@@ -37,7 +37,7 @@
 #include "modules/speech/SpeechSynthesis.h"
 #include "modules/speech/testing/PlatformSpeechSynthesizerMock.h"
 
-namespace WebCore {
+namespace blink {
 
 void InternalsSpeechSynthesis::enableMockSpeechSynthesizer(Internals&, Document* document)
 {
@@ -50,4 +50,4 @@ void InternalsSpeechSynthesis::enableMockSpeechSynthesizer(Internals&, Document*
     synthesis->setPlatformSynthesizer(PlatformSpeechSynthesizerMock::create(synthesis));
 }
 
-} // namespace WebCore
+} // namespace blink

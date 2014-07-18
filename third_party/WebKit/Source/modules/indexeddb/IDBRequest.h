@@ -45,7 +45,7 @@
 #include "public/platform/WebIDBCursor.h"
 #include "public/platform/WebIDBTypes.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExceptionState;
 class IDBCursor;
@@ -166,6 +166,6 @@ private:
     bool m_resultDirty;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // IDBRequest_h

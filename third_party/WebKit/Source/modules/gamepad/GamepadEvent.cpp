@@ -5,7 +5,7 @@
 #include "config.h"
 #include "modules/gamepad/GamepadEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 GamepadEventInit::GamepadEventInit()
 {
@@ -45,4 +45,4 @@ void GamepadEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

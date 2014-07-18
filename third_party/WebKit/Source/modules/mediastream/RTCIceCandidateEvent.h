@@ -28,7 +28,7 @@
 #include "modules/EventModules.h"
 #include "wtf/text/AtomicString.h"
 
-namespace WebCore {
+namespace blink {
 class RTCIceCandidate;
 
 class RTCIceCandidateEvent FINAL : public Event {
@@ -51,6 +51,6 @@ private:
     PersistentWillBeMember<RTCIceCandidate> m_candidate;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCIceCandidateEvent_h

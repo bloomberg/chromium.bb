@@ -29,7 +29,7 @@
 #include "modules/webaudio/AudioDestinationNode.h"
 #include "wtf/OwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioContext;
 class ExceptionState;
@@ -61,6 +61,6 @@ private:
     unsigned m_numberOfInputChannels;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DefaultAudioDestinationNode_h

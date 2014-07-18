@@ -38,7 +38,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Assertions.h"
 
-namespace WebCore {
+namespace blink {
 
 // How the DatabaseContext Life-Cycle works?
 // ========================================
@@ -266,4 +266,4 @@ bool DatabaseContext::isContextThread() const
     return executionContext()->isContextThread();
 }
 
-} // namespace WebCore
+} // namespace blink

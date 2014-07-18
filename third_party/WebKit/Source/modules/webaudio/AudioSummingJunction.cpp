@@ -32,7 +32,7 @@
 #include "modules/webaudio/AudioNodeOutput.h"
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 AudioSummingJunction::AudioSummingJunction(AudioContext* context)
     : m_context(context)
@@ -82,6 +82,6 @@ void AudioSummingJunction::updateRenderingState()
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

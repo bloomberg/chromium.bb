@@ -28,7 +28,7 @@
 
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 SourceInfo* SourceInfo::create(const blink::WebSourceInfo& webSourceInfo)
 {
@@ -82,4 +82,4 @@ String SourceInfo::facing() const
     return String();
 }
 
-} // namespace WebCore
+} // namespace blink

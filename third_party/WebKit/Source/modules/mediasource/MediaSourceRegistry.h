@@ -37,7 +37,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/StringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class KURL;
 class MediaSource;
@@ -57,6 +57,6 @@ private:
     PersistentHeapHashMap<String, Member<MediaSource> > m_mediaSources;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

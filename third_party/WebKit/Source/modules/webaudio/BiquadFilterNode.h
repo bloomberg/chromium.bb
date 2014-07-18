@@ -28,7 +28,7 @@
 #include "modules/webaudio/AudioBasicProcessorNode.h"
 #include "modules/webaudio/BiquadProcessor.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioParam;
 
@@ -72,6 +72,6 @@ private:
     bool setType(unsigned); // Returns true on success.
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // BiquadFilterNode_h

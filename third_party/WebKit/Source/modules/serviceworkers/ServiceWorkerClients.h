@@ -10,7 +10,7 @@
 #include "public/platform/WebServiceWorkerClientsInfo.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class Client;
 class ExecutionContext;
@@ -31,6 +31,6 @@ private:
     ServiceWorkerClients();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ServiceWorkerClients_h

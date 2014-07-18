@@ -31,7 +31,7 @@
 #ifndef SQLTransactionSyncCallback_h
 #define SQLTransactionSyncCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class SQLTransactionSync;
 

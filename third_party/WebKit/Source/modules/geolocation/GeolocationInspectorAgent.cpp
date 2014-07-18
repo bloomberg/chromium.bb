@@ -33,7 +33,7 @@
 
 #include "modules/geolocation/GeolocationController.h"
 
-namespace WebCore {
+namespace blink {
 
 PassOwnPtr<GeolocationInspectorAgent> GeolocationInspectorAgent::create()
 {
@@ -99,4 +99,4 @@ void GeolocationInspectorAgent::RemoveController(GeolocationController* controll
     m_controllers.remove(controller);
 }
 
-} // namespace WebCore
+} // namespace blink

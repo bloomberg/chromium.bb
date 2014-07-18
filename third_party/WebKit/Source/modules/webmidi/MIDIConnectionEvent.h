@@ -34,7 +34,7 @@
 #include "modules/EventModules.h"
 #include "modules/webmidi/MIDIPort.h"
 
-namespace WebCore {
+namespace blink {
 
 struct MIDIConnectionEventInit : public EventInit {
     MIDIConnectionEventInit()
@@ -65,6 +65,6 @@ private:
     PersistentWillBeMember<MIDIPort> m_port;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MIDIConnectionEvent_h

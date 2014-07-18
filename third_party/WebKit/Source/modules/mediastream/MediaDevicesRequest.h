@@ -32,7 +32,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class ExceptionState;
@@ -64,6 +64,6 @@ private:
     OwnPtr<MediaDeviceInfoCallback> m_callback;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaDevicesRequest_h

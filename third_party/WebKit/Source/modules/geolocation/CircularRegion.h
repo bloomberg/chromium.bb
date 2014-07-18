@@ -7,7 +7,7 @@
 
 #include "modules/geolocation/GeofencingRegion.h"
 
-namespace WebCore {
+namespace blink {
 
 class Dictionary;
 
@@ -41,6 +41,6 @@ private:
     double m_radius;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

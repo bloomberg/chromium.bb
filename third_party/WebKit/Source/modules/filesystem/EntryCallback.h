@@ -31,7 +31,7 @@
 #ifndef EntryCallback_h
 #define EntryCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class Entry;
 

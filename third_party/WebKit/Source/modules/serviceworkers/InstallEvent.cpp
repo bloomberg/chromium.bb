@@ -36,7 +36,7 @@
 #include "wtf/RefPtr.h"
 #include <v8.h>
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<InstallEvent> InstallEvent::create()
 {
@@ -84,4 +84,4 @@ void InstallEvent::trace(Visitor* visitor)
     InstallPhaseEvent::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

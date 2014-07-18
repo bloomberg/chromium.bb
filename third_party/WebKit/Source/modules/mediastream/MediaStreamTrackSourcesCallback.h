@@ -27,7 +27,7 @@
 #define MediaStreamTrackSourcesCallback_h
 
 #include "modules/mediastream/SourceInfo.h"
-namespace WebCore {
+namespace blink {
 
 class MediaStreamTrackSourcesResponse;
 
@@ -37,6 +37,6 @@ public:
     virtual void handleEvent(const SourceInfoVector&) = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MediaStreamTrackSourcesCallback_h

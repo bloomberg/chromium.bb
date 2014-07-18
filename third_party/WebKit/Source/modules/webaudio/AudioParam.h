@@ -39,7 +39,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioNodeOutput;
 
@@ -138,6 +138,6 @@ private:
     AudioParamTimeline m_timeline;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AudioParam_h

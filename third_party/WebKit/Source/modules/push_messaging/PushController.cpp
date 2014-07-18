@@ -8,7 +8,7 @@
 #include "public/platform/WebPushClient.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 PushController::PushController(blink::WebPushClient* client)
     : m_client(client)
@@ -37,4 +37,4 @@ void providePushControllerTo(Page& page, blink::WebPushClient* client)
     PushController::provideTo(page, PushController::supplementName(), PushController::create(client));
 }
 
-} // namespace WebCore
+} // namespace blink

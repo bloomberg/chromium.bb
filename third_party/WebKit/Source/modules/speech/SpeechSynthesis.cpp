@@ -32,7 +32,7 @@
 #include "platform/speech/PlatformSpeechSynthesisVoice.h"
 #include "wtf/CurrentTime.h"
 
-namespace WebCore {
+namespace blink {
 
 SpeechSynthesis* SpeechSynthesis::create(ExecutionContext* context)
 {
@@ -242,4 +242,4 @@ void SpeechSynthesis::trace(Visitor* visitor)
     EventTargetWithInlineData::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

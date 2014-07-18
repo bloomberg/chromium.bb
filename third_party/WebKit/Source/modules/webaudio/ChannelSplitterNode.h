@@ -28,7 +28,7 @@
 #include "modules/webaudio/AudioNode.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioContext;
 
@@ -46,6 +46,6 @@ private:
     ChannelSplitterNode(AudioContext*, float sampleRate, unsigned numberOfOutputs);
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ChannelSplitterNode_h

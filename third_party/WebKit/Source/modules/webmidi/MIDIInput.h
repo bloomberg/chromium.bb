@@ -34,7 +34,7 @@
 #include "modules/EventTargetModules.h"
 #include "modules/webmidi/MIDIPort.h"
 
-namespace WebCore {
+namespace blink {
 
 class MIDIAccess;
 
@@ -59,6 +59,6 @@ private:
 
 typedef HeapVector<Member<MIDIInput> > MIDIInputVector;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MIDIInput_h

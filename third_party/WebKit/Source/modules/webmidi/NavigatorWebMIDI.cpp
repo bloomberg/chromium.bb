@@ -40,7 +40,7 @@
 #include "modules/webmidi/MIDIAccessInitializer.h"
 #include "modules/webmidi/MIDIOptions.h"
 
-namespace WebCore {
+namespace blink {
 
 NavigatorWebMIDI::NavigatorWebMIDI(LocalFrame* frame)
     : DOMWindowProperty(frame)
@@ -84,4 +84,4 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, cons
     return MIDIAccessInitializer::start(scriptState, MIDIOptions(options));
 }
 
-} // namespace WebCore
+} // namespace blink

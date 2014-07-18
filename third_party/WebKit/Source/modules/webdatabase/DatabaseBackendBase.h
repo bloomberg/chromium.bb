@@ -43,7 +43,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #endif
 
-namespace WebCore {
+namespace blink {
 
 class DatabaseAuthorizer;
 class DatabaseContext;
@@ -149,6 +149,6 @@ private:
     friend class DatabaseServer;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DatabaseBackendBase_h

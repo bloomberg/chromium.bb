@@ -43,7 +43,7 @@
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicStringHash.h"
 
-namespace WebCore {
+namespace blink {
 
 class AnalyserNode;
 class AudioBuffer;

@@ -35,7 +35,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class Crypto;
 class ExecutionContext;
@@ -57,6 +57,6 @@ private:
     mutable PersistentWillBeMember<Crypto> m_crypto;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerGlobalScopeCrypto_h

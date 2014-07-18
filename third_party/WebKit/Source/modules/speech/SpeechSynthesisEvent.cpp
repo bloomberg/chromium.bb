@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/speech/SpeechSynthesisEvent.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create()
 {
@@ -52,4 +52,4 @@ SpeechSynthesisEvent::SpeechSynthesisEvent(const AtomicString& type, unsigned lo
     ScriptWrappable::init(this);
 }
 
-} // namespace WebCore
+} // namespace blink

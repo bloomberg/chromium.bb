@@ -32,7 +32,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadingPrimitives.h"
 
-namespace WebCore {
+namespace blink {
 
 // WaveShaperProcessor is an AudioDSPKernelProcessor which uses WaveShaperDSPKernel objects to implement non-linear distortion effects.
 
@@ -65,6 +65,6 @@ private:
     OverSampleType m_oversample;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WaveShaperProcessor_h

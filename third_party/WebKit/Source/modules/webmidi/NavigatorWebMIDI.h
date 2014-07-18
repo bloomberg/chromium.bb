@@ -37,7 +37,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class Navigator;
 
@@ -57,6 +57,6 @@ private:
     static const char* supplementName();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NavigatorWebMIDI_h

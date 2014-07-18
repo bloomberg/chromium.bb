@@ -34,7 +34,7 @@
 #include "modules/webmidi/MIDIClient.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 // FIXME: This belongs in Source/testing/runner, not compiled into shipping Blink!
 class MIDIClientMock FINAL : public MIDIClient {
@@ -53,6 +53,6 @@ private:
     bool m_allowed;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // MIDIClient_h

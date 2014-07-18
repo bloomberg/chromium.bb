@@ -26,7 +26,7 @@
 #include "config.h"
 #include "modules/device_orientation/DeviceAcceleration.h"
 
-namespace WebCore {
+namespace blink {
 
 DeviceAcceleration::DeviceAcceleration(PassRefPtrWillBeRawPtr<DeviceMotionData::Acceleration> acceleration)
     : m_acceleration(acceleration)
@@ -66,4 +66,4 @@ double DeviceAcceleration::z(bool& isNull) const
     return 0;
 }
 
-} // namespace WebCore
+} // namespace blink

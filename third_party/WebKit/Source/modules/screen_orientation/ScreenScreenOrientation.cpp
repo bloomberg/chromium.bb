@@ -9,7 +9,7 @@
 #include "core/frame/Screen.h"
 #include "modules/screen_orientation/ScreenOrientation.h"
 
-namespace WebCore {
+namespace blink {
 
 // static
 ScreenScreenOrientation& ScreenScreenOrientation::from(Screen& screen)
@@ -50,4 +50,4 @@ void ScreenScreenOrientation::trace(Visitor* visitor)
     WillBeHeapSupplement<Screen>::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

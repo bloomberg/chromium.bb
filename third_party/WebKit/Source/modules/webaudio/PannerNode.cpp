@@ -36,7 +36,7 @@
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "wtf/MathExtras.h"
 
-namespace WebCore {
+namespace blink {
 
 static void fixNANs(double &x)
 {
@@ -575,6 +575,6 @@ void PannerNode::notifyAudioSourcesConnectedToNode(AudioNode* node, HashMap<Audi
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

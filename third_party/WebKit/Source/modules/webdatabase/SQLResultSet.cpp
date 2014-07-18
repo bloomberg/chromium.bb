@@ -33,7 +33,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 SQLResultSet::SQLResultSet()
     : m_rows(SQLResultSetRowList::create())

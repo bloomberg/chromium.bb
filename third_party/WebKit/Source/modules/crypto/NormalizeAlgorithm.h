@@ -37,7 +37,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class Dictionary;
 
@@ -59,6 +59,6 @@ struct AlgorithmError {
 // [1] http://www.w3.org/TR/WebCryptoAPI/#algorithm-normalizing-rules
 bool normalizeAlgorithm(const Dictionary&, blink::WebCryptoOperation, blink::WebCryptoAlgorithm&, AlgorithmError*) WARN_UNUSED_RETURN;
 
-} // namespace WebCore
+} // namespace blink
 
 #endif

@@ -34,7 +34,7 @@
 #include "modules/geolocation/GeolocationInspectorAgent.h"
 #include "modules/geolocation/GeolocationPosition.h"
 
-namespace WebCore {
+namespace blink {
 
 GeolocationController::GeolocationController(LocalFrame& frame, GeolocationClient* client)
     : PageLifecycleObserver(frame.page())
@@ -238,4 +238,4 @@ void provideGeolocationTo(LocalFrame& frame, GeolocationClient* client)
     WillBeHeapSupplement<LocalFrame>::provideTo(frame, GeolocationController::supplementName(), GeolocationController::create(frame, client));
 }
 
-} // namespace WebCore
+} // namespace blink

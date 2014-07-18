@@ -13,7 +13,7 @@ namespace blink {
 class WebString;
 }
 
-namespace WebCore {
+namespace blink {
 
 class ScriptPromise;
 class ScriptPromiseResolver;
@@ -46,6 +46,6 @@ private:
     RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SimpleContentDecryptionModuleResult_h

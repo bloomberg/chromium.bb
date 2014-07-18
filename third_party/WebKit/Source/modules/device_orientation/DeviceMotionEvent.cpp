@@ -30,7 +30,7 @@
 #include "modules/device_orientation/DeviceMotionData.h"
 #include "modules/device_orientation/DeviceRotationRate.h"
 
-namespace WebCore {
+namespace blink {
 
 DeviceMotionEvent::~DeviceMotionEvent()
 {
@@ -118,4 +118,4 @@ void DeviceMotionEvent::trace(Visitor* visitor)
     Event::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

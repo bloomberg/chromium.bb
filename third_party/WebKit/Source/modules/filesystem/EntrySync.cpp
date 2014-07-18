@@ -41,7 +41,7 @@
 #include "modules/filesystem/Metadata.h"
 #include "modules/filesystem/SyncCallbackHelper.h"
 
-namespace WebCore {
+namespace blink {
 
 EntrySync* EntrySync::create(EntryBase* entry)
 {

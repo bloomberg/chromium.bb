@@ -46,7 +46,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebIDBFactory.h"
 
-namespace WebCore {
+namespace blink {
 
 static const char permissionDeniedErrorMessage[] = "The user denied permission to access the database.";
 
@@ -182,4 +182,4 @@ short IDBFactory::cmp(ScriptState* scriptState, const ScriptValue& firstValue, c
     return static_cast<short>(first->compare(second));
 }
 
-} // namespace WebCore
+} // namespace blink

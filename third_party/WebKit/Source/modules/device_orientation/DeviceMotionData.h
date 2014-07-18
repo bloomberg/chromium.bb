@@ -34,7 +34,7 @@ namespace blink {
 class WebDeviceMotionData;
 }
 
-namespace WebCore {
+namespace blink {
 
 class DeviceMotionData : public RefCountedWillBeGarbageCollected<DeviceMotionData> {
 public:
@@ -119,6 +119,6 @@ private:
     double m_interval;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DeviceMotionData_h

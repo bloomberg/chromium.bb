@@ -57,7 +57,7 @@ class WebSocketHandshakeResponseInfo;
 
 } // namespace blink
 
-namespace WebCore {
+namespace blink {
 
 class Document;
 class WebSocketHandshakeRequest;
@@ -195,6 +195,6 @@ private:
     static const int64_t receivedDataSizeForFlowControlHighWaterMark = 1 << 15;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // NewWebSocketChannelImpl_h

@@ -31,7 +31,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/ThreadSafeRefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class AbstractSQLStatementBackend : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<AbstractSQLStatementBackend> {
 public:
@@ -42,6 +42,6 @@ public:
     virtual SQLResultSet* sqlResultSet() const = 0;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // AbstractSQLStatementBackend_h

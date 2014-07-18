@@ -5,7 +5,7 @@
 #include "config.h"
 #include "modules/push_messaging/PushRegistration.h"
 
-namespace WebCore {
+namespace blink {
 
 PushRegistration::PushRegistration(const String& pushEndpoint, const String& pushRegistrationId)
     : m_pushEndpoint(pushEndpoint)
@@ -18,4 +18,4 @@ PushRegistration::~PushRegistration()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

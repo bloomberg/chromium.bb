@@ -18,7 +18,7 @@
 
 namespace blink { class WebServiceWorkerResponse; }
 
-namespace WebCore {
+namespace blink {
 
 class Blob;
 class ExceptionState;
@@ -53,6 +53,6 @@ private:
     RefPtrWillBeMember<FetchBodyStream> m_fetchBodyStream;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // Response_h

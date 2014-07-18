@@ -36,7 +36,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/text/StringBuilder.h"
 
-namespace WebCore {
+namespace blink {
 
 static HashSet<String>* protocolWhitelist;
 
@@ -233,4 +233,4 @@ void provideNavigatorContentUtilsTo(Page& page, PassOwnPtr<NavigatorContentUtils
     NavigatorContentUtils::provideTo(page, NavigatorContentUtils::supplementName(), NavigatorContentUtils::create(client));
 }
 
-} // namespace WebCore
+} // namespace blink

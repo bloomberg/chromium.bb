@@ -46,7 +46,7 @@
 #include "modules/websockets/WorkerThreadableWebSocketChannel.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<WebSocketChannel> WebSocketChannel::create(ExecutionContext* context, WebSocketChannelClient* client)
 {
@@ -73,4 +73,4 @@ PassRefPtrWillBeRawPtr<WebSocketChannel> WebSocketChannel::create(ExecutionConte
     return MainThreadWebSocketChannel::create(document, client, sourceURL, lineNumber);
 }
 
-} // namespace WebCore
+} // namespace blink

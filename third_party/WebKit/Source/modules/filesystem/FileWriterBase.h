@@ -37,7 +37,7 @@
 
 namespace blink { class WebFileWriter; }
 
-namespace WebCore {
+namespace blink {
 
 class FileWriterBase : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<FileWriterBase> {
 public:
@@ -83,6 +83,6 @@ private:
     long long m_length;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FileWriterBase_h

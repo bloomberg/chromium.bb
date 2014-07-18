@@ -12,7 +12,7 @@
 #include "modules/filesystem/DOMFileSystem.h"
 #include "platform/JSONValues.h"
 
-namespace WebCore {
+namespace blink {
 
 DOMFileSystem* InspectorFrontendHostFileSystem::isolatedFileSystem(InspectorFrontendHost& host, const String& fileSystemName, const String& rootURL)
 {
@@ -36,4 +36,4 @@ InspectorFrontendHostFileSystem::InspectorFrontendHostFileSystem() { }
 InspectorFrontendHostFileSystem::~InspectorFrontendHostFileSystem() { }
 
 
-} // namespace WebCore
+} // namespace blink

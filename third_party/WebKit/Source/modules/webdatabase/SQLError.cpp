@@ -31,10 +31,10 @@
 #include "config.h"
 #include "modules/webdatabase/SQLError.h"
 
-namespace WebCore {
+namespace blink {
 
 const char SQLError::quotaExceededErrorMessage[] = "Quota was exceeded.";
 const char SQLError::unknownErrorMessage[] = "The operation failed for reasons unrelated to the database.";
 const char SQLError::versionErrorMessage[] = "The actual database version did not match the expected version.";
 
-} // namespace WebCore
+} // namespace blink

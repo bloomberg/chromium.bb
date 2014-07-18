@@ -33,7 +33,7 @@
 
 #include "modules/filesystem/EntriesCallback.h"
 
-namespace WebCore {
+namespace blink {
 
 class Entry;
 class HTMLInputElement;
@@ -48,6 +48,6 @@ private:
     ~HTMLInputElementFileSystem();
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // HTMLInputElementFileSystem_h

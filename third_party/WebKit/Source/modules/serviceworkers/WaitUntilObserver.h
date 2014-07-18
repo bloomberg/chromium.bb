@@ -10,7 +10,7 @@
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
-namespace WebCore {
+namespace blink {
 
 class ExecutionContext;
 class ScriptState;
@@ -54,6 +54,6 @@ private:
     bool m_hasError;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WaitUntilObserver_h

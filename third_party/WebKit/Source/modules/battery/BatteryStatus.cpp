@@ -7,7 +7,7 @@
 
 #include <limits>
 
-namespace WebCore {
+namespace blink {
 
 PassRefPtrWillBeRawPtr<BatteryStatus> BatteryStatus::create()
 {
@@ -35,4 +35,4 @@ BatteryStatus::BatteryStatus(bool charging, double chargingTime, double discharg
 {
 }
 
-} // namespace WebCore
+} // namespace blink

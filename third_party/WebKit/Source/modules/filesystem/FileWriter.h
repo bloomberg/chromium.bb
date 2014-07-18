@@ -40,7 +40,7 @@
 #include "public/platform/WebFileWriterClient.h"
 #include "wtf/RefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class Blob;
 class ExceptionState;
@@ -122,6 +122,6 @@ private:
     RefPtrWillBeMember<Blob> m_blobBeingWritten;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // FileWriter_h

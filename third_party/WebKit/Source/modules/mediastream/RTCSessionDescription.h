@@ -35,7 +35,7 @@
 #include "public/platform/WebRTCSessionDescription.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class Dictionary;
 class ExceptionState;
@@ -61,6 +61,6 @@ private:
     blink::WebRTCSessionDescription m_webSessionDescription;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // RTCSessionDescription_h

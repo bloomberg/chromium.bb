@@ -41,7 +41,7 @@
 #include <stdio.h>
 #endif
 
-namespace WebCore {
+namespace blink {
 
 AudioNode::AudioNode(AudioContext* context, float sampleRate)
     : m_isInitialized(false)
@@ -624,6 +624,6 @@ void AudioNode::clearKeepAlive()
 }
 #endif
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

@@ -25,7 +25,7 @@
 #include "config.h"
 #include "modules/mediastream/RTCStatsResponse.h"
 
-namespace WebCore {
+namespace blink {
 
 RTCStatsResponse* RTCStatsResponse::create()
 {
@@ -63,4 +63,4 @@ void RTCStatsResponse::trace(Visitor* visitor)
     RTCStatsResponseBase::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

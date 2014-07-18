@@ -29,7 +29,7 @@
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 
-namespace WebCore {
+namespace blink {
 
 class SQLiteDatabase;
 
@@ -52,6 +52,6 @@ private:
     bool m_readOnly;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // SQLiteTransation_H

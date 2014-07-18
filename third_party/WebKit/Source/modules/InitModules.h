@@ -8,7 +8,7 @@
 #include "core/Init.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class Event;
 class ExceptionState;
@@ -23,6 +23,6 @@ public:
 
 PassRefPtrWillBeRawPtr<Event> createEventModules(const String& eventType, ExceptionState&);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // InitModules_h

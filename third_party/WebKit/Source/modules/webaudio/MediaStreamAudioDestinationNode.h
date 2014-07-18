@@ -33,7 +33,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
-namespace WebCore {
+namespace blink {
 
 class AudioContext;
 
@@ -62,7 +62,7 @@ private:
     RefPtr<AudioBus> m_mixBus;
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)
 

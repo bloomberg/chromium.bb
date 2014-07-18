@@ -41,7 +41,7 @@
 #include "platform/FileMetadata.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 // static
 EntryHeapVector HTMLInputElementFileSystem::webkitEntries(ExecutionContext* executionContext, HTMLInputElement& input)
@@ -84,4 +84,4 @@ HTMLInputElementFileSystem::~HTMLInputElementFileSystem()
 {
 }
 
-} // namespace WebCore
+} // namespace blink

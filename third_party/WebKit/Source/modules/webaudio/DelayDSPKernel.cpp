@@ -32,7 +32,7 @@
 #include "wtf/MathExtras.h"
 #include <algorithm>
 
-namespace WebCore {
+namespace blink {
 
 const float SmoothingTimeConstant = 0.020f; // 20ms
 
@@ -69,6 +69,6 @@ double DelayDSPKernel::delayTime(float)
     return delayProcessor()->delayTime()->finalValue();
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

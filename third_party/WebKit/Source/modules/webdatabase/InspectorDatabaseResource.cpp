@@ -34,7 +34,7 @@
 
 #include "modules/webdatabase/Database.h"
 
-namespace WebCore {
+namespace blink {
 
 static int nextUnusedId = 1;
 
@@ -67,4 +67,4 @@ void InspectorDatabaseResource::bind(InspectorFrontend::Database* frontend)
     frontend->addDatabase(jsonObject);
 }
 
-} // namespace WebCore
+} // namespace blink

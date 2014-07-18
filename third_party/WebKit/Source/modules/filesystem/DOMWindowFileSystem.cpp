@@ -38,7 +38,7 @@
 #include "platform/FileSystemType.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
-namespace WebCore {
+namespace blink {
 
 DOMWindowFileSystem::DOMWindowFileSystem()
 {
@@ -98,4 +98,4 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(LocalDOMWindow& window
 COMPILE_ASSERT(static_cast<int>(DOMWindowFileSystem::TEMPORARY) == static_cast<int>(FileSystemTypeTemporary), enum_mismatch);
 COMPILE_ASSERT(static_cast<int>(DOMWindowFileSystem::PERSISTENT) == static_cast<int>(FileSystemTypePersistent), enum_mismatch);
 
-} // namespace WebCore
+} // namespace blink

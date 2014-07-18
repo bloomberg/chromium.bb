@@ -29,7 +29,7 @@
 #include "modules/EventModules.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class DeviceOrientationData;
 
@@ -67,6 +67,6 @@ private:
 
 DEFINE_TYPE_CASTS(DeviceOrientationEvent, Event, event, event->interfaceName() == EventNames::DeviceOrientationEvent, event.interfaceName() == EventNames::DeviceOrientationEvent);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DeviceOrientationEvent_h

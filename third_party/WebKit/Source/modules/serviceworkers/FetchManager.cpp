@@ -19,7 +19,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "wtf/HashSet.h"
 
-namespace WebCore {
+namespace blink {
 
 class FetchManager::Loader : public ThreadableLoaderClient {
 public:
@@ -196,4 +196,4 @@ bool FetchManager::isUsefulMethod(const String& method)
     return XMLHttpRequest::isAllowedHTTPMethod(method);
 }
 
-} // namespace WebCore
+} // namespace blink

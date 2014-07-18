@@ -30,7 +30,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
-namespace WebCore {
+namespace blink {
 
 class Database;
 class DatabaseCallback;
@@ -48,6 +48,6 @@ private:
     ~WorkerGlobalScopeWebDatabase() { };
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // WorkerGlobalScopeWebDatabase_h

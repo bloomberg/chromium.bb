@@ -34,7 +34,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/crypto/Crypto.h"
 
-namespace WebCore {
+namespace blink {
 
 WorkerGlobalScopeCrypto::WorkerGlobalScopeCrypto()
 {
@@ -73,4 +73,4 @@ void WorkerGlobalScopeCrypto::trace(Visitor* visitor)
     WillBeHeapSupplement<WorkerGlobalScope>::trace(visitor);
 }
 
-} // namespace WebCore
+} // namespace blink

@@ -31,7 +31,7 @@
 #ifndef FileCallback_h
 #define FileCallback_h
 
-namespace WebCore {
+namespace blink {
 
 class File;
 

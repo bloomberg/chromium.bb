@@ -35,7 +35,7 @@
 #include "wtf/ArrayBufferView.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 
-namespace WebCore {
+namespace blink {
 
 namespace {
 

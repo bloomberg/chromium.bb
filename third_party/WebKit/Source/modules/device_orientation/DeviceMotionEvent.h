@@ -29,7 +29,7 @@
 #include "modules/EventModules.h"
 #include "platform/heap/Handle.h"
 
-namespace WebCore {
+namespace blink {
 
 class DeviceAcceleration;
 class DeviceMotionData;
@@ -72,6 +72,6 @@ private:
 
 DEFINE_TYPE_CASTS(DeviceMotionEvent, Event, event, event->interfaceName() == EventNames::DeviceMotionEvent, event.interfaceName() == EventNames::DeviceMotionEvent);
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // DeviceMotionEvent_h

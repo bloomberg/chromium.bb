@@ -33,7 +33,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "wtf/MainThread.h"
 
-namespace WebCore {
+namespace blink {
 
 WaveShaperNode::WaveShaperNode(AudioContext* context)
     : AudioBasicProcessorNode(context, context->sampleRate())
@@ -91,6 +91,6 @@ String WaveShaperNode::oversample() const
     }
 }
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

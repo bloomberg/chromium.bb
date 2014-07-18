@@ -8,7 +8,7 @@
 #include "core/workers/WorkerNavigator.h"
 #include "modules/netinfo/NetworkInformation.h"
 
-namespace WebCore {
+namespace blink {
 
 WorkerNavigatorNetworkInformation::WorkerNavigatorNetworkInformation(WorkerNavigator& navigator, ExecutionContext* context)
 {
@@ -57,4 +57,4 @@ NetworkInformation* WorkerNavigatorNetworkInformation::connection(ExecutionConte
     return m_connection.get();
 }
 
-} // namespace WebCore
+} // namespace blink

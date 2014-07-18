@@ -32,7 +32,7 @@
 #include "public/platform/WebGamepads.h"
 #include "wtf/Vector.h"
 
-namespace WebCore {
+namespace blink {
 
 class GamepadList FINAL : public GarbageCollectedFinalized<GamepadList>, public ScriptWrappable {
 public:
@@ -53,6 +53,6 @@ private:
     Member<Gamepad> m_items[blink::WebGamepads::itemsLengthCap];
 };
 
-} // namespace WebCore
+} // namespace blink
 
 #endif // GamepadList_h

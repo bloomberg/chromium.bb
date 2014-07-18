@@ -53,7 +53,7 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/unicode/CharacterNames.h"
 
-namespace WebCore {
+namespace blink {
 
 String formatHandshakeFailureReason(const String& detail)
 {
@@ -550,4 +550,4 @@ void WebSocketHandshake::trace(Visitor* visitor)
     visitor->trace(m_document);
 }
 
-} // namespace WebCore
+} // namespace blink
