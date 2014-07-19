@@ -8,6 +8,7 @@ PASS event instanceof IDBVersionChangeEvent is true
 PASS event.type is "default"
 PASS event.oldVersion is 0
 PASS event.newVersion is null
+PASS event.dataLoss is "none"
 
 initEvent = {oldVersion: 123, newVersion: 456}
 event = new IDBVersionChangeEvent('foo', initEvent)
@@ -15,6 +16,15 @@ PASS event instanceof IDBVersionChangeEvent is true
 PASS event.type is "foo"
 PASS event.oldVersion is initEvent.oldVersion
 PASS event.newVersion is initEvent.newVersion
+PASS event.dataLoss is "none"
+
+initEvent = {oldVersion: 124, newVersion: 457, dataLoss: 'total'}
+event = new IDBVersionChangeEvent('foo2', initEvent)
+PASS event instanceof IDBVersionChangeEvent is true
+PASS event.type is "foo2"
+PASS event.oldVersion is initEvent.oldVersion
+PASS event.newVersion is initEvent.newVersion
+PASS event.dataLoss is initEvent.dataLoss
 
 initEvent = {oldVersion: 'legacy', newVersion: null}
 event = new IDBVersionChangeEvent('bar', initEvent)
@@ -22,6 +32,7 @@ PASS event instanceof IDBVersionChangeEvent is true
 PASS event.type is "bar"
 PASS event.oldVersion is 0
 PASS event.newVersion is null
+PASS event.dataLoss is "none"
 PASS successfullyParsed is true
 
 TEST COMPLETE

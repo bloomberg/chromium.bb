@@ -26,8 +26,6 @@
 #include "config.h"
 #include "modules/indexeddb/IDBVersionChangeEvent.h"
 
-#include "bindings/modules/v8/IDBBindingUtilities.h"
-
 namespace blink {
 
 
@@ -58,6 +56,10 @@ IDBVersionChangeEvent::IDBVersionChangeEvent(const AtomicString& eventType, cons
     , m_newVersion(initializer.newVersion)
     , m_dataLoss(blink::WebIDBDataLossNone)
 {
+    if (initializer.dataLoss.isEmpty() || initializer.dataLoss == "none")
+        m_dataLoss = blink::WebIDBDataLossNone;
+    else if (initializer.dataLoss == "total")
+        m_dataLoss = blink::WebIDBDataLossTotal;
     ScriptWrappable::init(this);
 }
 

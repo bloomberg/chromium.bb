@@ -43,6 +43,7 @@ struct IDBVersionChangeEventInit : public EventInit {
 
     unsigned long long oldVersion;
     Nullable<unsigned long long> newVersion;
+    String dataLoss;
 };
 
 class IDBVersionChangeEvent FINAL : public Event {
@@ -77,7 +78,7 @@ private:
 
     unsigned long long m_oldVersion;
     Nullable<unsigned long long> m_newVersion;
-    bool m_dataLoss;
+    blink::WebIDBDataLoss m_dataLoss;
     String m_dataLossMessage;
 };
 

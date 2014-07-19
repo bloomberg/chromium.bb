@@ -23,6 +23,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/IndexedDB/#idl-def-IDBVersionChangeEvent
+
+// FIXME: This enum is non-standard, see
+// https://www.w3.org/Bugs/Public/show_bug.cgi?id=22370
+enum IDBDataLossAmount {
+    "none",
+    "total"
+};
 [
     EventConstructor
 ] interface IDBVersionChangeEvent : Event {
@@ -31,6 +39,6 @@
 
     // FIXME: These are non-standard, see
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22370
-    readonly attribute DOMString dataLoss;
+    [InitializedByEventConstructor] readonly attribute IDBDataLossAmount dataLoss;
     readonly attribute DOMString dataLossMessage;
 };
