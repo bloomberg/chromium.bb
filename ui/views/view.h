@@ -551,17 +551,15 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // The points, rects, mouse locations, and touch locations in the following
   // functions are in the view's coordinates, except for a RootView.
 
-  // Convenience functions which calls into GetEventHandler() with
-  // a 1x1 rect centered at |point|.
+  // A convenience function which calls into GetEventHandlerForRect() with
+  // a 1x1 rect centered at |point|. |point| is in the local coordinate
+  // space of |this|.
   View* GetEventHandlerForPoint(const gfx::Point& point);
 
-  // If point-based targeting should be used, return the deepest visible
-  // descendant that contains the center point of |rect|.
-  // If rect-based targeting (i.e., fuzzing) should be used, return the
-  // closest visible descendant having at least kRectTargetOverlap of
-  // its area covered by |rect|. If no such descendant exists, return the
-  // deepest visible descendant that contains the center point of |rect|.
-  // See http://goo.gl/3Jp2BD for more information about rect-based targeting.
+  // Returns the View that should be the target of an event having |rect| as
+  // its location, or NULL if no such target exists. |rect| is in the local
+  // coordinate space of |this|.
+  // TODO(tdanderson): Make this function non-virtual.
   virtual View* GetEventHandlerForRect(const gfx::Rect& rect);
 
   // Returns the deepest visible descendant that contains the specified point
@@ -577,12 +575,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event);
 
   // A convenience function which calls HitTestRect() with a rect of size
-  // 1x1 and an origin of |point|.
+  // 1x1 and an origin of |point|. |point| is in the local coordinate space
+  // of |this|.
   bool HitTestPoint(const gfx::Point& point) const;
 
-  // Tests whether |rect| intersects this view's bounds using the ViewTargeter
-  // installed on |this|. If there is no ViewTargeter installed on |this|, the
-  // ViewTargeter installed on the root view is used instead.
+  // Returns true if |rect| intersects this view's bounds. |rect| is in the
+  // local coordinate space of |this|.
   bool HitTestRect(const gfx::Rect& rect) const;
 
   // Returns true if this view or any of its descendants are permitted to
@@ -1392,6 +1390,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   bool ProcessMousePressed(const ui::MouseEvent& event);
   bool ProcessMouseDragged(const ui::MouseEvent& event);
   void ProcessMouseReleased(const ui::MouseEvent& event);
+
+  // Returns the ViewTargeter installed on |this| if one exists,
+  // otherwise returns the ViewTargeter installed on our root view.
+  // The return value is guaranteed to be non-null.
+  ViewTargeter* GetEffectiveViewTargeter() const;
 
   // Accelerators --------------------------------------------------------------
 

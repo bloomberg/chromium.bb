@@ -29,7 +29,6 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/point_conversions.h"
-#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
@@ -42,7 +41,6 @@
 #include "ui/views/drag_controller.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/layout/layout_manager.h"
-#include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/root_view.h"
@@ -60,11 +58,6 @@ const bool kContextMenuOnMousePress = false;
 #else
 const bool kContextMenuOnMousePress = true;
 #endif
-
-// The minimum percentage of a view's area that needs to be covered by a rect
-// representing a touch region in order for that view to be considered by the
-// rect-based targeting algorithm.
-static const float kRectTargetOverlap = 0.6f;
 
 // Default horizontal drag threshold in pixels.
 // Same as what gtk uses.
@@ -850,77 +843,7 @@ View* View::GetEventHandlerForPoint(const gfx::Point& point) {
 }
 
 View* View::GetEventHandlerForRect(const gfx::Rect& rect) {
-  // |rect_view| represents the current best candidate to return
-  // if rect-based targeting (i.e., fuzzing) is used.
-  // |rect_view_distance| is used to keep track of the distance
-  // between the center point of |rect_view| and the center
-  // point of |rect|.
-  View* rect_view = NULL;
-  int rect_view_distance = INT_MAX;
-
-  // |point_view| represents the view that would have been returned
-  // from this function call if point-based targeting were used.
-  View* point_view = NULL;
-
-  for (int i = child_count() - 1; i >= 0; --i) {
-    View* child = child_at(i);
-
-    if (!child->CanProcessEventsWithinSubtree())
-      continue;
-
-    // Ignore any children which are invisible or do not intersect |rect|.
-    if (!child->visible())
-      continue;
-    gfx::RectF rect_in_child_coords_f(rect);
-    ConvertRectToTarget(this, child, &rect_in_child_coords_f);
-    gfx::Rect rect_in_child_coords = gfx::ToEnclosingRect(
-        rect_in_child_coords_f);
-    if (!child->HitTestRect(rect_in_child_coords))
-      continue;
-
-    View* cur_view = child->GetEventHandlerForRect(rect_in_child_coords);
-
-    if (views::UsePointBasedTargeting(rect))
-      return cur_view;
-
-    gfx::RectF cur_view_bounds_f(cur_view->GetLocalBounds());
-    ConvertRectToTarget(cur_view, this, &cur_view_bounds_f);
-    gfx::Rect cur_view_bounds = gfx::ToEnclosingRect(
-        cur_view_bounds_f);
-    if (views::PercentCoveredBy(cur_view_bounds, rect) >= kRectTargetOverlap) {
-      // |cur_view| is a suitable candidate for rect-based targeting.
-      // Check to see if it is the closest suitable candidate so far.
-      gfx::Point touch_center(rect.CenterPoint());
-      int cur_dist = views::DistanceSquaredFromCenterToPoint(touch_center,
-                                                             cur_view_bounds);
-      if (!rect_view || cur_dist < rect_view_distance) {
-        rect_view = cur_view;
-        rect_view_distance = cur_dist;
-      }
-    } else if (!rect_view && !point_view) {
-      // Rect-based targeting has not yielded any candidates so far. Check
-      // if point-based targeting would have selected |cur_view|.
-      gfx::Point point_in_child_coords(rect_in_child_coords.CenterPoint());
-      if (child->HitTestPoint(point_in_child_coords))
-        point_view = child->GetEventHandlerForPoint(point_in_child_coords);
-    }
-  }
-
-  if (views::UsePointBasedTargeting(rect) || (!rect_view && !point_view))
-    return this;
-
-  // If |this| is a suitable candidate for rect-based targeting, check to
-  // see if it is closer than the current best suitable candidate so far.
-  gfx::Rect local_bounds(GetLocalBounds());
-  if (views::PercentCoveredBy(local_bounds, rect) >= kRectTargetOverlap) {
-    gfx::Point touch_center(rect.CenterPoint());
-    int cur_dist = views::DistanceSquaredFromCenterToPoint(touch_center,
-                                                           local_bounds);
-    if (!rect_view || cur_dist < rect_view_distance)
-      rect_view = this;
-  }
-
-  return rect_view ? rect_view : point_view;
+  return GetEffectiveViewTargeter()->TargetForRect(this, rect);
 }
 
 bool View::CanProcessEventsWithinSubtree() const {
@@ -928,6 +851,7 @@ bool View::CanProcessEventsWithinSubtree() const {
 }
 
 View* View::GetTooltipHandlerForPoint(const gfx::Point& point) {
+  // TODO(tdanderson): Move this implementation into ViewTargetDelegate.
   if (!HitTestPoint(point) || !CanProcessEventsWithinSubtree())
     return NULL;
 
@@ -963,11 +887,7 @@ bool View::HitTestPoint(const gfx::Point& point) const {
 }
 
 bool View::HitTestRect(const gfx::Rect& rect) const {
-  ViewTargeter* view_targeter = targeter();
-  if (!view_targeter)
-    view_targeter = GetWidget()->GetRootView()->targeter();
-  CHECK(view_targeter);
-  return view_targeter->DoesIntersectRect(this, rect);
+  return GetEffectiveViewTargeter()->DoesIntersectRect(this, rect);
 }
 
 bool View::IsMouseHovered() {
@@ -2348,6 +2268,14 @@ void View::ProcessMouseReleased(const ui::MouseEvent& event) {
     OnMouseReleased(event);
   }
   // WARNING: we may have been deleted.
+}
+
+ViewTargeter* View::GetEffectiveViewTargeter() const {
+  ViewTargeter* view_targeter = targeter();
+  if (!view_targeter)
+    view_targeter = GetWidget()->GetRootView()->targeter();
+  CHECK(view_targeter);
+  return view_targeter;
 }
 
 // Accelerators ----------------------------------------------------------------

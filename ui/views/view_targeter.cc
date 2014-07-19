@@ -13,14 +13,18 @@ namespace views {
 
 ViewTargeter::ViewTargeter(ViewTargeterDelegate* delegate)
     : delegate_(delegate) {
+  DCHECK(delegate_);
 }
 
 ViewTargeter::~ViewTargeter() {}
 
 bool ViewTargeter::DoesIntersectRect(const View* target,
                                      const gfx::Rect& rect) const {
-  DCHECK(delegate_);
   return delegate_->DoesIntersectRect(target, rect);
+}
+
+View* ViewTargeter::TargetForRect(View* root, const gfx::Rect& rect) const {
+  return delegate_->TargetForRect(root, rect);
 }
 
 gfx::RectF ViewTargeter::BoundsForEvent(const ui::LocatedEvent& event) const {

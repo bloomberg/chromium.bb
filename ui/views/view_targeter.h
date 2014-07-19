@@ -18,6 +18,8 @@ class ViewTargeterDelegate;
 // derived classes) is installed on a View to specify the
 // targeting behaviour to be used for the subtree rooted at
 // that View.
+// TODO(tdanderson): Remove overrides of all EventHandler methods except for
+//                   FindTargetForEvent() and FindNextBestTarget().
 class VIEWS_EXPORT ViewTargeter : public ui::EventTargeter {
  public:
   explicit ViewTargeter(ViewTargeterDelegate* delegate);
@@ -25,6 +27,9 @@ class VIEWS_EXPORT ViewTargeter : public ui::EventTargeter {
 
   // A call-through to DoesIntersectRect() on |delegate_|.
   bool DoesIntersectRect(const View* target, const gfx::Rect& rect) const;
+
+  // A call-through to TargetForRect() on |delegate_|.
+  View* TargetForRect(View* root, const gfx::Rect& rect) const;
 
  protected:
   // Returns the location of |event| represented as a rect. If |event| is

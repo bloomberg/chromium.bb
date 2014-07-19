@@ -29,6 +29,16 @@ class VIEWS_EXPORT ViewTargeterDelegate {
   virtual bool DoesIntersectRect(const View* target,
                                  const gfx::Rect& rect) const;
 
+  // If point-based targeting should be used, return the deepest visible
+  // descendant of |root| that contains the center point of |rect|.
+  // If rect-based targeting (i.e., fuzzing) should be used, return the
+  // closest visible descendant of |root| having at least kRectTargetOverlap of
+  // its area covered by |rect|. If no such descendant exists, return the
+  // deepest visible descendant of |root| that contains the center point of
+  // |rect|. See http://goo.gl/3Jp2BD for more information about rect-based
+  // targeting.
+  virtual View* TargetForRect(View* root, const gfx::Rect& rect);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ViewTargeterDelegate);
 };
