@@ -5,10 +5,12 @@
 #ifndef CONTENT_CHILD_WEBCRYPTO_OPENSSL_KEY_OPENSSL_H_
 #define CONTENT_CHILD_WEBCRYPTO_OPENSSL_KEY_OPENSSL_H_
 
+#include <openssl/ossl_typ.h>
 #include <stdint.h>
 #include <vector>
 
 #include "base/macros.h"
+#include "crypto/scoped_openssl_types.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
 
 namespace content {
@@ -16,6 +18,7 @@ namespace content {
 namespace webcrypto {
 
 class CryptoData;
+class AsymKeyOpenSsl;
 class SymKeyOpenSsl;
 
 // Base key class for all OpenSSL keys, used to safely cast between types. Each
@@ -28,6 +31,7 @@ class KeyOpenSsl : public blink::WebCryptoKeyHandle {
   virtual ~KeyOpenSsl();
 
   virtual SymKeyOpenSsl* AsSymKey();
+  virtual AsymKeyOpenSsl* AsAsymKey();
 
   const std::vector<uint8_t>& serialized_key_data() const {
     return serialized_key_data_;
@@ -52,6 +56,24 @@ class SymKeyOpenSsl : public KeyOpenSsl {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SymKeyOpenSsl);
+};
+
+class AsymKeyOpenSsl : public KeyOpenSsl {
+ public:
+  virtual ~AsymKeyOpenSsl();
+  AsymKeyOpenSsl(crypto::ScopedEVP_PKEY key,
+                 const CryptoData& serialized_key_data);
+
+  static AsymKeyOpenSsl* Cast(const blink::WebCryptoKey& key);
+
+  virtual AsymKeyOpenSsl* AsAsymKey() OVERRIDE;
+
+  EVP_PKEY* key() { return key_.get(); }
+
+ private:
+  crypto::ScopedEVP_PKEY key_;
+
+  DISALLOW_COPY_AND_ASSIGN(AsymKeyOpenSsl);
 };
 
 }  // namespace webcrypto

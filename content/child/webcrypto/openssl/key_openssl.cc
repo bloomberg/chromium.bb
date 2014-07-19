@@ -25,6 +25,10 @@ SymKeyOpenSsl* KeyOpenSsl::AsSymKey() {
   return NULL;
 }
 
+AsymKeyOpenSsl* KeyOpenSsl::AsAsymKey() {
+  return NULL;
+}
+
 SymKeyOpenSsl::~SymKeyOpenSsl() {
 }
 
@@ -39,6 +43,22 @@ SymKeyOpenSsl* SymKeyOpenSsl::AsSymKey() {
 
 SymKeyOpenSsl::SymKeyOpenSsl(const CryptoData& raw_key_data)
     : KeyOpenSsl(raw_key_data) {
+}
+
+AsymKeyOpenSsl::~AsymKeyOpenSsl() {
+}
+
+AsymKeyOpenSsl* AsymKeyOpenSsl::Cast(const blink::WebCryptoKey& key) {
+  return reinterpret_cast<KeyOpenSsl*>(key.handle())->AsAsymKey();
+}
+
+AsymKeyOpenSsl* AsymKeyOpenSsl::AsAsymKey() {
+  return this;
+}
+
+AsymKeyOpenSsl::AsymKeyOpenSsl(crypto::ScopedEVP_PKEY key,
+                               const CryptoData& serialized_key_data)
+    : KeyOpenSsl(serialized_key_data), key_(key.Pass()) {
 }
 
 bool PlatformSerializeKeyForClone(const blink::WebCryptoKey& key,

@@ -2014,7 +2014,7 @@ TEST_F(SharedCryptoTest, MAYBE(ExportJwkEmptySymmetricKey)) {
   EXPECT_EQ(0u, exported_key_data.size());
 }
 
-TEST_F(SharedCryptoTest, MAYBE(ImportExportSpki)) {
+TEST_F(SharedCryptoTest, ImportExportSpki) {
   if (!SupportsRsaKeyImport())
     return;
 
@@ -2103,7 +2103,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportSpki)) {
   // as OAEP/PSS
 }
 
-TEST_F(SharedCryptoTest, MAYBE(ImportExportPkcs8)) {
+TEST_F(SharedCryptoTest, ImportExportPkcs8) {
   if (!SupportsRsaKeyImport())
     return;
 

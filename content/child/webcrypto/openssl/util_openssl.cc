@@ -38,11 +38,6 @@ AlgorithmImplementation* CreatePlatformRsaOaepImplementation() {
   return NULL;
 }
 
-AlgorithmImplementation* CreatePlatformRsaSsaImplementation() {
-  // TODO(eroman):
-  return NULL;
-}
-
 }  // namespace webcrypto
 
 }  // namespace content
