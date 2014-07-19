@@ -38,8 +38,8 @@
 #else
 #include <algorithm>
 #include <cmath>
-#include <ui/gfx/size.h>
-#include <ui/gfx/vector2d.h>
+#include <ui/gfx/geometry/size.h>
+#include <ui/gfx/geometry/vector2d.h>
 #endif
 
 namespace blink {
