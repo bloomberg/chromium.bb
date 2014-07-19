@@ -8,7 +8,7 @@
   },
   'targets': [
     {
-      'target_name': 'athena_resources',
+      'target_name': 'athena_pak',
       'type': 'none',
       'dependencies': [
         '../../apps/shell/app_shell.gyp:app_shell_pak',
