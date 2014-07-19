@@ -957,21 +957,13 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
 }
 
 // TODO(zea): Move this logic into the DataTypeController/DataTypeManager.
-void ProfileSyncService::DisableDatatype(
-    syncer::ModelType type,
-    const tracked_objects::Location& from_here,
-    std::string message) {
+void ProfileSyncService::DisableDatatype(const syncer::SyncError& error) {
   // First deactivate the type so that no further server changes are
   // passed onto the change processor.
-  DeactivateDataType(type);
-
-  syncer::SyncError error(from_here,
-                          syncer::SyncError::DATATYPE_ERROR,
-                          message,
-                          type);
+  DeactivateDataType(error.model_type());
 
   std::map<syncer::ModelType, syncer::SyncError> errors;
-  errors[type] = error;
+  errors[error.model_type()] = error;
 
   // Update this before posting a task. So if a configure happens before
   // the task that we are going to post, this type would still be disabled.
@@ -1382,9 +1374,12 @@ void ProfileSyncService::OnEncryptedTypesChanged(
   // delete directives are unnecessary.
   if (GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES) &&
       encrypted_types_.Has(syncer::SESSIONS)) {
-    DisableDatatype(syncer::HISTORY_DELETE_DIRECTIVES,
-                    FROM_HERE,
-                    "Delete directives not supported with encryption.");
+    syncer::SyncError error(
+        FROM_HERE,
+        syncer::SyncError::DATATYPE_POLICY_ERROR,
+        "Delete directives not supported with encryption.",
+        syncer::HISTORY_DELETE_DIRECTIVES);
+    DisableDatatype(error);
   }
 }
 
@@ -1790,9 +1785,12 @@ void ProfileSyncService::OnUserChoseDatatypes(
   failed_data_types_handler_.Reset();
   if (GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES) &&
       encrypted_types_.Has(syncer::SESSIONS)) {
-    DisableDatatype(syncer::HISTORY_DELETE_DIRECTIVES,
-                    FROM_HERE,
-                    "Delete directives not supported with encryption.");
+    syncer::SyncError error(
+        FROM_HERE,
+        syncer::SyncError::DATATYPE_POLICY_ERROR,
+        "Delete directives not supported with encryption.",
+        syncer::HISTORY_DELETE_DIRECTIVES);
+    DisableDatatype(error);
   }
   ChangePreferredDataTypes(chosen_types);
   AcknowledgeSyncedTypes();
@@ -2037,10 +2035,22 @@ base::Value* ProfileSyncService::GetTypeStatusMap() const {
     if (error_map.find(type) != error_map.end()) {
       const syncer::SyncError &error = error_map.find(type)->second;
       DCHECK(error.IsSet());
-      std::string error_text = "Error: " + error.location().ToString() +
-          ", " + error.message();
-      type_status->SetString("status", "error");
-      type_status->SetString("value", error_text);
+      switch (error.GetSeverity()) {
+        case syncer::SyncError::SYNC_ERROR_SEVERITY_ERROR: {
+            std::string error_text = "Error: " + error.location().ToString() +
+                ", " + error.GetMessagePrefix() + error.message();
+            type_status->SetString("status", "error");
+            type_status->SetString("value", error_text);
+          }
+          break;
+        case syncer::SyncError::SYNC_ERROR_SEVERITY_INFO:
+          type_status->SetString("status", "disabled");
+          type_status->SetString("value", error.message());
+          break;
+        default:
+          NOTREACHED() << "Unexpected error severity.";
+          break;
+      }
     } else if (syncer::IsProxyType(type) && passive_types.Has(type)) {
       // Show a proxy type in "ok" state unless it is disabled by user.
       DCHECK(!throttled_types.Has(type));

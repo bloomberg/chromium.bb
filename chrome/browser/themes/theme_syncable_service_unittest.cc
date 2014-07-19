@@ -535,9 +535,7 @@ TEST_F(ThemeSyncableServiceTest, StopSync) {
   error = theme_sync_service_->ProcessSyncChanges(FROM_HERE, changes);
   EXPECT_TRUE(error.IsSet());
   EXPECT_EQ(syncer::THEMES, error.model_type());
-  EXPECT_EQ("datatype error was encountered: Theme syncable service is not "
-                "started.",
-            error.message());
+  EXPECT_EQ("Theme syncable service is not started.", error.message());
 }
 
 TEST_F(ThemeSyncableServiceTest, RestoreSystemThemeBitWhenChangeToCustomTheme) {

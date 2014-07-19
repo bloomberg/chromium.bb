@@ -80,8 +80,7 @@ static void CreateModelAssociatorAsync(base::WaitableEvent* startup,
   aborted->Wait();
   syncer::SyncError error = (*associator)->AssociateModels(NULL, NULL);
   EXPECT_TRUE(error.IsSet());
-  EXPECT_EQ("datatype error was encountered: Association was aborted.",
-            error.message());
+  EXPECT_EQ("Association was aborted.", error.message());
   delete *associator;
   done->Signal();
 }

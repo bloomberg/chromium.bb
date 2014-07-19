@@ -29,8 +29,24 @@ TEST_F(SyncErrorTest, Default) {
   SyncError error(location, SyncError::DATATYPE_ERROR, msg, type);
   ASSERT_TRUE(error.IsSet());
   EXPECT_EQ(location.line_number(), error.location().line_number());
-  EXPECT_EQ("datatype error was encountered: " + msg, error.message());
+  EXPECT_EQ("datatype error was encountered: ", error.GetMessagePrefix());
+  EXPECT_EQ(msg, error.message());
   EXPECT_EQ(type, error.model_type());
+  EXPECT_EQ(SyncError::SYNC_ERROR_SEVERITY_ERROR, error.GetSeverity());
+}
+
+TEST_F(SyncErrorTest, LowSeverity) {
+  tracked_objects::Location location = FROM_HERE;
+  std::string msg = "test";
+  ModelType type = PREFERENCES;
+  SyncError error(location, SyncError::DATATYPE_POLICY_ERROR, msg, type);
+  ASSERT_TRUE(error.IsSet());
+  EXPECT_EQ(location.line_number(), error.location().line_number());
+  EXPECT_EQ("disabled due to configuration constraints: ",
+      error.GetMessagePrefix());
+  EXPECT_EQ(msg, error.message());
+  EXPECT_EQ(type, error.model_type());
+  EXPECT_EQ(SyncError::SYNC_ERROR_SEVERITY_INFO, error.GetSeverity());
 }
 
 TEST_F(SyncErrorTest, Reset) {

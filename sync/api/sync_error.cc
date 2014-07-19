@@ -18,30 +18,10 @@ SyncError::SyncError() {
 
 SyncError::SyncError(const tracked_objects::Location& location,
                      ErrorType error_type,
-                     const std::string& custom_message,
+                     const std::string& message,
                      ModelType model_type) {
-  std::string type_message;
-  switch (error_type) {
-    case UNRECOVERABLE_ERROR:
-      type_message = "unrecoverable error was encountered: ";
-      break;
-    case DATATYPE_ERROR:
-      type_message = "datatype error was encountered: ";
-      break;
-    case PERSISTENCE_ERROR:
-      type_message = "persistence error was encountered: ";
-      break;
-    case CRYPTO_ERROR:
-      type_message = "cryptographer error was encountered: ";
-      break;
-    case UNREADY_ERROR:
-      type_message = "unready error was encountered: ";
-      break;
-    case UNSET:
-      NOTREACHED() << "Invalid error type";
-      return;
-  }
-  Init(location, type_message + custom_message, model_type, error_type);
+  DCHECK(error_type != UNSET);
+  Init(location, message, model_type, error_type);
   PrintLogError();
 }
 
@@ -120,20 +100,63 @@ SyncError::ErrorType SyncError::error_type() const {
   return error_type_;
 }
 
+SyncError::Severity SyncError::GetSeverity() const {
+  switch (error_type_) {
+    case UNREADY_ERROR:
+    case DATATYPE_POLICY_ERROR:
+      return SYNC_ERROR_SEVERITY_INFO;
+    default:
+      return SYNC_ERROR_SEVERITY_ERROR;
+  }
+}
+
+std::string SyncError::GetMessagePrefix() const {
+  std::string type_message;
+  switch (error_type_) {
+    case UNRECOVERABLE_ERROR:
+      type_message = "unrecoverable error was encountered: ";
+      break;
+    case DATATYPE_ERROR:
+      type_message = "datatype error was encountered: ";
+      break;
+    case PERSISTENCE_ERROR:
+      type_message = "persistence error was encountered: ";
+      break;
+    case CRYPTO_ERROR:
+      type_message = "cryptographer error was encountered: ";
+      break;
+    case UNREADY_ERROR:
+      type_message = "unready error was encountered: ";
+      break;
+    case DATATYPE_POLICY_ERROR:
+      type_message = "disabled due to configuration constraints: ";
+      break;
+    case UNSET:
+      NOTREACHED() << "Invalid error type";
+      break;
+  }
+  return type_message;
+}
+
 std::string SyncError::ToString() const {
   if (!IsSet()) {
     return std::string();
   }
   return location_->ToString() + ", " + ModelTypeToString(model_type_) +
-      " " + message_;
+      " " + GetMessagePrefix() + message_;
 }
 
 void SyncError::PrintLogError() const {
+  logging::LogSeverity logSeverity =
+      (GetSeverity() == SYNC_ERROR_SEVERITY_INFO)
+          ? logging::LOG_INFO : logging::LOG_ERROR;
+
   LAZY_STREAM(logging::LogMessage(location_->file_name(),
                                   location_->line_number(),
-                                  logging::LOG_ERROR).stream(),
-              LOG_IS_ON(ERROR))
-      << ModelTypeToString(model_type_) << " " << message_;
+                                  logSeverity).stream(),
+              logSeverity >= ::logging::GetMinLogLevel())
+      << ModelTypeToString(model_type_) << " "
+      << GetMessagePrefix() << message_;
 }
 
 void PrintTo(const SyncError& sync_error, std::ostream* os) {

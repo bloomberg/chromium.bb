@@ -38,8 +38,18 @@ class SYNC_EXPORT SyncError {
                           // datataype should be associated after a sync update.
     CRYPTO_ERROR,         // A cryptographer error was detected, and the
                           // datatype should be associated after it is resolved.
-    UNREADY_ERROR,        // The type is not ready to start yet, so should be
+    UNREADY_ERROR,        // A datatype is not ready to start yet, so should be
                           // neither purged nor enabled until it is ready.
+    DATATYPE_POLICY_ERROR // A datatype should be disabled and purged due
+                          // to configuration constraints.
+  };
+
+  // Severity is used to indicate how an error should be logged and
+  // represented to an end user.
+  enum Severity {
+    SYNC_ERROR_SEVERITY_ERROR,  // Severe unrecoverable error.
+    SYNC_ERROR_SEVERITY_INFO    // Low-severity recoverable error or
+                                // configuration policy issue.
   };
 
   // Default constructor refers to "no error", and IsSet() will return false.
@@ -75,6 +85,11 @@ class SYNC_EXPORT SyncError {
   const std::string& message() const;
   ModelType model_type() const;
   ErrorType error_type() const;
+
+  // Error severity for logging and UI purposes.
+  Severity GetSeverity() const;
+  // Type specific message prefix for logging and UI purposes.
+  std::string GetMessagePrefix() const;
 
   // Returns empty string is IsSet() is false.
   std::string ToString() const;

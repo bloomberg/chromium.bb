@@ -45,6 +45,7 @@ bool FailedDataTypesHandler::UpdateFailedDataTypes(const TypeErrorMap& errors) {
         unrecoverable_errors_.insert(*iter);
         break;
       case syncer::SyncError::DATATYPE_ERROR:
+      case syncer::SyncError::DATATYPE_POLICY_ERROR:
         data_type_errors_.insert(*iter);
         break;
       case syncer::SyncError::CRYPTO_ERROR:
