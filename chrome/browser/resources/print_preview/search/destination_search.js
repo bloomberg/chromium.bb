@@ -55,7 +55,8 @@ cr.define('print_preview', function() {
      * @type {!print_preview.SearchBox}
      * @private
      */
-    this.searchBox_ = new print_preview.SearchBox();
+    this.searchBox_ = new print_preview.SearchBox(
+        localStrings.getString('searchBoxPlaceholder'));
     this.addChild(this.searchBox_);
 
     /**
@@ -260,7 +261,7 @@ cr.define('print_preview', function() {
 
     /** @override */
     decorateInternal: function() {
-      this.searchBox_.decorate($('search-box'));
+      this.searchBox_.render(this.getChildElement('.search-box-container'));
       this.recentList_.render(this.getChildElement('.recent-list'));
       this.localList_.render(this.getChildElement('.local-list'));
       this.cloudList_.render(this.getChildElement('.cloud-list'));

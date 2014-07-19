@@ -166,6 +166,14 @@ cr.define('print_preview', function() {
     this.addChild(this.otherOptionsSettings_);
 
     /**
+     * Component used to search for print destinations.
+     * @type {!print_preview.AdvancedSettings}
+     * @private
+     */
+    this.advancedSettings_ = new print_preview.AdvancedSettings(this.metrics_);
+    this.addChild(this.advancedSettings_);
+
+    /**
      * Area of the UI that holds the print preview.
      * @type {!print_preview.PreviewArea}
      * @private
@@ -409,6 +417,7 @@ cr.define('print_preview', function() {
       this.colorSettings_.decorate($('color-settings'));
       this.marginSettings_.decorate($('margin-settings'));
       this.otherOptionsSettings_.decorate($('other-options-settings'));
+      this.advancedSettings_.decorate($('advanced-settings'));
       this.previewArea_.decorate($('preview-area'));
 
       setIsVisible($('open-pdf-in-preview-link'), cr.isMac);
@@ -1129,6 +1138,8 @@ cr.define('print_preview', function() {
 });
 
 // Pull in all other scripts in a single shot.
+<include src="common/search_box.js"/>
+
 <include src="data/page_number_set.js"/>
 <include src="data/destination.js"/>
 <include src="data/local_parsers.js"/>
@@ -1176,6 +1187,7 @@ cr.define('print_preview', function() {
 <include src="settings/margin_settings.js"/>
 <include src="settings/destination_settings.js"/>
 <include src="settings/other_options_settings.js"/>
+<include src="settings/advanced_settings/advanced_settings.js"/>
 
 <include src="previewarea/margin_control.js"/>
 <include src="previewarea/margin_control_container.js"/>
@@ -1188,7 +1200,6 @@ cr.define('print_preview', function() {
 <include src="search/recent_destination_list.js"/>
 <include src="search/destination_list_item.js"/>
 <include src="search/destination_search.js"/>
-<include src="search/search_box.js"/>
 <include src="search/fedex_tos.js"/>
 
 window.addEventListener('DOMContentLoaded', function() {

@@ -8121,9 +8121,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Opening PDF in Preview
           </message>
         </if>
-        <message name="IDS_PRINT_PREVIEW_CANCEL_BUTTON" desc="Cancel button.">
-          Cancel
-        </message>
         <message name="IDS_PRINT_PREVIEW_OPTION_ALL_PAGES" desc="Option to print all pages.">
           All
         </message>
@@ -8274,9 +8271,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PRINT_PREVIEW_DESTINATION_SEARCH_TITLE" desc="Title of the destination search UI component.">
           Select a destination
         </message>
-        <message name="IDS_PRINT_PREVIEW_USER_INFO" desc="Message describing which user's destinations are being shown.">
-          Showing destinations for <ph name="EMAIL">$1<ex>testing@gmail.com</ex></ph>
-        </message>
         <message name="IDS_PRINT_PREVIEW_ACCOUNT_SELECT_TITLE" desc="Title of the user's account selection control, to choose the account destinations are being shown for.">
           Showing destinations for
         </message>
@@ -8359,6 +8353,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_PRINT_PREVIEW_REGISTER_PROMO_BUTTON_TEXT">
           Register
+        </message>
+        <message name="IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_SEARCH_BOX_PLACEHOLDER" desc="Text to put in a advanced settings search box when user has not entered a search query.">
+          Search settings
+        </message>
+        <message name="IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_DIALOG_TITLE" desc="Title of the advanced printer settings selection dialog.">
+          Advanced settings for <ph name="PRINTING_DESTINATION">$1<ex>Office printer</ex></ph>
+        </message>
+        <message name="IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_DIALOG_CONFIRM" desc="In title case: The text for the accept button on the printer advanced settings dialog.">
+          Apply
         </message>
       </if>
 

@@ -166,7 +166,6 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
                              IDS_PRINT_INVALID_PRINTER_SETTINGS);
   source->AddLocalizedString("printButton", IDS_PRINT_PREVIEW_PRINT_BUTTON);
   source->AddLocalizedString("saveButton", IDS_PRINT_PREVIEW_SAVE_BUTTON);
-  source->AddLocalizedString("cancelButton", IDS_PRINT_PREVIEW_CANCEL_BUTTON);
   source->AddLocalizedString("printing", IDS_PRINT_PREVIEW_PRINTING);
   source->AddLocalizedString("printingToPDFInProgress",
                              IDS_PRINT_PREVIEW_PRINTING_TO_PDF_IN_PROGRESS);
@@ -276,7 +275,6 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
                              IDS_PRINT_PREVIEW_MEDIA_SIZE_LABEL);
   source->AddLocalizedString("destinationSearchTitle",
                              IDS_PRINT_PREVIEW_DESTINATION_SEARCH_TITLE);
-  source->AddLocalizedString("userInfo", IDS_PRINT_PREVIEW_USER_INFO);
   source->AddLocalizedString("accountSelectTitle",
                              IDS_PRINT_PREVIEW_ACCOUNT_SELECT_TITLE);
   source->AddLocalizedString("addAccountTitle",
@@ -330,6 +328,15 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
                              IDS_PRINT_PREVIEW_COULD_NOT_PRINT);
   source->AddLocalizedString("registerPromoButtonText",
                              IDS_PRINT_PREVIEW_REGISTER_PROMO_BUTTON_TEXT);
+  source->AddLocalizedString(
+      "advancedSettingsSearchBoxPlaceholder",
+      IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_SEARCH_BOX_PLACEHOLDER);
+  source->AddLocalizedString("advancedSettingsDialogTitle",
+                             IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_DIALOG_TITLE);
+  source->AddLocalizedString(
+      "advancedSettingsDialogConfirm",
+      IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_DIALOG_CONFIRM);
+  source->AddLocalizedString("cancel", IDS_CANCEL);
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("print_preview.js", IDR_PRINT_PREVIEW_JS);

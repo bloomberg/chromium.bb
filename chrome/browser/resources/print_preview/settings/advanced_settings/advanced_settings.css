@@ -1,0 +1,36 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+#advanced-settings {
+  z-index: 3;
+}
+
+#advanced-settings.transparent {
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#advanced-settings .page {
+  width: 640px;
+}
+
+#advanced-settings > .page > .close-button {
+  top: 9px;
+}
+
+#advanced-settings .search-box {
+  -webkit-user-select: none;
+  margin: 14px;
+}
+
+#advanced-settings .lists {
+  flex: 1;
+  overflow-y: auto;
+}
+
+#advanced-settings .lists > * {
+  -webkit-user-select: none;
+  padding: 0 14px 18px;
+}

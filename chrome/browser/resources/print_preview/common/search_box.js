@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,23 +7,28 @@ cr.define('print_preview', function() {
 
   /**
    * Component that renders a search box for searching through destinations.
+   * @param {string} searchBoxPlaceholderText Search box placeholder text.
    * @constructor
    * @extends {print_preview.Component}
    */
-  function SearchBox() {
+  function SearchBox(searchBoxPlaceholderText) {
     print_preview.Component.call(this);
 
     /**
+     * Search box placeholder text.
+     * @private {string}
+     */
+    this.searchBoxPlaceholderText_ = searchBoxPlaceholderText;
+
+    /**
      * Timeout used to control incremental search.
-     * @type {?number}
-     * @private
+     * @private {?number}
      */
      this.timeout_ = null;
 
     /**
      * Input box where the query is entered.
-     * @type {HTMLInputElement}
-     * @private
+     * @private {HTMLInputElement}
      */
     this.input_ = null;
   };
@@ -37,19 +42,9 @@ cr.define('print_preview', function() {
   };
 
   /**
-   * CSS classes used by the search box.
-   * @enum {string}
-   * @private
-   */
-  SearchBox.Classes_ = {
-    INPUT: 'search-box-input'
-  };
-
-  /**
    * Delay in milliseconds before dispatching a SEARCH event.
-   * @type {number}
+   * @private {number}
    * @const
-   * @private
    */
   SearchBox.SEARCH_DELAY_ = 150;
 
@@ -68,6 +63,14 @@ cr.define('print_preview', function() {
     },
 
     /** @override */
+    createDom: function() {
+      this.setElementInternal(this.cloneTemplateInternal(
+          'search-box-template'));
+      this.input_ = this.getChildElement('.search-box-input');
+      this.input_.setAttribute('placeholder', this.searchBoxPlaceholderText_);
+    },
+
+    /** @override */
     enterDocument: function() {
       print_preview.Component.prototype.enterDocument.call(this);
       this.tracker.add(this.input_, 'input', this.onInputInput_.bind(this));
@@ -77,12 +80,6 @@ cr.define('print_preview', function() {
     exitDocument: function() {
       print_preview.Component.prototype.exitDocument.call(this);
       this.input_ = null;
-    },
-
-    /** @override */
-    decorateInternal: function() {
-      this.input_ = this.getElement().getElementsByClassName(
-          SearchBox.Classes_.INPUT)[0];
     },
 
     /**
@@ -109,9 +106,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onInputInput_: function() {
-      if (this.timeout_) {
+      if (this.timeout_)
         clearTimeout(this.timeout_);
-      }
       this.timeout_ = setTimeout(
           this.dispatchSearchEvent_.bind(this), SearchBox.SEARCH_DELAY_);
     }

@@ -10,11 +10,13 @@
   <link rel="stylesheet" href="chrome://resources/css/chrome_shared.css">
   <link rel="stylesheet" href="chrome://resources/css/throbber.css">
   <link rel="stylesheet" href="print_header.css">
+  <link rel="stylesheet" href="common/search_box.css">
   <link rel="stylesheet" href="settings/destination_settings.css">
   <link rel="stylesheet" href="settings/copies_settings.css">
   <link rel="stylesheet" href="settings/page_settings.css">
   <link rel="stylesheet" href="settings/margin_settings.css">
   <link rel="stylesheet" href="settings/media_size_settings.css">
+  <link rel="stylesheet" href="settings/advanced_settings/advanced_settings.css">
   <link rel="stylesheet" href="previewarea/preview_area.css">
   <link rel="stylesheet" href="previewarea/margin_control_container.css">
   <link rel="stylesheet" href="previewarea/margin_control.css">
@@ -24,7 +26,6 @@
   <link rel="stylesheet" href="search/destination_list.css">
   <link rel="stylesheet" href="search/destination_list_item.css">
   <link rel="stylesheet" href="search/destination_search.css">
-  <link rel="stylesheet" href="search/search_box.css">
   <link rel="stylesheet" href="search/fedex_tos.css">
 
   <script src="chrome://print/strings.js"></script>
@@ -77,12 +78,14 @@
     </div>
   </div>
   <include src="search/destination_search.html"/>
+  <include src="settings/advanced_settings/advanced_settings.html"/>
   <include src="no_destinations_promo.html"/>
   <div id="main-container">
     <include src="previewarea/preview_area.html"/>
   </div>
 
   <!-- HTML Templates -->
+  <include src="common/search_box.html"/>
   <include src="previewarea/margin_control.html"/>
   <include src="search/destination_list.html"/>
   <include src="search/destination_list_item.html"/>
