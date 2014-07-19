@@ -314,6 +314,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "sectionTitleSearch", IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME },
     { "sectionTitleStartup", IDS_OPTIONS_STARTUP_GROUP_NAME },
     { "sectionTitleSync", IDS_SYNC_OPTIONS_GROUP_NAME },
+    { "sectionTitleVoice", IDS_OPTIONS_VOICE_GROUP_NAME },
     { "spellingConfirmMessage", IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT },
     { "spellingConfirmEnable", IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE },
     { "spellingConfirmDisable", IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_DISABLE },

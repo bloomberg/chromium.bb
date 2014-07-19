@@ -9847,6 +9847,9 @@ Chrome ran out of memory.
         <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME" desc="The title of the default search engine group">
           Search
         </message>
+        <message name="IDS_OPTIONS_VOICE_GROUP_NAME" desc="The title of the voice group in the settings page">
+          Voice
+        </message>
         <message name="IDS_SEARCH_ENGINE_ADD_NEW_NAME_PLACEHOLDER" desc="Placeholder text for name before the user adds a new search engine" >
           Add a new search engine
         </message>
