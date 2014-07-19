@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/test_runner/WebTestThemeEngineMock.h"
+#include "content/shell/renderer/test_runner/mock_web_theme_engine.h"
 
 #include "base/logging.h"
 #include "skia/ext/platform_canvas.h"
@@ -17,8 +17,12 @@ using blink::WebThemeEngine;
 
 namespace content {
 
-static const SkColor edgeColor     = SK_ColorBLACK;
-static const SkColor readOnlyColor = SkColorSetRGB(0xe9, 0xc2, 0xa6);
+namespace {
+
+const SkColor edgeColor = SK_ColorBLACK;
+const SkColor readOnlyColor = SkColorSetRGB(0xe9, 0xc2, 0xa6);
+
+}  // namespace
 
 SkColor bgColors(WebThemeEngine::State state) {
   switch (state) {
@@ -40,8 +44,7 @@ SkColor bgColors(WebThemeEngine::State state) {
   return SkColorSetRGB(0x00, 0x00, 0xff);
 }
 
-blink::WebSize WebTestThemeEngineMock::getSize(WebThemeEngine::Part part)
-{
+blink::WebSize MockWebThemeEngine::getSize(WebThemeEngine::Part part) {
     // FIXME: We use this constant to indicate we are being asked for the size of
     // a part that we don't expect to be asked about. We return a garbage value
     // rather than just asserting because this code doesn't have access to either
@@ -77,16 +80,14 @@ blink::WebSize WebTestThemeEngineMock::getSize(WebThemeEngine::Part part)
     }
 }
 
-static SkIRect webRectToSkIRect(const WebRect& webRect)
-{
+static SkIRect webRectToSkIRect(const WebRect& webRect) {
     SkIRect irect;
     irect.set(webRect.x, webRect.y,
         webRect.x + webRect.width - 1, webRect.y + webRect.height - 1);
     return irect;
 }
 
-static SkIRect validate(const SkIRect& rect, WebThemeEngine::Part part)
-{
+static SkIRect validate(const SkIRect& rect, WebThemeEngine::Part part) {
     switch (part) {
     case WebThemeEngine::PartCheckbox:
     case WebThemeEngine::PartRadio: {
@@ -110,9 +111,7 @@ static SkIRect validate(const SkIRect& rect, WebThemeEngine::Part part)
     }
 }
 
-
-void box(SkCanvas *canvas, const SkIRect& rect, SkColor fillColor)
-{
+void box(SkCanvas* canvas, const SkIRect& rect, SkColor fillColor) {
     SkPaint paint;
 
     paint.setStyle(SkPaint::kFill_Style);
@@ -124,20 +123,24 @@ void box(SkCanvas *canvas, const SkIRect& rect, SkColor fillColor)
     canvas->drawIRect(rect, paint);
 }
 
-void line(SkCanvas *canvas, int x0, int y0, int x1, int y1, SkColor color)
-{
+void line(SkCanvas* canvas, int x0, int y0, int x1, int y1, SkColor color) {
     SkPaint paint;
     paint.setColor(color);
-    canvas->drawLine(SkIntToScalar(x0), SkIntToScalar(y0),
-        SkIntToScalar(x1), SkIntToScalar(y1), paint);
+    canvas->drawLine(SkIntToScalar(x0),
+                     SkIntToScalar(y0),
+                     SkIntToScalar(x1),
+                     SkIntToScalar(y1),
+                     paint);
 }
 
-void triangle(SkCanvas *canvas,
-    int x0, int y0,
-    int x1, int y1,
-    int x2, int y2,
-    SkColor color)
-{
+void triangle(SkCanvas* canvas,
+              int x0,
+              int y0,
+              int x1,
+              int y1,
+              int x2,
+              int y2,
+              SkColor color) {
     SkPath path;
     SkPaint paint;
 
@@ -155,8 +158,7 @@ void triangle(SkCanvas *canvas,
     canvas->drawPath(path, paint);
 }
 
-void roundRect(SkCanvas *canvas, SkIRect irect, SkColor color)
-{
+void roundRect(SkCanvas* canvas, SkIRect irect, SkColor color) {
     SkRect rect;
     SkScalar radius = SkIntToScalar(5);
     SkPaint paint;
@@ -171,8 +173,7 @@ void roundRect(SkCanvas *canvas, SkIRect irect, SkColor color)
     canvas->drawRoundRect(rect, radius, radius, paint);
 }
 
-void oval(SkCanvas* canvas, SkIRect irect, SkColor color)
-{
+void oval(SkCanvas* canvas, SkIRect irect, SkColor color) {
     SkRect rect;
     SkPaint paint;
 
@@ -186,8 +187,7 @@ void oval(SkCanvas* canvas, SkIRect irect, SkColor color)
     canvas->drawOval(rect, paint);
 }
 
-void circle(SkCanvas *canvas, SkIRect irect, SkScalar radius, SkColor color)
-{
+void circle(SkCanvas* canvas, SkIRect irect, SkScalar radius, SkColor color) {
     int left = irect.fLeft;
     int width = irect.width();
     int height = irect.height();
@@ -206,15 +206,14 @@ void circle(SkCanvas *canvas, SkIRect irect, SkScalar radius, SkColor color)
     canvas->drawCircle(cx, cy, radius, paint);
 }
 
-void nestedBoxes(SkCanvas *canvas,
-    SkIRect irect,
-    int indentLeft,
-    int indentTop,
-    int indentRight,
-    int indentBottom,
-    SkColor outerColor,
-    SkColor innerColor)
-{
+void nestedBoxes(SkCanvas* canvas,
+                 SkIRect irect,
+                 int indentLeft,
+                 int indentTop,
+                 int indentRight,
+                 int indentBottom,
+                 SkColor outerColor,
+                 SkColor innerColor) {
     SkIRect lirect;
     box(canvas, irect, outerColor);
     lirect.set(irect.fLeft + indentLeft,
@@ -239,8 +238,7 @@ void insetBox(SkCanvas* canvas,
   box(canvas, lirect, color);
 }
 
-void markState(SkCanvas *canvas, SkIRect irect, WebThemeEngine::State state)
-{
+void markState(SkCanvas* canvas, SkIRect irect, WebThemeEngine::State state) {
     int left = irect.fLeft;
     int right = irect.fRight;
     int top = irect.fTop;
@@ -298,13 +296,11 @@ void markState(SkCanvas *canvas, SkIRect irect, WebThemeEngine::State state)
     }
 }
 
-void WebTestThemeEngineMock::paint(
-    blink::WebCanvas* canvas,
-    WebThemeEngine::Part part,
-    WebThemeEngine::State state,
-    const blink::WebRect& rect,
-    const WebThemeEngine::ExtraParams* extraParams)
-{
+void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
+                               WebThemeEngine::Part part,
+                               WebThemeEngine::State state,
+                               const blink::WebRect& rect,
+                               const WebThemeEngine::ExtraParams* extraParams) {
     SkIRect irect = webRectToSkIRect(rect);
     SkPaint paint;
 

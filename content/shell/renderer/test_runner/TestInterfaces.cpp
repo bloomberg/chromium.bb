@@ -195,7 +195,7 @@ WebThemeEngine* TestInterfaces::themeEngine()
         m_themeEngine.reset(new WebTestThemeEngineMac());
 #else
     if (!m_themeEngine.get())
-        m_themeEngine.reset(new WebTestThemeEngineMock());
+        m_themeEngine.reset(new MockWebThemeEngine());
 #endif
     return m_themeEngine.get();
 }

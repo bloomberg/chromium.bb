@@ -14,7 +14,7 @@
 #if defined(__APPLE__)
 #include "content/shell/renderer/test_runner/WebTestThemeEngineMac.h"
 #else
-#include "content/shell/renderer/test_runner/WebTestThemeEngineMock.h"
+#include "content/shell/renderer/test_runner/mock_web_theme_engine.h"
 #endif
 
 namespace blink {
@@ -71,7 +71,7 @@ private:
 #if defined(__APPLE__)
     scoped_ptr<WebTestThemeEngineMac> m_themeEngine;
 #else
-    scoped_ptr<WebTestThemeEngineMock> m_themeEngine;
+    scoped_ptr<MockWebThemeEngine> m_themeEngine;
 #endif
 
     DISALLOW_COPY_AND_ASSIGN(TestInterfaces);
