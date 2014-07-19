@@ -2952,6 +2952,11 @@
             '../third_party/hunspell/hunspell.gyp:hunspell',
           ],
         }],
+        # Temporary fix to break the browser_ui target into smaller chunks so it
+        # will link with SyzyASan builds.
+        ['OS=="win" and syzyasan==1', {
+          'msvs_shard': 4,
+        }],
       ],
     },
   ],
