@@ -63,9 +63,10 @@ namespace {
 class FallbackFence : public ResourceProvider::Fence {
  public:
   explicit FallbackFence(gpu::gles2::GLES2Interface* gl)
-      : gl_(gl), has_passed_(false) {}
+      : gl_(gl), has_passed_(true) {}
 
   // Overridden from ResourceProvider::Fence:
+  virtual void Set() OVERRIDE { has_passed_ = false; }
   virtual bool HasPassed() OVERRIDE {
     if (!has_passed_) {
       has_passed_ = true;
@@ -235,32 +236,60 @@ struct GLRenderer::PendingAsyncReadPixels {
 class GLRenderer::SyncQuery {
  public:
   explicit SyncQuery(gpu::gles2::GLES2Interface* gl)
-      : gl_(gl), query_id_(0u), weak_ptr_factory_(this) {
+      : gl_(gl), query_id_(0u), is_pending_(false), weak_ptr_factory_(this) {
     gl_->GenQueriesEXT(1, &query_id_);
   }
   virtual ~SyncQuery() { gl_->DeleteQueriesEXT(1, &query_id_); }
 
   scoped_refptr<ResourceProvider::Fence> Begin() {
-    DCHECK(!weak_ptr_factory_.HasWeakPtrs() || !IsPending());
+    DCHECK(!IsPending());
     // Invalidate weak pointer held by old fence.
     weak_ptr_factory_.InvalidateWeakPtrs();
-    gl_->BeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, query_id_);
+    // Note: In case the set of drawing commands issued before End() do not
+    // depend on the query, defer BeginQueryEXT call until Set() is called and
+    // query is required.
     return make_scoped_refptr<ResourceProvider::Fence>(
         new Fence(weak_ptr_factory_.GetWeakPtr()));
   }
 
-  void End() { gl_->EndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM); }
+  void Set() {
+    if (is_pending_)
+      return;
+
+    // Note: BeginQueryEXT on GL_COMMANDS_COMPLETED_CHROMIUM is effectively a
+    // noop relative to GL, so it doesn't matter where it happens but we still
+    // make sure to issue this command when Set() is called (prior to issuing
+    // any drawing commands that depend on query), in case some future extension
+    // can take advantage of this.
+    gl_->BeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, query_id_);
+    is_pending_ = true;
+  }
+
+  void End() {
+    if (!is_pending_)
+      return;
+
+    gl_->EndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);
+  }
 
   bool IsPending() {
-    unsigned available = 1;
+    if (!is_pending_)
+      return false;
+
+    unsigned result_available = 1;
     gl_->GetQueryObjectuivEXT(
-        query_id_, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
-    return !available;
+        query_id_, GL_QUERY_RESULT_AVAILABLE_EXT, &result_available);
+    is_pending_ = !result_available;
+    return is_pending_;
   }
 
   void Wait() {
+    if (!is_pending_)
+      return;
+
     unsigned result = 0;
     gl_->GetQueryObjectuivEXT(query_id_, GL_QUERY_RESULT_EXT, &result);
+    is_pending_ = false;
   }
 
  private:
@@ -270,6 +299,10 @@ class GLRenderer::SyncQuery {
         : query_(query) {}
 
     // Overridden from ResourceProvider::Fence:
+    virtual void Set() OVERRIDE {
+      DCHECK(query_);
+      query_->Set();
+    }
     virtual bool HasPassed() OVERRIDE {
       return !query_ || !query_->IsPending();
     }
@@ -284,6 +317,7 @@ class GLRenderer::SyncQuery {
 
   gpu::gles2::GLES2Interface* gl_;
   unsigned query_id_;
+  bool is_pending_;
   base::WeakPtrFactory<SyncQuery> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncQuery);

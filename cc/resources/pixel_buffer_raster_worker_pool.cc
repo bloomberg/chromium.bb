@@ -412,7 +412,7 @@ void PixelBufferRasterWorkerPool::CheckForCompletedUploads() {
     // Async set pixels commands are not necessarily processed in-sequence with
     // drawing commands. Read lock fences are required to ensure that async
     // commands don't access the resource while used for drawing.
-    resource_provider_->EnableReadLockFences(task->resource()->id(), true);
+    resource_provider_->EnableReadLockFences(task->resource()->id());
 
     DCHECK(std::find(completed_raster_tasks_.begin(),
                      completed_raster_tasks_.end(),

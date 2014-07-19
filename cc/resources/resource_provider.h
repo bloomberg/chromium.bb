@@ -301,6 +301,8 @@ class CC_EXPORT ResourceProvider {
   class Fence : public base::RefCounted<Fence> {
    public:
     Fence() {}
+
+    virtual void Set() = 0;
     virtual bool HasPassed() = 0;
 
    protected:
@@ -356,7 +358,7 @@ class CC_EXPORT ResourceProvider {
   void SetReadLockFence(Fence* fence) { current_read_lock_fence_ = fence; }
 
   // Enable read lock fences for a specific resource.
-  void EnableReadLockFences(ResourceProvider::ResourceId id, bool enable);
+  void EnableReadLockFences(ResourceProvider::ResourceId id);
 
   // Indicates if we can currently lock this resource for write.
   bool CanLockForWrite(ResourceId id);
@@ -418,7 +420,7 @@ class CC_EXPORT ResourceProvider {
     bool pending_set_pixels : 1;
     bool set_pixels_completion_forced : 1;
     bool allocated : 1;
-    bool enable_read_lock_fences : 1;
+    bool read_lock_fences_enabled : 1;
     bool has_shared_bitmap_id : 1;
     bool allow_overlay : 1;
     scoped_refptr<Fence> read_lock_fence;
