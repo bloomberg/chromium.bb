@@ -441,7 +441,7 @@ bool DrawingBuffer::copyToPlatformTexture(blink::WebGraphicsContext3D* context, 
         return false;
 
     GLint textureId = m_colorBuffer.textureId;
-    if (fromFrontBuffer)
+    if (fromFrontBuffer && m_frontColorBuffer.textureId)
         textureId = m_frontColorBuffer.textureId;
 
     if (m_contentsChanged) {

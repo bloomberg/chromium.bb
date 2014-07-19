@@ -450,8 +450,8 @@ static void writeImageNodeToPasteboard(Pasteboard* pasteboard, Node* node, const
     ASSERT(pasteboard);
     ASSERT(node);
 
-    Image* image = imageFromNode(*node);
-    if (!image)
+    RefPtrWillBeRawPtr<Image> image = imageFromNode(*node);
+    if (!image.get())
         return;
 
     // FIXME: This should probably be reconciled with HitTestResult::absoluteImageURL.
@@ -464,7 +464,7 @@ static void writeImageNodeToPasteboard(Pasteboard* pasteboard, Node* node, const
         urlString = toElement(node)->imageSourceURL();
     KURL url = urlString.isEmpty() ? KURL() : node->document().completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
 
-    pasteboard->writeImage(image, url, title);
+    pasteboard->writeImage(image.get(), url, title);
 }
 
 // Returns whether caller should continue with "the default processing", which is the same as

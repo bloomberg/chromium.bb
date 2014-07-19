@@ -603,8 +603,11 @@ void HTMLCanvasElement::ensureUnacceleratedImageBuffer()
 Image* HTMLCanvasElement::copiedImage() const
 {
     if (!m_copiedImage && buffer()) {
-        if (m_context)
+        if (m_context && m_context->is3d()) {
+            toWebGLRenderingContext(m_context.get())->setSavingImage(true);
             m_context->paintRenderingResultsToCanvas();
+            toWebGLRenderingContext(m_context.get())->setSavingImage(false);
+        }
         m_copiedImage = buffer()->copyImage(CopyBackingStore, Unscaled);
         updateExternallyAllocatedMemory();
     }
