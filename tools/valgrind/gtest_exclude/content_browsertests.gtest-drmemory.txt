@@ -1,2 +1,0 @@
-# All WebRTCBrowserTests fail - see http://crbug.com/395172
-WebRtcBrowserTest.*

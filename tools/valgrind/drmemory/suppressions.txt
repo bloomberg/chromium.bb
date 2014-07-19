@@ -634,19 +634,3 @@ KERNEL32.dll!CreateWaitableTimerW
 *!content::RenderProcessHostImpl::CreateMessageFilters
 *!content::RenderProcessHostImpl::Init
 *!content::RenderViewHostImpl::CreateRenderView
-
-UNADDRESSABLE ACCESS
-name=http://crbug.com/394957
-content.dll!crypto_kernel_do_load_cipher_type
-content.dll!crypto_kernel_load_cipher_type
-content.dll!crypto_kernel_init
-content.dll!cricket::SrtpSession::SetKey
-content.dll!cricket::SrtpSession::SetSend
-content.dll!cricket::SrtpFilter::ApplyParams
-content.dll!cricket::SrtpFilter::DoSetAnswer
-content.dll!cricket::SrtpFilter::SetAnswer
-content.dll!cricket::BaseChannel::SetSrtp_w
-content.dll!cricket::BaseChannel::SetBaseLocalContent_w
-content.dll!cricket::VoiceChannel::SetLocalContent_w
-content.dll!talk_base::FunctorMessageHandler<>::OnMessage
-
