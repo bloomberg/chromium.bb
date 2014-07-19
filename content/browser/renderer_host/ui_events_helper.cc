@@ -258,6 +258,8 @@ int EventFlagsToWebEventModifiers(int flags) {
     modifiers |= blink::WebInputEvent::RightButtonDown;
   if (flags & ui::EF_CAPS_LOCK_DOWN)
     modifiers |= blink::WebInputEvent::CapsLockOn;
+  if (flags & ui::EF_IS_REPEAT)
+    modifiers |= blink::WebInputEvent::IsAutoRepeat;
   return modifiers;
 }
 

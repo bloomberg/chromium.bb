@@ -132,7 +132,7 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
 
   webkit_event.setKeyIdentifierFromWindowsKeyCode();
 
-  // TODO: IsAutoRepeat/IsKeyPad?
+  // TODO: IsKeyPad?
 
   return webkit_event;
 }
