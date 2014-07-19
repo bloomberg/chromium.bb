@@ -15,8 +15,12 @@
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/state_names.h"
 #include "grit/components_strings.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using ::i18n::addressinput::AddressData;
+using ::i18n::addressinput::GetStreetAddressLinesAsSingleLine;
 using base::ASCIIToUTF16;
 using base::StringToInt;
 
@@ -354,18 +358,23 @@ bool FillMonthControl(const base::string16& value, FormFieldData* field) {
   return true;
 }
 
-// Fills |field| with the street address in |value|.  Translates newlines into
+// Fills |field| with the street address in |value|. Translates newlines into
 // equivalent separators when necessary, i.e. when filling a single-line field.
+// The separators depend on |address_language_code|.
 void FillStreetAddress(const base::string16& value,
+                       const std::string& address_language_code,
                        FormFieldData* field) {
   if (field->form_control_type == "textarea") {
     field->value = value;
     return;
   }
 
-  const base::string16& separator =
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_LINE_SEPARATOR);
-  base::ReplaceChars(value, base::ASCIIToUTF16("\n"), separator, &field->value);
+  AddressData address_data;
+  address_data.language_code = address_language_code;
+  base::SplitString(base::UTF16ToUTF8(value), '\n', &address_data.address_line);
+  std::string line;
+  GetStreetAddressLinesAsSingleLine(address_data, &line);
+  field->value = base::UTF8ToUTF16(line);
 }
 
 std::string Hash32Bit(const std::string& str) {
@@ -462,6 +471,7 @@ bool AutofillField::IsFieldFillable() const {
 // static
 bool AutofillField::FillFormField(const AutofillField& field,
                                   const base::string16& value,
+                                  const std::string& address_language_code,
                                   const std::string& app_locale,
                                   FormFieldData* field_data) {
   AutofillType type = field.Type();
@@ -474,7 +484,7 @@ bool AutofillField::FillFormField(const AutofillField& field,
   } else if (field_data->form_control_type == "month") {
     return FillMonthControl(value, field_data);
   } else if (type.GetStorableType() == ADDRESS_HOME_STREET_ADDRESS) {
-    FillStreetAddress(value, field_data);
+    FillStreetAddress(value, address_language_code, field_data);
     return true;
   }
 

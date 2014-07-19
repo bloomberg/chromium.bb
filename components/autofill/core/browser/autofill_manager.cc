@@ -550,9 +550,12 @@ void AutofillManager::FillOrPreviewForm(
   FormData result = form;
 
   base::string16 profile_full_name;
+  std::string profile_language_code;
   if (!is_credit_card) {
     profile_full_name = data_model->GetInfo(
         AutofillType(NAME_FULL), app_locale_);
+    profile_language_code =
+        static_cast<const AutofillProfile*>(data_model)->language_code();
   }
 
   // If the relevant section is auto-filled, we should fill |field| but not the
@@ -563,8 +566,11 @@ void AutofillManager::FillOrPreviewForm(
       if ((*iter) == field) {
         base::string16 value = data_model->GetInfoForVariant(
             autofill_field->Type(), variant, app_locale_);
-        if (AutofillField::FillFormField(
-            *autofill_field, value, app_locale_, &(*iter))) {
+        if (AutofillField::FillFormField(*autofill_field,
+                                         value,
+                                         profile_language_code,
+                                         app_locale_,
+                                         &(*iter))) {
           // Mark the cached field as autofilled, so that we can detect when a
           // user edits an autofilled field (for metrics).
           autofill_field->is_autofilled = true;
@@ -620,8 +626,11 @@ void AutofillManager::FillOrPreviewForm(
           (result.fields[i] == field ||
            result.fields[i].form_control_type == "select-one" ||
            result.fields[i].value.empty());
-      if (AutofillField::FillFormField(
-          *cached_field, value, app_locale_, &result.fields[i])) {
+      if (AutofillField::FillFormField(*cached_field,
+                                       value,
+                                       profile_language_code,
+                                       app_locale_,
+                                       &result.fields[i])) {
         // Mark the cached field as autofilled, so that we can detect when a
         // user edits an autofilled field (for metrics).
         form_structure->field(i)->is_autofilled = true;
