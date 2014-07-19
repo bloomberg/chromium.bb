@@ -259,8 +259,9 @@ void SynchronousCompositorFactoryImpl::SetDeferredGpuService(
   service_ = service;
 }
 
-void SynchronousCompositorFactoryImpl::DisableRecordFullLayer() {
-  record_full_layer_ = false;
+void SynchronousCompositorFactoryImpl::SetRecordFullDocument(
+    bool record_full_document) {
+  record_full_layer_ = record_full_document;
 }
 
 }  // namespace content

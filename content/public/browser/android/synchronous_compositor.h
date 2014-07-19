@@ -64,9 +64,10 @@ class CONTENT_EXPORT SynchronousCompositor {
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service);
 
   // By default, synchronous compopsitor records the full layer, not only
-  // what is inside and around the view port. Call this on start up to revert
-  // to default behavior when synchronous compositor is not used.
-  static void DisableRecordFullLayer();
+  // what is inside and around the view port. This can be used to switch
+  // between this record-full-layer behavior and normal record-around-viewport
+  // behavior.
+  static void SetRecordFullDocument(bool record_full_document);
 
   // Synchronously initialize compositor for hardware draw. Can only be called
   // while compositor is in software only mode, either after compositor is

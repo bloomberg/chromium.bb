@@ -7,9 +7,6 @@
 
 namespace switches {
 
-const char kDisableRecordDocumentWorkaround[] =
-    "disable-record-document-workaround";
-
 const char kForceAuxiliaryBitmap[] = "force-auxiliary-bitmap";
 
 bool ForceAuxiliaryBitmap() {

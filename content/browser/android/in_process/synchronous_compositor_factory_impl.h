@@ -50,7 +50,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
   void SetDeferredGpuService(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service);
-  void DisableRecordFullLayer();
+  void SetRecordFullDocument(bool record_full_document);
   void CompositorInitializedHardwareDraw();
   void CompositorReleasedHardwareDraw();
 

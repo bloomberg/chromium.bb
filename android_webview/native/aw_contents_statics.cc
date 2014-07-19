@@ -9,6 +9,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
+#include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
 #include "jni/AwContentsStatics_jni.h"
@@ -71,6 +72,11 @@ void SetDataReductionProxyEnabled(JNIEnv* env, jclass, jboolean enabled) {
 jstring GetUnreachableWebDataUrl(JNIEnv* env, jclass) {
   return base::android::ConvertUTF8ToJavaString(
              env, content::kUnreachableWebDataURL).Release();
+}
+
+// static
+void SetRecordFullDocument(JNIEnv* env, jclass, jboolean record_full_document) {
+  content::SynchronousCompositor::SetRecordFullDocument(record_full_document);
 }
 
 bool RegisterAwContentsStatics(JNIEnv* env) {

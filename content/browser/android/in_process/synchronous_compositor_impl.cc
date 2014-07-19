@@ -90,8 +90,8 @@ void SynchronousCompositor::SetGpuService(
 }
 
 // static
-void SynchronousCompositor::DisableRecordFullLayer() {
-  g_factory.Get().DisableRecordFullLayer();
+void SynchronousCompositor::SetRecordFullDocument(bool record_full_document) {
+  g_factory.Get().SetRecordFullDocument(record_full_document);
 }
 
 bool SynchronousCompositorImpl::InitializeHwDraw() {

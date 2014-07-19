@@ -70,6 +70,10 @@ public class AwContentsStatics {
         return sUnreachableWebDataUrl;
     }
 
+    public static void setRecordFullDocument(boolean recordFullDocument) {
+        nativeSetRecordFullDocument(recordFullDocument);
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------
@@ -77,4 +81,5 @@ public class AwContentsStatics {
     private static native void nativeSetDataReductionProxyKey(String key);
     private static native void nativeSetDataReductionProxyEnabled(boolean enabled);
     private static native String nativeGetUnreachableWebDataUrl();
+    private static native void nativeSetRecordFullDocument(boolean recordFullDocument);
 }
