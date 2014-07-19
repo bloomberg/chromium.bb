@@ -13,9 +13,9 @@
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
-#include "mojo/services/public/cpp/view_manager/view_event_dispatcher.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
+#include "mojo/services/public/cpp/view_manager/window_manager_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -529,7 +529,7 @@ ViewManagerClientImpl::ViewManagerClientImpl(ApplicationConnection* connection,
       connection_id_(0),
       next_id_(1),
       delegate_(delegate),
-      dispatcher_(NULL) {}
+      window_manager_delegate_(NULL) {}
 
 ViewManagerClientImpl::~ViewManagerClientImpl() {
   while (!nodes_.empty()) {
@@ -676,14 +676,14 @@ void ViewManagerClientImpl::RemoveView(Id view_id) {
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerClientImpl, ViewManager implementation:
 
-void ViewManagerClientImpl::SetEventDispatcher(
-    ViewEventDispatcher* dispatcher) {
+void ViewManagerClientImpl::SetWindowManagerDelegate(
+    WindowManagerDelegate* window_manager_delegate) {
   CHECK(NULL != GetNodeById(1));
-  dispatcher_ = dispatcher;
+  window_manager_delegate_ = window_manager_delegate;
 }
 
 void ViewManagerClientImpl::DispatchEvent(View* target, EventPtr event) {
-  CHECK(dispatcher_);
+  CHECK(window_manager_delegate_);
   service_->DispatchOnViewInputEvent(target->id(), event.Pass());
 }
 
@@ -824,9 +824,13 @@ void ViewManagerClientImpl::OnFocusChanged(Id gained_focus_id,
   }
 }
 
+void ViewManagerClientImpl::EmbedRoot(const String& url) {
+  window_manager_delegate_->EmbedRoot(url);
+}
+
 void ViewManagerClientImpl::DispatchOnViewInputEvent(Id view_id,
                                                      EventPtr event) {
-  dispatcher_->DispatchEvent(GetViewById(view_id), event.Pass());
+  window_manager_delegate_->DispatchEvent(GetViewById(view_id), event.Pass());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
