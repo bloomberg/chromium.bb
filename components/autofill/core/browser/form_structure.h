@@ -137,13 +137,11 @@ class FormStructure {
       InputFieldComparator;
 
   // Fills in |fields_| that match |types| (via |matches|) with info from
-  // |get_info|. Uses |address_language_code| to determine line separators when
-  // collapsing street address lines into a single-line input text field.
+  // |get_info|.
   bool FillFields(
       const std::vector<ServerFieldType>& types,
       const InputFieldComparator& matches,
       const base::Callback<base::string16(const AutofillType&)>& get_info,
-      const std::string& address_language_code,
       const std::string& app_locale);
 
   // Returns the values that can be filled into the form structure for the

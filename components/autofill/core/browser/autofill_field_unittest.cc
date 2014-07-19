@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/autofill_field.h"
-
 #include "base/format_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
-using base::UTF8ToUTF16;
 
 namespace autofill {
 namespace {
@@ -126,13 +124,11 @@ TEST(AutofillFieldTest, FillPhoneNumber) {
   field.SetHtmlType(HTML_TYPE_TEL_LOCAL_PREFIX, HtmlFieldMode());
 
   // Fill with a non-phone number; should fill normally.
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("Oh hai"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("Oh hai"), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("Oh hai"), field.value);
 
   // Fill with a phone number; should fill just the prefix.
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("5551234"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("5551234"), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("555"), field.value);
 
   // Now reset the type, and set a max-length instead.
@@ -141,8 +137,7 @@ TEST(AutofillFieldTest, FillPhoneNumber) {
   field.max_length = 4;
 
   // Fill with a phone-number; should fill just the suffix.
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("5551234"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("5551234"), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("1234"), field.value);
 }
 
@@ -160,8 +155,8 @@ TEST(AutofillFieldTest, FillSelectControlByValue) {
     field.option_contents[i] = ASCIIToUTF16(base::StringPrintf("%" PRIuS, i));
   }
 
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("Meenie"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("Meenie"), "en-US",
+                               &field);
   EXPECT_EQ(ASCIIToUTF16("Meenie"), field.value);
 }
 
@@ -179,8 +174,8 @@ TEST(AutofillFieldTest, FillSelectControlByContents) {
     field.option_values[i] = ASCIIToUTF16(base::StringPrintf("%" PRIuS, i));
   }
 
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("Miney"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("Miney"), "en-US",
+                               &field);
   EXPECT_EQ(ASCIIToUTF16("2"), field.value);  // Corresponds to "Miney".
 }
 
@@ -193,8 +188,7 @@ TEST(AutofillFieldTest, FillSelectControlWithFullCountryNames) {
       base::string16());
   field.set_heuristic_type(ADDRESS_HOME_COUNTRY);
 
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("CA"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("CA"), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("Canada"), field.value);
 }
 
@@ -207,8 +201,7 @@ TEST(AutofillFieldTest, FillSelectControlWithAbbreviatedCountryNames) {
       base::string16());
   field.set_heuristic_type(ADDRESS_HOME_COUNTRY);
 
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("Canada"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("Canada"), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
 }
 
@@ -221,8 +214,7 @@ TEST(AutofillFieldTest, FillSelectControlWithFullStateNames) {
       base::string16());
   field.set_heuristic_type(ADDRESS_HOME_STATE);
 
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("CA"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("CA"), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("California"), field.value);
 }
 
@@ -235,8 +227,8 @@ TEST(AutofillFieldTest, FillSelectControlWithAbbreviateStateNames) {
       base::string16());
   field.set_heuristic_type(ADDRESS_HOME_STATE);
 
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("California"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("California"), "en-US",
+                               &field);
   EXPECT_EQ(ASCIIToUTF16("CA"), field.value);
 }
 
@@ -250,8 +242,8 @@ TEST(AutofillFieldTest, FillSelectControlWithInexactFullStateNames) {
         base::string16());
     field.set_heuristic_type(ADDRESS_HOME_STATE);
 
-    AutofillField::FillFormField(
-        field, ASCIIToUTF16("California"), "en-US", "en-US", &field);
+    AutofillField::FillFormField(field, ASCIIToUTF16("California"), "en-US",
+                                 &field);
     EXPECT_EQ(ASCIIToUTF16("CA - California"), field.value);
   }
 
@@ -265,8 +257,8 @@ TEST(AutofillFieldTest, FillSelectControlWithInexactFullStateNames) {
         base::string16());
     field.set_heuristic_type(ADDRESS_HOME_STATE);
 
-    AutofillField::FillFormField(
-        field, ASCIIToUTF16("Virginia"), "en-US", "en-US", &field);
+    AutofillField::FillFormField(field, ASCIIToUTF16("Virginia"), "en-US",
+                                 &field);
     EXPECT_EQ(ASCIIToUTF16("VA - Virginia"), field.value);
   }
 
@@ -282,8 +274,8 @@ TEST(AutofillFieldTest, FillSelectControlWithInexactFullStateNames) {
         base::string16());
     field.set_heuristic_type(ADDRESS_HOME_STATE);
 
-    AutofillField::FillFormField(
-        field, ASCIIToUTF16("Virginia"), "en-US", "en-US", &field);
+    AutofillField::FillFormField(field, ASCIIToUTF16("Virginia"), "en-US",
+                                 &field);
     EXPECT_EQ(ASCIIToUTF16("WV - West Virginia"), field.value);
   }
 
@@ -299,8 +291,8 @@ TEST(AutofillFieldTest, FillSelectControlWithInexactFullStateNames) {
         base::string16());
     field.set_heuristic_type(ADDRESS_HOME_STATE);
 
-    AutofillField::FillFormField(
-        field, ASCIIToUTF16("North Carolina"), "en-US", "en-US", &field);
+    AutofillField::FillFormField(field, ASCIIToUTF16("North Carolina"), "en-US",
+                                 &field);
     EXPECT_EQ(ASCIIToUTF16("North Carolina."), field.value);
   }
 }
@@ -315,8 +307,8 @@ TEST(AutofillFieldTest, FillSelectControlWithInexactAbbreviations) {
         base::string16());
     field.set_heuristic_type(ADDRESS_HOME_STATE);
 
-    AutofillField::FillFormField(
-        field, ASCIIToUTF16("CA"), "en-US", "en-US", &field);
+    AutofillField::FillFormField(field, ASCIIToUTF16("CA"), "en-US",
+                                 &field);
     EXPECT_EQ(ASCIIToUTF16("CA - California"), field.value);
   }
 
@@ -329,8 +321,8 @@ TEST(AutofillFieldTest, FillSelectControlWithInexactAbbreviations) {
         base::string16());
     field.set_heuristic_type(ADDRESS_HOME_STATE);
 
-    AutofillField::FillFormField(
-        field, ASCIIToUTF16("NC"), "en-US", "en-US", &field);
+    AutofillField::FillFormField(field, ASCIIToUTF16("NC"), "en-US",
+                                 &field);
     EXPECT_EQ(base::string16(), field.value);
   }
 }
@@ -345,18 +337,15 @@ TEST(AutofillFieldTest, FillSelectControlWithNumericMonth) {
   field.set_heuristic_type(CREDIT_CARD_EXP_MONTH);
 
   // Try with a leading zero.
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("03"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("03"), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("03"), field.value);
 
   // Try without a leading zero.
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("4"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("4"), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("04"), field.value);
 
   // Try a two-digit month.
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("11"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("11"), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("11"), field.value);
 }
 
@@ -371,14 +360,13 @@ TEST(AutofillFieldTest, FillSelectControlWithAbbreviatedMonthName) {
       base::string16());
   field.set_heuristic_type(CREDIT_CARD_EXP_MONTH);
 
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("04"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("04"), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("Apr"), field.value);
 }
 
 TEST(AutofillFieldTest, FillSelectControlWithFullMonthName) {
   const char* const kMonthsFull[] = {
-    "January","February", "March", "April", "May", "June",
+    "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December",
   };
   AutofillField field(
@@ -386,8 +374,7 @@ TEST(AutofillFieldTest, FillSelectControlWithFullMonthName) {
       base::string16());
   field.set_heuristic_type(CREDIT_CARD_EXP_MONTH);
 
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("04"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("04"), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("April"), field.value);
 }
 
@@ -400,8 +387,7 @@ TEST(AutofillFieldTest, FillSelectControlWithNumericMonthSansLeadingZero) {
       base::string16());
   field.set_heuristic_type(CREDIT_CARD_EXP_MONTH);
 
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("04"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("04"), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("4"), field.value);
 }
 
@@ -413,8 +399,7 @@ TEST(AutofillFieldTest, FillSelectControlWithTwoDigitCreditCardYear) {
                       base::string16());
   field.set_heuristic_type(CREDIT_CARD_EXP_2_DIGIT_YEAR);
 
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("2017"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("2017"), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("17"), field.value);
 }
 
@@ -429,23 +414,22 @@ TEST(AutofillFieldTest, FillSelectControlWithCreditCardType) {
   field.set_heuristic_type(CREDIT_CARD_TYPE);
 
   // Normal case:
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("Visa"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("Visa"), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("Visa"), field.value);
 
   // Filling should be able to handle intervening whitespace:
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("MasterCard"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("MasterCard"), "en-US",
+                               &field);
   EXPECT_EQ(ASCIIToUTF16("Master Card"), field.value);
 
   // American Express is sometimes abbreviated as AmEx:
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("American Express"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("American Express"), "en-US",
+                               &field);
   EXPECT_EQ(ASCIIToUTF16("AmEx"), field.value);
 
   // Case insensitivity:
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("Discover"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("Discover"), "en-US",
+                               &field);
   EXPECT_EQ(ASCIIToUTF16("discover"), field.value);
 }
 
@@ -454,18 +438,15 @@ TEST(AutofillFieldTest, FillMonthControl) {
   field.form_control_type = "month";
 
   // Try a month with two digits.
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("12/2017"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("12/2017"), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("2017-12"), field.value);
 
   // Try a month with a leading zero.
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("03/2019"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("03/2019"), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("2019-03"), field.value);
 
   // Try a month without a leading zero.
-  AutofillField::FillFormField(
-      field, ASCIIToUTF16("4/2018"), "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, ASCIIToUTF16("4/2018"), "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("2018-04"), field.value);
 }
 
@@ -475,13 +456,8 @@ TEST(AutofillFieldTest, FillStreetAddressTextArea) {
 
   base::string16 value = ASCIIToUTF16("123 Fake St.\n"
                                       "Apt. 42");
-  AutofillField::FillFormField(field, value, "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, value, "en-US", &field);
   EXPECT_EQ(value, field.value);
-
-  base::string16 ja_value = UTF8ToUTF16("桜丘町26-1\n"
-                                        "セルリアンタワー6階");
-  AutofillField::FillFormField(field, ja_value, "ja-JP", "en-US", &field);
-  EXPECT_EQ(ja_value, field.value);
 }
 
 TEST(AutofillFieldTest, FillStreetAddressTextField) {
@@ -491,16 +467,8 @@ TEST(AutofillFieldTest, FillStreetAddressTextField) {
 
   base::string16 value = ASCIIToUTF16("123 Fake St.\n"
                                       "Apt. 42");
-  AutofillField::FillFormField(field, value, "en-US", "en-US", &field);
+  AutofillField::FillFormField(field, value, "en-US", &field);
   EXPECT_EQ(ASCIIToUTF16("123 Fake St., Apt. 42"), field.value);
-
-  AutofillField::FillFormField(field,
-                               UTF8ToUTF16("桜丘町26-1\n"
-                                           "セルリアンタワー6階"),
-                               "ja-JP",
-                               "en-US",
-                               &field);
-  EXPECT_EQ(UTF8ToUTF16("桜丘町26-1セルリアンタワー6階"), field.value);
 }
 
 }  // namespace
