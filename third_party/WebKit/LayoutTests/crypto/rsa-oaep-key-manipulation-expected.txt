@@ -23,9 +23,9 @@ error is: InvalidAccessError: key.usages does not permit this operation
 error is: InvalidAccessError: key.algorithm does not match that of operation
 
 Trying to export keys to raw...
-error is: InvalidAccessError: The key is not of the expected type
+error is: NotSupportedError: Unsupported export key format for algorithm
 PASS Promise rejected for exporting public key
-error is: InvalidAccessError: The key is not of the expected type
+error is: NotSupportedError: Unsupported export key format for algorithm
 PASS Promise rejected for exporting private key
 
 Exporting public key to JWK...

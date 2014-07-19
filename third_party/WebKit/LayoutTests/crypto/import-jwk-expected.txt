@@ -6,16 +6,16 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 error is: TypeError: Failed to execute 'importKey' on 'SubtleCrypto': No function was found that matched the signature provided.
 error is: TypeError: Failed to execute 'importKey' on 'SubtleCrypto': No function was found that matched the signature provided.
 error is: DataError: The required JWK property "kty" was missing
-error is: DataError: The JWK "kty" property was unrecognized
-error is: DataError: The JWK "alg" property was not recognized
+error is: DataError: The JWK "kty" property was not "oct"
+error is: DataError: The JWK "alg" property was inconsistent with that specified by the Web Crypto call
 error is: DataError: The JWK "alg" property was inconsistent with that specified by the Web Crypto call
 error is: DataError: The JWK "alg" property was inconsistent with that specified by the Web Crypto call
 error is: DataError: The required JWK property "k" was missing
 error is: DataError: The required JWK property "k" was missing
 error is: DataError: The JWK "k" property did not include the right length of key data for the given algorithm.
 error is: DataError: The JWK "k" property did not include the right length of key data for the given algorithm.
-error is: DataError: The JWK "kty" property was unrecognized
-error is: DataError: The JWK "alg" property was not recognized
+error is: DataError: The JWK "kty" property was not "oct"
+error is: DataError: The JWK "alg" property was inconsistent with that specified by the Web Crypto call
 error is: DataError: The JWK "use" property could not be parsed
 Boolean JWK property passed as a string and worked
 String JWK property passed as a number and worked
