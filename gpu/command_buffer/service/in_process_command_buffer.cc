@@ -698,8 +698,15 @@ void InProcessCommandBuffer::RetireSyncPoint(uint32 sync_point) {
 void InProcessCommandBuffer::RetireSyncPointOnGpuThread(uint32 sync_point) {
   gles2::MailboxManager* mailbox_manager =
       decoder_->GetContextGroup()->mailbox_manager();
-  if (mailbox_manager->UsesSync() && MakeCurrent())
-    mailbox_manager->PushTextureUpdates();
+  if (mailbox_manager->UsesSync()) {
+    bool make_current_success = false;
+    {
+      base::AutoLock lock(command_buffer_lock_);
+      make_current_success = MakeCurrent();
+    }
+    if (make_current_success)
+      mailbox_manager->PushTextureUpdates();
+  }
   g_sync_point_manager.Get().RetireSyncPoint(sync_point);
 }
 
