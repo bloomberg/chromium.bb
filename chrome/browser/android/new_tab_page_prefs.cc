@@ -33,6 +33,19 @@ void NewTabPagePrefs::Destroy(JNIEnv* env, jobject obj) {
 NewTabPagePrefs::~NewTabPagePrefs() {
 }
 
+jboolean NewTabPagePrefs::GetCurrentlyOpenTabsCollapsed(JNIEnv* env,
+                                                       jobject obj) {
+  PrefService* prefs = profile_->GetPrefs();
+  return prefs->GetBoolean(prefs::kNtpCollapsedCurrentlyOpenTabs);
+}
+
+void NewTabPagePrefs::SetCurrentlyOpenTabsCollapsed(JNIEnv* env,
+                                                   jobject obj,
+                                                   jboolean is_collapsed) {
+  PrefService* prefs = profile_->GetPrefs();
+  prefs->SetBoolean(prefs::kNtpCollapsedCurrentlyOpenTabs, is_collapsed);
+}
+
 jboolean NewTabPagePrefs::GetSnapshotDocumentCollapsed(JNIEnv* env,
                                                        jobject obj) {
   return profile_->GetPrefs()->GetBoolean(prefs::kNtpCollapsedSnapshotDocument);

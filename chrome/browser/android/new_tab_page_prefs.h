@@ -14,6 +14,11 @@ class NewTabPagePrefs {
   explicit NewTabPagePrefs(Profile* profile);
   void Destroy(JNIEnv* env, jobject obj);
 
+  jboolean GetCurrentlyOpenTabsCollapsed(JNIEnv* env, jobject obj);
+  void SetCurrentlyOpenTabsCollapsed(JNIEnv* env,
+                                     jobject obj,
+                                     jboolean is_collapsed);
+
   jboolean GetSnapshotDocumentCollapsed(JNIEnv* env, jobject obj);
   void SetSnapshotDocumentCollapsed(JNIEnv* env,
                                     jobject obj,
