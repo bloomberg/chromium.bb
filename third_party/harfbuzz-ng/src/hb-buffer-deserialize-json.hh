@@ -1,5 +1,5 @@
 
-#line 1 "hb-buffer-deserialize-json.rl"
+#line 1 "../../src/hb-buffer-deserialize-json.rl"
 /*
  * Copyright © 2013  Google, Inc.
  *
@@ -435,7 +435,7 @@ static const int deserialize_json_error = 0;
 static const int deserialize_json_en_main = 1;
 
 
-#line 97 "hb-buffer-deserialize-json.rl"
+#line 97 "../../src/hb-buffer-deserialize-json.rl"
 
 
 static hb_bool_t
@@ -493,14 +493,14 @@ _resume:
 
 	switch ( _deserialize_json_trans_actions[_trans] ) {
 	case 1:
-#line 38 "hb-buffer-deserialize-json.rl"
+#line 38 "../../src/hb-buffer-deserialize-json.rl"
 	{
 	memset (&info, 0, sizeof (info));
 	memset (&pos , 0, sizeof (pos ));
 }
 	break;
 	case 5:
-#line 43 "hb-buffer-deserialize-json.rl"
+#line 43 "../../src/hb-buffer-deserialize-json.rl"
 	{
 	buffer->add_info (info);
 	if (buffer->in_error)
@@ -510,13 +510,13 @@ _resume:
 }
 	break;
 	case 2:
-#line 51 "hb-buffer-deserialize-json.rl"
+#line 51 "../../src/hb-buffer-deserialize-json.rl"
 	{
 	tok = p;
 }
 	break;
 	case 14:
-#line 55 "hb-buffer-deserialize-json.rl"
+#line 55 "../../src/hb-buffer-deserialize-json.rl"
 	{
 	if (!hb_font_glyph_from_string (font,
 					tok, p - tok,
@@ -525,33 +525,33 @@ _resume:
 }
 	break;
 	case 15:
-#line 62 "hb-buffer-deserialize-json.rl"
+#line 62 "../../src/hb-buffer-deserialize-json.rl"
 	{ if (!parse_uint (tok, p, &info.codepoint)) return false; }
 	break;
 	case 8:
-#line 63 "hb-buffer-deserialize-json.rl"
+#line 63 "../../src/hb-buffer-deserialize-json.rl"
 	{ if (!parse_uint (tok, p, &info.cluster )) return false; }
 	break;
 	case 10:
-#line 64 "hb-buffer-deserialize-json.rl"
+#line 64 "../../src/hb-buffer-deserialize-json.rl"
 	{ if (!parse_int  (tok, p, &pos.x_offset )) return false; }
 	break;
 	case 12:
-#line 65 "hb-buffer-deserialize-json.rl"
+#line 65 "../../src/hb-buffer-deserialize-json.rl"
 	{ if (!parse_int  (tok, p, &pos.y_offset )) return false; }
 	break;
 	case 3:
-#line 66 "hb-buffer-deserialize-json.rl"
+#line 66 "../../src/hb-buffer-deserialize-json.rl"
 	{ if (!parse_int  (tok, p, &pos.x_advance)) return false; }
 	break;
 	case 6:
-#line 67 "hb-buffer-deserialize-json.rl"
+#line 67 "../../src/hb-buffer-deserialize-json.rl"
 	{ if (!parse_int  (tok, p, &pos.y_advance)) return false; }
 	break;
 	case 16:
-#line 62 "hb-buffer-deserialize-json.rl"
+#line 62 "../../src/hb-buffer-deserialize-json.rl"
 	{ if (!parse_uint (tok, p, &info.codepoint)) return false; }
-#line 43 "hb-buffer-deserialize-json.rl"
+#line 43 "../../src/hb-buffer-deserialize-json.rl"
 	{
 	buffer->add_info (info);
 	if (buffer->in_error)
@@ -561,9 +561,9 @@ _resume:
 }
 	break;
 	case 9:
-#line 63 "hb-buffer-deserialize-json.rl"
+#line 63 "../../src/hb-buffer-deserialize-json.rl"
 	{ if (!parse_uint (tok, p, &info.cluster )) return false; }
-#line 43 "hb-buffer-deserialize-json.rl"
+#line 43 "../../src/hb-buffer-deserialize-json.rl"
 	{
 	buffer->add_info (info);
 	if (buffer->in_error)
@@ -573,9 +573,9 @@ _resume:
 }
 	break;
 	case 11:
-#line 64 "hb-buffer-deserialize-json.rl"
+#line 64 "../../src/hb-buffer-deserialize-json.rl"
 	{ if (!parse_int  (tok, p, &pos.x_offset )) return false; }
-#line 43 "hb-buffer-deserialize-json.rl"
+#line 43 "../../src/hb-buffer-deserialize-json.rl"
 	{
 	buffer->add_info (info);
 	if (buffer->in_error)
@@ -585,9 +585,9 @@ _resume:
 }
 	break;
 	case 13:
-#line 65 "hb-buffer-deserialize-json.rl"
+#line 65 "../../src/hb-buffer-deserialize-json.rl"
 	{ if (!parse_int  (tok, p, &pos.y_offset )) return false; }
-#line 43 "hb-buffer-deserialize-json.rl"
+#line 43 "../../src/hb-buffer-deserialize-json.rl"
 	{
 	buffer->add_info (info);
 	if (buffer->in_error)
@@ -597,9 +597,9 @@ _resume:
 }
 	break;
 	case 4:
-#line 66 "hb-buffer-deserialize-json.rl"
+#line 66 "../../src/hb-buffer-deserialize-json.rl"
 	{ if (!parse_int  (tok, p, &pos.x_advance)) return false; }
-#line 43 "hb-buffer-deserialize-json.rl"
+#line 43 "../../src/hb-buffer-deserialize-json.rl"
 	{
 	buffer->add_info (info);
 	if (buffer->in_error)
@@ -609,9 +609,9 @@ _resume:
 }
 	break;
 	case 7:
-#line 67 "hb-buffer-deserialize-json.rl"
+#line 67 "../../src/hb-buffer-deserialize-json.rl"
 	{ if (!parse_int  (tok, p, &pos.y_advance)) return false; }
-#line 43 "hb-buffer-deserialize-json.rl"
+#line 43 "../../src/hb-buffer-deserialize-json.rl"
 	{
 	buffer->add_info (info);
 	if (buffer->in_error)
@@ -632,7 +632,7 @@ _again:
 	_out: {}
 	}
 
-#line 125 "hb-buffer-deserialize-json.rl"
+#line 125 "../../src/hb-buffer-deserialize-json.rl"
 
 
   *end_ptr = p;
