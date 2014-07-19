@@ -204,6 +204,8 @@ void disposeUnderlyingV8Object(NPObject* npObject, v8::Isolate* isolate)
 
 bool _NPN_Invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPVariant* arguments, uint32_t argumentCount, NPVariant* result)
 {
+    ScriptForbiddenScope::AllowSuperUnsafeScript thisShouldBeRemoved;
+
     if (!npObject)
         return false;
 
@@ -269,6 +271,8 @@ bool _NPN_Invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPV
 // FIXME: Fix it same as _NPN_Invoke (HandleScope and such).
 bool _NPN_InvokeDefault(NPP npp, NPObject* npObject, const NPVariant* arguments, uint32_t argumentCount, NPVariant* result)
 {
+    ScriptForbiddenScope::AllowSuperUnsafeScript thisShouldBeRemoved;
+
     if (!npObject)
         return false;
 
@@ -324,6 +328,8 @@ bool _NPN_Evaluate(NPP npp, NPObject* npObject, NPString* npScript, NPVariant* r
 
 bool _NPN_EvaluateHelper(NPP npp, bool popupsAllowed, NPObject* npObject, NPString* npScript, NPVariant* result)
 {
+    ScriptForbiddenScope::AllowSuperUnsafeScript thisShouldBeRemoved;
+
     VOID_TO_NPVARIANT(*result);
     if (!npObject)
         return false;

@@ -40,4 +40,18 @@ ScriptForbiddenScope::AllowUserAgentScript::~AllowUserAgentScript()
     ASSERT(!s_scriptForbiddenCount);
 }
 
+ScriptForbiddenScope::AllowSuperUnsafeScript::AllowSuperUnsafeScript()
+#if !ASSERT_ENABLED
+    : m_change(s_scriptForbiddenCount, 0)
+#endif
+{
+}
+
+ScriptForbiddenScope::AllowSuperUnsafeScript::~AllowSuperUnsafeScript()
+{
+#if !ASSERT_ENABLED
+    RELEASE_ASSERT(!s_scriptForbiddenCount);
+#endif
+}
+
 } // namespace blink

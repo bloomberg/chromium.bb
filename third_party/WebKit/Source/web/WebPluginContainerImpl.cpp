@@ -684,6 +684,8 @@ WebPluginContainerImpl::~WebPluginContainerImpl()
         m_element->document().didRemoveTouchEventHandler(m_element);
 #endif
 
+    ScriptForbiddenScope::AllowSuperUnsafeScript thisShouldBeRemoved;
+
     for (size_t i = 0; i < m_pluginLoadObservers.size(); ++i)
         m_pluginLoadObservers[i]->clearPluginContainer();
     m_webPlugin->destroy();
