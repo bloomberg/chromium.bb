@@ -8,6 +8,7 @@
     'message_lib_deps': [
       '../../../base/base.gyp:base',
       '../../../chrome/chrome.gyp:common',
+      '../../../components/nacl.gyp:nacl_common',
       '../../../content/content.gyp:content_child',
       '../../../ipc/ipc.gyp:ipc',
       '../../../media/cast/cast.gyp:cast_net',
