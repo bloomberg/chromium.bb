@@ -18,8 +18,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_ALSA)
+#if defined(USE_PULSEAUDIO)
+#include "media/audio/pulse/audio_manager_pulse.h"
+#elif defined(USE_ALSA)
 #include "media/audio/alsa/audio_manager_alsa.h"
+#elif defined(USE_CRAS)
+#include "media/audio/cras/audio_manager_cras.h"
 #elif defined(OS_MACOSX)
 #include "media/audio/mac/audio_manager_mac.h"
 #elif defined(OS_WIN)
@@ -33,8 +37,12 @@
 
 namespace media {
 
-#if defined(USE_ALSA)
+#if defined(USE_PULSEAUDIO)
+typedef AudioManagerPulse AudioManagerAnyPlatform;
+#elif defined(USE_ALSA)
 typedef AudioManagerAlsa AudioManagerAnyPlatform;
+#elif defined(USE_CRAS)
+typedef AudioManagerCras AudioManagerAnyPlatform;
 #elif defined(OS_MACOSX)
 typedef AudioManagerMac AudioManagerAnyPlatform;
 #elif defined(OS_WIN)

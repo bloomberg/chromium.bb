@@ -1,0 +1,45 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# These variables need to be args.
+
+# Override to dynamically link the cras (ChromeOS audio) library.
+use_cras = false
+
+# Option e.g. for Linux distributions to link pulseaudio directly
+# (DT_NEEDED) instead of using dlopen. This helps with automated
+# detection of ABI mismatches and prevents silent errors.
+#
+# TODO(ajwong): Why is this prefixed "linux_"?
+linux_link_pulseaudio = false
+
+# TODO(ajwong): Enable libvpx once that's converted.
+media_use_ffmpeg = true
+media_use_libvpx = false
+if (is_android) {
+  # Android doesn't use ffmpeg or libvpx.
+  media_use_ffmpeg = false
+  media_use_libvpx = false
+}
+
+# TODO(ajwong): how to disable embedded?
+# Original conditional: (OS=="linux" or OS=="freebsd" or OS=="solaris") and embedded!=1
+use_alsa = false
+use_pulseaudio = false
+if (is_posix && !is_android) {
+  use_alsa = true
+  if (!use_cras) {
+    use_pulseaudio = true
+  }
+}
+
+# TODO(ajwong): is_openbsd should be a platform define.
+is_openbsd = false
+
+# TODO(ajwong): This should be branding controlled?
+proprietary_codecs = false
+
+# TODO(ajwong): Where are these coming from?jk
+enable_mpeg2ts_stream_parser = false
+enable_browser_cdms = is_android
