@@ -29,7 +29,7 @@ class XPCMessageServerTest : public testing::Test {
   }
 
   bool RunXPCTest() {
-    return base::mac::IsOSLionOrLater();
+    return base::mac::IsOSMountainLionOrLater();
   }
 };
 
