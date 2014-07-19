@@ -383,6 +383,7 @@ def GenerateSetEnvCmd(target_dir, pro):
             'set PATH=%~dp0..\\..\\Common7\\IDE;%PATH%\n'
             'set INCLUDE=%~dp0..\\..\\win8sdk\\Include\\um;'
                '%~dp0..\\..\\win8sdk\\Include\\shared;'
+               '%~dp0..\\..\\win8sdk\\Include\\winrt;'
                '%~dp0..\\..\\VC\\include;'
                '%~dp0..\\..\\VC\\atlmfc\\include\n'
             'if "%1"=="/x64" goto x64\n')
