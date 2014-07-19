@@ -998,7 +998,11 @@ void ProfileIOData::Init(
 
   ChromeNetworkDelegate* network_delegate =
       new ChromeNetworkDelegate(
+#if defined(ENABLE_EXTENSIONS)
           io_thread_globals->extension_event_router_forwarder.get(),
+#else
+          NULL,
+#endif
           &enable_referrers_);
   network_delegate->set_data_reduction_proxy_params(
       io_thread_globals->data_reduction_proxy_params.get());

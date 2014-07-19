@@ -27,7 +27,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/net/async_dns_field_trial.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
@@ -80,6 +79,10 @@
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "policy/policy_constants.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/event_router_forwarder.h"
 #endif
 
 #if !defined(USE_OPENSSL)
@@ -443,7 +446,9 @@ IOThread::IOThread(
     ChromeNetLog* net_log,
     extensions::EventRouterForwarder* extension_event_router_forwarder)
     : net_log_(net_log),
+#if defined(ENABLE_EXTENSIONS)
       extension_event_router_forwarder_(extension_event_router_forwarder),
+#endif
       globals_(NULL),
       is_spdy_disabled_by_policy_(false),
       weak_factory_(this),
@@ -562,15 +567,23 @@ void IOThread::InitAsync() {
   // Setup the HistogramWatcher to run on the IO thread.
   net::NetworkChangeNotifier::InitHistogramWatcher();
 
+#if defined(ENABLE_EXTENSIONS)
   globals_->extension_event_router_forwarder =
       extension_event_router_forwarder_;
+#endif
+
   ChromeNetworkDelegate* network_delegate =
-      new ChromeNetworkDelegate(extension_event_router_forwarder_,
+      new ChromeNetworkDelegate(extension_event_router_forwarder(),
                                 &system_enable_referrers_);
+
   if (command_line.HasSwitch(switches::kEnableClientHints))
     network_delegate->SetEnableClientHints();
+
+#if defined(ENABLE_EXTENSIONS)
   if (command_line.HasSwitch(switches::kDisableExtensionsHttpThrottling))
     network_delegate->NeverThrottleRequests();
+#endif
+
   globals_->system_network_delegate.reset(network_delegate);
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
   UpdateDnsClientEnabled();
@@ -579,8 +592,8 @@ void IOThread::InitAsync() {
   globals_->cert_verifier.reset(new net::MultiThreadedCertVerifier(
       new chromeos::CertVerifyProcChromeOS()));
 #else
-    globals_->cert_verifier.reset(new net::MultiThreadedCertVerifier(
-        net::CertVerifyProc::CreateDefault()));
+  globals_->cert_verifier.reset(new net::MultiThreadedCertVerifier(
+      net::CertVerifyProc::CreateDefault()));
 #endif
 
     globals_->transport_security_state.reset(new net::TransportSecurityState());

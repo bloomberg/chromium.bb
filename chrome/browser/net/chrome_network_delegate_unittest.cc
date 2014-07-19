@@ -9,7 +9,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
@@ -21,6 +20,11 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/event_router_forwarder.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
 class ChromeNetworkDelegateTest : public testing::Test {
  protected:
   ChromeNetworkDelegateTest()
@@ -88,12 +92,15 @@ class ChromeNetworkDelegateTest : public testing::Test {
 TEST_F(ChromeNetworkDelegateTest, NeverThrottleLogic) {
   NeverThrottleLogicImpl();
 }
+#endif  // defined(ENABLE_EXTENSIONS)
 
 class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
  public:
   ChromeNetworkDelegateSafeSearchTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        forwarder_(new extensions::EventRouterForwarder()) {
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+#if defined(ENABLE_EXTENSIONS)
+    forwarder_ = new extensions::EventRouterForwarder();
+#endif
   }
 
   virtual void SetUp() OVERRIDE {
@@ -105,7 +112,7 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
  protected:
   scoped_ptr<net::NetworkDelegate> CreateNetworkDelegate() {
     scoped_ptr<ChromeNetworkDelegate> network_delegate(
-        new ChromeNetworkDelegate(forwarder_.get(), &enable_referrers_));
+        new ChromeNetworkDelegate(forwarder(), &enable_referrers_));
     network_delegate->set_force_google_safe_search(&force_google_safe_search_);
     return network_delegate.PassAs<net::NetworkDelegate>();
   }
@@ -137,8 +144,18 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
   }
 
  private:
+  extensions::EventRouterForwarder* forwarder() {
+#if defined(ENABLE_EXTENSIONS)
+    return forwarder_.get();
+#else
+    return NULL;
+#endif
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
+#if defined(ENABLE_EXTENSIONS)
   scoped_refptr<extensions::EventRouterForwarder> forwarder_;
+#endif
   TestingProfile profile_;
   BooleanPrefMember enable_referrers_;
   BooleanPrefMember force_google_safe_search_;
@@ -285,7 +302,9 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
  public:
   ChromeNetworkDelegatePrivacyModeTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+#if defined(ENABLE_EXTENSIONS)
         forwarder_(new extensions::EventRouterForwarder()),
+#endif
         cookie_settings_(CookieSettings::Factory::GetForProfile(&profile_)
                              .get()),
         kBlockedSite("http://ads.thirdparty.com"),
@@ -302,7 +321,7 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
  protected:
   scoped_ptr<ChromeNetworkDelegate> CreateNetworkDelegate() {
     scoped_ptr<ChromeNetworkDelegate> network_delegate(
-        new ChromeNetworkDelegate(forwarder_.get(), &enable_referrers_));
+        new ChromeNetworkDelegate(forwarder(), &enable_referrers_));
     network_delegate->set_cookie_settings(cookie_settings_);
     return network_delegate.Pass();
   }
@@ -313,8 +332,18 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
   }
 
  protected:
+  extensions::EventRouterForwarder* forwarder() {
+#if defined(ENABLE_EXTENSIONS)
+    return forwarder_.get();
+#else
+    return NULL;
+#endif
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
+#if defined(ENABLE_EXTENSIONS)
   scoped_refptr<extensions::EventRouterForwarder> forwarder_;
+#endif
   TestingProfile profile_;
   CookieSettings* cookie_settings_;
   BooleanPrefMember enable_referrers_;

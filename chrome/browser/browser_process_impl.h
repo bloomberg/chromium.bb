@@ -195,21 +195,24 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_ptr<GpuModeManager> gpu_mode_manager_;
 
   scoped_ptr<extensions::ExtensionsBrowserClient> extensions_browser_client_;
+
+#if defined(ENABLE_EXTENSIONS)
   scoped_refptr<extensions::EventRouterForwarder>
       extension_event_router_forwarder_;
+
+  scoped_ptr<MediaFileSystemRegistry> media_file_system_registry_;
+#endif
 
 #if !defined(OS_ANDROID)
   scoped_ptr<RemoteDebuggingServer> remote_debugging_server_;
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  scoped_ptr<MediaFileSystemRegistry> media_file_system_registry_;
-#endif
-
+#if defined(ENABLE_FULL_PRINTING)
   scoped_refptr<printing::PrintPreviewDialogController>
       print_preview_dialog_controller_;
 
   scoped_ptr<printing::BackgroundPrintingManager> background_printing_manager_;
+#endif
 
   // Manager for desktop notification UI.
   bool created_notification_ui_manager_;

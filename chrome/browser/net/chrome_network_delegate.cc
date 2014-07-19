@@ -42,7 +42,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_info.h"
-#include "extensions/common/constants.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
@@ -72,6 +71,10 @@
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/common/constants.h"
+#endif
+
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::ResourceRequestInfo;
@@ -85,9 +88,11 @@ bool ChromeNetworkDelegate::g_allow_file_access_ = false;
 bool ChromeNetworkDelegate::g_allow_file_access_ = true;
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
 // This remains false unless the --disable-extensions-http-throttling
 // flag is passed to the browser.
 bool ChromeNetworkDelegate::g_never_throttle_requests_ = false;
+#endif
 
 namespace {
 
@@ -338,9 +343,11 @@ void ChromeNetworkDelegate::SetEnableClientHints() {
 }
 
 // static
+#if defined(ENABLE_EXTENSIONS)
 void ChromeNetworkDelegate::NeverThrottleRequests() {
   g_never_throttle_requests_ = true;
 }
+#endif
 
 // static
 void ChromeNetworkDelegate::InitializePrefsOnUIThread(
@@ -789,10 +796,14 @@ bool ChromeNetworkDelegate::OnCanAccessFile(const net::URLRequest& request,
 
 bool ChromeNetworkDelegate::OnCanThrottleRequest(
     const net::URLRequest& request) const {
+#if defined(ENABLE_EXTENSIONS)
   if (g_never_throttle_requests_)
     return false;
   return request.first_party_for_cookies().scheme() ==
       extensions::kExtensionScheme;
+#else
+  return false;
+#endif
 }
 
 bool ChromeNetworkDelegate::OnCanEnablePrivacyMode(

@@ -37,8 +37,6 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/extensions/chrome_extensions_browser_client.h"
-#include "chrome/browser/extensions/event_router_forwarder.h"
-#include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/gpu/gl_string_manager.h"
 #include "chrome/browser/gpu/gpu_mode_manager.h"
@@ -114,11 +112,6 @@
 #include "components/gcm_driver/gcm_client_factory.h"
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-#include "chrome/browser/media_galleries/media_file_system_registry.h"
-#include "components/storage_monitor/storage_monitor.h"
-#endif
-
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
 #endif
@@ -128,6 +121,13 @@
 #else
 #include "components/policy/core/common/policy_service_stub.h"
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/event_router_forwarder.h"
+#include "chrome/browser/extensions/extension_renderer_state.h"
+#include "chrome/browser/media_galleries/media_file_system_registry.h"
+#include "components/storage_monitor/storage_monitor.h"
+#endif
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 #include "chrome/browser/plugins/plugins_resource_service.h"
@@ -193,6 +193,9 @@ BrowserProcessImpl::BrowserProcessImpl(
 
 #if defined(ENABLE_EXTENSIONS)
   apps::AppsClient::Set(ChromeAppsClient::GetInstance());
+
+  extension_event_router_forwarder_ = new extensions::EventRouterForwarder;
+  ExtensionRendererState::GetInstance()->Init();
 #endif
 
   extensions::ExtensionsClient::Set(
@@ -201,9 +204,6 @@ BrowserProcessImpl::BrowserProcessImpl(
   extensions_browser_client_.reset(
       new extensions::ChromeExtensionsBrowserClient);
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
-
-  extension_event_router_forwarder_ = new extensions::EventRouterForwarder;
-  ExtensionRendererState::GetInstance()->Init();
 
   message_center::MessageCenter::Initialize();
 
@@ -253,9 +253,9 @@ void BrowserProcessImpl::StartTearDown() {
   remote_debugging_server_.reset();
 #endif
 
+#if defined(ENABLE_EXTENSIONS)
   ExtensionRendererState::GetInstance()->Shutdown();
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
   media_file_system_registry_.reset();
   // Remove the global instance of the Storage Monitor now. Otherwise the
   // FILE thread would be gone when we try to release it in the dtor and
@@ -584,7 +584,11 @@ BrowserProcessPlatformPart* BrowserProcessImpl::platform_part() {
 
 extensions::EventRouterForwarder*
 BrowserProcessImpl::extension_event_router_forwarder() {
+#if defined(ENABLE_EXTENSIONS)
   return extension_event_router_forwarder_.get();
+#else
+  return NULL;
+#endif
 }
 
 NotificationUIManager* BrowserProcessImpl::notification_ui_manager() {
@@ -719,17 +723,17 @@ DownloadStatusUpdater* BrowserProcessImpl::download_status_updater() {
 }
 
 MediaFileSystemRegistry* BrowserProcessImpl::media_file_system_registry() {
-#if defined(OS_ANDROID) || defined(OS_IOS)
-    return NULL;
-#else
+#if defined(ENABLE_EXTENSIONS)
   if (!media_file_system_registry_)
     media_file_system_registry_.reset(new MediaFileSystemRegistry());
   return media_file_system_registry_.get();
+#else
+  return NULL;
 #endif
 }
 
 bool BrowserProcessImpl::created_local_state() const {
-    return created_local_state_;
+  return created_local_state_;
 }
 
 #if defined(ENABLE_WEBRTC)
@@ -977,8 +981,9 @@ void BrowserProcessImpl::CreateLocalState() {
 }
 
 void BrowserProcessImpl::PreCreateThreads() {
-  io_thread_.reset(new IOThread(local_state(), policy_service(), net_log_.get(),
-                                extension_event_router_forwarder_.get()));
+  io_thread_.reset(
+      new IOThread(local_state(), policy_service(), net_log_.get(),
+                   extension_event_router_forwarder()));
 }
 
 void BrowserProcessImpl::PreMainMessageLoopRun() {

@@ -155,8 +155,10 @@ class IOThread : public content::BrowserThreadDelegate {
     // |system_cookie_store| and |system_server_bound_cert_service| are shared
     // between |proxy_script_fetcher_context| and |system_request_context|.
     scoped_refptr<net::CookieStore> system_cookie_store;
+#if defined(ENABLE_EXTENSIONS)
     scoped_refptr<extensions::EventRouterForwarder>
         extension_event_router_forwarder;
+#endif
     scoped_ptr<net::HostMappingRules> host_mapping_rules;
     scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings;
     bool ignore_certificate_errors;
@@ -305,6 +307,13 @@ class IOThread : public content::BrowserThreadDelegate {
   // well as the QUIC field trial group.
   void ConfigureQuic(const base::CommandLine& command_line);
 
+  extensions::EventRouterForwarder* extension_event_router_forwarder() {
+#if defined(ENABLE_EXTENSIONS)
+    return extension_event_router_forwarder_;
+#else
+    return NULL;
+#endif
+  }
   // Configures QUIC options in |globals| based on the flags in |command_line|
   // as well as the QUIC field trial group and parameters.
   static void ConfigureQuicGlobals(
@@ -379,9 +388,11 @@ class IOThread : public content::BrowserThreadDelegate {
   // threads during shutdown, but is used most frequently on the IOThread.
   ChromeNetLog* net_log_;
 
+#if defined(ENABLE_EXTENSIONS)
   // The extensions::EventRouterForwarder allows for sending events to
   // extensions from the IOThread.
   extensions::EventRouterForwarder* extension_event_router_forwarder_;
+#endif
 
   // These member variables are basically global, but their lifetimes are tied
   // to the IOThread.  IOThread owns them all, despite not using scoped_ptr.
