@@ -34,16 +34,10 @@ class MockManifestPermission : public ManifestPermission {
     return PermissionMessages();
   }
 
-  virtual bool FromValue(const base::Value* value) OVERRIDE {
-    return false;
-  }
+  virtual bool FromValue(const base::Value* value) OVERRIDE { return true; }
 
   virtual scoped_ptr<base::Value> ToValue() const OVERRIDE {
-    return scoped_ptr<base::Value>(base::Value::CreateNullValue());
-  }
-
-  virtual ManifestPermission* Clone() const OVERRIDE {
-    return new MockManifestPermission(name_);
+    return make_scoped_ptr(base::Value::CreateNullValue());
   }
 
   virtual ManifestPermission* Diff(const ManifestPermission* rhs)
@@ -68,36 +62,6 @@ class MockManifestPermission : public ManifestPermission {
         static_cast<const MockManifestPermission*>(rhs);
     EXPECT_EQ(name_, other->name_);
     return new MockManifestPermission(name_);
-  }
-
-  virtual bool Contains(const ManifestPermission* rhs) const OVERRIDE {
-    const MockManifestPermission* other =
-        static_cast<const MockManifestPermission*>(rhs);
-    EXPECT_EQ(name_, other->name_);
-    return true;
-  }
-
-  virtual bool Equal(const ManifestPermission* rhs) const OVERRIDE {
-    const MockManifestPermission* other =
-        static_cast<const MockManifestPermission*>(rhs);
-    EXPECT_EQ(name_, other->name_);
-    return true;
-  }
-
-  virtual void Write(IPC::Message* m) const OVERRIDE {
-    IPC::WriteParam(m, name_);
-  }
-
-  virtual bool Read(const IPC::Message* m, PickleIterator* iter) OVERRIDE {
-    std::string read_name;
-    bool result = IPC::ReadParam(m, iter, &read_name);
-    if (!result)
-      return result;
-    EXPECT_EQ(read_name, name_);
-    return true;
-  }
-
-  virtual void Log(std::string* log) const OVERRIDE {
   }
 
  private:

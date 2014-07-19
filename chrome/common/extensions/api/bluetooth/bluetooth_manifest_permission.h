@@ -47,18 +47,12 @@ class BluetoothManifestPermission : public ManifestPermission {
   virtual PermissionMessages GetMessages() const OVERRIDE;
   virtual bool FromValue(const base::Value* value) OVERRIDE;
   virtual scoped_ptr<base::Value> ToValue() const OVERRIDE;
-  virtual ManifestPermission* Clone() const OVERRIDE;
   virtual ManifestPermission* Diff(const ManifestPermission* rhs)
       const OVERRIDE;
   virtual ManifestPermission* Union(const ManifestPermission* rhs)
       const OVERRIDE;
   virtual ManifestPermission* Intersect(const ManifestPermission* rhs)
       const OVERRIDE;
-  virtual bool Contains(const ManifestPermission* rhs) const OVERRIDE;
-  virtual bool Equal(const ManifestPermission* rhs) const OVERRIDE;
-  virtual void Write(IPC::Message* m) const OVERRIDE;
-  virtual bool Read(const IPC::Message* m, PickleIterator* iter) OVERRIDE;
-  virtual void Log(std::string* log) const OVERRIDE;
 
   const BluetoothUuidSet& uuids() const {
     return uuids_;

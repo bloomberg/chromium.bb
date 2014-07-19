@@ -50,7 +50,7 @@ class ManifestPermission {
   virtual scoped_ptr<base::Value> ToValue() const = 0;
 
   // Clones this.
-  virtual ManifestPermission* Clone() const = 0;
+  ManifestPermission* Clone() const;
 
   // Returns a new manifest permission which equals this - |rhs|.
   virtual ManifestPermission* Diff(const ManifestPermission* rhs) const = 0;
@@ -64,20 +64,20 @@ class ManifestPermission {
       const = 0;
 
   // Returns true if |rhs| is a subset of this.
-  virtual bool Contains(const ManifestPermission* rhs) const = 0;
+  bool Contains(const ManifestPermission* rhs) const;
 
   // Returns true if |rhs| is equal to this.
-  virtual bool Equal(const ManifestPermission* rhs) const = 0;
+  bool Equal(const ManifestPermission* rhs) const;
 
   // IPC functions
   // Writes this into the given IPC message |m|.
-  virtual void Write(IPC::Message* m) const = 0;
+  void Write(IPC::Message* m) const;
 
   // Reads from the given IPC message |m|.
-  virtual bool Read(const IPC::Message* m, PickleIterator* iter) = 0;
+  bool Read(const IPC::Message* m, PickleIterator* iter);
 
   // Logs this permission.
-  virtual void Log(std::string* log) const = 0;
+  void Log(std::string* log) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ManifestPermission);

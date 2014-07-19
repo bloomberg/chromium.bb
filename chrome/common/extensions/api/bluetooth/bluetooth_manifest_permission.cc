@@ -159,13 +159,6 @@ scoped_ptr<base::Value> BluetoothManifestPermission::ToValue() const {
   return bluetooth.ToValue().PassAs<base::Value>();
 }
 
-ManifestPermission* BluetoothManifestPermission::Clone() const {
-  scoped_ptr<BluetoothManifestPermission> result(
-      new BluetoothManifestPermission());
-  result->uuids_ = uuids_;
-  return result.release();
-}
-
 ManifestPermission* BluetoothManifestPermission::Diff(
     const ManifestPermission* rhs) const {
   const BluetoothManifestPermission* other =
@@ -200,34 +193,6 @@ ManifestPermission* BluetoothManifestPermission::Intersect(
   result->uuids_ = base::STLSetIntersection<BluetoothUuidSet>(
       uuids_, other->uuids_);
   return result.release();
-}
-
-bool BluetoothManifestPermission::Contains(const ManifestPermission* rhs)
-    const {
-  const BluetoothManifestPermission* other =
-      static_cast<const BluetoothManifestPermission*>(rhs);
-
-  return base::STLIncludes(uuids_, other->uuids_);
-}
-
-bool BluetoothManifestPermission::Equal(const ManifestPermission* rhs) const {
-  const BluetoothManifestPermission* other =
-      static_cast<const BluetoothManifestPermission*>(rhs);
-
-  return (uuids_ == other->uuids_);
-}
-
-void BluetoothManifestPermission::Write(IPC::Message* m) const {
-  IPC::WriteParam(m, uuids_);
-}
-
-bool BluetoothManifestPermission::Read(const IPC::Message* m,
-                                       PickleIterator* iter) {
-  return IPC::ReadParam(m, iter, &uuids_);
-}
-
-void BluetoothManifestPermission::Log(std::string* log) const {
-  IPC::LogParam(uuids_, log);
 }
 
 void BluetoothManifestPermission::AddPermission(const std::string& uuid) {
