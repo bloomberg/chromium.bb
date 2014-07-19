@@ -754,6 +754,8 @@ const DataResource kDataResources[] = {
   { "generatePassword", IDR_PASSWORD_GENERATION_ICON, ui::SCALE_FACTOR_100P },
   { "generatePasswordHover",
     IDR_PASSWORD_GENERATION_ICON_HOVER, ui::SCALE_FACTOR_100P },
+  { "XMLViewer.js", IDR_XML_VIEWER_JS, ui::SCALE_FACTOR_NONE },
+  { "XMLViewer.css", IDR_XML_VIEWER_CSS, ui::SCALE_FACTOR_NONE },
 #ifdef IDR_PICKER_COMMON_JS
   { "pickerCommon.js", IDR_PICKER_COMMON_JS, ui::SCALE_FACTOR_NONE },
   { "pickerCommon.css", IDR_PICKER_COMMON_CSS, ui::SCALE_FACTOR_NONE },
