@@ -4,6 +4,8 @@
 
 #include "ui/gfx/font_fallback_win.h"
 
+#include <usp10.h>
+
 #include <map>
 
 #include "base/memory/singleton.h"
@@ -12,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/font_fallback.h"
 
 namespace gfx {
 
@@ -149,6 +152,20 @@ CachedFontLinkSettings::CachedFontLinkSettings() {
 CachedFontLinkSettings::~CachedFontLinkSettings() {
 }
 
+// Callback to |EnumEnhMetaFile()| to intercept font creation.
+int CALLBACK MetaFileEnumProc(HDC hdc,
+                              HANDLETABLE* table,
+                              CONST ENHMETARECORD* record,
+                              int table_entries,
+                              LPARAM log_font) {
+  if (record->iType == EMR_EXTCREATEFONTINDIRECTW) {
+    const EMREXTCREATEFONTINDIRECTW* create_font_record =
+        reinterpret_cast<const EMREXTCREATEFONTINDIRECTW*>(record);
+    *reinterpret_cast<LOGFONT*>(log_font) = create_font_record->elfw.elfLogFont;
+  }
+  return 1;
+}
+
 }  // namespace
 
 namespace internal {
@@ -185,8 +202,6 @@ void ParseFontFamilyString(const std::string& family,
     }
   }
 }
-
-}  // namespace internal
 
 LinkedFontsIterator::LinkedFontsIterator(Font font)
     : original_font_(font),
@@ -241,6 +256,68 @@ const std::vector<Font>* LinkedFontsIterator::GetLinkedFonts() const {
     fonts = font_link->GetLinkedFonts(current_font_);
 
   return fonts;
+}
+
+}  // namespace internal
+
+std::vector<std::string> GetFallbackFontFamilies(
+    const std::string& font_family) {
+  // LinkedFontsIterator doesn't care about the font size, so we always pass 10.
+  internal::LinkedFontsIterator linked_fonts(Font(font_family, 10));
+  std::vector<std::string> fallback_fonts;
+  Font current;
+  while (linked_fonts.NextFont(&current))
+    fallback_fonts.push_back(current.GetFontName());
+  return fallback_fonts;
+}
+
+bool GetUniscribeFallbackFont(const Font& font,
+                              const wchar_t* text,
+                              int text_length,
+                              Font* result) {
+  // Adapted from WebKit's |FontCache::GetFontDataForCharacters()|.
+  // Uniscribe doesn't expose a method to query fallback fonts, so this works by
+  // drawing the text to an EMF object with Uniscribe's ScriptStringOut and then
+  // inspecting the EMF object to figure out which font Uniscribe used.
+  //
+  // DirectWrite in Windows 8.1 provides a cleaner alternative:
+  // http://msdn.microsoft.com/en-us/library/windows/desktop/dn280480.aspx
+
+  static HDC hdc = CreateCompatibleDC(NULL);
+
+  // Use a meta file to intercept the fallback font chosen by Uniscribe.
+  HDC meta_file_dc = CreateEnhMetaFile(hdc, NULL, NULL, NULL);
+  if (!meta_file_dc)
+    return false;
+
+  SelectObject(meta_file_dc, font.GetNativeFont());
+
+  SCRIPT_STRING_ANALYSIS script_analysis;
+  HRESULT hresult =
+      ScriptStringAnalyse(meta_file_dc, text, text_length, 0, -1,
+                          SSA_METAFILE | SSA_FALLBACK | SSA_GLYPHS | SSA_LINK,
+                          0, NULL, NULL, NULL, NULL, NULL, &script_analysis);
+
+  if (SUCCEEDED(hresult)) {
+    hresult = ScriptStringOut(script_analysis, 0, 0, 0, NULL, 0, 0, FALSE);
+    ScriptStringFree(&script_analysis);
+  }
+
+  bool found_fallback = false;
+  HENHMETAFILE meta_file = CloseEnhMetaFile(meta_file_dc);
+  if (SUCCEEDED(hresult)) {
+    LOGFONT log_font;
+    log_font.lfFaceName[0] = 0;
+    EnumEnhMetaFile(0, meta_file, MetaFileEnumProc, &log_font, NULL);
+    if (log_font.lfFaceName[0]) {
+      *result = Font(base::UTF16ToUTF8(log_font.lfFaceName),
+                     font.GetFontSize());
+      found_fallback = true;
+    }
+  }
+  DeleteEnhMetaFile(meta_file);
+
+  return found_fallback;
 }
 
 }  // namespace gfx

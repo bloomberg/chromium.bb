@@ -11,7 +11,7 @@ namespace {
 
 // Subclass of LinkedFontsIterator for testing that allows mocking the linked
 // fonts vector.
-class TestLinkedFontsIterator : public LinkedFontsIterator {
+class TestLinkedFontsIterator : public internal::LinkedFontsIterator {
  public:
   explicit TestLinkedFontsIterator(Font font) : LinkedFontsIterator(font) {
   }

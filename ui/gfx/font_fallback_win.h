@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ui/gfx/font.h"
+#include "ui/gfx/font_fallback.h"
 
 namespace gfx {
 
@@ -28,8 +29,6 @@ void GFX_EXPORT ParseFontLinkEntry(const std::string& entry,
 // Splits by '&' and strips off the trailing parenthesized expression.
 void GFX_EXPORT ParseFontFamilyString(const std::string& family,
                                      std::vector<std::string>* font_names);
-
-}  // namespace internal
 
 // Iterator over linked fallback fonts for a given font. The linked font chain
 // comes from the Windows registry, but gets cached between uses.
@@ -76,6 +75,16 @@ class GFX_EXPORT LinkedFontsIterator {
 
   DISALLOW_COPY_AND_ASSIGN(LinkedFontsIterator);
 };
+
+}  // namespace internal
+
+// Finds a fallback font to render the specified |text| with respect to an
+// initial |font|. Returns the resulting font via out param |result|. Returns
+// |true| if a fallback font was found.
+bool GetUniscribeFallbackFont(const Font& font,
+                              const wchar_t* text,
+                              int text_length,
+                              Font* result);
 
 }  // namespace gfx
 

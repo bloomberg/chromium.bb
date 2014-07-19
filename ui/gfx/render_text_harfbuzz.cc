@@ -16,8 +16,13 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/font_fallback.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/utf16_indexing.h"
+
+#if defined(OS_WIN)
+#include "ui/gfx/font_fallback_win.h"
+#endif
 
 namespace gfx {
 
@@ -463,14 +468,12 @@ Range TextRunHarfBuzz::CharRangeToGlyphRange(const Range& char_range) const {
   return Range(first, glyph_count);
 }
 
-// Returns whether the given shaped run contains any missing glyphs.
-bool TextRunHarfBuzz::HasMissingGlyphs() const {
+size_t TextRunHarfBuzz::CountMissingGlyphs() const {
   static const int kMissingGlyphId = 0;
-  for (size_t i = 0; i < glyph_count; ++i) {
-    if (glyphs[i] == kMissingGlyphId)
-      return true;
-  }
-  return false;
+  size_t missing = 0;
+  for (size_t i = 0; i < glyph_count; ++i)
+    missing += (glyphs[i] == kMissingGlyphId) ? 1 : 0;
+  return missing;
 }
 
 int TextRunHarfBuzz::GetGlyphXBoundary(size_t text_index, bool trailing) const {
@@ -948,13 +951,54 @@ void RenderTextHarfBuzz::ItemizeText() {
 }
 
 void RenderTextHarfBuzz::ShapeRun(internal::TextRunHarfBuzz* run) {
-  const base::string16& text = GetLayoutText();
-  // TODO(ckocagil|yukishiino): Implement font fallback.
   const Font& primary_font = font_list().GetPrimaryFont();
-  run->skia_face = internal::CreateSkiaTypeface(primary_font.GetFontName(),
-                                                run->font_style);
+  const std::string primary_font_name = primary_font.GetFontName();
   run->font_size = primary_font.GetFontSize();
 
+  // Try shaping with |primary_font|.
+  ShapeRunWithFont(run, primary_font_name);
+  size_t best_font_missing = run->CountMissingGlyphs();
+  if (best_font_missing == 0)
+    return;
+  std::string best_font = primary_font_name;
+
+#if defined(OS_WIN)
+  Font uniscribe_font;
+  const base::char16* run_text = &(GetLayoutText()[run->range.start()]);
+  if (GetUniscribeFallbackFont(primary_font, run_text, run->range.length(),
+                               &uniscribe_font)) {
+    ShapeRunWithFont(run, uniscribe_font.GetFontName());
+    size_t current_missing = run->CountMissingGlyphs();
+    if (current_missing == 0)
+      return;
+    if (current_missing < best_font_missing) {
+      best_font_missing = current_missing;
+      best_font = uniscribe_font.GetFontName();
+    }
+  }
+#endif
+
+  // Try shaping with the fonts in the fallback list except the first, which is
+  // |primary_font|.
+  std::vector<std::string> fonts = GetFallbackFontFamilies(primary_font_name);
+  for (size_t i = 1; i < fonts.size(); ++i) {
+    ShapeRunWithFont(run, fonts[i]);
+    size_t current_missing = run->CountMissingGlyphs();
+    if (current_missing == 0)
+      return;
+    if (current_missing < best_font_missing) {
+      best_font_missing = current_missing;
+      best_font = fonts[i];
+    }
+  }
+
+  ShapeRunWithFont(run, best_font);
+}
+
+void RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
+                                          const std::string& font_family) {
+  const base::string16& text = GetLayoutText();
+  run->skia_face = internal::CreateSkiaTypeface(font_family, run->font_style);
   hb_font_t* harfbuzz_font = CreateHarfBuzzFont(run->skia_face.get(),
                                                 run->font_size);
 
@@ -967,8 +1011,7 @@ void RenderTextHarfBuzz::ShapeRun(internal::TextRunHarfBuzz* run) {
   hb_buffer_set_script(buffer, ICUScriptToHBScript(run->script));
   hb_buffer_set_direction(buffer,
       run->is_rtl ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
-  // TODO(ckocagil): Should we determine the actual language?
-  hb_buffer_set_language(buffer, hb_language_get_default());
+  // TODO(ckocagil): Should we call |hb_buffer_set_language()| here?
 
   // Shape the text.
   hb_shape(harfbuzz_font, buffer, NULL, 0);
@@ -976,12 +1019,13 @@ void RenderTextHarfBuzz::ShapeRun(internal::TextRunHarfBuzz* run) {
   // Populate the run fields with the resulting glyph data in the buffer.
   unsigned int glyph_count = 0;
   hb_glyph_info_t* infos = hb_buffer_get_glyph_infos(buffer, &glyph_count);
-  hb_glyph_position_t* hb_positions = hb_buffer_get_glyph_positions(buffer,
-                                                                    NULL);
   run->glyph_count = glyph_count;
+  hb_glyph_position_t* hb_positions =
+      hb_buffer_get_glyph_positions(buffer, NULL);
   run->glyphs.reset(new uint16[run->glyph_count]);
   run->glyph_to_char.reset(new uint32[run->glyph_count]);
   run->positions.reset(new SkPoint[run->glyph_count]);
+  run->width = 0;
   for (size_t i = 0; i < run->glyph_count; ++i) {
     run->glyphs[i] = infos[i].codepoint;
     run->glyph_to_char[i] = infos[i].cluster;
@@ -989,7 +1033,7 @@ void RenderTextHarfBuzz::ShapeRun(internal::TextRunHarfBuzz* run) {
         SkScalarRoundToInt(SkFixedToScalar(hb_positions[i].x_offset));
     const int y_offset =
         SkScalarRoundToInt(SkFixedToScalar(hb_positions[i].y_offset));
-    run->positions[i].set(run->width + x_offset, -y_offset);
+    run->positions[i].set(run->width + x_offset, y_offset);
     run->width +=
         SkScalarRoundToInt(SkFixedToScalar(hb_positions[i].x_advance));
   }

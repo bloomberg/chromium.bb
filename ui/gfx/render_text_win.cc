@@ -37,65 +37,6 @@ const size_t kMaxRuns = 10000;
 // The maximum number of glyphs per run; ScriptShape fails on larger values.
 const size_t kMaxGlyphs = 65535;
 
-// Callback to |EnumEnhMetaFile()| to intercept font creation.
-int CALLBACK MetaFileEnumProc(HDC hdc,
-                              HANDLETABLE* table,
-                              CONST ENHMETARECORD* record,
-                              int table_entries,
-                              LPARAM log_font) {
-  if (record->iType == EMR_EXTCREATEFONTINDIRECTW) {
-    const EMREXTCREATEFONTINDIRECTW* create_font_record =
-        reinterpret_cast<const EMREXTCREATEFONTINDIRECTW*>(record);
-    *reinterpret_cast<LOGFONT*>(log_font) = create_font_record->elfw.elfLogFont;
-  }
-  return 1;
-}
-
-// Finds a fallback font to use to render the specified |text| with respect to
-// an initial |font|. Returns the resulting font via out param |result|. Returns
-// |true| if a fallback font was found.
-// Adapted from WebKit's |FontCache::GetFontDataForCharacters()|.
-// TODO(asvitkine): This should be moved to font_fallback_win.cc.
-bool ChooseFallbackFont(HDC hdc,
-                        const Font& font,
-                        const wchar_t* text,
-                        int text_length,
-                        Font* result) {
-  // Use a meta file to intercept the fallback font chosen by Uniscribe.
-  HDC meta_file_dc = CreateEnhMetaFile(hdc, NULL, NULL, NULL);
-  if (!meta_file_dc)
-    return false;
-
-  SelectObject(meta_file_dc, font.GetNativeFont());
-
-  SCRIPT_STRING_ANALYSIS script_analysis;
-  HRESULT hresult =
-      ScriptStringAnalyse(meta_file_dc, text, text_length, 0, -1,
-                          SSA_METAFILE | SSA_FALLBACK | SSA_GLYPHS | SSA_LINK,
-                          0, NULL, NULL, NULL, NULL, NULL, &script_analysis);
-
-  if (SUCCEEDED(hresult)) {
-    hresult = ScriptStringOut(script_analysis, 0, 0, 0, NULL, 0, 0, FALSE);
-    ScriptStringFree(&script_analysis);
-  }
-
-  bool found_fallback = false;
-  HENHMETAFILE meta_file = CloseEnhMetaFile(meta_file_dc);
-  if (SUCCEEDED(hresult)) {
-    LOGFONT log_font;
-    log_font.lfFaceName[0] = 0;
-    EnumEnhMetaFile(0, meta_file, MetaFileEnumProc, &log_font, NULL);
-    if (log_font.lfFaceName[0]) {
-      *result = Font(base::UTF16ToUTF8(log_font.lfFaceName),
-                     font.GetFontSize());
-      found_fallback = true;
-    }
-  }
-  DeleteEnhMetaFile(meta_file);
-
-  return found_fallback;
-}
-
 // Changes |font| to have the specified |font_size| (or |font_height| on Windows
 // XP) and |font_style| if it is not the case already. Only considers bold and
 // italic styles, since the underlined style has no effect on glyph shaping.
@@ -1056,14 +997,11 @@ void RenderTextWin::LayoutTextRun(internal::TextRun* run) {
   const size_t run_length = run->range.length();
   const wchar_t* run_text = &(GetLayoutText()[run->range.start()]);
   Font original_font = run->font;
-  LinkedFontsIterator fonts(original_font);
 
   run->logical_clusters.reset(new WORD[run_length]);
 
-  // Try to shape with the first font in the fallback list, which is
-  // |original_font|.
-  Font current_font;
-  fonts.NextFont(&current_font);
+  // Try shaping with |original_font|.
+  Font current_font = original_font;
   int missing_count = CountCharsWithMissingGlyphs(run,
       ShapeTextRunWithFont(run, current_font));
   if (missing_count == 0)
@@ -1092,8 +1030,8 @@ void RenderTextWin::LayoutTextRun(internal::TextRun* run) {
 
   // Try finding a fallback font using a meta file.
   // TODO(msw|asvitkine): Support RenderText's font_list()?
-  if (ChooseFallbackFont(cached_hdc_, run->font, run_text, run_length,
-                         &current_font)) {
+  if (GetUniscribeFallbackFont(original_font, run_text, run_length,
+                               &current_font)) {
     missing_count = CountCharsWithMissingGlyphs(run,
         ShapeTextRunWithFont(run, current_font));
     if (missing_count == 0) {
@@ -1106,10 +1044,12 @@ void RenderTextWin::LayoutTextRun(internal::TextRun* run) {
     }
   }
 
-  // Try the rest of fonts in the fallback list.
-  while (fonts.NextFont(&current_font)) {
+  // Try fonts in the fallback list except the first, which is |original_font|.
+  std::vector<std::string> fonts =
+      GetFallbackFontFamilies(original_font.GetFontName());
+  for (size_t i = 1; i < fonts.size(); ++i) {
     missing_count = CountCharsWithMissingGlyphs(run,
-        ShapeTextRunWithFont(run, current_font));
+        ShapeTextRunWithFont(run, Font(fonts[i], original_font.GetFontSize())));
     if (missing_count == 0) {
       successful_substitute_fonts_[original_font.GetFontName()] = current_font;
       return;

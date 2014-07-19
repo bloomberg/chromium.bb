@@ -29,8 +29,8 @@ struct GFX_EXPORT TextRunHarfBuzz {
   // value is in run-space (0 corresponds to the first glyph in the run).
   Range CharRangeToGlyphRange(const Range& range) const;
 
-  // Returns whether the given shaped run contains any missing glyphs.
-  bool HasMissingGlyphs() const;
+  // Returns the number of missing glyphs in the shaped text run.
+  size_t CountMissingGlyphs() const;
 
   // Returns the X coordinate of the leading or |trailing| edge of the glyph
   // starting at |text_index|, relative to the left of the text (not the view).
@@ -112,6 +112,8 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
 
   // Shape the glyphs needed for the text |run|.
   void ShapeRun(internal::TextRunHarfBuzz* run);
+  void ShapeRunWithFont(internal::TextRunHarfBuzz* run,
+                        const std::string& font);
 
   // Text runs in logical order.
   ScopedVector<internal::TextRunHarfBuzz> runs_;
