@@ -53,18 +53,23 @@ def BuildScriptX86(status, context):
           args=flags_run + smoke_tests_irt)
 
   # Test sandboxed translation
-  if not context.Windows():
+  if not context.Windows() and not context.Mac():
     # TODO(dschuff): The standalone sandboxed translator driver does not have
     # the batch script wrappers, so it can't run on Windows. Either add them to
     # the translator package or make SCons use the pnacl_newlib drivers except
     # on the ARM bots where we don't have the pnacl_newlib drivers.
-    with Step('smoke_tests_sandboxed_translator', status, halt_on_fail=False):
+    # The mac standalone sandboxed translator is flaky.
+    # https://code.google.com/p/nativeclient/issues/detail?id=3856
+
+    with Step('toolchain_tests_sandboxed_translator', status,
+              halt_on_fail=False):
       SCons(context, parallel=True, mode=irt_mode,
-            args=flags_run + ['use_sandboxed_translator=1'] + smoke_tests_irt)
-    with Step('smoke_tests_sandboxed_fast', status, halt_on_fail=False):
+            args=flags_run + ['use_sandboxed_translator=1',
+                              'toolchain_tests_irt'])
+    with Step('toolchain_tests_sandboxed_fast', status, halt_on_fail=False):
       SCons(context, parallel=True, mode=irt_mode,
-            args=flags_run + ['use_sandboxed_translator=1', 'translate_fast=1']
-            + smoke_tests_irt)
+            args=flags_run + ['use_sandboxed_translator=1', 'translate_fast=1',
+                              'toolchain_tests_irt'])
 
     # Translator memory consumption regression test
     with Step('large_code_test', status, halt_on_fail=False):
