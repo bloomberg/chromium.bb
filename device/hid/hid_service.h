@@ -50,6 +50,7 @@ class HidService : public base::MessageLoop::DestructionObserver {
 
   void AddDevice(const HidDeviceInfo& info);
   void RemoveDevice(const HidDeviceId& device_id);
+  const DeviceMap& GetDevicesNoEnumerate() const;
 
   base::ThreadChecker thread_checker_;
 

@@ -66,78 +66,96 @@ void HidServiceWin::Enumerate() {
       NULL,
       DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 
-  if (device_info_set == INVALID_HANDLE_VALUE)
-    return;
+  std::set<std::string> connected_devices;
 
-  for (int device_index = 0;
-       SetupDiEnumDeviceInterfaces(device_info_set,
-                                   NULL,
-                                   &GUID_DEVINTERFACE_HID,
-                                   device_index,
-                                   &device_interface_data);
-       ++device_index) {
-    DWORD required_size = 0;
-
-    // Determime the required size of detail struct.
-    SetupDiGetDeviceInterfaceDetailA(device_info_set,
-                                     &device_interface_data,
+  if (device_info_set != INVALID_HANDLE_VALUE) {
+    for (int device_index = 0;
+         SetupDiEnumDeviceInterfaces(device_info_set,
                                      NULL,
-                                     0,
-                                     &required_size,
-                                     NULL);
+                                     &GUID_DEVINTERFACE_HID,
+                                     device_index,
+                                     &device_interface_data);
+         ++device_index) {
+      DWORD required_size = 0;
 
-    scoped_ptr<SP_DEVICE_INTERFACE_DETAIL_DATA_A, base::FreeDeleter>
-        device_interface_detail_data(
-            static_cast<SP_DEVICE_INTERFACE_DETAIL_DATA_A*>(
-                malloc(required_size)));
-    device_interface_detail_data->cbSize =
-        sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA_A);
+      // Determime the required size of detail struct.
+      SetupDiGetDeviceInterfaceDetailA(device_info_set,
+                                       &device_interface_data,
+                                       NULL,
+                                       0,
+                                       &required_size,
+                                       NULL);
 
-    // Get the detailed data for this device.
-    res = SetupDiGetDeviceInterfaceDetailA(device_info_set,
-                                           &device_interface_data,
-                                           device_interface_detail_data.get(),
-                                           required_size,
-                                           NULL,
-                                           NULL);
-    if (!res)
-      continue;
+      scoped_ptr<SP_DEVICE_INTERFACE_DETAIL_DATA_A, base::FreeDeleter>
+          device_interface_detail_data(
+              static_cast<SP_DEVICE_INTERFACE_DETAIL_DATA_A*>(
+                  malloc(required_size)));
+      device_interface_detail_data->cbSize =
+          sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA_A);
 
-    // Enumerate device info. Looking for Setup Class "HIDClass".
-    for (DWORD i = 0;
-        SetupDiEnumDeviceInfo(device_info_set, i, &devinfo_data);
-        i++) {
-      char class_name[256] = {0};
-      res = SetupDiGetDeviceRegistryPropertyA(device_info_set,
-                                              &devinfo_data,
-                                              SPDRP_CLASS,
-                                              NULL,
-                                              (PBYTE) class_name,
-                                              sizeof(class_name) - 1,
-                                              NULL);
+      // Get the detailed data for this device.
+      res = SetupDiGetDeviceInterfaceDetailA(device_info_set,
+                                             &device_interface_data,
+                                             device_interface_detail_data.get(),
+                                             required_size,
+                                             NULL,
+                                             NULL);
       if (!res)
-        break;
-      if (memcmp(class_name, kHIDClass, sizeof(kHIDClass)) == 0) {
-        char driver_name[256] = {0};
-        // Get bounded driver.
+        continue;
+
+      // Enumerate device info. Looking for Setup Class "HIDClass".
+      for (DWORD i = 0;
+          SetupDiEnumDeviceInfo(device_info_set, i, &devinfo_data);
+          i++) {
+        char class_name[256] = {0};
         res = SetupDiGetDeviceRegistryPropertyA(device_info_set,
                                                 &devinfo_data,
-                                                SPDRP_DRIVER,
+                                                SPDRP_CLASS,
                                                 NULL,
-                                                (PBYTE) driver_name,
-                                                sizeof(driver_name) - 1,
+                                                (PBYTE) class_name,
+                                                sizeof(class_name) - 1,
                                                 NULL);
-        if (res) {
-          // Found the driver.
+        if (!res)
           break;
+        if (memcmp(class_name, kHIDClass, sizeof(kHIDClass)) == 0) {
+          char driver_name[256] = {0};
+          // Get bounded driver.
+          res = SetupDiGetDeviceRegistryPropertyA(device_info_set,
+                                                  &devinfo_data,
+                                                  SPDRP_DRIVER,
+                                                  NULL,
+                                                  (PBYTE) driver_name,
+                                                  sizeof(driver_name) - 1,
+                                                  NULL);
+          if (res) {
+            // Found the driver.
+            break;
+          }
         }
       }
+
+      if (!res)
+        continue;
+
+      PlatformAddDevice(device_interface_detail_data->DevicePath);
+      connected_devices.insert(device_interface_detail_data->DevicePath);
     }
+  }
 
-    if (!res)
-      continue;
+  // Find disconnected devices.
+  const DeviceMap& devices = GetDevicesNoEnumerate();
+  std::vector<std::string> disconnected_devices;
+  for (DeviceMap::const_iterator it = devices.begin();
+       it != devices.end();
+       ++it) {
+    if (!ContainsKey(connected_devices, it->first)) {
+      disconnected_devices.push_back(it->first);
+    }
+  }
 
-    PlatformAddDevice(device_interface_detail_data->DevicePath);
+  // Remove disconnected devices.
+  for (size_t i = 0; i < disconnected_devices.size(); ++i) {
+    PlatformRemoveDevice(disconnected_devices[i]);
   }
 }
 

@@ -90,6 +90,10 @@ void HidService::RemoveDevice(const HidDeviceId& device_id) {
     devices_.erase(it);
 }
 
+const HidService::DeviceMap& HidService::GetDevicesNoEnumerate() const {
+  return devices_;
+}
+
 HidService* HidService::GetInstance() {
   if (!g_hid_service_ptr.Get().get())
     g_hid_service_ptr.Get().reset(CreateInstance());
