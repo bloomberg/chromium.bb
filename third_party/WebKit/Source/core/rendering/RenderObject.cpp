@@ -1324,11 +1324,10 @@ LayoutPoint RenderObject::positionFromPaintInvalidationContainer(const RenderLay
     // FIXME: This assert should be re-enabled when we move paint invalidation to after compositing update. crbug.com/360286
     // ASSERT(containerForPaintInvalidation() == paintInvalidationContainer);
 
-    LayoutPoint offset = isBox() ? toRenderBox(this)->location() : LayoutPoint();
     if (paintInvalidationContainer == this)
-        return offset;
+        return LayoutPoint();
 
-    return roundedIntPoint(localToContainerPoint(offset, paintInvalidationContainer, 0, 0, paintInvalidationState));
+    return LayoutPoint(localToContainerPoint(LayoutPoint(), paintInvalidationContainer, 0, 0, paintInvalidationState));
 }
 
 IntRect RenderObject::absoluteBoundingBoxRect() const
