@@ -27,7 +27,6 @@ enum ChangeType {
   CHANGE_TYPE_VIEW_DELETED,
   CHANGE_TYPE_VIEW_REPLACED,
   CHANGE_TYPE_INPUT_EVENT,
-  CHANGE_TYPE_EMBED_ROOT,
 };
 
 // TODO(sky): consider nuking and converting directly to NodeData.
@@ -58,7 +57,6 @@ struct Change {
   gfx::Rect bounds2;
   int32 event_action;
   String creator_url;
-  String embed_url;
   OrderDirection direction;
 };
 
@@ -113,7 +111,6 @@ class TestChangeTracker {
   void OnViewDeleted(Id view_id);
   void OnNodeViewReplaced(Id node_id, Id new_view_id, Id old_view_id);
   void OnViewInputEvent(Id view_id, EventPtr event);
-  void OnEmbedRoot(const String& url);
 
  private:
   void AddChange(const Change& change);

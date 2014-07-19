@@ -318,7 +318,7 @@ class TestViewManagerClientConnection
     connection_.set_view_manager(client());
   }
 
-  // ViewManagerClient:
+  // ViewMangerClient:
   virtual void OnViewManagerConnectionEstablished(
       ConnectionSpecificId connection_id,
       const String& creator_url,
@@ -363,9 +363,6 @@ class TestViewManagerClientConnection
   }
   virtual void OnFocusChanged(Id gained_focus_id,
                               Id lost_focus_id) OVERRIDE {}
-  virtual void EmbedRoot(const String& url) OVERRIDE {
-    tracker_.OnEmbedRoot(url);
-  }
   virtual void DispatchOnViewInputEvent(Id view_id,
                                         mojo::EventPtr event) OVERRIDE {
   }
@@ -519,12 +516,6 @@ class ViewManagerTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerTest);
 };
-
-TEST_F(ViewManagerTest, SecondEmbedRoot) {
-  ASSERT_TRUE(EmbedRoot(view_manager_init_.get(), kTestServiceURL));
-  connection_->DoRunLoopUntilChangesCount(1);
-  EXPECT_EQ(kTestServiceURL, connection_->changes()[0].embed_url);
-}
 
 // Verifies client gets a valid id.
 TEST_F(ViewManagerTest, ValidId) {

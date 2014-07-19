@@ -15,9 +15,9 @@
 #include "mojo/services/public/cpp/view_manager/node.h"
 #include "mojo/services/public/cpp/view_manager/node_observer.h"
 #include "mojo/services/public/cpp/view_manager/view.h"
+#include "mojo/services/public/cpp/view_manager/view_event_dispatcher.h"
 #include "mojo/services/public/cpp/view_manager/view_manager.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
-#include "mojo/services/public/cpp/view_manager/window_manager_delegate.h"
 #include "mojo/services/public/interfaces/input_events/input_events.mojom.h"
 #include "mojo/services/public/interfaces/launcher/launcher.mojom.h"
 #include "mojo/services/public/interfaces/navigation/navigation.mojom.h"
@@ -34,10 +34,10 @@ using mojo::view_manager::Id;
 using mojo::view_manager::Node;
 using mojo::view_manager::NodeObserver;
 using mojo::view_manager::View;
+using mojo::view_manager::ViewEventDispatcher;
 using mojo::view_manager::ViewManager;
 using mojo::view_manager::ViewManagerDelegate;
 using mojo::view_manager::ViewObserver;
-using mojo::view_manager::WindowManagerDelegate;
 
 namespace mojo {
 namespace examples {
@@ -252,7 +252,7 @@ class RootLayoutManager : public NodeObserver {
 class WindowManager : public ApplicationDelegate,
                       public DebugPanel::Delegate,
                       public ViewManagerDelegate,
-                      public WindowManagerDelegate {
+                      public ViewEventDispatcher {
  public:
   WindowManager()
       : launcher_ui_(NULL),
@@ -339,7 +339,7 @@ class WindowManager : public ApplicationDelegate,
   virtual void OnRootAdded(ViewManager* view_manager, Node* root) OVERRIDE {
     DCHECK(!view_manager_);
     view_manager_ = view_manager;
-    view_manager_->SetWindowManagerDelegate(this);
+    view_manager_->SetEventDispatcher(this);
 
     Node* node = Node::Create(view_manager_);
     root->AddChild(node);
@@ -366,12 +366,7 @@ class WindowManager : public ApplicationDelegate,
     base::MessageLoop::current()->Quit();
   }
 
-  // Overridden from WindowManagerDelegate:
-  virtual void EmbedRoot(const String& url) OVERRIDE {
-    CreateWindow(url,
-                 navigation::NavigationDetailsPtr().Pass(),
-                 navigation::ResponseDetailsPtr().Pass());
-  }
+  // Overridden from ViewEventDispatcher:
   virtual void DispatchEvent(View* target, EventPtr event) OVERRIDE {
     // TODO(beng): More sophisticated focus handling than this is required!
     if (event->action == ui::ET_MOUSE_PRESSED &&

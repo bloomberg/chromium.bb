@@ -88,12 +88,8 @@ void RootNodeManager::RemoveConnection(ViewManagerServiceImpl* connection) {
 }
 
 void RootNodeManager::EmbedRoot(const std::string& url) {
-  if (connection_map_.empty()) {
-    EmbedImpl(kRootConnection, String::From(url), InvalidNodeId());
-    return;
-  }
-  ViewManagerServiceImpl* connection = GetConnection(kWindowManagerConnection);
-  connection->client()->EmbedRoot(url);
+  CHECK(connection_map_.empty());
+  EmbedImpl(kRootConnection, String::From(url), InvalidNodeId());
 }
 
 void RootNodeManager::Embed(ConnectionSpecificId creator_id,
