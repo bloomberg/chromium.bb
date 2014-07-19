@@ -450,7 +450,7 @@ static void writeImageNodeToPasteboard(Pasteboard* pasteboard, Node* node, const
     ASSERT(pasteboard);
     ASSERT(node);
 
-    RefPtrWillBeRawPtr<Image> image = imageFromNode(*node);
+    RefPtr<Image> image = imageFromNode(*node);
     if (!image.get())
         return;
 
