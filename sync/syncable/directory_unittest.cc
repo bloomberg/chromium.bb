@@ -232,6 +232,8 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
   MetahandleSet expected_purges;
   MetahandleSet all_handles;
   {
+    dir()->SetDownloadProgress(BOOKMARKS, BuildProgress(BOOKMARKS));
+    dir()->SetDownloadProgress(PREFERENCES, BuildProgress(PREFERENCES));
     WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
     for (int i = 0; i < metas_to_create; i++) {
       MutableEntry e(&trans, CREATE, BOOKMARKS, trans.root_id(), "foo");

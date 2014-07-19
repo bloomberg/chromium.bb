@@ -234,7 +234,8 @@ class SyncBackendHostTest : public testing::Test {
 
   // Synchronously configures the backend's datatypes.
   void ConfigureDataTypes(syncer::ModelTypeSet types_to_add,
-                          syncer::ModelTypeSet types_to_remove) {
+                          syncer::ModelTypeSet types_to_remove,
+                          syncer::ModelTypeSet types_to_unapply) {
     BackendDataTypeConfigurer::DataTypeConfigStateMap config_state_map;
     BackendDataTypeConfigurer::SetDataTypesState(
         BackendDataTypeConfigurer::CONFIGURE_ACTIVE,
@@ -243,6 +244,9 @@ class SyncBackendHostTest : public testing::Test {
     BackendDataTypeConfigurer::SetDataTypesState(
         BackendDataTypeConfigurer::DISABLED,
         types_to_remove, &config_state_map);
+    BackendDataTypeConfigurer::SetDataTypesState(
+        BackendDataTypeConfigurer::UNREADY,
+        types_to_unapply, &config_state_map);
 
     types_to_add.PutAll(syncer::ControlTypes());
     backend_->ConfigureDataTypes(
@@ -315,7 +319,8 @@ TEST_F(SyncBackendHostTest, FirstTimeSync) {
 
   ConfigureDataTypes(enabled_types_,
                      Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_));
+                                enabled_types_),
+                     syncer::ModelTypeSet());
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().HasAll(
       Difference(enabled_types_, syncer::ControlTypes())));
   EXPECT_TRUE(fake_manager_->InitialSyncEndedTypes().Equals(enabled_types_));
@@ -341,7 +346,8 @@ TEST_F(SyncBackendHostTest, Restart) {
 
   ConfigureDataTypes(enabled_types_,
                      Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_));
+                                enabled_types_),
+                     syncer::ModelTypeSet());
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Empty());
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
@@ -378,7 +384,8 @@ TEST_F(SyncBackendHostTest, PartialTypes) {
   // Now do the actual configuration, which should download and apply bookmarks.
   ConfigureDataTypes(enabled_types_,
                      Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_));
+                                enabled_types_),
+                     syncer::ModelTypeSet());
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
                            enabled_types_).Empty());
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(
@@ -411,7 +418,8 @@ TEST_F(SyncBackendHostTest, LostDB) {
   // The actual configuration should redownload and apply all the enabled types.
   ConfigureDataTypes(enabled_types_,
                      Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_));
+                                enabled_types_),
+                     syncer::ModelTypeSet());
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().HasAll(
       Difference(enabled_types_, syncer::ControlTypes())));
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
@@ -428,7 +436,8 @@ TEST_F(SyncBackendHostTest, DisableTypes) {
   fake_manager_->GetAndResetCleanedTypes();
   ConfigureDataTypes(enabled_types_,
                      Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_));
+                                enabled_types_),
+                     syncer::ModelTypeSet());
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(
       enabled_types_));
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
@@ -444,7 +453,8 @@ TEST_F(SyncBackendHostTest, DisableTypes) {
   enabled_types_.RemoveAll(disabled_types);
   ConfigureDataTypes(enabled_types_,
                      Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_));
+                                enabled_types_),
+                     syncer::ModelTypeSet());
 
   // Only those datatypes disabled should be cleaned. Nothing should be
   // downloaded.
@@ -463,7 +473,8 @@ TEST_F(SyncBackendHostTest, AddTypes) {
   fake_manager_->GetAndResetCleanedTypes();
   ConfigureDataTypes(enabled_types_,
                      Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_));
+                                enabled_types_),
+                     syncer::ModelTypeSet());
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(
       enabled_types_));
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
@@ -478,7 +489,8 @@ TEST_F(SyncBackendHostTest, AddTypes) {
   enabled_types_.PutAll(new_types);
   ConfigureDataTypes(enabled_types_,
                      Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_));
+                                enabled_types_),
+                     syncer::ModelTypeSet());
 
   // Only those datatypes added should be downloaded (plus nigori). Nothing
   // should be cleaned aside from the disabled types.
@@ -499,7 +511,8 @@ TEST_F(SyncBackendHostTest, AddDisableTypes) {
   fake_manager_->GetAndResetCleanedTypes();
   ConfigureDataTypes(enabled_types_,
                      Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_));
+                                enabled_types_),
+                     syncer::ModelTypeSet());
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(
       enabled_types_));
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
@@ -518,7 +531,8 @@ TEST_F(SyncBackendHostTest, AddDisableTypes) {
   enabled_types_.RemoveAll(disabled_types);
   ConfigureDataTypes(enabled_types_,
                      Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_));
+                                enabled_types_),
+                     syncer::ModelTypeSet());
 
   // Only those datatypes added should be downloaded (plus nigori). Nothing
   // should be cleaned aside from the disabled types.
@@ -557,7 +571,8 @@ TEST_F(SyncBackendHostTest, NewlySupportedTypes) {
   // Downloads and applies the new types.
   ConfigureDataTypes(enabled_types_,
                      Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_));
+                                enabled_types_),
+                     syncer::ModelTypeSet());
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(
       Union(new_types, syncer::ModelTypeSet(syncer::NIGORI))));
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
@@ -601,7 +616,8 @@ TEST_F(SyncBackendHostTest, NewlySupportedTypesWithPartialTypes) {
   // nigori anyways).
   ConfigureDataTypes(enabled_types_,
                      Difference(syncer::ModelTypeSet::All(),
-                                enabled_types_));
+                                enabled_types_),
+                     syncer::ModelTypeSet());
   EXPECT_TRUE(fake_manager_->GetAndResetDownloadedTypes().Equals(
       Union(new_types, partial_types)));
   EXPECT_TRUE(Intersection(fake_manager_->GetAndResetCleanedTypes(),
@@ -730,6 +746,39 @@ TEST_F(SyncBackendHostTest, TestStartupWithOldSyncData) {
   InitializeBackend(true);
 
   EXPECT_FALSE(base::PathExists(sync_file));
+}
+
+// If bookmarks encounter an error that results in disabling without purging
+// (such as when the type is unready), and then is explicitly disabled, the
+// SyncBackendHost needs to tell the manager to purge the type, even though
+// it's already disabled (crbug.com/386778).
+TEST_F(SyncBackendHostTest, DisableThenPurgeType) {
+  syncer::ModelTypeSet error_types(syncer::BOOKMARKS);
+
+  InitializeBackend(true);
+
+  // First enable the types.
+  ConfigureDataTypes(enabled_types_,
+                     Difference(syncer::ModelTypeSet::All(),
+                                enabled_types_),
+                     syncer::ModelTypeSet());
+
+  // Then mark the error types as unready (disables without purging).
+  ConfigureDataTypes(enabled_types_,
+                     Difference(syncer::ModelTypeSet::All(),
+                                enabled_types_),
+                     error_types);
+  EXPECT_TRUE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
+      error_types).Empty());
+
+  // Lastly explicitly disable the error types, which should result in a purge.
+  enabled_types_.RemoveAll(error_types);
+  ConfigureDataTypes(enabled_types_,
+                     Difference(syncer::ModelTypeSet::All(),
+                                enabled_types_),
+                     syncer::ModelTypeSet());
+  EXPECT_FALSE(fake_manager_->GetTypesWithEmptyProgressMarkerToken(
+      error_types).Empty());
 }
 
 }  // namespace

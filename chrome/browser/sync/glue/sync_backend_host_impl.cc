@@ -348,8 +348,6 @@ void SyncBackendHostImpl::ConfigureDataTypes(
   // backend because configuration requests are never aborted; they are retried
   // until they succeed or the backend is shut down.
 
-  syncer::ModelTypeSet previous_types = registrar_->GetLastConfiguredTypes();
-
   syncer::ModelTypeSet disabled_types =
       GetDataTypesInState(DISABLED, config_state_map);
   syncer::ModelTypeSet fatal_types =
@@ -358,10 +356,8 @@ void SyncBackendHostImpl::ConfigureDataTypes(
       GetDataTypesInState(CRYPTO, config_state_map);
   syncer::ModelTypeSet unready_types =
       GetDataTypesInState(UNREADY, config_state_map);
-  disabled_types.PutAll(fatal_types);
 
-  // TODO(zea): These types won't be fully purged if they are subsequently
-  // disabled by the user. Fix that. See crbug.com/386778
+  disabled_types.PutAll(fatal_types);
   disabled_types.PutAll(crypto_types);
   disabled_types.PutAll(unready_types);
 
@@ -404,7 +400,7 @@ void SyncBackendHostImpl::ConfigureDataTypes(
 
   syncer::ModelTypeSet current_types = registrar_->GetLastConfiguredTypes();
   syncer::ModelTypeSet types_to_purge =
-      syncer::Difference(previous_types, current_types);
+      syncer::Difference(syncer::ModelTypeSet::All(), current_types);
   syncer::ModelTypeSet inactive_types =
       GetDataTypesInState(CONFIGURE_INACTIVE, config_state_map);
   types_to_purge.RemoveAll(inactive_types);

@@ -109,6 +109,9 @@ class SYNC_EXPORT Directory {
     // a full download of all objects of the model will be initiated.
     void ResetDownloadProgress(ModelType model_type);
 
+    // Whether a valid progress marker exists for |model_type|.
+    bool HasEmptyDownloadProgress(ModelType model_type);
+
     // Last sync timestamp fetched from the server.
     sync_pb::DataTypeProgressMarker download_progress[MODEL_TYPE_COUNT];
     // Sync-side transaction version per data type. Monotonically incremented

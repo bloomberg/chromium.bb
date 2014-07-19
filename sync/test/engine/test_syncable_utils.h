@@ -11,6 +11,7 @@
 #include <string>
 
 #include "sync/internal_api/public/base/model_type.h"
+#include "sync/protocol/sync.pb.h"
 
 namespace syncer {
 namespace syncable {
@@ -41,6 +42,8 @@ Id GetOnlyEntryWithName(BaseTransaction* rtrans,
 void CreateTypeRoot(WriteTransaction* trans,
                     syncable::Directory *dir,
                     ModelType type);
+
+sync_pb::DataTypeProgressMarker BuildProgress(ModelType type);
 
 }  // namespace syncable
 }  // namespace syncer

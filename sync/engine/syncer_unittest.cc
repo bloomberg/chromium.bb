@@ -1037,6 +1037,10 @@ TEST_F(SyncerTest, TestPurgeWhileUnsynced) {
   // Similar to above, but throw a purge operation into the mix. Bug 49278.
   syncable::Id pref_node_id = TestIdFactory::MakeServer("Tim");
   {
+    directory()->SetDownloadProgress(BOOKMARKS,
+                                     syncable::BuildProgress(BOOKMARKS));
+    directory()->SetDownloadProgress(PREFERENCES,
+                                     syncable::BuildProgress(PREFERENCES));
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
     MutableEntry parent(&wtrans, CREATE, BOOKMARKS, wtrans.root_id(), "Pete");
     ASSERT_TRUE(parent.good());
@@ -1086,6 +1090,8 @@ TEST_F(SyncerTest, TestPurgeWhileUnsynced) {
 TEST_F(SyncerTest, TestPurgeWhileUnapplied) {
   // Similar to above, but for unapplied items. Bug 49278.
   {
+    directory()->SetDownloadProgress(BOOKMARKS,
+                                     syncable::BuildProgress(BOOKMARKS));
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
     MutableEntry parent(&wtrans, CREATE, BOOKMARKS, wtrans.root_id(), "Pete");
     ASSERT_TRUE(parent.good());
@@ -1111,6 +1117,8 @@ TEST_F(SyncerTest, TestPurgeWhileUnapplied) {
 
 TEST_F(SyncerTest, TestPurgeWithJournal) {
   {
+    directory()->SetDownloadProgress(BOOKMARKS,
+                                     syncable::BuildProgress(BOOKMARKS));
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
     MutableEntry parent(&wtrans, syncable::CREATE, BOOKMARKS, wtrans.root_id(),
                         "Pete");

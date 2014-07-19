@@ -58,6 +58,13 @@ void Directory::PersistedKernelInfo::ResetDownloadProgress(
   download_progress[model_type].set_token("");
 }
 
+bool Directory::PersistedKernelInfo::HasEmptyDownloadProgress(
+    ModelType model_type) {
+  const sync_pb::DataTypeProgressMarker& progress_marker =
+      download_progress[model_type];
+  return progress_marker.token().empty();
+}
+
 Directory::SaveChangesSnapshot::SaveChangesSnapshot()
     : kernel_info_status(KERNEL_SHARE_INFO_INVALID) {
 }
@@ -737,6 +744,18 @@ bool Directory::PurgeEntriesWithTypeIn(ModelTypeSet disabled_types,
 
     {
       ScopedKernelLock lock(this);
+
+      bool found_progress = false;
+      for (ModelTypeSet::Iterator iter = disabled_types.First(); iter.Good();
+           iter.Inc()) {
+        if (!kernel_->persisted_info.HasEmptyDownloadProgress(iter.Get()))
+          found_progress = true;
+      }
+
+      // If none of the disabled types have progress markers, there's nothing to
+      // purge.
+      if (!found_progress)
+        return true;
 
       // We iterate in two passes to avoid a bug in STLport (which is used in
       // the Android build).  There are some versions of that library where a

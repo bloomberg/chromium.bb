@@ -90,5 +90,12 @@ void CreateTypeRoot(WriteTransaction* trans,
   node.PutSpecifics(specifics);
 }
 
+sync_pb::DataTypeProgressMarker BuildProgress(ModelType type) {
+  sync_pb::DataTypeProgressMarker progress;
+  progress.set_token("token");
+  progress.set_data_type_id(GetSpecificsFieldNumberFromModelType(type));
+  return progress;
+}
+
 }  // namespace syncable
 }  // namespace syncer

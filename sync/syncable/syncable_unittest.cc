@@ -191,13 +191,6 @@ class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
   base::FilePath file_path_;
 };
 
-sync_pb::DataTypeProgressMarker BuildProgress(ModelType type) {
-  sync_pb::DataTypeProgressMarker progress;
-  progress.set_token("token");
-  progress.set_data_type_id(GetSpecificsFieldNumberFromModelType(type));
-  return progress;
-}
-
 sync_pb::DataTypeContext BuildContext(ModelType type) {
   sync_pb::DataTypeContext context;
   context.set_context("context");
@@ -518,7 +511,8 @@ TEST_F(OnDiskSyncableDirectoryTest, TestSaveChangesFailure) {
 
 TEST_F(OnDiskSyncableDirectoryTest, TestSaveChangesFailureWithPurge) {
   int64 handle1 = 0;
-  // Set up an item using a regular, saveable directory.
+  // Set up an item and progress marker using a regular, saveable directory.
+  dir()->SetDownloadProgress(BOOKMARKS, BuildProgress(BOOKMARKS));
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
 
