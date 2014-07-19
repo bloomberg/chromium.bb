@@ -25,8 +25,6 @@ class WebCryptoImpl : public blink::WebCrypto {
 
   virtual ~WebCryptoImpl();
 
-  static void EnsureInit();
-
   virtual void encrypt(const blink::WebCryptoAlgorithm& algorithm,
                        const blink::WebCryptoKey& key,
                        const unsigned char* data,
