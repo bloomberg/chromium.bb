@@ -48,14 +48,6 @@ void MediaQueryMatcher::documentDetached()
 {
     m_document = nullptr;
     m_evaluator = nullptr;
-
-    // Take a ref to each MediaQueryList as removing the listeners in documentDetached
-    // could release the last ref and mutate the m_mediaLists.
-    WillBeHeapVector<RefPtrWillBeMember<MediaQueryList> > lists;
-    copyToVector(m_mediaLists, lists);
-
-    for (size_t i = 0; i < lists.size(); ++i)
-        lists[i]->documentDetached();
 }
 
 PassOwnPtr<MediaQueryEvaluator> MediaQueryMatcher::createEvaluator() const
@@ -91,7 +83,7 @@ PassRefPtrWillBeRawPtr<MediaQueryList> MediaQueryMatcher::matchMedia(const Strin
     RefPtrWillBeRawPtr<MediaQuerySet> media = MediaQuerySet::create(query);
     // Add warning message to inspector whenever dpi/dpcm values are used for "screen" media.
     reportMediaQueryWarningIfNeeded(m_document, media.get());
-    return MediaQueryList::create(this, media);
+    return MediaQueryList::create(m_document, this, media);
 }
 
 void MediaQueryMatcher::addMediaQueryList(MediaQueryList* query)

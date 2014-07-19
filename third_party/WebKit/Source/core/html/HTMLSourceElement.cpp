@@ -161,7 +161,7 @@ void HTMLSourceElement::parseAttribute(const QualifiedName& name, const AtomicSt
         if (m_mediaQueryList)
             m_mediaQueryList->removeListener(m_listener);
         RefPtrWillBeRawPtr<MediaQuerySet> set = MediaQuerySet::create(value);
-        m_mediaQueryList = MediaQueryList::create(&document().mediaQueryMatcher(), set.release());
+        m_mediaQueryList = MediaQueryList::create(&document(), &document().mediaQueryMatcher(), set.release());
         m_mediaQueryList->addListener(m_listener);
     }
     if (name == srcsetAttr || name == sizesAttr || name == mediaAttr || name == typeAttr) {

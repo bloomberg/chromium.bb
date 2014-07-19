@@ -27,13 +27,16 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<MediaQueryList> MediaQueryList::create(PassRefPtrWillBeRawPtr<MediaQueryMatcher> matcher, PassRefPtrWillBeRawPtr<MediaQuerySet> media)
+PassRefPtrWillBeRawPtr<MediaQueryList> MediaQueryList::create(ExecutionContext* context, PassRefPtrWillBeRawPtr<MediaQueryMatcher> matcher, PassRefPtrWillBeRawPtr<MediaQuerySet> media)
 {
-    return adoptRefWillBeNoop(new MediaQueryList(matcher, media));
+    RefPtrWillBeRawPtr<MediaQueryList> list = adoptRefWillBeNoop(new MediaQueryList(context, matcher, media));
+    list->suspendIfNeeded();
+    return list.release();
 }
 
-MediaQueryList::MediaQueryList(PassRefPtrWillBeRawPtr<MediaQueryMatcher> matcher, PassRefPtrWillBeRawPtr<MediaQuerySet> media)
-    : m_matcher(matcher)
+MediaQueryList::MediaQueryList(ExecutionContext* context, PassRefPtrWillBeRawPtr<MediaQueryMatcher> matcher, PassRefPtrWillBeRawPtr<MediaQuerySet> media)
+    : ActiveDOMObject(context)
+    , m_matcher(matcher)
     , m_media(media)
     , m_matchesDirty(true)
     , m_matches(false)
@@ -81,7 +84,12 @@ void MediaQueryList::removeListener(PassRefPtrWillBeRawPtr<MediaQueryListListene
     }
 }
 
-void MediaQueryList::documentDetached()
+bool MediaQueryList::hasPendingActivity() const
+{
+    return m_listeners.size();
+}
+
+void MediaQueryList::stop()
 {
     m_listeners.clear();
 }
