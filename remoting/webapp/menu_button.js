@@ -28,6 +28,12 @@ remoting.MenuButton = function(container, opt_onShow) {
       (container.querySelector('button,.menu-button-activator'));
 
   /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.menu_ = /** @type {HTMLElement} */ (container.querySelector('ul'));
+
+  /**
    * @type {undefined|function():void}
    * @private
    */
@@ -36,46 +42,43 @@ remoting.MenuButton = function(container, opt_onShow) {
   /** @type {remoting.MenuButton} */
   var that = this;
 
-  // Create event handlers to show and hide the menu, attached to the button
-  // and the document <html> tag, respectively. These handlers are added and
-  // removed depending on the state of the menu. To prevent both triggering
-  // for one click, they are added by a timer.
   /**
    * @type {function(Event):void}
    * @private
    */
-  this.onClick_ = function(event) {
+  var closeHandler = function(event) {
+    that.button_.classList.remove(remoting.MenuButton.BUTTON_ACTIVE_CLASS_);
+    document.body.removeEventListener('click', closeHandler, true);
+  };
+
+  /**
+   * @type {function(Event):void}
+   * @private
+   */
+  var onClick = function(event) {
     if (that.onShow_) {
       that.onShow_();
     }
-    that.button_.classList.add(remoting.MenuButton.BUTTON_ACTIVE_CLASS_);
-    that.button_.removeEventListener('click', that.onClick_, false);
-    window.setTimeout(
-        function() {
-          // Attach the click handler to the <html> node so that it includes
-          // the document area outside the plugin, which is not covered by
-          // the <body> node.
-          var htmlNode = document.body.parentNode;
-          htmlNode.addEventListener('click', that.closeHandler_, true);
-        },
-        100);
+    that.button_.classList.toggle(remoting.MenuButton.BUTTON_ACTIVE_CLASS_);
+    document.body.addEventListener('click', closeHandler, false);
+    event.stopPropagation();
   };
 
-  /**
-   * @type {function(Event):void}
-   * @private
-   */
-  this.closeHandler_ = function(event) {
-    that.button_.classList.remove(remoting.MenuButton.BUTTON_ACTIVE_CLASS_);
-    document.body.removeEventListener('click', that.closeHandler_, true);
-    window.setTimeout(
-        function() {
-          that.button_.addEventListener('click', that.onClick_, false);
-        },
-        100);
-  };
+  this.button_.addEventListener('click', onClick, false);
+};
 
-  this.button_.addEventListener('click', this.onClick_, false);
+/**
+ * @return {HTMLElement} The button that activates the menu.
+ */
+remoting.MenuButton.prototype.button = function() {
+  return this.button_;
+};
+
+/**
+ * @return {HTMLElement} The menu.
+ */
+remoting.MenuButton.prototype.menu = function() {
+  return this.menu_;
 };
 
 /**

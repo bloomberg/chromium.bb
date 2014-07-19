@@ -8,7 +8,7 @@
 }
 
 .menu-button-activator + ul {
-  visibility: hidden;
+  display: none;
   position: absolute;
 }
 
@@ -21,7 +21,7 @@
 }
 
 .menu-button-activator.active + ul {
-  visibility: visible;
+  display: block;
 }
 
 .menu-button-activator.active {

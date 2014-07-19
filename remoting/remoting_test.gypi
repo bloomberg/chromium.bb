@@ -328,12 +328,8 @@
           'destination': '<(output_dir)',
           'files': [
             '<@(webapp_js_files)',
-          ],
-        },
-        {
-          'destination': '<(output_dir)',
-          'files': [
-            '<@(remoting_webapp_unittest_cases)'
+            '<@(remoting_webapp_unittest_cases)',
+            '<@(remoting_webapp_unittest_additional_files)'
           ],
         },
       ],

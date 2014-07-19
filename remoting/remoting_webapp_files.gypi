@@ -136,6 +136,10 @@
     # The unit test cases for the webapp
     'remoting_webapp_unittest_cases': [
       'webapp/unittests/base_unittest.js',
+      'webapp/unittests/menu_button_unittest.js',
+    ],
+    'remoting_webapp_unittest_additional_files': [
+      'webapp/menu_button.css',
     ],
     'remoting_webapp_unittest_template_main':
       'webapp/html/template_unittest.html',
