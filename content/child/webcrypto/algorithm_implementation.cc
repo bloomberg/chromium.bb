@@ -17,7 +17,7 @@ Status AlgorithmImplementation::Encrypt(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const CryptoData& data,
-    std::vector<uint8>* buffer) const {
+    std::vector<uint8_t>* buffer) const {
   return Status::ErrorUnsupported();
 }
 
@@ -25,14 +25,14 @@ Status AlgorithmImplementation::Decrypt(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,
     const CryptoData& data,
-    std::vector<uint8>* buffer) const {
+    std::vector<uint8_t>* buffer) const {
   return Status::ErrorUnsupported();
 }
 
 Status AlgorithmImplementation::Sign(const blink::WebCryptoAlgorithm& algorithm,
                                      const blink::WebCryptoKey& key,
                                      const CryptoData& data,
-                                     std::vector<uint8>* buffer) const {
+                                     std::vector<uint8_t>* buffer) const {
   return Status::ErrorUnsupported();
 }
 
@@ -48,7 +48,7 @@ Status AlgorithmImplementation::Verify(
 Status AlgorithmImplementation::Digest(
     const blink::WebCryptoAlgorithm& algorithm,
     const CryptoData& data,
-    std::vector<uint8>* buffer) const {
+    std::vector<uint8_t>* buffer) const {
   return Status::ErrorUnsupported();
 }
 
@@ -125,25 +125,27 @@ Status AlgorithmImplementation::ImportKeyJwk(
   return Status::ErrorUnsupportedImportKeyFormat();
 }
 
-Status AlgorithmImplementation::ExportKeyRaw(const blink::WebCryptoKey& key,
-                                             std::vector<uint8>* buffer) const {
+Status AlgorithmImplementation::ExportKeyRaw(
+    const blink::WebCryptoKey& key,
+    std::vector<uint8_t>* buffer) const {
   return Status::ErrorUnsupportedExportKeyFormat();
 }
 
 Status AlgorithmImplementation::ExportKeyPkcs8(
     const blink::WebCryptoKey& key,
-    std::vector<uint8>* buffer) const {
+    std::vector<uint8_t>* buffer) const {
   return Status::ErrorUnsupportedExportKeyFormat();
 }
 
 Status AlgorithmImplementation::ExportKeySpki(
     const blink::WebCryptoKey& key,
-    std::vector<uint8>* buffer) const {
+    std::vector<uint8_t>* buffer) const {
   return Status::ErrorUnsupportedExportKeyFormat();
 }
 
-Status AlgorithmImplementation::ExportKeyJwk(const blink::WebCryptoKey& key,
-                                             std::vector<uint8>* buffer) const {
+Status AlgorithmImplementation::ExportKeyJwk(
+    const blink::WebCryptoKey& key,
+    std::vector<uint8_t>* buffer) const {
   return Status::ErrorUnsupportedExportKeyFormat();
 }
 

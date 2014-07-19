@@ -5,9 +5,9 @@
 #ifndef CONTENT_CHILD_WEBCRYPTO_JWK_H_
 #define CONTENT_CHILD_WEBCRYPTO_JWK_H_
 
+#include <stdint.h>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/values.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
@@ -29,7 +29,7 @@ void WriteSecretKeyJwk(const CryptoData& raw_key_data,
                        const std::string& algorithm,
                        bool extractable,
                        blink::WebCryptoKeyUsageMask usage_mask,
-                       std::vector<uint8>* jwk_key_data);
+                       std::vector<uint8_t>* jwk_key_data);
 
 // Parses a UTF-8 encoded JWK (key_data), and extracts the key material to
 // |*raw_key_data|. Returns Status::Success() on success, otherwise an error.
@@ -42,7 +42,7 @@ Status ReadSecretKeyJwk(const CryptoData& key_data,
                         const std::string& expected_algorithm,
                         bool expected_extractable,
                         blink::WebCryptoKeyUsageMask expected_usage_mask,
-                        std::vector<uint8>* raw_key_data);
+                        std::vector<uint8_t>* raw_key_data);
 
 // Creates an AES algorithm name for the given key size (in bytes). For
 // instance "A128CBC" is the result of suffix="CBC", keylen_bytes=16.
@@ -60,7 +60,7 @@ Status ReadAesSecretKeyJwk(const CryptoData& key_data,
                            const std::string& algorithm_name_suffix,
                            bool expected_extractable,
                            blink::WebCryptoKeyUsageMask expected_usage_mask,
-                           std::vector<uint8>* raw_key_data);
+                           std::vector<uint8_t>* raw_key_data);
 
 // Writes a JWK-formated RSA public key and saves the result to
 // |*jwk_key_data|.
@@ -69,7 +69,7 @@ void WriteRsaPublicKeyJwk(const CryptoData& n,
                           const std::string& algorithm,
                           bool extractable,
                           blink::WebCryptoKeyUsageMask usage_mask,
-                          std::vector<uint8>* jwk_key_data);
+                          std::vector<uint8_t>* jwk_key_data);
 
 // Writes a JWK-formated RSA private key and saves the result to
 // |*jwk_key_data|.
@@ -84,7 +84,7 @@ void WriteRsaPrivateKeyJwk(const CryptoData& n,
                            const std::string& algorithm,
                            bool extractable,
                            blink::WebCryptoKeyUsageMask usage_mask,
-                           std::vector<uint8>* jwk_key_data);
+                           std::vector<uint8_t>* jwk_key_data);
 
 // Describes the RSA components for a parsed key. The names of the properties
 // correspond with those from the JWK spec. Note that Chromium's WebCrypto

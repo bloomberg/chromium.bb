@@ -101,7 +101,7 @@ bool ValidateDeserializedKey(const blink::WebCryptoKey& key,
 
 // Note that this function is called from the target Blink thread.
 bool SerializeKeyForClone(const blink::WebCryptoKey& key,
-                          blink::WebVector<uint8>* key_data) {
+                          blink::WebVector<uint8_t>* key_data) {
   return PlatformSerializeKeyForClone(key, key_data);
 }
 

@@ -79,7 +79,7 @@ class DigestorNSS : public blink::WebCryptoDigestor {
     return true;
   }
 
-  Status FinishWithVectorAndStatus(std::vector<uint8>* result) {
+  Status FinishWithVectorAndStatus(std::vector<uint8_t>* result) {
     if (!hash_context_)
       return Status::ErrorUnexpected();
 
@@ -132,7 +132,7 @@ class ShaImplementation : public AlgorithmImplementation {
  public:
   virtual Status Digest(const blink::WebCryptoAlgorithm& algorithm,
                         const CryptoData& data,
-                        std::vector<uint8>* buffer) const OVERRIDE {
+                        std::vector<uint8_t>* buffer) const OVERRIDE {
     DigestorNSS digestor(algorithm.id());
     Status error = digestor.ConsumeWithStatus(data.bytes(), data.byte_length());
     // http://crbug.com/366427: the spec does not define any other failures for

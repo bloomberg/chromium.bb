@@ -85,7 +85,7 @@ Status EncryptRsaOaep(SECKEYPublicKey* key,
                       const blink::WebCryptoAlgorithm& hash,
                       const CryptoData& label,
                       const CryptoData& data,
-                      std::vector<uint8>* buffer) {
+                      std::vector<uint8_t>* buffer) {
   CK_RSA_PKCS_OAEP_PARAMS oaep_params = {0};
   if (!InitializeRsaOaepParams(hash, label, &oaep_params))
     return Status::ErrorUnsupported();
@@ -119,7 +119,7 @@ Status DecryptRsaOaep(SECKEYPrivateKey* key,
                       const blink::WebCryptoAlgorithm& hash,
                       const CryptoData& label,
                       const CryptoData& data,
-                      std::vector<uint8>* buffer) {
+                      std::vector<uint8_t>* buffer) {
   Status status = NssSupportsRsaOaep();
   if (status.IsError())
     return status;
@@ -207,7 +207,7 @@ class RsaOaepImplementation : public RsaHashedAlgorithm {
   virtual Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
-                         std::vector<uint8>* buffer) const OVERRIDE {
+                         std::vector<uint8_t>* buffer) const OVERRIDE {
     if (key.type() != blink::WebCryptoKeyTypePublic)
       return Status::ErrorUnexpectedKeyType();
 
@@ -222,7 +222,7 @@ class RsaOaepImplementation : public RsaHashedAlgorithm {
   virtual Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
-                         std::vector<uint8>* buffer) const OVERRIDE {
+                         std::vector<uint8_t>* buffer) const OVERRIDE {
     if (key.type() != blink::WebCryptoKeyTypePrivate)
       return Status::ErrorUnexpectedKeyType();
 

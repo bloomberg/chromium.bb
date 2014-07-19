@@ -5,11 +5,10 @@
 #ifndef CONTENT_CHILD_WEBCRYPTO_PLATFORM_CRYPTO_H_
 #define CONTENT_CHILD_WEBCRYPTO_PLATFORM_CRYPTO_H_
 
+#include <stdint.h>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 
 // The definitions for these methods lives in either nss/ or openssl/
@@ -33,7 +32,7 @@ AlgorithmImplementation* CreatePlatformRsaOaepImplementation();
 AlgorithmImplementation* CreatePlatformRsaSsaImplementation();
 
 bool PlatformSerializeKeyForClone(const blink::WebCryptoKey& key,
-                                  blink::WebVector<uint8>* key_data);
+                                  blink::WebVector<uint8_t>* key_data);
 
 }  // namespace webcrypto
 

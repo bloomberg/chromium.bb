@@ -5,12 +5,17 @@
 #ifndef CONTENT_CHILD_WEBCRYPTO_OPENSSL_KEY_OPENSSL_H_
 #define CONTENT_CHILD_WEBCRYPTO_OPENSSL_KEY_OPENSSL_H_
 
-#include "content/child/webcrypto/algorithm_implementation.h"
+#include <stdint.h>
+#include <vector>
+
+#include "base/macros.h"
+#include "third_party/WebKit/public/platform/WebCryptoKey.h"
 
 namespace content {
 
 namespace webcrypto {
 
+class CryptoData;
 class SymKeyOpenSsl;
 
 // Base key class for all OpenSSL keys, used to safely cast between types. Each
@@ -24,12 +29,12 @@ class KeyOpenSsl : public blink::WebCryptoKeyHandle {
 
   virtual SymKeyOpenSsl* AsSymKey();
 
-  const std::vector<uint8>& serialized_key_data() const {
+  const std::vector<uint8_t>& serialized_key_data() const {
     return serialized_key_data_;
   }
 
  private:
-  const std::vector<uint8> serialized_key_data_;
+  const std::vector<uint8_t> serialized_key_data_;
 };
 
 class SymKeyOpenSsl : public KeyOpenSsl {
@@ -41,7 +46,7 @@ class SymKeyOpenSsl : public KeyOpenSsl {
 
   virtual SymKeyOpenSsl* AsSymKey() OVERRIDE;
 
-  const std::vector<uint8>& raw_key_data() const {
+  const std::vector<uint8_t>& raw_key_data() const {
     return serialized_key_data();
   }
 

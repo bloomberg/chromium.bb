@@ -16,13 +16,13 @@ namespace content {
 
 namespace webcrypto {
 
-const uint8* Uint8VectorStart(const std::vector<uint8>& data) {
+const uint8_t* Uint8VectorStart(const std::vector<uint8_t>& data) {
   if (data.empty())
     return NULL;
   return &data[0];
 }
 
-uint8* Uint8VectorStart(std::vector<uint8>* data) {
+uint8_t* Uint8VectorStart(std::vector<uint8_t>* data) {
   if (data->empty())
     return NULL;
   return &(*data)[0];
@@ -52,7 +52,7 @@ std::string Base64EncodeUrlSafe(const base::StringPiece& input) {
   return output;
 }
 
-std::string Base64EncodeUrlSafe(const std::vector<uint8>& input) {
+std::string Base64EncodeUrlSafe(const std::vector<uint8_t>& input) {
   const base::StringPiece string_piece(
       reinterpret_cast<const char*>(Uint8VectorStart(input)), input.size());
   return Base64EncodeUrlSafe(string_piece);

@@ -5,14 +5,17 @@
 #ifndef CONTENT_CHILD_WEBCRYPTO_NSS_KEY_NSS_H_
 #define CONTENT_CHILD_WEBCRYPTO_NSS_KEY_NSS_H_
 
-#include "content/child/webcrypto/algorithm_implementation.h"
+#include <stdint.h>
+#include <vector>
 
 #include "crypto/scoped_nss_types.h"
+#include "third_party/WebKit/public/platform/WebCryptoKey.h"
 
 namespace content {
 
 namespace webcrypto {
 
+class CryptoData;
 class PrivateKeyNss;
 class PublicKeyNss;
 class SymKeyNss;
@@ -30,12 +33,12 @@ class KeyNss : public blink::WebCryptoKeyHandle {
   virtual PublicKeyNss* AsPublicKey();
   virtual PrivateKeyNss* AsPrivateKey();
 
-  const std::vector<uint8>& serialized_key_data() const {
+  const std::vector<uint8_t>& serialized_key_data() const {
     return serialized_key_data_;
   }
 
  private:
-  const std::vector<uint8> serialized_key_data_;
+  const std::vector<uint8_t> serialized_key_data_;
 };
 
 class SymKeyNss : public KeyNss {
@@ -48,7 +51,7 @@ class SymKeyNss : public KeyNss {
   PK11SymKey* key() { return key_.get(); }
   virtual SymKeyNss* AsSymKey() OVERRIDE;
 
-  const std::vector<uint8>& raw_key_data() const {
+  const std::vector<uint8_t>& raw_key_data() const {
     return serialized_key_data();
   }
 
@@ -68,7 +71,9 @@ class PublicKeyNss : public KeyNss {
   SECKEYPublicKey* key() { return key_.get(); }
   virtual PublicKeyNss* AsPublicKey() OVERRIDE;
 
-  const std::vector<uint8>& spki_data() const { return serialized_key_data(); }
+  const std::vector<uint8_t>& spki_data() const {
+    return serialized_key_data();
+  }
 
  private:
   crypto::ScopedSECKEYPublicKey key_;
@@ -87,7 +92,9 @@ class PrivateKeyNss : public KeyNss {
   SECKEYPrivateKey* key() { return key_.get(); }
   virtual PrivateKeyNss* AsPrivateKey() OVERRIDE;
 
-  const std::vector<uint8>& pkcs8_data() const { return serialized_key_data(); }
+  const std::vector<uint8_t>& pkcs8_data() const {
+    return serialized_key_data();
+  }
 
  private:
   crypto::ScopedSECKEYPrivateKey key_;

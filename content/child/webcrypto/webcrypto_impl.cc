@@ -109,7 +109,7 @@ void CompleteWithError(const Status& status, blink::WebCryptoResult* result) {
 }
 
 void CompleteWithBufferOrError(const Status& status,
-                               const std::vector<uint8>& buffer,
+                               const std::vector<uint8_t>& buffer,
                                blink::WebCryptoResult* result) {
   if (status.IsError()) {
     CompleteWithError(status, result);
@@ -199,9 +199,9 @@ struct EncryptState : public BaseState {
 
   const blink::WebCryptoAlgorithm algorithm;
   const blink::WebCryptoKey key;
-  const std::vector<uint8> data;
+  const std::vector<uint8_t> data;
 
-  std::vector<uint8> buffer;
+  std::vector<uint8_t> buffer;
 };
 
 typedef EncryptState DecryptState;
@@ -248,7 +248,7 @@ struct ImportKeyState : public BaseState {
         key(blink::WebCryptoKey::createNull()) {}
 
   const blink::WebCryptoKeyFormat format;
-  const std::vector<uint8> key_data;
+  const std::vector<uint8_t> key_data;
   const blink::WebCryptoAlgorithm algorithm;
   const bool extractable;
   const blink::WebCryptoKeyUsageMask usage_mask;
@@ -265,7 +265,7 @@ struct ExportKeyState : public BaseState {
   const blink::WebCryptoKeyFormat format;
   const blink::WebCryptoKey key;
 
-  std::vector<uint8> buffer;
+  std::vector<uint8_t> buffer;
 };
 
 typedef EncryptState SignState;
@@ -287,8 +287,8 @@ struct VerifySignatureState : public BaseState {
 
   const blink::WebCryptoAlgorithm algorithm;
   const blink::WebCryptoKey key;
-  const std::vector<uint8> signature;
-  const std::vector<uint8> data;
+  const std::vector<uint8_t> signature;
+  const std::vector<uint8_t> data;
 
   bool verify_result;
 };
@@ -310,7 +310,7 @@ struct WrapKeyState : public BaseState {
   const blink::WebCryptoKey wrapping_key;
   const blink::WebCryptoAlgorithm wrap_algorithm;
 
-  std::vector<uint8> buffer;
+  std::vector<uint8_t> buffer;
 };
 
 struct UnwrapKeyState : public BaseState {
@@ -334,7 +334,7 @@ struct UnwrapKeyState : public BaseState {
         unwrapped_key(blink::WebCryptoKey::createNull()) {}
 
   const blink::WebCryptoKeyFormat format;
-  const std::vector<uint8> wrapped_key;
+  const std::vector<uint8_t> wrapped_key;
   const blink::WebCryptoKey wrapping_key;
   const blink::WebCryptoAlgorithm unwrap_algorithm;
   const blink::WebCryptoAlgorithm unwrapped_key_algorithm;

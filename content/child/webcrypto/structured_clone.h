@@ -5,7 +5,8 @@
 #ifndef CONTENT_CHILD_WEBCRYPTO_STRUCTURED_CLONE_H_
 #define CONTENT_CHILD_WEBCRYPTO_STRUCTURED_CLONE_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 
 namespace content {
@@ -16,7 +17,7 @@ class CryptoData;
 
 // Called on the target Blink thread.
 bool SerializeKeyForClone(const blink::WebCryptoKey& key,
-                          blink::WebVector<uint8>* key_data);
+                          blink::WebVector<uint8_t>* key_data);
 
 // Called on the target Blink thread.
 bool DeserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,

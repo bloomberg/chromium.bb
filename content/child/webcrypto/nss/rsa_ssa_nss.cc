@@ -44,7 +44,7 @@ class RsaSsaImplementation : public RsaHashedAlgorithm {
   virtual Status Sign(const blink::WebCryptoAlgorithm& algorithm,
                       const blink::WebCryptoKey& key,
                       const CryptoData& data,
-                      std::vector<uint8>* buffer) const OVERRIDE {
+                      std::vector<uint8_t>* buffer) const OVERRIDE {
     if (key.type() != blink::WebCryptoKeyTypePrivate)
       return Status::ErrorUnexpectedKeyType();
 

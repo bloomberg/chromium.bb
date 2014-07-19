@@ -8,6 +8,7 @@
 #include <sechash.h>
 
 #include "base/logging.h"
+#include "content/child/webcrypto/algorithm_implementation.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/jwk.h"
 #include "content/child/webcrypto/nss/key_nss.h"
@@ -129,7 +130,7 @@ class HmacImplementation : public AlgorithmImplementation {
     if (!algorithm_name)
       return Status::ErrorUnexpected();
 
-    std::vector<uint8> raw_data;
+    std::vector<uint8_t> raw_data;
     Status status = ReadSecretKeyJwk(
         key_data, algorithm_name, extractable, usage_mask, &raw_data);
     if (status.IsError())
@@ -140,15 +141,15 @@ class HmacImplementation : public AlgorithmImplementation {
   }
 
   virtual Status ExportKeyRaw(const blink::WebCryptoKey& key,
-                              std::vector<uint8>* buffer) const OVERRIDE {
+                              std::vector<uint8_t>* buffer) const OVERRIDE {
     *buffer = SymKeyNss::Cast(key)->raw_key_data();
     return Status::Success();
   }
 
   virtual Status ExportKeyJwk(const blink::WebCryptoKey& key,
-                              std::vector<uint8>* buffer) const OVERRIDE {
+                              std::vector<uint8_t>* buffer) const OVERRIDE {
     SymKeyNss* sym_key = SymKeyNss::Cast(key);
-    const std::vector<uint8>& raw_data = sym_key->raw_key_data();
+    const std::vector<uint8_t>& raw_data = sym_key->raw_key_data();
 
     const char* algorithm_name =
         GetJwkHmacAlgorithmName(key.algorithm().hmacParams()->hash().id());
@@ -167,7 +168,7 @@ class HmacImplementation : public AlgorithmImplementation {
   virtual Status Sign(const blink::WebCryptoAlgorithm& algorithm,
                       const blink::WebCryptoKey& key,
                       const CryptoData& data,
-                      std::vector<uint8>* buffer) const OVERRIDE {
+                      std::vector<uint8_t>* buffer) const OVERRIDE {
     const blink::WebCryptoAlgorithm& hash =
         key.algorithm().hmacParams()->hash();
     PK11SymKey* sym_key = SymKeyNss::Cast(key)->key();
@@ -207,7 +208,7 @@ class HmacImplementation : public AlgorithmImplementation {
                         const CryptoData& signature,
                         const CryptoData& data,
                         bool* signature_match) const OVERRIDE {
-    std::vector<uint8> result;
+    std::vector<uint8_t> result;
     Status status = Sign(algorithm, key, data, &result);
 
     if (status.IsError())

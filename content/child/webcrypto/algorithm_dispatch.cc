@@ -22,7 +22,7 @@ namespace {
 Status DecryptDontCheckKeyUsage(const blink::WebCryptoAlgorithm& algorithm,
                                 const blink::WebCryptoKey& key,
                                 const CryptoData& data,
-                                std::vector<uint8>* buffer) {
+                                std::vector<uint8_t>* buffer) {
   if (algorithm.id() != key.algorithm().id())
     return Status::ErrorUnexpected();
 
@@ -37,7 +37,7 @@ Status DecryptDontCheckKeyUsage(const blink::WebCryptoAlgorithm& algorithm,
 Status EncryptDontCheckUsage(const blink::WebCryptoAlgorithm& algorithm,
                              const blink::WebCryptoKey& key,
                              const CryptoData& data,
-                             std::vector<uint8>* buffer) {
+                             std::vector<uint8_t>* buffer) {
   if (algorithm.id() != key.algorithm().id())
     return Status::ErrorUnexpected();
 
@@ -51,7 +51,7 @@ Status EncryptDontCheckUsage(const blink::WebCryptoAlgorithm& algorithm,
 
 Status ExportKeyDontCheckExtractability(blink::WebCryptoKeyFormat format,
                                         const blink::WebCryptoKey& key,
-                                        std::vector<uint8>* buffer) {
+                                        std::vector<uint8_t>* buffer) {
   const AlgorithmImplementation* impl = NULL;
   Status status = GetAlgorithmImplementation(key.algorithm().id(), &impl);
   if (status.IsError())
@@ -76,7 +76,7 @@ Status ExportKeyDontCheckExtractability(blink::WebCryptoKeyFormat format,
 Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                const blink::WebCryptoKey& key,
                const CryptoData& data,
-               std::vector<uint8>* buffer) {
+               std::vector<uint8_t>* buffer) {
   if (!KeyUsageAllows(key, blink::WebCryptoKeyUsageEncrypt))
     return Status::ErrorUnexpected();
   return EncryptDontCheckUsage(algorithm, key, data, buffer);
@@ -85,7 +85,7 @@ Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
 Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
                const blink::WebCryptoKey& key,
                const CryptoData& data,
-               std::vector<uint8>* buffer) {
+               std::vector<uint8_t>* buffer) {
   if (!KeyUsageAllows(key, blink::WebCryptoKeyUsageDecrypt))
     return Status::ErrorUnexpected();
   return DecryptDontCheckKeyUsage(algorithm, key, data, buffer);
@@ -93,7 +93,7 @@ Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
 
 Status Digest(const blink::WebCryptoAlgorithm& algorithm,
               const CryptoData& data,
-              std::vector<uint8>* buffer) {
+              std::vector<uint8_t>* buffer) {
   const AlgorithmImplementation* impl = NULL;
   Status status = GetAlgorithmImplementation(algorithm.id(), &impl);
   if (status.IsError())
@@ -179,7 +179,7 @@ Status ImportKey(blink::WebCryptoKeyFormat format,
 
 Status ExportKey(blink::WebCryptoKeyFormat format,
                  const blink::WebCryptoKey& key,
-                 std::vector<uint8>* buffer) {
+                 std::vector<uint8_t>* buffer) {
   if (!key.extractable())
     return Status::ErrorKeyNotExtractable();
   return ExportKeyDontCheckExtractability(format, key, buffer);
@@ -188,7 +188,7 @@ Status ExportKey(blink::WebCryptoKeyFormat format,
 Status Sign(const blink::WebCryptoAlgorithm& algorithm,
             const blink::WebCryptoKey& key,
             const CryptoData& data,
-            std::vector<uint8>* buffer) {
+            std::vector<uint8_t>* buffer) {
   if (!KeyUsageAllows(key, blink::WebCryptoKeyUsageSign))
     return Status::ErrorUnexpected();
   if (algorithm.id() != key.algorithm().id())
@@ -233,11 +233,11 @@ Status WrapKey(blink::WebCryptoKeyFormat format,
                const blink::WebCryptoKey& key_to_wrap,
                const blink::WebCryptoKey& wrapping_key,
                const blink::WebCryptoAlgorithm& wrapping_algorithm,
-               std::vector<uint8>* buffer) {
+               std::vector<uint8_t>* buffer) {
   if (!KeyUsageAllows(wrapping_key, blink::WebCryptoKeyUsageWrapKey))
     return Status::ErrorUnexpected();
 
-  std::vector<uint8> exported_data;
+  std::vector<uint8_t> exported_data;
   Status status = ExportKey(format, key_to_wrap, &exported_data);
   if (status.IsError())
     return status;
@@ -268,7 +268,7 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
   if (status.IsError())
     return status;
 
-  std::vector<uint8> buffer;
+  std::vector<uint8_t> buffer;
   status = DecryptDontCheckKeyUsage(
       wrapping_algorithm, wrapping_key, wrapped_key_data, &buffer);
   if (status.IsError())

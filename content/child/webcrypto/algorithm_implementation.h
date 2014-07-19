@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_WEBCRYPTO_CRYPTO_ALGORITHM_IMPLEMENTATION_H_
 #define CONTENT_CHILD_WEBCRYPTO_CRYPTO_ALGORITHM_IMPLEMENTATION_H_
 
+#include <stdint.h>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -44,19 +45,19 @@ class AlgorithmImplementation {
   virtual Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
-                         std::vector<uint8>* buffer) const;
+                         std::vector<uint8_t>* buffer) const;
 
   // This method corresponds to Web Crypto's crypto.subtle.decrypt().
   virtual Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
-                         std::vector<uint8>* buffer) const;
+                         std::vector<uint8_t>* buffer) const;
 
   // This method corresponds to Web Crypto's crypto.subtle.sign().
   virtual Status Sign(const blink::WebCryptoAlgorithm& algorithm,
                       const blink::WebCryptoKey& key,
                       const CryptoData& data,
-                      std::vector<uint8>* buffer) const;
+                      std::vector<uint8_t>* buffer) const;
 
   // This method corresponds to Web Crypto's crypto.subtle.verify().
   virtual Status Verify(const blink::WebCryptoAlgorithm& algorithm,
@@ -68,7 +69,7 @@ class AlgorithmImplementation {
   // This method corresponds to Web Crypto's crypto.subtle.digest().
   virtual Status Digest(const blink::WebCryptoAlgorithm& algorithm,
                         const CryptoData& data,
-                        std::vector<uint8>* buffer) const;
+                        std::vector<uint8_t>* buffer) const;
 
   // VerifyKeyUsagesBeforeGenerateKey() must be called prior to
   // GenerateSecretKey() to validate the requested key usages.
@@ -154,16 +155,16 @@ class AlgorithmImplementation {
   // -----------------------------------------------
 
   virtual Status ExportKeyRaw(const blink::WebCryptoKey& key,
-                              std::vector<uint8>* buffer) const;
+                              std::vector<uint8_t>* buffer) const;
 
   virtual Status ExportKeyPkcs8(const blink::WebCryptoKey& key,
-                                std::vector<uint8>* buffer) const;
+                                std::vector<uint8_t>* buffer) const;
 
   virtual Status ExportKeySpki(const blink::WebCryptoKey& key,
-                               std::vector<uint8>* buffer) const;
+                               std::vector<uint8_t>* buffer) const;
 
   virtual Status ExportKeyJwk(const blink::WebCryptoKey& key,
-                              std::vector<uint8>* buffer) const;
+                              std::vector<uint8_t>* buffer) const;
 };
 
 }  // namespace webcrypto

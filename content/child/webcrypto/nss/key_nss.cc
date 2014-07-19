@@ -85,7 +85,7 @@ PrivateKeyNss::PrivateKeyNss(crypto::ScopedSECKEYPrivateKey key,
 }
 
 bool PlatformSerializeKeyForClone(const blink::WebCryptoKey& key,
-                                  blink::WebVector<uint8>* key_data) {
+                                  blink::WebVector<uint8_t>* key_data) {
   const KeyNss* nss_key = static_cast<KeyNss*>(key.handle());
   *key_data = nss_key->serialized_key_data();
   return true;

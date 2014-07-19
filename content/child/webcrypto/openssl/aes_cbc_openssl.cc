@@ -39,9 +39,10 @@ Status AesCbcEncryptDecrypt(CipherOperation cipher_operation,
                             const blink::WebCryptoAlgorithm& algorithm,
                             const blink::WebCryptoKey& key,
                             const CryptoData& data,
-                            std::vector<uint8>* buffer) {
+                            std::vector<uint8_t>* buffer) {
   const blink::WebCryptoAesCbcParams* params = algorithm.aesCbcParams();
-  const std::vector<uint8>& raw_key = SymKeyOpenSsl::Cast(key)->raw_key_data();
+  const std::vector<uint8_t>& raw_key =
+      SymKeyOpenSsl::Cast(key)->raw_key_data();
 
   if (params->iv().size() != 16)
     return Status::ErrorIncorrectSizeAesCbcIv();
@@ -115,14 +116,14 @@ class AesCbcImplementation : public AesAlgorithm {
   virtual Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
-                         std::vector<uint8>* buffer) const OVERRIDE {
+                         std::vector<uint8_t>* buffer) const OVERRIDE {
     return AesCbcEncryptDecrypt(kDoEncrypt, algorithm, key, data, buffer);
   }
 
   virtual Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
-                         std::vector<uint8>* buffer) const OVERRIDE {
+                         std::vector<uint8_t>* buffer) const OVERRIDE {
     return AesCbcEncryptDecrypt(kDoDecrypt, algorithm, key, data, buffer);
   }
 };

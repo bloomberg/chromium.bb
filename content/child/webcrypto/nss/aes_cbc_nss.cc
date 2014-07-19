@@ -23,7 +23,7 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
                             const blink::WebCryptoAlgorithm& algorithm,
                             const blink::WebCryptoKey& key,
                             const CryptoData& data,
-                            std::vector<uint8>* buffer) {
+                            std::vector<uint8_t>* buffer) {
   const blink::WebCryptoAesCbcParams* params = algorithm.aesCbcParams();
   if (!params)
     return Status::ErrorUnexpected();
@@ -103,14 +103,14 @@ class AesCbcImplementation : public AesAlgorithm {
   virtual Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
-                         std::vector<uint8>* buffer) const OVERRIDE {
+                         std::vector<uint8_t>* buffer) const OVERRIDE {
     return AesCbcEncryptDecrypt(ENCRYPT, algorithm, key, data, buffer);
   }
 
   virtual Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
-                         std::vector<uint8>* buffer) const OVERRIDE {
+                         std::vector<uint8_t>* buffer) const OVERRIDE {
     return AesCbcEncryptDecrypt(DECRYPT, algorithm, key, data, buffer);
   }
 };

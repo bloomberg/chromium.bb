@@ -42,7 +42,7 @@ SymKeyOpenSsl::SymKeyOpenSsl(const CryptoData& raw_key_data)
 }
 
 bool PlatformSerializeKeyForClone(const blink::WebCryptoKey& key,
-                                  blink::WebVector<uint8>* key_data) {
+                                  blink::WebVector<uint8_t>* key_data) {
   const KeyOpenSsl* openssl_key = static_cast<KeyOpenSsl*>(key.handle());
   *key_data = openssl_key->serialized_key_data();
   return true;

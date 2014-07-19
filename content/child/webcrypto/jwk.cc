@@ -241,7 +241,7 @@ class JwkWriter {
                         value.byte_length())));
   }
 
-  void ToBytes(std::vector<uint8>* utf8_bytes) {
+  void ToBytes(std::vector<uint8_t>* utf8_bytes) {
     std::string json;
     base::JSONWriter::Write(&dict_, &json);
     utf8_bytes->assign(json.begin(), json.end());
@@ -482,7 +482,7 @@ Status ReadSecretKeyNoExpectedAlg(
     const CryptoData& key_data,
     bool expected_extractable,
     blink::WebCryptoKeyUsageMask expected_usage_mask,
-    std::vector<uint8>* raw_key_data,
+    std::vector<uint8_t>* raw_key_data,
     scoped_ptr<base::DictionaryValue>* dict) {
   if (!key_data.byte_length())
     return Status::ErrorImportEmptyKeyData();
@@ -511,7 +511,7 @@ void WriteSecretKeyJwk(const CryptoData& raw_key_data,
                        const std::string& algorithm,
                        bool extractable,
                        blink::WebCryptoKeyUsageMask usage_mask,
-                       std::vector<uint8>* jwk_key_data) {
+                       std::vector<uint8_t>* jwk_key_data) {
   JwkWriter writer(algorithm, extractable, usage_mask, "oct");
   writer.SetBase64Encoded("k", raw_key_data);
   writer.ToBytes(jwk_key_data);
@@ -521,7 +521,7 @@ Status ReadSecretKeyJwk(const CryptoData& key_data,
                         const std::string& expected_algorithm,
                         bool expected_extractable,
                         blink::WebCryptoKeyUsageMask expected_usage_mask,
-                        std::vector<uint8>* raw_key_data) {
+                        std::vector<uint8_t>* raw_key_data) {
   scoped_ptr<base::DictionaryValue> dict;
   Status status = ReadSecretKeyNoExpectedAlg(
       key_data, expected_extractable, expected_usage_mask, raw_key_data, &dict);
@@ -545,7 +545,7 @@ Status ReadAesSecretKeyJwk(const CryptoData& key_data,
                            const std::string& algorithm_name_suffix,
                            bool expected_extractable,
                            blink::WebCryptoKeyUsageMask expected_usage_mask,
-                           std::vector<uint8>* raw_key_data) {
+                           std::vector<uint8_t>* raw_key_data) {
   scoped_ptr<base::DictionaryValue> dict;
   Status status = ReadSecretKeyNoExpectedAlg(
       key_data, expected_extractable, expected_usage_mask, raw_key_data, &dict);
@@ -582,7 +582,7 @@ void WriteRsaPublicKeyJwk(const CryptoData& n,
                           const std::string& algorithm,
                           bool extractable,
                           blink::WebCryptoKeyUsageMask usage_mask,
-                          std::vector<uint8>* jwk_key_data) {
+                          std::vector<uint8_t>* jwk_key_data) {
   JwkWriter writer(algorithm, extractable, usage_mask, "RSA");
   writer.SetBase64Encoded("n", n);
   writer.SetBase64Encoded("e", e);
@@ -601,7 +601,7 @@ void WriteRsaPrivateKeyJwk(const CryptoData& n,
                            const std::string& algorithm,
                            bool extractable,
                            blink::WebCryptoKeyUsageMask usage_mask,
-                           std::vector<uint8>* jwk_key_data) {
+                           std::vector<uint8_t>* jwk_key_data) {
   JwkWriter writer(algorithm, extractable, usage_mask, "RSA");
 
   writer.SetBase64Encoded("n", n);

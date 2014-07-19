@@ -23,7 +23,7 @@ namespace {
 
 // Converts a (big-endian) WebCrypto BigInteger, with or without leading zeros,
 // to unsigned long.
-bool BigIntegerToLong(const uint8* data,
+bool BigIntegerToLong(const uint8_t* data,
                       unsigned int data_size,
                       unsigned long* result) {
   // TODO(eroman): Fix handling of empty biginteger. http://crubg.com/373552
@@ -310,7 +310,7 @@ void AddOptionalAttribute(CK_ATTRIBUTE_TYPE type,
   AddOptionalAttribute(type, CryptoData(data), templ);
 }
 
-Status ExportKeyPkcs8Nss(SECKEYPrivateKey* key, std::vector<uint8>* buffer) {
+Status ExportKeyPkcs8Nss(SECKEYPrivateKey* key, std::vector<uint8_t>* buffer) {
   if (key->keyType != rsaKey)
     return Status::ErrorUnsupported();
 
@@ -452,7 +452,7 @@ Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
   if (!CreatePrivateKeyAlgorithm(algorithm, private_key.get(), &key_algorithm))
     return Status::ErrorUnexpected();
 
-  std::vector<uint8> pkcs8_data;
+  std::vector<uint8_t> pkcs8_data;
   status = ExportKeyPkcs8Nss(private_key.get(), &pkcs8_data);
   if (status.IsError())
     return status;
@@ -468,7 +468,7 @@ Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
   return Status::Success();
 }
 
-Status ExportKeySpkiNss(SECKEYPublicKey* key, std::vector<uint8>* buffer) {
+Status ExportKeySpkiNss(SECKEYPublicKey* key, std::vector<uint8_t>* buffer) {
   const crypto::ScopedSECItem spki_der(
       SECKEY_EncodeDERSubjectPublicKeyInfo(key));
   if (!spki_der)
@@ -538,7 +538,7 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
   if (!CreatePublicKeyAlgorithm(algorithm, pubkey.get(), &key_algorithm))
     return Status::ErrorUnexpected();
 
-  std::vector<uint8> spki_data;
+  std::vector<uint8_t> spki_data;
   Status status = ExportKeySpkiNss(pubkey.get(), &spki_data);
   if (status.IsError())
     return status;
@@ -630,7 +630,7 @@ Status RsaHashedAlgorithm::GenerateKeyPair(
   if (!CreatePublicKeyAlgorithm(algorithm, sec_public_key, &key_algorithm))
     return Status::ErrorUnexpected();
 
-  std::vector<uint8> spki_data;
+  std::vector<uint8_t> spki_data;
   Status status = ExportKeySpkiNss(sec_public_key, &spki_data);
   if (status.IsError())
     return status;
@@ -638,7 +638,7 @@ Status RsaHashedAlgorithm::GenerateKeyPair(
   scoped_ptr<PublicKeyNss> public_key_handle(new PublicKeyNss(
       crypto::ScopedSECKEYPublicKey(sec_public_key), CryptoData(spki_data)));
 
-  std::vector<uint8> pkcs8_data;
+  std::vector<uint8_t> pkcs8_data;
   status = ExportKeyPkcs8Nss(scoped_sec_private_key.get(), &pkcs8_data);
   if (status.IsError())
     return status;
@@ -719,7 +719,7 @@ Status RsaHashedAlgorithm::ImportKeyPkcs8(
     return Status::ErrorUnexpected();
 
   // TODO(eroman): This is probably going to be the same as the input.
-  std::vector<uint8> pkcs8_data;
+  std::vector<uint8_t> pkcs8_data;
   status = ExportKeyPkcs8Nss(private_key.get(), &pkcs8_data);
   if (status.IsError())
     return status;
@@ -772,7 +772,7 @@ Status RsaHashedAlgorithm::ImportKeySpki(
     return Status::ErrorUnexpected();
 
   // TODO(eroman): This is probably going to be the same as the input.
-  std::vector<uint8> spki_data;
+  std::vector<uint8_t> spki_data;
   status = ExportKeySpkiNss(sec_public_key.get(), &spki_data);
   if (status.IsError())
     return status;
@@ -790,7 +790,7 @@ Status RsaHashedAlgorithm::ImportKeySpki(
 }
 
 Status RsaHashedAlgorithm::ExportKeyPkcs8(const blink::WebCryptoKey& key,
-                                          std::vector<uint8>* buffer) const {
+                                          std::vector<uint8_t>* buffer) const {
   if (key.type() != blink::WebCryptoKeyTypePrivate)
     return Status::ErrorUnexpectedKeyType();
   *buffer = PrivateKeyNss::Cast(key)->pkcs8_data();
@@ -798,7 +798,7 @@ Status RsaHashedAlgorithm::ExportKeyPkcs8(const blink::WebCryptoKey& key,
 }
 
 Status RsaHashedAlgorithm::ExportKeySpki(const blink::WebCryptoKey& key,
-                                         std::vector<uint8>* buffer) const {
+                                         std::vector<uint8_t>* buffer) const {
   if (key.type() != blink::WebCryptoKeyTypePublic)
     return Status::ErrorUnexpectedKeyType();
   *buffer = PublicKeyNss::Cast(key)->spki_data();
@@ -841,7 +841,7 @@ Status RsaHashedAlgorithm::ImportKeyJwk(
 }
 
 Status RsaHashedAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
-                                        std::vector<uint8>* buffer) const {
+                                        std::vector<uint8_t>* buffer) const {
   const char* jwk_algorithm =
       GetJwkAlgorithm(key.algorithm().rsaHashedParams()->hash().id());
 

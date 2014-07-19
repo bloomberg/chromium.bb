@@ -5,9 +5,10 @@
 #ifndef CONTENT_CHILD_WEBCRYPTO_WEBCRYPTO_UTIL_H_
 #define CONTENT_CHILD_WEBCRYPTO_WEBCRYPTO_UTIL_H_
 
+#include <stdint.h>
 #include <string>
 #include <vector>
-#include "base/basictypes.h"
+
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
@@ -23,8 +24,9 @@ class Status;
 // Returns a pointer to the start of |data|, or NULL if it is empty. This is a
 // convenience function for getting the pointer, and should not be used beyond
 // the expected lifetime of |data|.
-CONTENT_EXPORT const uint8* Uint8VectorStart(const std::vector<uint8>& data);
-CONTENT_EXPORT uint8* Uint8VectorStart(std::vector<uint8>* data);
+CONTENT_EXPORT const uint8_t* Uint8VectorStart(
+    const std::vector<uint8_t>& data);
+CONTENT_EXPORT uint8_t* Uint8VectorStart(std::vector<uint8_t>* data);
 
 // This function decodes unpadded 'base64url' encoded data, as described in
 // RFC4648 (http://www.ietf.org/rfc/rfc4648.txt) Section 5.
@@ -35,7 +37,8 @@ CONTENT_EXPORT bool Base64DecodeUrlSafe(const std::string& input,
 // Returns an unpadded 'base64url' encoding of the input data, the opposite of
 // Base64DecodeUrlSafe() above.
 CONTENT_EXPORT std::string Base64EncodeUrlSafe(const base::StringPiece& input);
-CONTENT_EXPORT std::string Base64EncodeUrlSafe(const std::vector<uint8>& input);
+CONTENT_EXPORT std::string Base64EncodeUrlSafe(
+    const std::vector<uint8_t>& input);
 
 // Composes a Web Crypto usage mask from an array of JWK key_ops values.
 CONTENT_EXPORT Status GetWebCryptoUsagesFromJwkKeyOps(

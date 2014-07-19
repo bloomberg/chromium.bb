@@ -53,10 +53,10 @@ class AesAlgorithm : public AlgorithmImplementation {
                               blink::WebCryptoKey* key) const OVERRIDE;
 
   virtual Status ExportKeyRaw(const blink::WebCryptoKey& key,
-                              std::vector<uint8>* buffer) const OVERRIDE;
+                              std::vector<uint8_t>* buffer) const OVERRIDE;
 
   virtual Status ExportKeyJwk(const blink::WebCryptoKey& key,
-                              std::vector<uint8>* buffer) const OVERRIDE;
+                              std::vector<uint8_t>* buffer) const OVERRIDE;
 
  private:
   const blink::WebCryptoKeyUsageMask all_key_usages_;

@@ -57,7 +57,7 @@ class DigestorOpenSsl : public blink::WebCryptoDigestor {
     return true;
   }
 
-  Status FinishWithVectorAndStatus(std::vector<uint8>* result) {
+  Status FinishWithVectorAndStatus(std::vector<uint8_t>* result) {
     const int hash_expected_size = EVP_MD_CTX_size(digest_context_.get());
     result->resize(hash_expected_size);
     unsigned char* const hash_buffer = Uint8VectorStart(result);
@@ -112,7 +112,7 @@ class ShaImplementation : public AlgorithmImplementation {
  public:
   virtual Status Digest(const blink::WebCryptoAlgorithm& algorithm,
                         const CryptoData& data,
-                        std::vector<uint8>* buffer) const OVERRIDE {
+                        std::vector<uint8_t>* buffer) const OVERRIDE {
     DigestorOpenSsl digestor(algorithm.id());
     Status error = digestor.ConsumeWithStatus(data.bytes(), data.byte_length());
     // http://crbug.com/366427: the spec does not define any other failures for

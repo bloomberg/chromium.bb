@@ -88,7 +88,7 @@ Status DoUnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
 
 Status WrapSymKeyAesKw(PK11SymKey* key,
                        PK11SymKey* wrapping_key,
-                       std::vector<uint8>* buffer) {
+                       std::vector<uint8_t>* buffer) {
   // The data size must be at least 16 bytes and a multiple of 8 bytes.
   // RFC 3394 does not specify a maximum allowed data length, but since only
   // keys are being wrapped in this application (which are small), a reasonable
@@ -135,7 +135,7 @@ class AesKwCryptoAlgorithmNss : public AesAlgorithm {
   virtual Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& wrapping_key,
                          const CryptoData& data,
-                         std::vector<uint8>* buffer) const OVERRIDE {
+                         std::vector<uint8_t>* buffer) const OVERRIDE {
     if (data.byte_length() < 16)
       return Status::ErrorDataTooSmall();
     if (data.byte_length() % 8)
@@ -162,7 +162,7 @@ class AesKwCryptoAlgorithmNss : public AesAlgorithm {
   virtual Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& wrapping_key,
                          const CryptoData& data,
-                         std::vector<uint8>* buffer) const OVERRIDE {
+                         std::vector<uint8_t>* buffer) const OVERRIDE {
     if (data.byte_length() < 24)
       return Status::ErrorDataTooSmall();
     if (data.byte_length() % 8)

@@ -102,7 +102,7 @@ Status AesAlgorithm::ImportKeyJwk(const CryptoData& key_data,
                                   bool extractable,
                                   blink::WebCryptoKeyUsageMask usage_mask,
                                   blink::WebCryptoKey* key) const {
-  std::vector<uint8> raw_data;
+  std::vector<uint8_t> raw_data;
   Status status = ReadAesSecretKeyJwk(
       key_data, jwk_suffix_, extractable, usage_mask, &raw_data);
   if (status.IsError())
@@ -113,15 +113,15 @@ Status AesAlgorithm::ImportKeyJwk(const CryptoData& key_data,
 }
 
 Status AesAlgorithm::ExportKeyRaw(const blink::WebCryptoKey& key,
-                                  std::vector<uint8>* buffer) const {
+                                  std::vector<uint8_t>* buffer) const {
   *buffer = SymKeyNss::Cast(key)->raw_key_data();
   return Status::Success();
 }
 
 Status AesAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
-                                  std::vector<uint8>* buffer) const {
+                                  std::vector<uint8_t>* buffer) const {
   SymKeyNss* sym_key = SymKeyNss::Cast(key);
-  const std::vector<uint8>& raw_data = sym_key->raw_key_data();
+  const std::vector<uint8_t>& raw_data = sym_key->raw_key_data();
 
   WriteSecretKeyJwk(CryptoData(raw_data),
                     MakeJwkAesAlgorithmName(jwk_suffix_, raw_data.size()),

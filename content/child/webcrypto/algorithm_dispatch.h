@@ -5,9 +5,9 @@
 #ifndef CONTENT_CHILD_WEBCRYPTO_ALGORITHM_DISPATCH_H_
 #define CONTENT_CHILD_WEBCRYPTO_ALGORITHM_DISPATCH_H_
 
+#include <stdint.h>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
@@ -31,16 +31,16 @@ class Status;
 CONTENT_EXPORT Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                               const blink::WebCryptoKey& key,
                               const CryptoData& data,
-                              std::vector<uint8>* buffer);
+                              std::vector<uint8_t>* buffer);
 
 CONTENT_EXPORT Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
                               const blink::WebCryptoKey& key,
                               const CryptoData& data,
-                              std::vector<uint8>* buffer);
+                              std::vector<uint8_t>* buffer);
 
 CONTENT_EXPORT Status Digest(const blink::WebCryptoAlgorithm& algorithm,
                              const CryptoData& data,
-                             std::vector<uint8>* buffer);
+                             std::vector<uint8_t>* buffer);
 
 CONTENT_EXPORT Status
     GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
@@ -64,12 +64,12 @@ CONTENT_EXPORT Status ImportKey(blink::WebCryptoKeyFormat format,
 
 CONTENT_EXPORT Status ExportKey(blink::WebCryptoKeyFormat format,
                                 const blink::WebCryptoKey& key,
-                                std::vector<uint8>* buffer);
+                                std::vector<uint8_t>* buffer);
 
 CONTENT_EXPORT Status Sign(const blink::WebCryptoAlgorithm& algorithm,
                            const blink::WebCryptoKey& key,
                            const CryptoData& data,
-                           std::vector<uint8>* buffer);
+                           std::vector<uint8_t>* buffer);
 
 CONTENT_EXPORT Status Verify(const blink::WebCryptoAlgorithm& algorithm,
                              const blink::WebCryptoKey& key,
@@ -82,7 +82,7 @@ CONTENT_EXPORT Status
             const blink::WebCryptoKey& key_to_wrap,
             const blink::WebCryptoKey& wrapping_key,
             const blink::WebCryptoAlgorithm& wrapping_algorithm,
-            std::vector<uint8>* buffer);
+            std::vector<uint8_t>* buffer);
 
 CONTENT_EXPORT Status
     UnwrapKey(blink::WebCryptoKeyFormat format,

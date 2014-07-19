@@ -56,7 +56,7 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
                             const blink::WebCryptoAlgorithm& algorithm,
                             const blink::WebCryptoKey& key,
                             const CryptoData& data,
-                            std::vector<uint8>* buffer) {
+                            std::vector<uint8_t>* buffer) {
   Status status = NssSupportsAesGcm();
   if (status.IsError())
     return status;
@@ -165,14 +165,14 @@ class AesGcmImplementation : public AesAlgorithm {
   virtual Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
-                         std::vector<uint8>* buffer) const OVERRIDE {
+                         std::vector<uint8_t>* buffer) const OVERRIDE {
     return AesGcmEncryptDecrypt(ENCRYPT, algorithm, key, data, buffer);
   }
 
   virtual Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
-                         std::vector<uint8>* buffer) const OVERRIDE {
+                         std::vector<uint8_t>* buffer) const OVERRIDE {
     return AesGcmEncryptDecrypt(DECRYPT, algorithm, key, data, buffer);
   }
 };

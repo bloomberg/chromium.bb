@@ -36,8 +36,9 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
                             const blink::WebCryptoAlgorithm& algorithm,
                             const blink::WebCryptoKey& key,
                             const CryptoData& data,
-                            std::vector<uint8>* buffer) {
-  const std::vector<uint8>& raw_key = SymKeyOpenSsl::Cast(key)->raw_key_data();
+                            std::vector<uint8_t>* buffer) {
+  const std::vector<uint8_t>& raw_key =
+      SymKeyOpenSsl::Cast(key)->raw_key_data();
   const blink::WebCryptoAesGcmParams* params = algorithm.aesGcmParams();
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
@@ -116,14 +117,14 @@ class AesGcmImplementation : public AesAlgorithm {
   virtual Status Encrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
-                         std::vector<uint8>* buffer) const OVERRIDE {
+                         std::vector<uint8_t>* buffer) const OVERRIDE {
     return AesGcmEncryptDecrypt(ENCRYPT, algorithm, key, data, buffer);
   }
 
   virtual Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
                          const blink::WebCryptoKey& key,
                          const CryptoData& data,
-                         std::vector<uint8>* buffer) const OVERRIDE {
+                         std::vector<uint8_t>* buffer) const OVERRIDE {
     return AesGcmEncryptDecrypt(DECRYPT, algorithm, key, data, buffer);
   }
 };
