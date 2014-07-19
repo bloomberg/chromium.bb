@@ -168,8 +168,9 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     return test_hooks_->PrepareToDrawOnThread(this, frame, draw_result);
   }
 
-  virtual void DrawLayers(FrameData* frame) OVERRIDE {
-    LayerTreeHostImpl::DrawLayers(frame);
+  virtual void DrawLayers(FrameData* frame,
+                          base::TimeTicks frame_begin_time) OVERRIDE {
+    LayerTreeHostImpl::DrawLayers(frame, frame_begin_time);
     test_hooks_->DrawLayersOnThread(this);
   }
 

@@ -99,7 +99,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
 
   void DoCommit(scoped_ptr<ResourceUpdateQueue> queue);
-  bool DoComposite(LayerTreeHostImpl::FrameData* frame);
+  bool DoComposite(base::TimeTicks frame_begin_time,
+                   LayerTreeHostImpl::FrameData* frame);
   void DidSwapFrame();
 
   bool ShouldComposite() const;

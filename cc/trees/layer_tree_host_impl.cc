@@ -1416,7 +1416,8 @@ static void LayerTreeHostImplDidBeginTracingCallback(LayerImpl* layer) {
   layer->DidBeginTracing();
 }
 
-void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
+void LayerTreeHostImpl::DrawLayers(FrameData* frame,
+                                   base::TimeTicks frame_begin_time) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::DrawLayers");
   DCHECK(CanDraw());
 
@@ -1429,7 +1430,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
   DCHECK(!frame->render_passes.empty());
 
-  fps_counter_->SaveTimeStamp(CurrentFrameTimeTicks(),
+  fps_counter_->SaveTimeStamp(frame_begin_time,
                               !output_surface_->context_provider());
   bool on_main_thread = false;
   rendering_stats_instrumentation_->IncrementFrameCount(

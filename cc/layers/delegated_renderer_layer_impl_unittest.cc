@@ -165,7 +165,7 @@ TEST_F(DelegatedRendererLayerImplTestSimple, AddsContributingRenderPasses) {
   EXPECT_EQ(gfx::Rect(7, 7, 7, 7).ToString(),
             frame.render_passes[2]->output_rect.ToString());
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -201,7 +201,7 @@ TEST_F(DelegatedRendererLayerImplTestSimple,
   EXPECT_EQ(gfx::Rect(0, 0, 6, 6).ToString(),
             frame.render_passes[1]->quad_list[0]->rect.ToString());
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -228,7 +228,7 @@ TEST_F(DelegatedRendererLayerImplTestSimple, AddsQuadsToTargetRenderPass) {
   EXPECT_EQ(gfx::Rect(0, 0, 15, 15).ToString(),
             frame.render_passes[3]->quad_list[1]->rect.ToString());
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -259,7 +259,7 @@ TEST_F(DelegatedRendererLayerImplTestSimple,
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       gfx::Transform(), frame.render_passes[1]->quad_list[0]->quadTransform());
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -291,7 +291,7 @@ TEST_F(DelegatedRendererLayerImplTestSimple, RenderPassTransformIsModified) {
       transform * seven_eight,
       frame.render_passes[2]->transform_to_root_target);
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, base::TimeTicks::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -303,7 +303,7 @@ TEST_F(DelegatedRendererLayerImplTestSimple, DoesNotOwnARenderSurface) {
   // has no need to be a RenderSurface for the quads it carries.
   EXPECT_FALSE(delegated_renderer_layer_->render_surface());
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -318,7 +318,7 @@ TEST_F(DelegatedRendererLayerImplTestSimple, DoesOwnARenderSurfaceForOpacity) {
   // render surface.
   EXPECT_TRUE(delegated_renderer_layer_->render_surface());
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -336,7 +336,7 @@ TEST_F(DelegatedRendererLayerImplTestSimple,
   // render surface.
   EXPECT_TRUE(delegated_renderer_layer_->render_surface());
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -383,7 +383,7 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsRenderPasses) {
   EXPECT_EQ(gfx::Rect(7, 7, 7, 7).ToString(),
             frame.render_passes[2]->output_rect.ToString());
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -420,7 +420,7 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface,
   EXPECT_EQ(gfx::Rect(0, 0, 6, 6).ToString(),
             frame.render_passes[1]->quad_list[0]->rect.ToString());
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -445,7 +445,7 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsQuadsToTargetRenderPass) {
   EXPECT_EQ(gfx::Rect(7, 7, 7, 7).ToString(),
             frame.render_passes[3]->quad_list[0]->rect.ToString());
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -474,7 +474,7 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface,
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       gfx::Transform(), frame.render_passes[1]->quad_list[0]->quadTransform());
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -727,7 +727,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_NoSurface) {
       expected,
       contrib_delegated_shared_quad_state->content_to_target_transform);
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -786,7 +786,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_NoSurface) {
       expected,
       contrib_delegated_shared_quad_state->content_to_target_transform);
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -834,7 +834,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsUnclipped_Surface) {
       expected,
       contrib_delegated_shared_quad_state->content_to_target_transform);
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -881,7 +881,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, QuadsClipped_Surface) {
       expected,
       contrib_delegated_shared_quad_state->content_to_target_transform);
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -920,7 +920,7 @@ TEST_F(DelegatedRendererLayerImplTestTransform, MismatchedDeviceScaleFactor) {
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected, root_delegated_shared_quad_state->content_to_target_transform);
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -1112,7 +1112,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   // Quads are clipped to the delegated renderer layer.
   EXPECT_TRUE(root_delegated_shared_quad_state->is_clipped);
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -1141,7 +1141,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   // Quads came with a clip rect.
   EXPECT_TRUE(root_delegated_shared_quad_state->is_clipped);
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -1171,7 +1171,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   // Quads are clipped to the delegated renderer layer.
   EXPECT_TRUE(root_delegated_shared_quad_state->is_clipped);
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -1200,7 +1200,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   // Quads came with a clip rect.
   EXPECT_TRUE(root_delegated_shared_quad_state->is_clipped);
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -1229,7 +1229,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   // clip rect is ignored, and they are not set as clipped.
   EXPECT_FALSE(root_delegated_shared_quad_state->is_clipped);
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -1259,7 +1259,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   // Quads came with a clip rect.
   EXPECT_TRUE(root_delegated_shared_quad_state->is_clipped);
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -1288,7 +1288,7 @@ TEST_F(DelegatedRendererLayerImplTestClip,
   // clip rect is ignored, and they are not set as clipped.
   EXPECT_FALSE(root_delegated_shared_quad_state->is_clipped);
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -1319,7 +1319,7 @@ TEST_F(DelegatedRendererLayerImplTestClip, QuadsClipped_LayerClipped_Surface) {
   // Quads came with a clip rect.
   EXPECT_TRUE(root_delegated_shared_quad_state->is_clipped);
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
@@ -1372,7 +1372,7 @@ TEST_F(DelegatedRendererLayerImplTest, InvalidRenderPassDrawQuad) {
   EXPECT_EQ(DrawQuad::SOLID_COLOR,
             frame.render_passes[0]->quad_list[0]->material);
 
-  host_impl_->DrawLayers(&frame);
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
   host_impl_->DidDrawAllLayers(frame);
 }
 
