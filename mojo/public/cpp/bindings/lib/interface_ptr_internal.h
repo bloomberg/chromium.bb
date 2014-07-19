@@ -69,6 +69,10 @@ class InterfacePtrState {
     return handle_.Pass();
   }
 
+  bool is_bound() const {
+    return handle_.is_valid() || router_;
+  }
+
   void set_client(typename Interface::Client* client) {
     ConfigureProxyIfNecessary();
 

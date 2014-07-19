@@ -83,7 +83,7 @@ class HTMLViewer : public ApplicationDelegate,
   }
 
   void MaybeLoad() {
-    if (document_view_ && response_.get())
+    if (document_view_ && response_)
       document_view_->Load(response_.Pass());
   }
 

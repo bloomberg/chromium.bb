@@ -287,7 +287,7 @@ HandleSignalsState LocalDataPipe::ConsumerGetHandleSignalsStateNoLock() const {
 
 void LocalDataPipe::EnsureBufferNoLock() {
   DCHECK(producer_open_no_lock());
-  if (buffer_.get())
+  if (buffer_)
     return;
   buffer_.reset(static_cast<char*>(
       base::AlignedAlloc(capacity_num_bytes(), kDataPipeBufferAlignmentBytes)));
@@ -297,7 +297,7 @@ void LocalDataPipe::DestroyBufferNoLock() {
 #ifndef NDEBUG
   // Scribble on the buffer to help detect use-after-frees. (This also helps the
   // unit test detect certain bugs without needing ASAN or similar.)
-  if (buffer_.get())
+  if (buffer_)
     memset(buffer_.get(), 0xcd, capacity_num_bytes());
 #endif
   buffer_.reset();

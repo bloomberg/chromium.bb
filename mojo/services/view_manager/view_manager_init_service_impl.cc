@@ -44,7 +44,7 @@ void ViewManagerInitServiceImpl::MaybeEmbedRoot(
 void ViewManagerInitServiceImpl::EmbedRoot(
     const String& url,
     const Callback<void(bool)>& callback) {
-  if (connect_params_.get()) {
+  if (connect_params_) {
     DVLOG(1) << "Ignoring second connect";
     callback.Run(false);
     return;
@@ -58,7 +58,7 @@ void ViewManagerInitServiceImpl::EmbedRoot(
 void ViewManagerInitServiceImpl::OnRootViewManagerWindowTreeHostCreated() {
   DCHECK(!is_tree_host_ready_);
   is_tree_host_ready_ = true;
-  if (connect_params_.get())
+  if (connect_params_)
     MaybeEmbedRoot(connect_params_->url, connect_params_->callback);
 }
 

@@ -288,7 +288,7 @@ void CommandBufferClientImpl::MakeProgressAndUpdateState() {
   command_buffer_->MakeProgress(last_state_.get_offset);
 
   CommandBufferStatePtr state = sync_client_impl_->WaitForProgress();
-  if (!state.get()) {
+  if (!state) {
     VLOG(1) << "Channel encountered error while waiting for command buffer";
     // TODO(piman): is it ok for this to re-enter?
     DidDestroy();

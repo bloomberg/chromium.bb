@@ -239,7 +239,7 @@ class SpyInterceptor : public mojo::ServiceManager::Interceptor {
 
       // You can get an invalid handle if the app (or service) is
       // created by unconventional means, for example the command line.
-      if (!real_client.get())
+      if (!real_client)
         return real_client.Pass();
 
       mojo::ScopedMessagePipeHandle faux_client;

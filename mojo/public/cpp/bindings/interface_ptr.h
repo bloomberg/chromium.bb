@@ -102,6 +102,16 @@ class InterfacePtr {
     return &internal_state_;
   }
 
+  // Allow InterfacePtr<> to be used in boolean expressions, but not
+  // implicitly convertible to a real bool (which is dangerous).
+ private:
+  typedef internal::InterfacePtrState<Interface> InterfacePtr::*Testable;
+
+ public:
+  operator Testable() const {
+    return internal_state_.is_bound() ? &InterfacePtr::internal_state_ : NULL;
+  }
+
  private:
   typedef internal::InterfacePtrState<Interface> State;
   mutable State internal_state_;

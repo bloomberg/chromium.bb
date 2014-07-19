@@ -464,7 +464,7 @@ class WindowManager : public ApplicationDelegate,
              navigation::NavigationDetailsPtr nav_details,
              navigation::ResponseDetailsPtr response) {
     node->Embed(app_url);
-    if (nav_details.get()) {
+    if (nav_details) {
       navigation::NavigatorPtr navigator;
       app_->ConnectToService(app_url, &navigator);
       navigator->Navigate(node->id(), nav_details.Pass(), response.Pass());

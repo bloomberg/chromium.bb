@@ -52,7 +52,7 @@ CommandBufferImpl::CommandBufferImpl(gfx::AcceleratedWidget widget,
 
 CommandBufferImpl::~CommandBufferImpl() {
   client()->DidDestroy();
-  if (decoder_.get()) {
+  if (decoder_) {
     bool have_context = decoder_->MakeCurrent();
     decoder_->Destroy(have_context);
   }
@@ -130,7 +130,7 @@ bool CommandBufferImpl::DoInitialize(
   const size_t kSize = sizeof(gpu::CommandBufferSharedState);
   scoped_ptr<gpu::BufferBacking> backing(
       gles2::MojoBufferBacking::Create(shared_state.Pass(), kSize));
-  if (!backing.get())
+  if (!backing)
     return false;
 
   command_buffer_->SetSharedStateBuffer(backing.Pass());
@@ -159,7 +159,7 @@ void CommandBufferImpl::RegisterTransferBuffer(
   // This validates the size.
   scoped_ptr<gpu::BufferBacking> backing(
       gles2::MojoBufferBacking::Create(transfer_buffer.Pass(), size));
-  if (!backing.get()) {
+  if (!backing) {
     DVLOG(0) << "Failed to map shared memory.";
     return;
   }

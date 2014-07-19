@@ -73,7 +73,7 @@ class NativeViewportImpl
 
   virtual void CreateGLES2Context(
       InterfaceRequest<CommandBuffer> command_buffer_request) OVERRIDE {
-    if (command_buffer_.get() || command_buffer_request_.is_pending()) {
+    if (command_buffer_ || command_buffer_request_.is_pending()) {
       LOG(ERROR) << "Can't create multiple contexts on a NativeViewport";
       return;
     }

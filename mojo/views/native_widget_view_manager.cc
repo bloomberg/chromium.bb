@@ -162,7 +162,7 @@ void NativeWidgetViewManager::OnNodeActiveViewChanged(
 void NativeWidgetViewManager::OnViewInputEvent(view_manager::View* view,
                                                const EventPtr& event) {
   scoped_ptr<ui::Event> ui_event(event.To<scoped_ptr<ui::Event> >());
-  if (ui_event.get())
+  if (ui_event)
     window_tree_host_->SendEventToProcessor(ui_event.get());
 }
 

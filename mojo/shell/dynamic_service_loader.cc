@@ -167,7 +167,7 @@ void DynamicServiceLoader::LoadService(ServiceManager* manager,
   if (resolved_url.SchemeIsFile()) {
     loader = new LocalLoader(runner.Pass());
   } else {
-    if (!network_service_.get()) {
+    if (!network_service_) {
       context_->service_manager()->ConnectToService(
           GURL("mojo:mojo_network_service"),
           &network_service_);

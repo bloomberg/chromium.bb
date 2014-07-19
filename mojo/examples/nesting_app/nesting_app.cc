@@ -72,7 +72,7 @@ class NestingApp : public ApplicationDelegate,
     connection->ConnectToService(&window_manager_);
     connection->AddService<Navigator>(this);
     // TODO(davemoore): Is this ok?
-    if (!navigator_.get()) {
+    if (!navigator_) {
       connection->ConnectToApplication(
           kEmbeddedAppURL)->ConnectToService(&navigator_);
     }
