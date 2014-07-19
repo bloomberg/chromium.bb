@@ -36,12 +36,17 @@ asyncTest("url", 1, function() {
 
 asyncTest("heightChanged", 1, function() {
   var embeddedFlakinessDashboard = document.createElement('ct-embedded-flakiness-dashboard');
-  window.postMessage({command: 'heightChanged', height: "100"}, '*')
 
-  requestAnimationFrame(function() {
+  function finishTest() {
+    window.removeEventListener('message', finishTest);
     var iframe = embeddedFlakinessDashboard.shadowRoot.querySelector('#iframe');
     equal(iframe.style.height, "100px");
     start();
+  }
+  window.addEventListener('message', finishTest);
+
+  requestAnimationFrame(function() {
+    window.postMessage({command: 'heightChanged', height: "100"}, '*');
   });
 });
 
