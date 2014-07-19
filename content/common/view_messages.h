@@ -481,9 +481,12 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewMsg_PostMessage_Params)
+  // Whether the data format is supplied as serialized script value, or as
+  // a simple string. If it is a raw string, must be converted from string to a
+  // WebSerializedScriptValue in renderer.
+  IPC_STRUCT_MEMBER(bool, is_data_raw_string)
   // The serialized script value.
   IPC_STRUCT_MEMBER(base::string16, data)
-
   // When sent to the browser, this is the routing ID of the source frame in
   // the source process.  The browser replaces it with the routing ID of the
   // equivalent (swapped out) frame in the destination process.

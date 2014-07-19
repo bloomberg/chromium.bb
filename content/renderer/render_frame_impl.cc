@@ -2824,6 +2824,7 @@ bool RenderFrameImpl::willCheckAndDispatchMessageEvent(
     return false;
 
   ViewMsg_PostMessage_Params params;
+  params.is_data_raw_string = false;
   params.data = event.data().toString();
   params.source_origin = event.origin();
   if (!target_origin.isNull())

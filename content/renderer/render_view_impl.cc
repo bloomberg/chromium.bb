@@ -159,6 +159,7 @@
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebMediaPlayerAction.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
@@ -2946,6 +2947,22 @@ void RenderViewImpl::OnPostMessageEvent(
                                       base::MessageLoopProxy::current().get());
   }
 
+  WebSerializedScriptValue serialized_script_value;
+  if (params.is_data_raw_string) {
+    v8::HandleScope handle_scope(blink::mainThreadIsolate());
+    v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+    v8::Context::Scope context_scope(context);
+    V8ValueConverterImpl converter;
+    converter.SetDateAllowed(true);
+    converter.SetRegExpAllowed(true);
+    scoped_ptr<base::Value> value(new base::StringValue(params.data));
+    v8::Handle<v8::Value> result_value = converter.ToV8Value(value.get(),
+                                                             context);
+    serialized_script_value = WebSerializedScriptValue::serialize(result_value);
+  } else {
+    serialized_script_value = WebSerializedScriptValue::fromString(params.data);
+  }
+
   // Create an event with the message.  The final parameter to initMessageEvent
   // is the last event ID, which is not used with postMessage.
   WebDOMEvent event = frame->document().createEvent("MessageEvent");
@@ -2953,7 +2970,7 @@ void RenderViewImpl::OnPostMessageEvent(
   msg_event.initMessageEvent("message",
                              // |canBubble| and |cancellable| are always false
                              false, false,
-                             WebSerializedScriptValue::fromString(params.data),
+                             serialized_script_value,
                              params.source_origin, source_frame, "", channels);
 
   // We must pass in the target_origin to do the security check on this side,
