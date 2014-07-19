@@ -97,6 +97,19 @@ bool Connector::Accept(Message* message) {
       // of incoming messages before regarding the message pipe as closed.
       drop_writes_ = true;
       break;
+    case MOJO_RESULT_BUSY:
+      // We'd get a "busy" result if one of the message's handles is:
+      //   - |message_pipe_|'s own handle;
+      //   - simultaneously being used on another thread; or
+      //   - in a "busy" state that prohibits it from being transferred (e.g.,
+      //     a data pipe handle in the middle of a two-phase read/write,
+      //     regardless of which thread that two-phase read/write is happening
+      //     on).
+      // TODO(vtl): I wonder if this should be a |MOJO_DCHECK()|. (But, until
+      // crbug.com/389666, etc. are resolved, this will make tests fail quickly
+      // rather than hanging.)
+      MOJO_CHECK(false) << "Race condition or other bug detected";
+      return false;
     default:
       // This particular write was rejected, presumably because of bad input.
       // The pipe is not necessarily in a bad state.
