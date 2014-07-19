@@ -5,12 +5,8 @@
 #ifndef ATHENA_HOME_MINIMIZED_HOME_H_
 #define ATHENA_HOME_MINIMIZED_HOME_H_
 
-namespace aura {
-class Window;
-}
-
 namespace views {
-class Widget;
+class View;
 }
 
 namespace athena {
@@ -22,10 +18,9 @@ class MinimizedHomeDragDelegate {
   virtual void OnDragUpCompleted() = 0;
 };
 
-// Note that |delegate| is guaranteed to be alive as long as the returned widget
+// Note that |delegate| is guaranteed to be alive as long as the returned view
 // is alive.
-views::Widget* CreateMinimizedHome(aura::Window* container,
-                                   MinimizedHomeDragDelegate* delegate);
+views::View* CreateMinimizedHome(MinimizedHomeDragDelegate* delegate);
 
 }  // namespace athena
 

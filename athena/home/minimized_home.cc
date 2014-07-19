@@ -93,17 +93,10 @@ class MinimizedHomeView : public views::View {
 
 namespace athena {
 
-views::Widget* CreateMinimizedHome(aura::Window* container,
-                                   MinimizedHomeDragDelegate* delegate) {
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params(
-      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.parent = container;
-  params.delegate = NULL;
-  widget->Init(params);
-
+views::View* CreateMinimizedHome(MinimizedHomeDragDelegate* delegate) {
   views::View* content_view = new views::View;
-  widget->SetContentsView(content_view);
+  content_view->set_background(
+      views::Background::CreateSolidBackground(SK_ColorBLACK));
   views::BoxLayout* layout =
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 2, 0);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
@@ -111,7 +104,7 @@ views::Widget* CreateMinimizedHome(aura::Window* container,
 
   views::View* view = new MinimizedHomeView(delegate);
   content_view->AddChildView(view);
-  return widget;
+  return content_view;
 }
 
 }  // namespace athena

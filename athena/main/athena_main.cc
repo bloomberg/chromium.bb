@@ -24,6 +24,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "content/public/app/content_main.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -81,6 +82,10 @@ class AthenaBrowserMainDelegate : public apps::ShellBrowserMainDelegate {
   // apps::ShellBrowserMainDelegate:
   virtual void Start(content::BrowserContext* context) OVERRIDE {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+    // Force showing in the experimental app-list view.
+    command_line->AppendSwitch(app_list::switches::kEnableExperimentalAppList);
+
     base::FilePath app_dir = base::FilePath::FromUTF8Unsafe(
         command_line->HasSwitch(apps::switches::kAppShellAppPath) ?
         command_line->GetSwitchValueNative(apps::switches::kAppShellAppPath) :

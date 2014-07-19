@@ -5,6 +5,7 @@
 #ifndef UI_APP_LIST_VIEWS_TILE_ITEM_VIEW_H_
 #define UI_APP_LIST_VIEWS_TILE_ITEM_VIEW_H_
 
+#include "ui/app_list/app_list_export.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/custom_button.h"
 
@@ -18,7 +19,8 @@ namespace app_list {
 class AppListItem;
 
 // The view for a tile in the app list on the start/search page.
-class TileItemView : public views::CustomButton, public views::ButtonListener {
+class APP_LIST_EXPORT TileItemView : public views::CustomButton,
+                                     public views::ButtonListener {
  public:
   TileItemView();
   virtual ~TileItemView();
