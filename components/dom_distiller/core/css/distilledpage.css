@@ -243,11 +243,6 @@ ul {
   border-radius: 2px;
 }
 
-code {
-  display: block;
-  padding: .4444rem;
-}
-
 pre code {
   border: none;
   padding: 0;
