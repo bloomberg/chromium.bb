@@ -406,7 +406,14 @@ class Mirror(object):
       self._fetch(tempdir or self.mirror_path, verbose, depth)
     finally:
       if tempdir:
-        os.rename(tempdir, self.mirror_path)
+        try:
+          os.rename(tempdir, self.mirror_path)
+        except OSError as e:
+          # This is somehow racy on Windows.
+          # Catching OSError because WindowsError isn't portable and
+          # pylint complains.
+          self.print('Error moving %s to %s: %s' % (tempdir, self.mirror_path,
+                                                    str(e)))
       if not ignore_lock:
         lockfile.unlock()
 
