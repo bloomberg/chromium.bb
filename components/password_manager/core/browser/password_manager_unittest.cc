@@ -335,7 +335,9 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSubmitEmptyStore) {
   // occured.
   EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_)).Times(Exactly(0));
   EXPECT_CALL(*store_.get(), AddLogin(FormMatches(form)));
-  EXPECT_CALL(client_, AutomaticPasswordSavePtr(_)).Times(Exactly(1));
+  scoped_ptr<PasswordFormManager> saved_form_manager;
+  EXPECT_CALL(client_, AutomaticPasswordSavePtr(_)).Times(Exactly(1))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&saved_form_manager)));
 
   // Now the password manager waits for the navigation to complete.
   observed.clear();
@@ -643,7 +645,9 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSavedAutocompleteOff) {
   // occured.
   EXPECT_CALL(client_, PromptUserToSavePasswordPtr(_)).Times(Exactly(0));
   EXPECT_CALL(*store_.get(), AddLogin(FormMatches(form)));
-  EXPECT_CALL(client_, AutomaticPasswordSavePtr(_)).Times(Exactly(1));
+  scoped_ptr<PasswordFormManager> saved_form_manager;
+  EXPECT_CALL(client_, AutomaticPasswordSavePtr(_)).Times(Exactly(1))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&saved_form_manager)));
 
   // Now the password manager waits for the navigation to complete.
   observed.clear();
