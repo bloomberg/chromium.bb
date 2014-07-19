@@ -81,6 +81,7 @@ class CC_EXPORT LayerTreeImpl {
   bool IsRecycleTree() const;
   LayerImpl* FindActiveTreeLayerById(int id);
   LayerImpl* FindPendingTreeLayerById(int id);
+  LayerImpl* FindRecycleTreeLayerById(int id);
   int MaxTextureSize() const;
   bool PinchGestureActive() const;
   base::TimeTicks CurrentFrameTimeTicks() const;

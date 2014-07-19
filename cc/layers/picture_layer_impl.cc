@@ -1195,18 +1195,28 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
     to_remove.push_back(tiling);
   }
 
+  if (to_remove.empty())
+    return;
+
+  PictureLayerImpl* recycled_twin = static_cast<PictureLayerImpl*>(
+      layer_tree_impl()->FindRecycleTreeLayerById(id()));
+  // Remove tilings on this tree and the twin tree.
   for (size_t i = 0; i < to_remove.size(); ++i) {
     const PictureLayerTiling* twin_tiling = GetTwinTiling(to_remove[i]);
     // Only remove tilings from the twin layer if they have
     // NON_IDEAL_RESOLUTION.
     if (twin_tiling && twin_tiling->resolution() == NON_IDEAL_RESOLUTION)
       twin->RemoveTiling(to_remove[i]->contents_scale());
+    // Remove the tiling from the recycle tree. Note that we ignore resolution,
+    // since we don't need to maintain high/low res on the recycle tree.
+    if (recycled_twin)
+      recycled_twin->RemoveTiling(to_remove[i]->contents_scale());
     // TODO(enne): temporary sanity CHECK for http://crbug.com/358350
     CHECK_NE(HIGH_RESOLUTION, to_remove[i]->resolution());
     tilings_->Remove(to_remove[i]);
   }
-  DCHECK_GT(tilings_->num_tilings(), 0u);
 
+  DCHECK_GT(tilings_->num_tilings(), 0u);
   SanityCheckTilingState();
 }
 
@@ -1255,6 +1265,10 @@ bool PictureLayerImpl::CanHaveTilingWithScale(float contents_scale) const {
 
 void PictureLayerImpl::SanityCheckTilingState() const {
 #if DCHECK_IS_ON
+  // Recycle tree doesn't have any restrictions.
+  if (layer_tree_impl()->IsRecycleTree())
+    return;
+
   if (!CanHaveTilings()) {
     DCHECK_EQ(0u, tilings_->num_tilings());
     return;
