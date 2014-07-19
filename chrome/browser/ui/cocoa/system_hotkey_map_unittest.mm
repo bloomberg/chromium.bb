@@ -7,12 +7,10 @@
 #import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
-#include "base/files/file_path.h"
-#include "base/path_service.h"
-#import "content/browser/cocoa/system_hotkey_map.h"
-#include "content/public/common/content_paths.h"
+#import "chrome/browser/ui/cocoa/system_hotkey_map.h"
+#include "chrome/test/base/ui_test_utils.h"
 
-namespace content {
+namespace {
 
 class SystemHotkeyMapTest : public ::testing::Test {
  public:
@@ -20,22 +18,15 @@ class SystemHotkeyMapTest : public ::testing::Test {
 };
 
 TEST_F(SystemHotkeyMapTest, Parse) {
-  base::FilePath test_data_dir;
-  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &test_data_dir));
-
-  base::FilePath test_path =
-      test_data_dir.AppendASCII("mac/mac_system_hotkeys.plist");
-  std::string test_path_string = test_path.AsUTF8Unsafe();
-  NSString* file_path =
-      [NSString stringWithUTF8String:test_path_string.c_str()];
+  std::string path = ui_test_utils::GetTestUrl(
+                         base::FilePath(base::FilePath::kCurrentDirectory),
+                         base::FilePath("mac/mac_system_hotkeys.plist")).path();
+  NSString* file_path = [NSString stringWithUTF8String:path.c_str()];
   NSData* data = [NSData dataWithContentsOfFile:file_path];
   ASSERT_TRUE(data);
 
-  NSDictionary* dictionary = SystemHotkeyMap::DictionaryFromData(data);
-  ASSERT_TRUE(dictionary);
-
   SystemHotkeyMap map;
-  bool result = map.ParseDictionary(dictionary);
+  bool result = map.ParseData(data);
   EXPECT_TRUE(result);
 
   // Command + ` is a common key binding. It should exist.
@@ -57,12 +48,4 @@ TEST_F(SystemHotkeyMapTest, Parse) {
   EXPECT_FALSE(map.IsHotkeyReserved(key_code, modifiers));
 }
 
-TEST_F(SystemHotkeyMapTest, ParseNil) {
-  NSDictionary* dictionary = nil;
-
-  SystemHotkeyMap map;
-  bool result = map.ParseDictionary(dictionary);
-  EXPECT_FALSE(result);
-}
-
-}  // namespace content
+}  // namespace

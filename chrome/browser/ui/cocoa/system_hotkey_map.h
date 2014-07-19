@@ -2,49 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COCOA_SYSTEM_HOTKEY_MAP_H_
-#define CONTENT_BROWSER_COCOA_SYSTEM_HOTKEY_MAP_H_
+#ifndef CHROME_BROWSER_UI_COCOA_SYSTEM_HOTKEY_MAP_H_
+#define CHROME_BROWSER_UI_COCOA_SYSTEM_HOTKEY_MAP_H_
 
-#import <Cocoa/Cocoa.h>
+#import <Foundation/Foundation.h>
 #include <vector>
 
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "content/common/content_export.h"
-
-namespace content {
 
 struct SystemHotkey;
 
-// Maintains a listing of all OSX system hotkeys. e.g. (cmd + `) These hotkeys
-// should have higher priority than web content, so NSEvents that correspond to
-// a system hotkey should not be passed to the renderer.
-class CONTENT_EXPORT SystemHotkeyMap {
+// Maintains a listing of all OSX user modifiable hotkeys. e.g. (cmd + `)
+class SystemHotkeyMap {
  public:
   SystemHotkeyMap();
   ~SystemHotkeyMap();
-
-  // Converts the plist stored in |data| into an NSDictionary. Returns nil on
-  // error.
-  static NSDictionary* DictionaryFromData(NSData* data);
 
   // Parses the property list data commonly stored at
   // ~/Library/Preferences/com.apple.symbolichotkeys.plist
   // Returns false on encountering an irrecoverable error.
   // Can be called multiple times. Only the results from the most recent
   // invocation are stored.
-  bool ParseDictionary(NSDictionary* dictionary);
-
-  // Whether the event corresponds to a hotkey that has been reserved by the
-  // system.
-  bool IsEventReserved(NSEvent* event) const;
-
- private:
-  FRIEND_TEST_ALL_PREFIXES(SystemHotkeyMapTest, Parse);
+  bool ParseData(NSData* data);
 
   // Whether the hotkey has been reserved by the user.
-  bool IsHotkeyReserved(int key_code, int modifiers) const;
+  bool IsHotkeyReserved(int key_code, int modifiers);
 
+ private:
   // Create at least one record of a hotkey that is reserved by the user.
   // Certain system hotkeys automatically reserve multiple key combinations.
   void ReserveHotkey(int key_code, int modifiers, NSString* system_effect);
@@ -57,6 +41,4 @@ class CONTENT_EXPORT SystemHotkeyMap {
   DISALLOW_COPY_AND_ASSIGN(SystemHotkeyMap);
 };
 
-}  // namespace content
-
-#endif  // CONTENT_BROWSER_COCOA_SYSTEM_HOTKEY_MAP_H_
+#endif  // CHROME_BROWSER_UI_COCOA_SYSTEM_HOTKEY_MAP_H_
