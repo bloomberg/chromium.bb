@@ -296,6 +296,8 @@ cr.define('options', function() {
       // https://bugs.webkit.org/show_bug.cgi?id=52256
       this.addEventListener('keyup', this.handleRelease_.bind(this));
       this.addEventListener('mouseup', this.handleRelease_.bind(this));
+      this.addEventListener('touchcancel', this.handleRelease_.bind(this));
+      this.addEventListener('touchend', this.handleRelease_.bind(this));
     },
 
     /**

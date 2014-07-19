@@ -311,6 +311,47 @@ TEST_F('OptionsWebUITest', 'DISABLED_OverlayShowDoesntShift', function() {
   expectGT(numFrozenPages, 0);
 });
 
+GEN('#if defined(OS_CHROMEOS)');
+// Verify that range inputs respond to touch events. Currently only Chrome OS
+// uses slider options.
+TEST_F('OptionsWebUITest', 'RangeInputHandlesTouchEvents', function() {
+  this.mockHandler.expects(once()).setIntegerPref([
+    'settings.touchpad.sensitivity2', 1]);
+
+  var touchpadRange = $('touchpad-sensitivity-range');
+  var event = document.createEvent('UIEvent');
+  event.initUIEvent('touchstart', true, true, window);
+  touchpadRange.dispatchEvent(event);
+
+  event = document.createEvent('UIEvent');
+  event.initUIEvent('touchmove', true, true, window);
+  touchpadRange.dispatchEvent(event);
+
+  touchpadRange.value = 1;
+
+  event = document.createEvent('UIEvent');
+  event.initUIEvent('touchend', true, true, window);
+  touchpadRange.dispatchEvent(event);
+
+  // touchcancel should also trigger the handler, since it
+  // changes the slider position.
+  this.mockHandler.expects(once()).setIntegerPref([
+    'settings.touchpad.sensitivity2', 2]);
+
+  event = document.createEvent('UIEvent');
+  event.initUIEvent('touchstart', true, true, window);
+  touchpadRange.dispatchEvent(event);
+
+  touchpadRange.value = 2;
+
+  event = document.createEvent('UIEvent');
+  event.initUIEvent('touchcancel', true, true, window);
+  touchpadRange.dispatchEvent(event);
+
+  testDone();
+});
+GEN('#endif');  // defined(OS_CHROMEOS)
+
 /**
  * TestFixture for OptionsPage WebUI testing including tab history and support
  * for preference manipulation. If you don't need the features in the C++
