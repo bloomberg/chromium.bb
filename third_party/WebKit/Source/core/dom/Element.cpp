@@ -82,6 +82,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/ClassList.h"
+#include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLElement.h"
@@ -224,11 +225,9 @@ bool Element::rendererIsFocusable() const
     // Elements in canvas fallback content are not rendered, but they are allowed to be
     // focusable as long as their canvas is displayed and visible.
     if (isInCanvasSubtree()) {
-        const Element* e = this;
-        while (e && !e->hasLocalName(canvasTag))
-            e = e->parentElement();
-        ASSERT(e);
-        return e->renderer() && e->renderer()->style()->visibility() == VISIBLE;
+        const HTMLCanvasElement* canvas = Traversal<HTMLCanvasElement>::firstAncestorOrSelf(*this);
+        ASSERT(canvas);
+        return canvas->renderer() && canvas->renderer()->style()->visibility() == VISIBLE;
     }
 
     // FIXME: These asserts should be in Node::isFocusable, but there are some

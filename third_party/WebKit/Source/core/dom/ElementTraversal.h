@@ -44,6 +44,8 @@ public:
     static ElementType* firstAncestor(const Node& current);
     static ElementType* firstAncestorOrSelf(Node& current) { return firstAncestorOrSelfTemplate(current); }
     static ElementType* firstAncestorOrSelf(Element& current) { return firstAncestorOrSelfTemplate(current); }
+    static const ElementType* firstAncestorOrSelf(const Node& current) { return firstAncestorOrSelfTemplate(const_cast<Node&>(current)); }
+    static const ElementType* firstAncestorOrSelf(const Element& current) { return firstAncestorOrSelfTemplate(const_cast<Element&>(current)); }
 
     // First or last ElementType descendant of the node.
     // For Elements firstWithin() is always the same as firstChild().
