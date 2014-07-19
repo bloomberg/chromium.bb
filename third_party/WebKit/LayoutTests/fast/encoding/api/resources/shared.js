@@ -7,7 +7,6 @@
 //   * whitespace
 //   * encodings.json data assigned to `encodings_table` (for tests)
 //   * UTF encodings listed in `utf_encodings` (for tests)
-//   * 'ibm866' not yet supported - crbug.com/277023
 //   * 'gb18030' distinct from 'gbk' - crbug.com/339862
 //   * 'big5-hkscs' distinct from 'big5' - crbug.com/277040
 //   * 'hz-gb-2312' is replacement label - w3.org/Bugs/Public/show_bug.cgi?id=25339
@@ -31,7 +30,6 @@ var encodings_table = [
     },
     {
         "encodings": [
-            /* FIXME: Support ibm866 (crbug.com/277023)
             {
                 "labels": [
                     "866",
@@ -41,7 +39,6 @@ var encodings_table = [
                 ],
                 "name": "ibm866"
             },
-             */
             {
                 "labels": [
                     "csisolatin2",

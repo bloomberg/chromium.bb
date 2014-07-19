@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+PASS ASCII superset encoding: ibm866 
 PASS ASCII superset encoding: iso-8859-2 
 PASS ASCII superset encoding: iso-8859-3 
 PASS ASCII superset encoding: iso-8859-4 
