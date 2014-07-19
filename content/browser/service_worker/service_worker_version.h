@@ -64,7 +64,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
     INSTALLING,  // Install event is dispatched and being handled.
     INSTALLED,   // Install event is finished and is ready to be activated.
     ACTIVATING,  // Activate event is dispatched and being handled.
-    ACTIVATED,      // Activation is finished and can run as activated.
+    ACTIVATED,   // Activation is finished and can run as activated.
     REDUNDANT,   // The version is no longer running as activated, due to
                  // unregistration or replace.
   };
@@ -85,6 +85,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                         const base::string16& message,
                                         int line_number,
                                         const GURL& source_url) {}
+    // Fires when a version transitions from having a controllee to not.
+    virtual void OnNoControllees(ServiceWorkerVersion* version) {}
+
+   protected:
+    virtual ~Listener() {}
   };
 
   ServiceWorkerVersion(

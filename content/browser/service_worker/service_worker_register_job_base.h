@@ -7,11 +7,13 @@
 
 namespace content {
 
-// A base class for ServiceWorkerRegisterJob and ServiceWorkerUnregisterJob. A
-// job lives only for the lifetime of a single registration or unregistration.
 class ServiceWorkerRegisterJobBase {
  public:
-  enum RegistrationJobType { REGISTRATION, UNREGISTRATION, };
+  enum RegistrationJobType {
+    REGISTRATION_JOB,
+    UNREGISTRATION_JOB,
+    UPDATE_JOB
+  };
 
   virtual ~ServiceWorkerRegisterJobBase() {}
 

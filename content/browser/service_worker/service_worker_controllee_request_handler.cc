@@ -120,18 +120,21 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
   if (status != SERVICE_WORKER_OK || !registration->active_version()) {
     // No registration, or no active version for the registration is available.
     job_->FallbackToNetwork();
+    // TODO(michaeln): If there's a waiting version, activate it instead of
+    // using the network.
     return;
   }
 
   ServiceWorkerMetrics::CountControlledPageLoad();
 
-  // TODO(michaeln): should SetWaitingVersion() even if no active version so
-  // so the versions in the pipeline (.installing, .waiting) show up in the
-  // attribute values.
+  // TODO(michaeln): if 'activating' wait until it's activated before
+  // forwarding the request to the serviceworker.
   DCHECK(registration);
   provider_host_->SetControllerVersion(registration->active_version());
   provider_host_->SetActiveVersion(registration->active_version());
   provider_host_->SetWaitingVersion(registration->waiting_version());
+  provider_host_->SetInstallingVersion(registration->installing_version());
+
   job_->ForwardToServiceWorker();
 }
 

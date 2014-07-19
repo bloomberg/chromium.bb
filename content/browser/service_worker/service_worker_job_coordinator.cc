@@ -92,6 +92,13 @@ void ServiceWorkerJobCoordinator::Unregister(
   queued_job->AddCallback(callback);
 }
 
+void ServiceWorkerJobCoordinator::Update(
+    ServiceWorkerRegistration* registration) {
+  job_queues_[registration->pattern()].Push(
+      make_scoped_ptr<ServiceWorkerRegisterJobBase>(
+          new ServiceWorkerRegisterJob(context_, registration)));
+}
+
 void ServiceWorkerJobCoordinator::AbortAll() {
   for (RegistrationJobMap::iterator it = job_queues_.begin();
        it != job_queues_.end(); ++it) {

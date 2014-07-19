@@ -53,7 +53,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
       void(const std::vector<ServiceWorkerRegistrationInfo>& registrations)>
           GetAllRegistrationInfosCallback;
   typedef base::Callback<
-      void(ServiceWorkerStatusCode status, int result)>
+      void(ServiceWorkerStatusCode status, bool are_equal)>
           CompareCallback;
 
   virtual ~ServiceWorkerStorage();
@@ -123,6 +123,10 @@ class CONTENT_EXPORT ServiceWorkerStorage
   // Removes |id| from uncommitted list, adds it to the
   // purgeable list and purges it.
   void DoomUncommittedResponse(int64 id);
+
+  // Compares only the response bodies.
+  void CompareScriptResources(int64 lhs_id, int64 rhs_id,
+                              const CompareCallback& callback);
 
   // Deletes the storage and starts over.
   void DeleteAndStartOver(const StatusCallback& callback);

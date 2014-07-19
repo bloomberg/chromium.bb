@@ -6,6 +6,8 @@
 
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_info.h"
+#include "content/browser/service_worker/service_worker_register_job.h"
+#include "content/browser/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -62,19 +64,19 @@ ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
 void ServiceWorkerRegistration::SetActiveVersion(
     ServiceWorkerVersion* version) {
   SetVersionInternal(version, &active_version_,
-                    ChangedVersionAttributesMask::ACTIVE_VERSION);
+                     ChangedVersionAttributesMask::ACTIVE_VERSION);
 }
 
 void ServiceWorkerRegistration::SetWaitingVersion(
     ServiceWorkerVersion* version) {
   SetVersionInternal(version, &waiting_version_,
-                    ChangedVersionAttributesMask::WAITING_VERSION);
+                     ChangedVersionAttributesMask::WAITING_VERSION);
 }
 
 void ServiceWorkerRegistration::SetInstallingVersion(
     ServiceWorkerVersion* version) {
   SetVersionInternal(version, &installing_version_,
-                    ChangedVersionAttributesMask::INSTALLING_VERSION);
+                     ChangedVersionAttributesMask::INSTALLING_VERSION);
 }
 
 void ServiceWorkerRegistration::UnsetVersion(ServiceWorkerVersion* version) {
@@ -122,5 +124,78 @@ void ServiceWorkerRegistration::UnsetVersionInternal(
   }
 }
 
+void ServiceWorkerRegistration::ActivateWaitingVersion(
+    const StatusCallback& completion_callback) {
+  DCHECK(context_);
+  DCHECK(waiting_version());
+  scoped_refptr<ServiceWorkerVersion> activating_version = waiting_version();
+  scoped_refptr<ServiceWorkerVersion> exiting_version = active_version();
+
+  // "4. If exitingWorker is not null,
+  if (exiting_version) {
+    DCHECK(!exiting_version->HasControllee());
+    // TODO(michaeln): should wait for events to be complete
+    // "1. Wait for exitingWorker to finish handling any in-progress requests."
+    // "2. Terminate exitingWorker."
+    exiting_version->StopWorker(
+        base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+    // "3. Run the [[UpdateState]] algorithm passing exitingWorker and
+    // "redundant" as the arguments."
+    exiting_version->SetStatus(ServiceWorkerVersion::REDUNDANT);
+  }
+
+  // "5. Set serviceWorkerRegistration.activeWorker to activatingWorker."
+  // "6. Set serviceWorkerRegistration.waitingWorker to null."
+  ServiceWorkerRegisterJob::DisassociateVersionFromDocuments(
+      context_, activating_version);
+  SetActiveVersion(activating_version);
+  ServiceWorkerRegisterJob::AssociateActiveVersionToDocuments(
+      context_, activating_version);
+
+  // "7. Run the [[UpdateState]] algorithm passing registration.activeWorker and
+  // "activating" as arguments."
+  activating_version->SetStatus(ServiceWorkerVersion::ACTIVATING);
+
+  // TODO(nhiroki): "8. Fire a simple event named controllerchange..."
+
+  // "9. Queue a task to fire an event named activate..."
+  activating_version->DispatchActivateEvent(
+      base::Bind(&ServiceWorkerRegistration::OnActivateEventFinished,
+                 this, activating_version, completion_callback));
+}
+
+void ServiceWorkerRegistration::OnActivateEventFinished(
+    ServiceWorkerVersion* activating_version,
+    const StatusCallback& completion_callback,
+    ServiceWorkerStatusCode status) {
+  if (activating_version != active_version())
+    return;
+  // TODO(kinuko,falken): For some error cases (e.g. ServiceWorker is
+  // unexpectedly terminated) we may want to retry sending the event again.
+  if (status != SERVICE_WORKER_OK) {
+    // "11. If activateFailed is true, then:..."
+    ServiceWorkerRegisterJob::DisassociateVersionFromDocuments(
+        context_, activating_version);
+    UnsetVersion(activating_version);
+    activating_version->Doom();
+    if (!active_version()) {
+      context_->storage()->DeleteRegistration(
+          id(), script_url().GetOrigin(),
+          base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+    }
+    completion_callback.Run(status);
+    return;
+  }
+
+  // "12. Run the [[UpdateState]] algorithm passing registration.activeWorker
+  // and "activated" as the arguments."
+  activating_version->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  if (context_) {
+    context_->storage()->UpdateToActiveState(
+        this,
+        base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  }
+  completion_callback.Run(SERVICE_WORKER_OK);
+}
 
 }  // namespace content

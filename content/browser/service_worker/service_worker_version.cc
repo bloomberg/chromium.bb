@@ -217,7 +217,13 @@ void ServiceWorkerVersion::DeferScheduledUpdate() {
 
 void ServiceWorkerVersion::StartUpdate() {
   update_timer_.Stop();
-  // TODO(michaeln): write me
+  if (!context_)
+    return;
+  ServiceWorkerRegistration* registration =
+      context_->GetLiveRegistration(registration_id_);
+  if (!registration)
+    return;
+  context_->UpdateServiceWorker(registration);
 }
 
 void ServiceWorkerVersion::SendMessage(
@@ -389,6 +395,7 @@ void ServiceWorkerVersion::RemoveControllee(
   RemoveProcessFromWorker(provider_host->process_id());
   if (HasControllee())
     return;
+  FOR_EACH_OBSERVER(Listener, listeners_, OnNoControllees(this));
   if (is_doomed_) {
     DoomInternal();
     return;

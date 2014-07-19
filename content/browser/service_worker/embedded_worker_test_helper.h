@@ -67,6 +67,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   ServiceWorkerContextWrapper* context_wrapper() { return wrapper_.get(); }
   void ShutdownContext();
 
+  int mock_render_process_id() const { return mock_render_process_id_;}
+
  protected:
   // Called when StartWorker, StopWorker and SendMessageToWorker message
   // is sent to the embedded worker. Override if necessary. By default
@@ -77,7 +79,9 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   virtual void OnStartWorker(int embedded_worker_id,
                              int64 service_worker_version_id,
                              const GURL& scope,
-                             const GURL& script_url);
+                             const GURL& script_url,
+                             bool pause_after_download);
+  virtual void OnResumeAfterDownload(int embedded_worker_id);
   virtual void OnStopWorker(int embedded_worker_id);
   virtual bool OnMessageToWorker(int thread_id,
                                  int embedded_worker_id,
@@ -97,15 +101,17 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   // These functions simulate sending an EmbeddedHostMsg message to the
   // browser.
+  void SimulatePausedAfterDownload(int embedded_worker_id);
+  void SimulateWorkerScriptLoaded(int embedded_worker_id);
   void SimulateWorkerStarted(int thread_id, int embedded_worker_id);
   void SimulateWorkerStopped(int embedded_worker_id);
   void SimulateSend(IPC::Message* message);
 
- protected:
   EmbeddedWorkerRegistry* registry();
 
  private:
   void OnStartWorkerStub(const EmbeddedWorkerMsg_StartWorker_Params& params);
+  void OnResumeAfterDownloadStub(int embedded_worker_id);
   void OnStopWorkerStub(int embedded_worker_id);
   void OnMessageToWorkerStub(int thread_id,
                              int embedded_worker_id,
@@ -121,6 +127,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   IPC::TestSink inner_sink_;
 
   int next_thread_id_;
+  int mock_render_process_id_;
 
   // Updated each time MessageToWorker message is received.
   int current_embedded_worker_id_;

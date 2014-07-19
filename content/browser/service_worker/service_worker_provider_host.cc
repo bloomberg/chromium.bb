@@ -30,6 +30,9 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
+  // Clear docurl so the deferred activation of a waiting worker
+  // won't associate the new version with a provider being destroyed.
+  document_url_ = GURL();
   if (controlling_version_)
     controlling_version_->RemoveControllee(this);
   if (active_version_)

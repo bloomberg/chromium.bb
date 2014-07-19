@@ -205,6 +205,14 @@ void ServiceWorkerContextCore::UnregisterServiceWorker(
                  callback));
 }
 
+void ServiceWorkerContextCore::UpdateServiceWorker(
+    ServiceWorkerRegistration* registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (storage()->IsDisabled())
+    return;
+  job_coordinator_->Update(registration);
+}
+
 void ServiceWorkerContextCore::RegistrationComplete(
     const GURL& pattern,
     const ServiceWorkerContextCore::RegistrationCallback& callback,

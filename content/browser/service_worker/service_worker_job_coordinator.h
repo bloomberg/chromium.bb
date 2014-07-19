@@ -35,6 +35,8 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
       const GURL& pattern,
       const ServiceWorkerUnregisterJob::UnregistrationCallback& callback);
 
+  void Update(ServiceWorkerRegistration* registration);
+
   // Calls ServiceWorkerRegisterJobBase::Abort() on all jobs and removes them.
   void AbortAll();
 

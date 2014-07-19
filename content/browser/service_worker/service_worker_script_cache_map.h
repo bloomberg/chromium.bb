@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_database.h"
+#include "content/common/content_export.h"
 
 class GURL;
 
@@ -21,7 +22,7 @@ class ServiceWorkerVersion;
 
 // Class that maintains the mapping between urls and a resource id
 // for a particular version's implicit script resources.
-class ServiceWorkerScriptCacheMap {
+class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
  public:
   int64 Lookup(const GURL& url);
 

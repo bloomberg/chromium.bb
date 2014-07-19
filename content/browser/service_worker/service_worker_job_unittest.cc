@@ -9,18 +9,29 @@
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_test_sink.h"
+#include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
+#include "net/base/test_completion_callback.h"
+#include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using net::IOBuffer;
+using net::TestCompletionCallback;
+using net::WrappedIOBuffer;
 
 // Unit tests for testing all job registration tasks.
 namespace content {
 
 namespace {
+
+int kMockRenderProcessId = 88;
 
 void SaveRegistrationCallback(
     ServiceWorkerStatusCode expected_status,
@@ -92,7 +103,7 @@ class ServiceWorkerJobTest : public testing::Test {
  public:
   ServiceWorkerJobTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        render_process_id_(88) {}
+        render_process_id_(kMockRenderProcessId) {}
 
   virtual void SetUp() OVERRIDE {
     helper_.reset(new EmbeddedWorkerTestHelper(render_process_id_));
@@ -112,7 +123,6 @@ class ServiceWorkerJobTest : public testing::Test {
  protected:
   TestBrowserThreadBundle browser_thread_bundle_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
-
   int render_process_id_;
 };
 
@@ -401,8 +411,8 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
   virtual void OnStartWorker(int embedded_worker_id,
                              int64 service_worker_version_id,
                              const GURL& scope,
-                             const GURL& script_url) OVERRIDE {
-    // Simulate failure by sending worker stopped instead of started.
+                             const GURL& script_url,
+                             bool pause_after_download) OVERRIDE {
     EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
     registry()->OnWorkerStopped(worker->process_id(), embedded_worker_id);
   }
@@ -813,6 +823,276 @@ TEST_F(ServiceWorkerJobTest,
   // The version should be stopped since there is no controllee.
   EXPECT_EQ(ServiceWorkerVersion::STOPPED, version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, version->status());
+}
+
+namespace {  // Helpers for the update job tests.
+
+const GURL kNoChangeOrigin("http://nochange/");
+const GURL kNewVersionOrigin("http://newversion/");
+const std::string kScope("scope/*");
+const std::string kScript("script.js");
+
+void RunNestedUntilIdle() {
+  base::MessageLoop::ScopedNestableTaskAllower allow(
+      base::MessageLoop::current());
+  base::MessageLoop::current()->RunUntilIdle();
+}
+
+void OnIOComplete(int* rv_out, int rv) {
+  *rv_out = rv;
+}
+
+void WriteResponse(
+    ServiceWorkerStorage* storage, int64 id,
+    const std::string& headers,
+    IOBuffer* body, int length) {
+  scoped_ptr<ServiceWorkerResponseWriter> writer =
+      storage->CreateResponseWriter(id);
+
+  scoped_ptr<net::HttpResponseInfo> info(new net::HttpResponseInfo);
+  info->request_time = base::Time::Now();
+  info->response_time = base::Time::Now();
+  info->was_cached = false;
+  info->headers = new net::HttpResponseHeaders(headers);
+  scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
+      new HttpResponseInfoIOBuffer(info.release());
+
+  int rv = -1234;
+  writer->WriteInfo(info_buffer, base::Bind(&OnIOComplete, &rv));
+  RunNestedUntilIdle();
+  EXPECT_LT(0, rv);
+
+  rv = -1234;
+  writer->WriteData(body, length,
+                    base::Bind(&OnIOComplete, &rv));
+  RunNestedUntilIdle();
+  EXPECT_EQ(length, rv);
+}
+
+void WriteStringResponse(
+    ServiceWorkerStorage* storage, int64 id,
+    const std::string& body) {
+  scoped_refptr<IOBuffer> body_buffer(new WrappedIOBuffer(body.data()));
+  const char kHttpHeaders[] = "HTTP/1.0 200 HONKYDORY\0\0";
+  std::string headers(kHttpHeaders, arraysize(kHttpHeaders));
+  WriteResponse(storage, id, headers, body_buffer, body.length());
+}
+
+class UpdateJobTestHelper
+    : public EmbeddedWorkerTestHelper,
+      public ServiceWorkerRegistration::Listener,
+      public ServiceWorkerVersion::Listener {
+ public:
+  struct AttributeChangeLogEntry {
+    int64 registration_id;
+    ChangedVersionAttributesMask mask;
+    ServiceWorkerRegistrationInfo info;
+  };
+
+  struct StateChangeLogEntry {
+    int64 version_id;
+    ServiceWorkerVersion::Status status;
+  };
+
+  UpdateJobTestHelper(int mock_render_process_id)
+      : EmbeddedWorkerTestHelper(mock_render_process_id) {}
+
+  ServiceWorkerStorage* storage() { return context()->storage(); }
+  ServiceWorkerJobCoordinator* job_coordinator() {
+    return context()->job_coordinator();
+  }
+
+  scoped_refptr<ServiceWorkerRegistration> SetupInitialRegistration(
+      const GURL& test_origin) {
+    scoped_refptr<ServiceWorkerRegistration> registration;
+    bool called = false;
+    job_coordinator()->Register(
+        test_origin.Resolve(kScope),
+        test_origin.Resolve(kScript),
+        mock_render_process_id(),
+        SaveRegistration(SERVICE_WORKER_OK, &called, &registration));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(called);
+    EXPECT_TRUE(registration);
+    EXPECT_TRUE(registration->active_version());
+    EXPECT_FALSE(registration->installing_version());
+    EXPECT_FALSE(registration->waiting_version());
+    return registration;
+  }
+
+  // EmbeddedWorkerTestHelper overrides
+  virtual void OnStartWorker(int embedded_worker_id,
+                             int64 version_id,
+                             const GURL& scope,
+                             const GURL& script,
+                             bool pause_after_download) OVERRIDE {
+    const std::string kMockScriptBody = "mock_script";
+    ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
+    ASSERT_TRUE(version);
+    version->AddListener(this);
+
+    if (!pause_after_download) {
+      // Spoof caching the script for the initial version.
+      int64 resource_id = storage()->NewResourceId();
+      version->script_cache_map()->NotifyStartedCaching(script, resource_id);
+      WriteStringResponse(storage(), resource_id, kMockScriptBody);
+      version->script_cache_map()->NotifyFinishedCaching(script, true);
+    } else {
+      // Spoof caching the script for the new version.
+      int64 resource_id = storage()->NewResourceId();
+      version->script_cache_map()->NotifyStartedCaching(script, resource_id);
+      if (script.GetOrigin() == kNoChangeOrigin)
+        WriteStringResponse(storage(), resource_id, kMockScriptBody);
+      else
+        WriteStringResponse(storage(), resource_id, "mock_different_script");
+      version->script_cache_map()->NotifyFinishedCaching(script, true);
+    }
+    EmbeddedWorkerTestHelper::OnStartWorker(
+        embedded_worker_id, version_id, scope, script, pause_after_download);
+  }
+
+  // ServiceWorkerRegistration::Listener overrides
+  virtual void OnVersionAttributesChanged(
+      ServiceWorkerRegistration* registration,
+      ChangedVersionAttributesMask changed_mask,
+      const ServiceWorkerRegistrationInfo& info) OVERRIDE {
+    AttributeChangeLogEntry entry;
+    entry.registration_id = registration->id();
+    entry.mask = changed_mask;
+    entry.info = info;
+    attribute_change_log_.push_back(entry);
+  }
+
+  // ServiceWorkerVersion::Listener overrides
+  virtual void OnVersionStateChanged(ServiceWorkerVersion* version) OVERRIDE {
+    StateChangeLogEntry entry;
+    entry.version_id = version->version_id();
+    entry.status = version->status();
+    state_change_log_.push_back(entry);
+  }
+
+  std::vector<AttributeChangeLogEntry> attribute_change_log_;
+  std::vector<StateChangeLogEntry> state_change_log_;
+};
+
+}  // namespace
+
+TEST_F(ServiceWorkerJobTest, Update_NoChange) {
+  UpdateJobTestHelper* update_helper =
+      new UpdateJobTestHelper(render_process_id_);
+  helper_.reset(update_helper);
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      update_helper->SetupInitialRegistration(kNoChangeOrigin);
+  ASSERT_TRUE(registration);
+  ASSERT_EQ(4u, update_helper->state_change_log_.size());
+  EXPECT_EQ(ServiceWorkerVersion::INSTALLING,
+            update_helper->state_change_log_[0].status);
+  EXPECT_EQ(ServiceWorkerVersion::INSTALLED,
+            update_helper->state_change_log_[1].status);
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATING,
+            update_helper->state_change_log_[2].status);
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED,
+            update_helper->state_change_log_[3].status);
+  update_helper->state_change_log_.clear();
+
+  // Run the update job.
+  registration->AddListener(update_helper);
+  scoped_refptr<ServiceWorkerVersion> first_version =
+      registration->active_version();
+  first_version->StartUpdate();
+  base::RunLoop().RunUntilIdle();
+
+  // Verify results.
+  ASSERT_TRUE(registration->active_version());
+  EXPECT_EQ(first_version.get(), registration->active_version());
+  EXPECT_FALSE(registration->installing_version());
+  EXPECT_FALSE(registration->waiting_version());
+  EXPECT_TRUE(update_helper->attribute_change_log_.empty());
+  ASSERT_EQ(1u, update_helper->state_change_log_.size());
+  EXPECT_NE(registration->active_version()->version_id(),
+            update_helper->state_change_log_[0].version_id);
+  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT,
+            update_helper->state_change_log_[0].status);
+}
+
+TEST_F(ServiceWorkerJobTest, Update_NewVersion) {
+  UpdateJobTestHelper* update_helper =
+      new UpdateJobTestHelper(render_process_id_);
+  helper_.reset(update_helper);
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      update_helper->SetupInitialRegistration(kNewVersionOrigin);
+  ASSERT_TRUE(registration);
+  update_helper->state_change_log_.clear();
+
+  // Run the update job.
+  registration->AddListener(update_helper);
+  scoped_refptr<ServiceWorkerVersion> first_version =
+      registration->active_version();
+  first_version->StartUpdate();
+  base::RunLoop().RunUntilIdle();
+
+  // Verify results.
+  ASSERT_TRUE(registration->active_version());
+  EXPECT_NE(first_version.get(), registration->active_version());
+  EXPECT_FALSE(registration->installing_version());
+  EXPECT_FALSE(registration->waiting_version());
+  ASSERT_EQ(3u, update_helper->attribute_change_log_.size());
+
+  UpdateJobTestHelper::AttributeChangeLogEntry entry;
+  entry = update_helper->attribute_change_log_[0];
+  EXPECT_TRUE(entry.mask.installing_changed());
+  EXPECT_FALSE(entry.mask.waiting_changed());
+  EXPECT_FALSE(entry.mask.active_changed());
+  EXPECT_FALSE(entry.info.installing_version.is_null);
+  EXPECT_TRUE(entry.info.waiting_version.is_null);
+  EXPECT_FALSE(entry.info.active_version.is_null);
+
+  entry = update_helper->attribute_change_log_[1];
+  EXPECT_TRUE(entry.mask.installing_changed());
+  EXPECT_TRUE(entry.mask.waiting_changed());
+  EXPECT_FALSE(entry.mask.active_changed());
+  EXPECT_TRUE(entry.info.installing_version.is_null);
+  EXPECT_FALSE(entry.info.waiting_version.is_null);
+  EXPECT_FALSE(entry.info.active_version.is_null);
+
+  entry = update_helper->attribute_change_log_[2];
+  EXPECT_FALSE(entry.mask.installing_changed());
+  EXPECT_TRUE(entry.mask.waiting_changed());
+  EXPECT_TRUE(entry.mask.active_changed());
+  EXPECT_TRUE(entry.info.installing_version.is_null);
+  EXPECT_TRUE(entry.info.waiting_version.is_null);
+  EXPECT_FALSE(entry.info.active_version.is_null);
+
+  // expected version state transitions:
+  // new.installing, new.installed,
+  // old.redundant,
+  // new.activating, new.activated
+  ASSERT_EQ(5u, update_helper->state_change_log_.size());
+
+  EXPECT_EQ(registration->active_version()->version_id(),
+            update_helper->state_change_log_[0].version_id);
+  EXPECT_EQ(ServiceWorkerVersion::INSTALLING,
+            update_helper->state_change_log_[0].status);
+
+  EXPECT_EQ(registration->active_version()->version_id(),
+            update_helper->state_change_log_[1].version_id);
+  EXPECT_EQ(ServiceWorkerVersion::INSTALLED,
+            update_helper->state_change_log_[1].status);
+
+  EXPECT_EQ(first_version->version_id(),
+            update_helper->state_change_log_[2].version_id);
+  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT,
+            update_helper->state_change_log_[2].status);
+
+  EXPECT_EQ(registration->active_version()->version_id(),
+            update_helper->state_change_log_[3].version_id);
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATING,
+            update_helper->state_change_log_[3].status);
+
+  EXPECT_EQ(registration->active_version()->version_id(),
+            update_helper->state_change_log_[4].version_id);
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED,
+            update_helper->state_change_log_[4].status);
 }
 
 }  // namespace content
