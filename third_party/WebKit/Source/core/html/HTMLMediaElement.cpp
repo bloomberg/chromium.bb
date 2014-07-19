@@ -2081,7 +2081,10 @@ void HTMLMediaElement::setCurrentTime(double time, ExceptionState& exceptionStat
 
 double HTMLMediaElement::duration() const
 {
-    if (m_readyState < HAVE_METADATA)
+    // FIXME: remove m_player check once we figure out how m_player is going
+    // out of sync with readystate. m_player is cleared but readystate is not set
+    // to HAVE_NOTHING
+    if (!m_player || m_readyState < HAVE_METADATA)
         return std::numeric_limits<double>::quiet_NaN();
 
     // FIXME: Refactor so m_duration is kept current (in both MSE and
