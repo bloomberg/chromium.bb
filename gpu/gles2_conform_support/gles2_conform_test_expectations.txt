@@ -10,7 +10,7 @@
 //  WIN XP VISTA WIN7 MAC LEOPARD SNOWLEOPARD LION LINUX CHROMEOS MOUNTAINLION
 //  MAVERICKS
 //  NVIDIA AMD INTEL
-//  0x**** (this is a gpu's PCI device ID)
+//  0xabcd - GPU PCI device ID. Specifying a PCI id requires a vendor.
 //  DEBUG RELEASE
 //
 // TEST_NAME can be a specific test name, or have a '*' in the end, which
@@ -56,6 +56,25 @@
 
 253674 MAC : GL2Tests_glUniform_input_run = FAIL
 253674 MAC : GL2Tests_three_uniforms_input_run = FAIL
+
+393677 CHROMEOS INTEL 0xa011 : GL_acos_input_run = FAIL
+393677 CHROMEOS INTEL 0xa011 : GL_asin_input_run = FAIL
+393677 CHROMEOS INTEL 0xa011 : GL_atan_input_run = FAIL
+393677 CHROMEOS INTEL 0xa011 : GL_control_flow_input_run = FAIL
+393677 CHROMEOS INTEL 0xa011 : GL_cos_input_run = FAIL
+393677 CHROMEOS INTEL 0xa011 : GL_discard_input_run = FAIL
+393677 CHROMEOS INTEL 0xa011 : GL_functions_input_run = FAIL
+393677 CHROMEOS INTEL 0xa011 : GL_gl_FrontFacing_input_run = FAIL
+393677 CHROMEOS INTEL 0xa011 : GL_log_input_run = FAIL
+393677 CHROMEOS INTEL 0xa011 : GL_log2_input_run = FAIL
+393677 CHROMEOS INTEL 0xa011 : GL_normalize_input_run = FAIL
+393677 CHROMEOS INTEL 0xa011 : GL_sin_input_run = FAIL
+393677 CHROMEOS INTEL 0xa011 : GL2ExtensionTests_dFdx_input_run = FAIL
+393677 CHROMEOS INTEL 0xa011 : GL2ExtensionTests_dFdy_input_run = FAIL
+393677 CHROMEOS INTEL 0xa011 : GL2ExtensionTests_fwidth_input_run = FAIL
+393677 CHROMEOS INTEL 0xa011 : GL2FixedTests_blend_input_run = FAIL
+393677 CHROMEOS INTEL 0xa011 : GL2FixedTests_point_rasterization_input_run = FAIL
+393677 CHROMEOS INTEL 0xa011 : GL2FixedTests_scissor_input_run = FAIL
 
 ////////////////////////////////////////////////////////////////////////////////
 //
