@@ -6,8 +6,8 @@ import datetime
 import logging
 import os
 
+from integration_tests import network_metrics
 from telemetry.page import page_measurement
-from metrics import network
 from telemetry.value import scalar
 
 
@@ -30,7 +30,8 @@ DEFAULT_BYPASS_MAX_SECONDS = 5 * 60
 
 def GetProxyInfoFromNetworkInternals(tab, url='chrome://net-internals#proxy'):
   tab.Navigate(url)
-  with open(os.path.join(os.path.dirname(__file__), 'chrome_proxy.js')) as f:
+  with open(os.path.join(os.path.dirname(__file__),
+                         'chrome_proxy_metrics.js')) as f:
     js = f.read()
     tab.ExecuteJavaScript(js)
   tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 300)
@@ -43,7 +44,7 @@ def ProxyRetryTimeInRange(retry_time, low, high, grace_seconds=30):
           (retry_time < high + datetime.timedelta(seconds=grace_seconds)))
 
 
-class ChromeProxyResponse(network.HTTPResponse):
+class ChromeProxyResponse(network_metrics.HTTPResponse):
   """ Represents an HTTP response from a timeleine event."""
   def __init__(self, event):
     super(ChromeProxyResponse, self).__init__(event)
@@ -88,7 +89,7 @@ class ChromeProxyResponse(network.HTTPResponse):
     return False
 
 
-class ChromeProxyMetric(network.NetworkMetric):
+class ChromeProxyMetric(network_metrics.NetworkMetric):
   """A Chrome proxy timeline metric."""
 
   def __init__(self):

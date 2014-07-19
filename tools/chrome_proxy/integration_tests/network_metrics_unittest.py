@@ -5,8 +5,8 @@
 import base64
 import unittest
 
+from integration_tests import network_metrics
 from metrics import test_page_measurement_results
-from metrics import network
 from telemetry.timeline import event
 
 
@@ -18,7 +18,7 @@ HTML_BODY = """<!DOCTYPE HTML>
  </body>
  </html>"""
 IMAGE_BODY = """fake image data"""
-GZIPPED_HTML_LEN = network.HTTPResponse.GetGizppedBodyLength(HTML_BODY)
+GZIPPED_HTML_LEN = network_metrics.HTTPResponse.GetGizppedBodyLength(HTML_BODY)
 # Make up original content length for the image.
 IMAGE_OCL = 3 * len(IMAGE_BODY)
 
@@ -49,7 +49,7 @@ class NetworkMetricTest(unittest.TestCase):
     self.assertLess(GZIPPED_HTML_LEN, len(HTML_BODY))
 
     # A plain text HTML response
-    resp = network.HTTPResponse(self.MakeNetworkTimelineEvent(
+    resp = network_metrics.HTTPResponse(self.MakeNetworkTimelineEvent(
         url=url,
         response_headers={
             'Content-Type': 'text/html',
@@ -68,7 +68,7 @@ class NetworkMetricTest(unittest.TestCase):
     self.assertEqual(0.0, resp.data_saving_rate)
 
     # A gzipped HTML response
-    resp = network.HTTPResponse(self.MakeNetworkTimelineEvent(
+    resp = network_metrics.HTTPResponse(self.MakeNetworkTimelineEvent(
         url=url,
         response_headers={
             'Content-Type': 'text/html',
@@ -87,7 +87,7 @@ class NetworkMetricTest(unittest.TestCase):
         resp.data_saving_rate)
 
     # A JPEG image response.
-    resp = network.HTTPResponse(self.MakeNetworkTimelineEvent(
+    resp = network_metrics.HTTPResponse(self.MakeNetworkTimelineEvent(
         url='http://test.image',
         response_headers={
             'Content-Type': 'image/jpeg',
@@ -107,7 +107,7 @@ class NetworkMetricTest(unittest.TestCase):
                      resp.data_saving_rate)
 
     # A JPEG image response from cache.
-    resp = network.HTTPResponse(self.MakeNetworkTimelineEvent(
+    resp = network_metrics.HTTPResponse(self.MakeNetworkTimelineEvent(
         url='http://test.image',
         response_headers={
             'Content-Type': 'image/jpeg',
@@ -154,7 +154,7 @@ class NetworkMetricTest(unittest.TestCase):
             body=base64.b64encode(IMAGE_BODY),
             base64_encoded_body=True),
         ]
-    metric = network.NetworkMetric()
+    metric = network_metrics.NetworkMetric()
     metric._events = events
     metric.compute_data_saving = True
 

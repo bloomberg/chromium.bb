@@ -6,7 +6,7 @@ import base64
 import logging
 import urlparse
 
-from metrics import chrome_proxy
+from integration_tests import chrome_proxy_metrics as metrics
 from metrics import loading
 from telemetry.core import util
 from telemetry.page import page_measurement
@@ -31,7 +31,7 @@ class ChromeProxyDataSaving(page_measurement.PageMeasurement):
   """Chrome proxy data daving measurement."""
   def __init__(self, *args, **kwargs):
     super(ChromeProxyDataSaving, self).__init__(*args, **kwargs)
-    self._metrics = chrome_proxy.ChromeProxyMetric()
+    self._metrics = metrics.ChromeProxyMetric()
 
   def WillNavigateToPage(self, page, tab):
     tab.ClearCache(force=True)
@@ -50,7 +50,7 @@ class ChromeProxyValidation(page_measurement.PageMeasurement):
   def __init__(self, restart_after_each_page=False):
     super(ChromeProxyValidation, self).__init__(
         needs_browser_restart_after_each_page=restart_after_each_page)
-    self._metrics = chrome_proxy.ChromeProxyMetric()
+    self._metrics = metrics.ChromeProxyMetric()
     self._page = None
     # Whether a timeout exception is expected during the test.
     self._expect_timeout = False
