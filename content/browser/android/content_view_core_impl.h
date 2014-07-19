@@ -158,7 +158,6 @@ class ContentViewCoreImpl : public ContentViewCore,
                                        jobject obj,
                                        jboolean enabled);
 
-  void AddStyleSheetByURL(JNIEnv* env, jobject obj, jstring url);
   void ClearHistory(JNIEnv* env, jobject obj);
   void EvaluateJavaScript(JNIEnv* env,
                           jobject obj,
@@ -169,21 +168,15 @@ class ContentViewCoreImpl : public ContentViewCore,
       jstring message, jstring source_origin, jstring target_origin);
   long GetNativeImeAdapter(JNIEnv* env, jobject obj);
   void SetFocus(JNIEnv* env, jobject obj, jboolean focused);
-  void ScrollFocusedEditableNodeIntoView(JNIEnv* env, jobject obj);
-  void SelectWordAroundCaret(JNIEnv* env, jobject obj);
 
   jint GetBackgroundColor(JNIEnv* env, jobject obj);
   void SetBackgroundColor(JNIEnv* env, jobject obj, jint color);
-  void OnShow(JNIEnv* env, jobject obj);
-  void OnHide(JNIEnv* env, jobject obj);
   void ClearSslPreferences(JNIEnv* env, jobject /* obj */);
   void SetUseDesktopUserAgent(JNIEnv* env,
                               jobject /* obj */,
                               jboolean state,
                               jboolean reload_on_state_change);
   bool GetUseDesktopUserAgent(JNIEnv* env, jobject /* obj */);
-  void Show();
-  void Hide();
   void SetAllowJavascriptInterfacesInspection(JNIEnv* env,
                                               jobject obj,
                                               jboolean allow);
@@ -202,20 +195,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   base::android::ScopedJavaLocalRef<jstring>
       GetOriginalUrlForActiveNavigationEntry(JNIEnv* env, jobject obj);
   void WasResized(JNIEnv* env, jobject obj);
-  jboolean IsRenderWidgetHostViewReady(JNIEnv* env, jobject obj);
-  void ExitFullscreen(JNIEnv* env, jobject obj);
-  void UpdateTopControlsState(JNIEnv* env,
-                              jobject obj,
-                              bool enable_hiding,
-                              bool enable_showing,
-                              bool animate);
-  void ShowImeIfNeeded(JNIEnv* env, jobject obj);
-
-  void ShowInterstitialPage(JNIEnv* env,
-                            jobject obj,
-                            jstring jurl,
-                            jlong delegate);
-  jboolean IsShowingInterstitialPage(JNIEnv* env, jobject obj);
 
   void SetAccessibilityEnabled(JNIEnv* env, jobject obj, bool enabled);
 

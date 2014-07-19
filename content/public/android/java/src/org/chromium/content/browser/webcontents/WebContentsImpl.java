@@ -70,8 +70,89 @@ import org.chromium.content_public.browser.WebContents;
         nativeInsertCSS(mNativeWebContentsAndroid, css);
     }
 
+    @Override
+    public void onHide() {
+         nativeOnHide(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public void onShow() {
+        nativeOnShow(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public int getBackgroundColor() {
+        return nativeGetBackgroundColor(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public void addStyleSheetByURL(String url) {
+        nativeAddStyleSheetByURL(mNativeWebContentsAndroid, url);
+    }
+
+    @Override
+    public void showInterstitialPage(
+            String url, long interstitialPageDelegateAndroid) {
+        nativeShowInterstitialPage(mNativeWebContentsAndroid, url, interstitialPageDelegateAndroid);
+    }
+
+    @Override
+    public boolean isShowingInterstitialPage() {
+        return nativeIsShowingInterstitialPage(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public boolean isReady() {
+        return nativeIsRenderWidgetHostViewReady(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public void exitFullscreen() {
+        nativeExitFullscreen(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public void updateTopControlsState(boolean enableHiding, boolean enableShowing,
+            boolean animate) {
+        nativeUpdateTopControlsState(mNativeWebContentsAndroid, enableHiding,
+                enableShowing, animate);
+    }
+
+    @Override
+    public void showImeIfNeeded() {
+        nativeShowImeIfNeeded(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public void scrollFocusedEditableNodeIntoView() {
+        // The native side keeps track of whether the zoom and scroll actually occurred. It is
+        // more efficient to do it this way and sometimes fire an unnecessary message rather
+        // than synchronize with the renderer and always have an additional message.
+        nativeScrollFocusedEditableNodeIntoView(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public void selectWordAroundCaret() {
+        nativeSelectWordAroundCaret(mNativeWebContentsAndroid);
+    }
+
     private native String nativeGetTitle(long nativeWebContentsAndroid);
     private native String nativeGetVisibleURL(long nativeWebContentsAndroid);
     private native void nativeStop(long nativeWebContentsAndroid);
     private native void nativeInsertCSS(long nativeWebContentsAndroid, String css);
+    private native void nativeOnHide(long nativeWebContentsAndroid);
+    private native void nativeOnShow(long nativeWebContentsAndroid);
+    private native int nativeGetBackgroundColor(long nativeWebContentsAndroid);
+    private native void nativeAddStyleSheetByURL(long nativeWebContentsAndroid,
+            String url);
+    private native void nativeShowInterstitialPage(long nativeWebContentsAndroid,
+            String url, long nativeInterstitialPageDelegateAndroid);
+    private native boolean nativeIsShowingInterstitialPage(long nativeWebContentsAndroid);
+    private native boolean nativeIsRenderWidgetHostViewReady(long nativeWebContentsAndroid);
+    private native void  nativeExitFullscreen(long nativeWebContentsAndroid);
+    private native void nativeUpdateTopControlsState(long nativeWebContentsAndroid,
+            boolean enableHiding, boolean enableShowing, boolean animate);
+    private native void nativeShowImeIfNeeded(long nativeWebContentsAndroid);
+    private native void nativeScrollFocusedEditableNodeIntoView(long nativeWebContentsAndroid);
+    private native void nativeSelectWordAroundCaret(long nativeWebContentsAndroid);
 }

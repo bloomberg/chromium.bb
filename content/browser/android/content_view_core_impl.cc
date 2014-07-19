@@ -359,23 +359,6 @@ jint ContentViewCoreImpl::GetBackgroundColor(JNIEnv* env, jobject obj) {
   return rwhva->GetCachedBackgroundColor();
 }
 
-void ContentViewCoreImpl::OnHide(JNIEnv* env, jobject obj) {
-  Hide();
-}
-
-void ContentViewCoreImpl::OnShow(JNIEnv* env, jobject obj) {
-  Show();
-}
-
-void ContentViewCoreImpl::Show() {
-  GetWebContents()->WasShown();
-}
-
-void ContentViewCoreImpl::Hide() {
-  GetWebContents()->WasHidden();
-  PauseVideo();
-}
-
 void ContentViewCoreImpl::PauseVideo() {
   RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
       web_contents_->GetRenderViewHost());
@@ -1188,16 +1171,6 @@ void ContentViewCoreImpl::ClearHistory(JNIEnv* env, jobject obj) {
     web_contents_->GetController().PruneAllButLastCommitted();
 }
 
-void ContentViewCoreImpl::AddStyleSheetByURL(
-    JNIEnv* env, jobject obj, jstring url) {
-  if (!web_contents_)
-    return;
-
-  web_contents_->GetMainFrame()->Send(new FrameMsg_AddStyleSheetByURL(
-      web_contents_->GetMainFrame()->GetRoutingID(),
-      ConvertJavaStringToUTF8(env, url)));
-}
-
 void ContentViewCoreImpl::SetAllowJavascriptInterfacesInspection(
     JNIEnv* env,
     jobject obj,
@@ -1237,68 +1210,6 @@ void ContentViewCoreImpl::WasResized(JNIEnv* env, jobject obj) {
     host->SendScreenRects();
     view->WasResized();
   }
-}
-
-void ContentViewCoreImpl::ShowInterstitialPage(
-    JNIEnv* env, jobject obj, jstring jurl, jlong delegate_ptr) {
-  GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
-  InterstitialPageDelegateAndroid* delegate =
-      reinterpret_cast<InterstitialPageDelegateAndroid*>(delegate_ptr);
-  InterstitialPage* interstitial = InterstitialPage::Create(
-      web_contents_, false, url, delegate);
-  delegate->set_interstitial_page(interstitial);
-  interstitial->Show();
-}
-
-jboolean ContentViewCoreImpl::IsShowingInterstitialPage(JNIEnv* env,
-                                                        jobject obj) {
-  return web_contents_->ShowingInterstitialPage();
-}
-
-jboolean ContentViewCoreImpl::IsRenderWidgetHostViewReady(JNIEnv* env,
-                                                          jobject obj) {
-  RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
-  return view && view->HasValidFrame();
-}
-
-void ContentViewCoreImpl::ExitFullscreen(JNIEnv* env, jobject obj) {
-  RenderViewHost* host = web_contents_->GetRenderViewHost();
-  if (!host)
-    return;
-  host->ExitFullscreen();
-}
-
-void ContentViewCoreImpl::UpdateTopControlsState(JNIEnv* env,
-                                                 jobject obj,
-                                                 bool enable_hiding,
-                                                 bool enable_showing,
-                                                 bool animate) {
-  RenderViewHost* host = web_contents_->GetRenderViewHost();
-  if (!host)
-    return;
-  host->Send(new ViewMsg_UpdateTopControlsState(host->GetRoutingID(),
-                                                enable_hiding,
-                                                enable_showing,
-                                                animate));
-}
-
-void ContentViewCoreImpl::ShowImeIfNeeded(JNIEnv* env, jobject obj) {
-  RenderViewHost* host = web_contents_->GetRenderViewHost();
-  host->Send(new ViewMsg_ShowImeIfNeeded(host->GetRoutingID()));
-}
-
-void ContentViewCoreImpl::ScrollFocusedEditableNodeIntoView(JNIEnv* env,
-                                                            jobject obj) {
-  RenderViewHost* host = web_contents_->GetRenderViewHost();
-  host->Send(new InputMsg_ScrollFocusedEditableNodeIntoRect(
-      host->GetRoutingID(), gfx::Rect()));
-}
-
-void ContentViewCoreImpl::SelectWordAroundCaret(JNIEnv* env, jobject obj) {
-  RenderViewHost* host = web_contents_->GetRenderViewHost();
-  if (!host)
-    return;
-  host->SelectWordAroundCaret();
 }
 
 namespace {

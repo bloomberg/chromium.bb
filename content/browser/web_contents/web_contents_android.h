@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/supports_user_data.h"
 #include "content/browser/frame_host/navigation_controller_android.h"
+#include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -39,10 +40,32 @@ class CONTENT_EXPORT WebContentsAndroid
   base::android::ScopedJavaLocalRef<jstring> GetVisibleURL(JNIEnv* env,
                                                            jobject obj) const;
   void Stop(JNIEnv* env, jobject obj);
+  jint GetBackgroundColor(JNIEnv* env, jobject obj);
+  void OnHide(JNIEnv* env, jobject obj);
+  void OnShow(JNIEnv* env, jobject obj);
+  void PauseVideo();
+  void AddStyleSheetByURL(
+      JNIEnv* env, jobject obj, jstring url);
+  void ShowInterstitialPage(
+      JNIEnv* env, jobject obj, jstring jurl, jlong delegate_ptr);
+  jboolean IsShowingInterstitialPage(JNIEnv* env, jobject obj);
+  jboolean IsRenderWidgetHostViewReady(JNIEnv* env, jobject obj);
+  void ExitFullscreen(JNIEnv* env, jobject obj);
+  void UpdateTopControlsState(
+      JNIEnv* env,
+      jobject obj,
+      bool enable_hiding,
+      bool enable_showing,
+      bool animate);
+  void ShowImeIfNeeded(JNIEnv* env, jobject obj);
+  void ScrollFocusedEditableNodeIntoView(JNIEnv* env, jobject obj);
+  void SelectWordAroundCaret(JNIEnv* env, jobject obj);
 
   void InsertCSS(JNIEnv* env, jobject jobj, jstring jcss);
 
  private:
+  RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
+
   WebContents* web_contents_;
   NavigationControllerAndroid navigation_controller_;
   base::android::ScopedJavaGlobalRef<jobject> obj_;

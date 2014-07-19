@@ -16,7 +16,6 @@ import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
@@ -860,10 +859,8 @@ public class ContentViewCore
     }
 
     public int getBackgroundColor() {
-        if (mNativeContentViewCore != 0) {
-            return nativeGetBackgroundColor(mNativeContentViewCore);
-        }
-        return Color.WHITE;
+        assert mWebContents != null;
+        return mWebContents.getBackgroundColor();
     }
 
     @CalledByNative
@@ -931,16 +928,16 @@ public class ContentViewCore
     @VisibleForTesting
     public void showInterstitialPage(
             String url, InterstitialPageDelegateAndroid delegate) {
-        if (mNativeContentViewCore == 0) return;
-        nativeShowInterstitialPage(mNativeContentViewCore, url, delegate.getNative());
+        assert mWebContents != null;
+        mWebContents.showInterstitialPage(url, delegate.getNative());
     }
 
     /**
      * @return Whether the page is currently showing an interstitial, such as a bad HTTPS page.
      */
     public boolean isShowingInterstitialPage() {
-        return mNativeContentViewCore == 0 ?
-                false : nativeIsShowingInterstitialPage(mNativeContentViewCore);
+        assert mWebContents != null;
+        return mWebContents.isShowingInterstitialPage();
     }
 
     /**
@@ -1406,7 +1403,8 @@ public class ContentViewCore
      * main frame's document.
      */
     void addStyleSheetByURL(String url) {
-        nativeAddStyleSheetByURL(mNativeContentViewCore, url);
+        assert mWebContents != null;
+        mWebContents.addStyleSheetByURL(url);
     }
 
     /** Callback interface for evaluateJavaScript(). */
@@ -1462,8 +1460,8 @@ public class ContentViewCore
      * To be called when the ContentView is shown.
      */
     public void onShow() {
-        assert mNativeContentViewCore != 0;
-        nativeOnShow(mNativeContentViewCore);
+        assert mWebContents != null;
+        mWebContents.onShow();
         setAccessibilityState(mAccessibilityManager.isEnabled());
     }
 
@@ -1479,10 +1477,10 @@ public class ContentViewCore
      * To be called when the ContentView is hidden.
      */
     public void onHide() {
-        assert mNativeContentViewCore != 0;
+        assert mWebContents != null;
         hidePopups();
         setInjectedAccessibility(false);
-        nativeOnHide(mNativeContentViewCore);
+        mWebContents.onHide();
     }
 
     /**
@@ -1676,11 +1674,8 @@ public class ContentViewCore
     }
 
     private void scrollFocusedEditableNodeIntoView() {
-        if (mNativeContentViewCore == 0) return;
-        // The native side keeps track of whether the zoom and scroll actually occurred. It is
-        // more efficient to do it this way and sometimes fire an unnecessary message rather
-        // than synchronize with the renderer and always have an additional message.
-        nativeScrollFocusedEditableNodeIntoView(mNativeContentViewCore);
+        assert mWebContents != null;
+        mWebContents.scrollFocusedEditableNodeIntoView();
     }
 
     /**
@@ -1688,8 +1683,8 @@ public class ContentViewCore
      * The caller can check if selection actually occurred by listening to OnSelectionChanged.
      */
     public void selectWordAroundCaret() {
-        if (mNativeContentViewCore == 0) return;
-        nativeSelectWordAroundCaret(mNativeContentViewCore);
+        assert mWebContents != null;
+        mWebContents.selectWordAroundCaret();
     }
 
     /**
@@ -2333,7 +2328,8 @@ public class ContentViewCore
      * Shows the IME if the focused widget could accept text input.
      */
     public void showImeIfNeeded() {
-        if (mNativeContentViewCore != 0) nativeShowImeIfNeeded(mNativeContentViewCore);
+        assert mWebContents != null;
+        mWebContents.showImeIfNeeded();
     }
 
     /**
@@ -2850,8 +2846,8 @@ public class ContentViewCore
      * once the texture is actually ready.
      */
     public boolean isReady() {
-        if (mNativeContentViewCore == 0) return false;
-        return nativeIsRenderWidgetHostViewReady(mNativeContentViewCore);
+        assert mWebContents != null;
+        return mWebContents.isReady();
     }
 
     @CalledByNative
@@ -3070,7 +3066,8 @@ public class ContentViewCore
      * Inform WebKit that Fullscreen mode has been exited by the user.
      */
     public void exitFullscreen() {
-        if (mNativeContentViewCore != 0) nativeExitFullscreen(mNativeContentViewCore);
+        assert mWebContents != null;
+        mWebContents.exitFullscreen();
     }
 
     /**
@@ -3082,10 +3079,9 @@ public class ContentViewCore
      */
     public void updateTopControlsState(boolean enableHiding, boolean enableShowing,
             boolean animate) {
-        if (mNativeContentViewCore != 0) {
-            nativeUpdateTopControlsState(
-                    mNativeContentViewCore, enableHiding, enableShowing, animate);
-        }
+        assert mWebContents != null;
+        mWebContents.updateTopControlsState(
+                enableHiding, enableShowing, animate);
     }
 
     /**
@@ -3283,10 +3279,6 @@ public class ContentViewCore
 
     private native String nativeGetURL(long nativeContentViewCoreImpl);
 
-    private native void nativeShowInterstitialPage(
-            long nativeContentViewCoreImpl, String url, long nativeInterstitialPageDelegateAndroid);
-    private native boolean nativeIsShowingInterstitialPage(long nativeContentViewCoreImpl);
-
     private native boolean nativeIsIncognito(long nativeContentViewCoreImpl);
 
     private native void nativeSetFocus(long nativeContentViewCoreImpl, boolean focused);
@@ -3355,14 +3347,7 @@ public class ContentViewCore
 
     private native void nativeSelectPopupMenuItems(long nativeContentViewCoreImpl, int[] indices);
 
-    private native void nativeScrollFocusedEditableNodeIntoView(long nativeContentViewCoreImpl);
-
-    private native void nativeSelectWordAroundCaret(long nativeContentViewCoreImpl);
-
     private native void nativeClearHistory(long nativeContentViewCoreImpl);
-
-    private native void nativeAddStyleSheetByURL(long nativeContentViewCoreImpl,
-            String stylesheetUrl);
 
     private native void nativeEvaluateJavaScript(long nativeContentViewCoreImpl,
             String script, JavaScriptCallback callback, boolean startRenderer);
@@ -3373,11 +3358,6 @@ public class ContentViewCore
     private native long nativeGetNativeImeAdapter(long nativeContentViewCoreImpl);
 
     private native int nativeGetCurrentRenderProcessId(long nativeContentViewCoreImpl);
-
-    private native int nativeGetBackgroundColor(long nativeContentViewCoreImpl);
-
-    private native void nativeOnShow(long nativeContentViewCoreImpl);
-    private native void nativeOnHide(long nativeContentViewCoreImpl);
 
     private native void nativeSetUseDesktopUserAgent(long nativeContentViewCoreImpl,
             boolean enabled, boolean reloadOnChange);
@@ -3401,14 +3381,6 @@ public class ContentViewCore
             long nativeContentViewCoreImpl);
 
     private native void nativeWasResized(long nativeContentViewCoreImpl);
-
-    private native boolean nativeIsRenderWidgetHostViewReady(long nativeContentViewCoreImpl);
-
-    private native void nativeExitFullscreen(long nativeContentViewCoreImpl);
-    private native void nativeUpdateTopControlsState(long nativeContentViewCoreImpl,
-            boolean enableHiding, boolean enableShowing, boolean animate);
-
-    private native void nativeShowImeIfNeeded(long nativeContentViewCoreImpl);
 
     private native void nativeSetAccessibilityEnabled(
             long nativeContentViewCoreImpl, boolean enabled);

@@ -32,4 +32,78 @@ public interface WebContents {
      * Inserts css into main frame's document.
      */
     void insertCSS(String css);
+    /**
+     * To be called when the ContentView is hidden.
+     */
+    public void onHide();
+
+    /**
+     * To be called when the ContentView is shown.
+     */
+    public void onShow();
+
+    /**
+     * Get the Background color from underlying RenderWidgetHost for this WebContent.
+     */
+    public int getBackgroundColor();
+
+    /**
+     * Requests the renderer insert a link to the specified stylesheet in the
+     * main frame's document.
+     */
+    void addStyleSheetByURL(String url);
+
+    /**
+     * Shows an interstitial page driven by the passed in delegate.
+     *
+     * @param url The URL being blocked by the interstitial.
+     * @param delegate The delegate handling the interstitial.
+     */
+    public void showInterstitialPage(
+            String url, long interstitialPageDelegateAndroid);
+
+    /**
+     * @return Whether the page is currently showing an interstitial, such as a bad HTTPS page.
+     */
+    public boolean isShowingInterstitialPage();
+
+    /**
+     * If the view is ready to draw contents to the screen. In hardware mode,
+     * the initialization of the surface texture may not occur until after the
+     * view has been added to the layout. This method will return {@code true}
+     * once the texture is actually ready.
+     */
+    public boolean isReady();
+
+     /**
+     * Inform WebKit that Fullscreen mode has been exited by the user.
+     */
+    public void exitFullscreen();
+
+    /**
+     * Changes whether hiding the top controls is enabled.
+     *
+     * @param enableHiding Whether hiding the top controls should be enabled or not.
+     * @param enableShowing Whether showing the top controls should be enabled or not.
+     * @param animate Whether the transition should be animated or not.
+     */
+    public void updateTopControlsState(boolean enableHiding, boolean enableShowing,
+            boolean animate);
+
+    /**
+     * Shows the IME if the focused widget could accept text input.
+     */
+    public void showImeIfNeeded();
+
+    /**
+     * Brings the Editable to the visible area while IME is up to make easier for inputing text.
+     */
+    public void scrollFocusedEditableNodeIntoView();
+
+    /**
+     * Selects the word around the caret, if any.
+     * The caller can check if selection actually occurred by listening to OnSelectionChanged.
+     */
+    public void selectWordAroundCaret();
+
 }
