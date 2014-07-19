@@ -145,7 +145,7 @@
         '../skia/skia.gyp:skia',
         'athena_lib',
         'athena_test_support',
-        'resources/athena_resources.gyp:athena_resources',
+        'resources/athena_resources.gyp:athena_pak',
       ],
       'sources': [
         'test/athena_unittests.cc',
