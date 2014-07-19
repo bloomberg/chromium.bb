@@ -1,0 +1,117 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="editor-test.js"></script>
+<script>
+function codeSnippet() {
+    return document.getElementById("codeSnippet").textContent;
+}
+
+function test() {
+    var textEditor = InspectorTest.createTestEditor();
+    textEditor.setMimeType("text/javascript");
+    textEditor.setReadOnly(false);
+    textEditor.element.focus();
+    InspectorTest.evaluateInPage("codeSnippet();", onCodeSnippet);
+    var codeSnippetText;
+
+    function onCodeSnippet(result)
+    {
+        codeSnippetText = result.value;
+        InspectorTest.runTestSuite(testSuite);
+    }
+
+    function dumpAndNext(next)
+    {
+        function innerDumpAndNext()
+        {
+            InspectorTest.dumpTextWithSelection(textEditor, true);
+            next();
+        }
+        return innerDumpAndNext;
+    }
+
+    function doubleEnter(next)
+    {
+        function onFirstEnter()
+        {
+            InspectorTest.fakeKeyEvent(textEditor, "enter", [], dumpAndNext(next));
+        }
+
+        InspectorTest.fakeKeyEvent(textEditor, "enter", [], onFirstEnter);
+    }
+
+    var testSuite = [
+        function testCollapsedBlock(next)
+        {
+            textEditor.setText(codeSnippetText);
+            InspectorTest.setLineSelections(textEditor, [
+                {line: 0, column: 12}
+            ]);
+            doubleEnter(next);
+        },
+
+        function testOpenCurlyBrace(next)
+        {
+            textEditor.setText(codeSnippetText);
+            InspectorTest.setLineSelections(textEditor, [
+                {line: 1, column: 17}
+            ]);
+            doubleEnter(next);
+        },
+
+        function testSmartIndent(next)
+        {
+            textEditor.setText(codeSnippetText);
+            InspectorTest.setLineSelections(textEditor, [
+                {line: 1, column: 2}
+            ]);
+            doubleEnter(next);
+        },
+
+        function testMultiCursorSelection(next)
+        {
+            textEditor.setText(codeSnippetText);
+            InspectorTest.setLineSelections(textEditor, [
+                {line: 1, column: 2},
+                {line: 1, column: 4}
+            ]);
+            doubleEnter(next);
+        },
+
+        function testEditedAutoIndent(next)
+        {
+            textEditor.setText(codeSnippetText);
+            InspectorTest.setLineSelections(textEditor, [
+                {line: 1, column: 17}
+            ]);
+            InspectorTest.fakeKeyEvent(textEditor, "enter", [], onEnter);
+
+            function onEnter()
+            {
+                InspectorTest.fakeKeyEvent(textEditor, "W", [], onEditedText);
+            }
+
+            function onEditedText()
+            {
+                InspectorTest.fakeKeyEvent(textEditor, "enter", [], dumpAndNext(next));
+            }
+        },
+    ];
+}
+
+</script>
+</head>
+
+<body onload="runTest();">
+<p>
+This test verifies that auto-appended spaces are removed on consequent enters.
+</p>
+
+<pre id="codeSnippet">
+function (){}
+    if (a == b) {
+</pre>
+
+</body>
+</html>
