@@ -2415,6 +2415,53 @@ TEST_F(TraceEventCallbackTest, TraceEventCallbackAndRecordingDuration) {
   VerifyCollectedEvent(5, TRACE_EVENT_PHASE_END, "callback", "duration1");
 }
 
+TEST_F(TraceEventTestFixture, TraceBufferVectorReportFull) {
+  TraceLog* trace_log = TraceLog::GetInstance();
+  trace_log->SetEnabled(CategoryFilter("*"),
+      base::debug::TraceLog::RECORDING_MODE,
+      TraceLog::RECORD_UNTIL_FULL);
+  trace_log->logged_events_.reset(
+      trace_log->CreateTraceBufferVectorOfSize(100));
+  do {
+    TRACE_EVENT_BEGIN_WITH_ID_TID_AND_TIMESTAMP0(
+        "all", "with_timestamp", 0, 0,
+        TimeTicks::NowFromSystemTraceTime().ToInternalValue());
+    TRACE_EVENT_END_WITH_ID_TID_AND_TIMESTAMP0(
+        "all", "with_timestamp", 0, 0,
+        TimeTicks::NowFromSystemTraceTime().ToInternalValue());
+  } while (!trace_log->BufferIsFull());
+
+  EndTraceAndFlush();
+
+  const DictionaryValue* trace_full_metadata = NULL;
+
+  trace_full_metadata = FindTraceEntry(trace_parsed_,
+                                       "overflowed_at_ts");
+  std::string phase;
+  double buffer_limit_reached_timestamp = 0;
+
+  EXPECT_TRUE(trace_full_metadata);
+  EXPECT_TRUE(trace_full_metadata->GetString("ph", &phase));
+  EXPECT_EQ("M", phase);
+  EXPECT_TRUE(trace_full_metadata->GetDouble(
+      "args.overflowed_at_ts", &buffer_limit_reached_timestamp));
+  EXPECT_DOUBLE_EQ(
+      static_cast<double>(
+          trace_log->buffer_limit_reached_timestamp_.ToInternalValue()),
+      buffer_limit_reached_timestamp);
+
+  // Test that buffer_limit_reached_timestamp's value is near to the timestamp
+  // of the last trace event.
+  DropTracedMetadataRecords();
+  const DictionaryValue* last_trace_event = NULL;
+  double last_trace_event_timestamp = 0;
+  EXPECT_TRUE(trace_parsed_.GetDictionary(trace_parsed_.GetSize() - 1,
+                                          &last_trace_event));
+  EXPECT_TRUE(last_trace_event->GetDouble("ts", &last_trace_event_timestamp));
+  // The difference between the two timestamps should be less than 50ms.
+  EXPECT_NEAR(last_trace_event_timestamp, buffer_limit_reached_timestamp, 50);
+}
+
 TEST_F(TraceEventTestFixture, TraceBufferRingBufferGetReturnChunk) {
   TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
                                       base::debug::TraceLog::RECORDING_MODE,

@@ -605,6 +605,8 @@ class BASE_EXPORT TraceLog {
                            TraceBufferRingBufferHalfIteration);
   FRIEND_TEST_ALL_PREFIXES(TraceEventTestFixture,
                            TraceBufferRingBufferFullIteration);
+  FRIEND_TEST_ALL_PREFIXES(TraceEventTestFixture,
+                           TraceBufferVectorReportFull);
 
   // This allows constructor and destructor to be private and usable only
   // by the Singleton class.
@@ -632,6 +634,7 @@ class BASE_EXPORT TraceLog {
 
   TraceBuffer* trace_buffer() const { return logged_events_.get(); }
   TraceBuffer* CreateTraceBuffer();
+  TraceBuffer* CreateTraceBufferVectorOfSize(size_t max_chunks);
 
   std::string EventToConsoleMessage(unsigned char phase,
                                     const TimeTicks& timestamp,
@@ -691,6 +694,8 @@ class BASE_EXPORT TraceLog {
   // The following two maps are used only when ECHO_TO_CONSOLE.
   base::hash_map<int, std::stack<TimeTicks> > thread_event_start_times_;
   base::hash_map<std::string, int> thread_colors_;
+
+  TimeTicks buffer_limit_reached_timestamp_;
 
   // XORed with TraceID to make it unlikely to collide with other processes.
   unsigned long long process_id_hash_;
