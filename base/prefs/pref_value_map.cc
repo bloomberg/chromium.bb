@@ -120,6 +120,10 @@ void PrefValueMap::SetInteger(const std::string& key, const int value) {
   SetValue(key, new base::FundamentalValue(value));
 }
 
+void PrefValueMap::SetDouble(const std::string& key, const double value) {
+  SetValue(key, new base::FundamentalValue(value));
+}
+
 void PrefValueMap::GetDifferingKeys(
     const PrefValueMap* other,
     std::vector<std::string>* differing_keys) const {

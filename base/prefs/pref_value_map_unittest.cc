@@ -37,6 +37,17 @@ TEST(PrefValueMapTest, GetAndSetIntegerValue) {
   EXPECT_EQ(-14, int_value);
 }
 
+TEST(PrefValueMapTest, SetDoubleValue) {
+  PrefValueMap map;
+  ASSERT_TRUE(map.SetValue("key", new FundamentalValue(5.5)));
+
+  const Value* result = NULL;
+  ASSERT_TRUE(map.GetValue("key", &result));
+  double double_value = 0.;
+  EXPECT_TRUE(result->GetAsDouble(&double_value));
+  EXPECT_DOUBLE_EQ(5.5, double_value);
+}
+
 TEST(PrefValueMapTest, RemoveValue) {
   PrefValueMap map;
   EXPECT_FALSE(map.RemoveValue("key"));

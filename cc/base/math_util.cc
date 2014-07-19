@@ -650,12 +650,12 @@ scoped_ptr<base::Value> MathUtil::AsValue(const gfx::BoxF& box) {
 }
 
 scoped_ptr<base::Value> MathUtil::AsValueSafely(double value) {
-  return scoped_ptr<base::Value>(base::Value::CreateDoubleValue(
+  return scoped_ptr<base::Value>(new base::FundamentalValue(
       std::min(value, std::numeric_limits<double>::max())));
 }
 
 scoped_ptr<base::Value> MathUtil::AsValueSafely(float value) {
-  return scoped_ptr<base::Value>(base::Value::CreateDoubleValue(
+  return scoped_ptr<base::Value>(new base::FundamentalValue(
       std::min(value, std::numeric_limits<float>::max())));
 }
 

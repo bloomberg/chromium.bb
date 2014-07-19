@@ -40,7 +40,7 @@ base::Value* CreateLocaleDefaultValue(base::Value::Type type,
     case base::Value::TYPE_DOUBLE: {
       double val;
       base::StringToDouble(resource_string, &val);
-      return base::Value::CreateDoubleValue(val);
+      return new base::FundamentalValue(val);
     }
 
     case base::Value::TYPE_STRING: {
@@ -91,9 +91,8 @@ void PrefRegistrySyncable::RegisterIntegerPref(const char* path,
 void PrefRegistrySyncable::RegisterDoublePref(const char* path,
                                               double default_value,
                                               PrefSyncStatus sync_status) {
-  RegisterSyncablePreference(path,
-                             base::Value::CreateDoubleValue(default_value),
-                             sync_status);
+  RegisterSyncablePreference(
+      path, new base::FundamentalValue(default_value), sync_status);
 }
 
 void PrefRegistrySyncable::RegisterStringPref(const char* path,

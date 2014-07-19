@@ -71,6 +71,9 @@ class BASE_PREFS_EXPORT PrefValueMap {
   // Sets the value for |key| to the int |value|.
   void SetInteger(const std::string& key, const int value);
 
+  // Sets the value for |key| to the double |value|.
+  void SetDouble(const std::string& key, const double value);
+
   // Compares this value map against |other| and stores all key names that have
   // different values in |differing_keys|. This includes keys that are present
   // only in one of the maps.

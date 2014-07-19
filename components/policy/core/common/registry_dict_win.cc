@@ -86,13 +86,11 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
     case base::Value::TYPE_DOUBLE: {
       // Doubles may be string-encoded or integer-encoded.
       double double_value = 0;
-      if (value.GetAsInteger(&int_value)) {
+      if (value.GetAsDouble(&double_value) ||
+          (value.GetAsString(&string_value) &&
+           base::StringToDouble(string_value, &double_value))) {
         return scoped_ptr<base::Value>(
-            base::Value::CreateDoubleValue(int_value));
-      } else if (value.GetAsString(&string_value) &&
-                 base::StringToDouble(string_value, &double_value)) {
-        return scoped_ptr<base::Value>(
-            base::Value::CreateDoubleValue(double_value));
+            new base::FundamentalValue(double_value));
       }
       break;
     }

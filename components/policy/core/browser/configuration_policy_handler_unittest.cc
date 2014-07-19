@@ -530,7 +530,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
                  NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
-  expected.reset(base::Value::CreateDoubleValue(0.0));
+  expected.reset(new base::FundamentalValue(0.0));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 
@@ -541,7 +541,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
                  NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
-  expected.reset(base::Value::CreateDoubleValue(0.05));
+  expected.reset(new base::FundamentalValue(0.05));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 
@@ -552,7 +552,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
                  NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
-  expected.reset(base::Value::CreateDoubleValue(0.1));
+  expected.reset(new base::FundamentalValue(0.1));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 
@@ -565,7 +565,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
                  NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
-  expected.reset(base::Value::CreateDoubleValue(0.0));
+  expected.reset(new base::FundamentalValue(0.0));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 
@@ -576,7 +576,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsClamp) {
                  NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
-  expected.reset(base::Value::CreateDoubleValue(0.1));
+  expected.reset(new base::FundamentalValue(0.1));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 }
@@ -600,7 +600,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsDontClamp) {
                  NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
-  expected.reset(base::Value::CreateDoubleValue(0.0));
+  expected.reset(new base::FundamentalValue(0.0));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 
@@ -611,7 +611,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsDontClamp) {
                  NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
-  expected.reset(base::Value::CreateDoubleValue(0.05));
+  expected.reset(new base::FundamentalValue(0.05));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 
@@ -622,7 +622,7 @@ TEST(IntPercentageToDoublePolicyHandler, ApplyPolicySettingsDontClamp) {
                  NULL);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
-  expected.reset(base::Value::CreateDoubleValue(0.1));
+  expected.reset(new base::FundamentalValue(0.1));
   EXPECT_TRUE(prefs.GetValue(kTestPref, &value));
   EXPECT_TRUE(base::Value::Equals(expected.get(), value));
 }

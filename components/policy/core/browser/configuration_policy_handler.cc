@@ -267,10 +267,8 @@ void IntRangePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     return;
   const base::Value* value = policies.GetValue(policy_name());
   int value_in_range;
-  if (value && EnsureInRange(value, &value_in_range, NULL)) {
-    prefs->SetValue(pref_path_,
-                    new base::FundamentalValue(value_in_range));
-  }
+  if (value && EnsureInRange(value, &value_in_range, NULL))
+    prefs->SetInteger(pref_path_, value_in_range);
 }
 
 
@@ -296,10 +294,8 @@ void IntPercentageToDoublePolicyHandler::ApplyPolicySettings(
     return;
   const base::Value* value = policies.GetValue(policy_name());
   int percentage;
-  if (value && EnsureInRange(value, &percentage, NULL)) {
-    prefs->SetValue(pref_path_, base::Value::CreateDoubleValue(
-        static_cast<double>(percentage) / 100.));
-  }
+  if (value && EnsureInRange(value, &percentage, NULL))
+    prefs->SetDouble(pref_path_, static_cast<double>(percentage) / 100.);
 }
 
 

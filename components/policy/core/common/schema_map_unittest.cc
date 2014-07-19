@@ -174,8 +174,11 @@ TEST_F(SchemaMapTest, FilterBundle) {
           NULL);
   map.Set("null", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
           base::Value::CreateNullValue(), NULL);
-  map.Set("double", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          base::Value::CreateDoubleValue(1.2), NULL);
+  map.Set("double",
+          POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_USER,
+          new base::FundamentalValue(1.2),
+          NULL);
   base::DictionaryValue dict;
   dict.SetString("a", "b");
   dict.SetInteger("b", 2);

@@ -13,7 +13,7 @@ namespace {
 
 static scoped_ptr<base::DictionaryValue> CreateTestTypeDictionary() {
   base::DictionaryValue* value(new base::DictionaryValue());
-  value->SetWithoutPathExpansion("number", base::Value::CreateDoubleValue(1.1));
+  value->SetWithoutPathExpansion("number", new base::FundamentalValue(1.1));
   value->SetWithoutPathExpansion("integer", new base::FundamentalValue(4));
   value->SetWithoutPathExpansion("string", new base::StringValue("bling"));
   value->SetWithoutPathExpansion("boolean", new base::FundamentalValue(true));
