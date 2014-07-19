@@ -641,7 +641,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest,
   const int kTestFillBytes = 1024 * 1024 * 5;  // 5MB
   EXPECT_GT(after_filling, kTestFillBytes);
 
-  const int kTestCompactBytes = 1024 * 1024 * 1;  // 1MB
+  const int kTestCompactBytes = 1024 * 10;  // 10kB
   EXPECT_LT(after_deleting, kTestCompactBytes);
 }
 

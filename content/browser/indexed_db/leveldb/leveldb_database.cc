@@ -395,6 +395,8 @@ void LevelDBDatabase::Compact(const base::StringPiece& start,
                               const base::StringPiece& stop) {
   const leveldb::Slice start_slice = MakeSlice(start);
   const leveldb::Slice stop_slice = MakeSlice(stop);
+  // NULL batch means just wait for earlier writes to be done
+  db_->Write(leveldb::WriteOptions(), NULL);
   db_->CompactRange(&start_slice, &stop_slice);
 }
 
