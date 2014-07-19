@@ -86,6 +86,14 @@ public:
             : logicalWidth() - logicalRightOffsetForLine(position, shouldIndentText, logicalHeight);
     }
 
+    // FIXME-BLOCKFLOW: Move this into RenderBlockFlow once there are no calls
+    // in RenderBlock. http://crbug.com/393945, http://crbug.com/302024
+    using RenderBlock::lineBoxes;
+    using RenderBlock::firstLineBox;
+    using RenderBlock::lastLineBox;
+    using RenderBlock::firstRootBox;
+    using RenderBlock::lastRootBox;
+
     virtual LayoutUnit logicalLeftSelectionOffset(RenderBlock* rootBlock, LayoutUnit position) OVERRIDE;
     virtual LayoutUnit logicalRightSelectionOffset(RenderBlock* rootBlock, LayoutUnit position) OVERRIDE;
 
