@@ -12,6 +12,8 @@
 
 #include <mach/mach.h>
 
+#include "sandbox/sandbox_export.h"
+
 // C++ library loader.
 #include "sandbox/mac/xpc_stubs.h"
 
@@ -36,5 +38,12 @@ extern "C" {
 }  // extern "C"
 
 #endif
+
+namespace sandbox {
+
+// Dynamically loads the XPC library.
+bool SANDBOX_EXPORT InitializeXPC();
+
+}  // namespace sandbox
 
 #endif  // SANDBOX_MAC_XPC_H_

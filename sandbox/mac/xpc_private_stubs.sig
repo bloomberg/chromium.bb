@@ -7,11 +7,13 @@
 // tools/generate_stubs for creating a dynamic library loader.
 
 // Dictionary manipulation.
-void xpc_dictionary_set_mach_send(xpc_object_t dict, const char* name, mach_port_t port);
+void xpc_dictionary_set_mach_send(xpc_object_t dictionary, const char* name, mach_port_t port);
+void xpc_dictionary_get_audit_token(xpc_object_t dictionary, audit_token_t* token);
 
 // Pipe methods.
 xpc_pipe_t xpc_pipe_create_from_port(mach_port_t port, int flags);
 int xpc_pipe_receive(mach_port_t port, xpc_object_t* message);
 int xpc_pipe_routine(xpc_pipe_t pipe, xpc_object_t request, xpc_object_t* reply);
 int xpc_pipe_routine_reply(xpc_object_t reply);
+int xpc_pipe_simpleroutine(xpc_pipe_t pipe, xpc_object_t message);
 int xpc_pipe_routine_forward(xpc_pipe_t forward_to, xpc_object_t request);

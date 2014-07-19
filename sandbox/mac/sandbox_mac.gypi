@@ -21,7 +21,10 @@
         'os_compatibility.h',
         'policy.cc',
         'policy.h',
+        'xpc.cc',
         'xpc.h',
+        'xpc_message_server.cc',
+        'xpc_message_server.h',
       ],
       'dependencies': [
         '../base/base.gyp:base',
@@ -68,6 +71,7 @@
             '-e', '<(generate_stubs_header_path)',
             '-s', '<(generate_stubs_output_stem)',
             '-p', '<(generate_stubs_project)',
+            '-x', 'SANDBOX_EXPORT',
             '<(generate_stubs_sig_public_path)',
             '<(generate_stubs_sig_private_path)',
           ],
@@ -83,6 +87,7 @@
         'bootstrap_sandbox_unittest.mm',
         'dispatch_source_mach_unittest.cc',
         'policy_unittest.cc',
+        'xpc_message_server_unittest.cc',
       ],
       'dependencies': [
         'sandbox',

@@ -5,6 +5,10 @@
 #ifndef SANDBOX_MAC_XPC_STUBS_HEADER_FRAGMENT_
 #define SANDBOX_MAC_XPC_STUBS_HEADER_FRAGMENT_
 
+#include <bsm/libbsm.h>
+
+#include "sandbox/sandbox_export.h"
+
 // Declare or include public types.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7

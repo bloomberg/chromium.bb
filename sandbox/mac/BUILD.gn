@@ -17,7 +17,10 @@ component("sandbox") {
     "os_compatibility.h",
     "policy.cc",
     "policy.h",
+    "xpc.cc",
     "xpc.h",
+    "xpc_message_server.cc",
+    "xpc_message_server.h",
   ]
 
   defines = [ "SANDBOX_IMPLEMENTATION" ]
@@ -51,6 +54,7 @@ action("generate_stubs") {
     "-e", rebase_path(generate_stubs_header, root_build_dir),
     "-s", generate_stubs_output_stem,
     "-p", generate_stubs_project,
+    "-x", "SANDBOX_EXPORT",
   ]
   args += rebase_path(sources, root_build_dir)
 }
@@ -60,6 +64,7 @@ test("sandbox_mac_unittests") {
     "bootstrap_sandbox_unittest.mm",
     "dispatch_source_mach_unittest.cc",
     "policy_unittest.cc",
+    "xpc_message_server_unittest.cc",
   ]
 
   libs = [
