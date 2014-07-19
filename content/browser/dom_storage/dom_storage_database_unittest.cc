@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/common/content_paths.h"
 #include "sql/statement.h"
 #include "sql/test/scoped_error_ignorer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -309,11 +310,9 @@ TEST(DOMStorageDatabaseTest, TestSimpleRemoveOneValue) {
 }
 
 TEST(DOMStorageDatabaseTest, TestCanOpenAndReadWebCoreDatabase) {
-  base::FilePath webcore_database;
-  PathService::Get(base::DIR_SOURCE_ROOT, &webcore_database);
-  webcore_database = webcore_database.AppendASCII("webkit");
-  webcore_database = webcore_database.AppendASCII("data");
-  webcore_database = webcore_database.AppendASCII("dom_storage");
+  base::FilePath dir_test_data;
+  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &dir_test_data));
+  base::FilePath webcore_database = dir_test_data.AppendASCII("dom_storage");
   webcore_database =
       webcore_database.AppendASCII("webcore_test_database.localstorage");
 
