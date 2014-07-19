@@ -7,6 +7,7 @@
 var localStrings = new LocalStrings(templateData);
 
 <include src="component.js"/>
+<include src="print_preview_focus_manager.js"/>
 
 cr.define('print_preview', function() {
   'use strict';
@@ -255,6 +256,7 @@ cr.define('print_preview', function() {
         this.setIsEnabled_(false);
       }
       this.nativeLayer_.startGetInitialSettings();
+      print_preview.PrintPreviewFocusManager.getInstance().initialize();
       cr.ui.FocusOutlineManager.forDocument(document);
     },
 
