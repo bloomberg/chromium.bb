@@ -98,6 +98,7 @@ using syncer::syncable::WriteTransaction;
 using testing::_;
 using testing::DoAll;
 using testing::ElementsAre;
+using testing::Not;
 using testing::SetArgumentPointee;
 using testing::Return;
 
@@ -511,6 +512,12 @@ class ProfileSyncServiceAutofillTest
         profile_->IsOffTheRecord());
 
     web_data_service_->StartSyncableService();
+
+    // When UpdateAutofillEntries() is called with an empty list, the return
+    // value should be |true|, rather than the default of |false|.
+    std::vector<AutofillEntry> empty;
+    EXPECT_CALL(autofill_table_, UpdateAutofillEntries(empty))
+        .WillRepeatedly(Return(true));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -693,7 +700,10 @@ class ProfileSyncServiceAutofillTest
   void SetIdleChangeProcessorExpectations() {
     EXPECT_CALL(autofill_table_, RemoveFormElement(_, _)).Times(0);
     EXPECT_CALL(autofill_table_, GetAutofillTimestamps(_, _, _, _)).Times(0);
-    EXPECT_CALL(autofill_table_, UpdateAutofillEntries(_)).Times(0);
+
+    // Only permit UpdateAutofillEntries() to be called with an empty list.
+    std::vector<AutofillEntry> empty;
+    EXPECT_CALL(autofill_table_, UpdateAutofillEntries(Not(empty))).Times(0);
   }
 
   static AutofillEntry MakeAutofillEntry(const char* name,

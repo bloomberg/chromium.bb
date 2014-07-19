@@ -780,7 +780,7 @@ bool AutofillTable::GetAutofillTimestamps(const base::string16& name,
 
 bool AutofillTable::UpdateAutofillEntries(
     const std::vector<AutofillEntry>& entries) {
-  if (!entries.size())
+  if (entries.empty())
     return true;
 
   // Remove all existing entries.

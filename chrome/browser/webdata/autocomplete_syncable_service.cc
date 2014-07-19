@@ -69,13 +69,13 @@ void* UserDataKey() {
 }  // namespace
 
 AutocompleteSyncableService::AutocompleteSyncableService(
-    AutofillWebDataBackend* webdata_backend)
-    : webdata_backend_(webdata_backend),
+    AutofillWebDataBackend* web_data_backend)
+    : web_data_backend_(web_data_backend),
       scoped_observer_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  DCHECK(webdata_backend_);
+  DCHECK(web_data_backend_);
 
-  scoped_observer_.Add(webdata_backend_);
+  scoped_observer_.Add(web_data_backend_);
 }
 
 AutocompleteSyncableService::~AutocompleteSyncableService() {
@@ -85,9 +85,9 @@ AutocompleteSyncableService::~AutocompleteSyncableService() {
 // static
 void AutocompleteSyncableService::CreateForWebDataServiceAndBackend(
     AutofillWebDataService* web_data_service,
-    AutofillWebDataBackend* webdata_backend) {
+    AutofillWebDataBackend* web_data_backend) {
   web_data_service->GetDBUserData()->SetUserData(
-      UserDataKey(), new AutocompleteSyncableService(webdata_backend));
+      UserDataKey(), new AutocompleteSyncableService(web_data_backend));
 }
 
 // static
@@ -98,7 +98,7 @@ AutocompleteSyncableService* AutocompleteSyncableService::FromWebDataService(
 }
 
 AutocompleteSyncableService::AutocompleteSyncableService()
-    : webdata_backend_(NULL),
+    : web_data_backend_(NULL),
       scoped_observer_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 }
@@ -153,8 +153,6 @@ syncer::SyncMergeResult AutocompleteSyncableService::MergeDataAndStartSyncing(
     return merge_result;
   }
 
-  webdata_backend_->NotifyOfMultipleAutofillChanges();
-
   syncer::SyncChangeList new_changes;
   for (AutocompleteEntryMap::iterator it = new_db_entries.begin();
        it != new_db_entries.end(); ++it) {
@@ -172,7 +170,7 @@ syncer::SyncMergeResult AutocompleteSyncableService::MergeDataAndStartSyncing(
   // NOTE: This must be called *after* the ProcessSyncChanges call above.
   // Otherwise, an item that Sync is not yet aware of might expire, causing a
   // Sync error when that item's deletion is propagated to Sync.
-  webdata_backend_->RemoveExpiredFormElements();
+  web_data_backend_->RemoveExpiredFormElements();
 
   return merge_result;
 }
@@ -181,7 +179,7 @@ void AutocompleteSyncableService::StopSyncing(syncer::ModelType type) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(syncer::AUTOFILL, type);
 
-  sync_processor_.reset(NULL);
+  sync_processor_.reset();
   error_handler_.reset();
 }
 
@@ -256,11 +254,11 @@ syncer::SyncError AutocompleteSyncableService::ProcessSyncChanges(
         if (autofill.has_value())
           list_processing_error = AutofillEntryDelete(autofill);
         else
-          VLOG(1) << "Delete for old-style autofill profile being dropped!";
+          DVLOG(1) << "Delete for old-style autofill profile being dropped!";
         break;
       }
 
-      default:
+      case syncer::SyncChange::ACTION_INVALID:
         NOTREACHED();
         return error_handler_->CreateAndUploadError(
             FROM_HERE,
@@ -275,11 +273,9 @@ syncer::SyncError AutocompleteSyncableService::ProcessSyncChanges(
         "Failed to update webdata.");
   }
 
-  webdata_backend_->NotifyOfMultipleAutofillChanges();
-
   // This will schedule a deletion operation on the DB thread, which will
   // trigger a notification to propagate the deletion to Sync.
-  webdata_backend_->RemoveExpiredFormElements();
+  web_data_backend_->RemoveExpiredFormElements();
 
   return list_processing_error;
 }
@@ -287,9 +283,10 @@ syncer::SyncError AutocompleteSyncableService::ProcessSyncChanges(
 void AutocompleteSyncableService::AutofillEntriesChanged(
     const AutofillChangeList& changes) {
   // Check if sync is on. If we receive this notification prior to sync being
-  // started, we'll notify sync to start as soon as it can and later process
-  // all entries when MergeData..() is called. If we receive this notification
-  // sync has exited, it will be synced next time Chrome starts.
+  // started, we'll notify sync to start as soon as it can and later process all
+  // entries when MergeDataAndStartSyncing() is called. If we receive this
+  // notification after sync has exited, it will be synced the next time Chrome
+  // starts.
   if (sync_processor_) {
     ActOnChanges(changes);
   } else if (!flare_.is_null()) {
@@ -300,20 +297,16 @@ void AutocompleteSyncableService::AutofillEntriesChanged(
 
 bool AutocompleteSyncableService::LoadAutofillData(
     std::vector<AutofillEntry>* entries) const {
-  return AutofillTable::FromWebDatabase(
-      webdata_backend_->GetDatabase())->GetAllAutofillEntries(entries);
+  return GetAutofillTable()->GetAllAutofillEntries(entries);
 }
 
 bool AutocompleteSyncableService::SaveChangesToWebData(
     const std::vector<AutofillEntry>& new_entries) {
   DCHECK(CalledOnValidThread());
-
-  if (!new_entries.empty() &&
-      !AutofillTable::FromWebDatabase(
-          webdata_backend_->GetDatabase())->UpdateAutofillEntries(
-              new_entries)) {
+  if (!GetAutofillTable()->UpdateAutofillEntries(new_entries))
     return false;
-  }
+
+  web_data_backend_->NotifyOfMultipleAutofillChanges();
   return true;
 }
 
@@ -326,7 +319,7 @@ void AutocompleteSyncableService::CreateOrUpdateEntry(
   const sync_pb::AutofillSpecifics& autofill_specifics(specifics.autofill());
 
   if (!autofill_specifics.has_value()) {
-    VLOG(1) << "Add/Update for old-style autofill profile being dropped!";
+    DVLOG(1) << "Add/Update for old-style autofill profile being dropped!";
     return;
   }
 
@@ -375,10 +368,9 @@ void AutocompleteSyncableService::WriteAutofillEntry(
 
 syncer::SyncError AutocompleteSyncableService::AutofillEntryDelete(
     const sync_pb::AutofillSpecifics& autofill) {
-  if (!AutofillTable::FromWebDatabase(
-          webdata_backend_->GetDatabase())->RemoveFormElement(
-              base::UTF8ToUTF16(autofill.name()),
-              base::UTF8ToUTF16(autofill.value()))) {
+  if (!GetAutofillTable()->RemoveFormElement(
+          base::UTF8ToUTF16(autofill.name()),
+          base::UTF8ToUTF16(autofill.value()))) {
     return error_handler_->CreateAndUploadError(
         FROM_HERE,
         "Could not remove autocomplete entry from WebDatabase.");
@@ -396,13 +388,10 @@ void AutocompleteSyncableService::ActOnChanges(
       case AutofillChange::ADD:
       case AutofillChange::UPDATE: {
         base::Time date_created, date_last_used;
-        WebDatabase* db = webdata_backend_->GetDatabase();
-        if (!AutofillTable::FromWebDatabase(db)->GetAutofillTimestamps(
-                change->key().name(), change->key().value(),
-                &date_created, &date_last_used)) {
-          NOTREACHED();
-          return;
-        }
+        bool success = GetAutofillTable()->GetAutofillTimestamps(
+            change->key().name(), change->key().value(),
+            &date_created, &date_last_used);
+        DCHECK(success);
         AutofillEntry entry(change->key(), date_created, date_last_used);
         syncer::SyncChange::SyncChangeType change_type =
            (change->type() == AutofillChange::ADD) ?
@@ -422,16 +411,13 @@ void AutocompleteSyncableService::ActOnChanges(
                                CreateSyncData(entry)));
         break;
       }
-
-      default:
-        NOTREACHED();
     }
   }
   syncer::SyncError error =
       sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
   if (error.IsSet()) {
-    VLOG(1) << "[AUTOCOMPLETE SYNC] Failed processing change.  Error: "
-            << error.message();
+    DVLOG(1) << "[AUTOCOMPLETE SYNC] Failed processing change.  Error: "
+             << error.message();
   }
 }
 
@@ -442,6 +428,10 @@ syncer::SyncData AutocompleteSyncableService::CreateSyncData(
   std::string tag(KeyToTag(base::UTF16ToUTF8(entry.key().name()),
                            base::UTF16ToUTF8(entry.key().value())));
   return syncer::SyncData::CreateLocalData(tag, tag, autofill_specifics);
+}
+
+AutofillTable* AutocompleteSyncableService::GetAutofillTable() const {
+  return AutofillTable::FromWebDatabase(web_data_backend_->GetDatabase());
 }
 
 // static

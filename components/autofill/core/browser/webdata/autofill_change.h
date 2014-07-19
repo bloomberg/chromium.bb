@@ -19,11 +19,11 @@ class CreditCard;
 template <typename KeyType>
 class GenericAutofillChange {
  public:
-  typedef enum {
+  enum Type {
     ADD,
     UPDATE,
     REMOVE
-  } Type;
+  };
 
   virtual ~GenericAutofillChange() {}
 

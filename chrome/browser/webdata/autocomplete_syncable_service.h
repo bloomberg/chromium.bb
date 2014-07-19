@@ -28,6 +28,10 @@
 
 class ProfileSyncServiceAutofillTest;
 
+namespace autofill {
+class AutofillTable;
+}
+
 namespace syncer {
 class SyncErrorFactory;
 }
@@ -52,15 +56,15 @@ class AutocompleteSyncableService
   // |web_data_service|, which takes ownership.
   static void CreateForWebDataServiceAndBackend(
       autofill::AutofillWebDataService* web_data_service,
-      autofill::AutofillWebDataBackend* webdata_backend);
+      autofill::AutofillWebDataBackend* web_data_backend);
 
-  // Retrieves the AutocompleteSyncableService stored on |web_data|.
+  // Retrieves the AutocompleteSyncableService stored on |web_data_service|.
   static AutocompleteSyncableService* FromWebDataService(
       autofill::AutofillWebDataService* web_data_service);
 
   static syncer::ModelType model_type() { return syncer::AUTOFILL; }
 
-  // syncer::SyncableService implementation.
+  // syncer::SyncableService:
   virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
@@ -73,18 +77,18 @@ class AutocompleteSyncableService
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
 
-  // AutofillWebDataServiceObserverOnDBThread implementation.
+  // AutofillWebDataServiceObserverOnDBThread:
   virtual void AutofillEntriesChanged(
       const autofill::AutofillChangeList& changes) OVERRIDE;
 
-  // Provides a StartSyncFlare to the SyncableService. See
-  // sync_start_util for more.
+  // Provides a StartSyncFlare to the SyncableService. See sync_start_util for
+  // more.
   void InjectStartSyncFlare(
       const syncer::SyncableService::StartSyncFlare& flare);
 
  protected:
   explicit AutocompleteSyncableService(
-      autofill::AutofillWebDataBackend* webdata_backend);
+      autofill::AutofillWebDataBackend* web_data_backend);
 
   // Helper to query WebDatabase for the current autocomplete state.
   // Made virtual for ease of mocking in the unit-test.
@@ -118,7 +122,7 @@ class AutocompleteSyncableService
       AutocompleteEntryMap;
 
   // Creates or updates an autocomplete entry based on |data|.
-  // |data| -  an entry for sync.
+  // |data| - an entry for sync.
   // |loaded_data| - entries that were loaded from local storage.
   // |new_entries| - entries that came from the sync.
   // |ignored_entries| - entries that came from the sync, but too old to be
@@ -140,6 +144,9 @@ class AutocompleteSyncableService
   // Syncs |changes| to the cloud.
   void ActOnChanges(const autofill::AutofillChangeList& changes);
 
+  // Returns the table associated with the |web_data_backend_|.
+  autofill::AutofillTable* GetAutofillTable() const;
+
   static std::string KeyToTag(const std::string& name,
                               const std::string& value);
 
@@ -149,9 +156,8 @@ class AutocompleteSyncableService
     sync_processor_.reset(sync_processor);
   }
 
-  // Lifetime of AutocompleteSyncableService object is shorter than
-  // |autofill_webdata_backend_| passed to it.
-  autofill::AutofillWebDataBackend* const webdata_backend_;
+  // The |web_data_backend_| is expected to outlive |this|.
+  autofill::AutofillWebDataBackend* const web_data_backend_;
 
   ScopedObserver<autofill::AutofillWebDataBackend, AutocompleteSyncableService>
       scoped_observer_;
