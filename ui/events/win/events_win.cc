@@ -352,20 +352,6 @@ bool GetGestureTimes(const base::NativeEvent& native_event,
   return false;
 }
 
-void SetNaturalScroll(bool enabled) {
-  NOTIMPLEMENTED();
-}
-
-bool IsNaturalScrollEnabled() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool IsTouchpadEvent(const base::NativeEvent& event) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 int GetModifiersFromACCEL(const ACCEL& accel) {
   int modifiers = EF_NONE;
   if (accel.fVirt & FSHIFT)

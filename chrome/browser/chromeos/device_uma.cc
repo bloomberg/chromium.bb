@@ -85,9 +85,12 @@ void DeviceUMA::CheckTouchpadEvent(XEvent* native_event) {
 void DeviceUMA::CheckIncomingEvent(XEvent* event) {
   switch (event->type) {
     case GenericEvent: {
-      if (ui::DeviceDataManagerX11::GetInstance()->IsXIDeviceEvent(event) &&
-          ui::IsTouchpadEvent(event))
+      ui::DeviceDataManagerX11* devices =
+          ui::DeviceDataManagerX11::GetInstance();
+      if (devices->IsXIDeviceEvent(event) &&
+          devices->IsTouchpadXInputEvent(event)) {
         CheckTouchpadEvent(event);
+      }
       break;
     }
     default:

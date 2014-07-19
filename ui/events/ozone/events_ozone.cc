@@ -144,15 +144,6 @@ bool GetGestureTimes(const base::NativeEvent& native_event,
   return false;
 }
 
-void SetNaturalScroll(bool /* enabled */) { NOTIMPLEMENTED(); }
-
-bool IsNaturalScrollEnabled() { return false; }
-
-bool IsTouchpadEvent(const base::NativeEvent& event) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 int GetModifiersFromKeyState() {
   NOTIMPLEMENTED();
   return 0;

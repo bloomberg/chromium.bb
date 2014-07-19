@@ -371,17 +371,17 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
         }
         case XI_Motion: {
           bool is_cancel;
-          if (GetFlingData(native_event, NULL, NULL, NULL, NULL, &is_cancel)) {
+          DeviceDataManagerX11* devices = DeviceDataManagerX11::GetInstance();
+          if (GetFlingData(native_event, NULL, NULL, NULL, NULL, &is_cancel))
             return is_cancel ? ET_SCROLL_FLING_CANCEL : ET_SCROLL_FLING_START;
-          } else if (DeviceDataManagerX11::GetInstance()->IsScrollEvent(
-              native_event)) {
-            return IsTouchpadEvent(native_event) ? ET_SCROLL : ET_MOUSEWHEEL;
-          } else if (DeviceDataManagerX11::GetInstance()->IsCMTMetricsEvent(
-              native_event)) {
-            return ET_UMA_DATA;
-          } else if (GetButtonMaskForX2Event(xievent)) {
-            return ET_MOUSE_DRAGGED;
+          if (devices->IsScrollEvent(native_event)) {
+            return devices->IsTouchpadXInputEvent(native_event) ? ET_SCROLL
+                                                                : ET_MOUSEWHEEL;
           }
+          if (devices->IsCMTMetricsEvent(native_event))
+            return ET_UMA_DATA;
+          if (GetButtonMaskForX2Event(xievent))
+            return ET_MOUSE_DRAGGED;
           return ET_MOUSE_MOVED;
         }
         case XI_KeyPress:
@@ -806,10 +806,6 @@ bool GetGestureTimes(const base::NativeEvent& native_event,
   DeviceDataManagerX11::GetInstance()->GetGestureTimes(
       native_event, start_time, end_time);
   return true;
-}
-
-bool IsTouchpadEvent(const base::NativeEvent& event) {
-  return DeviceDataManagerX11::GetInstance()->IsTouchpadXInputEvent(event);
 }
 
 }  // namespace ui
