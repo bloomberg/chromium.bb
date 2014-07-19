@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import subprocess
 import unittest
 
 from driver_env import env
@@ -48,3 +49,41 @@ define i32 @main() {
     self.assertFalse(filetype.IsLLVMBitcode(bc.name))
     self.assertTrue(filetype.IsPNaClBitcode(bc.name))
     self.assertTrue(filetype.FileType(bc.name) == 'pexe')
+
+  def getBCWithDebug(self):
+    with self.getTemp(suffix='.c', close=False) as t:
+      t.write('''
+int __attribute__((noinline)) baz(int x, int y) {
+  return x + y;
+}
+
+int foo(int a, int b) {
+  return baz(a, b);
+}
+''')
+      t.close()
+      with self.getTemp(suffix='.bc') as b:
+        # Compile w/ optimization to avoid allocas from local
+        # variables/parameters, since this isn't running the ABI
+        # simplification passes.
+        driver_tools.RunDriver(
+            'pnacl-clang', [t.name, '-o', b.name, '-c', '-g', '-O1'])
+        return b
+
+  def test_finalize_keep_syms(self):
+    """Test that finalize is still able to create a pexe w/ -no-strip-syms."""
+    if not driver_test_utils.CanRunHost():
+      return
+    bc = self.getBCWithDebug()
+    self.assertTrue(filetype.FileType(bc.name) == 'po')
+    self.assertTrue(filetype.IsLLVMBitcode(bc.name))
+    self.assertFalse(filetype.IsPNaClBitcode(bc.name))
+    driver_tools.RunDriver('pnacl-finalize', [bc.name, '--no-strip-syms'])
+    self.assertFalse(filetype.IsLLVMBitcode(bc.name))
+    self.assertTrue(filetype.IsPNaClBitcode(bc.name))
+    self.assertTrue(filetype.FileType(bc.name) == 'pexe')
+    _, stdout, _ = driver_tools.Run(
+        '"${LLVM_NM}" --bitcode-format=pnacl %s' % bc.name,
+        redirect_stdout=subprocess.PIPE)
+    self.assertTrue('T baz' in stdout)
+    self.assertTrue('T foo' in stdout)
