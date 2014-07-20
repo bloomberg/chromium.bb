@@ -29,7 +29,7 @@ closedTreeJson = {
   "can_commit_freely": false
 }
 
-asyncTest("basic", 7, function() {
+asyncTest("basic", 9, function() {
   var simulator = new NetworkSimulator();
   simulator.json = function(url) {
     if (url.indexOf('closed') != -1)
@@ -39,12 +39,14 @@ asyncTest("basic", 7, function() {
     else
       return Promise.resolve(openTreeJson);
   };
+
   var opentree = document.createElement("ct-tree-status");
-  opentree.setAttribute("project", "open-tree-project");
+  opentree.project = "open-tree-project";
   var throttledtree = document.createElement("ct-tree-status");
-  throttledtree.setAttribute("project", "throttled-tree-project");
+  throttledtree.project = "throttled-tree-project";
   var closedtree = document.createElement("ct-tree-status");
-  closedtree.setAttribute("project", "closed-tree-project");
+  closedtree.project = "closed-tree-project";
+
   simulator.runTest(function() {
     var urlByName = treestatus.urlByName;
     treestatus.urlByName = function(name) {
@@ -52,7 +54,6 @@ asyncTest("basic", 7, function() {
     }
     Promise.all([
       opentree.update().then(function() {
-        equal(opentree.message, "Tree is open");
         equal(opentree.status, "open");
       }),
       throttledtree.update().then(function() {
@@ -66,8 +67,13 @@ asyncTest("basic", 7, function() {
         equal(closedtree.status, "closed");
       })
     ]).then(function() {
-      start();
-      treestatus.urlByName = urlByName;
+      requestAnimationFrame(function() {
+        ok(!opentree.shadowRoot.textContent.trim());
+        ok(throttledtree.shadowRoot.textContent.has("throttled-tree-project"));
+        ok(closedtree.shadowRoot.textContent.has("closed-tree-project"));
+        start();
+        treestatus.urlByName = urlByName;
+      });
     });
   });
 });
