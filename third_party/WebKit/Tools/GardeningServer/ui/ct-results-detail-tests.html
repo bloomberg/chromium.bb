@@ -18,7 +18,7 @@ asyncTest("image+text", 4, function() {
   simulator.probe = function(url)
   {
     probedUrls.push(url);
-    if (base.endsWith(url, '.txt') || base.endsWith(url, '.png'))
+    if (url.endsWith('.txt') || url.endsWith('.png'))
         return Promise.resolve();
     else
         return Promise.reject();
@@ -56,7 +56,7 @@ asyncTest("crash", 4, function() {
   simulator.probe = function(url)
   {
     probedUrls.push(url);
-    if (base.endsWith(url, '.txt'))
+    if (url.endsWith('.txt'))
         return Promise.resolve();
     else
         return Promise.reject();

@@ -82,6 +82,21 @@ net.probe = function(url)
     });
 };
 
+net._parseJSONP = function(jsonp)
+{
+    if (!jsonp)
+        return {};
+
+    if (!jsonp.match(/^[^{[]*\(/))
+        return JSON.parse(jsonp);
+
+    var startIndex = jsonp.indexOf('(') + 1;
+    var endIndex = jsonp.lastIndexOf(')');
+    if (startIndex == 0 || endIndex == -1)
+        return {};
+    return JSON.parse(jsonp.substr(startIndex, endIndex - startIndex));
+};
+
 // We use XMLHttpRequest and CORS to fetch JSONP rather than using script tags.
 // That's better for security and performance, but we need the server to cooperate
 // by setting CORS headers.
@@ -90,7 +105,7 @@ net.jsonp = function(url)
     return net.ajax({
         url: url,
     }).then(function(jsonp) {
-        return base.parseJSONP(jsonp);
+        return net._parseJSONP(jsonp);
     }).catch(function(error) {
         return {};
     });

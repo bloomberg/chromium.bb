@@ -256,6 +256,14 @@ var kExampleCommitDataList = [{
   }
 ];
 
+test("queryParam", 2, function() {
+    equal(trac._queryParam({}), '');
+    equal(trac._queryParam({
+        'foo bar': 'bar baz',
+        '1 2': '3 4',
+    }), 'foo+bar=bar+baz&1+2=3+4');
+});
+
 test("changesetURL", 1, function() {
     equals(trac.changesetURL(1234), "http://src.chromium.org/viewvc/blink?view=rev&revision=1234");
 });

@@ -83,6 +83,13 @@ NetworkSimulator.prototype.runTest = function(testCase)
 
 module("net");
 
-// No unit tests yet!
+test("parseJSONP", 6, function() {
+    deepEqual(net._parseJSONP(""), {});
+    deepEqual(net._parseJSONP('p({"key": "value"})'), {"key": "value"});
+    deepEqual(net._parseJSONP('ADD_RESULTS({"dummy":"data"});'), {"dummy":"data"});
+    deepEqual(net._parseJSONP('{"dummy":"data"}'), {"dummy":"data"});
+    deepEqual(net._parseJSONP('ADD_RESULTS({"builder(1)":"data"});'), {"builder(1)":"data"});
+    deepEqual(net._parseJSONP('{"builder(1)":"data"}'), {"builder(1)":"data"});
+});
 
 })();

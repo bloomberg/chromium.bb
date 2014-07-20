@@ -153,6 +153,72 @@ test("ResultAnalyzer", 44, function() {
     ok(!analyzer.flaky());
 });
 
+test("trimExtension", 6, function() {
+    equals(results._trimExtension("xyz"), "xyz");
+    equals(results._trimExtension("xy.z"), "xy");
+    equals(results._trimExtension("x.yz"), "x");
+    equals(results._trimExtension("x.y.z"), "x.y");
+    equals(results._trimExtension(".xyz"), "");
+    equals(results._trimExtension(""), "");
+});
+
+test("joinPath", 1, function() {
+    var value = results._joinPath("path/to", "test.html");
+    equals(value, "path/to/test.html");
+});
+
+test("joinPath with empty parent", 1, function() {
+    var value = results._joinPath("", "test.html");
+    equals(value, "test.html");
+});
+
+test("filterTree", 2, function() {
+    var tree = {
+        'path': {
+            'to': {
+                'test.html': {
+                    'actual': 'PASS',
+                    'expected': 'FAIL'
+                }
+            },
+            'another.html': {
+                'actual': 'TEXT',
+                'expected': 'PASS'
+            }
+        }
+    }
+
+    function isLeaf(node)
+    {
+        return !!node.actual;
+    }
+
+    function actualIsText(node)
+    {
+        return node.actual == 'TEXT';
+    }
+
+    var all = results._filterTree(tree, isLeaf, function() { return true });
+    deepEqual(all, {
+        'path/to/test.html': {
+            'actual': 'PASS',
+            'expected': 'FAIL'
+        },
+        'path/another.html': {
+            'actual': 'TEXT',
+            'expected': 'PASS'
+        }
+    });
+
+    var text = results._filterTree(tree, isLeaf, actualIsText);
+    deepEqual(text, {
+        'path/another.html': {
+            'actual': 'TEXT',
+            'expected': 'PASS'
+        }
+    });
+});
+
 test("unexpectedFailures", 1, function() {
     var unexpectedFailures = results.unexpectedFailures(unittest.kExampleResultsJSON);
     deepEqual(unexpectedFailures, {
@@ -391,7 +457,7 @@ asyncTest("fetchResultsURLs", 5, function() {
     simulator.probe = function(url)
     {
         probedURLs.push(url);
-        if (base.endsWith(url, '.txt'))
+        if (url.endsWith('.txt'))
             return Promise.resolve();
         else if (/taco.+png$/.test(url))
             return Promise.resolve();
@@ -454,7 +520,7 @@ asyncTest("fetchResultsByBuilder", 3, function() {
     simulator.jsonp = function(url)
     {
         probedURLs.push(url);
-        return Promise.resolve(base.endsWith(url, 'results/layout-test-results/failing_results.json'));
+        return Promise.resolve(url.endsWith('results/layout-test-results/failing_results.json'));
     };
 
     simulator.runTest(function() {

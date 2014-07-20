@@ -27,79 +27,6 @@ var base = base || {};
 
 (function(){
 
-base.endsWith = function(string, suffix)
-{
-    if (suffix.length > string.length)
-        return false;
-    var expectedIndex = string.length - suffix.length;
-    return string.lastIndexOf(suffix) == expectedIndex;
-};
-
-base.joinPath = function(parent, child)
-{
-    if (parent.length == 0)
-        return child;
-    return parent + '/' + child;
-};
-
-base.trimExtension = function(url)
-{
-    var index = url.lastIndexOf('.');
-    if (index == -1)
-        return url;
-    return url.substr(0, index);
-}
-
-base.uniquifyArray = function(array)
-{
-    var seen = {};
-    var result = [];
-    array.forEach(function(value) {
-        if (seen[value])
-            return;
-        seen[value] = true;
-        result.push(value);
-    });
-    return result;
-};
-
-base.filterTree = function(tree, isLeaf, predicate)
-{
-    var filteredTree = {};
-
-    function walkSubtree(subtree, directory)
-    {
-        for (var childName in subtree) {
-            var child = subtree[childName];
-            var childPath = base.joinPath(directory, childName);
-            if (isLeaf(child)) {
-                if (predicate(child))
-                    filteredTree[childPath] = child;
-                continue;
-            }
-            walkSubtree(child, childPath);
-        }
-    }
-
-    walkSubtree(tree, '');
-    return filteredTree;
-};
-
-base.parseJSONP = function(jsonp)
-{
-    if (!jsonp)
-        return {};
-
-    if (!jsonp.match(/^[^{[]*\(/))
-        return JSON.parse(jsonp);
-
-    var startIndex = jsonp.indexOf('(') + 1;
-    var endIndex = jsonp.lastIndexOf(')');
-    if (startIndex == 0 || endIndex == -1)
-        return {};
-    return JSON.parse(jsonp.substr(startIndex, endIndex - startIndex));
-};
-
 // This is effectively a cache of possibly-resolved promises.
 base.AsynchronousCache = function(fetch)
 {
@@ -124,39 +51,5 @@ base.AsynchronousCache.prototype.clear = function()
 {
     this._promiseCache = {};
 };
-
-// Based on http://src.chromium.org/viewvc/chrome/trunk/src/chrome/browser/resources/shared/js/cr/ui.js
-base.extends = function(base, prototype)
-{
-    var extended = function() {
-        var element = typeof base == 'string' ? document.createElement(base) : base.call(this);
-        extended.prototype.__proto__ = element.__proto__;
-        element.__proto__ = extended.prototype;
-        var singleton = element.init && element.init.apply(element, arguments);
-        if (singleton)
-            return singleton;
-        return element;
-    }
-
-    extended.prototype = prototype;
-    return extended;
-}
-
-base.underscoredBuilderName = function(builderName)
-{
-    return builderName.replace(/[ .()]/g, '_');
-}
-
-base.queryParam = function(params)
-{
-    var result = []
-    Object.keys(params, function(key, value) {
-        result.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
-    });
-    // FIXME: Remove the conversion of space to plus. This is just here
-    // to remain compatible with jQuery.param, but there's no reason to
-    // deviate from the built-in encodeURIComponent behavior.
-    return result.join('&').replace(/%20/g, '+');
-}
 
 })();

@@ -114,13 +114,25 @@ function parseCommitData(responseXML)
     return commits;
 }
 
+trac._queryParam = function(params)
+{
+    var result = []
+    Object.keys(params, function(key, value) {
+        result.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
+    });
+    // FIXME: Remove the conversion of space to plus. This is just here
+    // to remain compatible with jQuery.param, but there's no reason to
+    // deviate from the built-in encodeURIComponent behavior.
+    return result.join('&').replace(/%20/g, '+');
+}
+
 trac.changesetURL = function(revision)
 {
     var queryParameters = {
         view: 'rev',
         revision: revision,
     };
-    return config.kBlinkRevisionURL + '?' + base.queryParam(queryParameters);
+    return config.kBlinkRevisionURL + '?' + trac._queryParam(queryParameters);
 };
 
 trac.recentCommitData = function(path, limit)

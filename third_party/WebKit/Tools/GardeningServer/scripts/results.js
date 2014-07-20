@@ -130,7 +130,7 @@ function possibleSuffixListFor(failureTypeList)
         }
     });
 
-    return base.uniquifyArray(suffixList);
+    return suffixList.unique();
 }
 
 function failureTypeList(failureBlob)
@@ -157,13 +157,14 @@ var g_resultsCache = new base.AsynchronousCache(function(key) {
     return net.jsonp(key);
 });
 
-results.ResultAnalyzer = base.extends(Object, {
-    init: function(resultNode)
-    {
-        this._isUnexpected = resultNode.is_unexpected;
-        this._actual = resultNode ? failureTypeList(resultNode.actual) : [];
-        this._expected = resultNode ? this._addImpliedExpectations(failureTypeList(resultNode.expected)) : [];
-    },
+results.ResultAnalyzer = function(resultNode)
+{
+    this._isUnexpected = resultNode.is_unexpected;
+    this._actual = resultNode ? failureTypeList(resultNode.actual) : [];
+    this._expected = resultNode ? this._addImpliedExpectations(failureTypeList(resultNode.expected)) : [];
+};
+
+results.ResultAnalyzer.prototype = {
     _addImpliedExpectations: function(resultsList)
     {
         if (resultsList.indexOf('FAIL') == -1)
@@ -195,8 +196,8 @@ results.ResultAnalyzer = base.extends(Object, {
     hasUnexpectedFailures: function()
     {
         return this._isUnexpected;
-    }
-});
+    },
+};
 
 function isUnexpectedFailure(resultNode)
 {
@@ -209,9 +210,38 @@ function isResultNode(node)
     return !!node.actual;
 }
 
+results._joinPath = function(parent, child)
+{
+    if (parent.length == 0)
+        return child;
+    return parent + '/' + child;
+};
+
+results._filterTree = function(tree, isLeaf, predicate)
+{
+    var filteredTree = {};
+
+    function walkSubtree(subtree, directory)
+    {
+        for (var childName in subtree) {
+            var child = subtree[childName];
+            var childPath = results._joinPath(directory, childName);
+            if (isLeaf(child)) {
+                if (predicate(child))
+                    filteredTree[childPath] = child;
+                continue;
+            }
+            walkSubtree(child, childPath);
+        }
+    }
+
+    walkSubtree(tree, '');
+    return filteredTree;
+};
+
 results.unexpectedFailures = function(resultsTree)
 {
-    return base.filterTree(resultsTree.tests, isResultNode, isUnexpectedFailure);
+    return results._filterTree(resultsTree.tests, isResultNode, isUnexpectedFailure);
 };
 
 function resultsByTest(resultsByBuilder, filter)
@@ -411,7 +441,7 @@ function sortResultURLsBySuffix(urls)
     var sortedURLs = [];
     kPreferredSuffixOrder.forEach(function(suffix) {
         urls.forEach(function(url) {
-            if (!base.endsWith(url, suffix))
+            if (!url.endsWith(suffix))
                 return;
             sortedURLs.push(url);
         });
@@ -421,9 +451,17 @@ function sortResultURLsBySuffix(urls)
     return sortedURLs;
 }
 
+results._trimExtension = function(url)
+{
+    var index = url.lastIndexOf('.');
+    if (index == -1)
+        return url;
+    return url.substr(0, index);
+}
+
 results.fetchResultsURLs = function(failureInfo)
 {
-    var testNameStem = base.trimExtension(failureInfo.testName);
+    var testNameStem = results._trimExtension(failureInfo.testName);
     var urlStem = resultsDirectoryURL(failureInfo.builderName);
 
     var suffixList = possibleSuffixListFor(failureInfo.failureTypeList);

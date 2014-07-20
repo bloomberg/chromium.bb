@@ -53,7 +53,7 @@ config = {
         'WebKit Android (Nexus4)': {version: 'android'},
     },
     resultsDirectoryNameFromBuilderName: function(builderName) {
-        return base.underscoredBuilderName(builderName);
+        return builderName.replace(/[ .()]/g, '_');
     },
     builderApplies: function(builderName) {
         return builderName.indexOf('GPU') == -1 &&
