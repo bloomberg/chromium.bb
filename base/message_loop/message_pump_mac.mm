@@ -72,9 +72,6 @@ bool g_not_using_cr_app = false;
 // Call through to CFRunLoopTimerSetTolerance(), which is only available on
 // OS X 10.9.
 void SetTimerTolerance(CFRunLoopTimerRef timer, CFTimeInterval tolerance) {
-// TODO(jeremy): Temporarily disabled in order to gauge net effect of timer
-// coalescing.
-#if 0
   typedef void (*CFRunLoopTimerSetTolerancePtr)(CFRunLoopTimerRef timer,
       CFTimeInterval tolerance);
 
@@ -97,7 +94,6 @@ void SetTimerTolerance(CFRunLoopTimerRef timer, CFTimeInterval tolerance) {
 
   if (settimertolerance_function_ptr)
     settimertolerance_function_ptr(timer, tolerance);
-#endif
 }
 
 }  // namespace
