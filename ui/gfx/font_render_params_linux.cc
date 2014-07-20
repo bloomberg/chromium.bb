@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/linux_font_delegate.h"
 #include "ui/gfx/switches.h"
 
@@ -42,6 +43,7 @@ FontRenderParams::SubpixelRendering ConvertFontconfigRgba(int rgba) {
 bool QueryFontconfig(const std::vector<std::string>* family_list,
                      const int* pixel_size,
                      const int* point_size,
+                     const int* style,
                      FontRenderParams* params_out,
                      std::string* family_out) {
   FcPattern* pattern = FcPatternCreate();
@@ -58,6 +60,12 @@ bool QueryFontconfig(const std::vector<std::string>* family_list,
     FcPatternAddDouble(pattern, FC_PIXEL_SIZE, *pixel_size);
   if (point_size)
     FcPatternAddInteger(pattern, FC_SIZE, *point_size);
+  if (style) {
+    FcPatternAddInteger(pattern, FC_SLANT,
+        (*style & Font::ITALIC) ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
+    FcPatternAddInteger(pattern, FC_WEIGHT,
+        (*style & Font::BOLD) ? FC_WEIGHT_BOLD : FC_WEIGHT_NORMAL);
+  }
 
   FcConfigSubstitute(NULL, pattern, FcMatchPattern);
   FcDefaultSubstitute(pattern);
@@ -99,28 +107,21 @@ bool QueryFontconfig(const std::vector<std::string>* family_list,
   return true;
 }
 
-// Initializes |params| with the system's default settings.
-void LoadDefaults(FontRenderParams* params, bool for_web_contents) {
-  *params = GetCustomFontRenderParams(for_web_contents, NULL, NULL, NULL, NULL);
+// Returns the system's default settings.
+FontRenderParams LoadDefaults(bool for_web_contents) {
+  return GetCustomFontRenderParams(
+      for_web_contents, NULL, NULL, NULL, NULL, NULL);
 }
 
 }  // namespace
 
 const FontRenderParams& GetDefaultFontRenderParams() {
-  static bool loaded_defaults = false;
-  static FontRenderParams default_params;
-  if (!loaded_defaults)
-    LoadDefaults(&default_params, /* for_web_contents */ false);
-  loaded_defaults = true;
+  static FontRenderParams default_params = LoadDefaults(false);
   return default_params;
 }
 
 const FontRenderParams& GetDefaultWebKitFontRenderParams() {
-  static bool loaded_defaults = false;
-  static FontRenderParams default_params;
-  if (!loaded_defaults)
-    LoadDefaults(&default_params, /* for_web_contents */ true);
-  loaded_defaults = true;
+  static FontRenderParams default_params = LoadDefaults(true);
   return default_params;
 }
 
@@ -129,6 +130,7 @@ FontRenderParams GetCustomFontRenderParams(
     const std::vector<std::string>* family_list,
     const int* pixel_size,
     const int* point_size,
+    const int* style,
     std::string* family_out) {
   if (family_out)
     family_out->clear();
@@ -138,7 +140,8 @@ FontRenderParams GetCustomFontRenderParams(
   const LinuxFontDelegate* delegate = LinuxFontDelegate::instance();
   if (delegate)
     params = delegate->GetDefaultFontRenderParams();
-  QueryFontconfig(family_list, pixel_size, point_size, &params, family_out);
+  QueryFontconfig(
+      family_list, pixel_size, point_size, style, &params, family_out);
 
   // Fontconfig doesn't support configuring subpixel positioning; check a flag.
   params.subpixel_positioning = CommandLine::ForCurrentProcess()->HasSwitch(

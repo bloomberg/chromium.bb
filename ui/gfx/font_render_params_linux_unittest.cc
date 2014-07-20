@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/test/fontconfig_util_linux.h"
 
 namespace gfx {
@@ -72,7 +73,6 @@ TEST_F(FontRenderParamsTest, Default) {
 }
 
 TEST_F(FontRenderParamsTest, Size) {
-  // Fontconfig needs to know about at least one font to return a match.
   ASSERT_TRUE(LoadSystemFont("arial.ttf"));
   ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
       std::string(kFontconfigFileHeader) +
@@ -97,25 +97,73 @@ TEST_F(FontRenderParamsTest, Size) {
   // second or third blocks.
   int pixel_size = 12;
   FontRenderParams params = GetCustomFontRenderParams(
-      false, NULL, &pixel_size, NULL, NULL);
+      false, NULL, &pixel_size, NULL, NULL, NULL);
   EXPECT_TRUE(params.antialiasing);
   EXPECT_EQ(FontRenderParams::HINTING_FULL, params.hinting);
   EXPECT_EQ(FontRenderParams::SUBPIXEL_RENDERING_NONE,
             params.subpixel_rendering);
 
   pixel_size = 10;
-  params = GetCustomFontRenderParams(false, NULL, &pixel_size, NULL, NULL);
+  params = GetCustomFontRenderParams(
+      false, NULL, &pixel_size, NULL, NULL, NULL);
   EXPECT_FALSE(params.antialiasing);
   EXPECT_EQ(FontRenderParams::HINTING_FULL, params.hinting);
   EXPECT_EQ(FontRenderParams::SUBPIXEL_RENDERING_NONE,
             params.subpixel_rendering);
 
   int point_size = 20;
-  params = GetCustomFontRenderParams(false, NULL, NULL, &point_size, NULL);
+  params = GetCustomFontRenderParams(
+      false, NULL, NULL, &point_size, NULL, NULL);
   EXPECT_TRUE(params.antialiasing);
   EXPECT_EQ(FontRenderParams::HINTING_SLIGHT, params.hinting);
   EXPECT_EQ(FontRenderParams::SUBPIXEL_RENDERING_RGB,
             params.subpixel_rendering);
+}
+
+TEST_F(FontRenderParamsTest, Style) {
+  ASSERT_TRUE(LoadSystemFont("arial.ttf"));
+  // Load a config that disables antialiasing for bold text and disables
+  // hinting for italic text.
+  ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
+      std::string(kFontconfigFileHeader) +
+      kFontconfigMatchHeader +
+      CreateFontconfigEditStanza("antialias", "bool", "true") +
+      CreateFontconfigEditStanza("hinting", "bool", "true") +
+      CreateFontconfigEditStanza("hintstyle", "const", "hintfull") +
+      kFontconfigMatchFooter +
+      kFontconfigMatchHeader +
+      CreateFontconfigTestStanza("weight", "eq", "const", "bold") +
+      CreateFontconfigEditStanza("antialias", "bool", "false") +
+      kFontconfigMatchFooter +
+      kFontconfigMatchHeader +
+      CreateFontconfigTestStanza("slant", "eq", "const", "italic") +
+      CreateFontconfigEditStanza("hinting", "bool", "false") +
+      kFontconfigMatchFooter +
+      kFontconfigFileFooter));
+
+  int style = Font::NORMAL;
+  FontRenderParams params = GetCustomFontRenderParams(
+      false, NULL, NULL, NULL, &style, NULL);
+  EXPECT_TRUE(params.antialiasing);
+  EXPECT_EQ(FontRenderParams::HINTING_FULL, params.hinting);
+
+  style = Font::BOLD;
+  params = GetCustomFontRenderParams(
+      false, NULL, NULL, NULL, &style, NULL);
+  EXPECT_FALSE(params.antialiasing);
+  EXPECT_EQ(FontRenderParams::HINTING_FULL, params.hinting);
+
+  style = Font::ITALIC;
+  params = GetCustomFontRenderParams(
+      false, NULL, NULL, NULL, &style, NULL);
+  EXPECT_TRUE(params.antialiasing);
+  EXPECT_EQ(FontRenderParams::HINTING_NONE, params.hinting);
+
+  style = Font::BOLD | Font::ITALIC;
+  params = GetCustomFontRenderParams(
+      false, NULL, NULL, NULL, &style, NULL);
+  EXPECT_FALSE(params.antialiasing);
+  EXPECT_EQ(FontRenderParams::HINTING_NONE, params.hinting);
 }
 
 }  // namespace gfx

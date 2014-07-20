@@ -94,20 +94,15 @@ PlatformFontPango::PlatformFontPango() {
 }
 
 PlatformFontPango::PlatformFontPango(NativeFont native_font) {
-  const int pango_size =
-      pango_font_description_get_size(native_font) / PANGO_SCALE;
-  const bool pango_using_pixels =
-      pango_font_description_get_size_is_absolute(native_font);
-
   std::string font_family;
   std::vector<std::string> family_names;
   base::SplitString(pango_font_description_get_family(native_font), ',',
                     &family_names);
-  const FontRenderParams params = GetCustomFontRenderParams(
-      false, &family_names,
-      pango_using_pixels ? &pango_size : NULL /* pixel_size */,
-      !pango_using_pixels ? &pango_size : NULL /* point_size */,
-      &font_family);
+
+  const int pango_size =
+      pango_font_description_get_size(native_font) / PANGO_SCALE;
+  const bool pango_using_pixels =
+      pango_font_description_get_size_is_absolute(native_font);
 
   int style = 0;
   // TODO(davemoore) What should we do about other weights? We currently only
@@ -118,6 +113,12 @@ PlatformFontPango::PlatformFontPango(NativeFont native_font) {
   if (pango_font_description_get_style(native_font) == PANGO_STYLE_ITALIC)
     style |= gfx::Font::ITALIC;
 
+  const FontRenderParams params = GetCustomFontRenderParams(
+      false, &family_names,
+      pango_using_pixels ? &pango_size : NULL /* pixel_size */,
+      !pango_using_pixels ? &pango_size : NULL /* point_size */,
+      &style, &font_family);
+
   InitFromDetails(skia::RefPtr<SkTypeface>(), font_family,
                   gfx::GetPangoFontSizeInPixels(native_font), style, params);
 }
@@ -125,10 +126,11 @@ PlatformFontPango::PlatformFontPango(NativeFont native_font) {
 PlatformFontPango::PlatformFontPango(const std::string& font_name,
                                      int font_size_pixels) {
   const std::vector<std::string> font_list(1, font_name);
+  const int style = Font::NORMAL;
   const FontRenderParams params = GetCustomFontRenderParams(
-      false, &font_list, &font_size_pixels, NULL, NULL);
+      false, &font_list, &font_size_pixels, NULL, &style, NULL);
   InitFromDetails(skia::RefPtr<SkTypeface>(), font_name, font_size_pixels,
-                  SkTypeface::kNormal, params);
+                  style, params);
 }
 
 double PlatformFontPango::underline_position() const {
@@ -169,13 +171,9 @@ Font PlatformFontPango::DeriveFont(int size_delta, int style) const {
   skia::RefPtr<SkTypeface> typeface =
       (style == style_) ? typeface_ : CreateSkTypeface(style, &new_family);
 
-  // If the size or family changed, get updated rendering settings.
-  FontRenderParams render_params = font_render_params_;
-  if (size_delta != 0 || new_family != font_family_) {
-    const std::vector<std::string> family_list(1, new_family);
-    render_params = GetCustomFontRenderParams(
-        false, &family_list, &new_size, NULL, NULL);
-  }
+  const std::vector<std::string> family_list(1, new_family);
+  const FontRenderParams render_params = GetCustomFontRenderParams(
+      false, &family_list, &new_size, NULL, &style, NULL);
 
   return Font(new PlatformFontPango(typeface,
                                     new_family,

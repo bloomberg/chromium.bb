@@ -67,13 +67,13 @@ GFX_EXPORT const FontRenderParams& GetDefaultWebKitFontRenderParams();
 // Returns the appropriate parameters for rendering the font described by the
 // passed-in-arguments, any of which may be NULL. If |family_out| is non-NULL,
 // it will be updated to contain the recommended font family from |family_list|.
-// TODO(derat): Also accept the font style, so that its bold and italic states
-// can be passed to Fontconfig in the Linux implementation.
+// |style| optionally points to a bit field of Font::FontStyle values.
 GFX_EXPORT FontRenderParams GetCustomFontRenderParams(
     bool for_web_contents,
     const std::vector<std::string>* family_list,
     const int* pixel_size,
     const int* point_size,
+    const int* style,
     std::string* family_out);
 
 }  // namespace gfx
