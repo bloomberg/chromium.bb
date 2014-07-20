@@ -27,6 +27,7 @@ var treestatus = treestatus || {};
 
 (function() {
 
+// FIXME: Turn this into a model-object class.
 treestatus.urlByName = function(name) {
     if (name == 'blink')
         return "http://blink-status.appspot.com/current?format=json";

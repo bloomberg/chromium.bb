@@ -28,14 +28,9 @@ var config = config || {};
 (function() {
 
 config = {
-    kTreeStatusUpdateFrequency: 1000 * 30,
-    kUpdateFrequency: 10 * 60 * 1000,
-
+    kUpdateFrequency: 1000 * 30,
     kBlinkRevisionURL: 'http://src.chromium.org/viewvc/blink',
-    kRietveldURL: 'https://codereview.chromium.org',
-
     buildConsoleURL: 'http://build.chromium.org/p/chromium.webkit',
-
     layoutTestResultsURL: 'https://storage.googleapis.com/chromium-layout-test-archives',
     waterfallURL: 'http://build.chromium.org/p/chromium.webkit/waterfall',
     builders: {
@@ -64,7 +59,6 @@ config = {
         return builderName.indexOf('GPU') == -1 &&
                builderName.indexOf('Oilpan') == -1;
     },
-    useLocalResults: !!base.getURLParameter('useLocalResults') || false,
 };
 
 })();

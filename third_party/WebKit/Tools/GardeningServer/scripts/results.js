@@ -60,7 +60,6 @@ var kPreferredSuffixOrder = [
     kCrashLogSuffix,
     kExpectedAudioSuffix,
     kActualAudioSuffix,
-    // FIXME: Add support for the rest of the result types.
 ];
 
 // Kinds of results.
@@ -73,7 +72,6 @@ results.kUnknownKind = 'unknown';
 results.kImageType = 'image';
 results.kAudioType = 'audio';
 results.kTextType = 'text';
-// FIXME: There are more types of tests.
 
 function possibleSuffixListFor(failureTypeList)
 {
@@ -142,8 +140,6 @@ function failureTypeList(failureBlob)
 
 function resultsDirectoryURL(builderName)
 {
-    if (config.useLocalResults)
-        return '/localresult?path=';
     return config.layoutTestResultsURL + '/' + config.resultsDirectoryNameFromBuilderName(builderName) + '/results/layout-test-results/';
 }
 
@@ -245,21 +241,6 @@ results.failureInfo = function(testName, builderName, result)
         'failureTypeList': failureTypeList(result),
     };
 }
-
-results.failureInfoForTestAndBuilder = function(resultsByTest, testName, builderName)
-{
-    return results.failureInfo(testName, builderName, resultsByTest[testName][builderName].actual)
-};
-
-results.collectUnexpectedResults = function(dictionaryOfResultNodes)
-{
-    var collectedResults = [];
-    Object.keys(dictionaryOfResultNodes, function(key, resultNode) {
-        var analyzer = new results.ResultAnalyzer(resultNode);
-        collectedResults = collectedResults.concat(analyzer.unexpectedResults());
-    });
-    return base.uniquifyArray(collectedResults);
-};
 
 // Callback data is [{ buildNumber:, url: }]
 function historicalResultsLocations(builderName)

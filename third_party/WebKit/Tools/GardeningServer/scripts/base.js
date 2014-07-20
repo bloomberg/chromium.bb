@@ -42,14 +42,6 @@ base.joinPath = function(parent, child)
     return parent + '/' + child;
 };
 
-base.dirName = function(path)
-{
-    var directoryIndex = path.lastIndexOf('/');
-    if (directoryIndex == -1)
-        return path;
-    return path.substr(0, directoryIndex);
-};
-
 base.trimExtension = function(url)
 {
     var index = url.lastIndexOf('.');
@@ -68,27 +60,6 @@ base.uniquifyArray = function(array)
         seen[value] = true;
         result.push(value);
     });
-    return result;
-};
-
-base.flattenArray = function(arrayOfArrays)
-{
-    if (!arrayOfArrays.length)
-        return [];
-    return arrayOfArrays.reduce(function(left, right) {
-        return left.concat(right);
-    });
-};
-
-base.filterDictionary = function(dictionary, predicate)
-{
-    var result = {};
-
-    for (var key in dictionary) {
-        if (predicate(key))
-            result[key] = dictionary[key];
-    }
-
     return result;
 };
 
@@ -112,20 +83,6 @@ base.filterTree = function(tree, isLeaf, predicate)
 
     walkSubtree(tree, '');
     return filteredTree;
-};
-
-base.forEachDirectory = function(pathList, callback)
-{
-    var pathsByDirectory = {};
-    pathList.forEach(function(path) {
-        var directory = base.dirName(path);
-        pathsByDirectory[directory] = pathsByDirectory[directory] || [];
-        pathsByDirectory[directory].push(path);
-    });
-    Object.keys(pathsByDirectory).sort().forEach(function(directory) {
-        var paths = pathsByDirectory[directory];
-        callback(directory + ' (' + paths.length + ' tests)', paths);
-    });
 };
 
 base.parseJSONP = function(jsonp)
@@ -168,69 +125,6 @@ base.AsynchronousCache.prototype.clear = function()
     this._promiseCache = {};
 };
 
-/*
-    Maintains a dictionary of items, tracking their updates and removing items that haven't been updated.
-    An "update" is a call to the "update" method.
-    To remove stale items, call the "remove" method. It will remove all
-    items that have not been been updated since the last call of "remove".
-*/
-base.UpdateTracker = function()
-{
-    this._items = {};
-    this._updated = {};
-}
-
-base.UpdateTracker.prototype = {
-    /*
-        Update an {key}/{item} pair. You can make the dictionary act as a set and
-        skip the {item}, in which case the {key} is also the {item}.
-    */
-    update: function(key, object)
-    {
-        object = object || key;
-        this._items[key] = object;
-        this._updated[key] = 1;
-    },
-    exists: function(key)
-    {
-        return !!this.get(key);
-    },
-    get: function(key)
-    {
-        return this._items[key];
-    },
-    length: function()
-    {
-        return Object.keys(this._items).length;
-    },
-    /*
-        Callback parameters are:
-        - item
-        - key
-        - updated, which is true if the item was updated after last purge() call.
-    */
-    forEach: function(callback, thisObject)
-    {
-        if (!callback)
-            return;
-
-        Object.keys(this._items).sort().forEach(function(key) {
-            var item = this._items[key];
-            callback.call(thisObject || item, item, key, !!this._updated[key]);
-        }, this);
-    },
-    purge: function(removeCallback, thisObject) {
-        removeCallback = removeCallback || function() {};
-        this.forEach(function(item, key, updated) {
-            if (updated)
-                return;
-            removeCallback.call(thisObject || item, item);
-            delete this._items[key];
-        }, this);
-        this._updated = {};
-    }
-}
-
 // Based on http://src.chromium.org/viewvc/chrome/trunk/src/chrome/browser/resources/shared/js/cr/ui.js
 base.extends = function(base, prototype)
 {
@@ -246,14 +140,6 @@ base.extends = function(base, prototype)
 
     extended.prototype = prototype;
     return extended;
-}
-
-base.getURLParameter = function(name)
-{
-    var match = RegExp(name + '=' + '(.+?)(&|$)').exec(location.search);
-    if (!match)
-        return null;
-    return decodeURI(match[1])
 }
 
 base.underscoredBuilderName = function(builderName)

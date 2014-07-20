@@ -58,41 +58,12 @@ test("joinPath with empty parent", 1, function() {
     equals(value, "test.html");
 });
 
-test("dirName", 3, function() {
-    equals(base.dirName("foo.html"), "foo.html");
-    equals(base.dirName("foo/bar.html"), "foo");
-    equals(base.dirName("foo/bar/baz.html"), "foo/bar");
-});
-
 test("uniquifyArray", 5, function() {
     deepEqual(base.uniquifyArray([]), []);
     deepEqual(base.uniquifyArray(["a"]), ["a"]);
     deepEqual(base.uniquifyArray(["a", "b"]), ["a", "b"]);
     deepEqual(base.uniquifyArray(["a", "b", "b"]), ["a", "b"]);
     deepEqual(base.uniquifyArray(["a", "b", "b", "a"]), ["a", "b"]);
-});
-
-test("flattenArray", 5, function() {
-    deepEqual(base.flattenArray([]), []);
-    deepEqual(base.flattenArray([["a"]]), ["a"]);
-    deepEqual(base.flattenArray([["a"], ["b"]]), ["a", "b"]);
-    deepEqual(base.flattenArray([["a"], ["b", "c"]]), ["a", "b", "c"]);
-    deepEqual(base.flattenArray([["a"], [], ["b"]]), ["a", "b"]);
-});
-
-test("filterDictionary", 3, function() {
-    var dictionary = {
-        'foo': 43,
-        'bar': 11
-    };
-    deepEqual(base.filterDictionary(dictionary, function() { return true; }), {
-        "foo": 43,
-        "bar": 11
-    });
-    deepEqual(base.filterDictionary(dictionary, function() { return false; }), { });
-    deepEqual(base.filterDictionary(dictionary, function(key) { return key == 'foo'; }), {
-        "foo": 43
-    });
 });
 
 test("filterTree", 2, function() {
@@ -140,83 +111,6 @@ test("filterTree", 2, function() {
             'expected': 'PASS'
         }
     });
-});
-
-test("UpdateTracker", 20, function() {
-    var dict;
-
-    function dumpKeys()
-    {
-        var updates = []
-        dict.forEach(function(item, key, updated) {
-            updates.push(key);
-        });
-        return updates;
-    }
-
-    function dumpUpdatedKeys()
-    {
-        var updates = []
-        dict.forEach(function(item, key, updated) {
-            updated && updates.push(key);
-        });
-        return updates;
-    }
-
-
-    dict = new base.UpdateTracker();
-    dict.update("5", {});
-    deepEqual(dumpUpdatedKeys(), ["5"]);
-    dict.update("6", {});
-    dict.update("7", {});
-    deepEqual(dumpUpdatedKeys(), ["5", "6", "7"]);
-    deepEqual(dict.get("6"), {});
-    ok(dict.exists("7"));
-    dict.purge();
-    deepEqual(dumpUpdatedKeys(), []);
-    deepEqual(dumpKeys(), ["5", "6", "7"]);
-    dict.update("5", {});
-    deepEqual(dumpUpdatedKeys(), ["5"]);
-    dict.update("4", {});
-    deepEqual(dumpUpdatedKeys(), ["4", "5"]);
-    deepEqual(dumpKeys(), ["4", "5", "6", "7"]);
-    dict.purge();
-    deepEqual(dumpKeys(), ["4", "5"]);
-    deepEqual(dumpUpdatedKeys(), []);
-    dict.purge();
-    deepEqual(dumpKeys(), []);
-
-    var removeCount = 0;
-    dict.update("one");
-    deepEqual(dumpUpdatedKeys(), ["one"]);
-    dict.update("two");
-    deepEqual(dumpUpdatedKeys(), ["one", "two"]);
-    dict.update("three");
-    dict.purge();
-    deepEqual(dumpKeys(), ["one", "three", "two"]);
-    dict.update("two");
-    dict.purge(function() {
-        removeCount++;
-    });
-    deepEqual(dumpKeys(), ["two"]);
-    equal(removeCount, 2);
-    dict.update("four");
-    var removeCounter = { count: 0 };
-    dict.purge(function() {
-        this.count++;
-    }, removeCounter);
-    equal(removeCounter.count, 1);
-    dict.purge(function() {
-        equal(String(this), "four");
-    });
-
-    dict = new base.UpdateTracker();
-    dict.update("one");
-    var thisObject = {}
-    dict.forEach(function(item) {
-        equal(this, thisObject);
-    }, thisObject);
-
 });
 
 test("extends", 14, function() {
@@ -294,10 +188,6 @@ test("extends", 14, function() {
     // Safari 5.1 lacks the <progress> element.
     // equals(document.body.lastChild.position, 1);
     document.body.removeChild(document.body.lastChild);
-});
-
-test("getURLParameter", 1, function() {
-    ok(!base.getURLParameter('non-existant'));
 });
 
 test("parseJSONP", 6, function() {

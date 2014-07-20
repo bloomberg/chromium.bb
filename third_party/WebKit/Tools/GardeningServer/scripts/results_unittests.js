@@ -188,18 +188,6 @@ test("failureInfo", 1, function() {
     });
 });
 
-test("failureInfoForTestAndBuilder", 1, function() {
-    var unexpectedFailuresByTest = results.unexpectedFailuresByTest({
-        "Mock Builder": unittest.kExampleResultsJSON
-    });
-    var failureInfo = results.failureInfoForTestAndBuilder(unexpectedFailuresByTest, "userscripts/another-test.html", "Mock Builder");
-    deepEqual(failureInfo, {
-        "testName": "userscripts/another-test.html",
-        "builderName": "Mock Builder",
-        "failureTypeList": ["TEXT"],
-    });
-});
-
 test("resultKind", 12, function() {
     equals(results.resultKind("http://example.com/foo-actual.txt"), "actual");
     equals(results.resultKind("http://example.com/foo-expected.txt"), "expected");
@@ -394,34 +382,6 @@ asyncTest("walkHistory (no revision)", 3, function() {
             equals(newestPassingRevision, 0);
         }).then(start);
     });
-});
-
-test("collectUnexpectedResults", 1, function() {
-    var dictionaryOfResultNodes = {
-        "foo": {
-            "expected": "IMAGE",
-            "actual": "IMAGE"
-        },
-        "bar": {
-            "expected": "PASS",
-            "actual": "PASS TEXT"
-        },
-        "baz": {
-            "expected": "TEXT",
-            "actual": "IMAGE"
-        },
-        "qux": {
-            "expected": "PASS",
-            "actual": "TEXT"
-        },
-        "taco": {
-            "expected": "PASS",
-            "actual": "TEXT"
-        },
-    };
-
-    var collectedResults = results.collectUnexpectedResults(dictionaryOfResultNodes);
-    deepEqual(collectedResults, ["TEXT", "IMAGE"]);
 });
 
 asyncTest("fetchResultsURLs", 5, function() {

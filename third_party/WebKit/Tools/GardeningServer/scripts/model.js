@@ -111,33 +111,6 @@ model.buildersInFlightForRevision = function(revision)
     return builders;
 };
 
-model.latestRevision = function()
-{
-    return model.state.recentCommits[0].revision;
-};
-
-model.latestRevisionWithNoBuildersInFlight = function()
-{
-    var revision = 0;
-    Object.keys(model.state.resultsByBuilder).forEach(function(builderName) {
-        var results = model.state.resultsByBuilder[builderName];
-        if (!results.blink_revision)
-            return;
-        var testedRevision = parseInt(results.blink_revision);
-        revision = revision ? Math.min(revision, testedRevision) : testedRevision;
-    });
-    return revision;
-}
-
-model.latestRevisionByBuilder = function()
-{
-    var revision = {};
-    Object.keys(model.state.resultsByBuilder).forEach(function(builderName) {
-        revision[builderName] = model.state.resultsByBuilder[builderName].blink_revision;
-    });
-    return revision;
-}
-
 model.updateResultsByBuilder = function()
 {
     return results.fetchResultsByBuilder(Object.keys(config.builders)).then(function(resultsByBuilder) {
@@ -184,15 +157,6 @@ model.analyzeUnexpectedFailures = function(failureCallback)
         }));
     });
     return Promise.all(failurePromises);
-};
-
-model.unexpectedFailureInfoForTestName = function(testName)
-{
-    var resultsByTest = results.unexpectedFailuresByTest(model.state.resultsByBuilder);
-
-    return Object.keys(resultsByTest[testName]).map(function(builderName) {
-        return results.failureInfoForTestAndBuilder(resultsByTest, testName, builderName);
-    });
 };
 
 })();
