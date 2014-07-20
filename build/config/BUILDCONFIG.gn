@@ -31,7 +31,7 @@ declare_args() {
 
   # Set to true when compiling with the Clang compiler. Typically this is used
   # to configure warnings.
-  is_clang = (os == "mac" || os == "ios")
+  is_clang = (os == "mac" || os == "ios" || os == "linux")
 
   # Forces a 64-bit build on Windows. Does nothing on other platforms. Normally
   # we build 32-bit on Windows regardless of the current host OS bit depth.
