@@ -140,6 +140,9 @@ public:
     // Called periodically at the end of each render quantum to dereference finished source nodes.
     void derefFinishedSourceNodes();
 
+#if ENABLE(OILPAN)
+    void registerLiveAudioSummingJunction(AudioSummingJunction&);
+#endif
     // We schedule deletion of all marked nodes at the end of each realtime render quantum.
     void markForDeletion(AudioNode*);
     void deleteMarkedNodes();
@@ -276,6 +279,21 @@ private:
     // before deref().
     Vector<RefPtr<AudioNode> > m_referencedNodes;
 
+#if ENABLE(OILPAN)
+    class AudioSummingJunctionDisposer {
+    public:
+        explicit AudioSummingJunctionDisposer(AudioSummingJunction& junction) : m_junction(junction) { }
+        ~AudioSummingJunctionDisposer();
+
+    private:
+        AudioSummingJunction& m_junction;
+    };
+    // The purpose of m_liveAudioSummingJunctions is to remove a dying
+    // AudioSummingJunction from m_dirtySummingJunctions. However we put all of
+    // AudioSummingJunction objects to m_liveAudioSummingJunctions to avoid
+    // concurrent access to m_liveAudioSummingJunctions.
+    HeapHashMap<WeakMember<AudioSummingJunction>, OwnPtr<AudioSummingJunctionDisposer> > m_liveAudioSummingJunctions;
+#endif
     // Accumulate nodes which need to be deleted here.
     // This is copied to m_nodesToDelete at the end of a render cycle in handlePostRenderTasks(), where we're assured of a stable graph
     // state which will have no references to any of the nodes in m_nodesToDelete once the context lock is released

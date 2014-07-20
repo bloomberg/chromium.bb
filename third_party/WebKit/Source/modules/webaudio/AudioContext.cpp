@@ -191,6 +191,11 @@ void AudioContext::initialize()
 
 void AudioContext::clear()
 {
+#if ENABLE(OILPAN)
+    // We need to run disposers before destructing m_contextGraphMutex.
+    m_liveAudioSummingJunctions.clear();
+#endif
+
     // We have to release our reference to the destination node before the context will ever be deleted since the destination node holds a reference to the context.
     if (m_destinationNode)
         m_destinationNode.clear();
@@ -756,6 +761,20 @@ void AudioContext::handleDeferredAudioNodeTasks()
     m_deferredFinishDerefList.clear();
 }
 
+#if ENABLE(OILPAN)
+void AudioContext::registerLiveAudioSummingJunction(AudioSummingJunction& junction)
+{
+    ASSERT(isMainThread());
+    m_liveAudioSummingJunctions.add(&junction, adoptPtr(new AudioSummingJunctionDisposer(junction)));
+}
+
+AudioContext::AudioSummingJunctionDisposer::~AudioSummingJunctionDisposer()
+{
+    ASSERT(isMainThread());
+    m_junction.context()->removeMarkedSummingJunction(&m_junction);
+}
+#endif
+
 void AudioContext::markForDeletion(AudioNode* node)
 {
     ASSERT(isGraphOwner());
@@ -965,6 +984,9 @@ void AudioContext::trace(Visitor* visitor)
     visitor->trace(m_renderTarget);
     visitor->trace(m_destinationNode);
     visitor->trace(m_listener);
+#if ENABLE(OILPAN)
+    visitor->trace(m_liveAudioSummingJunctions);
+#endif
     EventTargetWithInlineData::trace(visitor);
 }
 

@@ -38,14 +38,18 @@ AudioSummingJunction::AudioSummingJunction(AudioContext* context)
     : m_context(context)
     , m_renderingStateNeedUpdating(false)
 {
+    ASSERT(context);
+#if ENABLE(OILPAN)
+    m_context->registerLiveAudioSummingJunction(*this);
+#endif
 }
 
 AudioSummingJunction::~AudioSummingJunction()
 {
-    // Oilpan: m_context is null if AudioContext and this object die
-    // together. It's non-null if this object dies before AudioContext.
+#if !ENABLE(OILPAN)
     if (m_renderingStateNeedUpdating && m_context.get())
         m_context->removeMarkedSummingJunction(this);
+#endif
 }
 
 void AudioSummingJunction::trace(Visitor* visitor)

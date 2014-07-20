@@ -63,16 +63,7 @@ public:
 protected:
     explicit AudioSummingJunction(AudioContext*);
 
-    // Oilpan: m_context can be null only in the destructor because
-    // AudioSummingJunction objects are owned by AudioNodes, and AudioNodes have
-    // strong references to AudioContext.
-    // Theorically this should be a strong reference and AudioContext::
-    // m_dirtySummingJunctions should be HeapHashSet<WeakMember<
-    // AudioSummingJunction>>, but we can't do them because the map is modified
-    // in an audio rendering thread, which has no GC support. We need to remove
-    // an AudioSummingJunction from AudioContext in ~AudioSummingJunction, and
-    // this WeakMember<> makes it possible though we can't do it with Member<>.
-    RefPtrWillBeWeakMember<AudioContext> m_context;
+    RefPtrWillBeMember<AudioContext> m_context;
 
     // m_outputs contains the AudioNodeOutputs representing current connections which are not disabled.
     // The rendering code should never use this directly, but instead uses m_renderingOutputs.
