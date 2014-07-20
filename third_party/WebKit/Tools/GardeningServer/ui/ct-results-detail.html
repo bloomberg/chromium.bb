@@ -54,6 +54,8 @@ found in the LICENSE file.
           return;
 
         var failureInfo = results.failureInfo(this.test, this.builder, this.result);
+        // FIXME: Move this logic to a proper model class so that the network requests this makes
+        // can be easily mocked out in tests.
         results.fetchResultsURLs(failureInfo).then(function(resultsUrls) {
           var resultsUrlsByTypeAndKind = {};
           resultsUrls.forEach(function(url) {

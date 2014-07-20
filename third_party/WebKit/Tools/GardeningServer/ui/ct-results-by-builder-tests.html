@@ -35,26 +35,32 @@ var kExampleFailure = {
 module("ct-results-by-builder");
 
 asyncTest("basic", 11, function() {
-  var results = document.createElement('ct-results-by-builder');
+  // FIXME: Remove this override when ct-results-detail is fixed to not use
+  // results.fetchResultsURLs.
+  var oldFetchResultsURLs = results.fetchResultsURLs;
+  results.fetchResultsURLs = function() { return Promise.resolve([]); };
 
-  results.failure = kExampleFailure;
+  var resultsByBuilder = document.createElement('ct-results-by-builder');
+  resultsByBuilder.failure = kExampleFailure;
 
-  Platform.endOfMicrotask(function() {
-    var tabs = results.shadowRoot.querySelectorAll('paper-tab');
+  requestAnimationFrame(function() {
+    var tabs = resultsByBuilder.shadowRoot.querySelectorAll('paper-tab');
     equal(tabs.length, 2);
     equal(tabs[0].textContent, 'Linux (dbg)');
     equal(tabs[1].textContent, 'Mac10.6 (dbg)');
 
-    var detail = results.shadowRoot.querySelectorAll('ct-results-detail');
+    var detail = resultsByBuilder.shadowRoot.querySelectorAll('ct-results-detail');
     equal(detail.length, 1);
     equal(detail[0].test, 'inspector/console/console-viewport-selection.html');
     equal(detail[0].builder, 'WebKit Linux (dbg)');
     equal(detail[0].result, 'TEXT');
 
-    results.shadowRoot.querySelector('paper-tabs').selected = 1;
+    resultsByBuilder.shadowRoot.querySelector('paper-tabs').selected = 1;
 
-    Platform.endOfMicrotask(function() {
-      var detail = results.shadowRoot.querySelectorAll('ct-results-detail');
+    requestAnimationFrame(function() {
+      results.fetchResultsURLs = oldFetchResultsURLs;
+
+      var detail = resultsByBuilder.shadowRoot.querySelectorAll('ct-results-detail');
       equal(detail.length, 1);
       equal(detail[0].test, 'inspector/console/console-viewport-selection.html');
       equal(detail[0].builder, 'WebKit Mac10.6 (dbg)');
