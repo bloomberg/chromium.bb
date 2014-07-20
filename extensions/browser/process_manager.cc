@@ -229,13 +229,10 @@ ProcessManager::ProcessManager(BrowserContext* context,
       devtools_callback_(base::Bind(&ProcessManager::OnDevToolsStateChanged,
                                     base::Unretained(this))),
       last_background_close_sequence_id_(0),
-      weak_ptr_factory_(this) {
+      weak_ptr_factory_(this),
+      extension_registry_observer_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(original_context));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
-                 content::Source<BrowserContext>(original_context));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<BrowserContext>(original_context));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<BrowserContext>(original_context));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                  content::Source<BrowserContext>(context));
@@ -660,33 +657,6 @@ void ProcessManager::Observe(int type,
       break;
     }
 
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      BrowserContext* context = content::Source<BrowserContext>(source).ptr();
-      ExtensionSystem* system = ExtensionSystem::Get(context);
-      if (system->ready().is_signaled()) {
-        // The extension system is ready, so create the background host.
-        const Extension* extension =
-            content::Details<const Extension>(details).ptr();
-        CreateBackgroundHostForExtensionLoad(this, extension);
-      }
-      break;
-    }
-
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<UnloadedExtensionInfo>(details)->extension;
-      for (ExtensionHostSet::iterator iter = background_hosts_.begin();
-           iter != background_hosts_.end(); ++iter) {
-        ExtensionHost* host = *iter;
-        if (host->extension_id() == extension->id()) {
-          CloseBackgroundHost(host);
-          break;
-        }
-      }
-      UnregisterExtension(extension->id());
-      break;
-    }
-
     case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
       if (background_hosts_.erase(host)) {
@@ -758,6 +728,30 @@ void ProcessManager::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+void ProcessManager::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                       const Extension* extension) {
+  if (ExtensionSystem::Get(browser_context)->ready().is_signaled()) {
+    // The extension system is ready, so create the background host.
+    CreateBackgroundHostForExtensionLoad(this, extension);
+  }
+}
+
+void ProcessManager::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  for (ExtensionHostSet::iterator iter = background_hosts_.begin();
+       iter != background_hosts_.end();
+       ++iter) {
+    ExtensionHost* host = *iter;
+    if (host->extension_id() == extension->id()) {
+      CloseBackgroundHost(host);
+      break;
+    }
+  }
+  UnregisterExtension(extension->id());
 }
 
 void ProcessManager::OnDevToolsStateChanged(

@@ -8,20 +8,19 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/site_instance.h"
-#include "content/public/test/test_browser_context.h"
+#include "extensions/browser/extensions_test_browser_context.h"
 #include "extensions/browser/test_extensions_browser_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserContext;
 using content::SiteInstance;
-using content::TestBrowserContext;
 
 namespace extensions {
 
 namespace {
 
-// An incognito version of a TestBrowserContext.
-class TestBrowserContextIncognito : public TestBrowserContext {
+// An incognito version of a ExtensionsTestBrowserContext.
+class TestBrowserContextIncognito : public ExtensionsTestBrowserContext {
  public:
   TestBrowserContextIncognito() {}
   virtual ~TestBrowserContextIncognito() {}
@@ -59,7 +58,7 @@ class ProcessManagerTest : public testing::Test {
   }
 
  private:
-  TestBrowserContext original_context_;
+  ExtensionsTestBrowserContext original_context_;
   TestBrowserContextIncognito incognito_context_;
   TestExtensionsBrowserClient extensions_browser_client_;
 
@@ -80,12 +79,6 @@ TEST_F(ProcessManagerTest, ExtensionNotificationRegistration) {
                            chrome::NOTIFICATION_EXTENSIONS_READY,
                            original_context()));
   EXPECT_TRUE(IsRegistered(manager1.get(),
-                           chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                           original_context()));
-  EXPECT_TRUE(IsRegistered(manager1.get(),
-                           chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                           original_context()));
-  EXPECT_TRUE(IsRegistered(manager1.get(),
                            chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
                            original_context()));
 
@@ -95,11 +88,6 @@ TEST_F(ProcessManagerTest, ExtensionNotificationRegistration) {
 
   EXPECT_EQ(incognito_context(), manager2->GetBrowserContext());
   EXPECT_EQ(0u, manager2->background_hosts().size());
-
-  // Some notifications are observed for the original context.
-  EXPECT_TRUE(IsRegistered(manager2.get(),
-                           chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                           original_context()));
 
   // Some notifications are observed for the incognito context.
   EXPECT_TRUE(IsRegistered(manager2.get(),
@@ -135,9 +123,8 @@ TEST_F(ProcessManagerTest, ProcessGrouping) {
   // SiteInstances.
   scoped_ptr<ProcessManager> manager1(
       ProcessManager::Create(original_context()));
-  // NOTE: This context is not associated with the TestExtensionsBrowserClient.
-  // That's OK because we're not testing regular vs. incognito behavior.
-  TestBrowserContext another_context;
+
+  ExtensionsTestBrowserContext another_context;
   scoped_ptr<ProcessManager> manager2(ProcessManager::Create(&another_context));
 
   // Extensions with common origins ("scheme://id/") should be grouped in the
