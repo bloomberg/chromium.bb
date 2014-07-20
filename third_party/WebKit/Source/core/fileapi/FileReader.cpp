@@ -47,8 +47,6 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/Deque.h"
 #include "wtf/HashSet.h"
-#include "wtf/ThreadSpecific.h"
-#include "wtf/Threading.h"
 #include "wtf/text/CString.h"
 
 namespace blink {
