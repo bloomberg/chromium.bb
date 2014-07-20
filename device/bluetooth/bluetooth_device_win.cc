@@ -47,15 +47,8 @@ BluetoothDeviceWin::BluetoothDeviceWin(
        iter = state.service_record_states.begin();
        iter != state.service_record_states.end();
        ++iter) {
-    uint8 sdp_bytes_buffer[kSdpBytesBufferSize];
-    std::copy((*iter)->sdp_bytes.begin(),
-              (*iter)->sdp_bytes.end(),
-              sdp_bytes_buffer);
     BluetoothServiceRecordWin* service_record = new BluetoothServiceRecordWin(
-        (*iter)->name,
-        (*iter)->address,
-        (*iter)->sdp_bytes.size(),
-        sdp_bytes_buffer);
+        state.address, (*iter)->name, (*iter)->sdp_bytes, (*iter)->gatt_uuid);
     service_record_list_.push_back(service_record);
     uuids_.push_back(service_record->uuid());
   }

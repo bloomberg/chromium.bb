@@ -42,6 +42,29 @@ std::string BluetoothAddressToString(const BLUETOOTH_ADDRESS& btha) {
                             btha.rgBytes[0]);
 }
 
+device::BluetoothUUID BluetoothLowEnergyUuidToUBluetoothUuid(
+    const BTH_LE_UUID& bth_le_uuid) {
+  if (bth_le_uuid.IsShortUuid) {
+    std::string uuid_hex =
+        base::StringPrintf("%04x", bth_le_uuid.Value.ShortUuid);
+    return device::BluetoothUUID(uuid_hex);
+  } else {
+    return device::BluetoothUUID(
+        base::StringPrintf("%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+                           bth_le_uuid.Value.LongUuid.Data1,
+                           bth_le_uuid.Value.LongUuid.Data2,
+                           bth_le_uuid.Value.LongUuid.Data3,
+                           bth_le_uuid.Value.LongUuid.Data4[0],
+                           bth_le_uuid.Value.LongUuid.Data4[1],
+                           bth_le_uuid.Value.LongUuid.Data4[2],
+                           bth_le_uuid.Value.LongUuid.Data4[3],
+                           bth_le_uuid.Value.LongUuid.Data4[4],
+                           bth_le_uuid.Value.LongUuid.Data4[5],
+                           bth_le_uuid.Value.LongUuid.Data4[6],
+                           bth_le_uuid.Value.LongUuid.Data4[7]));
+  }
+}
+
 // Populates bluetooth adapter state using adapter_handle.
 void GetAdapterState(HANDLE adapter_handle,
                      device::BluetoothTaskManagerWin::AdapterState* state) {
@@ -104,7 +127,6 @@ void DiscoverDeviceServices(
     ServiceRecordState* service_record_state = new ServiceRecordState();
     service_record_state->name =
         base::SysWideToUTF8(sdp_result_data->lpszServiceInstanceName);
-    service_record_state->address = device_address;
     for (uint64 i = 0; i < sdp_result_data->lpBlob->cbSize; i++) {
       service_record_state->sdp_bytes.push_back(
           sdp_result_data->lpBlob->pBlobData[i]);
@@ -410,6 +432,21 @@ void BluetoothTaskManagerWin::GetKnownDevices() {
         device_state->authenticated = device_info->authenticated;
         device_state->connected = device_info->connected;
         device_state->path = device_info->path;
+
+        ScopedVector<win::BluetoothLowEnergyServiceInfo> services;
+        success = win::EnumerateKnownBluetoothLowEnergyServices(
+            device_info, &services, &error);
+        if (success) {
+          for (ScopedVector<win::BluetoothLowEnergyServiceInfo>::iterator
+                   iter2 = services.begin();
+               iter2 != services.end();
+               ++iter2) {
+            ServiceRecordState* service_state = new ServiceRecordState();
+            service_state->gatt_uuid =
+                BluetoothLowEnergyUuidToUBluetoothUuid((*iter2)->uuid);
+            device_state->service_record_states.push_back(service_state);
+          }
+        }
         device_list->push_back(device_state);
       }
     }

@@ -65,6 +65,8 @@
         'bluetooth_init_win.h',
         'bluetooth_l2cap_channel_mac.mm',
         'bluetooth_l2cap_channel_mac.h',
+        'bluetooth_low_energy_defs_win.cc',
+        'bluetooth_low_energy_defs_win.h',
         'bluetooth_low_energy_win.cc',
         'bluetooth_low_energy_win.h',
         'bluetooth_pairing_chromeos.cc',
@@ -109,6 +111,7 @@
             'msvs_settings': {
               'VCLinkerTool': {
                 'DelayLoadDLLs': [
+                  'BluetoothApis.dll',
                   # Despite MSDN stating that Bthprops.dll contains the
                   # symbols declared by bthprops.lib, they actually reside here:
                   'Bthprops.cpl',

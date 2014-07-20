@@ -121,30 +121,34 @@ BTH_ADDR ConvertToBthAddr(const std::string& address) {
 namespace device {
 
 BluetoothServiceRecordWin::BluetoothServiceRecordWin(
+    const std::string& device_address,
     const std::string& name,
-    const std::string& address,
-    uint64 blob_size,
-    uint8* blob_data) : bth_addr_(ConvertToBthAddr(address)) {
-  name_ = name;
-  address_ = address;
-  supports_rfcomm_ = false;
-  SDP_ELEMENT_DATA protocol_descriptor_list_data;
-  if (ERROR_SUCCESS == BluetoothSdpGetAttributeValue(
-      blob_data,
-      blob_size,
-      kProtocolDescriptorListId,
-      &protocol_descriptor_list_data)) {
-    ExtractChannels(protocol_descriptor_list_data,
-                    &supports_rfcomm_,
-                    &rfcomm_channel_);
-  }
-  SDP_ELEMENT_DATA uuid_data;
-  if (ERROR_SUCCESS == BluetoothSdpGetAttributeValue(
-      blob_data,
-      blob_size,
-      kUuidId,
-      &uuid_data)) {
-    ExtractUuid(uuid_data, &uuid_);
+    const std::vector<uint8>& sdp_bytes,
+    const BluetoothUUID& gatt_uuid)
+    : device_bth_addr_(ConvertToBthAddr(device_address)),
+      device_address_(device_address),
+      name_(name),
+      uuid_(gatt_uuid),
+      supports_rfcomm_(false),
+      rfcomm_channel_(-1) {
+  // Bluetooth 2.0
+  if (sdp_bytes.size() > 0) {
+    LPBYTE blob_data = const_cast<LPBYTE>(&sdp_bytes[0]);
+    ULONG blob_size = static_cast<ULONG>(sdp_bytes.size());
+    SDP_ELEMENT_DATA protocol_descriptor_list_data;
+    if (ERROR_SUCCESS ==
+        BluetoothSdpGetAttributeValue(blob_data,
+                                      blob_size,
+                                      kProtocolDescriptorListId,
+                                      &protocol_descriptor_list_data)) {
+      ExtractChannels(
+          protocol_descriptor_list_data, &supports_rfcomm_, &rfcomm_channel_);
+    }
+    SDP_ELEMENT_DATA uuid_data;
+    if (ERROR_SUCCESS == BluetoothSdpGetAttributeValue(
+                             blob_data, blob_size, kUuidId, &uuid_data)) {
+      ExtractUuid(uuid_data, &uuid_);
+    }
   }
 }
 

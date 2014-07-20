@@ -31,47 +31,38 @@ namespace device {
 
 class BluetoothServiceRecordWinTest : public testing::Test {
  protected:
-  void ConvertSdpBytes(const char* sdp_hex_char, uint8* sdp_bytes_array) {
-    std::vector<uint8> sdp_bytes_vector;
-    base::HexStringToBytes(sdp_hex_char, &sdp_bytes_vector);
-    std::copy(sdp_bytes_vector.begin(),
-              sdp_bytes_vector.end(),
-              sdp_bytes_array);
+  void ConvertSdpBytes(const char* sdp_hex_char,
+                       std::vector<uint8>* sdp_bytes_vector) {
+    base::HexStringToBytes(sdp_hex_char, sdp_bytes_vector);
   }
 };
 
 TEST_F(BluetoothServiceRecordWinTest, NoRfcommSdp) {
-  uint8 sdp_bytes_array[kTestNoRfcommSdpBytesSize];
-  ConvertSdpBytes(kTestNoRfcommSdpBytes, sdp_bytes_array);
-  BluetoothServiceRecordWin service_record("NoRfcommSdp",
-                                           "01:02:03:0A:10:A0",
-                                           kTestNoRfcommSdpBytesSize,
-                                           sdp_bytes_array);
+  std::vector<uint8> sdp_bytes_array;
+  ConvertSdpBytes(kTestNoRfcommSdpBytes, &sdp_bytes_array);
+  BluetoothServiceRecordWin service_record(
+      "01:02:03:0A:10:A0", "NoRfcommSdp", sdp_bytes_array, BluetoothUUID());
   EXPECT_EQ(kTestNoRfcommSdpUuid, service_record.uuid());
   EXPECT_FALSE(service_record.SupportsRfcomm());
 }
 
 
 TEST_F(BluetoothServiceRecordWinTest, RfcommSdp) {
-  uint8 sdp_bytes_array[kTestRfcommSdpBytesSize];
-  ConvertSdpBytes(kTestRfcommSdpBytes, sdp_bytes_array);
-  BluetoothServiceRecordWin service_record("RfcommSdp",
-                                           "01:02:03:0A:10:A0",
-                                           kTestRfcommSdpBytesSize,
-                                           sdp_bytes_array);
+  std::vector<uint8> sdp_bytes_array;
+  ConvertSdpBytes(kTestRfcommSdpBytes, &sdp_bytes_array);
+  BluetoothServiceRecordWin service_record(
+      "01:02:03:0A:10:A0", "RfcommSdp", sdp_bytes_array, BluetoothUUID());
   EXPECT_EQ(kTestRfcommSdpUuid, service_record.uuid());
   EXPECT_TRUE(service_record.SupportsRfcomm());
   EXPECT_EQ(kTestRfcommChannel, service_record.rfcomm_channel());
 }
 
 TEST_F(BluetoothServiceRecordWinTest, BthAddr) {
-  uint8 sdp_bytes_array[kTestRfcommSdpBytesSize];
-  ConvertSdpBytes(kTestRfcommSdpBytes, sdp_bytes_array);
-  BluetoothServiceRecordWin service_record("Sdp",
-                                           "01:02:03:0A:10:A0",
-                                           kTestRfcommSdpBytesSize,
-                                           sdp_bytes_array);
-  EXPECT_EQ(1108152553632, service_record.bth_addr());
+  std::vector<uint8> sdp_bytes_array;
+  ConvertSdpBytes(kTestRfcommSdpBytes, &sdp_bytes_array);
+  BluetoothServiceRecordWin service_record(
+      "01:02:03:0A:10:A0", "Sdp", sdp_bytes_array, BluetoothUUID());
+  EXPECT_EQ(1108152553632, service_record.device_bth_addr());
 }
 
 }  // namespace device

@@ -5,44 +5,11 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_LOW_ENERGY_WIN_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_LOW_ENERGY_WIN_H_
 
-#include <windows.h>
-#include <setupapi.h>
-// #include <bthledef.h>
-// TODO(rpaquay):
-// bthledef.h from Win8 SDK has a couple of issues when used in a Win32 app:
-// * line 420: usage of "pragma pop" instead of "pragma warning(pop)"
-// * line 349: no CALLBACK modifier in the definition of
-// PFNBLUETOOTH_GATT_EVENT_CALLBACK.
-//
-// So, we duplicate the definitions we need and prevent the build from including
-// the content of bthledef.h.
-#ifndef __BTHLEDEF_H__
-#define __BTHLEDEF_H__
-
-//
-// Bluetooth LE device interface GUID
-//
-// {781aee18-7733-4ce4-adb0-91f41c67b592}
-DEFINE_GUID(GUID_BLUETOOTHLE_DEVICE_INTERFACE,
-            0x781aee18,
-            0x7733,
-            0x4ce4,
-            0xad,
-            0xd0,
-            0x91,
-            0xf4,
-            0x1c,
-            0x67,
-            0xb5,
-            0x92);
-
-#endif  // __BTHLEDEF_H__
-#include <bluetoothapis.h>
-
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/win/scoped_handle.h"
+#include "device/bluetooth/bluetooth_low_energy_defs_win.h"
 
 namespace device {
 namespace win {
@@ -105,6 +72,13 @@ class DevicePropertyValue {
 // Returns true only on Windows platforms supporting Bluetooth Low Energy.
 bool IsBluetoothLowEnergySupported();
 
+struct BluetoothLowEnergyServiceInfo {
+  BluetoothLowEnergyServiceInfo();
+  ~BluetoothLowEnergyServiceInfo();
+
+  BTH_LE_UUID uuid;
+};
+
 struct BluetoothLowEnergyDeviceInfo {
   BluetoothLowEnergyDeviceInfo();
   ~BluetoothLowEnergyDeviceInfo();
@@ -125,6 +99,16 @@ struct BluetoothLowEnergyDeviceInfo {
 // on this Windows platform.
 bool EnumerateKnownBluetoothLowEnergyDevices(
     ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
+    std::string* error);
+
+// Enumerates the list of known (i.e. cached) GATT services for a given
+// Bluetooth LE device |device_info| into |services|. In case of error, returns
+// false and sets |error| with an error message describing the problem. Note:
+// This function returns an error if Bluetooth Low Energy is not supported on
+// this Windows platform.
+bool EnumerateKnownBluetoothLowEnergyServices(
+    BluetoothLowEnergyDeviceInfo* device_info,
+    ScopedVector<BluetoothLowEnergyServiceInfo>* services,
     std::string* error);
 
 bool ExtractBluetoothAddressFromDeviceInstanceIdForTesting(

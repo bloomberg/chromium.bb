@@ -19,10 +19,9 @@
 namespace {
 
 const char kDeviceName[] = "Device";
-const char kDeviceAddress[] = "device address";
+const char kDeviceAddress[] = "01:02:03:0A:10:A0";
 
 const char kTestAudioSdpName[] = "Audio";
-const char kTestAudioSdpAddress[] = "01:02:03:0A:10:A0";
 const char kTestAudioSdpBytes[] =
     "35510900000a00010001090001350319110a09000435103506190100090019350619001909"
     "010209000535031910020900093508350619110d090102090100250c417564696f20536f75"
@@ -30,7 +29,6 @@ const char kTestAudioSdpBytes[] =
 const device::BluetoothUUID kTestAudioSdpUuid("110a");
 
 const char kTestVideoSdpName[] = "Video";
-const char kTestVideoSdpAddress[] = "A0:10:0A:03:02:01";
 const char kTestVideoSdpBytes[] =
     "354b0900000a000100030900013506191112191203090004350c3503190100350519000308"
     "0b090005350319100209000935083506191108090100090100250d566f6963652047617465"
@@ -52,14 +50,12 @@ class BluetoothDeviceWinTest : public testing::Test {
     BluetoothTaskManagerWin::ServiceRecordState* audio_state =
         new BluetoothTaskManagerWin::ServiceRecordState();
     audio_state->name = kTestAudioSdpName;
-    audio_state->address = kTestAudioSdpAddress;
     base::HexStringToBytes(kTestAudioSdpBytes, &audio_state->sdp_bytes);
     device_state.service_record_states.push_back(audio_state);
 
     BluetoothTaskManagerWin::ServiceRecordState* video_state =
         new BluetoothTaskManagerWin::ServiceRecordState();
     video_state->name = kTestVideoSdpName;
-    video_state->address = kTestVideoSdpAddress;
     base::HexStringToBytes(kTestVideoSdpBytes, &video_state->sdp_bytes);
     device_state.service_record_states.push_back(video_state);
 

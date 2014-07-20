@@ -46,9 +46,12 @@ class BluetoothTaskManagerWin
   struct ServiceRecordState {
     ServiceRecordState();
     ~ServiceRecordState();
+    // Properties common to Bluetooth Radio and LE devices.
     std::string name;
-    std::string address;
+    // Properties specific to Bluetooth Radio devices.
     std::vector<uint8> sdp_bytes;
+    // Properties specific to Bluetooth LE devices.
+    BluetoothUUID gatt_uuid;
   };
 
   struct DeviceState {

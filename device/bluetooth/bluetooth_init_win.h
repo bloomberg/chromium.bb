@@ -18,6 +18,7 @@
 #include <ws2bth.h>
 
 #pragma comment(lib, "Bthprops.lib")
+#pragma comment(lib, "BluetoothApis.lib")
 
 namespace device {
 namespace bluetooth_init_win {

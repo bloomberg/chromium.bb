@@ -118,11 +118,11 @@ void BluetoothSocketWin::Connect(
     return;
   }
 
-  device_address_ = service_record_win->address();
+  device_address_ = service_record_win->device_address();
   if (service_record_win->SupportsRfcomm()) {
     supports_rfcomm_ = true;
     rfcomm_channel_ = service_record_win->rfcomm_channel();
-    bth_addr_ = service_record_win->bth_addr();
+    bth_addr_ = service_record_win->device_bth_addr();
   }
 
   socket_thread()->task_runner()->PostTask(
