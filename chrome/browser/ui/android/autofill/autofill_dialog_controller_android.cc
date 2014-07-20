@@ -115,10 +115,14 @@ void FillOutputForSectionWithComparator(
                  g_browser_process->GetApplicationLocale());
 
   std::vector<ServerFieldType> types = common::TypesFromInputs(inputs);
-  form_structure.FillFields(types,
-                            compare,
-                            get_info,
-                            g_browser_process->GetApplicationLocale());
+  form_structure.FillFields(
+      types,
+      compare,
+      get_info,
+      section == SECTION_CC_BILLING
+          ? full_wallet->billing_address()->language_code()
+          : full_wallet->shipping_address()->language_code(),
+      g_browser_process->GetApplicationLocale());
 }
 
 void FillOutputForSection(
@@ -345,6 +349,7 @@ void AutofillDialogControllerAndroid::Show() {
         common::TypesFromInputs(inputs),
         base::Bind(common::ServerTypeMatchesField, SECTION_SHIPPING),
         base::Bind(NullGetInfo),
+        std::string(),
         g_browser_process->GetApplicationLocale());
   }
 

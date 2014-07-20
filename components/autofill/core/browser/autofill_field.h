@@ -65,11 +65,13 @@ class AutofillField : public FormFieldData {
   void set_default_value(const std::string& value) { default_value_ = value; }
   const std::string& default_value() const { return default_value_; }
 
-  // Set |field_data|'s value to |value|.  Uses |field| and |app_locale| as
-  // hints when filling exceptional cases like phone number values and <select>
-  // fields. Returns |true| if the field has been filled, |false| otherwise.
+  // Set |field_data|'s value to |value|. Uses |field|, |address_language_code|,
+  // and |app_locale| as hints when filling exceptional cases like phone number
+  // values and <select> fields. Returns |true| if the field has been filled,
+  // |false| otherwise.
   static bool FillFormField(const AutofillField& field,
                             const base::string16& value,
+                            const std::string& address_language_code,
                             const std::string& app_locale,
                             FormFieldData* field_data);
 

@@ -91,6 +91,7 @@ bool DataModelWrapper::FillFormStructure(
       types,
       compare,
       base::Bind(&DataModelWrapper::GetInfo, base::Unretained(this)),
+      GetLanguageCode(),
       g_browser_process->GetApplicationLocale());
 }
 

@@ -1107,6 +1107,7 @@ bool FormStructure::FillFields(
     const std::vector<ServerFieldType>& types,
     const InputFieldComparator& matches,
     const base::Callback<base::string16(const AutofillType&)>& get_info,
+    const std::string& address_language_code,
     const std::string& app_locale) {
   bool filled_something = false;
   for (size_t i = 0; i < field_count(); ++i) {
@@ -1114,6 +1115,7 @@ bool FormStructure::FillFields(
       if (matches.Run(types[j], *field(i))) {
         AutofillField::FillFormField(*field(i),
                                      get_info.Run(field(i)->Type()),
+                                     address_language_code,
                                      app_locale,
                                      field(i));
         filled_something = true;

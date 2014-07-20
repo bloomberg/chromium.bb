@@ -839,6 +839,7 @@ void AutofillDialogControllerImpl::Show() {
       RequestedTypesForSection(SECTION_SHIPPING),
       base::Bind(common::ServerTypeMatchesField, SECTION_SHIPPING),
       base::Bind(NullGetInfo),
+      std::string(),
       g_browser_process->GetApplicationLocale());
 
   transaction_amount_ = form_structure_.GetUniqueValue(
