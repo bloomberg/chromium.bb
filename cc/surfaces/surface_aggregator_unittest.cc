@@ -31,7 +31,7 @@ namespace {
 
 SurfaceId InvalidSurfaceId() {
   static SurfaceId invalid;
-  invalid.id = -1;
+  invalid.id = static_cast<uint64_t>(-1);
   return invalid;
 }
 

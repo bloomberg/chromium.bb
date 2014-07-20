@@ -362,13 +362,12 @@ ParentIDAndTitle MetadataDatabaseIndexOnDisk::PickMultiBackingFilePath() const {
     return ParentIDAndTitle();
 
   size_t pos = value.find('\0');  // '\0' is a separator.
-  int64 parent_id;
-  if (pos == std::string::npos ||
-      !base::StringToInt64(value.substr(0, pos), &parent_id))
+  if (pos == std::string::npos)
     return ParentIDAndTitle();
 
-  // Successfully found an entry.
-  return ParentIDAndTitle(parent_id, value.substr(pos + 1));
+  int64 parent_id;
+  return base::StringToInt64(value.substr(0, pos), &parent_id) ?
+      ParentIDAndTitle(parent_id, value.substr(pos + 1)) : ParentIDAndTitle();
 }
 
 int64 MetadataDatabaseIndexOnDisk::PickDirtyTracker() const {
