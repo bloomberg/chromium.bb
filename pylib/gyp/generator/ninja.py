@@ -14,6 +14,7 @@ import subprocess
 import sys
 import gyp
 import gyp.common
+from gyp.common import OrderedSet
 import gyp.msvs_emulation
 import gyp.MSVSUtil as MSVSUtil
 import gyp.xcode_emulation
@@ -1777,8 +1778,15 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       wrappers[key_prefix] = os.path.join(build_to_root, value)
 
   if flavor == 'win':
+    configs = [target_dicts[qualified_target]['configurations'][config_name]
+               for qualified_target in target_list]
+    shared_system_includes = None
+    if not generator_flags.get('ninja_use_custom_environment_files', 0):
+      shared_system_includes = \
+          gyp.msvs_emulation.ExtractSharedMSVSSystemIncludes(
+              configs, generator_flags)
     cl_paths = gyp.msvs_emulation.GenerateEnvironmentFiles(
-        toplevel_build, generator_flags, OpenOutput)
+        toplevel_build, generator_flags, shared_system_includes, OpenOutput)
     for arch, path in cl_paths.iteritems():
       if clang_cl:
         # If we have selected clang-cl, use that instead.
