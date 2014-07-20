@@ -186,38 +186,6 @@
             ],
         },
         {
-          'action_name': 'generateXMLViewerCSS',
-          'inputs': [
-            'xml/XMLViewer.css',
-          ],
-          'outputs': [
-            '<(blink_core_output_dir)/XMLViewerCSS.h',
-          ],
-          'action': [
-            'python',
-            '../build/scripts/xxd.py',
-            'XMLViewer_css',
-            '<@(_inputs)',
-            '<@(_outputs)'
-          ],
-        },
-        {
-          'action_name': 'generateXMLViewerJS',
-          'inputs': [
-            'xml/XMLViewer.js',
-          ],
-          'outputs': [
-            '<(blink_core_output_dir)/XMLViewerJS.h',
-          ],
-          'action': [
-            'python',
-            '../build/scripts/xxd.py',
-            'XMLViewer_js',
-            '<@(_inputs)',
-            '<@(_outputs)'
-          ],
-        },
-        {
           'action_name': 'HTMLEntityTable',
           'inputs': [
             'html/parser/create-html-entity-table',

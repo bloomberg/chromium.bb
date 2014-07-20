@@ -32,12 +32,11 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
-#include "core/XMLViewerCSS.h"
-#include "core/XMLViewerJS.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
 #include "core/frame/LocalFrame.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -48,13 +47,18 @@ XMLTreeViewer::XMLTreeViewer(Document* document)
 
 void XMLTreeViewer::transformDocumentToTreeView()
 {
+    const blink::WebData& xmlViewerJSResource = blink::Platform::current()->loadResource("XMLViewer.js");
+    const blink::WebData& xmlViewerCSSResource = blink::Platform::current()->loadResource("XMLViewer.css");
+    if (xmlViewerJSResource.isEmpty() || xmlViewerCSSResource.isEmpty())
+        return;
+
     m_document->setIsViewSource(true);
-    String scriptString(reinterpret_cast<const char*>(XMLViewer_js), sizeof(XMLViewer_js));
+    String scriptString(xmlViewerJSResource.data(), xmlViewerJSResource.size());
     m_document->frame()->script().executeScriptInMainWorld(scriptString, ScriptController::ExecuteScriptWhenScriptsDisabled);
     String noStyleMessage("This XML file does not appear to have any style information associated with it. The document tree is shown below.");
     m_document->frame()->script().executeScriptInMainWorld("prepareWebKitXMLViewer('" + noStyleMessage + "');", ScriptController::ExecuteScriptWhenScriptsDisabled);
 
-    String cssString(reinterpret_cast<const char*>(XMLViewer_css), sizeof(XMLViewer_css));
+    String cssString(xmlViewerCSSResource.data(), xmlViewerCSSResource.size());
     m_document->getElementById("xml-viewer-style")->appendChild(m_document->createTextNode(cssString), IGNORE_EXCEPTION);
 }
 

@@ -562,8 +562,6 @@ action("generated_testing_idls_internal_runtime_flags") {
 group("make_core_generated") {
   deps = [
     ":make_core_generated_private_script",
-    ":make_core_generated_xml_viewer_css",
-    ":make_core_generated_xml_viewer_js",
     ":make_core_generated_html_entity_table",
     ":make_core_generated_css_property_names",
     ":make_core_generated_media_feature_names",
@@ -967,48 +965,6 @@ action("make_core_generated_private_script_for_testing") {
 
   args = rebase_path(outputs, root_build_dir)
   args += rebase_path(inputs, root_build_dir)
-
-  deps = make_core_generated_deps
-}
-
-# "generateXMLViewerCSS" in make_core_generated from GYP.
-action("make_core_generated_xml_viewer_css") {
-  visibility = ":make_core_generated"
-  script = "../build/scripts/xxd.py"
-
-  inputs = [
-    "xml/XMLViewer.css",
-  ]
-  outputs = [
-    "$blink_core_output_dir/XMLViewerCSS.h",
-  ]
-
-  args = [
-    "XMLViewer_css",
-    rebase_path(inputs[0], root_build_dir),
-    rebase_path(outputs[0], root_build_dir),
-  ]
-
-  deps = make_core_generated_deps
-}
-
-# "generateXMLViewerJS" in make_core_generated from GYP.
-action("make_core_generated_xml_viewer_js") {
-  visibility = ":make_core_generated"
-  script = "../build/scripts/xxd.py"
-
-  inputs = [
-    "xml/XMLViewer.js",
-  ]
-  outputs = [
-    "$blink_core_output_dir/XMLViewerJS.h",
-  ]
-
-  args = [
-    "XMLViewer_js",
-    rebase_path(inputs[0], root_build_dir),
-    rebase_path(outputs[0], root_build_dir),
-  ]
 
   deps = make_core_generated_deps
 }
