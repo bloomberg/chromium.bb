@@ -1011,7 +1011,8 @@ void RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
   hb_buffer_set_script(buffer, ICUScriptToHBScript(run->script));
   hb_buffer_set_direction(buffer,
       run->is_rtl ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
-  // TODO(ckocagil): Should we call |hb_buffer_set_language()| here?
+  // TODO(ckocagil): Should we determine the actual language?
+  hb_buffer_set_language(buffer, hb_language_get_default());
 
   // Shape the text.
   hb_shape(harfbuzz_font, buffer, NULL, 0);
@@ -1033,7 +1034,7 @@ void RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
         SkScalarRoundToInt(SkFixedToScalar(hb_positions[i].x_offset));
     const int y_offset =
         SkScalarRoundToInt(SkFixedToScalar(hb_positions[i].y_offset));
-    run->positions[i].set(run->width + x_offset, y_offset);
+    run->positions[i].set(run->width + x_offset, -y_offset);
     run->width +=
         SkScalarRoundToInt(SkFixedToScalar(hb_positions[i].x_advance));
   }
