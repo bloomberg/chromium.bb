@@ -118,7 +118,8 @@ void RecommendedApps::OnExtensionUnloaded(
 
 void RecommendedApps::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const extensions::Extension* extension) {
+    const extensions::Extension* extension,
+    extensions::UninstallReason reason) {
   Update();
 }
 

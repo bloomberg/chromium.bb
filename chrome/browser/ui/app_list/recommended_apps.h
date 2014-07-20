@@ -57,7 +57,8 @@ class RecommendedApps : public extensions::ExtensionRegistryObserver {
       extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
   virtual void OnExtensionUninstalled(
       content::BrowserContext* browser_context,
-      const extensions::Extension* extension) OVERRIDE;
+      const extensions::Extension* extension,
+      extensions::UninstallReason reason) OVERRIDE;
 
   Profile* profile_;
   PrefChangeRegistrar pref_change_registrar_;

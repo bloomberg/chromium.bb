@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -85,7 +86,7 @@ TEST_F(AppSearchProviderTest, DisableAndEnable) {
 TEST_F(AppSearchProviderTest, Uninstall) {
   EXPECT_EQ("Packaged App 1", RunQuery("pa1"));
   service_->UninstallExtension(
-      kPackagedApp1Id, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+      kPackagedApp1Id, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   EXPECT_EQ("", RunQuery("pa1"));
 
   // Let uninstall code to clean up.

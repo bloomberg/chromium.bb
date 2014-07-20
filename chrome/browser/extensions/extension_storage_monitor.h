@@ -69,8 +69,10 @@ class ExtensionStorageMonitor : public KeyedService,
       bool is_update,
       bool from_ephemeral,
       const std::string& old_name) OVERRIDE;
-  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                                      const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      extensions::UninstallReason reason) OVERRIDE;
 
   // Overridden from ExtensionUninstallDialog::Delegate:
   virtual void ExtensionUninstallAccepted() OVERRIDE;

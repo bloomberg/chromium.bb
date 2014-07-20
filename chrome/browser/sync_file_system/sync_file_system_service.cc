@@ -662,7 +662,8 @@ void SyncFileSystemService::OnExtensionUnloaded(
 
 void SyncFileSystemService::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    extensions::UninstallReason reason) {
   RemoteFileSyncService::UninstallFlag flag =
       RemoteFileSyncService::UNINSTALL_AND_PURGE_REMOTE;
   // If it's loaded from an unpacked package and with key: field,

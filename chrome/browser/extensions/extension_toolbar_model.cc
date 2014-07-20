@@ -192,7 +192,8 @@ void ExtensionToolbarModel::OnExtensionUnloaded(
 
 void ExtensionToolbarModel::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    extensions::UninstallReason reason) {
   // Remove the extension id from the ordered list, if it exists (the extension
   // might not be represented in the list because it might not have an icon).
   ExtensionIdList::iterator pos =

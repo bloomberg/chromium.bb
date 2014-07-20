@@ -25,6 +25,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
@@ -720,11 +721,11 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
 
     // Clean up after ourselves.
     service_->UninstallExtension(
-        kId1, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+        kId1, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
     service_->UninstallExtension(
-        kId2, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+        kId2, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
     service_->UninstallExtension(
-        kId3, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+        kId3, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   }
 }
 
@@ -822,11 +823,11 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_NtpOverriddenControllerTest) {
 
   // Clean up after ourselves.
   service_->UninstallExtension(
-      kId1, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+      kId1, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   service_->UninstallExtension(
-      kId2, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+      kId2, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   service_->UninstallExtension(
-      kId3, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+      kId3, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
 }
 
 void SetInstallTime(const std::string& extension_id,
@@ -945,11 +946,11 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_ProxyOverriddenControllerTest) {
 
   // Clean up after ourselves.
   service_->UninstallExtension(
-      kId1, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+      kId1, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   service_->UninstallExtension(
-      kId2, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+      kId2, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   service_->UninstallExtension(
-      kId3, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+      kId3, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
 }
 
 }  // namespace extensions

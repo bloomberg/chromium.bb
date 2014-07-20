@@ -16,6 +16,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -207,9 +208,7 @@ void BookmarkAppBubbleView::WindowClosing() {
 
   if (remove_app_) {
     GetExtensionService(profile_)->UninstallExtension(
-        extension_id_,
-        ExtensionService::UNINSTALL_REASON_INSTALL_CANCELED,
-        NULL);
+        extension_id_, extensions::UNINSTALL_REASON_INSTALL_CANCELED, NULL);
   } else {
     ApplyEdits();
   }

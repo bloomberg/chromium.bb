@@ -116,8 +116,10 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
       content::BrowserContext* browser_context,
       const Extension* extension,
       UnloadedExtensionInfo::Reason reason) OVERRIDE;
-  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                                      const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      extensions::UninstallReason reason) OVERRIDE;
 
   // Iterates over all registries, and calls |notification_callback| on them
   // with |extension_id| as the argument. If a registry lives on a different

@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "extensions/common/extension.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -69,8 +69,10 @@ class TestObserver : public ExtensionRegistryObserver {
     installed_.push_back(extension);
   }
 
-  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                                      const Extension* extension) OVERRIDE {
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      extensions::UninstallReason reason) OVERRIDE {
     uninstalled_.push_back(extension);
   }
 
@@ -265,7 +267,8 @@ TEST_F(ExtensionRegistryTest, Observer) {
   EXPECT_TRUE(HasSingleExtension(observer.unloaded(), extension.get()));
   registry.Shutdown();
 
-  registry.TriggerOnUninstalled(extension);
+  registry.TriggerOnUninstalled(extension,
+                                extensions::UNINSTALL_REASON_FOR_TESTING);
   EXPECT_TRUE(observer.installed().empty());
   EXPECT_TRUE(HasSingleExtension(observer.uninstalled(), extension.get()));
 

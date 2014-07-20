@@ -18,6 +18,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install_flag.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/id_util.h"
@@ -83,7 +84,7 @@ void SyncExtensionHelper::UninstallExtension(
   ExtensionService::UninstallExtensionHelper(
       extensions::ExtensionSystem::Get(profile)->extension_service(),
       extensions::id_util::GenerateId(name),
-      ExtensionService::UNINSTALL_REASON_SYNC);
+      extensions::UNINSTALL_REASON_SYNC);
 }
 
 std::vector<std::string> SyncExtensionHelper::GetInstalledExtensionNames(

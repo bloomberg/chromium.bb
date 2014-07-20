@@ -52,6 +52,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -791,7 +792,7 @@ void AppLauncherHandler::ExtensionUninstallAccepted() {
 
   extension_service_->UninstallExtension(
       extension_id_prompting_,
-      ExtensionService::UNINSTALL_REASON_USER_INITIATED,
+      extensions::UNINSTALL_REASON_USER_INITIATED,
       NULL);
   CleanupAfterUninstall();
 }

@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -115,7 +116,7 @@ void AppInfoFooterPanel::ExtensionUninstallAccepted() {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   service->UninstallExtension(
-      app_->id(), ExtensionService::UNINSTALL_REASON_USER_INITIATED, NULL);
+      app_->id(), extensions::UNINSTALL_REASON_USER_INITIATED, NULL);
 
   // Close the App Info dialog as well (which will free the dialog too).
   GetWidget()->Close();

@@ -33,8 +33,10 @@ class TestExtensionRegistryObserver : public ExtensionRegistryObserver {
       bool is_update,
       bool from_ephemeral,
       const std::string& old_name) OVERRIDE;
-  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                                      const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      extensions::UninstallReason reason) OVERRIDE;
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
                                  const Extension* extension) OVERRIDE;
   virtual void OnExtensionUnloaded(

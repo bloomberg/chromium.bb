@@ -26,6 +26,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/webplugininfo.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/one_shot_event.h"
 #include "grit/generated_resources.h"
@@ -255,7 +256,8 @@ void HotwordService::Observe(int type,
 
 void HotwordService::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const extensions::Extension* extension) {
+    const extensions::Extension* extension,
+    extensions::UninstallReason reason) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   if (extension->id() != extension_misc::kHotwordExtensionId ||
@@ -362,7 +364,7 @@ bool HotwordService::UninstallHotwordExtension(
   base::string16 error;
   if (!extension_service->UninstallExtension(
           extension_misc::kHotwordExtensionId,
-          ExtensionService::UNINSTALL_REASON_INTERNAL_MANAGEMENT,
+          extensions::UNINSTALL_REASON_INTERNAL_MANAGEMENT,
           &error)) {
     LOG(WARNING) << "Cannot uninstall extension with id "
                  << extension_misc::kHotwordExtensionId

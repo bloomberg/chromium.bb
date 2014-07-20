@@ -195,7 +195,8 @@ void ExternalInstallManager::OnExtensionInstalled(
 
 void ExternalInstallManager::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    extensions::UninstallReason reason) {
   if (IsUnacknowledgedExternalExtension(extension))
     LogExternalExtensionEvent(extension, EXTERNAL_EXTENSION_UNINSTALLED);
 }

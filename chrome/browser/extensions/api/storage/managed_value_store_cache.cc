@@ -78,8 +78,10 @@ class ManagedValueStoreCache::ExtensionTracker
       bool is_update,
       bool from_ephemeral,
       const std::string& old_name) OVERRIDE;
-  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                                      const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      extensions::UninstallReason reason) OVERRIDE;
 
   // Handler for the signal from ExtensionSystem::ready().
   void OnExtensionsReady();
@@ -137,7 +139,8 @@ void ManagedValueStoreCache::ExtensionTracker::OnExtensionWillBeInstalled(
 
 void ManagedValueStoreCache::ExtensionTracker::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    extensions::UninstallReason reason) {
   if (!ExtensionSystem::Get(profile_)->ready().is_signaled())
     return;
   if (extension && UsesManagedStorage(extension)) {

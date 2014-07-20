@@ -142,7 +142,8 @@ void ExtensionEnableFlow::OnExtensionLoaded(
 
 void ExtensionEnableFlow::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    extensions::UninstallReason reason) {
   if (extension->id() == extension_id_) {
     StopObserving();
     delegate_->ExtensionEnableFlowAborted(false);

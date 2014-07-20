@@ -204,8 +204,10 @@ class AlarmManager : public BrowserContextKeyedAPI,
   // ExtensionRegistryObserver implementation.
   virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
                                  const Extension* extension) OVERRIDE;
-  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                                      const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      extensions::UninstallReason reason) OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {

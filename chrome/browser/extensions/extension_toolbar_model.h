@@ -151,8 +151,10 @@ class ExtensionToolbarModel : public content::NotificationObserver,
       content::BrowserContext* browser_context,
       const Extension* extension,
       UnloadedExtensionInfo::Reason reason) OVERRIDE;
-  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                                      const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      extensions::UninstallReason reason) OVERRIDE;
 
   // To be called after the extension service is ready; gets loaded extensions
   // from the extension service and their saved order from the pref service

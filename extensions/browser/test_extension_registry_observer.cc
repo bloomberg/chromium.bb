@@ -80,7 +80,8 @@ void TestExtensionRegistryObserver::OnExtensionWillBeInstalled(
 
 void TestExtensionRegistryObserver::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    extensions::UninstallReason reason) {
   if (extension->id() == extension_id_)
     uninstalled_waiter_->OnObserved();
 }

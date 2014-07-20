@@ -247,8 +247,10 @@ class ManagementEventRouter : public ExtensionRegistryObserver {
   virtual void OnExtensionInstalled(content::BrowserContext* browser_context,
                                     const Extension* extension,
                                     bool is_update) OVERRIDE;
-  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                                      const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      extensions::UninstallReason reason) OVERRIDE;
 
   // Dispatches management api events to listening extensions.
   void BroadcastEvent(const Extension* extension, const char* event_name);

@@ -60,6 +60,7 @@
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/runtime_data.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/browser/update_observer.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/feature_switch.h"
@@ -140,7 +141,8 @@ void ExtensionService::CheckExternalUninstall(const std::string& id) {
                  << "with id: " << id;
     return;
   }
-  UninstallExtension(id, UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION, NULL);
+  UninstallExtension(
+      id, extensions::UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION, NULL);
 }
 
 void ExtensionService::SetFileTaskRunnerForTesting(
@@ -209,7 +211,7 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
 bool ExtensionService::UninstallExtensionHelper(
     ExtensionService* extensions_service,
     const std::string& extension_id,
-    UninstallReason reason) {
+    extensions::UninstallReason reason) {
   // We can't call UninstallExtension with an invalid extension ID.
   if (!extensions_service->GetInstalledExtension(extension_id)) {
     LOG(WARNING) << "Attempted uninstallation of non-existent extension with "
@@ -677,7 +679,7 @@ bool ExtensionService::UninstallExtension(
     // "transient" because the process of uninstalling may cause the reference
     // to become invalid. Instead, use |extenson->id()|.
     const std::string& transient_extension_id,
-    UninstallReason reason,
+    extensions::UninstallReason reason,
     base::string16* error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -697,9 +699,9 @@ bool ExtensionService::UninstallExtension(
   // else, like include an enum IS_INTERNAL_UNINSTALL or IS_USER_UNINSTALL so
   // we don't do this.
   bool external_uninstall =
-      (reason == UNINSTALL_REASON_INTERNAL_MANAGEMENT) ||
-      (reason == UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION) ||
-      (reason == UNINSTALL_REASON_ORPHANED_SHARED_MODULE);
+      (reason == extensions::UNINSTALL_REASON_INTERNAL_MANAGEMENT) ||
+      (reason == extensions::UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION) ||
+      (reason == extensions::UNINSTALL_REASON_ORPHANED_SHARED_MODULE);
   if (!external_uninstall &&
       !system_->management_policy()->UserMayModifySettings(
         extension.get(), error)) {
@@ -748,7 +750,8 @@ bool ExtensionService::UninstallExtension(
       chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
       content::Source<Profile>(profile_),
       content::Details<const Extension>(extension.get()));
-  ExtensionRegistry::Get(profile_)->TriggerOnUninstalled(extension.get());
+  ExtensionRegistry::Get(profile_)
+      ->TriggerOnUninstalled(extension.get(), reason);
 
   if (extension_sync_service_) {
     extension_sync_service_->ProcessSyncUninstallExtension(extension->id(),
@@ -1290,7 +1293,8 @@ void ExtensionService::RemoveComponentExtension(
         chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
         content::Source<Profile>(profile_),
         content::Details<const Extension>(extension.get()));
-    ExtensionRegistry::Get(profile_)->TriggerOnUninstalled(extension.get());
+    ExtensionRegistry::Get(profile_)->TriggerOnUninstalled(
+        extension.get(), extensions::UNINSTALL_REASON_INTERNAL_MANAGEMENT);
   }
 }
 

@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension_set.h"
 
 namespace content {
@@ -93,7 +94,7 @@ class ExtensionRegistry : public KeyedService {
 
   // Invokes the observer method OnExtensionUninstalled(). The extension must
   // not be any installed extension with |extension|'s ID.
-  void TriggerOnUninstalled(const Extension* extension);
+  void TriggerOnUninstalled(const Extension* extension, UninstallReason reason);
 
   // Find an extension by ID using |include_mask| to pick the sets to search:
   //  * enabled_extensions()     --> ExtensionRegistry::ENABLED

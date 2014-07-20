@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/install_flag.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/id_util.h"
 #include "extensions/common/value_builder.h"
@@ -144,8 +145,8 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUninstall) {
   // Uninstall the extension that imports our module.
   base::string16 error;
   service()->UninstallExtension(importing_extension->id(),
-                               ExtensionService::UNINSTALL_REASON_FOR_TESTING,
-                               &error);
+                                extensions::UNINSTALL_REASON_FOR_TESTING,
+                                &error);
   EXPECT_TRUE(error.empty());
 
   // Since the module was only referenced by that single extension, it should

@@ -192,7 +192,8 @@ void AppResult::OnExtensionLoaded(content::BrowserContext* browser_context,
 }
 
 void AppResult::OnExtensionUninstalled(content::BrowserContext* browser_context,
-                                       const extensions::Extension* extension) {
+                                       const extensions::Extension* extension,
+                                       extensions::UninstallReason reason) {
   if (extension->id() != app_id_)
     return;
 

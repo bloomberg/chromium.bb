@@ -89,6 +89,7 @@
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/test_management_policy.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -858,10 +859,10 @@ class ExtensionServiceTest : public extensions::ExtensionServiceTestBase,
     // Uninstall it.
     if (use_helper) {
       EXPECT_TRUE(ExtensionService::UninstallExtensionHelper(
-          service(), id, ExtensionService::UNINSTALL_REASON_FOR_TESTING));
+          service(), id, extensions::UNINSTALL_REASON_FOR_TESTING));
     } else {
       EXPECT_TRUE(service()->UninstallExtension(
-          id, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL));
+          id, extensions::UNINSTALL_REASON_FOR_TESTING, NULL));
     }
     --expected_extensions_count_;
 
@@ -1435,8 +1436,10 @@ struct MockExtensionRegistryObserver
     last_extension_installed = extension->id();
   }
 
-  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                                      const Extension* extension) OVERRIDE {
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      extensions::UninstallReason reason) OVERRIDE {
     last_extension_uninstalled = extension->id();
   }
 
@@ -3740,7 +3743,7 @@ TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsLoadFromPrefs) {
   const Extension* extension =
       (registry()->enabled_extensions().begin())->get();
   EXPECT_TRUE(service()->UninstallExtension(
-      extension->id(), ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL));
+      extension->id(), extensions::UNINSTALL_REASON_FOR_TESTING, NULL));
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
 
   // Ensure we cannot load it if management policy prohibits installation.
@@ -3788,7 +3791,7 @@ TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsUninstall) {
 
   // Attempt to uninstall it.
   EXPECT_FALSE(service()->UninstallExtension(
-      good_crx, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL));
+      good_crx, extensions::UNINSTALL_REASON_FOR_TESTING, NULL));
 
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
   EXPECT_TRUE(service()->GetExtensionById(good_crx, false));
@@ -4333,7 +4336,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
 
   // Uninstall the extension.
   service()->UninstallExtension(
-      good_crx, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+      good_crx, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   base::RunLoop().RunUntilIdle();
 
   // Check that the cookie is gone.
@@ -4526,7 +4529,7 @@ TEST_F(ExtensionServiceTest, DISABLED_LoadExtension) {
   std::string id = loaded_[0]->id();
   EXPECT_FALSE(unloaded_id_.length());
   service()->UninstallExtension(
-      id, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+      id, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(id, unloaded_id_);
   ASSERT_EQ(0u, loaded_.size());
@@ -4639,7 +4642,7 @@ void ExtensionServiceTest::TestExternalProvider(
   bool no_uninstall =
       GetManagementPolicy()->MustRemainEnabled(loaded_[0].get(), NULL);
   service()->UninstallExtension(
-      id, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+      id, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   base::RunLoop().RunUntilIdle();
 
   base::FilePath install_path = extensions_install_dir().AppendASCII(id);
@@ -4704,7 +4707,7 @@ void ExtensionServiceTest::TestExternalProvider(
     // User uninstalls.
     loaded_.clear();
     service()->UninstallExtension(
-        id, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+        id, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(0u, loaded_.size());
 

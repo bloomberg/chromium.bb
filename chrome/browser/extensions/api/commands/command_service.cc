@@ -305,7 +305,8 @@ void CommandService::OnExtensionWillBeInstalled(
 
 void CommandService::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    extensions::UninstallReason reason) {
   RemoveKeybindingPrefs(extension->id(), std::string());
 }
 

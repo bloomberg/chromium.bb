@@ -23,6 +23,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -197,7 +198,7 @@ TEST_F(ExtensionAppModelBuilderTest, DisableAndEnable) {
 
 TEST_F(ExtensionAppModelBuilderTest, Uninstall) {
   service_->UninstallExtension(
-      kPackagedApp2Id, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+      kPackagedApp2Id, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   EXPECT_EQ(std::string("Packaged App 1,Hosted App"),
             GetModelContent(model_.get()));
 
@@ -213,7 +214,7 @@ TEST_F(ExtensionAppModelBuilderTest, UninstallTerminatedApp) {
   service_->TrackTerminatedExtensionForTest(app);
 
   service_->UninstallExtension(
-      kPackagedApp2Id, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+      kPackagedApp2Id, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   EXPECT_EQ(std::string("Packaged App 1,Hosted App"),
             GetModelContent(model_.get()));
 

@@ -76,8 +76,10 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
   void RemoveKeysForExtension(const std::string& extension_id);
 
   // ExtensionRegistryObserver implementation.
-  virtual void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                                      const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      extensions::UninstallReason reason) OVERRIDE;
   virtual void OnExtensionWillBeInstalled(
       content::BrowserContext* browser_context,
       const Extension* extension,

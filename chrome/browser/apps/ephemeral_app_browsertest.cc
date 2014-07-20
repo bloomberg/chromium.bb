@@ -31,6 +31,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
 #include "sync/api/fake_sync_change_processor.h"
@@ -244,9 +245,7 @@ void EphemeralAppTestBase::EvictApp(const std::string& app_id) {
       ExtensionSystem::Get(profile())->extension_service();
   ASSERT_TRUE(service);
   service->UninstallExtension(
-      app_id,
-      ExtensionService::UNINSTALL_REASON_ORPHANED_EPHEMERAL_EXTENSION,
-      NULL);
+      app_id, extensions::UNINSTALL_REASON_ORPHANED_EPHEMERAL_EXTENSION, NULL);
 
   uninstalled_signal.Wait();
 }

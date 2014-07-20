@@ -160,7 +160,8 @@ void ExtensionAppModelBuilder::OnExtensionUnloaded(
 
 void ExtensionAppModelBuilder::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const extensions::Extension* extension) {
+    const extensions::Extension* extension,
+    extensions::UninstallReason reason) {
   if (service_) {
     DVLOG(2) << service_ << ": OnExtensionUninstalled: "
              << extension->id().substr(0, 8);

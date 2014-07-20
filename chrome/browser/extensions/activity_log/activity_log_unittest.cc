@@ -20,6 +20,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/dom_action_types.h"
 #include "extensions/common/extension_builder.h"
 #include "sql/statement.h"
@@ -368,7 +369,8 @@ TEST_F(ActivityLogTest, UninstalledExtension) {
                       "document.write");
   action->set_page_url(GURL("http://www.google.com"));
 
-  activity_log->OnExtensionUninstalled(NULL, extension);
+  activity_log->OnExtensionUninstalled(
+      NULL, extension, extensions::UNINSTALL_REASON_FOR_TESTING);
   activity_log->GetFilteredActions(
       extension->id(),
       Action::ACTION_ANY,

@@ -21,6 +21,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -120,7 +121,7 @@ TEST_F(ThemeServiceTest, ThemeInstallUninstall) {
 
   // Now uninstall the extension, should revert to the default theme.
   service_->UninstallExtension(
-      extension_id, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+      extension_id, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   EXPECT_TRUE(theme_service->UsingDefaultTheme());
 }
 

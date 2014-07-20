@@ -159,7 +159,8 @@ void StateStore::OnExtensionWillBeInstalled(
 
 void StateStore::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    extensions::UninstallReason reason) {
   RemoveKeysForExtension(extension->id());
 }
 

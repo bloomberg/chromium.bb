@@ -43,6 +43,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
@@ -334,7 +335,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 
   void UninstallExtension(const Extension* extension) {
     extension_service_->UninstallExtension(
-        extension->id(), ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+        extension->id(), extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   }
 
   void SignIn(const std::string& username) {

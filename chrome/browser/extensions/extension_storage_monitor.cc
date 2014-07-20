@@ -24,6 +24,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/image_loader.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -303,7 +304,8 @@ void ExtensionStorageMonitor::OnExtensionWillBeInstalled(
 
 void ExtensionStorageMonitor::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    extensions::UninstallReason reason) {
   RemoveNotificationForExtension(extension->id());
 }
 
@@ -321,7 +323,7 @@ void ExtensionStorageMonitor::ExtensionUninstallAccepted() {
   DCHECK(service);
   service->UninstallExtension(
       extension->id(),
-      ExtensionService::UNINSTALL_REASON_STORAGE_THRESHOLD_EXCEEDED,
+      extensions::UNINSTALL_REASON_STORAGE_THRESHOLD_EXCEEDED,
       NULL);
 }
 

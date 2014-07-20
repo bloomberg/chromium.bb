@@ -33,6 +33,7 @@
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/image_loader.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -366,9 +367,7 @@ bool ExtensionDisabledGlobalError::ShouldCloseOnDeactivate() const {
 
 void ExtensionDisabledGlobalError::ExtensionUninstallAccepted() {
   service_->UninstallExtension(
-      extension_->id(),
-      ExtensionService::UNINSTALL_REASON_EXTENSION_DISABLED,
-      NULL);
+      extension_->id(), extensions::UNINSTALL_REASON_EXTENSION_DISABLED, NULL);
 }
 
 void ExtensionDisabledGlobalError::ExtensionUninstallCanceled() {

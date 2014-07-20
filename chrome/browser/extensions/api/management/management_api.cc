@@ -44,6 +44,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
@@ -647,9 +648,7 @@ void ManagementUninstallFunctionBase::Finish(bool should_uninstall) {
       SendResponse(false);
     } else {
       bool success = service()->UninstallExtension(
-          extension_id_,
-          ExtensionService::UNINSTALL_REASON_MANAGEMENT_API,
-          NULL);
+          extension_id_, extensions::UNINSTALL_REASON_MANAGEMENT_API, NULL);
 
       // TODO set error_ if !success
       SendResponse(success);
@@ -954,7 +953,8 @@ void ManagementEventRouter::OnExtensionInstalled(
 
 void ManagementEventRouter::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    extensions::UninstallReason reason) {
   BroadcastEvent(extension, management::OnUninstalled::kEventName);
 }
 

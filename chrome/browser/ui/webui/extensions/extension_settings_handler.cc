@@ -78,6 +78,7 @@
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -726,7 +727,8 @@ void ExtensionSettingsHandler::OnExtensionUnloaded(
 
 void ExtensionSettingsHandler::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    extensions::UninstallReason reason) {
   MaybeUpdateAfterNotification();
 }
 
@@ -755,7 +757,7 @@ void ExtensionSettingsHandler::ExtensionUninstallAccepted() {
 
   extension_service_->UninstallExtension(
       extension_id_prompting_,
-      ExtensionService::UNINSTALL_REASON_USER_INITIATED,
+      extensions::UNINSTALL_REASON_USER_INITIATED,
       NULL);  // Error.
   extension_id_prompting_ = "";
 

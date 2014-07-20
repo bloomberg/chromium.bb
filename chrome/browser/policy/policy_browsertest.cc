@@ -124,6 +124,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -708,7 +709,7 @@ class PolicyTest : public InProcessBrowserTest {
                        : chrome::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
         content::NotificationService::AllSources());
     extension_service()->UninstallExtension(
-        id, ExtensionService::UNINSTALL_REASON_FOR_TESTING, NULL);
+        id, extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
     observer.Wait();
   }
 

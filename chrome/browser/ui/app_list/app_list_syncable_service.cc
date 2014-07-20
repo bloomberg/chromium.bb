@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "grit/generated_resources.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_data.h"
@@ -117,8 +118,7 @@ bool IsUnRemovableDefaultApp(const std::string& id) {
 
 void UninstallExtension(ExtensionService* service, const std::string& id) {
   if (service && service->GetInstalledExtension(id))
-    service->UninstallExtension(
-        id, ExtensionService::UNINSTALL_REASON_SYNC, NULL);
+    service->UninstallExtension(id, extensions::UNINSTALL_REASON_SYNC, NULL);
 }
 
 bool GetAppListItemType(AppListItem* item,

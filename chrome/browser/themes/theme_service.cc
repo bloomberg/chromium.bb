@@ -26,6 +26,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "grit/theme_resources.h"
@@ -372,9 +373,7 @@ void ThemeService::RemoveUnusedThemes(bool ignore_infobars) {
 
   for (size_t i = 0; i < remove_list.size(); ++i) {
     service->UninstallExtension(
-        remove_list[i],
-        ExtensionService::UNINSTALL_REASON_ORPHANED_THEME,
-        NULL);
+        remove_list[i], extensions::UNINSTALL_REASON_ORPHANED_THEME, NULL);
   }
 }
 

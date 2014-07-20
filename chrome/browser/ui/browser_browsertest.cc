@@ -80,6 +80,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "grit/chromium_strings.h"
@@ -1307,9 +1308,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TabClosingWhenRemovingExtension) {
   // Uninstall the extension and make sure TabClosing is sent.
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
-  service->UninstallExtension(GetExtension()->id(),
-                              ExtensionService::UNINSTALL_REASON_FOR_TESTING,
-                              NULL);
+  service->UninstallExtension(
+      GetExtension()->id(), extensions::UNINSTALL_REASON_FOR_TESTING, NULL);
   EXPECT_EQ(1, observer.closing_count());
 
   model->RemoveObserver(&observer);

@@ -18,6 +18,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 
@@ -101,7 +102,7 @@ void EphemeralAppService::ClearCachedApps() {
                                       ExtensionRegistry::EVERYTHING));
     service->UninstallExtension(
         extension_id,
-        ExtensionService::UNINSTALL_REASON_ORPHANED_EPHEMERAL_EXTENSION,
+        extensions::UNINSTALL_REASON_ORPHANED_EPHEMERAL_EXTENSION,
         NULL);
   }
 }
@@ -147,7 +148,8 @@ void EphemeralAppService::OnExtensionWillBeInstalled(
 
 void EphemeralAppService::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const extensions::Extension* extension) {
+    const extensions::Extension* extension,
+    extensions::UninstallReason reason) {
   if (extensions::util::IsEphemeralApp(extension->id(), profile_)) {
     --ephemeral_app_count_;
     DCHECK_GE(ephemeral_app_count_, 0);
@@ -236,9 +238,7 @@ void EphemeralAppService::GarbageCollectApps() {
         continue;
 
       service->UninstallExtension(
-          *id,
-          ExtensionService::UNINSTALL_REASON_ORPHANED_EPHEMERAL_EXTENSION,
-          NULL);
+          *id, extensions::UNINSTALL_REASON_ORPHANED_EPHEMERAL_EXTENSION, NULL);
     }
   }
 }

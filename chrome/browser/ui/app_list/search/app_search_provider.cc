@@ -104,7 +104,8 @@ void AppSearchProvider::OnExtensionLoaded(
 
 void AppSearchProvider::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const extensions::Extension* extension) {
+    const extensions::Extension* extension,
+    extensions::UninstallReason reason) {
   RefreshApps();
 }
 

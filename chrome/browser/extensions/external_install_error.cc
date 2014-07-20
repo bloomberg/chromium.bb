@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
@@ -284,10 +285,9 @@ void ExternalInstallError::InstallUIAbort(bool user_initiated) {
   if (user_initiated && GetExtension()) {
     ExtensionSystem::Get(browser_context_)
         ->extension_service()
-        ->UninstallExtension(
-            extension_id_,
-            ExtensionService::UNINSTALL_REASON_INSTALL_CANCELED,
-            NULL);  // Ignore error.
+        ->UninstallExtension(extension_id_,
+                             extensions::UNINSTALL_REASON_INSTALL_CANCELED,
+                             NULL);  // Ignore error.
     // Since the manager listens for the extension to be removed, this will
     // remove the error...
   } else {

@@ -280,7 +280,8 @@ void DeveloperPrivateEventRouter::OnExtensionWillBeInstalled(
 
 void DeveloperPrivateEventRouter::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    extensions::UninstallReason reason) {
   DCHECK(profile_->IsSameProfile(Profile::FromBrowserContext(browser_context)));
   BroadcastItemStateChanged(
       browser_context, developer::EVENT_TYPE_UNINSTALLED, extension->id());

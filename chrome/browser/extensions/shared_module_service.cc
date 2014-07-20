@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
@@ -166,7 +167,7 @@ void SharedModuleService::PruneSharedModules() {
       continue;
     service->UninstallExtension(
         *shared_modules_iter,
-        ExtensionService::UNINSTALL_REASON_ORPHANED_SHARED_MODULE,
+        extensions::UNINSTALL_REASON_ORPHANED_SHARED_MODULE,
         NULL);  // Ignore error.
   }
 }
@@ -181,7 +182,8 @@ void SharedModuleService::OnExtensionInstalled(
 
 void SharedModuleService::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    extensions::UninstallReason reason) {
   PruneSharedModules();
 }
 

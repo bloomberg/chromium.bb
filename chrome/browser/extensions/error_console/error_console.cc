@@ -239,7 +239,8 @@ void ErrorConsole::OnExtensionInstalled(
 
 void ErrorConsole::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const Extension* extension) {
+    const Extension* extension,
+    extensions::UninstallReason reason) {
   errors_.Remove(extension->id());
 }
 
