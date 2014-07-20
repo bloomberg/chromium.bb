@@ -11,9 +11,5 @@ MockRtcpReceiverFeedback::MockRtcpReceiverFeedback() {}
 
 MockRtcpReceiverFeedback::~MockRtcpReceiverFeedback() {}
 
-MockRtcpRttFeedback::MockRtcpRttFeedback() {}
-
-MockRtcpRttFeedback::~MockRtcpRttFeedback() {}
-
 }  // namespace cast
 }  // namespace media

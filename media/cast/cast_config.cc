@@ -25,7 +25,6 @@ VideoSenderConfig::VideoSenderConfig()
     : ssrc(0),
       incoming_feedback_ssrc(0),
       rtcp_interval(kDefaultRtcpIntervalMs),
-      rtcp_mode(kRtcpReducedSize),
       target_playout_delay(
           base::TimeDelta::FromMilliseconds(kDefaultRtpMaxDelayMs)),
       rtp_payload_type(0),
@@ -49,7 +48,6 @@ AudioSenderConfig::AudioSenderConfig()
     : ssrc(0),
       incoming_feedback_ssrc(0),
       rtcp_interval(kDefaultRtcpIntervalMs),
-      rtcp_mode(kRtcpReducedSize),
       target_playout_delay(
           base::TimeDelta::FromMilliseconds(kDefaultRtpMaxDelayMs)),
       rtp_payload_type(0),
@@ -65,7 +63,6 @@ FrameReceiverConfig::FrameReceiverConfig()
     : feedback_ssrc(0),
       incoming_ssrc(0),
       rtcp_interval(kDefaultRtcpIntervalMs),
-      rtcp_mode(kRtcpReducedSize),
       rtp_max_delay_ms(kDefaultRtpMaxDelayMs),
       rtp_payload_type(0),
       frequency(0),

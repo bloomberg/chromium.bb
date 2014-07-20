@@ -21,19 +21,15 @@ static const size_t kRtcpReceiverFrameLogSize = 8;
 static const size_t kRtcpReceiverEventLogSize = 4;
 
 // Handle the per frame ACK and NACK messages.
-class RtcpCastMessage {
- public:
-  explicit RtcpCastMessage(uint32 media_ssrc);
+struct RtcpCastMessage {
+  explicit RtcpCastMessage(uint32 ssrc);
+  RtcpCastMessage();
   ~RtcpCastMessage();
 
-  void Copy(const RtcpCastMessage& cast_message);
-
-  uint32 media_ssrc_;
-  uint32 ack_frame_id_;
-  uint16 target_delay_ms_;
-  MissingFramesAndPacketsMap missing_frames_and_packets_;
-
-  DISALLOW_COPY_AND_ASSIGN(RtcpCastMessage);
+  uint32 media_ssrc;
+  uint32 ack_frame_id;
+  uint16 target_delay_ms;
+  MissingFramesAndPacketsMap missing_frames_and_packets;
 };
 
 // Log messages from receiver to sender.
@@ -126,6 +122,24 @@ struct RtcpEvent {
   // Only set for packet events.
   uint16 packet_id;
 };
+
+struct RtcpRttReport {
+  RtcpRttReport();
+  ~RtcpRttReport();
+
+  base::TimeDelta rtt;
+  base::TimeDelta avg_rtt;
+  base::TimeDelta min_rtt;
+  base::TimeDelta max_rtt;
+};
+
+typedef base::Callback<void(const RtcpCastMessage&)> RtcpCastMessageCallback;
+typedef base::Callback<void(base::TimeDelta,
+                            base::TimeDelta,
+                            base::TimeDelta,
+                            base::TimeDelta)> RtcpRttCallback;
+typedef
+base::Callback<void(const RtcpReceiverLogMessage&)> RtcpLogMessageCallback;
 
 }  // namespace cast
 }  // namespace media

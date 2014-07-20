@@ -13,11 +13,8 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/cast_environment.h"
-#include "media/cast/logging/logging_defines.h"
-#include "media/cast/net/rtcp/rtcp.h"
 #include "media/cast/sender/congestion_control.h"
-#include "media/cast/sender/rtp_timestamp_helper.h"
+#include "media/cast/sender/frame_sender.h"
 
 namespace media {
 
@@ -26,7 +23,6 @@ class VideoFrame;
 namespace cast {
 
 class CastTransportSender;
-class LocalVideoEncoderCallback;
 class VideoEncoder;
 
 // Not thread safe. Only called from the main cast thread.
@@ -35,7 +31,7 @@ class VideoEncoder;
 // RTCP packets.
 // Additionally it posts a bunch of delayed tasks to the main thread for various
 // timeouts.
-class VideoSender : public RtcpSenderFeedback,
+class VideoSender : public FrameSender,
                     public base::NonThreadSafe,
                     public base::SupportsWeakPtr<VideoSender> {
  public:
@@ -60,19 +56,11 @@ class VideoSender : public RtcpSenderFeedback,
   void InsertRawVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
                            const base::TimeTicks& capture_time);
 
-  // Only called from the main cast thread.
-  void IncomingRtcpPacket(scoped_ptr<Packet> packet);
-
  protected:
   // Protected for testability.
-  virtual void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback)
-      OVERRIDE;
+  void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback);
 
  private:
-  // Schedule and execute periodic sending of RTCP report.
-  void ScheduleNextRtcpReport();
-  void SendRtcpReport(bool schedule_future_reports);
-
   // Schedule and execute periodic checks for re-sending packets.  If no
   // acknowledgements have been received for "too long," VideoSender will
   // speculatively re-send certain packets of an unacked frame to kick-start
@@ -92,8 +80,6 @@ class VideoSender : public RtcpSenderFeedback,
   void SendEncodedVideoFrame(int requested_bitrate_before_encode,
                              scoped_ptr<EncodedFrame> encoded_frame);
 
-  const scoped_refptr<CastEnvironment> cast_environment_;
-
   // The total amount of time between a frame's capture/recording on the sender
   // and its playback on the receiver (i.e., shown to a user).  This is fixed as
   // a value large enough to give the system sufficient time to encode,
@@ -101,13 +87,6 @@ class VideoSender : public RtcpSenderFeedback,
   // environment (sender/receiver hardware performance, network conditions,
   // etc.).
   const base::TimeDelta target_playout_delay_;
-
-  // Sends encoded frames over the configured transport (e.g., UDP).  In
-  // Chromium, this could be a proxy that first sends the frames from a renderer
-  // process to the browser process over IPC, with the browser process being
-  // responsible for "packetizing" the frames and pushing packets into the
-  // network layer.
-  CastTransportSender* const transport_sender_;
 
   // Maximum number of outstanding frames before the encoding and sending of
   // new frames shall halt.
@@ -117,14 +96,6 @@ class VideoSender : public RtcpSenderFeedback,
   // this will point to either the internal software-based encoder or a proxy to
   // a hardware-based encoder.
   scoped_ptr<VideoEncoder> video_encoder_;
-
-  // Manages sending/receiving of RTCP packets, including sender/receiver
-  // reports.
-  Rtcp rtcp_;
-
-  // Records lip-sync (i.e., mapping of RTP <--> NTP timestamps), and
-  // extrapolates this mapping to any other point in time.
-  RtpTimestampHelper rtp_timestamp_helper_;
 
   // Counts how many RTCP reports are being "aggressively" sent (i.e., one per
   // frame) at the start of the session.  Once a threshold is reached, RTCP

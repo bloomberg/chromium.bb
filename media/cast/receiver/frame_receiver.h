@@ -172,6 +172,9 @@ class FrameReceiver : public RtpPayloadFeedback,
   base::TimeTicks lip_sync_reference_time_;
   ClockDriftSmoother lip_sync_drift_;
 
+  // Time interval for sending a RTCP report.
+  const base::TimeDelta rtcp_interval_;
+
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<FrameReceiver> weak_factory_;
 

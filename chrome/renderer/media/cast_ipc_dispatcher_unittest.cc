@@ -29,7 +29,7 @@ class CastIPCDispatcherTest : public testing::Test {
 
 TEST_F(CastIPCDispatcherTest, RawEvents) {
   const int kChannelId = 17;
-  std::vector<media::cast::PacketEvent> packet_events;
+
   media::cast::PacketEvent packet_event;
   packet_event.rtp_timestamp = 100;
   packet_event.max_packet_id = 10;
@@ -38,12 +38,23 @@ TEST_F(CastIPCDispatcherTest, RawEvents) {
   packet_event.timestamp = base::SimpleTestTickClock().NowTicks();
   packet_event.type = media::cast::PACKET_SENT_TO_NETWORK;
   packet_event.media_type = media::cast::VIDEO_EVENT;
+  std::vector<media::cast::PacketEvent> packet_events;
+  packet_events.push_back(packet_event);
+
+  media::cast::FrameEvent frame_event;
+  frame_event.rtp_timestamp = 100;
+  frame_event.frame_id = 5;
+  frame_event.size = 512;
+  frame_event.timestamp = base::SimpleTestTickClock().NowTicks();
+  frame_event.media_type = media::cast::VIDEO_EVENT;
+  std::vector<media::cast::FrameEvent> frame_events;
+  frame_events.push_back(frame_event);
 
   packet_events.push_back(packet_event);
-  CastMsg_RawEvents raw_events_msg(kChannelId, packet_events);
+  CastMsg_RawEvents raw_events_msg(kChannelId, packet_events,
+                                   frame_events);
 
   FakeSend(raw_events_msg);
 }
 
 }  // namespace
-

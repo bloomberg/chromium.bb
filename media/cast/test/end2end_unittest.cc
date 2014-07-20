@@ -588,7 +588,7 @@ class End2EndTest : public ::testing::Test {
         dummy_endpoint,
         base::Bind(&UpdateCastTransportStatus),
         base::Bind(&End2EndTest::LogRawEvents, base::Unretained(this)),
-        base::TimeDelta::FromSeconds(1),
+        base::TimeDelta::FromMilliseconds(1),
         task_runner_sender_,
         &sender_to_receiver_));
 
@@ -603,9 +603,10 @@ class End2EndTest : public ::testing::Test {
                                   CreateDefaultVideoEncodeAcceleratorCallback(),
                                   CreateDefaultVideoEncodeMemoryCallback());
 
-    receiver_to_sender_.SetPacketReceiver(cast_sender_->packet_receiver(),
-                                          task_runner_,
-                                          &testing_clock_);
+    receiver_to_sender_.SetPacketReceiver(
+        transport_sender_->PacketReceiverForTesting(),
+        task_runner_,
+        &testing_clock_);
     sender_to_receiver_.SetPacketReceiver(cast_receiver_->packet_receiver(),
                                           task_runner_,
                                           &testing_clock_);
@@ -715,8 +716,8 @@ class End2EndTest : public ::testing::Test {
                    base::Unretained(this)));
   }
 
-  void LogRawEvents(const std::vector<PacketEvent>& packet_events) {
-    EXPECT_FALSE(packet_events.empty());
+  void LogRawEvents(const std::vector<PacketEvent>& packet_events,
+                    const std::vector<FrameEvent>& frame_events) {
     for (std::vector<media::cast::PacketEvent>::const_iterator it =
              packet_events.begin();
          it != packet_events.end();
@@ -729,6 +730,16 @@ class End2EndTest : public ::testing::Test {
                                                              it->packet_id,
                                                              it->max_packet_id,
                                                              it->size);
+    }
+    for (std::vector<media::cast::FrameEvent>::const_iterator it =
+             frame_events.begin();
+         it != frame_events.end();
+         ++it) {
+      cast_environment_sender_->Logging()->InsertFrameEvent(it->timestamp,
+                                                            it->type,
+                                                            it->media_type,
+                                                            it->rtp_timestamp,
+                                                            it->frame_id);
     }
   }
 
@@ -1254,14 +1265,14 @@ TEST_F(End2EndTest, VideoLogging) {
       total_event_count_for_packet += map_it->second.counter[i];
     }
 
-    int expected_event_count_for_packet = 0;
     EXPECT_GT(map_it->second.counter[PACKET_RECEIVED], 0);
-    expected_event_count_for_packet +=
-        map_it->second.counter[PACKET_RECEIVED];
+    int packets_received = map_it->second.counter[PACKET_RECEIVED];
+    int packets_sent = map_it->second.counter[PACKET_SENT_TO_NETWORK];
+    EXPECT_EQ(packets_sent, packets_received);
 
     // Verify that there were no other events logged with respect to this
-    // packet. (i.e. Total event count = expected event count)
-    EXPECT_EQ(total_event_count_for_packet, expected_event_count_for_packet);
+    // packet. (i.e. Total event count = packets sent + packets received)
+    EXPECT_EQ(packets_received + packets_sent, total_event_count_for_packet);
   }
 }
 

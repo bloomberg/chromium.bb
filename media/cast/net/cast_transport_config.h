@@ -18,11 +18,6 @@
 namespace media {
 namespace cast {
 
-enum RtcpMode {
-  kRtcpCompound,     // Compound RTCP mode is described by RFC 4585.
-  kRtcpReducedSize,  // Reduced-size RTCP mode is described by RFC 5506.
-};
-
 enum Codec {
   CODEC_UNKNOWN,
   CODEC_AUDIO_OPUS,
@@ -39,6 +34,12 @@ struct CastTransportRtpConfig {
 
   // Identifier refering to this sender.
   uint32 ssrc;
+
+  // Identifier for incoming RTCP traffic.
+  uint32 feedback_ssrc;
+
+  // Identifier for this stream.
+  std::string c_name;
 
   // RTP payload type enum: Specifies the type/encoding of frame data.
   int rtp_payload_type;
@@ -170,19 +171,6 @@ struct RtcpDlrrReportBlock {
   ~RtcpDlrrReportBlock();
   uint32 last_rr;
   uint32 delay_since_last_rr;
-};
-
-// This is only needed because IPC messages don't support more than
-// 5 arguments.
-struct SendRtcpFromRtpSenderData {
-  SendRtcpFromRtpSenderData();
-  ~SendRtcpFromRtpSenderData();
-  uint32 packet_type_flags;
-  uint32 sending_ssrc;
-  std::string c_name;
-  uint32 ntp_seconds;
-  uint32 ntp_fraction;
-  uint32 rtp_timestamp;
 };
 
 inline bool operator==(RtcpSenderInfo lhs, RtcpSenderInfo rhs) {

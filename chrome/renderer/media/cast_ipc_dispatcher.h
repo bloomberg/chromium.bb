@@ -37,7 +37,6 @@ class CastIPCDispatcher : public IPC::MessageFilter {
   virtual ~CastIPCDispatcher();
 
  private:
-  void OnReceivedPacket(int32 channel_id, const media::cast::Packet& packet);
   void OnNotifyStatusChange(
       int32 channel_id,
       media::cast::CastTransportStatus status);
@@ -48,7 +47,14 @@ class CastIPCDispatcher : public IPC::MessageFilter {
       base::TimeTicks time_sent,
       uint32 rtp_timestamp);
   void OnRawEvents(int32 channel_id,
-                   const std::vector<media::cast::PacketEvent>& packet_events);
+                   const std::vector<media::cast::PacketEvent>& packet_events,
+                   const std::vector<media::cast::FrameEvent>& frame_events);
+  void OnRtt(int32 channel_id,
+             uint32 ssrc,
+             const media::cast::RtcpRttReport& rtt_report);
+  void OnRtcpCastMessage(int32 channel_id,
+                         uint32 ssrc,
+                         const media::cast::RtcpCastMessage& cast_message);
 
   static CastIPCDispatcher* global_instance_;
 

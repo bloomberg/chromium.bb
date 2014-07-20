@@ -73,10 +73,6 @@ class CastSender {
   // All audio frames for the session should be inserted to this object.
   virtual scoped_refptr<AudioFrameInput> audio_frame_input() = 0;
 
-  // All RTCP packets for the session should be inserted to this object.
-  // This function and the callback must be called on the main thread.
-  virtual PacketReceiverCallback packet_receiver() = 0;
-
   // Initialize the audio stack. Must be called in order to send audio frames.
   // Status of the initialization will be returned on cast_initialization_cb.
   virtual void InitializeAudio(

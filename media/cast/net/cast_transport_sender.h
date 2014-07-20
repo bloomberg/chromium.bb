@@ -10,15 +10,10 @@
 // in the following order:
 // 1. Create CastTransportSender.
 // 2. Create CastSender (accepts CastTransportSender as an input).
-// 3. Call CastTransportSender::SetPacketReceiver to ensure that the packets
-//    received by the CastTransportSender will be sent to the CastSender.
-// Steps 3 can be done interchangeably.
 
 // Destruction: The CastTransportSender is assumed to be valid as long as the
 // CastSender is alive. Therefore the CastSender should be destructed before the
 // CastTransportSender.
-// This also works when the CastSender acts as a receiver for the RTCP packets
-// due to the weak pointers in the ReceivedPacket method in cast_sender_impl.cc.
 
 #ifndef MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_H_
 #define MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_H_
@@ -31,6 +26,8 @@
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_defines.h"
+#include "media/cast/net/rtcp/receiver_rtcp_event_subscriber.h"
+#include "media/cast/net/rtcp/rtcp_defines.h"
 #include "net/base/ip_endpoint.h"
 
 namespace net {
@@ -45,7 +42,8 @@ namespace cast {
 typedef base::Callback<void(CastTransportStatus status)>
     CastTransportStatusCallback;
 
-typedef base::Callback<void(const std::vector<PacketEvent>&)>
+typedef base::Callback<void(const std::vector<PacketEvent>&,
+                            const std::vector<FrameEvent>&)>
     BulkRawEventsCallback;
 
 // The application should only trigger this class from the transport thread.
@@ -64,14 +62,13 @@ class CastTransportSender : public base::NonThreadSafe {
 
   // Audio/Video initialization.
   // Encoded frames cannot be transmitted until the relevant initialize method
-  // is called. Usually called by CastSender.
-  virtual void InitializeAudio(const CastTransportRtpConfig& config) = 0;
-  virtual void InitializeVideo(const CastTransportRtpConfig& config) = 0;
-
-  // Sets the Cast packet receiver. Should be called after creation on the
-  // Cast sender. Packets won't be received until this function is called.
-  virtual void SetPacketReceiver(
-      const PacketReceiverCallback& packet_receiver) = 0;
+  // is called.
+  virtual void InitializeAudio(const CastTransportRtpConfig& config,
+                               const RtcpCastMessageCallback& cast_message_cb,
+                               const RtcpRttCallback& rtt_cb) = 0;
+  virtual void InitializeVideo(const CastTransportRtpConfig& config,
+                               const RtcpCastMessageCallback& cast_message_cb,
+                               const RtcpRttCallback& rtt_cb) = 0;
 
   // The following two functions handle the encoded media frames (audio and
   // video) to be processed.
@@ -79,16 +76,14 @@ class CastTransportSender : public base::NonThreadSafe {
   virtual void InsertCodedAudioFrame(const EncodedFrame& audio_frame) = 0;
   virtual void InsertCodedVideoFrame(const EncodedFrame& video_frame) = 0;
 
-  // Builds an RTCP packet and sends it to the network.
-  // |ntp_seconds|, |ntp_fraction| and |rtp_timestamp| are used in the
-  // RTCP Sender Report.
-  virtual void SendRtcpFromRtpSender(uint32 packet_type_flags,
-                                     uint32 ntp_seconds,
-                                     uint32 ntp_fraction,
-                                     uint32 rtp_timestamp,
-                                     const RtcpDlrrReportBlock& dlrr,
-                                     uint32 sending_ssrc,
-                                     const std::string& c_name) = 0;
+  // Sends a RTCP sender report to the receiver.
+  // |ssrc| is the SSRC for this report.
+  // |current_time| is the current time reported by a tick clock.
+  // |current_time_as_rtp_timestamp| is the corresponding RTP timestamp.
+  virtual void SendSenderReport(
+      uint32 ssrc,
+      base::TimeTicks current_time,
+      uint32 current_time_as_rtp_timestamp) = 0;
 
   // Retransmission request.
   // |missing_packets| includes the list of frames and packets in each
@@ -103,6 +98,9 @@ class CastTransportSender : public base::NonThreadSafe {
       const MissingFramesAndPacketsMap& missing_packets,
       bool cancel_rtx_if_not_in_list,
       base::TimeDelta dedupe_window) = 0;
+
+  // Returns a callback for receiving packets for testing purposes.
+  virtual PacketReceiverCallback PacketReceiverForTesting();
 };
 
 }  // namespace cast

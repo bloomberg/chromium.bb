@@ -89,7 +89,8 @@ void VideoInitializationStatus(CastInitializationStatus status) {
   EXPECT_EQ(STATUS_VIDEO_INITIALIZED, status);
 }
 
-void IgnoreRawEvents(const std::vector<PacketEvent>& packet_events) {
+void IgnoreRawEvents(const std::vector<PacketEvent>& packet_events,
+                     const std::vector<FrameEvent>& frame_events) {
 }
 
 }  // namespace
@@ -108,18 +109,17 @@ class CastTransportSenderWrapper : public CastTransportSender {
   }
 
   virtual void InitializeAudio(
-      const CastTransportRtpConfig& config) OVERRIDE {
-    transport_->InitializeAudio(config);
+      const CastTransportRtpConfig& config,
+      const RtcpCastMessageCallback& cast_message_cb,
+      const RtcpRttCallback& rtt_cb) OVERRIDE {
+    transport_->InitializeAudio(config, cast_message_cb, rtt_cb);
   }
 
   virtual void InitializeVideo(
-      const CastTransportRtpConfig& config) OVERRIDE {
-    transport_->InitializeVideo(config);
-  }
-
-  virtual void SetPacketReceiver(
-      const PacketReceiverCallback& packet_receiver) OVERRIDE {
-    transport_->SetPacketReceiver(packet_receiver);
+      const CastTransportRtpConfig& config,
+      const RtcpCastMessageCallback& cast_message_cb,
+      const RtcpRttCallback& rtt_cb) OVERRIDE {
+    transport_->InitializeVideo(config, cast_message_cb, rtt_cb);
   }
 
   virtual void InsertCodedAudioFrame(
@@ -134,20 +134,13 @@ class CastTransportSenderWrapper : public CastTransportSender {
     transport_->InsertCodedVideoFrame(video_frame);
   }
 
-  virtual void SendRtcpFromRtpSender(uint32 packet_type_flags,
-                                     uint32 ntp_seconds,
-                                     uint32 ntp_fraction,
-                                     uint32 rtp_timestamp,
-                                     const RtcpDlrrReportBlock& dlrr,
-                                     uint32 sending_ssrc,
-                                     const std::string& c_name) OVERRIDE {
-    transport_->SendRtcpFromRtpSender(packet_type_flags,
-                                      ntp_seconds,
-                                      ntp_fraction,
-                                      rtp_timestamp,
-                                      dlrr,
-                                      sending_ssrc,
-                                      c_name);
+  virtual void SendSenderReport(
+      uint32 ssrc,
+      base::TimeTicks current_time,
+      uint32 current_time_as_rtp_timestamp) OVERRIDE {
+    transport_->SendSenderReport(ssrc,
+                                 current_time,
+                                 current_time_as_rtp_timestamp);
   }
 
   // Retransmission request.
@@ -158,6 +151,10 @@ class CastTransportSenderWrapper : public CastTransportSender {
       base::TimeDelta dedupe_window) OVERRIDE {
     transport_->ResendPackets(
         is_audio, missing_packets, cancel_rtx_if_not_in_list, dedupe_window);
+  }
+
+  virtual PacketReceiverCallback PacketReceiverForTesting() OVERRIDE {
+    return transport_->PacketReceiverForTesting();
   }
 
  private:
@@ -298,17 +295,18 @@ class RunOneBenchmark {
                                           video_receiver_config_,
                                           &receiver_to_sender_);
     net::IPEndPoint dummy_endpoint;
-    transport_sender_.Init(new CastTransportSenderImpl(
-                               NULL,
-                               testing_clock_sender_,
-                               dummy_endpoint,
-                               base::Bind(&UpdateCastTransportStatus),
-                               base::Bind(&IgnoreRawEvents),
-                               base::TimeDelta::FromSeconds(1),
-                               task_runner_sender_,
-                               &sender_to_receiver_),
-                           &video_bytes_encoded_,
-                           &audio_bytes_encoded_);
+    transport_sender_.Init(
+        new CastTransportSenderImpl(
+            NULL,
+            testing_clock_sender_,
+            dummy_endpoint,
+            base::Bind(&UpdateCastTransportStatus),
+            base::Bind(&IgnoreRawEvents),
+            base::TimeDelta::FromSeconds(1),
+            task_runner_sender_,
+            &sender_to_receiver_),
+        &video_bytes_encoded_,
+        &audio_bytes_encoded_);
 
     cast_sender_ =
         CastSender::Create(cast_environment_sender_, &transport_sender_);
@@ -322,7 +320,8 @@ class RunOneBenchmark {
                                   CreateDefaultVideoEncodeMemoryCallback());
 
     receiver_to_sender_.Initialize(
-        CreateSimplePipe(p).Pass(), cast_sender_->packet_receiver(),
+        CreateSimplePipe(p).Pass(),
+        transport_sender_.PacketReceiverForTesting(),
         task_runner_, &testing_clock_);
     sender_to_receiver_.Initialize(
         CreateSimplePipe(p).Pass(), cast_receiver_->packet_receiver(),

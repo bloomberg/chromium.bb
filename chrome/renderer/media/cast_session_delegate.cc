@@ -105,7 +105,6 @@ void CastSessionDelegate::StartUDP(const net::IPEndPoint& remote_endpoint) {
       base::Bind(&CastSessionDelegate::LogRawEvents, base::Unretained(this))));
 
   cast_sender_ = CastSender::Create(cast_environment_, cast_transport_.get());
-  cast_transport_->SetPacketReceiver(cast_sender_->packet_receiver());
 }
 
 void CastSessionDelegate::ToggleLogging(bool is_audio, bool enable) {
@@ -218,7 +217,8 @@ void CastSessionDelegate::InitializationResultCB(
 }
 
 void CastSessionDelegate::LogRawEvents(
-    const std::vector<media::cast::PacketEvent>& packet_events) {
+    const std::vector<media::cast::PacketEvent>& packet_events,
+    const std::vector<media::cast::FrameEvent>& frame_events) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   for (std::vector<media::cast::PacketEvent>::const_iterator it =
@@ -233,5 +233,15 @@ void CastSessionDelegate::LogRawEvents(
                                                     it->packet_id,
                                                     it->max_packet_id,
                                                     it->size);
+  }
+  for (std::vector<media::cast::FrameEvent>::const_iterator it =
+           frame_events.begin();
+       it != frame_events.end();
+       ++it) {
+    cast_environment_->Logging()->InsertFrameEvent(it->timestamp,
+                                                   it->type,
+                                                   it->media_type,
+                                                   it->rtp_timestamp,
+                                                   it->frame_id);
   }
 }

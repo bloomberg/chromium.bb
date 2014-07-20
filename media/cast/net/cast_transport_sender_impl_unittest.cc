@@ -8,8 +8,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/net/cast_transport_config.h"
@@ -70,11 +68,9 @@ class CastTransportSenderImplTest : public ::testing::Test {
     task_runner_->RunTasks();
   }
 
-  void LogRawEvents(const std::vector<PacketEvent>& packet_events) {
+  void LogRawEvents(const std::vector<PacketEvent>& packet_events,
+                    const std::vector<FrameEvent>& frame_events) {
     num_times_callback_called_++;
-    if (num_times_callback_called_ == 3) {
-      run_loop_.Quit();
-    }
   }
 
   static void UpdateCastTransportStatus(CastTransportStatus status) {
@@ -84,27 +80,19 @@ class CastTransportSenderImplTest : public ::testing::Test {
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<CastTransportSenderImpl> transport_sender_;
   FakePacketSender transport_;
-  base::MessageLoopForIO message_loop_;
-  base::RunLoop run_loop_;
   int num_times_callback_called_;
 };
 
 TEST_F(CastTransportSenderImplTest, InitWithoutLogging) {
   InitWithoutLogging();
-  message_loop_.PostDelayedTask(FROM_HERE,
-                                run_loop_.QuitClosure(),
-                                base::TimeDelta::FromMilliseconds(50));
-  run_loop_.Run();
+  task_runner_->Sleep(base::TimeDelta::FromMilliseconds(50));
   EXPECT_EQ(0, num_times_callback_called_);
 }
 
 TEST_F(CastTransportSenderImplTest, InitWithLogging) {
   InitWithLogging();
-  message_loop_.PostDelayedTask(FROM_HERE,
-                                run_loop_.QuitClosure(),
-                                base::TimeDelta::FromMilliseconds(50));
-  run_loop_.Run();
-  EXPECT_GT(num_times_callback_called_, 1);
+  task_runner_->Sleep(base::TimeDelta::FromMilliseconds(50));
+  EXPECT_EQ(5, num_times_callback_called_);
 }
 
 }  // namespace cast

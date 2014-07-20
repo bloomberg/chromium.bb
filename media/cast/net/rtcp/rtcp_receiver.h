@@ -16,7 +16,8 @@
 namespace media {
 namespace cast {
 
-class RtcpReceiverFeedback {
+// Interface for receiving RTCP messages.
+class RtcpMessageHandler {
  public:
   virtual void OnReceivedSenderReport(
       const RtcpSenderInfo& remote_sender_info) = 0;
@@ -24,32 +25,27 @@ class RtcpReceiverFeedback {
   virtual void OnReceiverReferenceTimeReport(
       const RtcpReceiverReferenceTimeReport& remote_time_report) = 0;
 
-  virtual void OnReceivedSendReportRequest() = 0;
-
   virtual void OnReceivedReceiverLog(
       const RtcpReceiverLogMessage& receiver_log) = 0;
 
-  virtual ~RtcpReceiverFeedback() {}
-};
-
-class RtcpRttFeedback {
- public:
   virtual void OnReceivedDelaySinceLastReport(
-      uint32 receivers_ssrc,
       uint32 last_report,
       uint32 delay_since_last_report) = 0;
 
-  virtual ~RtcpRttFeedback() {}
+  virtual void OnReceivedCastFeedback(
+      const RtcpCastMessage& cast_message) = 0;
+
+  virtual ~RtcpMessageHandler() {}
 };
 
 class RtcpReceiver {
  public:
-  explicit RtcpReceiver(scoped_refptr<CastEnvironment> cast_environment,
-                        RtcpSenderFeedback* sender_feedback,
-                        RtcpReceiverFeedback* receiver_feedback,
-                        RtcpRttFeedback* rtt_feedback,
-                        uint32 local_ssrc);
+  RtcpReceiver(RtcpMessageHandler* handler, uint32 local_ssrc);
   virtual ~RtcpReceiver();
+
+  static bool IsRtcpPacket(const uint8* rtcp_buffer, size_t length);
+
+  static uint32 GetSsrcOfSender(const uint8* rtcp_buffer, size_t length);
 
   void SetRemoteSSRC(uint32 ssrc);
 
@@ -111,10 +107,7 @@ class RtcpReceiver {
   uint32 remote_ssrc_;
 
   // Not owned by this class.
-  RtcpSenderFeedback* const sender_feedback_;
-  RtcpReceiverFeedback* const receiver_feedback_;
-  RtcpRttFeedback* const rtt_feedback_;
-  scoped_refptr<CastEnvironment> cast_environment_;
+  RtcpMessageHandler* const handler_;
 
   FrameIdWrapHelper ack_frame_id_wrap_helper_;
 

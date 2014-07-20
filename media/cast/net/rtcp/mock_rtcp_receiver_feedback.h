@@ -15,7 +15,8 @@
 namespace media {
 namespace cast {
 
-class MockRtcpReceiverFeedback : public RtcpReceiverFeedback {
+// TODO(hclam): Should be renamed to MockRtcpMessageHandler.
+class MockRtcpReceiverFeedback : public RtcpMessageHandler {
  public:
   MockRtcpReceiverFeedback();
   virtual ~MockRtcpReceiverFeedback();
@@ -30,17 +31,12 @@ class MockRtcpReceiverFeedback : public RtcpReceiverFeedback {
 
   MOCK_METHOD1(OnReceivedReceiverLog,
                void(const RtcpReceiverLogMessage& receiver_log));
-};
 
-class MockRtcpRttFeedback : public RtcpRttFeedback {
- public:
-  MockRtcpRttFeedback();
-  virtual ~MockRtcpRttFeedback();
+  MOCK_METHOD2(OnReceivedDelaySinceLastReport,
+               void(uint32 last_report, uint32 delay_since_last_report));
 
-  MOCK_METHOD3(OnReceivedDelaySinceLastReport,
-               void(uint32 media_ssrc,
-                    uint32 last_report,
-                    uint32 delay_since_last_report));
+  MOCK_METHOD1(OnReceivedCastFeedback,
+               void(const RtcpCastMessage& cast_message));
 };
 
 }  // namespace cast

@@ -28,16 +28,16 @@ class NackFeedbackVerification : public RtpPayloadFeedback {
       : triggered_(false), missing_packets_(), last_frame_acked_(0) {}
 
   virtual void CastFeedback(const RtcpCastMessage& cast_feedback) OVERRIDE {
-    EXPECT_EQ(kSsrc, cast_feedback.media_ssrc_);
+    EXPECT_EQ(kSsrc, cast_feedback.media_ssrc);
 
-    last_frame_acked_ = cast_feedback.ack_frame_id_;
+    last_frame_acked_ = cast_feedback.ack_frame_id;
 
     MissingFramesAndPacketsMap::const_iterator frame_it =
-        cast_feedback.missing_frames_and_packets_.begin();
+        cast_feedback.missing_frames_and_packets.begin();
 
     // Keep track of the number of missing packets per frame.
     missing_packets_.clear();
-    while (frame_it != cast_feedback.missing_frames_and_packets_.end()) {
+    while (frame_it != cast_feedback.missing_frames_and_packets.end()) {
       // Check for complete frame lost.
       if ((frame_it->second.size() == 1) &&
           (*frame_it->second.begin() == kRtcpCastAllPacketsLost)) {

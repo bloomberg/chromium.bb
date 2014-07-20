@@ -14,10 +14,7 @@
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
 #include "media/cast/cast_config.h"
-#include "media/cast/cast_environment.h"
-#include "media/cast/logging/logging_defines.h"
-#include "media/cast/net/rtcp/rtcp.h"
-#include "media/cast/sender/rtp_timestamp_helper.h"
+#include "media/cast/sender/frame_sender.h"
 
 namespace media {
 namespace cast {
@@ -30,7 +27,7 @@ class AudioEncoder;
 // RTCP packets.
 // Additionally it posts a bunch of delayed tasks to the main thread for various
 // timeouts.
-class AudioSender : public RtcpSenderFeedback,
+class AudioSender : public FrameSender,
                     public base::NonThreadSafe,
                     public base::SupportsWeakPtr<AudioSender> {
  public:
@@ -53,19 +50,11 @@ class AudioSender : public RtcpSenderFeedback,
   void InsertAudio(scoped_ptr<AudioBus> audio_bus,
                    const base::TimeTicks& recorded_time);
 
-  // Only called from the main cast thread.
-  void IncomingRtcpPacket(scoped_ptr<Packet> packet);
-
  protected:
   // Protected for testability.
-  virtual void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback)
-      OVERRIDE;
+  void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback);
 
  private:
-  // Schedule and execute periodic sending of RTCP report.
-  void ScheduleNextRtcpReport();
-  void SendRtcpReport(bool schedule_future_reports);
-
   // Schedule and execute periodic checks for re-sending packets.  If no
   // acknowledgements have been received for "too long," AudioSender will
   // speculatively re-send certain packets of an unacked frame to kick-start
@@ -84,8 +73,6 @@ class AudioSender : public RtcpSenderFeedback,
   // Called by the |audio_encoder_| with the next EncodedFrame to send.
   void SendEncodedAudioFrame(scoped_ptr<EncodedFrame> audio_frame);
 
-  const scoped_refptr<CastEnvironment> cast_environment_;
-
   // The total amount of time between a frame's capture/recording on the sender
   // and its playback on the receiver (i.e., shown to a user).  This is fixed as
   // a value large enough to give the system sufficient time to encode,
@@ -94,13 +81,6 @@ class AudioSender : public RtcpSenderFeedback,
   // etc.).
   const base::TimeDelta target_playout_delay_;
 
-  // Sends encoded frames over the configured transport (e.g., UDP).  In
-  // Chromium, this could be a proxy that first sends the frames from a renderer
-  // process to the browser process over IPC, with the browser process being
-  // responsible for "packetizing" the frames and pushing packets into the
-  // network layer.
-  CastTransportSender* const transport_sender_;
-
   // Maximum number of outstanding frames before the encoding and sending of
   // new frames shall halt.
   const int max_unacked_frames_;
@@ -108,14 +88,6 @@ class AudioSender : public RtcpSenderFeedback,
   // Encodes AudioBuses into EncodedFrames.
   scoped_ptr<AudioEncoder> audio_encoder_;
   const int configured_encoder_bitrate_;
-
-  // Manages sending/receiving of RTCP packets, including sender/receiver
-  // reports.
-  Rtcp rtcp_;
-
-  // Records lip-sync (i.e., mapping of RTP <--> NTP timestamps), and
-  // extrapolates this mapping to any other point in time.
-  RtpTimestampHelper rtp_timestamp_helper_;
 
   // Counts how many RTCP reports are being "aggressively" sent (i.e., one per
   // frame) at the start of the session.  Once a threshold is reached, RTCP

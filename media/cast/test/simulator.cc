@@ -85,7 +85,8 @@ void VideoInitializationStatus(CastInitializationStatus status) {
 }
 
 void LogTransportEvents(const scoped_refptr<CastEnvironment>& env,
-                        const std::vector<PacketEvent>& packet_events) {
+                        const std::vector<PacketEvent>& packet_events,
+                        const std::vector<FrameEvent>& frame_events) {
   for (std::vector<media::cast::PacketEvent>::const_iterator it =
            packet_events.begin();
        it != packet_events.end();
@@ -98,6 +99,16 @@ void LogTransportEvents(const scoped_refptr<CastEnvironment>& env,
                                       it->packet_id,
                                       it->max_packet_id,
                                       it->size);
+  }
+  for (std::vector<media::cast::FrameEvent>::const_iterator it =
+           frame_events.begin();
+       it != frame_events.end();
+       ++it) {
+    env->Logging()->InsertFrameEvent(it->timestamp,
+                                     it->type,
+                                     it->media_type,
+                                     it->rtp_timestamp,
+                                     it->frame_id);
   }
 }
 
@@ -265,8 +276,8 @@ void RunSimulation(const base::FilePath& source_path,
 
   // Connect sender to receiver. This initializes the pipe.
   receiver_to_sender.Initialize(
-      ipp.NewBuffer(128 * 1024), cast_sender->packet_receiver(), task_runner,
-      &testing_clock);
+      ipp.NewBuffer(128 * 1024), transport_sender->PacketReceiverForTesting(),
+      task_runner, &testing_clock);
   sender_to_receiver.Initialize(
       ipp.NewBuffer(128 * 1024), cast_receiver->packet_receiver(), task_runner,
       &testing_clock);

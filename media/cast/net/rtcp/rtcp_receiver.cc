@@ -4,6 +4,7 @@
 
 #include "media/cast/net/rtcp/rtcp_receiver.h"
 
+#include "base/big_endian.h"
 #include "base/logging.h"
 #include "media/cast/net/cast_transport_defines.h"
 #include "media/cast/net/rtcp/rtcp_utility.h"
@@ -38,20 +39,43 @@ std::pair<uint64, uint64> GetReceiverEventKey(
 namespace media {
 namespace cast {
 
-RtcpReceiver::RtcpReceiver(scoped_refptr<CastEnvironment> cast_environment,
-                           RtcpSenderFeedback* sender_feedback,
-                           RtcpReceiverFeedback* receiver_feedback,
-                           RtcpRttFeedback* rtt_feedback,
+RtcpReceiver::RtcpReceiver(RtcpMessageHandler* handler,
                            uint32 local_ssrc)
     : ssrc_(local_ssrc),
       remote_ssrc_(0),
-      sender_feedback_(sender_feedback),
-      receiver_feedback_(receiver_feedback),
-      rtt_feedback_(rtt_feedback),
-      cast_environment_(cast_environment),
-      receiver_event_history_size_(0) {}
+      handler_(handler),
+      receiver_event_history_size_(0) {
+  DCHECK(handler_);
+}
 
 RtcpReceiver::~RtcpReceiver() {}
+
+// static
+bool RtcpReceiver::IsRtcpPacket(const uint8* packet, size_t length) {
+  if (length < kMinLengthOfRtcp) {
+    LOG(ERROR) << "Invalid RTCP packet received.";
+    return false;
+  }
+
+  uint8 packet_type = packet[1];
+  if (packet_type >= kPacketTypeLow &&
+      packet_type <= kPacketTypeHigh) {
+    return true;
+  }
+  return false;
+}
+
+// static
+uint32 RtcpReceiver::GetSsrcOfSender(const uint8* rtcp_buffer, size_t length) {
+  if (length < kMinLengthOfRtcp)
+    return 0;
+  uint32 ssrc_of_sender;
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_buffer), length);
+  big_endian_reader.Skip(4);  // Skip header
+  big_endian_reader.ReadU32(&ssrc_of_sender);
+  return ssrc_of_sender;
+}
 
 void RtcpReceiver::SetRemoteSSRC(uint32 ssrc) { remote_ssrc_ = ssrc; }
 
@@ -83,9 +107,6 @@ void RtcpReceiver::IncomingRtcpPacket(RtcpParser* rtcp_parser) {
       case kRtcpGenericRtpFeedbackNackCode:
         HandleNACK(rtcp_parser);
         break;
-      case kRtcpGenericRtpFeedbackSrReqCode:
-        HandleSendReportRequest(rtcp_parser);
-        break;
       case kRtcpPayloadSpecificPliCode:
         HandlePLI(rtcp_parser);
         break;
@@ -110,6 +131,7 @@ void RtcpReceiver::IncomingRtcpPacket(RtcpParser* rtcp_parser) {
       case kRtcpNotValidCode:
       case kRtcpReportBlockItemCode:
       case kRtcpSdesChunkCode:
+      case kRtcpGenericRtpFeedbackSrReqCode:
       case kRtcpGenericRtpFeedbackNackItemCode:
       case kRtcpPayloadSpecificFirItemCode:
       case kRtcpXrRrtrCode:
@@ -145,9 +167,7 @@ void RtcpReceiver::HandleSenderReport(RtcpParser* rtcp_parser) {
         rtcp_field.sender_report.sender_packet_count;
     remote_sender_info.send_octet_count =
         rtcp_field.sender_report.sender_octet_count;
-    if (receiver_feedback_) {
-      receiver_feedback_->OnReceivedSenderReport(remote_sender_info);
-    }
+    handler_->OnReceivedSenderReport(remote_sender_info);
   }
   rtcp_field_type = rtcp_parser->Iterate();
   while (rtcp_field_type == kRtcpReportBlockItemCode) {
@@ -203,11 +223,8 @@ void RtcpReceiver::HandleReportBlock(const RtcpField* rtcp_field,
   report_block.jitter = rb.jitter;
   report_block.last_sr = rb.last_sender_report;
   report_block.delay_since_last_sr = rb.delay_last_sender_report;
-
-  if (rtt_feedback_) {
-    rtt_feedback_->OnReceivedDelaySinceLastReport(
-        rb.ssrc, rb.last_sender_report, rb.delay_last_sender_report);
-  }
+  handler_->OnReceivedDelaySinceLastReport(
+      rb.last_sender_report, rb.delay_last_sender_report);
 }
 
 void RtcpReceiver::HandleSDES(RtcpParser* rtcp_parser) {
@@ -254,10 +271,7 @@ void RtcpReceiver::HandleRrtr(RtcpParser* rtcp_parser, uint32 remote_ssrc) {
   remote_time_report.remote_ssrc = remote_ssrc;
   remote_time_report.ntp_seconds = rtcp_field.rrtr.ntp_most_significant;
   remote_time_report.ntp_fraction = rtcp_field.rrtr.ntp_least_significant;
-
-  if (receiver_feedback_) {
-    receiver_feedback_->OnReceiverReferenceTimeReport(remote_time_report);
-  }
+  handler_->OnReceiverReferenceTimeReport(remote_time_report);
 }
 
 void RtcpReceiver::HandleDlrr(RtcpParser* rtcp_parser) {
@@ -266,12 +280,9 @@ void RtcpReceiver::HandleDlrr(RtcpParser* rtcp_parser) {
     // Not to us.
     return;
   }
-  if (rtt_feedback_) {
-    rtt_feedback_->OnReceivedDelaySinceLastReport(
-        rtcp_field.dlrr.receivers_ssrc,
-        rtcp_field.dlrr.last_receiver_report,
-        rtcp_field.dlrr.delay_last_receiver_report);
-  }
+  handler_->OnReceivedDelaySinceLastReport(
+      rtcp_field.dlrr.last_receiver_report,
+      rtcp_field.dlrr.delay_last_receiver_report);
 }
 
 void RtcpReceiver::HandleNACK(RtcpParser* rtcp_parser) {
@@ -322,13 +333,6 @@ void RtcpReceiver::HandlePLI(RtcpParser* rtcp_parser) {
   if (ssrc_ == rtcp_field.pli.media_ssrc) {
     // Received a signal that we need to send a new key frame.
     VLOG(2) << "Cast RTCP received PLI on our SSRC " << ssrc_;
-  }
-  rtcp_parser->Iterate();
-}
-
-void RtcpReceiver::HandleSendReportRequest(RtcpParser* rtcp_parser) {
-  if (receiver_feedback_) {
-    receiver_feedback_->OnReceivedSendReportRequest();
   }
   rtcp_parser->Iterate();
 }
@@ -436,9 +440,8 @@ void RtcpReceiver::HandleApplicationSpecificCastReceiverLog(
       receiver_log.push_back(frame_log);
   }
 
-  if (receiver_feedback_ && !receiver_log.empty()) {
-    receiver_feedback_->OnReceivedReceiverLog(receiver_log);
-  }
+  if (!receiver_log.empty())
+    handler_->OnReceivedReceiverLog(receiver_log);
 }
 
 void RtcpReceiver::HandleApplicationSpecificCastReceiverEventLog(
@@ -491,20 +494,18 @@ void RtcpReceiver::HandleApplicationSpecificCastReceiverEventLog(
 void RtcpReceiver::HandlePayloadSpecificCastItem(RtcpParser* rtcp_parser) {
   const RtcpField& rtcp_field = rtcp_parser->Field();
   RtcpCastMessage cast_message(remote_ssrc_);
-  cast_message.ack_frame_id_ = ack_frame_id_wrap_helper_.MapTo32bitsFrameId(
+  cast_message.ack_frame_id = ack_frame_id_wrap_helper_.MapTo32bitsFrameId(
       rtcp_field.cast_item.last_frame_id);
-  cast_message.target_delay_ms_ = rtcp_field.cast_item.target_delay_ms;
+  cast_message.target_delay_ms = rtcp_field.cast_item.target_delay_ms;
 
   RtcpFieldTypes packet_type = rtcp_parser->Iterate();
   while (packet_type == kRtcpPayloadSpecificCastNackItemCode) {
     const RtcpField& rtcp_field = rtcp_parser->Field();
     HandlePayloadSpecificCastNackItem(
-        &rtcp_field, &cast_message.missing_frames_and_packets_);
+        &rtcp_field, &cast_message.missing_frames_and_packets);
     packet_type = rtcp_parser->Iterate();
   }
-  if (sender_feedback_) {
-    sender_feedback_->OnReceivedCastFeedback(cast_message);
-  }
+  handler_->OnReceivedCastFeedback(cast_message);
 }
 
 void RtcpReceiver::HandlePayloadSpecificCastNackItem(

@@ -123,7 +123,8 @@ void UpdateCastTransportStatus(
 
 void LogRawEvents(
     const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
-    const std::vector<media::cast::PacketEvent>& packet_events) {
+    const std::vector<media::cast::PacketEvent>& packet_events,
+    const std::vector<media::cast::FrameEvent>& frame_events) {
   VLOG(1) << "Got packet events from transport, size: " << packet_events.size();
   for (std::vector<media::cast::PacketEvent>::const_iterator it =
            packet_events.begin();
@@ -137,6 +138,17 @@ void LogRawEvents(
                                                    it->packet_id,
                                                    it->max_packet_id,
                                                    it->size);
+  }
+  VLOG(1) << "Got frame events from transport, size: " << frame_events.size();
+  for (std::vector<media::cast::FrameEvent>::const_iterator it =
+           frame_events.begin();
+       it != frame_events.end();
+       ++it) {
+    cast_environment->Logging()->InsertFrameEvent(it->timestamp,
+                                                  it->type,
+                                                  it->media_type,
+                                                  it->rtp_timestamp,
+                                                  it->frame_id);
   }
 }
 
@@ -327,7 +339,6 @@ int main(int argc, char** argv) {
       media::cast::CreateDefaultVideoEncodeAcceleratorCallback(),
       media::cast::CreateDefaultVideoEncodeMemoryCallback());
   cast_sender->InitializeAudio(audio_config, base::Bind(&InitializationResult));
-  transport_sender->SetPacketReceiver(cast_sender->packet_receiver());
 
   // Set up event subscribers.
   scoped_ptr<media::cast::EncodingEventSubscriber> video_event_subscriber;

@@ -85,8 +85,6 @@
         'net/pacing/paced_sender_unittest.cc',
         'net/rtcp/mock_rtcp_receiver_feedback.cc',
         'net/rtcp/mock_rtcp_receiver_feedback.h',
-        'net/rtcp/mock_rtcp_sender_feedback.cc',
-        'net/rtcp/mock_rtcp_sender_feedback.h',
         'net/rtcp/rtcp_receiver_unittest.cc',
         'net/rtcp/rtcp_sender_unittest.cc',
         'net/rtcp/rtcp_unittest.cc',

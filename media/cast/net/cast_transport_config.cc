@@ -8,7 +8,7 @@ namespace media {
 namespace cast {
 
 CastTransportRtpConfig::CastTransportRtpConfig()
-    : ssrc(0), rtp_payload_type(0), stored_frames(0) {}
+    : ssrc(0), feedback_ssrc(0), rtp_payload_type(0), stored_frames(0) {}
 
 CastTransportRtpConfig::~CastTransportRtpConfig() {}
 
@@ -51,10 +51,6 @@ RtcpReportBlock::~RtcpReportBlock() {}
 RtcpDlrrReportBlock::RtcpDlrrReportBlock()
     : last_rr(0), delay_since_last_rr(0) {}
 RtcpDlrrReportBlock::~RtcpDlrrReportBlock() {}
-
-SendRtcpFromRtpSenderData::SendRtcpFromRtpSenderData()
-    : packet_type_flags(0), sending_ssrc(0) {}
-SendRtcpFromRtpSenderData::~SendRtcpFromRtpSenderData() {}
 
 }  // namespace cast
 }  // namespace media

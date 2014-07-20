@@ -11,6 +11,9 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "media/cast/cast_sender.h"
 
+CastTransportSenderIPC::ClientCallbacks::ClientCallbacks() {}
+CastTransportSenderIPC::ClientCallbacks::~ClientCallbacks() {}
+
 CastTransportSenderIPC::CastTransportSenderIPC(
     const net::IPEndPoint& remote_end_point,
     const media::cast::CastTransportStatusCallback& status_cb,
@@ -29,18 +32,21 @@ CastTransportSenderIPC::~CastTransportSenderIPC() {
   }
 }
 
-void CastTransportSenderIPC::SetPacketReceiver(
-    const media::cast::PacketReceiverCallback& packet_callback) {
-  packet_callback_ = packet_callback;
-}
-
 void CastTransportSenderIPC::InitializeAudio(
-    const media::cast::CastTransportRtpConfig& config) {
+    const media::cast::CastTransportRtpConfig& config,
+    const media::cast::RtcpCastMessageCallback& cast_message_cb,
+    const media::cast::RtcpRttCallback& rtt_cb) {
+  clients_[config.ssrc].cast_message_cb = cast_message_cb;
+  clients_[config.ssrc].rtt_cb = rtt_cb;
   Send(new CastHostMsg_InitializeAudio(channel_id_, config));
 }
 
 void CastTransportSenderIPC::InitializeVideo(
-    const media::cast::CastTransportRtpConfig& config) {
+    const media::cast::CastTransportRtpConfig& config,
+    const media::cast::RtcpCastMessageCallback& cast_message_cb,
+    const media::cast::RtcpRttCallback& rtt_cb) {
+  clients_[config.ssrc].cast_message_cb = cast_message_cb;
+  clients_[config.ssrc].rtt_cb = rtt_cb;
   Send(new CastHostMsg_InitializeVideo(channel_id_, config));
 }
 
@@ -54,25 +60,14 @@ void CastTransportSenderIPC::InsertCodedVideoFrame(
   Send(new CastHostMsg_InsertCodedVideoFrame(channel_id_, video_frame));
 }
 
-void CastTransportSenderIPC::SendRtcpFromRtpSender(
-    uint32 packet_type_flags,
-    uint32 ntp_seconds,
-    uint32 ntp_fraction,
-    uint32 rtp_timestamp,
-    const media::cast::RtcpDlrrReportBlock& dlrr,
-    uint32 sending_ssrc,
-    const std::string& c_name) {
-  struct media::cast::SendRtcpFromRtpSenderData data;
-  data.packet_type_flags = packet_type_flags;
-  data.sending_ssrc = sending_ssrc;
-  data.c_name = c_name;
-  data.ntp_seconds = ntp_seconds;
-  data.ntp_fraction = ntp_fraction;
-  data.rtp_timestamp = rtp_timestamp;
-  Send(new CastHostMsg_SendRtcpFromRtpSender(
-      channel_id_,
-      data,
-      dlrr));
+void CastTransportSenderIPC::SendSenderReport(
+    uint32 ssrc,
+    base::TimeTicks current_time,
+    uint32 current_time_as_rtp_timestamp) {
+  Send(new CastHostMsg_SendSenderReport(channel_id_,
+                                        ssrc,
+                                        current_time,
+                                        current_time_as_rtp_timestamp));
 }
 
 void CastTransportSenderIPC::ResendPackets(
@@ -87,26 +82,45 @@ void CastTransportSenderIPC::ResendPackets(
                                      dedupe_window));
 }
 
-void CastTransportSenderIPC::OnReceivedPacket(
-    const media::cast::Packet& packet) {
-  if (!packet_callback_.is_null()) {
-    // TODO(hubbe): Perhaps an non-ownership-transferring cb here?
-    scoped_ptr<media::cast::Packet> packet_copy(
-        new media::cast::Packet(packet));
-    packet_callback_.Run(packet_copy.Pass());
-  } else {
-    DVLOG(1) << "CastIPCDispatcher::OnReceivedPacket no packet callback yet.";
-  }
-}
-
 void CastTransportSenderIPC::OnNotifyStatusChange(
     media::cast::CastTransportStatus status) {
   status_callback_.Run(status);
 }
 
 void CastTransportSenderIPC::OnRawEvents(
-    const std::vector<media::cast::PacketEvent>& packet_events) {
-  raw_events_callback_.Run(packet_events);
+    const std::vector<media::cast::PacketEvent>& packet_events,
+    const std::vector<media::cast::FrameEvent>& frame_events) {
+  raw_events_callback_.Run(packet_events, frame_events);
+}
+
+void CastTransportSenderIPC::OnRtt(
+    uint32 ssrc,
+    const media::cast::RtcpRttReport& rtt_report) {
+  ClientMap::iterator it = clients_.find(ssrc);
+  if (it == clients_.end()) {
+    LOG(ERROR) << "Received RTT report from for unknown SSRC: " << ssrc;
+    return;
+  }
+  if (it->second.rtt_cb.is_null())
+    return;
+  it->second.rtt_cb.Run(
+      rtt_report.rtt,
+      rtt_report.avg_rtt,
+      rtt_report.min_rtt,
+      rtt_report.max_rtt);
+}
+
+void CastTransportSenderIPC::OnRtcpCastMessage(
+    uint32 ssrc,
+    const media::cast::RtcpCastMessage& cast_message) {
+  ClientMap::iterator it = clients_.find(ssrc);
+  if (it == clients_.end()) {
+    LOG(ERROR) << "Received cast message from for unknown SSRC: " << ssrc;
+    return;
+  }
+  if (it->second.cast_message_cb.is_null())
+    return;
+  it->second.cast_message_cb.Run(cast_message);
 }
 
 void CastTransportSenderIPC::Send(IPC::Message* message) {

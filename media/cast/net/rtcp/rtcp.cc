@@ -4,7 +4,6 @@
 
 #include "media/cast/net/rtcp/rtcp.h"
 
-#include "base/big_endian.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
@@ -20,28 +19,11 @@ namespace media {
 namespace cast {
 
 static const int32 kMaxRttMs = 10000;  // 10 seconds.
-static const int32 kMaxDelayMs = 2000;  // 2 seconds.
 
-class LocalRtcpRttFeedback : public RtcpRttFeedback {
+class Rtcp::RtcpMessageHandlerImpl : public RtcpMessageHandler {
  public:
-  explicit LocalRtcpRttFeedback(Rtcp* rtcp) : rtcp_(rtcp) {}
-
-  virtual void OnReceivedDelaySinceLastReport(
-      uint32 receivers_ssrc, uint32 last_report,
-      uint32 delay_since_last_report) OVERRIDE {
-    rtcp_->OnReceivedDelaySinceLastReport(receivers_ssrc, last_report,
-                                          delay_since_last_report);
-  }
-
- private:
-  Rtcp* rtcp_;
-};
-
-class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
- public:
-  LocalRtcpReceiverFeedback(Rtcp* rtcp,
-                            scoped_refptr<CastEnvironment> cast_environment)
-      : rtcp_(rtcp), cast_environment_(cast_environment) {}
+  explicit RtcpMessageHandlerImpl(Rtcp* rtcp)
+      : rtcp_(rtcp) {}
 
   virtual void OnReceivedSenderReport(
       const RtcpSenderInfo& remote_sender_info) OVERRIDE {
@@ -60,103 +42,91 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
                          remote_time_report.ntp_fraction);
   }
 
-  virtual void OnReceivedSendReportRequest() OVERRIDE {
-    rtcp_->OnReceivedSendReportRequest();
-  }
-
   virtual void OnReceivedReceiverLog(const RtcpReceiverLogMessage& receiver_log)
       OVERRIDE {
     rtcp_->OnReceivedReceiverLog(receiver_log);
   }
 
+  virtual void OnReceivedDelaySinceLastReport(
+      uint32 last_report,
+      uint32 delay_since_last_report) OVERRIDE {
+    rtcp_->OnReceivedDelaySinceLastReport(last_report, delay_since_last_report);
+  }
+
+  virtual void OnReceivedCastFeedback(
+      const RtcpCastMessage& cast_message) OVERRIDE {
+    rtcp_->OnReceivedCastFeedback(cast_message);
+  }
+
  private:
   Rtcp* rtcp_;
-  scoped_refptr<CastEnvironment> cast_environment_;
 };
 
-Rtcp::Rtcp(scoped_refptr<CastEnvironment> cast_environment,
-           RtcpSenderFeedback* sender_feedback,
-           CastTransportSender* const transport_sender,
-           PacedPacketSender* paced_packet_sender,
-           RtpReceiverStatistics* rtp_receiver_statistics, RtcpMode rtcp_mode,
-           const base::TimeDelta& rtcp_interval, uint32 local_ssrc,
-           uint32 remote_ssrc, const std::string& c_name,
-           EventMediaType event_media_type)
-    : cast_environment_(cast_environment),
-      transport_sender_(transport_sender),
-      rtcp_interval_(rtcp_interval),
-      rtcp_mode_(rtcp_mode),
+Rtcp::Rtcp(const RtcpCastMessageCallback& cast_callback,
+           const RtcpRttCallback& rtt_callback,
+           const RtcpLogMessageCallback& log_callback,
+           base::TickClock* clock,
+           PacedPacketSender* packet_sender,
+           uint32 local_ssrc,
+           uint32 remote_ssrc, const std::string& c_name)
+    : cast_callback_(cast_callback),
+      rtt_callback_(rtt_callback),
+      log_callback_(log_callback),
+      clock_(clock),
+      rtcp_sender_(new RtcpSender(packet_sender, local_ssrc, c_name)),
       local_ssrc_(local_ssrc),
       remote_ssrc_(remote_ssrc),
       c_name_(c_name),
-      event_media_type_(event_media_type),
-      rtp_receiver_statistics_(rtp_receiver_statistics),
-      rtt_feedback_(new LocalRtcpRttFeedback(this)),
-      receiver_feedback_(new LocalRtcpReceiverFeedback(this, cast_environment)),
-      rtcp_sender_(new RtcpSender(cast_environment, paced_packet_sender,
-                                  local_ssrc, c_name)),
+      handler_(new RtcpMessageHandlerImpl(this)),
+      rtcp_receiver_(new RtcpReceiver(handler_.get(), local_ssrc)),
       last_report_truncated_ntp_(0),
       local_clock_ahead_by_(ClockDriftSmoother::GetDefaultTimeConstant()),
       lip_sync_rtp_timestamp_(0),
       lip_sync_ntp_timestamp_(0),
       min_rtt_(TimeDelta::FromMilliseconds(kMaxRttMs)),
       number_of_rtt_in_avg_(0) {
-  rtcp_receiver_.reset(new RtcpReceiver(cast_environment, sender_feedback,
-                                        receiver_feedback_.get(),
-                                        rtt_feedback_.get(), local_ssrc));
   rtcp_receiver_->SetRemoteSSRC(remote_ssrc);
+
+  // This value is the same in FrameReceiver.
+  rtcp_receiver_->SetCastReceiverEventHistorySize(
+      kReceiverRtcpEventHistorySize);
 }
 
 Rtcp::~Rtcp() {}
 
-// static
-bool Rtcp::IsRtcpPacket(const uint8* packet, size_t length) {
-  DCHECK_GE(length, kMinLengthOfRtcp) << "Invalid RTCP packet";
-  if (length < kMinLengthOfRtcp) return false;
-
-  uint8 packet_type = packet[1];
-  if (packet_type >= kPacketTypeLow &&
-      packet_type <= kPacketTypeHigh) {
-    return true;
+bool Rtcp::IncomingRtcpPacket(const uint8* data, size_t length) {
+  // Check if this is a valid RTCP packet.
+  if (!RtcpReceiver::IsRtcpPacket(data, length)) {
+    VLOG(1) << "Rtcp@" << this << "::IncomingRtcpPacket() -- "
+            << "Received an invalid (non-RTCP?) packet.";
+    return false;
   }
-  return false;
-}
 
-// static
-uint32 Rtcp::GetSsrcOfSender(const uint8* rtcp_buffer, size_t length) {
-  DCHECK_GE(length, kMinLengthOfRtcp) << "Invalid RTCP packet";
-  uint32 ssrc_of_sender;
-  base::BigEndianReader big_endian_reader(
-      reinterpret_cast<const char*>(rtcp_buffer), length);
-  big_endian_reader.Skip(4);  // Skip header
-  big_endian_reader.ReadU32(&ssrc_of_sender);
-  return ssrc_of_sender;
-}
-
-base::TimeTicks Rtcp::TimeToSendNextRtcpReport() {
-  if (next_time_to_send_rtcp_.is_null()) {
-    UpdateNextTimeToSendRtcp();
+  // Check if this packet is to us.
+  uint32 ssrc_of_sender = RtcpReceiver::GetSsrcOfSender(data, length);
+  if (ssrc_of_sender != remote_ssrc_) {
+    return false;
   }
-  return next_time_to_send_rtcp_;
-}
 
-void Rtcp::IncomingRtcpPacket(const uint8* rtcp_buffer, size_t length) {
-  RtcpParser rtcp_parser(rtcp_buffer, length);
+  // Parse this packet.
+  RtcpParser rtcp_parser(data, length);
   if (!rtcp_parser.IsValid()) {
     // Silently ignore packet.
-    DLOG(ERROR) << "Received invalid RTCP packet";
-    return;
+    VLOG(1) << "Received invalid RTCP packet";
+    return false;
   }
   rtcp_receiver_->IncomingRtcpPacket(&rtcp_parser);
+  return true;
 }
 
 void Rtcp::SendRtcpFromRtpReceiver(
     const RtcpCastMessage* cast_message,
-    const ReceiverRtcpEventSubscriber::RtcpEventMultiMap* rtcp_events) {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+    base::TimeDelta target_delay,
+    const ReceiverRtcpEventSubscriber::RtcpEventMultiMap* rtcp_events,
+    RtpReceiverStatistics* rtp_receiver_statistics) {
   uint32 packet_type_flags = 0;
 
-  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
+  base::TimeTicks now = clock_->NowTicks();
   RtcpReportBlock report_block;
   RtcpReceiverReferenceTimeReport rrtr;
 
@@ -172,13 +142,14 @@ void Rtcp::SendRtcpFromRtpReceiver(
   if (rtcp_events) {
     packet_type_flags |= kRtcpReceiverLog;
   }
-  if (rtcp_mode_ == kRtcpCompound || now >= next_time_to_send_rtcp_) {
+  // If RTCP is in compound mode then we always send a RR.
+  if (rtp_receiver_statistics) {
     packet_type_flags |= kRtcpRr;
 
     report_block.remote_ssrc = 0;            // Not needed to set send side.
     report_block.media_ssrc = remote_ssrc_;  // SSRC of the RTP packet sender.
-    if (rtp_receiver_statistics_) {
-      rtp_receiver_statistics_->GetStatistics(
+    if (rtp_receiver_statistics) {
+      rtp_receiver_statistics->GetStatistics(
           &report_block.fraction_lost, &report_block.cumulative_lost,
           &report_block.extended_high_sequence_number, &report_block.jitter);
     }
@@ -188,6 +159,14 @@ void Rtcp::SendRtcpFromRtpReceiver(
       uint32 delay_seconds = 0;
       uint32 delay_fraction = 0;
       base::TimeDelta delta = now - time_last_report_received_;
+
+      // TODO(hclam): DLRR is not used by any receiver. Consider removing
+      // it. There is one race condition in the computation of the time for
+      // DLRR: current time is submitted to this method while
+      // |time_last_report_received_| is updated just before that. This can
+      // happen if current time is not submitted synchronously.
+      if (delta < base::TimeDelta())
+        delta = base::TimeDelta();
       ConvertTimeToFractions(delta.InMicroseconds(), &delay_seconds,
                              &delay_fraction);
       report_block.delay_since_last_sr =
@@ -195,19 +174,19 @@ void Rtcp::SendRtcpFromRtpReceiver(
     } else {
       report_block.delay_since_last_sr = 0;
     }
-    UpdateNextTimeToSendRtcp();
   }
   rtcp_sender_->SendRtcpFromRtpReceiver(packet_type_flags,
                                         &report_block,
                                         &rrtr,
                                         cast_message,
                                         rtcp_events,
-                                        target_delay_);
+                                        target_delay);
 }
 
 void Rtcp::SendRtcpFromRtpSender(base::TimeTicks current_time,
-                                 uint32 current_time_as_rtp_timestamp) {
-  DCHECK(transport_sender_);
+                                 uint32 current_time_as_rtp_timestamp,
+                                 uint32 send_packet_count,
+                                 size_t send_octet_count) {
   uint32 packet_type_flags = kRtcpSr;
   uint32 current_ntp_seconds = 0;
   uint32 current_ntp_fractions = 0;
@@ -229,16 +208,20 @@ void Rtcp::SendRtcpFromRtpSender(base::TimeTicks current_time,
     dlrr.delay_since_last_rr = ConvertToNtpDiff(delay_seconds, delay_fraction);
   }
 
-  transport_sender_->SendRtcpFromRtpSender(
-      packet_type_flags, current_ntp_seconds, current_ntp_fractions,
-      current_time_as_rtp_timestamp, dlrr, local_ssrc_, c_name_);
-  UpdateNextTimeToSendRtcp();
+  RtcpSenderInfo sender_info;
+  sender_info.ntp_seconds = current_ntp_seconds;
+  sender_info.ntp_fraction = current_ntp_fractions;
+  sender_info.rtp_timestamp = current_time_as_rtp_timestamp;
+  sender_info.send_packet_count = send_packet_count;
+  sender_info.send_octet_count = send_octet_count;
+
+  rtcp_sender_->SendRtcpFromRtpSender(packet_type_flags, sender_info, dlrr);
 }
 
 void Rtcp::OnReceivedNtp(uint32 ntp_seconds, uint32 ntp_fraction) {
   last_report_truncated_ntp_ = ConvertToNtpDiff(ntp_seconds, ntp_fraction);
 
-  const base::TimeTicks now = cast_environment_->Clock()->NowTicks();
+  const base::TimeTicks now = clock_->NowTicks();
   time_last_report_received_ = now;
 
   // TODO(miu): This clock offset calculation does not account for packet
@@ -283,41 +266,29 @@ bool Rtcp::GetLatestLipSyncTimes(uint32* rtp_timestamp,
       local_clock_ahead_by_.Current();
 
   // Sanity-check: Getting regular lip sync updates?
-  DCHECK((cast_environment_->Clock()->NowTicks() - local_reference_time) <
-             base::TimeDelta::FromMinutes(1));
+  DCHECK((clock_->NowTicks() - local_reference_time) <
+         base::TimeDelta::FromMinutes(1));
 
   *rtp_timestamp = lip_sync_rtp_timestamp_;
   *reference_time = local_reference_time;
   return true;
 }
 
-void Rtcp::OnReceivedSendReportRequest() {
-  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-
-  // Trigger a new RTCP report at next timer.
-  next_time_to_send_rtcp_ = now;
-}
-
-void Rtcp::SetCastReceiverEventHistorySize(size_t size) {
-  rtcp_receiver_->SetCastReceiverEventHistorySize(size);
-}
-
-void Rtcp::SetTargetDelay(base::TimeDelta target_delay) {
-  DCHECK(target_delay < TimeDelta::FromMilliseconds(kMaxDelayMs));
-  target_delay_ = target_delay;
-}
-
-void Rtcp::OnReceivedDelaySinceLastReport(uint32 receivers_ssrc,
-                                          uint32 last_report,
+void Rtcp::OnReceivedDelaySinceLastReport(uint32 last_report,
                                           uint32 delay_since_last_report) {
   RtcpSendTimeMap::iterator it = last_reports_sent_map_.find(last_report);
   if (it == last_reports_sent_map_.end()) {
     return;  // Feedback on another report.
   }
 
-  base::TimeDelta sender_delay =
-      cast_environment_->Clock()->NowTicks() - it->second;
+  base::TimeDelta sender_delay = clock_->NowTicks() - it->second;
   UpdateRtt(sender_delay, ConvertFromNtpDiff(delay_since_last_report));
+}
+
+void Rtcp::OnReceivedCastFeedback(const RtcpCastMessage& cast_message) {
+  if (cast_callback_.is_null())
+    return;
+  cast_callback_.Run(cast_message);
 }
 
 void Rtcp::SaveLastSentNtpTime(const base::TimeTicks& now,
@@ -367,6 +338,9 @@ void Rtcp::UpdateRtt(const base::TimeDelta& sender_delay,
     avg_rtt_ = rtt;
   }
   number_of_rtt_in_avg_++;
+
+  if (!rtt_callback_.is_null())
+    rtt_callback_.Run(rtt, avg_rtt_, min_rtt_, max_rtt_);
 }
 
 bool Rtcp::Rtt(base::TimeDelta* rtt, base::TimeDelta* avg_rtt,
@@ -385,45 +359,10 @@ bool Rtcp::Rtt(base::TimeDelta* rtt, base::TimeDelta* avg_rtt,
   return true;
 }
 
-void Rtcp::UpdateNextTimeToSendRtcp() {
-  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  next_time_to_send_rtcp_ = now + rtcp_interval_;
-}
-
 void Rtcp::OnReceivedReceiverLog(const RtcpReceiverLogMessage& receiver_log) {
-  // Add received log messages into our log system.
-  RtcpReceiverLogMessage::const_iterator it = receiver_log.begin();
-  for (; it != receiver_log.end(); ++it) {
-    uint32 rtp_timestamp = it->rtp_timestamp_;
-
-    RtcpReceiverEventLogMessages::const_iterator event_it =
-        it->event_log_messages_.begin();
-    for (; event_it != it->event_log_messages_.end(); ++event_it) {
-      switch (event_it->type) {
-        case PACKET_RECEIVED:
-          cast_environment_->Logging()->InsertPacketEvent(
-              event_it->event_timestamp, event_it->type,
-              event_media_type_, rtp_timestamp,
-              kFrameIdUnknown, event_it->packet_id, 0, 0);
-          break;
-        case FRAME_ACK_SENT:
-        case FRAME_DECODED:
-          cast_environment_->Logging()->InsertFrameEvent(
-              event_it->event_timestamp, event_it->type, event_media_type_,
-              rtp_timestamp, kFrameIdUnknown);
-          break;
-        case FRAME_PLAYOUT:
-          cast_environment_->Logging()->InsertFrameEventWithDelay(
-              event_it->event_timestamp, event_it->type, event_media_type_,
-              rtp_timestamp, kFrameIdUnknown, event_it->delay_delta);
-          break;
-        default:
-          VLOG(2) << "Received log message via RTCP that we did not expect: "
-                  << static_cast<int>(event_it->type);
-          break;
-      }
-    }
-  }
+  if (log_callback_.is_null())
+    return;
+  log_callback_.Run(receiver_log);
 }
 
 }  // namespace cast

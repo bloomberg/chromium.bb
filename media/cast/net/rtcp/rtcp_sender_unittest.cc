@@ -92,10 +92,7 @@ class RtcpSenderTest : public ::testing::Test {
             task_runner_,
             task_runner_,
             task_runner_)),
-        rtcp_sender_(new RtcpSender(cast_environment_,
-                                    &test_transport_,
-                                    kSendingSsrc,
-                                    kCName)) {}
+        rtcp_sender_(new RtcpSender(&test_transport_, kSendingSsrc, kCName)) {}
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   TestRtcpTransport test_transport_;
@@ -172,14 +169,14 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithCast) {
   RtcpReportBlock report_block = GetReportBlock();
 
   RtcpCastMessage cast_message(kMediaSsrc);
-  cast_message.ack_frame_id_ = kAckFrameId;
+  cast_message.ack_frame_id = kAckFrameId;
   PacketIdSet missing_packets;
-  cast_message.missing_frames_and_packets_[kLostFrameId] = missing_packets;
+  cast_message.missing_frames_and_packets[kLostFrameId] = missing_packets;
 
   missing_packets.insert(kLostPacketId1);
   missing_packets.insert(kLostPacketId2);
   missing_packets.insert(kLostPacketId3);
-  cast_message.missing_frames_and_packets_[kFrameIdWithLostPackets] =
+  cast_message.missing_frames_and_packets[kFrameIdWithLostPackets] =
       missing_packets;
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
@@ -210,14 +207,14 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtraAndCastMessage) {
   rrtr.ntp_fraction = kNtpLow;
 
   RtcpCastMessage cast_message(kMediaSsrc);
-  cast_message.ack_frame_id_ = kAckFrameId;
+  cast_message.ack_frame_id = kAckFrameId;
   PacketIdSet missing_packets;
-  cast_message.missing_frames_and_packets_[kLostFrameId] = missing_packets;
+  cast_message.missing_frames_and_packets[kLostFrameId] = missing_packets;
 
   missing_packets.insert(kLostPacketId1);
   missing_packets.insert(kLostPacketId2);
   missing_packets.insert(kLostPacketId3);
-  cast_message.missing_frames_and_packets_[kFrameIdWithLostPackets] =
+  cast_message.missing_frames_and_packets[kFrameIdWithLostPackets] =
       missing_packets;
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
@@ -251,14 +248,14 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
   rrtr.ntp_fraction = kNtpLow;
 
   RtcpCastMessage cast_message(kMediaSsrc);
-  cast_message.ack_frame_id_ = kAckFrameId;
+  cast_message.ack_frame_id = kAckFrameId;
   PacketIdSet missing_packets;
-  cast_message.missing_frames_and_packets_[kLostFrameId] = missing_packets;
+  cast_message.missing_frames_and_packets[kLostFrameId] = missing_packets;
 
   missing_packets.insert(kLostPacketId1);
   missing_packets.insert(kLostPacketId2);
   missing_packets.insert(kLostPacketId3);
-  cast_message.missing_frames_and_packets_[kFrameIdWithLostPackets] =
+  cast_message.missing_frames_and_packets[kFrameIdWithLostPackets] =
       missing_packets;
 
   ReceiverRtcpEventSubscriber event_subscriber(500, VIDEO_EVENT);
@@ -551,6 +548,59 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportRedundancy) {
   }
 
   EXPECT_EQ(static_cast<int>(packet_count), test_transport_.packet_count());
+}
+
+TEST_F(RtcpSenderTest, RtcpSenderReport) {
+  RtcpSenderInfo sender_info;
+  sender_info.ntp_seconds = kNtpHigh;
+  sender_info.ntp_fraction = kNtpLow;
+  sender_info.rtp_timestamp = kRtpTimestamp;
+  sender_info.send_packet_count = kSendPacketCount;
+  sender_info.send_octet_count = kSendOctetCount;
+
+  RtcpDlrrReportBlock dlrr_rb;
+  dlrr_rb.last_rr = kLastRr;
+  dlrr_rb.delay_since_last_rr = kDelayLastRr;
+
+  // Sender report + c_name.
+  TestRtcpPacketBuilder p;
+  p.AddSr(kSendingSsrc, 0);
+  p.AddSdesCname(kSendingSsrc, kCName);
+  test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
+
+  rtcp_sender_->SendRtcpFromRtpSender(kRtcpSr,
+                                      sender_info,
+                                      dlrr_rb);
+
+  EXPECT_EQ(1, test_transport_.packet_count());
+}
+
+TEST_F(RtcpSenderTest, RtcpSenderReportWithDlrr) {
+  RtcpSenderInfo sender_info;
+  sender_info.ntp_seconds = kNtpHigh;
+  sender_info.ntp_fraction = kNtpLow;
+  sender_info.rtp_timestamp = kRtpTimestamp;
+  sender_info.send_packet_count = kSendPacketCount;
+  sender_info.send_octet_count = kSendOctetCount;
+
+  // Sender report + c_name + dlrr.
+  TestRtcpPacketBuilder p1;
+  p1.AddSr(kSendingSsrc, 0);
+  p1.AddSdesCname(kSendingSsrc, kCName);
+  p1.AddXrHeader(kSendingSsrc);
+  p1.AddXrDlrrBlock(kSendingSsrc);
+  test_transport_.SetExpectedRtcpPacket(p1.GetPacket().Pass());
+
+  RtcpDlrrReportBlock dlrr_rb;
+  dlrr_rb.last_rr = kLastRr;
+  dlrr_rb.delay_since_last_rr = kDelayLastRr;
+
+  rtcp_sender_->SendRtcpFromRtpSender(
+      kRtcpSr | kRtcpDlrr,
+      sender_info,
+      dlrr_rb);
+
+  EXPECT_EQ(1, test_transport_.packet_count());
 }
 
 }  // namespace cast

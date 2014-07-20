@@ -44,19 +44,12 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::cast::CastTransportRtpConfig)
   IPC_STRUCT_TRAITS_MEMBER(ssrc)
+  IPC_STRUCT_TRAITS_MEMBER(feedback_ssrc)
+  IPC_STRUCT_TRAITS_MEMBER(c_name)
   IPC_STRUCT_TRAITS_MEMBER(rtp_payload_type)
   IPC_STRUCT_TRAITS_MEMBER(stored_frames)
   IPC_STRUCT_TRAITS_MEMBER(aes_key)
   IPC_STRUCT_TRAITS_MEMBER(aes_iv_mask)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(media::cast::SendRtcpFromRtpSenderData)
-  IPC_STRUCT_TRAITS_MEMBER(packet_type_flags)
-  IPC_STRUCT_TRAITS_MEMBER(sending_ssrc)
-  IPC_STRUCT_TRAITS_MEMBER(c_name)
-  IPC_STRUCT_TRAITS_MEMBER(ntp_seconds)
-  IPC_STRUCT_TRAITS_MEMBER(ntp_fraction)
-  IPC_STRUCT_TRAITS_MEMBER(rtp_timestamp)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::cast::PacketEvent)
@@ -70,20 +63,53 @@ IPC_STRUCT_TRAITS_BEGIN(media::cast::PacketEvent)
   IPC_STRUCT_TRAITS_MEMBER(media_type)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(media::cast::FrameEvent)
+  IPC_STRUCT_TRAITS_MEMBER(rtp_timestamp)
+  IPC_STRUCT_TRAITS_MEMBER(frame_id)
+  IPC_STRUCT_TRAITS_MEMBER(size)
+  IPC_STRUCT_TRAITS_MEMBER(timestamp)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(media_type)
+  IPC_STRUCT_TRAITS_MEMBER(delay_delta)
+  IPC_STRUCT_TRAITS_MEMBER(key_frame)
+  IPC_STRUCT_TRAITS_MEMBER(target_bitrate)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(media::cast::RtcpCastMessage)
+  IPC_STRUCT_TRAITS_MEMBER(media_ssrc)
+  IPC_STRUCT_TRAITS_MEMBER(ack_frame_id)
+  IPC_STRUCT_TRAITS_MEMBER(target_delay_ms)
+  IPC_STRUCT_TRAITS_MEMBER(missing_frames_and_packets)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(media::cast::RtcpRttReport)
+  IPC_STRUCT_TRAITS_MEMBER(rtt)
+  IPC_STRUCT_TRAITS_MEMBER(avg_rtt)
+  IPC_STRUCT_TRAITS_MEMBER(min_rtt)
+  IPC_STRUCT_TRAITS_MEMBER(max_rtt)
+IPC_STRUCT_TRAITS_END()
+
 // Cast messages sent from the browser to the renderer.
 
-IPC_MESSAGE_CONTROL2(CastMsg_ReceivedPacket,
+IPC_MESSAGE_CONTROL3(CastMsg_Rtt,
                      int32 /* channel_id */,
-                     media::cast::Packet /* packet */)
+                     uint32 /* ssrc */,
+                     media::cast::RtcpRttReport /* rtt_report */)
+
+IPC_MESSAGE_CONTROL3(CastMsg_RtcpCastMessage,
+                     int32 /* channel_id */,
+                     uint32 /* ssrc */,
+                     media::cast::RtcpCastMessage /* cast_message */)
 
 IPC_MESSAGE_CONTROL2(
     CastMsg_NotifyStatusChange,
     int32 /* channel_id */,
     media::cast::CastTransportStatus /* status */)
 
-IPC_MESSAGE_CONTROL2(CastMsg_RawEvents,
+IPC_MESSAGE_CONTROL3(CastMsg_RawEvents,
                      int32 /* channel_id */,
-                     std::vector<media::cast::PacketEvent> /* packet_events */)
+                     std::vector<media::cast::PacketEvent> /* packet_events */,
+                     std::vector<media::cast::FrameEvent> /* frame_events */)
 
 // Cast messages sent from the renderer to the browser.
 
@@ -107,11 +133,12 @@ IPC_MESSAGE_CONTROL2(
     int32 /* channel_id */,
     media::cast::EncodedFrame /* video_frame */)
 
-IPC_MESSAGE_CONTROL3(
-    CastHostMsg_SendRtcpFromRtpSender,
+IPC_MESSAGE_CONTROL4(
+    CastHostMsg_SendSenderReport,
     int32 /* channel_id */,
-    media::cast::SendRtcpFromRtpSenderData /* data */,
-    media::cast::RtcpDlrrReportBlock /* dlrr */)
+    uint32 /* ssrc */,
+    base::TimeTicks /* current_time */,
+    uint32 /* current_time_as_rtp_timestamp */)
 
 IPC_MESSAGE_CONTROL5(
     CastHostMsg_ResendPackets,

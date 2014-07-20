@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MEDIA_CAST_TRANSPORT_HOST_FILTER_H_
 
 #include "base/id_map.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/common/cast_messages.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -24,11 +25,19 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   void NotifyStatusChange(
       int32 channel_id,
       media::cast::CastTransportStatus result);
-  void ReceivedPacket(
+  void SendRawEvents(
       int32 channel_id,
-      scoped_ptr<media::cast::Packet> result);
-  void RawEvents(int32 channel_id,
-                 const std::vector<media::cast::PacketEvent>& packet_events);
+      const std::vector<media::cast::PacketEvent>& packet_events,
+      const std::vector<media::cast::FrameEvent>& frame_events);
+  void SendRtt(int32 channel_id,
+               uint32 ssrc,
+               base::TimeDelta rtt,
+               base::TimeDelta avg_rtt,
+               base::TimeDelta min_rtt,
+               base::TimeDelta max_rtt);
+  void SendCastMessage(int32 channel_id,
+                       uint32 ssrc,
+                       const media::cast::RtcpCastMessage& cast_message);
 
   // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -46,10 +55,11 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   void OnInsertCodedVideoFrame(
       int32 channel_id,
       const media::cast::EncodedFrame& video_frame);
-  void OnSendRtcpFromRtpSender(
+  void OnSendSenderReport(
       int32 channel_id,
-      const media::cast::SendRtcpFromRtpSenderData& data,
-      const media::cast::RtcpDlrrReportBlock& dlrr);
+      uint32 ssrc,
+      base::TimeTicks current_time,
+      uint32 current_time_as_rtp_timestamp);
   void OnResendPackets(
       int32 channel_id,
       bool is_audio,
@@ -65,6 +75,8 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
 
   // Clock used by Cast transport.
   base::DefaultTickClock clock_;
+
+  base::WeakPtrFactory<CastTransportHostFilter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastTransportHostFilter);
 };

@@ -42,8 +42,6 @@ class CastSenderImpl : public CastSender {
   virtual scoped_refptr<AudioFrameInput> audio_frame_input() OVERRIDE;
   virtual scoped_refptr<VideoFrameInput> video_frame_input() OVERRIDE;
 
-  virtual PacketReceiverCallback packet_receiver() OVERRIDE;
-
  private:
   void ReceivedPacket(scoped_ptr<Packet> packet);
 

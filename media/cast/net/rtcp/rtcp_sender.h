@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_RTCP_RTCP_SENDER_H_
-#define MEDIA_CAST_RTCP_RTCP_SENDER_H_
+#ifndef MEDIA_CAST_NET_RTCP_RTCP_SENDER_H_
+#define MEDIA_CAST_NET_RTCP_RTCP_SENDER_H_
 
 #include <deque>
 #include <list>
@@ -13,8 +13,6 @@
 #include "media/cast/cast_defines.h"
 #include "media/cast/net/cast_transport_defines.h"
 #include "media/cast/net/rtcp/receiver_rtcp_event_subscriber.h"
-#include "media/cast/net/rtcp/rtcp.h"
-#include "media/cast/net/rtcp/rtcp_builder.h"
 #include "media/cast/net/rtcp/rtcp_defines.h"
 
 namespace media {
@@ -40,16 +38,19 @@ COMPILE_ASSERT(kSecondRedundancyOffset >
                    kReceiveLogMessageHistorySize,
                redundancy_offset_out_of_range);
 
-// TODO(mikhal): Resolve duplication between this and RtcpBuilder.
+class PacedPacketSender;
+
+// TODO(hclam): This should be renamed to RtcpPacketBuilder. The function
+// of this class is to only to build a RTCP packet but not to send it.
 class RtcpSender {
  public:
-  RtcpSender(scoped_refptr<CastEnvironment> cast_environment,
-             PacedPacketSender* outgoing_transport,
+  RtcpSender(PacedPacketSender* outgoing_transport,
              uint32 sending_ssrc,
              const std::string& c_name);
+  ~RtcpSender();
 
-  virtual ~RtcpSender();
-
+  // TODO(hclam): This method should be to build a packet instead of
+  // sending it.
   void SendRtcpFromRtpReceiver(
       uint32 packet_type_flags,
       const RtcpReportBlock* report_block,
@@ -57,6 +58,12 @@ class RtcpSender {
       const RtcpCastMessage* cast_message,
       const ReceiverRtcpEventSubscriber::RtcpEventMultiMap* rtcp_events,
       base::TimeDelta target_delay);
+
+  // TODO(hclam): This method should be to build a packet instead of
+  // sending it.
+  void SendRtcpFromRtpSender(uint32 packet_type_flags,
+                             const RtcpSenderInfo& sender_info,
+                             const RtcpDlrrReportBlock& dlrr);
 
  private:
   void BuildRR(const RtcpReportBlock* report_block,
@@ -83,6 +90,10 @@ class RtcpSender {
   void BuildCast(const RtcpCastMessage* cast_message,
                  base::TimeDelta target_delay,
                  Packet* packet) const;
+
+  void BuildSR(const RtcpSenderInfo& sender_info, Packet* packet) const;
+
+  void BuildDlrrRb(const RtcpDlrrReportBlock& dlrr, Packet* packet) const;
 
   void BuildReceiverLog(
       const ReceiverRtcpEventSubscriber::RtcpEventMultiMap& rtcp_events,
@@ -115,7 +126,6 @@ class RtcpSender {
 
   // Not owned by this class.
   PacedPacketSender* const transport_;
-  scoped_refptr<CastEnvironment> cast_environment_;
 
   std::deque<RtcpReceiverLogMessage> rtcp_events_history_;
 
@@ -124,4 +134,5 @@ class RtcpSender {
 
 }  // namespace cast
 }  // namespace media
-#endif  // MEDIA_CAST_RTCP_RTCP_SENDER_H_
+
+#endif  // MEDIA_CAST_NET_RTCP_RTCP_SENDER_H_

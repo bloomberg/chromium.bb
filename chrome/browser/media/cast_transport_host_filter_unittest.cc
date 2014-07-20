@@ -84,11 +84,15 @@ TEST_F(CastTransportHostFilterTest, SimpleMessages) {
 
   media::cast::CastTransportRtpConfig audio_config;
   audio_config.stored_frames = 10;
+  audio_config.ssrc = 1;
+  audio_config.feedback_ssrc = 2;
   CastHostMsg_InitializeAudio init_audio_msg(kChannelId, audio_config);
   FakeSend(init_audio_msg);
 
   media::cast::CastTransportRtpConfig video_config;
   video_config.stored_frames = 10;
+  video_config.ssrc = 11;
+  video_config.feedback_ssrc = 12;
   CastHostMsg_InitializeVideo init_video_msg(kChannelId, video_config);
   FakeSend(init_video_msg);
 
@@ -117,15 +121,8 @@ TEST_F(CastTransportHostFilterTest, SimpleMessages) {
       kChannelId, video_frame);
   FakeSend(insert_coded_video_frame);
 
-  media::cast::SendRtcpFromRtpSenderData rtcp_data;
-  rtcp_data.packet_type_flags = 0;
-  rtcp_data.sending_ssrc = 0;
-  rtcp_data.c_name = "FNRD";
-  media::cast::RtcpDlrrReportBlock dlrr;
-  dlrr.last_rr = 7;
-  dlrr.delay_since_last_rr = 8;
-  CastHostMsg_SendRtcpFromRtpSender rtcp_msg(
-      kChannelId, rtcp_data, dlrr);
+  CastHostMsg_SendSenderReport rtcp_msg(
+      kChannelId, 1, base::TimeTicks(), 2);
   FakeSend(rtcp_msg);
 
   media::cast::MissingFramesAndPacketsMap missing_packets;

@@ -26,7 +26,7 @@ CastMessageBuilder::CastMessageBuilder(
       slowing_down_ack_(false),
       acked_last_frame_(true),
       last_acked_frame_id_(kStartFrameId) {
-  cast_msg_.ack_frame_id_ = kStartFrameId;
+  cast_msg_.ack_frame_id = kStartFrameId;
 }
 
 CastMessageBuilder::~CastMessageBuilder() {}
@@ -86,8 +86,8 @@ bool CastMessageBuilder::UpdateAckMessage(uint32 frame_id) {
   }
   acked_last_frame_ = true;
   last_acked_frame_id_ = frame_id;
-  cast_msg_.ack_frame_id_ = last_acked_frame_id_;
-  cast_msg_.missing_frames_and_packets_.clear();
+  cast_msg_.ack_frame_id = last_acked_frame_id_;
+  cast_msg_.missing_frames_and_packets.clear();
   last_update_time_ = clock_->NowTicks();
   return true;
 }
@@ -113,8 +113,8 @@ void CastMessageBuilder::UpdateCastMessage() {
 }
 
 void CastMessageBuilder::Reset() {
-  cast_msg_.ack_frame_id_ = kStartFrameId;
-  cast_msg_.missing_frames_and_packets_.clear();
+  cast_msg_.ack_frame_id = kStartFrameId;
+  cast_msg_.missing_frames_and_packets.clear();
   time_last_nacked_map_.clear();
 }
 
@@ -137,7 +137,7 @@ bool CastMessageBuilder::UpdateCastMessageInternal(RtcpCastMessage* message) {
   // Needed to cover when a frame is skipped.
   UpdateAckMessage(last_acked_frame_id_);
   BuildPacketList();
-  message->Copy(cast_msg_);
+  *message = cast_msg_;
   return true;
 }
 
@@ -145,14 +145,14 @@ void CastMessageBuilder::BuildPacketList() {
   base::TimeTicks now = clock_->NowTicks();
 
   // Clear message NACK list.
-  cast_msg_.missing_frames_and_packets_.clear();
+  cast_msg_.missing_frames_and_packets.clear();
 
   // Are we missing packets?
   if (frame_id_map_->Empty())
     return;
 
   uint32 newest_frame_id = frame_id_map_->NewestFrameId();
-  uint32 next_expected_frame_id = cast_msg_.ack_frame_id_ + 1;
+  uint32 next_expected_frame_id = cast_msg_.ack_frame_id + 1;
 
   // Iterate over all frames.
   for (; !IsNewerFrameId(next_expected_frame_id, newest_frame_id);
@@ -175,13 +175,13 @@ void CastMessageBuilder::BuildPacketList() {
           next_expected_frame_id, last_frame, &missing);
       if (!missing.empty()) {
         time_last_nacked_map_[next_expected_frame_id] = now;
-        cast_msg_.missing_frames_and_packets_.insert(
+        cast_msg_.missing_frames_and_packets.insert(
             std::make_pair(next_expected_frame_id, missing));
       }
     } else {
       time_last_nacked_map_[next_expected_frame_id] = now;
       missing.insert(kRtcpCastAllPacketsLost);
-      cast_msg_.missing_frames_and_packets_[next_expected_frame_id] = missing;
+      cast_msg_.missing_frames_and_packets[next_expected_frame_id] = missing;
     }
   }
 }
