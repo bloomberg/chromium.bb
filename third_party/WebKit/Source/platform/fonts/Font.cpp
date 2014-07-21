@@ -160,9 +160,8 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
             glyphOverflow = 0;
     }
 
-    bool hasKerningOrLigatures = fontDescription().typesettingFeatures() & (Kerning | Ligatures);
     bool hasWordSpacingOrLetterSpacing = fontDescription().wordSpacing() || fontDescription().letterSpacing();
-    bool isCacheable = (codePathToUse == ComplexPath || hasKerningOrLigatures)
+    bool isCacheable = codePathToUse == ComplexPath
         && !hasWordSpacingOrLetterSpacing // Word spacing and letter spacing can change the width of a word.
         && !run.allowTabs(); // If we allow tabs and a tab occurs inside a word, the width of the word varies based on its position on the line.
 
@@ -180,8 +179,8 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
     if (codePathToUse == ComplexPath) {
         result = floatWidthForComplexText(run, fallbackFonts, &glyphBounds);
     } else {
-        result = floatWidthForSimpleText(run, fallbackFonts,
-            glyphOverflow || isCacheable ? &glyphBounds : 0);
+        ASSERT(!isCacheable);
+        result = floatWidthForSimpleText(run, fallbackFonts, glyphOverflow ? &glyphBounds : 0);
     }
 
     if (cacheEntry && (!fallbackFonts || fallbackFonts->isEmpty())) {
