@@ -47,6 +47,7 @@ fixed-benchmark
 fixed-test
 list-test
 map-test
+message-test
 os-wrappers-test
 queue-test
 resources-test
