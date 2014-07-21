@@ -603,6 +603,12 @@ function htmlForTestResults(test, revisions)
             }
         }
 
+        if (!cell) {
+            console.error(
+                'Could not determine test results column for r' + revision);
+            continue;
+        }
+
         cell.className = classNameForFailureString(resultString);
         cell.hasResult =
             resultString !== results.NO_DATA && resultString !== results.NOTRUN;
@@ -610,7 +616,7 @@ function htmlForTestResults(test, revisions)
             + ' title="' + resultString + '. Click for more info."'
             + ' class="results ' + cell.className + '"'
             + ' onclick=\'showPopupForBuild(event,'
-            + ' "' + builder + '",' + i + ',"' + test.test + '")\'>'
+            + ' "' + builder + '","' + i + '","' + test.test + '")\'>'
             + (currentTime || (cell.hasResult ? '' : '?')) + '</td>';
     }
 
@@ -646,7 +652,7 @@ function populateEmptyCells(cells)
             cell.html = '<td'
                 + ' title="Unknown result. Did not run tests."'
                 + ' onclick=\'showPopupForInterpolatedResult(event,'
-                + ' ' + cell.revision + ')\''
+                + ' "' + cell.revision + '")\''
                 + ' class="results interpolatedResult ' + cell.className + '"'
                 + ' >?</td>';
         }
