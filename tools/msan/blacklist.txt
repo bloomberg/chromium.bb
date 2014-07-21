@@ -26,7 +26,7 @@ fun:*ProcessOnePixel*
 fun:*UTF8GenericReplaceInternal*
 
 # False positives due to use of linux_syscall_support. http://crbug.com/394028
-fun:*google_breakpad*LinuxDumper*ReadAuxv*
+src:*/breakpad/src/*
 
 # Bug in MSan, fixed in clang r211022. http://crbug.com/385074
 fun:*TEST_SeccompRetTrace*
