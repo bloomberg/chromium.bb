@@ -959,4 +959,42 @@ class ChromeAppSortingDefaultOrdinalNoCollision
 TEST_F(ChromeAppSortingDefaultOrdinalNoCollision,
        ChromeAppSortingDefaultOrdinalNoCollision) {}
 
+// Tests that SetExtensionVisible() correctly hides and unhides extensions.
+class ChromeAppSortingSetExtensionVisible : public ChromeAppSortingTest {
+ public:
+  ChromeAppSortingSetExtensionVisible() {}
+  virtual ~ChromeAppSortingSetExtensionVisible() {}
+
+  virtual void Initialize() OVERRIDE {
+    first_app_ = prefs_.AddApp("first_app");
+    second_app_ = prefs_.AddApp("second_app");
+  }
+
+  virtual void Verify() OVERRIDE {
+    ChromeAppSorting* sorting = app_sorting();
+    syncer::StringOrdinal page1 = sorting->GetPageOrdinal(first_app_->id());
+    syncer::StringOrdinal page2 = sorting->GetPageOrdinal(second_app_->id());
+    EXPECT_TRUE(sorting->GetAppLaunchOrdinal(first_app_->id()).IsValid());
+    EXPECT_TRUE(sorting->GetAppLaunchOrdinal(second_app_->id()).IsValid());
+    EXPECT_TRUE(page1.IsValid());
+    EXPECT_TRUE(page2.IsValid());
+    EXPECT_TRUE(page1.Equals(page2));
+
+    sorting->SetExtensionVisible(first_app_->id(), false);
+    EXPECT_EQ(
+        1U, sorting->CountItemsVisibleOnNtp(sorting->ntp_ordinal_map_[page1]));
+
+    sorting->SetExtensionVisible(first_app_->id(), true);
+    EXPECT_EQ(
+        2U, sorting->CountItemsVisibleOnNtp(sorting->ntp_ordinal_map_[page1]));
+  }
+
+ private:
+  scoped_refptr<Extension> first_app_;
+  scoped_refptr<Extension> second_app_;
+};
+TEST_F(ChromeAppSortingSetExtensionVisible,
+       ChromeAppSortingSetExtensionVisible) {
+}
+
 }  // namespace extensions

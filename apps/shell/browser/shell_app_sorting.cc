@@ -100,8 +100,8 @@ syncer::StringOrdinal ShellAppSorting::PageIntegerAsStringOrdinal(
   return syncer::StringOrdinal(kFirstPage);
 }
 
-void ShellAppSorting::MarkExtensionAsHidden(
-    const std::string& extension_id) {
+void ShellAppSorting::SetExtensionVisible(const std::string& extension_id,
+                                          bool visible) {
 }
 
 }  // namespace apps

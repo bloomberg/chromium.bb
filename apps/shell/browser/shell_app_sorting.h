@@ -53,7 +53,8 @@ class ShellAppSorting : public extensions::AppSorting {
       const syncer::StringOrdinal& page_ordinal) const OVERRIDE;
   virtual syncer::StringOrdinal PageIntegerAsStringOrdinal(
       size_t page_index) OVERRIDE;
-  virtual void MarkExtensionAsHidden(const std::string& extension_id) OVERRIDE;
+  virtual void SetExtensionVisible(const std::string& extension_id,
+                                   bool visible) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellAppSorting);

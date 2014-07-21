@@ -1410,11 +1410,14 @@ void ExtensionService::AddExtension(const Extension* extension) {
     // All apps that are displayed in the launcher are ordered by their ordinals
     // so we must ensure they have valid ordinals.
     if (extension->RequiresSortOrdinal()) {
-      if (!extension->ShouldDisplayInNewTabPage()) {
-        extension_prefs_->app_sorting()->MarkExtensionAsHidden(extension->id());
+      extension_prefs_->app_sorting()->SetExtensionVisible(
+          extension->id(),
+          extension->ShouldDisplayInNewTabPage() &&
+              !extension_prefs_->IsEphemeralApp(extension->id()));
+      if (!extension_prefs_->IsEphemeralApp(extension->id())) {
+        extension_prefs_->app_sorting()->EnsureValidOrdinals(
+            extension->id(), syncer::StringOrdinal());
       }
-      extension_prefs_->app_sorting()->EnsureValidOrdinals(
-          extension->id(), syncer::StringOrdinal());
     }
 
     registry_->AddEnabled(extension);
@@ -1817,15 +1820,21 @@ void ExtensionService::PromoteEphemeralApp(
   DCHECK(GetInstalledExtension(extension->id()) &&
          extension_prefs_->IsEphemeralApp(extension->id()));
 
-  if (!is_from_sync) {
-    if (extension->RequiresSortOrdinal()) {
+  if (extension->RequiresSortOrdinal()) {
+    extension_prefs_->app_sorting()->SetExtensionVisible(
+        extension->id(), extension->ShouldDisplayInNewTabPage());
+
+    if (!is_from_sync) {
       // Reset the sort ordinals of the app to ensure it is added to the default
       // position, like newly installed apps would.
       extension_prefs_->app_sorting()->ClearOrdinals(extension->id());
-      extension_prefs_->app_sorting()->EnsureValidOrdinals(
-          extension->id(), syncer::StringOrdinal());
     }
 
+    extension_prefs_->app_sorting()->EnsureValidOrdinals(
+        extension->id(), syncer::StringOrdinal());
+  }
+
+  if (!is_from_sync) {
     // Cached ephemeral apps may be updated and disabled due to permissions
     // increase. The app can be enabled as the install was user-acknowledged.
     if (extension_prefs_->DidExtensionEscalatePermissions(extension->id()))

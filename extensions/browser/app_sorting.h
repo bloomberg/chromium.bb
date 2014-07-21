@@ -109,8 +109,10 @@ class AppSorting {
   virtual syncer::StringOrdinal PageIntegerAsStringOrdinal(
       size_t page_index) = 0;
 
-  // Hidden extensions don't appear in the new tab page.
-  virtual void MarkExtensionAsHidden(const std::string& extension_id) = 0;
+  // Hides an extension from the new tab page, or makes a previously hidden
+  // extension visible.
+  virtual void SetExtensionVisible(const std::string& extension_id,
+                                   bool visible) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppSorting);

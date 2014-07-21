@@ -435,8 +435,12 @@ syncer::StringOrdinal ChromeAppSorting::PageIntegerAsStringOrdinal(
   return ntp_ordinal_map_.rbegin()->first;
 }
 
-void ChromeAppSorting::MarkExtensionAsHidden(const std::string& extension_id) {
-  ntp_hidden_extensions_.insert(extension_id);
+void ChromeAppSorting::SetExtensionVisible(const std::string& extension_id,
+                                           bool visible) {
+  if (visible)
+    ntp_hidden_extensions_.erase(extension_id);
+  else
+    ntp_hidden_extensions_.insert(extension_id);
 }
 
 syncer::StringOrdinal ChromeAppSorting::GetMinOrMaxAppLaunchOrdinalsOnPage(

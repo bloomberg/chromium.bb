@@ -1238,9 +1238,14 @@ void ExtensionPrefs::OnExtensionInstalled(
                              install_flags,
                              install_parameter,
                              extension_dict);
-  FinishExtensionInfoPrefs(extension->id(), install_time,
-                           extension->RequiresSortOrdinal(),
-                           page_ordinal, extension_dict);
+
+  bool requires_sort_ordinal = extension->RequiresSortOrdinal() &&
+                               (install_flags & kInstallFlagIsEphemeral) == 0;
+  FinishExtensionInfoPrefs(extension->id(),
+                           install_time,
+                           requires_sort_ordinal,
+                           page_ordinal,
+                           extension_dict);
 }
 
 void ExtensionPrefs::OnExtensionUninstalled(const std::string& extension_id,
@@ -1453,7 +1458,8 @@ void ExtensionPrefs::SetDelayedInstallInfo(
   // Add transient data that is needed by FinishDelayedInstallInfo(), but
   // should not be in the final extension prefs. All entries here should have
   // a corresponding Remove() call in FinishDelayedInstallInfo().
-  if (extension->RequiresSortOrdinal()) {
+  if (extension->RequiresSortOrdinal() &&
+      (install_flags & kInstallFlagIsEphemeral) == 0) {
     extension_dict->SetString(
         kPrefSuggestedPageOrdinal,
         page_ordinal.IsValid() ? page_ordinal.ToInternalValue()

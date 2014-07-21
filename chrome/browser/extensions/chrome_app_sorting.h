@@ -62,7 +62,8 @@ class ChromeAppSorting : public AppSorting {
       const syncer::StringOrdinal& page_ordinal) const OVERRIDE;
   virtual syncer::StringOrdinal PageIntegerAsStringOrdinal(
       size_t page_index) OVERRIDE;
-  virtual void MarkExtensionAsHidden(const std::string& extension_id) OVERRIDE;
+  virtual void SetExtensionVisible(const std::string& extension_id,
+                                   bool visible) OVERRIDE;
 
  private:
   // The StringOrdinal is the app launch ordinal and the string is the extension
@@ -81,6 +82,7 @@ class ChromeAppSorting : public AppSorting {
   friend class ChromeAppSortingGetMinOrMaxAppLaunchOrdinalsOnPage;
   friend class ChromeAppSortingInitializeWithNoApps;
   friend class ChromeAppSortingPageOrdinalMapping;
+  friend class ChromeAppSortingSetExtensionVisible;
 
   // An enum used by GetMinOrMaxAppLaunchOrdinalsOnPage to specify which
   // value should be returned.

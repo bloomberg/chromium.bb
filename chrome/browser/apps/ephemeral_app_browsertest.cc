@@ -277,6 +277,22 @@ class EphemeralAppBrowserTest : public EphemeralAppTestBase {
         process_manager()->GetBackgroundHostForExtension(app_id));
   }
 
+  // Verify properties of ephemeral apps.
+  void VerifyEphemeralApp(const std::string& app_id) {
+    EXPECT_TRUE(extensions::util::IsEphemeralApp(app_id, profile()));
+
+    // Ephemeral apps should not be synced.
+    scoped_ptr<AppSyncData> sync_change = GetLastSyncChangeForApp(app_id);
+    EXPECT_FALSE(sync_change.get());
+
+    // Ephemeral apps should not be assigned ordinals.
+    extensions::AppSorting* app_sorting =
+        ExtensionPrefs::Get(profile())->app_sorting();
+    EXPECT_FALSE(app_sorting->GetAppLaunchOrdinal(app_id).IsValid());
+    EXPECT_FALSE(app_sorting->GetPageOrdinal(app_id).IsValid());
+  }
+
+  // Dispatch a fake alarm event to the app.
   void DispatchAlarmEvent(EventRouter* event_router,
                           const std::string& app_id) {
     alarms::Alarm dummy_alarm;
@@ -324,17 +340,17 @@ class EphemeralAppBrowserTest : public EphemeralAppTestBase {
             new syncer::SyncErrorFactoryMock()));
   }
 
-  scoped_ptr<AppSyncData> GetFirstSyncChangeForApp(const std::string& id) {
+  scoped_ptr<AppSyncData> GetLastSyncChangeForApp(const std::string& id) {
     scoped_ptr<AppSyncData> sync_data;
     for (syncer::SyncChangeList::iterator it =
              mock_sync_processor_.changes().begin();
          it != mock_sync_processor_.changes().end(); ++it) {
-      sync_data.reset(new AppSyncData(*it));
-      if (sync_data->id() == id)
-        return sync_data.Pass();
+      scoped_ptr<AppSyncData> data(new AppSyncData(*it));
+      if (data->id() == id)
+        sync_data.reset(data.release());
     }
 
-    return scoped_ptr<AppSyncData>();
+    return sync_data.Pass();
   }
 
   void VerifySyncChange(const AppSyncData* sync_change, bool expect_enabled) {
@@ -402,13 +418,18 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
 // Verify that an updated ephemeral app will still have its ephemeral flag
 // enabled.
 IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, UpdateEphemeralApp) {
-  const Extension* app_v1 = InstallEphemeralApp(kMessagingReceiverApp);
+  InitSyncService();
+
+  const Extension* app_v1 = InstallAndLaunchEphemeralApp(kMessagingReceiverApp);
   ASSERT_TRUE(app_v1);
   std::string app_id = app_v1->id();
   base::Version app_original_version = *app_v1->version();
-  app_v1 = NULL; // The extension object will be destroyed during update.
+
+  VerifyEphemeralApp(app_id);
+  CloseApp(app_id);
 
   // Update to version 2 of the app.
+  app_v1 = NULL;  // The extension object will be destroyed during update.
   InstallObserver installed_observer(profile());
   const Extension* app_v2 = UpdateEphemeralApp(
       app_id, GetTestPath(kMessagingReceiverAppV2),
@@ -423,8 +444,8 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, UpdateEphemeralApp) {
 
   // The ephemeral flag should still be enabled.
   ASSERT_TRUE(app_v2);
-  EXPECT_TRUE(app_v2->version()->CompareTo(app_original_version) > 0);
-  EXPECT_TRUE(extensions::util::IsEphemeralApp(app_v2->id(), profile()));
+  EXPECT_GT(app_v2->version()->CompareTo(app_original_version), 0);
+  VerifyEphemeralApp(app_id);
 }
 
 // Verify that if notifications have been disabled for an ephemeral app, it will
@@ -533,7 +554,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, PromoteEphemeralApp) {
   ASSERT_TRUE(app);
 
   // Ephemeral apps should not be synced.
-  scoped_ptr<AppSyncData> sync_change = GetFirstSyncChangeForApp(app->id());
+  scoped_ptr<AppSyncData> sync_change = GetLastSyncChangeForApp(app->id());
   EXPECT_FALSE(sync_change.get());
 
   // Promote the app to a regular installed app.
@@ -548,7 +569,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, PromoteEphemeralApp) {
   EXPECT_TRUE(params.from_ephemeral);
 
   // The installation should now be synced.
-  sync_change = GetFirstSyncChangeForApp(app->id());
+  sync_change = GetLastSyncChangeForApp(app->id());
   VerifySyncChange(sync_change.get(), true);
 }
 
@@ -574,7 +595,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, PromoteEphemeralAppAndEnable) {
   VerifyPromotedApp(app->id(), ExtensionRegistry::ENABLED);
   EXPECT_FALSE(prefs->DidExtensionEscalatePermissions(app->id()));
 
-  scoped_ptr<AppSyncData> sync_change = GetFirstSyncChangeForApp(app->id());
+  scoped_ptr<AppSyncData> sync_change = GetLastSyncChangeForApp(app->id());
   VerifySyncChange(sync_change.get(), true);
 }
 
@@ -599,7 +620,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
   PromoteEphemeralApp(app);
   VerifyPromotedApp(app->id(), ExtensionRegistry::DISABLED);
 
-  scoped_ptr<AppSyncData> sync_change = GetFirstSyncChangeForApp(app->id());
+  scoped_ptr<AppSyncData> sync_change = GetLastSyncChangeForApp(app->id());
   VerifySyncChange(sync_change.get(), false);
 }
 
