@@ -548,6 +548,8 @@ private:
 
     void configureAutoResizeMode();
 
+    void initializeLayerTreeView();
+
     void setIsAcceleratedCompositingActive(bool);
     void doComposite();
     void reallocateRenderer();

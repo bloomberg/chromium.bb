@@ -276,7 +276,8 @@ TEST_F(WebViewTest, SetBaseBackgroundColor)
 TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame)
 {
     const WebColor kBlue = 0xFF0000FF;
-    WebView* webView = WebViewImpl::create(0);
+    FrameTestHelpers::TestWebViewClient webViewClient;
+    WebView* webView = WebViewImpl::create(&webViewClient);
     EXPECT_NE(kBlue, webView->backgroundColor());
     // webView does not have a frame yet, but we should still be able to set the background color.
     webView->setBaseBackgroundColor(kBlue);

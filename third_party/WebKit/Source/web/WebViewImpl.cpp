@@ -442,6 +442,8 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     }
 
     m_inspectorSettingsMap = adoptPtr(new SettingsMap);
+
+    initializeLayerTreeView();
 }
 
 WebViewImpl::~WebViewImpl()
@@ -3900,7 +3902,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         m_rootTransformLayer = 0;
     }
 
-    setIsAcceleratedCompositingActive(layer);
+    setIsAcceleratedCompositingActive(layer != 0);
 
     updateRootLayerTransform();
 
@@ -3989,8 +3991,23 @@ void WebViewImpl::scheduleAnimation()
         m_client->scheduleAnimation();
 }
 
+void WebViewImpl::initializeLayerTreeView()
+{
+    if (m_client) {
+        m_client->initializeLayerTreeView();
+        m_layerTreeView = m_client->layerTreeView();
+    }
+
+    m_page->settings().setAcceleratedCompositingEnabled(m_layerTreeView != 0);
+
+    // FIXME: only unittests, click to play, Android priting, and printing (for headers and footers)
+    // make this assert necessary. We should make them not hit this code and then delete allowsBrokenNullLayerTreeView.
+    ASSERT(m_layerTreeView || !m_client || m_client->allowsBrokenNullLayerTreeView());
+}
+
 void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
 {
+    ASSERT(!active || m_layerTreeView);
     blink::Platform::current()->histogramEnumeration("GPU.setIsAcceleratedCompositingActive", active * 2 + m_isAcceleratedCompositingActive, 4);
 
     if (m_isAcceleratedCompositingActive == active)
@@ -4012,50 +4029,31 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
             m_layerTreeView->setDeferCommits(true);
             m_layerTreeViewCommitsDeferred = true;
         }
-    } else if (m_layerTreeView) {
-        m_isAcceleratedCompositingActive = true;
-        updateLayerTreeViewport();
-        if (m_pageOverlays)
-            m_pageOverlays->update();
     } else {
         TRACE_EVENT0("blink", "WebViewImpl::setIsAcceleratedCompositingActive(true)");
+        m_layerTreeView->setRootLayer(*m_rootLayer);
 
-        m_client->initializeLayerTreeView();
-        m_layerTreeView = m_client->layerTreeView();
-        if (m_layerTreeView) {
-            m_layerTreeView->setRootLayer(*m_rootLayer);
-
-            bool visible = page()->visibilityState() == PageVisibilityStateVisible;
-            m_layerTreeView->setVisible(visible);
-            updateLayerTreeDeviceScaleFactor();
-            m_layerTreeView->setPageScaleFactorAndLimits(pageScaleFactor(), minimumPageScaleFactor(), maximumPageScaleFactor());
-            updateLayerTreeBackgroundColor();
-            m_layerTreeView->setHasTransparentBackground(isTransparent());
+        bool visible = page()->visibilityState() == PageVisibilityStateVisible;
+        m_layerTreeView->setVisible(visible);
+        updateLayerTreeDeviceScaleFactor();
+        m_layerTreeView->setPageScaleFactorAndLimits(pageScaleFactor(), minimumPageScaleFactor(), maximumPageScaleFactor());
+        updateLayerTreeBackgroundColor();
+        m_layerTreeView->setHasTransparentBackground(isTransparent());
 #if USE(RUBBER_BANDING)
-            RefPtr<Image> overhangImage = OverscrollTheme::theme()->getOverhangImage();
-            if (overhangImage && overhangImage->nativeImageForCurrentFrame())
-                m_layerTreeView->setOverhangBitmap(overhangImage->nativeImageForCurrentFrame()->bitmap());
+        RefPtr<Image> overhangImage = OverscrollTheme::theme()->getOverhangImage();
+        if (overhangImage && overhangImage->nativeImageForCurrentFrame())
+            m_layerTreeView->setOverhangBitmap(overhangImage->nativeImageForCurrentFrame()->bitmap());
 #endif
-            updateLayerTreeViewport();
-            m_isAcceleratedCompositingActive = true;
-            if (m_pageOverlays)
-                m_pageOverlays->update();
-            m_layerTreeView->setShowFPSCounter(m_showFPSCounter);
-            m_layerTreeView->setShowPaintRects(m_showPaintRects);
-            m_layerTreeView->setShowDebugBorders(m_showDebugBorders);
-            m_layerTreeView->setContinuousPaintingEnabled(m_continuousPaintingEnabled);
-            m_layerTreeView->setShowScrollBottleneckRects(m_showScrollBottleneckRects);
-            m_layerTreeView->heuristicsForGpuRasterizationUpdated(m_matchesHeuristicsForGpuRasterization);
-        } else {
-            // FIXME: It appears that only unittests, <webview> and android webview
-            // printing can hit this code. We should make them not hit this code and
-            // then delete this else clause and allowsBrokenNullLayerTreeView.
-            // crbug.com/322276 and crbug.com/364716.
-            ASSERT(m_client->allowsBrokenNullLayerTreeView());
-            m_isAcceleratedCompositingActive = false;
-            m_page->settings().setAcceleratedCompositingEnabled(false);
-            m_page->updateAcceleratedCompositingSettings();
-        }
+        updateLayerTreeViewport();
+        m_isAcceleratedCompositingActive = true;
+        if (m_pageOverlays)
+            m_pageOverlays->update();
+        m_layerTreeView->setShowFPSCounter(m_showFPSCounter);
+        m_layerTreeView->setShowPaintRects(m_showPaintRects);
+        m_layerTreeView->setShowDebugBorders(m_showDebugBorders);
+        m_layerTreeView->setContinuousPaintingEnabled(m_continuousPaintingEnabled);
+        m_layerTreeView->setShowScrollBottleneckRects(m_showScrollBottleneckRects);
+        m_layerTreeView->heuristicsForGpuRasterizationUpdated(m_matchesHeuristicsForGpuRasterization);
     }
     if (page() && page()->mainFrame()->isLocalFrame())
         page()->deprecatedLocalMainFrame()->view()->setClipsRepaints(!m_isAcceleratedCompositingActive);
