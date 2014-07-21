@@ -30,13 +30,10 @@ static_library("renderer") {
     "//chrome:strings",
     "//components/autofill/content/renderer",
     "//components/data_reduction_proxy/common",
-    "//components/plugins/renderer",
-    "//components/startup_metric_utils",
     "//components/translate/core/common",
     "//components/translate/core/language_detection",
     "//components/visitedlink/renderer",
     "//content/public/renderer",
-    "//extensions:extensions_resources",
     "//media/cast/logging/proto",
     "//third_party/re2",
     "//net",
@@ -51,7 +48,10 @@ static_library("renderer") {
     "//webkit/common",
     "//webkit:resources",
     #"../components/components.gyp:cdm_renderer",  TODO(GYP)
+    #"../components/components.gyp:startup_metric_utils",  TODO(GYP)
+    #"../components/components.gyp:plugins_renderer",  TODO(GYP)
     #"../extensions/extensions.gyp:extensions_renderer",  TODO(GYP)
+    #"../extensions/extensions_resources.gyp:extensions_resources",  TODO(GYP)
     #"../media/cast/cast.gyp:cast_sender",  TODO(GYP)
     #"../media/cast/cast.gyp:cast_transport",  TODO(GYP)
   ]
@@ -108,12 +108,17 @@ static_library("renderer") {
   if (enable_spellcheck) {
     sources += rebase_path(gypi_values.chrome_renderer_spellchecker_sources,
                            ".", "..")
-    deps += [ "//third_party/hunspell" ]
+    # TODO(GYP) When hunspell is done, the extra defines can be removed.
+    #deps += [ "//third_party/hunspell" ]
+    defines += [ "HUNSPELL_STATIC", "HUNSPELL_CHROME_CLIENT", "OPENOFFICEORG" ]
+
   }
 
-  if (printing_mode > 0) {
-    deps += [ "//printing" ]
-    if (printing_mode == 1) {
+  if (enable_printing > 0) {
+    deps += [
+      #"//printing",   TODO(GYP)
+    ]
+    if (enable_printing == 1) {
       sources += rebase_path(gypi_values.chrome_renderer_printing_sources,
                              ".", "..")
     }

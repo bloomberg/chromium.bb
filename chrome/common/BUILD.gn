@@ -42,7 +42,6 @@ static_library("common") {
     "//chrome/common/net",
     "//chrome/common/safe_browsing:proto",
     "//components/cloud_devices/common",
-    "//components/json_schema",
     "//components/metrics",
     "//components/policy:policy_component_common",
     "//components/translate/core/common",
@@ -60,61 +59,28 @@ static_library("common") {
     "//ui/resources:resources",
     "//url",
     #":installer_util",  TODO(GYP)
+    #"//components/json_schema",  TODO(GYP)
     #"//media/cast/cast.gyp:cast_transport",  TODO(GYP)
   ]
 
-  if (is_ios) {
-    sources += [
-      # Use this Mac file that was filtered out.
-      "chrome_version_info_mac.mm",
-    ]
-  } else {
-    # Non-iOS.
+  if (!is_ios) {
     deps += [
       "//chrome/common/extensions/api",
       "//components/visitedlink/common",
       "//components/autofill/content/common",
       "//components/autofill/core/common",
-      "//components/password_manager/core/common",
-      "//components/signin/core/common",
       "//components/translate/content/common",
       "//extensions/common/api",
       "//ipc",
       "//third_party/adobe/flash:flapper_version_h",
       "//third_party/re2",
       "//third_party/widevine/cdm:version_h",
+      #'<(DEPTH)/components/components.gyp:password_manager_core_common',  TODO(GYP)
+      #'<(DEPTH)/components/components.gyp:signin_core_common',  TODO(GYP)
+      #'<(DEPTH)/components/nacl.gyp:nacl_common',  TODO(GYP)
+      #'<(DEPTH)/extensions/common/api/api.gyp:extensions_api',  TODO(GYP)
       #'<(DEPTH)/extensions/extensions.gyp:extensions_common',  TODO(GYP)
     ]
-  }
-
-  if (enable_extensions) {
-    sources += rebase_path(
-        gypi_values.chrome_common_extensions_sources,
-        ".", "//chrome")
-    deps += [
-      "//device/bluetooth",
-      "//device/usb",
-    ]
-  }
-
-  if (is_win || is_mac) {
-    sources += rebase_path(
-        gypi_values.chrome_common_win_mac_sources,
-        ".", "//chrome")
-    if (use_openssl) {
-      sources -= [
-        "extensions/api/networking_private/networking_private_crypto_nss.cc",
-      ]
-    } else {
-      sources -= [
-        "extensions/api/networking_private/networking_private_crypto_openssl.cc",
-      ]
-    }
-  }
-  if (is_mac) {
-    sources += rebase_path(
-        gypi_values.chrome_common_mac_sources,
-        ".", "//chrome")
   }
 
   if (enable_nacl) {
@@ -125,91 +91,6 @@ static_library("common") {
       "extensions/manifest_handlers/nacl_modules_handler.cc",
       "extensions/manifest_handlers/nacl_modules_handler.h",
     ]
-  }
-
-  # Printing.
-  if (printing_mode == 0) {
-    sources -= [
-      "print_messages.cc",
-      "print_messages.h",
-    ]
-  } else {
-    deps += [ "//printing" ]
-    if (printing_mode == 1) {
-      # Full printing support.
-      sources += rebase_path(
-          gypi_values.chrome_common_service_process_sources,
-          ".", "//chrome")
-    }
-  }
-
-  if (enable_service_discovery) {
-    sources += [
-      "local_discovery/service_discovery_client.cc",
-      "local_discovery/service_discovery_client.h",
-    ]
-  }
-  if (enable_mdns) {
-    sources += [
-      "local_discovery/service_discovery_client_impl.cc",
-      "local_discovery/service_discovery_client_impl.h",
-    ]
-  }
-
-  if (is_android) {
-    sources -= [
-      "badge_util.cc",
-      "chrome_version_info_posix.cc",
-      "extensions/api/extension_action/browser_action_handler.cc",
-      "extensions/api/extension_action/page_action_handler.cc",
-      "extensions/api/spellcheck/spellcheck_handler.cc",
-      "extensions/manifest_handlers/minimum_chrome_version_checker.cc",
-      "icon_with_badge_image_source.cc",
-      "media_galleries/metadata_types.h",
-      "net/url_util.cc",
-      "spellcheck_common.cc",
-    ]
-  } else {
-    # Non-Android.
-    sources += rebase_path(
-        gypi_values.chrome_common_importer_sources,
-        ".", "//chrome")
-  }
-
-  if (is_win) {
-    deps += [ "//third_party/wtl" ]
-  }
-
-  if (enable_mdns) {
-    sources += [ "local_discovery/local_discovery_messages.h" ]
-  }
-
-  if (is_chromeos) {
-    sources -= [ "chrome_version_info_linux.cc" ]
-  }
-
-  if (is_mac) {
-    sources -= [
-      "child_process_logging_posix.cc",
-      "chrome_version_info_posix.cc",
-    ]
-    deps += [
-      "//third_party/mach_override",
-      #'../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',  TODO(GYP)
-    ]
-  }
-
-  if (enable_remoting) {
-    #deps += [ '../remoting/remoting.gyp:remoting_client_plugin' ]  TODO(GYP)
-  }
-  if (!enable_plugins) {
-    sources -= [ "pepper_permission_util.cc" ]
-  }
-  if (!enable_webrtc) {
-    sources -= [ "media/webrtc_logging_messages.h" ]
-  }
-  if (enable_configuration_policy) {
-    deps += [ "//components/policy" ]
   }
 
   if (safe_browsing_mode == 1) {
@@ -292,8 +173,8 @@ static_library("constants") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//components/bookmarks/common",
     "//third_party/widevine/cdm:version_h",
+    #'../components/components.gyp:bookmarks_common',  TODO(GYP)
   ]
 
   if (enable_nacl) {

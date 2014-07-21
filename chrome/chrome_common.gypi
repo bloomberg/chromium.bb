@@ -4,7 +4,6 @@
 
 {
   'variables': {
-    # File lists shared with GN build.
     'chrome_common_sources': [
       '../apps/app_shim/app_shim_launch.h',
       '../apps/app_shim/app_shim_messages.h',
@@ -126,6 +125,30 @@
       'common/favicon/favicon_url_parser.h',
       'common/icon_with_badge_image_source.cc',
       'common/icon_with_badge_image_source.h',
+      'common/importer/firefox_importer_utils.cc',
+      'common/importer/firefox_importer_utils.h',
+      'common/importer/firefox_importer_utils_linux.cc',
+      'common/importer/firefox_importer_utils_mac.mm',
+      'common/importer/firefox_importer_utils_win.cc',
+      'common/importer/ie_importer_test_registry_overrider_win.cc',
+      'common/importer/ie_importer_test_registry_overrider_win.h',
+      'common/importer/ie_importer_utils_win.cc',
+      'common/importer/ie_importer_utils_win.h',
+      'common/importer/imported_bookmark_entry.cc',
+      'common/importer/imported_bookmark_entry.h',
+      'common/importer/imported_favicon_usage.cc',
+      'common/importer/imported_favicon_usage.h',
+      'common/importer/importer_bridge.cc',
+      'common/importer/importer_bridge.h',
+      'common/importer/importer_data_types.cc',
+      'common/importer/importer_data_types.h',
+      'common/importer/importer_type.h',
+      'common/importer/importer_url_row.cc',
+      'common/importer/importer_url_row.h',
+      'common/importer/profile_import_process_messages.cc',
+      'common/importer/profile_import_process_messages.h',
+      'common/importer/safari_importer_utils.h',
+      'common/importer/safari_importer_utils.mm',
       'common/instant_restricted_id_cache.h',
       'common/instant_types.cc',
       'common/instant_types.h',
@@ -173,6 +196,14 @@
       'common/search_types.h',
       'common/search_urls.cc',
       'common/search_urls.h',
+      'common/service_messages.h',
+      'common/service_process_util.cc',
+      'common/service_process_util.h',
+      'common/service_process_util_linux.cc',
+      'common/service_process_util_mac.mm',
+      'common/service_process_util_posix.cc',
+      'common/service_process_util_posix.h',
+      'common/service_process_util_win.cc',
       'common/spellcheck_common.cc',
       'common/spellcheck_common.h',
       'common/spellcheck_marker.h',
@@ -234,56 +265,6 @@
       'common/safe_browsing/zip_analyzer.cc',
       'common/safe_browsing/zip_analyzer.h',
     ],
-    'chrome_common_importer_sources': [
-      'common/importer/firefox_importer_utils.cc',
-      'common/importer/firefox_importer_utils.h',
-      'common/importer/firefox_importer_utils_linux.cc',
-      'common/importer/firefox_importer_utils_mac.mm',
-      'common/importer/firefox_importer_utils_win.cc',
-      'common/importer/ie_importer_test_registry_overrider_win.cc',
-      'common/importer/ie_importer_test_registry_overrider_win.h',
-      'common/importer/ie_importer_utils_win.cc',
-      'common/importer/ie_importer_utils_win.h',
-      'common/importer/imported_bookmark_entry.cc',
-      'common/importer/imported_bookmark_entry.h',
-      'common/importer/imported_favicon_usage.cc',
-      'common/importer/imported_favicon_usage.h',
-      'common/importer/importer_bridge.cc',
-      'common/importer/importer_bridge.h',
-      'common/importer/importer_data_types.cc',
-      'common/importer/importer_data_types.h',
-      'common/importer/importer_type.h',
-      'common/importer/importer_url_row.cc',
-      'common/importer/importer_url_row.h',
-      'common/importer/profile_import_process_messages.cc',
-      'common/importer/profile_import_process_messages.h',
-      'common/importer/safari_importer_utils.h',
-      'common/importer/safari_importer_utils.mm',
-    ],
-    'chrome_common_service_process_sources': [
-      'common/service_messages.h',
-      'common/service_process_util.cc',
-      'common/service_process_util.h',
-      'common/service_process_util_linux.cc',
-      'common/service_process_util_mac.mm',
-      'common/service_process_util_posix.cc',
-      'common/service_process_util_posix.h',
-      'common/service_process_util_win.cc',
-    ],
-    'chrome_common_win_mac_sources': [
-      'common/extensions/api/networking_private/networking_private_crypto_nss.cc',
-      'common/extensions/api/networking_private/networking_private_crypto_openssl.cc',
-      'common/extensions/api/networking_private/networking_private_crypto.h',
-      'common/media_galleries/itunes_library.cc',
-      'common/media_galleries/itunes_library.h',
-      'common/media_galleries/picasa_types.cc',
-      'common/media_galleries/picasa_types.h',
-      'common/media_galleries/pmp_constants.h',
-    ],
-    'chrome_common_mac_sources': [
-      'common/media_galleries/iphoto_library.cc',
-      'common/media_galleries/iphoto_library.h',
-    ]
   },
   'targets': [
     {
@@ -346,17 +327,31 @@
       ],
       'conditions': [
         ['enable_extensions==1', {
-          'sources': [ '<@(chrome_common_extensions_sources)' ],
+          'sources': [
+            '<@(chrome_common_extensions_sources)',
+          ],
           'dependencies': [
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../device/usb/usb.gyp:device_usb',
           ],
         }],
         ['OS=="win" or OS=="mac"', {
-          'sources': [ '<@(chrome_common_win_mac_sources)' ],
+          'sources': [
+            'common/extensions/api/networking_private/networking_private_crypto_nss.cc',
+            'common/extensions/api/networking_private/networking_private_crypto_openssl.cc',
+            'common/extensions/api/networking_private/networking_private_crypto.h',
+            'common/media_galleries/itunes_library.cc',
+            'common/media_galleries/itunes_library.h',
+            'common/media_galleries/picasa_types.cc',
+            'common/media_galleries/picasa_types.h',
+            'common/media_galleries/pmp_constants.h',
+          ],
         }],
         ['OS=="mac"', {
-          'sources': [ '<@(chrome_common_mac_sources)' ],
+          'sources': [
+            'common/media_galleries/iphoto_library.cc',
+            'common/media_galleries/iphoto_library.h',
+          ],
         }],
         ['OS != "ios"', {
           'dependencies': [
@@ -427,8 +422,13 @@
             '<(DEPTH)/printing/printing.gyp:printing',
           ],
         }],
-        ['enable_printing==1', {
-          'sources': [ '<@(chrome_common_service_process_sources)' ],
+        ['enable_printing!=1', {
+          'sources!' : [
+            'common/service_messages.h',
+          ],
+          'sources/': [
+            ['exclude', '^common/service_process_util_'],
+          ],
         }],
         ['enable_service_discovery==1', {
           'sources' : [
@@ -443,6 +443,11 @@
           ]
         }],
         ['OS=="android"', {
+          'sources/': [
+            ['exclude', '^common/importer/'],
+            ['exclude', '^common/media_galleries/'],
+            ['exclude', '^common/service_'],
+          ],
           'sources!': [
             'common/badge_util.cc',
             'common/chrome_version_info_posix.cc',
@@ -451,13 +456,9 @@
             'common/extensions/api/spellcheck/spellcheck_handler.cc',
             'common/extensions/manifest_handlers/minimum_chrome_version_checker.cc',
             'common/icon_with_badge_image_source.cc',
-            'common/media_galleries/metadata_types.h',
             'common/net/url_util.cc',
             'common/spellcheck_common.cc',
           ],
-        }, {
-          # Non-Android.
-          'sources': [ '<@(chrome_common_importer_sources)' ]
         }],
         ['OS=="win"', {
           'include_dirs': [
@@ -494,7 +495,7 @@
           ],
         }],
         ['enable_plugins==0', {
-          'sources!' : [
+          'source!' : [
             'common/pepper_permission_util.cc',
           ],
         }],
@@ -541,7 +542,6 @@
       ],
     },
     {
-      # GN version: //chrome/common:version
       'target_name': 'common_version',
       'type': 'none',
       'conditions': [
@@ -601,7 +601,7 @@
       ],
     },
     {
-      # GN version: //chrome/common/net
+      # GN version: //chrome/common/net:net
       'target_name': 'common_net',
       'type': 'static_library',
       'sources': [

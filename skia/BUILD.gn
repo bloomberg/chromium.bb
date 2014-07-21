@@ -9,7 +9,7 @@ if (cpu_arch == "arm") {
 }
 
 skia_support_gpu = !is_ios
-skia_support_pdf = !is_ios && printing_mode != 0
+skia_support_pdf = !is_ios && enable_printing != 0
 
 # The list of Skia defines that are to be set for chromium.
 gypi_skia_defines = exec_script(
@@ -415,7 +415,7 @@ component("skia") {
   if (is_win) {
     sources -= [ "ext/SkThread_chrome.cc" ]
   }
-  if (is_android && printing_mode == 0) {
+  if (is_android && enable_printing == 0) {
     sources -= [
       "ext/skia_utils_base.cc",
       "ext/vector_platform_device_skia.cc"

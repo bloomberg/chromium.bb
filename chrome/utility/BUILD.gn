@@ -77,7 +77,7 @@ static_library("utility") {
     }
   }
 
-  if (printing_mode != 1) {
+  if (enable_printing != 1) {
     sources -= [
       "printing_handler.cc",
       "printing_handler.h",

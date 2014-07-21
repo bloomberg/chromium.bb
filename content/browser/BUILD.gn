@@ -134,7 +134,7 @@ source_set("browser") {
     sources += [ "gamepad/gamepad_platform_data_fetcher.cc" ]
   }
 
-  if (printing_mode != 0) {
+  if (enable_printing != 0) {
     deps += [ "//printing" ]
   }
 
