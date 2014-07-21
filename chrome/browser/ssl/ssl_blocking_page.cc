@@ -511,6 +511,7 @@ std::string SSLBlockingPage::GetHTMLContentsV2() {
   load_time_data.SetString(
      "closeDetails",
      l10n_util::GetStringUTF16(IDS_SSL_V2_CLOSE_DETAILS_BUTTON));
+  load_time_data.SetString("errorCode", net::ErrorToString(cert_error_));
 
   if (overridable_ && !strict_enforcement_) {  // Overridable.
     SSLErrorInfo error_info =
@@ -557,7 +558,6 @@ std::string SSLBlockingPage::GetHTMLContentsV2() {
     }
     load_time_data.SetString(
         "finalParagraph", l10n_util::GetStringFUTF16(help_string, url));
-    load_time_data.SetString("errorCode", net::ErrorToString(cert_error_));
   }
 
   base::StringPiece html(
