@@ -285,6 +285,8 @@
             'browser/chromeos/login/login_manager_test.h',
             'browser/chromeos/login/login_ui_browsertest.cc',
             'browser/chromeos/login/oobe_browsertest.cc',
+            'browser/chromeos/login/screenshot_tester.h',
+            'browser/chromeos/login/screenshot_tester.cc',
             'browser/chromeos/login/users/wallpaper/wallpaper_manager_browsertest.cc',
             'browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.cc',
             'browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.h',

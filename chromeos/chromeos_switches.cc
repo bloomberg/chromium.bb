@@ -96,6 +96,9 @@ const char kEnableNetworkPortalNotification[] =
 // Enables activation of voice search by saying 'Ok Google'.
 const char kEnableOkGoogleVoiceSearch[] = "enable-ok-google-voice-search";
 
+// Enables using screenshots in tests.
+const char kEnableScreenshotTesting[] = "enable-screenshot-testing";
+
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[]
     = "enable-touchpad-three-finger-click";
@@ -235,6 +238,10 @@ const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
 
 // Forces first-run UI to be shown for every login.
 const char kForceFirstRunUI[] = "force-first-run-ui";
+
+// Turns on screenshot testing and specifies the directory where the
+// golden screenshots are stored.
+const char kScreenshotDestinationDir[] = "screenshot-destination-dir";
 
 // Enables testing for auto update UI.
 const char kTestAutoUpdateUI[] = "test-auto-update-ui";
