@@ -100,13 +100,6 @@ bool TestCase::Init() {
 std::string TestCase::MakeFailureMessage(const char* file,
                                          int line,
                                          const char* cmd) {
-  // The mere presence of this local variable works around a gcc-4.2.4
-  // compiler bug in official Chrome Linux builds.  If you remove it,
-  // confirm this compile command still works:
-  // GYP_DEFINES='branding=Chrome buildtype=Official target_arch=x64'
-  //     gclient runhooks
-  // make -k -j4 BUILDTYPE=Release ppapi_tests
-
   std::ostringstream output;
   output << "Failure in " << file << "(" << line << "): " << cmd;
   return output.str();
