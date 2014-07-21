@@ -5,6 +5,7 @@
 {
    'targets': [
     {
+      # GN version: //ppapi:ppapi_host
       'target_name': 'ppapi_host',
       'type': '<(component)',
       'dependencies': [
@@ -22,6 +23,7 @@
         'PPAPI_HOST_IMPLEMENTATION',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'host/dispatch_host_message.h',
         'host/error_conversion.cc',
         'host/error_conversion.h',

@@ -33,6 +33,7 @@
   ],
   'targets': [
     {
+      # GN version: //ppapi:ppapi_shared
       'target_name': 'ppapi_shared',
       'type': '<(component)',
       'variables': {
@@ -93,6 +94,7 @@
       # In a static build, build ppapi_ipc separately.
       'targets': [
         {
+          # GN version: //ppapi:ppapi_ipc
           'target_name': 'ppapi_ipc',
           'type': 'static_library',
           'variables': {
@@ -114,6 +116,7 @@
           },
         },
         {
+          # GN version: //ppapi:ppapi_proxy
           'target_name': 'ppapi_proxy',
           'type': 'static_library',
           'variables': {
@@ -160,6 +163,7 @@
       # In the component build, we'll just build ppapi_ipc in to ppapi_proxy.
       'targets': [
         {
+          # GN version: //ppapi:ppapi_proxy
           'target_name': 'ppapi_proxy',
           'type': 'shared_library',
           'variables': {
@@ -221,6 +225,8 @@
       # Windows).
       'targets': [
         {
+          # GN version: //ppapi:ppapi_shared
+          # (Should be automagical when compiling in the 64-bit toolchain.)
           'target_name': 'ppapi_shared_win64',
           'type': '<(component)',
           'variables': {
@@ -248,6 +254,8 @@
           },
         },
         {
+          # GN version: //ppapi:ppapi_ipc
+          # (Should be automagical when compiling in the 64-bit toolchain.)
           'target_name': 'ppapi_ipc_win64',
           'type': 'static_library',
           'variables': {

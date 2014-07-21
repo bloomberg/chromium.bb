@@ -67,10 +67,10 @@ static_library("renderer") {
     sources += rebase_path(gypi_values.chrome_renderer_plugin_sources,
                            ".", "..")
     deps += [
-      #'../ppapi/ppapi_internal.gyp:ppapi_host',  TODO(GYP
-      #'../ppapi/ppapi_internal.gyp:ppapi_proxy',  TODO(GYP
-      #'../ppapi/ppapi_internal.gyp:ppapi_ipc',  TODO(GYP
-      #'../ppapi/ppapi_internal.gyp:ppapi_shared',  TODO(GYP
+      "//ppapi:ppapi_host",
+      "//ppapi:ppapi_ipc",
+      "//ppapi:ppapi_proxy",
+      "//ppapi:ppapi_shared",
     ]
   }
 

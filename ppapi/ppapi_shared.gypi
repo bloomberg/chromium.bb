@@ -11,6 +11,7 @@
       # This part is shared between the targets defined below.
       ['ppapi_shared_target==1', {
         'sources': [
+          # Note: sources list duplicated in GN build.
           'shared_impl/array_var.cc',
           'shared_impl/array_var.h',
           'shared_impl/array_writer.cc',

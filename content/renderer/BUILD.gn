@@ -150,10 +150,9 @@ source_set("renderer") {
         content_renderer_gypi_values.private_renderer_plugin_sources,
         ".", "//content")
     deps += [
-      # TODO(GYP)
-      #"//ppapi/ppapi_internal.gyp:ppapi_host",
-      #"//ppapi/ppapi_internal.gyp:ppapi_proxy",
-      #"//ppapi/ppapi_internal.gyp:ppapi_shared",
+      "//ppapi:ppapi_host",
+      "//ppapi:ppapi_proxy",
+      "//ppapi:ppapi_shared",
     ]
   } else {
     # These files are in the WebRTC list, but also require plugins.
