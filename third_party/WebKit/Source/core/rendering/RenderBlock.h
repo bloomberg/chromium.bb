@@ -424,9 +424,6 @@ private:
 
     void adjustPointToColumnContents(LayoutPoint&) const;
 
-    void fitBorderToLinesIfNeeded(); // Shrink the box in which the border paints if border-fit is set.
-    virtual void adjustForBorderFit(LayoutUnit x, LayoutUnit& left, LayoutUnit& right) const; // Helper function for borderFitAdjust
-
     void markLinesDirtyInBlockRange(LayoutUnit logicalTop, LayoutUnit logicalBottom, RootInlineBox* highest = 0);
 
     Position positionForBox(InlineBox*, bool start = true) const;
