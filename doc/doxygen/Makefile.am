@@ -20,7 +20,7 @@ scanned_src_files_server = 				\
 # find all man/man3/wl_foo.3 pages
 # for this to work, we need to create them before the man target (hence
 # all-local below)
-dist_man3_MANS= $(shell find man/man3/ -name "wl_*.3" -printf "man/man3/%P\n")
+dist_man3_MANS = $(shell test -d man && find man/man3 -name "wl_*.3" -printf "man/man3/%P\n")
 
 xml/client/index.xml: $(scanned_src_files_client) wayland.doxygen
 	$(AM_V_GEN)$(MKDIR_P) xml/client && \
