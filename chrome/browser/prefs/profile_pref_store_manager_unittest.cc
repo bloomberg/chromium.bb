@@ -92,7 +92,8 @@ class ProfilePrefStoreManagerTest : public testing::Test {
                        kConfiguration + arraysize(kConfiguration)),
         profile_pref_registry_(new user_prefs::PrefRegistrySyncable),
         registry_verifier_(profile_pref_registry_),
-        seed_("seed") {}
+        seed_("seed"),
+        reset_recorded_(false) {}
 
   virtual void SetUp() OVERRIDE {
     ProfilePrefStoreManager::RegisterPrefs(local_state_.registry());
@@ -142,17 +143,25 @@ class ProfilePrefStoreManagerTest : public testing::Test {
   virtual void TearDown() OVERRIDE { DestroyPrefStore(); }
 
  protected:
-  bool WasResetRecorded() {
+  // Verifies whether a reset was reported via the RecordReset() hook. Also
+  // verifies that GetResetTime() was set (or not) accordingly.
+  void VerifyResetRecorded(bool reset_expected) {
+    EXPECT_EQ(reset_expected, reset_recorded_);
+
     base::PrefServiceFactory pref_service_factory;
     pref_service_factory.set_user_prefs(pref_store_);
 
     scoped_ptr<PrefService> pref_service(
         pref_service_factory.Create(profile_pref_registry_));
 
-    return !ProfilePrefStoreManager::GetResetTime(pref_service.get()).is_null();
+    EXPECT_EQ(
+        reset_expected,
+        !ProfilePrefStoreManager::GetResetTime(pref_service.get()).is_null());
   }
 
   void ClearResetRecorded() {
+    reset_recorded_ = false;
+
     base::PrefServiceFactory pref_service_factory;
     pref_service_factory.set_user_prefs(pref_store_);
 
@@ -168,6 +177,8 @@ class ProfilePrefStoreManagerTest : public testing::Test {
     scoped_refptr<PersistentPrefStore> pref_store =
         manager_->CreateProfilePrefStore(
             main_message_loop_.message_loop_proxy(),
+            base::Bind(&ProfilePrefStoreManagerTest::RecordReset,
+                       base::Unretained(this)),
             &mock_validation_delegate_);
     InitializePrefStore(pref_store);
     pref_store = NULL;
@@ -214,7 +225,10 @@ class ProfilePrefStoreManagerTest : public testing::Test {
   void LoadExistingPrefs() {
     DestroyPrefStore();
     pref_store_ = manager_->CreateProfilePrefStore(
-        main_message_loop_.message_loop_proxy(), NULL);
+        main_message_loop_.message_loop_proxy(),
+        base::Bind(&ProfilePrefStoreManagerTest::RecordReset,
+                   base::Unretained(this)),
+        NULL);
     pref_store_->AddObserver(&registry_verifier_);
     pref_store_->ReadPrefs();
   }
@@ -267,6 +281,17 @@ class ProfilePrefStoreManagerTest : public testing::Test {
   scoped_refptr<PersistentPrefStore> pref_store_;
 
   std::string seed_;
+
+ private:
+  void RecordReset() {
+    // As-is |reset_recorded_| is only designed to remember a single reset, make
+    // sure none was previously recorded (or that ClearResetRecorded() was
+    // called).
+    EXPECT_FALSE(reset_recorded_);
+    reset_recorded_ = true;
+  }
+
+  bool reset_recorded_;
 };
 
 TEST_F(ProfilePrefStoreManagerTest, StoreValues) {
@@ -276,7 +301,7 @@ TEST_F(ProfilePrefStoreManagerTest, StoreValues) {
 
   ExpectStringValueEquals(kTrackedAtomic, kFoobar);
   ExpectStringValueEquals(kProtectedAtomic, kHelloWorld);
-  EXPECT_FALSE(WasResetRecorded());
+  VerifyResetRecorded(false);
   ExpectValidationObserved(kTrackedAtomic);
   ExpectValidationObserved(kProtectedAtomic);
 }
@@ -309,8 +334,8 @@ TEST_F(ProfilePrefStoreManagerTest, ProtectValues) {
   // will be discarded at load time, leaving this preference undefined.
   EXPECT_NE(ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
             pref_store_->GetValue(kProtectedAtomic, NULL));
-  EXPECT_EQ(ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
-            WasResetRecorded());
+  VerifyResetRecorded(
+      ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking);
 
   ExpectValidationObserved(kTrackedAtomic);
   ExpectValidationObserved(kProtectedAtomic);
@@ -337,7 +362,7 @@ TEST_F(ProfilePrefStoreManagerTest, MigrateFromOneFile) {
 
   ExpectStringValueEquals(kTrackedAtomic, kFoobar);
   ExpectStringValueEquals(kProtectedAtomic, kHelloWorld);
-  EXPECT_FALSE(WasResetRecorded());
+  VerifyResetRecorded(false);
 
   LoadExistingPrefs();
 
@@ -347,7 +372,7 @@ TEST_F(ProfilePrefStoreManagerTest, MigrateFromOneFile) {
 
   ExpectStringValueEquals(kTrackedAtomic, kFoobar);
   ExpectStringValueEquals(kProtectedAtomic, kHelloWorld);
-  EXPECT_FALSE(WasResetRecorded());
+  VerifyResetRecorded(false);
 }
 
 TEST_F(ProfilePrefStoreManagerTest, MigrateWithTampering) {
@@ -380,8 +405,8 @@ TEST_F(ProfilePrefStoreManagerTest, MigrateWithTampering) {
   // will be discarded at load time, leaving this preference undefined.
   EXPECT_NE(ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
             pref_store_->GetValue(kProtectedAtomic, NULL));
-  EXPECT_EQ(ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
-            WasResetRecorded());
+  VerifyResetRecorded(
+      ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking);
 
   LoadExistingPrefs();
 
@@ -390,7 +415,7 @@ TEST_F(ProfilePrefStoreManagerTest, MigrateWithTampering) {
       PrefServiceHashStoreContents::kProfilePreferenceHashes));
 
   ExpectStringValueEquals(kTrackedAtomic, kBarfoo);
-  EXPECT_FALSE(WasResetRecorded());
+  VerifyResetRecorded(false);
 }
 
 TEST_F(ProfilePrefStoreManagerTest, InitializePrefsFromMasterPrefs) {
@@ -405,7 +430,7 @@ TEST_F(ProfilePrefStoreManagerTest, InitializePrefsFromMasterPrefs) {
   // necessary to authenticate these values.
   ExpectStringValueEquals(kTrackedAtomic, kFoobar);
   ExpectStringValueEquals(kProtectedAtomic, kHelloWorld);
-  EXPECT_FALSE(WasResetRecorded());
+  VerifyResetRecorded(false);
 }
 
 TEST_F(ProfilePrefStoreManagerTest, UnprotectedToProtected) {
@@ -439,7 +464,7 @@ TEST_F(ProfilePrefStoreManagerTest, UnprotectedToProtected) {
   // Since there was a valid super MAC we were able to extend the existing trust
   // to the newly protected preference.
   ExpectStringValueEquals(kUnprotectedPref, kBarfoo);
-  EXPECT_FALSE(WasResetRecorded());
+  VerifyResetRecorded(false);
 
   // Ensure everything is written out to disk.
   DestroyPrefStore();
@@ -450,8 +475,8 @@ TEST_F(ProfilePrefStoreManagerTest, UnprotectedToProtected) {
   LoadExistingPrefs();
   EXPECT_NE(ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
             pref_store_->GetValue(kUnprotectedPref, NULL));
-  EXPECT_EQ(ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
-            WasResetRecorded());
+  VerifyResetRecorded(
+      ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking);
 }
 
 TEST_F(ProfilePrefStoreManagerTest, NewPrefWhenFirstProtecting) {
@@ -490,7 +515,7 @@ TEST_F(ProfilePrefStoreManagerTest, NewPrefWhenFirstProtecting) {
   // Since there was a valid super MAC we were able to extend the existing trust
   // to the newly tracked & protected preference.
   ExpectStringValueEquals(kUnprotectedPref, kFoobar);
-  EXPECT_FALSE(WasResetRecorded());
+  VerifyResetRecorded(false);
 }
 
 TEST_F(ProfilePrefStoreManagerTest, UnprotectedToProtectedWithoutTrust) {
@@ -514,8 +539,8 @@ TEST_F(ProfilePrefStoreManagerTest, UnprotectedToProtectedWithoutTrust) {
   // discarded because new values are not accepted without a valid super MAC.
   EXPECT_NE(ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
             pref_store_->GetValue(kUnprotectedPref, NULL));
-  EXPECT_EQ(ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking,
-            WasResetRecorded());
+  VerifyResetRecorded(
+      ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking);
 }
 
 // This test verifies that preference values are correctly maintained when a
@@ -545,7 +570,7 @@ TEST_F(ProfilePrefStoreManagerTest, ProtectedToUnprotected) {
 
   // Verify that the value was not reset.
   ExpectStringValueEquals(kProtectedAtomic, kHelloWorld);
-  EXPECT_FALSE(WasResetRecorded());
+  VerifyResetRecorded(false);
 
   // Accessing the value of the previously protected pref didn't trigger its
   // move to the unprotected preferences file, though the loading of the pref
@@ -558,5 +583,5 @@ TEST_F(ProfilePrefStoreManagerTest, ProtectedToUnprotected) {
   pref_store_->SetValue(kProtectedAtomic, new base::StringValue(kGoodbyeWorld));
   LoadExistingPrefs();
   ExpectStringValueEquals(kProtectedAtomic, kGoodbyeWorld);
-  EXPECT_FALSE(WasResetRecorded());
+  VerifyResetRecorded(false);
 }

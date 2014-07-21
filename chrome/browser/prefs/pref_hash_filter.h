@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
@@ -60,6 +61,8 @@ class PrefHashFilter : public InterceptablePrefFilter {
   // Constructs a PrefHashFilter tracking the specified |tracked_preferences|
   // using |pref_hash_store| to check/store hashes. An optional |delegate| is
   // notified of the status of each preference as it is checked.
+  // If |on_reset_on_load| is provided, it will be invoked if a reset occurs in
+  // FilterOnLoad.
   // |reporting_ids_count| is the count of all possible IDs (possibly greater
   // than |tracked_preferences.size()|). If |report_super_mac_validity| is true,
   // the state of the super MAC will be reported via UMA during
@@ -67,6 +70,7 @@ class PrefHashFilter : public InterceptablePrefFilter {
   PrefHashFilter(
       scoped_ptr<PrefHashStore> pref_hash_store,
       const std::vector<TrackedPreferenceMetadata>& tracked_preferences,
+      const base::Closure& on_reset_on_load,
       TrackedPreferenceValidationDelegate* delegate,
       size_t reporting_ids_count,
       bool report_super_mac_validity);
@@ -115,6 +119,9 @@ class PrefHashFilter : public InterceptablePrefFilter {
   typedef std::map<std::string, const TrackedPreference*> ChangedPathsMap;
 
   scoped_ptr<PrefHashStore> pref_hash_store_;
+
+  // Invoked if a reset occurs in a call to FilterOnLoad.
+  const base::Closure on_reset_on_load_;
 
   TrackedPreferencesMap tracked_paths_;
 

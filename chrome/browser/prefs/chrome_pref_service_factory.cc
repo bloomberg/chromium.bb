@@ -34,6 +34,7 @@
 #include "chrome/browser/profiles/file_path_verifier_win.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/default_search_pref_migration.h"
+#include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -46,6 +47,7 @@
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -451,16 +453,28 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
     bool async) {
   TRACE_EVENT0("browser", "chrome_prefs::CreateProfilePrefs");
+
+  // A StartSyncFlare used to kick sync early in case of a reset event. This is
+  // done since sync may bring back the user's server value post-reset which
+  // could potentially cause a "settings flash" between the factory default and
+  // the re-instantiated server value. Starting sync ASAP minimizes the window
+  // before the server value is re-instantiated (this window can otherwise be
+  // as long as 10 seconds by default).
+  const base::Closure start_sync_flare_for_prefs =
+      base::Bind(sync_start_util::GetFlareForSyncableService(profile_path),
+                 syncer::PREFERENCES);
+
   PrefServiceSyncableFactory factory;
-  PrepareFactory(
-      &factory,
-      policy_service,
-      supervised_user_settings,
-      scoped_refptr<PersistentPrefStore>(
-          CreateProfilePrefStoreManager(profile_path)->CreateProfilePrefStore(
-              pref_io_task_runner, validation_delegate)),
-      extension_prefs,
-      async);
+  PrepareFactory(&factory,
+                 policy_service,
+                 supervised_user_settings,
+                 scoped_refptr<PersistentPrefStore>(
+                     CreateProfilePrefStoreManager(profile_path)
+                         ->CreateProfilePrefStore(pref_io_task_runner,
+                                                  start_sync_flare_for_prefs,
+                                                  validation_delegate)),
+                 extension_prefs,
+                 async);
   scoped_ptr<PrefServiceSyncable> pref_service =
       factory.CreateSyncable(pref_registry.get());
 

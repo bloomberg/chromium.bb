@@ -79,10 +79,13 @@ class ProfilePrefStoreManager {
   static void ClearResetTime(PrefService* pref_service);
 
   // Creates a PersistentPrefStore providing access to the user preferences of
-  // the managed profile. An optional |validation_delegate| will be notified
+  // the managed profile. If |on_reset| is provided, it will be invoked if a
+  // reset occurs as a result of loading the profile's prefs.
+  // An optional |validation_delegate| will be notified
   // of the status of each tracked preference as they are checked.
   PersistentPrefStore* CreateProfilePrefStore(
       const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
+      const base::Closure& on_reset_on_load,
       TrackedPreferenceValidationDelegate* validation_delegate);
 
   // Initializes the preferences for the managed profile with the preference

@@ -5,6 +5,7 @@
 #include "chrome/browser/prefs/profile_pref_store_manager.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
@@ -81,6 +82,7 @@ void ProfilePrefStoreManager::ClearResetTime(PrefService* pref_service) {
 
 PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
+    const base::Closure& on_reset_on_load,
     TrackedPreferenceValidationDelegate* validation_delegate) {
   scoped_ptr<PrefFilter> pref_filter;
   if (!kPlatformSupportsPreferenceTracking) {
@@ -111,12 +113,14 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
   scoped_ptr<PrefHashFilter> unprotected_pref_hash_filter(
       new PrefHashFilter(GetPrefHashStore(false),
                          unprotected_configuration,
+                         base::Closure(),
                          validation_delegate,
                          reporting_ids_count_,
                          false));
   scoped_ptr<PrefHashFilter> protected_pref_hash_filter(
       new PrefHashFilter(GetPrefHashStore(true),
                          protected_configuration,
+                         on_reset_on_load,
                          validation_delegate,
                          reporting_ids_count_,
                          true));
@@ -175,6 +179,7 @@ bool ProfilePrefStoreManager::InitializePrefsFromMasterPrefs(
     to_serialize = copy.get();
     PrefHashFilter(GetPrefHashStore(false),
                    tracking_configuration_,
+                   base::Closure(),
                    NULL,
                    reporting_ids_count_,
                    false).Initialize(copy.get());
@@ -209,6 +214,7 @@ ProfilePrefStoreManager::CreateDeprecatedCombinedProfilePrefStore(
     pref_filter.reset(
         new PrefHashFilter(pref_hash_store_impl.PassAs<PrefHashStore>(),
                            tracking_configuration_,
+                           base::Closure(),
                            NULL,
                            reporting_ids_count_,
                            false));

@@ -24,10 +24,12 @@
 PrefHashFilter::PrefHashFilter(
     scoped_ptr<PrefHashStore> pref_hash_store,
     const std::vector<TrackedPreferenceMetadata>& tracked_preferences,
+    const base::Closure& on_reset_on_load,
     TrackedPreferenceValidationDelegate* delegate,
     size_t reporting_ids_count,
     bool report_super_mac_validity)
     : pref_hash_store_(pref_hash_store.Pass()),
+      on_reset_on_load_(on_reset_on_load),
       report_super_mac_validity_(report_super_mac_validity) {
   DCHECK(pref_hash_store_);
   DCHECK_GE(reporting_ids_count, tracked_preferences.size());
@@ -185,6 +187,9 @@ void PrefHashFilter::FinalizeFilterOnLoad(
                              new base::StringValue(base::Int64ToString(
                                  base::Time::Now().ToInternalValue())));
     FilterUpdate(prefs::kPreferenceResetTime);
+
+    if (!on_reset_on_load_.is_null())
+      on_reset_on_load_.Run();
   }
 
   // TODO(gab): Remove this histogram by Feb 21 2014; after sufficient timing

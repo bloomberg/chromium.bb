@@ -365,7 +365,8 @@ class PrefHashFilterTest
  public:
   PrefHashFilterTest() : mock_pref_hash_store_(NULL),
                          pref_store_contents_(new base::DictionaryValue),
-                         last_filter_on_load_modified_prefs_(false) {}
+                         last_filter_on_load_modified_prefs_(false),
+                         reset_recorded_(false) {}
 
   virtual void SetUp() OVERRIDE {
     base::StatisticsRecorder::Initialize();
@@ -387,16 +388,21 @@ class PrefHashFilterTest
     scoped_ptr<MockPrefHashStore> temp_mock_pref_hash_store(
         new MockPrefHashStore);
     mock_pref_hash_store_ = temp_mock_pref_hash_store.get();
-    pref_hash_filter_.reset(
-        new PrefHashFilter(temp_mock_pref_hash_store.PassAs<PrefHashStore>(),
-                           configuration,
-                           &mock_validation_delegate_,
-                           arraysize(kTestTrackedPrefs),
-                           true));
+    pref_hash_filter_.reset(new PrefHashFilter(
+        temp_mock_pref_hash_store.PassAs<PrefHashStore>(),
+        configuration,
+        base::Bind(&PrefHashFilterTest::RecordReset, base::Unretained(this)),
+        &mock_validation_delegate_,
+        arraysize(kTestTrackedPrefs),
+        true));
   }
 
-  bool RecordedReset() {
-    return pref_store_contents_->Get(prefs::kPreferenceResetTime, NULL);
+  // Verifies whether a reset was reported by the PrefHashFiler. Also verifies
+  // that kPreferenceResetTime was set (or not) accordingly.
+  void VerifyRecordedReset(bool reset_expected) {
+    EXPECT_EQ(reset_expected, reset_recorded_);
+    EXPECT_EQ(reset_expected,
+              pref_store_contents_->Get(prefs::kPreferenceResetTime, NULL));
   }
 
   // Calls FilterOnLoad() on |pref_hash_Filter_|. |pref_store_contents_| is
@@ -427,6 +433,15 @@ class PrefHashFilterTest
     EXPECT_EQ(expected_schedule_write, schedule_write);
   }
 
+  void RecordReset() {
+    // As-is |reset_recorded_| is only designed to remember a single reset, make
+    // sure none was previously recorded.
+    EXPECT_FALSE(reset_recorded_);
+    reset_recorded_ = true;
+  }
+
+  bool reset_recorded_;
+
   DISALLOW_COPY_AND_ASSIGN(PrefHashFilterTest);
 };
 
@@ -444,7 +459,7 @@ TEST_P(PrefHashFilterTest, EmptyAndUnchanged) {
                         kTestTrackedPrefs[i].name).first);
   }
   ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
-  ASSERT_FALSE(RecordedReset());
+  VerifyRecordedReset(false);
 
   // Delegate saw all paths, and all unchanged.
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
@@ -481,7 +496,7 @@ TEST_P(PrefHashFilterTest, FilterTrackedPrefUpdate) {
   ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_ATOMIC, stored_value.second);
 
   ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
-  ASSERT_FALSE(RecordedReset());
+  VerifyRecordedReset(false);
 }
 
 TEST_P(PrefHashFilterTest, ReportSuperMacValidity) {
@@ -541,7 +556,7 @@ TEST_P(PrefHashFilterTest, FilterSplitPrefUpdate) {
   ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT, stored_value.second);
 
   ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
-  ASSERT_FALSE(RecordedReset());
+  VerifyRecordedReset(false);
 }
 
 TEST_P(PrefHashFilterTest, FilterUntrackedPrefUpdate) {
@@ -711,7 +726,7 @@ TEST_P(PrefHashFilterTest, InitialValueUnknown) {
     ASSERT_FALSE(pref_store_contents_->Get(kSplitPref, NULL));
     ASSERT_EQ(NULL, stored_split_value.first);
 
-    ASSERT_TRUE(RecordedReset());
+    VerifyRecordedReset(true);
   } else {
     // Otherwise the values should have remained intact and the hashes should
     // have been updated to match them.
@@ -725,7 +740,7 @@ TEST_P(PrefHashFilterTest, InitialValueUnknown) {
     ASSERT_EQ(dict_value, split_value_in_store);
     ASSERT_EQ(dict_value, stored_split_value.first);
 
-    ASSERT_FALSE(RecordedReset());
+    VerifyRecordedReset(false);
   }
 }
 
@@ -838,7 +853,7 @@ TEST_P(PrefHashFilterTest, InitialValueChanged) {
     ASSERT_TRUE(dict_value->HasKey("d"));
     ASSERT_EQ(dict_value, stored_split_value.first);
 
-    ASSERT_TRUE(RecordedReset());
+    VerifyRecordedReset(true);
   } else {
     // Otherwise the value should have remained intact and the hash should have
     // been updated to match it.
@@ -857,7 +872,7 @@ TEST_P(PrefHashFilterTest, InitialValueChanged) {
     ASSERT_TRUE(dict_value->HasKey("d"));
     ASSERT_EQ(dict_value, stored_split_value.first);
 
-    ASSERT_FALSE(RecordedReset());
+    VerifyRecordedReset(false);
   }
 }
 
@@ -940,7 +955,7 @@ TEST_P(PrefHashFilterTest, InitialValueMigrated) {
     ASSERT_FALSE(pref_store_contents_->Get(kAtomicPref, NULL));
     ASSERT_EQ(NULL, stored_atomic_value.first);
 
-    ASSERT_TRUE(RecordedReset());
+    VerifyRecordedReset(true);
   } else {
     // Otherwise the value should have remained intact and the hash should have
     // been updated to match it.
@@ -949,7 +964,7 @@ TEST_P(PrefHashFilterTest, InitialValueMigrated) {
     ASSERT_EQ(list_value, atomic_value_in_store);
     ASSERT_EQ(list_value, stored_atomic_value.first);
 
-    ASSERT_FALSE(RecordedReset());
+    VerifyRecordedReset(false);
   }
 }
 
@@ -1009,7 +1024,7 @@ TEST_P(PrefHashFilterTest, InitialValueUnchangedLegacyId) {
   ASSERT_EQ(dict_value, split_value_in_store);
   ASSERT_EQ(dict_value, stored_split_value.first);
 
-  ASSERT_FALSE(RecordedReset());
+  VerifyRecordedReset(false);
 }
 
 TEST_P(PrefHashFilterTest, DontResetReportOnly) {
@@ -1072,7 +1087,7 @@ TEST_P(PrefHashFilterTest, DontResetReportOnly) {
     ASSERT_EQ(NULL, mock_pref_hash_store_->stored_value(kAtomicPref).first);
     ASSERT_EQ(NULL, mock_pref_hash_store_->stored_value(kAtomicPref2).first);
 
-    ASSERT_TRUE(RecordedReset());
+    VerifyRecordedReset(true);
   } else {
     const base::Value* value_in_store;
     const base::Value* value_in_store2;
@@ -1085,7 +1100,7 @@ TEST_P(PrefHashFilterTest, DontResetReportOnly) {
     ASSERT_EQ(int_value2,
               mock_pref_hash_store_->stored_value(kAtomicPref2).first);
 
-    ASSERT_FALSE(RecordedReset());
+    VerifyRecordedReset(false);
   }
 }
 
