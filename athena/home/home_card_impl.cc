@@ -199,9 +199,10 @@ class HomeCardImpl : public HomeCard,
       case VISIBLE_MINIMIZED:
         return kHomeCardMinimizedHeight;
       case HIDDEN:
-        NOTREACHED();
-        return -1;
+        break;
     }
+    NOTREACHED();
+    return -1;
   }
 
   virtual int GetHorizontalMargin() const OVERRIDE {
