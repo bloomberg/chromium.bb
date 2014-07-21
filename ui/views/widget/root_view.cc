@@ -255,18 +255,32 @@ ui::EventDispatchDetails RootView::OnEventFromSource(ui::Event* event) {
   //                   that event type has been refactored, and then
   //                   eventually remove this function altogether. See
   //                   crbug.com/348083.
+
   if (event->IsKeyEvent())
     return EventProcessor::OnEventFromSource(event);
-  else if (event->IsScrollEvent())
+
+  if (event->IsScrollEvent())
     return EventProcessor::OnEventFromSource(event);
-  else if (event->IsTouchEvent())
-    NOTREACHED() << "Touch events should not be sent to RootView.";
-  else if (event->IsGestureEvent())
+
+  if (event->IsGestureEvent()) {
+    // Ignore subsequent gesture scroll events if no handler was set for a
+    // ui::ET_GESTURE_SCROLL_BEGIN event.
+    if (!gesture_handler_ &&
+        (event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
+         event->type() == ui::ET_GESTURE_SCROLL_END ||
+         event->type() == ui::ET_SCROLL_FLING_START)) {
+      return DispatchDetails();
+    }
+
     DispatchGestureEvent(event->AsGestureEvent());
-  else if (event->IsMouseEvent())
+    return DispatchDetails();
+  }
+
+  if (event->IsTouchEvent())
+    NOTREACHED() << "Touch events should not be sent to RootView.";
+
+  if (event->IsMouseEvent())
     NOTREACHED() << "Should not be called with a MouseEvent.";
-  else
-    NOTREACHED() << "Invalid event type.";
 
   return DispatchDetails();
 }
@@ -680,17 +694,6 @@ void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
     }
 
     return;
-  }
-
-  // If there was no handler for a SCROLL_BEGIN event, then subsequent scroll
-  // events are not dispatched to any views.
-  switch (event->type()) {
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-    case ui::ET_GESTURE_SCROLL_END:
-    case ui::ET_SCROLL_FLING_START:
-      return;
-    default:
-      break;
   }
 
   View* gesture_handler = NULL;
