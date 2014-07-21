@@ -68,7 +68,7 @@ void Label::SetText(const base::string16& text) {
 void Label::SetTextInternal(const base::string16& text) {
   text_ = text;
 
-  if (is_obscured_) {
+  if (obscured_) {
     size_t obscured_text_length =
         static_cast<size_t>(gfx::UTF16IndexToOffset(text_, 0, text_.length()));
     layout_text_.assign(obscured_text_length, kPasswordReplacementChar);
@@ -104,6 +104,15 @@ void Label::SetBackgroundColor(SkColor color) {
   RecalculateColors();
 }
 
+void Label::SetShadows(const gfx::ShadowValues& shadows) {
+  shadows_ = shadows;
+  text_size_valid_ = false;
+}
+
+void Label::SetSubpixelRenderingEnabled(bool subpixel_rendering_enabled) {
+  subpixel_rendering_enabled_ = subpixel_rendering_enabled;
+}
+
 void Label::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
   // If the UI layout is right-to-left, flip the alignment direction.
   if (base::i18n::IsRTL() &&
@@ -122,7 +131,7 @@ gfx::HorizontalAlignment Label::GetHorizontalAlignment() const {
     return horizontal_alignment_;
 
   const base::i18n::TextDirection dir =
-      base::i18n::GetFirstStrongCharacterDirection(layout_text());
+      base::i18n::GetFirstStrongCharacterDirection(layout_text_);
   return dir == base::i18n::RIGHT_TO_LEFT ? gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT;
 }
 
@@ -138,8 +147,8 @@ void Label::SetLineHeight(int height) {
 void Label::SetMultiLine(bool multi_line) {
   DCHECK(!multi_line || (elide_behavior_ == gfx::ELIDE_TAIL ||
                          elide_behavior_ == gfx::NO_ELIDE));
-  if (multi_line != is_multi_line_) {
-    is_multi_line_ = multi_line;
+  if (multi_line != multi_line_) {
+    multi_line_ = multi_line;
     ResetCachedSize();
     PreferredSizeChanged();
     SchedulePaint();
@@ -147,8 +156,8 @@ void Label::SetMultiLine(bool multi_line) {
 }
 
 void Label::SetObscured(bool obscured) {
-  if (obscured != is_obscured_) {
-    is_obscured_ = obscured;
+  if (obscured != obscured_) {
+    obscured_ = obscured;
     SetTextInternal(text_);
   }
 }
@@ -163,8 +172,8 @@ void Label::SetAllowCharacterBreak(bool allow_character_break) {
 }
 
 void Label::SetElideBehavior(gfx::ElideBehavior elide_behavior) {
-  DCHECK(!is_multi_line_ || (elide_behavior_ == gfx::ELIDE_TAIL ||
-                             elide_behavior_ == gfx::NO_ELIDE));
+  DCHECK(!multi_line_ || (elide_behavior_ == gfx::ELIDE_TAIL ||
+                          elide_behavior_ == gfx::NO_ELIDE));
   if (elide_behavior != elide_behavior_) {
     elide_behavior_ = elide_behavior;
     ResetCachedSize();
@@ -178,10 +187,10 @@ void Label::SetTooltipText(const base::string16& tooltip_text) {
 }
 
 void Label::SizeToFit(int max_width) {
-  DCHECK(is_multi_line_);
+  DCHECK(multi_line_);
 
   std::vector<base::string16> lines;
-  base::SplitString(layout_text(), '\n', &lines);
+  base::SplitString(layout_text_, '\n', &lines);
 
   int label_width = 0;
   for (std::vector<base::string16>::const_iterator iter = lines.begin();
@@ -196,6 +205,10 @@ void Label::SizeToFit(int max_width) {
 
   SetBounds(x(), y(), label_width, 0);
   SizeToPreferredSize();
+}
+
+const base::string16& Label::GetLayoutTextForTesting() const {
+  return layout_text_;
 }
 
 gfx::Insets Label::GetInsets() const {
@@ -241,7 +254,7 @@ gfx::Size Label::GetMinimumSize() const {
 }
 
 int Label::GetHeightForWidth(int w) const {
-  if (!is_multi_line_)
+  if (!multi_line_)
     return View::GetHeightForWidth(w);
 
   w = std::max(0, w - GetInsets().width());
@@ -257,7 +270,7 @@ int Label::GetHeightForWidth(int w) const {
   int h = font_list_.GetHeight();
   const int flags = ComputeDrawStringFlags();
   gfx::Canvas::SizeStringInt(
-      layout_text(), font_list_, &w, &h, line_height_, flags);
+      layout_text_, font_list_, &w, &h, line_height_, flags);
   cached_heights_[cached_heights_cursor_] = gfx::Size(cache_width, h);
   cached_heights_cursor_ = (cached_heights_cursor_ + 1) % kCachedSizeLimit;
   return h + GetInsets().height();
@@ -268,18 +281,10 @@ const char* Label::GetClassName() const {
 }
 
 View* Label::GetTooltipHandlerForPoint(const gfx::Point& point) {
-  // Bail out if the label does not contain the point.
-  // Note that HitTestPoint() cannot be used here as it uses
-  // Label::HitTestRect() to determine if the point hits the label; and
-  // Label::HitTestRect() always fails. Instead, default HitTestRect()
-  // implementation should be used.
-  if (!View::HitTestRect(gfx::Rect(point, gfx::Size(1, 1))))
-    return NULL;
-
   if (tooltip_text_.empty() && !ShouldShowDefaultTooltip())
     return NULL;
 
-  return this;
+  return HitTestPoint(point) ? this : NULL;
 }
 
 bool Label::CanProcessEventsWithinSubtree() const {
@@ -287,28 +292,24 @@ bool Label::CanProcessEventsWithinSubtree() const {
   return false;
 }
 
-bool Label::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
-  DCHECK(tooltip);
+void Label::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_STATIC_TEXT;
+  state->AddStateFlag(ui::AX_STATE_READ_ONLY);
+  state->name = layout_text_;
+}
 
-  // If a tooltip has been explicitly set, use it.
+bool Label::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
   if (!tooltip_text_.empty()) {
     tooltip->assign(tooltip_text_);
     return true;
   }
 
-  // Show the full text if the text does not fit.
   if (ShouldShowDefaultTooltip()) {
-    *tooltip = layout_text();
+    *tooltip = layout_text_;
     return true;
   }
 
   return false;
-}
-
-void Label::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_STATIC_TEXT;
-  state->AddStateFlag(ui::AX_STATE_READ_ONLY);
-  state->name = layout_text();
 }
 
 void Label::PaintText(gfx::Canvas* canvas,
@@ -336,16 +337,16 @@ gfx::Size Label::GetTextSize() const {
     // while adding NO_ELLIPSIS to the flags works on Windows for forcing
     // SizeStringInt() to calculate the desired width, it doesn't seem to work
     // on Linux.
-    int w = is_multi_line_ ?
+    int w = multi_line_ ?
         GetAvailableRect().width() : std::numeric_limits<int>::max();
     int h = font_list_.GetHeight();
     // For single-line strings, ignore the available width and calculate how
     // wide the text wants to be.
     int flags = ComputeDrawStringFlags();
-    if (!is_multi_line_)
+    if (!multi_line_)
       flags |= gfx::Canvas::NO_ELLIPSIS;
     gfx::Canvas::SizeStringInt(
-        layout_text(), font_list_, &w, &h, line_height_, flags);
+        layout_text_, font_list_, &w, &h, line_height_, flags);
     text_size_.SetSize(w, h);
     const gfx::Insets shadow_margin = -gfx::ShadowValue::GetMargin(shadows_);
     text_size_.Enlarge(shadow_margin.width(), shadow_margin.height());
@@ -356,7 +357,7 @@ gfx::Size Label::GetTextSize() const {
 }
 
 void Label::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  text_size_valid_ &= !is_multi_line_;
+  text_size_valid_ &= !multi_line_;
 }
 
 void Label::OnPaint(gfx::Canvas* canvas) {
@@ -385,12 +386,11 @@ void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   UpdateColorsFromTheme(ui::NativeTheme::instance());
   horizontal_alignment_ = gfx::ALIGN_CENTER;
   line_height_ = 0;
-  is_multi_line_ = false;
-  is_obscured_ = false;
+  multi_line_ = false;
+  obscured_ = false;
   allow_character_break_ = false;
   elide_behavior_ = gfx::ELIDE_TAIL;
   collapse_when_hidden_ = false;
-  directionality_mode_ = gfx::DIRECTIONALITY_FROM_UI;
   cached_heights_.resize(kCachedSizeLimit);
   ResetCachedSize();
 
@@ -439,18 +439,12 @@ int Label::ComputeDrawStringFlags() const {
   if (SkColorGetA(background_color_) != 0xFF || !subpixel_rendering_enabled_)
     flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
 
-  if (directionality_mode_ == gfx::DIRECTIONALITY_FORCE_LTR) {
-    flags |= gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
-  } else if (directionality_mode_ == gfx::DIRECTIONALITY_FORCE_RTL) {
+  base::i18n::TextDirection direction =
+      base::i18n::GetFirstStrongCharacterDirection(layout_text_);
+  if (direction == base::i18n::RIGHT_TO_LEFT)
     flags |= gfx::Canvas::FORCE_RTL_DIRECTIONALITY;
-  } else if (directionality_mode_ == gfx::DIRECTIONALITY_FROM_TEXT) {
-    base::i18n::TextDirection direction =
-        base::i18n::GetFirstStrongCharacterDirection(layout_text());
-    if (direction == base::i18n::RIGHT_TO_LEFT)
-      flags |= gfx::Canvas::FORCE_RTL_DIRECTIONALITY;
-    else
-      flags |= gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
-  }
+  else
+    flags |= gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
 
   switch (GetHorizontalAlignment()) {
     case gfx::ALIGN_LEFT:
@@ -467,7 +461,7 @@ int Label::ComputeDrawStringFlags() const {
       break;
   }
 
-  if (!is_multi_line_)
+  if (!multi_line_)
     return flags;
 
   flags |= gfx::Canvas::MULTI_LINE;
@@ -498,17 +492,17 @@ void Label::CalculateDrawStringParams(base::string16* paint_text,
 
   const bool forbid_ellipsis = elide_behavior_ == gfx::NO_ELIDE ||
                                elide_behavior_ == gfx::FADE_TAIL;
-  if (is_multi_line_ || forbid_ellipsis) {
-    *paint_text = layout_text();
+  if (multi_line_ || forbid_ellipsis) {
+    *paint_text = layout_text_;
   } else {
-    *paint_text = gfx::ElideText(layout_text(), font_list_,
+    *paint_text = gfx::ElideText(layout_text_, font_list_,
                                  GetAvailableRect().width(), elide_behavior_);
   }
 
   *text_bounds = GetTextBounds();
   *flags = ComputeDrawStringFlags();
   // TODO(msw): Elide multi-line text with ElideRectangleText instead.
-  if (!is_multi_line_ || forbid_ellipsis)
+  if (!multi_line_ || forbid_ellipsis)
     *flags |= gfx::Canvas::NO_ELLIPSIS;
 }
 
@@ -536,9 +530,10 @@ void Label::ResetCachedSize() {
 }
 
 bool Label::ShouldShowDefaultTooltip() const {
-  return !is_multi_line_ && !is_obscured_ &&
-         gfx::GetStringWidth(layout_text(), font_list_) >
-             GetAvailableRect().width();
+  const gfx::Size text_size = GetTextSize();
+  const gfx::Size size = GetContentsBounds().size();
+  return !obscured() && (text_size.width() > size.width() ||
+                         text_size.height() > size.height());
 }
 
 }  // namespace views

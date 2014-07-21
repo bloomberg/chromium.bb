@@ -8,7 +8,6 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -93,7 +92,7 @@ void LabelExample::CreateExampleView(View* container) {
   gfx::ShadowValues shadows(1, gfx::ShadowValue(gfx::Point(), 1, SK_ColorRED));
   gfx::ShadowValue shadow(gfx::Point(2, 2), 0, SK_ColorGRAY);
   shadows.push_back(shadow);
-  label->set_shadows(shadows);
+  label->SetShadows(shadows);
   container->AddChildView(label);
 
   label = new PreferredSizeLabel();
@@ -120,7 +119,7 @@ void LabelExample::ButtonPressed(Button* button, const ui::Event& event) {
       shadows.push_back(gfx::ShadowValue(gfx::Point(), 1, SK_ColorRED));
       shadows.push_back(gfx::ShadowValue(gfx::Point(2, 2), 0, SK_ColorGRAY));
     }
-    custom_label_->set_shadows(shadows);
+    custom_label_->SetShadows(shadows);
   }
   custom_label_->parent()->parent()->Layout();
   custom_label_->SchedulePaint();

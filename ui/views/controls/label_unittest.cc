@@ -96,24 +96,13 @@ TEST_F(LabelTest, AlignmentProperty) {
   EXPECT_EQ(was_rtl, base::i18n::IsRTL());
 }
 
-TEST_F(LabelTest, DirectionalityModeProperty) {
-  Label label;
-  EXPECT_EQ(gfx::DIRECTIONALITY_FROM_UI, label.directionality_mode());
-
-  label.set_directionality_mode(gfx::DIRECTIONALITY_FROM_TEXT);
-  EXPECT_EQ(gfx::DIRECTIONALITY_FROM_TEXT, label.directionality_mode());
-
-  label.set_directionality_mode(gfx::DIRECTIONALITY_FROM_UI);
-  EXPECT_EQ(gfx::DIRECTIONALITY_FROM_UI, label.directionality_mode());
-}
-
 TEST_F(LabelTest, MultiLineProperty) {
   Label label;
-  EXPECT_FALSE(label.is_multi_line());
+  EXPECT_FALSE(label.multi_line());
   label.SetMultiLine(true);
-  EXPECT_TRUE(label.is_multi_line());
+  EXPECT_TRUE(label.multi_line());
   label.SetMultiLine(false);
-  EXPECT_FALSE(label.is_multi_line());
+  EXPECT_FALSE(label.multi_line());
 }
 
 TEST_F(LabelTest, ObscuredProperty) {
@@ -121,23 +110,24 @@ TEST_F(LabelTest, ObscuredProperty) {
   base::string16 test_text(ASCIIToUTF16("Password!"));
   label.SetText(test_text);
 
-  // Should be false by default...
-  EXPECT_FALSE(label.is_obscured());
-  EXPECT_EQ(test_text, label.layout_text());
+  // The text should be unobscured by default.
+  EXPECT_FALSE(label.obscured());
+  EXPECT_EQ(test_text, label.GetLayoutTextForTesting());
   EXPECT_EQ(test_text, label.text());
 
   label.SetObscured(true);
-  EXPECT_TRUE(label.is_obscured());
-  EXPECT_EQ(ASCIIToUTF16("*********"), label.layout_text());
+  EXPECT_TRUE(label.obscured());
+  EXPECT_EQ(ASCIIToUTF16("*********"), label.GetLayoutTextForTesting());
   EXPECT_EQ(test_text, label.text());
 
   label.SetText(test_text + test_text);
-  EXPECT_EQ(ASCIIToUTF16("******************"), label.layout_text());
+  EXPECT_EQ(ASCIIToUTF16("******************"),
+            label.GetLayoutTextForTesting());
   EXPECT_EQ(test_text + test_text, label.text());
 
   label.SetObscured(false);
-  EXPECT_FALSE(label.is_obscured());
-  EXPECT_EQ(test_text + test_text, label.layout_text());
+  EXPECT_FALSE(label.obscured());
+  EXPECT_EQ(test_text + test_text, label.GetLayoutTextForTesting());
   EXPECT_EQ(test_text + test_text, label.text());
 }
 
@@ -149,7 +139,7 @@ TEST_F(LabelTest, ObscuredSurrogatePair) {
   label.SetText(test_text);
 
   label.SetObscured(true);
-  EXPECT_EQ(ASCIIToUTF16("*"), label.layout_text());
+  EXPECT_EQ(ASCIIToUTF16("*"), label.GetLayoutTextForTesting());
   EXPECT_EQ(test_text, label.text());
 }
 
@@ -183,7 +173,7 @@ TEST_F(LabelTest, TooltipProperty) {
   label.SetTooltipText(base::string16());
 
   // Shrink the bounds and the tooltip should come back.
-  label.SetBounds(0, 0, 1, 1);
+  label.SetBounds(0, 0, 10, 10);
   EXPECT_TRUE(label.GetTooltipText(gfx::Point(), &tooltip));
 
   // Make the label obscured and there is no tooltip.
@@ -194,8 +184,11 @@ TEST_F(LabelTest, TooltipProperty) {
   label.SetObscured(false);
   EXPECT_TRUE(label.GetTooltipText(gfx::Point(), &tooltip));
 
-  // Make the label multiline and there is no tooltip.
+  // Making the label multiline shouldn't eliminate the tooltip.
   label.SetMultiLine(true);
+  EXPECT_TRUE(label.GetTooltipText(gfx::Point(), &tooltip));
+  // Expanding the multiline label bounds should eliminate the tooltip.
+  label.SetBounds(0, 0, 1000, 1000);
   EXPECT_FALSE(label.GetTooltipText(gfx::Point(), &tooltip));
 
   // Verify that setting the tooltip still shows it.
@@ -217,27 +210,31 @@ TEST_F(LabelTest, Accessibility) {
   EXPECT_TRUE(state.HasStateFlag(ui::AX_STATE_READ_ONLY));
 }
 
+TEST_F(LabelTest, EmptyLabelSizing) {
+  Label label;
+  const gfx::Size expected_size(0, gfx::FontList().GetHeight());
+  EXPECT_EQ(expected_size, label.GetPreferredSize());
+  label.SetMultiLine(!label.multi_line());
+  EXPECT_EQ(expected_size, label.GetPreferredSize());
+}
+
 TEST_F(LabelTest, SingleLineSizing) {
   Label label;
   label.SetText(ASCIIToUTF16("A not so random string in one line."));
+  const gfx::Size size = label.GetPreferredSize();
+  EXPECT_GT(size.height(), kMinTextDimension);
+  EXPECT_GT(size.width(), kMinTextDimension);
 
-  // GetPreferredSize
-  gfx::Size required_size = label.GetPreferredSize();
-  EXPECT_GT(required_size.height(), kMinTextDimension);
-  EXPECT_GT(required_size.width(), kMinTextDimension);
+  // Setting a size smaller than preferred should not change the preferred size.
+  label.SetSize(gfx::Size(size.width() / 2, size.height() / 2));
+  EXPECT_EQ(size, label.GetPreferredSize());
 
-  // Test everything with borders.
-  gfx::Insets border(10, 20, 30, 40);
+  const gfx::Insets border(10, 20, 30, 40);
   label.SetBorder(Border::CreateEmptyBorder(
       border.top(), border.left(), border.bottom(), border.right()));
-
-  // GetPreferredSize and borders.
-  label.SetBounds(0, 0, 0, 0);
-  gfx::Size required_size_with_border = label.GetPreferredSize();
-  EXPECT_EQ(required_size_with_border.height(),
-            required_size.height() + border.height());
-  EXPECT_EQ(required_size_with_border.width(),
-            required_size.width() + border.width());
+  const gfx::Size size_with_border = label.GetPreferredSize();
+  EXPECT_EQ(size_with_border.height(), size.height() + border.height());
+  EXPECT_EQ(size_with_border.width(), size.width() + border.width());
 }
 
 TEST_F(LabelTest, MultilineSmallAvailableWidthSizing) {
@@ -337,7 +334,6 @@ TEST_F(LabelTest, MultiLineSizing) {
 
 TEST_F(LabelTest, DirectionalityFromText) {
   Label label;
-  label.set_directionality_mode(gfx::DIRECTIONALITY_FROM_TEXT);
   label.SetBounds(0, 0, 1000, 1000);
   base::string16 paint_text;
   gfx::Rect text_bounds;
@@ -361,8 +357,6 @@ TEST_F(LabelTest, DirectionalityFromText) {
 TEST_F(LabelTest, DrawSingleLineString) {
   Label label;
   label.SetFocusable(false);
-  // Force a directionality to simplify alignment value testing.
-  label.set_directionality_mode(gfx::DIRECTIONALITY_FORCE_LTR);
 
   label.SetText(ASCIIToUTF16("Here's a string with no returns."));
   gfx::Size required_size(label.GetPreferredSize());
@@ -486,8 +480,6 @@ TEST_F(LabelTest, DrawSingleLineString) {
 TEST_F(LabelTest, DrawMultiLineString) {
   Label label;
   label.SetFocusable(false);
-  // Force a directionality to simplify alignment value testing.
-  label.set_directionality_mode(gfx::DIRECTIONALITY_FORCE_LTR);
   // Set a background color to prevent gfx::Canvas::NO_SUBPIXEL_RENDERING flags.
   label.SetBackgroundColor(SK_ColorWHITE);
 
@@ -872,9 +864,9 @@ TEST_F(LabelTest, DisableSubpixelRendering) {
   label.SetBackgroundColor(SK_ColorWHITE);
   const int flag = gfx::Canvas::NO_SUBPIXEL_RENDERING;
   EXPECT_EQ(0, label.ComputeDrawStringFlags() & flag);
-  label.set_subpixel_rendering_enabled(false);
+  label.SetSubpixelRenderingEnabled(false);
   EXPECT_EQ(flag, label.ComputeDrawStringFlags() & flag);
-  label.set_subpixel_rendering_enabled(true);
+  label.SetSubpixelRenderingEnabled(true);
   EXPECT_EQ(0, label.ComputeDrawStringFlags() & flag);
   // Text cannot be drawn with subpixel rendering on transparent backgrounds.
   label.SetBackgroundColor(SkColorSetARGB(64, 255, 255, 255));

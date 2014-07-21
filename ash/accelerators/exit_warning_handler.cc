@@ -63,7 +63,7 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
     label->SetEnabledColor(kTextColor);
     label->SetDisabledColor(kTextColor);
     label->SetAutoColorReadabilityEnabled(false);
-    label->set_subpixel_rendering_enabled(false);
+    label->SetSubpixelRenderingEnabled(false);
     AddChildView(label);
     SetLayoutManager(new views::FillLayout);
   }

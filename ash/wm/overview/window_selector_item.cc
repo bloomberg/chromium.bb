@@ -296,8 +296,10 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   window_label_view_ = new views::Label;
   window_label_view_->SetEnabledColor(kLabelColor);
   window_label_view_->SetBackgroundColor(kLabelBackground);
-  window_label_view_->set_shadows(gfx::ShadowValues(1, gfx::ShadowValue(
-      gfx::Point(0, kVerticalShadowOffset), kShadowBlur, kLabelShadow)));
+  window_label_view_->SetShadows(gfx::ShadowValues(
+      1,
+      gfx::ShadowValue(
+          gfx::Point(0, kVerticalShadowOffset), kShadowBlur, kLabelShadow)));
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   window_label_view_->SetFontList(
       bundle.GetFontList(ui::ResourceBundle::BoldFont));

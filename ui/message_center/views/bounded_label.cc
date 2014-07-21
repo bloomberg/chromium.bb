@@ -182,7 +182,8 @@ void InnerBoundedLabel::OnPaint(gfx::Canvas* canvas) {
       wrapped_text_lines_ = lines;
     }
     bounds.set_x(GetMirroredXForRect(bounds));
-    PaintText(canvas, wrapped_text_, bounds, GetTextFlags());
+    canvas->DrawStringRectWithFlags(
+        wrapped_text_, font_list(), enabled_color(), bounds, GetTextFlags());
   }
 }
 
@@ -198,20 +199,11 @@ int InnerBoundedLabel::GetTextFlags() {
   if (SkColorGetA(background_color()) != 0xFF)
     flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
 
-  if (directionality_mode() == gfx::DIRECTIONALITY_FORCE_LTR) {
-    flags |= gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
-  } else if (directionality_mode() == gfx::DIRECTIONALITY_FORCE_RTL) {
-    flags |= gfx::Canvas::FORCE_RTL_DIRECTIONALITY;
-  } else if (directionality_mode() == gfx::DIRECTIONALITY_FROM_TEXT) {
-    base::i18n::TextDirection direction =
-        base::i18n::GetFirstStrongCharacterDirection(text());
-    if (direction == base::i18n::RIGHT_TO_LEFT)
-      flags |= gfx::Canvas::FORCE_RTL_DIRECTIONALITY;
-    else
-      flags |= gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
-  }
-
-  return flags;
+  const base::i18n::TextDirection direction =
+      base::i18n::GetFirstStrongCharacterDirection(text());
+  if (direction == base::i18n::RIGHT_TO_LEFT)
+    return flags | gfx::Canvas::FORCE_RTL_DIRECTIONALITY;
+  return flags | gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
 }
 
 void InnerBoundedLabel::ClearCaches() {

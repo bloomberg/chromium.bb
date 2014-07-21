@@ -28,6 +28,21 @@ gfx::Range ClampRange(gfx::Range range, size_t max) {
   return range;
 }
 
+// A Label with a clamped preferred width to demonstrate wrapping.
+class PreferredSizeLabel : public Label {
+ public:
+  PreferredSizeLabel() : Label() {}
+  virtual ~PreferredSizeLabel() {}
+
+  // Label:
+  virtual gfx::Size GetPreferredSize() const OVERRIDE {
+    return gfx::Size(50, Label::GetPreferredSize().height());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PreferredSizeLabel);
+};
+
 }  // namespace
 
 // A simple View that hosts a RenderText object.
@@ -119,7 +134,7 @@ void MultilineExample::CreateExampleView(View* container) {
   render_text_view_ = new RenderTextView();
   render_text_view_->SetText(kTestString);
 
-  label_ = new Label();
+  label_ = new PreferredSizeLabel();
   label_->SetText(kTestString);
   label_->SetMultiLine(true);
   label_->SetBorder(Border::CreateSolidBorder(2, SK_ColorCYAN));
@@ -162,11 +177,6 @@ void MultilineExample::ContentsChanged(Textfield* sender,
     label_->SetText(new_contents);
   container()->Layout();
   container()->SchedulePaint();
-}
-
-bool MultilineExample::HandleKeyEvent(Textfield* sender,
-                                      const ui::KeyEvent& key_event) {
-  return false;
 }
 
 void MultilineExample::ButtonPressed(Button* sender, const ui::Event& event) {

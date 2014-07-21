@@ -174,7 +174,6 @@ void MessageBoxView::Init(const InitParams& params) {
       // Avoid empty multi-line labels, which have a height of 0.
       message_label->SetMultiLine(!texts[i].empty());
       message_label->SetAllowCharacterBreak(true);
-      message_label->set_directionality_mode(gfx::DIRECTIONALITY_FROM_TEXT);
       message_label->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
       message_labels_.push_back(message_label);
     }

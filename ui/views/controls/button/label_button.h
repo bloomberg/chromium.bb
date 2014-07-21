@@ -65,9 +65,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   gfx::HorizontalAlignment GetHorizontalAlignment() const;
   void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
 
-  // Set the directionality mode used for the button text.
-  void SetDirectionalityMode(gfx::DirectionalityMode mode);
-
   // Call set_min_size(gfx::Size()) to clear the monotonically increasing size.
   void set_min_size(const gfx::Size& min_size) { min_size_ = min_size; }
   void set_max_size(const gfx::Size& max_size) { max_size_ = max_size; }
@@ -86,6 +83,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // View:
   virtual void SetBorder(scoped_ptr<Border> border) OVERRIDE;
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
+  virtual int GetHeightForWidth(int w) const OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 

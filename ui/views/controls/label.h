@@ -48,7 +48,7 @@ class VIEWS_EXPORT Label : public View {
   void SetAutoColorReadabilityEnabled(bool enabled);
 
   // Sets the color.  This will automatically force the color to be readable
-  // over the current background color.
+  // over the current background color, if auto color readability is enabled.
   virtual void SetEnabledColor(SkColor color);
   void SetDisabledColor(SkColor color);
 
@@ -60,31 +60,16 @@ class VIEWS_EXPORT Label : public View {
   SkColor background_color() const { return background_color_; }
 
   // Set drop shadows underneath the text.
-  void set_shadows(const gfx::ShadowValues& shadows) {
-    shadows_ = shadows;
-    text_size_valid_ = false;
-  }
+  void SetShadows(const gfx::ShadowValues& shadows);
   const gfx::ShadowValues& shadows() const { return shadows_; }
 
   // Sets whether subpixel rendering is used; the default is true, but this
   // feature also requires an opaque background color.
-  void set_subpixel_rendering_enabled(bool subpixel_rendering_enabled) {
-    subpixel_rendering_enabled_ = subpixel_rendering_enabled;
-  }
+  void SetSubpixelRenderingEnabled(bool subpixel_rendering_enabled);
 
   // Sets the horizontal alignment; the argument value is mirrored in RTL UI.
   void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
   gfx::HorizontalAlignment GetHorizontalAlignment() const;
-
-  // Sets the directionality mode. The default value is DIRECTIONALITY_FROM_UI,
-  // which should be suitable for most text originating from UI string assets.
-  // Most text originating from web content should use DIRECTIONALITY_FROM_TEXT.
-  void set_directionality_mode(gfx::DirectionalityMode mode) {
-    directionality_mode_ = mode;
-  }
-  gfx::DirectionalityMode directionality_mode() const {
-    return directionality_mode_;
-  }
 
   // Get or set the distance in pixels between baselines of multi-line text.
   // Default is 0, indicating the distance between lines should be the standard
@@ -93,19 +78,15 @@ class VIEWS_EXPORT Label : public View {
   void SetLineHeight(int height);
 
   // Get or set if the label text can wrap on multiple lines; default is false.
-  bool is_multi_line() const { return is_multi_line_; }
+  bool multi_line() const { return multi_line_; }
   void SetMultiLine(bool multi_line);
 
   // Get or set if the label text should be obscured before rendering (e.g.
   // should "Password!" display as "*********"); default is false.
-  bool is_obscured() const { return is_obscured_; }
+  bool obscured() const { return obscured_; }
   void SetObscured(bool obscured);
 
-  // Get the text as displayed to the user, respecting the 'obscured' flag.
-  const base::string16& layout_text() const { return layout_text_; }
-
-  // Sets whether the label text can be split on words.
-  // Default is false. This only works when is_multi_line is true.
+  // Sets whether multi-line text can wrap mid-word; the default is false.
   void SetAllowCharacterBreak(bool allow_character_break);
 
   // Sets the eliding or fading behavior, applied as necessary. The default is
@@ -126,48 +107,37 @@ class VIEWS_EXPORT Label : public View {
   // wrapped).  If 0, no maximum width is enforced.
   void SizeToFit(int max_width);
 
-  // Gets/sets the flag to determine whether the label should be collapsed when
-  // it's hidden (not visible). If this flag is true, the label will return a
-  // preferred size of (0, 0) when it's not visible.
+  // Sets whether the preferred size is empty when the label is not visible.
   void set_collapse_when_hidden(bool value) { collapse_when_hidden_ = value; }
-  bool collapse_when_hidden() const { return collapse_when_hidden_; }
+
+  // Get the text as displayed to the user, respecting the obscured flag.
+  const base::string16& GetLayoutTextForTesting() const;
 
   // View:
   virtual gfx::Insets GetInsets() const OVERRIDE;
   virtual int GetBaseline() const OVERRIDE;
-  // Overridden to compute the size required to display this label.
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  // Returns the width of an ellipsis if the label is non-empty, or 0 otherwise.
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  // Returns the height necessary to display this label with the provided width.
-  // This method is used to layout multi-line labels. It is equivalent to
-  // GetPreferredSize().height() if the receiver is not multi-line.
   virtual int GetHeightForWidth(int w) const OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual View* GetTooltipHandlerForPoint(const gfx::Point& point) OVERRIDE;
   virtual bool CanProcessEventsWithinSubtree() const OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  // Gets the tooltip text for labels that are wider than their bounds, except
-  // when the label is multiline, in which case it just returns false (no
-  // tooltip).  If a custom tooltip has been specified with SetTooltipText()
-  // it is returned instead.
   virtual bool GetTooltipText(const gfx::Point& p,
                               base::string16* tooltip) const OVERRIDE;
 
  protected:
-  // Called by Paint to paint the text.  Override this to change how
-  // text is painted.
-  virtual void PaintText(gfx::Canvas* canvas,
-                         const base::string16& text,
-                         const gfx::Rect& text_bounds,
-                         int flags);
+  // Called by Paint to paint the text.
+  void PaintText(gfx::Canvas* canvas,
+                 const base::string16& text,
+                 const gfx::Rect& text_bounds,
+                 int flags);
 
   virtual gfx::Size GetTextSize() const;
 
   SkColor disabled_color() const { return actual_disabled_color_; }
 
-  // Overridden from View:
-  // Overridden to dirty our text bounds if we're multi-line.
+  // View:
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
@@ -230,17 +200,14 @@ class VIEWS_EXPORT Label : public View {
   mutable gfx::Size text_size_;
   mutable bool text_size_valid_;
   int line_height_;
-  bool is_multi_line_;
-  bool is_obscured_;
+  bool multi_line_;
+  bool obscured_;
   bool allow_character_break_;
   gfx::ElideBehavior elide_behavior_;
   gfx::HorizontalAlignment horizontal_alignment_;
   base::string16 tooltip_text_;
   // Whether to collapse the label when it's not visible.
   bool collapse_when_hidden_;
-  // Controls whether the directionality is auto-detected based on first strong
-  // directionality character or is determined by the application UI's locale.
-  gfx::DirectionalityMode directionality_mode_;
   gfx::ShadowValues shadows_;
 
   // The cached heights to avoid recalculation in GetHeightForWidth().

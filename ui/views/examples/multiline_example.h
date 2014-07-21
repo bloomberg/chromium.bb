@@ -37,8 +37,6 @@ class VIEWS_EXAMPLES_EXPORT MultilineExample : public ExampleBase,
   // TextfieldController:
   virtual void ContentsChanged(Textfield* sender,
                                const base::string16& new_contents) OVERRIDE;
-  virtual bool HandleKeyEvent(Textfield* sender,
-                              const ui::KeyEvent& key_event) OVERRIDE;
 
   RenderTextView* render_text_view_;
   Label* label_;

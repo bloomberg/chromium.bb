@@ -70,7 +70,7 @@ StickyKeyOverlayLabel::StickyKeyOverlayLabel(const std::string& key_name)
   SetFocusable(false);
   SetEnabledColor(SkColorSetARGB(0x80, 0xFF, 0xFF, 0xFF));
   SetDisabledColor(SkColorSetARGB(0x80, 0xFF, 0xFF, 0xFF));
-  set_subpixel_rendering_enabled(false);
+  SetSubpixelRenderingEnabled(false);
 }
 
 StickyKeyOverlayLabel::~StickyKeyOverlayLabel() {

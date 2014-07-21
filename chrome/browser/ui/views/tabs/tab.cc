@@ -435,7 +435,6 @@ Tab::Tab(TabController* controller)
 
   set_id(VIEW_ID_TAB);
 
-  title_->set_directionality_mode(gfx::DIRECTIONALITY_FROM_TEXT);
   title_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
   title_->SetElideBehavior(gfx::FADE_TAIL);
   title_->SetAutoColorReadabilityEnabled(false);

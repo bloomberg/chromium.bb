@@ -35,7 +35,7 @@ void BlueButton::ResetColorsFromNativeTheme() {
     SetTextColor(STATE_DISABLED, GetNativeTheme()->
         GetSystemColor(ui::NativeTheme::kColorId_BlueButtonDisabledColor));
 
-    label()->set_shadows(gfx::ShadowValues(
+    label()->SetShadows(gfx::ShadowValues(
         1,
         gfx::ShadowValue(
             gfx::Point(0, 1),

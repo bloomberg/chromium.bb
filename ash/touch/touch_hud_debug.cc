@@ -352,8 +352,8 @@ TouchHudDebug::TouchHudDebug(aura::Window* initial_root)
   for (int i = 0; i < kMaxTouchPoints; ++i) {
     touch_labels_[i] = new views::Label;
     touch_labels_[i]->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
-    touch_labels_[i]->set_shadows(gfx::ShadowValues(1,
-        gfx::ShadowValue(gfx::Point(1, 1), 0, SK_ColorWHITE)));
+    touch_labels_[i]->SetShadows(gfx::ShadowValues(
+        1, gfx::ShadowValue(gfx::Point(1, 1), 0, SK_ColorWHITE)));
     label_container_->AddChildView(touch_labels_[i]);
   }
   label_container_->SetX(0);

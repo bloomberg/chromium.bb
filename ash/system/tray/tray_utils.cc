@@ -17,8 +17,8 @@ void SetupLabelForTray(views::Label* label) {
   label->SetAutoColorReadabilityEnabled(false);
   label->SetEnabledColor(SK_ColorWHITE);
   label->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));
-  label->set_shadows(gfx::ShadowValues(1,
-      gfx::ShadowValue(gfx::Point(0, 1), 0, SkColorSetARGB(64, 0, 0, 0))));
+  label->SetShadows(gfx::ShadowValues(
+      1, gfx::ShadowValue(gfx::Point(0, 1), 0, SkColorSetARGB(64, 0, 0, 0))));
 }
 
 void SetTrayImageItemBorder(views::View* tray_view,

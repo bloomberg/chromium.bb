@@ -171,7 +171,6 @@ class BookmarkButtonBase : public views::LabelButton {
   BookmarkButtonBase(views::ButtonListener* listener,
                      const base::string16& title)
       : LabelButton(listener, title) {
-    SetDirectionalityMode(gfx::DIRECTIONALITY_FROM_TEXT);
     SetElideBehavior(kElideBehavior);
     show_animation_.reset(new gfx::SlideAnimation(this));
     if (!animations_enabled) {
@@ -282,7 +281,6 @@ class BookmarkFolderButton : public views::MenuButton {
                        views::MenuButtonListener* menu_button_listener,
                        bool show_menu_marker)
       : MenuButton(listener, title, menu_button_listener, show_menu_marker) {
-    SetDirectionalityMode(gfx::DIRECTIONALITY_FROM_TEXT);
     SetElideBehavior(kElideBehavior);
     show_animation_.reset(new gfx::SlideAnimation(this));
     if (!animations_enabled) {
