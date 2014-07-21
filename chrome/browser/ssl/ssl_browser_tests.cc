@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
@@ -39,14 +41,14 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_renderer_host.h"
-#include "crypto/nss_util.h"
-#include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
 #if defined(USE_NSS)
+#include "chrome/browser/net/nss_context.h"
+#include "net/base/crypto_module.h"
 #include "net/cert/nss_cert_database.h"
 #endif  // defined(USE_NSS)
 
@@ -717,27 +719,46 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndGoForward) {
 }
 
 #if defined(USE_NSS)
+class SSLUITestWithClientCert : public SSLUITest {
+  public:
+   SSLUITestWithClientCert() : cert_db_(NULL) {}
+
+   virtual void SetUpOnMainThread() OVERRIDE {
+     SSLUITest::SetUpOnMainThread();
+
+     base::RunLoop loop;
+     GetNSSCertDatabaseForProfile(
+         browser()->profile(),
+         base::Bind(&SSLUITestWithClientCert::DidGetCertDatabase,
+                    base::Unretained(this),
+                    &loop));
+     loop.Run();
+   }
+
+  protected:
+   void DidGetCertDatabase(base::RunLoop* loop, net::NSSCertDatabase* cert_db) {
+     cert_db_ = cert_db;
+     loop->Quit();
+   }
+
+   net::NSSCertDatabase* cert_db_;
+};
+
 // SSL client certificate tests are only enabled when using NSS for private key
 // storage, as only NSS can avoid modifying global machine state when testing.
 // See http://crbug.com/51132
 
 // Visit a HTTPS page which requires client cert authentication. The client
 // cert will be selected automatically, then a test which uses WebSocket runs.
-// Disabled:  http://crbug.com/159985
-IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestWSSClientCert) {
-  // Open a temporary NSS DB for testing.
-  crypto::ScopedTestNSSDB test_nssdb;
-  ASSERT_TRUE(test_nssdb.is_open());
-
-  // Import client cert for test. These interfaces require NSS.
-  net::NSSCertDatabase* cert_db = net::NSSCertDatabase::GetInstance();
-  scoped_refptr<net::CryptoModule> crypt_module = cert_db->GetPublicModule();
+IN_PROC_BROWSER_TEST_F(SSLUITestWithClientCert, TestWSSClientCert) {
+  // Import a client cert for test.
+  scoped_refptr<net::CryptoModule> crypt_module = cert_db_->GetPublicModule();
   std::string pkcs12_data;
   base::FilePath cert_path = net::GetTestCertsDirectory().Append(
       FILE_PATH_LITERAL("websocket_client_cert.p12"));
   EXPECT_TRUE(base::ReadFileToString(cert_path, &pkcs12_data));
   EXPECT_EQ(net::OK,
-            cert_db->ImportFromPKCS12(
+            cert_db_->ImportFromPKCS12(
                 crypt_module.get(), pkcs12_data, base::string16(), true, NULL));
 
   // Start WebSocket test server with TLS and client cert authentication.
