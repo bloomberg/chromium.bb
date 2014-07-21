@@ -31,6 +31,20 @@ bool WebTouchEventTraits::IsTouchSequenceStart(const WebTouchEvent& event) {
   return AllTouchPointsHaveState(event, blink::WebTouchPoint::StatePressed);
 }
 
+bool WebTouchEventTraits::IsTouchSequenceEnd(const WebTouchEvent& event) {
+  if (event.type != WebInputEvent::TouchEnd &&
+      event.type != WebInputEvent::TouchCancel)
+    return false;
+  if (!event.touchesLength)
+    return true;
+  for (size_t i = 0; i < event.touchesLength; ++i) {
+    if (event.touches[i].state != blink::WebTouchPoint::StateReleased &&
+        event.touches[i].state != blink::WebTouchPoint::StateCancelled)
+      return false;
+  }
+  return true;
+}
+
 void WebTouchEventTraits::ResetType(WebInputEvent::Type type,
                                     double timestamp_sec,
                                     WebTouchEvent* event) {

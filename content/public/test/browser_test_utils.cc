@@ -305,10 +305,10 @@ void SimulateTapAt(WebContents* web_contents, const gfx::Point& point) {
   touch.PressPoint(point.x(), point.y());
   RenderWidgetHostImpl* widget_host =
       RenderWidgetHostImpl::From(web_contents->GetRenderViewHost());
-  widget_host->ForwardTouchEvent(touch);
+  widget_host->ForwardTouchEventWithLatencyInfo(touch, ui::LatencyInfo());
   touch.timeStampSeconds += kTapDurationSeconds;
   touch.ReleasePoint(0);
-  widget_host->ForwardTouchEvent(touch);
+  widget_host->ForwardTouchEventWithLatencyInfo(touch, ui::LatencyInfo());
 }
 
 void SimulateKeyPress(WebContents* web_contents,

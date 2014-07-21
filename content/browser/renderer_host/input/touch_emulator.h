@@ -23,15 +23,22 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   void Enable(bool allow_pinch);
   void Disable();
 
-  // Returns |true| if the event was consumed.
+  // Note that TouchEmulator should always listen to touch events and their acks
+  // (even in disabled state) to track native stream presence.
+  bool enabled() const { return enabled_; }
+
+  // Returns |true| if the event was consumed. Consumed event should not
+  // propagate any further.
   // TODO(dgozman): maybe pass latency info together with events.
   bool HandleMouseEvent(const blink::WebMouseEvent& event);
   bool HandleMouseWheelEvent(const blink::WebMouseWheelEvent& event);
   bool HandleKeyboardEvent(const blink::WebKeyboardEvent& event);
+  bool HandleTouchEvent(const blink::WebTouchEvent& event);
 
   // Returns |true| if the event ack was consumed. Consumed ack should not
   // propagate any further.
-  bool HandleTouchEventAck(InputEventAckState ack_result);
+  bool HandleTouchEventAck(const blink::WebTouchEvent& event,
+                           InputEventAckState ack_result);
 
   // Cancel any touches, for example, when focus is lost.
   void CancelTouch();
@@ -59,6 +66,8 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   void PinchEnd(const blink::WebGestureEvent& event);
   void ScrollEnd(const blink::WebGestureEvent& event);
 
+  void ForwardTouchEventToClient();
+
   TouchEmulatorClient* const client_;
   ui::FilteredGestureProvider gesture_provider_;
 
@@ -83,7 +92,8 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   bool shift_pressed_;
 
   blink::WebTouchEvent touch_event_;
-  bool touch_active_;
+  int emulated_stream_active_sequence_count_;
+  int native_stream_active_sequence_count_;
 
   // Whether we should suppress next fling cancel. This may happen when we
   // did not send fling start in pinch mode.

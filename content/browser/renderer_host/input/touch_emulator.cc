@@ -47,7 +47,9 @@ TouchEmulator::TouchEmulator(TouchEmulatorClient* client)
     : client_(client),
       gesture_provider_(GetGestureProviderConfig(), this),
       enabled_(false),
-      allow_pinch_(false) {
+      allow_pinch_(false),
+      emulated_stream_active_sequence_count_(0),
+      native_stream_active_sequence_count_(0) {
   DCHECK(client_);
   ResetState();
 
@@ -85,7 +87,6 @@ void TouchEmulator::ResetState() {
   last_mouse_move_timestamp_ = 0;
   mouse_pressed_ = false;
   shift_pressed_ = false;
-  touch_active_ = false;
   suppress_next_fling_cancel_ = false;
   pinch_scale_ = 1.f;
   pinch_gesture_active_ = false;
@@ -155,7 +156,7 @@ bool TouchEmulator::HandleMouseEvent(const WebMouseEvent& mouse_event) {
 
   if (FillTouchEventAndPoint(mouse_event) &&
       gesture_provider_.OnTouchEvent(MotionEventWeb(touch_event_))) {
-    client_->ForwardTouchEvent(touch_event_);
+    ForwardTouchEventToClient();
   }
 
   // Do not pass mouse events to the renderer.
@@ -167,7 +168,7 @@ bool TouchEmulator::HandleMouseWheelEvent(const WebMouseWheelEvent& event) {
     return false;
 
   // Send mouse wheel for easy scrolling when there is no active touch.
-  return touch_active_;
+  return emulated_stream_active_sequence_count_ > 0;
 }
 
 bool TouchEmulator::HandleKeyboardEvent(const WebKeyboardEvent& event) {
@@ -193,11 +194,59 @@ bool TouchEmulator::HandleKeyboardEvent(const WebKeyboardEvent& event) {
   return false;
 }
 
-bool TouchEmulator::HandleTouchEventAck(InputEventAckState ack_result) {
-  const bool event_consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
-  gesture_provider_.OnTouchEventAck(event_consumed);
-  // TODO(dgozman): Disable emulation when real touch events are available.
-  return true;
+bool TouchEmulator::HandleTouchEvent(const blink::WebTouchEvent& event) {
+  // Block native event when emulated touch stream is active.
+  if (emulated_stream_active_sequence_count_)
+    return true;
+
+  bool is_sequence_start = WebTouchEventTraits::IsTouchSequenceStart(event);
+  // Do not allow middle-sequence event to pass through, if start was blocked.
+  if (!native_stream_active_sequence_count_ && !is_sequence_start)
+    return true;
+
+  if (is_sequence_start)
+    native_stream_active_sequence_count_++;
+  return false;
+}
+
+void TouchEmulator::ForwardTouchEventToClient() {
+  const bool event_consumed = true;
+  // Block emulated event when emulated native stream is active.
+  if (native_stream_active_sequence_count_) {
+    gesture_provider_.OnTouchEventAck(event_consumed);
+    return;
+  }
+
+  bool is_sequence_start =
+      WebTouchEventTraits::IsTouchSequenceStart(touch_event_);
+  // Do not allow middle-sequence event to pass through, if start was blocked.
+  if (!emulated_stream_active_sequence_count_ && !is_sequence_start) {
+    gesture_provider_.OnTouchEventAck(event_consumed);
+    return;
+  }
+
+  if (is_sequence_start)
+    emulated_stream_active_sequence_count_++;
+  client_->ForwardEmulatedTouchEvent(touch_event_);
+}
+
+bool TouchEmulator::HandleTouchEventAck(
+    const blink::WebTouchEvent& event, InputEventAckState ack_result) {
+  bool is_sequence_end = WebTouchEventTraits::IsTouchSequenceEnd(event);
+  if (emulated_stream_active_sequence_count_) {
+    if (is_sequence_end)
+      emulated_stream_active_sequence_count_--;
+
+    const bool event_consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
+    gesture_provider_.OnTouchEventAck(event_consumed);
+    return true;
+  }
+
+  // We may have not seen native touch sequence start (when created in the
+  // middle of a sequence), so don't decrement sequence count below zero.
+  if (is_sequence_end && native_stream_active_sequence_count_)
+    native_stream_active_sequence_count_--;
+  return false;
 }
 
 void TouchEmulator::OnGestureEvent(const ui::GestureEventData& gesture) {
@@ -267,16 +316,15 @@ void TouchEmulator::OnGestureEvent(const ui::GestureEventData& gesture) {
 }
 
 void TouchEmulator::CancelTouch() {
-  if (!touch_active_)
+  if (!emulated_stream_active_sequence_count_)
     return;
 
   WebTouchEventTraits::ResetTypeAndTouchStates(
       WebInputEvent::TouchCancel,
       (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF(),
       &touch_event_);
-  touch_active_ = false;
   if (gesture_provider_.OnTouchEvent(MotionEventWeb(touch_event_)))
-    client_->ForwardTouchEvent(touch_event_);
+    ForwardTouchEventToClient();
 }
 
 void TouchEmulator::UpdateCursor() {
@@ -352,14 +400,12 @@ bool TouchEmulator::FillTouchEventAndPoint(const WebMouseEvent& mouse_event) {
   switch (mouse_event.type) {
     case WebInputEvent::MouseDown:
       eventType = WebInputEvent::TouchStart;
-      touch_active_ = true;
       break;
     case WebInputEvent::MouseMove:
       eventType = WebInputEvent::TouchMove;
       break;
     case WebInputEvent::MouseUp:
       eventType = WebInputEvent::TouchEnd;
-      touch_active_ = false;
       break;
     default:
       eventType = WebInputEvent::Undefined;

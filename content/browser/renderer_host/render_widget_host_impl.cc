@@ -961,9 +961,13 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   input_router_->SendGestureEvent(gesture_with_latency);
 }
 
-void RenderWidgetHostImpl::ForwardTouchEvent(
+void RenderWidgetHostImpl::ForwardEmulatedTouchEvent(
       const blink::WebTouchEvent& touch_event) {
-  ForwardTouchEventWithLatencyInfo(touch_event, ui::LatencyInfo());
+  TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardEmulatedTouchEvent");
+  ui::LatencyInfo latency_info =
+      CreateRWHLatencyInfoIfNotExist(NULL, touch_event.type);
+  TouchEventWithLatencyInfo touch_with_latency(touch_event, latency_info);
+  input_router_->SendTouchEvent(touch_with_latency);
 }
 
 void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
@@ -977,6 +981,16 @@ void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
   ui::LatencyInfo latency_info =
       CreateRWHLatencyInfoIfNotExist(&ui_latency, touch_event.type);
   TouchEventWithLatencyInfo touch_with_latency(touch_event, latency_info);
+
+  if (touch_emulator_ &&
+      touch_emulator_->HandleTouchEvent(touch_with_latency.event)) {
+    if (view_) {
+      view_->ProcessAckedTouchEvent(
+          touch_with_latency, INPUT_EVENT_ACK_STATE_CONSUMED);
+    }
+    return;
+  }
+
   input_router_->SendTouchEvent(touch_with_latency);
 }
 
@@ -1856,8 +1870,10 @@ void RenderWidgetHostImpl::OnTouchEventAck(
   }
   ComputeTouchLatency(touch_event.latency);
 
-  if (touch_emulator_ && touch_emulator_->HandleTouchEventAck(ack_result))
+  if (touch_emulator_ &&
+      touch_emulator_->HandleTouchEventAck(event.event, ack_result)) {
     return;
+  }
 
   if (view_)
     view_->ProcessAckedTouchEvent(touch_event, ack_result);
@@ -1886,6 +1902,13 @@ bool RenderWidgetHostImpl::IgnoreInputEvents() const {
 }
 
 bool RenderWidgetHostImpl::ShouldForwardTouchEvent() const {
+  // It's important that the emulator sees a complete native touch stream,
+  // allowing it to perform touch filtering as appropriate.
+  // TODO(dgozman): Remove when touch stream forwarding issues resolved, see
+  // crbug.com/375940.
+  if (touch_emulator_ && touch_emulator_->enabled())
+    return true;
+
   return input_router_->ShouldForwardTouchEvent();
 }
 

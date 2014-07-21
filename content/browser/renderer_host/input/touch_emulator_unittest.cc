@@ -71,7 +71,7 @@ class TouchEmulatorTest : public testing::Test,
     forwarded_events_.push_back(event.type);
   }
 
-  virtual void ForwardTouchEvent(
+  virtual void ForwardEmulatedTouchEvent(
       const blink::WebTouchEvent& event) OVERRIDE {
     forwarded_events_.push_back(event.type);
     EXPECT_EQ(1U, event.touchesLength);
@@ -79,7 +79,8 @@ class TouchEmulatorTest : public testing::Test,
     EXPECT_EQ(last_mouse_y_, event.touches[0].position.y);
     int expectedCancelable = event.type != WebInputEvent::TouchCancel;
     EXPECT_EQ(expectedCancelable, event.cancelable);
-    emulator()->HandleTouchEventAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+    emulator()->HandleTouchEventAck(
+        event, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   }
 
   virtual void SetCursor(const WebCursor& cursor) OVERRIDE {}
@@ -181,6 +182,66 @@ class TouchEmulatorTest : public testing::Test,
     mouse_pressed_ = false;
   }
 
+  bool TouchStart(int x, int  y, bool ack) {
+    return SendTouchEvent(
+        WebInputEvent::TouchStart, WebTouchPoint::StatePressed, x, y, ack);
+  }
+
+  bool TouchMove(int x, int  y, bool ack) {
+    return SendTouchEvent(
+        WebInputEvent::TouchMove, WebTouchPoint::StateMoved, x, y, ack);
+  }
+
+  bool TouchEnd(int x, int  y, bool ack) {
+    return SendTouchEvent(
+        WebInputEvent::TouchEnd, WebTouchPoint::StateReleased, x, y, ack);
+  }
+
+  WebTouchEvent MakeTouchEvent(WebInputEvent::Type type,
+      WebTouchPoint::State state, int x, int y) {
+    WebTouchEvent event;
+    event.type = type;
+    event.timeStampSeconds = GetNextEventTimeSeconds();
+    event.touchesLength = 1;
+    event.touches[0].id = 0;
+    event.touches[0].state = state;
+    event.touches[0].position.x = x;
+    event.touches[0].position.y = y;
+    event.touches[0].screenPosition.x = x;
+    event.touches[0].screenPosition.y = y;
+    return event;
+  }
+
+  bool SendTouchEvent(WebInputEvent::Type type, WebTouchPoint::State state,
+      int x, int y, bool ack) {
+    WebTouchEvent event = MakeTouchEvent(type, state, x, y);
+    if (emulator()->HandleTouchEvent(event)) {
+      // Touch event is not forwarded.
+      return false;
+    }
+
+    if (ack) {
+      // Can't send ack if there are some pending acks.
+      DCHECK(!touch_events_to_ack_.size());
+
+      // Touch event is forwarded, ack should not be handled by emulator.
+      EXPECT_FALSE(emulator()->HandleTouchEventAck(
+          event, INPUT_EVENT_ACK_STATE_CONSUMED));
+    } else {
+      touch_events_to_ack_.push_back(event);
+    }
+    return true;
+  }
+
+  void AckOldestTouchEvent() {
+    DCHECK(touch_events_to_ack_.size());
+    WebTouchEvent event = touch_events_to_ack_[0];
+    touch_events_to_ack_.erase(touch_events_to_ack_.begin());
+    // Emulator should not handle ack from native stream.
+    EXPECT_FALSE(emulator()->HandleTouchEventAck(
+                 event, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS));
+  }
+
  private:
   scoped_ptr<TouchEmulator> emulator_;
   std::vector<WebInputEvent::Type> forwarded_events_;
@@ -193,6 +254,7 @@ class TouchEmulatorTest : public testing::Test,
   bool mouse_pressed_;
   int last_mouse_x_;
   int last_mouse_y_;
+  std::vector<WebTouchEvent> touch_events_to_ack_;
   base::MessageLoopForUI message_loop_;
 };
 
@@ -344,6 +406,88 @@ TEST_F(TouchEmulatorTest, MouseWheel) {
   EXPECT_TRUE(SendMouseWheelEvent());
   emulator()->Enable(true /* allow_pinch */);
   EXPECT_TRUE(SendMouseWheelEvent());
+}
+
+TEST_F(TouchEmulatorTest, MultipleTouchStreams) {
+  // Native stream should be blocked while emulated is active.
+  MouseMove(100, 200);
+  EXPECT_EQ("", ExpectedEvents());
+  MouseDown(100, 200);
+  EXPECT_EQ("TouchStart GestureTapDown", ExpectedEvents());
+  EXPECT_FALSE(TouchStart(10, 10, true));
+  EXPECT_FALSE(TouchMove(20, 20, true));
+  MouseUp(200, 200);
+  EXPECT_EQ(
+      "TouchMove GestureTapCancel GestureScrollBegin GestureScrollUpdate"
+      " TouchEnd GestureScrollEnd",
+      ExpectedEvents());
+  EXPECT_FALSE(TouchEnd(20, 20, true));
+
+  // Emulated stream should be blocked while native is active.
+  EXPECT_TRUE(TouchStart(10, 10, true));
+  EXPECT_TRUE(TouchMove(20, 20, true));
+  MouseDown(300, 200);
+  EXPECT_EQ("", ExpectedEvents());
+  // Re-enabling in the middle of a touch sequence should not affect this.
+  emulator()->Disable();
+  emulator()->Enable(true);
+  MouseDrag(300, 300);
+  EXPECT_EQ("", ExpectedEvents());
+  MouseUp(300, 300);
+  EXPECT_EQ("", ExpectedEvents());
+  EXPECT_TRUE(TouchEnd(20, 20, true));
+  EXPECT_EQ("", ExpectedEvents());
+
+  // Late ack for TouchEnd should not mess things up.
+  EXPECT_TRUE(TouchStart(10, 10, false));
+  EXPECT_TRUE(TouchMove(20, 20, false));
+  emulator()->Disable();
+  EXPECT_TRUE(TouchEnd(20, 20, false));
+  EXPECT_TRUE(TouchStart(30, 30, false));
+  AckOldestTouchEvent(); // TouchStart.
+  emulator()->Enable(true);
+  AckOldestTouchEvent(); // TouchMove.
+  AckOldestTouchEvent(); // TouchEnd.
+  MouseDown(300, 200);
+  EXPECT_EQ("", ExpectedEvents());
+  MouseDrag(300, 300);
+  EXPECT_EQ("", ExpectedEvents());
+  MouseUp(300, 300);
+  EXPECT_EQ("", ExpectedEvents());
+  AckOldestTouchEvent(); // TouchStart.
+  MouseDown(300, 200);
+  EXPECT_EQ("", ExpectedEvents());
+  EXPECT_TRUE(TouchMove(30, 40, true));
+  EXPECT_TRUE(TouchEnd(30, 40, true));
+  MouseUp(300, 200);
+  EXPECT_EQ("", ExpectedEvents());
+
+  // Emulation should be back to normal.
+  MouseDown(100, 200);
+  EXPECT_EQ("TouchStart GestureTapDown", ExpectedEvents());
+  MouseUp(200, 200);
+  EXPECT_EQ(
+      "TouchMove GestureTapCancel GestureScrollBegin GestureScrollUpdate"
+      " TouchEnd GestureScrollEnd",
+      ExpectedEvents());
+}
+
+TEST_F(TouchEmulatorTest, MultipleTouchStreamsLateEnable) {
+  // Enabling in the middle of native touch sequence should be handled.
+  // Send artificial late TouchEnd ack, like it is the first thing emulator
+  // does see.
+  WebTouchEvent event = MakeTouchEvent(
+      WebInputEvent::TouchEnd, WebTouchPoint::StateReleased, 10, 10);
+  EXPECT_FALSE(emulator()->HandleTouchEventAck(
+      event, INPUT_EVENT_ACK_STATE_CONSUMED));
+
+  MouseDown(100, 200);
+  EXPECT_EQ("TouchStart GestureTapDown", ExpectedEvents());
+  MouseUp(200, 200);
+  EXPECT_EQ(
+      "TouchMove GestureTapCancel GestureScrollBegin GestureScrollUpdate"
+      " TouchEnd GestureScrollEnd",
+      ExpectedEvents());
 }
 
 }  // namespace content

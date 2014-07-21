@@ -297,10 +297,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const blink::WebMouseWheelEvent& wheel_event,
       const ui::LatencyInfo& ui_latency);
 
-  // TouchEmulatorClient overrides.
+  // TouchEmulatorClient implementation.
   virtual void ForwardGestureEvent(
       const blink::WebGestureEvent& gesture_event) OVERRIDE;
-  virtual void ForwardTouchEvent(
+  virtual void ForwardEmulatedTouchEvent(
       const blink::WebTouchEvent& touch_event) OVERRIDE;
   virtual void SetCursor(const WebCursor& cursor) OVERRIDE;
 

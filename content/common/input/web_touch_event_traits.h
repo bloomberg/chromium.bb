@@ -22,6 +22,10 @@ class CONTENT_EXPORT WebTouchEventTraits {
   // touches to some active touches (the start of a new "touch sequence").
   static bool IsTouchSequenceStart(const blink::WebTouchEvent& event);
 
+  // Returns whether this event represents a transition from active
+  // touches to no active touches (the end of a "touch sequence").
+  static bool IsTouchSequenceEnd(const blink::WebTouchEvent& event);
+
   // Sets the type of |event| to |type|, resetting any other type-specific
   // properties and updating the timestamp.
   static void ResetType(blink::WebInputEvent::Type type,
