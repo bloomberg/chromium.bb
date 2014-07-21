@@ -58,6 +58,29 @@
 
 namespace WTF {
 
+#if OS(WIN)
+
+static bool shouldUseAddressHint()
+{
+#if CPU(32BIT)
+    // When running 32-bit processes under 32-bit Windows, the userspace is
+    // limited to 2 GB, and we risk fragmenting it badly if we allow further
+    // randomization via our address hint. On the other hand, if the process
+    // is running under WOW64, then it has at least 3 GB available (and likely
+    // 4 GB depending upon the OS version), and we want use the additional
+    // randomness.
+    static BOOL bIsWow64 = -1;
+    if (bIsWow64 == -1) {
+        IsWow64Process(GetCurrentProcess(), &bIsWow64);
+    }
+    return !!bIsWow64;
+#else // CPU(32BIT)
+    return true;
+#endif // CPU(32BIT)
+}
+
+#endif // OS(WIN)
+
 // This simple internal function wraps the OS-specific page allocation call so
 // that it behaves consistently: the address is a hint and if it cannot be used,
 // the allocation will be placed elsewhere.
@@ -65,9 +88,10 @@ static void* systemAllocPages(void* addr, size_t len)
 {
     ASSERT(!(len & kPageAllocationGranularityOffsetMask));
     ASSERT(!(reinterpret_cast<uintptr_t>(addr) & kPageAllocationGranularityOffsetMask));
-    void* ret;
+    void* ret = 0;
 #if OS(WIN)
-    ret = VirtualAlloc(addr, len, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    if (shouldUseAddressHint())
+        ret = VirtualAlloc(addr, len, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
     if (!ret)
         ret = VirtualAlloc(0, len, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 #else
