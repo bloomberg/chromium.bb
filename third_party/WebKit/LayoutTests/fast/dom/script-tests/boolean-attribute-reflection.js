@@ -7,6 +7,7 @@ var attributes = [
     [ "form", "noValidate" ],
     [ "frame", "noResize" ],
     [ "hr", "noShade" ],
+    [ "iframe", "allowFullscreen" ],
     [ "img", "isMap" ],
     [ "input", "autofocus" ],
     [ "input", "defaultChecked", "checked" ],

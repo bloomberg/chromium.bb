@@ -20,6 +20,7 @@
 
 interface HTMLIFrameElement : HTMLElement {
     [Reflect] attribute DOMString align;
+    [Reflect] attribute boolean allowFullscreen;
     [Reflect] attribute DOMString frameBorder;
     [Reflect] attribute DOMString height;
     [Reflect, URL] attribute DOMString longDesc;

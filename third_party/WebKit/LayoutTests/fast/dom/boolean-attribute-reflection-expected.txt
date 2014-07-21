@@ -27,6 +27,10 @@ PASS e = make('hr'); e.removeAttribute('noshade'); e.noShade is false
 PASS e = make('hr'); e.setAttribute('noshade', ''); e.noShade is true
 PASS e = make('hr'); e.setAttribute('noshade', 'x'); e.noShade = false; e.getAttribute('noshade') is null
 PASS e = make('hr'); e.setAttribute('noshade', 'x'); e.noShade = true; e.getAttribute('noshade') is ''
+PASS e = make('iframe'); e.removeAttribute('allowfullscreen'); e.allowFullscreen is false
+PASS e = make('iframe'); e.setAttribute('allowfullscreen', ''); e.allowFullscreen is true
+PASS e = make('iframe'); e.setAttribute('allowfullscreen', 'x'); e.allowFullscreen = false; e.getAttribute('allowfullscreen') is null
+PASS e = make('iframe'); e.setAttribute('allowfullscreen', 'x'); e.allowFullscreen = true; e.getAttribute('allowfullscreen') is ''
 PASS e = make('img'); e.removeAttribute('ismap'); e.isMap is false
 PASS e = make('img'); e.setAttribute('ismap', ''); e.isMap is true
 PASS e = make('img'); e.setAttribute('ismap', 'x'); e.isMap = false; e.getAttribute('ismap') is null
