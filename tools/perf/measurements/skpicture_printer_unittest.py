@@ -9,6 +9,7 @@ from measurements import skpicture_printer
 from telemetry.page import page_measurement_unittest_base
 from telemetry.unittest import options_for_unittests
 from telemetry.unittest import test
+from telemetry.value import failure
 
 
 class SkpicturePrinterUnitTest(
@@ -28,7 +29,8 @@ class SkpicturePrinterUnitTest(
 
     # Picture printing is not supported on all platforms.
     if results.failures:
-      assert 'not supported' in results.failures[0][1]
+      assert 'not supported' in failure.GetStringFromExcInfo(
+          results.failures[0].exc_info)
       return
 
     saved_picture_count = results.FindAllPageSpecificValuesNamed(
