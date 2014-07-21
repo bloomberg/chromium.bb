@@ -11,12 +11,12 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
-#include "chrome/browser/chromeos/login/users/avatar/default_user_images.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/audio/chromeos_sounds.h"
+#include "components/user_manager/user_image/default_user_images.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "net/base/data_url.h"
@@ -124,7 +124,7 @@ void UserImageScreenHandler::RegisterMessages() {
 
 void UserImageScreenHandler::SelectImage(int index) {
   if (page_is_ready())
-    CallJS("setSelectedImage", GetDefaultImageUrl(index));
+    CallJS("setSelectedImage", user_manager::GetDefaultImageUrl(index));
 }
 
 void UserImageScreenHandler::SendProfileImage(const std::string& data_url) {
@@ -142,14 +142,18 @@ void UserImageScreenHandler::OnProfileImageAbsent() {
 // TODO(antrim) : It looks more like parameters for "Init" rather than callback.
 void UserImageScreenHandler::HandleGetImages() {
   base::ListValue image_urls;
-  for (int i = kFirstDefaultImageIndex; i < kDefaultImagesCount; ++i) {
+  for (int i = user_manager::kFirstDefaultImageIndex;
+       i < user_manager::kDefaultImagesCount;
+       ++i) {
     scoped_ptr<base::DictionaryValue> image_data(new base::DictionaryValue);
-    image_data->SetString("url", GetDefaultImageUrl(i));
+    image_data->SetString("url", user_manager::GetDefaultImageUrl(i));
     image_data->SetString(
-        "author", l10n_util::GetStringUTF16(kDefaultImageAuthorIDs[i]));
+        "author",
+        l10n_util::GetStringUTF16(user_manager::kDefaultImageAuthorIDs[i]));
     image_data->SetString(
-        "website", l10n_util::GetStringUTF16(kDefaultImageWebsiteIDs[i]));
-    image_data->SetString("title", GetDefaultImageDescription(i));
+        "website",
+        l10n_util::GetStringUTF16(user_manager::kDefaultImageWebsiteIDs[i]));
+    image_data->SetString("title", user_manager::GetDefaultImageDescription(i));
     image_urls.Append(image_data.release());
   }
   CallJS("setDefaultImages", image_urls);

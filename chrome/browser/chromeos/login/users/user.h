@@ -18,8 +18,6 @@
 
 namespace chromeos {
 
-extern const int kDefaultImagesCount;
-
 // A class representing information about a previously logged in user.
 // Each user has a canonical email (username), returned by |email()| and
 // may have a different displayed email (in the raw form as entered by user),

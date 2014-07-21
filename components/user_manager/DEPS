@@ -1,5 +1,9 @@
 include_rules = [
+"+grit/ui_chromeos_resources.h",
+"+grit/ui_chromeos_strings.h",
 "+third_party/skia/include",
+"+ui/base/l10n",
+"+ui/base/resource",
 "+ui/gfx/codec",
 "+ui/gfx/image",
 "+url",
