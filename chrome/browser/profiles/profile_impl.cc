@@ -399,6 +399,7 @@ ProfileImpl::ProfileImpl(
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   predictor_ = chrome_browser_net::Predictor::CreatePredictor(
       !command_line->HasSwitch(switches::kDisablePreconnect),
+      !command_line->HasSwitch(switches::kDnsPrefetchDisable),
       g_browser_process->profile_manager() == NULL);
 
   // If we are creating the profile synchronously, then we should load the

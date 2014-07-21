@@ -40,7 +40,6 @@ NetPrefObserver::~NetPrefObserver() {
 void NetPrefObserver::ApplySettings() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  predictor_->EnablePredictor(*network_prediction_enabled_);
   if (prerender_manager_)
     prerender_manager_->set_enabled(*network_prediction_enabled_);
   if (spdy_disabled_.IsManaged())

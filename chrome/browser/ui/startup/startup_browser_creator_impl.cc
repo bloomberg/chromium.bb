@@ -330,10 +330,6 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
 
   if (command_line_.HasSwitch(switches::kDnsLogDetails))
     chrome_browser_net::EnablePredictorDetailedLog(true);
-  if (command_line_.HasSwitch(switches::kDnsPrefetchDisable) &&
-      profile->GetNetworkPredictor()) {
-    profile->GetNetworkPredictor()->EnablePredictor(false);
-  }
 
   if (AppListService::HandleLaunchCommandLine(command_line_, profile))
     return true;

@@ -96,10 +96,8 @@ ProfileImplIOData::Handle::~Handle() {
 #if defined(OS_CHROMEOS)
     save_prefs = !chromeos::ProfileHelper::IsSigninProfile(profile_);
 #endif
-    if (save_prefs) {
-      io_data_->predictor_->SaveStateForNextStartupAndTrim(
-          profile_->GetPrefs());
-    }
+    if (save_prefs)
+      io_data_->predictor_->SaveStateForNextStartupAndTrim();
     io_data_->predictor_->ShutdownOnUIThread();
   }
 
@@ -186,7 +184,8 @@ ProfileImplIOData::Handle::CreateMainRequestContextGetter(
       ->InitNetworkPredictor(profile_->GetPrefs(),
                              local_state,
                              io_thread,
-                             main_request_context_getter_.get());
+                             main_request_context_getter_.get(),
+                             io_data_);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,

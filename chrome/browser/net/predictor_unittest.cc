@@ -128,7 +128,7 @@ class PredictorTest : public testing::Test {
 //------------------------------------------------------------------------------
 
 TEST_F(PredictorTest, StartupShutdownTest) {
-  Predictor testing_master(true);
+  Predictor testing_master(true, true);
   testing_master.Shutdown();
 }
 
@@ -136,7 +136,7 @@ TEST_F(PredictorTest, StartupShutdownTest) {
 TEST_F(PredictorTest, ShutdownWhenResolutionIsPendingTest) {
   scoped_ptr<net::HostResolver> host_resolver(new net::HangingHostResolver());
 
-  Predictor testing_master(true);
+  Predictor testing_master(true, true);
   testing_master.SetHostResolver(host_resolver.get());
 
   GURL localhost("http://localhost:80");
@@ -160,7 +160,7 @@ TEST_F(PredictorTest, ShutdownWhenResolutionIsPendingTest) {
 }
 
 TEST_F(PredictorTest, SingleLookupTest) {
-  Predictor testing_master(true);
+  Predictor testing_master(true, true);
   testing_master.SetHostResolver(host_resolver_.get());
 
   GURL goog("http://www.google.com:80");
@@ -189,7 +189,7 @@ TEST_F(PredictorTest, SingleLookupTest) {
 TEST_F(PredictorTest, ConcurrentLookupTest) {
   host_resolver_->rules()->AddSimulatedFailure("*.notfound");
 
-  Predictor testing_master(true);
+  Predictor testing_master(true, true);
   testing_master.SetHostResolver(host_resolver_.get());
 
   GURL goog("http://www.google.com:80"),
@@ -236,7 +236,7 @@ TEST_F(PredictorTest, ConcurrentLookupTest) {
 TEST_F(PredictorTest, MassiveConcurrentLookupTest) {
   host_resolver_->rules()->AddSimulatedFailure("*.notfound");
 
-  Predictor testing_master(true);
+  Predictor testing_master(true, true);
   testing_master.SetHostResolver(host_resolver_.get());
 
   UrlList names;
@@ -360,7 +360,7 @@ static bool GetDataFromSerialization(const GURL& motivation,
 
 // Make sure nil referral lists really have no entries, and no latency listed.
 TEST_F(PredictorTest, ReferrerSerializationNilTest) {
-  Predictor predictor(true);
+  Predictor predictor(true, true);
   predictor.SetHostResolver(host_resolver_.get());
 
   scoped_ptr<base::ListValue> referral_list(NewEmptySerializationList());
@@ -377,7 +377,7 @@ TEST_F(PredictorTest, ReferrerSerializationNilTest) {
 // deserialized into the database, and can be extracted back out via
 // serialization without being changed.
 TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
-  Predictor predictor(true);
+  Predictor predictor(true, true);
   predictor.SetHostResolver(host_resolver_.get());
   const GURL motivation_url("http://www.google.com:91");
   const GURL subresource_url("http://icons.google.com:90");
@@ -404,7 +404,7 @@ TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
 // domains for referring URL, and that it sorts the results in the
 // correct order.
 TEST_F(PredictorTest, GetHtmlReferrerLists) {
-  Predictor predictor(true);
+  Predictor predictor(true, true);
   predictor.SetHostResolver(host_resolver_.get());
   const double kUseRate = 23.4;
   scoped_ptr<base::ListValue> referral_list(NewEmptySerializationList());
@@ -489,7 +489,7 @@ TEST_F(PredictorTest, GetHtmlReferrerLists) {
 
 // Make sure the Trim() functionality works as expected.
 TEST_F(PredictorTest, ReferrerSerializationTrimTest) {
-  Predictor predictor(true);
+  Predictor predictor(true, true);
   predictor.SetHostResolver(host_resolver_.get());
   GURL motivation_url("http://www.google.com:110");
 
@@ -678,7 +678,7 @@ TEST_F(PredictorTest, CanonicalizeUrl) {
 }
 
 TEST_F(PredictorTest, DiscardPredictorResults) {
-  Predictor predictor(true);
+  SimplePredictor predictor(true, true);
   predictor.SetHostResolver(host_resolver_.get());
   base::ListValue referral_list;
   predictor.SerializeReferrers(&referral_list);
@@ -721,7 +721,7 @@ TEST_F(PredictorTest, HSTSRedirect) {
   net::TransportSecurityState state;
   state.AddHSTS(kHttpUrl.host(), expiry, false);
 
-  Predictor predictor(true);
+  Predictor predictor(true, true);
   TestPredictorObserver observer;
   predictor.SetObserver(&observer);
   predictor.SetTransportSecurityState(&state);
@@ -746,7 +746,7 @@ TEST_F(PredictorTest, HSTSRedirectSubresources) {
   net::TransportSecurityState state;
   state.AddHSTS(kHttpUrl.host(), expiry, false);
 
-  Predictor predictor(true);
+  SimplePredictor predictor(true, true);
   TestPredictorObserver observer;
   predictor.SetObserver(&observer);
   predictor.SetTransportSecurityState(&state);
@@ -795,7 +795,7 @@ class TestProxyAdvisor : public ProxyAdvisor {
 };
 
 TEST_F(PredictorTest, SingleLookupTestWithDisabledAdvisor) {
-  Predictor testing_master(true);
+  Predictor testing_master(true, true);
   TestProxyAdvisor* advisor = new TestProxyAdvisor();
   testing_master.SetHostResolver(host_resolver_.get());
   testing_master.proxy_advisor_.reset(advisor);
@@ -819,7 +819,7 @@ TEST_F(PredictorTest, SingleLookupTestWithDisabledAdvisor) {
 }
 
 TEST_F(PredictorTest, SingleLookupTestWithEnabledAdvisor) {
-  Predictor testing_master(true);
+  Predictor testing_master(true, true);
   testing_master.SetHostResolver(host_resolver_.get());
   TestProxyAdvisor* advisor = new TestProxyAdvisor();
   testing_master.proxy_advisor_.reset(advisor);
@@ -848,7 +848,7 @@ TEST_F(PredictorTest, SingleLookupTestWithEnabledAdvisor) {
 }
 
 TEST_F(PredictorTest, TestSimplePreconnectAdvisor) {
-  Predictor testing_master(true);
+  Predictor testing_master(true, true);
   testing_master.SetHostResolver(host_resolver_.get());
   TestProxyAdvisor* advisor = new TestProxyAdvisor();
   testing_master.proxy_advisor_.reset(advisor);

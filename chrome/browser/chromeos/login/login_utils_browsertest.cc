@@ -39,6 +39,7 @@
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -211,6 +212,10 @@ class LoginUtilsTest : public testing::Test,
     command_line->AppendSwitchASCII(
         policy::switches::kDeviceManagementUrl, kDMServer);
 
+    // Disable prefetch so that Predictor can peacefully shut down without a
+    // running IO thread.
+    command_line->AppendSwitch(::switches::kDnsPrefetchDisable);
+
     // DBusThreadManager should be initialized before io_thread_state_, as
     // DBusThreadManager is used from chromeos::ProxyConfigServiceImpl,
     // which is part of io_thread_state_.
@@ -325,10 +330,8 @@ class LoginUtilsTest : public testing::Test,
     for (size_t i = 0; i < profiles.size(); ++i) {
       chrome_browser_net::Predictor* predictor =
           profiles[i]->GetNetworkPredictor();
-      if (predictor) {
-        predictor->EnablePredictorOnIOThread(false);
+      if (predictor)
         predictor->Shutdown();
-      }
     }
   }
 

@@ -28,6 +28,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/net/spdyproxy/proxy_advisor.h"
 #include "chrome/browser/net/timed_cache.h"
@@ -38,6 +39,7 @@
 class IOThread;
 class PrefService;
 class Profile;
+class ProfileIOData;
 
 namespace base {
 class ListValue;
@@ -115,13 +117,14 @@ class Predictor {
 
   // |max_concurrent| specifies how many concurrent (parallel) prefetches will
   // be performed. Host lookups will be issued through |host_resolver|.
-  explicit Predictor(bool preconnect_enabled);
+  explicit Predictor(bool preconnect_enabled, bool predictor_enabled);
 
   virtual ~Predictor();
 
   // This function is used to create a predictor. For testing, we can create
   // a version which does a simpler shutdown.
   static Predictor* CreatePredictor(bool preconnect_enabled,
+                                    bool predictor_enabled,
                                     bool simple_shutdown);
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -131,7 +134,8 @@ class Predictor {
   virtual void InitNetworkPredictor(PrefService* user_prefs,
                                     PrefService* local_state,
                                     IOThread* io_thread,
-                                    net::URLRequestContextGetter* getter);
+                                    net::URLRequestContextGetter* getter,
+                                    ProfileIOData* profile_io_data);
 
   // The Omnibox has proposed a given url to the user, and if it is a search
   // URL, then it also indicates that this is preconnectable (i.e., we could
@@ -212,7 +216,7 @@ class Predictor {
       const std::vector<GURL>& urls_to_prefetch,
       base::ListValue* referral_list,
       IOThread* io_thread,
-      bool predictor_enabled);
+      ProfileIOData* profile_io_data);
 
   // During startup, we learn what the first N urls visited are, and then
   // resolve the associated hosts ASAP during our next startup.
@@ -229,18 +233,12 @@ class Predictor {
 
   // May be called from either the IO or UI thread and will PostTask
   // to the IO thread if necessary.
-  void SaveStateForNextStartupAndTrim(PrefService* prefs);
+  void SaveStateForNextStartupAndTrim();
 
   void SaveDnsPrefetchStateForNextStartupAndTrim(
       base::ListValue* startup_list,
       base::ListValue* referral_list,
       base::WaitableEvent* completion);
-
-  // May be called from either the IO or UI thread and will PostTask
-  // to the IO thread if necessary.
-  void EnablePredictor(bool enable);
-
-  void EnablePredictorOnIOThread(bool enable);
 
   // May be called from either the IO or UI thread and will PostTask
   // to the IO thread if necessary.
@@ -295,12 +293,14 @@ class Predictor {
     observer_ = observer;
   }
 
-  // Flag setting to use preconnection instead of just DNS pre-fetching.
+  ProfileIOData* profile_io_data() const {
+    return profile_io_data_;
+  }
+
   bool preconnect_enabled() const {
     return preconnect_enabled_;
   }
 
-  // Flag setting for whether we are prefetching dns lookups.
   bool predictor_enabled() const {
     return predictor_enabled_;
   }
@@ -435,6 +435,11 @@ class Predictor {
                    UrlInfo::ResolutionMotivation motivation,
                    bool is_preconnect);
 
+  // There two members call the corresponding global functions in
+  // prediction_options.cc.
+  virtual bool CanPredictNetworkActionsUI();
+  virtual bool CanPredictNetworkActionsIO();
+
   // ------------- Start IO thread methods.
 
   // Perform actual resolution or preconnection to subresources now.  This is
@@ -508,8 +513,16 @@ class Predictor {
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   // Status of speculative DNS resolution and speculative TCP/IP connection
-  // feature.
-  bool predictor_enabled_;
+  // feature. This is false if and only if disabled by a command line switch.
+  const bool predictor_enabled_;
+
+  // This is set by InitNetworkPredictor and used for calling
+  // chrome_browser_net::CanPredictNetworkActionsUI.
+  PrefService* user_prefs_;
+
+  // This is set by InitNetworkPredictor and used for calling
+  // chrome_browser_net::CanPredictNetworkActionsIO.
+  ProfileIOData* profile_io_data_;
 
   // work_queue_ holds a list of names we need to look up.
   HostNameQueue work_queue_;
@@ -547,7 +560,8 @@ class Predictor {
 
   // Are we currently using preconnection, rather than just DNS resolution, for
   // subresources and omni-box search URLs.
-  bool preconnect_enabled_;
+  // This is false if and only if disabled by a command line switch.
+  const bool preconnect_enabled_;
 
   // Most recent suggestion from Omnibox provided via AnticipateOmniboxUrl().
   std::string last_omnibox_host_;
@@ -588,15 +602,20 @@ class Predictor {
 // This version of the predictor is used for testing.
 class SimplePredictor : public Predictor {
  public:
-  explicit SimplePredictor(bool preconnect_enabled)
-      : Predictor(preconnect_enabled) {}
+  explicit SimplePredictor(bool preconnect_enabled, bool predictor_enabled)
+      : Predictor(preconnect_enabled, predictor_enabled) {}
   virtual ~SimplePredictor() {}
   virtual void InitNetworkPredictor(
       PrefService* user_prefs,
       PrefService* local_state,
       IOThread* io_thread,
-      net::URLRequestContextGetter* getter) OVERRIDE;
+      net::URLRequestContextGetter* getter,
+      ProfileIOData* profile_io_data) OVERRIDE;
   virtual void ShutdownOnUIThread() OVERRIDE;
+ private:
+  // There member functions return True for unittests.
+  virtual bool CanPredictNetworkActionsUI() OVERRIDE;
+  virtual bool CanPredictNetworkActionsIO() OVERRIDE;
 };
 
 }  // namespace chrome_browser_net

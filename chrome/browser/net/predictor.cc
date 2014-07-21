@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/containers/mru_cache.h"
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/net/preconnect.h"
 #include "chrome/browser/net/spdyproxy/proxy_advisor.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
@@ -133,9 +135,11 @@ class Predictor::LookupRequest {
   DISALLOW_COPY_AND_ASSIGN(LookupRequest);
 };
 
-Predictor::Predictor(bool preconnect_enabled)
+Predictor::Predictor(bool preconnect_enabled, bool predictor_enabled)
     : url_request_context_getter_(NULL),
-      predictor_enabled_(true),
+      predictor_enabled_(predictor_enabled),
+      user_prefs_(NULL),
+      profile_io_data_(NULL),
       peak_pending_lookups_(0),
       shutdown_(false),
       max_concurrent_dns_lookups_(g_max_parallel_resolves),
@@ -160,10 +164,11 @@ Predictor::~Predictor() {
 
 // static
 Predictor* Predictor::CreatePredictor(bool preconnect_enabled,
+                                      bool predictor_enabled,
                                       bool simple_shutdown) {
   if (simple_shutdown)
-    return new SimplePredictor(preconnect_enabled);
-  return new Predictor(preconnect_enabled);
+    return new SimplePredictor(preconnect_enabled, predictor_enabled);
+  return new Predictor(preconnect_enabled, predictor_enabled);
 }
 
 void Predictor::RegisterProfilePrefs(
@@ -179,12 +184,11 @@ void Predictor::RegisterProfilePrefs(
 void Predictor::InitNetworkPredictor(PrefService* user_prefs,
                                      PrefService* local_state,
                                      IOThread* io_thread,
-                                     net::URLRequestContextGetter* getter) {
+                                     net::URLRequestContextGetter* getter,
+                                     ProfileIOData* profile_io_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  bool predictor_enabled =
-      user_prefs->GetBoolean(prefs::kNetworkPredictionEnabled);
-
+  user_prefs_ = user_prefs;
   url_request_context_getter_ = getter;
 
   // Gather the list of hostnames to prefetch on startup.
@@ -220,7 +224,7 @@ void Predictor::InitNetworkPredictor(PrefService* user_prefs,
           &Predictor::FinalizeInitializationOnIOThread,
           base::Unretained(this),
           urls, referral_list,
-          io_thread, predictor_enabled));
+          io_thread, profile_io_data));
 }
 
 void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
@@ -229,6 +233,9 @@ void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
     return;
   if (!url.is_valid() || !url.has_host())
     return;
+  if (!CanPredictNetworkActionsUI())
+    return;
+
   std::string host = url.HostNoBrackets();
   bool is_new_host_request = (host != last_omnibox_host_);
   last_omnibox_host_ = host;
@@ -236,7 +243,7 @@ void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
   UrlInfo::ResolutionMotivation motivation(UrlInfo::OMNIBOX_MOTIVATED);
   base::TimeTicks now = base::TimeTicks::Now();
 
-  if (preconnect_enabled()) {
+  if (preconnect_enabled_) {
     if (preconnectable && !is_new_host_request) {
       ++consecutive_omnibox_preconnect_count_;
       // The omnibox suggests a search URL (for which we can preconnect) after
@@ -299,9 +306,17 @@ void Predictor::PreconnectUrlAndSubresources(const GURL& url,
     const GURL& first_party_for_cookies) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!predictor_enabled_ || !preconnect_enabled() ||
+  if (!predictor_enabled_ || !preconnect_enabled_ ||
       !url.is_valid() || !url.has_host())
     return;
+
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    if (!CanPredictNetworkActionsUI())
+      return;
+  } else {
+    if (!CanPredictNetworkActionsIO())
+      return;
+  }
 
   UrlInfo::ResolutionMotivation motivation(UrlInfo::EARLY_LOAD_MOTIVATED);
   const int kConnectionsNeeded = 1;
@@ -458,7 +473,7 @@ void Predictor::Resolve(const GURL& url,
 void Predictor::LearnFromNavigation(const GURL& referring_url,
                                     const GURL& target_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!predictor_enabled_)
+  if (!predictor_enabled_ || !CanPredictNetworkActionsIO())
     return;
   DCHECK_EQ(referring_url, Predictor::CanonicalizeUrl(referring_url));
   DCHECK_NE(referring_url, GURL::EmptyGURL());
@@ -481,7 +496,8 @@ void Predictor::PredictorGetHtmlInfo(Predictor* predictor,
                  // We'd like the following no-cache... but it doesn't work.
                  // "<META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">"
                  "</head><body>");
-  if (predictor && predictor->predictor_enabled()) {
+  if (predictor && predictor->predictor_enabled() &&
+      predictor->CanPredictNetworkActionsIO()) {
     predictor->GetHtmlInfo(output);
   } else {
     output->append("DNS pre-resolution and TCP pre-connection is disabled.");
@@ -678,10 +694,10 @@ void Predictor::FinalizeInitializationOnIOThread(
     const UrlList& startup_urls,
     base::ListValue* referral_list,
     IOThread* io_thread,
-    bool predictor_enabled) {
+    ProfileIOData* profile_io_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  predictor_enabled_ = predictor_enabled;
+  profile_io_data_ = profile_io_data;
   initial_observer_.reset(new InitialObserver());
   host_resolver_ = io_thread->globals()->host_resolver.get();
 
@@ -711,7 +727,8 @@ void Predictor::FinalizeInitializationOnIOThread(
 
 void Predictor::LearnAboutInitialNavigation(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!predictor_enabled_ || NULL == initial_observer_.get() )
+  if (!predictor_enabled_ || NULL == initial_observer_.get() ||
+      !CanPredictNetworkActionsIO())
     return;
   initial_observer_->Append(url, this);
 }
@@ -741,6 +758,14 @@ void Predictor::DnsPrefetchMotivatedList(
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!predictor_enabled_)
     return;
+
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    if (!CanPredictNetworkActionsUI())
+      return;
+  } else {
+    if (!CanPredictNetworkActionsIO())
+      return;
+  }
 
   if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     ResolveList(urls, motivation);
@@ -772,14 +797,23 @@ static void SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread(
       startup_list, referral_list, completion);
 }
 
-void Predictor::SaveStateForNextStartupAndTrim(PrefService* prefs) {
+void Predictor::SaveStateForNextStartupAndTrim() {
   if (!predictor_enabled_)
     return;
 
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    if (!CanPredictNetworkActionsUI())
+      return;
+  } else {
+    if (!CanPredictNetworkActionsIO())
+      return;
+  }
+
   base::WaitableEvent completion(true, false);
 
-  ListPrefUpdate update_startup_list(prefs, prefs::kDnsPrefetchingStartupList);
-  ListPrefUpdate update_referral_list(prefs,
+  ListPrefUpdate update_startup_list(user_prefs_,
+                                     prefs::kDnsPrefetchingStartupList);
+  ListPrefUpdate update_referral_list(user_prefs_,
                                       prefs::kDnsPrefetchingHostReferralList);
   if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread(
@@ -823,26 +857,6 @@ void Predictor::SaveDnsPrefetchStateForNextStartupAndTrim(
   SerializeReferrers(referral_list);
 
   completion->Signal();
-}
-
-void Predictor::EnablePredictor(bool enable) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    EnablePredictorOnIOThread(enable);
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&Predictor::EnablePredictorOnIOThread,
-                   base::Unretained(this), enable));
-  }
-}
-
-void Predictor::EnablePredictorOnIOThread(bool enable) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  predictor_enabled_ = enable;
 }
 
 void Predictor::PreconnectUrl(const GURL& url,
@@ -892,6 +906,14 @@ void Predictor::PredictFrameSubresources(const GURL& url,
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!predictor_enabled_)
     return;
+
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    if (!CanPredictNetworkActionsUI())
+      return;
+  } else {
+    if (!CanPredictNetworkActionsIO())
+      return;
+  }
   DCHECK_EQ(url.GetWithEmptyPath(), url);
   // Add one pass through the message loop to allow current navigation to
   // proceed.
@@ -924,6 +946,14 @@ void Predictor::AdviseProxy(const GURL& url,
         base::Bind(&Predictor::AdviseProxyOnIOThread,
                    base::Unretained(this), url, motivation, is_preconnect));
   }
+}
+
+bool Predictor::CanPredictNetworkActionsUI() {
+  return chrome_browser_net::CanPredictNetworkActionsUI(user_prefs_);
+}
+
+bool Predictor::CanPredictNetworkActionsIO() {
+  return chrome_browser_net::CanPredictNetworkActionsIO(profile_io_data_);
 }
 
 enum SubresourceValue {
@@ -1306,12 +1336,16 @@ void SimplePredictor::InitNetworkPredictor(
     PrefService* user_prefs,
     PrefService* local_state,
     IOThread* io_thread,
-    net::URLRequestContextGetter* getter) {
+    net::URLRequestContextGetter* getter,
+    ProfileIOData* profile_io_data) {
   // Empty function for unittests.
 }
 
 void SimplePredictor::ShutdownOnUIThread() {
   SetShutdown(true);
 }
+
+bool SimplePredictor::CanPredictNetworkActionsUI() { return true; }
+bool SimplePredictor::CanPredictNetworkActionsIO() { return true; }
 
 }  // namespace chrome_browser_net
