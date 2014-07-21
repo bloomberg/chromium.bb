@@ -29,7 +29,6 @@
 namespace blink {
 
 class HTMLStyleElement;
-class StyleSheet;
 
 template<typename T> class EventSender;
 typedef EventSender<HTMLStyleElement> StyleEventSender;
