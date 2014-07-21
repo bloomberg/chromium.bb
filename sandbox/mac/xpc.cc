@@ -7,6 +7,8 @@
 namespace sandbox {
 
 bool InitializeXPC() {
+#if !defined(MAC_OS_X_VERSION_10_7) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
   std::vector<std::string> path_list;
   path_list.push_back("/usr/lib/system/libxpc.dylib");
 
@@ -15,6 +17,9 @@ bool InitializeXPC() {
   path_map[sandbox_mac::kModuleXpc_private_stubs] = path_list;
 
   return sandbox_mac::InitializeStubs(path_map);
+#else
+  return true;
+#endif
 }
 
 }  // namespace sandbox

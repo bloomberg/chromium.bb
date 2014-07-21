@@ -10,18 +10,19 @@
 #ifndef SANDBOX_MAC_XPC_H_
 #define SANDBOX_MAC_XPC_H_
 
+#include <AvailabilityMacros.h>
 #include <mach/mach.h>
 
 #include "sandbox/sandbox_export.h"
-
-// C++ library loader.
-#include "sandbox/mac/xpc_stubs.h"
 
 // Declares XPC object types. This includes <xpc/xpc.h> if available.
 #include "sandbox/mac/xpc_stubs_header.fragment"
 
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+
+// C++ library loader.
+#include "sandbox/mac/xpc_stubs.h"
 
 extern "C" {
 // Signatures for XPC public functions that are loaded by xpc_stubs.h.
