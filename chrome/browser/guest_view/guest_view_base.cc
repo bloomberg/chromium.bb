@@ -4,14 +4,12 @@
 
 #include "chrome/browser/guest_view/guest_view_base.h"
 
-#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/guest_view/app_view/app_view_guest.h"
 #include "chrome/browser/guest_view/guest_view_constants.h"
 #include "chrome/browser/guest_view/guest_view_manager.h"
 #include "chrome/browser/guest_view/web_view/web_view_guest.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -24,6 +22,11 @@
 using content::WebContents;
 
 namespace {
+
+typedef std::map<std::string, GuestViewBase::GuestCreationCallback>
+    GuestViewCreationMap;
+static base::LazyInstance<GuestViewCreationMap> guest_view_registry =
+    LAZY_INSTANCE_INITIALIZER;
 
 typedef std::map<WebContents*, GuestViewBase*> WebContentsGuestViewMap;
 static base::LazyInstance<WebContentsGuestViewMap> webcontents_guestview_map =
@@ -140,21 +143,33 @@ void GuestViewBase::InitWithWebContents(
 }
 
 // static
+void GuestViewBase::RegisterGuestViewTypes() {
+  GuestView<WebViewGuest>::Register();
+  GuestView<AppViewGuest>::Register();
+}
+
+// static
+void GuestViewBase::RegisterGuestViewType(
+    const std::string& view_type,
+    const GuestCreationCallback& callback) {
+  GuestViewCreationMap::iterator it =
+      guest_view_registry.Get().find(view_type);
+  DCHECK(it == guest_view_registry.Get().end());
+  guest_view_registry.Get()[view_type] = callback;
+}
+
+// static
 GuestViewBase* GuestViewBase::Create(
     content::BrowserContext* browser_context,
     int guest_instance_id,
     const std::string& view_type) {
-  if (view_type == WebViewGuest::Type) {
-    return new WebViewGuest(browser_context, guest_instance_id);
-  } else if (view_type == AppViewGuest::Type) {
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableAppView)) {
-      return NULL;
-    }
-    return new AppViewGuest(browser_context, guest_instance_id);
+  GuestViewCreationMap::iterator it =
+      guest_view_registry.Get().find(view_type);
+  if (it == guest_view_registry.Get().end()) {
+    NOTREACHED();
+    return NULL;
   }
-  NOTREACHED();
-  return NULL;
+  return it->second.Run(browser_context, guest_instance_id);
 }
 
 // static

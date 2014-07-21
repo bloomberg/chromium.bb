@@ -52,6 +52,13 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
     return NULL;
   }
 
+  static void RegisterGuestViewTypes();
+
+  typedef base::Callback<GuestViewBase*(
+      content::BrowserContext*, int)> GuestCreationCallback;
+  static void RegisterGuestViewType(const std::string& view_type,
+                                    const GuestCreationCallback& callback);
+
   static GuestViewBase* Create(content::BrowserContext* browser_context,
                                int guest_instance_id,
                                const std::string& view_type);

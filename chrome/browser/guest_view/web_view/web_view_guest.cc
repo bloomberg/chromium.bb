@@ -169,15 +169,10 @@ void ParsePartitionParam(const base::DictionaryValue& create_params,
 
 }  // namespace
 
-WebViewGuest::WebViewGuest(content::BrowserContext* browser_context,
-                           int guest_instance_id)
-    : GuestView<WebViewGuest>(browser_context, guest_instance_id),
-      pending_context_menu_request_id_(0),
-      is_overriding_user_agent_(false),
-      chromevox_injected_(false),
-      current_zoom_factor_(1.0),
-      find_helper_(this),
-      javascript_dialog_helper_(this) {
+// static
+GuestViewBase* WebViewGuest::Create(content::BrowserContext* browser_context,
+                                    int guest_instance_id) {
+  return new WebViewGuest(browser_context, guest_instance_id);
 }
 
 // static
@@ -696,6 +691,17 @@ bool WebViewGuest::ClearData(const base::Time remove_since,
       base::Time::Now(),
       callback);
   return true;
+}
+
+WebViewGuest::WebViewGuest(content::BrowserContext* browser_context,
+                           int guest_instance_id)
+    : GuestView<WebViewGuest>(browser_context, guest_instance_id),
+      pending_context_menu_request_id_(0),
+      is_overriding_user_agent_(false),
+      chromevox_injected_(false),
+      current_zoom_factor_(1.0),
+      find_helper_(this),
+      javascript_dialog_helper_(this) {
 }
 
 WebViewGuest::~WebViewGuest() {

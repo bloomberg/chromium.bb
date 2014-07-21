@@ -4,6 +4,7 @@
 
 #include "chrome/browser/guest_view/app_view/app_view_guest.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/guest_view/app_view/app_view_constants.h"
@@ -11,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/context_menu_delegate.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/renderer_preferences.h"
 #include "extensions/browser/api/app_runtime/app_runtime_api.h"
@@ -85,6 +87,16 @@ bool AppViewGuest::CompletePendingRequest(
 
   response_map->erase(guest_instance_id);
   return true;
+}
+
+// static
+GuestViewBase* AppViewGuest::Create(content::BrowserContext* browser_context,
+                                    int guest_instance_id) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableAppView)) {
+    return NULL;
+  }
+  return new AppViewGuest(browser_context, guest_instance_id);
 }
 
 AppViewGuest::AppViewGuest(content::BrowserContext* browser_context,

@@ -45,8 +45,8 @@ class SimpleMenuModel;
 class WebViewGuest : public GuestView<WebViewGuest>,
                      public content::NotificationObserver {
  public:
-  WebViewGuest(content::BrowserContext* browser_context,
-               int guest_instance_id);
+  static GuestViewBase* Create(content::BrowserContext* browser_context,
+                               int guest_instance_id);
 
   // For WebViewGuest, we create special guest processes, which host the
   // tag content separately from the main application that embeds the tag.
@@ -238,6 +238,9 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
  private:
   friend class WebViewPermissionHelper;
+  WebViewGuest(content::BrowserContext* browser_context,
+               int guest_instance_id);
+
   virtual ~WebViewGuest();
 
   // Returns the top level items (ignoring submenus) as Value.

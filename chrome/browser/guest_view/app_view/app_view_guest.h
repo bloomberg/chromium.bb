@@ -15,7 +15,7 @@ class ExtensionHost;
 };
 
 // An AppViewGuest provides the browser-side implementation of <appview> API.
-// AppViewGuest is created on attachment. That is, when a guest WEbContnets is
+// AppViewGuest is created on attachment. That is, when a guest WebContents is
 // associated with a particular embedder WebContents. This happens on calls to
 // the connect API.
 class AppViewGuest : public GuestView<AppViewGuest>,
@@ -31,8 +31,8 @@ class AppViewGuest : public GuestView<AppViewGuest>,
       int guest_instance_id,
       const std::string& guest_extension_id);
 
-  AppViewGuest(content::BrowserContext* browser_context,
-               int guest_instance_id);
+  static GuestViewBase* Create(content::BrowserContext* browser_context,
+                               int guest_instance_id);
 
   // ExtensionFunctionDispatcher::Delegate implementation.
   virtual extensions::WindowController* GetExtensionWindowController() const
@@ -58,6 +58,9 @@ class AppViewGuest : public GuestView<AppViewGuest>,
   virtual void DidInitialize() OVERRIDE;
 
  private:
+  AppViewGuest(content::BrowserContext* browser_context,
+               int guest_instance_id);
+
   virtual ~AppViewGuest();
 
   void OnRequest(const ExtensionHostMsg_Request_Params& params);

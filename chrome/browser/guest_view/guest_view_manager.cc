@@ -30,6 +30,7 @@ GuestViewManagerFactory* GuestViewManager::factory_ = NULL;
 
 GuestViewManager::GuestViewManager(content::BrowserContext* context)
     : current_instance_id_(0), last_instance_id_removed_(0), context_(context) {
+  GuestViewBase::RegisterGuestViewTypes();
 }
 
 GuestViewManager::~GuestViewManager() {}
