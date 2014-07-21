@@ -559,7 +559,7 @@ bool RenderLayerCompositor::scrollingLayerDidChange(RenderLayer* layer)
 
 String RenderLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
 {
-    ASSERT(lifecycle().state() >= DocumentLifecycle::CompositingClean);
+    ASSERT(lifecycle().state() >= DocumentLifecycle::PaintInvalidationClean);
 
     if (!m_rootContentLayer)
         return String();
@@ -846,7 +846,7 @@ void RenderLayerCompositor::resetTrackedRepaintRects()
 
 void RenderLayerCompositor::setTracksRepaints(bool tracksRepaints)
 {
-    ASSERT(lifecycle().state() == DocumentLifecycle::CompositingClean);
+    ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean);
     m_isTrackingRepaints = tracksRepaints;
 }
 

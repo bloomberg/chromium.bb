@@ -58,6 +58,9 @@ public:
         InCompositingUpdate,
         CompositingClean,
 
+        InPaintInvalidation,
+        PaintInvalidationClean,
+
         // Once the document starts shuting down, we cannot return
         // to the style/layout/rendering states.
         Stopping,
@@ -163,6 +166,7 @@ inline bool DocumentLifecycle::stateAllowsDetach() const
         || m_state == InPreLayout
         || m_state == LayoutClean
         || m_state == CompositingClean
+        || m_state == PaintInvalidationClean
         || m_state == Stopping;
 }
 

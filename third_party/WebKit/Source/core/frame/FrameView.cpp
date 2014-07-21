@@ -2830,7 +2830,7 @@ void FrameView::updateLayoutAndStyleForPainting()
     }
 
     scrollContentsIfNeededRecursive();
-    ASSERT(lifecycle().state() == DocumentLifecycle::CompositingClean);
+    ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean);
 }
 
 void FrameView::updateLayoutAndStyleIfNeededRecursive()
@@ -2886,7 +2886,9 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
 void FrameView::invalidateTreeIfNeededRecursive()
 {
     // FIXME: We should be more aggressive at cutting tree traversals.
+    lifecycle().advanceTo(DocumentLifecycle::InPaintInvalidation);
     invalidateTreeIfNeeded();
+    lifecycle().advanceTo(DocumentLifecycle::PaintInvalidationClean);
 
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (!child->isLocalFrame())
