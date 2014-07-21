@@ -41,6 +41,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/Assertions.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
@@ -101,6 +102,7 @@ static xmlDocPtr docLoaderFunc(
 
         ResourceLoaderOptions fetchOptions(ResourceFetcher::defaultResourceOptions());
         FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::xml, fetchOptions);
+        request.mutableResourceRequest().setRequestContext(blink::WebURLRequest::RequestContextXSLT);
         request.setOriginRestriction(FetchRequest::RestrictToSameOrigin);
         ResourcePtr<Resource> resource = globalResourceFetcher->fetchSynchronously(request);
         if (!resource || !globalProcessor)

@@ -31,6 +31,7 @@
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/ReferrerPolicy.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -109,6 +110,8 @@ public:
     bool allowInlineStyle(const String& contextURL, const WTF::OrdinalNumber& contextLine, ReportingStatus = SendReport) const;
     bool allowEval(ScriptState* = 0, ReportingStatus = SendReport) const;
     bool allowPluginType(const String& type, const String& typeAttribute, const KURL&, ReportingStatus = SendReport) const;
+
+    bool allowFromSource(const KURL&, blink::WebURLRequest::RequestContext, ReportingStatus = SendReport) const;
 
     bool allowScriptFromSource(const KURL&, ReportingStatus = SendReport) const;
     bool allowObjectFromSource(const KURL&, ReportingStatus = SendReport) const;

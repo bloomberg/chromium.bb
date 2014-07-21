@@ -68,7 +68,6 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
-#include "public/platform/WebURLRequest.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
@@ -285,10 +284,11 @@ ResourcePtr<Resource> ResourceFetcher::fetchSynchronously(FetchRequest& request)
 
 ResourcePtr<ImageResource> ResourceFetcher::fetchImage(FetchRequest& request)
 {
+    request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextImage);
     if (LocalFrame* f = frame()) {
         if (f->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal) {
             KURL requestURL = request.resourceRequest().url();
-            if (requestURL.isValid() && canRequest(Resource::Image, requestURL, request.options(), request.forPreload(), request.originRestriction()))
+            if (requestURL.isValid() && canRequest(Resource::Image, WebURLRequest::RequestContextPing, requestURL, request.options(), request.forPreload(), request.originRestriction()))
                 PingLoader::loadImage(f, requestURL);
             return 0;
         }
@@ -504,8 +504,9 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
     return true;
 }
 
-bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const ResourceLoaderOptions& options, bool forPreload, FetchRequest::OriginRestriction originRestriction) const
+bool ResourceFetcher::canRequest(Resource::Type type, WebURLRequest::RequestContext requestContext, const KURL& url, const ResourceLoaderOptions& options, bool forPreload, FetchRequest::OriginRestriction originRestriction) const
 {
+    ASSERT(requestContext != blink::WebURLRequest::RequestContextUnspecified);
     SecurityOrigin* securityOrigin = options.securityOrigin.get();
     if (!securityOrigin && document())
         securityOrigin = document()->securityOrigin();
@@ -556,25 +557,10 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
     ContentSecurityPolicy::ReportingStatus cspReporting = forPreload ?
         ContentSecurityPolicy::SuppressReport : ContentSecurityPolicy::SendReport;
 
-    // m_document can be null, but not in any of the cases where csp is actually used below.
-    // ImageResourceTest.MultipartImage crashes w/o the m_document null check.
-    // I believe it's the Resource::Raw case.
-    const ContentSecurityPolicy* csp = m_document ? m_document->contentSecurityPolicy() : nullptr;
+    if (!shouldBypassMainWorldCSP && m_document && !m_document->contentSecurityPolicy()->allowFromSource(url, requestContext, cspReporting))
+        return false;
 
-    // FIXME: This would be cleaner if moved this switch into an allowFromSource()
-    // helper on this object which took a Resource::Type, then this block would
-    // collapse to about 10 lines for handling Raw and Script special cases.
-    switch (type) {
-    case Resource::XSLStyleSheet:
-        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        if (!shouldBypassMainWorldCSP && !csp->allowScriptFromSource(url, cspReporting))
-            return false;
-        break;
-    case Resource::Script:
-    case Resource::ImportResource:
-        if (!shouldBypassMainWorldCSP && !csp->allowScriptFromSource(url, cspReporting))
-            return false;
-
+    if (type == Resource::Script || type == Resource::ImportResource) {
         if (frame()) {
             Settings* settings = frame()->settings();
             if (!frame()->loader().client()->allowScriptFromSource(!settings || settings->scriptEnabled(), url)) {
@@ -582,36 +568,13 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
                 return false;
             }
         }
-        break;
-    case Resource::CSSStyleSheet:
-        if (!shouldBypassMainWorldCSP && !csp->allowStyleFromSource(url, cspReporting))
-            return false;
-        break;
-    case Resource::SVGDocument:
-    case Resource::Image:
-        if (!shouldBypassMainWorldCSP && !csp->allowImageFromSource(url, cspReporting))
-            return false;
-        break;
-    case Resource::Font: {
-        if (!shouldBypassMainWorldCSP && !csp->allowFontFromSource(url, cspReporting))
-            return false;
-        break;
     }
-    case Resource::MainResource:
-    case Resource::Raw:
-    case Resource::LinkPrefetch:
-    case Resource::LinkSubresource:
-        break;
-    case Resource::Media:
-    case Resource::TextTrack:
-        if (!shouldBypassMainWorldCSP && !csp->allowMediaFromSource(url, cspReporting))
-            return false;
 
+    if (type == Resource::Media || type == Resource::TextTrack) {
         if (frame()) {
             if (!frame()->loader().client()->allowMedia(url))
                 return false;
         }
-        break;
     }
 
     // SVG Images have unique security rules that prevent all subresource requests
@@ -635,7 +598,7 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
 bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sourceOrigin, const KURL& url) const
 {
     // Redirects can change the response URL different from one of request.
-    if (!canRequest(resource->type(), url, resource->options(), resource->isUnusedPreload(), FetchRequest::UseDefaultOriginRestrictionForType))
+    if (!canRequest(resource->type(), resource->resourceRequest().requestContext(), url, resource->options(), resource->isUnusedPreload(), FetchRequest::UseDefaultOriginRestrictionForType))
         return false;
 
     if (!sourceOrigin && document())
@@ -715,7 +678,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     if (!url.isValid())
         return 0;
 
-    if (!canRequest(type, url, request.options(), request.forPreload(), request.originRestriction()))
+    if (!canRequest(type, request.resourceRequest().requestContext(), url, request.options(), request.forPreload(), request.originRestriction()))
         return 0;
 
     if (LocalFrame* f = frame())
@@ -1422,7 +1385,7 @@ bool ResourceFetcher::isLoadedBy(ResourceLoaderHost* possibleOwner) const
 
 bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse, ResourceLoaderOptions& options)
 {
-    if (!canRequest(resource->type(), request.url(), options, resource->isUnusedPreload(), FetchRequest::UseDefaultOriginRestrictionForType))
+    if (!canRequest(resource->type(), request.requestContext(), request.url(), options, resource->isUnusedPreload(), FetchRequest::UseDefaultOriginRestrictionForType))
         return false;
     if (options.corsEnabled == IsCORSEnabled) {
         SecurityOrigin* sourceOrigin = options.securityOrigin.get();

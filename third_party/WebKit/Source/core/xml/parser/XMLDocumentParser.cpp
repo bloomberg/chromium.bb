@@ -62,7 +62,7 @@
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
-#include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebURLRequest.h"
 #include "wtf/StringExtras.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/Threading.h"
@@ -638,6 +638,7 @@ static void* openFunc(const char* uri)
 
         if (fetcher->frame()) {
             FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::xml, ResourceFetcher::defaultResourceOptions());
+            request.mutableResourceRequest().setRequestContext(blink::WebURLRequest::RequestContextXSLT);
             ResourcePtr<Resource> resource = fetcher->fetchSynchronously(request);
             if (resource && !resource->errorOccurred()) {
                 data = resource->resourceBuffer();
