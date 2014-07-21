@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "content/browser/media/media_browsertest.h"
@@ -24,8 +25,6 @@ const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
 // EME-specific test results and errors.
 const char kEmeKeyError[] = "KEYERROR";
 const char kEmeNotSupportedError[] = "NOTSUPPORTEDERROR";
-
-const char kDefaultEmePlayer[] = "eme_player.html";
 
 // The type of video src used to load media.
 enum SrcType {
@@ -53,7 +52,7 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
     public testing::WithParamInterface<std::tr1::tuple<const char*, SrcType> > {
  public:
   // Can only be used in parameterized (*_P) tests.
-  const std::string CurrentKeySystem() {
+  const char* CurrentKeySystem() {
     return std::tr1::get<0>(GetParam());
   }
 
@@ -62,15 +61,14 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
     return std::tr1::get<1>(GetParam());
   }
 
-  void TestSimplePlayback(const std::string& encrypted_media,
-                          const std::string& media_type) {
+  void TestSimplePlayback(const char* encrypted_media, const char* media_type) {
     RunSimpleEncryptedMediaTest(
         encrypted_media, media_type, CurrentKeySystem(), CurrentSourceType());
   }
 
   void TestFrameSizeChange() {
     RunEncryptedMediaTest("encrypted_frame_size_change.html",
-                          "frame_size_change-av_enc-v.webm", kWebMAudioVideo,
+                          "frame_size_change-av-enc-v.webm", kWebMAudioVideo,
                           CurrentKeySystem(), CurrentSourceType(), kEnded);
   }
 
@@ -80,42 +78,38 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
       return;
     }
 
-    media::QueryParams query_params;
-    query_params.push_back(std::make_pair("keySystem", CurrentKeySystem()));
-    query_params.push_back(std::make_pair("runEncrypted", "1"));
-    RunMediaTestPage("mse_config_change.html", query_params, kEnded, true);
+    std::vector<StringPair> query_params;
+    query_params.push_back(std::make_pair("keysystem", CurrentKeySystem()));
+    query_params.push_back(std::make_pair("runencrypted", "1"));
+    RunMediaTestPage("mse_config_change.html", &query_params, kEnded, true);
   }
 
-  void RunEncryptedMediaTest(const std::string& html_page,
-                             const std::string& media_file,
-                             const std::string& media_type,
-                             const std::string& key_system,
+  void RunEncryptedMediaTest(const char* html_page,
+                             const char* media_file,
+                             const char* media_type,
+                             const char* key_system,
                              SrcType src_type,
-                             const std::string& expectation) {
+                             const char* expectation) {
     if (src_type == MSE && !IsMSESupported()) {
       VLOG(0) << "Skipping test - MSE not supported.";
       return;
     }
 
-    media::QueryParams query_params;
-    query_params.push_back(std::make_pair("mediaFile", media_file));
-    query_params.push_back(std::make_pair("mediaType", media_type));
-    query_params.push_back(std::make_pair("keySystem", key_system));
+    std::vector<StringPair> query_params;
+    query_params.push_back(std::make_pair("mediafile", media_file));
+    query_params.push_back(std::make_pair("mediatype", media_type));
+    query_params.push_back(std::make_pair("keysystem", key_system));
     if (src_type == MSE)
-      query_params.push_back(std::make_pair("useMSE", "1"));
-    RunMediaTestPage(html_page, query_params, expectation, true);
+      query_params.push_back(std::make_pair("usemse", "1"));
+    RunMediaTestPage(html_page, &query_params, expectation, true);
   }
 
-  void RunSimpleEncryptedMediaTest(const std::string& media_file,
-                                   const std::string& media_type,
-                                   const std::string& key_system,
+  void RunSimpleEncryptedMediaTest(const char* media_file,
+                                   const char* media_type,
+                                   const char* key_system,
                                    SrcType src_type) {
-    RunEncryptedMediaTest(kDefaultEmePlayer,
-                          media_file,
-                          media_type,
-                          key_system,
-                          src_type,
-                          kEnded);
+    RunEncryptedMediaTest("encrypted_media_player.html", media_file,
+                          media_type, key_system, src_type, kEnded);
   }
 
  protected:
@@ -147,23 +141,23 @@ INSTANTIATE_TEST_CASE_P(MSE_ClearKey, EncryptedMediaTest,
                         Combine(Values(kClearKeyKeySystem), Values(MSE)));
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
-  TestSimplePlayback("bear-a_enc-a.webm", kWebMAudioOnly);
+  TestSimplePlayback("bear-a-enc_a.webm", kWebMAudioOnly);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioClearVideo_WebM) {
-  TestSimplePlayback("bear-320x240-av_enc-a.webm", kWebMAudioVideo);
+  TestSimplePlayback("bear-320x240-av-enc_a.webm", kWebMAudioVideo);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoAudio_WebM) {
-  TestSimplePlayback("bear-320x240-av_enc-av.webm", kWebMAudioVideo);
+  TestSimplePlayback("bear-320x240-av-enc_av.webm", kWebMAudioVideo);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_WebM) {
-  TestSimplePlayback("bear-320x240-v_enc-v.webm", kWebMVideoOnly);
+  TestSimplePlayback("bear-320x240-v-enc_v.webm", kWebMVideoOnly);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM) {
-  TestSimplePlayback("bear-320x240-av_enc-v.webm", kWebMAudioVideo);
+  TestSimplePlayback("bear-320x240-av-enc_v.webm", kWebMAudioVideo);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo) {
@@ -180,11 +174,8 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
 }
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, UnknownKeySystemThrowsException) {
-  RunEncryptedMediaTest(kDefaultEmePlayer,
-                        "bear-a_enc-a.webm",
-                        kWebMAudioOnly,
-                        "com.example.foo",
-                        MSE,
+  RunEncryptedMediaTest("encrypted_media_player.html", "bear-a-enc_a.webm",
+                        kWebMAudioOnly, "com.example.foo", MSE,
                         kEmeNotSupportedError);
 }
 

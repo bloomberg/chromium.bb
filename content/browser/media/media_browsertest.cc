@@ -4,8 +4,10 @@
 
 #include "content/browser/media/media_browsertest.h"
 
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -24,33 +26,39 @@ const char MediaBrowserTest::kEnded[] = "ENDED";
 const char MediaBrowserTest::kError[] = "ERROR";
 const char MediaBrowserTest::kFailed[] = "FAILED";
 
-void MediaBrowserTest::RunMediaTestPage(const std::string& html_page,
-                                        const media::QueryParams& query_params,
-                                        const std::string& expected_title,
-                                        bool http) {
+void MediaBrowserTest::RunMediaTestPage(
+    const char* html_page, std::vector<StringPair>* query_params,
+    const char* expected, bool http) {
   GURL gurl;
-  std::string query = media::GetURLQueryString(query_params);
-  scoped_ptr<net::SpawnedTestServer> http_test_server;
-  if (http) {
-    http_test_server = media::StartMediaHttpTestServer();
-    gurl = http_test_server->GetURL("files/" + html_page + "?" + query);
-  } else {
-    gurl = content::GetFileUrlWithQuery(media::GetTestDataFilePath(html_page),
-                                        query);
+  std::string query = "";
+  if (query_params != NULL && !query_params->empty()) {
+    std::vector<StringPair>::const_iterator itr = query_params->begin();
+    query = base::StringPrintf("%s=%s", itr->first, itr->second);
+    ++itr;
+    for (; itr != query_params->end(); ++itr) {
+      query.append(base::StringPrintf("&%s=%s", itr->first, itr->second));
+    }
   }
-  std::string final_title = RunTest(gurl, expected_title);
-  EXPECT_EQ(expected_title, final_title);
+  if (http) {
+    ASSERT_TRUE(test_server()->Start());
+    gurl = test_server()->GetURL(
+        base::StringPrintf("files/media/%s?%s", html_page, query.c_str()));
+  } else {
+    base::FilePath test_file_path = GetTestFilePath("media", html_page);
+    gurl = GetFileUrlWithQuery(test_file_path, query);
+  }
+  RunTest(gurl, expected);
 }
 
-std::string MediaBrowserTest::RunTest(const GURL& gurl,
-                                      const std::string& expected_title) {
-  VLOG(0) << "Running test URL: " << gurl;
-  TitleWatcher title_watcher(shell()->web_contents(),
-                             base::ASCIIToUTF16(expected_title));
+void MediaBrowserTest::RunTest(const GURL& gurl, const char* expected) {
+  const base::string16 expected_title = base::ASCIIToUTF16(expected);
+  DVLOG(1) << "Running test URL: " << gurl;
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   AddWaitForTitles(&title_watcher);
   NavigateToURL(shell(), gurl);
-  base::string16 result = title_watcher.WaitAndGetTitle();
-  return base::UTF16ToASCII(result);
+
+  base::string16 final_title = title_watcher.WaitAndGetTitle();
+  EXPECT_EQ(expected_title, final_title);
 }
 
 void MediaBrowserTest::AddWaitForTitles(content::TitleWatcher* title_watcher) {
@@ -67,29 +75,25 @@ class MediaTest : public testing::WithParamInterface<bool>,
                   public MediaBrowserTest {
  public:
   // Play specified audio over http:// or file:// depending on |http| setting.
-  void PlayAudio(const std::string& media_file, bool http) {
+  void PlayAudio(const char* media_file, bool http) {
     PlayMedia("audio", media_file, http);
   }
 
   // Play specified video over http:// or file:// depending on |http| setting.
-  void PlayVideo(const std::string& media_file, bool http) {
+  void PlayVideo(const char* media_file, bool http) {
     PlayMedia("video", media_file, http);
   }
 
   // Run specified color format test with the expected result.
-  void RunColorFormatTest(const std::string& media_file,
-                          const std::string& expected) {
-    base::FilePath test_file_path =
-        media::GetTestDataFilePath("blackwhite.html");
+  void RunColorFormatTest(const char* media_file, const char* expected) {
+    base::FilePath test_file_path = GetTestFilePath("media", "blackwhite.html");
     RunTest(GetFileUrlWithQuery(test_file_path, media_file), expected);
   }
 
-  void PlayMedia(const std::string& tag,
-                 const std::string& media_file,
-                 bool http) {
-    media::QueryParams query_params;
+  void PlayMedia(const char* tag, const char* media_file, bool http) {
+    std::vector<StringPair> query_params;
     query_params.push_back(std::make_pair(tag, media_file));
-    RunMediaTestPage("player.html", query_params, kEnded, http);
+    RunMediaTestPage("player.html", &query_params, kEnded, http);
   }
 };
 
@@ -136,7 +140,7 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearMovPcmS16be) {
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearMovPcmS24be) {
   PlayVideo("bear_pcm_s24be.mov", GetParam());
 }
-#endif  // defined(USE_PROPRIETARY_CODECS)
+#endif
 
 #if defined(OS_CHROMEOS)
 #if defined(USE_PROPRIETARY_CODECS)
@@ -167,9 +171,8 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavGsmms) {
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearFlac) {
   PlayAudio("bear.flac", GetParam());
 }
-#endif  // defined(USE_PROPRIETARY_CODECS)
-#endif  // defined(OS_CHROMEOS)
-
+#endif
+#endif
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavAlaw) {
   PlayAudio("bear_alaw.wav", GetParam());
@@ -206,19 +209,19 @@ INSTANTIATE_TEST_CASE_P(File, MediaTest, ::testing::Values(false));
 INSTANTIATE_TEST_CASE_P(Http, MediaTest, ::testing::Values(true));
 
 IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv420pTheora)) {
-  RunColorFormatTest("yuv420p.ogv", kEnded);
+  RunColorFormatTest("yuv420p.ogv", "ENDED");
 }
 
 IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv422pTheora)) {
-  RunColorFormatTest("yuv422p.ogv", kEnded);
+  RunColorFormatTest("yuv422p.ogv", "ENDED");
 }
 
 IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv444pTheora)) {
-  RunColorFormatTest("yuv444p.ogv", kEnded);
+  RunColorFormatTest("yuv444p.ogv", "ENDED");
 }
 
 IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv420pVp8)) {
-  RunColorFormatTest("yuv420p.webm", kEnded);
+  RunColorFormatTest("yuv420p.webm", "ENDED");
 }
 
 // TODO(johannkoenig): Reenable after landing libvpx roll
@@ -229,24 +232,24 @@ IN_PROC_BROWSER_TEST_F(MediaTest, DISABLED_Yuv444pVp9) {
 
 #if defined(USE_PROPRIETARY_CODECS)
 IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv420pH264)) {
-  RunColorFormatTest("yuv420p.mp4", kEnded);
+  RunColorFormatTest("yuv420p.mp4", "ENDED");
 }
 
 IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuvj420pH264)) {
-  RunColorFormatTest("yuvj420p.mp4", kEnded);
+  RunColorFormatTest("yuvj420p.mp4", "ENDED");
 }
 
 IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv422pH264)) {
-  RunColorFormatTest("yuv422p.mp4", kEnded);
+  RunColorFormatTest("yuv422p.mp4", "ENDED");
 }
 
 IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv444pH264)) {
-  RunColorFormatTest("yuv444p.mp4", kEnded);
+  RunColorFormatTest("yuv444p.mp4", "ENDED");
 }
 
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(MediaTest, Yuv420pMpeg4) {
-  RunColorFormatTest("yuv420p.avi", kEnded);
+  RunColorFormatTest("yuv420p.avi", "ENDED");
 }
 #endif  // defined(OS_CHROMEOS)
 #endif  // defined(USE_PROPRIETARY_CODECS)
