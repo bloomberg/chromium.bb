@@ -10,6 +10,8 @@ import hashlib
 import json
 import os
 
+import error
+
 
 ArchiveInfoTuple = collections.namedtuple(
     'ArchiveInfoTuple',
@@ -99,9 +101,9 @@ class ArchiveInfo(object):
       with open(archive_info_file, 'rt') as f:
         archive_json = json.load(f)
     else:
-      raise RuntimeError('Invalid load archive file type (%s): %s',
-                         type(archive_info_file),
-                         archive_info_file)
+      raise error.Error('Invalid load archive file type (%s): %s',
+                        type(archive_info_file),
+                        archive_info_file)
 
     self.SetArchiveData(**archive_json)
 

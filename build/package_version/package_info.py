@@ -15,6 +15,7 @@ import pynacl.file_tools
 import pynacl.gsd_storage
 
 import archive_info
+import error
 
 PACKAGE_KEY_ARCHIVES = 'archives'
 PACKAGE_KEY_VERSION = 'version'
@@ -77,8 +78,8 @@ def DownloadPackageInfoFiles(local_package_file, remote_package_file,
   pynacl.file_tools.MakeParentDirectoryIfAbsent(local_package_file)
   downloader(remote_package_file, local_package_file)
   if not os.path.isfile(local_package_file):
-    raise IOError('Could not download package file: %s.' %
-                  remote_package_file)
+    raise error.Error('Could not download package file: %s.' %
+                      remote_package_file)
 
   package_data = ReadPackageFile(local_package_file)
   archive_list = package_data[PACKAGE_KEY_ARCHIVES]
@@ -97,8 +98,8 @@ def DownloadPackageInfoFiles(local_package_file, remote_package_file,
     remote_archive_file = posixpath.join(remote_archive_dir, archive_file)
     downloader(remote_archive_file, local_archive_file)
     if not os.path.isfile(local_archive_file):
-      raise IOError('Could not download archive file: %s.' %
-                    remote_archive_file)
+      raise error.Error('Could not download archive file: %s.' %
+                        remote_archive_file)
 
 def UploadPackageInfoFiles(storage, package_target, package_name,
                            remote_package_file, local_package_file,
@@ -216,7 +217,7 @@ class PackageInfo(object):
         arch_path = os.path.join(archive_dir, arch_file)
         if not os.path.isfile(arch_path):
           if not skip_missing:
-            raise RuntimeError(
+            raise package_version.Error(
                 'Package (%s) points to invalid archive file (%s).' %
                 (package_file, arch_path))
           archive_desc = archive_info.ArchiveInfo(name=archive)
@@ -224,7 +225,7 @@ class PackageInfo(object):
           archive_desc = archive_info.ArchiveInfo(archive_info_file=arch_path)
         self._archive_list.append(archive_desc)
     else:
-      raise RuntimeError('Invalid load package file type (%s): %s',
+      raise package_version.Error('Invalid load package file type (%s): %s',
                          (type(package_file), package_file))
 
   def SavePackageFile(self, package_file):

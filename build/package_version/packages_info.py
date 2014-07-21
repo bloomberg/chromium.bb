@@ -5,8 +5,8 @@
 
 """Encompasses a description of packages associated with package targets."""
 
+import error
 import json
-
 
 def LoadJSONStripComments(file):
   lines = []
@@ -31,8 +31,8 @@ class PackagesInfo(object):
     elif isinstance(packages_file, file):
       packages_json = LoadJSONStripComments(packages_file)
     else:
-      raise RuntimeError('Invalid packages file type (%s): %s' %
-                         (type(packages_file), packages_file))
+      raise error.Error('Invalid packages file type (%s): %s' %
+                        (type(packages_file), packages_file))
 
     assert isinstance(packages_json, dict), (
         "Invalid packages file: %s" % packages_file)

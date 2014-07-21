@@ -19,6 +19,7 @@ import pynacl.platform
 import pynacl.working_directory
 
 import archive_info
+import error
 import package_info
 import package_locations
 import package_version
@@ -165,7 +166,7 @@ class TestPackageVersion(unittest.TestCase):
 
       tar_dir = os.path.join(work_dir, 'tar_dir')
       self.assertRaises(
-          IOError,
+          error.Error,
           package_version.DownloadPackageArchives,
           tar_dir,
           'missing_target',
@@ -228,7 +229,7 @@ class TestPackageVersion(unittest.TestCase):
 
       tar_dir = os.path.join(work_dir, 'tar_dir')
       self.assertRaises(
-          IOError,
+          error.Error,
           package_version.DownloadPackageArchives,
           tar_dir,
           'mismatch_target',

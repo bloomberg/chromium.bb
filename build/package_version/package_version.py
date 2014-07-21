@@ -44,10 +44,11 @@ import os
 import shutil
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(SCRIPT_DIR))
 import cygtar
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
+sys.path.append(os.path.dirname(os.path.dirname(SCRIPT_DIR)))
 import pynacl.file_tools
 import pynacl.gsd_storage
 import pynacl.log_tools
@@ -55,6 +56,7 @@ import pynacl.platform
 import pynacl.working_directory
 
 import archive_info
+import error
 import package_info
 import package_locations
 import packages_info
@@ -250,15 +252,15 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
       pynacl.file_tools.MakeParentDirectoryIfAbsent(local_archive_file)
 
       if archive_desc.url is None:
-        raise IOError('Error, no URL for archive: %s' % archive_desc.name)
+        raise error.Error('Error, no URL for archive: %s' % archive_desc.name)
 
       logging.info('Downloading package archive: %s (%d/%d)' %
                    (archive_desc.name, index+1, num_archives))
       try:
         downloader(archive_desc.url, local_archive_file)
       except Exception as e:
-        raise IOError('Could not download URL (%s): %s' %
-                      (archive_desc.url, e))
+        raise error.Error('Could not download URL (%s): %s' %
+                          (archive_desc.url, e))
 
       # Delete any stale log files
       local_archive_log = package_locations.GetLocalPackageArchiveLogFile(
@@ -269,8 +271,8 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
 
       verified_hash = archive_info.GetArchiveHash(local_archive_file)
       if verified_hash != archive_desc.hash:
-        raise IOError('Package hash check failed: %s != %s' %
-                      (verified_hash, archive_desc.hash))
+        raise error.Error('Package hash check failed: %s != %s' %
+                          (verified_hash, archive_desc.hash))
 
       downloaded_files.append(local_archive_file)
 
@@ -383,7 +385,7 @@ def ArchivePackageArchives(tar_dir, package_target, package_name, archives,
       if skip_missing:
         logging.info('Skipping archival of missing file: %s', archive)
         continue
-      raise IOError('Invalid package: %s.' % archive)
+      raise error.Error('Invalid package: %s.' % archive)
     archive_list.append(archive)
 
     archive_basename = os.path.basename(archive)
@@ -493,9 +495,9 @@ def UploadPackage(storage, revision, tar_dir, package_target, package_name,
           archive_desc.name)
       archive_hash = archive_info.GetArchiveHash(archive_file)
       if archive_hash is None:
-        raise IOError('Missing Archive File: %s' % archive_file)
+        raise error.Error('Missing Archive File: %s' % archive_file)
       elif archive_hash != archive_desc.hash:
-        raise IOError(
+        raise error.Error(
             'Archive hash does not match package hash: %s' % archive_file
             + '\n  Archive Hash: %s' % archive_hash
             + '\n  Package Hash: %s' % archive_desc.hash)
@@ -602,7 +604,7 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
             logging.info('Skipping extraction of missing archive: %s' %
                          archive_file)
             continue
-          raise IOError('Invalid archive file and URL: %s' % archive_file)
+          raise error.Error('Invalid archive file and URL: %s' % archive_file)
 
         logging.warn('Expected archive missing, downloading: %s',
                      archive_desc.name)
@@ -611,9 +613,9 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
         downloader(archive_desc.url, archive_file)
         archive_hash = archive_info.GetArchiveHash(archive_file)
         if archive_hash != archive_desc.hash:
-          raise IOError('Downloaded archive file does not match hash.'
-                        ' [%s] Expected %s, received %s.' %
-                        (archive_file, archive_desc.hash, archive_hash))
+          raise error.Error('Downloaded archive file does not match hash.'
+                      ' [%s] Expected %s, received %s.' %
+                      (archive_file, archive_desc.hash, archive_hash))
 
       destination_dir = os.path.join(dest_package_dir, archive_desc.extract_dir)
       logging.info('Extracting %s (%d/%d)' %
@@ -693,8 +695,8 @@ def _DoArchiveCmd(arguments):
       arguments.package_target_packages
   )
   if not package_target_packages:
-    raise NameError('Unknown package: %s.' % arguments.archive__package
-                    + ' Did you forget to add "$PACKAGE_TARGET/"?')
+    raise error.Error('Unknown package: %s.' % arguments.archive__package
+                + ' Did you forget to add "$PACKAGE_TARGET/"?')
 
   for package_target, package_name in package_target_packages:
     ArchivePackageArchives(arguments.tar_dir,
@@ -753,8 +755,8 @@ def _DoUploadCmd(arguments):
       arguments.package_target_packages
   )
   if not package_target_packages:
-    raise NameError('Unknown package: %s.' % arguments.upload__package
-                    + ' Did you forget to add "$PACKAGE_TARGET/"?')
+    raise error.Error('Unknown package: %s.' % arguments.upload__package
+                + ' Did you forget to add "$PACKAGE_TARGET/"?')
 
   for package_target, package_name in package_target_packages:
     UploadPackage(
@@ -924,7 +926,7 @@ def _DoGetRevisionCmd(arguments):
                                                     package_name)
 
   if not os.path.isfile(revision_file):
-    raise NameError('No revision set for package: %s.' % package_name)
+    raise error.Error('No revision set for package: %s.' % package_name)
 
   revision_desc = revision_info.RevisionInfo(arguments.packages_desc,
                                              revision_file)
@@ -945,8 +947,8 @@ def _DoFillEmptyTarsCmd(arguments):
       arguments.package_target_packages
   )
   if not package_target_packages:
-    raise NameError('Unknown package: %s.' % arguments.fillemptytars_package
-                    + ' Did you forget to add "$PACKAGE_TARGET/"?')
+    raise error.Error('Unknown package: %s.' % arguments.fillemptytars_package
+                + ' Did you forget to add "$PACKAGE_TARGET/"?')
 
   for package_target, package_name in package_target_packages:
     package_path = package_locations.GetLocalPackageFile(arguments.tar_dir,
@@ -970,7 +972,7 @@ def _DoFillEmptyTarsCmd(arguments):
         elif archive_data.name.endswith('.tar'):
           mode = 'w:'
         else:
-          raise NameError('Unknown archive type: %s.' % archive_data.name)
+          raise error.Error('Unknown archive type: %s.' % archive_data.name)
 
         archive_file = package_locations.GetLocalPackageArchiveFile(
             arguments.tar_dir,
@@ -1126,8 +1128,8 @@ def ParseArgs(args):
     for package_target in package_targets:
       packages = packages_desc.GetPackages(package_target)
       if packages is None:
-        raise NameError('No packages defined for Package Target: %s.' %
-                        package_target)
+        raise error.Error('No packages defined for Package Target: %s.' %
+                          package_target)
       packages_set.update(packages)
   else:
     packages_set.update(arguments.packages.split(','))
@@ -1155,10 +1157,8 @@ def ParseArgs(args):
     if package_targets is None:
       custom_package_targets = GetPackageTargetPackages(package, [])
       if not custom_package_targets:
-        raise NameError('Invalid custom package: "%s".' % package
-                        + ' Expected $PACKAGE_TARGET'
-                        + os.path.sep
-                        + '$PACKAGE')
+        raise error.Error('Invalid custom package: "%s".'
+                          ' Expected $PACKAGE_TARGET/$PACKAGE' % package)
       package_target_packages.extend(custom_package_targets)
     else:
       for package_target in package_targets:
@@ -1175,8 +1175,12 @@ def ParseArgs(args):
 
 
 def main(args):
-  arguments = ParseArgs(args)
-  return COMMANDS[arguments.command].do_cmd_func(arguments)
+  try:
+    arguments = ParseArgs(args)
+    return COMMANDS[arguments.command].do_cmd_func(arguments)
+  except error.Error as e:
+    sys.stderr.write('package_version: ' + str(e) + '\n')
+    return 1
 
 
 if __name__ == '__main__':

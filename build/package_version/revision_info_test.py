@@ -14,6 +14,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import pynacl.working_directory
 
 import archive_info
+import error
 import package_info
 import packages_info
 import revision_info
@@ -55,7 +56,7 @@ class TestRevisionInfo(unittest.TestCase):
     revision_desc.SetTargetRevision('test1', 'package_target', package)
 
     self.assertRaises(
-        RuntimeError,
+        error.Error,
         revision_desc.SetTargetRevision,
         'test2',
         'package_target',
@@ -114,7 +115,7 @@ class TestRevisionInfo(unittest.TestCase):
       revision_file = os.path.join(work_dir, 'test_revision.json')
 
       self.assertRaises(
-          RuntimeError,
+          error.Error,
           revision.SaveRevisionFile,
           revision_file
       )
@@ -150,7 +151,7 @@ class TestRevisionInfo(unittest.TestCase):
 
       new_revision = revision_info.RevisionInfo(self._packages)
       self.assertRaises(
-          IOError,
+          error.Error,
           new_revision.LoadRevisionFile,
           revision_file
       )
@@ -180,7 +181,7 @@ class TestRevisionInfo(unittest.TestCase):
     with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
       revision_file = os.path.join(work_dir, 'incomplete_revision.json')
       self.assertRaises(
-          RuntimeError,
+          error.Error,
           revision.SaveRevisionFile,
           revision_file
       )
