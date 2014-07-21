@@ -241,32 +241,7 @@ def CreateBasicToolchain():
     open(specs, 'w').write(text)
 
 
-def ConfigureAndBuild_libc():
-  for arch in ARCHES:
-    inspath = GetBionicBuildPath(arch)
-    workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'bionic_$ARCH_work')
-    workpath = ReplaceArch(workpath, arch)
-    ConfigureAndBuild(arch, 'bionic/libc', workpath, inspath, )
-
-
-def ConfigureAndBuild_libc():
-  for arch in ARCHES:
-    inspath = GetBionicBuildPath(arch)
-    workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'bionic_$ARCH_work')
-    workpath = ReplaceArch(workpath, arch)
-    ConfigureAndBuild(arch, 'bionic/libc', workpath, inspath)
-    ConfigureAndBuild(arch, 'bionic/libm', workpath, inspath)
-
-
-def ConfigureAndBuildLinker():
-  for arch in ARCHES:
-    inspath = GetBionicBuildPath(arch)
-    workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'bionic_$ARCH_work')
-    workpath = ReplaceArch(workpath, arch)
-    ConfigureAndBuild(arch, 'bionic/linker', workpath, inspath)
-
-
-def ConfigureGCCProject(arch, project, cfg, workpath, inspath):
+def ConfigureGCCProject(arch, project, cfg, workpath):
   # configure does not always have +x
   filepath = os.path.abspath(os.path.join(workpath, cfg[0]))
   st_info  = os.stat(filepath)
@@ -291,12 +266,13 @@ def ConfigureGCCProject(arch, project, cfg, workpath, inspath):
     print 'Reusing config for %s.' % proj
 
 
-def MakeGCCProject(arch, project, workpath, targets=[]):
+def MakeGCCProject(arch, project, workpath, targets=None):
   env = os.environ
   newpath = GetBionicBuildPath(arch, 'bin')  + ':' + env['PATH']
   proj = '%s %s' % (project, arch)
   setpath = ['/usr/bin/env', 'PATH=' + newpath]
 
+  targets = targets or []
   if targets:
     proj = project = ': ' + ' '.join(targets)
   else:
@@ -341,7 +317,7 @@ def ConfigureAndBuild_libgcc(skip_build=False):
   ]
 
   if not skip_build:
-    ConfigureGCCProject(arch, project, cfg, dstpath, inspath)
+    ConfigureGCCProject(arch, project, cfg, dstpath)
     MakeGCCProject(arch, project, dstpath, ['libgcc.a'])
 
   # Copy temp version of libgcc.a for linking libc.so
@@ -409,7 +385,7 @@ def ConfigureAndBuild_libstdcpp(skip_build=False):
   ]
 
   if not skip_build:
-    ConfigureGCCProject(arch, project, cfg, dstpath, inspath)
+    ConfigureGCCProject(arch, project, cfg, dstpath)
     MakeGCCProject(arch, project, dstpath)
     MakeGCCProject(arch, project, dstpath, ['install'])
 
@@ -505,13 +481,13 @@ def ConfigureBionicProjects(clobber=False):
     CreateProject(arch, project, clobber)
 
 
-def MakeBionicProject(project, targets=[], clobber=False):
+def MakeBionicProject(project, targets=None, clobber=False):
   arch = 'arm'
   paths = GetProjectPaths(arch, project)
   workpath = paths['work']
-  inspath = paths['ins']
-  targetlist = ' '.join(targets)
+  targets = targets or []
 
+  targetlist = ' '.join(targets)
   print 'Building %s for %s at %s %s.' % (project, arch, workpath, targetlist)
   if clobber:
     args = ['make', '-j12', 'V=1', 'clean']
@@ -542,7 +518,7 @@ def ArchiveAndUpload(version, zipname, zippath, packages_file):
   if process.Run(['tar', '-czf', zipname, zippath],
                  cwd=TOOLCHAIN_BUILD_OUT,
                  outfile=sys.stdout):
-      raise RuntimeError('Failed to zip %s from %s.\n' % (zipname, zippath))
+    raise RuntimeError('Failed to zip %s from %s.\n' % (zipname, zippath))
 
   # Create Zip Hash file using the hash of the zip file.
   hashzipname = zipname + '.sha1hash'
@@ -636,7 +612,7 @@ def main(argv):
       default=False, action='store_true',
       help='Skip building GCC components (libgcc and libstdc++).')
 
-  options, leftover_args = parser.parse_known_args()
+  options, leftover_args = parser.parse_known_args(argv)
   if '-h' in leftover_args or '--help' in leftover_args:
     print 'The following arguments are specific to toolchain_build_bionic.py:'
     parser.print_help()
