@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USERS_AVATAR_DEFAULT_USER_IMAGES_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_AVATAR_DEFAULT_USER_IMAGES_H_
+#ifndef COMPONENTS_USER_MANAGER_USER_IMAGE_DEFAULT_USER_IMAGES_H_
+#define COMPONENTS_USER_MANAGER_USER_IMAGE_DEFAULT_USER_IMAGES_H_
 
 #include <cstddef>  // for size_t
 #include <string>
@@ -14,17 +14,7 @@ namespace gfx {
 class ImageSkia;
 }
 
-namespace chromeos {
-
-// Returns path to default user image with specified index.
-// The path is used in Local State to distinguish default images.
-// This function is obsolete and is preserved only for compatibility with older
-// profiles which don't user separate image index and path.
-std::string GetDefaultImagePath(int index);
-
-// Checks if given path is one of the default ones. If it is, returns true
-// and its index through |image_id|. If not, returns false.
-bool IsDefaultImagePath(const std::string& path, int* image_id);
+namespace user_manager {
 
 // Returns URL to default user image with specified index.
 std::string GetDefaultImageUrl(int index);
@@ -81,6 +71,6 @@ extern const int kHistogramImagesCount;
 // Returns the histogram value corresponding to the given default image index.
 int GetDefaultImageHistogramValue(int index);
 
-}  // namespace chromeos
+}  // namespace user_manager
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USERS_AVATAR_DEFAULT_USER_IMAGES_H_
+#endif  // COMPONENTS_USER_MANAGER_USER_IMAGE_DEFAULT_USER_IMAGES_H_

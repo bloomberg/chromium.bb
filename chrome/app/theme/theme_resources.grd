@@ -445,39 +445,6 @@
       <if expr="chromeos">
         <!-- TODO(nkostylev): This resource needs to be removed when cros login code is moved to ash. -->
         <structure type="chrome_scaled_image" name="IDR_LAUNCHER_BACKGROUND" file="cros/launcher_background.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER" file="avatar_beaker.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_1" file="avatar_bee.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_2" file="avatar_briefcase.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_3" file="avatar_circles.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_4" file="avatar_cloud.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_5" file="avatar_cupcake.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_6" file="avatar_day.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_7" file="avatar_flower.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_8" file="avatar_globe.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_9" file="avatar_hotair.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_10" file="avatar_ladybug.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_11" file="avatar_leaf.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_12" file="avatar_night.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_13" file="avatar_plane.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_14" file="avatar_robot_body.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_15" file="avatar_robot_head.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_16" file="avatar_toolbox.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_17" file="avatar_user_color.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_18" file="avatar_user_enterprise.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_19" file="avatar_bicycle.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_20" file="avatar_bokeh.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_21" file="avatar_chess.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_22" file="avatar_coffee.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_23" file="avatar_dragonfly.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_24" file="avatar_frog.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_25" file="avatar_ganzania.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_26" file="avatar_jackrussellterrier.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_27" file="avatar_jellyfish.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_28" file="avatar_kiwi.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_29" file="avatar_penguin.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_30" file="avatar_rainbowfish.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_31" file="avatar_recordplayer.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_32" file="avatar_upsidedown.png" />
         <structure type="chrome_scaled_image" name="IDR_LOGIN_PASSWORD_CAPS_LOCK" file="cros/login_password_capslock.png" />
       </if>
       <if expr="chromeos">
