@@ -12046,15 +12046,13 @@
         "gs_path": "default",
         "health_alert_recipients": [],
         "health_threshold": 0,
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"pfq\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"bvt\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
-        ],
+        "hw_tests": [],
         "hwqual": false,
         "image_test": false,
         "images": [
             "test"
         ],
-        "important": true,
+        "important": false,
         "internal": true,
         "latest_toolchain": false,
         "manifest": "default.xml",
@@ -47378,15 +47376,13 @@
         "gs_path": "default",
         "health_alert_recipients": [],
         "health_threshold": 0,
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"pfq\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"bvt\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
-        ],
+        "hw_tests": [],
         "hwqual": false,
         "image_test": false,
         "images": [
             "test"
         ],
-        "important": true,
+        "important": false,
         "internal": true,
         "latest_toolchain": false,
         "manifest": "default.xml",
@@ -53901,15 +53897,13 @@
         "gs_path": "default",
         "health_alert_recipients": [],
         "health_threshold": 0,
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"pool\": \"pfq\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"bvt\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}"
-        ],
+        "hw_tests": [],
         "hwqual": false,
         "image_test": false,
         "images": [
             "test"
         ],
-        "important": true,
+        "important": false,
         "internal": true,
         "latest_toolchain": false,
         "manifest": "default.xml",

@@ -1217,26 +1217,8 @@ chrome_pfq.add_config('daisy_spring-chrome-pfq',
   hw_tests=HWTestConfig.DefaultListPFQ(),
 )
 
-chrome_pfq.add_config('daisy-chrome-pfq',
-  non_testable_builder,
-  boards=['daisy'],
-  hw_tests=HWTestConfig.DefaultListPFQ(),
-)
-
 chrome_pfq.add_config('falco-chrome-pfq',
   boards=['falco'],
-  hw_tests=HWTestConfig.DefaultListPFQ(),
-  important=True,
-)
-
-chrome_pfq.add_config('peppy-chrome-pfq',
-  boards=['peppy'],
-  hw_tests=HWTestConfig.DefaultListPFQ(),
-  important=True,
-)
-
-chrome_pfq.add_config('parrot-chrome-pfq',
-  boards=['parrot'],
   hw_tests=HWTestConfig.DefaultListPFQ(),
   important=True,
 )

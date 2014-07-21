@@ -134,8 +134,7 @@ class UploadPrebuiltsStageTest(
     Args:
       bot_id: Bot to upload prebuilts for.
       count: Number of assert checks that should be performed.
-      board_map: Map from slave boards to whether the type of bot:
-        'public', 'private', or 'both'.
+      board_map: Map from slave boards to whether the bot is public.
       public_args: List of extra arguments for public boards.
       private_args: List of extra arguments for private boards.
     """
@@ -143,16 +142,13 @@ class UploadPrebuiltsStageTest(
     self.RunStage()
     public_prefix = [self.CMD] + (public_args or [])
     private_prefix = [self.CMD] + (private_args or [])
-    for board, bot_type in board_map.iteritems():
-      if (bot_type == 'public' or bot_type == 'both') or public_args:
+    for board, public in board_map.iteritems():
+      if public or public_args:
         public_cmd = public_prefix + ['--slave-board', board]
-        self.assertCommandContains(
-            public_cmd, expected=(bot_type is not 'private'))
+        self.assertCommandContains(public_cmd, expected=public)
         count -= 1
-
       private_cmd = private_prefix + ['--slave-board', board, '--private']
-      self.assertCommandContains(
-          private_cmd, expected=(bot_type is not 'public'))
+      self.assertCommandContains(private_cmd, expected=not public)
       count -= 1
     if board_map:
       self.assertCommandContains([self.CMD, '--set-version',
@@ -173,8 +169,8 @@ class UploadPrebuiltsStageTest(
 
   def testChromeUpload(self):
     """Test uploading of prebuilts for chrome build."""
-    board_map = {'amd64-generic': 'public', 'daisy': 'both',
-                 'x86-alex': 'private', 'lumpy': 'private'}
+    board_map = {'amd64-generic': True, 'daisy': True,
+                 'x86-alex': False, 'lumpy': False}
     self._VerifyBoardMap('x86-generic-chromium-pfq', 9, board_map,
                          public_args=['--board', 'x86-generic'])
 
