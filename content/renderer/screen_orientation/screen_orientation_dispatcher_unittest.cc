@@ -32,19 +32,14 @@ class MockLockOrientationCallback :
 
     bool succeeded_;
     bool failed_;
-    unsigned angle_;
-    blink::WebScreenOrientationType orientation_;
     blink::WebLockOrientationError error_;
   };
 
   explicit MockLockOrientationCallback(LockOrientationResultHolder* results)
       : results_(results) {}
 
-  virtual void onSuccess(unsigned angle,
-                         blink::WebScreenOrientationType orientation) {
+  virtual void onSuccess() {
     results_->succeeded_ = true;
-    results_->angle_ = angle;
-    results_->orientation_ = orientation;
   }
 
   virtual void onError(blink::WebLockOrientationError error) {
@@ -170,38 +165,20 @@ TEST_F(ScreenOrientationDispatcherTest, LockRequest_Error) {
 }
 
 // Test that when a LockSuccess message is received, the request is set as
-// succeeded with the correct values.
+// succeeded.
 TEST_F(ScreenOrientationDispatcherTest, LockRequest_Success) {
-  struct ScreenOrientationInformation {
-    unsigned angle;
-    blink::WebScreenOrientationType type;
-  } orientations[] = {
-    { 0, blink::WebScreenOrientationPortraitPrimary },
-    { 0, blink::WebScreenOrientationLandscapePrimary },
-    { 90, blink::WebScreenOrientationPortraitSecondary },
-    { 90, blink::WebScreenOrientationLandscapePrimary }
-  };
+  MockLockOrientationCallback::LockOrientationResultHolder callback_results;
+  LockOrientation(blink::WebScreenOrientationLockPortraitPrimary,
+                  new MockLockOrientationCallback(&callback_results));
 
-  int orientationsCount = 4;
+  int request_id = GetFirstLockRequestIdFromSink();
+  OnMessageReceived(ScreenOrientationMsg_LockSuccess(routing_id(),
+                                                     request_id));
 
-  for (int i = 0; i < orientationsCount; ++i) {
-    MockLockOrientationCallback::LockOrientationResultHolder callback_results;
-    LockOrientation(blink::WebScreenOrientationLockPortraitPrimary,
-                    new MockLockOrientationCallback(&callback_results));
+  EXPECT_TRUE(callback_results.succeeded_);
+  EXPECT_FALSE(callback_results.failed_);
 
-    int request_id = GetFirstLockRequestIdFromSink();
-    OnMessageReceived(ScreenOrientationMsg_LockSuccess(routing_id(),
-                                                       request_id,
-                                                       orientations[i].angle,
-                                                       orientations[i].type));
-
-    EXPECT_TRUE(callback_results.succeeded_);
-    EXPECT_FALSE(callback_results.failed_);
-    EXPECT_EQ(orientations[i].angle, callback_results.angle_);
-    EXPECT_EQ(orientations[i].type, callback_results.orientation_);
-
-    sink().ClearMessages();
-  }
+  sink().ClearMessages();
 }
 
 // Test an edge case: a LockSuccess is received but it matches no pending
@@ -212,11 +189,8 @@ TEST_F(ScreenOrientationDispatcherTest, SuccessForUnknownRequest) {
                   new MockLockOrientationCallback(&callback_results));
 
   int request_id = GetFirstLockRequestIdFromSink();
-  OnMessageReceived(ScreenOrientationMsg_LockSuccess(
-      routing_id(),
-      request_id + 1,
-      90,
-      blink::WebScreenOrientationLandscapePrimary));
+  OnMessageReceived(ScreenOrientationMsg_LockSuccess(routing_id(),
+                                                     request_id + 1));
 
   EXPECT_FALSE(callback_results.succeeded_);
   EXPECT_FALSE(callback_results.failed_);
@@ -256,11 +230,8 @@ TEST_F(ScreenOrientationDispatcherTest, RaceScenario) {
 
   // callback_results1 must be rejected, tested in CancelPending_DoubleLock.
 
-  OnMessageReceived(ScreenOrientationMsg_LockSuccess(
-      routing_id(),
-      request_id1,
-      0,
-      blink::WebScreenOrientationPortraitPrimary));
+  OnMessageReceived(ScreenOrientationMsg_LockSuccess(routing_id(),
+                                                     request_id1));
 
   // First request is still rejected.
   EXPECT_FALSE(callback_results1.succeeded_);

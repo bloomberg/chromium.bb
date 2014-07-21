@@ -41,9 +41,7 @@ class CONTENT_EXPORT ScreenOrientationDispatcher :
       blink::WebLockOrientationCallback* callback) OVERRIDE;
   virtual void unlockOrientation() OVERRIDE;
 
-  void OnLockSuccess(int request_id,
-                     unsigned angle,
-                     blink::WebScreenOrientationType orientation);
+  void OnLockSuccess(int request_id);
   void OnLockError(int request_id,
                    blink::WebLockOrientationError error);
 

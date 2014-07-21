@@ -34,13 +34,11 @@ IPC_MESSAGE_CONTROL1(ScreenOrientationMsg_OrientationChange,
                      blink::WebScreenOrientationType /* orientation */ )
 
 // The browser process' response to a ScreenOrientationHostMsg_LockRequest when
-// the lock actually succeeded. The message includes the new |angle| and |type|
-// of orientation. The |request_id| passed when receiving the request is passed
-// back so the renderer process can associate the response to the right request.
-IPC_MESSAGE_ROUTED3(ScreenOrientationMsg_LockSuccess,
-                    int, /* request_id */
-                    unsigned, /* angle */
-                    blink::WebScreenOrientationType /* type */)
+// the lock actually succeeded. The |request_id| passed when receiving the
+// request is passed back so the renderer process can associate the response to
+// the right request.
+IPC_MESSAGE_ROUTED1(ScreenOrientationMsg_LockSuccess,
+                    int /* request_id */)
 
 // The browser process' response to a ScreenOrientationHostMsg_LockRequest when
 // the lock actually failed. The message includes the |error| type. The
