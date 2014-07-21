@@ -1944,31 +1944,68 @@ TEST_F(WidgetTest, MAYBE_DisableTestRootViewHandlersWhenHidden) {
   widget->Close();
 }
 
-class GestureEndConsumerView : public View {
- private:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
-    if (event->type() == ui::ET_GESTURE_END)
-      event->SetHandled();
-  }
+// Convenience to make constructing a GestureEvent simpler.
+class GestureEventForTest : public ui::GestureEvent {
+ public:
+  GestureEventForTest(ui::EventType type, int x, int y)
+      : GestureEvent(x,
+                     y,
+                     0,
+                     base::TimeDelta(),
+                     ui::GestureEventDetails(type, 0.0f, 0.0f)) {}
 };
 
+// Tests that the |gesture_handler_| member in RootView is always NULL
+// after the dispatch of a ui::ET_GESTURE_END event corresponding to
+// the release of the final touch point on the screen.
 TEST_F(WidgetTest, GestureHandlerNotSetOnGestureEnd) {
   Widget* widget = CreateTopLevelNativeWidget();
   widget->SetBounds(gfx::Rect(0, 0, 300, 300));
-  View* view = new GestureEndConsumerView();
+  EventCountView* view = new EventCountView();
   view->SetBounds(0, 0, 300, 300);
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget->GetRootView());
   root_view->AddChildView(view);
-
   widget->Show();
+
+  // If no gesture handler is set, dispatching only a ui::ET_GESTURE_END
+  // event should not set the gesture handler if the event remains unhandled.
   EXPECT_EQ(NULL, GetGestureHandler(root_view));
-  ui::GestureEvent end(15,
-                       15,
-                       0,
-                       base::TimeDelta(),
-                       ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0));
+  GestureEventForTest end(ui::ET_GESTURE_END, 15, 15);
   widget->OnGestureEvent(&end);
+  EXPECT_FALSE(end.handled());
+  EXPECT_EQ(NULL, GetGestureHandler(root_view));
+
+  // If no gesture handler is set, dispatching only a ui::ET_GESTURE_END
+  // event should not set the gesture handler event if the event is handled.
+  view->set_handle_mode(EventCountView::CONSUME_EVENTS);
+  end = GestureEventForTest(ui::ET_GESTURE_END, 15, 15);
+  widget->OnGestureEvent(&end);
+  EXPECT_TRUE(end.handled());
+  EXPECT_EQ(NULL, GetGestureHandler(root_view));
+
+  // If the gesture handler has been set by a previous gesture, then
+  // it should be reset to NULL by a ui::ET_GESTURE_END.
+  GestureEventForTest tap(ui::ET_GESTURE_TAP, 15, 15);
+  widget->OnGestureEvent(&tap);
+  EXPECT_TRUE(tap.handled());
+  EXPECT_EQ(view, GetGestureHandler(root_view));
+  end = GestureEventForTest(ui::ET_GESTURE_END, 15, 15);
+  widget->OnGestureEvent(&end);
+  EXPECT_TRUE(end.handled());
+  EXPECT_EQ(NULL, GetGestureHandler(root_view));
+
+  // If the gesture handler has been set by a previous gesture, then
+  // it should be reset to NULL by a ui::ET_GESTURE_END, even when
+  // the gesture handler does not actually handle the end event.
+  tap = GestureEventForTest(ui::ET_GESTURE_TAP, 15, 15);
+  widget->OnGestureEvent(&tap);
+  EXPECT_TRUE(tap.handled());
+  EXPECT_EQ(view, GetGestureHandler(root_view));
+  end = GestureEventForTest(ui::ET_GESTURE_END, 15, 15);
+  view->set_handle_mode(EventCountView::PROPAGATE_EVENTS);
+  widget->OnGestureEvent(&end);
+  EXPECT_FALSE(end.handled());
   EXPECT_EQ(NULL, GetGestureHandler(root_view));
 
   widget->Close();
@@ -2446,20 +2483,6 @@ class FullscreenAwareFrame : public views::NonClientFrameView {
   bool fullscreen_layout_called_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenAwareFrame);
-};
-
-// Convenience to make constructing a GestureEvent simpler.
-class GestureEventForTest : public ui::GestureEvent {
- public:
-  GestureEventForTest(ui::EventType type, int x, int y)
-      : GestureEvent(x,
-                     y,
-                     0,
-                     base::TimeDelta(),
-                     ui::GestureEventDetails(type, 0.0f, 0.0f)) {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GestureEventForTest);
 };
 
 }  // namespace
