@@ -24,7 +24,7 @@ function test()
     typeTab();
     type("bar");
     typeTab();
-    InspectorTest.executeInPage("dump()", InspectorTest.completeTest.bind(InspectorTest));
+    InspectorTest.evaluateInPage("dump()", InspectorTest.completeTest.bind(InspectorTest));
 
     function type(text)
     {

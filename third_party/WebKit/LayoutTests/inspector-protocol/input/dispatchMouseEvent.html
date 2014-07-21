@@ -62,7 +62,7 @@ function test()
         }
     ];
 
-    InspectorTest.executeInPage("addListeners();", function() {
+    InspectorTest.evaluateInPage("addListeners();", function() {
         for (var i = 0; i < events.length; i++)
             InspectorTest.sendCommand("Input.dispatchMouseEvent", events[i], checkResponse.bind(undefined, i == events.length - 1));
     });

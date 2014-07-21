@@ -53,7 +53,7 @@ InspectorTest.sendCommand = function(method, params, handler)
                           "id": this._requestId };
 
     if (InspectorTest._dumpInspectorProtocolMessages)
-        testRunner.logToStderr("backend: " + JSON.stringify(messageObject));
+        testRunner.logToStderr("frontend: " + JSON.stringify(messageObject));
     InspectorFrontendHost.sendMessageToBackend(JSON.stringify(messageObject));
 
     return this._requestId;
@@ -141,7 +141,7 @@ InspectorTest.sendRawCommand = function(command, handler)
 InspectorFrontendAPI.dispatchMessage = function(message)
 {
     if (InspectorTest._dumpInspectorProtocolMessages)
-        testRunner.logToStderr("frontend: " + message);
+        testRunner.logToStderr("backend: " + message);
     var messageObject = JSON.parse(message);
     var messageId = messageObject["id"];
     try {
@@ -156,7 +156,7 @@ InspectorFrontendAPI.dispatchMessage = function(message)
                 eventHandler(messageObject);
         }
     } catch(e) {
-        InspectorTest.log("Exception when dispatching message: " + e + "\n\n message = " + JSON.stringify(messageObject, null, 2));
+        InspectorTest.log("Exception when dispatching message: " + e + "\n" + e.stack + "\n message = " + JSON.stringify(messageObject, null, 2));
         InspectorTest.completeTest();
     }
 }
@@ -243,7 +243,7 @@ InspectorTest.completeTest = function()
  * @param {string} message
  * @param {!function} callback
  */
-InspectorTest.executeInPage = function(string, callback)
+InspectorTest.evaluateInPage = function(string, callback)
 {
     this.sendCommand("Runtime.evaluate", { "expression": string }, function(message) {
         if (message.error)

@@ -1,9 +1,10 @@
 <html>
 <head>
 <script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/tracing-test.js"></script>
 <script>
 
-function testFunction()
+function performAction(callback)
 {
     var div = document.querySelector("#my-div");
     div.addEventListener("click", function(e) {  }, false);
@@ -11,39 +12,15 @@ function testFunction()
 
     var iframe = document.createElement("iframe");
     div.appendChild(iframe);
+    callback();
 }
 
 function test()
 {
-    InspectorTest.eventHandler["Tracing.dataCollected"] = dataCollected;
-    InspectorTest.eventHandler["Tracing.tracingComplete"] = tracingComplete;
-    InspectorTest.sendCommand("Tracing.start", { "categories" : "disabled-by-default-devtools.timeline", "type": "" }, onStart);
+    InspectorTest.invokeAsyncWithTracing("performAction", finish);
 
-    function onStart(response)
+    function finish(devtoolsEvents)
     {
-        InspectorTest.log("Recording started");
-        InspectorTest.sendCommand("Runtime.evaluate", { "expression": "testFunction()" }, didEvaluate);
-    }
-
-    function didEvaluate(response)
-    {
-        InspectorTest.sendCommand("Tracing.end", { }, onStop);
-    }
-
-    var devtoolsEvents = [];
-    function dataCollected(reply)
-    {
-        var allEvents = reply.params.value;
-        devtoolsEvents = devtoolsEvents.concat(allEvents.filter(function(e)
-        {
-            return e.cat === "disabled-by-default-devtools.timeline";
-        }));
-    }
-
-    function tracingComplete(event)
-    {
-        InspectorTest.log("Tracing complete");
-
         function windowEventFilter(type, e)
         {
             return e.name === "EventDispatch" && e.args.data.type === type;
@@ -56,26 +33,20 @@ function test()
             if (events.length >= 1) {
                 InspectorTest.log("SUCCESS: found " + eventName + " event");
             } else {
-                fail(eventName + " event is missing");
+                fail(eventName + " event is missing", devtoolsEvents);
             }
         }
 
         InspectorTest.completeTest();
     }
 
-
-    function fail(message)
+    function fail(message, devtoolsEvents)
     {
         var formattedEvents = devtoolsEvents.map(function(e)
         {
             return e.name + "(" + e.args.data.type + ")";
         });
         InspectorTest.log("FAIL: " + message + " devtools.timeline events: " + JSON.stringify(formattedEvents, null, 2));
-    }
-
-    function onStop(response)
-    {
-        InspectorTest.log("Recording stopped");
     }
 }
 </script>

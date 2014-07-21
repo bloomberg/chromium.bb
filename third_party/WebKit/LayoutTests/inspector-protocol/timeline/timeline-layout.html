@@ -7,55 +7,32 @@
 }
 </style>
 <script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/tracing-test.js"></script>
 <script>
 
-function testFunction()
+function performActions(callback)
 {
     var div = document.querySelector("#myDiv");
     div.classList.add("my-class");
     div.offsetWidth;
+    callback();
 }
 
 function test()
 {
-    InspectorTest.eventHandler["Tracing.dataCollected"] = dataCollected;
-    InspectorTest.eventHandler["Tracing.tracingComplete"] = tracingComplete;
-    InspectorTest.sendCommand("Tracing.start", { "categories" : "disabled-by-default-devtools.timeline", "type": "" }, onStart);
+    InspectorTest.invokeAsyncWithTracing("performActions", finish);
 
-    function onStart(response)
+    function finish(devtoolsEvents)
     {
-        InspectorTest.log("Recording started");
-        InspectorTest.sendCommand("Runtime.evaluate", { "expression": "testFunction()" }, didEvaluate);
-    }
-
-    function didEvaluate(response)
-    {
-        InspectorTest.sendCommand("Tracing.end", { }, onStop);
-    }
-
-    var devtoolsEvents = [];
-    function dataCollected(reply)
-    {
-        var allEvents = reply.params.value;
-        devtoolsEvents = devtoolsEvents.concat(allEvents.filter(function(e)
-        {
-            return e.cat === "disabled-by-default-devtools.timeline";
-        }));
-    }
-
-    function tracingComplete(event)
-    {
-        InspectorTest.log("Tracing complete");
-
-        var schedRecalc = findEvent("ScheduleStyleRecalculation", "I");
-        var recalcBegin = findEvent("RecalculateStyles", "B");
-        var recalcEnd = findEvent("RecalculateStyles", "E");
+        var schedRecalc = InspectorTest.findEvent("ScheduleStyleRecalculation", "I");
+        var recalcBegin = InspectorTest.findEvent("RecalculateStyles", "B");
+        var recalcEnd = InspectorTest.findEvent("RecalculateStyles", "E");
         InspectorTest.assertEquals(schedRecalc.args.frame, recalcBegin.args.frame, "RecalculateStyles frame");
         InspectorTest.assert(recalcEnd.args.elementCount > 0, "RecalculateStyles elementCount");
 
-        var invalidate = findEvent("InvalidateLayout", "I");
-        var layoutBegin = findEvent("Layout", "B");
-        var layoutEnd = findEvent("Layout", "E");
+        var invalidate = InspectorTest.findEvent("InvalidateLayout", "I");
+        var layoutBegin = InspectorTest.findEvent("Layout", "B");
+        var layoutEnd = InspectorTest.findEvent("Layout", "E");
 
         InspectorTest.assertEquals(recalcBegin.args.frame, invalidate.args.frame, "InvalidateLayout frame");
 
@@ -72,20 +49,6 @@ function test()
         InspectorTest.completeTest();
     }
 
-    function findEvent(name, ph)
-    {
-        for (var i = 0; i < devtoolsEvents.length; i++) {
-            var e = devtoolsEvents[i];
-            if (e.name === name && e.ph === ph)
-                return e;
-        }
-        throw new Error("Couldn't find event " + name + " / " + ph + "\n\n in " + JSON.stringify(devtoolsEvents, null, 2));
-    }
-
-    function onStop(response)
-    {
-        InspectorTest.log("Recording stopped");
-    }
 }
 </script>
 </head>
