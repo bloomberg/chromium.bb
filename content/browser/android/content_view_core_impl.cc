@@ -1463,12 +1463,12 @@ void ContentViewCoreImpl::SetAccessibilityEnabledInternal(bool enabled) {
 }
 
 void ContentViewCoreImpl::SendOrientationChangeEventInternal() {
-  static_cast<WebContentsImpl*>(web_contents())->
-      screen_orientation_dispatcher_host()->OnOrientationChange();
-
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv)
     rwhv->UpdateScreenInfo(GetViewAndroid());
+
+  static_cast<WebContentsImpl*>(web_contents())->
+      screen_orientation_dispatcher_host()->OnOrientationChange();
 }
 
 void ContentViewCoreImpl::ExtractSmartClipData(JNIEnv* env,
