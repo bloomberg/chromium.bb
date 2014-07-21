@@ -726,6 +726,8 @@ function isSuccessfullyParsed()
     debug('<br /><span class="pass">TEST COMPLETE</span>');
 }
 
+var wasPostTestScriptParsed, wasFinishJSTestCalled, jsTestIsAsync;
+
 // It's possible for an async test to call finishJSTest() before js-test-post.js
 // has been parsed.
 function finishJSTest()
