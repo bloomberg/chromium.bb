@@ -186,7 +186,8 @@
     "chrome/test/data/.*",
     "content/test/data/.*",
     "DEPS",
-    "testing/buildbot/.*"
+    "testing/buildbot/.*",
+    "tools/whitespace.txt"
   ],
 
   "filter_builders": [
