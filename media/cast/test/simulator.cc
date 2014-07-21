@@ -104,11 +104,22 @@ void LogTransportEvents(const scoped_refptr<CastEnvironment>& env,
            frame_events.begin();
        it != frame_events.end();
        ++it) {
-    env->Logging()->InsertFrameEvent(it->timestamp,
-                                     it->type,
-                                     it->media_type,
-                                     it->rtp_timestamp,
-                                     it->frame_id);
+    if (it->type == FRAME_PLAYOUT) {
+      env->Logging()->InsertFrameEventWithDelay(
+          it->timestamp,
+          it->type,
+          it->media_type,
+          it->rtp_timestamp,
+          it->frame_id,
+          it->delay_delta);
+    } else {
+      env->Logging()->InsertFrameEvent(
+          it->timestamp,
+          it->type,
+          it->media_type,
+          it->rtp_timestamp,
+          it->frame_id);
+    }
   }
 }
 
