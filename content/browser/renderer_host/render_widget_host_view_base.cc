@@ -484,13 +484,22 @@ blink::WebPopupType RenderWidgetHostViewBase::GetPopupType() {
 }
 
 BrowserAccessibilityManager*
-RenderWidgetHostViewBase::CreateBrowserAccessibilityManager(
-    BrowserAccessibilityDelegate* delegate) {
-  NOTREACHED();
-  return NULL;
+    RenderWidgetHostViewBase::GetBrowserAccessibilityManager() const {
+  return browser_accessibility_manager_.get();
 }
 
-void RenderWidgetHostViewBase::AccessibilityShowMenu(const gfx::Point& point) {
+void RenderWidgetHostViewBase::CreateBrowserAccessibilityManagerIfNeeded() {
+}
+
+void RenderWidgetHostViewBase::SetBrowserAccessibilityManager(
+    BrowserAccessibilityManager* manager) {
+  browser_accessibility_manager_.reset(manager);
+}
+
+void RenderWidgetHostViewBase::OnAccessibilitySetFocus(int acc_obj_id) {
+}
+
+void RenderWidgetHostViewBase::AccessibilityShowMenu(int acc_obj_id) {
 }
 
 gfx::Point RenderWidgetHostViewBase::AccessibilityOriginInScreen(

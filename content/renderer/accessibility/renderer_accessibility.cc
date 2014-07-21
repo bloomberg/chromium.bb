@@ -4,7 +4,6 @@
 
 #include "content/renderer/accessibility/renderer_accessibility.h"
 
-#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -17,16 +16,16 @@ using blink::WebView;
 namespace content {
 
 RendererAccessibility::RendererAccessibility(
-    RenderFrameImpl* render_frame)
-    : RenderFrameObserver(render_frame),
-      render_frame_(render_frame) {
+    RenderViewImpl* render_view)
+    : RenderViewObserver(render_view),
+      render_view_(render_view) {
 }
 
 RendererAccessibility::~RendererAccessibility() {
 }
 
 WebDocument RendererAccessibility::GetMainDocument() {
-  WebView* view = render_frame_->render_view()->GetWebView();
+  WebView* view = render_view()->GetWebView();
   WebFrame* main_frame = view ? view->mainFrame() : NULL;
 
   if (main_frame)

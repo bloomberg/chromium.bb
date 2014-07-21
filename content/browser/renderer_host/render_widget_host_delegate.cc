@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 
 namespace content {
@@ -28,19 +27,9 @@ bool RenderWidgetHostDelegate::HandleGestureEvent(
   return false;
 }
 
-BrowserAccessibilityManager*
-    RenderWidgetHostDelegate::GetRootBrowserAccessibilityManager() {
-  return NULL;
-}
-
-BrowserAccessibilityManager*
-    RenderWidgetHostDelegate::GetOrCreateRootBrowserAccessibilityManager() {
-  return NULL;
-}
-
 #if defined(OS_WIN)
 gfx::NativeViewAccessible
-    RenderWidgetHostDelegate::GetParentNativeViewAccessible() {
+RenderWidgetHostDelegate::GetParentNativeViewAccessible() {
   return NULL;
 }
 #endif

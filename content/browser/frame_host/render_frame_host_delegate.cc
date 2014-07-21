@@ -7,7 +7,6 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
-#include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -43,16 +42,5 @@ void RenderFrameHostDelegate::RequestMediaAccessPermission(
                MEDIA_DEVICE_INVALID_STATE,
                scoped_ptr<MediaStreamUI>());
 }
-
-AccessibilityMode RenderFrameHostDelegate::GetAccessibilityMode() const {
-  return AccessibilityModeOff;
-}
-
-#if defined(OS_WIN)
-gfx::NativeViewAccessible
-    RenderFrameHostDelegate::GetParentNativeViewAccessible() {
-  return NULL;
-}
-#endif  // defined(OS_WIN)
 
 }  // namespace content

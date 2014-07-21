@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
-#include "content/common/accessibility_mode_enums.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/referrer.h"
@@ -23,7 +22,6 @@
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
-#include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
@@ -67,7 +65,6 @@ class MidiDispatcher;
 class NotificationProvider;
 class PepperPluginInstanceImpl;
 class PushMessagingDispatcher;
-class RendererAccessibility;
 class RendererCdmManager;
 class RendererMediaPlayerManager;
 class RendererPpapiHost;
@@ -150,22 +147,6 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didStartLoading(bool to_different_document);
   virtual void didStopLoading();
   virtual void didChangeLoadProgress(double load_progress);
-
-  AccessibilityMode accessibility_mode() {
-    return accessibility_mode_;
-  }
-
-  RendererAccessibility* renderer_accessibility() {
-    return renderer_accessibility_;
-  }
-
-  void HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
-                                   blink::WebAXEvent event);
-
-  // TODO(dmazzoni): the only reason this is here is to plumb it through to
-  // RendererAccessibility. It should be part of RenderFrameObserver, once
-  // blink has a separate accessibility tree per frame.
-  void FocusedNodeChanged(const blink::WebNode& node);
 
 #if defined(ENABLE_PLUGINS)
   // Notification that a PPAPI plugin has been created.
@@ -438,7 +419,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
  private:
   friend class RenderFrameObserver;
-  friend class RendererAccessibilityTest;
   FRIEND_TEST_ALL_PREFIXES(RendererAccessibilityTest,
                            AccessibilityMessagesQueueWhileSwappedOut);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameImplTest,
@@ -449,8 +429,6 @@ class CONTENT_EXPORT RenderFrameImpl
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, SendSwapOutACK);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            SetEditableSelectionAndComposition);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
-                           OnSetAccessibilityMode);
 
   typedef std::map<GURL, double> HostZoomLevels;
 
@@ -498,7 +476,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnReload(bool ignore_cache);
   void OnTextSurroundingSelectionRequest(size_t max_length);
   void OnAddStyleSheetByURL(const std::string& url);
-  void OnSetAccessibilityMode(AccessibilityMode new_mode);
 #if defined(OS_MACOSX)
   void OnCopyToFindPboard();
 #endif
@@ -686,13 +663,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // The screen orientation dispatcher attached to the frame, lazily
   // initialized.
   ScreenOrientationDispatcher* screen_orientation_dispatcher_;
-
-  // The current accessibility mode.
-  AccessibilityMode accessibility_mode_;
-
-  // Only valid if |accessibility_mode_| is anything other than
-  // AccessibilityModeOff.
-  RendererAccessibility* renderer_accessibility_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

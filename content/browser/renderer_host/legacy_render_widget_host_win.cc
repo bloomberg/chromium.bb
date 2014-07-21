@@ -70,10 +70,8 @@ HWND LegacyRenderWidgetHostHWND::GetParent() {
   return ::GetParent(hwnd());
 }
 
-void LegacyRenderWidgetHostHWND::OnManagerDeleted(
-    content::BrowserAccessibilityManagerWin* manager) {
-  if (manager_ == manager)
-    manager_ = NULL;
+void LegacyRenderWidgetHostHWND::OnManagerDeleted() {
+  manager_ = NULL;
 }
 
 void LegacyRenderWidgetHostHWND::Show() {

@@ -1550,12 +1550,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     [self delegate]->AccessibilityDoDefaultAction(
         browserAccessibility_->GetId());
   } else if ([action isEqualToString:NSAccessibilityShowMenuAction]) {
-    NSPoint objOrigin = [self origin];
-    NSSize size = [[self size] sizeValue];
-    gfx::Point origin = [self delegate]->AccessibilityOriginInScreen(
-        gfx::Rect(objOrigin.x, objOrigin.y, size.width, size.height));
-    origin.Offset(size.width / 2, size.height / 2);
-    [self delegate]->AccessibilityShowMenu(origin);
+    [self delegate]->AccessibilityShowMenu(browserAccessibility_->GetId());
   }
 }
 
@@ -1580,11 +1575,10 @@ NSDictionary* attributeToMethodNameMap = nil;
     return;
 
   if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
-    BrowserAccessibilityManager* manager = browserAccessibility_->manager();
     NSNumber* focusedNumber = value;
     BOOL focused = [focusedNumber intValue];
     if (focused)
-      manager->SetFocus(browserAccessibility_, true);
+      [self delegate]->AccessibilitySetFocus(browserAccessibility_->GetId());
   }
   if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
     NSRange range = [(NSValue*)value rangeValue];

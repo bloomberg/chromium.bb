@@ -432,13 +432,6 @@ void InterstitialPageImpl::UpdateTitle(
   controller_->delegate()->NotifyNavigationStateChanged(INVALIDATE_TYPE_TITLE);
 }
 
-AccessibilityMode InterstitialPageImpl::GetAccessibilityMode() const {
-  if (web_contents_)
-    return static_cast<WebContentsImpl*>(web_contents_)->GetAccessibilityMode();
-  else
-    return AccessibilityModeOff;
-}
-
 RenderViewHostDelegateView* InterstitialPageImpl::GetDelegateView() {
   return rvh_delegate_view_.get();
 }
@@ -540,11 +533,7 @@ void InterstitialPageImpl::HandleKeyboardEvent(
 #if defined(OS_WIN)
 gfx::NativeViewAccessible
 InterstitialPageImpl::GetParentNativeViewAccessible() {
-  if (web_contents_) {
-    WebContentsImpl* wci = static_cast<WebContentsImpl*>(web_contents_);
-    return wci->GetParentNativeViewAccessible();
-  }
-  return NULL;
+  return render_widget_host_delegate_->GetParentNativeViewAccessible();
 }
 #endif
 

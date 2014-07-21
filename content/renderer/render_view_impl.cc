@@ -728,6 +728,8 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       speech_recognition_dispatcher_(NULL),
       browser_plugin_manager_(NULL),
       devtools_agent_(NULL),
+      accessibility_mode_(AccessibilityModeOff),
+      renderer_accessibility_(NULL),
       mouse_lock_dispatcher_(NULL),
 #if defined(OS_ANDROID)
       expected_content_intent_id_(0),
@@ -859,6 +861,9 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   mouse_lock_dispatcher_ = new RenderViewMouseLockDispatcher(this);
 
   history_controller_.reset(new HistoryController(this));
+
+  // Create renderer_accessibility_ if needed.
+  OnSetAccessibilityMode(params->accessibility_mode);
 
   new IdleUserDetector(this);
 
@@ -1202,7 +1207,8 @@ RenderViewImpl* RenderViewImpl::Create(
     bool hidden,
     bool never_visible,
     int32 next_page_id,
-    const blink::WebScreenInfo& screen_info) {
+    const blink::WebScreenInfo& screen_info,
+    AccessibilityMode accessibility_mode) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   RenderViewImplParams params(opener_id,
                               window_was_created_with_opener,
@@ -1219,7 +1225,8 @@ RenderViewImpl* RenderViewImpl::Create(
                               hidden,
                               never_visible,
                               next_page_id,
-                              screen_info);
+                              screen_info,
+                              accessibility_mode);
   RenderViewImpl* render_view = NULL;
   if (g_create_render_view_impl)
     render_view = g_create_render_view_impl(&params);
@@ -1407,6 +1414,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetHistoryLengthAndPrune,
                         OnSetHistoryLengthAndPrune)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetAccessibilityMode, OnSetAccessibilityMode)
     IPC_MESSAGE_HANDLER(ViewMsg_DisownOpener, OnDisownOpener)
     IPC_MESSAGE_HANDLER(ViewMsg_ReleaseDisambiguationPopupBitmap,
                         OnReleaseDisambiguationPopupBitmap)
@@ -1748,7 +1756,8 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
       params.disposition == NEW_BACKGROUND_TAB,  // hidden
       never_visible,
       1,  // next_page_id
-      screen_info_);
+      screen_info_,
+      accessibility_mode_);
   view->opened_by_user_gesture_ = params.user_gesture;
 
   // Record whether the creator frame is trying to suppress the opener field.
@@ -2032,9 +2041,6 @@ void RenderViewImpl::focusedNodeChanged(const WebNode& node) {
   Send(new ViewHostMsg_FocusedNodeChanged(routing_id_, IsEditableNode(node)));
 
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FocusedNodeChanged(node));
-
-  // TODO(dmazzoni): this should be part of RenderFrameObserver.
-  main_render_frame()->FocusedNodeChanged(node);
 }
 
 void RenderViewImpl::didUpdateLayout() {
@@ -2067,7 +2073,9 @@ int RenderViewImpl::historyForwardListCount() {
 
 void RenderViewImpl::postAccessibilityEvent(
     const WebAXObject& obj, blink::WebAXEvent event) {
-  main_render_frame()->HandleWebAccessibilityEvent(obj, event);
+  if (renderer_accessibility_) {
+    renderer_accessibility_->HandleWebAccessibilityEvent(obj, event);
+  }
 }
 
 void RenderViewImpl::didUpdateInspectorSetting(const WebString& key,
@@ -3430,6 +3438,25 @@ void RenderViewImpl::OnSetBackgroundOpaque(bool opaque) {
     compositor_->setHasTransparentBackground(!opaque);
 }
 
+void RenderViewImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {
+  if (accessibility_mode_ == new_mode)
+    return;
+  accessibility_mode_ = new_mode;
+  if (renderer_accessibility_) {
+    delete renderer_accessibility_;
+    renderer_accessibility_ = NULL;
+  }
+  if (accessibility_mode_ == AccessibilityModeOff)
+    return;
+
+  if (accessibility_mode_ & AccessibilityModeFlagFullTree)
+    renderer_accessibility_ = new RendererAccessibilityComplete(this);
+#if !defined(OS_ANDROID)
+  else
+    renderer_accessibility_ = new RendererAccessibilityFocusOnly(this);
+#endif
+}
+
 void RenderViewImpl::OnSetActive(bool active) {
   if (webview())
     webview()->setIsActive(active);
@@ -4124,12 +4151,10 @@ bool RenderViewImpl::didTapMultipleTargets(
     const WebVector<WebRect>& target_rects) {
   // Never show a disambiguation popup when accessibility is enabled,
   // as this interferes with "touch exploration".
-  AccessibilityMode accessibility_mode =
-      main_render_frame()->accessibility_mode();
-  bool matches_accessibility_mode_complete =
-      (accessibility_mode & AccessibilityModeComplete) ==
-          AccessibilityModeComplete;
-  if (matches_accessibility_mode_complete)
+  bool matchesAccessibilityModeComplete =
+      (accessibility_mode_ & AccessibilityModeComplete) ==
+      AccessibilityModeComplete;
+  if (matchesAccessibilityModeComplete)
     return false;
 
   gfx::Rect finger_rect(

@@ -47,11 +47,11 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual ~BrowserAccessibilityDelegate() {}
   virtual void AccessibilitySetFocus(int acc_obj_id) = 0;
   virtual void AccessibilityDoDefaultAction(int acc_obj_id) = 0;
-  virtual void AccessibilityShowMenu(const gfx::Point& global_point) = 0;
+  virtual void AccessibilityShowMenu(int acc_obj_id) = 0;
   virtual void AccessibilityScrollToMakeVisible(
-      int acc_obj_id, const gfx::Rect& subfocus) = 0;
+      int acc_obj_id, gfx::Rect subfocus) = 0;
   virtual void AccessibilityScrollToPoint(
-      int acc_obj_id, const gfx::Point& point) = 0;
+      int acc_obj_id, gfx::Point point) = 0;
   virtual void AccessibilitySetTextSelection(
       int acc_obj_id, int start_offset, int end_offset) = 0;
   virtual bool AccessibilityViewHasFocus() const = 0;
@@ -183,9 +183,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   virtual void OnRootChanged(ui::AXNode* new_root) OVERRIDE {}
 
   BrowserAccessibilityDelegate* delegate() const { return delegate_; }
-  void set_delegate(BrowserAccessibilityDelegate* delegate) {
-    delegate_ = delegate;
-  }
 
  protected:
   BrowserAccessibilityManager(

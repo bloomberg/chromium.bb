@@ -6,14 +6,14 @@
 #define CONTENT_TEST_ACCESSIBILITY_BROWSER_TEST_UTILS_H_
 
 #include "base/memory/weak_ptr.h"
-#include "content/common/accessibility_mode_enums.h"
+#include "content/common/view_message_enums.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree.h"
 
 namespace content {
 
 class MessageLoopRunner;
-class RenderFrameHostImpl;
+class RenderViewHostImpl;
 class Shell;
 
 // Create an instance of this class *before* doing any operation that
@@ -53,7 +53,7 @@ class AccessibilityNotificationWaiter {
   bool IsAboutBlank();
 
   Shell* shell_;
-  RenderFrameHostImpl* frame_host_;
+  RenderViewHostImpl* view_host_;
   ui::AXEvent event_to_wait_for_;
   scoped_refptr<MessageLoopRunner> loop_runner_;
   base::WeakPtrFactory<AccessibilityNotificationWaiter> weak_factory_;

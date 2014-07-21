@@ -2056,13 +2056,14 @@ void RenderWidgetHostViewMac::SetBackgroundOpaque(bool opaque) {
     render_widget_host_->SetBackgroundOpaque(opaque);
 }
 
-BrowserAccessibilityManager*
-    RenderWidgetHostViewMac::CreateBrowserAccessibilityManager(
-        BrowserAccessibilityDelegate* delegate) {
-  return new BrowserAccessibilityManagerMac(
-      cocoa_view_,
-      BrowserAccessibilityManagerMac::GetEmptyDocument(),
-      delegate);
+void RenderWidgetHostViewMac::CreateBrowserAccessibilityManagerIfNeeded() {
+  if (!GetBrowserAccessibilityManager()) {
+    SetBrowserAccessibilityManager(
+        new BrowserAccessibilityManagerMac(
+            cocoa_view_,
+            BrowserAccessibilityManagerMac::GetEmptyDocument(),
+            render_widget_host_));
+  }
 }
 
 gfx::Point RenderWidgetHostViewMac::AccessibilityOriginInScreen(
@@ -2077,9 +2078,33 @@ gfx::Point RenderWidgetHostViewMac::AccessibilityOriginInScreen(
   return gfx::Point(originInScreen.x, originInScreen.y);
 }
 
-void RenderWidgetHostViewMac::AccessibilityShowMenu(const gfx::Point& point) {
-  NSPoint location = NSMakePoint(point.x(), point.y());
+void RenderWidgetHostViewMac::OnAccessibilitySetFocus(int accObjId) {
+  // Immediately set the focused item even though we have not officially set
+  // focus on it as VoiceOver expects to get the focused item after this
+  // method returns.
+  BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
+  if (manager)
+    manager->SetFocus(manager->GetFromID(accObjId), false);
+}
+
+void RenderWidgetHostViewMac::AccessibilityShowMenu(int accObjId) {
+  BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
+  if (!manager)
+    return;
+  BrowserAccessibilityCocoa* obj =
+      manager->GetFromID(accObjId)->ToBrowserAccessibilityCocoa();
+
+  // Performs a right click copying WebKit's
+  // accessibilityPerformShowMenuAction.
+  NSPoint objOrigin = [obj origin];
+  NSSize size = [[obj size] sizeValue];
+  gfx::Point origin = AccessibilityOriginInScreen(
+      gfx::Rect(objOrigin.x, objOrigin.y, size.width, size.height));
+  NSPoint location = NSMakePoint(origin.x(), origin.y());
   location = [[cocoa_view_ window] convertScreenToBase:location];
+  location.x += size.width/2;
+  location.y += size.height/2;
+
   NSEvent* fakeRightClick = [NSEvent
                           mouseEventWithType:NSRightMouseDown
                                     location:location
@@ -2093,6 +2118,8 @@ void RenderWidgetHostViewMac::AccessibilityShowMenu(const gfx::Point& point) {
 
   [cocoa_view_ mouseEvent:fakeRightClick];
 }
+
+
 
 void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   if (active) {
@@ -3142,7 +3169,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
 - (id)accessibilityAttributeValue:(NSString *)attribute {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->GetHost()->GetRootBrowserAccessibilityManager();
+      renderWidgetHostView_->GetBrowserAccessibilityManager();
 
   // Contents specifies document view of RenderWidgetHostViewCocoa provided by
   // BrowserAccessibilityManager. Children includes all subviews in addition to
@@ -3167,28 +3194,25 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {
-  BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->GetHost()->GetRootBrowserAccessibilityManager();
-  if (!manager)
+  if (!renderWidgetHostView_->GetBrowserAccessibilityManager())
     return self;
   NSPoint pointInWindow = [[self window] convertScreenToBase:point];
   NSPoint localPoint = [self convertPoint:pointInWindow fromView:nil];
   localPoint.y = NSHeight([self bounds]) - localPoint.y;
-  BrowserAccessibilityCocoa* root =
-      manager->GetRoot()->ToBrowserAccessibilityCocoa();
+  BrowserAccessibilityCocoa* root = renderWidgetHostView_->
+      GetBrowserAccessibilityManager()->
+          GetRoot()->ToBrowserAccessibilityCocoa();
   id obj = [root accessibilityHitTest:localPoint];
   return obj;
 }
 
 - (BOOL)accessibilityIsIgnored {
-  BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->GetHost()->GetRootBrowserAccessibilityManager();
-  return !manager;
+  return !renderWidgetHostView_->GetBrowserAccessibilityManager();
 }
 
 - (NSUInteger)accessibilityGetIndexOf:(id)child {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->GetHost()->GetRootBrowserAccessibilityManager();
+      renderWidgetHostView_->GetBrowserAccessibilityManager();
   // Only child is root.
   if (manager &&
       manager->GetRoot()->ToBrowserAccessibilityCocoa() == child) {
@@ -3200,7 +3224,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
 - (id)accessibilityFocusedUIElement {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->GetHost()->GetRootBrowserAccessibilityManager();
+      renderWidgetHostView_->GetBrowserAccessibilityManager();
   if (manager) {
     BrowserAccessibility* focused_item = manager->GetFocus(NULL);
     DCHECK(focused_item);

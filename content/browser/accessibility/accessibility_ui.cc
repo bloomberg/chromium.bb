@@ -15,7 +15,6 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
@@ -64,11 +63,11 @@ base::DictionaryValue* BuildTargetDescriptor(
 }
 
 base::DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh) {
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderViewHost(rvh));
-  AccessibilityMode accessibility_mode = web_contents->GetAccessibilityMode();
-
+  WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
   std::string title;
+  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rvh);
+  AccessibilityMode accessibility_mode = rwhi->accessibility_mode();
+
   GURL url;
   GURL favicon_url;
   if (web_contents) {
@@ -179,15 +178,14 @@ void AccessibilityUI::ToggleAccessibility(const base::ListValue* args) {
   RenderViewHost* rvh = RenderViewHost::FromID(process_id, route_id);
   if (!rvh)
     return;
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderViewHost(rvh));
-  AccessibilityMode mode = web_contents->GetAccessibilityMode();
-  if ((mode & AccessibilityModeComplete) != AccessibilityModeComplete) {
-    web_contents->AddAccessibilityMode(AccessibilityModeComplete);
-  } else {
-    web_contents->SetAccessibilityMode(
-        BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode());
-  }
+  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rvh);
+  if (!rwhi)
+    return;
+  AccessibilityMode mode = rwhi->accessibility_mode();
+  if ((mode & AccessibilityModeComplete) != AccessibilityModeComplete)
+    rwhi->AddAccessibilityMode(AccessibilityModeComplete);
+  else
+    rwhi->ResetAccessibilityMode();
 }
 
 void AccessibilityUI::ToggleGlobalAccessibility(const base::ListValue* args) {
@@ -222,10 +220,25 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
   }
 
   scoped_ptr<base::DictionaryValue> result(BuildTargetDescriptor(rvh));
-  WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
+  RenderWidgetHostViewBase* host_view = static_cast<RenderWidgetHostViewBase*>(
+      WebContents::FromRenderViewHost(rvh)->GetRenderWidgetHostView());
+  if (!host_view) {
+    result->Set("error",
+                new base::StringValue("Could not get accessibility tree."));
+    web_ui()->CallJavascriptFunction("accessibility.showTree", *(result.get()));
+    return;
+  }
   scoped_ptr<AccessibilityTreeFormatter> formatter(
-      AccessibilityTreeFormatter::Create(web_contents));
+      AccessibilityTreeFormatter::Create(rvh));
   base::string16 accessibility_contents_utf16;
+  BrowserAccessibilityManager* manager =
+      host_view->GetBrowserAccessibilityManager();
+  if (!manager) {
+    result->Set("error",
+                new base::StringValue("Could not get accessibility tree."));
+    web_ui()->CallJavascriptFunction("accessibility.showTree", *(result.get()));
+    return;
+  }
   std::vector<AccessibilityTreeFormatter::Filter> filters;
   filters.push_back(AccessibilityTreeFormatter::Filter(
       base::ASCIIToUTF16("*"),

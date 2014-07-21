@@ -17,7 +17,6 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/output/begin_frame_args.h"
-#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/android/gesture_event_type.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/java/gin_java_bridge_dispatcher_host.h"
@@ -42,6 +41,7 @@
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/favicon_status.h"
@@ -1444,21 +1444,24 @@ bool ContentViewCoreImpl::IsFullscreenRequiredForOrientationLock() const {
 
 void ContentViewCoreImpl::SetAccessibilityEnabledInternal(bool enabled) {
   accessibility_enabled_ = enabled;
-  BrowserAccessibilityStateImpl* accessibility_state =
-      BrowserAccessibilityStateImpl::GetInstance();
+  RenderWidgetHostViewAndroid* host_view = GetRenderWidgetHostViewAndroid();
+  if (!host_view)
+    return;
+  RenderWidgetHostImpl* host_impl = RenderWidgetHostImpl::From(
+      host_view->GetRenderWidgetHost());
+  BrowserAccessibilityState* accessibility_state =
+      BrowserAccessibilityState::GetInstance();
   if (enabled) {
     // This enables accessibility globally unless it was explicitly disallowed
     // by a command-line flag.
     accessibility_state->OnScreenReaderDetected();
     // If it was actually enabled globally, enable it for this RenderWidget now.
-    if (accessibility_state->IsAccessibleBrowser() && web_contents_)
-      web_contents_->AddAccessibilityMode(AccessibilityModeComplete);
+    if (accessibility_state->IsAccessibleBrowser() && host_impl)
+      host_impl->AddAccessibilityMode(AccessibilityModeComplete);
   } else {
     accessibility_state->ResetAccessibilityMode();
-    if (web_contents_) {
-      web_contents_->SetAccessibilityMode(
-          accessibility_state->accessibility_mode());
-    }
+    if (host_impl)
+      host_impl->ResetAccessibilityMode();
   }
 }
 
