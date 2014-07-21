@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_MEDIA_MEDIA_BROWSERTEST_H_
 #define CONTENT_BROWSER_MEDIA_MEDIA_BROWSERTEST_H_
 
-#include <utility>
-#include <vector>
+#include <string>
 
 #include "content/public/test/content_browser_test.h"
+#include "media/base/test_data_util.h"
 
 namespace content {
 
@@ -19,8 +19,6 @@ class TitleWatcher;
 // the test http server.
 class MediaBrowserTest : public ContentBrowserTest {
  public:
-  typedef std::pair<const char*, const char*> StringPair;
-
   // Common test results.
   static const char kEnded[];
   static const char kError[];
@@ -30,17 +28,18 @@ class MediaBrowserTest : public ContentBrowserTest {
   // If http is true, the test starts a local http test server to load the test
   // page, otherwise a local file URL is loaded inside the content shell.
   // It uses RunTest() to check for expected test output.
-  void RunMediaTestPage(const char* html_page,
-                        std::vector<StringPair>* query_params,
-                        const char* expected, bool http);
+  void RunMediaTestPage(const std::string& html_page,
+                        const media::QueryParams& query_params,
+                        const std::string& expected,
+                        bool http);
 
   // Opens a URL and waits for the document title to match either one of the
-  // default strings or the expected string.
-  void RunTest(const GURL& gurl, const char* expected);
+  // default strings or the expected string. Returns the matching title value.
+  std::string RunTest(const GURL& gurl, const std::string& expected);
 
   virtual void AddWaitForTitles(content::TitleWatcher* title_watcher);
 };
 
-} // namespace content
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_MEDIA_MEDIA_BROWSERTEST_H_
