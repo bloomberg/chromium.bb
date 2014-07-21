@@ -2011,6 +2011,7 @@ class ServerRunner(testserver_base.TestServerRunner):
         websocket_options.private_key = self.options.cert_and_key_file
         websocket_options.certificate = self.options.cert_and_key_file
       if self.options.ssl_client_auth:
+        websocket_options.tls_client_cert_optional = False
         websocket_options.tls_client_auth = True
         if len(self.options.ssl_client_ca) != 1:
           raise testserver_base.OptionError(
