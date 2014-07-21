@@ -174,6 +174,7 @@ bool IsRendererDebugURL(const GURL& url) {
     return true;
 
   return url == GURL(kChromeUICrashURL) ||
+         url == GURL(kChromeUIDumpURL) ||
          url == GURL(kChromeUIKillURL) ||
          url == GURL(kChromeUIHangURL) ||
          url == GURL(kChromeUIShorthangURL);

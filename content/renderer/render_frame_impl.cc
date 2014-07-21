@@ -289,6 +289,12 @@ static void MaybeHandleDebugURL(const GURL& url) {
     return;
   if (url == GURL(kChromeUICrashURL)) {
     CrashIntentionally();
+  } else if (url == GURL(kChromeUIDumpURL)) {
+    // This URL will only correctly create a crash dump file if content is
+    // hosted in a process that has correctly called
+    // base::debug::SetDumpWithoutCrashingFunction.  Refer to the documentation
+    // of base::debug::DumpWithoutCrashing for more details.
+    base::debug::DumpWithoutCrashing();
   } else if (url == GURL(kChromeUIKillURL)) {
     base::KillProcess(base::GetCurrentProcessHandle(), 1, false);
   } else if (url == GURL(kChromeUIHangURL)) {

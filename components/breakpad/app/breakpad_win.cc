@@ -573,6 +573,10 @@ void InitCrashReporter(const std::string& process_type_switch) {
       google_breakpad::ExceptionHandler::HANDLER_NONE,
       dump_type, pipe_name.c_str(), custom_info);
 
+  // Set the DumpWithoutCrashingFunction for this instance of base.lib.  Other
+  // executable images linked with base should set this again for
+  // DumpWithoutCrashing to function correctly.
+  // See chrome_main.cc for example.
   base::debug::SetDumpWithoutCrashingFunction(&DumpProcessWithoutCrash);
 
   if (g_breakpad->IsOutOfProcess()) {

@@ -14,6 +14,9 @@ namespace base {
 namespace debug {
 
 // Handler to silently dump the current process without crashing.
+// Before calling this function, call SetDumpWithoutCrashingFunction to pass a
+// function pointer, typically chrome!DumpProcessWithoutCrash.  See example code
+// in chrome_main.cc that does this for chrome.dll.
 BASE_EXPORT void DumpWithoutCrashing();
 
 // Sets a function that'll be invoked to dump the current process when
