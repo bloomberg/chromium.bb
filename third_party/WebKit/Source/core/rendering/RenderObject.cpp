@@ -3395,9 +3395,6 @@ bool RenderObject::isRelayoutBoundaryForInspector() const
 
 void RenderObject::clearPaintInvalidationState()
 {
-    // paintInvalidationStateIsDirty should be kept in sync with the
-    // booleans that are cleared below.
-    ASSERT(paintInvalidationStateIsDirty());
     setShouldDoFullPaintInvalidation(false);
     setShouldDoFullPaintInvalidationIfSelfPaintingLayer(false);
     setOnlyNeededPositionedMovementLayout(false);
