@@ -84,6 +84,12 @@ public:
 
     const FillLayer* next() const { return m_next; }
     FillLayer* next() { return m_next; }
+    FillLayer* ensureNext()
+    {
+        if (!m_next)
+            m_next = new FillLayer(type());
+        return m_next;
+    }
 
     bool isImageSet() const { return m_imageSet; }
     bool isXPositionSet() const { return m_xPosSet; }
@@ -138,8 +144,6 @@ public:
     void clearBlendMode() { m_blendModeSet = false; }
     void clearSize() { m_sizeType = SizeNone; }
     void clearMaskSourceType() { m_maskSourceTypeSet = false; }
-
-    void setNext(FillLayer* n) { if (m_next != n) { delete m_next; m_next = n; } }
 
     FillLayer& operator=(const FillLayer& o);
     FillLayer(const FillLayer& o);

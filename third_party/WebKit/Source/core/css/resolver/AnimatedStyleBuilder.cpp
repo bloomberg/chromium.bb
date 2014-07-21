@@ -151,26 +151,8 @@ void setOnFillLayers(FillLayer& fillLayers, const AnimatableValue* value, StyleR
     FillLayer* fillLayer = &fillLayers;
     FillLayer* prev = 0;
     for (size_t i = 0; i < values.size(); ++i) {
-        if (!fillLayer) {
-            switch (property) {
-            case CSSPropertyBackgroundImage:
-            case CSSPropertyBackgroundPositionX:
-            case CSSPropertyBackgroundPositionY:
-            case CSSPropertyBackgroundSize:
-            case CSSPropertyWebkitBackgroundSize:
-                fillLayer = new FillLayer(BackgroundFillLayer);
-                break;
-            case CSSPropertyWebkitMaskImage:
-            case CSSPropertyWebkitMaskPositionX:
-            case CSSPropertyWebkitMaskPositionY:
-            case CSSPropertyWebkitMaskSize:
-                fillLayer = new FillLayer(MaskFillLayer);
-                break;
-            default:
-                ASSERT_NOT_REACHED();
-            }
-            prev->setNext(fillLayer);
-        }
+        if (!fillLayer)
+            fillLayer = prev->ensureNext();
         const AnimatableValue* layerValue = values[i].get();
         switch (property) {
         case CSSPropertyBackgroundImage:

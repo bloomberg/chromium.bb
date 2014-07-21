@@ -400,11 +400,8 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
     FillLayer* prevChild = 0;
     const FillLayer* currParent = &state.parentStyle()->{{layer_type|lower}}Layers();
     while (currParent && currParent->is{{fill_type}}Set()) {
-        if (!currChild) {
-            /* Need to make a new layer.*/
-            currChild = new FillLayer({{fill_layer_type}});
-            prevChild->setNext(currChild);
-        }
+        if (!currChild)
+            currChild = prevChild->ensureNext();
         currChild->set{{fill_type}}(currParent->{{fill_type|lower_first}}());
         prevChild = currChild;
         currChild = prevChild->next();
@@ -426,11 +423,8 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
         /* Walk each value and put it into a layer, creating new layers as needed. */
         CSSValueList* valueList = toCSSValueList(value);
         for (unsigned int i = 0; i < valueList->length(); i++) {
-            if (!currChild) {
-                /* Need to make a new layer to hold this value */
-                currChild = new FillLayer({{fill_layer_type}});
-                prevChild->setNext(currChild);
-            }
+            if (!currChild)
+                currChild = prevChild->ensureNext();
             state.styleMap().{{map_fill}}({{property_id}}, currChild, valueList->item(i));
             prevChild = currChild;
             currChild = currChild->next();
