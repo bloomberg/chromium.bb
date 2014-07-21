@@ -68,6 +68,18 @@ void LogLockedProfileInformation(ProfileManager* manager) {
   }
 }
 
+bool HasProfileAtIndexBeenActiveSince(const ProfileInfoCache& info_cache,
+                                      int index,
+                                      const base::Time& active_limit) {
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // TODO(mlerman): iOS and Android should set an ActiveTime in the
+  // ProfileInfoCache. (see ProfileManager::OnBrowserSetLastActive)
+  if (info_cache.GetProfileActiveTimeAtIndex(index) < active_limit)
+    return false;
+#endif
+  return true;
+}
+
 }  // namespace
 
 enum ProfileAvatar {
@@ -118,7 +130,7 @@ bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
       base::TimeDelta::FromDays(kMaximumDaysOfDisuse);
 
   for (size_t i = 0; i < number_of_profiles; ++i) {
-    if (info_cache.GetProfileActiveTimeAtIndex(i) < oldest) {
+    if (!HasProfileAtIndexBeenActiveSince(info_cache, i, oldest)) {
       counts->unused++;
     } else {
       if (info_cache.ProfileIsSupervisedAtIndex(i))
