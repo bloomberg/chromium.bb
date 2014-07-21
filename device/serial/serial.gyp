@@ -36,6 +36,10 @@
       ],
       'sources': [
         'serial.mojom',
+        'serial_connection.cc',
+        'serial_connection.h',
+        'serial_connection_factory.cc',
+        'serial_connection_factory.h',
         'serial_device_enumerator.cc',
         'serial_device_enumerator.h',
         'serial_device_enumerator_linux.cc',
@@ -52,6 +56,18 @@
         'serial_io_handler_win.h',
         'serial_service_impl.cc',
         'serial_service_impl.h',
+      ],
+    },
+    {
+      # GN version: //device/serial:test_util
+      'target_name': 'device_serial_test_util',
+      'type': 'static_library',
+      'dependencies': [
+        'device_serial',
+      ],
+      'sources': [
+        'test_serial_io_handler.cc',
+        'test_serial_io_handler.h',
       ],
     },
   ],

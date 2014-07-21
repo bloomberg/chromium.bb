@@ -81,6 +81,22 @@ struct DeviceControlSignals {
 
 interface SerialService {
   GetDevices() => (DeviceInfo[] devices);
+
+  // Creates a |Connection| to |path| with options specified by |options|,
+  // returning it via |connection|. This will fail and |connection| will not be
+  // usable if |path| does not specify a valid serial device or there is an
+  // error connecting to or configuring the connection.
+  Connect(string path,
+          ConnectionOptions options,
+          Connection& connection);
+};
+
+interface Connection {
+  GetInfo() => (ConnectionInfo info);
+  SetOptions(ConnectionOptions options) => (bool success);
+  SetControlSignals(HostControlSignals signals) => (bool success);
+  GetControlSignals() => (DeviceControlSignals signals);
+  Flush() => (bool success);
 };
 
 }

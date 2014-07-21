@@ -792,6 +792,7 @@
         '../components/components_resources.gyp:components_resources',
         '../components/components_strings.gyp:components_strings',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
+        '../device/serial/serial.gyp:device_serial_test_util',
         '../extensions/common/api/api.gyp:extensions_api',
         '../google_apis/google_apis.gyp:google_apis_test_support',
         '../media/cast/cast.gyp:cast_test_utility',

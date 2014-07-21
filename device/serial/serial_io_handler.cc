@@ -11,8 +11,11 @@
 
 namespace device {
 
-SerialIoHandler::SerialIoHandler()
-    : pending_read_buffer_len_(0), pending_write_buffer_len_(0) {
+SerialIoHandler::SerialIoHandler(
+    scoped_refptr<base::MessageLoopProxy> file_thread_message_loop)
+    : pending_read_buffer_len_(0),
+      pending_write_buffer_len_(0),
+      file_thread_message_loop_(file_thread_message_loop) {
 }
 
 SerialIoHandler::~SerialIoHandler() {
@@ -20,14 +23,11 @@ SerialIoHandler::~SerialIoHandler() {
   Close();
 }
 
-void SerialIoHandler::Initialize(
-    const ReadCompleteCallback& read_callback,
-    const WriteCompleteCallback& write_callback,
-    scoped_refptr<base::MessageLoopProxy> file_thread_message_loop) {
+void SerialIoHandler::Initialize(const ReadCompleteCallback& read_callback,
+                                 const WriteCompleteCallback& write_callback) {
   DCHECK(CalledOnValidThread());
   read_complete_ = read_callback;
   write_complete_ = write_callback;
-  file_thread_message_loop_ = file_thread_message_loop;
 }
 
 void SerialIoHandler::Open(const std::string& port,

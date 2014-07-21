@@ -22,6 +22,7 @@
         'usb/usb.gyp:device_usb',
         'hid/hid.gyp:device_hid',
         'serial/serial.gyp:device_serial',
+        'serial/serial.gyp:device_serial_test_util',
       ],
       'sources': [
         'bluetooth/bluetooth_adapter_mac_unittest.mm',
@@ -43,6 +44,7 @@
         'hid/hid_report_descriptor_unittest.cc',
         'hid/hid_service_unittest.cc',
         'hid/input_service_linux_unittest.cc',
+        'serial/serial_connection_unittest.cc',
         'serial/serial_service_unittest.cc',
         'test/run_all_unittests.cc',
       ],

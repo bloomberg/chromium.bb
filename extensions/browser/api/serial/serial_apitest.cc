@@ -5,6 +5,7 @@
 #include <string>
 
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "device/serial/test_serial_io_handler.h"
 #include "extensions/browser/api/serial/serial_api.h"
 #include "extensions/browser/api/serial/serial_connection.h"
 #include "extensions/browser/extension_function.h"
@@ -44,67 +45,14 @@ class FakeSerialGetDevicesFunction : public AsyncExtensionFunction {
   virtual ~FakeSerialGetDevicesFunction() {}
 };
 
-class FakeEchoSerialIoHandler : public device::SerialIoHandler {
+class FakeEchoSerialIoHandler : public device::TestSerialIoHandler {
  public:
-  explicit FakeEchoSerialIoHandler() : opened_(false) {}
-
-  virtual void Open(const std::string& port,
-                    const OpenCompleteCallback& callback) OVERRIDE {
-    DCHECK(!opened_);
-    opened_ = true;
-    callback.Run(true);
+  explicit FakeEchoSerialIoHandler() {
+    device_control_signals()->dcd = true;
+    device_control_signals()->cts = true;
+    device_control_signals()->ri = true;
+    device_control_signals()->dsr = true;
   }
-
-  virtual bool ConfigurePort(
-      const device::serial::ConnectionOptions& options) OVERRIDE {
-    return true;
-  }
-
-  virtual void ReadImpl() OVERRIDE {}
-
-  virtual void CancelReadImpl() OVERRIDE {
-    QueueReadCompleted(0, read_cancel_reason());
-  }
-
-  virtual void WriteImpl() OVERRIDE {
-    DCHECK(pending_read_buffer());
-    DCHECK_LE(pending_write_buffer_len(), pending_read_buffer_len());
-    memcpy(pending_read_buffer()->data(),
-           pending_write_buffer()->data(),
-           pending_write_buffer_len());
-    QueueReadCompleted(pending_write_buffer_len(),
-                       device::serial::RECEIVE_ERROR_NONE);
-    QueueWriteCompleted(pending_write_buffer_len(),
-                        device::serial::SEND_ERROR_NONE);
-  }
-
-  virtual void CancelWriteImpl() OVERRIDE {
-    QueueWriteCompleted(0, write_cancel_reason());
-  }
-
-  virtual device::serial::DeviceControlSignalsPtr GetControlSignals()
-      const OVERRIDE {
-    device::serial::DeviceControlSignalsPtr signals(
-        device::serial::DeviceControlSignals::New());
-    signals->dcd = true;
-    signals->cts = true;
-    signals->ri = true;
-    signals->dsr = true;
-    return signals.Pass();
-  }
-
-  virtual device::serial::ConnectionInfoPtr GetPortInfo() const OVERRIDE {
-    device::serial::ConnectionInfoPtr info(
-        device::serial::ConnectionInfo::New());
-    info->bitrate = 9600;
-    info->data_bits = device::serial::DATA_BITS_EIGHT;
-    info->parity_bit = device::serial::PARITY_BIT_NO;
-    info->stop_bits = device::serial::STOP_BITS_ONE;
-    info->cts_flow_control = false;
-    return info.Pass();
-  }
-
-  virtual bool Flush() const OVERRIDE { return true; }
 
   MOCK_METHOD1(SetControlSignals,
                bool(const device::serial::HostControlSignals&));
@@ -113,8 +61,6 @@ class FakeEchoSerialIoHandler : public device::SerialIoHandler {
   virtual ~FakeEchoSerialIoHandler() {}
 
  private:
-  bool opened_;
-
   DISALLOW_COPY_AND_ASSIGN(FakeEchoSerialIoHandler);
 };
 

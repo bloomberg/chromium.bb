@@ -122,8 +122,9 @@ bool SetCustomBitrate(base::PlatformFile file,
 namespace device {
 
 // static
-scoped_refptr<SerialIoHandler> SerialIoHandler::Create() {
-  return new SerialIoHandlerPosix();
+scoped_refptr<SerialIoHandler> SerialIoHandler::Create(
+    scoped_refptr<base::MessageLoopProxy> file_thread_message_loop) {
+  return new SerialIoHandlerPosix(file_thread_message_loop);
 }
 
 void SerialIoHandlerPosix::ReadImpl() {
@@ -156,8 +157,11 @@ void SerialIoHandlerPosix::CancelWriteImpl() {
   QueueWriteCompleted(0, write_cancel_reason());
 }
 
-SerialIoHandlerPosix::SerialIoHandlerPosix()
-    : is_watching_reads_(false), is_watching_writes_(false) {
+SerialIoHandlerPosix::SerialIoHandlerPosix(
+    scoped_refptr<base::MessageLoopProxy> file_thread_message_loop)
+    : SerialIoHandler(file_thread_message_loop),
+      is_watching_reads_(false),
+      is_watching_writes_(false) {
 }
 
 SerialIoHandlerPosix::~SerialIoHandlerPosix() {

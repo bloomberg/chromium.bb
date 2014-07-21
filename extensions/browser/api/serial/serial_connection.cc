@@ -155,13 +155,13 @@ SerialConnection::SerialConnection(const std::string& port,
       receive_timeout_(0),
       send_timeout_(0),
       paused_(false),
-      io_handler_(device::SerialIoHandler::Create()) {
+      io_handler_(device::SerialIoHandler::Create(
+          content::BrowserThread::GetMessageLoopProxyForThread(
+              content::BrowserThread::FILE))) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   io_handler_->Initialize(
       base::Bind(&SerialConnection::OnAsyncReadComplete, AsWeakPtr()),
-      base::Bind(&SerialConnection::OnAsyncWriteComplete, AsWeakPtr()),
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::FILE));
+      base::Bind(&SerialConnection::OnAsyncWriteComplete, AsWeakPtr()));
 }
 
 SerialConnection::~SerialConnection() {
@@ -252,9 +252,7 @@ void SerialConnection::SetIoHandlerForTest(
   io_handler_ = handler;
   io_handler_->Initialize(
       base::Bind(&SerialConnection::OnAsyncReadComplete, AsWeakPtr()),
-      base::Bind(&SerialConnection::OnAsyncWriteComplete, AsWeakPtr()),
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::FILE));
+      base::Bind(&SerialConnection::OnAsyncWriteComplete, AsWeakPtr()));
 }
 
 bool SerialConnection::GetInfo(core_api::serial::ConnectionInfo* info) const {

@@ -23,7 +23,8 @@ class SerialIoHandler : public base::NonThreadSafe,
                         public base::RefCounted<SerialIoHandler> {
  public:
   // Constructs an instance of some platform-specific subclass.
-  static scoped_refptr<SerialIoHandler> Create();
+  static scoped_refptr<SerialIoHandler> Create(
+      scoped_refptr<base::MessageLoopProxy> file_thread_message_loop);
 
   typedef base::Callback<void(bool success)> OpenCompleteCallback;
 
@@ -39,10 +40,8 @@ class SerialIoHandler : public base::NonThreadSafe,
 
   // Initializes the handler on the current message loop. Must be called exactly
   // once before performing any I/O through the handler.
-  virtual void Initialize(
-      const ReadCompleteCallback& read_callback,
-      const WriteCompleteCallback& write_callback,
-      scoped_refptr<base::MessageLoopProxy> file_thread_message_loop);
+  virtual void Initialize(const ReadCompleteCallback& read_callback,
+                          const WriteCompleteCallback& write_callback);
 
   // Initiates an asynchronous Open of the device.
   virtual void Open(const std::string& port,
@@ -94,7 +93,8 @@ class SerialIoHandler : public base::NonThreadSafe,
   virtual serial::ConnectionInfoPtr GetPortInfo() const = 0;
 
  protected:
-  SerialIoHandler();
+  explicit SerialIoHandler(
+      scoped_refptr<base::MessageLoopProxy> file_thread_message_loop);
   virtual ~SerialIoHandler();
 
   // Performs a platform-specific read operation. This must guarantee that

@@ -29,7 +29,8 @@ class SerialIoHandlerPosix : public SerialIoHandler,
  private:
   friend class SerialIoHandler;
 
-  SerialIoHandlerPosix();
+  SerialIoHandlerPosix(
+      scoped_refptr<base::MessageLoopProxy> file_thread_message_loop);
   virtual ~SerialIoHandlerPosix();
 
   // base::MessageLoopForIO::Watcher implementation.

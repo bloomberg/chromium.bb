@@ -133,8 +133,9 @@ serial::StopBits StopBitsConstantToEnum(int stop_bits) {
 }  // namespace
 
 // static
-scoped_refptr<SerialIoHandler> SerialIoHandler::Create() {
-  return new SerialIoHandlerWin();
+scoped_refptr<SerialIoHandler> SerialIoHandler::Create(
+    scoped_refptr<base::MessageLoopProxy> file_thread_message_loop) {
+  return new SerialIoHandlerWin(file_thread_message_loop);
 }
 
 bool SerialIoHandlerWin::PostOpen() {
@@ -237,8 +238,11 @@ void SerialIoHandlerWin::CancelWriteImpl() {
   ::CancelIo(file().GetPlatformFile());
 }
 
-SerialIoHandlerWin::SerialIoHandlerWin()
-    : event_mask_(0), is_comm_pending_(false) {
+SerialIoHandlerWin::SerialIoHandlerWin(
+    scoped_refptr<base::MessageLoopProxy> file_thread_message_loop)
+    : SerialIoHandler(file_thread_message_loop),
+      event_mask_(0),
+      is_comm_pending_(false) {
 }
 
 SerialIoHandlerWin::~SerialIoHandlerWin() {
