@@ -12,35 +12,35 @@
 
     <ImageButton
         android:id="@+id/button_one"
-        android:layout_width="56dp"
+        android:layout_width="59dp"
         android:layout_height="match_parent"
-        android:paddingEnd="8dp"
+        android:paddingEnd="11dp"
         android:background="?android:attr/listChoiceBackgroundIndicator"
         android:scaleType="center" />
 
     <ImageButton
         android:id="@+id/button_two"
-        android:layout_width="64dp"
+        android:layout_width="70dp"
         android:layout_height="match_parent"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
+        android:paddingStart="11dp"
+        android:paddingEnd="11dp"
         android:background="?android:attr/listChoiceBackgroundIndicator"
         android:scaleType="center" />
 
     <ImageButton
         android:id="@+id/button_three"
-        android:layout_width="64dp"
+        android:layout_width="70dp"
         android:layout_height="match_parent"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
+        android:paddingStart="11dp"
+        android:paddingEnd="11dp"
         android:background="?android:attr/listChoiceBackgroundIndicator"
         android:scaleType="center" />
 
     <ImageButton
         android:id="@+id/button_four"
-        android:layout_width="56dp"
+        android:layout_width="59dp"
         android:layout_height="match_parent"
-        android:paddingStart="8dp"
+        android:paddingStart="11dp"
         android:background="?android:attr/listChoiceBackgroundIndicator"
         android:scaleType="center" />
 

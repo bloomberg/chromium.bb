@@ -15,7 +15,7 @@
     <dimen name="swipe_commit_distance">120dp</dimen>
 
     <!-- Custom Menu dimensions -->
-    <dimen name="menu_width">260dp</dimen>
+    <dimen name="menu_width">258dp</dimen>
     <dimen name="menu_vertical_offset">0dp</dimen>
     <!-- The amount to fade the edges of the menu to indicate more content is available
          via scrolling. -->

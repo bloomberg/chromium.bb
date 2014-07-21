@@ -238,6 +238,9 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_TRANSLATE_NEVER_TRANSLATE_LANGUAGE" meaning="Android" desc="Text to display on the never translate language button. [CHAR-LIMIT=64]">
         Never translate <ph name="LANGUAGE">%1$s<ex>French</ex></ph>
       </message>
+      <message name="IDS_MENU_DISMISS_BTN" desc="Content description for the settings menu button when the menu is open.">
+        Dismiss the menu
+      </message>
       <message name="IDS_MENU_PRINT" desc="Menu item for printing the current page. [CHAR-LIMIT=27]">
         Print…
       </message>

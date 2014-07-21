@@ -34,6 +34,9 @@ import java.util.List;
  *   - Disabled items are grayed out.
  */
 public class AppMenu implements OnItemClickListener, OnKeyListener {
+    /** Whether or not to show the software menu button in the menu. */
+    private static final boolean SHOW_SW_MENU_BUTTON = false;
+
     private static final float LAST_ITEM_SHOW_FRACTION = 0.5f;
 
     private final Menu mMenu;
@@ -97,11 +100,18 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
                 mHandler.onMenuVisibilityChanged(false);
             }
         });
-        mPopup.setWidth(context.getResources().getDimensionPixelSize(R.dimen.menu_width));
 
         // Need to explicitly set the background here.  Relying on it being set in the style caused
         // an incorrectly drawn background.
         mPopup.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.menu_bg));
+
+        Rect bgPadding = new Rect();
+        mPopup.getBackground().getPadding(bgPadding);
+
+        int popupWidth = context.getResources().getDimensionPixelSize(R.dimen.menu_width) +
+                bgPadding.left + bgPadding.right;
+
+        mPopup.setWidth(popupWidth);
 
         mCurrentScreenRotation = screenRotation;
         mIsByHardwareButton = isByHardwareButton;
@@ -116,9 +126,12 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
             }
         }
 
+        boolean showMenuButton = !mIsByHardwareButton;
+        if (!SHOW_SW_MENU_BUTTON) showMenuButton = false;
         // A List adapter for visible items in the Menu. The first row is added as a header to the
         // list view.
-        mAdapter = new AppMenuAdapter(this, menuItems, LayoutInflater.from(context));
+        mAdapter = new AppMenuAdapter(
+                this, menuItems, LayoutInflater.from(context), showMenuButton);
         mPopup.setAdapter(mAdapter);
 
         setMenuHeight(menuItems.size(), visibleDisplayFrame);

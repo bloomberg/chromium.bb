@@ -47,12 +47,15 @@ class AppMenuAdapter extends BaseAdapter {
     private final LayoutInflater mInflater;
     private final List<MenuItem> mMenuItems;
     private final int mNumMenuItems;
+    private final boolean mShowMenuButton;
 
-    public AppMenuAdapter(AppMenu appMenu, List<MenuItem> menuItems, LayoutInflater inflater) {
+    public AppMenuAdapter(AppMenu appMenu, List<MenuItem> menuItems, LayoutInflater inflater,
+            boolean showMenuButton) {
         mAppMenu = appMenu;
         mMenuItems = menuItems;
         mInflater = inflater;
         mNumMenuItems = menuItems.size();
+        mShowMenuButton = showMenuButton;
     }
 
     @Override
@@ -67,14 +70,16 @@ class AppMenuAdapter extends BaseAdapter {
 
     @Override
     public int getItemViewType(int position) {
-        if (getItem(position).hasSubMenu()) {
-            if (getItem(position).getSubMenu().size() == 4) {
-                return FOUR_BUTTON_MENU_ITEM;
-            } else if (getItem(position).getSubMenu().size() == 3) {
-                return THREE_BUTTON_MENU_ITEM;
-            } else if (getItem(position).getSubMenu().size() == 2) {
-                return TITLE_BUTTON_MENU_ITEM;
-            }
+        MenuItem item = getItem(position);
+        int viewCount = item.hasSubMenu() ? item.getSubMenu().size() : 1;
+        if (mShowMenuButton && position == 0) viewCount++;
+
+        if (viewCount == 4) {
+            return FOUR_BUTTON_MENU_ITEM;
+        } else if (viewCount == 3) {
+            return THREE_BUTTON_MENU_ITEM;
+        } else if (viewCount == 2) {
+            return TITLE_BUTTON_MENU_ITEM;
         }
         return STANDARD_MENU_ITEM;
     }
@@ -142,7 +147,12 @@ class AppMenuAdapter extends BaseAdapter {
                 }
                 setupImageButton(holder.buttonOne, item.getSubMenu().getItem(0));
                 setupImageButton(holder.buttonTwo, item.getSubMenu().getItem(1));
-                setupImageButton(holder.buttonThree, item.getSubMenu().getItem(2));
+
+                if (mShowMenuButton && position == 0) {
+                    setupMenuButton(holder.buttonThree);
+                } else {
+                    setupImageButton(holder.buttonThree, item.getSubMenu().getItem(2));
+                }
                 convertView.setFocusable(false);
                 convertView.setEnabled(false);
                 break;
@@ -163,7 +173,12 @@ class AppMenuAdapter extends BaseAdapter {
                 setupImageButton(holder.buttonOne, item.getSubMenu().getItem(0));
                 setupImageButton(holder.buttonTwo, item.getSubMenu().getItem(1));
                 setupImageButton(holder.buttonThree, item.getSubMenu().getItem(2));
-                setupImageButton(holder.buttonFour, item.getSubMenu().getItem(3));
+
+                if (mShowMenuButton && position == 0) {
+                    setupMenuButton(holder.buttonFour);
+                } else {
+                    setupImageButton(holder.buttonFour, item.getSubMenu().getItem(3));
+                }
                 convertView.setFocusable(false);
                 convertView.setEnabled(false);
                 break;
@@ -179,7 +194,7 @@ class AppMenuAdapter extends BaseAdapter {
                 } else {
                     holder = (TitleButtonMenuItemViewHolder) convertView.getTag();
                 }
-                final MenuItem titleItem = item.getSubMenu().getItem(0);
+                final MenuItem titleItem = item.hasSubMenu() ? item.getSubMenu().getItem(0) : item;
                 holder.title.setText(titleItem.getTitle());
                 holder.title.setEnabled(titleItem.isEnabled());
                 holder.title.setFocusable(titleItem.isEnabled());
@@ -189,7 +204,11 @@ class AppMenuAdapter extends BaseAdapter {
                         mAppMenu.onItemClick(titleItem);
                     }
                 });
-                if (item.getSubMenu().getItem(1).getIcon() != null) {
+
+                if (mShowMenuButton && position == 0) {
+                    holder.button.setVisibility(View.VISIBLE);
+                    setupMenuButton(holder.button);
+                } else if (item.getSubMenu().getItem(1).getIcon() != null) {
                     holder.button.setVisibility(View.VISIBLE);
                     setupImageButton(holder.button, item.getSubMenu().getItem(1));
                 } else {
@@ -218,6 +237,19 @@ class AppMenuAdapter extends BaseAdapter {
             @Override
             public void onClick(View v) {
                 mAppMenu.onItemClick(item);
+            }
+        });
+    }
+
+    private void setupMenuButton(ImageButton button) {
+        button.setImageResource(R.drawable.btn_menu_pressed);
+        button.setContentDescription(button.getResources().getString(R.string.menu_dismiss_btn));
+        button.setEnabled(true);
+        button.setFocusable(true);
+        button.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAppMenu.dismiss();
             }
         });
     }
