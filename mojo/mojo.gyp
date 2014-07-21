@@ -793,6 +793,17 @@
     ['OS=="android"', {
       'targets': [
         {
+          'target_name': 'mojo_bindings_java',
+          'type': 'none',
+          'variables': {
+            'java_in_dir': 'bindings/java',
+          },
+          'dependencies': [
+            'mojo_public_java',
+          ],
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
           'target_name': 'mojo_jni_headers',
           'type': 'none',
           'dependencies': [

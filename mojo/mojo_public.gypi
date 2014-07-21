@@ -213,19 +213,6 @@
           },
           'includes': [ '../build/java.gypi' ],
         },
-        {
-          # TODO(cmasone): Move out of mojo_public, as this is built from code
-          # outside mojo/public.
-          'target_name': 'mojo_bindings_java',
-          'type': 'none',
-          'variables': {
-            'java_in_dir': 'bindings/java',
-          },
-          'dependencies': [
-            'mojo_public_java',
-          ],
-          'includes': [ '../build/java.gypi' ],
-        },
       ],
     }],
   ],
