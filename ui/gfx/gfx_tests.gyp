@@ -21,6 +21,7 @@
         'image/image_unittest_util.h',
         'image/image_unittest_util_ios.mm',
         'image/image_unittest_util_mac.mm',
+        'screen_unittest.cc',
         'test/run_all_unittests.cc',
         'text_elider_unittest.cc',
         'text_utils_unittest.cc',
@@ -135,6 +136,11 @@
         ['OS=="android" or OS=="ios"', {
           'sources!': [
             'render_text_unittest.cc',
+          ],
+        }],
+        ['use_aura==1', {
+          'sources!': [
+            'screen_unittest.cc',
           ],
         }],
       ],

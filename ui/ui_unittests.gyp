@@ -41,7 +41,6 @@
         'base/resource/data_pack_unittest.cc',
         'base/resource/resource_bundle_unittest.cc',
         'base/test/run_all_unittests.cc',
-        'gfx/screen_unittest.cc',
       ],
       'all_sources': [
         '<@(_common_sources)',
@@ -203,7 +202,6 @@
         ['use_aura==1', {
           'sources!': [
             'base/dragdrop/os_exchange_data_win_unittest.cc',
-            'gfx/screen_unittest.cc',
           ],
         }],
         ['chromeos==1', {
