@@ -1575,7 +1575,8 @@ void RenderLayer::paint(GraphicsContext* context, const LayoutRect& damageRect, 
     OverlapTestRequestMap overlapTestRequests;
 
     LayerPaintingInfo paintingInfo(this, enclosingIntRect(damageRect), paintBehavior, LayoutSize(), paintingRoot, &overlapTestRequests);
-    paintLayer(context, paintingInfo, paintFlags);
+    if (shouldPaintLayerInSoftwareMode(context, paintingInfo, paintFlags))
+        paintLayer(context, paintingInfo, paintFlags);
 
     OverlapTestRequestMap::iterator end = overlapTestRequests.end();
     for (OverlapTestRequestMap::iterator it = overlapTestRequests.begin(); it != end; ++it)
@@ -1662,11 +1663,6 @@ static void performOverlapTests(OverlapTestRequestMap& overlapTestRequests, cons
     overlapTestRequests.removeAll(overlappedRequestClients);
 }
 
-static bool shouldDoSoftwarePaint(const RenderLayer* layer, bool paintingReflection)
-{
-    return paintingReflection && !layer->has3DTransform();
-}
-
 static inline bool shouldSuppressPaintingLayer(RenderLayer* layer)
 {
     // Avoid painting descendants of the root layer when stylesheets haven't loaded. This eliminates FOUC.
@@ -1693,17 +1689,13 @@ void RenderLayer::paintLayer(GraphicsContext* context, const LayerPaintingInfo& 
     // https://code.google.com/p/chromium/issues/detail?id=343772
     DisableCompositingQueryAsserts disabler;
 
-    if (compositingState() != NotComposited && compositingState() != PaintsIntoGroupedBacking) {
-        // The updatingControlTints() painting pass goes through compositing layers,
-        // but we need to ensure that we don't cache clip rects computed with the wrong root in this case.
+    if (compositingState() != NotComposited) {
         if (context->updatingControlTints() || (paintingInfo.paintBehavior & PaintBehaviorFlattenCompositingLayers)) {
+            // The updatingControlTints() painting pass goes through compositing layers,
+            // but we need to ensure that we don't cache clip rects computed with the wrong root in this case.
+            // FIXME: ok, but what about PaintBehaviorFlattenCompositingLayers? That's for printing.
+            // FIXME: why isn't the code here global, as opposed to being set on each paintLayer() call?
             paintFlags |= PaintLayerUncachedClipRects;
-        } else if (!compositedLayerMapping()->paintsIntoCompositedAncestor()
-            && !shouldDoSoftwarePaint(this, paintFlags & PaintLayerPaintingReflection)
-            && !paintForFixedRootBackground(this, paintFlags)) {
-            // If this RenderLayer should paint into its own backing, that will be done via CompositedLayerMapping::paintContents()
-            // and CompositedLayerMapping::doPaintTask().
-            return;
         }
     } else if (viewportConstrainedNotCompositedReason() == NotCompositedForBoundsOutOfView) {
         // Don't paint out-of-view viewport constrained layers (when doing prepainting) because they will never be visible
@@ -2033,6 +2025,18 @@ void RenderLayer::paintLayerByApplyingTransform(GraphicsContext* context, const 
     paintLayerContentsAndReflection(context, transformedPaintingInfo, paintFlags);
 }
 
+bool RenderLayer::shouldPaintLayerInSoftwareMode(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
+{
+    DisableCompositingQueryAsserts disabler;
+
+    return compositingState() == NotComposited
+        || compositingState() == HasOwnBackingButPaintsIntoAncestor
+        || context->updatingControlTints()
+        || (paintingInfo.paintBehavior & PaintBehaviorFlattenCompositingLayers)
+        || ((paintFlags & PaintLayerPaintingReflection) && !has3DTransform())
+        || paintForFixedRootBackground(this, paintFlags);
+}
+
 void RenderLayer::paintChildren(unsigned childrenToVisit, GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
     if (!hasSelfPaintingLayerDescendant())
@@ -2045,9 +2049,9 @@ void RenderLayer::paintChildren(unsigned childrenToVisit, GraphicsContext* conte
     RenderLayerStackingNodeIterator iterator(*m_stackingNode, childrenToVisit);
     while (RenderLayerStackingNode* child = iterator.next()) {
         RenderLayer* childLayer = child->layer();
-
-        // Squashed RenderLayers should not paint into their ancestor.
-        if (childLayer->compositingState() == PaintsIntoGroupedBacking)
+        // If this RenderLayer should paint into its own backing or a grouped backing, that will be done via CompositedLayerMapping::paintContents()
+        // and CompositedLayerMapping::doPaintTask().
+        if (!childLayer->shouldPaintLayerInSoftwareMode(context, paintingInfo, paintFlags))
             continue;
 
         if (!childLayer->isPaginated())
