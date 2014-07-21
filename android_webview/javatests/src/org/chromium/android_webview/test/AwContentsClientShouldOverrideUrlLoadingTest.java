@@ -788,10 +788,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         doTestCalledOnRedirect(mWebServer, redirectUrl, redirectTargetUrl);
     }
 
-    // @SmallTest
-    // @Feature({"AndroidWebView", "Navigation"})
-    // http://crbug.com/395817
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView", "Navigation"})
     public void testDoubleNavigateDoesNotSuppressInitialNavigate() throws Throwable {
         final String jsUrl = "javascript:try{console.log('processed js loadUrl');}catch(e){};";
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
