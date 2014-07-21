@@ -53,12 +53,12 @@ protected:
     RefPtr<SVGAnimatedNumberList> m_rotate;
 };
 
-inline bool isSVGTextPositioningElement(const Node& node)
+inline bool isSVGTextPositioningElement(const SVGElement& element)
 {
-    return node.isSVGElement() && toSVGElement(node).isTextPositioning();
+    return element.isTextPositioning();
 }
 
-DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGTextPositioningElement);
+DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGTextPositioningElement);
 
 } // namespace blink
 

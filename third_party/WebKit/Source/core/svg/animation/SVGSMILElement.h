@@ -274,13 +274,13 @@ private:
     friend class ConditionEventListener;
 };
 
-inline bool isSVGSMILElement(const Node& node)
+inline bool isSVGSMILElement(const SVGElement& element)
 {
-    return node.hasTagName(SVGNames::setTag) || node.hasTagName(SVGNames::animateTag) || node.hasTagName(SVGNames::animateMotionTag)
-        || node.hasTagName(SVGNames::animateTransformTag) || node.hasTagName((SVGNames::discardTag));
+    return element.hasTagName(SVGNames::setTag) || element.hasTagName(SVGNames::animateTag) || element.hasTagName(SVGNames::animateMotionTag)
+        || element.hasTagName(SVGNames::animateTransformTag) || element.hasTagName((SVGNames::discardTag));
 }
 
-DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGSMILElement);
+DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGSMILElement);
 
 }
 

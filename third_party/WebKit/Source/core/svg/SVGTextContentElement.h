@@ -82,12 +82,12 @@ private:
     RefPtr<SVGAnimatedEnumeration<SVGLengthAdjustType> > m_lengthAdjust;
 };
 
-inline bool isSVGTextContentElement(const Node& node)
+inline bool isSVGTextContentElement(const SVGElement& element)
 {
-    return node.isSVGElement() && toSVGElement(node).isTextContent();
+    return element.isTextContent();
 }
 
-DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGTextContentElement);
+DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGTextContentElement);
 
 } // namespace blink
 

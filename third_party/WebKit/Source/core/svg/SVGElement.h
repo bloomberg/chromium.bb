@@ -271,6 +271,18 @@ inline bool Node::hasTagName(const SVGQualifiedName& name) const
     return isSVGElement() && toSVGElement(*this).hasTagName(name);
 }
 
+// This requires isSVG*Element(const SVGElement&).
+#define DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType) \
+    inline bool is##thisType(const thisType* element); \
+    inline bool is##thisType(const thisType& element); \
+    inline bool is##thisType(const SVGElement* element) { return element && is##thisType(*element); } \
+    inline bool is##thisType(const Node& node) { return node.isSVGElement() ? is##thisType(toSVGElement(node)) : false; } \
+    inline bool is##thisType(const Node* node) { return node && is##thisType(*node); } \
+    template<typename T> inline bool is##thisType(const PassRefPtr<T>& node) { return is##thisType(node.get()); } \
+    template<typename T> inline bool is##thisType(const RefPtr<T>& node) { return is##thisType(node.get()); } \
+    template <> inline bool isElementOfType<const thisType>(const SVGElement& element) { return is##thisType(element); } \
+    DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType)
+
 }
 
 #include "core/SVGElementTypeHelpers.h"

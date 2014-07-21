@@ -37,7 +37,6 @@ namespace blink {
 SVGAnimateElement::SVGAnimateElement(const QualifiedName& tagName, Document& document)
     : SVGAnimationElement(tagName, document)
 {
-    ASSERT(isSVGAnimateElement(*this));
     ScriptWrappable::init(this);
 }
 

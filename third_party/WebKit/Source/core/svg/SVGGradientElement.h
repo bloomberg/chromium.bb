@@ -73,12 +73,12 @@ private:
     RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_gradientUnits;
 };
 
-inline bool isSVGGradientElement(const Node& node)
+inline bool isSVGGradientElement(const SVGElement& element)
 {
-    return node.hasTagName(SVGNames::radialGradientTag) || node.hasTagName(SVGNames::linearGradientTag);
+    return element.hasTagName(SVGNames::radialGradientTag) || element.hasTagName(SVGNames::linearGradientTag);
 }
 
-DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGGradientElement);
+DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGGradientElement);
 
 } // namespace blink
 

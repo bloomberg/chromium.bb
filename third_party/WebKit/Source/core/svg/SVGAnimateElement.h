@@ -73,14 +73,14 @@ private:
     OwnPtrWillBeMember<SVGAnimatedTypeAnimator> m_animator;
 };
 
-inline bool isSVGAnimateElement(const Node& node)
+inline bool isSVGAnimateElement(const SVGElement& element)
 {
-    return node.hasTagName(SVGNames::animateTag)
-        || node.hasTagName(SVGNames::animateTransformTag)
-        || node.hasTagName(SVGNames::setTag);
+    return element.hasTagName(SVGNames::animateTag)
+        || element.hasTagName(SVGNames::animateTransformTag)
+        || element.hasTagName(SVGNames::setTag);
 }
 
-DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGAnimateElement);
+DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGAnimateElement);
 
 } // namespace blink
 
