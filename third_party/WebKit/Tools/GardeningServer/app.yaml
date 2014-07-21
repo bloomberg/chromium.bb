@@ -16,6 +16,9 @@ handlers:
 - url: /images
   static_dir: images
 
+- url: /model
+  static_dir: model
+
 - url: /scripts
   static_dir: scripts
 
