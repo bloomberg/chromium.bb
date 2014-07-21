@@ -30,9 +30,9 @@ var config = config || {};
 config = {
     kUpdateFrequency: 1000 * 30,
     kBlinkRevisionURL: 'http://src.chromium.org/viewvc/blink',
-    buildConsoleURL: 'http://build.chromium.org/p/chromium.webkit',
     layoutTestResultsURL: 'https://storage.googleapis.com/chromium-layout-test-archives',
     waterfallURL: 'http://build.chromium.org/p/chromium.webkit/waterfall',
+    // FIXME: All usages of this list need to be replaced.
     builders: {
         'WebKit XP': {version: 'xp'},
         'WebKit Win7': {version: 'win7'},
@@ -51,13 +51,6 @@ config = {
         'WebKit Mac10.8 (retina)': {version: 'retina'},
         'WebKit Mac10.9': {version: 'mavericks'},
         'WebKit Android (Nexus4)': {version: 'android'},
-    },
-    resultsDirectoryNameFromBuilderName: function(builderName) {
-        return builderName.replace(/[ .()]/g, '_');
-    },
-    builderApplies: function(builderName) {
-        return builderName.indexOf('GPU') == -1 &&
-               builderName.indexOf('Oilpan') == -1;
     },
 };
 

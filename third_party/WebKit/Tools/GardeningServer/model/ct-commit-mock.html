@@ -18,10 +18,10 @@ var kExampleCommitMessage =
     "\n" +
     "Review URL: https://chromiumcodereview.appspot.com/25022002\n" +
     "\n" +
-    "git-svn-id: svn://svn.chromium.org/blink/trunk@158545 bbb929c8-8fbe-4397-9dbb-9b2b20218538\n";
+    "git-svn-id: svn://svn.chromium.org/blink/trunk@158545 bbb929c8-8fbe-4397-9dbb-9b2b20218538";
 
 window.CTCommitMock = function() {
-  return new CTCommit("mkwst@chromium.org", kExampleCommitMessage);
+  return new CTCommit("mkwst@chromium.org", kExampleCommitMessage, config.kBlinkRevisionURL);
 };
 
 })();

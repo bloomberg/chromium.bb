@@ -125,13 +125,10 @@ found in the LICENSE file.
           passingRevisions.push(failure.newestPassingRevision);
           var results = failure.resultNodesByBuilder;
           Object.keys(results, (function(builder) {
-            var result = results[builder];
-            if (!result.is_unexpected)
-              return;
-
-            if (!Object.has(this.resultTypes, result.actual))
-              this.resultTypes[result.actual] = {};
-            this.resultTypes[result.actual][builder] =
+            var result = results[builder].actual;
+            if (!Object.has(this.resultTypes, result))
+              this.resultTypes[result] = {};
+            this.resultTypes[result][builder] =
                 config.builders[builder];
           }).bind(this));
         }, this);

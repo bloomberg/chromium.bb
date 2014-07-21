@@ -4,7 +4,7 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<polymer-element name="ct-commit" attributes="data">
+<polymer-element name="ct-commit" attributes="data" noscript>
   <template>
     <style>
       :host {
@@ -32,14 +32,6 @@ found in the LICENSE file.
         border-bottom: 5px solid white;
       }
     </style>
-    <a href="{{data.revision|changesetURL}}">{{data.revision}}</a> {{data.summary}} <em>{{data.author}}</em>
+    <a href="{{ data.url }}">{{ data.revision }}</a> {{ data.summary }} <em>{{ data.author }}</em>
   </template>
-  <script>
-    Polymer({
-      changesetURL: function(revision) {
-        // FIXME: This is the last caller of trac.*. Find a better home for this.
-        return trac.changesetURL(revision);
-      },
-    });
-  </script>
 </polymer-element>

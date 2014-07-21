@@ -6,23 +6,24 @@ found in the LICENSE file.
 
 <link rel="import" href="ct-commit.html">
 
-<link rel="import" href="model/ct-commit-mock.html">
+<link rel="import" href="../model/ct-commit-mock.html">
 
 <script>
 (function () {
 
 module("ct-commit");
 
-asyncTest("basic", 2, function() {
+asyncTest("basic", 3, function() {
   var grouper = document.createElement('ct-commit');
 
   grouper.data = new CTCommitMock();
 
-  Platform.endOfMicrotask(function() {
+  requestAnimationFrame(function() {
     var html = grouper.shadowRoot.innerHTML;
 
-    equal(html.indexOf('mkwst') != -1, true)
-    equal(html.indexOf('behavior for these types') != -1, true)
+    equal(html.indexOf('mkwst') != -1, true);
+    equal(html.indexOf('behavior for these types') != -1, true);
+    equal(grouper.shadowRoot.querySelector('a').href, grouper.data.url);
 
     start();
   });

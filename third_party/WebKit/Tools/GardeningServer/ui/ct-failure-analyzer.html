@@ -4,47 +4,80 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<polymer-element name="ct-failure-analyzer" attributes="failures status builderLatestRevisions">
+<polymer-element name="ct-failure-analyzer" attributes="failures builderLatestRevisions">
   <script>
+    // FIXME: Don't use a polymer component for this. Instead use a Failures model
+    // object that knows how to do the XHR and process the data appropriately.
     Polymer({
-      failures: {},
-      pendingUnexpectedFailures: [],
       builderLatestRevisions: {},
+      failures: {},
 
       update: function() {
-        this._updateFailingBuilders();
-        this._updateUnexpectedFailures();
-      },
-
-      _updateFailingBuilders: function() {
-        builders.buildersFailingNonLayoutTests().then((function(builders) {
-          this.failures.builders = builders;
-        }).bind(this));
-      },
-
-      _updateBuilderLatestRevisions: function() {
-        this.builderLatestRevisions = {};
-        Object.keys(config.builders, function(builder) {
-          this.builderLatestRevisions[builder] = {
-            blink: model.state.resultsByBuilder[builder].blink_revision,
-          };
+        net.json('http://auto-sheriff.appspot.com/data').then(function(data) {
+          // FIXME: Don't special-case the blink master.
+          this.builderLatestRevisions = data.latest_revisions['chromium.webkit'];
+          this.failures.builders = {};
+          this.failures.unexpected = [];
+          data.range_groups.forEach(function(group) {
+            this._processFailuresForGroup(group, data.alerts);
+          }.bind(this));
         }.bind(this));
       },
 
-      _updateUnexpectedFailures: function() {
-        this.pendingUnexpectedFailures = [];
-        var numberOfTestsAnalyzed = 0;
-        this.status = 'Updating ...';
-        Promise.all([model.updateRecentCommits(), model.updateResultsByBuilder()]).then(function() {
-          this.status = 'Analyzing test failures ...';
-          model.analyzeUnexpectedFailures(function(failureAnalysis, total) {
-            this.status = 'Analyzing test failures ... ' + ++numberOfTestsAnalyzed + '/' + total + ' tests analyzed.';
-            this.pendingUnexpectedFailures.push(failureAnalysis);
-          }.bind(this)).then(function() {
-            this.status = 'Done';
-            this.failures.unexpected = this.pendingUnexpectedFailures;
-            this._updateBuilderLatestRevisions();
-          }.bind(this));
+      _processFailuresForGroup: function(group, failures) {
+        var failuresByReason = {};
+        var failingBuildersWithoutReasons = {};
+
+        group.failure_keys.forEach(function(failure_key) {
+          var failure = failures.find(function(item) { return item.key == failure_key; });
+          if (failure.ignored_by.length)
+            return;
+
+          // FIXME: Make sheriff-o-matic work for all waterfalls.
+          if (!failure.master_url.endsWith('chromium.webkit'))
+            return;
+
+          // FIXME: Have sheriff-o-matic show non-webkit_tests failures by reason.
+          if (!failure.reason || failure.step_name != 'webkit_tests') {
+            var builder = failure.builder_name;
+            if (!failingBuildersWithoutReasons[builder])
+              failingBuildersWithoutReasons[builder] = {};
+            failingBuildersWithoutReasons[builder][failure.step_name] = 1;
+            return;
+          }
+
+          // FIXME: Store the actual failure type in a different field instead of smashing it into the reason.
+          var parts = failure.reason.split(':');
+          var reason = parts[0];
+          var failureType = parts[1];
+
+          if (!failuresByReason[reason])
+            failuresByReason[reason] = {}
+          failuresByReason[reason][failure.builder_name] = {
+            actual: failureType,
+          };
+        }.bind(this));
+
+        var groupedFailures = [];
+        var oldestFailingRevision = Number(group.merged_first_failing.blink);
+        var newestPassingRevision = group.merged_last_passing ? Number(group.merged_last_passing.blink) : undefined;
+
+        Object.keys(failuresByReason, function(reason, resultNodesByBuilder) {
+          groupedFailures.push({
+            testName: reason,
+            resultNodesByBuilder: resultNodesByBuilder,
+            oldestFailingRevision: oldestFailingRevision,
+            newestPassingRevision: newestPassingRevision,
+          });
+        });
+
+        if (groupedFailures.length)
+          this.failures.unexpected.push(groupedFailures);
+
+        // FIXME: Show these in the failure stream with regression ranges like
+        // any other kind of failure.
+        Object.keys(failingBuildersWithoutReasons, function(builder, steps) {
+          this.failures.builders[builder] = Object.keys(steps);
         }.bind(this));
       },
     });

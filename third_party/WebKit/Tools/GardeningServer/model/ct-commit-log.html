@@ -29,7 +29,9 @@ CTCommitLog.prototype._processXml = function(xml) {
   Array.prototype.forEach.call(xml.getElementsByTagName('entry'), function(logentry) {
     var author = logentry.getElementsByTagName('author')[0].textContent.trim();
     var message = logentry.getElementsByTagName('content')[0].textContent.trim();
-    var commit = new CTCommit(author, message);
+    // FIXME: Handle base urls for different repos.
+    // FIXME: This class should import config.js if it keeps using config.*.
+    var commit = new CTCommit(author, message, config.kBlinkRevisionURL);
     this.commits[commit.revision] = commit;
   }.bind(this));
 }

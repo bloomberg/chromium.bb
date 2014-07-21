@@ -5,13 +5,23 @@ found in the LICENSE file.
 -->
 
 <script>
-function CTCommit(author, message) {
+function CTCommit(author, message, baseUrl) {
   this.author = author;
   this.message = message;
   this.revision = this._findRevision();
   // FIXME: This is a needlessly expensive way to grab the first line.
   this.summary = this.message.split('\n')[0];
+  this._baseUrl = baseUrl;
 }
+
+Object.defineProperty(CTCommit.prototype, "url", {
+  get: function url() {
+    return this._baseUrl + '?' + Object.toQueryString({
+      view: 'rev',
+      revision: this.revision,
+    });
+  },
+});
 
 CTCommit.prototype._findRevision = function() {
   // FIXME: Make this regexp more general.
