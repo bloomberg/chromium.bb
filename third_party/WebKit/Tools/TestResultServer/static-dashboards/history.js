@@ -71,21 +71,21 @@ history.queryHashAsMap = function()
         paramsMap[thisParam[0]] = decodeURIComponent(thisParam[1]);
     }
 
-    // FIXME: remove support for mapping from the master parameter to the group
-    // one once the waterfall starts to pass in the builder name instead.
+    // FIXME: Make master a first-class parameter instead of replacing it with the group.
     if (paramsMap.master) {
         var errors = new ui.Errors();
         if (paramsMap.master == 'TryServer')
             errors.addError('ERROR: You got here from the trybot waterfall. The try bots do not record data in the flakiness dashboard. Showing results for the regular waterfall.');
-        else if (!builders.masters[paramsMap.master])
+        else if (!builders.masters[paramsMap.master] && !builders.urlNameToMasterName[paramsMap.master])
             errors.addError('ERROR: Unknown master name: ' + paramsMap.master);
 
         if (errors.hasErrors()) {
             errors.show();
             window.location.hash = window.location.hash.replace('master=' + paramsMap.master, '');
         } else {
-            var groupIndex = paramsMap.master == 'ChromiumWebkit' ? 1 : 0;
-            paramsMap.group = builders.masters[paramsMap.master].groups[groupIndex];
+            var master = builders.urlNameToMasterName[paramsMap.master] || paramsMap.master;
+            var groupIndex = master == 'ChromiumWebkit' ? 1 : 0;
+            paramsMap.group = builders.masters[master].groups[groupIndex];
             window.location.hash = window.location.hash.replace('master=' + paramsMap.master, 'group=' + encodeURIComponent(paramsMap.group));
             delete paramsMap.master;
         }

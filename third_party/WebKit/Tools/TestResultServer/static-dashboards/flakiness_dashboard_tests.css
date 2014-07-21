@@ -129,7 +129,7 @@
 .IMAGE {
     background-color: #69f;
 }
-.TEXT {
+.FAIL, .TEXT {
     background-color: #e98080;
 }
 .MISSING {

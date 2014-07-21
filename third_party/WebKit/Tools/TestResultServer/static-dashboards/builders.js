@@ -29,11 +29,13 @@
 function LOAD_BUILDBOT_DATA(builderData)
 {
     builders.masters = {};
+    builders.urlNameToMasterName = {};
     var groups = {};
     var testTypes = {};
     var testTypesThatDoNotUpload = {};
     builders.noUploadTestTypes = builderData['no_upload_test_types']
     builderData['masters'].forEach(function(master) {
+        builders.urlNameToMasterName[master.url_name] = master.name;
         builders.masters[master.name] = new builders.BuilderMaster(master);
 
         master.groups.forEach(function(group) { groups[group] = true; });
