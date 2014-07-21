@@ -4,33 +4,78 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
+<link rel="import" href="ct-results-comparison-zoomer.html">
 <link rel="import" href="ct-test-output.html">
 
-<polymer-element name="ct-results-comparison" attributes="type expectedUrl actualUrl diffUrl" noscript>
-    <template>
-        <style>
-            :host {
-                display: flex;
-                flex-wrap: wrap;
-                width: 100%;
-            }
-            .container {
-                flex: 1;
-                min-width: 300px;
-            }
-        </style>
+<polymer-element name="ct-results-comparison" attributes="type expectedUrl actualUrl diffUrl">
+  <template>
+    <style>
+      .main-content {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+      }
 
-        <div class="container">
-            <h2>Expected</h2>
-            <ct-test-output type="{{type}}" url="{{expectedUrl}}"></ct-test-output>
-        </div>
-        <div class="container">
-            <h2>Actual</h2>
-            <ct-test-output type="{{type}}" url="{{actualUrl}}"></ct-test-output>
-        </div>
-        <div class="container">
-            <h2>Diff</h2>
-            <ct-test-output type="{{type}}" url="{{diffUrl}}"></ct-test-output>
-        </div>
+      .main-content > * {
+        flex: 1;
+        min-width: 300px;
+      }
+    </style>
+
+    <div class="main-content">
+      <div>
+        <h2>Expected</h2>
+        <ct-test-output type="{{ type }}" url="{{ expectedUrl }}"
+             on-mouseout="{{ _handleMouseOut }}" on-mousemove="{{ _handleMouseMove }}"></ct-test-output>
+      </div>
+      <div>
+        <h2>Actual</h2>
+        <ct-test-output type="{{ type }}" url="{{ actualUrl }}"
+             on-mouseout="{{ _handleMouseOut }}" on-mousemove="{{ _handleMouseMove }}"></ct-test-output>
+      </div>
+      <div>
+        <h2>Diff</h2>
+        <ct-test-output type="{{ type }}" url="{{ diffUrl }}"
+             on-mouseout="{{ _handleMouseOut }}" on-mousemove="{{ _handleMouseMove }}"></ct-test-output>
+      </div>
+    </div>
+
+    <template if="{{ _zoomPosition }}">
+      <ct-results-comparison-zoomer
+          expectedUrl="{{ expectedUrl }}"
+          actualUrl="{{ actualUrl }}"
+          diffUrl="{{ diffUrl }}"
+          position="{{ _zoomPosition }}"></ct-results-comparison-zoomer>
     </template>
+  </template>
+  <script>
+    Polymer({
+      type: '',
+      expectedUrl: '',
+      actualUrl: '',
+      diffUrl: '',
+      _zoomPosition: null,
+
+      typeChanged: function() {
+        this._zoomPosition = null;
+      },
+
+      _handleMouseOut: function(e) {
+        this._zoomPosition = null;
+      },
+
+      _handleMouseMove: function(e) {
+        if (this.type != 'image')
+          return;
+
+        // FIXME: This assumes that the ct-test-output only contains an image.
+        var targetLocation = e.target.getBoundingClientRect();
+        // FIXME: Use a proper model class instead of a dumb object.
+        this._zoomPosition = {
+          x: (e.clientX - targetLocation.left) / targetLocation.width,
+          y: (e.clientY - targetLocation.top) / targetLocation.height,
+        };
+      },
+    });
+  </script>
 </polymer-element>

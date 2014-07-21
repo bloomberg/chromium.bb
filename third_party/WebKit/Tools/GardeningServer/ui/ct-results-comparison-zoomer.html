@@ -1,0 +1,114 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<polymer-element name="ct-results-comparison-zoomer" attributes="expectedUrl actualUrl diffUrl position">
+  <template>
+    <style>
+      :host {
+        background-color: silver;
+        border: 1px solid gray;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.75);
+        display: flex;
+        pointer-events: none;
+        position: fixed;
+        top: 0;
+        width: 100%;
+      }
+
+      :host > * {
+        flex: 1;
+      }
+
+      .label {
+        background-color: white;
+        text-align: center;
+      }
+
+      .container {
+        border: 1px solid gray;
+        height: 400px;
+        line-height: 0;
+      }
+
+      .container > img {
+        display: none;
+      }
+    </style>
+
+    <div>
+      <div class="label">Expected</div>
+      <div id="expectedZoomer" class="container">
+        <img src="{{ expectedUrl }}">
+        <canvas></canvas>
+      </div>
+    </div>
+
+    <div>
+      <div class="label">Actual</div>
+      <div id="actualZoomer" class="container">
+        <img src="{{ actualUrl }}">
+        <canvas></canvas>
+      </div>
+    </div>
+
+    <div>
+      <div class="label">Diff</div>
+      <div id="diffZoomer" class="container">
+        <img src="{{ diffUrl }}">
+        <canvas></canvas>
+      </div>
+    </div>
+  </template>
+  <script>
+  (function() {
+    var kResultWidth = 800;
+    var kResultHeight = 600;
+    var kZoomFactor = 6;
+    var kZoomedResultWidth = kResultWidth * kZoomFactor;
+    var kZoomedResultHeight = kResultHeight * kZoomFactor;
+
+    Polymer({
+      expectedUrl: '',
+      actualUrl: '',
+      diffUrl: '',
+      position: null,
+      _drawScheduled: false,
+
+      positionChanged: function() {
+        if (!this._drawScheduled) {
+          this._drawScheduled = true;
+          this.async(this._drawAll);
+        }
+      },
+
+      _drawAll: function() {
+        this._drawScheduled = false;
+
+        if (!this.position)
+          return;
+
+        this._draw(this.$.expectedZoomer);
+        this._draw(this.$.actualZoomer);
+        this._draw(this.$.diffZoomer);
+      },
+
+      _draw: function(imageContainer) {
+        var canvas = imageContainer.querySelector('canvas');
+        canvas.width = imageContainer.clientWidth;
+        canvas.height = imageContainer.clientHeight;
+
+        var ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        ctx.translate(imageContainer.clientWidth / 2, imageContainer.clientHeight / 2);
+        ctx.translate(-this.position.y * kZoomedResultWidth, -this.position.x * kZoomedResultHeight);
+        ctx.strokeRect(-1.5, -1.5, kZoomedResultWidth + 2, kZoomedResultHeight + 2);
+        ctx.scale(kZoomFactor, kZoomFactor);
+        ctx.drawImage(imageContainer.querySelector('img'), 0, 0);
+      },
+    });
+  })();
+  </script>
+</polymer-element>
