@@ -58,7 +58,12 @@ struct CONTENT_EXPORT ExplodedFrameState {
   std::vector<ExplodedFrameState> children;
 
   ExplodedFrameState();
+  ExplodedFrameState(const ExplodedFrameState& other);
   ~ExplodedFrameState();
+  void operator=(const ExplodedFrameState& other);
+
+private:
+  void assign(const ExplodedFrameState& other);
 };
 
 struct CONTENT_EXPORT ExplodedPageState {

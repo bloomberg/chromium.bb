@@ -696,7 +696,32 @@ ExplodedFrameState::ExplodedFrameState()
       referrer_policy(blink::WebReferrerPolicyDefault) {
 }
 
+ExplodedFrameState::ExplodedFrameState(const ExplodedFrameState& other) {
+  assign(other);
+}
+
 ExplodedFrameState::~ExplodedFrameState() {
+}
+
+void ExplodedFrameState::operator=(const ExplodedFrameState& other) {
+  if (&other != this)
+    assign(other);
+}
+
+void ExplodedFrameState::assign(const ExplodedFrameState& other) {
+  url_string = other.url_string;
+  referrer = other.referrer;
+  target = other.target;
+  state_object = other.state_object;
+  document_state = other.document_state;
+  pinch_viewport_scroll_offset = other.pinch_viewport_scroll_offset;
+  scroll_offset = other.scroll_offset;
+  item_sequence_number = other.item_sequence_number;
+  document_sequence_number = other.document_sequence_number;
+  page_scale_factor = other.page_scale_factor;
+  referrer_policy = other.referrer_policy;
+  http_body = other.http_body;
+  children = other.children;
 }
 
 ExplodedPageState::ExplodedPageState() {
