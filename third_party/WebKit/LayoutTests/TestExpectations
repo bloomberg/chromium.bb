@@ -232,10 +232,6 @@ crbug.com/314947 [ Mavericks ] fast/forms/datetimelocal-multiple-fields/datetime
 crbug.com/314947 [ Mavericks ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-value-set-empty.html [ Failure ]
 crbug.com/314947 [ Mavericks ] http/tests/images/drag-image-to-desktop.html [ Failure ]
 
-# Will fail with new expected.txt until ICU 52 is rolled in.
-crbug.com/378919 [ Linux Android ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-preserve-value-after-history-back.html [ Failure ]
-crbug.com/378919 [ Linux Android ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-value-set-empty.html [ Failure ]
-
 # Mavericks bots seem to fail lots of tests on occasion.
 crbug.com/331582 [ Mavericks ] fast/inline/justify-emphasis-inline-box.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/parser/fonts.html [ Pass ImageOnlyFailure ]

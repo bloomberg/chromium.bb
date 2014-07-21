@@ -209,16 +209,9 @@ TEST_F(LocaleICUTest, shortMonthLabels)
     EXPECT_STREQ("12\xE6\x9C\x88", shortStandAloneMonthLabel("ja_JP", 11).utf8().data());
 
     EXPECT_STREQ("\xD0\xBC\xD0\xB0\xD1\x80\xD1\x82\xD0\xB0", shortMonthLabel("ru_RU", 2).utf8().data());
-#if 0
-    // TODO(jshin): Disable these temporarily until ICU update is completed.
-    // See http://crbug.com/377042
     EXPECT_STREQ("\xD0\x9C\xD0\xB0\xD1\x80\xD1\x82", shortStandAloneMonthLabel("ru_RU", 2).utf8().data());
-#endif
     EXPECT_STREQ("\xD0\xBC\xD0\xB0\xD1\x8F", shortMonthLabel("ru_RU", 4).utf8().data());
-#if 0
-    // Same as above
     EXPECT_STREQ("\xD0\x9C\xD0\xB0\xD0\xB9", shortStandAloneMonthLabel("ru_RU", 4).utf8().data());
-#endif
 }
 
 TEST_F(LocaleICUTest, timeAMPMLabels)
