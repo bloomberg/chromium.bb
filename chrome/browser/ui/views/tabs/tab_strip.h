@@ -20,6 +20,7 @@
 #include "ui/views/mouse_watcher.h"
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
+#include "ui/views/view_targeter_delegate.h"
 
 class NewTabButton;
 class StackedTabStripLayout;
@@ -52,6 +53,7 @@ class ImageView;
 class TabStrip : public views::View,
                  public views::ButtonListener,
                  public views::MouseWatcherListener,
+                 public views::ViewTargeterDelegate,
                  public TabController {
  public:
   static const char kViewClassName[];
@@ -247,7 +249,6 @@ class TabStrip : public views::View,
   virtual void OnDragExited() OVERRIDE;
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
-  virtual views::View* GetEventHandlerForRect(const gfx::Rect& rect) OVERRIDE;
   virtual views::View* GetTooltipHandlerForPoint(
       const gfx::Point& point) OVERRIDE;
 
@@ -578,6 +579,10 @@ class TabStrip : public views::View,
 
   // ui::EventHandler overrides.
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
+
+  // views::ViewTargeterDelegate:
+  virtual views::View* TargetForRect(views::View* root,
+                                     const gfx::Rect& rect) OVERRIDE;
 
   // -- Member Variables ------------------------------------------------------
 

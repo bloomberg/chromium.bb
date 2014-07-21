@@ -39,6 +39,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/native_cursor.h"
 #include "ui/views/painter.h"
+#include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -289,6 +290,31 @@ NotificationView* NotificationView::Create(MessageCenterController* controller,
   return notification_view;
 }
 
+views::View* NotificationView::TargetForRect(views::View* root,
+                                             const gfx::Rect& rect) {
+  CHECK_EQ(root, this);
+
+  // TODO(tdanderson): Modify this function to support rect-based event
+  // targeting. Using the center point of |rect| preserves this function's
+  // expected behavior for the time being.
+  gfx::Point point = rect.CenterPoint();
+
+  // Want to return this for underlying views, otherwise GetCursor is not
+  // called. But buttons are exceptions, they'll have their own event handlings.
+  std::vector<views::View*> buttons(action_buttons_.begin(),
+                                    action_buttons_.end());
+  buttons.push_back(close_button());
+
+  for (size_t i = 0; i < buttons.size(); ++i) {
+    gfx::Point point_in_child = point;
+    ConvertPointToTarget(this, buttons[i], &point_in_child);
+    if (buttons[i]->HitTestPoint(point_in_child))
+      return buttons[i]->GetEventHandlerForPoint(point_in_child);
+  }
+
+  return root;
+}
+
 void NotificationView::CreateOrUpdateViews(const Notification& notification) {
   CreateOrUpdateTitleView(notification);
   CreateOrUpdateMessageView(notification);
@@ -355,6 +381,9 @@ NotificationView::NotificationView(MessageCenterController* controller,
   AddChildView(small_image());
   AddChildView(close_button());
   SetAccessibleName(notification);
+
+  SetEventTargeter(
+      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
 
 NotificationView::~NotificationView() {
@@ -439,28 +468,6 @@ void NotificationView::ScrollRectToVisible(const gfx::Rect& rect) {
   // Notification want to show the whole notification when a part of it (like
   // a button) gets focused.
   views::View::ScrollRectToVisible(GetLocalBounds());
-}
-
-views::View* NotificationView::GetEventHandlerForRect(const gfx::Rect& rect) {
-  // TODO(tdanderson): Modify this function to support rect-based event
-  // targeting. Using the center point of |rect| preserves this function's
-  // expected behavior for the time being.
-  gfx::Point point = rect.CenterPoint();
-
-  // Want to return this for underlying views, otherwise GetCursor is not
-  // called. But buttons are exceptions, they'll have their own event handlings.
-  std::vector<views::View*> buttons(action_buttons_.begin(),
-                                    action_buttons_.end());
-  buttons.push_back(close_button());
-
-  for (size_t i = 0; i < buttons.size(); ++i) {
-    gfx::Point point_in_child = point;
-    ConvertPointToTarget(this, buttons[i], &point_in_child);
-    if (buttons[i]->HitTestPoint(point_in_child))
-      return buttons[i]->GetEventHandlerForPoint(point_in_child);
-  }
-
-  return this;
 }
 
 gfx::NativeCursor NotificationView::GetCursor(const ui::MouseEvent& event) {

@@ -135,7 +135,7 @@ class VIEWS_EXPORT NonClientFrameView : public View,
 // implementations (e.g. during the switch from DWM/Aero-Glass to Vista Basic/
 // Classic rendering).
 //
-class VIEWS_EXPORT NonClientView : public View {
+class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -217,7 +217,6 @@ class VIEWS_EXPORT NonClientView : public View {
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 
-  virtual views::View* GetEventHandlerForRect(const gfx::Rect& rect) OVERRIDE;
   virtual views::View* GetTooltipHandlerForPoint(
       const gfx::Point& point) OVERRIDE;
 
@@ -227,6 +226,9 @@ class VIEWS_EXPORT NonClientView : public View {
       const ViewHierarchyChangedDetails& details) OVERRIDE;
 
  private:
+  // ViewTargeterDelegate:
+  virtual View* TargetForRect(View* root, const gfx::Rect& rect) OVERRIDE;
+
   // A ClientView object or subclass, responsible for sizing the contents view
   // of the window, hit testing and perhaps other tasks depending on the
   // implementation.

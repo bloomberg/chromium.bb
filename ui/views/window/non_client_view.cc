@@ -36,6 +36,8 @@ static const int kClientViewIndex = 1;
 NonClientView::NonClientView()
     : client_view_(NULL),
       overlay_view_(NULL) {
+  SetEventTargeter(
+      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
 
 NonClientView::~NonClientView() {
@@ -187,9 +189,28 @@ const char* NonClientView::GetClassName() const {
   return kViewClassName;
 }
 
-View* NonClientView::GetEventHandlerForRect(const gfx::Rect& rect) {
+View* NonClientView::GetTooltipHandlerForPoint(const gfx::Point& point) {
+  // The same logic as for |TargetForRect()| applies here.
+  if (frame_view_->parent() == this) {
+    // During the reset of the frame_view_ it's possible to be in this code
+    // after it's been removed from the view hierarchy but before it's been
+    // removed from the NonClientView.
+    gfx::Point point_in_child_coords(point);
+    View::ConvertPointToTarget(this, frame_view_.get(), &point_in_child_coords);
+    View* handler =
+        frame_view_->GetTooltipHandlerForPoint(point_in_child_coords);
+    if (handler)
+      return handler;
+  }
+
+  return View::GetTooltipHandlerForPoint(point);
+}
+
+View* NonClientView::TargetForRect(View* root, const gfx::Rect& rect) {
+  CHECK_EQ(root, this);
+
   if (!UsePointBasedTargeting(rect))
-    return View::GetEventHandlerForRect(rect);
+    return ViewTargeterDelegate::TargetForRect(root, rect);
 
   // Because of the z-ordering of our child views (the client view is positioned
   // over the non-client frame view, if the client view ever overlaps the frame
@@ -210,24 +231,7 @@ View* NonClientView::GetEventHandlerForRect(const gfx::Rect& rect) {
       return frame_view_->GetEventHandlerForRect(rect_in_child_coords);
   }
 
-  return View::GetEventHandlerForRect(rect);
-}
-
-View* NonClientView::GetTooltipHandlerForPoint(const gfx::Point& point) {
-  // The same logic as for |GetEventHandlerForRect()| applies here.
-  if (frame_view_->parent() == this) {
-    // During the reset of the frame_view_ it's possible to be in this code
-    // after it's been removed from the view hierarchy but before it's been
-    // removed from the NonClientView.
-    gfx::Point point_in_child_coords(point);
-    View::ConvertPointToTarget(this, frame_view_.get(), &point_in_child_coords);
-    View* handler =
-        frame_view_->GetTooltipHandlerForPoint(point_in_child_coords);
-    if (handler)
-      return handler;
-  }
-
-  return View::GetTooltipHandlerForPoint(point);
+  return ViewTargeterDelegate::TargetForRect(root, rect);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

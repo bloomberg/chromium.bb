@@ -52,6 +52,7 @@
 #include "ui/views/mouse_watcher_view_host.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/view_model_utils.h"
+#include "ui/views/view_targeter.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
@@ -537,6 +538,8 @@ TabStrip::TabStrip(TabStripController* controller)
       mouse_move_count_(0),
       immersive_style_(false) {
   Init();
+  SetEventTargeter(
+      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
 
 TabStrip::~TabStrip() {
@@ -1410,35 +1413,6 @@ int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
 
 void TabStrip::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_TAB_LIST;
-}
-
-views::View* TabStrip::GetEventHandlerForRect(const gfx::Rect& rect) {
-  if (!views::UsePointBasedTargeting(rect))
-    return View::GetEventHandlerForRect(rect);
-  const gfx::Point point(rect.CenterPoint());
-
-  if (!touch_layout_) {
-    // Return any view that isn't a Tab or this TabStrip immediately. We don't
-    // want to interfere.
-    views::View* v = View::GetEventHandlerForRect(rect);
-    if (v && v != this && strcmp(v->GetClassName(), Tab::kViewClassName))
-      return v;
-
-    views::View* tab = FindTabHitByPoint(point);
-    if (tab)
-      return tab;
-  } else {
-    if (newtab_button_->visible()) {
-      views::View* view =
-          ConvertPointToViewAndGetEventHandler(this, newtab_button_, point);
-      if (view)
-        return view;
-    }
-    Tab* tab = FindTabForEvent(point);
-    if (tab)
-      return ConvertPointToViewAndGetEventHandler(this, tab, point);
-  }
-  return this;
 }
 
 views::View* TabStrip::GetTooltipHandlerForPoint(const gfx::Point& point) {
@@ -2719,4 +2693,35 @@ void TabStrip::OnGestureEvent(ui::GestureEvent* event) {
       break;
   }
   event->SetHandled();
+}
+
+views::View* TabStrip::TargetForRect(views::View* root, const gfx::Rect& rect) {
+  CHECK_EQ(root, this);
+
+  if (!views::UsePointBasedTargeting(rect))
+    return views::ViewTargeterDelegate::TargetForRect(root, rect);
+  const gfx::Point point(rect.CenterPoint());
+
+  if (!touch_layout_) {
+    // Return any view that isn't a Tab or this TabStrip immediately. We don't
+    // want to interfere.
+    views::View* v = views::ViewTargeterDelegate::TargetForRect(root, rect);
+    if (v && v != this && strcmp(v->GetClassName(), Tab::kViewClassName))
+      return v;
+
+    views::View* tab = FindTabHitByPoint(point);
+    if (tab)
+      return tab;
+  } else {
+    if (newtab_button_->visible()) {
+      views::View* view =
+          ConvertPointToViewAndGetEventHandler(this, newtab_button_, point);
+      if (view)
+        return view;
+    }
+    Tab* tab = FindTabForEvent(point);
+    if (tab)
+      return ConvertPointToViewAndGetEventHandler(this, tab, point);
+  }
+  return this;
 }

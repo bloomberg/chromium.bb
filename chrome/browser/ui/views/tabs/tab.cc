@@ -252,21 +252,6 @@ class Tab::TabCloseButton : public views::ImageButton,
   virtual ~TabCloseButton() {}
 
   // views::View:
-  virtual View* GetEventHandlerForRect(const gfx::Rect& rect) OVERRIDE {
-    if (!views::UsePointBasedTargeting(rect))
-      return View::GetEventHandlerForRect(rect);
-
-    // Ignore the padding set on the button.
-    gfx::Rect contents_bounds = GetContentsBounds();
-    contents_bounds.set_x(GetMirroredXForRect(contents_bounds));
-
-    // Include the padding in hit-test for touch events.
-    if (aura::Env::GetInstance()->is_touch_down())
-      contents_bounds = GetLocalBounds();
-
-    return contents_bounds.Intersects(rect) ? this : parent();
-  }
-
   virtual View* GetTooltipHandlerForPoint(const gfx::Point& point) OVERRIDE {
     // Tab close button has no children, so tooltip handler should be the same
     // as the event handler.
@@ -335,6 +320,24 @@ class Tab::TabCloseButton : public views::ImageButton,
       button_bounds.set_height(button_bounds.height() - bottom_overflow);
 
     return button_bounds;
+  }
+
+  // views::ViewTargeterDelegate:
+  virtual View* TargetForRect(View* root, const gfx::Rect& rect) OVERRIDE {
+    CHECK_EQ(root, this);
+
+    if (!views::UsePointBasedTargeting(rect))
+      return ViewTargeterDelegate::TargetForRect(root, rect);
+
+    // Ignore the padding set on the button.
+    gfx::Rect contents_bounds = GetContentsBounds();
+    contents_bounds.set_x(GetMirroredXForRect(contents_bounds));
+
+    // Include the padding in hit-test for touch events.
+    if (aura::Env::GetInstance()->is_touch_down())
+      contents_bounds = GetLocalBounds();
+
+    return contents_bounds.Intersects(rect) ? this : parent();
   }
 
   // views:MaskedTargeterDelegate:

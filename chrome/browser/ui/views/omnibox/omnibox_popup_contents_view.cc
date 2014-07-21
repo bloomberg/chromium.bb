@@ -17,6 +17,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 #include "ui/wm/core/window_animations.h"
@@ -70,6 +71,9 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
 
   ui::ThemeProvider* theme = location_bar_view_->GetThemeProvider();
   bottom_shadow_ = theme->GetImageSkiaNamed(IDR_BUBBLE_B);
+
+  SetEventTargeter(
+      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
 
 void OmniboxPopupContentsView::Init() {
@@ -288,11 +292,6 @@ void OmniboxPopupContentsView::Layout() {
   SchedulePaint();
 }
 
-views::View* OmniboxPopupContentsView::GetEventHandlerForRect(
-    const gfx::Rect& rect) {
-  return this;
-}
-
 views::View* OmniboxPopupContentsView::GetTooltipHandlerForPoint(
     const gfx::Point& point) {
   return NULL;
@@ -438,6 +437,12 @@ void OmniboxPopupContentsView::PaintChildren(gfx::Canvas* canvas,
 
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxPopupContentsView, private:
+
+views::View* OmniboxPopupContentsView::TargetForRect(views::View* root,
+                                                     const gfx::Rect& rect) {
+  CHECK_EQ(root, this);
+  return this;
+}
 
 bool OmniboxPopupContentsView::HasMatchAt(size_t index) const {
   return index < model_->result().size();

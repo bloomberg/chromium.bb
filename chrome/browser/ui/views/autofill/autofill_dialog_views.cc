@@ -63,6 +63,7 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/painter.h"
+#include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/non_client_view.h"
@@ -854,6 +855,9 @@ AutofillDialogViews::SectionContainer::SectionContainer(
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   AddChildView(label_bar);
   AddChildView(controls);
+
+  SetEventTargeter(
+      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
 
 AutofillDialogViews::SectionContainer::~SectionContainer() {}
@@ -929,12 +933,12 @@ void AutofillDialogViews::SectionContainer::OnGestureEvent(
   proxy_button_->OnGestureEvent(event);
 }
 
-views::View* AutofillDialogViews::SectionContainer::GetEventHandlerForRect(
+views::View* AutofillDialogViews::SectionContainer::TargetForRect(
+    views::View* root,
     const gfx::Rect& rect) {
-  // TODO(tdanderson): Modify this function to support rect-based event
-  // targeting.
+  CHECK_EQ(root, this);
+  views::View* handler = views::ViewTargeterDelegate::TargetForRect(root, rect);
 
-  views::View* handler = views::View::GetEventHandlerForRect(rect);
   // If the event is not in the label bar and there's no background to be
   // cleared, let normal event handling take place.
   if (!background() &&

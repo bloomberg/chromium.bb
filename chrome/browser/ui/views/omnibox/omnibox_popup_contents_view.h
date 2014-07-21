@@ -13,6 +13,7 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/view.h"
+#include "ui/views/view_targeter_delegate.h"
 
 struct AutocompleteMatch;
 class LocationBarView;
@@ -24,6 +25,7 @@ class Profile;
 // A view representing the contents of the autocomplete popup.
 class OmniboxPopupContentsView : public views::View,
                                  public OmniboxPopupView,
+                                 public views::ViewTargeterDelegate,
                                  public gfx::AnimationDelegate {
  public:
   // Factory method for creating the AutocompletePopupView.
@@ -51,8 +53,6 @@ class OmniboxPopupContentsView : public views::View,
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
-  virtual views::View* GetEventHandlerForRect(
-      const gfx::Rect& rect) OVERRIDE;
   virtual views::View* GetTooltipHandlerForPoint(
       const gfx::Point& point) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
@@ -103,6 +103,10 @@ class OmniboxPopupContentsView : public views::View,
 
  private:
   class AutocompletePopupWidget;
+
+  // views::ViewTargeterDelegate:
+  virtual views::View* TargetForRect(views::View* root,
+                                     const gfx::Rect& rect) OVERRIDE;
 
   // Call immediately after construction.
   void Init();

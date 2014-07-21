@@ -9,6 +9,7 @@
 
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/message_view.h"
+#include "ui/views/view_targeter_delegate.h"
 
 namespace views {
 class ProgressBar;
@@ -27,8 +28,10 @@ class PaddedButton;
 // list). Future notification types may be handled by other classes, in which
 // case instances of those classes would be returned by the Create() factory
 // method below.
-class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
-                                               public MessageViewController {
+class MESSAGE_CENTER_EXPORT NotificationView
+    : public MessageView,
+      public views::ViewTargeterDelegate,
+      public MessageViewController {
  public:
   // Creates appropriate MessageViews for notifications. Those currently are
   // always NotificationView instances but in the future
@@ -48,7 +51,6 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
   virtual void Layout() OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void ScrollRectToVisible(const gfx::Rect& rect) OVERRIDE;
-  virtual views::View* GetEventHandlerForRect(const gfx::Rect& rect) OVERRIDE;
   virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
 
   // Overridden from MessageView:
@@ -77,6 +79,10 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, UpdateButtonCountTest);
 
   friend class NotificationViewTest;
+
+  // views::ViewTargeterDelegate:
+  virtual views::View* TargetForRect(views::View* root,
+                                     const gfx::Rect& rect) OVERRIDE;
 
   void CreateOrUpdateViews(const Notification& notification);
   void SetAccessibleName(const Notification& notification);

@@ -11,6 +11,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/view_targeter.h"
 
 namespace {
 
@@ -36,6 +37,9 @@ DecoratedTextfield::DecoratedTextfield(
   set_placeholder_text(placeholder);
   SetText(default_value);
   set_controller(controller);
+
+  SetEventTargeter(
+      scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
 
 DecoratedTextfield::~DecoratedTextfield() {}
@@ -99,13 +103,6 @@ const char* DecoratedTextfield::GetClassName() const {
   return kViewClassName;
 }
 
-views::View* DecoratedTextfield::GetEventHandlerForRect(const gfx::Rect& rect) {
-  views::View* handler = views::Textfield::GetEventHandlerForRect(rect);
-  if (handler->GetClassName() == TooltipIcon::kViewClassName)
-    return handler;
-  return this;
-}
-
 gfx::Size DecoratedTextfield::GetPreferredSize() const {
   static const int height =
       views::LabelButton(NULL, base::string16()).GetPreferredSize().height();
@@ -128,6 +125,16 @@ void DecoratedTextfield::Layout() {
     icon_bounds.set_x(GetMirroredXForRect(icon_bounds));
     icon_view_->SetBoundsRect(icon_bounds);
   }
+}
+
+views::View* DecoratedTextfield::TargetForRect(views::View* root,
+                                               const gfx::Rect& rect) {
+  CHECK_EQ(root, this);
+
+  views::View* handler = views::ViewTargeterDelegate::TargetForRect(root, rect);
+  if (handler->GetClassName() == TooltipIcon::kViewClassName)
+    return handler;
+  return this;
 }
 
 void DecoratedTextfield::UpdateBackground() {

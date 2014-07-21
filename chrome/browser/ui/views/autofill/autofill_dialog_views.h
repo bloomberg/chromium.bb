@@ -24,6 +24,7 @@
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/view_targeter_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -293,7 +294,8 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // A view that packs a label on the left and some related controls
   // on the right.
-  class SectionContainer : public views::View {
+  class SectionContainer : public views::View,
+                           public views::ViewTargeterDelegate {
    public:
     SectionContainer(const base::string16& label,
                      views::View* controls,
@@ -315,10 +317,12 @@ class AutofillDialogViews : public AutofillDialogView,
     virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
     virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
     virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-    // This is needed because not all events percolate up the views hierarchy.
-    virtual View* GetEventHandlerForRect(const gfx::Rect& rect) OVERRIDE;
 
    private:
+    // views::ViewTargeterDelegate:
+    virtual views::View* TargetForRect(views::View* root,
+                                       const gfx::Rect& rect) OVERRIDE;
+
     // Converts |event| to one suitable for |proxy_button_|.
     static ui::MouseEvent ProxyEvent(const ui::MouseEvent& event);
 

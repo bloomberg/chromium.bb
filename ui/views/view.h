@@ -559,8 +559,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Returns the View that should be the target of an event having |rect| as
   // its location, or NULL if no such target exists. |rect| is in the local
   // coordinate space of |this|.
-  // TODO(tdanderson): Make this function non-virtual.
-  virtual View* GetEventHandlerForRect(const gfx::Rect& rect);
+  View* GetEventHandlerForRect(const gfx::Rect& rect);
 
   // Returns the deepest visible descendant that contains the specified point
   // and supports tooltips. If the view does not contain the point, returns

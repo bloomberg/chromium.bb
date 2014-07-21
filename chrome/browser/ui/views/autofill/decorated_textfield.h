@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/view_targeter_delegate.h"
 
 namespace views {
 class ImageView;
@@ -19,7 +20,8 @@ namespace autofill {
 
 // A class which holds a textfield and draws extra stuff on top, like
 // invalid content indications.
-class DecoratedTextfield : public views::Textfield {
+class DecoratedTextfield : public views::Textfield,
+                           public views::ViewTargeterDelegate {
  public:
   static const char kViewClassName[];
 
@@ -50,10 +52,13 @@ class DecoratedTextfield : public views::Textfield {
   virtual const char* GetClassName() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual views::View* GetEventHandlerForRect(const gfx::Rect& rect) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DecoratedTextfieldTest, HeightMatchesButton);
+
+  // views::ViewTargeterDelegate:
+  virtual views::View* TargetForRect(views::View* root,
+                                     const gfx::Rect& rect) OVERRIDE;
 
   // Updates the background after its color may have changed.
   void UpdateBackground();
