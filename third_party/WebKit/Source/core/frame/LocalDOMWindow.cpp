@@ -59,7 +59,6 @@
 #include "core/events/PopStateEvent.h"
 #include "core/frame/BarProp.h"
 #include "core/frame/Console.h"
-#include "core/frame/DOMPoint.h"
 #include "core/frame/DOMWindowLifecycleNotifier.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
@@ -71,6 +70,7 @@
 #include "core/frame/Navigator.h"
 #include "core/frame/Screen.h"
 #include "core/frame/Settings.h"
+#include "core/frame/WebKitPoint.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -1331,7 +1331,7 @@ PassRefPtrWillBeRawPtr<CSSRuleList> LocalDOMWindow::getMatchedCSSRules(Element* 
     return m_frame->document()->ensureStyleResolver().pseudoCSSRulesForElement(element, pseudoId, rulesToInclude);
 }
 
-PassRefPtrWillBeRawPtr<DOMPoint> LocalDOMWindow::webkitConvertPointFromNodeToPage(Node* node, const DOMPoint* p) const
+PassRefPtrWillBeRawPtr<WebKitPoint> LocalDOMWindow::webkitConvertPointFromNodeToPage(Node* node, const WebKitPoint* p) const
 {
     if (!node || !p)
         return nullptr;
@@ -1343,10 +1343,10 @@ PassRefPtrWillBeRawPtr<DOMPoint> LocalDOMWindow::webkitConvertPointFromNodeToPag
 
     FloatPoint pagePoint(p->x(), p->y());
     pagePoint = node->convertToPage(pagePoint);
-    return DOMPoint::create(pagePoint.x(), pagePoint.y());
+    return WebKitPoint::create(pagePoint.x(), pagePoint.y());
 }
 
-PassRefPtrWillBeRawPtr<DOMPoint> LocalDOMWindow::webkitConvertPointFromPageToNode(Node* node, const DOMPoint* p) const
+PassRefPtrWillBeRawPtr<WebKitPoint> LocalDOMWindow::webkitConvertPointFromPageToNode(Node* node, const WebKitPoint* p) const
 {
     if (!node || !p)
         return nullptr;
@@ -1358,7 +1358,7 @@ PassRefPtrWillBeRawPtr<DOMPoint> LocalDOMWindow::webkitConvertPointFromPageToNod
 
     FloatPoint nodePoint(p->x(), p->y());
     nodePoint = node->convertFromPage(nodePoint);
-    return DOMPoint::create(nodePoint.x(), nodePoint.y());
+    return WebKitPoint::create(nodePoint.x(), nodePoint.y());
 }
 
 double LocalDOMWindow::devicePixelRatio() const

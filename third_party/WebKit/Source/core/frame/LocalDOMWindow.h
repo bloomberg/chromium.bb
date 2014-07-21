@@ -43,7 +43,7 @@ namespace blink {
     class CSSRuleList;
     class CSSStyleDeclaration;
     class Console;
-    class DOMPoint;
+    class WebKitPoint;
     class DOMSelection;
     class DOMURL;
     class DOMWindowProperty;
@@ -218,8 +218,8 @@ enum PageshowEventPersistence {
         PassRefPtrWillBeRawPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt) const;
         double devicePixelRatio() const;
 
-        PassRefPtrWillBeRawPtr<DOMPoint> webkitConvertPointFromPageToNode(Node*, const DOMPoint*) const;
-        PassRefPtrWillBeRawPtr<DOMPoint> webkitConvertPointFromNodeToPage(Node*, const DOMPoint*) const;
+        PassRefPtrWillBeRawPtr<WebKitPoint> webkitConvertPointFromPageToNode(Node*, const WebKitPoint*) const;
+        PassRefPtrWillBeRawPtr<WebKitPoint> webkitConvertPointFromNodeToPage(Node*, const WebKitPoint*) const;
 
         Console& console() const;
         FrameConsole* frameConsole() const;

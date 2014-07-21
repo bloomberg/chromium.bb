@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMPoint_h
-#define DOMPoint_h
+#ifndef WebKitPoint_h
+#define WebKitPoint_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
@@ -33,15 +33,15 @@
 
 namespace blink {
 
-class DOMPoint FINAL : public RefCountedWillBeGarbageCollected<DOMPoint>, public ScriptWrappable {
+class WebKitPoint FINAL : public RefCountedWillBeGarbageCollected<WebKitPoint>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<DOMPoint> create()
+    static PassRefPtrWillBeRawPtr<WebKitPoint> create()
     {
-        return adoptRefWillBeNoop(new DOMPoint());
+        return adoptRefWillBeNoop(new WebKitPoint());
     }
-    static PassRefPtrWillBeRawPtr<DOMPoint> create(float x, float y)
+    static PassRefPtrWillBeRawPtr<WebKitPoint> create(float x, float y)
     {
-        return adoptRefWillBeNoop(new DOMPoint(x, y));
+        return adoptRefWillBeNoop(new WebKitPoint(x, y));
     }
 
     float x() const { return m_x; }
@@ -53,7 +53,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    DOMPoint(float x = 0, float y = 0)
+    WebKitPoint(float x = 0, float y = 0)
         : m_x(x)
         , m_y(y)
     {
@@ -66,4 +66,4 @@ private:
 
 } // namespace blink
 
-#endif // DOMPoint_h
+#endif // WebKitPoint_h
