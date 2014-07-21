@@ -166,4 +166,48 @@ TEST_F(FontRenderParamsTest, Style) {
   EXPECT_EQ(FontRenderParams::HINTING_NONE, params.hinting);
 }
 
+TEST_F(FontRenderParamsTest, Scalable) {
+  ASSERT_TRUE(LoadSystemFont("arial.ttf"));
+  // Load a config that only enables antialiasing for scalable fonts.
+  ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
+      std::string(kFontconfigFileHeader) +
+      kFontconfigMatchHeader +
+      CreateFontconfigEditStanza("antialias", "bool", "false") +
+      kFontconfigMatchFooter +
+      kFontconfigMatchHeader +
+      CreateFontconfigTestStanza("scalable", "eq", "bool", "true") +
+      CreateFontconfigEditStanza("antialias", "bool", "true") +
+      kFontconfigMatchFooter +
+      kFontconfigFileFooter));
+
+  // Check that we specifically ask how scalable fonts should be rendered.
+  FontRenderParams params = GetCustomFontRenderParams(
+      false, NULL, NULL, NULL, NULL, NULL);
+  EXPECT_TRUE(params.antialiasing);
+}
+
+TEST_F(FontRenderParamsTest, UseBitmaps) {
+  ASSERT_TRUE(LoadSystemFont("arial.ttf"));
+  // Load a config that enables embedded bitmaps for fonts <= 10 pixels.
+  ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
+      std::string(kFontconfigFileHeader) +
+      kFontconfigMatchHeader +
+      CreateFontconfigEditStanza("embeddedbitmap", "bool", "false") +
+      kFontconfigMatchFooter +
+      kFontconfigMatchHeader +
+      CreateFontconfigTestStanza("pixelsize", "less_eq", "double", "10") +
+      CreateFontconfigEditStanza("embeddedbitmap", "bool", "true") +
+      kFontconfigMatchFooter +
+      kFontconfigFileFooter));
+
+  FontRenderParams params = GetCustomFontRenderParams(
+      false, NULL, NULL, NULL, NULL, NULL);
+  EXPECT_FALSE(params.use_bitmaps);
+
+  const int pixel_size = 5;
+  params = GetCustomFontRenderParams(
+      false, NULL, &pixel_size, NULL, NULL, NULL);
+  EXPECT_TRUE(params.use_bitmaps);
+}
+
 }  // namespace gfx

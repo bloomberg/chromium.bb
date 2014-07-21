@@ -49,6 +49,8 @@ bool QueryFontconfig(const std::vector<std::string>* family_list,
   FcPattern* pattern = FcPatternCreate();
   CHECK(pattern);
 
+  FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
+
   if (family_list) {
     for (std::vector<std::string>::const_iterator it = family_list->begin();
          it != family_list->end(); ++it) {
@@ -90,6 +92,10 @@ bool QueryFontconfig(const std::vector<std::string>* family_list,
     FcBool fc_autohint = 0;
     FcPatternGetBool(match, FC_AUTOHINT, 0, &fc_autohint);
     params_out->autohinter = fc_autohint;
+
+    FcBool fc_bitmap = 0;
+    FcPatternGetBool(match, FC_EMBEDDED_BITMAP, 0, &fc_bitmap);
+    params_out->use_bitmaps = fc_bitmap;
 
     FcBool fc_hinting = 0;
     int fc_hint_style = FC_HINT_NONE;
