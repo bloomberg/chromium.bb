@@ -121,9 +121,9 @@ if (enable_extensions) {
 if (enable_plugins) {
   grit_defines += [ "-D", "enable_plugins" ]
 }
-if (enable_printing != 0) {
+if (printing_mode != 0) {
   grit_defines += [ "-D", "enable_printing" ]
-  if (enable_printing == 1) {
+  if (printing_mode == 1) {
     grit_defines += [ "-D", "enable_full_printing" ]
   }
 }

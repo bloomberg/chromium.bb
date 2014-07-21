@@ -52,9 +52,9 @@ config("feature_flags") {
   if (enable_plugins) {
     defines += [ "ENABLE_PLUGINS=1" ]
   }
-  if (enable_printing > 0) {
+  if (printing_mode > 0) {
     defines += [ "ENABLE_PRINTING=1" ]
-    if (enable_printing < 2) {
+    if (printing_mode < 2) {
       defines += [ "ENABLE_FULL_PRINTING=1" ]
     }
   }
