@@ -1071,7 +1071,7 @@ class ChromiumAndroidDriver(driver.Driver):
                 not self._android_commands.file_exists(self._out_fifo_path) and
                 not self._android_commands.file_exists(self._err_fifo_path))
 
-    def start(self, pixel_tests, per_test_args):
+    def start(self, pixel_tests, per_test_args, deadline):
         # We override the default start() so that we can call _android_driver_cmd_line()
         # instead of cmd_line().
         new_cmd_line = self._android_driver_cmd_line(pixel_tests, per_test_args)
@@ -1084,7 +1084,7 @@ class ChromiumAndroidDriver(driver.Driver):
             self.stop()
         self._current_android_cmd_line = new_cmd_line
 
-        super(ChromiumAndroidDriver, self).start(pixel_tests, per_test_args)
+        super(ChromiumAndroidDriver, self).start(pixel_tests, per_test_args, deadline)
 
     def _start(self, pixel_tests, per_test_args):
         if not self._android_devices.is_device_prepared(self._android_commands.get_serial()):
