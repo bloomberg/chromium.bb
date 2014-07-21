@@ -11,7 +11,8 @@
 
 namespace content {
 
-DevToolsPowerHandler::DevToolsPowerHandler() {
+DevToolsPowerHandler::DevToolsPowerHandler()
+    : is_profiling_(false) {
   RegisterCommandHandler(devtools::Power::start::kName,
                          base::Bind(&DevToolsPowerHandler::OnStart,
                                     base::Unretained(this)));
@@ -27,7 +28,8 @@ DevToolsPowerHandler::DevToolsPowerHandler() {
 }
 
 DevToolsPowerHandler::~DevToolsPowerHandler() {
-  PowerProfilerService::GetInstance()->RemoveObserver(this);
+  if (is_profiling_)
+    PowerProfilerService::GetInstance()->RemoveObserver(this);
 }
 
 void DevToolsPowerHandler::OnPowerEvent(const PowerEventVector& events) {
@@ -57,6 +59,7 @@ DevToolsPowerHandler::OnStart(
     scoped_refptr<DevToolsProtocol::Command> command) {
   if (PowerProfilerService::GetInstance()->IsAvailable()) {
     PowerProfilerService::GetInstance()->AddObserver(this);
+    is_profiling_ = true;
     return command->SuccessResponse(NULL);
   }
 
@@ -67,6 +70,7 @@ scoped_refptr<DevToolsProtocol::Response>
 DevToolsPowerHandler::OnEnd(scoped_refptr<DevToolsProtocol::Command> command) {
   if (PowerProfilerService::GetInstance()->IsAvailable()) {
     PowerProfilerService::GetInstance()->RemoveObserver(this);
+    is_profiling_ = false;
     return command->SuccessResponse(NULL);
   }
 
@@ -97,7 +101,8 @@ DevToolsPowerHandler::OnGetAccuracyLevel(
 }
 
 void DevToolsPowerHandler::OnClientDetached() {
-  PowerProfilerService::GetInstance()->RemoveObserver(this);
+  if (is_profiling_)
+    PowerProfilerService::GetInstance()->RemoveObserver(this);
 }
 
 }  // namespace content
