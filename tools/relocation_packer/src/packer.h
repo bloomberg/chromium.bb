@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Pack R_ARM_RELATIVE relocations into a more compact form.
+// Pack ARM relative relocations into a more compact form.
 //
 // Applies two packing strategies.  The first is run-length encoding, which
-// turns a large set of R_ARM_RELATIVE relocations into a much smaller set
+// turns a large set of ARM relative relocations into a much smaller set
 // of delta-count pairs, prefixed with a two-word header comprising the
 // count of pairs and the initial relocation offset.  The second is LEB128
 // encoding, which compacts the result of run-length encoding.
@@ -22,28 +22,28 @@
 #define TOOLS_RELOCATION_PACKER_SRC_PACKER_H_
 
 #include <stdint.h>
-#include <string.h>
 #include <vector>
 
 #include "elf.h"
+#include "elf_traits.h"
 
 namespace relocation_packer {
 
-// A RelocationPacker packs vectors of R_ARM_RELATIVE relocations into more
+// A RelocationPacker packs vectors of ARM relative relocations into more
 // compact forms, and unpacks them to reproduce the pre-packed data.
 class RelocationPacker {
  public:
-  // Pack R_ARM_RELATIVE relocations into a more compact form.
-  // |relocations| is a vector of R_ARM_RELATIVE relocation structs.
+  // Pack ARM relative relocations into a more compact form.
+  // |relocations| is a vector of ARM relative relocation structs.
   // |packed| is the vector of packed bytes into which relocations are packed.
-  static void PackRelativeRelocations(const std::vector<Elf32_Rel>& relocations,
+  static void PackRelativeRelocations(const std::vector<ELF::Rel>& relocations,
                                       std::vector<uint8_t>* packed);
 
-  // Unpack R_ARM_RELATIVE relocations from their more compact form.
+  // Unpack ARM relative relocations from their more compact form.
   // |packed| is the vector of packed relocations.
-  // |relocations| is a vector of unpacked R_ARM_RELATIVE relocation structs.
+  // |relocations| is a vector of unpacked ARM relative relocation structs.
   static void UnpackRelativeRelocations(const std::vector<uint8_t>& packed,
-                                        std::vector<Elf32_Rel>* relocations);
+                                        std::vector<ELF::Rel>* relocations);
 };
 
 }  // namespace relocation_packer

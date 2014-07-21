@@ -24,7 +24,6 @@
 #define TOOLS_RELOCATION_PACKER_SRC_DEBUG_H_
 
 #include <limits.h>
-#include <algorithm>
 #include <ostream>
 #include <sstream>
 

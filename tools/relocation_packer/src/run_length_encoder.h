@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Run-length encode and decode R_ARM_RELATIVE relocations.
+// Run-length encode and decode ARM relative relocations.
 //
-// R_ARM_RELATIVE relocations are the bulk of dynamic relocations (the
+// ARM relative relocations are the bulk of dynamic relocations (the
 // .rel.dyn section) in libchrome<version>.so, and the ELF standard
 // representation of them is wasteful.
 //
@@ -27,20 +27,20 @@
 //   start    count    diff
 //   808fef01 00000006 00000004
 //
-// Because R_ARM_RELATIVE relocation offsets strictly increase, the complete
-// set of R_ARM_RELATIVE relocations in libchrome.<version>.so can be
+// Because ARM relative relocation offsets strictly increase, the complete
+// set of ARM relative relocations in libchrome.<version>.so can be
 // represented by a single start address followed by one or more difference
 // and count encoded word pairs:
 //
 //   start    run1 count run1 diff  run2 count run2 diff
 //   808fef01 00000006   00000004   00000010   00000008 ...
 //
-// Decoding regenerates R_ARM_RELATIVE relocations beginning at address
+// Decoding regenerates ARM relative relocations beginning at address
 // 'start' and for each encoded run, incrementing the address by 'difference'
-// for 'count' iterations and emitting a new R_ARM_RELATIVE relocation.
+// for 'count' iterations and emitting a new ARM relative relocation.
 //
 // Once encoded, data is prefixed by a single word count of packed delta and
-// count pairs.  A final run-length encoded R_ARM_RELATIVE relocations vector
+// count pairs.  A final run-length encoded ARM relative relocations vector
 // might therefore look something like:
 //
 //   pairs    start    run 1             run 2             ... run 15
@@ -51,29 +51,28 @@
 #ifndef TOOLS_RELOCATION_PACKER_SRC_RUN_LENGTH_ENCODER_H_
 #define TOOLS_RELOCATION_PACKER_SRC_RUN_LENGTH_ENCODER_H_
 
-#include <stdint.h>
-#include <string.h>
 #include <vector>
 
 #include "elf.h"
+#include "elf_traits.h"
 
 namespace relocation_packer {
 
-// A RelocationRunLengthCodec packs vectors of R_ARM_RELATIVE relocations
+// A RelocationRunLengthCodec packs vectors of ARM relative relocations
 // into more compact forms, and unpacks them to reproduce the pre-packed data.
 class RelocationRunLengthCodec {
  public:
-  // Encode R_ARM_RELATIVE relocations into a more compact form.
-  // |relocations| is a vector of R_ARM_RELATIVE relocation structs.
+  // Encode ARM relative relocations into a more compact form.
+  // |relocations| is a vector of ARM relative relocation structs.
   // |packed| is the vector of packed words into which relocations are packed.
-  static void Encode(const std::vector<Elf32_Rel>& relocations,
-                     std::vector<Elf32_Word>* packed);
+  static void Encode(const std::vector<ELF::Rel>& relocations,
+                     std::vector<ELF::Xword>* packed);
 
-  // Decode R_ARM_RELATIVE relocations from their more compact form.
+  // Decode ARM relative relocations from their more compact form.
   // |packed| is the vector of packed relocations.
-  // |relocations| is a vector of unpacked R_ARM_RELATIVE relocation structs.
-  static void Decode(const std::vector<Elf32_Word>& packed,
-                     std::vector<Elf32_Rel>* relocations);
+  // |relocations| is a vector of unpacked ARM relative relocation structs.
+  static void Decode(const std::vector<ELF::Xword>& packed,
+                     std::vector<ELF::Rel>* relocations);
 };
 
 }  // namespace relocation_packer

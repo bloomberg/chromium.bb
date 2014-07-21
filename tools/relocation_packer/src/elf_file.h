@@ -4,7 +4,7 @@
 
 // ELF shared object file updates handler.
 //
-// Provides functions to remove R_ARM_RELATIVE relocations from the .rel.dyn
+// Provides functions to remove ARM relative relocations from the .rel.dyn
 // section and pack them in .android.rel.dyn, and unpack to return the file
 // to its pre-packed state.
 //
@@ -31,17 +31,17 @@
 //     status = elf_file.UnpackRelocations();
 //   close(fd);
 //
-// SetPadding() causes PackRelocations() to pad .rel.dyn with R_ARM_NONE
+// SetPadding() causes PackRelocations() to pad .rel.dyn with NONE-type
 // entries rather than cutting a hole out of the shared object file.  This
 // keeps all load addresses and offsets constant, and enables easier
 // debugging and testing.
 //
-// A packed shared object file has all of its R_ARM_RELATIVE relocations
+// A packed shared object file has all of its ARM relative relocations
 // removed from .rel.dyn, and replaced as packed data in .android.rel.dyn.
 // The resulting file is shorter than its non-packed original.
 //
 // Unpacking a packed file restores the file to its non-packed state, by
-// expanding the packed data in android.rel.dyn, combining the R_ARM_RELATIVE
+// expanding the packed data in android.rel.dyn, combining the ARM relative
 // relocations with the data already in .rel.dyn, and then writing back the
 // now expanded .rel.dyn section.
 
@@ -56,7 +56,7 @@
 
 namespace relocation_packer {
 
-// An ElfFile reads shared objects, and shuttles R_ARM_RELATIVE relocations
+// An ElfFile reads shared objects, and shuttles ARM relative relocations
 // between .rel.dyn and .android.rel.dyn sections.
 class ElfFile {
  public:
@@ -64,16 +64,16 @@ class ElfFile {
   ~ElfFile() {}
 
   // Set padding mode.  When padding, PackRelocations() will not shrink
-  // the .rel.dyn section, but instead replace R_ARM_RELATIVE with
-  // R_ARM_NONE entries.
+  // the .rel.dyn section, but instead replace ARM relative with
+  // NONE-type entries.
   // |flag| is true to pad .rel.dyn, false to shrink it.
   inline void SetPadding(bool flag) { is_padding_rel_dyn_ = flag; }
 
-  // Transfer R_ARM_RELATIVE relocations from .rel.dyn to a packed
+  // Transfer ARM relative relocations from .rel.dyn to a packed
   // representation in .android.rel.dyn.  Returns true on success.
   bool PackRelocations();
 
-  // Transfer R_ARM_RELATIVE relocations from a packed representation in
+  // Transfer ARM relative relocations from a packed representation in
   // .android.rel.dyn to .rel.dyn.  Returns true on success.
   bool UnpackRelocations();
 

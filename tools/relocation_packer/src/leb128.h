@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// LEB128 encoder and decoder for packed R_ARM_RELATIVE relocations.
+// LEB128 encoder and decoder for packed ARM relative relocations.
 //
-// Run-length encoded R_ARM_RELATIVE relocations consist of a large number
+// Run-length encoded ARM relative relocations consist of a large number
 // of pairs of relatively small positive integer values.  Encoding these as
 // LEB128 saves space.
 //
@@ -14,8 +14,9 @@
 #define TOOLS_RELOCATION_PACKER_SRC_LEB128_H_
 
 #include <stdint.h>
-#include <unistd.h>
 #include <vector>
+
+#include "elf_traits.h"
 
 namespace relocation_packer {
 
@@ -28,11 +29,11 @@ class Leb128Encoder {
 
   // Add a value to the encoding stream.
   // |value| is the unsigned int to add.
-  void Enqueue(uint32_t value);
+  void Enqueue(ELF::Xword value);
 
   // Add a vector of values to the encoding stream.
   // |values| is the vector of unsigned ints to add.
-  void EnqueueAll(const std::vector<uint32_t>& values);
+  void EnqueueAll(const std::vector<ELF::Xword>& values);
 
   // Retrieve the encoded representation of the values.
   // |encoding| is the returned vector of encoded data.
@@ -54,11 +55,11 @@ class Leb128Decoder {
   ~Leb128Decoder();
 
   // Retrieve the next value from the encoded stream.
-  uint32_t Dequeue();
+  ELF::Xword Dequeue();
 
   // Retrieve all remaining values from the encoded stream.
   // |values| is the vector of decoded data.
-  void DequeueAll(std::vector<uint32_t>* values);
+  void DequeueAll(std::vector<ELF::Xword>* values);
 
  private:
   // Encoded LEB128 stream.

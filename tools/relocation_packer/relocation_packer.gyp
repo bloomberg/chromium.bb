@@ -3,11 +3,25 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'target_define%': 'TARGET_UNSUPPORTED',
+    'conditions': [
+      [ 'target_arch == "arm"', {
+        'target_define': 'TARGET_ARM',
+      }],
+      [ 'target_arch == "arm64"', {
+        'target_define': 'TARGET_ARM64',
+      }],
+    ],
+  },
   'targets': [
     {
       'target_name': 'lib_relocation_packer',
       'toolsets': ['host'],
       'type': 'static_library',
+      'defines': [
+        '<(target_define)',
+      ],
       'dependencies': [
         '../../third_party/elfutils/elfutils.gyp:libelf',
       ],
@@ -23,6 +37,9 @@
       'target_name': 'relocation_packer',
       'toolsets': ['host'],
       'type': 'executable',
+      'defines': [
+        '<(target_define)',
+      ],
       'dependencies': [
         '../../third_party/elfutils/elfutils.gyp:libelf',
         'lib_relocation_packer',
@@ -35,6 +52,9 @@
       'target_name': 'relocation_packer_unittests',
       'toolsets': ['host'],
       'type': 'executable',
+      'defines': [
+        '<(target_define)',
+      ],
       'cflags': [
         '-DINTERMEDIATE_DIR="<(INTERMEDIATE_DIR)"',
       ],

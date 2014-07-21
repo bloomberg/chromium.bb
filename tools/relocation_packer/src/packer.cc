@@ -2,28 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(simonb): Extend for 64-bit target libraries.
-
 #include "packer.h"
 
-#include <string.h>
-#include <string>
 #include <vector>
 
 #include "debug.h"
+#include "elf_traits.h"
 #include "leb128.h"
 #include "run_length_encoder.h"
 
 namespace relocation_packer {
 
-// Pack R_ARM_RELATIVE relocations into a run-length encoded packed
+// Pack ARM relative relocations into a run-length encoded packed
 // representation.
 void RelocationPacker::PackRelativeRelocations(
-    const std::vector<Elf32_Rel>& relocations,
+    const std::vector<ELF::Rel>& relocations,
     std::vector<uint8_t>* packed) {
 
   // Run-length encode.
-  std::vector<Elf32_Word> packed_words;
+  std::vector<ELF::Xword> packed_words;
   RelocationRunLengthCodec codec;
   codec.Encode(relocations, &packed_words);
 
@@ -44,18 +41,18 @@ void RelocationPacker::PackRelativeRelocations(
   // Pad packed to a whole number of words.  This padding will decode as
   // LEB128 zeroes.  Run-length decoding ignores it because encoding
   // embeds the pairs count in the stream itself.
-  while (packed->size() % sizeof(uint32_t))
+  while (packed->size() % sizeof(ELF::Word))
     packed->push_back(0);
 }
 
-// Unpack R_ARM_RELATIVE relocations from a run-length encoded packed
+// Unpack ARM relative relocations from a run-length encoded packed
 // representation.
 void RelocationPacker::UnpackRelativeRelocations(
     const std::vector<uint8_t>& packed,
-    std::vector<Elf32_Rel>* relocations) {
+    std::vector<ELF::Rel>* relocations) {
 
   // LEB128 decode, after checking and stripping "APR1" prefix.
-  std::vector<Elf32_Word> packed_words;
+  std::vector<ELF::Xword> packed_words;
   Leb128Decoder decoder(packed);
   CHECK(decoder.Dequeue() == 'A' && decoder.Dequeue() == 'P' &&
         decoder.Dequeue() == 'R' && decoder.Dequeue() == '1');
