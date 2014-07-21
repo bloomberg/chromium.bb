@@ -1474,6 +1474,8 @@
             'rendering/AutoTableLayout.cpp',
             'rendering/AutoTableLayout.h',
             'rendering/BidiRun.h',
+            'rendering/BidiRunForLine.cpp',
+            'rendering/BidiRunForLine.h',
             'rendering/ClipRect.cpp',
             'rendering/ClipRect.h',
             'rendering/ClipRects.h',
