@@ -138,9 +138,9 @@ void UpdateStats(const gpu::GPUInfo& gpu_info,
   std::vector<uint32> flag_disabled_entries;
   disabled = true;
   blacklist->GetDecisionEntries(&flag_disabled_entries, disabled);
-  for (size_t i = 0; i < flag_disabled_entries.size(); ++i) {
+  for (uint32 disabled_entry : flag_disabled_entries) {
     UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerDisabledEntry",
-        flag_disabled_entries[i], max_entry_id + 1);
+        disabled_entry, max_entry_id + 1);
   }
 
   const gpu::GpuFeatureType kGpuFeatures[] = {
