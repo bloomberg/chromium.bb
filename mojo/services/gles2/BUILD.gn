@@ -1,0 +1,27 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+
+# GYP version: mojo/mojo_services.gypi:mojo_gles2_bindings
+mojom("interfaces") {
+  sources = [
+    "command_buffer.mojom",
+  ]
+}
+
+# GYP version: mojo/mojo_services.gypi:mojo_gles2_bindings
+source_set("bindings") {
+  sources = [
+    "command_buffer_type_conversions.cc",
+    "command_buffer_type_conversions.h",
+    "mojo_buffer_backing.cc",
+    "mojo_buffer_backing.h",
+  ]
+
+  deps = [
+    ":interfaces",
+    "//gpu/command_buffer/common",
+  ]
+}

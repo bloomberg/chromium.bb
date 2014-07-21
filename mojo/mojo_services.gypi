@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //mojo/services/dbus_echo:bindings
       'target_name': 'mojo_echo_bindings',
       'type': 'static_library',
       'sources': [
@@ -85,6 +86,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/public/interfaces/input_events:bindings
       'target_name': 'mojo_input_events_bindings',
       'type': 'static_library',
       'sources': [
@@ -100,6 +102,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/public/interfaces/geometry:bindings
       'target_name': 'mojo_geometry_bindings',
       'type': 'static_library',
       'sources': [
@@ -224,6 +227,9 @@
       ],
     },
     {
+      # GN version: //mojo/services/gles2:interfaces (for files generated from
+      # the mojom file)
+      # GN version: //mojo/services/gles2:bindings
       'target_name': 'mojo_gles2_bindings',
       'type': 'static_library',
       'sources': [
@@ -262,6 +268,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/public/interfaces/native_viewport:bindings
       'target_name': 'mojo_native_viewport_bindings',
       'type': 'static_library',
       'sources': [
@@ -330,6 +337,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/public/interfaces/navigation:bindings
       'target_name': 'mojo_navigation_bindings',
       'type': 'static_library',
       'sources': [
@@ -345,6 +353,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/public/interfaces/network:bindings
       'target_name': 'mojo_network_bindings',
       'type': 'static_library',
       'sources': [
@@ -433,6 +442,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/public/interfaces/launcher:bindings
       'target_name': 'mojo_launcher_bindings',
       'type': 'static_library',
       'sources': [
@@ -466,6 +476,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/public/interfaces/view_manager:bindings
       'target_name': 'mojo_view_manager_bindings',
       'type': 'static_library',
       'sources': [
@@ -554,6 +565,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/public/interfaces/surfaces:bindings
       'target_name': 'mojo_surfaces_bindings',
       'type': 'static_library',
       'sources': [
@@ -572,12 +584,13 @@
       ],
     },
     {
+      # GN version: //mojo/services/test_service:bindings
       'target_name': 'mojo_test_service_bindings',
       'type': 'static_library',
       'sources': [
          # TODO(tim): Move to services/public/interfaces?
-        'services/test_service/test_service.mojom',
         'services/test_service/test_request_tracker.mojom',
+        'services/test_service/test_service.mojom',
       ],
       'includes': [ 'public/tools/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
@@ -634,6 +647,7 @@
       ],
     },
     {
+      # GN version: //mojo/services/public/interfaces/window_manager:core_bindings
       'target_name': 'mojo_core_window_manager_bindings',
       'type': 'static_library',
       'sources': [

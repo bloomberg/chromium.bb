@@ -1,0 +1,18 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+
+# GYP version: mojo/mojo_services.gypi:mojo_native_viewport_bindings
+mojom("bindings") {
+  sources = [
+    "native_viewport.mojom",
+  ]
+
+  deps = [
+    "//mojo/services/gles2:bindings",
+    "//mojo/services/public/interfaces/geometry:bindings",
+    "//mojo/services/public/interfaces/input_events:bindings",
+  ]
+}
