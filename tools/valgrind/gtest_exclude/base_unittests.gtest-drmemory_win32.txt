@@ -35,3 +35,7 @@ TraceEventTestFixture.TraceContinuousSampling
 # TODO(bruening): add a gtest_exclude distinction for light vs full mode
 # so we can avoid excluding this for light mode.
 MessageLoopTestTypeUI.RecursiveDenial3
+
+# http://crbug.com/395739
+# Fails under Dr. Memory
+TraceEventTestFixture.TraceBufferVectorReportFull
