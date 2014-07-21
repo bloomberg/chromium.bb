@@ -64,3 +64,12 @@ if not env.Bit('nacl_glibc'):
   node = env.CommandSelLdrTestNacl('irt_auxv_test.out', nexe)
 
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_auxv_test')
+
+# IRT Address Space test
+nexe = env.ComponentProgram('irt_code_data_alloc_test',
+                            ['irt_code_data_alloc_test.c'],
+                            EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl('irt_code_data_alloc_test.out', nexe)
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_code_data_alloc_test')

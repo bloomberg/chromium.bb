@@ -16,6 +16,7 @@
       'irt_private_tls.c',
 # irt_common_interfaces
       'irt_basic.c',
+      'irt_code_data_alloc.c',
       'irt_fdio.c',
       'irt_filename.c',
       'irt_memory.c',

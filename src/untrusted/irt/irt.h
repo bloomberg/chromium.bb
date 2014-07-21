@@ -380,6 +380,40 @@ struct nacl_irt_exception_handling {
   int (*exception_clear_flag)(void);
 };
 
+#define NACL_IRT_CODE_DATA_ALLOC_v0_1 "nacl-irt-code-data-alloc-0.1"
+struct nacl_irt_code_data_alloc {
+  /*
+   * Atomically allocate a code segment along with an associated data
+   * segment with a specified offset. The caller can then call mmap or
+   * dyncode_create for each of the segments starting with the value returned
+   * by |*begin|.
+   *
+   * |hint| is a desired address where the code should begin. If |hint| is 0
+   * this value is ignored and the next available combination of code and data
+   * segment will be allocated. The hint must be page aligned and is ignored if
+   * the hint location is already reserved.
+   *
+   * |code_size| is the size for the code segment, it should be non-zero and
+   * page size aligned.
+   *
+   * |data_offset| is the offset between the start of the code segment and the
+   * start of the data segment. If |data_size| is zero, this value is ignored.
+   *
+   * |data_size| is the size of the data segment, if no data segment is required
+   * this value can be 0. If the function is successful and |data_size| is
+   * non-zero, the address space for the data segment is reserved and will not
+   * be chosen by allocate_code_data calls or mmap calls without MAP_FIXED. The
+   * data segment will be located at the address |*begin| + |data_offset|.
+   *
+   * |*begin| is where the code segment is reserved so future calls to
+   * allocate_code_data will not overlap address segments.
+   */
+  int (*allocate_code_data)(uintptr_t hint, size_t code_size,
+                            uintptr_t data_offset,
+                            size_t data_size,
+                            uintptr_t *begin);
+};
+
 #if defined(__cplusplus)
 }
 #endif

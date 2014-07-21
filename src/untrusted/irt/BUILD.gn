@@ -24,6 +24,7 @@ executable("irt_core_raw") {
     "irt_basic.c",
     "irt_blockhook.c",
     "irt_clock.c",
+    "irt_code_data_alloc.c",
     "irt_cond.c",
     "irt_core_resource.c",
     "irt_dev_getpid.c",
