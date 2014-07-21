@@ -13,7 +13,8 @@ found in the LICENSE file.
   <template>
     <style>
       :host {
-        display: block;
+        display: flex;
+        flex-direction: column;
       }
 
       paper-item.core-selected {
@@ -21,21 +22,41 @@ found in the LICENSE file.
       }
 
       .message {
-        text-align: center;
         margin: 20px;
+        text-align: center;
+      }
+
+      core-menu {
+        box-shadow: 0 3px 3px #ccc;
+        /* Override /deep/ selector in core-menu.css. */
+        margin: 0 !important;
+        max-height: 20%;
+        min-height: 150px;
+        overflow: auto;
+        /* So the box-shadow goes on top of the results. */
+        z-index: 1;
+      }
+
+      .results {
+        /* Stay below the box shadow of the core-menu. */
+        padding-top: 6px;
+        flex: 1;
+        overflow: auto;
       }
     </style>
-    <template if="{{!failures.length}}">
+    <template if="{{ !failures.length }}">
       <div class="message">No results to display.</div>
     </template>
-    <template if="{{failures.length}}">
-      <core-menu selected="{{selected}}">
-        <template repeat="{{failure in failures}}">
-          <paper-item label="{{failure.testName}}"></paper-item>
+    <template if="{{ failures.length }}">
+      <core-menu selected="{{ selected }}">
+        <template repeat="{{ failure in failures }}">
+          <paper-item label="{{ failure.testName }}"></paper-item>
         </template>
       </core-menu>
-      <ct-embedded-flakiness-dashboard test="{{failures[selected].testName}}"></ct-embedded-flakiness-dashboard>
-      <ct-results-by-builder failure="{{failures[selected]}}"></ct-results-by-builder>
+      <div class="results">
+        <ct-embedded-flakiness-dashboard test="{{ failures[selected].testName }}"></ct-embedded-flakiness-dashboard>
+        <ct-results-by-builder failure="{{ failures[selected] }}"></ct-results-by-builder>
+      </div>
     </template>
   </template>
   <script>

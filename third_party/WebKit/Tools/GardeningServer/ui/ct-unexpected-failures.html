@@ -20,8 +20,21 @@ found in the LICENSE file.
         left: 10px;
       }
 
-      ct-tree-status, ct-failing-builders {
+      ct-failing-builders {
         margin: 5px;
+      }
+
+      ct-tree-status {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 5px;
+        padding: 3px;
+      }
+
+      ct-tree-status[status=open] {
+        margin: 0;
+        padding: 0;
       }
     </style>
     <ct-failure-analyzer id="analyzer" status="{{ analyzerStatus }}" failures="{{ failures }}"></ct-failure-analyzer>

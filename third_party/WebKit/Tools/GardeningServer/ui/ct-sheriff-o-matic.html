@@ -17,33 +17,61 @@ found in the LICENSE file.
 
 <link rel="import" href="../bower_components/core-animated-pages/core-animated-pages.html">
 <link rel="import" href="../bower_components/core-animated-pages/transitions/slide-from-right.html">
-<link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
-<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="ct-results-panel.html">
 <link rel="import" href="ct-unexpected-failures.html">
 
 <polymer-element name="ct-sheriff-o-matic">
   <template>
     <style>
-      paper-tabs {
-        background-color: #00bcd4;
-        color: #fff;
-        box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.2);
+      :host {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      header {
+        -webkit-user-select: none;
+        align-items: center;
+        background-color: #212121;
+        color: white;
+        cursor: default;
+        display: flex;
+        font-size: 1.1em;
+      }
+      header a, header span {
+        color: white;
+        display: inline-block;
+        padding: 0.25em 4px;
+        text-decoration: none;
+      }
+      core-animated-pages {
+        flex: 1;
       }
     </style>
-    <paper-tabs selected="{{selected}}">
-      <paper-tab>Unexpected Failures</paper-tab>
-      <paper-tab>Results</paper-tab>
-    </paper-tabs>
-    <core-animated-pages selected="{{selected}}" transitions="slide-from-right">
-      <ct-unexpected-failures on-ct-examine-failures="{{onExamine}}"></ct-unexpected-failures>
-      <ct-results-panel failures="{{currentFailures}}"></ct-results-panel>
+
+    <header>
+      <template if="{{ selected == 0 }}">
+        <span><img src="../favicon.ico"> Auto-sheriff-o-maticon</span>
+      </template>
+      <template if="{{ selected == 1 }}">
+        <a on-click="{{ onBack }}">
+          &lt;&lt; Go back
+        </a>
+      </template>
+    </header>
+
+    <core-animated-pages selected="{{ selected }}" transitions="slide-from-right">
+      <ct-unexpected-failures on-ct-examine-failures="{{ onExamine }}"></ct-unexpected-failures>
+      <ct-results-panel failures="{{ currentFailures }}"></ct-results-panel>
     </core-animated-pages>
   </template>
   <script>
     Polymer({
       selected: 0,
       currentFailures: [],
+
+      onBack: function() {
+        this.selected = 0;
+      },
 
       onExamine: function(event) {
         this.currentFailures = event.detail;

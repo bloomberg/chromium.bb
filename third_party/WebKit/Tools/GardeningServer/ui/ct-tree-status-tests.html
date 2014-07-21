@@ -69,7 +69,7 @@ asyncTest("basic", 10, function() {
       })
     ]).then(function() {
       requestAnimationFrame(function() {
-        ok(!opentree.shadowRoot.textContent.trim());
+        ok(!opentree.shadowRoot.textContent.has("open-tree-project"));
         ok(throttledtree.shadowRoot.textContent.has("throttled-tree-project"));
         ok(closedtree.shadowRoot.textContent.has("closed-tree-project"));
         start();

@@ -6,26 +6,30 @@ found in the LICENSE file.
 
 <polymer-element name="ct-tree-status">
   <template>
+    <style>
+      :host {
+        display: flex;
+      }
+
+      :host([status=throttled]) {
+        background-color: #fffc6c;
+      }
+
+      :host([status=closed]),
+      :host([status=closed]) a {
+        color: white;
+        background-color: #e98080;
+      }
+
+      .message {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    </style>
     <template if="{{ message }}">
-      <style>
-        :host {
-          display: flex;
-          whitespace: nowrap;
-          overflow: hidden;
-          text-overflow: ellispis;
-        }
-
-        :host([status=throttled]) {
-          background-color: khaki;
-        }
-
-        :host([status=closed]),
-        :host([status=closed]) a {
-          color: white;
-          background-color: tomato;
-        }
-      </style>
-      <div style="flex: 1">{{ project }}: {{ message }}</div>
+      <div class="message">{{ project }}: {{ message }}</div>
       <div style="padding: 0 5px;">[ <a href="{{ project | _url }}">details</a> ]</div>
     </template>
   </template>
@@ -35,7 +39,7 @@ found in the LICENSE file.
         project: '',
         message: '',
         status: {
-          value: 'open',
+          value: '',
           reflect: true,
         },
       },
