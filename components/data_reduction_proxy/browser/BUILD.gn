@@ -50,3 +50,22 @@ static_library("test_support") {
     "//testing/gtest",
   ]
 }
+
+source_set("unit_tests") {
+  sources = [
+    "data_reduction_proxy_auth_request_handler_unittest.cc",
+    "data_reduction_proxy_config_service_unittest.cc",
+    "data_reduction_proxy_metrics_unittest.cc",
+    "data_reduction_proxy_params_unittest.cc",
+    "data_reduction_proxy_protocol_unittest.cc",
+    "data_reduction_proxy_settings_unittest.cc",
+    "data_reduction_proxy_usage_stats_unittest.cc",
+  ]
+
+  deps = [
+    ":browser",
+    ":test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

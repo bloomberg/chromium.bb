@@ -33,3 +33,14 @@ static_library("test_support") {
     "//url",
   ]
 }
+
+source_set("unit_tests") {
+  sources = [
+    "captive_portal_detector_unittest.cc",
+  ]
+
+  deps = [
+    ":captive_portal",
+    "//testing/gtest",
+  ]
+}

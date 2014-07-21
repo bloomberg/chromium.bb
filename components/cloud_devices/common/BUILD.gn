@@ -23,3 +23,16 @@ static_library("common") {
     "//net",
   ]
 }
+
+source_set("unit_tests") {
+  sources = [
+    "cloud_devices_urls_unittest.cc",
+    "printer_description_unittest.cc",
+  ]
+
+  deps = [
+    ":common",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

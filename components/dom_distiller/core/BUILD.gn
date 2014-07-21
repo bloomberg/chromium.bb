@@ -45,6 +45,7 @@ static_library("core") {
   deps = [
     "//base",
     "//components/dom_distiller/core/proto",
+    "//components/leveldb_proto",
     "//components/resources",
     "//components/strings",
     "//net",
@@ -53,7 +54,11 @@ static_library("core") {
     "//third_party/dom_distiller_js/package/proto",
     "//ui/base",
     "//url",
-    #'components.gyp:leveldb_proto',  TODO(GYP)
+  ]
+
+  forward_dependent_configs_from = [
+    "//components/dom_distiller/core/proto",
+    "//third_party/dom_distiller_js/package/proto",
   ]
 
   if (is_android) {
@@ -74,10 +79,32 @@ static_library("test_support") {
 
   deps = [
     ":core",
-    #'components.gyp:leveldb_proto_test_support',  TODO(GYP)
+    "//components/leveldb_proto:test_support",
     "//sync",
     "//testing/gmock",
     "//testing/gtest",
   ]
 }
 
+source_set("unit_tests") {
+  sources = [
+    "article_entry_unittest.cc",
+    "distilled_content_store_unittest.cc",
+    "distilled_page_prefs_unittests.cc",
+    "distiller_unittest.cc",
+    "distiller_url_fetcher_unittest.cc",
+    "dom_distiller_model_unittest.cc",
+    "dom_distiller_service_unittest.cc",
+    "dom_distiller_store_unittest.cc",
+    "task_tracker_unittest.cc",
+    "url_utils_unittest.cc",
+    "viewer_unittest.cc",
+  ]
+
+  deps = [
+    ":core",
+    ":test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

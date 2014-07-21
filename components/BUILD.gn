@@ -167,8 +167,17 @@ test("components_unittests") {
     "//components/autofill/content/browser:unit_tests",
     "//components/autofill/core/browser:unit_tests",
     "//components/autofill/core/common:unit_tests",
+    "//components/bookmarks/browser:unit_tests",
+    "//components/captive_portal:unit_tests",
+    "//components/cloud_devices/common:unit_tests",
+    "//components/data_reduction_proxy/browser:unit_tests",
+    "//components/data_reduction_proxy/common:unit_tests",
+    "//components/dom_distiller/core:unit_tests",
+    "//components/domain_reliability:unit_tests",
   ]
 
+  # TODO(GYP) need this target.
+  #'breakpad/app/crash_keys_win_unittest.cc',
 
   # Precache tests need these defines.
   #configs += [ "//components/precache/core:precache_config" ]

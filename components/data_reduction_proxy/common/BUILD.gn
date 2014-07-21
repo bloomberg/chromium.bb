@@ -16,3 +16,14 @@ static_library("common") {
     "//base",
   ]
 }
+
+source_set("unit_tests") {
+  sources = [
+    "data_reduction_proxy_headers_unittest.cc",
+  ]
+
+  deps = [
+    ":common",
+    "//testing/gtest",
+  ]
+}

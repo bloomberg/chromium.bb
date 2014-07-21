@@ -60,3 +60,22 @@ component("domain_reliability") {
     "//url",
   ]
 }
+
+source_set("unit_tests") {
+  sources = [
+    "config_unittest.cc",
+    "context_unittest.cc",
+    "dispatcher_unittest.cc",
+    "monitor_unittest.cc",
+    "scheduler_unittest.cc",
+    "test_util.cc",
+    "test_util.h",
+    "uploader_unittest.cc",
+    "util_unittest.cc",
+  ]
+
+  deps = [
+    ":domain_reliability",
+    "//testing/gtest",
+  ]
+}

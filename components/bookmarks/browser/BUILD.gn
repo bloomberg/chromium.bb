@@ -59,3 +59,18 @@ source_set("browser") {
     ]
   }
 }
+
+source_set("unit_tests") {
+  sources = [
+    "bookmark_codec_unittest.cc",
+    "bookmark_expanded_state_tracker_unittest.cc",
+    "bookmark_index_unittest.cc",
+    "bookmark_model_unittest.cc",
+    "bookmark_utils_unittest.cc",
+  ]
+
+  deps = [
+    ":browser",
+    "//testing/gtest",
+  ]
+}
