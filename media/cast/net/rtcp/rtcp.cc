@@ -159,14 +159,6 @@ void Rtcp::SendRtcpFromRtpReceiver(
       uint32 delay_seconds = 0;
       uint32 delay_fraction = 0;
       base::TimeDelta delta = now - time_last_report_received_;
-
-      // TODO(hclam): DLRR is not used by any receiver. Consider removing
-      // it. There is one race condition in the computation of the time for
-      // DLRR: current time is submitted to this method while
-      // |time_last_report_received_| is updated just before that. This can
-      // happen if current time is not submitted synchronously.
-      if (delta < base::TimeDelta())
-        delta = base::TimeDelta();
       ConvertTimeToFractions(delta.InMicroseconds(), &delay_seconds,
                              &delay_fraction);
       report_block.delay_since_last_sr =
@@ -202,6 +194,13 @@ void Rtcp::SendRtcpFromRtpSender(base::TimeTicks current_time,
     uint32 delay_seconds = 0;
     uint32 delay_fraction = 0;
     base::TimeDelta delta = current_time - time_last_report_received_;
+    // TODO(hclam): DLRR is not used by any receiver. Consider removing
+    // it. There is one race condition in the computation of the time for
+    // DLRR: current time is submitted to this method while
+    // |time_last_report_received_| is updated just before that. This can
+    // happen if current time is not submitted synchronously.
+    if (delta < base::TimeDelta())
+      delta = base::TimeDelta();
     ConvertTimeToFractions(delta.InMicroseconds(), &delay_seconds,
                            &delay_fraction);
 
