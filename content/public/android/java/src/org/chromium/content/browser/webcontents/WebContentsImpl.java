@@ -149,7 +149,7 @@ import org.chromium.content_public.browser.WebContents;
             String url, long nativeInterstitialPageDelegateAndroid);
     private native boolean nativeIsShowingInterstitialPage(long nativeWebContentsAndroid);
     private native boolean nativeIsRenderWidgetHostViewReady(long nativeWebContentsAndroid);
-    private native void  nativeExitFullscreen(long nativeWebContentsAndroid);
+    private native void nativeExitFullscreen(long nativeWebContentsAndroid);
     private native void nativeUpdateTopControlsState(long nativeWebContentsAndroid,
             boolean enableHiding, boolean enableShowing, boolean animate);
     private native void nativeShowImeIfNeeded(long nativeWebContentsAndroid);
