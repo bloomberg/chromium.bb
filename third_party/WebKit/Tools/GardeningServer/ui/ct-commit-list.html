@@ -5,18 +5,40 @@ found in the LICENSE file.
 -->
 
 <link rel="import" href="ct-commit.html">
-<link rel="import" href="ct-commit-data.html">
 
-<polymer-element name="ct-commit-list" attributes="first last" noscript>
+<polymer-element name="ct-commit-list" attributes="first last commits" noscript>
   <template>
     <style>
       :host {
         display: block;
       }
     </style>
-    <ct-commit-data first="{{first}}" last="{{last}}" data="{{commitData}}"></ct-commit-data>
-    <template repeat="{{commit in commitData}}">
-      <ct-commit data="{{commit}}"></ct-commit>
+    <template repeat="{{revision in _revisions}}">
+      <template if="{{commits[revision]}}">
+        <ct-commit data="{{commits[revision]}}"></ct-commit>
+      </template>
     </template>
   </template>
+  <script>
+    Polymer({
+      commits: {},
+      first: 0,
+      last: 0,
+      _revisions: [],
+
+      observe: {
+        first: '_update',
+        last: '_update',
+      },
+
+      _update: function() {
+        if (!this.first || !this.last)
+          return;
+
+        this._revisions = [];
+        for (var i = this.first; i <= this.last; i++)
+          this._revisions.push(i);
+      },
+    });
+  </script>
 </polymer-element>

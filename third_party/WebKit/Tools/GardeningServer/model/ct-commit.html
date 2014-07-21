@@ -1,0 +1,24 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<script>
+function CTCommit(author, message) {
+  this.author = author;
+  this.message = message;
+  this.revision = this._findRevision();
+  // FIXME: This is a needlessly expensive way to grab the first line.
+  this.summary = this.message.split('\n')[0];
+}
+
+CTCommit.prototype._findRevision = function() {
+  // FIXME: Make this regexp more general.
+  var regexp = /git-svn-id: svn:\/\/svn.chromium.org\/blink\/trunk@(\d+)/;
+  var match = regexp.exec(this.message);
+  if (match)
+    return parseInt(match[1], 10);
+  return null;
+}
+</script>

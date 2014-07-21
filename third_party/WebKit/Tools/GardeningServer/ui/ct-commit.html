@@ -37,6 +37,7 @@ found in the LICENSE file.
   <script>
     Polymer({
       changesetURL: function(revision) {
+        // FIXME: This is the last caller of trac.*. Find a better home for this.
         return trac.changesetURL(revision);
       },
     });

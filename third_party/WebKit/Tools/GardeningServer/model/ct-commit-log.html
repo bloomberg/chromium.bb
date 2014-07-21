@@ -1,0 +1,36 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel='import' href='ct-commit.html'>
+
+<script>
+function CTCommitLog() {
+  // FIXME: This should be a map of repo-name to revision log using the same
+  // repo names that auto-sheriff.appspot's json uses.
+
+  // FIXME: Use better feeds.
+  // https://chromium.googlesource.com/chromium/blink/+log/master?format=json
+  // https://chromium.googlesource.com/chromium/chromium/+log/master?format=json
+  // https://code.google.com/feeds/p/skia/svnchanges/basic
+  // https://code.google.com/feeds/p/v8/svnchanges/basic
+  // https://code.google.com/feeds/p/nativeclient/svnchanges/basic
+  this.commits = {};
+}
+
+CTCommitLog.prototype.update = function() {
+  // FIXME: Turn net.js into net.html and import it at the top of this file.
+  return net.xml('http://blink.lc/blink/atom').then(this._processXml.bind(this));
+}
+
+CTCommitLog.prototype._processXml = function(xml) {
+  Array.prototype.forEach.call(xml.getElementsByTagName('entry'), function(logentry) {
+    var author = logentry.getElementsByTagName('author')[0].textContent.trim();
+    var message = logentry.getElementsByTagName('content')[0].textContent.trim();
+    var commit = new CTCommit(author, message);
+    this.commits[commit.revision] = commit;
+  }.bind(this));
+}
+</script>

@@ -1,0 +1,44 @@
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<link rel="import" href="ct-commit-log.html">
+
+<link rel='import' href='ct-commit-mock.html'>
+
+<script>
+(function () {
+
+module("ct-commit-log");
+
+test("basic", 1, function() {
+  var commit = new CTCommitMock();
+  var kExampleCommitDataXML =
+      "<feed xmlns='http://www.w3.org/2005/Atom'>\n" +
+      "<title>blink, branch master</title>\n" +
+      "<subtitle>Mirror of the Chromium Blink repository.</subtitle>\n" +
+      "<link rel='alternate' type='text/html' href='http://blink.lc/blink/'/>\n" +
+      "<entry>\n" +
+      "<title>Throw SecurityError when setting 'Replaceable' properties cross-origin.</title>\n" +
+      "<updated>2013-09-30T20:22:01Z</updated>\n" +
+      "<author>\n" +
+      "<name>" + commit.author + "</name>\n" +
+      "</author>\n" +
+      "<published>2013-09-30T20:22:01Z</published>\n" +
+      "<link rel='alternate' type='text/html' href='http://blink.lc/blink/commit/?id=723e62a4a4e093435b4772b4839aa3fd7cf6b991'/>\n" +
+      "<id>723e62a4a4e093435b4772b4839aa3fd7cf6b991</id>\n" +
+      "<content type='text'>\n" + commit.message + "</content>\n";
+
+  var xml = new DOMParser().parseFromString(kExampleCommitDataXML, "text/xml");
+  var log = new CTCommitLog();
+  log._processXml(xml);
+
+  var expectedCommits = {};
+  expectedCommits[commit.revision] = commit;
+  deepEqual(log.commits, expectedCommits);
+});
+
+})();
+</script>

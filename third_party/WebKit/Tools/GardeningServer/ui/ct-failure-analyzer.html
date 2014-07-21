@@ -4,11 +4,12 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<polymer-element name="ct-failure-analyzer" attributes="failures status">
+<polymer-element name="ct-failure-analyzer" attributes="failures status builderLatestRevisions">
   <script>
     Polymer({
       failures: {},
       pendingUnexpectedFailures: [],
+      builderLatestRevisions: {},
 
       update: function() {
         this._updateFailingBuilders();
@@ -19,6 +20,15 @@ found in the LICENSE file.
         builders.buildersFailingNonLayoutTests().then((function(builders) {
           this.failures.builders = builders;
         }).bind(this));
+      },
+
+      _updateBuilderLatestRevisions: function() {
+        this.builderLatestRevisions = {};
+        Object.keys(config.builders, function(builder) {
+          this.builderLatestRevisions[builder] = {
+            blink: model.state.resultsByBuilder[builder].blink_revision,
+          };
+        }.bind(this));
       },
 
       _updateUnexpectedFailures: function() {
@@ -33,6 +43,7 @@ found in the LICENSE file.
           }.bind(this)).then(function() {
             this.status = 'Done';
             this.failures.unexpected = this.pendingUnexpectedFailures;
+            this._updateBuilderLatestRevisions();
           }.bind(this));
         }.bind(this));
       },

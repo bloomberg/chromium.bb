@@ -7,7 +7,7 @@ found in the LICENSE file.
 <link rel="import" href="ct-builder.html">
 
 <!-- Table of failure types, listing the failing builders for each type. -->
-<polymer-element name="ct-builder-grid" attributes="failures">
+<polymer-element name="ct-builder-grid" attributes="failures builderLatestRevisions">
   <template>
     <style>
       table {
@@ -99,6 +99,7 @@ found in the LICENSE file.
   <script>
     Polymer({
       failures: [],
+      builderLatestRevisions: {},
       resultTypes: {},
 
       keys: function(obj) {
@@ -123,15 +124,15 @@ found in the LICENSE file.
         this.failures.forEach(function(failure) {
           passingRevisions.push(failure.newestPassingRevision);
           var results = failure.resultNodesByBuilder;
-          Object.keys(results, (function(builderName) {
-            var result = results[builderName];
+          Object.keys(results, (function(builder) {
+            var result = results[builder];
             if (!result.is_unexpected)
               return;
 
             if (!Object.has(this.resultTypes, result.actual))
               this.resultTypes[result.actual] = {};
-            this.resultTypes[result.actual][builderName] =
-                config.builders[builderName];
+            this.resultTypes[result.actual][builder] =
+                config.builders[builder];
           }).bind(this));
         }, this);
 
@@ -140,19 +141,27 @@ found in the LICENSE file.
             this.resultTypes['BUILDING'] = buildingType;
       },
 
+      _buildersInFlightForRevision: function(revision) {
+        return Object.keys(this.builderLatestRevisions).filter(function(builder) {
+          // FIXME: This should look at all chromium/v8/etc revisions as well.
+          // Is this concept of "building" builders even useful as is?
+          return parseInt(this.builderLatestRevisions[builder].blink, 10) < revision;
+        }.bind(this));
+      },
+
       _getBuilding: function(revisions) {
         var building = {};
-        var builderNames = [];
+        var builders = [];
         revisions.unique().forEach(function(revision) {
-          builderNames.push.apply(builderNames,
-              Object.keys(model.buildersInFlightForRevision(revision + 1)));
-        });
-        builderNames.unique().forEach(function(builderName) {
-          if (!config.builders[builderName])
+          builders.push.apply(builders, this._buildersInFlightForRevision(revision + 1));
+        }.bind(this));
+
+        builders.unique().forEach(function(builder) {
+          if (!config.builders[builder])
             return;
-          building[builderName] =
-              {'debug': config.builders[builderName].debug};
+          building[builder] = {'debug': config.builders[builder].debug};
         });
+
         return building;
       },
     });

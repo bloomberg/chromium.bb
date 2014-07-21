@@ -6,32 +6,23 @@ found in the LICENSE file.
 
 <link rel="import" href="ct-commit.html">
 
+<link rel="import" href="model/ct-commit-mock.html">
+
 <script>
 (function () {
-
-var kExampleCommitData = {
-  "revision": 2,
-  "title": "Fix one more layering violation caught by check-blink-deps",
-  "time": "2013-09-30T19:36:21Z",
-  "summary": "core/platform may not depend on core/ even for testing.",
-  "author": "eseidel@chromium.org",
-  "reviewer": "abarth@chromium.org, abarth",
-  "bugID": [12],
-  "revertedRevision": undefined
-}
 
 module("ct-commit");
 
 asyncTest("basic", 2, function() {
   var grouper = document.createElement('ct-commit');
 
-  grouper.data = kExampleCommitData;
+  grouper.data = new CTCommitMock();
 
   Platform.endOfMicrotask(function() {
     var html = grouper.shadowRoot.innerHTML;
 
-    equal(html.indexOf('eseidel') != -1, true)
-    equal(html.indexOf('may not depend on') != -1, true)
+    equal(html.indexOf('mkwst') != -1, true)
+    equal(html.indexOf('behavior for these types') != -1, true)
 
     start();
   });
