@@ -1991,7 +1991,7 @@ RenderObject* AXRenderObject::renderParentObject() const
     return parent;
 }
 
-bool AXRenderObject::isDescendantOfElementType(const QualifiedName& tagName) const
+bool AXRenderObject::isDescendantOfElementType(const HTMLQualifiedName& tagName) const
 {
     for (RenderObject* parent = m_renderer->parent(); parent; parent = parent->parent()) {
         if (parent->node() && parent->node()->hasTagName(tagName))

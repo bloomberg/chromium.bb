@@ -437,15 +437,16 @@ static bool isMailPasteAsQuotationNode(const Node* node)
 
 static bool isHeaderElement(const Node* a)
 {
-    if (!a)
+    if (!a || !a->isHTMLElement())
         return false;
 
-    return a->hasTagName(h1Tag)
-        || a->hasTagName(h2Tag)
-        || a->hasTagName(h3Tag)
-        || a->hasTagName(h4Tag)
-        || a->hasTagName(h5Tag)
-        || a->hasTagName(h6Tag);
+    const HTMLElement& element = toHTMLElement(*a);
+    return element.hasTagName(h1Tag)
+        || element.hasTagName(h2Tag)
+        || element.hasTagName(h3Tag)
+        || element.hasTagName(h4Tag)
+        || element.hasTagName(h5Tag)
+        || element.hasTagName(h6Tag);
 }
 
 static bool haveSameTagName(Node* a, Node* b)
@@ -460,8 +461,8 @@ bool ReplaceSelectionCommand::shouldMerge(const VisiblePosition& source, const V
 
     Node* sourceNode = source.deepEquivalent().deprecatedNode();
     Node* destinationNode = destination.deepEquivalent().deprecatedNode();
-    Node* sourceBlock = enclosingBlock(sourceNode);
-    Node* destinationBlock = enclosingBlock(destinationNode);
+    Element* sourceBlock = enclosingBlock(sourceNode);
+    Element* destinationBlock = enclosingBlock(destinationNode);
     return !enclosingNodeOfType(source.deepEquivalent(), &isMailPasteAsQuotationNode) &&
            sourceBlock && (!sourceBlock->hasTagName(blockquoteTag) || isMailBlockquote(sourceBlock))  &&
            enclosingListChild(sourceBlock) == enclosingListChild(destinationNode) &&

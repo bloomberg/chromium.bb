@@ -24,7 +24,7 @@ class AffectedByFocusTest : public ::testing::Test {
 protected:
 
     struct ElementResult {
-        const blink::QualifiedName tag;
+        const blink::HTMLQualifiedName tag;
         bool affectedBy;
         bool childrenOrSiblingsAffectedBy;
     };

@@ -77,7 +77,7 @@ void HTMLTableElement::setCaption(PassRefPtrWillBeRawPtr<HTMLTableCaptionElement
 
 HTMLTableSectionElement* HTMLTableElement::tHead() const
 {
-    for (Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
+    for (HTMLElement* child = Traversal<HTMLElement>::firstWithin(*this); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
         if (child->hasTagName(theadTag))
             return toHTMLTableSectionElement(child);
     }
@@ -88,8 +88,8 @@ void HTMLTableElement::setTHead(PassRefPtrWillBeRawPtr<HTMLTableSectionElement> 
 {
     deleteTHead();
 
-    Element* child;
-    for (child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
+    HTMLElement* child;
+    for (child = Traversal<HTMLElement>::firstWithin(*this); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
         if (!child->hasTagName(captionTag) && !child->hasTagName(colgroupTag))
             break;
     }
@@ -99,7 +99,7 @@ void HTMLTableElement::setTHead(PassRefPtrWillBeRawPtr<HTMLTableSectionElement> 
 
 HTMLTableSectionElement* HTMLTableElement::tFoot() const
 {
-    for (Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
+    for (HTMLElement* child = Traversal<HTMLElement>::firstWithin(*this); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
         if (child->hasTagName(tfootTag))
             return toHTMLTableSectionElement(child);
     }
@@ -110,8 +110,8 @@ void HTMLTableElement::setTFoot(PassRefPtrWillBeRawPtr<HTMLTableSectionElement> 
 {
     deleteTFoot();
 
-    Element* child;
-    for (child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
+    HTMLElement* child;
+    for (child = Traversal<HTMLElement>::firstWithin(*this); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
         if (!child->hasTagName(captionTag) && !child->hasTagName(colgroupTag) && !child->hasTagName(theadTag))
             break;
     }
@@ -172,7 +172,7 @@ void HTMLTableElement::deleteCaption()
 
 HTMLTableSectionElement* HTMLTableElement::lastBody() const
 {
-    for (Node* child = lastChild(); child; child = child->previousSibling()) {
+    for (HTMLElement* child = Traversal<HTMLElement>::lastChild(*this); child; child = Traversal<HTMLElement>::previousSibling(*child)) {
         if (child->hasTagName(tbodyTag))
             return toHTMLTableSectionElement(child);
     }

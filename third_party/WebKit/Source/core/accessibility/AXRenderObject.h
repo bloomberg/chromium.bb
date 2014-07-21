@@ -209,7 +209,7 @@ private:
     AXObject* accessibilityImageMapHitTest(HTMLAreaElement*, const IntPoint&) const;
     bool renderObjectIsObservable(RenderObject*) const;
     RenderObject* renderParentObject() const;
-    bool isDescendantOfElementType(const QualifiedName& tagName) const;
+    bool isDescendantOfElementType(const HTMLQualifiedName& tagName) const;
     bool isSVGImage() const;
     void detachRemoteSVGRoot();
     AXSVGRoot* remoteSVGRootElement() const;

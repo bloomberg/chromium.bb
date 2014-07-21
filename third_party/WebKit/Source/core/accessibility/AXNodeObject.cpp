@@ -37,6 +37,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLLegendElement.h"
+#include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/rendering/RenderObject.h"
@@ -224,7 +225,7 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
         return GroupRole;
     if (isHTMLAnchorElement(*node()) && isClickable())
         return LinkRole;
-    if (node()->hasTagName(iframeTag))
+    if (isHTMLIFrameElement(*node()))
         return IframeRole;
     if (isEmbeddedObject())
         return EmbeddedObjectRole;
@@ -477,9 +478,7 @@ bool AXNodeObject::isControl() const
 
 bool AXNodeObject::isEmbeddedObject() const
 {
-    return node()
-        && (node()->hasTagName(objectTag) || node()->hasTagName(embedTag)
-        || node()->hasTagName(appletTag));
+    return isHTMLPlugInElement(node());
 }
 
 bool AXNodeObject::isFieldset() const
@@ -814,27 +813,31 @@ int AXNodeObject::headingLevel() const
     // headings can be in block flow and non-block flow
     Node* node = this->node();
     if (!node)
-        return false;
+        return 0;
 
     if (ariaRoleAttribute() == HeadingRole)
         return getAttribute(aria_levelAttr).toInt();
 
-    if (node->hasTagName(h1Tag))
+    if (!node->isHTMLElement())
+        return 0;
+
+    HTMLElement& element = toHTMLElement(*node);
+    if (element.hasTagName(h1Tag))
         return 1;
 
-    if (node->hasTagName(h2Tag))
+    if (element.hasTagName(h2Tag))
         return 2;
 
-    if (node->hasTagName(h3Tag))
+    if (element.hasTagName(h3Tag))
         return 3;
 
-    if (node->hasTagName(h4Tag))
+    if (element.hasTagName(h4Tag))
         return 4;
 
-    if (node->hasTagName(h5Tag))
+    if (element.hasTagName(h5Tag))
         return 5;
 
-    if (node->hasTagName(h6Tag))
+    if (element.hasTagName(h6Tag))
         return 6;
 
     return 0;

@@ -52,11 +52,11 @@ private:
     virtual EditAction editingAction() const OVERRIDE { return EditActionInsertList; }
 
     HTMLElement* fixOrphanedListChild(Node*);
-    bool selectionHasListOfType(const VisibleSelection& selection, const QualifiedName&);
+    bool selectionHasListOfType(const VisibleSelection&, const HTMLQualifiedName&);
     PassRefPtrWillBeRawPtr<HTMLElement> mergeWithNeighboringLists(PassRefPtrWillBeRawPtr<HTMLElement>);
     void doApplyForSingleParagraph(bool forceCreateList, const HTMLQualifiedName&, Range& currentSelection);
     void unlistifyParagraph(const VisiblePosition& originalStart, HTMLElement* listNode, Node* listChildNode);
-    PassRefPtrWillBeRawPtr<HTMLElement> listifyParagraph(const VisiblePosition& originalStart, const QualifiedName& listTag);
+    PassRefPtrWillBeRawPtr<HTMLElement> listifyParagraph(const VisiblePosition& originalStart, const HTMLQualifiedName& listTag);
 
     RefPtrWillBeMember<HTMLElement> m_listElement;
     Type m_type;
