@@ -18,6 +18,7 @@ function test()
     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(cssUISourceCodeAdded);
     const styleSheetURL = "http://localhost:8000/inspector/resources/example.css";
     const sourceMapURL = "example.css.map";
+    const styleSheetId = 1;
     InspectorTest.addMockUISourceCodeToWorkspace(styleSheetURL, WebInspector.resourceTypes.Stylesheet, "");
 
     InspectorTest.addSniffer(WebInspector.CSSStyleSheetHeader.prototype, "updateLocations", locationsUpdated, true);
@@ -25,7 +26,7 @@ function test()
 
     function locationsUpdated()
     {
-        var uiLocation = new WebInspector.CSSLocation(WebInspector.targetManager.mainTarget(), "http://localhost:8000/inspector/resources/example.css", 2, 3).toUILocation();
+        var uiLocation = new WebInspector.CSSLocation(WebInspector.targetManager.mainTarget(), styleSheetId, styleSheetURL, 2, 3).toUILocation();
         if (uiLocation.uiSourceCode.url.indexOf(".scss") === -1)
             return;
         finalMappedLocation = uiLocation.uiSourceCode.url + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber;
@@ -37,7 +38,7 @@ function test()
     {
         const frame = WebInspector.resourceTreeModel.mainFrame;
         return {
-            styleSheetId: "1000",
+            styleSheetId: styleSheetId,
             frameId: frame.id,
             sourceURL: url,
             sourceMapURL: sourceMapURL,
@@ -72,12 +73,12 @@ function test()
 
     function rawLocationToUILocation(line, column)
     {
-        return new WebInspector.CSSLocation(WebInspector.targetManager.mainTarget(), "http://localhost:8000/inspector/resources/example.css", line, column).toUILocation();
+        return new WebInspector.CSSLocation(WebInspector.targetManager.mainTarget(), styleSheetId, styleSheetURL, line, column).toUILocation();
     }
 
     function afterStyleSheetAdded()
     {
-        var cssUISourceCode = InspectorTest.testWorkspace.uiSourceCodeForOriginURL("http://localhost:8000/inspector/resources/example.css");
+        var cssUISourceCode = InspectorTest.testWorkspace.uiSourceCodeForOriginURL(styleSheetURL);
         var scssUISourceCode = InspectorTest.testWorkspace.uiSourceCodeForOriginURL("http://localhost:8000/inspector/resources/example.scss");
 
         InspectorTest.checkUILocation(cssUISourceCode, 0, 3, rawLocationToUILocation(0, 3));
