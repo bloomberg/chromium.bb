@@ -38,6 +38,7 @@
 
 namespace blink {
 
+class HRTFDatabaseLoader;
 class PannerNode;
 
 // AudioListener maintains the state of the listener in the audio scene as defined in the OpenAL specification.
@@ -79,6 +80,12 @@ public:
     void addPanner(PannerNode*);
     void removePanner(PannerNode*);
 
+    // HRTF DB loader
+    HRTFDatabaseLoader* hrtfDatabaseLoader() { return m_hrtfDatabaseLoader.get(); }
+    void createAndLoadHRTFDatabaseLoader(float);
+    bool isHRTFDatabaseLoaded();
+    void waitForHRTFDatabaseLoaderThreadCompletion();
+
     void trace(Visitor*) { }
 
 private:
@@ -100,9 +107,10 @@ private:
 
     // Synchronize a panner's process() with setting of the state of the listener.
     mutable Mutex m_listenerLock;
-
     // List for pannerNodes in context.
     Vector<PannerNode*> m_panners;
+    // HRTF DB loader for panner node.
+    RefPtr<HRTFDatabaseLoader> m_hrtfDatabaseLoader;
 };
 
 } // WebCore

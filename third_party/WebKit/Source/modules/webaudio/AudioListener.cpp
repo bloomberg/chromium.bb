@@ -34,6 +34,7 @@
 
 #include "modules/webaudio/PannerNode.h"
 #include "platform/audio/AudioBus.h"
+#include "platform/audio/HRTFDatabaseLoader.h"
 
 namespace blink {
 
@@ -69,6 +70,22 @@ void AudioListener::removePanner(PannerNode* panner)
             break;
         }
     }
+}
+
+void AudioListener::createAndLoadHRTFDatabaseLoader(float sampleRate)
+{
+    if (!m_hrtfDatabaseLoader)
+        m_hrtfDatabaseLoader = HRTFDatabaseLoader::createAndLoadAsynchronouslyIfNecessary(sampleRate);
+}
+
+bool AudioListener::isHRTFDatabaseLoaded()
+{
+    return m_hrtfDatabaseLoader->isLoaded();
+}
+
+void AudioListener::waitForHRTFDatabaseLoaderThreadCompletion()
+{
+    m_hrtfDatabaseLoader->waitForLoaderThreadCompletion();
 }
 
 void AudioListener::markPannersAsDirty(unsigned type)

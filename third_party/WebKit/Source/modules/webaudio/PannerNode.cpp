@@ -63,7 +63,7 @@ PannerNode::PannerNode(AudioContext* context, float sampleRate)
 {
     // Load the HRTF database asynchronously so we don't block the Javascript thread while creating the HRTF database.
     // The HRTF panner will return zeroes until the database is loaded.
-    m_hrtfDatabaseLoader = HRTFDatabaseLoader::createAndLoadAsynchronouslyIfNecessary(context->sampleRate());
+    listener()->createAndLoadHRTFDatabaseLoader(context->sampleRate());
 
     ScriptWrappable::init(this);
     addInput();
@@ -123,9 +123,9 @@ void PannerNode::process(size_t framesToProcess)
 
     if (tryLocker.locked() && tryListenerLocker.locked()) {
         // HRTFDatabase should be loaded before proceeding for offline audio context when the panning model is HRTF.
-        if (m_panningModel == Panner::PanningModelHRTF && !m_hrtfDatabaseLoader->isLoaded()) {
+        if (m_panningModel == Panner::PanningModelHRTF && !listener()->isHRTFDatabaseLoaded()) {
             if (context()->isOfflineContext()) {
-                m_hrtfDatabaseLoader->waitForLoaderThreadCompletion();
+                listener()->waitForHRTFDatabaseLoaderThreadCompletion();
             } else {
                 destination->zero();
                 return;
@@ -160,7 +160,7 @@ void PannerNode::initialize()
     if (isInitialized())
         return;
 
-    m_panner = Panner::create(m_panningModel, sampleRate(), m_hrtfDatabaseLoader.get());
+    m_panner = Panner::create(m_panningModel, sampleRate(), listener()->hrtfDatabaseLoader());
     listener()->addPanner(this);
 
     AudioNode::initialize();
@@ -211,7 +211,7 @@ bool PannerNode::setPanningModel(unsigned model)
         if (!m_panner.get() || model != m_panningModel) {
             // This synchronizes with process().
             MutexLocker processLocker(m_processLock);
-            OwnPtr<Panner> newPanner = Panner::create(model, sampleRate(), m_hrtfDatabaseLoader.get());
+            OwnPtr<Panner> newPanner = Panner::create(model, sampleRate(), listener()->hrtfDatabaseLoader());
             m_panner = newPanner.release();
             m_panningModel = model;
         }

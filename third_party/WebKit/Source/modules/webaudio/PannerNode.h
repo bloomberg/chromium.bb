@@ -28,7 +28,6 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/Cone.h"
 #include "platform/audio/Distance.h"
-#include "platform/audio/HRTFDatabaseLoader.h"
 #include "platform/audio/Panner.h"
 #include "modules/webaudio/AudioListener.h"
 #include "modules/webaudio/AudioNode.h"
@@ -154,8 +153,6 @@ private:
     double m_cachedElevation;
     float m_cachedDistanceConeGain;
     double m_cachedDopplerRate;
-
-    RefPtr<HRTFDatabaseLoader> m_hrtfDatabaseLoader;
 
     // AudioContext's connection count
     unsigned m_connectionCount;
