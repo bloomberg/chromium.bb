@@ -327,23 +327,46 @@ bool MouseEvent::IsRepeatedClickEvent(
 int MouseEvent::GetRepeatCount(const MouseEvent& event) {
   int click_count = 1;
   if (last_click_event_) {
-    if (event.type() == ui::ET_MOUSE_RELEASED)
-      return last_click_event_->GetClickCount();
-    if (IsX11SendEventTrue(event.native_event()))
+    if (event.type() == ui::ET_MOUSE_RELEASED) {
+      if (event.changed_button_flags() ==
+              last_click_event_->changed_button_flags()) {
+        last_click_complete_ = true;
+        return last_click_event_->GetClickCount();
+      } else {
+        // If last_click_event_ has changed since this button was pressed
+        // return a click count of 1.
+        return click_count;
+      }
+    }
+    if (event.time_stamp() != last_click_event_->time_stamp())
+      last_click_complete_ = true;
+    if (!last_click_complete_ ||
+        IsX11SendEventTrue(event.native_event())) {
       click_count = last_click_event_->GetClickCount();
-    else if (IsRepeatedClickEvent(*last_click_event_, event))
+    } else if (IsRepeatedClickEvent(*last_click_event_, event)) {
       click_count = last_click_event_->GetClickCount() + 1;
+    }
     delete last_click_event_;
   }
   last_click_event_ = new MouseEvent(event);
+  last_click_complete_ = false;
   if (click_count > 3)
     click_count = 3;
   last_click_event_->SetClickCount(click_count);
   return click_count;
 }
 
+void MouseEvent::ResetLastClickForTest() {
+  if (last_click_event_) {
+    delete last_click_event_;
+    last_click_event_ = NULL;
+    last_click_complete_ = false;
+  }
+}
+
 // static
 MouseEvent* MouseEvent::last_click_event_ = NULL;
+bool MouseEvent::last_click_complete_ = false;
 
 int MouseEvent::GetClickCount() const {
   if (type() != ET_MOUSE_PRESSED && type() != ET_MOUSE_RELEASED)

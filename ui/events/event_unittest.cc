@@ -98,6 +98,68 @@ TEST(EventTest, RepeatedClick) {
   EXPECT_FALSE(MouseEvent::IsRepeatedClickEvent(mouse_ev1, mouse_ev2));
 }
 
+// Tests that an event only increases the click count and gets marked as a
+// double click if a release event was seen for the previous click. This
+// prevents the same PRESSED event from being processed twice:
+// http://crbug.com/389162
+TEST(EventTest, DoubleClickRequiresRelease) {
+  const gfx::Point origin1(0, 0);
+  const gfx::Point origin2(100, 0);
+  scoped_ptr<MouseEvent> ev;
+  base::TimeDelta start = base::TimeDelta::FromMilliseconds(0);
+
+  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin1, origin1, 0, 0));
+  ev->set_time_stamp(start);
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
+  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin1, origin1, 0, 0));
+  ev->set_time_stamp(start);
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
+
+  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin2, origin2, 0, 0));
+  ev->set_time_stamp(start);
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
+  ev.reset(new MouseEvent(ET_MOUSE_RELEASED, origin2, origin2, 0, 0));
+  ev->set_time_stamp(start);
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
+  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin2, origin2, 0, 0));
+  ev->set_time_stamp(start);
+  EXPECT_EQ(2, MouseEvent::GetRepeatCount(*ev));
+  ev.reset(new MouseEvent(ET_MOUSE_RELEASED, origin2, origin2, 0, 0));
+  ev->set_time_stamp(start);
+  EXPECT_EQ(2, MouseEvent::GetRepeatCount(*ev));
+  MouseEvent::ResetLastClickForTest();
+}
+
+// Tests that clicking right and then left clicking does not generate a double
+// click.
+TEST(EventTest, SingleClickRightLeft) {
+  const gfx::Point origin(0, 0);
+  scoped_ptr<MouseEvent> ev;
+  base::TimeDelta start = base::TimeDelta::FromMilliseconds(0);
+
+  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin, origin,
+                          ui::EF_RIGHT_MOUSE_BUTTON,
+                          ui::EF_RIGHT_MOUSE_BUTTON));
+  ev->set_time_stamp(start);
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
+  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin, origin,
+                          ui::EF_LEFT_MOUSE_BUTTON,
+                          ui::EF_LEFT_MOUSE_BUTTON));
+  ev->set_time_stamp(start);
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
+  ev.reset(new MouseEvent(ET_MOUSE_RELEASED, origin, origin,
+                          ui::EF_LEFT_MOUSE_BUTTON,
+                          ui::EF_LEFT_MOUSE_BUTTON));
+  ev->set_time_stamp(start);
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
+  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin, origin,
+                          ui::EF_LEFT_MOUSE_BUTTON,
+                          ui::EF_LEFT_MOUSE_BUTTON));
+  ev->set_time_stamp(start);
+  EXPECT_EQ(2, MouseEvent::GetRepeatCount(*ev));
+  MouseEvent::ResetLastClickForTest();
+}
+
 TEST(EventTest, KeyEvent) {
   static const struct {
     KeyboardCode key_code;

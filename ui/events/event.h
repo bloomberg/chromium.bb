@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/event_types.h"
+#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "ui/events/event_constants.h"
@@ -402,14 +403,25 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   void set_changed_button_flags(int flags) { changed_button_flags_ = flags; }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(EventTest, DoubleClickRequiresRelease);
+  FRIEND_TEST_ALL_PREFIXES(EventTest, SingleClickRightLeft);
+
   // Returns the repeat count based on the previous mouse click, if it is
   // recent enough and within a small enough distance.
   static int GetRepeatCount(const MouseEvent& click_event);
+
+  // Resets the last_click_event_ for unit tests.
+  static void ResetLastClickForTest();
 
   // See description above getter for details.
   int changed_button_flags_;
 
   static MouseEvent* last_click_event_;
+
+  // We can create a MouseEvent for a native event more than once. We set this
+  // to true when the next event either has a different timestamp or we see a
+  // release signalling that the press (click) event was completed.
+  static bool last_click_complete_;
 };
 
 class ScrollEvent;
