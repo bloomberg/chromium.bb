@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2004, 2005, 2006, 2008 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2004, 2005, 2006 Rob Buis <buis@kde.org>
- * Copyright (C) 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2009, 2014 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -22,7 +22,7 @@
 #ifndef SVGElement_h
 #define SVGElement_h
 
-#include "core/SVGElementTypeHelpers.h"
+#include "core/SVGNames.h"
 #include "core/dom/Element.h"
 #include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGParsingError.h"
@@ -44,6 +44,7 @@ class SVGElement;
 class SVGElementRareData;
 class SVGFitToViewBox;
 class SVGSVGElement;
+class SVGUseElement;
 
 void mapAttributeToCSSProperty(HashMap<StringImpl*, CSSPropertyID>* propertyNameToIdMap, const QualifiedName& attrName);
 
@@ -59,6 +60,8 @@ public:
     virtual bool supportsFocus() const OVERRIDE { return false; }
 
     bool isOutermostSVGSVGElement() const;
+
+    bool hasTagName(const SVGQualifiedName& name) const { return hasLocalName(name.localName()); }
 
     virtual String title() const OVERRIDE;
     bool hasRelativeLengths() const { return !m_elementsWithRelativeLengths.isEmpty(); }
@@ -260,8 +263,16 @@ struct SVGAttributeHashTranslator {
 
 DEFINE_ELEMENT_TYPE_CASTS(SVGElement, isSVGElement());
 
-template <> inline bool isElementOfType<const SVGElement>(const Node& node) { return node.isSVGElement(); }
+template <typename T> bool isElementOfType(const SVGElement&);
+template <> inline bool isElementOfType<const SVGElement>(const SVGElement&) { return true; }
+
+inline bool Node::hasTagName(const SVGQualifiedName& name) const
+{
+    return isSVGElement() && toSVGElement(*this).hasTagName(name);
+}
 
 }
+
+#include "core/SVGElementTypeHelpers.h"
 
 #endif

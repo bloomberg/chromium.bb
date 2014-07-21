@@ -127,7 +127,7 @@ void InsertListCommand::doApply()
             return;
     }
 
-    const QualifiedName& listTag = (m_type == OrderedList) ? olTag : ulTag;
+    const HTMLQualifiedName& listTag = (m_type == OrderedList) ? olTag : ulTag;
     if (endingSelection().isRange()) {
         bool forceListCreation = false;
         VisibleSelection selection = selectionForParagraphIteration(endingSelection());
@@ -197,7 +197,7 @@ void InsertListCommand::doApply()
     doApplyForSingleParagraph(false, listTag, *endingSelection().firstRange());
 }
 
-void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const QualifiedName& listTag, Range& currentSelection)
+void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HTMLQualifiedName& listTag, Range& currentSelection)
 {
     // FIXME: This will produce unexpected results for a selection that starts just before a
     // table and ends inside the first cell, selectionForParagraphIteration should probably

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2010 Google, Inc. All Rights Reserved.
- * Copyright (C) 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2011, 2014 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -508,7 +508,8 @@ void HTMLTreeBuilder::processCloseWhenNestedTag(AtomicHTMLToken* token)
 
 typedef HashMap<AtomicString, QualifiedName> PrefixedNameToQualifiedNameMap;
 
-static void mapLoweredLocalNameToName(PrefixedNameToQualifiedNameMap* map, const QualifiedName* const* names, size_t length)
+template <typename TableQualifiedName>
+static void mapLoweredLocalNameToName(PrefixedNameToQualifiedNameMap* map, const TableQualifiedName* const* names, size_t length)
 {
     for (size_t i = 0; i < length; ++i) {
         const QualifiedName& name = *names[i];
@@ -524,7 +525,7 @@ static void adjustSVGTagNameCase(AtomicHTMLToken* token)
     static PrefixedNameToQualifiedNameMap* caseMap = 0;
     if (!caseMap) {
         caseMap = new PrefixedNameToQualifiedNameMap;
-        OwnPtr<const QualifiedName*[]> svgTags = SVGNames::getSVGTags();
+        OwnPtr<const SVGQualifiedName*[]> svgTags = SVGNames::getSVGTags();
         mapLoweredLocalNameToName(caseMap, svgTags.get(), SVGNames::SVGTagsCount);
     }
 

@@ -1696,7 +1696,7 @@ bool CompositedLayerMapping::containsPaintedContent() const
 
         // Now look at the body's renderer.
         HTMLElement* body = renderObject->document().body();
-        RenderObject* bodyObject = (body && body->hasLocalName(bodyTag)) ? body->renderer() : 0;
+        RenderObject* bodyObject = isHTMLBodyElement(body) ? body->renderer() : 0;
         if (bodyObject && hasBoxDecorationsOrBackgroundImage(bodyObject->style()))
             return true;
     }

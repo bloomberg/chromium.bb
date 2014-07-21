@@ -102,7 +102,7 @@ bool IsSelectInDefaultState(HTMLSelectElement* select)
     const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = select->listItems();
     if (select->multiple() || select->size() > 1) {
         for (WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >::const_iterator i(listItems.begin()); i != listItems.end(); ++i) {
-            if (!(*i)->hasLocalName(HTMLNames::optionTag))
+            if (!isHTMLOptionElement(*i))
                 continue;
             HTMLOptionElement* optionElement = toHTMLOptionElement(*i);
             if (optionElement->selected() != optionElement->hasAttribute(selectedAttr))
@@ -115,7 +115,7 @@ bool IsSelectInDefaultState(HTMLSelectElement* select)
     // least one item is selected, determine which one.
     HTMLOptionElement* initialSelected = 0;
     for (WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >::const_iterator i(listItems.begin()); i != listItems.end(); ++i) {
-        if (!(*i)->hasLocalName(HTMLNames::optionTag))
+        if (!isHTMLOptionElement(*i))
             continue;
         HTMLOptionElement* optionElement = toHTMLOptionElement(*i);
         if (optionElement->hasAttribute(selectedAttr)) {

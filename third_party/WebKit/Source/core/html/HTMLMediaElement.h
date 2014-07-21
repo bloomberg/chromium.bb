@@ -623,11 +623,6 @@ struct ValueToString<TextTrackCue*> {
 };
 #endif
 
-inline bool isHTMLMediaElement(const Element& element)
-{
-    return isHTMLAudioElement(element) || isHTMLVideoElement(element);
-}
-
 inline bool isHTMLMediaElement(const HTMLElement& element)
 {
     return isHTMLAudioElement(element) || isHTMLVideoElement(element);

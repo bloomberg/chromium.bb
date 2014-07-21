@@ -31,6 +31,7 @@
 #include "core/dom/Element.h"
 #include "core/editing/TextAffinity.h"
 #include "core/fetch/ImageResourceClient.h"
+#include "core/html/HTMLElement.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/PaintPhase.h"
 #include "core/rendering/RenderObjectChildList.h"

@@ -3,7 +3,7 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Peter Kelly (pmk@post.com)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2003-2011, 2013, 2014 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -232,14 +232,16 @@ public:
 
     const QualifiedName& tagQName() const { return m_tagName; }
     String tagName() const { return nodeName(); }
+
     bool hasTagName(const QualifiedName& tagName) const { return m_tagName.matches(tagName); }
+    bool hasTagName(const HTMLQualifiedName& tagName) const { return ContainerNode::hasTagName(tagName); }
+    bool hasTagName(const SVGQualifiedName& tagName) const { return ContainerNode::hasTagName(tagName); }
 
     // Should be called only by Document::createElementNS to fix up m_tagName immediately after construction.
     void setTagNameForCreateElementNS(const QualifiedName&);
 
     // A fast function for checking the local name against another atomic string.
     bool hasLocalName(const AtomicString& other) const { return m_tagName.localName() == other; }
-    bool hasLocalName(const QualifiedName& other) const { return m_tagName.localName() == other.localName(); }
 
     virtual const AtomicString& localName() const OVERRIDE FINAL { return m_tagName.localName(); }
     const AtomicString& prefix() const { return m_tagName.prefix(); }
@@ -653,8 +655,9 @@ private:
 };
 
 DEFINE_NODE_TYPE_CASTS(Element, isElementNode());
-template <typename T> bool isElementOfType(const Element&);
-template <typename T> inline bool isElementOfType(const Node& node) { return node.isElementNode() && isElementOfType<const T>(toElement(node)); }
+template <typename T> bool isElementOfType(const Node&);
+template <> inline bool isElementOfType<const Element>(const Node& node) { return node.isElementNode(); }
+template <typename T> inline bool isElementOfType(const Element& element) { return isElementOfType<T>(static_cast<const Node&>(element)); }
 template <> inline bool isElementOfType<const Element>(const Element&) { return true; }
 
 // Type casting.
@@ -858,11 +861,11 @@ inline bool isShadowHost(const Element* element)
 // These macros do the same as their NODE equivalents but additionally provide a template specialization
 // for isElementOfType<>() so that the Traversal<> API works for these Element types.
 #define DEFINE_ELEMENT_TYPE_CASTS(thisType, predicate) \
-    template <> inline bool isElementOfType<const thisType>(const Element& element) { return element.predicate; } \
+    template <> inline bool isElementOfType<const thisType>(const Node& node) { return node.predicate; } \
     DEFINE_NODE_TYPE_CASTS(thisType, predicate)
 
 #define DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType) \
-    template <> inline bool isElementOfType<const thisType>(const Element& element) { return is##thisType(element); } \
+    template <> inline bool isElementOfType<const thisType>(const Node& node) { return is##thisType(node); } \
     DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(thisType)
 
 #define DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(T) \

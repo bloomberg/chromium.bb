@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2000 Peter Kelly (pmk@post.com)
- * Copyright (C) 2005, 2006, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2005, 2006, 2008, 2014 Apple Inc. All rights reserved.
  * Copyright (C) 2006 Alexey Proskuryakov (ap@webkit.org)
  * Copyright (C) 2007 Samuel Weinig (sam@webkit.org)
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
@@ -505,7 +505,7 @@ bool XMLDocumentParser::parseDocumentFragment(const String& chunk, DocumentFragm
     // FIXME: We need to implement the HTML5 XML Fragment parsing algorithm:
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-xhtml-syntax.html#xml-fragment-parsing-algorithm
     // For now we have a hack for script/style innerHTML support:
-    if (contextElement && (contextElement->hasLocalName(HTMLNames::scriptTag) || contextElement->hasLocalName(HTMLNames::styleTag))) {
+    if (contextElement && (contextElement->hasLocalName(scriptTag.localName()) || contextElement->hasLocalName(styleTag.localName()))) {
         fragment->parserAppendChild(fragment->document().createTextNode(chunk));
         return true;
     }

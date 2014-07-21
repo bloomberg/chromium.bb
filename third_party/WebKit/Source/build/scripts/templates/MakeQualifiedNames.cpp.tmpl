@@ -23,15 +23,15 @@ DEFINE_GLOBAL(AtomicString, {{namespace_prefix}}NamespaceURI)
 {% if tags %}
 // Tags
 {% for tag in tags|sort %}
-DEFINE_GLOBAL(QualifiedName, {{tag|symbol}}Tag)
+DEFINE_GLOBAL({{namespace}}QualifiedName, {{tag|symbol}}Tag)
 {% endfor %}
 
 
-PassOwnPtr<const QualifiedName*[]> get{{namespace}}Tags()
+PassOwnPtr<const {{namespace}}QualifiedName*[]> get{{namespace}}Tags()
 {
-    OwnPtr<const QualifiedName*[]> tags = adoptArrayPtr(new const QualifiedName*[{{namespace}}TagsCount]);
+    OwnPtr<const {{namespace}}QualifiedName*[]> tags = adoptArrayPtr(new const {{namespace}}QualifiedName*[{{namespace}}TagsCount]);
     {% for tag in tags|sort %}
-    tags[{{loop.index0}}] = reinterpret_cast<const QualifiedName*>(&{{tag|symbol}}Tag);
+    tags[{{loop.index0}}] = reinterpret_cast<const {{namespace}}QualifiedName*>(&{{tag|symbol}}Tag);
     {% endfor %}
     return tags.release();
 }

@@ -54,7 +54,7 @@ private:
     HTMLElement* fixOrphanedListChild(Node*);
     bool selectionHasListOfType(const VisibleSelection& selection, const QualifiedName&);
     PassRefPtrWillBeRawPtr<HTMLElement> mergeWithNeighboringLists(PassRefPtrWillBeRawPtr<HTMLElement>);
-    void doApplyForSingleParagraph(bool forceCreateList, const QualifiedName&, Range& currentSelection);
+    void doApplyForSingleParagraph(bool forceCreateList, const HTMLQualifiedName&, Range& currentSelection);
     void unlistifyParagraph(const VisiblePosition& originalStart, HTMLElement* listNode, Node* listChildNode);
     PassRefPtrWillBeRawPtr<HTMLElement> listifyParagraph(const VisiblePosition& originalStart, const QualifiedName& listTag);
 

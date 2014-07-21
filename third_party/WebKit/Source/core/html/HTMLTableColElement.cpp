@@ -82,7 +82,7 @@ void HTMLTableColElement::parseAttribute(const QualifiedName& name, const Atomic
 
 const StylePropertySet* HTMLTableColElement::additionalPresentationAttributeStyle()
 {
-    if (!hasLocalName(colgroupTag))
+    if (!hasTagName(colgroupTag))
         return 0;
     if (HTMLTableElement* table = findParentTable())
         return table->additionalGroupStyle(false);

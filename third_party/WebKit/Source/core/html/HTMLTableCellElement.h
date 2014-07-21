@@ -63,14 +63,9 @@ private:
     virtual const QualifiedName& subResourceAttributeName() const OVERRIDE;
 };
 
-inline bool isHTMLTableCellElement(const Element& element)
-{
-    return element.hasTagName(HTMLNames::tdTag) || element.hasTagName(HTMLNames::thTag);
-}
-
 inline bool isHTMLTableCellElement(const HTMLElement& element)
 {
-    return element.hasLocalName(HTMLNames::tdTag) || element.hasLocalName(HTMLNames::thTag);
+    return element.hasTagName(HTMLNames::tdTag) || element.hasTagName(HTMLNames::thTag);
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableCellElement);

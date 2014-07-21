@@ -142,11 +142,6 @@ private:
     RefPtr<Widget> m_persistedPluginWidget;
 };
 
-inline bool isHTMLPlugInElement(const Element& element)
-{
-    return element.isHTMLElement() && toHTMLElement(element).isPluginElement();
-}
-
 inline bool isHTMLPlugInElement(const HTMLElement& element)
 {
     return element.isPluginElement();

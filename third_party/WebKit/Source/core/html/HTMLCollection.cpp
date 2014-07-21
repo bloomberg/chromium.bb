@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2003-2008, 2011, 2012, 2014 Apple Inc. All rights reserved.
  * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -191,15 +191,67 @@ void HTMLCollection::invalidateCache(Document* oldDocument) const
     invalidateIdNameCacheMaps(oldDocument);
 }
 
+static inline bool isMatchingHTMLElement(const HTMLCollection& htmlCollection, const HTMLElement& element)
+{
+    switch (htmlCollection.type()) {
+    case DocImages:
+        return element.hasTagName(imgTag);
+    case DocScripts:
+        return element.hasTagName(scriptTag);
+    case DocForms:
+        return element.hasTagName(formTag);
+    case TableTBodies:
+        return element.hasTagName(tbodyTag);
+    case TRCells:
+        return element.hasTagName(tdTag) || element.hasTagName(thTag);
+    case TSectionRows:
+        return element.hasTagName(trTag);
+    case SelectOptions:
+        return element.hasTagName(optionTag);
+    case SelectedOptions:
+        return isHTMLOptionElement(element) && toHTMLOptionElement(element).selected();
+    case DataListOptions:
+        if (isHTMLOptionElement(element)) {
+            const HTMLOptionElement& option = toHTMLOptionElement(element);
+            if (!option.isDisabledFormControl() && !option.value().isEmpty())
+                return true;
+        }
+        return false;
+    case MapAreas:
+        return element.hasTagName(areaTag);
+    case DocApplets:
+        return element.hasTagName(appletTag) || (isHTMLObjectElement(element) && toHTMLObjectElement(element).containsJavaApplet());
+    case DocEmbeds:
+        return element.hasTagName(embedTag);
+    case DocLinks:
+        return (element.hasTagName(aTag) || element.hasTagName(areaTag)) && element.fastHasAttribute(hrefAttr);
+    case DocAnchors:
+        return element.hasTagName(aTag) && element.fastHasAttribute(nameAttr);
+    case ClassCollectionType:
+    case TagCollectionType:
+    case HTMLTagCollectionType:
+    case DocAll:
+    case NodeChildren:
+    case FormControls:
+    case DocumentNamedItems:
+    case TableRows:
+    case WindowNamedItems:
+    case NameNodeListType:
+    case RadioNodeListType:
+    case RadioImgNodeListType:
+    case LabelsNodeListType:
+        ASSERT_NOT_REACHED();
+    }
+    return false;
+}
+
 template <class NodeListType>
 inline bool isMatchingElement(const NodeListType&, const Element&);
 
 template <> inline bool isMatchingElement(const HTMLCollection& htmlCollection, const Element& element)
 {
-    CollectionType type = htmlCollection.type();
-
     // These collections apply to any kind of Elements, not just HTMLElements.
-    switch (type) {
+    switch (htmlCollection.type()) {
     case DocAll:
     case NodeChildren:
         return true;
@@ -218,59 +270,7 @@ template <> inline bool isMatchingElement(const HTMLCollection& htmlCollection, 
     }
 
     // The following only applies to HTMLElements.
-    if (!element.isHTMLElement())
-        return false;
-
-    switch (type) {
-    case DocImages:
-        return element.hasLocalName(imgTag);
-    case DocScripts:
-        return element.hasLocalName(scriptTag);
-    case DocForms:
-        return element.hasLocalName(formTag);
-    case TableTBodies:
-        return element.hasLocalName(tbodyTag);
-    case TRCells:
-        return element.hasLocalName(tdTag) || element.hasLocalName(thTag);
-    case TSectionRows:
-        return element.hasLocalName(trTag);
-    case SelectOptions:
-        return element.hasLocalName(optionTag);
-    case SelectedOptions:
-        return element.hasLocalName(optionTag) && toHTMLOptionElement(element).selected();
-    case DataListOptions:
-        if (element.hasLocalName(optionTag)) {
-            const HTMLOptionElement& option = toHTMLOptionElement(element);
-            if (!option.isDisabledFormControl() && !option.value().isEmpty())
-                return true;
-        }
-        return false;
-    case MapAreas:
-        return element.hasLocalName(areaTag);
-    case DocApplets:
-        return element.hasLocalName(appletTag) || (element.hasLocalName(objectTag) && toHTMLObjectElement(element).containsJavaApplet());
-    case DocEmbeds:
-        return element.hasLocalName(embedTag);
-    case DocLinks:
-        return (element.hasLocalName(aTag) || element.hasLocalName(areaTag)) && element.fastHasAttribute(hrefAttr);
-    case DocAnchors:
-        return element.hasLocalName(aTag) && element.fastHasAttribute(nameAttr);
-    case ClassCollectionType:
-    case TagCollectionType:
-    case HTMLTagCollectionType:
-    case DocAll:
-    case NodeChildren:
-    case FormControls:
-    case DocumentNamedItems:
-    case TableRows:
-    case WindowNamedItems:
-    case NameNodeListType:
-    case RadioNodeListType:
-    case RadioImgNodeListType:
-    case LabelsNodeListType:
-        ASSERT_NOT_REACHED();
-    }
-    return false;
+    return element.isHTMLElement() && isMatchingHTMLElement(htmlCollection, toHTMLElement(element));
 }
 
 template <> inline bool isMatchingElement(const ClassCollection& collection, const Element& element)
@@ -294,18 +294,18 @@ static inline bool nameShouldBeVisibleInDocumentAll(const HTMLElement& element)
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#dom-htmlallcollection-nameditem:
     // The document.all collection returns only certain types of elements by name,
     // although it returns any type of element by id.
-    return element.hasLocalName(aTag)
-        || element.hasLocalName(appletTag)
-        || element.hasLocalName(areaTag)
-        || element.hasLocalName(embedTag)
-        || element.hasLocalName(formTag)
-        || element.hasLocalName(frameTag)
-        || element.hasLocalName(framesetTag)
-        || element.hasLocalName(iframeTag)
-        || element.hasLocalName(imgTag)
-        || element.hasLocalName(inputTag)
-        || element.hasLocalName(objectTag)
-        || element.hasLocalName(selectTag);
+    return element.hasTagName(aTag)
+        || element.hasTagName(appletTag)
+        || element.hasTagName(areaTag)
+        || element.hasTagName(embedTag)
+        || element.hasTagName(formTag)
+        || element.hasTagName(frameTag)
+        || element.hasTagName(framesetTag)
+        || element.hasTagName(iframeTag)
+        || element.hasTagName(imgTag)
+        || element.hasTagName(inputTag)
+        || element.hasTagName(objectTag)
+        || element.hasTagName(selectTag);
 }
 
 inline Element* firstMatchingChildElement(const HTMLCollection& nodeList)

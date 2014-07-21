@@ -2,7 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2004-2011, 2014 Apple Inc. All rights reserved.
  * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
@@ -57,6 +57,7 @@ class ExceptionState;
 class FloatPoint;
 class LocalFrame;
 class HTMLInputElement;
+class HTMLQualifiedName;
 class IntRect;
 class KeyboardEvent;
 class NSResolver;
@@ -77,6 +78,7 @@ class RenderBox;
 class RenderBoxModelObject;
 class RenderObject;
 class RenderStyle;
+class SVGQualifiedName;
 class ShadowRoot;
 class StaticNodeList;
 class TagCollection;
@@ -170,6 +172,8 @@ public:
     // DOM methods & attributes for Node
 
     bool hasTagName(const QualifiedName&) const;
+    bool hasTagName(const HTMLQualifiedName&) const;
+    bool hasTagName(const SVGQualifiedName&) const;
     virtual String nodeName() const = 0;
     virtual String nodeValue() const;
     virtual void setNodeValue(const String&);

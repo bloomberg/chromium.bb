@@ -78,11 +78,6 @@ private:
     int m_marginHeight;
 };
 
-inline bool isHTMLFrameElementBase(const Element& element)
-{
-    return isHTMLFrameElement(element) || isHTMLIFrameElement(element);
-}
-
 inline bool isHTMLFrameElementBase(const HTMLElement& element)
 {
     return isHTMLFrameElement(element) || isHTMLIFrameElement(element);

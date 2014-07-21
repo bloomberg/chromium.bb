@@ -50,14 +50,9 @@ private:
     virtual const StylePropertySet* additionalPresentationAttributeStyle() OVERRIDE;
 };
 
-inline bool isHTMLTableSectionElement(const Element& element)
-{
-    return element.hasTagName(HTMLNames::tbodyTag) || element.hasTagName(HTMLNames::tfootTag) || element.hasTagName(HTMLNames::theadTag);
-}
-
 inline bool isHTMLTableSectionElement(const HTMLElement& element)
 {
-    return element.hasLocalName(HTMLNames::tbodyTag) || element.hasLocalName(HTMLNames::tfootTag) || element.hasLocalName(HTMLNames::theadTag);
+    return element.hasTagName(HTMLNames::tbodyTag) || element.hasTagName(HTMLNames::tfootTag) || element.hasTagName(HTMLNames::theadTag);
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableSectionElement);

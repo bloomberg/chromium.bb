@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2004-2008, 2013, 2014 Apple Inc. All rights reserved.
  * Copyright (C) 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  * Copyright (C) 2011 Motorola Mobility. All rights reserved.
  *
@@ -90,29 +90,29 @@ bool HTMLElement::ieForbidsInsertHTML() const
     // This is also called from editing and assumed to be the list of tags
     // for which no end tag should be serialized. It's unclear if the list for
     // IE compat and the list for serialization sanity are the same.
-    if (hasLocalName(areaTag)
-        || hasLocalName(baseTag)
-        || hasLocalName(basefontTag)
-        || hasLocalName(brTag)
-        || hasLocalName(colTag)
-        || hasLocalName(embedTag)
-        || hasLocalName(frameTag)
-        || hasLocalName(hrTag)
-        || hasLocalName(imageTag)
-        || hasLocalName(imgTag)
-        || hasLocalName(inputTag)
-        || hasLocalName(linkTag)
-        || hasLocalName(metaTag)
-        || hasLocalName(paramTag)
-        || hasLocalName(sourceTag)
-        || hasLocalName(wbrTag))
+    if (hasTagName(areaTag)
+        || hasTagName(baseTag)
+        || hasTagName(basefontTag)
+        || hasTagName(brTag)
+        || hasTagName(colTag)
+        || hasTagName(embedTag)
+        || hasTagName(frameTag)
+        || hasTagName(hrTag)
+        || hasTagName(imageTag)
+        || hasTagName(imgTag)
+        || hasTagName(inputTag)
+        || hasTagName(linkTag)
+        || hasTagName(metaTag)
+        || hasTagName(paramTag)
+        || hasTagName(sourceTag)
+        || hasTagName(wbrTag))
         return true;
     return false;
 }
 
 static inline CSSValueID unicodeBidiAttributeForDirAuto(HTMLElement* element)
 {
-    if (element->hasLocalName(preTag) || element->hasLocalName(textareaTag))
+    if (element->hasTagName(preTag) || element->hasTagName(textareaTag))
         return CSSValueWebkitPlaintext;
     // FIXME: For bdo element, dir="auto" should result in "bidi-override isolate" but we don't support having multiple values in unicode-bidi yet.
     // See https://bugs.webkit.org/show_bug.cgi?id=73164.
@@ -123,7 +123,7 @@ unsigned HTMLElement::parseBorderWidthAttribute(const AtomicString& value) const
 {
     unsigned borderWidth = 0;
     if (value.isEmpty() || !parseHTMLNonNegativeInteger(value, borderWidth))
-        return hasLocalName(tableTag) ? 1 : borderWidth;
+        return hasTagName(tableTag) ? 1 : borderWidth;
     return borderWidth;
 }
 
@@ -351,16 +351,27 @@ PassRefPtrWillBeRawPtr<DocumentFragment> HTMLElement::textToFragment(const Strin
     return fragment;
 }
 
+static inline bool shouldProhibitSetInnerOuterText(const HTMLElement& element)
+{
+    return element.hasTagName(colTag)
+        || element.hasTagName(colgroupTag)
+        || element.hasTagName(framesetTag)
+        || element.hasTagName(headTag)
+        || element.hasTagName(htmlTag)
+        || element.hasTagName(tableTag)
+        || element.hasTagName(tbodyTag)
+        || element.hasTagName(tfootTag)
+        || element.hasTagName(theadTag)
+        || element.hasTagName(trTag);
+}
+
 void HTMLElement::setInnerText(const String& text, ExceptionState& exceptionState)
 {
     if (ieForbidsInsertHTML()) {
         exceptionState.throwDOMException(NoModificationAllowedError, "The '" + localName() + "' element does not support text insertion.");
         return;
     }
-    if (hasLocalName(colTag) || hasLocalName(colgroupTag) || hasLocalName(framesetTag) ||
-        hasLocalName(headTag) || hasLocalName(htmlTag) || hasLocalName(tableTag) ||
-        hasLocalName(tbodyTag) || hasLocalName(tfootTag) || hasLocalName(theadTag) ||
-        hasLocalName(trTag)) {
+    if (shouldProhibitSetInnerOuterText(*this)) {
         exceptionState.throwDOMException(NoModificationAllowedError, "The '" + localName() + "' element does not support text insertion.");
         return;
     }
@@ -398,16 +409,13 @@ void HTMLElement::setInnerText(const String& text, ExceptionState& exceptionStat
         replaceChildrenWithFragment(this, fragment.release(), exceptionState);
 }
 
-void HTMLElement::setOuterText(const String &text, ExceptionState& exceptionState)
+void HTMLElement::setOuterText(const String& text, ExceptionState& exceptionState)
 {
     if (ieForbidsInsertHTML()) {
         exceptionState.throwDOMException(NoModificationAllowedError, "The '" + localName() + "' element does not support text insertion.");
         return;
     }
-    if (hasLocalName(colTag) || hasLocalName(colgroupTag) || hasLocalName(framesetTag) ||
-        hasLocalName(headTag) || hasLocalName(htmlTag) || hasLocalName(tableTag) ||
-        hasLocalName(tbodyTag) || hasLocalName(tfootTag) || hasLocalName(theadTag) ||
-        hasLocalName(trTag)) {
+    if (shouldProhibitSetInnerOuterText(*this)) {
         exceptionState.throwDOMException(NoModificationAllowedError, "The '" + localName() + "' element does not support text insertion.");
         return;
     }
@@ -627,7 +635,7 @@ HTMLFormElement* HTMLElement::findFormAncestor() const
 
 static inline bool elementAffectsDirectionality(const Node* node)
 {
-    return node->isHTMLElement() && (isHTMLBDIElement(*node) || toHTMLElement(node)->hasAttribute(dirAttr));
+    return node->isHTMLElement() && (isHTMLBDIElement(toHTMLElement(*node)) || toHTMLElement(*node).hasAttribute(dirAttr));
 }
 
 static void setHasDirAutoFlagRecursively(Node* firstNode, bool flag, Node* lastNode = 0)

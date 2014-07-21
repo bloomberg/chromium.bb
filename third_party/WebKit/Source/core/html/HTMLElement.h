@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2004-2007, 2009, 2014 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -41,6 +41,8 @@ enum TranslateAttributeMode {
 class HTMLElement : public Element {
 public:
     DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLElement);
+
+    bool hasTagName(const HTMLQualifiedName& name) const { return hasLocalName(name.localName()); }
 
     virtual String title() const OVERRIDE FINAL;
     virtual short tabIndex() const OVERRIDE;
@@ -129,7 +131,6 @@ private:
 
 DEFINE_ELEMENT_TYPE_CASTS(HTMLElement, isHTMLElement());
 
-template <> inline bool isElementOfType<const HTMLElement>(const Node& node) { return node.isHTMLElement(); }
 template <typename T> bool isElementOfType(const HTMLElement&);
 template <> inline bool isElementOfType<const HTMLElement>(const HTMLElement&) { return true; }
 
@@ -140,15 +141,20 @@ inline HTMLElement::HTMLElement(const QualifiedName& tagName, Document& document
     ScriptWrappable::init(this);
 }
 
+inline bool Node::hasTagName(const HTMLQualifiedName& name) const
+{
+    return isHTMLElement() && toHTMLElement(*this).hasTagName(name);
+}
+
 // This requires isHTML*Element(const Element&) and isHTML*Element(const HTMLElement&).
 // When the input element is an HTMLElement, we don't need to check the namespace URI, just the local name.
 #define DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType) \
     inline bool is##thisType(const thisType* element); \
     inline bool is##thisType(const thisType& element); \
     inline bool is##thisType(const HTMLElement* element) { return element && is##thisType(*element); } \
+    inline bool is##thisType(const Node& node) { return node.isHTMLElement() ? is##thisType(toHTMLElement(node)) : false; } \
+    inline bool is##thisType(const Node* node) { return node && is##thisType(*node); } \
     inline bool is##thisType(const Element* element) { return element && is##thisType(*element); } \
-    inline bool is##thisType(const Node& node) { return node.isElementNode() ? is##thisType(toElement(node)) : false; } \
-    inline bool is##thisType(const Node* node) { return node && node->isElementNode() ? is##thisType(*toElement(node)) : false; } \
     template<typename T> inline bool is##thisType(const PassRefPtr<T>& node) { return is##thisType(node.get()); } \
     template<typename T> inline bool is##thisType(const RefPtr<T>& node) { return is##thisType(node.get()); } \
     template <> inline bool isElementOfType<const thisType>(const HTMLElement& element) { return is##thisType(element); } \

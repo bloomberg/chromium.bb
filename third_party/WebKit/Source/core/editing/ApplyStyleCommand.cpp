@@ -65,10 +65,10 @@ bool isLegacyAppleStyleSpan(const Node *node)
     if (!node || !node->isHTMLElement())
         return false;
 
-    const HTMLElement* elem = toHTMLElement(node);
-    if (!elem->hasLocalName(spanAttr) || elem->getAttribute(classAttr) != styleSpanClassString())
+    const HTMLElement& element = toHTMLElement(*node);
+    if (!isHTMLSpanElement(element) || element.getAttribute(classAttr) != styleSpanClassString())
         return false;
-    UseCounter::count(elem->document(), UseCounter::EditingAppleStyleSpanClass);
+    UseCounter::count(element.document(), UseCounter::EditingAppleStyleSpanClass);
     return true;
 }
 

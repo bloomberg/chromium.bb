@@ -991,11 +991,12 @@ static inline bool isSupportedContainer(Element* element)
     if (!element->isHTMLElement())
         return true;
 
-    if (element->hasLocalName(colTag) || element->hasLocalName(colgroupTag) || element->hasLocalName(framesetTag)
-        || element->hasLocalName(headTag) || element->hasLocalName(styleTag) || element->hasLocalName(titleTag)) {
+    HTMLElement& htmlElement = toHTMLElement(*element);
+    if (htmlElement.hasTagName(colTag) || htmlElement.hasTagName(colgroupTag) || htmlElement.hasTagName(framesetTag)
+        || htmlElement.hasTagName(headTag) || htmlElement.hasTagName(styleTag) || htmlElement.hasTagName(titleTag)) {
         return false;
     }
-    return !toHTMLElement(element)->ieForbidsInsertHTML();
+    return !htmlElement.ieForbidsInsertHTML();
 }
 
 PassRefPtrWillBeRawPtr<DocumentFragment> createContextualFragment(const String& markup, Element* element, ParserContentPolicy parserContentPolicy, ExceptionState& exceptionState)

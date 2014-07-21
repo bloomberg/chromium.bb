@@ -51,11 +51,6 @@ private:
     }
 };
 
-inline bool isHTMLUnknownElement(const Element& element)
-{
-    return element.isHTMLElement() && toHTMLElement(element).isHTMLUnknownElement();
-}
-
 inline bool isHTMLUnknownElement(const HTMLElement& element)
 {
     return element.isHTMLUnknownElement();

@@ -54,11 +54,6 @@ private:
     virtual bool isLabelable() const OVERRIDE FINAL { return true; }
 };
 
-inline bool isLabelableElement(const Element& element)
-{
-    return element.isHTMLElement() && toHTMLElement(element).isLabelable();
-}
-
 inline bool isLabelableElement(const HTMLElement& element)
 {
     return element.isLabelable();
