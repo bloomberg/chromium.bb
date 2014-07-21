@@ -39,6 +39,10 @@
 #include "platform/audio/VectorMath.h"
 #include "wtf/CPU.h"
 
+#if (CPU(X86) || CPU(X86_64)) && !(OS(MACOSX) || USE(WEBAUDIO_IPP))
+#include <emmintrin.h>
+#endif
+
 namespace blink {
 
 using namespace VectorMath;
@@ -97,6 +101,47 @@ void DirectConvolver::process(AudioFloatArray* convolutionKernel, const float* s
     vDSP_conv(inputP - kernelSize + 1, 1, kernelP + kernelSize - 1, -1, destP, 1, framesToProcess, kernelSize);
 #endif // CPU(X86)
 #else
+    size_t i = 0;
+#if CPU(X86) || CPU(X86_64)
+    // Convolution using SSE2. Currently only do this if both |kernelSize| and |framesToProcess|
+    // are multiples of 4. If not, use the straightforward loop below.
+
+    if ((kernelSize % 4 == 0) && (framesToProcess % 4 == 0)) {
+        // AudioFloatArray's are always aligned on at least a 16-byte boundary.
+        AudioFloatArray kernelBuffer(4 * kernelSize);
+        __m128* kernelReversed = reinterpret_cast<__m128*>(kernelBuffer.data());
+
+        // Reverse the kernel and repeat each value across a vector
+        for (i = 0; i < kernelSize; ++i) {
+            kernelReversed[i] = _mm_set1_ps(kernelP[kernelSize - i - 1]);
+        }
+
+        float* inputStartP = inputP - kernelSize + 1;
+
+        // Do convolution with 4 inputs at a time.
+        for (i = 0; i < framesToProcess; i += 4) {
+            __m128 convolutionSum;
+
+            convolutionSum = _mm_setzero_ps();
+
+            // |kernelSize| is a multiple of 4 so we can unroll the loop by 4, manually.
+            for (size_t k = 0; k < kernelSize; k += 4) {
+                size_t dataOffset = i + k;
+
+                for (size_t m = 0; m < 4; ++m) {
+                    __m128 sourceBlock;
+                    __m128 product;
+
+                    sourceBlock = _mm_loadu_ps(inputStartP + dataOffset + m);
+                    product = _mm_mul_ps(kernelReversed[k + m], sourceBlock);
+                    convolutionSum = _mm_add_ps(convolutionSum, product);
+                }
+            }
+            _mm_storeu_ps(destP + i, convolutionSum);
+        }
+    } else {
+#endif
+
     // FIXME: The macro can be further optimized to avoid pipeline stalls. One possibility is to maintain 4 separate sums and change the macro to CONVOLVE_FOUR_SAMPLES.
 #define CONVOLVE_ONE_SAMPLE                 \
     do {                                    \
@@ -104,7 +149,6 @@ void DirectConvolver::process(AudioFloatArray* convolutionKernel, const float* s
         j++;                                \
     } while (0)
 
-    size_t i = 0;
     while (i < framesToProcess) {
         size_t j = 0;
         float sum = 0;
@@ -368,6 +412,9 @@ void DirectConvolver::process(AudioFloatArray* convolutionKernel, const float* s
         }
         destP[i++] = sum;
     }
+#if CPU(X86) || CPU(X86_64)
+    }
+#endif
 #endif // OS(MACOSX)
 
     // Copy 2nd half of input buffer to 1st half.
