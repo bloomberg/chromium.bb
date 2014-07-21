@@ -739,8 +739,13 @@ Value RunFunction(Scope* scope,
     block->ExecuteBlockInScope(&block_scope, err);
     if (err->has_error())
       return Value();
-    return found_function->second.executed_block_runner(
+
+    Value result = found_function->second.executed_block_runner(
         function, args.list_value(), &block_scope, err);
+
+    if (!block_scope.CheckForUnusedVars(err))
+      return Value();
+    return result;
   }
 
   // Otherwise it's a no-block function.

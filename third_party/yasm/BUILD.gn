@@ -41,11 +41,6 @@ if (current_toolchain == host_toolchain) {
       "source/config/$os",
       "source/patched-yasm",
     ]
-    inputs = [
-      config_makefile,
-      "source/config/$os/config.h",
-      "source/config/$os/libyasm-stdint.h",
-    ]
     defines = [ "HAVE_CONFIG_H" ]
     if (is_posix) {
       cflags = [ "-std=gnu99" ]
@@ -380,6 +375,7 @@ if (current_toolchain == host_toolchain) {
 
   compiled_action("generate_module") {
     tool = ":genmodule"
+    inputs = [ config_makefile ]
     sources = [ "source/patched-yasm/libyasm/module.in" ]
     outputs = [ "$target_gen_dir/module.c" ]
     args = [
