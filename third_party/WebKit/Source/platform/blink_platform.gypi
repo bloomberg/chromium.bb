@@ -629,6 +629,8 @@
       'graphics/Pattern.h',
       'graphics/ProfilingCanvas.cpp',
       'graphics/ProfilingCanvas.h',
+      'graphics/RecordingImageBufferSurface.cpp',
+      'graphics/RecordingImageBufferSurface.h',
       'graphics/ReplayingCanvas.cpp',
       'graphics/ReplayingCanvas.h',
       'graphics/ScaledImageFragment.cpp',

@@ -155,6 +155,13 @@ GraphicsContext::~GraphicsContext()
 #endif
 }
 
+void GraphicsContext::resetCanvas(SkCanvas* canvas)
+{
+    ASSERT(canvas);
+    m_canvas = canvas;
+    m_opaqueRegion.reset();
+}
+
 void GraphicsContext::save()
 {
     if (contextDisabled())
@@ -1043,6 +1050,22 @@ void GraphicsContext::drawImageBuffer(ImageBuffer* image, const FloatRect& dest,
         return;
 
     image->draw(this, dest, src, op);
+}
+
+void GraphicsContext::drawPicture(PassRefPtr<SkPicture> picture, const FloatRect& dest, const FloatRect& src, CompositeOperator op, WebBlendMode blendMode)
+{
+    if (contextDisabled() || !picture)
+        return;
+
+    SkPaint picturePaint;
+    picturePaint.setXfermode(WebCoreCompositeToSkiaComposite(op, blendMode).get());
+    SkRect skBounds = WebCoreFloatRectToSKRect(dest);
+    saveLayer(&skBounds, &picturePaint);
+    SkMatrix pictureTransform;
+    pictureTransform.setRectToRect(WebCoreFloatRectToSKRect(src), skBounds, SkMatrix::kFill_ScaleToFit);
+    m_canvas->concat(pictureTransform);
+    picture->draw(m_canvas);
+    restoreLayer();
 }
 
 void GraphicsContext::writePixels(const SkImageInfo& info, const void* pixels, size_t rowBytes, int x, int y)

@@ -44,6 +44,12 @@ OpaqueRegionSkia::OpaqueRegionSkia()
 {
 }
 
+void OpaqueRegionSkia::reset()
+{
+    ASSERT(m_canvasLayerStack.isEmpty());
+    m_opaqueRect = SkRect::MakeEmpty();
+}
+
 IntRect OpaqueRegionSkia::asRect() const
 {
     // Returns the largest enclosed rect.

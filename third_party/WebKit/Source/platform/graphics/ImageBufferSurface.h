@@ -36,9 +36,11 @@
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassRefPtr.h"
 
-class SkCanvas;
 class SkBitmap;
+class SkCanvas;
+class SkPicture;
 
 namespace blink { class WebLayer; }
 
@@ -57,7 +59,7 @@ public:
     virtual ~ImageBufferSurface() { }
 
     virtual SkCanvas* canvas() const = 0;
-    virtual const SkBitmap& bitmap() const;
+    virtual const SkBitmap& bitmap();
     virtual void willUse() { } // Called by ImageBuffer before reading or writing to the surface.
     virtual void willReadback() { }
     virtual bool isValid() const = 0;
@@ -71,6 +73,8 @@ public:
     virtual void updateCachedBitmapIfNeeded() { }
     virtual void setIsHidden(bool) { }
     virtual void setImageBuffer(ImageBuffer*) { }
+    virtual PassRefPtr<SkPicture> getPicture();
+    virtual void didClearCanvas() { }
 
     OpacityMode opacityMode() const { return m_opacityMode; }
     const IntSize& size() const { return m_size; }

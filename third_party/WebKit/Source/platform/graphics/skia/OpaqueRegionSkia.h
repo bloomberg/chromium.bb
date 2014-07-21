@@ -84,6 +84,8 @@ public:
         SkRect opaqueRect;
     };
 
+    void reset();
+
 private:
     void didDraw(const GraphicsContext*, const SkRect&, const SkPaint&, const SkBitmap* sourceBitmap, bool fillsBounds, DrawType);
     void applyOpaqueRegionFromLayer(const GraphicsContext*, const SkRect& layerOpaqueRect, const SkPaint&);

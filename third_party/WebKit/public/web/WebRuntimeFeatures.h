@@ -46,6 +46,8 @@ public:
 
     BLINK_EXPORT static void enableDatabase(bool);
 
+    BLINK_EXPORT static void enableDisplayList2dCanvas(bool);
+
     BLINK_EXPORT static void enableEncryptedMedia(bool);
     BLINK_EXPORT static bool isEncryptedMediaEnabled();
 

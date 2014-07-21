@@ -95,6 +95,9 @@ public:
         ASSERT(!paintingDisabled());
         return m_canvas;
     }
+
+    void resetCanvas(SkCanvas*);
+
     bool paintingDisabled() const { return m_disabledState & PaintingDisabled; }
     bool contextDisabled() const { return m_disabledState; }
 
@@ -291,6 +294,8 @@ public:
         CompositeOperator = CompositeSourceOver);
 
     void drawImageBuffer(ImageBuffer*, const FloatRect& destRect, const FloatRect* srcRect = 0, CompositeOperator = CompositeSourceOver);
+
+    void drawPicture(PassRefPtr<SkPicture>, const FloatRect& dest, const FloatRect& src, CompositeOperator, blink::WebBlendMode);
 
     // These methods write to the canvas and modify the opaque region, if tracked.
     // Also drawLine(const IntPoint& point1, const IntPoint& point2) and fillRoundedRect
