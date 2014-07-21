@@ -2361,7 +2361,7 @@ void RenderFrameImpl::willSendRequest(
   // Set the first party for cookies url if it has not been set yet (new
   // requests). For redirects, it is updated by WebURLLoaderImpl.
   if (request.firstPartyForCookies().isEmpty()) {
-    if (request.targetType() == blink::WebURLRequest::TargetIsMainFrame) {
+    if (request.frameType() == blink::WebURLRequest::FrameTypeTopLevel) {
       request.setFirstPartyForCookies(request.url());
     } else {
       request.setFirstPartyForCookies(
@@ -2422,8 +2422,8 @@ void RenderFrameImpl::willSendRequest(
 
   // Add the default accept header for frame request if it has not been set
   // already.
-  if ((request.targetType() == blink::WebURLRequest::TargetIsMainFrame ||
-       request.targetType() == blink::WebURLRequest::TargetIsSubframe) &&
+  if ((request.frameType() == blink::WebURLRequest::FrameTypeTopLevel ||
+       request.frameType() == blink::WebURLRequest::FrameTypeNested) &&
       request.httpHeaderField(WebString::fromUTF8(kAcceptHeader)).isEmpty()) {
     request.setHTTPHeaderField(WebString::fromUTF8(kAcceptHeader),
                                WebString::fromUTF8(kDefaultAcceptHeader));
@@ -2450,8 +2450,8 @@ void RenderFrameImpl::willSendRequest(
   }
 
   int provider_id = kInvalidServiceWorkerProviderId;
-  if (request.targetType() == blink::WebURLRequest::TargetIsMainFrame ||
-      request.targetType() == blink::WebURLRequest::TargetIsSubframe) {
+  if (request.frameType() == blink::WebURLRequest::FrameTypeTopLevel ||
+      request.frameType() == blink::WebURLRequest::FrameTypeNested) {
     // |provisionalDataSource| may be null in some content::ResourceFetcher
     // use cases, we don't hook those requests.
     if (frame->provisionalDataSource()) {
@@ -2494,7 +2494,7 @@ void RenderFrameImpl::willSendRequest(
   if (top_document_state) {
     // TODO(gavinp): separate out prefetching and prerender field trials
     // if the rel=prerender rel type is sticking around.
-    if (request.targetType() == WebURLRequest::TargetIsPrefetch)
+    if (request.requestContext() == WebURLRequest::RequestContextPrefetch)
       top_document_state->set_was_prefetcher(true);
 
     if (was_after_preconnect_request)
