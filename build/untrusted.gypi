@@ -13,7 +13,6 @@
     },
     # Default C compiler defines.
     'nacl_default_defines': [
-      '__linux__',
       '__STDC_LIMIT_MACROS=1',
       '__STDC_FORMAT_MACROS=1',
       '_GNU_SOURCE=1',

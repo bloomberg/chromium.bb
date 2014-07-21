@@ -9,6 +9,7 @@ This module will take a set of source files, include paths, library paths, and
 additional arguments, and use them to build.
 """
 
+import hashlib
 from optparse import OptionParser
 import os
 import re
@@ -66,7 +67,8 @@ def OpenFile(path, mode='r'):
 
 def RemoveQuotes(opt):
   if opt and opt[0] == '"':
-    return opt[1:-1]
+    assert opt[-1] == '"', opt
+    return opt[1:-1].replace('\\"', '"')
   return opt
 
 
@@ -74,9 +76,9 @@ def ArgToList(opt):
   outlist = []
   if opt is None:
     return outlist
-  optlist = RemoveQuotes(opt).split(' ')
+  optlist = opt.split(' ')
   for optitem in optlist:
-    optitem = RemoveQuotes(optitem).replace('\\"', '"')
+    optitem = RemoveQuotes(optitem)
     if optitem:
       outlist.append(optitem)
   return outlist
@@ -227,7 +229,6 @@ class Builder(object):
     self.BuildLinkOptions(options.link_flags)
     self.BuildArchiveOptions()
     self.verbose = options.verbose
-    self.suffix = options.suffix
     self.strip = options.strip
     self.empty = options.empty
     self.strip_all = options.strip_all
@@ -435,13 +436,19 @@ class Builder(object):
   def GetObjectName(self, src):
     if self.strip:
       src = src.replace(self.strip,'')
+    # Hash the full path of the source file and add 32 bits of that hash onto
+    # the end of the object file name.  This helps disambiguate files with the
+    # same name, because all of the object files are placed into the same
+    # directory.  Technically, the correct solution would be to preserve the
+    # directory structure of the input source files inside the object file
+    # directory, but doing that runs the risk of running into filename length
+    # issues on Windows.
+    h = hashlib.sha1()
+    h.update(src)
+    wart = h.hexdigest()[:8]
     _, filename = os.path.split(src)
     filename, _ = os.path.splitext(filename)
-    if self.suffix:
-      return os.path.join(self.outdir, filename + '.o')
-    else:
-      filename = os.path.split(src)[1]
-      return os.path.join(self.outdir, os.path.splitext(filename)[0] + '.o')
+    return os.path.join(self.outdir, filename + '_' + wart + '.o')
 
   def CleanOutput(self, out):
     if IsFile(out):
@@ -876,8 +883,6 @@ def Main(argv):
                     help='Do not pass sources to library.', action='store_true')
   parser.add_option('--no-suffix', dest='suffix', default=True,
                     help='Do not append arch suffix.', action='store_false')
-  parser.add_option('--sufix', dest='suffix',
-                    help='Do append arch suffix.', action='store_true')
   parser.add_option('--strip-debug', dest='strip_debug', default=False,
                     help='Strip the NEXE for debugging', action='store_true')
   parser.add_option('--strip-all', dest='strip_all', default=False,
