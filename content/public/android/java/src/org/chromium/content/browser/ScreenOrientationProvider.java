@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.util.Log;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -74,7 +75,17 @@ class ScreenOrientationProvider {
             return;
         }
 
-        activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        int defaultOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+
+        try {
+            ActivityInfo info = activity.getPackageManager().getActivityInfo(
+                    activity.getComponentName(), PackageManager.GET_META_DATA);
+            defaultOrientation = info.screenOrientation;
+        } catch (PackageManager.NameNotFoundException e) {
+            // Do nothing, defaultOrientation should be SCREEN_ORIENTATION_UNSPECIFIED.
+        } finally {
+            activity.setRequestedOrientation(defaultOrientation);
+        }
     }
 
     private ScreenOrientationProvider() {
