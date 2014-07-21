@@ -14,5 +14,7 @@
 
     var transformed = document.getElementById('transformed');
     transformed.style.transform = "translateY(1000px)";
-    window.scrollTo(0, 1000);
+
+    if (window.eventSender)
+        eventSender.keyDown("end");
 </script>

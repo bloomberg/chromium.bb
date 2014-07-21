@@ -287,7 +287,7 @@ protected:
         FirstPass,
         Incremental
     };
-    void computeScrollbarExistence(bool& newHasHorizontalScrollbar, bool& newHasVerticalScrollbar, ComputeScrollbarExistenceOption = FirstPass) const;
+    void computeScrollbarExistence(bool& newHasHorizontalScrollbar, bool& newHasVerticalScrollbar, const IntSize& docSize, ComputeScrollbarExistenceOption = FirstPass) const;
     void updateScrollbarGeometry();
 
     // Called to update the scrollbars to accurately reflect the state of the view.

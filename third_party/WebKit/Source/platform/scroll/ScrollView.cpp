@@ -341,7 +341,7 @@ static bool useOverlayScrollbars()
     return ScrollbarTheme::theme()->usesOverlayScrollbars();
 }
 
-void ScrollView::computeScrollbarExistence(bool& newHasHorizontalScrollbar, bool& newHasVerticalScrollbar, ComputeScrollbarExistenceOption option) const
+void ScrollView::computeScrollbarExistence(bool& newHasHorizontalScrollbar, bool& newHasVerticalScrollbar, const IntSize& docSize, ComputeScrollbarExistenceOption option) const
 {
     bool hasHorizontalScrollbar = m_horizontalScrollbar;
     bool hasVerticalScrollbar = m_verticalScrollbar;
@@ -359,8 +359,6 @@ void ScrollView::computeScrollbarExistence(bool& newHasHorizontalScrollbar, bool
 
     if (m_scrollbarsSuppressed || (hScroll != ScrollbarAuto && vScroll != ScrollbarAuto))
         return;
-
-    IntSize docSize = contentsSize();
 
     if (hScroll == ScrollbarAuto)
         newHasHorizontalScrollbar = docSize.width() > visibleWidth();
@@ -447,7 +445,7 @@ bool ScrollView::adjustScrollbarExistence(ComputeScrollbarExistenceOption option
 
     bool newHasHorizontalScrollbar = false;
     bool newHasVerticalScrollbar = false;
-    computeScrollbarExistence(newHasHorizontalScrollbar, newHasVerticalScrollbar, option);
+    computeScrollbarExistence(newHasHorizontalScrollbar, newHasVerticalScrollbar, contentsSize(), option);
 
     bool scrollbarExistenceChanged = hasHorizontalScrollbar != newHasHorizontalScrollbar || hasVerticalScrollbar != newHasVerticalScrollbar;
     if (!scrollbarExistenceChanged)

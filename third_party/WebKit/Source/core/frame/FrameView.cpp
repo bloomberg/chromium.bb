@@ -612,6 +612,10 @@ void FrameView::recalcOverflowAfterStyleChange()
 
     renderView->recalcOverflowAfterStyleChange();
 
+    IntRect documentRect = renderView->documentRect();
+    if (scrollOrigin() == -documentRect.location() && contentsSize() == documentRect.size())
+        return;
+
     if (needsLayout())
         return;
 
@@ -619,7 +623,7 @@ void FrameView::recalcOverflowAfterStyleChange()
 
     bool shouldHaveHorizontalScrollbar = false;
     bool shouldHaveVerticalScrollbar = false;
-    computeScrollbarExistence(shouldHaveHorizontalScrollbar, shouldHaveVerticalScrollbar);
+    computeScrollbarExistence(shouldHaveHorizontalScrollbar, shouldHaveVerticalScrollbar, documentRect.size());
 
     bool hasHorizontalScrollbar = horizontalScrollbar();
     bool hasVerticalScrollbar = verticalScrollbar();

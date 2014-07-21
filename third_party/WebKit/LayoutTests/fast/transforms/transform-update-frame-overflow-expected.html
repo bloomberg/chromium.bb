@@ -10,5 +10,6 @@
 <div id="transformed">
 </div>
 <script>
-    window.scrollTo(0, 1000);
+    if (window.eventSender)
+        eventSender.keyDown("end");
 </script>
