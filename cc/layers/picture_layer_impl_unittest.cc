@@ -3072,7 +3072,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 #define MAYBE_OccludedTilesNotMarkedAsRequired OccludedTilesNotMarkedAsRequired
 #endif
 TEST_F(OcclusionTrackingPictureLayerImplTest,
-       OccludedTilesNotMarkedAsRequired) {
+       MAYBE_OccludedTilesNotMarkedAsRequired) {
   gfx::Size tile_size(102, 102);
   gfx::Size layer_bounds(1000, 1000);
   gfx::Size viewport_size(500, 500);
