@@ -178,7 +178,7 @@ TEST(TimeTicks, TimerPerformance) {
   typedef TimeTicks (*TestFunc)();
   struct TestCase {
     TestFunc func;
-    char *description;
+    const char *description;
   };
   // Cheating a bit here:  assumes sizeof(TimeTicks) == sizeof(Time)
   // in order to create a single test case list.

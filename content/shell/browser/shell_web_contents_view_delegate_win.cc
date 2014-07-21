@@ -38,7 +38,7 @@ enum {
 
 void MakeContextMenuItem(HMENU menu,
                          int menu_index,
-                         LPTSTR text,
+                         LPCTSTR text,
                          UINT id,
                          bool enabled) {
   MENUITEMINFO mii = {0};
@@ -47,7 +47,7 @@ void MakeContextMenuItem(HMENU menu,
   mii.fState = enabled ? MFS_ENABLED : (MF_DISABLED | MFS_GRAYED);
   mii.fType = MFT_STRING;
   mii.wID = id;
-  mii.dwTypeData = text;
+  mii.dwTypeData = const_cast<LPTSTR>(text);
 
   InsertMenuItem(menu, menu_index, TRUE, &mii);
 }

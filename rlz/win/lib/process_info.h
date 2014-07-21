@@ -13,13 +13,6 @@ namespace rlz_lib {
 
 class ProcessInfo {
  public:
-  enum IntegrityLevel {
-    INTEGRITY_UNKNOWN,
-    LOW_INTEGRITY,
-    MEDIUM_INTEGRITY,
-    HIGH_INTEGRITY,
-  };
-
   // All these functions cache the result after first run.
   static bool IsRunningAsSystem();
   static bool HasAdminRights();  // System / Admin / High Elevation on Vista

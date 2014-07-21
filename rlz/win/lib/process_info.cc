@@ -172,7 +172,7 @@ bool ProcessInfo::HasAdminRights() {
       if (SUCCEEDED(GetElevationType(&elevation)) &&
         base::GetProcessIntegrityLevel(base::GetCurrentProcessHandle(), &level))
         has_rights = (elevation == TokenElevationTypeFull) ||
-                    (level == HIGH_INTEGRITY);
+                     (level == base::HIGH_INTEGRITY);
     } else {
       long group = 0;
       if (GetUserGroup(&group))
