@@ -30,9 +30,9 @@ var treestatus = treestatus || {};
 // FIXME: Turn this into a model-object class.
 treestatus.urlByName = function(name) {
     if (name == 'blink')
-        return "http://blink-status.appspot.com/current?format=json";
+        return "http://blink-status.appspot.com/";
     if (name == 'chromium')
-        return "http://chromium-status.appspot.com/current?format=json";
+        return "http://chromium-status.appspot.com/";
     return null;
 }
 

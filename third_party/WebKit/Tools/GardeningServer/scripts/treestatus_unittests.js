@@ -44,8 +44,8 @@ var closedTreeJson = {
 };
 
 test('urlByName', 3, function() {
-    equal(treestatus.urlByName('blink'), 'http://blink-status.appspot.com/current?format=json');
-    equal(treestatus.urlByName('chromium'), 'http://chromium-status.appspot.com/current?format=json');
+    equal(treestatus.urlByName('blink'), 'http://blink-status.appspot.com/');
+    equal(treestatus.urlByName('chromium'), 'http://chromium-status.appspot.com/');
     equal(treestatus.urlByName('foo'), null);
 });
 

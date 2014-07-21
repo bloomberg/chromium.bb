@@ -29,7 +29,7 @@ closedTreeJson = {
   "can_commit_freely": false
 }
 
-asyncTest("basic", 9, function() {
+asyncTest("basic", 10, function() {
   var simulator = new NetworkSimulator();
   simulator.json = function(url) {
     if (url.indexOf('closed') != -1)
@@ -50,7 +50,7 @@ asyncTest("basic", 9, function() {
   simulator.runTest(function() {
     var urlByName = treestatus.urlByName;
     treestatus.urlByName = function(name) {
-      return name + "-status.appspot.com/current?format=json";
+      return "http://" + name + "-status.appspot.com/";
     }
     Promise.all([
       opentree.update().then(function() {
@@ -65,6 +65,7 @@ asyncTest("basic", 9, function() {
         equal(closedtree.message,
               "Tree is closed for maintenance by username@test.org");
         equal(closedtree.status, "closed");
+        equal(closedtree.shadowRoot.querySelector('a').href, treestatus.urlByName('closed-tree-project'));
       })
     ]).then(function() {
       requestAnimationFrame(function() {
