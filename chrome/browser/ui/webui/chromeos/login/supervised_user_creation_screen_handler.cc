@@ -390,18 +390,14 @@ void SupervisedUserCreationScreenHandler::HandleAuthenticateManager(
 // It should be removed by issue 251179.
 void SupervisedUserCreationScreenHandler::HandleGetImages() {
   base::ListValue image_urls;
-  for (int i = user_manager::kFirstDefaultImageIndex;
-       i < user_manager::kDefaultImagesCount;
-       ++i) {
+  for (int i = kFirstDefaultImageIndex; i < kDefaultImagesCount; ++i) {
     scoped_ptr<base::DictionaryValue> image_data(new base::DictionaryValue);
-    image_data->SetString("url", user_manager::GetDefaultImageUrl(i));
+    image_data->SetString("url", GetDefaultImageUrl(i));
     image_data->SetString(
-        "author",
-        l10n_util::GetStringUTF16(user_manager::kDefaultImageAuthorIDs[i]));
+        "author", l10n_util::GetStringUTF16(kDefaultImageAuthorIDs[i]));
     image_data->SetString(
-        "website",
-        l10n_util::GetStringUTF16(user_manager::kDefaultImageWebsiteIDs[i]));
-    image_data->SetString("title", user_manager::GetDefaultImageDescription(i));
+        "website", l10n_util::GetStringUTF16(kDefaultImageWebsiteIDs[i]));
+    image_data->SetString("title", GetDefaultImageDescription(i));
     image_urls.Append(image_data.release());
   }
   CallJS("setDefaultImages", image_urls);

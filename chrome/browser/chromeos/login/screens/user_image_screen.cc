@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
+#include "chrome/browser/chromeos/login/users/avatar/default_user_images.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -31,7 +32,6 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
-#include "components/user_manager/user_image/default_user_images.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -167,7 +167,7 @@ void UserImageScreen::OnImageSelected(const std::string& image_type,
     return;
   int user_image_index = User::kInvalidImageIndex;
   if (image_type == "default" &&
-      user_manager::IsDefaultImageUrl(image_url, &user_image_index)) {
+      IsDefaultImageUrl(image_url, &user_image_index)) {
     selected_image_ = user_image_index;
   } else if (image_type == "camera") {
     selected_image_ = User::kExternalImageIndex;
@@ -190,23 +190,22 @@ void UserImageScreen::OnImageAccepted() {
       }
       image_manager->SaveUserImage(
           user_manager::UserImage::CreateAndEncode(user_photo_));
-      uma_index = user_manager::kHistogramImageFromCamera;
+      uma_index = kHistogramImageFromCamera;
       break;
     case User::kProfileImageIndex:
       image_manager->SaveUserImageFromProfileImage();
-      uma_index = user_manager::kHistogramImageFromProfile;
+      uma_index = kHistogramImageFromProfile;
       break;
     default:
-      DCHECK(selected_image_ >= 0 &&
-             selected_image_ < user_manager::kDefaultImagesCount);
+      DCHECK(selected_image_ >= 0 && selected_image_ < kDefaultImagesCount);
       image_manager->SaveUserDefaultImageIndex(selected_image_);
-      uma_index = user_manager::GetDefaultImageHistogramValue(selected_image_);
+      uma_index = GetDefaultImageHistogramValue(selected_image_);
       break;
   }
   if (user_has_selected_image_) {
     UMA_HISTOGRAM_ENUMERATION("UserImage.FirstTimeChoice",
                               uma_index,
-                              user_manager::kHistogramImagesCount);
+                              kHistogramImagesCount);
   }
   ExitScreen();
 }

@@ -24,13 +24,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/users/avatar/default_user_images.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_sync_observer.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
-#include "components/user_manager/user_image/default_user_images.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
@@ -147,9 +147,9 @@ int ImageIndexToHistogramIndex(int image_index) {
   switch (image_index) {
     case User::kExternalImageIndex:
       // TODO(ivankr): Distinguish this from selected from file.
-      return user_manager::kHistogramImageFromCamera;
+      return kHistogramImageFromCamera;
     case User::kProfileImageIndex:
-      return user_manager::kHistogramImageFromProfile;
+      return kHistogramImageFromProfile;
     default:
       return image_index;
   }
@@ -299,10 +299,9 @@ void UserImageManagerImpl::Job::LoadImage(base::FilePath image_path,
   image_url_ = image_url;
   image_path_ = image_path;
 
-  if (image_index_ >= 0 && image_index_ < user_manager::kDefaultImagesCount) {
+  if (image_index_ >= 0 && image_index_ < kDefaultImagesCount) {
     // Load one of the default images. This happens synchronously.
-    user_image_ =
-        user_manager::UserImage(user_manager::GetDefaultImage(image_index_));
+    user_image_ = user_manager::UserImage(GetDefaultImage(image_index_));
     UpdateUser();
     NotifyJobDone();
   } else if (image_index_ == User::kExternalImageIndex ||
@@ -328,11 +327,10 @@ void UserImageManagerImpl::Job::SetToDefaultImage(int default_image_index) {
   run_ = true;
 
   DCHECK_LE(0, default_image_index);
-  DCHECK_GT(user_manager::kDefaultImagesCount, default_image_index);
+  DCHECK_GT(kDefaultImagesCount, default_image_index);
 
   image_index_ = default_image_index;
-  user_image_ =
-      user_manager::UserImage(user_manager::GetDefaultImage(image_index_));
+  user_image_ = user_manager::UserImage(GetDefaultImage(image_index_));
 
   UpdateUser();
   UpdateLocalState();
@@ -523,10 +521,9 @@ void UserImageManagerImpl::LoadUserImage() {
 
   int image_index = User::kInvalidImageIndex;
   image_properties->GetInteger(kImageIndexNodeName, &image_index);
-  if (image_index >= 0 && image_index < user_manager::kDefaultImagesCount) {
-    user->SetImage(
-        user_manager::UserImage(user_manager::GetDefaultImage(image_index)),
-        image_index);
+  if (image_index >= 0 && image_index < kDefaultImagesCount) {
+    user->SetImage(user_manager::UserImage(GetDefaultImage(image_index)),
+                   image_index);
     return;
   }
 
@@ -566,7 +563,7 @@ void UserImageManagerImpl::UserLoggedIn(bool user_is_new,
   } else {
     UMA_HISTOGRAM_ENUMERATION("UserImage.LoggedIn",
                               ImageIndexToHistogramIndex(user->image_index()),
-                              user_manager::kHistogramImagesCount);
+                              kHistogramImagesCount);
 
     if (!IsUserImageManaged() && user_needs_migration_) {
       const base::DictionaryValue* prefs_images_unsafe =
@@ -855,9 +852,8 @@ bool UserImageManagerImpl::IsUserImageManaged() const {
 
 void UserImageManagerImpl::SetInitialUserImage() {
   // Choose a random default image.
-  SaveUserDefaultImageIndex(
-      base::RandInt(user_manager::kFirstDefaultImageIndex,
-                    user_manager::kDefaultImagesCount - 1));
+  SaveUserDefaultImageIndex(base::RandInt(kFirstDefaultImageIndex,
+                                          kDefaultImagesCount - 1));
 }
 
 void UserImageManagerImpl::TryToInitDownloadedProfileImage() {
@@ -956,7 +952,7 @@ void UserImageManagerImpl::OnJobDone() {
   image_properties->GetInteger(kImageIndexNodeName, &image_index);
   UMA_HISTOGRAM_ENUMERATION("UserImage.Migration",
                             ImageIndexToHistogramIndex(image_index),
-                            user_manager::kHistogramImagesCount);
+                            kHistogramImagesCount);
 
   std::string image_path;
   image_properties->GetString(kImagePathNodeName, &image_path);

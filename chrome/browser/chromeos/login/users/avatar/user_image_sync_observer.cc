@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/screens/user_image_screen.h"
+#include "chrome/browser/chromeos/login/users/avatar/default_user_images.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
-#include "components/user_manager/user_image/default_user_images.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 
@@ -31,9 +31,8 @@ const char kUserImageInfo[] = "user_image_info";
 const char kImageIndex[] = "image_index";
 
 bool IsIndexSupported(int index) {
-  return (index >= user_manager::kFirstDefaultImageIndex &&
-          index < user_manager::kDefaultImagesCount) ||
-         (index == User::kProfileImageIndex);
+  return (index >= kFirstDefaultImageIndex && index < kDefaultImagesCount) ||
+      (index == User::kProfileImageIndex);
 }
 
 Profile* GetUserProfile() {

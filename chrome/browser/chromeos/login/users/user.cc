@@ -8,9 +8,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/chromeos/login/users/avatar/default_user_images.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chromeos/login/user_names.h"
-#include "components/user_manager/user_image/default_user_images.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -139,7 +139,7 @@ std::string User::GetAccountName(bool use_display_email) const {
 }
 
 bool User::HasDefaultImage() const {
-  return image_index_ >= 0 && image_index_ < user_manager::kDefaultImagesCount;
+  return image_index_ >= 0 && image_index_ < kDefaultImagesCount;
 }
 
 bool User::CanSyncImage() const {

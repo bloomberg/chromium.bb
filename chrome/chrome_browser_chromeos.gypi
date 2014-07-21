@@ -713,6 +713,8 @@
         'browser/chromeos/login/ui/webui_login_view.h',
         'browser/chromeos/login/user_flow.cc',
         'browser/chromeos/login/user_flow.h',
+        'browser/chromeos/login/users/avatar/default_user_images.cc',
+        'browser/chromeos/login/users/avatar/default_user_images.h',
         'browser/chromeos/login/users/avatar/user_image_loader.cc',
         'browser/chromeos/login/users/avatar/user_image_loader.h',
         'browser/chromeos/login/users/avatar/user_image_manager.cc',

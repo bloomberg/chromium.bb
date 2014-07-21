@@ -9,8 +9,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/chromeos/login/users/avatar/default_user_images.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "components/user_manager/user_image/default_user_images.h"
 #include "content/public/browser/web_ui.h"
 
 namespace base {

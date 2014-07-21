@@ -22,7 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "components/user_manager/user_image/default_user_images.h"
+#include "chrome/browser/chromeos/login/users/avatar/default_user_images.h"
 #endif
 
 using sync_pb::ManagedUserSpecifics;
@@ -295,7 +295,7 @@ TEST_F(SupervisedUserSyncServiceTest, GetAvatarIndex) {
 
   int avatar_index = 4;
 #if defined(OS_CHROMEOS)
-  avatar_index += user_manager::kFirstDefaultImageIndex;
+  avatar_index += chromeos::kFirstDefaultImageIndex;
 #endif
   std::string avatar_str =
       SupervisedUserSyncService::BuildAvatarString(avatar_index);
@@ -311,7 +311,7 @@ TEST_F(SupervisedUserSyncServiceTest, GetAvatarIndex) {
 
   avatar_index = 0;
 #if defined(OS_CHROMEOS)
-  avatar_index += user_manager::kFirstDefaultImageIndex;
+  avatar_index += chromeos::kFirstDefaultImageIndex;
 #endif
   avatar_str = SupervisedUserSyncService::BuildAvatarString(avatar_index);
 #if defined(OS_CHROMEOS)

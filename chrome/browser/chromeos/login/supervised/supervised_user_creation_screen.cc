@@ -458,8 +458,7 @@ void SupervisedUserCreationScreen::ApplyPicture() {
       NOTREACHED() << "Supervised users have no profile pictures";
       break;
     default:
-      DCHECK(selected_image_ >= 0 &&
-             selected_image_ < user_manager::kDefaultImagesCount);
+      DCHECK(selected_image_ >= 0 && selected_image_ < kDefaultImagesCount);
       image_manager->SaveUserDefaultImageIndex(selected_image_);
       break;
   }
@@ -503,16 +502,14 @@ void SupervisedUserCreationScreen::OnGetSupervisedUsers(
         !chromeos_avatar.empty() &&
         SupervisedUserSyncService::GetAvatarIndex(
             chromeos_avatar, &avatar_index)) {
-      ui_copy->SetString(kAvatarURLKey,
-                         user_manager::GetDefaultImageUrl(avatar_index));
+      ui_copy->SetString(kAvatarURLKey, GetDefaultImageUrl(avatar_index));
     } else {
-      int i = base::RandInt(user_manager::kFirstDefaultImageIndex,
-                            user_manager::kDefaultImagesCount - 1);
+      int i = base::RandInt(kFirstDefaultImageIndex, kDefaultImagesCount - 1);
       local_copy->SetString(
           SupervisedUserSyncService::kChromeOsAvatar,
           SupervisedUserSyncService::BuildAvatarString(i));
       local_copy->SetBoolean(kRandomAvatarKey, true);
-      ui_copy->SetString(kAvatarURLKey, user_manager::GetDefaultImageUrl(i));
+      ui_copy->SetString(kAvatarURLKey, GetDefaultImageUrl(i));
     }
 
     local_copy->SetBoolean(kUserExists, false);
@@ -584,7 +581,7 @@ void SupervisedUserCreationScreen::OnImageSelected(
     return;
   int user_image_index = User::kInvalidImageIndex;
   if (image_type == "default" &&
-      user_manager::IsDefaultImageUrl(image_url, &user_image_index)) {
+      IsDefaultImageUrl(image_url, &user_image_index)) {
     selected_image_ = user_image_index;
   } else if (image_type == "camera") {
     selected_image_ = User::kExternalImageIndex;
