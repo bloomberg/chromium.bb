@@ -164,6 +164,11 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
+    # https://mail.python.org/pipermail/cython-devel/2014-July/004062.html
+    'third_party/cython': [
+        'UNKNOWN',
+    ],
+
     'third_party/devscripts': [
         'GPL (v2 or later)',
     ],
