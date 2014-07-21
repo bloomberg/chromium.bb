@@ -773,3 +773,49 @@ def num_processors():
     except:
       # Some of the windows builders seem to get here.
       return 4
+
+
+def enum_processes_win():
+  """Returns all processes on the system that are accessible to this process.
+
+  Returns:
+    Win32_Process COM objects. See
+    http://msdn.microsoft.com/library/aa394372.aspx for more details.
+  """
+  import win32com.client  # pylint: disable=F0401
+  wmi_service = win32com.client.Dispatch('WbemScripting.SWbemLocator')
+  wbem = wmi_service.ConnectServer('.', 'root\\cimv2')
+  return [
+    proc for proc in wbem.ExecQuery('SELECT * FROM Win32_Process')
+    if proc.ExecutablePath
+  ]
+
+
+def filter_processes_dir_win(processes, root_dir):
+  """Returns all processes which has their main executable located inside
+  root_dir.
+  """
+  root_dir = root_dir.lower()
+  return [
+    proc for proc in processes
+    if proc.ExecutablePath.lower().startswith(root_dir)
+  ]
+
+
+def filter_processes_tree_win(processes):
+  """Returns all the processes under the current process."""
+  # Convert to dict.
+  processes = {p.ProcessId: p for p in processes}
+  root_pid = os.getpid()
+  out = {root_pid: processes[root_pid]}
+  while True:
+    found = set()
+    for pid in out:
+      found.update(
+          p.ProcessId for p in processes.itervalues()
+          if p.ParentProcessId == pid)
+    found -= set(out)
+    if not found:
+      break
+    out.update((p, processes[p]) for p in found)
+  return out.values()
