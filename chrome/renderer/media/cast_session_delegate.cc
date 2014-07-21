@@ -238,21 +238,10 @@ void CastSessionDelegate::LogRawEvents(
            frame_events.begin();
        it != frame_events.end();
        ++it) {
-    if (it->type == media::cast::FRAME_PLAYOUT) {
-      cast_environment_->Logging()->InsertFrameEventWithDelay(
-          it->timestamp,
-          it->type,
-          it->media_type,
-          it->rtp_timestamp,
-          it->frame_id,
-          it->delay_delta);
-    } else {
-      cast_environment_->Logging()->InsertFrameEvent(
-          it->timestamp,
-          it->type,
-          it->media_type,
-          it->rtp_timestamp,
-          it->frame_id);
-    }
+    cast_environment_->Logging()->InsertFrameEvent(it->timestamp,
+                                                   it->type,
+                                                   it->media_type,
+                                                   it->rtp_timestamp,
+                                                   it->frame_id);
   }
 }
