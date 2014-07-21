@@ -160,6 +160,11 @@ void WebRuntimeFeatures::enableNavigatorContentUtils(bool enable)
     RuntimeEnabledFeatures::setNavigatorContentUtilsEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableNavigationTransitions(bool enable)
+{
+    RuntimeEnabledFeatures::setNavigationTransitionsEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableOrientationEvent(bool enable)
 {
     RuntimeEnabledFeatures::setOrientationEventEnabled(enable);
