@@ -44,7 +44,8 @@ void AudioBlockFifo::Push(const void* source,
         std::min(block_frames_ - write_pos_, frames_to_push);
 
     // Deinterleave the content to the FIFO and update the |write_pos_|.
-    current_block->FromInterleaved(source_ptr, push_frames, bytes_per_sample);
+    current_block->FromInterleavedPartial(
+        source_ptr, write_pos_, push_frames, bytes_per_sample);
     write_pos_ = (write_pos_ + push_frames) % block_frames_;
     if (!write_pos_) {
       // The current block is completely filled, increment |write_block_| and
@@ -55,6 +56,7 @@ void AudioBlockFifo::Push(const void* source,
 
     source_ptr += push_frames * bytes_per_sample * current_block->channels();
     frames_to_push -= push_frames;
+    DCHECK_GE(frames_to_push, 0);
   }
 }
 
@@ -71,6 +73,10 @@ void AudioBlockFifo::Clear() {
   write_block_ = 0;
   read_block_ = 0;
   available_blocks_ = 0;
+}
+
+int AudioBlockFifo::GetAvailableFrames() const {
+  return available_blocks_ * block_frames_ + write_pos_;
 }
 
 int AudioBlockFifo::GetUnfilledFrames() const {

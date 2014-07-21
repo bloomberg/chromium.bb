@@ -12,6 +12,7 @@
 #include "media/audio/audio_device_name.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
+#include "media/base/audio_block_fifo.h"
 
 struct pa_context;
 struct pa_source_info;
@@ -21,7 +22,6 @@ struct pa_threaded_mainloop;
 namespace media {
 
 class AudioManagerPulse;
-class SeekableBuffer;
 
 class PulseAudioInputStream : public AgcAudioStream<AudioInputStream> {
  public:
@@ -61,11 +61,7 @@ class PulseAudioInputStream : public AgcAudioStream<AudioInputStream> {
   bool stream_started_;
 
   // Holds the data from the OS.
-  scoped_ptr<media::SeekableBuffer> buffer_;
-
-  // Temporary storage for recorded data. It gets a packet of data from
-  // |buffer_| and deliver the data to OnData() callback.
-  scoped_ptr<uint8[]> audio_data_buffer_;
+  AudioBlockFifo fifo_;
 
   // PulseAudio API structs.
   pa_threaded_mainloop* pa_mainloop_; // Weak.
@@ -74,8 +70,6 @@ class PulseAudioInputStream : public AgcAudioStream<AudioInputStream> {
 
   // Flag indicating the state of the context has been changed.
   bool context_state_changed_;
-
-  scoped_ptr<AudioBus> audio_bus_;
 
   base::ThreadChecker thread_checker_;
 

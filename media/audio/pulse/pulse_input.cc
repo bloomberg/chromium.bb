@@ -9,12 +9,14 @@
 #include "base/logging.h"
 #include "media/audio/pulse/audio_manager_pulse.h"
 #include "media/audio/pulse/pulse_util.h"
-#include "media/base/seekable_buffer.h"
 
 namespace media {
 
 using pulse::AutoPulseLock;
 using pulse::WaitForOperationCompletion;
+
+// Number of blocks of buffers used in the |fifo_|.
+const int kNumberOfBlocksBufferInFifo = 2;
 
 PulseAudioInputStream::PulseAudioInputStream(AudioManagerPulse* audio_manager,
                                              const std::string& device_name,
@@ -28,6 +30,9 @@ PulseAudioInputStream::PulseAudioInputStream(AudioManagerPulse* audio_manager,
       channels_(0),
       volume_(0.0),
       stream_started_(false),
+      fifo_(params.channels(),
+            params.frames_per_buffer(),
+            kNumberOfBlocksBufferInFifo),
       pa_mainloop_(mainloop),
       pa_context_(context),
       handle_(NULL),
@@ -35,7 +40,6 @@ PulseAudioInputStream::PulseAudioInputStream(AudioManagerPulse* audio_manager,
   DCHECK(mainloop);
   DCHECK(context);
   CHECK(params_.IsValid());
-  audio_bus_ = AudioBus::Create(params_);
 }
 
 PulseAudioInputStream::~PulseAudioInputStream() {
@@ -54,8 +58,6 @@ bool PulseAudioInputStream::Open() {
 
   DCHECK(handle_);
 
-  buffer_.reset(new media::SeekableBuffer(0, 2 * params_.GetBytesPerBuffer()));
-  audio_data_buffer_.reset(new uint8[params_.GetBytesPerBuffer()]);
   return true;
 }
 
@@ -74,7 +76,7 @@ void PulseAudioInputStream::Start(AudioInputCallback* callback) {
 
   // Clean up the old buffer.
   pa_stream_drop(handle_);
-  buffer_->Clear();
+  fifo_.Clear();
 
   // Start the streaming.
   callback_ = callback;
@@ -265,23 +267,19 @@ void PulseAudioInputStream::ReadData() {
     if (!data || length == 0)
       break;
 
-    buffer_->Append(reinterpret_cast<const uint8*>(data), length);
+    const int number_of_frames = length / params_.GetBytesPerFrame();
+    fifo_.Push(data, number_of_frames, params_.bits_per_sample() / 8);
 
     // Checks if we still have data.
     pa_stream_drop(handle_);
   } while (pa_stream_readable_size(handle_) > 0);
 
-  int packet_size = params_.GetBytesPerBuffer();
-  while (buffer_->forward_bytes() >= packet_size) {
-    buffer_->Read(audio_data_buffer_.get(), packet_size);
-    audio_bus_->FromInterleaved(audio_data_buffer_.get(),
-                                audio_bus_->frames(),
-                                params_.bits_per_sample() / 8);
-    callback_->OnData(
-        this, audio_bus_.get(), hardware_delay, normalized_volume);
+  while (fifo_.available_blocks()) {
+    const AudioBus* audio_bus = fifo_.Consume();
 
-    if (buffer_->forward_bytes() < packet_size)
-      break;
+    // Compensate the audio delay caused by the FIFO.
+    hardware_delay += fifo_.GetAvailableFrames() * params_.GetBytesPerFrame();
+    callback_->OnData(this, audio_bus, hardware_delay, normalized_volume);
 
     // TODO(xians): Remove once PPAPI is using circular buffers.
     DVLOG(1) << "OnData is being called consecutively, sleep 5ms to "

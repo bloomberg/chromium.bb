@@ -45,11 +45,11 @@
 #include "media/audio/agc_audio_stream.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
+#include "media/base/audio_block_fifo.h"
 
 namespace media {
 
 class AudioBus;
-class AudioFifo;
 class AudioManagerMac;
 class DataBuffer;
 
@@ -148,19 +148,11 @@ class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
   // when querying the volume of each channel.
   int number_of_channels_in_frame_;
 
-  // Dynamically allocated FIFO used to accumulates recorded data when
-  // CoreAudio delivers non-requested frame size of data.
-  scoped_ptr<media::AudioFifo> fifo_;
+  // FIFO used to accumulates recorded data.
+  media::AudioBlockFifo fifo_;
 
   // Used to defer Start() to workaround http://crbug.com/160920.
   base::CancelableClosure deferred_start_cb_;
-
-  // Audio bus used for storage of deinterleaved data for the OnData callback.
-  scoped_ptr<media::AudioBus> audio_bus_;
-
-  // Audio bus used to convert interleaved data to deinterleaved data before
-  // storing data to FIFO or delivering data via OnData callback.
-  scoped_ptr<media::AudioBus> audio_wrapper_;
 
   DISALLOW_COPY_AND_ASSIGN(AUAudioInputStream);
 };

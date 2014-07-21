@@ -39,6 +39,9 @@ class MEDIA_EXPORT AudioBlockFifo {
   // Number of available block of memory ready to be consumed in the FIFO.
   int available_blocks() const { return available_blocks_; }
 
+  // Number of available frames of data in the FIFO.
+  int GetAvailableFrames() const;
+
   // Number of unfilled frames in the whole FIFO.
   int GetUnfilledFrames() const;
 

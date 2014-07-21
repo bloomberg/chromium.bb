@@ -11,10 +11,12 @@
 #include "base/mac/mac_logging.h"
 #include "media/audio/mac/audio_manager_mac.h"
 #include "media/base/audio_bus.h"
-#include "media/base/audio_fifo.h"
 #include "media/base/data_buffer.h"
 
 namespace media {
+
+// Number of blocks of buffers used in the |fifo_|.
+const int kNumberOfBlocksBufferInFifo = 2;
 
 static std::ostream& operator<<(std::ostream& os,
                                 const AudioStreamBasicDescription& format) {
@@ -44,8 +46,9 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
       started_(false),
       hardware_latency_frames_(0),
       number_of_channels_in_frame_(0),
-      audio_bus_(media::AudioBus::Create(input_params)),
-      audio_wrapper_(media::AudioBus::Create(input_params)) {
+      fifo_(input_params.channels(),
+            number_of_frames_,
+            kNumberOfBlocksBufferInFifo) {
   DCHECK(manager_);
 
   // Set up the desired (output) format specified by the client.
@@ -494,43 +497,17 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
   if (!audio_data)
     return kAudioUnitErr_InvalidElement;
 
-  if (number_of_frames != number_of_frames_) {
-    // Create a FIFO on the fly to handle any discrepancies in callback rates.
-    if (!fifo_) {
-      VLOG(1) << "Audio frame size changed from " << number_of_frames_ << " to "
-              << number_of_frames << "; adding FIFO to compensate.";
-      fifo_.reset(new AudioFifo(
-          format_.mChannelsPerFrame, number_of_frames_ + number_of_frames));
-    }
+  // Copy captured (and interleaved) data into FIFO.
+  fifo_.Push(audio_data, number_of_frames, format_.mBitsPerChannel / 8);
 
-    if (audio_wrapper_->frames() != static_cast<int>(number_of_frames)) {
-      audio_wrapper_ = media::AudioBus::Create(format_.mChannelsPerFrame,
-                                               number_of_frames);
-    }
-  }
+  // Consume and deliver the data when the FIFO has a block of available data.
+  while (fifo_.available_blocks()) {
+    const AudioBus* audio_bus = fifo_.Consume();
+    DCHECK_EQ(audio_bus->frames(), static_cast<int>(number_of_frames_));
 
-  // Copy captured (and interleaved) data into deinterleaved audio bus.
-  audio_wrapper_->FromInterleaved(
-      audio_data, audio_wrapper_->frames(), format_.mBitsPerChannel / 8);
-
-  // When FIFO does not kick in, data will be directly passed to the callback.
-  if (!fifo_) {
-    CHECK_EQ(audio_wrapper_->frames(), static_cast<int>(number_of_frames_));
-    sink_->OnData(
-        this, audio_wrapper_.get(), capture_delay_bytes, normalized_volume);
-    return noErr;
-  }
-
-  // Compensate the audio delay caused by the FIFO.
-  capture_delay_bytes += fifo_->frames() * format_.mBytesPerFrame;
-  fifo_->Push(audio_wrapper_.get());
-  if (fifo_->frames() >= static_cast<int>(number_of_frames_)) {
-    // Consume the audio from the FIFO.
-    fifo_->Consume(audio_bus_.get(), 0, audio_bus_->frames());
-    DCHECK(fifo_->frames() < static_cast<int>(number_of_frames_));
-
-    sink_->OnData(
-        this, audio_bus_.get(), capture_delay_bytes, normalized_volume);
+    // Compensate the audio delay caused by the FIFO.
+    capture_delay_bytes += fifo_.GetAvailableFrames() * format_.mBytesPerFrame;
+    sink_->OnData(this, audio_bus, capture_delay_bytes, normalized_volume);
   }
 
   return noErr;

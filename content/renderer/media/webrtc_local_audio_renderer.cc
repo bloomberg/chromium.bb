@@ -14,8 +14,8 @@
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/render_frame_impl.h"
 #include "media/audio/audio_output_device.h"
+#include "media/base/audio_block_fifo.h"
 #include "media/base/audio_bus.h"
-#include "media/base/audio_fifo.h"
 
 namespace content {
 
@@ -42,8 +42,10 @@ int WebRtcLocalAudioRenderer::Render(
 
   // Provide data by reading from the FIFO if the FIFO contains enough
   // to fulfill the request.
-  if (loopback_fifo_->frames() >= audio_bus->frames()) {
-    loopback_fifo_->Consume(audio_bus, 0, audio_bus->frames());
+  if (loopback_fifo_->available_blocks()) {
+    const media::AudioBus* audio_data = loopback_fifo_->Consume();
+    DCHECK_EQ(audio_data->frames(), audio_bus->frames());
+    audio_data->CopyTo(audio_bus);
   } else {
     audio_bus->Zero();
     // This warning is perfectly safe if it happens for the first audio
@@ -70,14 +72,8 @@ void WebRtcLocalAudioRenderer::OnData(const int16* audio_data,
     return;
 
   // Push captured audio to FIFO so it can be read by a local sink.
-  if (loopback_fifo_->frames() + number_of_frames <=
-      loopback_fifo_->max_frames()) {
-    scoped_ptr<media::AudioBus> audio_source = media::AudioBus::Create(
-        number_of_channels, number_of_frames);
-    audio_source->FromInterleaved(audio_data,
-                                  audio_source->frames(),
-                                  sizeof(audio_data[0]));
-    loopback_fifo_->Push(audio_source.get());
+  if (loopback_fifo_->GetUnfilledFrames() >= number_of_frames) {
+    loopback_fifo_->Push(audio_data, number_of_frames, sizeof(audio_data[0]));
 
     const base::TimeTicks now = base::TimeTicks::Now();
     total_render_time_ += now - last_render_time_;
@@ -311,8 +307,10 @@ void WebRtcLocalAudioRenderer::ReconfigureSink(
     // in case since these tests were performed on a 16 core, 64GB Win 7
     // machine. We could also add some sort of error notifier in this area if
     // the FIFO overflows.
-    media::AudioFifo* new_fifo = new media::AudioFifo(
-        params.channels(), 10 * params.frames_per_buffer());
+    const int blocks_of_buffers =
+        10 * params.frames_per_buffer() / sink_params_.frames_per_buffer() + 1;
+    media::AudioBlockFifo* new_fifo = new media::AudioBlockFifo(
+        params.channels(), sink_params_.frames_per_buffer(), blocks_of_buffers);
 
     base::AutoLock auto_lock(thread_lock_);
     loopback_fifo_.reset(new_fifo);
