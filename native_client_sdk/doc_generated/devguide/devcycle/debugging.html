@@ -233,13 +233,15 @@ that copy in your application&#8217;s manifest file:</p>
 <pre class="prettyprint">
 {
   &quot;program&quot;: {
-    &quot;pnacl-translate&quot;: {
-      &quot;url&quot;: &quot;release_version.pexe&quot;,
-      &quot;optlevel&quot;: 2
-    },
-    &quot;pnacl-debug&quot;: {
-      &quot;url&quot;: &quot;debug_version.bc&quot;,
-      &quot;optlevel&quot;: 0
+    &quot;portable&quot;: {
+      &quot;pnacl-translate&quot;: {
+        &quot;url&quot;: &quot;release_version.pexe&quot;,
+        &quot;optlevel&quot;: 2
+      },
+      &quot;pnacl-debug&quot;: {
+        &quot;url&quot;: &quot;debug_version.bc&quot;,
+        &quot;optlevel&quot;: 0
+      }
     }
   }
 }

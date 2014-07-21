@@ -245,13 +245,15 @@ that copy in your application's manifest file:
 
   {
     "program": {
-      "pnacl-translate": {
-        "url": "release_version.pexe",
-        "optlevel": 2
-      },
-      "pnacl-debug": {
-        "url": "debug_version.bc",
-        "optlevel": 0
+      "portable": {
+        "pnacl-translate": {
+          "url": "release_version.pexe",
+          "optlevel": 2
+        },
+        "pnacl-debug": {
+          "url": "debug_version.bc",
+          "optlevel": 0
+        }
       }
     }
   }
