@@ -79,7 +79,8 @@ class PathContext(object):
   """A PathContext is used to carry the information used to construct URLs and
   paths when dealing with the storage server and archives."""
   def __init__(self, base_url, platform, good_revision, bad_revision,
-               is_official, is_aura, use_local_repo, flash_path = None):
+               is_official, is_aura, use_local_repo, flash_path = None,
+               pdf_path = None):
     super(PathContext, self).__init__()
     # Store off the input parameters.
     self.base_url = base_url
@@ -94,6 +95,7 @@ class PathContext(object):
     # _FetchAndParse and used later in GetDownloadURL while downloading
     # the build.
     self.githash_svn_dict = {}
+    self.pdf_path = pdf_path
 
     # The name of the ZIP file in a revision directory on the server.
     self.archive_name = None
@@ -452,7 +454,7 @@ def RunRevision(context, revision, zipfile, profile, num_runs, command, args):
   # Run the build as many times as specified.
   testargs = ['--user-data-dir=%s' % profile] + args
   # The sandbox must be run as root on Official Chrome, so bypass it.
-  if ((context.is_official or context.flash_path) and
+  if ((context.is_official or context.flash_path or context.pdf_path) and
       context.platform.startswith('linux')):
     testargs.append('--no-sandbox')
   if context.flash_path:
@@ -461,6 +463,11 @@ def RunRevision(context, revision, zipfile, profile, num_runs, command, args):
     # be correct. Instead of requiring the user of the script to figure out and
     # pass the correct version we just spoof it.
     testargs.append('--ppapi-flash-version=99.9.999.999')
+
+  # TODO(vitalybuka): Remove in the future. See crbug.com/395687.
+  if context.pdf_path:
+    shutil.copy(context.pdf_path, os.path.dirname(context.GetLaunchPath()))
+    testargs.append('--enable-print-preview')
 
   runcommand = []
   for token in shlex.split(command):
@@ -555,6 +562,7 @@ def Bisect(base_url,
            try_args=(),
            profile=None,
            flash_path=None,
+           pdf_path=None,
            interactive=True,
            evaluate=AskIsGoodBuild):
   """Given known good and known bad revisions, run a binary search on all
@@ -591,7 +599,8 @@ def Bisect(base_url,
     profile = 'profile'
 
   context = PathContext(base_url, platform, good_rev, bad_rev,
-                        official_builds, is_aura, use_local_repo, flash_path)
+                        official_builds, is_aura, use_local_repo, flash_path,
+                        pdf_path)
   cwd = os.getcwd()
 
   print "Downloading list of known revisions..."
@@ -852,6 +861,12 @@ def main():
                     'binary to be used in this bisection (e.g. ' +
                     'on Windows C:\...\pepflashplayer.dll and on Linux ' +
                     '/opt/google/chrome/PepperFlash/libpepflashplayer.so).')
+  parser.add_option('-d', '--pdf_path', type = 'str',
+                    help = 'Absolute path to a recent PDF pluggin ' +
+                    'binary to be used in this bisection (e.g. ' +
+                    'on Windows C:\...\pdf.dll and on Linux ' +
+                    '/opt/google/chrome/libpdf.so). Option also enables ' +
+                    'print preview.')
   parser.add_option('-g', '--good', type = 'str',
                     help = 'A good revision to start bisection. ' +
                     'May be earlier or later than the bad revision. ' +
@@ -930,6 +945,11 @@ def main():
     msg = 'Could not find Flash binary at %s' % flash_path
     assert os.path.exists(flash_path), msg
 
+  if opts.pdf_path:
+    pdf_path = opts.pdf_path
+    msg = 'Could not find PDF binary at %s' % pdf_path
+    assert os.path.exists(pdf_path), msg
+
   if opts.official_builds:
     good_rev = LooseVersion(good_rev)
     bad_rev = LooseVersion(bad_rev)
@@ -946,7 +966,8 @@ def main():
   (min_chromium_rev, max_chromium_rev) = Bisect(
       base_url, opts.archive, opts.official_builds, opts.aura,
       opts.use_local_repo, good_rev, bad_rev, opts.times, opts.command,
-      args, opts.profile, opts.flash_path, not opts.not_interactive)
+      args, opts.profile, opts.flash_path, opts.pdf_path,
+      not opts.not_interactive)
 
   # Get corresponding blink revisions.
   try:
