@@ -99,7 +99,7 @@ void WinVistaCondVar::TimedWait(const TimeDelta& max_time) {
   DWORD timeout = static_cast<DWORD>(max_time.InMilliseconds());
   CRITICAL_SECTION* cs = user_lock_.lock_.native_handle();
 
-#if !defined(NDEBUG)
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
   user_lock_.CheckHeldAndUnmark();
 #endif
 
@@ -107,7 +107,7 @@ void WinVistaCondVar::TimedWait(const TimeDelta& max_time) {
     DCHECK(GetLastError() != WAIT_TIMEOUT);
   }
 
-#if !defined(NDEBUG)
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
   user_lock_.CheckUnheldAndMark();
 #endif
 }

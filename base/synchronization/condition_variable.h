@@ -104,7 +104,7 @@ class BASE_EXPORT ConditionVariable {
 #elif defined(OS_POSIX)
   pthread_cond_t condition_;
   pthread_mutex_t* user_mutex_;
-#if !defined(NDEBUG)
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
   base::Lock* user_lock_;     // Needed to adjust shadow lock state on wait.
 #endif
 

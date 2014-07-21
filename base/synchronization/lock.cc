@@ -6,7 +6,7 @@
 // is functionally a wrapper around the LockImpl class, so the only
 // real intelligence in the class is in the debugging logic.
 
-#if !defined(NDEBUG)
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 
 #include "base/synchronization/lock.h"
 #include "base/logging.h"
@@ -36,4 +36,4 @@ void Lock::CheckUnheldAndMark() {
 
 }  // namespace base
 
-#endif  // NDEBUG
+#endif  // !NDEBUG || DCHECK_ALWAYS_ON
