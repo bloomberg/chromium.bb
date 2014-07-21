@@ -27,13 +27,21 @@ class PermissionBubbleCocoa : public PermissionBubbleView {
                     const std::vector<bool>& accept_state,
                     bool customization_mode) OVERRIDE;
   virtual void Hide() OVERRIDE;
+  virtual bool IsVisible() OVERRIDE;
   virtual void SetDelegate(Delegate* delegate) OVERRIDE;
   virtual bool CanAcceptRequestUpdate() OVERRIDE;
 
   // Called when |bubbleController_| is closing.
   void OnBubbleClosing();
 
- private:
+  // Returns the point, in screen coordinates, to which the bubble's arrow
+  // should point.
+  NSPoint GetAnchorPoint();
+
+  // Returns the NSWindow containing the bubble.
+  NSWindow* window();
+
+private:
   NSWindow* parent_window_;  // Weak.
   Delegate* delegate_;  // Weak.
 

@@ -53,6 +53,9 @@ class PermissionBubbleView {
 
   // Hides the permission bubble.
   virtual void Hide() = 0;
+
+  // Returns true if there is a bubble currently showing.
+  virtual bool IsVisible() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_VIEW_H_

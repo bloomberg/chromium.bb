@@ -31,10 +31,7 @@ void PermissionBubbleCocoa::Show(
                       bridge:this];
   }
 
-  LocationBarViewMac* location_bar =
-      [[parent_window_ windowController] locationBarBridge];
-  NSPoint anchor = location_bar->GetPageInfoBubblePoint();
-  [bubbleController_ showAtAnchor:[parent_window_ convertBaseToScreen:anchor]
+  [bubbleController_ showAtAnchor:GetAnchorPoint()
                      withDelegate:delegate_
                       forRequests:requests
                      acceptStates:accept_state
@@ -43,6 +40,10 @@ void PermissionBubbleCocoa::Show(
 
 void PermissionBubbleCocoa::Hide() {
   [bubbleController_ close];
+}
+
+bool PermissionBubbleCocoa::IsVisible() {
+  return bubbleController_ != nil;
 }
 
 void PermissionBubbleCocoa::SetDelegate(Delegate* delegate) {
@@ -61,4 +62,15 @@ bool PermissionBubbleCocoa::CanAcceptRequestUpdate() {
 
 void PermissionBubbleCocoa::OnBubbleClosing() {
   bubbleController_ = nil;
+}
+
+NSPoint PermissionBubbleCocoa::GetAnchorPoint() {
+  LocationBarViewMac* location_bar =
+      [[parent_window_ windowController] locationBarBridge];
+  NSPoint anchor = location_bar->GetPageInfoBubblePoint();
+  return [parent_window_ convertBaseToScreen:anchor];
+}
+
+NSWindow* PermissionBubbleCocoa::window() {
+  return [bubbleController_ window];
 }

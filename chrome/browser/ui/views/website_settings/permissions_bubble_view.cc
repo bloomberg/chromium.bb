@@ -456,6 +456,10 @@ void PermissionBubbleViewViews::Hide() {
   }
 }
 
+bool PermissionBubbleViewViews::IsVisible() {
+  return bubble_delegate_ != NULL;
+}
+
 void PermissionBubbleViewViews::Closing() {
   if (bubble_delegate_)
     bubble_delegate_ = NULL;

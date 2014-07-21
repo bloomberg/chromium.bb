@@ -236,6 +236,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
                       backing:NSBackingStoreBuffered
                         defer:NO]);
   [window setAllowedAnimations:info_bubble::kAnimateNone];
+  [window setReleasedWhenClosed:NO];
   if ((self = [super initWithWindow:window
                        parentWindow:parentWindow
                          anchoredAt:NSZeroPoint])) {
@@ -250,6 +251,15 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 - (void)windowWillClose:(NSNotification*)notification {
   bridge_->OnBubbleClosing();
   [super windowWillClose:notification];
+}
+
+- (void)parentWindowWillBecomeFullScreen:(NSNotification*)notification {
+  // Override the base class implementation, which would have closed the bubble.
+}
+
+- (void)parentWindowDidResize:(NSNotification*)notification {
+  DCHECK(bridge_);
+  [self setAnchorPoint:bridge_->GetAnchorPoint()];
 }
 
 - (void)showAtAnchor:(NSPoint)anchorPoint

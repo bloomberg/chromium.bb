@@ -48,6 +48,7 @@ class FakePermissionBubbleView : public PermissionBubbleView {
   virtual bool CanAcceptRequestUpdate() OVERRIDE { return false; }
 
   virtual void Hide() OVERRIDE {}
+  virtual bool IsVisible() OVERRIDE { return false; }
 
  private:
   DownloadRequestLimiterTest* test_;

@@ -50,6 +50,10 @@ class MockView : public PermissionBubbleView {
     return can_accept_updates_;
   }
 
+  virtual bool IsVisible() OVERRIDE {
+    return shown_;
+  }
+
   bool shown_;
   bool can_accept_updates_;
   Delegate* delegate_;

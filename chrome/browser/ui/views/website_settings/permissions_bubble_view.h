@@ -27,6 +27,7 @@ class PermissionBubbleViewViews : public PermissionBubbleView {
                     bool customization_mode) OVERRIDE;
   virtual bool CanAcceptRequestUpdate() OVERRIDE;
   virtual void Hide() OVERRIDE;
+  virtual bool IsVisible() OVERRIDE;
 
   void Closing();
   void Toggle(int index, bool value);
