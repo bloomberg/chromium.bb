@@ -118,20 +118,6 @@
           ],
         },
         {
-          'target_name': 'jingle_glue_test_util',
-          'type': 'static_library',
-          'sources': [
-            'glue/fake_network_manager.cc',
-            'glue/fake_network_manager.h',
-            'glue/fake_socket_factory.cc',
-            'glue/fake_socket_factory.h',
-          ],
-          'dependencies': [
-            '../base/base.gyp:base',
-            'jingle_glue',
-          ],
-        },
-        {
           'target_name': 'jingle_unittests',
           'type': 'executable',
           'sources': [
@@ -176,7 +162,6 @@
           ],
           'dependencies': [
             'jingle_glue',
-            'jingle_glue_test_util',
             'notifier',
             'notifier_test_util',
             '../base/base.gyp:base',

@@ -737,7 +737,6 @@
             '../gpu/gpu.gyp:gpu',
             '../gpu/gpu.gyp:gpu_unittest_utils',
             '../ipc/ipc.gyp:test_support_ipc',
-            '../jingle/jingle.gyp:jingle_glue_test_util',
             '../media/media.gyp:media_test_support',
             '../media/media.gyp:shared_memory_support',
             '../third_party/WebKit/public/blink.gyp:blink',
