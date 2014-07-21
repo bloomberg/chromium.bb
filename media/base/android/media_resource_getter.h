@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 #include "url/gurl.h"
@@ -19,11 +20,25 @@ namespace media {
 // are executed on the caller's thread.
 class MEDIA_EXPORT MediaResourceGetter {
  public:
+  // Callback to get the cookies. Args: cookies string.
   typedef base::Callback<void(const std::string&)> GetCookieCB;
+
+  // Callback to get the platform path. Args: platform path.
   typedef base::Callback<void(const std::string&)> GetPlatformPathCB;
+
+  // Callback to get the auth credentials. Args: username and password.
+  typedef base::Callback<void(const base::string16&, const base::string16&)>
+      GetAuthCredentialsCB;
+
+  // Callback to get the media metadata. Args: duration, width, height, and
+  // whether the information is retrieved successfully.
   typedef base::Callback<void(base::TimeDelta, int, int, bool)>
       ExtractMediaMetadataCB;
   virtual ~MediaResourceGetter();
+
+  // Method for getting the auth credentials for a URL.
+  virtual void GetAuthCredentials(const GURL& url,
+                                  const GetAuthCredentialsCB& callback) = 0;
 
   // Method for getting the cookies for a given URL.
   virtual void GetCookies(const GURL& url,

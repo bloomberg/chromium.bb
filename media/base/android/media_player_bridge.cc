@@ -209,6 +209,21 @@ void MediaPlayerBridge::OnDidSetDataUriDataSource(JNIEnv* env, jobject obj,
 
 void MediaPlayerBridge::OnCookiesRetrieved(const std::string& cookies) {
   cookies_ = cookies;
+  manager()->GetMediaResourceGetter()->GetAuthCredentials(
+      url_,
+      base::Bind(&MediaPlayerBridge::OnAuthCredentialsRetrieved,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void MediaPlayerBridge::OnAuthCredentialsRetrieved(
+    const base::string16& username, const base::string16& password) {
+  GURL::ReplacementsW replacements;
+  if (!username.empty()) {
+    replacements.SetUsernameStr(username);
+    if (!password.empty())
+      replacements.SetPasswordStr(password);
+    url_ = url_.ReplaceComponents(replacements);
+  }
   ExtractMediaMetadata(url_.spec());
 }
 

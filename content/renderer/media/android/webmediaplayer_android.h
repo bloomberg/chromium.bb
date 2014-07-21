@@ -249,6 +249,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   void SetNeedsEstablishPeer(bool needs_establish_peer);
 
  private:
+  void InitializePlayer(int demuxer_client_id);
   void Pause(bool is_media_related_action);
   void DrawRemotePlaybackText(const std::string& remote_playback_message);
   void ReallocateVideoFrame();
@@ -357,9 +358,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // Whether the mediaplayer is playing.
   bool is_playing_;
 
-  // Whether the mediaplayer has already started playing.
-  bool playing_started_;
-
   // Whether media player needs to re-establish the surface texture peer.
   bool needs_establish_peer_;
 
@@ -368,10 +366,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
 
   // Whether the video size info is available.
   bool has_size_info_;
-
-  // Whether the video metadata and info are available.
-  bool has_media_metadata_;
-  bool has_media_info_;
 
   // Object for allocating stream textures.
   scoped_refptr<StreamTextureFactory> stream_texture_factory_;

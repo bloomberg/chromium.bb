@@ -108,12 +108,9 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       texture_id_(0),
       stream_id_(0),
       is_playing_(false),
-      playing_started_(false),
       needs_establish_peer_(true),
       stream_texture_proxy_initialized_(false),
       has_size_info_(false),
-      has_media_metadata_(false),
-      has_media_info_(false),
       stream_texture_factory_(factory),
       needs_external_surface_(false),
       video_frame_provider_client_(NULL),
@@ -190,13 +187,9 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
       return;
   }
 
-  has_media_metadata_ = false;
-  has_media_info_ = false;
-
+  url_ = url;
   int demuxer_client_id = 0;
   if (player_type_ != MEDIA_PLAYER_TYPE_URL) {
-    has_media_info_ = true;
-
     RendererDemuxerAndroid* demuxer =
         RenderThreadImpl::current()->renderer_demuxer();
     demuxer_client_id = demuxer->GetNextDemuxerClientID();
@@ -220,6 +213,7 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
                      weak_factory_.GetWeakPtr()),
           base::Bind(&WebMediaPlayerAndroid::OnDurationChanged,
                      weak_factory_.GetWeakPtr()));
+      InitializePlayer(demuxer_client_id);
     }
   } else {
     info_loader_.reset(
@@ -236,12 +230,6 @@ void WebMediaPlayerAndroid::load(LoadType load_type,
     info_loader_->Start(frame_);
   }
 
-  url_ = url;
-  GURL first_party_url = frame_->document().firstPartyForCookies();
-  player_manager_->Initialize(
-      player_type_, player_id_, url, first_party_url, demuxer_client_id,
-      frame_->document().url());
-
   if (player_manager_->ShouldEnterFullscreen(frame_))
     player_manager_->EnterFullscreen(player_id_, frame_);
 
@@ -257,17 +245,9 @@ void WebMediaPlayerAndroid::DidLoadMediaInfo(MediaInfoLoader::Status status) {
     return;
   }
 
-  has_media_info_ = true;
-  if (has_media_metadata_ &&
-      ready_state_ != WebMediaPlayer::ReadyStateHaveEnoughData) {
-    UpdateReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
-    UpdateReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
-  }
-  // Android doesn't start fetching resources until an implementation-defined
-  // event (e.g. playback request) occurs. Sets the network state to IDLE
-  // if play is not requested yet.
-  if (!playing_started_)
-    UpdateNetworkState(WebMediaPlayer::NetworkStateIdle);
+  InitializePlayer(0);
+
+  UpdateNetworkState(WebMediaPlayer::NetworkStateIdle);
 }
 
 void WebMediaPlayerAndroid::play() {
@@ -291,7 +271,6 @@ void WebMediaPlayerAndroid::play() {
     player_manager_->Start(player_id_);
   UpdatePlayingState(true);
   UpdateNetworkState(WebMediaPlayer::NetworkStateLoading);
-  playing_started_ = true;
 }
 
 void WebMediaPlayerAndroid::pause() {
@@ -613,9 +592,7 @@ void WebMediaPlayerAndroid::OnMediaMetadataChanged(
     }
   }
 
-  has_media_metadata_ = true;
-  if (has_media_info_ &&
-      ready_state_ != WebMediaPlayer::ReadyStateHaveEnoughData) {
+  if (ready_state_ != WebMediaPlayer::ReadyStateHaveEnoughData) {
     UpdateReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
     UpdateReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
   }
@@ -878,6 +855,14 @@ void WebMediaPlayerAndroid::OnDestruct() {
   NOTREACHED() << "WebMediaPlayer should be destroyed before any "
                   "RenderFrameObserver::OnDestruct() gets called when "
                   "the RenderFrame goes away.";
+}
+
+void WebMediaPlayerAndroid::InitializePlayer(
+    int demuxer_client_id) {
+  GURL first_party_url = frame_->document().firstPartyForCookies();
+  player_manager_->Initialize(
+      player_type_, player_id_, url_, first_party_url, demuxer_client_id,
+      frame_->document().url());
 }
 
 void WebMediaPlayerAndroid::Pause(bool is_media_related_action) {
