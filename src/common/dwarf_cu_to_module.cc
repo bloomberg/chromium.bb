@@ -46,25 +46,16 @@
 #include <stdio.h>
 
 #include <algorithm>
-#if defined(_LIBCPP_VERSION)
-#include <unordered_set>
-#else
-#include <tr1/unordered_set>
-#endif
 #include <utility>
 
 #include "common/dwarf_line_to_module.h"
+#include "common/unordered.h"
 
 namespace google_breakpad {
 
 using std::map;
 using std::pair;
 using std::sort;
-#if defined(_LIBCPP_VERSION)
-using std::unordered_set;
-#else
-using std::tr1::unordered_set;
-#endif
 using std::vector;
 
 // Data provided by a DWARF specification DIE.
