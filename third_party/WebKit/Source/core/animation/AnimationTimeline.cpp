@@ -44,7 +44,7 @@ namespace {
 
 bool compareAnimationPlayers(const RefPtrWillBeMember<blink::AnimationPlayer>& left, const RefPtrWillBeMember<blink::AnimationPlayer>& right)
 {
-    return left->sortInfo().hasLowerSequenceNumber(right->sortInfo());
+    return AnimationPlayer::hasLowerPriority(left.get(), right.get());
 }
 
 }

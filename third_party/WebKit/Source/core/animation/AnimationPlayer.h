@@ -126,20 +126,16 @@ public:
     class SortInfo {
     public:
         friend class AnimationPlayer;
-        bool operator<(const SortInfo& other) const;
-        double startTime() const { return m_startTime; }
-        bool hasLowerSequenceNumber(const SortInfo& other) const
+        bool operator<(const SortInfo& other) const
         {
             return m_sequenceNumber < other.m_sequenceNumber;
         }
     private:
-        SortInfo(unsigned sequenceNumber, double startTime)
+        SortInfo(unsigned sequenceNumber)
             : m_sequenceNumber(sequenceNumber)
-            , m_startTime(startTime)
         {
         }
         unsigned m_sequenceNumber;
-        double m_startTime;
     };
 
     const SortInfo& sortInfo() const { return m_sortInfo; }

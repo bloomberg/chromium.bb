@@ -105,10 +105,6 @@ WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > AnimationSt
             const SampledEffect& effect = *effects[i];
             if (effect.priority() != priority || (cancelledAnimationPlayers && effect.animation() && cancelledAnimationPlayers->contains(effect.animation()->player())))
                 continue;
-            if (newAnimations && effect.sortInfo().startTime() > timelineCurrentTime) {
-                copyNewAnimationsToActiveInterpolationMap(*newAnimations, result);
-                newAnimations = 0;
-            }
             copyToActiveInterpolationMap(effect.interpolations(), result);
         }
     }

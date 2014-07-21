@@ -709,29 +709,9 @@ TEST_F(AnimationAnimationPlayerTest, AttachedAnimationPlayers)
 
 TEST_F(AnimationAnimationPlayerTest, HasLowerPriority)
 {
-    // Sort time defaults to timeline current time
-    updateTimeline(15);
     RefPtrWillBeRawPtr<AnimationPlayer> player1 = timeline->createAnimationPlayer(0);
     RefPtrWillBeRawPtr<AnimationPlayer> player2 = timeline->createAnimationPlayer(0);
-    player2->setStartTimeInternal(10);
-    RefPtrWillBeRawPtr<AnimationPlayer> player3 = timeline->createAnimationPlayer(0);
-    RefPtrWillBeRawPtr<AnimationPlayer> player4 = timeline->createAnimationPlayer(0);
-    player4->setStartTimeInternal(20);
-    RefPtrWillBeRawPtr<AnimationPlayer> player5 = timeline->createAnimationPlayer(0);
-    player5->setStartTimeInternal(10);
-    RefPtrWillBeRawPtr<AnimationPlayer> player6 = timeline->createAnimationPlayer(0);
-    player6->setStartTimeInternal(-10);
-    Vector<RefPtrWillBeMember<AnimationPlayer> > players;
-    players.append(player6);
-    players.append(player2);
-    players.append(player5);
-    players.append(player1);
-    players.append(player3);
-    players.append(player4);
-    for (size_t i = 0; i < players.size(); i++) {
-        for (size_t j = 0; j < players.size(); j++)
-            EXPECT_EQ(i < j, AnimationPlayer::hasLowerPriority(players[i].get(), players[j].get()));
-    }
+    EXPECT_TRUE(AnimationPlayer::hasLowerPriority(player1.get(), player2.get()));
 }
 
 }

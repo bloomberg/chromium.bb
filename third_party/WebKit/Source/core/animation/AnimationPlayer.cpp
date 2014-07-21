@@ -62,7 +62,7 @@ AnimationPlayer::AnimationPlayer(ExecutionContext* executionContext, AnimationTi
     , m_startTime(nullValue())
     , m_holdTime(nullValue())
     , m_storedTimeLag(0)
-    , m_sortInfo(nextSequenceNumber(), timeline.effectiveTime())
+    , m_sortInfo(nextSequenceNumber())
     , m_content(content)
     , m_timeline(&timeline)
     , m_paused(false)
@@ -183,7 +183,6 @@ void AnimationPlayer::setStartTimeInternal(double newStartTime, bool isUpdateFro
     bool hadStartTime = hasStartTime();
     double previousCurrentTime = currentTimeInternal();
     m_startTime = newStartTime;
-    m_sortInfo.m_startTime = newStartTime;
     updateCurrentTimingState();
     if (previousCurrentTime != currentTimeInternal()) {
         setOutdated();
@@ -413,16 +412,6 @@ double AnimationPlayer::timeToEffectChange()
 void AnimationPlayer::cancel()
 {
     setSource(0);
-}
-
-bool AnimationPlayer::SortInfo::operator<(const SortInfo& other) const
-{
-    ASSERT(!std::isnan(m_startTime) && !std::isnan(other.m_startTime));
-    if (m_startTime < other.m_startTime)
-        return true;
-    if (m_startTime > other.m_startTime)
-        return false;
-    return m_sequenceNumber < other.m_sequenceNumber;
 }
 
 #if !ENABLE(OILPAN)
