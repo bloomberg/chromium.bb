@@ -41,8 +41,10 @@ class ScopedBeginFrameTask {
   DISALLOW_COPY_AND_ASSIGN(ScopedBeginFrameTask);
 };
 
-void IssueMainThreadRenderingStatsEvent(const MainThreadRenderingStats& stats);
-void IssueImplThreadRenderingStatsEvent(const ImplThreadRenderingStats& stats);
+void IssueMainThreadRenderingStatsEvent(
+    const RenderingStats::MainThreadRenderingStats& stats);
+void IssueImplThreadRenderingStatsEvent(
+    const RenderingStats::ImplThreadRenderingStats& stats);
 
 }  // namespace benchmark_instrumentation
 }  // namespace cc

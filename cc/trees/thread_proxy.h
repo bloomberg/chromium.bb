@@ -97,7 +97,10 @@ class CC_EXPORT ThreadProxy : public Proxy,
   struct ReadbackRequest;
 
   struct CompositorThreadOnly {
-    CompositorThreadOnly(ThreadProxy* proxy, int layer_tree_host_id);
+    CompositorThreadOnly(
+        ThreadProxy* proxy,
+        int layer_tree_host_id,
+        RenderingStatsInstrumentation* rendering_stats_instrumentation);
     ~CompositorThreadOnly();
 
     const int layer_tree_host_id;

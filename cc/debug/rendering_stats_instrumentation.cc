@@ -18,13 +18,13 @@ RenderingStatsInstrumentation::RenderingStatsInstrumentation()
 
 RenderingStatsInstrumentation::~RenderingStatsInstrumentation() {}
 
-MainThreadRenderingStats
+RenderingStats::MainThreadRenderingStats
 RenderingStatsInstrumentation::main_thread_rendering_stats() {
   base::AutoLock scoped_lock(lock_);
   return main_thread_rendering_stats_;
 }
 
-ImplThreadRenderingStats
+RenderingStats::ImplThreadRenderingStats
 RenderingStatsInstrumentation::impl_thread_rendering_stats() {
   base::AutoLock scoped_lock(lock_);
   return impl_thread_rendering_stats_;
@@ -43,13 +43,13 @@ RenderingStats RenderingStatsInstrumentation::GetRenderingStats() {
 void RenderingStatsInstrumentation::AccumulateAndClearMainThreadStats() {
   base::AutoLock scoped_lock(lock_);
   main_thread_rendering_stats_accu_.Add(main_thread_rendering_stats_);
-  main_thread_rendering_stats_ = MainThreadRenderingStats();
+  main_thread_rendering_stats_ = RenderingStats::MainThreadRenderingStats();
 }
 
 void RenderingStatsInstrumentation::AccumulateAndClearImplThreadStats() {
   base::AutoLock scoped_lock(lock_);
   impl_thread_rendering_stats_accu_.Add(impl_thread_rendering_stats_);
-  impl_thread_rendering_stats_ = ImplThreadRenderingStats();
+  impl_thread_rendering_stats_ = RenderingStats::ImplThreadRenderingStats();
 }
 
 base::TimeTicks RenderingStatsInstrumentation::StartRecording() const {
@@ -137,6 +137,44 @@ void RenderingStatsInstrumentation::AddApproximatedVisibleContentArea(
 
   base::AutoLock scoped_lock(lock_);
   impl_thread_rendering_stats_.approximated_visible_content_area += area;
+}
+
+void RenderingStatsInstrumentation::AddDrawDuration(
+    base::TimeDelta draw_duration,
+    base::TimeDelta draw_duration_estimate) {
+  if (!record_rendering_stats_)
+    return;
+
+  base::AutoLock scoped_lock(lock_);
+  impl_thread_rendering_stats_.draw_duration.Append(draw_duration);
+  impl_thread_rendering_stats_.draw_duration_estimate.Append(
+      draw_duration_estimate);
+}
+
+void RenderingStatsInstrumentation::AddBeginMainFrameToCommitDuration(
+    base::TimeDelta begin_main_frame_to_commit_duration,
+    base::TimeDelta begin_main_frame_to_commit_duration_estimate) {
+  if (!record_rendering_stats_)
+    return;
+
+  base::AutoLock scoped_lock(lock_);
+  impl_thread_rendering_stats_.begin_main_frame_to_commit_duration.Append(
+      begin_main_frame_to_commit_duration);
+  impl_thread_rendering_stats_.begin_main_frame_to_commit_duration_estimate
+      .Append(begin_main_frame_to_commit_duration_estimate);
+}
+
+void RenderingStatsInstrumentation::AddCommitToActivateDuration(
+    base::TimeDelta commit_to_activate_duration,
+    base::TimeDelta commit_to_activate_duration_estimate) {
+  if (!record_rendering_stats_)
+    return;
+
+  base::AutoLock scoped_lock(lock_);
+  impl_thread_rendering_stats_.commit_to_activate_duration.Append(
+      commit_to_activate_duration);
+  impl_thread_rendering_stats_.commit_to_activate_duration_estimate.Append(
+      commit_to_activate_duration_estimate);
 }
 
 }  // namespace cc

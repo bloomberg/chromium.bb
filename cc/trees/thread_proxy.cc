@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/debug/trace_event_synthetic_delay.h"
-#include "base/metrics/histogram.h"
 #include "cc/base/swap_promise.h"
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/devtools_instrumentation.h"
@@ -78,7 +77,10 @@ ThreadProxy::ThreadProxy(
     : Proxy(main_task_runner, impl_task_runner),
       main_thread_only_vars_unsafe_(this, layer_tree_host->id()),
       main_thread_or_blocked_vars_unsafe_(layer_tree_host),
-      compositor_thread_vars_unsafe_(this, layer_tree_host->id()) {
+      compositor_thread_vars_unsafe_(
+          this,
+          layer_tree_host->id(),
+          layer_tree_host->rendering_stats_instrumentation()) {
   TRACE_EVENT0("cc", "ThreadProxy::ThreadProxy");
   DCHECK(IsMainThread());
   DCHECK(this->layer_tree_host());
@@ -111,8 +113,10 @@ ThreadProxy::MainThreadOrBlockedMainThread::contents_texture_manager() {
   return layer_tree_host->contents_texture_manager();
 }
 
-ThreadProxy::CompositorThreadOnly::CompositorThreadOnly(ThreadProxy* proxy,
-                                                        int layer_tree_host_id)
+ThreadProxy::CompositorThreadOnly::CompositorThreadOnly(
+    ThreadProxy* proxy,
+    int layer_tree_host_id,
+    RenderingStatsInstrumentation* rendering_stats_instrumentation)
     : layer_tree_host_id(layer_tree_host_id),
       contents_texture_manager(NULL),
       commit_completion_event(NULL),
@@ -127,6 +131,7 @@ ThreadProxy::CompositorThreadOnly::CompositorThreadOnly(ThreadProxy* proxy,
           base::Bind(&ThreadProxy::RenewTreePriority, base::Unretained(proxy)),
           base::TimeDelta::FromMilliseconds(
               kSmoothnessTakesPriorityExpirationDelay * 1000)),
+      timing_history(rendering_stats_instrumentation),
       weak_factory(proxy) {
 }
 
@@ -1053,7 +1058,6 @@ DrawResult ThreadProxy::DrawSwapInternal(bool forced_draw) {
   DCHECK(impl().layer_tree_host_impl.get());
 
   impl().timing_history.DidStartDrawing();
-  base::TimeDelta draw_duration_estimate = DrawDurationEstimate();
   base::AutoReset<bool> mark_inside(&impl().inside_draw, true);
 
   if (impl().did_commit_after_animating) {
@@ -1129,31 +1133,8 @@ DrawResult ThreadProxy::DrawSwapInternal(bool forced_draw) {
   if (draw_frame)
     CheckOutputSurfaceStatusOnImplThread();
 
-  if (result == DRAW_SUCCESS) {
-    base::TimeDelta draw_duration = impl().timing_history.DidFinishDrawing();
-
-    base::TimeDelta draw_duration_overestimate;
-    base::TimeDelta draw_duration_underestimate;
-    if (draw_duration > draw_duration_estimate)
-      draw_duration_underestimate = draw_duration - draw_duration_estimate;
-    else
-      draw_duration_overestimate = draw_duration_estimate - draw_duration;
-    UMA_HISTOGRAM_CUSTOM_TIMES("Renderer.DrawDuration",
-                               draw_duration,
-                               base::TimeDelta::FromMilliseconds(1),
-                               base::TimeDelta::FromMilliseconds(100),
-                               50);
-    UMA_HISTOGRAM_CUSTOM_TIMES("Renderer.DrawDurationUnderestimate",
-                               draw_duration_underestimate,
-                               base::TimeDelta::FromMilliseconds(1),
-                               base::TimeDelta::FromMilliseconds(100),
-                               50);
-    UMA_HISTOGRAM_CUSTOM_TIMES("Renderer.DrawDurationOverestimate",
-                               draw_duration_overestimate,
-                               base::TimeDelta::FromMilliseconds(1),
-                               base::TimeDelta::FromMilliseconds(100),
-                               50);
-  }
+  if (result == DRAW_SUCCESS)
+    impl().timing_history.DidFinishDrawing();
 
   DCHECK_NE(INVALID_RESULT, result);
   return result;
