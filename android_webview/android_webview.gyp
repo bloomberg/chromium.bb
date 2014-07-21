@@ -22,7 +22,7 @@
         [ 'android_webview_build==1', {
           # When building inside the android tree we also need to depend on all
           # the java sources generated from templates which will be needed by
-          # android_webview_java in android_webview/Android.mk.
+          # android_webview_java in android_webview/java_library_common.mk.
           'dependencies': [
             '../base/base.gyp:base_java_application_state',
             '../base/base.gyp:base_java_memory_pressure_level_list',
@@ -32,6 +32,7 @@
             '../content/content.gyp:popup_item_type_java',
             '../content/content.gyp:result_codes_java',
             '../content/content.gyp:screen_orientation_values_java',
+            '../content/content.gyp:selection_event_type_java',
             '../content/content.gyp:speech_recognition_error_java',
             '../media/media.gyp:media_android_imageformat_list',
             '../net/net.gyp:cert_verify_status_android_java',

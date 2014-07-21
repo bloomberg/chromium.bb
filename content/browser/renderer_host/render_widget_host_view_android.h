@@ -21,6 +21,7 @@
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/input/gesture_text_selector.h"
+#include "content/browser/renderer_host/input/touch_selection_controller.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -67,7 +68,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       public ui::GestureProviderClient,
       public ui::WindowAndroidObserver,
       public DelegatedFrameEvictorClient,
-      public GestureTextSelectorClient {
+      public GestureTextSelectorClient,
+      public TouchSelectionControllerClient {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
                               ContentViewCoreImpl* content_view_core);
@@ -211,6 +213,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                                 const gfx::Rect rect);
 
   bool OnTouchEvent(const ui::MotionEvent& event);
+  bool OnTouchHandleEvent(const ui::MotionEvent& event);
   void ResetGestureDetection();
   void SetDoubleTapSupportEnabled(bool enabled);
   void SetMultiTouchZoomSupportEnabled(bool enabled);
@@ -228,6 +231,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool HasValidFrame() const;
 
   void MoveCaret(const gfx::Point& point);
+  void HideTextHandles();
 
   void SynchronousFrameMetadata(
       const cc::CompositorFrameMetadata& frame_metadata);
@@ -241,6 +245,16 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const TextSurroundingSelectionCallback& callback);
 
  private:
+  // TouchSelectionControllerClient implementation.
+  virtual bool SupportsAnimation() const OVERRIDE;
+  virtual void SetNeedsAnimate() OVERRIDE;
+  virtual void MoveCaret(const gfx::PointF& position) OVERRIDE;
+  virtual void SelectBetweenCoordinates(const gfx::PointF& start,
+                                        const gfx::PointF& end) OVERRIDE;
+  virtual void OnSelectionEvent(SelectionEventType event,
+                                const gfx::PointF& anchor_position) OVERRIDE;
+  virtual scoped_ptr<TouchHandleDrawable> CreateDrawable() OVERRIDE;
+
   void RunAckCallbacks();
 
   void DestroyDelegatedContent();
@@ -252,8 +266,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnFrameMetadataUpdated(
       const cc::CompositorFrameMetadata& frame_metadata);
   void ComputeContentsSize(const cc::CompositorFrameMetadata& frame_metadata);
-  void ResetClipping();
-  void ClipContents(const gfx::Rect& clipping, const gfx::Size& content_size);
 
   void AttachLayers();
   void RemoveLayers();
@@ -296,8 +308,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void InternalSwapCompositorFrame(uint32 output_surface_id,
                                    scoped_ptr<cc::CompositorFrame> frame);
 
-  void SetNeedsAnimate();
   bool Animate(base::TimeTicks frame_time);
+
+  void OnContentScrollingChange();
+  bool IsContentScrolling() const;
+
+  float GetDpiScale() const;
 
   // The model object.
   RenderWidgetHostImpl* host_;
@@ -346,6 +362,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // Handles gesture based text selection
   GestureTextSelector gesture_text_selector_;
+
+  // Manages selection handle rendering and manipulation.
+  // This will always be NULL if |content_view_core_| is NULL.
+  scoped_ptr<TouchSelectionController> selection_controller_;
+  bool touch_scrolling_;
+  size_t potentially_active_fling_count_;
 
   bool flush_input_requested_;
 

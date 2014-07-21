@@ -390,6 +390,7 @@
             'page_transition_types_java',
             'popup_item_type_java',
             'result_codes_java',
+            'selection_event_type_java',
             'speech_recognition_error_java',
             'top_controls_state_java',
             'screen_orientation_values_java',
@@ -467,6 +468,18 @@
           'variables': {
             'package_name': 'org/chromium/content/common',
             'template_deps': ['public/common/result_codes_list.h'],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
+        },
+        {
+          'target_name': 'selection_event_type_java',
+          'type': 'none',
+          'sources': [
+            'public/android/java/src/org/chromium/content/browser/input/SelectionEventType.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/content/browser/input',
+            'template_deps': ['browser/renderer_host/input/selection_event_type_list.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },

@@ -117,7 +117,8 @@ class ContentViewCoreImpl : public ContentViewCore,
                         jfloat raw_pos_y,
                         jint android_tool_type_0,
                         jint android_tool_type_1,
-                        jint android_button_state);
+                        jint android_button_state,
+                        jboolean is_touch_handle_event);
   jboolean SendMouseMoveEvent(JNIEnv* env,
                               jobject obj,
                               jlong time_ms,
@@ -151,6 +152,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                                 jfloat x1, jfloat y1,
                                 jfloat x2, jfloat y2);
   void MoveCaret(JNIEnv* env, jobject obj, jfloat x, jfloat y);
+  void HideTextHandles(JNIEnv* env, jobject obj);
 
   void ResetGestureDetection(JNIEnv* env, jobject obj);
   void SetDoubleTapSupportEnabled(JNIEnv* env, jobject obj, jboolean enabled);
@@ -265,8 +267,9 @@ class ContentViewCoreImpl : public ContentViewCore,
                          InputEventAckState ack_result);
   bool FilterInputEvent(const blink::WebInputEvent& event);
   void OnSelectionChanged(const std::string& text);
-  void OnSelectionBoundsChanged(
-      const ViewHostMsg_SelectionBounds_Params& params);
+  void OnSelectionEvent(SelectionEventType event,
+                        const gfx::PointF& anchor_position);
+  scoped_ptr<TouchHandleDrawable> CreatePopupTouchHandleDrawable();
 
   void StartContentIntent(const GURL& content_url);
 
@@ -296,8 +299,6 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void SetAccessibilityEnabledInternal(bool enabled);
 
-  void ShowSelectionHandlesAutomatically() const;
-
   bool IsFullscreenRequiredForOrientationLock() const;
 
   // --------------------------------------------------------------------------
@@ -311,6 +312,9 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void AttachLayer(scoped_refptr<cc::Layer> layer);
   void RemoveLayer(scoped_refptr<cc::Layer> layer);
+
+  void SelectBetweenCoordinates(const gfx::PointF& start,
+                                const gfx::PointF& end);
 
  private:
   class ContentViewUserData;

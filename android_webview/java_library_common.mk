@@ -37,7 +37,7 @@ LOCAL_SRC_FILES += \
     $(call all-java-files-under, java/generated_src)
 
 # Java files generated from .template rules. This list should match list of java dependencies in
-# android_webview/all_webview.gyp
+# android_webview/android_webview.gyp
 LOCAL_GENERATED_SOURCES := \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/base/ApplicationState.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/base/MemoryPressureLevelList.java \
@@ -47,6 +47,7 @@ $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/input/CanonicalAxisIndex.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/input/CanonicalButtonIndex.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/input/PopupItemType.java \
+$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/input/SelectionEventType.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/common/ResultCodes.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/common/ScreenOrientationValues.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/media/ImageFormat.java \
