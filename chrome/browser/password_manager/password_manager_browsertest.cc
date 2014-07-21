@@ -259,6 +259,8 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
     PasswordStoreFactory::GetInstance()->SetTestingFactory(
         browser()->profile(), TestPasswordStoreService::Build);
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    ASSERT_FALSE(CommandLine::ForCurrentProcess()->HasSwitch(
+        password_manager::switches::kEnableAutomaticPasswordSaving));
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
@@ -281,11 +283,6 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
   // would sometimes see the DidFinishLoad event from a previous navigation and
   // return immediately.
   void NavigateToFile(const std::string& path) {
-    if (!embedded_test_server()->Started())
-      ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-    ASSERT_FALSE(CommandLine::ForCurrentProcess()->HasSwitch(
-        password_manager::switches::kEnableAutomaticPasswordSaving));
     NavigationObserver observer(WebContents());
     GURL url = embedded_test_server()->GetURL(path);
     ui_test_utils::NavigateToURL(browser(), url);
