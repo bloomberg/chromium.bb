@@ -28,7 +28,6 @@
 
 class AppModalDialog;
 class Browser;
-class DevToolsWindow;
 class LocationBar;
 class Profile;
 class SkBitmap;
@@ -110,9 +109,6 @@ void NavigateToURLWithDisposition(Browser* browser,
 void NavigateToURLBlockUntilNavigationsComplete(Browser* browser,
                                                 const GURL& url,
                                                 int number_of_navigations);
-
-// Blocks until DevTools window is loaded.
-void WaitUntilDevToolsWindowLoaded(DevToolsWindow* window);
 
 // Generate the file path for testing a particular test.
 // The file for the tests is all located in

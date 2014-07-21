@@ -39,7 +39,6 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -49,7 +48,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/test/test_utils.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -318,6 +316,11 @@ DevToolsWindow::~DevToolsWindow() {
       std::find(instances->begin(), instances->end(), this));
   DCHECK(it != instances->end());
   instances->erase(it);
+
+  if (!close_callback_.is_null()) {
+    close_callback_.Run();
+    close_callback_ = base::Closure();
+  }
 }
 
 // static
@@ -403,7 +406,16 @@ DevToolsWindow* DevToolsWindow::GetInstanceForInspectedWebContents(
 
 // static
 bool DevToolsWindow::IsDevToolsWindow(content::WebContents* web_contents) {
-  return AsDevToolsWindow(web_contents) != NULL;
+  if (!web_contents || g_instances == NULL)
+    return false;
+  DevToolsWindows* instances = g_instances.Pointer();
+  for (DevToolsWindows::iterator it(instances->begin()); it != instances->end();
+       ++it) {
+    if ((*it)->main_web_contents_ == web_contents ||
+        (*it)->toolbox_web_contents_ == web_contents)
+      return true;
+  }
+  return false;
 }
 
 // static
@@ -425,40 +437,21 @@ DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForWorker(
 DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
     Profile* profile) {
   content::RecordAction(base::UserMetricsAction("DevTools_InspectWorker"));
-  return Create(profile, GURL(), NULL, true, false, false);
+  return Create(profile, GURL(), NULL, true, false, false, "");
 }
 
 // static
 DevToolsWindow* DevToolsWindow::OpenDevToolsWindow(
     content::RenderViewHost* inspected_rvh) {
   return ToggleDevToolsWindow(
-      inspected_rvh, true, DevToolsToggleAction::Show());
+      inspected_rvh, true, DevToolsToggleAction::Show(), "");
 }
 
 // static
 DevToolsWindow* DevToolsWindow::OpenDevToolsWindow(
     content::RenderViewHost* inspected_rvh,
     const DevToolsToggleAction& action) {
-  return ToggleDevToolsWindow(
-      inspected_rvh, true, action);
-}
-
-// static
-DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForTest(
-    content::RenderViewHost* inspected_rvh,
-    bool is_docked) {
-  DevToolsWindow* window = OpenDevToolsWindow(inspected_rvh);
-  window->SetIsDockedAndShowImmediatelyForTest(is_docked);
-  return window;
-}
-
-// static
-DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForTest(
-    Browser* browser,
-    bool is_docked) {
-  return OpenDevToolsWindowForTest(
-      browser->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
-      is_docked);
+  return ToggleDevToolsWindow(inspected_rvh, true, action, "");
 }
 
 // static
@@ -473,7 +466,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
 
   return ToggleDevToolsWindow(
       browser->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
-      action.type() == DevToolsToggleAction::kInspect, action);
+      action.type() == DevToolsToggleAction::kInspect, action, "");
 }
 
 // static
@@ -484,7 +477,7 @@ void DevToolsWindow::OpenExternalFrontend(
   DevToolsWindow* window = FindDevToolsWindow(agent_host);
   if (!window) {
     window = Create(profile, DevToolsUI::GetProxyURL(frontend_url), NULL,
-                    false, true, false);
+                    false, true, false, "");
     content::DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
         agent_host, window->bindings_->frontend_host());
   }
@@ -495,7 +488,8 @@ void DevToolsWindow::OpenExternalFrontend(
 DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
     content::RenderViewHost* inspected_rvh,
     bool force_open,
-    const DevToolsToggleAction& action) {
+    const DevToolsToggleAction& action,
+    const std::string& settings) {
   scoped_refptr<DevToolsAgentHost> agent(
       DevToolsAgentHost::GetOrCreateFor(inspected_rvh));
   content::DevToolsManager* manager = content::DevToolsManager::GetInstance();
@@ -506,7 +500,8 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
         inspected_rvh->GetProcess()->GetBrowserContext());
     content::RecordAction(
         base::UserMetricsAction("DevTools_InspectRenderer"));
-    window = Create(profile, GURL(), inspected_rvh, false, false, true);
+    window = Create(
+        profile, GURL(), inspected_rvh, false, false, true, settings);
     manager->RegisterDevToolsClientHostFor(agent.get(),
                                            window->bindings_->frontend_host());
     do_open = true;
@@ -700,7 +695,6 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       // Passing "dockSide=undocked" parameter ensures proper UI.
       life_stage_(can_dock ? kNotLoaded : kIsDockedSet),
       action_on_load_(DevToolsToggleAction::NoOp()),
-      ignore_set_is_docked_(false),
       intercepted_page_beforeunload_(false) {
   // Set up delegate, so we get fully-functional window immediately.
   // It will not appear in UI though until |life_stage_ == kLoadCompleted|.
@@ -744,7 +738,8 @@ DevToolsWindow* DevToolsWindow::Create(
     content::RenderViewHost* inspected_rvh,
     bool shared_worker_frontend,
     bool external_frontend,
-    bool can_dock) {
+    bool can_dock,
+    const std::string& settings) {
   if (inspected_rvh) {
     // Check for a place to dock.
     Browser* browser = NULL;
@@ -763,7 +758,7 @@ DevToolsWindow* DevToolsWindow::Create(
   GURL url(GetDevToolsURL(profile, frontend_url,
                           shared_worker_frontend,
                           external_frontend,
-                          can_dock));
+                          can_dock, settings));
   return new DevToolsWindow(profile, url, inspected_rvh, can_dock);
 }
 
@@ -772,7 +767,8 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
                                     const GURL& base_url,
                                     bool shared_worker_frontend,
                                     bool external_frontend,
-                                    bool can_dock) {
+                                    bool can_dock,
+                                    const std::string& settings) {
   // Compatibility errors are encoded with data urls, pass them
   // through with no decoration.
   if (base_url.SchemeIs("data"))
@@ -789,6 +785,8 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
     url_string += "&remoteFrontend=true";
   if (can_dock)
     url_string += "&can_dock=true";
+  if (settings.size())
+    url_string += "&settings=" + settings;
   return GURL(url_string);
 }
 
@@ -1045,27 +1043,8 @@ void DevToolsWindow::MoveWindow(int x, int y) {
   }
 }
 
-void DevToolsWindow::SetIsDockedAndShowImmediatelyForTest(bool is_docked) {
-  DCHECK(!is_docked || can_dock_);
-  DCHECK(life_stage_ != kClosing);
-  if (life_stage_ == kLoadCompleted) {
-    SetIsDocked(is_docked);
-  } else {
-    is_docked_ = is_docked;
-    // Load is completed when both kIsDockedSet and kOnLoadFired happened.
-    // Note that kIsDockedSet may be already set when can_dock_ is false.
-    life_stage_ = life_stage_ == kOnLoadFired ? kLoadCompleted : kIsDockedSet;
-    // Note that action_on_load_ will be performed after the load is actually
-    // completed. For now, just show the window.
-    Show(DevToolsToggleAction::Show());
-    if (life_stage_ == kLoadCompleted)
-      LoadCompleted();
-  }
-  ignore_set_is_docked_ = true;
-}
-
 void DevToolsWindow::SetIsDocked(bool dock_requested) {
-  if (ignore_set_is_docked_ || life_stage_ == kClosing)
+  if (life_stage_ == kClosing)
     return;
 
   DCHECK(can_dock_ || !dock_requested);
@@ -1276,7 +1255,7 @@ void DevToolsWindow::LoadCompleted() {
 }
 
 void DevToolsWindow::SetLoadCompletedCallback(const base::Closure& closure) {
-  if (life_stage_ == kLoadCompleted) {
+  if (life_stage_ == kLoadCompleted || life_stage_ == kClosing) {
     if (!closure.is_null())
       closure.Run();
     return;

@@ -18,7 +18,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -1374,9 +1374,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
                                       NEW_WINDOW));
   ASSERT_TRUE(app_window);
 
-  DevToolsWindow::OpenDevToolsWindowForTest(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
-      false);
+  DevToolsWindow* devtools_window =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), false);
 
   // The launch should have created a new app browser and a dev tools browser.
   ASSERT_EQ(3u,
@@ -1403,6 +1402,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
       dev_tools_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
   EXPECT_FALSE(
       app_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
+
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window);
 }
 #endif
 

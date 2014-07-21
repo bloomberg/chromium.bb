@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
@@ -132,11 +132,6 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
           overlappingTipHeight];
     }
     return height;
-  }
-
-  void SetDevToolsWindowContentsBounds(
-      DevToolsWindow* window, const gfx::Rect& bounds) {
-    window->SetInspectedPageBounds(bounds);
   }
 
  private:
@@ -366,10 +361,13 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
                        StatusBubblePositioning) {
   NSPoint origin = [controller() statusBubbleBaseFrame].origin;
 
-  DevToolsWindow* devtools_window = DevToolsWindow::OpenDevToolsWindowForTest(
-      browser(), true);
-  SetDevToolsWindowContentsBounds(devtools_window, gfx::Rect(10, 10, 100, 100));
+  DevToolsWindow* devtools_window =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), true);
+  DevToolsWindowTesting::Get(devtools_window)->SetInspectedPageBounds(
+      gfx::Rect(10, 10, 100, 100));
 
   NSPoint originWithDevTools = [controller() statusBubbleBaseFrame].origin;
   EXPECT_FALSE(NSEqualPoints(origin, originWithDevTools));
+
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window);
 }
