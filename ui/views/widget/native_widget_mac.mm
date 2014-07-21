@@ -497,7 +497,7 @@ ui::NativeTheme* NativeWidgetMac::GetNativeTheme() const {
   return ui::NativeTheme::instance();
 }
 
-void NativeWidgetMac::OnRootViewLayout() const {
+void NativeWidgetMac::OnRootViewLayout() {
   NOTIMPLEMENTED();
 }
 
