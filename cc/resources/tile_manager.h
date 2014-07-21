@@ -17,22 +17,26 @@
 #include "cc/base/ref_counted_managed.h"
 #include "cc/base/unique_notifier.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
-#include "cc/layers/picture_layer_impl.h"
+#include "cc/resources/eviction_tile_priority_queue.h"
 #include "cc/resources/managed_tile_state.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/prioritized_tile_set.h"
+#include "cc/resources/raster_tile_priority_queue.h"
 #include "cc/resources/rasterizer.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/tile.h"
 
 namespace cc {
+class PictureLayerImpl;
 class ResourceProvider;
 
 class CC_EXPORT TileManagerClient {
  public:
   // Returns the set of layers that the tile manager should consider for raster.
-  virtual const std::vector<PictureLayerImpl*>& GetPictureLayers() = 0;
+  // TODO(vmpstr): Change the way we determine if we are ready to activate, so
+  // that this can be removed.
+  virtual const std::vector<PictureLayerImpl*>& GetPictureLayers() const = 0;
 
   // Called when all tiles marked as required for activation are ready to draw.
   virtual void NotifyReadyToActivate() = 0;
@@ -43,6 +47,18 @@ class CC_EXPORT TileManagerClient {
   // - Tile resources freed.
   // - Tile marked for on-demand raster.
   virtual void NotifyTileStateChanged(const Tile* tile) = 0;
+
+  // Given an empty raster tile priority queue, this will build a priority queue
+  // that will return tiles in order in which they should be rasterized.
+  // Note if the queue was previous built, Reset must be called on it.
+  virtual void BuildRasterQueue(RasterTilePriorityQueue* queue,
+                                TreePriority tree_priority) = 0;
+
+  // Given an empty eviction tile priority queue, this will build a priority
+  // queue that will return tiles in order in which they should be evicted.
+  // Note if the queue was previous built, Reset must be called on it.
+  virtual void BuildEvictionQueue(EvictionTilePriorityQueue* queue,
+                                  TreePriority tree_priority) = 0;
 
  protected:
   virtual ~TileManagerClient() {}
@@ -64,105 +80,6 @@ scoped_ptr<base::Value> RasterTaskCompletionStatsAsValue(
 class CC_EXPORT TileManager : public RasterizerClient,
                               public RefCountedManager<Tile> {
  public:
-  struct CC_EXPORT PairedPictureLayer {
-    PairedPictureLayer();
-    ~PairedPictureLayer();
-
-    PictureLayerImpl* active_layer;
-    PictureLayerImpl* pending_layer;
-  };
-
-  class CC_EXPORT RasterTileIterator {
-   public:
-    RasterTileIterator(TileManager* tile_manager, TreePriority tree_priority);
-    ~RasterTileIterator();
-
-    RasterTileIterator& operator++();
-    operator bool() const;
-    Tile* operator*();
-
-   private:
-    struct PairedPictureLayerIterator {
-      PairedPictureLayerIterator();
-      ~PairedPictureLayerIterator();
-
-      Tile* PeekTile(TreePriority tree_priority);
-      void PopTile(TreePriority tree_priority);
-
-      std::pair<PictureLayerImpl::LayerRasterTileIterator*, WhichTree>
-          NextTileIterator(TreePriority tree_priority);
-
-      PictureLayerImpl::LayerRasterTileIterator active_iterator;
-      PictureLayerImpl::LayerRasterTileIterator pending_iterator;
-
-      std::vector<Tile*> returned_shared_tiles;
-    };
-
-    class RasterOrderComparator {
-     public:
-      explicit RasterOrderComparator(TreePriority tree_priority);
-
-      bool operator()(PairedPictureLayerIterator* a,
-                      PairedPictureLayerIterator* b) const;
-
-     private:
-      TreePriority tree_priority_;
-    };
-
-    std::vector<PairedPictureLayerIterator> paired_iterators_;
-    std::vector<PairedPictureLayerIterator*> iterator_heap_;
-    TreePriority tree_priority_;
-    RasterOrderComparator comparator_;
-
-    DISALLOW_COPY_AND_ASSIGN(RasterTileIterator);
-  };
-
-  struct CC_EXPORT EvictionTileIterator {
-   public:
-    EvictionTileIterator();
-    EvictionTileIterator(TileManager* tile_manager, TreePriority tree_priority);
-    ~EvictionTileIterator();
-
-    EvictionTileIterator& operator++();
-    operator bool() const;
-    Tile* operator*();
-
-   private:
-    struct PairedPictureLayerIterator {
-      PairedPictureLayerIterator();
-      ~PairedPictureLayerIterator();
-
-      Tile* PeekTile(TreePriority tree_priority);
-      void PopTile(TreePriority tree_priority);
-
-      PictureLayerImpl::LayerEvictionTileIterator* NextTileIterator(
-          TreePriority tree_priority);
-
-      PictureLayerImpl::LayerEvictionTileIterator active_iterator;
-      PictureLayerImpl::LayerEvictionTileIterator pending_iterator;
-
-      std::vector<Tile*> returned_shared_tiles;
-    };
-
-    class EvictionOrderComparator {
-     public:
-      explicit EvictionOrderComparator(TreePriority tree_priority);
-
-      bool operator()(PairedPictureLayerIterator* a,
-                      PairedPictureLayerIterator* b) const;
-
-     private:
-      TreePriority tree_priority_;
-    };
-
-    std::vector<PairedPictureLayerIterator> paired_iterators_;
-    std::vector<PairedPictureLayerIterator*> iterator_heap_;
-    TreePriority tree_priority_;
-    EvictionOrderComparator comparator_;
-
-    DISALLOW_COPY_AND_ASSIGN(EvictionTileIterator);
-  };
-
   static scoped_ptr<TileManager> Create(
       TileManagerClient* client,
       base::SequencedTaskRunner* task_runner,
@@ -190,8 +107,6 @@ class CC_EXPORT TileManager : public RasterizerClient,
   const MemoryHistory::Entry& memory_stats_from_last_assign() const {
     return memory_stats_from_last_assign_;
   }
-
-  void GetPairedPictureLayers(std::vector<PairedPictureLayer>* layers) const;
 
   void InitializeTilesWithResourcesForTesting(const std::vector<Tile*>& tiles) {
     for (size_t i = 0; i < tiles.size(); ++i) {

@@ -17,9 +17,14 @@ class FakeTileManagerClient : public TileManagerClient {
   virtual ~FakeTileManagerClient();
 
   // TileManagerClient implementation.
-  virtual const std::vector<PictureLayerImpl*>& GetPictureLayers() OVERRIDE;
+  virtual const std::vector<PictureLayerImpl*>& GetPictureLayers()
+      const OVERRIDE;
   virtual void NotifyReadyToActivate() OVERRIDE {}
   virtual void NotifyTileStateChanged(const Tile* tile) OVERRIDE {}
+  virtual void BuildRasterQueue(RasterTilePriorityQueue* queue,
+                                TreePriority tree_priority) OVERRIDE {}
+  virtual void BuildEvictionQueue(EvictionTilePriorityQueue* queue,
+                                  TreePriority tree_priority) OVERRIDE {}
 
  private:
   std::vector<PictureLayerImpl*> picture_layers_;
