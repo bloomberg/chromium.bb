@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/common/url_constants.h"
 #include "grit/theme_resources.h"
+#include "grit/ui_chromeos_resources.h"
 #include "net/base/escape.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"

@@ -91,6 +91,8 @@
         '../ui/display/display.gyp:display',
         '../ui/events/events.gyp:dom4_keycode_converter',
         '../ui/events/platform/events_platform.gyp:events_platform',
+        '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
+        '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_strings',
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/strings/ui_strings.gyp:ui_strings',
         '../ui/surface/surface.gyp:surface',
