@@ -21,6 +21,7 @@ function test()
 {
     WebInspector.inspectorView.showPanel("timeline");
     WebInspector.panels.timeline._model._collectionEnabled = true;
+    WebInspector.inspectorView.panel("timeline")._model._currentTarget = WebInspector.targetManager.mainTarget();
 
     TimelineAgent.start(step1);
 

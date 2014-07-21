@@ -43,6 +43,8 @@ InspectorTest.startTimeline = function(callback)
     InspectorTest._timelineRecords = [];
     WebInspector.inspectorView.panel("timeline").toggleTimelineButton.toggled = true;
     WebInspector.inspectorView.panel("timeline")._model._collectionEnabled = true;
+    WebInspector.inspectorView.panel("timeline")._model._currentTarget = WebInspector.targetManager.mainTarget();
+
     TimelineAgent.start(5, false, undefined, true, false, callback);
     function addRecord(record)
     {
