@@ -20,7 +20,7 @@ _MANIFEST_FEATURES = '_manifest_features.json'
 _PERMISSION_FEATURES = '_permission_features.json'
 
 
-def HasParentFeature(feature_name, feature, all_feature_names):
+def HasParent(feature_name, feature, all_feature_names):
   # A feature has a parent if it has a . in its name, its parent exists,
   # and it does not explicitly specify that it has no parent.
   return ('.' in feature_name and
@@ -28,11 +28,11 @@ def HasParentFeature(feature_name, feature, all_feature_names):
           not feature.get('noparent'))
 
 
-def GetParentFeature(feature_name, feature, all_feature_names):
+def GetParentName(feature_name, feature, all_feature_names):
   '''Returns the name of the parent feature, or None if it does not have a
   parent.
   '''
-  if not HasParentFeature(feature_name, feature, all_feature_names):
+  if not HasParent(feature_name, feature, all_feature_names):
     return None
   return feature_name.rsplit('.', 1)[0]
 
@@ -122,7 +122,7 @@ def _ResolveFeature(feature_name,
     channel = value.get('channel')
 
     dependencies = value.get('dependencies', [])
-    parent = GetParentFeature(
+    parent = GetParentName(
         feature_name, value, features_map[features_type]['all_names'])
     if parent is not None:
       # The parent data needs to be resolved so the child can inherit it.

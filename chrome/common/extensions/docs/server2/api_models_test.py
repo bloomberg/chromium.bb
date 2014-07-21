@@ -66,6 +66,7 @@ class APIModelsTest(unittest.TestCase):
     self._api_models = APIModels(features_bundle,
                                  compiled_fs_factory,
                                  self._mock_file_system,
+                                 object_store_creator,
                                  'extensions')
 
   def testGetNames(self):

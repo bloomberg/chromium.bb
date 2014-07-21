@@ -51,4 +51,10 @@
   .availability {
     color: #A03;
   }
+
+  table#intro {
+    .title {
+      white-space: nowrap;
+    }
+  }
 }

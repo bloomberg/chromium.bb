@@ -53,6 +53,7 @@ class PlatformBundle(object):
           self.GetFeaturesBundle(platform),
           self._compiled_fs_factory,
           self._host_fs_at_trunk,
+          self._object_store_creator,
           platform)
     return self._platform_data[platform].api_models
 

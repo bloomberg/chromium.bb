@@ -5,15 +5,40 @@
 import posixpath
 
 from compiled_file_system import SingleFile, Unicode
-from docs_server_utils import StringIdentity
 from extensions_paths import API_PATHS
-from features_bundle import HasParentFeature
+from features_bundle import HasParent, GetParentName
 from file_system import FileNotFoundError
 from future import Collect, Future
+from operator import itemgetter
 from platform_util import PlatformToExtensionType
 from schema_util import ProcessSchema
 from third_party.json_schema_compiler.json_schema import DeleteNodes
 from third_party.json_schema_compiler.model import Namespace, UnixName
+
+
+class ContentScriptAPI(object):
+  '''Represents an API available to content scripts.
+
+  |name| is the name of the API or API node this object represents.
+  |restrictedTo| is a list of dictionaries representing the nodes
+  of this API that are available to content scripts, or None if the
+  entire API is available to content scripts.
+  '''
+  def __init__(self, name):
+    self.name = name
+    self.restrictedTo = None
+
+  def __eq__(self, o):
+    return self.name == o.name and self.restrictedTo == o.restrictedTo
+
+  def __ne__(self, o):
+    return not (self == o)
+
+  def __repr__(self):
+    return '<ContentScriptAPI name=%s, restrictedTo=%s>' % (name, restrictedTo)
+
+  def __str__(self):
+    return repr(self)
 
 
 class APIModels(object):
@@ -24,11 +49,13 @@ class APIModels(object):
                features_bundle,
                compiled_fs_factory,
                file_system,
+               object_store_creator,
                platform):
     self._features_bundle = features_bundle
     self._platform = PlatformToExtensionType(platform)
     self._model_cache = compiled_fs_factory.Create(
         file_system, self._CreateAPIModel, APIModels, category=self._platform)
+    self._object_store = object_store_creator.Create(APIModels)
 
   @SingleFile
   @Unicode
@@ -51,7 +78,7 @@ class APIModels(object):
     # APIs; runtime.onConnectNative is not).
     api_features = self._features_bundle.GetAPIFeatures().Get()
     return [name for name, feature in api_features.iteritems()
-            if not HasParentFeature(name, feature, api_features)]
+            if not HasParent(name, feature, api_features)]
 
   def GetModel(self, api_name):
     # By default |api_name| is assumed to be given without a path or extension,
@@ -95,6 +122,45 @@ class APIModels(object):
         except (FileNotFoundError, ValueError): pass
       # Propagate the first error if neither were found.
       futures[0].Get()
+    return Future(callback=resolve)
+
+  def GetContentScriptAPIs(self):
+    '''Creates a dict of APIs and nodes supported by content scripts in
+    this format:
+
+      {
+        'extension': '<ContentScriptAPI name='extension',
+                                        restrictedTo=[{'node': 'onRequest'}]>',
+        ...
+      }
+    '''
+    content_script_apis_future = self._object_store.Get('content_script_apis')
+    api_features_future = self._features_bundle.GetAPIFeatures()
+    def resolve():
+      content_script_apis = content_script_apis_future.Get()
+      if content_script_apis is not None:
+        return content_script_apis
+
+      api_features = api_features_future.Get()
+      content_script_apis = {}
+      for name, feature in api_features.iteritems():
+        if 'content_script' not in feature.get('contexts', ()):
+          continue
+        parent = GetParentName(name, feature, api_features)
+        if parent is None:
+          content_script_apis[name] = ContentScriptAPI(name)
+        else:
+          # Creates a dict for the individual node.
+          node = {'node': name[len(parent) + 1:]}
+          if parent not in content_script_apis:
+            content_script_apis[parent] = ContentScriptAPI(parent)
+          if content_script_apis[parent].restrictedTo:
+            content_script_apis[parent].restrictedTo.append(node)
+          else:
+            content_script_apis[parent].restrictedTo = [node]
+
+      self._object_store.Set('content_script_apis', content_script_apis)
+      return content_script_apis
     return Future(callback=resolve)
 
   def Cron(self):

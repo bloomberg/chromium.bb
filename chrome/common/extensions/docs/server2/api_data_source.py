@@ -8,11 +8,12 @@ import os
 import posixpath
 
 from data_source import DataSource
-from docs_server_utils import StringIdentity
+from docs_server_utils import StringIdentity, MarkFirstAndLast
 from environment import IsPreviewServer, IsReleaseServer
 from extensions_paths import JSON_TEMPLATES, PRIVATE_TEMPLATES
 from file_system import FileNotFoundError
 from future import Future, Collect
+from operator import itemgetter
 from platform_util import GetPlatforms
 import third_party.json_schema_compiler.json_parse as json_parse
 import third_party.json_schema_compiler.model as model
@@ -278,12 +279,14 @@ class _JSCModel(object):
   '''
 
   def __init__(self,
+               content_script_apis,
                namespace,
                availability_finder,
                json_cache,
                template_cache,
                features_bundle,
                event_byname_future):
+    self._content_script_apis = content_script_apis
     self._availability = availability_finder.GetAPIAvailability(namespace.name)
     self._current_node = _APINodeCursor(availability_finder, namespace.name)
     self._api_availabilities = json_cache.GetFromFile(
@@ -556,7 +559,7 @@ class _JSCModel(object):
     intro_rows = [
       self._GetIntroDescriptionRow(),
       self._GetIntroAvailabilityRow()
-    ] + self._GetIntroDependencyRows()
+    ] + self._GetIntroDependencyRows() + self._GetIntroContentScriptRow()
 
     # Add rows using data from intro_tables.json, overriding any existing rows
     # if they share the same 'title' attribute.
@@ -580,6 +583,23 @@ class _JSCModel(object):
       'version': version
     }
 
+  def _GetIntroContentScriptRow(self):
+    content_script_support = self._content_script_apis.get(self._namespace.name)
+    if content_script_support is None:
+      return []
+    if content_script_support.restrictedTo:
+      content_script_support.restrictedTo.sort(key=itemgetter('node'))
+      MarkFirstAndLast(content_script_support.restrictedTo)
+    return [{
+      'title': 'Content Scripts',
+      'content': [{
+        'partial': self._template_cache.GetFromFile(
+            posixpath.join(PRIVATE_TEMPLATES,
+                           'intro_tables',
+                           'content_scripts.html')).Get(),
+        'contentScriptSupport': content_script_support.__dict__
+      }]
+    }]
   def _GetAvailabilityTemplate(self):
     '''Gets availability for the current node and returns an appropriate
     template object.
@@ -756,13 +776,15 @@ class APIDataSource(DataSource):
 
   def _GetSchemaModel(self, platform, api_name):
     object_store_key = '/'.join((platform, api_name))
+    api_models = self._platform_bundle.GetAPIModels(platform)
     jsc_model_future = self._model_cache.Get(object_store_key)
-    model_future = self._platform_bundle.GetAPIModels(platform).GetModel(
-        api_name)
+    model_future = api_models.GetModel(api_name)
+    content_script_apis_future = api_models.GetContentScriptAPIs()
     def resolve():
       jsc_model = jsc_model_future.Get()
       if jsc_model is None:
         jsc_model = _JSCModel(
+            content_script_apis_future.Get(),
             model_future.Get(),
             self._platform_bundle.GetAvailabilityFinder(platform),
             self._json_cache,

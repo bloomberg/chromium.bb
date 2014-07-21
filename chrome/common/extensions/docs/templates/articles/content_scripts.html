@@ -27,9 +27,20 @@ They <b>cannot</b>:
 
 <ul>
   <li>
-    Use chrome.* APIs
-    (except for parts of
-    <a href="extension"><code>chrome.extension</code></a>)
+    Use chrome.* APIs, with the exception of:
+    <ul id="content_script_supported_nodes">
+      {{#api:content_scripts}}
+      <li>
+        $(ref:{{api.name}})
+        {{?api.restrictedTo}}
+          ({{#n:api.restrictedTo}}
+           $(ref:{{api.name}}.{{n.node}} {{n.node}})
+           {{^n.last}},{{/n.last}}
+           {{/api.restrictedTo}})
+        {{/api.restrictedTo}}
+      </li>
+      {{/content_scripts}}
+    </ul>
   </li>
   <li>
     Use variables or functions defined by their extension's pages

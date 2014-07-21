@@ -33,11 +33,23 @@ def StringIdentity(first, *more):
     identity = encode(identity + m)
   return identity[:8]
 
+def MarkFirst(dicts):
+  '''Adds a property 'first' == True to the first element in a list of dicts.
+  '''
+  if len(dicts) > 0:
+    dicts[0]['first'] = True
+
 def MarkLast(dicts):
   '''Adds a property 'last' == True to the last element in a list of dicts.
   '''
   if len(dicts) > 0:
     dicts[-1]['last'] = True
+
+def MarkFirstAndLast(dicts):
+  '''Marks the first and last element in a list of dicts.
+  '''
+  MarkFirst(dicts)
+  MarkLast(dicts)
 
 def ToUnicode(data):
   '''Returns the str |data| as a unicode object. It's expected to be utf8, but

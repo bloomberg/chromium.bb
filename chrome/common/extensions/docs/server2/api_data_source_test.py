@@ -120,7 +120,8 @@ class APIDataSourceTest(unittest.TestCase):
 
   def testCreateId(self):
     fake_avail_finder = _FakeAvailabilityFinder(self._fake_availability)
-    dict_ = _JSCModel(self._api_models.GetModel('tester').Get(),
+    dict_ = _JSCModel(self._api_models.GetContentScriptAPIs().Get(),
+                      self._api_models.GetModel('tester').Get(),
                       fake_avail_finder,
                       self._json_cache,
                       _FakeTemplateCache(),
@@ -136,7 +137,8 @@ class APIDataSourceTest(unittest.TestCase):
   def DISABLED_testToDict(self):
     fake_avail_finder = _FakeAvailabilityFinder(self._fake_availability)
     expected_json = self._LoadJSON('expected_tester.json')
-    dict_ = _JSCModel(self._api_models.GetModel('tester').Get(),
+    dict_ = _JSCModel(self._api_models.GetContentScriptAPIs().Get(),
+                      self._api_models.GetModel('tester').Get(),
                       fake_avail_finder,
                       self._json_cache,
                       _FakeTemplateCache(),
@@ -146,7 +148,8 @@ class APIDataSourceTest(unittest.TestCase):
 
   def testAddRules(self):
     fake_avail_finder = _FakeAvailabilityFinder(self._fake_availability)
-    dict_ = _JSCModel(self._api_models.GetModel('add_rules_tester').Get(),
+    dict_ = _JSCModel(self._api_models.GetContentScriptAPIs().Get(),
+                      self._api_models.GetModel('add_rules_tester').Get(),
                       fake_avail_finder,
                       self._json_cache,
                       _FakeTemplateCache(),
@@ -170,7 +173,8 @@ class APIDataSourceTest(unittest.TestCase):
 
   def testGetIntroList(self):
     fake_avail_finder = _FakeAvailabilityFinder(self._fake_availability)
-    model = _JSCModel(self._api_models.GetModel('tester').Get(),
+    model = _JSCModel(self._api_models.GetContentScriptAPIs().Get(),
+                      self._api_models.GetModel('tester').Get(),
                       fake_avail_finder,
                       self._json_cache,
                       _FakeTemplateCache(),
@@ -206,6 +210,18 @@ class APIDataSourceTest(unittest.TestCase):
           }
         ]
       },
+      { 'title': 'Content Scripts',
+        'content': [
+          {
+            'partial': 'handlebar chrome/common/extensions/docs' +
+                       '/templates/private/intro_tables/content_scripts.html',
+            'contentScriptSupport': {
+              'name': 'tester',
+              'restrictedTo': None
+            }
+          }
+        ]
+      },
       { 'title': 'Learn More',
         'content': [
           { 'link': 'https://tester.test.com/welcome.html',
@@ -219,12 +235,13 @@ class APIDataSourceTest(unittest.TestCase):
     # Tests the same data with a scheduled availability.
     fake_avail_finder = _FakeAvailabilityFinder(
         AvailabilityInfo(ChannelInfo('beta', '1453', 27), scheduled=28))
-    model = _JSCModel(self._api_models.GetModel('tester').Get(),
-        fake_avail_finder,
-        self._json_cache,
-        _FakeTemplateCache(),
-        self._features_bundle,
-        None)
+    model = _JSCModel(self._api_models.GetContentScriptAPIs().Get(),
+                      self._api_models.GetModel('tester').Get(),
+                      fake_avail_finder,
+                      self._json_cache,
+                      _FakeTemplateCache(),
+                      self._features_bundle,
+                      None)
     expected_list[1] = {
       'title': 'Availability',
       'content': [
@@ -262,6 +279,7 @@ class APIDataSourceWithoutNodeAvailabilityTest(unittest.TestCase):
     }
     for api_name, availability in api_availabilities.iteritems():
       model_dict = _JSCModel(
+          self._api_models.GetContentScriptAPIs().Get(),
           self._api_models.GetModel(api_name).Get(),
           self._avail_finder,
           self._json_cache,
@@ -335,6 +353,7 @@ class APIDataSourceWithNodeAvailabilityTest(unittest.TestCase):
       self.assertEquals(node_availabilities[node], actual)
 
     model_dict = _JSCModel(
+        self._api_models.GetContentScriptAPIs().Get(),
         self._api_models.GetModel('tabs').Get(),
         self._avail_finder,
         self._json_cache,

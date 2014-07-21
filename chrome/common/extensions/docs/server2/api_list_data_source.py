@@ -7,7 +7,7 @@ from future import Future
 from operator import itemgetter
 from platform_util import GetPlatforms
 
-from docs_server_utils import MarkLast
+from docs_server_utils import MarkFirstAndLast, MarkLast
 
 class APIListDataSource(DataSource):
   """ This class creates a list of chrome.* APIs and chrome.experimental.* APIs
@@ -31,6 +31,24 @@ class APIListDataSource(DataSource):
         APIListDataSource, category=self._platform_bundle.GetIdentity())
 
   def _GenerateAPIDict(self):
+    def make_list_for_content_scripts():
+      content_script_apis = self._platform_bundle.GetAPIModels(
+          'extensions').GetContentScriptAPIs().Get()
+      content_script_apis_list = [csa.__dict__ for api_name, csa
+                                  in content_script_apis.iteritems()
+                                  if self._platform_bundle.GetAPICategorizer(
+                                      'extensions').IsDocumented(api_name)]
+
+      content_script_apis_list.sort(key=itemgetter('name'))
+      for csa in content_script_apis_list:
+        restricted_nodes = csa['restrictedTo']
+        if restricted_nodes:
+          restricted_nodes.sort(key=itemgetter('node'))
+          MarkFirstAndLast(restricted_nodes)
+        else:
+          del csa['restrictedTo']
+      return content_script_apis_list
+
     def make_dict_for_platform(platform):
       platform_dict = {
         'chrome': {'stable': [], 'beta': [], 'dev': [], 'trunk': []},
@@ -77,8 +95,10 @@ class APIListDataSource(DataSource):
         platform_dict[key] = apis
 
       return platform_dict
-    return dict((platform, make_dict_for_platform(platform))
-                for platform in GetPlatforms())
+    api_dict = dict((platform, make_dict_for_platform(platform))
+                     for platform in GetPlatforms())
+    api_dict['contentScripts'] = make_list_for_content_scripts()
+    return api_dict
 
   def _GetCachedAPIData(self):
     data_future = self._object_store.Get('api_data')
