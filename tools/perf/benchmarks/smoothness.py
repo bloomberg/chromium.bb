@@ -116,6 +116,15 @@ class SmoothnessFastPathGpuRasterizationKeySilkCases(
 
 
 @benchmark.Enabled('android')
+class SmoothnessSimpleMobilePages(benchmark.Benchmark):
+  """Measures rendering statistics for pinch-zooming into the tough pinch zoom
+  cases
+  """
+  test = smoothness.Smoothness
+  page_set = page_sets.SimpleMobileSitesPageSet
+
+
+@benchmark.Enabled('android')
 class SmoothnessToughPinchZoomCases(benchmark.Benchmark):
   """Measures rendering statistics for pinch-zooming into the tough pinch zoom
   cases

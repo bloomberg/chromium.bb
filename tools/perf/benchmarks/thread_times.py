@@ -43,6 +43,12 @@ class ThreadTimesFastPathMobileSites(benchmark.Benchmark):
   page_set = page_sets.KeyMobileSitesPageSet
   options = {'page_label_filter' : 'fastpath'}
 
+class ThreadTimesSimpleMobileSites(benchmark.Benchmark):
+  """Measures timeline metric using smoothness action on simple mobile sites
+  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
+  test = thread_times.ThreadTimes
+  page_set = page_sets.SimpleMobileSitesPageSet
+
 
 class ThreadTimesCompositorCases(benchmark.Benchmark):
   """Measures timeline metrics while performing smoothness action on
