@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/animation/interpolation/DeferredLegacyStyleInterpolation.h"
+#include "core/animation/DeferredLegacyStyleInterpolation.h"
 
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSPrimitiveValue.h"

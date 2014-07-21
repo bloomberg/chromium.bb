@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/animation/interpolation/DeferredLegacyStyleInterpolation.h"
+#include "core/animation/DeferredLegacyStyleInterpolation.h"
 
-#include "core/animation/interpolation/LegacyStyleInterpolation.h"
+#include "core/animation/LegacyStyleInterpolation.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSSVGDocumentValue.h"

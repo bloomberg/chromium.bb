@@ -32,8 +32,8 @@
 #include "core/animation/AnimationStack.h"
 
 #include "core/animation/CompositorAnimations.h"
+#include "core/animation/StyleInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
-#include "core/animation/interpolation/StyleInterpolation.h"
 #include "wtf/BitArray.h"
 #include "wtf/NonCopyingSort.h"
 #include <algorithm>

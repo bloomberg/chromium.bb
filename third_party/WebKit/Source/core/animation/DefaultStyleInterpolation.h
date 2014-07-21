@@ -5,7 +5,7 @@
 #ifndef DefaultStyleInterpolation_h
 #define DefaultStyleInterpolation_h
 
-#include "core/animation/interpolation/StyleInterpolation.h"
+#include "core/animation/StyleInterpolation.h"
 #include "core/css/resolver/StyleBuilder.h"
 
 namespace blink {

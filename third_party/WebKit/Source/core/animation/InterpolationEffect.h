@@ -5,7 +5,7 @@
 #ifndef InterpolationEffect_h
 #define InterpolationEffect_h
 
-#include "core/animation/interpolation/Interpolation.h"
+#include "core/animation/Interpolation.h"
 #include "platform/animation/TimingFunction.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"

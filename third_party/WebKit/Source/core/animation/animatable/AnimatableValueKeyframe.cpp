@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/animation/animatable/AnimatableValueKeyframe.h"
 
-#include "core/animation/interpolation/LegacyStyleInterpolation.h"
+#include "core/animation/LegacyStyleInterpolation.h"
 
 namespace blink {
 

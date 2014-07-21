@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/animation/interpolation/LengthStyleInterpolation.h"
+#include "core/animation/LengthStyleInterpolation.h"
 
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/resolver/StyleBuilder.h"

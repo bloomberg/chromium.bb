@@ -7,7 +7,7 @@
 
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationPlayer.h"
-#include "core/animation/interpolation/Interpolation.h"
+#include "core/animation/Interpolation.h"
 #include "wtf/BitArray.h"
 #include "wtf/Vector.h"
 

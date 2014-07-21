@@ -5,7 +5,7 @@
 #ifndef DeferredLegacyStyleInterpolation_h
 #define DeferredLegacyStyleInterpolation_h
 
-#include "core/animation/interpolation/StyleInterpolation.h"
+#include "core/animation/StyleInterpolation.h"
 #include "core/css/CSSValue.h"
 
 namespace blink {

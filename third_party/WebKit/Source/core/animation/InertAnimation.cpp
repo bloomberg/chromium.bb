@@ -30,7 +30,7 @@
 
 #include "config.h"
 #include "core/animation/InertAnimation.h"
-#include "core/animation/interpolation/Interpolation.h"
+#include "core/animation/Interpolation.h"
 
 namespace blink {
 

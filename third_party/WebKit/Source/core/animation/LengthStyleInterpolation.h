@@ -5,7 +5,7 @@
 #ifndef LengthStyleInterpolation_h
 #define LengthStyleInterpolation_h
 
-#include "core/animation/interpolation/StyleInterpolation.h"
+#include "core/animation/StyleInterpolation.h"
 #include "platform/Length.h"
 
 namespace blink {

@@ -5,7 +5,7 @@
 #ifndef LegacyStyleInterpolation_h
 #define LegacyStyleInterpolation_h
 
-#include "core/animation/interpolation/StyleInterpolation.h"
+#include "core/animation/StyleInterpolation.h"
 #include "core/css/resolver/AnimatedStyleBuilder.h"
 
 namespace blink {

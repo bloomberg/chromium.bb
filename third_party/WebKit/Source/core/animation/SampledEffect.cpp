@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/animation/SampledEffect.h"
 
-#include "core/animation/interpolation/StyleInterpolation.h"
+#include "core/animation/StyleInterpolation.h"
 
 namespace blink {
 

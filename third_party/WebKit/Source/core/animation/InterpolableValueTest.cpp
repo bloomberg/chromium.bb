@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/animation/InterpolableValue.h"
 
-#include "core/animation/interpolation/Interpolation.h"
+#include "core/animation/Interpolation.h"
 
 #include <gtest/gtest.h>
 
