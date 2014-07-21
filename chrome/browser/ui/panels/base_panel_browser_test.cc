@@ -245,22 +245,6 @@ BasePanelBrowserTest::BasePanelBrowserTest()
 BasePanelBrowserTest::~BasePanelBrowserTest() {
 }
 
-bool BasePanelBrowserTest::SkipTestIfIceWM() {
-#if defined(OS_LINUX) && defined(USE_X11)
-  return ui::GuessWindowManager() == ui::WM_ICE_WM;
-#else
-  return false;
-#endif
-}
-
-bool BasePanelBrowserTest::SkipTestIfCompizWM() {
-#if defined(OS_LINUX) && defined(USE_X11)
-  return ui::GuessWindowManager() == ui::WM_COMPIZ;
-#else
-  return false;
-#endif
-}
-
 void BasePanelBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitch(switches::kEnablePanels);
 }

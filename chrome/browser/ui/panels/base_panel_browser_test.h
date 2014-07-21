@@ -42,19 +42,6 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   BasePanelBrowserTest();
   virtual ~BasePanelBrowserTest();
 
-  // Linux bots use icewm which activate windows in ways that break
-  // certain panel tests. Skip those tests when running on the bots.
-  // We do not disable the tests to make it easy for developers to run
-  // them locally. [Icewm always activates a window when shown.]
-  bool SkipTestIfIceWM();
-
-  // Gnome running compiz refuses to activate a window that was initially
-  // created as inactive, causing certain panel tests to fail. These tests
-  // pass fine on the bots, but fail for developers as Gnome running compiz
-  // is the typical linux dev machine configuration. We do not disable the
-  // tests to ensure we still have coverage on the bots.
-  bool SkipTestIfCompizWM();
-
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;
 
