@@ -13,28 +13,13 @@
   }
 </style>
 
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <script>
-  if (window.testRunner) {
-    testRunner.dumpAsText();
-  }
-
-  onload = function() {
-    if (!window.internals)
-      return;
-
-    window.internals.startTrackingRepaints(document);
-
+  function repaintTest() {
     // Remove the div's only compositing reason. This should trigger a repaint.
     document.getElementById("square").style.webkitBackfaceVisibility = "visible";
-    document.getElementById("layertree").textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
-    window.internals.stopTrackingRepaints(document);
-
-    document.getElementById("testResults").style.display = "block";
   }
+  runRepaintTest();
 </script>
 
 <div id="square"></div>
-
-<div id="testResults">
-  <pre id="layertree"></pre>
-</div>

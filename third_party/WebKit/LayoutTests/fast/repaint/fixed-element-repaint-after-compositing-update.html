@@ -22,39 +22,13 @@
 </style>
 <script src="resources/text-based-repaint.js"></script>
 <script>
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-}
-
-function center(){
-    if (window.internals)
-        internals.startTrackingRepaints(document);
-
+function repaintTest() {
     var mP = document.getElementById("moveMe");
     mP.style.top = "150px";
     mP.style.left = "150px";
-
-    if (!window.testRunner || !window.internals)
-        return;
-
-    var layerTree = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
-    document.getElementById("console").textContent = layerTree;
-    window.internals.stopTrackingRepaints(document);
-    testRunner.notifyDone();
 }
 
-var frameWaitCount = 2;
-function throttle(){
-    if (frameWaitCount-- == 0) {
-        center();
-        return;
-    }
-
-    requestAnimationFrame(center);
-}
-
-window.addEventListener("load", throttle);
+runRepaintTest();
 </script>
 </head>
 
@@ -64,5 +38,4 @@ window.addEventListener("load", throttle);
     <div id="fixedTransformed"></div>
     <div id="fixedOverlapping"></div>
     <div id="moveMe"></div>
-    <pre id="console"></pre>
 </body>

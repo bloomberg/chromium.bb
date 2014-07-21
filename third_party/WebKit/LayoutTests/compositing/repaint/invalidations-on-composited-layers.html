@@ -25,48 +25,20 @@ This test checks that repaint testing works with composited layers.
     }
 
   </style>
-  <script type="text/javascript">
-      window.addEventListener('load', function() {
-          if (!window.testRunner) {
-              alert('This test requires testRunner to run!');
-              return;
-          }
-
-          if (!window.internals) {
-              alert('This test requires window.interals to run!');
-              return;
-          }
-
-          testRunner.dumpAsText();
-
+  <script src="../../fast/repaint/resources/text-based-repaint.js"></script>
+  <script>
+      function repaintTest() {
           var parent = document.getElementById('parent');
           var child = document.getElementById('child');
 
-          // Ensure that we've recalculated style before starting repaint
-          // tracking (we don't want our lists of invalidated rects to be
-          // polluted).
-          document.body.offsetTop;
-          window.internals.startTrackingRepaints(document);
-
           child.style.background = 'blue';
           parent.style.background = 'green';
+      }
 
-          var text = document.getElementById('text');
-          text.innerHTML = 'This text will be replaced with the layer tree';
-
-          // Force a style recalc.
-          document.body.offsetTop;
-
-          var layerTreeText = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
-
-          window.internals.stopTrackingRepaints(document);
-
-          text.innerHTML = layerTreeText;
-      });
+      runRepaintTest();
   </script>
 </head>
 <body>
-  <pre id="text"></pre>
   <div id="parent">
     <div id="child"></div>
   </div>

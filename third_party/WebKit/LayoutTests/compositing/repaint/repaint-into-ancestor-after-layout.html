@@ -28,25 +28,17 @@
 }
 </style>
 
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <script>
-    if (window.testRunner)
-        testRunner.dumpAsText();
-
-    function test()
-    {
-        document.body.offsetHeight;
-        if (window.internals)
-            window.internals.startTrackingRepaints(document);
-
-        if (window.internals) {
-            document.getElementById('parent').style.top = "10px";
-            document.getElementById('layers').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
-        }
+    function repaintTest() {
+        document.getElementById('parent').style.top = "10px";
     }
+
+    runRepaintTest();
 </script>
 </head>
 
-<body onload="test()">
+<body>
   <!-- 
        https://code.google.com/p/chromium/issues/detail?id=256200
        The parent element is set up uniquely such that it is composited, but it
@@ -56,8 +48,6 @@
   <div id="parent">
     <div id="child"></div>
   </div>
-
-  <pre id="layers"></pre>
 </body>
 
 </html>

@@ -1,4 +1,3 @@
-
 {
   "bounds": [800, 600],
   "children": [

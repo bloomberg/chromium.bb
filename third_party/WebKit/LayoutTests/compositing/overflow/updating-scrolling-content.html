@@ -25,17 +25,12 @@ https://bugs.webkit.org/show_bug.cgi?id=100524.
         height: 1000px;
     }
   </style>
+  <script src="../../fast/repaint/resources/text-based-repaint.js"></script>
   <script type="text/javascript">
       if (window.internals)
           window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(true);
 
       window.addEventListener('load', function() {
-          if (!window.testRunner || !window.internals) {
-              alert('This test requires testRunner to run!');
-              return;
-          }
-          testRunner.dumpAsText();
-
           var scroller = document.getElementById('scroller');
           var indicator = document.getElementById('indicator');
 
@@ -45,16 +40,19 @@ https://bugs.webkit.org/show_bug.cgi?id=100524.
           // Scroll all the way to the bottom and change the color of the
           // indicator (which is now outside the overflow clip).
           scroller.scrollTop = 1000;
-          window.internals.startTrackingRepaints(document);
+
+          runRepaintTest();
+      });
+
+      function repaintTest() {
+          var scroller = document.getElementById('scroller');
+          var indicator = document.getElementById('indicator');
+
           indicator.style.background = 'green';
 
           // Scroll back up so that the updated (green) indicator is visible.
-          var layerTree = document.getElementById('layerTree');
           scroller.scrollTop = 0;
-          layerTree.innerText =
-              window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
-          window.internals.stopTrackingRepaints(document);
-      });
+      }
   </script>
 </head>
 <body>
@@ -62,6 +60,5 @@ https://bugs.webkit.org/show_bug.cgi?id=100524.
     <div id="indicator"></div>
     <div id="content"></div>
   </div>
-  <pre id="layerTree">This text will be replaced with the layer tree.</pre>
 </body>
 </html>

@@ -5,40 +5,19 @@
 </div>
 <div style="position:absolute; top: 400px; left: 400px; height: 200px; width: 200px; background-color: lightblue">
   <div id="imgElement" style="height: 200px; width: 200px; background-color: lightblue">
-  <div>
+  </div>
 </div>
-<pre id="output" style="display:none">
-<pre>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <script>
 // Test that a repaint for the rect containing the changed background image is issued in the coordinate space of the
 // squashing layer, *not* local to the div with the background image on it.
 
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-}
-
 if (window.internals)
     internals.settings.setLayerSquashingEnabled(true);
 
-var imgElement = document.querySelector("#imgElement");
-var output = document.querySelector("#output");
-
-runAfterDisplay(function() {
-    if (window.internals)
-        window.internals.startTrackingRepaints(document);
-  
+function repaintTest() {
+    var imgElement = document.querySelector("#imgElement");
     imgElement.style.backgroundImage = "url('data:image/gif;base64,R0lGODdhAgACAIABAAAAAP///ywAAAAAAgACAAACA0QCBQA7')";
-    
-    if (window.internals) {
-        output.textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
-        window.internals.stopTrackingRepaints(document);
-    }  
-
-    output.style.display = 'block';
-
-    if (window.testRunner)
-        testRunner.notifyDone();
-});
+}
+runRepaintTest();
 </script>
