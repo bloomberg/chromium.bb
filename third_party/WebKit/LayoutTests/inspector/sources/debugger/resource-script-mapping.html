@@ -17,11 +17,22 @@ function test()
 
     var target = WebInspector.debuggerModel.target();
 
+    function uiLocation(script, lineNumber, columnNumber)
+    {
+        var location = script.target().debuggerModel.createRawLocation(script, lineNumber, columnNumber);
+        return WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location);
+    }
+
+    function resetModels()
+    {
+        WebInspector.debuggerModel._reset();
+    }
+
     InspectorTest.runTestSuite([
         function testScriptWithPendingResource(next)
         {
             var script;
-            WebInspector.debuggerModel._reset();
+            resetModels();
             var resourceScriptMapping = createResourceScriptMapping();
             var url = "foo.js";
             step1();
@@ -35,14 +46,14 @@ function test()
                 resourceScriptMapping.addScript(script);
 
                 var originalUISourceCode;
-                script.rawLocationToUILocation(0, 5);
+                uiLocation(script, 0, 5);
 
                 function originalUISourceCodeAdded(uiSourceCode)
                 {
                     originalUISourceCode = uiSourceCode;
                 }
 
-                InspectorTest.checkUILocation(originalUISourceCode, 0, 5, script.rawLocationToUILocation(0, 5));
+                InspectorTest.checkUILocation(originalUISourceCode, 0, 5, uiLocation(script, 0, 5));
                 InspectorTest.checkRawLocation(script, 10, 0, originalUISourceCode.uiLocationToRawLocation(target, 10, 0));
                 InspectorTest.dumpUISourceCode(originalUISourceCode, step2);
             }
@@ -55,7 +66,7 @@ function test()
 
                 function uiSourceCodeAdded(uiSourceCode)
                 {
-                    InspectorTest.checkUILocation(uiSourceCode, 0, 5, script.rawLocationToUILocation(0, 5));
+                    InspectorTest.checkUILocation(uiSourceCode, 0, 5, uiLocation(script, 0, 5));
                     InspectorTest.checkRawLocation(script, 10, 0, uiSourceCode.uiLocationToRawLocation(target, 10, 0));
                     InspectorTest.dumpUISourceCode(uiSourceCode, next);
                 }
@@ -65,7 +76,7 @@ function test()
         function testScriptWithFinishedResource(next)
         {
             var script;
-            WebInspector.debuggerModel._reset();
+            resetModels();
             var mockUISourceCode;
             var resourceScriptMapping = createResourceScriptMapping();
             var url = "foo.js";
@@ -89,7 +100,7 @@ function test()
                 InspectorTest.addResult("Adding script for finished request.");
                 script = InspectorTest.createScriptMock(url, 0, 0, false, "<script source>");
                 resourceScriptMapping.addScript(script);
-                InspectorTest.checkUILocation(mockUISourceCode, 0, 5, script.rawLocationToUILocation(0, 5));
+                InspectorTest.checkUILocation(mockUISourceCode, 0, 5, uiLocation(script, 0, 5));
                 InspectorTest.checkRawLocation(script, 10, 0, mockUISourceCode.uiLocationToRawLocation(target, 10, 0));
                 InspectorTest.dumpUISourceCode(mockUISourceCode, next);
             }
@@ -99,7 +110,7 @@ function test()
         {
             var script1;
             var script2;
-            WebInspector.debuggerModel._reset();
+            resetModels();
             var resourceScriptMapping = createResourceScriptMapping();
             var originalUISourceCode1;
             var originalUISourceCode2;
@@ -114,14 +125,14 @@ function test()
                 defaultScriptMapping.addScript(script1);
                 resourceScriptMapping.addScript(script1);
 
-                script1.rawLocationToUILocation(0, 5);
+                uiLocation(script1, 0, 5);
 
                 function originalUISourceCodeAdded(uiSourceCode)
                 {
                     originalUISourceCode1 = uiSourceCode;
                 }
 
-                InspectorTest.checkUILocation(originalUISourceCode1, 0, 5, script1.rawLocationToUILocation(0, 5));
+                InspectorTest.checkUILocation(originalUISourceCode1, 0, 5, uiLocation(script1, 0, 5));
                 InspectorTest.checkRawLocation(script1, 10, 0, originalUISourceCode1.uiLocationToRawLocation(target, 10, 0));
                 InspectorTest.dumpUISourceCode(originalUISourceCode1, step2);
             }
@@ -138,8 +149,7 @@ function test()
                 {
                     originalUISourceCode2 = uiSourceCode;
                 }
-
-                InspectorTest.checkUILocation(originalUISourceCode2, 0, 5, script2.rawLocationToUILocation(0, 5));
+                InspectorTest.checkUILocation(originalUISourceCode2, 0, 45, uiLocation(script2, 0, 45));
                 InspectorTest.checkRawLocation(script1, 10, 0, originalUISourceCode1.uiLocationToRawLocation(target, 10, 0));
                 InspectorTest.dumpUISourceCode(originalUISourceCode2, step3);
             }
@@ -152,7 +162,7 @@ function test()
 
                 function uiSourceCodeAdded(uiSourceCode)
                 {
-                    InspectorTest.checkUILocation(uiSourceCode, 0, 5, script1.rawLocationToUILocation(0, 5));
+                    InspectorTest.checkUILocation(uiSourceCode, 0, 5, uiLocation(script1, 0, 5));
                     InspectorTest.checkRawLocation(script1, 10, 0, uiSourceCode.uiLocationToRawLocation(target, 10, 0));
                     InspectorTest.dumpUISourceCode(uiSourceCode, next);
                 }
@@ -163,7 +173,7 @@ function test()
         {
             var script1;
             var script2;
-            WebInspector.debuggerModel._reset();
+            resetModels();
             var mockUISourceCode;
             var resourceScriptMapping = createResourceScriptMapping();
             var url = "index.html";
@@ -187,7 +197,7 @@ function test()
                 InspectorTest.addResult("Adding first script for finished request.");
                 script1 = InspectorTest.createScriptMock(url, 1, 10, false, "<script source 1>");
                 resourceScriptMapping.addScript(script1);
-                InspectorTest.checkUILocation(mockUISourceCode, 1, 20, script1.rawLocationToUILocation(1, 20));
+                InspectorTest.checkUILocation(mockUISourceCode, 1, 20, uiLocation(script1, 1, 20));
                 InspectorTest.checkRawLocation(script1, 1, 0, mockUISourceCode.uiLocationToRawLocation(target, 1, 0));
                 InspectorTest.checkRawLocation(script1, 6, 0, mockUISourceCode.uiLocationToRawLocation(target, 6, 0));
                 InspectorTest.dumpUISourceCode(mockUISourceCode, step3);
@@ -198,7 +208,7 @@ function test()
                 InspectorTest.addResult("Adding second script for finished request.");
                 script2 = InspectorTest.createScriptMock(url, 5, 45, false, "<script\nsource\n2>");
                 resourceScriptMapping.addScript(script2);
-                InspectorTest.checkUILocation(mockUISourceCode, 1, 20, script1.rawLocationToUILocation(1, 20));
+                InspectorTest.checkUILocation(mockUISourceCode, 1, 20, uiLocation(script1, 1, 20));
                 InspectorTest.checkRawLocation(script1, 1, 0, mockUISourceCode.uiLocationToRawLocation(target, 1, 0));
                 InspectorTest.checkRawLocation(script2, 6, 0, mockUISourceCode.uiLocationToRawLocation(target, 6, 0));
                 InspectorTest.dumpUISourceCode(mockUISourceCode, next);

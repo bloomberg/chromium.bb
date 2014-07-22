@@ -10,13 +10,14 @@ function test()
     var fileSystem;
     var cssModel;
     var liveLocation;
+    var mockStyleSheetId = 1;
     var fileSystemPath = "/var/www";
     var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
 
     function addMockHeader(sourceURL, sourceMapURL)
     {
         cssModel._styleSheetAdded({
-            styleSheetId: 1,
+            styleSheetId: mockStyleSheetId,
             frameId: 1000,
             sourceURL: sourceURL,
             sourceMapURL: sourceMapURL,
@@ -61,15 +62,16 @@ function test()
 
     InspectorTest.createWorkspace();
     manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);
-    cssModel = new WebInspector.CSSStyleModel(WebInspector.targetManager.mainTarget(), InspectorTest.testWorkspace);
-    WebInspector.targetManager.mainTarget().cssModel = cssModel;
+    var target = WebInspector.targetManager.mainTarget();
+    cssModel = new WebInspector.CSSStyleModel(target, InspectorTest.testWorkspace);
+    target.cssModel = cssModel;
     new WebInspector.CSSStyleSheetMapping(cssModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceBinding);
 
     var resourcesURL = WebInspector.ParsedURL.completeURL(WebInspector.resourceTreeModel.inspectedPageURL(), "resources/");
     var namePrefix = "update-locations-on-filesystem-scss-load."
     var cssURL = resourcesURL + namePrefix + "css";
     var scssURL = resourcesURL + namePrefix + "scss";
-    var cssLocation = new WebInspector.CSSLocation(WebInspector.targetManager.mainTarget(), 1, cssURL, 0, 1);
+    var cssLocation = new WebInspector.CSSLocation(target, mockStyleSheetId, cssURL, 0, 1);
     var scssContent =
         ["a {",
         "  foo: bar;",
@@ -97,7 +99,7 @@ function test()
     addMockHeader(cssURL, cssURL + ".map");
     InspectorTest.addResult("Adding network resource.");
     InspectorTest.addMockUISourceCodeToWorkspace(cssURL, WebInspector.resourceTypes.Stylesheet, cssContent);
-    liveLocation = cssLocation.createLiveLocation(updateDelegate);
+    liveLocation = WebInspector.cssWorkspaceBinding.createLiveLocation(cssLocation, updateDelegate);
     dumpLiveLocation();
 
     InspectorTest.addResult("Adding filesystem SCSS.");

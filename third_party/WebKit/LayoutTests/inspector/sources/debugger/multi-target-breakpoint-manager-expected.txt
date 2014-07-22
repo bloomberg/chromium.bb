@@ -4,6 +4,7 @@ Tests BreakpointManager class.
 Running: testResolvedBreakpointInBothTarget
   Created breakpoints manager
   Dumping Storage
+  Adding script: a.js
   Adding UISourceCode: a.js
   Setting breakpoint at a.js:30:0 enabled:true condition:
     breakpointAdded(a.js, 30, 0, , true)
@@ -47,6 +48,7 @@ Running: testResolvedBreakpointInBothTarget
 Running: testResolvedBreakpointInOneTarget
   Created breakpoints manager
   Dumping Storage
+  Adding script: a.js
   Adding UISourceCode: a.js
   Setting breakpoint at a.js:30:0 enabled:true condition:
     breakpointAdded(a.js, 30, 0, , true)

@@ -59,7 +59,7 @@ var test = function()
             return;
         }
         var frame = callFrames[callFrameIndex];
-        var uiLocation = frame.location().toUILocation();
+        var uiLocation = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(frame.location());
         InspectorTest.showUISourceCode(uiLocation.uiSourceCode, dumpCallFrameLine);
 
         function dumpCallFrameLine(sourceFrame)

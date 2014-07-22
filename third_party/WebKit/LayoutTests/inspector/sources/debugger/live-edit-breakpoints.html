@@ -100,7 +100,7 @@ function test()
                 InspectorTest.addResult("Editing source:");
                 InspectorTest.replaceInSource(javaScriptSourceFrame, "}", "}//");
 
-                originalUISourceCode = script.rawLocationToUILocation(location.lineNumber).uiSourceCode;
+                originalUISourceCode = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location).uiSourceCode;
                 InspectorTest.showUISourceCode(originalUISourceCode, didShowOriginalUISourceCode);
             }
 
@@ -151,7 +151,7 @@ function test()
                 InspectorTest.addResult("Editing source:");
                 InspectorTest.replaceInSource(javaScriptSourceFrame, "}", "}//");
 
-                originalUISourceCode = script.rawLocationToUILocation(location.lineNumber).uiSourceCode;
+                originalUISourceCode = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location).uiSourceCode;
                 InspectorTest.showUISourceCode(originalUISourceCode, didShowOriginalUISourceCode);
             }
 
@@ -202,7 +202,7 @@ function test()
                 InspectorTest.addResult("Editing source:");
                 InspectorTest.replaceInSource(javaScriptSourceFrame, "}", "//}");
 
-                originalUISourceCode = script.rawLocationToUILocation(location.lineNumber).uiSourceCode;
+                originalUISourceCode = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location).uiSourceCode;
                 InspectorTest.showUISourceCode(originalUISourceCode, didShowOriginalUISourceCode);
             }
 
@@ -266,7 +266,7 @@ function test()
                 InspectorTest.addResult("Editing source:");
                 InspectorTest.replaceInSource(javaScriptSourceFrame, "}", "//}");
 
-                originalUISourceCode = script.rawLocationToUILocation(location.lineNumber).uiSourceCode;
+                originalUISourceCode = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location).uiSourceCode;
                 InspectorTest.showUISourceCode(originalUISourceCode, didShowOriginalUISourceCode);
             }
 
@@ -342,10 +342,10 @@ function test()
 
                 dumpBreakpointStorageAndLocations();
                 liveEditUISourceCode = liveEditSupport.uiSourceCodeForLiveEdit(uiSourceCode);
-                InspectorTest.showUISourceCode(liveEditUISourceCode, didShowLiveEditScriptSource);
+                InspectorTest.showUISourceCode(liveEditUISourceCode, didShowLiveEditScriptSource.bind(null, location));
             }
 
-            function didShowLiveEditScriptSource(sourceFrame)
+            function didShowLiveEditScriptSource(location, sourceFrame)
             {
                 liveEditSourceFrame = sourceFrame;
                 InspectorTest.assertTrue(liveEditSourceFrame !== javaScriptSourceFrame, "Edited and original javaScriptSourceFrames should differ.");
@@ -355,7 +355,7 @@ function test()
                 InspectorTest.replaceInSource(liveEditSourceFrame, "}", "}//");
                 dumpBreakpointStorageAndLocations();
 
-                var originalUISourceCode = script.rawLocationToUILocation(location.lineNumber).uiSourceCode;
+                var originalUISourceCode = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location).uiSourceCode;
                 InspectorTest.assertTrue(originalUISourceCode === uiSourceCode, "Mapped and original uiSourceCodes should be the same.");
                 InspectorTest.addResult("Undoing source editing:");
                 InspectorTest.undoSourceEditing(liveEditSourceFrame);
@@ -404,10 +404,10 @@ function test()
 
                 dumpBreakpointStorageAndLocations();
                 liveEditUISourceCode = liveEditSupport.uiSourceCodeForLiveEdit(uiSourceCode);
-                InspectorTest.showUISourceCode(liveEditUISourceCode, didShowLiveEditScriptSource);
+                InspectorTest.showUISourceCode(liveEditUISourceCode, didShowLiveEditScriptSource.bind(null, location));
             }
 
-            function didShowLiveEditScriptSource(sourceFrame)
+            function didShowLiveEditScriptSource(location, sourceFrame)
             {
                 liveEditSourceFrame = sourceFrame;
                 InspectorTest.assertTrue(liveEditSourceFrame !== javaScriptSourceFrame, "Edited and original javaScriptSourceFrames should differ.");
@@ -417,7 +417,7 @@ function test()
                 InspectorTest.replaceInSource(liveEditSourceFrame, "}", "}//");
                 dumpBreakpointStorageAndLocations();
 
-                var originalUISourceCode = script.rawLocationToUILocation(location.lineNumber).uiSourceCode;
+                var originalUISourceCode = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location).uiSourceCode;
                 InspectorTest.assertTrue(originalUISourceCode === uiSourceCode, "Mapped and original uiSourceCodes should be the same.");
                 InspectorTest.addResult("Undoing source editing:");
                 InspectorTest.undoSourceEditing(liveEditSourceFrame);
