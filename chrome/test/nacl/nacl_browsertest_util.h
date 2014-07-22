@@ -183,8 +183,10 @@ class NaClBrowserTestNewlibExtension : public NaClBrowserTestNewlib {
 #  define MAYBE_GLIBC(test_name) DISABLED_##test_name
 #endif
 
-// ASan does not work with libc-free context, so disable the test.
-#if defined(OS_LINUX) && !defined(ADDRESS_SANITIZER)
+// Sanitizers internally use some syscalls which non-SFI NaCl disallows.
+#if defined(OS_LINUX) && !defined(ADDRESS_SANITIZER) && \
+    !defined(THREAD_SANITIZER) && !defined(MEMORY_SANITIZER) && \
+    !defined(LEAK_SANITIZER)
 #  define MAYBE_NONSFI(test_case) test_case
 #else
 #  define MAYBE_NONSFI(test_case) DISABLED_##test_case
