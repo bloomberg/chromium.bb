@@ -38,13 +38,7 @@ void UpgradeDetector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kAttemptedToEnableAutoupdate, false);
 }
 
-int UpgradeDetector::GetIconResourceID(UpgradeNotificationIconType type) {
-  if (type == UPGRADE_ICON_TYPE_BADGE) {
-    // TODO(oshima): Badges no longer exist. remove this.
-    NOTREACHED();
-    return 0;
-  }
-
+int UpgradeDetector::GetIconResourceID() {
   switch (upgrade_notification_stage_) {
     case UPGRADE_ANNOYANCE_NONE:
       return 0;

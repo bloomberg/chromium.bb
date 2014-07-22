@@ -365,8 +365,7 @@ bool WrenchMenuModel::GetIconForCommandId(int command_id,
     case IDC_UPGRADE_DIALOG: {
       if (UpgradeDetector::GetInstance()->notify_upgrade()) {
         *icon = rb.GetNativeImageNamed(
-            UpgradeDetector::GetInstance()->GetIconResourceID(
-                UpgradeDetector::UPGRADE_ICON_TYPE_MENU_ICON));
+            UpgradeDetector::GetInstance()->GetIconResourceID());
         return true;
       }
       return false;
