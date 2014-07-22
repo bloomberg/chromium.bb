@@ -64,6 +64,7 @@ static jint WaitMany(JNIEnv* env,
   // Buffer contains first the list of handles, then the list of signals.
   const void* buffer_start = env->GetDirectBufferAddress(buffer);
   DCHECK(buffer_start);
+  DCHECK_EQ(reinterpret_cast<const uintptr_t>(buffer_start) % 8, 0u);
   const size_t record_size = 8;
   const size_t buffer_size = env->GetDirectBufferCapacity(buffer);
   DCHECK_EQ(buffer_size % record_size, 0u);
@@ -82,6 +83,7 @@ static jobject CreateMessagePipe(JNIEnv* env,
   if (options_buffer) {
     const void* buffer_start = env->GetDirectBufferAddress(options_buffer);
     DCHECK(buffer_start);
+    DCHECK_EQ(reinterpret_cast<const uintptr_t>(buffer_start) % 8, 0u);
     const size_t buffer_size = env->GetDirectBufferCapacity(options_buffer);
     DCHECK_EQ(buffer_size, sizeof(MojoCreateMessagePipeOptions));
     options = static_cast<const MojoCreateMessagePipeOptions*>(buffer_start);
@@ -101,6 +103,7 @@ static jobject CreateDataPipe(JNIEnv* env,
   if (options_buffer) {
     const void* buffer_start = env->GetDirectBufferAddress(options_buffer);
     DCHECK(buffer_start);
+    DCHECK_EQ(reinterpret_cast<const uintptr_t>(buffer_start) % 8, 0u);
     const size_t buffer_size = env->GetDirectBufferCapacity(options_buffer);
     DCHECK_EQ(buffer_size, sizeof(MojoCreateDataPipeOptions));
     options = static_cast<const MojoCreateDataPipeOptions*>(buffer_start);
@@ -121,6 +124,7 @@ static jobject CreateSharedBuffer(JNIEnv* env,
   if (options_buffer) {
     const void* buffer_start = env->GetDirectBufferAddress(options_buffer);
     DCHECK(buffer_start);
+    DCHECK_EQ(reinterpret_cast<const uintptr_t>(buffer_start) % 8, 0u);
     const size_t buffer_size = env->GetDirectBufferCapacity(options_buffer);
     DCHECK_EQ(buffer_size, sizeof(MojoCreateSharedBufferOptions));
     options = static_cast<const MojoCreateSharedBufferOptions*>(buffer_start);
