@@ -1277,7 +1277,7 @@
     </request>
    </interface>
 
-  <interface name="wl_seat" version="3">
+  <interface name="wl_seat" version="4">
     <description summary="group of input devices">
       A seat is a group of keyboards, pointer and touch devices. This
       object is published as a global during start up, or when such a
@@ -1505,7 +1505,7 @@
 
   </interface>
 
-  <interface name="wl_keyboard" version="3">
+  <interface name="wl_keyboard" version="4">
     <description summary="keyboard input device">
       The wl_keyboard interface represents one or more keyboards
       associated with a seat.
@@ -1593,6 +1593,30 @@
     <request name="release" type="destructor" since="3">
       <description summary="release the keyboard object"/>
     </request>
+
+    <!-- Version 4 additions -->
+
+    <event name="repeat_info" since="4">
+      <description summary="repeat rate and delay">
+        Informs the client about the keyboard's repeat rate and delay.
+
+        This event is sent as soon as the wl_keyboard object has been created,
+        and is guaranteed to be received by the client before any key press
+        event.
+
+        Negative values for either rate or delay are illegal. A rate of zero
+        will disable any repeating (regardless of the value of delay).
+
+        This event can be sent later on as well with a new value if necessary,
+        so clients should continue listening for the event past the creation
+        of wl_keyboard.
+      </description>
+
+      <arg name="rate" type="int"
+           summary="the rate of repeating keys in characters per second"/>
+      <arg name="delay" type="int"
+           summary="delay in milliseconds since key down until repeating starts"/>
+    </event>
   </interface>
 
   <interface name="wl_touch" version="3">
