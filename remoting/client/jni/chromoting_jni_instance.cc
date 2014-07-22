@@ -90,13 +90,24 @@ ChromotingJniInstance::ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
                  this));
 }
 
-ChromotingJniInstance::~ChromotingJniInstance() {}
+ChromotingJniInstance::~ChromotingJniInstance() {
+  // This object is ref-counted, so this dtor can execute on any thread.
+  // Ensure that all these objects have been freed already, so they are not
+  // destroyed on some random thread.
+  DCHECK(!view_);
+  DCHECK(!client_context_);
+  DCHECK(!video_renderer_);
+  DCHECK(!authenticator_);
+  DCHECK(!client_);
+  DCHECK(!signaling_);
+  DCHECK(!client_status_logger_);
+}
 
-void ChromotingJniInstance::Cleanup() {
+void ChromotingJniInstance::Disconnect() {
   if (!jni_runtime_->display_task_runner()->BelongsToCurrentThread()) {
     jni_runtime_->display_task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&ChromotingJniInstance::Cleanup, this));
+        base::Bind(&ChromotingJniInstance::Disconnect, this));
     return;
   }
 
@@ -403,8 +414,11 @@ void ChromotingJniInstance::DisconnectFromHostOnNetworkThread() {
 
   // |client_| must be torn down before |signaling_|.
   client_.reset();
-  client_.reset();
   client_status_logger_.reset();
+  client_context_.reset();
+  video_renderer_.reset();
+  authenticator_.reset();
+  signaling_.reset();
 }
 
 void ChromotingJniInstance::FetchSecret(

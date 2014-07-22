@@ -52,7 +52,7 @@ class ChromotingJniInstance
 
   // Terminates the current connection (if it hasn't already failed) and cleans
   // up. Must be called before destruction.
-  void Cleanup();
+  void Disconnect();
 
   // Requests the android app to fetch a third-party token.
   void FetchThirdPartyToken(

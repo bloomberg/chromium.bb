@@ -230,7 +230,7 @@ void ChromotingJniRuntime::ConnectToHost(const char* username,
 void ChromotingJniRuntime::DisconnectFromHost() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   if (session_) {
-    session_->Cleanup();
+    session_->Disconnect();
     session_ = NULL;
   }
 }
