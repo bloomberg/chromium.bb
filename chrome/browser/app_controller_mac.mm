@@ -367,6 +367,10 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
       MacStartupProfiler::WILL_FINISH_LAUNCHING);
 }
 
+- (void)applicationWillHide:(NSNotification*)notification {
+  apps::ExtensionAppShimHandler::OnChromeWillHide();
+}
+
 - (BOOL)tryToTerminateApplication:(NSApplication*)app {
   // Check for in-process downloads, and prompt the user if they really want
   // to quit (and thus cancel downloads). Only check if we're not already

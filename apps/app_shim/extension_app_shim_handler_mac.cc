@@ -227,9 +227,7 @@ AppShimHandler::Host* ExtensionAppShimHandler::FindHost(
 
 // static
 void ExtensionAppShimHandler::QuitAppForWindow(AppWindow* app_window) {
-  ExtensionAppShimHandler* handler =
-      g_browser_process->platform_part()->app_shim_host_manager()->
-          extension_app_shim_handler();
+  ExtensionAppShimHandler* handler = GetInstance();
   Host* host = handler->FindHost(
       Profile::FromBrowserContext(app_window->browser_context()),
       app_window->extension_id());
@@ -244,9 +242,7 @@ void ExtensionAppShimHandler::QuitAppForWindow(AppWindow* app_window) {
 }
 
 void ExtensionAppShimHandler::HideAppForWindow(AppWindow* app_window) {
-  ExtensionAppShimHandler* handler =
-      g_browser_process->platform_part()->app_shim_host_manager()->
-          extension_app_shim_handler();
+  ExtensionAppShimHandler* handler = GetInstance();
   Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
   Host* host = handler->FindHost(profile, app_window->extension_id());
   if (host)
@@ -256,9 +252,7 @@ void ExtensionAppShimHandler::HideAppForWindow(AppWindow* app_window) {
 }
 
 void ExtensionAppShimHandler::FocusAppForWindow(AppWindow* app_window) {
-  ExtensionAppShimHandler* handler =
-      g_browser_process->platform_part()->app_shim_host_manager()->
-          extension_app_shim_handler();
+  ExtensionAppShimHandler* handler = GetInstance();
   Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
   const std::string& app_id = app_window->extension_id();
   Host* host = handler->FindHost(profile, app_id);
@@ -275,9 +269,7 @@ void ExtensionAppShimHandler::FocusAppForWindow(AppWindow* app_window) {
 // static
 bool ExtensionAppShimHandler::RequestUserAttentionForWindow(
     AppWindow* app_window) {
-  ExtensionAppShimHandler* handler =
-      g_browser_process->platform_part()->app_shim_host_manager()->
-          extension_app_shim_handler();
+  ExtensionAppShimHandler* handler = GetInstance();
   Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
   Host* host = handler->FindHost(profile, app_window->extension_id());
   if (host) {
@@ -289,6 +281,19 @@ bool ExtensionAppShimHandler::RequestUserAttentionForWindow(
     // Just show the app.
     SetAppHidden(profile, app_window->extension_id(), false);
     return false;
+  }
+}
+
+// static
+void ExtensionAppShimHandler::OnChromeWillHide() {
+  // Send OnAppHide to all the shims so that they go into the hidden state.
+  // This is necessary so that when the shim is next focused, it will know to
+  // unhide.
+  ExtensionAppShimHandler* handler = GetInstance();
+  for (HostMap::iterator it = handler->hosts_.begin();
+       it != handler->hosts_.end();
+       ++it) {
+    it->second->OnAppHide();
   }
 }
 
@@ -329,6 +334,13 @@ void ExtensionAppShimHandler::OnShimLaunch(
                  host, launch_type, files));
 
   // Return now. OnAppLaunchComplete will be called when the app is activated.
+}
+
+// static
+ExtensionAppShimHandler* ExtensionAppShimHandler::GetInstance() {
+  return g_browser_process->platform_part()
+      ->app_shim_host_manager()
+      ->extension_app_shim_handler();
 }
 
 void ExtensionAppShimHandler::OnProfileLoaded(

@@ -83,6 +83,9 @@ class ExtensionAppShimHandler : public AppShimHandler,
   // request user attention. Returns false if there is no shim for this window.
   static bool RequestUserAttentionForWindow(AppWindow* app_window);
 
+  // Called by AppControllerMac when Chrome hides.
+  static void OnChromeWillHide();
+
   // AppShimHandler overrides:
   virtual void OnShimLaunch(Host* host,
                             AppShimLaunchType launch_type,
@@ -118,6 +121,9 @@ class ExtensionAppShimHandler : public AppShimHandler,
   content::NotificationRegistrar& registrar() { return registrar_; }
 
  private:
+  // Helper function to get the instance on the browser process.
+  static ExtensionAppShimHandler* GetInstance();
+
   // This is passed to Delegate::LoadProfileAsync for shim-initiated launches
   // where the profile was not yet loaded.
   void OnProfileLoaded(Host* host,
