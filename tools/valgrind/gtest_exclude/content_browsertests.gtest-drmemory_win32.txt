@@ -1,11 +1,14 @@
 # crbug.com/389132
 WebRtcBrowserTest.TwoCallsWithAecDump
-# failed test
+
+# http://code.google.com/p/drmemory/issues/detail?id=1528
+# Un-analyzed test failures:
 DeviceInertialSensorBrowserTest.MotionNullTestWithAlert
 DeviceInertialSensorBrowserTest.OrientationNullTestWithAlert
 File/MediaTest.VideoTulipWebm/0
 Http/MediaTest.VideoBearTheora/0
 Http/MediaTest.VideoTulipWebm/0
+IndexedDBBrowserTest.DeleteCompactsBackingStore
 MSE_ClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
 OutOfProcessPPAPITest.MediaStreamAudioTrack
 OutOfProcessPPAPITest.NetworkProxy
