@@ -2835,7 +2835,8 @@ LayoutUnit RenderBox::computeReplacedLogicalHeightUsing(const Length& logicalHei
 
 LayoutUnit RenderBox::availableLogicalHeight(AvailableLogicalHeightType heightType) const
 {
-    return constrainLogicalHeightByMinMax(availableLogicalHeightUsing(style()->logicalHeight(), heightType), -1);
+    // http://www.w3.org/TR/CSS2/visudet.html#propdef-height - We are interested in the content height.
+    return constrainContentBoxLogicalHeightByMinMax(availableLogicalHeightUsing(style()->logicalHeight(), heightType), -1);
 }
 
 LayoutUnit RenderBox::availableLogicalHeightUsing(const Length& h, AvailableLogicalHeightType heightType) const
