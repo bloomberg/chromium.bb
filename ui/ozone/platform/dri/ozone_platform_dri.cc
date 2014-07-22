@@ -87,6 +87,10 @@ class OzonePlatformDri : public OzonePlatform {
         new CursorFactoryEvdevDri(surface_factory_ozone_.get()));
     event_factory_ozone_.reset(new EventFactoryEvdev(
         cursor_factory_ozone_.get(), device_manager_.get()));
+    if (surface_factory_ozone_->InitializeHardware() !=
+        DriSurfaceFactory::INITIALIZED)
+      LOG(FATAL) << "failed to initialize display hardware";
+
   }
 
   virtual void InitializeGPU() OVERRIDE {}

@@ -137,7 +137,6 @@ class OzonePlatformGbm : public OzonePlatform {
     surface_factory_ozone_->InitializeGpu(dri_.get(),
                                           buffer_generator_->device(),
                                           screen_manager_.get());
-
     gpu_platform_support_.reset(
         new GpuPlatformSupportGbm(surface_factory_ozone_.get()));
 #if defined(OS_CHROMEOS)
@@ -148,6 +147,9 @@ class OzonePlatformGbm : public OzonePlatform {
                 screen_manager_.get(),
                 NULL)))));
 #endif
+    if (surface_factory_ozone_->InitializeHardware() !=
+        DriSurfaceFactory::INITIALIZED)
+      LOG(FATAL) << "failed to initialize display hardware";
   }
 
  private:

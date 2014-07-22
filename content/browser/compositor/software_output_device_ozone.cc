@@ -16,9 +16,6 @@ SoftwareOutputDeviceOzone::SoftwareOutputDeviceOzone(ui::Compositor* compositor)
     : compositor_(compositor) {
   ui::SurfaceFactoryOzone* factory = ui::SurfaceFactoryOzone::GetInstance();
 
-  if (factory->InitializeHardware() != ui::SurfaceFactoryOzone::INITIALIZED)
-    LOG(FATAL) << "Failed to initialize hardware in OZONE";
-
   surface_ozone_ = factory->CreateCanvasForWidget(compositor_->widget());
 
   if (!surface_ozone_)

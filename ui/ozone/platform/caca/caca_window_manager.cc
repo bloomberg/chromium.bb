@@ -121,13 +121,6 @@ void CacaWindowManager::RemoveWindow(int window_id, CacaWindow* window) {
 CacaWindowManager::~CacaWindowManager() {
 }
 
-ui::SurfaceFactoryOzone::HardwareState CacaWindowManager::InitializeHardware() {
-  return INITIALIZED;
-}
-
-void CacaWindowManager::ShutdownHardware() {
-}
-
 bool CacaWindowManager::LoadEGLGLES2Bindings(
     AddGLLibraryCallback add_gl_library,
     SetGLGetProcAddressProcCallback set_gl_get_proc_address) {

@@ -55,12 +55,6 @@ class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
 bool GLSurface::InitializeOneOffInternal() {
   switch (GetGLImplementation()) {
     case kGLImplementationEGLGLES2:
-      if (ui::SurfaceFactoryOzone::GetInstance()->InitializeHardware() !=
-          ui::SurfaceFactoryOzone::INITIALIZED) {
-        LOG(ERROR) << "Ozone failed to initialize hardware";
-        return false;
-      }
-
       if (!GLSurfaceEGL::InitializeOneOff()) {
         LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
         return false;

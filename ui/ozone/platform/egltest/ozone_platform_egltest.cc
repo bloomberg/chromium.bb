@@ -197,8 +197,6 @@ class SurfaceFactoryEgltest : public ui::SurfaceFactoryOzone {
   virtual ~SurfaceFactoryEgltest() {}
 
   // SurfaceFactoryOzone:
-  virtual HardwareState InitializeHardware() OVERRIDE;
-  virtual void ShutdownHardware() OVERRIDE;
   virtual intptr_t GetNativeDisplay() OVERRIDE;
   virtual scoped_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
       gfx::AcceleratedWidget widget) OVERRIDE;
@@ -211,14 +209,6 @@ class SurfaceFactoryEgltest : public ui::SurfaceFactoryOzone {
  private:
   LibeglplatformShimLoader* eglplatform_shim_;
 };
-
-SurfaceFactoryEgltest::HardwareState
-SurfaceFactoryEgltest::InitializeHardware() {
-  return INITIALIZED;
-}
-
-void SurfaceFactoryEgltest::ShutdownHardware() {
-}
 
 intptr_t SurfaceFactoryEgltest::GetNativeDisplay() {
   return eglplatform_shim_->ShimGetNativeDisplay();

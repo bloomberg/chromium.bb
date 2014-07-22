@@ -61,7 +61,7 @@ DriSurfaceFactory::~DriSurfaceFactory() {
     ShutdownHardware();
 }
 
-ui::SurfaceFactoryOzone::HardwareState DriSurfaceFactory::InitializeHardware() {
+DriSurfaceFactory::HardwareState DriSurfaceFactory::InitializeHardware() {
   if (state_ != UNINITIALIZED)
     return state_;
 

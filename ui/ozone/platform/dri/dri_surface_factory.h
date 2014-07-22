@@ -30,9 +30,19 @@ class DriSurfaceFactory : public ui::SurfaceFactoryOzone,
   DriSurfaceFactory(DriWrapper* drm, ScreenManager* screen_manager);
   virtual ~DriSurfaceFactory();
 
-  // SurfaceFactoryOzone overrides:
-  virtual HardwareState InitializeHardware() OVERRIDE;
-  virtual void ShutdownHardware() OVERRIDE;
+  // Describes the state of the hardware after initialization.
+  enum HardwareState {
+    UNINITIALIZED,
+    INITIALIZED,
+    FAILED,
+  };
+
+  // Open the display device.
+  virtual HardwareState InitializeHardware();
+
+  // Close the display device.
+  virtual void ShutdownHardware();
+
   virtual scoped_ptr<ui::SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget w) OVERRIDE;
   virtual bool LoadEGLGLES2Bindings(

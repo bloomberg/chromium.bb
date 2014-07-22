@@ -29,8 +29,6 @@ class CacaWindowManager : public SurfaceFactoryOzone {
   void RemoveWindow(int32_t window_id, CacaWindow* window);
 
   // ui::SurfaceFactoryOzone overrides:
-  virtual HardwareState InitializeHardware() OVERRIDE;
-  virtual void ShutdownHardware() OVERRIDE;
   virtual bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;

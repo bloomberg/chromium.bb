@@ -80,16 +80,16 @@ void DriSurfaceFactoryTest::TearDown() {
 
 TEST_F(DriSurfaceFactoryTest, FailInitialization) {
   dri_->fail_init();
-  EXPECT_EQ(ui::SurfaceFactoryOzone::FAILED, factory_->InitializeHardware());
+  EXPECT_EQ(ui::DriSurfaceFactory::FAILED, factory_->InitializeHardware());
 }
 
 TEST_F(DriSurfaceFactoryTest, SuccessfulInitialization) {
-  EXPECT_EQ(ui::SurfaceFactoryOzone::INITIALIZED,
+  EXPECT_EQ(ui::DriSurfaceFactory::INITIALIZED,
             factory_->InitializeHardware());
 }
 
 TEST_F(DriSurfaceFactoryTest, SuccessfulWidgetRealization) {
-  EXPECT_EQ(ui::SurfaceFactoryOzone::INITIALIZED,
+  EXPECT_EQ(ui::DriSurfaceFactory::INITIALIZED,
             factory_->InitializeHardware());
 
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
@@ -99,7 +99,7 @@ TEST_F(DriSurfaceFactoryTest, SuccessfulWidgetRealization) {
 }
 
 TEST_F(DriSurfaceFactoryTest, SetCursorImage) {
-  EXPECT_EQ(ui::SurfaceFactoryOzone::INITIALIZED,
+  EXPECT_EQ(ui::DriSurfaceFactory::INITIALIZED,
             factory_->InitializeHardware());
 
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();

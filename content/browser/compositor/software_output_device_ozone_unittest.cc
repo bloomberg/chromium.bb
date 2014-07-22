@@ -48,11 +48,6 @@ class MockSurfaceFactoryOzone : public ui::SurfaceFactoryOzone {
   MockSurfaceFactoryOzone() {}
   virtual ~MockSurfaceFactoryOzone() {}
 
-  virtual HardwareState InitializeHardware() OVERRIDE {
-    return SurfaceFactoryOzone::INITIALIZED;
-  }
-
-  virtual void ShutdownHardware() OVERRIDE {}
   virtual bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE {
