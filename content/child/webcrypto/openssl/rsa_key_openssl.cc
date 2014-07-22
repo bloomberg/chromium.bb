@@ -79,7 +79,7 @@ Status CreateRsaHashedKeyAlgorithm(
   std::vector<uint8_t> e(BN_num_bytes(rsa.get()->e));
   if (e.size() == 0)
     return Status::ErrorUnexpected();
-  if (static_cast<int>(e.size()) != BN_bn2bin(rsa.get()->e, &e[0]))
+  if (e.size() != BN_bn2bin(rsa.get()->e, &e[0]))
     return Status::ErrorUnexpected();
 
   *key_algorithm = blink::WebCryptoKeyAlgorithm::createRsaHashed(

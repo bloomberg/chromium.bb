@@ -1001,7 +1001,7 @@ AES_encrypt:
 	call	.L004pic_point
 .L004pic_point:
 	popl	%ebp
-	leal	OPENSSL_ia32cap_P,%eax
+	leal	OPENSSL_ia32cap_P-.L004pic_point(%ebp),%eax
 	leal	.LAES_Te-.L004pic_point(%ebp),%ebp
 	leal	764(%esp),%ebx
 	subl	%ebp,%ebx
@@ -2193,7 +2193,7 @@ AES_decrypt:
 	call	.L010pic_point
 .L010pic_point:
 	popl	%ebp
-	leal	OPENSSL_ia32cap_P,%eax
+	leal	OPENSSL_ia32cap_P-.L010pic_point(%ebp),%eax
 	leal	.LAES_Td-.L010pic_point(%ebp),%ebp
 	leal	764(%esp),%ebx
 	subl	%ebp,%ebx
@@ -2249,7 +2249,7 @@ AES_cbc_encrypt:
 	call	.L013pic_point
 .L013pic_point:
 	popl	%ebp
-	leal	OPENSSL_ia32cap_P,%eax
+	leal	OPENSSL_ia32cap_P-.L013pic_point(%ebp),%eax
 	cmpl	$0,40(%esp)
 	leal	.LAES_Te-.L013pic_point(%ebp),%ebp
 	jne	.L014picked_te

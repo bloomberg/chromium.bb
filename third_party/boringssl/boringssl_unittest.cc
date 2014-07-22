@@ -113,6 +113,10 @@ TEST(BoringSSL, RC4MD5) {
   TestProcess("aead_test", args);
 }
 
+TEST(BoringSSL, Base64) {
+  TestSimple("base64_test");
+}
+
 TEST(BoringSSL, BIO) {
   TestSimple("bio_test");
 }

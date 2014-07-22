@@ -6,16 +6,10 @@
 
 #include <jni.h>
 #include <openssl/bn.h>
-// This include is required to get the ECDSA_METHOD structure definition
-// which isn't currently part of the OpenSSL official ABI. This should
-// not be a concern for Chromium which always links against its own
-// version of the library on Android.
-#include <openssl/crypto/ecdsa/ecs_locl.h>
-// And this one is needed for the EC_GROUP definition.
-#include <openssl/crypto/ec/ec_lcl.h>
 #include <openssl/dsa.h>
 #include <openssl/ec.h>
 #include <openssl/engine.h>
+#include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
 
@@ -60,41 +54,10 @@
 // fields point to static methods used to implement the corresponding
 // RSA operation using platform Android APIs.
 //
-// However, the platform APIs require a jobject JNI reference to work.
-// It must be stored in the RSA instance, or made accessible when the
-// custom RSA methods are called. This is done by using RSA_set_app_data()
-// and RSA_get_app_data().
-//
-// One can thus _directly_ create a new EVP_PKEY that uses a custom RSA
-// object with the following:
-//
-//    RSA* rsa = RSA_new()
-//    RSA_set_method(&custom_rsa_method);
-//    RSA_set_app_data(rsa, jni_private_key);
-//
-//    EVP_PKEY* pkey = EVP_PKEY_new();
-//    EVP_PKEY_assign_RSA(pkey, rsa);
-//
-// Note that because EVP_PKEY_assign_RSA() is used, instead of
-// EVP_PKEY_set1_RSA(), the new EVP_PKEY now owns the RSA object, and
-// will destroy it when it is itself destroyed.
-//
-// Unfortunately, such objects cannot be used with RSA_size(), which
-// totally ignores the RSA_METHOD pointers. Instead, it is necessary
-// to manually setup the modulus field (n) in the RSA object, with a
-// value that matches the wrapped PrivateKey object. See GetRsaPkeyWrapper
-// for full details.
-//
-// Similarly, custom DSA_METHOD and ECDSA_METHOD are defined by this source
-// file, and appropriate field setups are performed to ensure that
-// DSA_size() and ECDSA_size() work properly with the wrapper EVP_PKEY.
-//
-// Note that there is no need to define an OpenSSL ENGINE here. These
-// are objects that can be used to expose custom methods (i.e. either
-// RSA_METHOD, DSA_METHOD, ECDSA_METHOD, and a large number of other ones
-// for types not related to this source file), and make them used by
-// default for a lot of operations. Very fortunately, this is not needed
-// here, which saves a lot of complexity.
+// However, the platform APIs require a jobject JNI reference to work. It must
+// be stored in the RSA instance, or made accessible when the custom RSA
+// methods are called. This is done by storing it in a |KeyExData| structure
+// that's referenced by the key using |EX_DATA|.
 
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
@@ -104,45 +67,127 @@ namespace android {
 
 namespace {
 
-typedef crypto::ScopedOpenSSL<EC_GROUP, EC_GROUP_free>::Type ScopedEC_GROUP;
+extern const RSA_METHOD android_rsa_method;
+extern const ECDSA_METHOD android_ecdsa_method;
 
-// Custom RSA_METHOD that uses the platform APIs.
-// Note that for now, only signing through RSA_sign() is really supported.
-// all other method pointers are either stubs returning errors, or no-ops.
-// See <openssl/rsa.h> for exact declaration of RSA_METHOD.
-
-struct RsaAppData {
+// KeyExData contains the data that is contained in the EX_DATA of the RSA, DSA
+// and ECDSA objects that are created to wrap Android system keys.
+struct KeyExData {
+  // private_key contains a reference to a Java, private-key object.
   jobject private_key;
+  // legacy_rsa, if not NULL, points to an RSA* in the system's OpenSSL (which
+  // might not be ABI compatible with Chromium).
   AndroidRSA* legacy_rsa;
+  // cached_size contains the "size" of the key. This is the size of the
+  // modulus (in bytes) for RSA, or the group order size for (EC)DSA. This
+  // avoids calling into Java to calculate the size.
+  size_t cached_size;
 };
 
-int RsaMethodPubEnc(int flen,
-                    const unsigned char* from,
-                    unsigned char* to,
-                    RSA* rsa,
-                    int padding) {
-  NOTIMPLEMENTED();
-  RSAerr(RSA_F_RSA_PUBLIC_ENCRYPT, RSA_R_RSA_OPERATIONS_NOT_SUPPORTED);
-  return -1;
+// ExDataDup is called when one of the RSA, DSA or EC_KEY objects is
+// duplicated. We don't support this and it should never happen.
+int ExDataDup(CRYPTO_EX_DATA* to,
+              const CRYPTO_EX_DATA* from,
+              void** from_d,
+              int index,
+              long argl,
+              void* argp) {
+  CHECK(false);
+  return 0;
 }
 
-int RsaMethodPubDec(int flen,
-                    const unsigned char* from,
-                    unsigned char* to,
-                    RSA* rsa,
-                    int padding) {
-  NOTIMPLEMENTED();
-  RSAerr(RSA_F_RSA_PUBLIC_DECRYPT, RSA_R_RSA_OPERATIONS_NOT_SUPPORTED);
-  return -1;
+// ExDataFree is called when one of the RSA, DSA or EC_KEY object is freed.
+void ExDataFree(void* parent,
+                void* ptr,
+                CRYPTO_EX_DATA* ad,
+                int index,
+                long argl,
+                void* argp) {
+  // Ensure the global JNI reference created with this wrapper is
+  // properly destroyed with it.
+  KeyExData *ex_data = reinterpret_cast<KeyExData*>(ptr);
+  if (ex_data != NULL) {
+    ReleaseKey(ex_data->private_key);
+    delete ex_data;
+  }
 }
 
-// See RSA_eay_private_encrypt in
-// third_party/openssl/openssl/crypto/rsa/rsa_eay.c for the default
-// implementation of this function.
-int RsaMethodPrivEnc(int flen,
-                     const unsigned char *from,
-                     unsigned char *to,
-                     RSA *rsa,
+// BoringSSLEngine is a BoringSSL ENGINE that implements RSA, DSA and ECDSA by
+// forwarding the requested operations to the Java libraries.
+class BoringSSLEngine {
+ public:
+  BoringSSLEngine()
+      : rsa_index_(RSA_get_ex_new_index(0 /* argl */,
+                                        NULL /* argp */,
+                                        NULL /* new_func */,
+                                        ExDataDup,
+                                        ExDataFree)),
+        ec_key_index_(EC_KEY_get_ex_new_index(0 /* argl */,
+                                              NULL /* argp */,
+                                              NULL /* new_func */,
+                                              ExDataDup,
+                                              ExDataFree)),
+        engine_(ENGINE_new()) {
+    ENGINE_set_RSA_method(
+        engine_, &android_rsa_method, sizeof(android_rsa_method));
+    ENGINE_set_ECDSA_method(
+        engine_, &android_ecdsa_method, sizeof(android_ecdsa_method));
+  }
+
+  int rsa_ex_index() const { return rsa_index_; }
+  int ec_key_ex_index() const { return ec_key_index_; }
+
+  const ENGINE* engine() const { return engine_; }
+
+ private:
+  const int rsa_index_;
+  const int ec_key_index_;
+  ENGINE* const engine_;
+};
+
+base::LazyInstance<BoringSSLEngine>::Leaky global_boringssl_engine =
+    LAZY_INSTANCE_INITIALIZER;
+
+
+// VectorBignumSize returns the number of bytes needed to represent the bignum
+// given in |v|, i.e. the length of |v| less any leading zero bytes.
+size_t VectorBignumSize(const std::vector<uint8>& v) {
+  size_t size = v.size();
+  // Ignore any leading zero bytes.
+  for (size_t i = 0; i < v.size() && v[i] == 0; i++) {
+    size--;
+  }
+  return size;
+}
+
+KeyExData* RsaGetExData(const RSA* rsa) {
+  return reinterpret_cast<KeyExData*>(
+      RSA_get_ex_data(rsa, global_boringssl_engine.Get().rsa_ex_index()));
+}
+
+size_t RsaMethodSize(const RSA *rsa) {
+  const KeyExData *ex_data = RsaGetExData(rsa);
+  return ex_data->cached_size;
+}
+
+int RsaMethodEncrypt(RSA* rsa,
+                     size_t* out_len,
+                     uint8_t* out,
+                     size_t max_out,
+                     const uint8_t* in,
+                     size_t in_len,
+                     int padding) {
+  NOTIMPLEMENTED();
+  OPENSSL_PUT_ERROR(RSA, encrypt, RSA_R_UNKNOWN_ALGORITHM_TYPE);
+  return 0;
+}
+
+int RsaMethodSignRaw(RSA* rsa,
+                     size_t* out_len,
+                     uint8_t* out,
+                     size_t max_out,
+                     const uint8_t* in,
+                     size_t in_len,
                      int padding) {
   DCHECK_EQ(RSA_PKCS1_PADDING, padding);
   if (padding != RSA_PKCS1_PADDING) {
@@ -153,22 +198,22 @@ int RsaMethodPrivEnc(int flen,
     // the same Android version as the "NONEwithRSA"
     // java.security.Signature algorithm, so the same version checks
     // for GetRsaLegacyKey should work.
-    RSAerr(RSA_F_RSA_PRIVATE_ENCRYPT, RSA_R_UNKNOWN_PADDING_TYPE);
-    return -1;
+    OPENSSL_PUT_ERROR(RSA, sign_raw, RSA_R_UNKNOWN_PADDING_TYPE);
+    return 0;
   }
 
   // Retrieve private key JNI reference.
-  RsaAppData* app_data = static_cast<RsaAppData*>(RSA_get_app_data(rsa));
-  if (!app_data || !app_data->private_key) {
+  const KeyExData *ex_data = RsaGetExData(rsa);
+  if (!ex_data || !ex_data->private_key) {
     LOG(WARNING) << "Null JNI reference passed to RsaMethodPrivEnc!";
-    RSAerr(RSA_F_RSA_PRIVATE_ENCRYPT, ERR_R_INTERNAL_ERROR);
-    return -1;
+    OPENSSL_PUT_ERROR(RSA, sign_raw, ERR_R_INTERNAL_ERROR);
+    return 0;
   }
 
   // Pre-4.2 legacy codepath.
-  if (app_data->legacy_rsa) {
-    int ret = app_data->legacy_rsa->meth->rsa_priv_enc(
-        flen, from, to, app_data->legacy_rsa, ANDROID_RSA_PKCS1_PADDING);
+  if (ex_data->legacy_rsa) {
+    int ret = ex_data->legacy_rsa->meth->rsa_priv_enc(
+        in_len, in, out, ex_data->legacy_rsa, ANDROID_RSA_PKCS1_PADDING);
     if (ret < 0) {
       LOG(WARNING) << "Could not sign message in RsaMethodPrivEnc!";
       // System OpenSSL will use a separate error queue, so it is still
@@ -178,125 +223,91 @@ int RsaMethodPrivEnc(int flen,
       // if there were some way to convince Java to do it. (Without going
       // through Java, it's difficult to get a handle on a system OpenSSL
       // function; dlopen loads a second copy.)
-      RSAerr(RSA_F_RSA_PRIVATE_ENCRYPT, ERR_R_INTERNAL_ERROR);
-      return -1;
+      OPENSSL_PUT_ERROR(RSA, sign_raw, ERR_R_INTERNAL_ERROR);
+      return 0;
     }
-    return ret;
+    *out_len = ret;
+    return 1;
   }
 
-  base::StringPiece from_piece(reinterpret_cast<const char*>(from), flen);
+  base::StringPiece from_piece(reinterpret_cast<const char*>(in), in_len);
   std::vector<uint8> result;
   // For RSA keys, this function behaves as RSA_private_encrypt with
   // PKCS#1 padding.
-  if (!RawSignDigestWithPrivateKey(app_data->private_key,
-                                   from_piece, &result)) {
+  if (!RawSignDigestWithPrivateKey(ex_data->private_key, from_piece, &result)) {
     LOG(WARNING) << "Could not sign message in RsaMethodPrivEnc!";
-    RSAerr(RSA_F_RSA_PRIVATE_ENCRYPT, ERR_R_INTERNAL_ERROR);
-    return -1;
+    OPENSSL_PUT_ERROR(RSA, sign_raw, ERR_R_INTERNAL_ERROR);
+    return 0;
   }
 
   size_t expected_size = static_cast<size_t>(RSA_size(rsa));
   if (result.size() > expected_size) {
     LOG(ERROR) << "RSA Signature size mismatch, actual: "
                <<  result.size() << ", expected <= " << expected_size;
-    RSAerr(RSA_F_RSA_PRIVATE_ENCRYPT, ERR_R_INTERNAL_ERROR);
-    return -1;
+    OPENSSL_PUT_ERROR(RSA, sign_raw, ERR_R_INTERNAL_ERROR);
+    return 0;
+  }
+
+  if (max_out < expected_size) {
+    OPENSSL_PUT_ERROR(RSA, sign_raw, RSA_R_DATA_TOO_LARGE);
+    return 0;
   }
 
   // Copy result to OpenSSL-provided buffer. RawSignDigestWithPrivateKey
   // should pad with leading 0s, but if it doesn't, pad the result.
   size_t zero_pad = expected_size - result.size();
-  memset(to, 0, zero_pad);
-  memcpy(to + zero_pad, &result[0], result.size());
+  memset(out, 0, zero_pad);
+  memcpy(out + zero_pad, &result[0], result.size());
+  *out_len = expected_size;
 
-  return expected_size;
+  return 1;
 }
 
-int RsaMethodPrivDec(int flen,
-                     const unsigned char* from,
-                     unsigned char* to,
-                     RSA* rsa,
+int RsaMethodDecrypt(RSA* rsa,
+                     size_t* out_len,
+                     uint8_t* out,
+                     size_t max_out,
+                     const uint8_t* in,
+                     size_t in_len,
                      int padding) {
   NOTIMPLEMENTED();
-  RSAerr(RSA_F_RSA_PRIVATE_DECRYPT, RSA_R_RSA_OPERATIONS_NOT_SUPPORTED);
-  return -1;
-}
-
-int RsaMethodInit(RSA* rsa) {
+  OPENSSL_PUT_ERROR(RSA, decrypt, RSA_R_UNKNOWN_ALGORITHM_TYPE);
   return 0;
 }
 
-int RsaMethodFinish(RSA* rsa) {
-  // Ensure the global JNI reference created with this wrapper is
-  // properly destroyed with it.
-  RsaAppData* app_data = static_cast<RsaAppData*>(RSA_get_app_data(rsa));
-  if (app_data != NULL) {
-    RSA_set_app_data(rsa, NULL);
-    ReleaseKey(app_data->private_key);
-    delete app_data;
-  }
-  // Actual return value is ignored by OpenSSL. There are no docs
-  // explaining what this is supposed to be.
+int RsaMethodVerifyRaw(RSA* rsa,
+                       size_t* out_len,
+                       uint8_t* out,
+                       size_t max_out,
+                       const uint8_t* in,
+                       size_t in_len,
+                       int padding) {
+  NOTIMPLEMENTED();
+  OPENSSL_PUT_ERROR(RSA, verify_raw, RSA_R_UNKNOWN_ALGORITHM_TYPE);
   return 0;
 }
 
 const RSA_METHOD android_rsa_method = {
-  /* .name = */ "Android signing-only RSA method",
-  /* .rsa_pub_enc = */ RsaMethodPubEnc,
-  /* .rsa_pub_dec = */ RsaMethodPubDec,
-  /* .rsa_priv_enc = */ RsaMethodPrivEnc,
-  /* .rsa_priv_dec = */ RsaMethodPrivDec,
-  /* .rsa_mod_exp = */ NULL,
-  /* .bn_mod_exp = */ NULL,
-  /* .init = */ RsaMethodInit,
-  /* .finish = */ RsaMethodFinish,
-  // This flag is necessary to tell OpenSSL to avoid checking the content
-  // (i.e. internal fields) of the private key. Otherwise, it will complain
-  // it's not valid for the certificate.
-  /* .flags = */ RSA_METHOD_FLAG_NO_CHECK,
-  /* .app_data = */ NULL,
-  /* .rsa_sign = */ NULL,
-  /* .rsa_verify = */ NULL,
-  /* .rsa_keygen = */ NULL,
+    {
+     0 /* references */,
+     1 /* is_static */
+    } /* common */,
+    NULL /* app_data */,
+
+    NULL /* init */,
+    NULL /* finish */,
+    RsaMethodSize,
+    NULL /* sign */,
+    NULL /* verify */,
+    RsaMethodEncrypt,
+    RsaMethodSignRaw,
+    RsaMethodDecrypt,
+    RsaMethodVerifyRaw,
+    NULL /* mod_exp */,
+    NULL /* bn_mod_exp */,
+    RSA_FLAG_OPAQUE,
+    NULL /* keygen */,
 };
-
-// Copy the contents of an encoded big integer into an existing BIGNUM.
-// This function modifies |*num| in-place.
-// |new_bytes| is the byte encoding of the new value.
-// |num| points to the BIGNUM which will be assigned with the new value.
-// Returns true on success, false otherwise. On failure, |*num| is
-// not modified.
-bool CopyBigNumFromBytes(const std::vector<uint8>& new_bytes,
-                         BIGNUM* num) {
-  BIGNUM* ret = BN_bin2bn(
-      reinterpret_cast<const unsigned char*>(&new_bytes[0]),
-      static_cast<int>(new_bytes.size()),
-      num);
-  return (ret != NULL);
-}
-
-// Decode the contents of an encoded big integer and either create a new
-// BIGNUM object (if |*num_ptr| is NULL on input) or copy it (if
-// |*num_ptr| is not NULL).
-// |new_bytes| is the byte encoding of the new value.
-// |num_ptr| is the address of a BIGNUM pointer. |*num_ptr| can be NULL.
-// Returns true on success, false otherwise. On failure, |*num_ptr| is
-// not modified. On success, |*num_ptr| will always be non-NULL and
-// point to a valid BIGNUM object.
-bool SwapBigNumPtrFromBytes(const std::vector<uint8>& new_bytes,
-                            BIGNUM** num_ptr) {
-  BIGNUM* old_num = *num_ptr;
-  BIGNUM* new_num = BN_bin2bn(
-      reinterpret_cast<const unsigned char*>(&new_bytes[0]),
-      static_cast<int>(new_bytes.size()),
-      old_num);
-  if (new_num == NULL)
-    return false;
-
-  if (old_num == NULL)
-    *num_ptr = new_num;
-  return true;
-}
 
 // Setup an EVP_PKEY to wrap an existing platform RSA PrivateKey object.
 // |private_key| is the JNI reference (local or global) to the object.
@@ -311,24 +322,8 @@ bool SwapBigNumPtrFromBytes(const std::vector<uint8>& new_bytes,
 bool GetRsaPkeyWrapper(jobject private_key,
                        AndroidRSA* legacy_rsa,
                        EVP_PKEY* pkey) {
-  crypto::ScopedRSA rsa(RSA_new());
-  RSA_set_method(rsa.get(), &android_rsa_method);
-
-  // HACK: RSA_size() doesn't work with custom RSA_METHODs. To ensure that
-  // it will return the right value, set the 'n' field of the RSA object
-  // to match the private key's modulus.
-  //
-  // TODO(davidben): After switching to BoringSSL, consider making RSA_size call
-  // into an RSA_METHOD hook.
-  std::vector<uint8> modulus;
-  if (!GetRSAKeyModulus(private_key, &modulus)) {
-    LOG(ERROR) << "Failed to get private key modulus";
-    return false;
-  }
-  if (!SwapBigNumPtrFromBytes(modulus, &rsa.get()->n)) {
-    LOG(ERROR) << "Failed to decode private key modulus";
-    return false;
-  }
+  crypto::ScopedRSA rsa(
+      RSA_new_method(global_boringssl_engine.Get().engine()));
 
   ScopedJavaGlobalRef<jobject> global_key;
   global_key.Reset(NULL, private_key);
@@ -336,10 +331,19 @@ bool GetRsaPkeyWrapper(jobject private_key,
     LOG(ERROR) << "Could not create global JNI reference";
     return false;
   }
-  RsaAppData* app_data = new RsaAppData();
-  app_data->private_key = global_key.Release();
-  app_data->legacy_rsa = legacy_rsa;
-  RSA_set_app_data(rsa.get(), app_data);
+
+  std::vector<uint8> modulus;
+  if (!GetRSAKeyModulus(private_key, &modulus)) {
+    LOG(ERROR) << "Failed to get private key modulus";
+    return false;
+  }
+
+  KeyExData* ex_data = new KeyExData;
+  ex_data->private_key = global_key.Release();
+  ex_data->legacy_rsa = legacy_rsa;
+  ex_data->cached_size = VectorBignumSize(modulus);
+  RSA_set_ex_data(
+      rsa.get(), global_boringssl_engine.Get().rsa_ex_index(), ex_data);
   EVP_PKEY_assign_RSA(pkey, rsa.release());
   return true;
 }
@@ -398,7 +402,7 @@ EVP_PKEY* GetRsaLegacyKey(jobject private_key) {
     if (sys_rsa->engine) {
       // |private_key| may not have an engine if the PrivateKey did not come
       // from the key store, such as in unit tests.
-      if (!strcmp(sys_rsa->engine->id, "keystore")) {
+      if (strcmp(sys_rsa->engine->id, "keystore") == 0) {
         LeakEngine(private_key);
       } else {
         NOTREACHED();
@@ -431,265 +435,66 @@ EVP_PKEY* GetRsaLegacyKey(jobject private_key) {
   return pkey;
 }
 
-// Custom DSA_METHOD that uses the platform APIs.
-// Note that for now, only signing through DSA_sign() is really supported.
-// all other method pointers are either stubs returning errors, or no-ops.
-// See <openssl/dsa.h> for exact declaration of DSA_METHOD.
-//
-// Note: There is no DSA_set_app_data() and DSA_get_app_data() functions,
-//       but RSA_set_app_data() is defined as a simple macro that calls
-//       RSA_set_ex_data() with a hard-coded index of 0, so this code
-//       does the same thing here.
-
-DSA_SIG* DsaMethodDoSign(const unsigned char* dgst,
-                         int dlen,
-                         DSA* dsa) {
-  // Extract the JNI reference to the PrivateKey object.
-  jobject private_key = reinterpret_cast<jobject>(DSA_get_ex_data(dsa, 0));
-  if (private_key == NULL)
-    return NULL;
-
-  // Sign the message with it, calling platform APIs.
-  std::vector<uint8> signature;
-  if (!RawSignDigestWithPrivateKey(
-          private_key,
-          base::StringPiece(
-              reinterpret_cast<const char*>(dgst),
-              static_cast<size_t>(dlen)),
-          &signature)) {
-    return NULL;
-  }
-
-  // Note: With DSA, the actual signature might be smaller than DSA_size().
-  size_t max_expected_size = static_cast<size_t>(DSA_size(dsa));
-  if (signature.size() > max_expected_size) {
-    LOG(ERROR) << "DSA Signature size mismatch, actual: "
-               << signature.size() << ", expected <= "
-               << max_expected_size;
-    return NULL;
-  }
-
-  // Convert the signature into a DSA_SIG object.
-  const unsigned char* sigbuf =
-      reinterpret_cast<const unsigned char*>(&signature[0]);
-  int siglen = static_cast<size_t>(signature.size());
-  DSA_SIG* dsa_sig = d2i_DSA_SIG(NULL, &sigbuf, siglen);
-  return dsa_sig;
-}
-
-int DsaMethodSignSetup(DSA* dsa,
-                       BN_CTX* ctx_in,
-                       BIGNUM** kinvp,
-                       BIGNUM** rp) {
-  NOTIMPLEMENTED();
-  DSAerr(DSA_F_DSA_SIGN_SETUP, DSA_R_INVALID_DIGEST_TYPE);
-  return -1;
-}
-
-int DsaMethodDoVerify(const unsigned char* dgst,
-                      int dgst_len,
-                      DSA_SIG* sig,
-                      DSA* dsa) {
-  NOTIMPLEMENTED();
-  DSAerr(DSA_F_DSA_DO_VERIFY, DSA_R_INVALID_DIGEST_TYPE);
-  return -1;
-}
-
-int DsaMethodFinish(DSA* dsa) {
-  // Free the global JNI reference that was created with this
-  // wrapper key.
-  jobject key = reinterpret_cast<jobject>(DSA_get_ex_data(dsa,0));
-  if (key != NULL) {
-    DSA_set_ex_data(dsa, 0, NULL);
-    ReleaseKey(key);
-  }
-  // Actual return value is ignored by OpenSSL. There are no docs
-  // explaining what this is supposed to be.
-  return 0;
-}
-
-const DSA_METHOD android_dsa_method = {
-  /* .name = */ "Android signing-only DSA method",
-  /* .dsa_do_sign = */ DsaMethodDoSign,
-  /* .dsa_sign_setup = */ DsaMethodSignSetup,
-  /* .dsa_do_verify = */ DsaMethodDoVerify,
-  /* .dsa_mod_exp = */ NULL,
-  /* .bn_mod_exp = */ NULL,
-  /* .init = */ NULL,  // nothing to do here.
-  /* .finish = */ DsaMethodFinish,
-  /* .flags = */ 0,
-  /* .app_data = */ NULL,
-  /* .dsa_paramgem = */ NULL,
-  /* .dsa_keygen = */ NULL
-};
-
-// Setup an EVP_PKEY to wrap an existing DSA platform PrivateKey object.
-// |private_key| is a JNI reference (local or global) to the object.
-// |pkey| is the EVP_PKEY to setup as a wrapper.
-// Returns true on success, false otherwise.
-// On success, this creates a global JNI reference to the same object
-// that will be owned by and destroyed with the EVP_PKEY.
-bool GetDsaPkeyWrapper(jobject private_key, EVP_PKEY* pkey) {
-  crypto::ScopedDSA dsa(DSA_new());
-  DSA_set_method(dsa.get(), &android_dsa_method);
-
-  // DSA_size() doesn't work with custom DSA_METHODs. To ensure it
-  // returns the right value, set the 'q' field in the DSA object to
-  // match the parameter from the platform key.
-  std::vector<uint8> q;
-  if (!GetDSAKeyParamQ(private_key, &q)) {
-    LOG(ERROR) << "Can't extract Q parameter from DSA private key";
-    return false;
-  }
-  if (!SwapBigNumPtrFromBytes(q, &dsa.get()->q)) {
-    LOG(ERROR) << "Can't decode Q parameter from DSA private key";
-    return false;
-  }
-
-  ScopedJavaGlobalRef<jobject> global_key;
-  global_key.Reset(NULL, private_key);
-  if (global_key.is_null()) {
-    LOG(ERROR) << "Could not create global JNI reference";
-    return false;
-  }
-  DSA_set_ex_data(dsa.get(), 0, global_key.Release());
-  EVP_PKEY_assign_DSA(pkey, dsa.release());
-  return true;
-}
-
 // Custom ECDSA_METHOD that uses the platform APIs.
 // Note that for now, only signing through ECDSA_sign() is really supported.
 // all other method pointers are either stubs returning errors, or no-ops.
-//
-// Note: The ECDSA_METHOD structure doesn't have init/finish
-//       methods. As such, the only way to to ensure the global
-//       JNI reference is properly released when the EVP_PKEY is
-//       destroyed is to use a custom EX_DATA type.
 
-// Used to ensure that the global JNI reference associated with a custom
-// EC_KEY + ECDSA_METHOD wrapper is released when its EX_DATA is destroyed
-// (this function is called when EVP_PKEY_free() is called on the wrapper).
-void ExDataFree(void* parent,
-                void* ptr,
-                CRYPTO_EX_DATA* ad,
-                int idx,
-                long argl,
-                void* argp) {
-  jobject private_key = reinterpret_cast<jobject>(ptr);
-  if (private_key == NULL)
-    return;
-
-  CRYPTO_set_ex_data(ad, idx, NULL);
-  ReleaseKey(private_key);
+jobject EcKeyGetKey(const EC_KEY* ec_key) {
+  KeyExData* ex_data = reinterpret_cast<KeyExData*>(EC_KEY_get_ex_data(
+      ec_key, global_boringssl_engine.Get().ec_key_ex_index()));
+  return ex_data->private_key;
 }
 
-int ExDataDup(CRYPTO_EX_DATA* to,
-              CRYPTO_EX_DATA* from,
-              void* from_d,
-              int idx,
-              long argl,
-              void* argp) {
-  // This callback shall never be called with the current OpenSSL
-  // implementation (the library only ever duplicates EX_DATA items
-  // for SSL and BIO objects). But provide this to catch regressions
-  // in the future.
-  CHECK(false) << "ExDataDup was called for ECDSA custom key !?";
-  // Return value is currently ignored by OpenSSL.
-  return 0;
+size_t EcdsaMethodGroupOrderSize(const EC_KEY* ec_key) {
+  KeyExData* ex_data = reinterpret_cast<KeyExData*>(EC_KEY_get_ex_data(
+      ec_key, global_boringssl_engine.Get().ec_key_ex_index()));
+  return ex_data->cached_size;
 }
 
-class EcdsaExDataIndex {
-public:
-  int ex_data_index() { return ex_data_index_; }
-
-  EcdsaExDataIndex() {
-    ex_data_index_ = ECDSA_get_ex_new_index(0,           // argl
-                                            NULL,        // argp
-                                            NULL,        // new_func
-                                            ExDataDup,   // dup_func
-                                            ExDataFree); // free_func
-  }
-
-private:
-  int ex_data_index_;
-};
-
-// Returns the index of the custom EX_DATA used to store the JNI reference.
-int EcdsaGetExDataIndex(void) {
-  // Use a LazyInstance to perform thread-safe lazy initialization.
-  // Use a leaky one, since OpenSSL doesn't provide a way to release
-  // allocated EX_DATA indices.
-  static base::LazyInstance<EcdsaExDataIndex>::Leaky s_instance =
-      LAZY_INSTANCE_INITIALIZER;
-  return s_instance.Get().ex_data_index();
-}
-
-ECDSA_SIG* EcdsaMethodDoSign(const unsigned char* dgst,
-                             int dgst_len,
-                             const BIGNUM* inv,
-                             const BIGNUM* rp,
-                             EC_KEY* eckey) {
+int EcdsaMethodSign(const uint8_t* digest,
+                    size_t digest_len,
+                    uint8_t* sig,
+                    unsigned int* sig_len,
+                    EC_KEY* ec_key) {
   // Retrieve private key JNI reference.
-  jobject private_key = reinterpret_cast<jobject>(
-      ECDSA_get_ex_data(eckey, EcdsaGetExDataIndex()));
+  jobject private_key = EcKeyGetKey(ec_key);
   if (!private_key) {
-    LOG(WARNING) << "Null JNI reference passed to EcdsaMethodDoSign!";
-    return NULL;
+    LOG(WARNING) << "Null JNI reference passed to EcdsaMethodSign!";
+    return 0;
   }
   // Sign message with it through JNI.
   std::vector<uint8> signature;
-  base::StringPiece digest(
-      reinterpret_cast<const char*>(dgst),
-      static_cast<size_t>(dgst_len));
-  if (!RawSignDigestWithPrivateKey(
-          private_key, digest, &signature)) {
-    LOG(WARNING) << "Could not sign message in EcdsaMethodDoSign!";
-    return NULL;
+  base::StringPiece digest_sp(reinterpret_cast<const char*>(digest),
+                              digest_len);
+  if (!RawSignDigestWithPrivateKey(private_key, digest_sp, &signature)) {
+    LOG(WARNING) << "Could not sign message in EcdsaMethodSign!";
+    return 0;
   }
 
   // Note: With ECDSA, the actual signature may be smaller than
   // ECDSA_size().
-  size_t max_expected_size = static_cast<size_t>(ECDSA_size(eckey));
+  size_t max_expected_size = ECDSA_size(ec_key);
   if (signature.size() > max_expected_size) {
     LOG(ERROR) << "ECDSA Signature size mismatch, actual: "
                <<  signature.size() << ", expected <= "
                << max_expected_size;
-    return NULL;
+    return 0;
   }
 
-  // Convert signature to ECDSA_SIG object
-  const unsigned char* sigbuf =
-      reinterpret_cast<const unsigned char*>(&signature[0]);
-  long siglen = static_cast<long>(signature.size());
-  return d2i_ECDSA_SIG(NULL, &sigbuf, siglen);
+  memcpy(sig, &signature[0], signature.size());
+  *sig_len = signature.size();
+  return 1;
 }
 
-int EcdsaMethodSignSetup(EC_KEY* eckey,
-                         BN_CTX* ctx,
-                         BIGNUM** kinv,
-                         BIGNUM** r) {
+int EcdsaMethodVerify(const uint8_t* digest,
+                      size_t digest_len,
+                      const uint8_t* sig,
+                      size_t sig_len,
+                      EC_KEY* ec_key) {
   NOTIMPLEMENTED();
-  ECDSAerr(ECDSA_F_ECDSA_SIGN_SETUP, ECDSA_R_ERR_EC_LIB);
-  return -1;
+  OPENSSL_PUT_ERROR(ECDSA, ECDSA_do_verify, ECDSA_R_NOT_IMPLEMENTED);
+  return 0;
 }
-
-int EcdsaMethodDoVerify(const unsigned char* dgst,
-                        int dgst_len,
-                        const ECDSA_SIG* sig,
-                        EC_KEY* eckey) {
-  NOTIMPLEMENTED();
-  ECDSAerr(ECDSA_F_ECDSA_DO_VERIFY, ECDSA_R_ERR_EC_LIB);
-  return -1;
-}
-
-const ECDSA_METHOD android_ecdsa_method = {
-  /* .name = */ "Android signing-only ECDSA method",
-  /* .ecdsa_do_sign = */ EcdsaMethodDoSign,
-  /* .ecdsa_sign_setup = */ EcdsaMethodSignSetup,
-  /* .ecdsa_do_verify = */ EcdsaMethodDoVerify,
-  /* .flags = */ 0,
-  /* .app_data = */ NULL,
-};
 
 // Setup an EVP_PKEY to wrap an existing platform PrivateKey object.
 // |private_key| is the JNI reference (local or global) to the object.
@@ -699,26 +504,8 @@ const ECDSA_METHOD android_ecdsa_method = {
 // is owned by and destroyed with the EVP_PKEY. I.e. the caller shall
 // always free |private_key| after the call.
 bool GetEcdsaPkeyWrapper(jobject private_key, EVP_PKEY* pkey) {
-  crypto::ScopedEC_KEY eckey(EC_KEY_new());
-  ECDSA_set_method(eckey.get(), &android_ecdsa_method);
-
-  // To ensure that ECDSA_size() works properly, craft a custom EC_GROUP
-  // that has the same order than the private key.
-  std::vector<uint8> order;
-  if (!GetECKeyOrder(private_key, &order)) {
-    LOG(ERROR) << "Can't extract order parameter from EC private key";
-    return false;
-  }
-  ScopedEC_GROUP group(EC_GROUP_new(EC_GFp_nist_method()));
-  if (!group.get()) {
-    LOG(ERROR) << "Can't create new EC_GROUP";
-    return false;
-  }
-  if (!CopyBigNumFromBytes(order, &group.get()->order)) {
-    LOG(ERROR) << "Can't decode order from PrivateKey";
-    return false;
-  }
-  EC_KEY_set_group(eckey.get(), group.release());
+  crypto::ScopedEC_KEY ec_key(
+      EC_KEY_new_method(global_boringssl_engine.Get().engine()));
 
   ScopedJavaGlobalRef<jobject> global_key;
   global_key.Reset(NULL, private_key);
@@ -726,13 +513,39 @@ bool GetEcdsaPkeyWrapper(jobject private_key, EVP_PKEY* pkey) {
     LOG(ERROR) << "Can't create global JNI reference";
     return false;
   }
-  ECDSA_set_ex_data(eckey.get(),
-                    EcdsaGetExDataIndex(),
-                    global_key.Release());
 
-  EVP_PKEY_assign_EC_KEY(pkey, eckey.release());
+  std::vector<uint8> order;
+  if (!GetECKeyOrder(private_key, &order)) {
+    LOG(ERROR) << "Can't extract order parameter from EC private key";
+    return false;
+  }
+
+  KeyExData* ex_data = new KeyExData;
+  ex_data->private_key = global_key.Release();
+  ex_data->legacy_rsa = NULL;
+  ex_data->cached_size = VectorBignumSize(order);
+
+  EC_KEY_set_ex_data(
+      ec_key.get(), global_boringssl_engine.Get().ec_key_ex_index(), ex_data);
+
+  EVP_PKEY_assign_EC_KEY(pkey, ec_key.release());
   return true;
 }
+
+const ECDSA_METHOD android_ecdsa_method = {
+    {
+     0 /* references */,
+     1 /* is_static */
+    } /* common */,
+    NULL /* app_data */,
+
+    NULL /* init */,
+    NULL /* finish */,
+    EcdsaMethodGroupOrderSize,
+    EcdsaMethodSign,
+    EcdsaMethodVerify,
+    ECDSA_FLAG_OPAQUE,
+};
 
 }  // namespace
 
@@ -764,10 +577,6 @@ EVP_PKEY* GetOpenSSLPrivateKeyWrapper(jobject private_key) {
             return NULL;
         }
       }
-      break;
-    case PRIVATE_KEY_TYPE_DSA:
-      if (!GetDsaPkeyWrapper(private_key, pkey.get()))
-        return NULL;
       break;
     case PRIVATE_KEY_TYPE_ECDSA:
       if (!GetEcdsaPkeyWrapper(private_key, pkey.get()))

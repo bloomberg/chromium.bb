@@ -9,7 +9,7 @@
   'targets': [
     {
       'target_name': 'boringssl',
-      'type': 'static_library',
+      'type': '<(component)',
       'includes': [
         'boringssl.gypi',
       ],
@@ -51,6 +51,19 @@
         }],
         ['target_arch != "arm" and target_arch != "ia32" and target_arch != "x64"', {
           'defines': [ 'OPENSSL_NO_ASM' ],
+        }],
+        ['component == "shared_library"', {
+          'xcode_settings': {
+            'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',  # no -fvisibility=hidden
+          },
+          'cflags!': [ '-fvisibility=hidden' ],
+          'conditions': [
+            ['os_posix == 1 and OS != "mac"', {
+              # Avoid link failures on Linux x86-64.
+              # See http://rt.openssl.org/Ticket/Display.html?id=2466&user=guest&pass=guest
+              'ldflags+': [ '-Wl,-Bsymbolic' ],
+            }],
+          ],
         }],
       ],
       'include_dirs': [

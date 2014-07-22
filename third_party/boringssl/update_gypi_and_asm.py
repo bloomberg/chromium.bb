@@ -13,12 +13,12 @@ import sys
 # OS_ARCH_COMBOS maps from OS and platform to the OpenSSL assembly "style" for
 # that platform and the extension used by asm files.
 OS_ARCH_COMBOS = [
-    ('linux', 'arm', 'elf', 'S'),
-    ('linux', 'x86', 'elf', 'S'),
-    ('linux', 'x86_64', 'elf', 'S'),
-    ('mac', 'x86', 'macosx', 'S'),
-    ('mac', 'x86_64', 'macosx', 'S'),
-    ('win', 'x86_64', 'masm', 'asm'),
+    ('linux', 'arm', 'elf', [''], 'S'),
+    ('linux', 'x86', 'elf', ['-fPIC'], 'S'),
+    ('linux', 'x86_64', 'elf', [''], 'S'),
+    ('mac', 'x86', 'macosx', ['-fPIC'], 'S'),
+    ('mac', 'x86_64', 'macosx', [''], 'S'),
+    ('win', 'x86_64', 'masm', [''], 'asm'),
 ]
 
 # NON_PERL_FILES enumerates assembly files that are not processed by the
@@ -152,7 +152,7 @@ def WriteAsmFiles(perlasms):
   asmfiles = {}
 
   for osarch in OS_ARCH_COMBOS:
-    (osname, arch, perlasm_style, asm_ext) = osarch
+    (osname, arch, perlasm_style, extra_args, asm_ext) = osarch
     key = (osname, arch)
     outDir = '%s-%s' % key
 
@@ -165,7 +165,8 @@ def WriteAsmFiles(perlasms):
       output = output.replace('${ASM_EXT}', asm_ext)
 
       if arch == ArchForAsmFilename(filename):
-        PerlAsm(output, perlasm['input'], perlasm_style, perlasm['extra_args'])
+        PerlAsm(output, perlasm['input'], perlasm_style,
+                perlasm['extra_args'] + extra_args)
         asmfiles.setdefault(key, []).append(output)
 
   for (key, non_perl_asm_files) in NON_PERL_FILES.iteritems():
@@ -206,7 +207,7 @@ def main():
     test_gypi.write(FILE_HEADER + '{\n  \'targets\': [\n')
 
     test_names = []
-    for test in test_c_files:
+    for test in sorted(test_c_files):
       test_name = 'boringssl_%s' % os.path.splitext(os.path.basename(test))[0]
       test_gypi.write("""    {
       'target_name': '%s',

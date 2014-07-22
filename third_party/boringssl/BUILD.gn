@@ -1,0 +1,76 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Config for us and everybody else depending on BoringSSL.
+config("openssl_config") {
+  include_dirs = []
+  include_dirs += [ "src/include" ]
+}
+
+# Config internal to this build file.
+config("openssl_internal_config") {
+  visibility = ":*"  # Only targets in this file can depend on this.
+}
+
+# The list of BoringSSL files is kept in boringssl.gypi.
+gypi_values = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("//third_party/boringssl/boringssl.gypi") ],
+    "scope",
+    [ "//third_party/boringssl/boringssl.gypi" ])
+
+component("boringssl") {
+  sources = gypi_values.boringssl_lib_sources
+
+  direct_dependent_configs = [ ":openssl_config" ]
+
+  cflags = []
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  # Also gets the include dirs from :openssl_config
+  include_dirs = [
+    "src/include",
+    # This is for arm_arch.h, which is needed by some asm files. Since the
+    # asm files are generated and kept in a different directory, they
+    # cannot use relative paths to find this file.
+    "src/crypto",
+  ]
+
+  if (cpu_arch == "x64") {
+    if (is_mac) {
+      sources += gypi_values.boringssl_mac_x86_64_sources
+    } else if (is_linux || is_android) {
+      sources += gypi_values.boringssl_linux_x86_64_sources
+    } else if (is_win) {
+      sources += gypi_values.boringssl_win_x86_64_sources
+    } else {
+      defines += [ "OPENSSL_NO_ASM" ]
+    }
+  } else if (cpu_arch == "x86") {
+    if (is_mac) {
+      sources += gypi_values.boringssl_mac_x86_sources
+    } else if (is_linux || is_android) {
+      sources += gypi_values.boringssl_linux_x86_sources
+    } else {
+      defines += [ "OPENSSL_NO_ASM" ]
+    }
+  } else if (cpu_arch == "arm") {
+    sources += gypi_values.boringssl_linux_arm_sources
+  } else {
+    defines += [ "OPENSSL_NO_ASM" ]
+  }
+
+  if (is_component_build) {
+    if (!is_win) {
+      configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+    }
+    if (is_posix && !is_mac) {
+      # Avoid link failures on Linux x86-64.
+      # See http://rt.openssl.org/Ticket/Display.html?id=2466&user=guest&pass=guest
+      ldflags += [ "-Wl,-Bsymbolic" ]
+    }
+  }
+}

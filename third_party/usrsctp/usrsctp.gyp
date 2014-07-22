@@ -28,7 +28,7 @@
           'SCTP_USE_OPENSSL_SHA1',
         ],
         'dependencies': [
-          '<(DEPTH)/third_party/openssl/openssl.gyp:openssl',
+          '<(DEPTH)/third_party/boringssl/boringssl.gyp:boringssl',
         ],
       },
       {  # else use_openssl==0, use NSS.

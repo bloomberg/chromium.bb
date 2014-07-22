@@ -25,7 +25,7 @@
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
         '<(DEPTH)/native_client_sdk/native_client_sdk_untrusted.gyp:nacl_io_untrusted',
         '<(DEPTH)/third_party/expat/expat_nacl.gyp:expat_nacl',
-        '<(DEPTH)/third_party/openssl/openssl_nacl.gyp:openssl_nacl',
+        '<(DEPTH)/third_party/boringssl/boringssl_nacl.gyp:boringssl_nacl',
         'libjingle_p2p_constants_nacl',
       ],
       'defines': [

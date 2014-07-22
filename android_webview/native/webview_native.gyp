@@ -23,7 +23,7 @@
         '../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../webkit/storage_browser.gyp:webkit_storage_browser',
         '../../webkit/storage_common.gyp:webkit_storage_common',
-        '../../third_party/openssl/openssl.gyp:openssl',
+        '../../third_party/boringssl/boringssl.gyp:boringssl',
         'android_webview_native_jni',
       ],
       'include_dirs': [

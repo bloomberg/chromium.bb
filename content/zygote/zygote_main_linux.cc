@@ -47,6 +47,10 @@
 #include <sys/prctl.h>
 #endif
 
+#if defined(USE_OPENSSL)
+#include <openssl/rand.h>
+#endif
+
 #if defined(ENABLE_WEBRTC)
 #include "third_party/libjingle/overrides/init_webrtc.h"
 #endif
@@ -312,9 +316,10 @@ static void ZygotePreSandboxInit() {
   // successful initialization of NSS which tries to load extra library files.
   crypto::LoadNSSLibraries();
 #elif defined(USE_OPENSSL)
-  // OpenSSL is intentionally not supported in the sandboxed processes, see
-  // http://crbug.com/99163. If that ever changes we'll likely need to init
-  // OpenSSL here (at least, load the library and error strings).
+  // Read a random byte in order to cause BoringSSL to open a file descriptor
+  // for /dev/urandom.
+  uint8_t scratch;
+  RAND_bytes(&scratch, 1);
 #else
   // It's possible that another hypothetical crypto stack would not require
   // pre-sandbox init, but more likely this is just a build configuration error.

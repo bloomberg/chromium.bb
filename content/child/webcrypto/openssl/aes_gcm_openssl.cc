@@ -71,7 +71,8 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
   crypto::ScopedOpenSSL<EVP_AEAD_CTX, EVP_AEAD_CTX_cleanup>::Type ctx_cleanup(
       &ctx);
 
-  ssize_t len;
+  size_t len;
+  int ok;
 
   if (mode == DECRYPT) {
     if (data.byte_length() < tag_length_bytes)
@@ -79,32 +80,34 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
 
     buffer->resize(data.byte_length() - tag_length_bytes);
 
-    len = EVP_AEAD_CTX_open(&ctx,
-                            Uint8VectorStart(buffer),
-                            buffer->size(),
-                            iv.bytes(),
-                            iv.byte_length(),
-                            data.bytes(),
-                            data.byte_length(),
-                            additional_data.bytes(),
-                            additional_data.byte_length());
+    ok = EVP_AEAD_CTX_open(&ctx,
+                           Uint8VectorStart(buffer),
+                           &len,
+                           buffer->size(),
+                           iv.bytes(),
+                           iv.byte_length(),
+                           data.bytes(),
+                           data.byte_length(),
+                           additional_data.bytes(),
+                           additional_data.byte_length());
   } else {
     // No need to check for unsigned integer overflow here (seal fails if
     // the output buffer is too small).
     buffer->resize(data.byte_length() + tag_length_bytes);
 
-    len = EVP_AEAD_CTX_seal(&ctx,
-                            Uint8VectorStart(buffer),
-                            buffer->size(),
-                            iv.bytes(),
-                            iv.byte_length(),
-                            data.bytes(),
-                            data.byte_length(),
-                            additional_data.bytes(),
-                            additional_data.byte_length());
+    ok = EVP_AEAD_CTX_seal(&ctx,
+                           Uint8VectorStart(buffer),
+                           &len,
+                           buffer->size(),
+                           iv.bytes(),
+                           iv.byte_length(),
+                           data.bytes(),
+                           data.byte_length(),
+                           additional_data.bytes(),
+                           additional_data.byte_length());
   }
 
-  if (len < 0)
+  if (!ok)
     return Status::OperationError();
   buffer->resize(len);
   return Status::Success();

@@ -51,7 +51,7 @@ static_library("net") {
       "x509_certificate_model.cc",
       "x509_certificate_model_openssl.cc",
     ]
-    deps += [ "//third_party/openssl" ]
+    deps += [ "//third_party/boringssl" ]
   }
 
   if (use_openssl) {
