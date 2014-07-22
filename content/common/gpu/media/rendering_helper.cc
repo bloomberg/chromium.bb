@@ -9,14 +9,16 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringize_macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/gl_context_stub_with_extensions.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/gl_surface_glx.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -26,10 +28,10 @@
 #include "ui/gfx/x/x11_types.h"
 #endif
 
-#ifdef GL_VARIANT_GLX
-struct XFreeDeleter {
-  void operator()(void* x) const { ::XFree(x); }
-};
+#if !defined(OS_WIN) && defined(ARCH_CPU_X86_FAMILY)
+#define GL_VARIANT_GLX 1
+#else
+#define GL_VARIANT_EGL 1
 #endif
 
 // Helper for Shader creation.
@@ -58,27 +60,20 @@ RenderingHelperParams::RenderingHelperParams() {}
 
 RenderingHelperParams::~RenderingHelperParams() {}
 
-static const gfx::GLImplementation kGLImplementation =
-#if defined(GL_VARIANT_GLX)
-    gfx::kGLImplementationDesktopGL;
-#elif defined(GL_VARIANT_EGL)
-    gfx::kGLImplementationEGLGLES2;
+// static
+bool RenderingHelper::InitializeOneOff() {
+  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+#if GL_VARIANT_GLX
+  cmd_line->AppendSwitchASCII(switches::kUseGL,
+                              gfx::kGLImplementationDesktopName);
 #else
-    -1;
-#error "Unknown GL implementation."
+  cmd_line->AppendSwitchASCII(switches::kUseGL, gfx::kGLImplementationEGLName);
 #endif
+  return gfx::GLSurface::InitializeOneOff();
+}
 
 RenderingHelper::RenderingHelper() {
-#if defined(GL_VARIANT_EGL)
-  gl_surface_ = EGL_NO_SURFACE;
-#endif
-
-#if defined(OS_WIN)
-  window_ = NULL;
-#else
-  x_window_ = (Window)0;
-#endif
-
+  window_ = gfx::kNullAcceleratedWidget;
   Clear();
 }
 
@@ -101,90 +96,12 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
                         ? base::TimeDelta::FromSeconds(1) / params.rendering_fps
                         : base::TimeDelta();
 
-  gfx::InitializeStaticGLBindings(kGLImplementation);
-  scoped_refptr<gfx::GLContextStubWithExtensions> stub_context(
-      new gfx::GLContextStubWithExtensions());
-
   render_as_thumbnails_ = params.render_as_thumbnails;
   message_loop_ = base::MessageLoop::current();
 
-#if GL_VARIANT_GLX
-  x_display_ = gfx::GetXDisplay();
-  CHECK(x_display_);
-  CHECK(glXQueryVersion(x_display_, NULL, NULL));
-  const int fbconfig_attr[] = {
-    GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
-    GLX_RENDER_TYPE, GLX_RGBA_BIT,
-    GLX_BIND_TO_TEXTURE_TARGETS_EXT, GLX_TEXTURE_2D_BIT_EXT,
-    GLX_BIND_TO_TEXTURE_RGB_EXT, GL_TRUE,
-    GLX_DOUBLEBUFFER, True,
-    GL_NONE,
-  };
-  int num_fbconfigs;
-  scoped_ptr<GLXFBConfig, XFreeDeleter> glx_fb_configs(
-      glXChooseFBConfig(x_display_, DefaultScreen(x_display_), fbconfig_attr,
-                        &num_fbconfigs));
-  CHECK(glx_fb_configs.get());
-  CHECK_GT(num_fbconfigs, 0);
-  x_visual_ = glXGetVisualFromFBConfig(x_display_, glx_fb_configs.get()[0]);
-  CHECK(x_visual_);
-  gl_context_ = glXCreateContext(x_display_, x_visual_, 0, true);
-  CHECK(gl_context_);
-  stub_context->AddExtensionsString(
-      reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
-  stub_context->SetGLVersionString(
-      reinterpret_cast<const char*>(glGetString(GL_VERSION)));
-
-  Screen* screen = DefaultScreenOfDisplay(x_display_);
-  screen_size_ = gfx::Size(XWidthOfScreen(screen), XHeightOfScreen(screen));
-#else // EGL
-  EGLNativeDisplayType native_display;
-
 #if defined(OS_WIN)
-  native_display = EGL_DEFAULT_DISPLAY;
   screen_size_ =
       gfx::Size(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
-#else
-  x_display_ = gfx::GetXDisplay();
-  CHECK(x_display_);
-  native_display = x_display_;
-
-  Screen* screen = DefaultScreenOfDisplay(x_display_);
-  screen_size_ = gfx::Size(XWidthOfScreen(screen), XHeightOfScreen(screen));
-#endif
-  gl_display_ = eglGetDisplay(native_display);
-  CHECK(gl_display_);
-  CHECK(eglInitialize(gl_display_, NULL, NULL)) << eglGetError();
-
-  static EGLint rgba8888[] = {
-    EGL_RED_SIZE, 8,
-    EGL_GREEN_SIZE, 8,
-    EGL_BLUE_SIZE, 8,
-    EGL_ALPHA_SIZE, 8,
-    EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-    EGL_NONE,
-  };
-  EGLConfig egl_config;
-  int num_configs;
-  CHECK(eglChooseConfig(gl_display_, rgba8888, &egl_config, 1, &num_configs))
-      << eglGetError();
-  CHECK_GE(num_configs, 1);
-  static EGLint context_attribs[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
-  gl_context_ = eglCreateContext(
-      gl_display_, egl_config, EGL_NO_CONTEXT, context_attribs);
-  CHECK_NE(gl_context_, EGL_NO_CONTEXT) << eglGetError();
-  stub_context->AddExtensionsString(
-      reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
-  stub_context->AddExtensionsString(
-      eglQueryString(gl_display_, EGL_EXTENSIONS));
-  stub_context->SetGLVersionString(
-      reinterpret_cast<const char*>(glGetString(GL_VERSION)));
-#endif
-  clients_ = params.clients;
-  CHECK_GT(clients_.size(), 0U);
-  LayoutRenderingAreas();
-
-#if defined(OS_WIN)
   window_ = CreateWindowEx(0,
                            L"Static",
                            L"VideoDecodeAcceleratorTest",
@@ -197,56 +114,48 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
                            NULL,
                            NULL,
                            NULL);
-  CHECK(window_ != NULL);
-#else
-  int depth = DefaultDepth(x_display_, DefaultScreen(x_display_));
+#elif defined(USE_X11)
+  Display* display = gfx::GetXDisplay();
+  Screen* screen = DefaultScreenOfDisplay(display);
+  screen_size_ = gfx::Size(XWidthOfScreen(screen), XHeightOfScreen(screen));
 
-#if defined(GL_VARIANT_GLX)
-  CHECK_EQ(depth, x_visual_->depth);
-#endif
+  CHECK(display);
 
   XSetWindowAttributes window_attributes;
+  memset(&window_attributes, 0, sizeof(window_attributes));
   window_attributes.background_pixel =
-      BlackPixel(x_display_, DefaultScreen(x_display_));
+      BlackPixel(display, DefaultScreen(display));
   window_attributes.override_redirect = true;
+  int depth = DefaultDepth(display, DefaultScreen(display));
 
-  x_window_ = XCreateWindow(x_display_,
-                            DefaultRootWindow(x_display_),
-                            0,
-                            0,
-                            screen_size_.width(),
-                            screen_size_.height(),
-                            0 /* border width */,
-                            depth,
-                            CopyFromParent /* class */,
-                            CopyFromParent /* visual */,
-                            (CWBackPixel | CWOverrideRedirect),
-                            &window_attributes);
-  XStoreName(x_display_, x_window_, "VideoDecodeAcceleratorTest");
-  XSelectInput(x_display_, x_window_, ExposureMask);
-  XMapWindow(x_display_, x_window_);
-#endif
-
-#if GL_VARIANT_EGL
-#if defined(OS_WIN)
-  gl_surface_ =
-      eglCreateWindowSurface(gl_display_, egl_config, window_, NULL);
+  window_ = XCreateWindow(display,
+                          DefaultRootWindow(display),
+                          0,
+                          0,
+                          screen_size_.width(),
+                          screen_size_.height(),
+                          0 /* border width */,
+                          depth,
+                          CopyFromParent /* class */,
+                          CopyFromParent /* visual */,
+                          (CWBackPixel | CWOverrideRedirect),
+                          &window_attributes);
+  XStoreName(display, window_, "VideoDecodeAcceleratorTest");
+  XSelectInput(display, window_, ExposureMask);
+  XMapWindow(display, window_);
 #else
-  gl_surface_ =
-      eglCreateWindowSurface(gl_display_, egl_config, x_window_, NULL);
+#error unknown platform
 #endif
-  CHECK_NE(gl_surface_, EGL_NO_SURFACE);
-#endif
+  CHECK(window_ != gfx::kNullAcceleratedWidget);
 
-#if GL_VARIANT_GLX
-  CHECK(glXMakeContextCurrent(x_display_, x_window_, x_window_, gl_context_));
-#else  // EGL
-  CHECK(eglMakeCurrent(gl_display_, gl_surface_, gl_surface_, gl_context_))
-      << eglGetError();
-#endif
+  gl_surface_ = gfx::GLSurface::CreateViewGLSurface(window_);
+  gl_context_ = gfx::GLContext::CreateGLContext(
+      NULL, gl_surface_, gfx::PreferIntegratedGpu);
+  gl_context_->MakeCurrent(gl_surface_);
 
-  // Must be done after a context is made current.
-  gfx::InitializeDynamicGLBindings(kGLImplementation, stub_context.get());
+  clients_ = params.clients;
+  CHECK_GT(clients_.size(), 0U);
+  LayoutRenderingAreas();
 
   if (render_as_thumbnails_) {
     CHECK_EQ(clients_.size(), 1U);
@@ -386,18 +295,11 @@ void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
     glDeleteTextures(1, &thumbnails_texture_id_);
     glDeleteFramebuffersEXT(1, &thumbnails_fbo_id_);
   }
-#if GL_VARIANT_GLX
 
-  glXDestroyContext(x_display_, gl_context_);
-#else // EGL
-  CHECK(eglMakeCurrent(
-      gl_display_, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT))
-      << eglGetError();
-  CHECK(eglDestroyContext(gl_display_, gl_context_));
-  CHECK(eglDestroySurface(gl_display_, gl_surface_));
-  CHECK(eglTerminate(gl_display_));
-#endif
-  gfx::ClearGLBindings();
+  gl_context_->ReleaseCurrent(gl_surface_);
+  gl_context_ = NULL;
+  gl_surface_ = NULL;
+
   Clear();
   done->Signal();
 }
@@ -483,44 +385,36 @@ void RenderingHelper::DeleteTexture(uint32 texture_id) {
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
 
-NativeContextType RenderingHelper::GetGLContext() { return gl_context_; }
+void* RenderingHelper::GetGLContext() {
+  return gl_context_->GetHandle();
+}
 
 void* RenderingHelper::GetGLDisplay() {
-#if GL_VARIANT_GLX
-  return x_display_;
-#else  // EGL
-  return gl_display_;
-#endif
+  return gl_surface_->GetDisplay();
 }
 
 void RenderingHelper::Clear() {
   clients_.clear();
   message_loop_ = NULL;
   gl_context_ = NULL;
-#if GL_VARIANT_EGL
-  gl_display_ = EGL_NO_DISPLAY;
-  gl_surface_ = EGL_NO_SURFACE;
-#endif
+  gl_surface_ = NULL;
+
   render_as_thumbnails_ = false;
   frame_count_ = 0;
   thumbnails_fbo_id_ = 0;
   thumbnails_texture_id_ = 0;
 
 #if defined(OS_WIN)
-  if (window_) {
+  if (window_)
     DestroyWindow(window_);
-    window_ = NULL;
-  }
 #else
   // Destroy resources acquired in Initialize, in reverse-acquisition order.
-  if (x_window_) {
-    CHECK(XUnmapWindow(x_display_, x_window_));
-    CHECK(XDestroyWindow(x_display_, x_window_));
-    x_window_ = (Window)0;
+  if (window_) {
+    CHECK(XUnmapWindow(gfx::GetXDisplay(), window_));
+    CHECK(XDestroyWindow(gfx::GetXDisplay(), window_));
   }
-  // Mimic newly created object.
-  x_display_ = NULL;
 #endif
+  window_ = gfx::kNullAcceleratedWidget;
 }
 
 void RenderingHelper::GetThumbnailsAsRGB(std::vector<unsigned char>* rgb,
@@ -577,12 +471,7 @@ void RenderingHelper::RenderContent() {
     }
   }
 
-#if GL_VARIANT_GLX
-  glXSwapBuffers(x_display_, x_window_);
-#else  // EGL
-  eglSwapBuffers(gl_display_, gl_surface_);
-  CHECK_EQ(static_cast<int>(eglGetError()), EGL_SUCCESS);
-#endif
+  gl_surface_->SwapBuffers();
 }
 
 // Helper function for the LayoutRenderingAreas(). The |lengths| are the

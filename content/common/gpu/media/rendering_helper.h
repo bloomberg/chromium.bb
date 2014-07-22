@@ -14,19 +14,13 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_surface.h"
 
 namespace base {
 class MessageLoop;
 class WaitableEvent;
 }
-
-#if !defined(OS_WIN) && defined(ARCH_CPU_X86_FAMILY)
-#define GL_VARIANT_GLX 1
-typedef GLXContext NativeContextType;
-#else
-#define GL_VARIANT_EGL 1
-typedef EGLContext NativeContextType;
-#endif
 
 namespace content {
 
@@ -52,6 +46,8 @@ class RenderingHelper {
 
   RenderingHelper();
   ~RenderingHelper();
+
+  static bool InitializeOneOff();
 
   // Create the render context and windows by the specified dimensions.
   void Initialize(const RenderingHelperParams& params,
@@ -82,7 +78,7 @@ class RenderingHelper {
   void* GetGLDisplay();
 
   // Get the platform specific handle to the OpenGL context.
-  NativeContextType GetGLContext();
+  void* GetGLContext();
 
   // Get rendered thumbnails as RGB.
   // Sets alpha_solid to true if the alpha channel is entirely 0xff.
@@ -101,21 +97,10 @@ class RenderingHelper {
   scoped_ptr<base::RepeatingTimer<RenderingHelper> > render_timer_;
   base::MessageLoop* message_loop_;
 
-  NativeContextType gl_context_;
+  scoped_refptr<gfx::GLContext> gl_context_;
+  scoped_refptr<gfx::GLSurface> gl_surface_;
 
-#if defined(GL_VARIANT_EGL)
-  EGLDisplay gl_display_;
-  EGLSurface gl_surface_;
-#else
-  XVisualInfo* x_visual_;
-#endif
-
-#if defined(OS_WIN)
-  HWND window_;
-#else
-  Display* x_display_;
-  Window x_window_;
-#endif
+  gfx::AcceleratedWidget window_;
 
   gfx::Size screen_size_;
 
