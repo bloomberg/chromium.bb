@@ -208,10 +208,12 @@ void ScalingFilterInterpreter::ConsumeGesture(const Gesture& gs) {
       copy.details.move.ordinal_dy *= screen_y_scale_;
       break;
     case kGestureTypeScroll:
-      copy.details.scroll.dx *= screen_x_scale_;
-      copy.details.scroll.dy *= screen_y_scale_;
-      copy.details.scroll.ordinal_dx *= screen_x_scale_;
-      copy.details.scroll.ordinal_dy *= screen_y_scale_;
+      if (devclass_ != GESTURES_DEVCLASS_MOUSE) {
+        copy.details.scroll.dx *= screen_x_scale_;
+        copy.details.scroll.dy *= screen_y_scale_;
+        copy.details.scroll.ordinal_dx *= screen_x_scale_;
+        copy.details.scroll.ordinal_dy *= screen_y_scale_;
+      }
       if (!australian_scrolling_.val_) {
         copy.details.scroll.dx *= -1;
         copy.details.scroll.dy *= -1;
