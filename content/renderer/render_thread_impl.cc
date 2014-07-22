@@ -574,8 +574,13 @@ void RenderThreadImpl::Shutdown() {
 
   // Wait for all databases to be closed.
   if (webkit_platform_support_) {
+    // WaitForAllDatabasesToClose might run a nested message loop. To avoid
+    // processing timer events while we're already in the process of shutting
+    // down blink, put a ScopePageLoadDeferrer on the stack.
+    WebView::willEnterModalLoop();
     webkit_platform_support_->web_database_observer_impl()->
         WaitForAllDatabasesToClose();
+    WebView::didExitModalLoop();
   }
 
   // Shutdown in reverse of the initialization order.
