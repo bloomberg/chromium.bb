@@ -17,7 +17,8 @@
     "metricsPrivate",
     "storage",
     "identity",
-    "notifications"
+    "notifications",
+    "easyUnlockPrivate"
   ],
 
   "app": {

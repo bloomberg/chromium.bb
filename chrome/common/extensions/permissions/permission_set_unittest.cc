@@ -721,6 +721,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kDeveloperPrivate);
   skip.insert(APIPermission::kDial);
   skip.insert(APIPermission::kDownloadsInternal);
+  skip.insert(APIPermission::kEasyUnlockPrivate);
   skip.insert(APIPermission::kEchoPrivate);
   skip.insert(APIPermission::kEnterprisePlatformKeysPrivate);
   skip.insert(APIPermission::kFeedbackPrivate);

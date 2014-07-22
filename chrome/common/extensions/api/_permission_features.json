@@ -396,6 +396,11 @@
       "16CA7A47AAE4BE49B1E75A6B960C3875E945B264"   // Google Cast Stable
     ]
   },
+  "easyUnlockPrivate": {
+    "channel": "stable",
+    "extension_types": ["platform_app"],
+    "location": "component"
+  },
   "enterprise.platformKeys": {
     "channel": "stable",
     "platforms": ["chromeos"],

@@ -281,6 +281,10 @@
     "channel": "stable",
     "contexts": ["blessed_extension"]
   },
+  "easyUnlockPrivate": {
+    "dependencies": ["permission:easyUnlockPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "echoPrivate": {
     "dependencies": ["permission:echoPrivate"],
     "contexts": ["blessed_extension"]

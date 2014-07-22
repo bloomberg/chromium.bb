@@ -56,6 +56,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        IDS_EXTENSION_PROMPT_WARNING_DOWNLOADS_OPEN,
        PermissionMessage::kDownloadsOpen},
       {APIPermission::kDownloadsShelf, "downloads.shelf"},
+      {APIPermission::kEasyUnlockPrivate, "easyUnlockPrivate"},
       {APIPermission::kIdentity, "identity"},
       {APIPermission::kIdentityEmail, "identity.email",
        APIPermissionInfo::kFlagNone,

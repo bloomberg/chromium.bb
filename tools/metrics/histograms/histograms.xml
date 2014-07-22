@@ -38799,6 +38799,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="838" label="GCDPRIVATE_GETCOMMANDSLIST"/>
   <int value="839" label="APPVIEWINTERNAL_ATTACHFRAME"/>
   <int value="840" label="APPVIEWINTERNAL_DENYREQUEST"/>
+  <int value="841" label="FILEBROWSERPRIVATE_GETDOWNLOADURL"/>
+  <int value="842" label="EASYUNLOCKPRIVATE_PERFORMECDHKEYAGREEMENT"/>
+  <int value="843" label="EASYUNLOCKPRIVATE_GENERATEECP256KEYPAIR"/>
+  <int value="844" label="EASYUNLOCKPRIVATE_CREATESECUREMESSAGE"/>
+  <int value="845" label="EASYUNLOCKPRIVATE_UNWRAPSECUREMESSAGE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

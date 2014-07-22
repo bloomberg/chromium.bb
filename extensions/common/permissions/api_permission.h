@@ -77,6 +77,7 @@ class APIPermission {
     kDownloadsInternal,
     kDownloadsOpen,
     kDownloadsShelf,
+    kEasyUnlockPrivate,
     kEchoPrivate,
     kEnterprisePlatformKeys,
     kEnterprisePlatformKeysPrivate,

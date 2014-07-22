@@ -543,6 +543,8 @@
       'browser/extensions/api/downloads/downloads_api.h',
       'browser/extensions/api/downloads_internal/downloads_internal_api.cc',
       'browser/extensions/api/downloads_internal/downloads_internal_api.h',
+      'browser/extensions/api/easy_unlock_private/easy_unlock_private_api.h',
+      'browser/extensions/api/easy_unlock_private/easy_unlock_private_api.cc',
       'browser/extensions/api/execute_code_function.cc',
       'browser/extensions/api/execute_code_function.h',
       'browser/extensions/api/extension_action/extension_action_api.cc',

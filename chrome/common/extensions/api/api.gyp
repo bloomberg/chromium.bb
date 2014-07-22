@@ -50,6 +50,7 @@
       'dial.idl',
       'downloads.idl',
       'downloads_internal.idl',
+      'easy_unlock_private.idl',
       'echo_private.json',
       'enterprise_platform_keys_private.json',
       'events.json',
