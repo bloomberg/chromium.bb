@@ -220,7 +220,10 @@ void RegisterWidevineCdmWithChrome(const base::Version& cdm_version,
   // true = Add to beginning of list to override any existing registrations.
   PluginService::GetInstance()->RegisterInternalPlugin(
       plugin_info.ToWebPluginInfo(), true);
+  // Tell the browser to refresh the plugin list. Then tell all renderers to
+  // update their plugin list caches.
   PluginService::GetInstance()->RefreshPlugins();
+  PluginService::GetInstance()->PurgePluginListCache(NULL, false);
 }
 
 }  // namespace
