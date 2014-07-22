@@ -4,156 +4,92 @@
 
 #include "mojo/services/native_viewport/native_viewport.h"
 
-#include "ui/events/event.h"
-#include "ui/events/event_utils.h"
-#include "ui/gfx/win/msg_util.h"
-#include "ui/gfx/win/window_impl.h"
+#include "base/memory/scoped_ptr.h"
+#include "ui/gfx/rect.h"
+#include "ui/platform_window/platform_window_delegate.h"
+#include "ui/platform_window/win/win_window.h"
 
 namespace mojo {
 namespace services {
-namespace {
 
-gfx::Rect GetWindowBoundsForClientBounds(DWORD style, DWORD ex_style,
-                                         const gfx::Rect& bounds) {
-  RECT wr;
-  wr.left = bounds.x();
-  wr.top = bounds.y();
-  wr.right = bounds.x() + bounds.width();
-  wr.bottom = bounds.y() + bounds.height();
-  AdjustWindowRectEx(&wr, style, FALSE, ex_style);
-
-  // Make sure to keep the window onscreen, as AdjustWindowRectEx() may have
-  // moved part of it offscreen.
-  gfx::Rect window_bounds(wr.left, wr.top,
-                          wr.right - wr.left, wr.bottom - wr.top);
-  window_bounds.set_x(std::max(0, window_bounds.x()));
-  window_bounds.set_y(std::max(0, window_bounds.y()));
-  return window_bounds;
-}
-
-}
-
-class NativeViewportWin : public gfx::WindowImpl,
-                          public NativeViewport {
+class NativeViewportWin : public NativeViewport,
+                          public ui::PlatformWindowDelegate {
  public:
   explicit NativeViewportWin(NativeViewportDelegate* delegate)
       : delegate_(delegate) {
   }
+
   virtual ~NativeViewportWin() {
-    if (IsWindow(hwnd()))
-      DestroyWindow(hwnd());
+    // Destroy the platform-window while |this| is still alive.
+    platform_window_.reset();
   }
 
  private:
   // Overridden from NativeViewport:
   virtual void Init(const gfx::Rect& bounds) OVERRIDE {
-    gfx::Rect window_bounds = GetWindowBoundsForClientBounds(
-        WS_OVERLAPPEDWINDOW, window_ex_style(), bounds);
-    gfx::WindowImpl::Init(NULL, window_bounds);
-    SetWindowText(hwnd(), L"native_viewport::NativeViewportWin!");
+    platform_window_.reset(new ui::WinWindow(this, bounds));
   }
 
   virtual void Show() OVERRIDE {
-    ShowWindow(hwnd(), SW_SHOWNORMAL);
+    platform_window_->Show();
   }
 
   virtual void Hide() OVERRIDE {
-    ShowWindow(hwnd(), SW_HIDE);
+    platform_window_->Hide();
   }
 
   virtual void Close() OVERRIDE {
-    DestroyWindow(hwnd());
+    platform_window_->Close();
   }
 
   virtual gfx::Size GetSize() OVERRIDE {
-    RECT cr;
-    GetClientRect(hwnd(), &cr);
-    return gfx::Size(cr.right - cr.left, cr.bottom - cr.top);
+    return platform_window_->GetBounds().size();
   }
 
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE {
-    gfx::Rect window_bounds = GetWindowBoundsForClientBounds(
-        GetWindowLong(hwnd(), GWL_STYLE),
-        GetWindowLong(hwnd(), GWL_EXSTYLE),
-        bounds);
-    SetWindowPos(hwnd(), NULL, window_bounds.x(), window_bounds.y(),
-                 window_bounds.width(), window_bounds.height(),
-                 SWP_NOREPOSITION);
+    platform_window_->SetBounds(bounds);
   }
 
   virtual void SetCapture() OVERRIDE {
-    DCHECK(::GetCapture() != hwnd());
-    ::SetCapture(hwnd());
+    platform_window_->SetCapture();
   }
 
   virtual void ReleaseCapture() OVERRIDE {
-    if (::GetCapture() == hwnd())
-      ::ReleaseCapture();
+    platform_window_->ReleaseCapture();
   }
 
-  CR_BEGIN_MSG_MAP_EX(NativeViewportWin)
-    CR_MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
-
-    CR_MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyEvent)
-    CR_MESSAGE_HANDLER_EX(WM_KEYUP, OnKeyEvent)
-    CR_MESSAGE_HANDLER_EX(WM_SYSKEYDOWN, OnKeyEvent)
-    CR_MESSAGE_HANDLER_EX(WM_SYSKEYUP, OnKeyEvent)
-    CR_MESSAGE_HANDLER_EX(WM_CHAR, OnKeyEvent)
-    CR_MESSAGE_HANDLER_EX(WM_SYSCHAR, OnKeyEvent)
-    CR_MESSAGE_HANDLER_EX(WM_IME_CHAR, OnKeyEvent)
-
-    CR_MSG_WM_CREATE(OnCreate)
-    CR_MSG_WM_DESTROY(OnDestroy)
-    CR_MSG_WM_PAINT(OnPaint)
-    CR_MSG_WM_WINDOWPOSCHANGED(OnWindowPosChanged)
-  CR_END_MSG_MAP()
-
-  LRESULT OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
-    MSG msg = { hwnd(), message, w_param, l_param, 0,
-                { CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param) } };
-    ui::MouseEvent event(msg);
-    if (ui::IsMouseEventFromTouch(message))
-      event.set_flags(event.flags() | ui::EF_FROM_TOUCH);
-    SetMsgHandled(delegate_->OnEvent(&event));
-    return 0;
+  // ui::PlatformWindowDelegate:
+  virtual void OnBoundsChanged(const gfx::Rect& new_bounds) OVERRIDE {
+    delegate_->OnBoundsChanged(new_bounds);
   }
-  LRESULT OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param) {
-    MSG msg = { hwnd(), message, w_param, l_param };
-    ui::KeyEvent event(msg, message == WM_CHAR);
-    SetMsgHandled(delegate_->OnEvent(&event));
-    return 0;
+
+  virtual void OnDamageRect(const gfx::Rect& damaged_region) OVERRIDE {
   }
-  LRESULT OnCreate(CREATESTRUCT* create_struct) {
-    delegate_->OnAcceleratedWidgetAvailable(hwnd());
-    return 0;
+
+  virtual void DispatchEvent(ui::Event* event) OVERRIDE {
+    delegate_->OnEvent(event);
   }
-  void OnDestroy() {
+
+  virtual void OnCloseRequest() OVERRIDE {
+    platform_window_->Close();
+  }
+
+  virtual void OnClosed() OVERRIDE {
     delegate_->OnDestroyed();
   }
-  void OnPaint(HDC) {
-    RECT cr;
-    GetClientRect(hwnd(), &cr);
 
-    PAINTSTRUCT ps;
-    HDC dc = BeginPaint(hwnd(), &ps);
-    HBRUSH red_brush = CreateSolidBrush(RGB(255, 0, 0));
-    HGDIOBJ old_object = SelectObject(dc, red_brush);
-    Rectangle(dc, cr.left, cr.top, cr.right, cr.bottom);
-    SelectObject(dc, old_object);
-    DeleteObject(red_brush);
-    EndPaint(hwnd(), &ps);
-  }
-  void OnWindowPosChanged(WINDOWPOS* window_pos) {
-    if (!(window_pos->flags & SWP_NOSIZE) ||
-        !(window_pos->flags & SWP_NOMOVE)) {
-      RECT cr;
-      GetClientRect(hwnd(), &cr);
-      delegate_->OnBoundsChanged(
-          gfx::Rect(window_pos->x, window_pos->y,
-                    cr.right - cr.left, cr.bottom - cr.top));
-    }
+  virtual void OnWindowStateChanged(ui::PlatformWindowState state) OVERRIDE {
   }
 
+  virtual void OnLostCapture() OVERRIDE {
+  }
+
+  virtual void OnAcceleratedWidgetAvailable(
+      gfx::AcceleratedWidget widget) OVERRIDE {
+    delegate_->OnAcceleratedWidgetAvailable(widget);
+  }
+
+  scoped_ptr<ui::PlatformWindow> platform_window_;
   NativeViewportDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewportWin);

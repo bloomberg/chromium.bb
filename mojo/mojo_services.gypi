@@ -329,6 +329,11 @@
             'mojo_jni_headers',
           ],
         }],
+        ['OS=="win"', {
+          'dependencies': [
+            '../ui/platform_window/win/win_window.gyp:win_window',
+          ],
+        }],
         ['use_x11==1', {
           'dependencies': [
             '../ui/platform_window/x11/x11_window.gyp:x11_window',

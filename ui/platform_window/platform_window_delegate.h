@@ -6,7 +6,6 @@
 #define UI_PLATFORM_WINDOW_PLATFORM_WINDOW_DELEGATE_H_
 
 #include "ui/gfx/native_widget_types.h"
-#include "ui/platform_window/platform_window_export.h"
 
 namespace gfx {
 class Rect;
@@ -24,7 +23,7 @@ enum PlatformWindowState {
   PLATFORM_WINDOW_STATE_FULLSCREEN,
 };
 
-class PLATFORM_WINDOW_EXPORT PlatformWindowDelegate {
+class PlatformWindowDelegate {
  public:
   virtual ~PlatformWindowDelegate() {}
 
