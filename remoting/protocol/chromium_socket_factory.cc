@@ -372,7 +372,7 @@ ChromiumPacketSocketFactory::CreateServerTcpSocket(
     int min_port, int max_port,
     int opts) {
   // We don't use TCP sockets for remoting connections.
-  NOTREACHED();
+  NOTIMPLEMENTED();
   return NULL;
 }
 

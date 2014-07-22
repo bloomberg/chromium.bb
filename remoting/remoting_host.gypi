@@ -40,6 +40,7 @@
             '../google_apis/google_apis.gyp:google_apis',
             '../ipc/ipc.gyp:ipc',
             '../third_party/webrtc/modules/modules.gyp:desktop_capture',
+	    '../third_party/libjingle/libjingle.gyp:libpeerconnection',
             '../ui/events/events.gyp:dom4_keycode_converter',
           ],
           'defines': [
@@ -65,6 +66,8 @@
             'host/branding.h',
             'host/capture_scheduler.cc',
             'host/capture_scheduler.h',
+            'host/chromium_port_allocator_factory.cc',
+            'host/chromium_port_allocator_factory.h',
             'host/chromoting_host.cc',
             'host/chromoting_host.h',
             'host/chromoting_host_context.cc',
