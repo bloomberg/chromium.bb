@@ -31,7 +31,8 @@ class WebFrameTestProxy : public Base {
   virtual blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
                                          const blink::WebPluginParams& params) {
     blink::WebPlugin* plugin = base_proxy_->CreatePlugin(frame, params);
-    if (plugin) return plugin;
+    if (plugin)
+      return plugin;
     return Base::createPlugin(frame, params);
   }
 
@@ -40,20 +41,21 @@ class WebFrameTestProxy : public Base {
   }
 
   virtual void didAddMessageToConsole(const blink::WebConsoleMessage& message,
-                                      const blink::WebString& sourceName,
-                                      unsigned sourceLine,
-                                      const blink::WebString& stackTrace) {
-    base_proxy_->DidAddMessageToConsole(message, sourceName, sourceLine);
-    Base::didAddMessageToConsole(message, sourceName, sourceLine, stackTrace);
+                                      const blink::WebString& source_name,
+                                      unsigned source_line,
+                                      const blink::WebString& stack_trace) {
+    base_proxy_->DidAddMessageToConsole(message, source_name, source_line);
+    Base::didAddMessageToConsole(
+        message, source_name, source_line, stack_trace);
   }
 
   virtual bool canCreatePluginWithoutRenderer(
-      const blink::WebString& mimeType) {
+      const blink::WebString& mime_type) {
     using blink::WebString;
 
-    const CR_DEFINE_STATIC_LOCAL(WebString, suffix,
-                                 ("-can-create-without-renderer"));
-    return mimeType.utf8().find(suffix.utf8()) != std::string::npos;
+    const CR_DEFINE_STATIC_LOCAL(
+        WebString, suffix, ("-can-create-without-renderer"));
+    return mime_type.utf8().find(suffix.utf8()) != std::string::npos;
   }
 
   virtual void loadURLExternally(blink::WebLocalFrame* frame,
@@ -79,12 +81,14 @@ class WebFrameTestProxy : public Base {
                                       const blink::WebURLError& error) {
     // If the test finished, don't notify the embedder of the failed load,
     // as we already destroyed the document loader.
-    if (base_proxy_->DidFailProvisionalLoad(frame, error)) return;
+    if (base_proxy_->DidFailProvisionalLoad(frame, error))
+      return;
     Base::didFailProvisionalLoad(frame, error);
   }
 
   virtual void didCommitProvisionalLoad(
-      blink::WebLocalFrame* frame, const blink::WebHistoryItem& item,
+      blink::WebLocalFrame* frame,
+      const blink::WebHistoryItem& item,
       blink::WebHistoryCommitType commit_type) {
     base_proxy_->DidCommitProvisionalLoad(frame, item, commit_type);
     Base::didCommitProvisionalLoad(frame, item, commit_type);
@@ -98,9 +102,9 @@ class WebFrameTestProxy : public Base {
   }
 
   virtual void didChangeIcon(blink::WebLocalFrame* frame,
-                             blink::WebIconURL::Type iconType) {
-    base_proxy_->DidChangeIcon(frame, iconType);
-    Base::didChangeIcon(frame, iconType);
+                             blink::WebIconURL::Type icon_type) {
+    base_proxy_->DidChangeIcon(frame, icon_type);
+    Base::didChangeIcon(frame, icon_type);
   }
 
   virtual void didFinishDocumentLoad(blink::WebLocalFrame* frame) {
@@ -152,11 +156,11 @@ class WebFrameTestProxy : public Base {
   }
 
   virtual bool runModalPromptDialog(const blink::WebString& message,
-                                    const blink::WebString& defaultValue,
+                                    const blink::WebString& default_value,
                                     blink::WebString*) {
     base_proxy_->delegate_->printMessage(
         std::string("PROMPT: ") + message.utf8().data() + ", default text: " +
-        defaultValue.utf8().data() + "\n");
+        default_value.utf8().data() + "\n");
     return true;
   }
 
@@ -169,19 +173,19 @@ class WebFrameTestProxy : public Base {
   }
 
   virtual void showContextMenu(
-      const blink::WebContextMenuData& contextMenuData) {
+      const blink::WebContextMenuData& context_menu_data) {
     base_proxy_->ShowContextMenu(Base::GetWebFrame()->toWebLocalFrame(),
-                                 contextMenuData);
-    Base::showContextMenu(contextMenuData);
+                                 context_menu_data);
+    Base::showContextMenu(context_menu_data);
   }
 
   virtual void didDetectXSS(blink::WebLocalFrame* frame,
-                            const blink::WebURL& insecureURL,
-                            bool didBlockEntirePage) {
+                            const blink::WebURL& insecure_url,
+                            bool did_block_entire_page) {
     // This is not implemented in RenderFrameImpl, so need to explicitly call
     // into the base proxy.
-    base_proxy_->DidDetectXSS(frame, insecureURL, didBlockEntirePage);
-    Base::didDetectXSS(frame, insecureURL, didBlockEntirePage);
+    base_proxy_->DidDetectXSS(frame, insecure_url, did_block_entire_page);
+    Base::didDetectXSS(frame, insecure_url, did_block_entire_page);
   }
 
   virtual void didDispatchPingLoader(blink::WebLocalFrame* frame,
@@ -205,11 +209,12 @@ class WebFrameTestProxy : public Base {
     Base::didCreateDataSource(frame, ds);
   }
 
-  virtual void willSendRequest(blink::WebLocalFrame* frame, unsigned identifier,
+  virtual void willSendRequest(blink::WebLocalFrame* frame,
+                               unsigned identifier,
                                blink::WebURLRequest& request,
-                               const blink::WebURLResponse& redirectResponse) {
-    Base::willSendRequest(frame, identifier, request, redirectResponse);
-    base_proxy_->WillSendRequest(frame, identifier, request, redirectResponse);
+                               const blink::WebURLResponse& redirect_response) {
+    Base::willSendRequest(frame, identifier, request, redirect_response);
+    base_proxy_->WillSendRequest(frame, identifier, request, redirect_response);
   }
 
   virtual void didReceiveResponse(blink::WebLocalFrame* frame,
@@ -220,15 +225,16 @@ class WebFrameTestProxy : public Base {
   }
 
   virtual void didChangeResourcePriority(
-      blink::WebLocalFrame* frame, unsigned identifier,
+      blink::WebLocalFrame* frame,
+      unsigned identifier,
       const blink::WebURLRequest::Priority& priority,
       int intra_priority_value) {
     // This is not implemented in RenderFrameImpl, so need to explicitly call
     // into the base proxy.
-    base_proxy_->DidChangeResourcePriority(frame, identifier, priority,
-                                           intra_priority_value);
-    Base::didChangeResourcePriority(frame, identifier, priority,
-                                    intra_priority_value);
+    base_proxy_->DidChangeResourcePriority(
+        frame, identifier, priority, intra_priority_value);
+    Base::didChangeResourcePriority(
+        frame, identifier, priority, intra_priority_value);
   }
 
   virtual void didFinishResourceLoad(blink::WebLocalFrame* frame,
@@ -238,15 +244,19 @@ class WebFrameTestProxy : public Base {
   }
 
   virtual blink::WebNavigationPolicy decidePolicyForNavigation(
-      blink::WebLocalFrame* frame, blink::WebDataSource::ExtraData* extraData,
-      const blink::WebURLRequest& request, blink::WebNavigationType type,
-      blink::WebNavigationPolicy defaultPolicy, bool isRedirect) {
+      blink::WebLocalFrame* frame,
+      blink::WebDataSource::ExtraData* extra_data,
+      const blink::WebURLRequest& request,
+      blink::WebNavigationType type,
+      blink::WebNavigationPolicy default_policy,
+      bool is_redirect) {
     blink::WebNavigationPolicy policy = base_proxy_->DecidePolicyForNavigation(
-        frame, extraData, request, type, defaultPolicy, isRedirect);
-    if (policy == blink::WebNavigationPolicyIgnore) return policy;
+        frame, extra_data, request, type, default_policy, is_redirect);
+    if (policy == blink::WebNavigationPolicyIgnore)
+      return policy;
 
-    return Base::decidePolicyForNavigation(frame, extraData, request, type,
-                                           defaultPolicy, isRedirect);
+    return Base::decidePolicyForNavigation(
+        frame, extra_data, request, type, default_policy, is_redirect);
   }
 
   virtual void willStartUsingPeerConnectionHandler(
@@ -260,19 +270,20 @@ class WebFrameTestProxy : public Base {
     return base_proxy_->GetUserMediaClient();
   }
 
-  
   virtual blink::WebMIDIClient* webMIDIClient() {
     return base_proxy_->GetWebMIDIClient();
   }
 
   virtual bool willCheckAndDispatchMessageEvent(
-      blink::WebLocalFrame* sourceFrame, blink::WebFrame* targetFrame,
-      blink::WebSecurityOrigin target, blink::WebDOMMessageEvent event) {
-    if (base_proxy_->WillCheckAndDispatchMessageEvent(sourceFrame, targetFrame,
-                                                      target, event))
+      blink::WebLocalFrame* source_frame,
+      blink::WebFrame* target_frame,
+      blink::WebSecurityOrigin target,
+      blink::WebDOMMessageEvent event) {
+    if (base_proxy_->WillCheckAndDispatchMessageEvent(
+            source_frame, target_frame, target, event))
       return true;
-    return Base::willCheckAndDispatchMessageEvent(sourceFrame, targetFrame,
-                                                  target, event);
+    return Base::willCheckAndDispatchMessageEvent(
+        source_frame, target_frame, target, event);
   }
 
   virtual void didStopLoading() {
@@ -282,8 +293,8 @@ class WebFrameTestProxy : public Base {
 
  private:
 #if defined(ENABLE_WEBRTC)
-  virtual scoped_ptr<MediaStreamRendererFactory>
-  CreateRendererFactory() OVERRIDE {
+  virtual scoped_ptr<MediaStreamRendererFactory> CreateRendererFactory()
+      OVERRIDE {
     return scoped_ptr<MediaStreamRendererFactory>(
         new TestMediaStreamRendererFactory());
   }
