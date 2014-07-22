@@ -17,6 +17,7 @@ from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import partial_mock
+from chromite.lib import patch_unittest
 
 import mock
 
@@ -221,6 +222,15 @@ class GitPushTest(cros_test_lib.MockTestCase):
         side_effect = lambda *_args, **_kwargs: results.pop(0)
         rc_mock.AddCmdResult(partial_mock.In('push'), side_effect=side_effect)
         self._RunGitPush()
+
+
+class GitBranchDetectionTest(patch_unittest.GitRepoPatchTestCase):
+  """Tests that git library functions related to branch detection work."""
+  def testDoesCommitExistInRepoWithAmbiguousBranchName(self):
+    git1 = self._MakeRepo('git1', self.source)
+    git.CreateBranch(git1, 'peach', track=True)
+    self.CommitFile(git1, 'peach', 'Keep me.')
+    self.assertTrue(git.DoesCommitExistInRepo(git1, 'peach'))
 
 
 if __name__ == '__main__':

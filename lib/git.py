@@ -214,7 +214,7 @@ def DoesCommitExistInRepo(cwd, commit):
     True if the commit exists in the repo.
   """
   try:
-    RunGit(cwd, ['rev-list', '-n1', commit])
+    RunGit(cwd, ['rev-list', '-n1', commit, '--'])
   except cros_build_lib.RunCommandError as e:
     if e.result.returncode == 128:
       return False
