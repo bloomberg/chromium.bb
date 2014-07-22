@@ -45,7 +45,7 @@ class TestConsumer: public EtwTraceConsumerBase<TestConsumer> {
   void ClearQueue() {
     for (EventQueue::const_iterator it(events_.begin()), end(events_.end());
          it != end; ++it) {
-      delete[] it->MofData;
+      delete[] reinterpret_cast<char*>(it->MofData);
     }
 
     events_.clear();
