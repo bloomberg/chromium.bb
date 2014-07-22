@@ -515,16 +515,13 @@ BOOL WINAPI Monitor2ClosePort(HANDLE port_handle) {
     SetLastError(ERROR_INVALID_PARAMETER);
     return FALSE;
   }
-  PortData* port_data = reinterpret_cast<PortData*>(port_handle);
-  delete port_data;
+  delete reinterpret_cast<PortData*>(port_handle);
   return TRUE;
 }
 
 VOID WINAPI Monitor2Shutdown(HANDLE monitor_handle) {
   if (monitor_handle != NULL) {
-    MonitorData* monitor_data =
-      reinterpret_cast<MonitorData*>(monitor_handle);
-    delete monitor_handle;
+    delete reinterpret_cast<MonitorData*>(monitor_handle);
   }
 }
 
@@ -581,8 +578,7 @@ DWORD WINAPI Monitor2XcvDataPort(HANDLE xcv_handle,
 }
 
 BOOL WINAPI Monitor2XcvClosePort(HANDLE handle) {
-  XcvUiData* xcv_data = reinterpret_cast<XcvUiData*>(handle);
-  delete xcv_data;
+  delete reinterpret_cast<XcvUiData*>(handle);
   return TRUE;
 }
 
