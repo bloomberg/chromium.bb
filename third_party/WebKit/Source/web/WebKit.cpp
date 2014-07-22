@@ -207,7 +207,6 @@ void shutdown()
 
     ASSERT(s_isolateInterruptor);
     blink::ThreadState::current()->removeInterruptor(s_isolateInterruptor);
-    blink::Scheduler::shutdown();
 
     // currentThread will always be non-null in production, but can be null in Chromium unit tests.
     if (Platform::current()->currentThread()) {
@@ -239,6 +238,7 @@ void shutdownWithoutV8()
     blink::CoreInitializer::shutdown();
     blink::Heap::shutdown();
     WTF::shutdown();
+    blink::Scheduler::shutdown();
     Platform::shutdown();
     WebPrerenderingSupport::shutdown();
 }
