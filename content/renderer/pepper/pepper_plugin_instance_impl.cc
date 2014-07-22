@@ -2384,9 +2384,11 @@ PP_Var PepperPluginInstanceImpl::ExecuteScript(PP_Instance instance,
   np_script.UTF8Length = script_string->value().length();
 
   // Get the current frame to pass to the evaluate function.
-  WebLocalFrame* frame = container_->element().document().frame();
-  if (!frame) {
-    try_catch.SetException("No frame to execute script in.");
+  WebLocalFrame* frame = NULL;
+  if (container_)
+    frame = container_->element().document().frame();
+  if (!frame || !frame->windowObject()) {
+    try_catch.SetException("No context in which to execute script.");
     return PP_MakeUndefined();
   }
 
