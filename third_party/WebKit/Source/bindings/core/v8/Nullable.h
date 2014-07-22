@@ -5,12 +5,14 @@
 #ifndef Nullable_h
 #define Nullable_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
 
 template <typename T>
 class Nullable {
+    DISALLOW_ALLOCATION();
 public:
     Nullable()
         : m_value()
@@ -39,6 +41,11 @@ public:
     bool operator==(const Nullable& other) const
     {
         return (m_isNull && other.m_isNull) || (!m_isNull && !other.m_isNull && m_value == other.m_value);
+    }
+
+    void trace(Visitor* visitor)
+    {
+        TraceIfNeeded<T>::trace(visitor, &m_value);
     }
 
 private:

@@ -55,7 +55,7 @@ public:
     void detachContextGroup();
 
 protected:
-    WebGLSharedObject(WebGLRenderingContextBase*);
+    explicit WebGLSharedObject(WebGLRenderingContextBase*);
 
     virtual bool hasGroupOrContext() const OVERRIDE FINAL
     {

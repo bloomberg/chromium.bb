@@ -34,8 +34,6 @@ CanvasContextAttributes::CanvasContextAttributes()
 {
 }
 
-CanvasContextAttributes::~CanvasContextAttributes()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CanvasContextAttributes);
 
 } // namespace blink

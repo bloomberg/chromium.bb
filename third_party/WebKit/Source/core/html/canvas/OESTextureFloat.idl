@@ -24,6 +24,7 @@
  */
 
 [
-    NoInterfaceObject
+    NoInterfaceObject,
+    WillBeGarbageCollected,
 ] interface OESTextureFloat {
 };

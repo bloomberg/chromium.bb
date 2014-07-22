@@ -159,7 +159,7 @@ bool Dictionary::getWithUndefinedOrNullCheck(const String& key, RefPtrWillBeMemb
     return true;
 }
 
-bool Dictionary::getWithUndefinedOrNullCheck(const String& key, RefPtr<Path2D>& value) const
+bool Dictionary::getWithUndefinedOrNullCheck(const String& key, RefPtrWillBeMember<Path2D>& value) const
 {
     v8::Local<v8::Value> v8Value;
     if (!getKey(key, v8Value) || blink::isUndefinedOrNull(v8Value))

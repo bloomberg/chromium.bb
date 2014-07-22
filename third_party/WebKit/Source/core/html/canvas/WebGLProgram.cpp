@@ -27,13 +27,14 @@
 
 #include "core/html/canvas/WebGLProgram.h"
 
+#include "core/html/canvas/WebGLContextGroup.h"
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 
 namespace blink {
 
-PassRefPtr<WebGLProgram> WebGLProgram::create(WebGLRenderingContextBase* ctx)
+PassRefPtrWillBeRawPtr<WebGLProgram> WebGLProgram::create(WebGLRenderingContextBase* ctx)
 {
-    return adoptRef(new WebGLProgram(ctx));
+    return adoptRefWillBeNoop(new WebGLProgram(ctx));
 }
 
 WebGLProgram::WebGLProgram(WebGLRenderingContextBase* ctx)
@@ -48,7 +49,22 @@ WebGLProgram::WebGLProgram(WebGLRenderingContextBase* ctx)
 
 WebGLProgram::~WebGLProgram()
 {
-    deleteObject(0);
+#if ENABLE(OILPAN)
+    // These heap objects handle detachment on their own. Clear out
+    // the references to prevent deleteObjectImpl() from trying to do
+    // same, as we cannot safely access other heap objects from this
+    // destructor.
+    m_vertexShader = nullptr;
+    m_fragmentShader = nullptr;
+#endif
+    // Always call detach here to ensure that platform object deletion
+    // happens with Oilpan enabled. It keeps the code regular to do it
+    // with or without Oilpan enabled.
+    //
+    // See comment in WebGLBuffer's destructor for additional
+    // information on why this is done for WebGLSharedObject-derived
+    // objects.
+    detachAndDeleteObject();
 }
 
 void WebGLProgram::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject obj)
@@ -174,7 +190,9 @@ void WebGLProgram::cacheInfoIfNeeded()
     if (!object())
         return;
 
-    blink::WebGraphicsContext3D* context = getAWebGraphicsContext3D();
+    if (!contextGroup())
+        return;
+    blink::WebGraphicsContext3D* context = contextGroup()->getAWebGraphicsContext3D();
     if (!context)
         return;
     GLint linkStatus = 0;
@@ -183,6 +201,13 @@ void WebGLProgram::cacheInfoIfNeeded()
     if (m_linkStatus)
         cacheActiveAttribLocations(context);
     m_infoValid = true;
+}
+
+void WebGLProgram::trace(Visitor* visitor)
+{
+    visitor->trace(m_vertexShader);
+    visitor->trace(m_fragmentShader);
+    WebGLSharedObject::trace(visitor);
 }
 
 }

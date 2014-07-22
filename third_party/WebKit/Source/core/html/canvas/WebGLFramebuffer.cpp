@@ -41,10 +41,14 @@ namespace {
 
     class WebGLRenderbufferAttachment FINAL : public WebGLFramebuffer::WebGLAttachment {
     public:
-        static PassRefPtr<WebGLFramebuffer::WebGLAttachment> create(WebGLRenderbuffer*);
+        static PassRefPtrWillBeRawPtr<WebGLFramebuffer::WebGLAttachment> create(WebGLRenderbuffer*);
+
+        virtual void trace(Visitor*) OVERRIDE;
 
     private:
-        WebGLRenderbufferAttachment(WebGLRenderbuffer*);
+        explicit WebGLRenderbufferAttachment(WebGLRenderbuffer*);
+        WebGLRenderbufferAttachment() { }
+
         virtual GLsizei width() const OVERRIDE;
         virtual GLsizei height() const OVERRIDE;
         virtual GLenum format() const OVERRIDE;
@@ -56,14 +60,18 @@ namespace {
         virtual void attach(blink::WebGraphicsContext3D*, GLenum attachment) OVERRIDE;
         virtual void unattach(blink::WebGraphicsContext3D*, GLenum attachment) OVERRIDE;
 
-        WebGLRenderbufferAttachment() { };
-
-        RefPtr<WebGLRenderbuffer> m_renderbuffer;
+        RefPtrWillBeMember<WebGLRenderbuffer> m_renderbuffer;
     };
 
-    PassRefPtr<WebGLFramebuffer::WebGLAttachment> WebGLRenderbufferAttachment::create(WebGLRenderbuffer* renderbuffer)
+    PassRefPtrWillBeRawPtr<WebGLFramebuffer::WebGLAttachment> WebGLRenderbufferAttachment::create(WebGLRenderbuffer* renderbuffer)
     {
-        return adoptRef(new WebGLRenderbufferAttachment(renderbuffer));
+        return adoptRefWillBeNoop(new WebGLRenderbufferAttachment(renderbuffer));
+    }
+
+    void WebGLRenderbufferAttachment::trace(Visitor* visitor)
+    {
+        visitor->trace(m_renderbuffer);
+        WebGLFramebuffer::WebGLAttachment::trace(visitor);
     }
 
     WebGLRenderbufferAttachment::WebGLRenderbufferAttachment(WebGLRenderbuffer* renderbuffer)
@@ -141,10 +149,14 @@ namespace {
 
     class WebGLTextureAttachment FINAL : public WebGLFramebuffer::WebGLAttachment {
     public:
-        static PassRefPtr<WebGLFramebuffer::WebGLAttachment> create(WebGLTexture*, GLenum target, GLint level);
+        static PassRefPtrWillBeRawPtr<WebGLFramebuffer::WebGLAttachment> create(WebGLTexture*, GLenum target, GLint level);
+
+        virtual void trace(Visitor*) OVERRIDE;
 
     private:
         WebGLTextureAttachment(WebGLTexture*, GLenum target, GLint level);
+        WebGLTextureAttachment() { }
+
         virtual GLsizei width() const OVERRIDE;
         virtual GLsizei height() const OVERRIDE;
         virtual GLenum format() const OVERRIDE;
@@ -156,16 +168,20 @@ namespace {
         virtual void attach(blink::WebGraphicsContext3D*, GLenum attachment) OVERRIDE;
         virtual void unattach(blink::WebGraphicsContext3D*, GLenum attachment) OVERRIDE;
 
-        WebGLTextureAttachment() { };
-
-        RefPtr<WebGLTexture> m_texture;
+        RefPtrWillBeMember<WebGLTexture> m_texture;
         GLenum m_target;
         GLint m_level;
     };
 
-    PassRefPtr<WebGLFramebuffer::WebGLAttachment> WebGLTextureAttachment::create(WebGLTexture* texture, GLenum target, GLint level)
+    PassRefPtrWillBeRawPtr<WebGLFramebuffer::WebGLAttachment> WebGLTextureAttachment::create(WebGLTexture* texture, GLenum target, GLint level)
     {
-        return adoptRef(new WebGLTextureAttachment(texture, target, level));
+        return adoptRefWillBeNoop(new WebGLTextureAttachment(texture, target, level));
+    }
+
+    void WebGLTextureAttachment::trace(Visitor* visitor)
+    {
+        visitor->trace(m_texture);
+        WebGLFramebuffer::WebGLAttachment::trace(visitor);
     }
 
     WebGLTextureAttachment::WebGLTextureAttachment(WebGLTexture* texture, GLenum target, GLint level)
@@ -253,9 +269,9 @@ WebGLFramebuffer::WebGLAttachment::~WebGLAttachment()
 {
 }
 
-PassRefPtr<WebGLFramebuffer> WebGLFramebuffer::create(WebGLRenderingContextBase* ctx)
+PassRefPtrWillBeRawPtr<WebGLFramebuffer> WebGLFramebuffer::create(WebGLRenderingContextBase* ctx)
 {
-    return adoptRef(new WebGLFramebuffer(ctx));
+    return adoptRefWillBeNoop(new WebGLFramebuffer(ctx));
 }
 
 WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx)
@@ -268,7 +284,15 @@ WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx)
 
 WebGLFramebuffer::~WebGLFramebuffer()
 {
-    deleteObject(0);
+    // Delete the platform framebuffer resource. Explicit detachment
+    // is for the benefit of Oilpan, where the framebuffer object
+    // isn't detached when it and the WebGLRenderingContextBase object
+    // it is registered with are both finalized. Without Oilpan, the
+    // object will have been detached.
+    //
+    // To keep the code regular, the trivial detach()ment is always
+    // performed.
+    detachAndDeleteObject();
 }
 
 void WebGLFramebuffer::setAttachmentForBoundFramebuffer(GLenum attachment, GLenum texTarget, WebGLTexture* texture, GLint level)
@@ -539,8 +563,17 @@ bool WebGLFramebuffer::hasStencilBuffer() const
 
 void WebGLFramebuffer::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject object)
 {
+#if !ENABLE(OILPAN)
+    // With Oilpan, both the AttachmentMap and its WebGLAttachment objects are
+    // GCed objects and cannot be accessed, as they may have been finalized
+    // already during the same GC sweep.
+    //
+    // The WebGLAttachment-derived classes instead handle detachment
+    // on their own when finalizing, so the explicit notification is
+    // not needed.
     for (AttachmentMap::iterator it = m_attachments.begin(); it != m_attachments.end(); ++it)
         it->value->onDetached(context3d);
+#endif
 
     context3d->deleteFramebuffer(object);
 }
@@ -593,6 +626,12 @@ GLenum WebGLFramebuffer::getDrawBuffer(GLenum drawBuffer)
     if (drawBuffer == GL_DRAW_BUFFER0_EXT)
         return GL_COLOR_ATTACHMENT0;
     return GL_NONE;
+}
+
+void WebGLFramebuffer::trace(Visitor* visitor)
+{
+    visitor->trace(m_attachments);
+    WebGLContextObject::trace(visitor);
 }
 
 }

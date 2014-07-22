@@ -50,9 +50,9 @@ WebGLExtensionName WebGLCompressedTexturePVRTC::name() const
     return WebGLCompressedTexturePVRTCName;
 }
 
-PassRefPtr<WebGLCompressedTexturePVRTC> WebGLCompressedTexturePVRTC::create(WebGLRenderingContextBase* context)
+PassRefPtrWillBeRawPtr<WebGLCompressedTexturePVRTC> WebGLCompressedTexturePVRTC::create(WebGLRenderingContextBase* context)
 {
-    return adoptRef(new WebGLCompressedTexturePVRTC(context));
+    return adoptRefWillBeNoop(new WebGLCompressedTexturePVRTC(context));
 }
 
 bool WebGLCompressedTexturePVRTC::supported(WebGLRenderingContextBase* context)

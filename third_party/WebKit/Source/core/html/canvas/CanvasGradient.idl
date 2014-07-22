@@ -25,9 +25,9 @@
  */
 [
     TypeChecking=Unrestricted,
+    WillBeGarbageCollected,
 ] interface CanvasGradient {
 
     [RaisesException] void addColorStop(float offset, DOMString color);
 
 };
-

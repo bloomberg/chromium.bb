@@ -28,12 +28,13 @@
 
 #include "core/html/canvas/WebGLExtensionName.h"
 #include "core/html/canvas/WebGLRenderingContextBase.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
 
-class WebGLExtension : public RefCounted<WebGLExtension> {
-    WTF_MAKE_FAST_ALLOCATED;
+class WebGLExtension : public RefCountedWillBeGarbageCollectedFinalized<WebGLExtension> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     WebGLRenderingContextBase* context() { return m_context; }
 
@@ -45,7 +46,7 @@ public:
     // is lost but must be lost when destroying their WebGLRenderingContextBase.
     virtual void lose(bool)
     {
-        m_context = 0;
+        m_context = nullptr;
     }
 
     bool isLost()
@@ -53,10 +54,12 @@ public:
         return !m_context;
     }
 
-protected:
-    WebGLExtension(WebGLRenderingContextBase*);
+    virtual void trace(Visitor*);
 
-    WebGLRenderingContextBase* m_context;
+protected:
+    explicit WebGLExtension(WebGLRenderingContextBase*);
+
+    RawPtrWillBeWeakMember<WebGLRenderingContextBase> m_context;
 };
 
 } // namespace blink

@@ -352,6 +352,13 @@ void CanvasRenderingContext2D::State::fontsNeedUpdate(CSSFontSelector* fontSelec
     m_font.update(fontSelector);
 }
 
+void CanvasRenderingContext2D::State::trace(Visitor* visitor)
+{
+    visitor->trace(m_strokeStyle);
+    visitor->trace(m_fillStyle);
+    CSSFontSelectorClient::trace(visitor);
+}
+
 void CanvasRenderingContext2D::realizeSaves()
 {
     validateStateStack();
@@ -398,9 +405,9 @@ CanvasStyle* CanvasRenderingContext2D::strokeStyle() const
     return state().m_strokeStyle.get();
 }
 
-void CanvasRenderingContext2D::setStrokeStyle(PassRefPtr<CanvasStyle> prpStyle)
+void CanvasRenderingContext2D::setStrokeStyle(PassRefPtrWillBeRawPtr<CanvasStyle> prpStyle)
 {
-    RefPtr<CanvasStyle> style = prpStyle;
+    RefPtrWillBeRawPtr<CanvasStyle> style = prpStyle;
 
     if (!style)
         return;
@@ -431,9 +438,9 @@ CanvasStyle* CanvasRenderingContext2D::fillStyle() const
     return state().m_fillStyle.get();
 }
 
-void CanvasRenderingContext2D::setFillStyle(PassRefPtr<CanvasStyle> prpStyle)
+void CanvasRenderingContext2D::setFillStyle(PassRefPtrWillBeRawPtr<CanvasStyle> prpStyle)
 {
-    RefPtr<CanvasStyle> style = prpStyle;
+    RefPtrWillBeRawPtr<CanvasStyle> style = prpStyle;
 
     if (!style)
         return;
@@ -1657,24 +1664,24 @@ template<class T> void CanvasRenderingContext2D::fullCanvasCompositedStroke(cons
     c->endLayer();
 }
 
-PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createLinearGradient(float x0, float y0, float x1, float y1)
+PassRefPtrWillBeRawPtr<CanvasGradient> CanvasRenderingContext2D::createLinearGradient(float x0, float y0, float x1, float y1)
 {
-    RefPtr<CanvasGradient> gradient = CanvasGradient::create(FloatPoint(x0, y0), FloatPoint(x1, y1));
+    RefPtrWillBeRawPtr<CanvasGradient> gradient = CanvasGradient::create(FloatPoint(x0, y0), FloatPoint(x1, y1));
     return gradient.release();
 }
 
-PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<CanvasGradient> CanvasRenderingContext2D::createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState& exceptionState)
 {
     if (r0 < 0 || r1 < 0) {
         exceptionState.throwDOMException(IndexSizeError, String::format("The %s provided is less than 0.", r0 < 0 ? "r0" : "r1"));
         return nullptr;
     }
 
-    RefPtr<CanvasGradient> gradient = CanvasGradient::create(FloatPoint(x0, y0), r0, FloatPoint(x1, y1), r1);
+    RefPtrWillBeRawPtr<CanvasGradient> gradient = CanvasGradient::create(FloatPoint(x0, y0), r0, FloatPoint(x1, y1), r1);
     return gradient.release();
 }
 
-PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(CanvasImageSource* imageSource,
+PassRefPtrWillBeRawPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(CanvasImageSource* imageSource,
     const String& repetitionType, ExceptionState& exceptionState)
 {
     bool repeatX, repeatY;
@@ -2056,9 +2063,9 @@ static String normalizeSpaces(const String& text)
     return String(charVector);
 }
 
-PassRefPtr<TextMetrics> CanvasRenderingContext2D::measureText(const String& text)
+PassRefPtrWillBeRawPtr<TextMetrics> CanvasRenderingContext2D::measureText(const String& text)
 {
-    RefPtr<TextMetrics> metrics = TextMetrics::create();
+    RefPtrWillBeRawPtr<TextMetrics> metrics = TextMetrics::create();
 
     // The style resolution required for rendering text is not available in frame-less documents.
     if (!canvas()->document().frame())
@@ -2280,9 +2287,9 @@ void CanvasRenderingContext2D::setImageSmoothingEnabled(bool enabled)
         c->setImageInterpolationQuality(enabled ? CanvasDefaultInterpolationQuality : InterpolationNone);
 }
 
-PassRefPtr<Canvas2DContextAttributes> CanvasRenderingContext2D::getContextAttributes() const
+PassRefPtrWillBeRawPtr<Canvas2DContextAttributes> CanvasRenderingContext2D::getContextAttributes() const
 {
-    RefPtr<Canvas2DContextAttributes> attributes = Canvas2DContextAttributes::create();
+    RefPtrWillBeRawPtr<Canvas2DContextAttributes> attributes = Canvas2DContextAttributes::create();
     attributes->setAlpha(m_hasAlpha);
     return attributes.release();
 }
@@ -2367,7 +2374,7 @@ void CanvasRenderingContext2D::addHitRegion(const Dictionary& options, Exception
         return;
     }
 
-    RefPtr<Path2D> path2d;
+    RefPtrWillBeMember<Path2D> path2d;
     options.getWithUndefinedOrNullCheck("path", path2d);
     Path hitRegionPath = path2d ? path2d->path() : m_path;
 

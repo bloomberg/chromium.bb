@@ -34,15 +34,17 @@
 
 namespace blink {
 
-class WebGLActiveInfo : public RefCounted<WebGLActiveInfo>, public ScriptWrappable {
+class WebGLActiveInfo FINAL : public RefCountedWillBeGarbageCollectedFinalized<WebGLActiveInfo>, public ScriptWrappable {
 public:
-    static PassRefPtr<WebGLActiveInfo> create(const String& name, GLenum type, GLint size)
+    static PassRefPtrWillBeRawPtr<WebGLActiveInfo> create(const String& name, GLenum type, GLint size)
     {
-        return adoptRef(new WebGLActiveInfo(name, type, size));
+        return adoptRefWillBeNoop(new WebGLActiveInfo(name, type, size));
     }
     String name() const { return m_name; }
     GLenum type() const { return m_type; }
     GLint size() const { return m_size; }
+
+    void trace(Visitor*) { }
 
 private:
     WebGLActiveInfo(const String& name, GLenum type, GLint size)

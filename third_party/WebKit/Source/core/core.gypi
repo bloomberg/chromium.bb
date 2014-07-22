@@ -2591,6 +2591,8 @@
             'html/canvas/WebGLShaderPrecisionFormat.h',
             'html/canvas/WebGLSharedObject.cpp',
             'html/canvas/WebGLSharedObject.h',
+            'html/canvas/WebGLSharedWebGraphicsContext3D.cpp',
+            'html/canvas/WebGLSharedWebGraphicsContext3D.h',
             'html/canvas/WebGLTexture.cpp',
             'html/canvas/WebGLTexture.h',
             'html/canvas/WebGLUniformLocation.cpp',

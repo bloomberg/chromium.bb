@@ -37,7 +37,7 @@ class WebGLShader FINAL : public WebGLSharedObject, public ScriptWrappable {
 public:
     virtual ~WebGLShader();
 
-    static PassRefPtr<WebGLShader> create(WebGLRenderingContextBase*, GLenum);
+    static PassRefPtrWillBeRawPtr<WebGLShader> create(WebGLRenderingContextBase*, GLenum);
 
     GLenum type() const { return m_type; }
     const String& source() const { return m_source; }

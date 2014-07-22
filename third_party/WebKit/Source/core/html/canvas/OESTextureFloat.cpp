@@ -49,9 +49,9 @@ WebGLExtensionName OESTextureFloat::name() const
     return OESTextureFloatName;
 }
 
-PassRefPtr<OESTextureFloat> OESTextureFloat::create(WebGLRenderingContextBase* context)
+PassRefPtrWillBeRawPtr<OESTextureFloat> OESTextureFloat::create(WebGLRenderingContextBase* context)
 {
-    return adoptRef(new OESTextureFloat(context));
+    return adoptRefWillBeNoop(new OESTextureFloat(context));
 }
 
 bool OESTextureFloat::supported(WebGLRenderingContextBase* context)

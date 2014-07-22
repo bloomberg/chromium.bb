@@ -34,7 +34,7 @@ namespace blink {
 
 class WebGLDrawBuffers FINAL : public WebGLExtension, public ScriptWrappable {
 public:
-    static PassRefPtr<WebGLDrawBuffers> create(WebGLRenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<WebGLDrawBuffers> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
@@ -44,7 +44,7 @@ public:
     void drawBuffersWEBGL(const Vector<GLenum>& buffers);
 
 private:
-    WebGLDrawBuffers(WebGLRenderingContextBase*);
+    explicit WebGLDrawBuffers(WebGLRenderingContextBase*);
 
     static bool satisfiesWebGLRequirements(WebGLRenderingContextBase*);
 };

@@ -49,6 +49,7 @@ namespace blink {
 // decrements the reference count of the target object.
 
 class WebGLGetInfo FINAL {
+    STACK_ALLOCATED();
 public:
     enum Type {
         kTypeBool,
@@ -79,18 +80,18 @@ public:
     WebGLGetInfo();
     explicit WebGLGetInfo(const String& value);
     explicit WebGLGetInfo(unsigned value);
-    explicit WebGLGetInfo(PassRefPtr<WebGLBuffer> value);
+    explicit WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLBuffer> value);
     explicit WebGLGetInfo(PassRefPtr<Float32Array> value);
-    explicit WebGLGetInfo(PassRefPtr<WebGLFramebuffer> value);
+    explicit WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLFramebuffer> value);
     explicit WebGLGetInfo(PassRefPtr<Int32Array> value);
     // FIXME: implement WebGLObjectArray
-    // WebGLGetInfo(PassRefPtr<WebGLObjectArray> value);
-    explicit WebGLGetInfo(PassRefPtr<WebGLProgram> value);
-    explicit WebGLGetInfo(PassRefPtr<WebGLRenderbuffer> value);
-    explicit WebGLGetInfo(PassRefPtr<WebGLTexture> value);
+    // WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObjectArray> value);
+    explicit WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLProgram> value);
+    explicit WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLRenderbuffer> value);
+    explicit WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLTexture> value);
     explicit WebGLGetInfo(PassRefPtr<Uint8Array> value);
     explicit WebGLGetInfo(PassRefPtr<Uint32Array> value);
-    explicit WebGLGetInfo(PassRefPtr<WebGLVertexArrayObjectOES> value);
+    explicit WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> value);
 
     Type getType() const;
 
@@ -100,18 +101,18 @@ public:
     int getInt() const;
     const String& getString() const;
     unsigned getUnsignedInt() const;
-    PassRefPtr<WebGLBuffer> getWebGLBuffer() const;
+    PassRefPtrWillBeRawPtr<WebGLBuffer> getWebGLBuffer() const;
     PassRefPtr<Float32Array> getWebGLFloatArray() const;
-    PassRefPtr<WebGLFramebuffer> getWebGLFramebuffer() const;
+    PassRefPtrWillBeRawPtr<WebGLFramebuffer> getWebGLFramebuffer() const;
     PassRefPtr<Int32Array> getWebGLIntArray() const;
     // FIXME: implement WebGLObjectArray
     // PassRefPtr<WebGLObjectArray> getWebGLObjectArray() const;
-    PassRefPtr<WebGLProgram> getWebGLProgram() const;
-    PassRefPtr<WebGLRenderbuffer> getWebGLRenderbuffer() const;
-    PassRefPtr<WebGLTexture> getWebGLTexture() const;
+    PassRefPtrWillBeRawPtr<WebGLProgram> getWebGLProgram() const;
+    PassRefPtrWillBeRawPtr<WebGLRenderbuffer> getWebGLRenderbuffer() const;
+    PassRefPtrWillBeRawPtr<WebGLTexture> getWebGLTexture() const;
     PassRefPtr<Uint8Array> getWebGLUnsignedByteArray() const;
     PassRefPtr<Uint32Array> getWebGLUnsignedIntArray() const;
-    PassRefPtr<WebGLVertexArrayObjectOES> getWebGLVertexArrayObjectOES() const;
+    PassRefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> getWebGLVertexArrayObjectOES() const;
 
 private:
     Type m_type;
@@ -121,18 +122,18 @@ private:
     int m_int;
     String m_string;
     unsigned m_unsignedInt;
-    RefPtr<WebGLBuffer> m_webglBuffer;
+    RefPtrWillBeMember<WebGLBuffer> m_webglBuffer;
     RefPtr<Float32Array> m_webglFloatArray;
-    RefPtr<WebGLFramebuffer> m_webglFramebuffer;
+    RefPtrWillBeMember<WebGLFramebuffer> m_webglFramebuffer;
     RefPtr<Int32Array> m_webglIntArray;
     // FIXME: implement WebGLObjectArray
     // RefPtr<WebGLObjectArray> m_webglObjectArray;
-    RefPtr<WebGLProgram> m_webglProgram;
-    RefPtr<WebGLRenderbuffer> m_webglRenderbuffer;
-    RefPtr<WebGLTexture> m_webglTexture;
+    RefPtrWillBeMember<WebGLProgram> m_webglProgram;
+    RefPtrWillBeMember<WebGLRenderbuffer> m_webglRenderbuffer;
+    RefPtrWillBeMember<WebGLTexture> m_webglTexture;
     RefPtr<Uint8Array> m_webglUnsignedByteArray;
     RefPtr<Uint32Array> m_webglUnsignedIntArray;
-    RefPtr<WebGLVertexArrayObjectOES> m_webglVertexArrayObject;
+    RefPtrWillBeMember<WebGLVertexArrayObjectOES> m_webglVertexArrayObject;
 };
 
 } // namespace blink

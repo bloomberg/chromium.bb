@@ -39,11 +39,10 @@ enum Canvas2DContextStorage {
 };
 
 class Canvas2DContextAttributes : public CanvasContextAttributes, public ScriptWrappable {
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(Canvas2DContextAttributes);
 public:
-    virtual ~Canvas2DContextAttributes();
-
     // Create a new attributes object
-    static PassRefPtr<Canvas2DContextAttributes> create();
+    static PassRefPtrWillBeRawPtr<Canvas2DContextAttributes> create();
 
     // Whether or not the drawing buffer has an alpha channel; default=true
     bool alpha() const;

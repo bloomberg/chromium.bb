@@ -42,7 +42,7 @@ public:
     };
     virtual ~WebGLTexture();
 
-    static PassRefPtr<WebGLTexture> create(WebGLRenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<WebGLTexture> create(WebGLRenderingContextBase*);
 
     void setTarget(GLenum target, GLint maxLevel);
     void setParameteri(GLenum pname, GLint param);
@@ -76,7 +76,7 @@ public:
     static GLint computeLevelCount(GLsizei width, GLsizei height);
 
 protected:
-    WebGLTexture(WebGLRenderingContextBase*);
+    explicit WebGLTexture(WebGLRenderingContextBase*);
 
     virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) OVERRIDE;
 

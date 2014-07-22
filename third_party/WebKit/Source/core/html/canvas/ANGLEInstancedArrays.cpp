@@ -52,9 +52,9 @@ WebGLExtensionName ANGLEInstancedArrays::name() const
     return ANGLEInstancedArraysName;
 }
 
-PassRefPtr<ANGLEInstancedArrays> ANGLEInstancedArrays::create(WebGLRenderingContextBase* context)
+PassRefPtrWillBeRawPtr<ANGLEInstancedArrays> ANGLEInstancedArrays::create(WebGLRenderingContextBase* context)
 {
-    return adoptRef(new ANGLEInstancedArrays(context));
+    return adoptRefWillBeNoop(new ANGLEInstancedArrays(context));
 }
 
 bool ANGLEInstancedArrays::supported(WebGLRenderingContextBase* context)

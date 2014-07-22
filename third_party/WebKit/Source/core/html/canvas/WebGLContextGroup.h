@@ -58,13 +58,19 @@ public:
 
     void loseContextGroup(WebGLRenderingContextBase::LostContextMode);
 
-  private:
+private:
     friend class WebGLObject;
 
     WebGLContextGroup();
 
     void detachAndRemoveAllObjects();
 
+    // FIXME: Oilpan: this object is not on the heap, but keeps bare
+    // pointers to garbage collected objects in the two hash sets
+    // below. The objects are responsible for managing their
+    // registration with WebGLContextGroup, and vice versa, the
+    // WebGLContextGroup takes care of detaching the group objects if
+    // the set of WebGLRenderingContextBase contexts becomes empty.
     HashSet<WebGLRenderingContextBase*> m_contexts;
     HashSet<WebGLSharedObject*> m_groupObjects;
 };

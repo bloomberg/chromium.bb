@@ -37,18 +37,20 @@ namespace blink {
 class ExceptionState;
 class Image;
 
-class CanvasPattern : public RefCounted<CanvasPattern>, public ScriptWrappable {
+class CanvasPattern FINAL : public RefCountedWillBeGarbageCollectedFinalized<CanvasPattern>, public ScriptWrappable {
 public:
     static void parseRepetitionType(const String&, bool& repeatX, bool& repeatY, ExceptionState&);
 
-    static PassRefPtr<CanvasPattern> create(PassRefPtr<Image> image, bool repeatX, bool repeatY, bool originClean)
+    static PassRefPtrWillBeRawPtr<CanvasPattern> create(PassRefPtr<Image> image, bool repeatX, bool repeatY, bool originClean)
     {
-        return adoptRef(new CanvasPattern(image, repeatX, repeatY, originClean));
+        return adoptRefWillBeNoop(new CanvasPattern(image, repeatX, repeatY, originClean));
     }
 
     Pattern* pattern() const { return m_pattern.get(); }
 
     bool originClean() const { return m_originClean; }
+
+    void trace(Visitor*) { }
 
 private:
     CanvasPattern(PassRefPtr<Image>, bool repeatX, bool repeatY, bool originClean);

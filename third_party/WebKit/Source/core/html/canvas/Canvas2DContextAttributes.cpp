@@ -39,13 +39,11 @@ Canvas2DContextAttributes::Canvas2DContextAttributes()
     ScriptWrappable::init(this);
 }
 
-Canvas2DContextAttributes::~Canvas2DContextAttributes()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Canvas2DContextAttributes);
 
-PassRefPtr<Canvas2DContextAttributes> Canvas2DContextAttributes::create()
+PassRefPtrWillBeRawPtr<Canvas2DContextAttributes> Canvas2DContextAttributes::create()
 {
-    return adoptRef(new Canvas2DContextAttributes());
+    return adoptRefWillBeNoop(new Canvas2DContextAttributes());
 }
 
 bool Canvas2DContextAttributes::alpha() const

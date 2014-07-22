@@ -128,7 +128,7 @@ public:
 
     bool getWithUndefinedOrNullCheck(const String&, String&) const;
     bool getWithUndefinedOrNullCheck(const String&, RefPtrWillBeMember<Element>&) const;
-    bool getWithUndefinedOrNullCheck(const String&, RefPtr<Path2D>&) const;
+    bool getWithUndefinedOrNullCheck(const String&, RefPtrWillBeMember<Path2D>&) const;
 
     bool hasProperty(const String&) const;
 

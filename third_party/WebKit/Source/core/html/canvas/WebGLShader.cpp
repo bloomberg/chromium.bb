@@ -31,9 +31,9 @@
 
 namespace blink {
 
-PassRefPtr<WebGLShader> WebGLShader::create(WebGLRenderingContextBase* ctx, GLenum type)
+PassRefPtrWillBeRawPtr<WebGLShader> WebGLShader::create(WebGLRenderingContextBase* ctx, GLenum type)
 {
-    return adoptRef(new WebGLShader(ctx, type));
+    return adoptRefWillBeNoop(new WebGLShader(ctx, type));
 }
 
 WebGLShader::WebGLShader(WebGLRenderingContextBase* ctx, GLenum type)
@@ -47,7 +47,14 @@ WebGLShader::WebGLShader(WebGLRenderingContextBase* ctx, GLenum type)
 
 WebGLShader::~WebGLShader()
 {
-    deleteObject(0);
+    // Always call detach here to ensure that platform object deletion
+    // happens with Oilpan enabled. It keeps the code regular to do it
+    // with or without Oilpan enabled.
+    //
+    // See comment in WebGLBuffer's destructor for additional
+    // information on why this is done for WebGLSharedObject-derived
+    // objects.
+    detachAndDeleteObject();
 }
 
 void WebGLShader::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Platform3DObject object)

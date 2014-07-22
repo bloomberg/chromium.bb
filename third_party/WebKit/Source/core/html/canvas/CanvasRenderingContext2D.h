@@ -75,10 +75,10 @@ public:
     virtual ~CanvasRenderingContext2D();
 
     CanvasStyle* strokeStyle() const;
-    void setStrokeStyle(PassRefPtr<CanvasStyle>);
+    void setStrokeStyle(PassRefPtrWillBeRawPtr<CanvasStyle>);
 
     CanvasStyle* fillStyle() const;
-    void setFillStyle(PassRefPtr<CanvasStyle>);
+    void setFillStyle(PassRefPtrWillBeRawPtr<CanvasStyle>);
 
     float lineWidth() const;
     void setLineWidth(float);
@@ -190,9 +190,9 @@ public:
 
     void setCompositeOperation(const String&);
 
-    PassRefPtr<CanvasGradient> createLinearGradient(float x0, float y0, float x1, float y1);
-    PassRefPtr<CanvasGradient> createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState&);
-    PassRefPtr<CanvasPattern> createPattern(CanvasImageSource*, const String& repetitionType, ExceptionState&);
+    PassRefPtrWillBeRawPtr<CanvasGradient> createLinearGradient(float x0, float y0, float x1, float y1);
+    PassRefPtrWillBeRawPtr<CanvasGradient> createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState&);
+    PassRefPtrWillBeRawPtr<CanvasPattern> createPattern(CanvasImageSource*, const String& repetitionType, ExceptionState&);
 
     PassRefPtrWillBeRawPtr<ImageData> createImageData(PassRefPtrWillBeRawPtr<ImageData>) const;
     PassRefPtrWillBeRawPtr<ImageData> createImageData(float width, float height, ExceptionState&) const;
@@ -215,7 +215,7 @@ public:
     void fillText(const String& text, float x, float y, float maxWidth);
     void strokeText(const String& text, float x, float y);
     void strokeText(const String& text, float x, float y, float maxWidth);
-    PassRefPtr<TextMetrics> measureText(const String& text);
+    PassRefPtrWillBeRawPtr<TextMetrics> measureText(const String& text);
 
     LineCap getLineCap() const { return state().m_lineCap; }
     LineJoin getLineJoin() const { return state().m_lineJoin; }
@@ -223,7 +223,7 @@ public:
     bool imageSmoothingEnabled() const;
     void setImageSmoothingEnabled(bool);
 
-    PassRefPtr<Canvas2DContextAttributes> getContextAttributes() const;
+    PassRefPtrWillBeRawPtr<Canvas2DContextAttributes> getContextAttributes() const;
 
     void drawFocusIfNeeded(Element*);
     void drawFocusIfNeeded(Path2D*, Element*);
@@ -252,14 +252,14 @@ private:
         // CSSFontSelectorClient implementation
         virtual void fontsNeedUpdate(CSSFontSelector*) OVERRIDE;
 
-        virtual void trace(Visitor* visitor) OVERRIDE { CSSFontSelectorClient::trace(visitor); }
+        virtual void trace(Visitor*) OVERRIDE;
 
         unsigned m_unrealizedSaveCount;
 
         String m_unparsedStrokeColor;
         String m_unparsedFillColor;
-        RefPtr<CanvasStyle> m_strokeStyle;
-        RefPtr<CanvasStyle> m_fillStyle;
+        RefPtrWillBeMember<CanvasStyle> m_strokeStyle;
+        RefPtrWillBeMember<CanvasStyle> m_fillStyle;
         float m_lineWidth;
         LineCap m_lineCap;
         LineJoin m_lineJoin;

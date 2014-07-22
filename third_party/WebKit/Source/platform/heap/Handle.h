@@ -676,21 +676,28 @@ public:
     }
 };
 
-template<bool needsTracing, typename T>
-struct StdPairHelper;
+template<typename T, bool needsTracing>
+struct TraceIfEnabled;
 
 template<typename T>
-struct StdPairHelper<false, T>  {
+struct TraceIfEnabled<T, false>  {
     static void trace(Visitor*, T*) { }
 };
 
 template<typename T>
-struct StdPairHelper<true, T> {
+struct TraceIfEnabled<T, true> {
     static void trace(Visitor* visitor, T* t)
     {
         visitor->trace(*t);
     }
 };
+
+template <typename T> struct RemoveHeapPointerWrapperTypes {
+    typedef typename WTF::RemoveTemplate<typename WTF::RemoveTemplate<typename WTF::RemoveTemplate<T, Member>::Type, WeakMember>::Type, RawPtr>::Type Type;
+};
+
+template<typename T>
+struct TraceIfNeeded : public TraceIfEnabled<T, WebCore::IsGarbageCollectedType<typename RemoveHeapPointerWrapperTypes<typename WTF::RemovePointer<T>::Type>::Type>::value> { };
 
 // This trace trait for std::pair will null weak members if their referent is
 // collected. If you have a collection that contain weakness it does not remove
@@ -702,8 +709,8 @@ public:
     static const bool secondNeedsTracing = WTF::NeedsTracing<U>::value || WTF::IsWeak<U>::value;
     static void trace(Visitor* visitor, std::pair<T, U>* pair)
     {
-        StdPairHelper<firstNeedsTracing, T>::trace(visitor, &pair->first);
-        StdPairHelper<secondNeedsTracing, U>::trace(visitor, &pair->second);
+        TraceIfEnabled<T, firstNeedsTracing>::trace(visitor, &pair->first);
+        TraceIfEnabled<U, secondNeedsTracing>::trace(visitor, &pair->second);
     }
 };
 

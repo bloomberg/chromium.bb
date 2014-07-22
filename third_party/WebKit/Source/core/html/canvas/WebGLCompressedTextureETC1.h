@@ -15,7 +15,7 @@ class WebGLTexture;
 
 class WebGLCompressedTextureETC1 FINAL : public WebGLExtension, public ScriptWrappable {
 public:
-    static PassRefPtr<WebGLCompressedTextureETC1> create(WebGLRenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<WebGLCompressedTextureETC1> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
@@ -23,7 +23,7 @@ public:
     virtual WebGLExtensionName name() const OVERRIDE;
 
 private:
-    WebGLCompressedTextureETC1(WebGLRenderingContextBase*);
+    explicit WebGLCompressedTextureETC1(WebGLRenderingContextBase*);
 };
 
 } // namespace blink

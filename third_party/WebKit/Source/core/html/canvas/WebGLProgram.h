@@ -38,7 +38,7 @@ class WebGLProgram FINAL : public WebGLSharedObject, public ScriptWrappable {
 public:
     virtual ~WebGLProgram();
 
-    static PassRefPtr<WebGLProgram> create(WebGLRenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<WebGLProgram> create(WebGLRenderingContextBase*);
 
     unsigned numActiveAttribLocations();
     GLint getActiveAttribLocation(GLuint index);
@@ -59,8 +59,10 @@ public:
     bool attachShader(WebGLShader*);
     bool detachShader(WebGLShader*);
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
-    WebGLProgram(WebGLRenderingContextBase*);
+    explicit WebGLProgram(WebGLRenderingContextBase*);
 
     virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) OVERRIDE;
 
@@ -78,8 +80,8 @@ private:
     // program or not.
     unsigned m_linkCount;
 
-    RefPtr<WebGLShader> m_vertexShader;
-    RefPtr<WebGLShader> m_fragmentShader;
+    RefPtrWillBeMember<WebGLShader> m_vertexShader;
+    RefPtrWillBeMember<WebGLShader> m_fragmentShader;
 
     bool m_infoValid;
 };

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 [
-    NoInterfaceObject
+    NoInterfaceObject,
+    WillBeGarbageCollected,
 ] interface EXTShaderTextureLOD {
 };

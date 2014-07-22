@@ -45,9 +45,9 @@ WebGLExtensionName WebGLDepthTexture::name() const
     return WebGLDepthTextureName;
 }
 
-PassRefPtr<WebGLDepthTexture> WebGLDepthTexture::create(WebGLRenderingContextBase* context)
+PassRefPtrWillBeRawPtr<WebGLDepthTexture> WebGLDepthTexture::create(WebGLRenderingContextBase* context)
 {
-    return adoptRef(new WebGLDepthTexture(context));
+    return adoptRefWillBeNoop(new WebGLDepthTexture(context));
 }
 
 bool WebGLDepthTexture::supported(WebGLRenderingContextBase* context)

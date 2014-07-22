@@ -37,20 +37,20 @@ class WebGLVertexArrayObjectOES;
 
 class OESVertexArrayObject FINAL : public WebGLExtension, public ScriptWrappable {
 public:
-    static PassRefPtr<OESVertexArrayObject> create(WebGLRenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<OESVertexArrayObject> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
     virtual ~OESVertexArrayObject();
     virtual WebGLExtensionName name() const OVERRIDE;
 
-    PassRefPtr<WebGLVertexArrayObjectOES> createVertexArrayOES();
+    PassRefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> createVertexArrayOES();
     void deleteVertexArrayOES(WebGLVertexArrayObjectOES*);
     GLboolean isVertexArrayOES(WebGLVertexArrayObjectOES*);
     void bindVertexArrayOES(WebGLVertexArrayObjectOES*);
 
 private:
-    OESVertexArrayObject(WebGLRenderingContextBase*);
+    explicit OESVertexArrayObject(WebGLRenderingContextBase*);
 };
 
 } // namespace blink

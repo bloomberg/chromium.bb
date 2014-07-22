@@ -37,7 +37,7 @@ class WebGLBuffer FINAL : public WebGLSharedObject, public ScriptWrappable {
 public:
     virtual ~WebGLBuffer();
 
-    static PassRefPtr<WebGLBuffer> create(WebGLRenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<WebGLBuffer> create(WebGLRenderingContextBase*);
 
     GLenum getTarget() const { return m_target; }
     void setTarget(GLenum);
@@ -45,7 +45,7 @@ public:
     bool hasEverBeenBound() const { return object() && m_target; }
 
 protected:
-    WebGLBuffer(WebGLRenderingContextBase*);
+    explicit WebGLBuffer(WebGLRenderingContextBase*);
 
     virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) OVERRIDE;
 

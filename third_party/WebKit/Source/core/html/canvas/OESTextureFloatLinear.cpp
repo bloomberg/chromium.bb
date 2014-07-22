@@ -45,9 +45,9 @@ WebGLExtensionName OESTextureFloatLinear::name() const
     return OESTextureFloatLinearName;
 }
 
-PassRefPtr<OESTextureFloatLinear> OESTextureFloatLinear::create(WebGLRenderingContextBase* context)
+PassRefPtrWillBeRawPtr<OESTextureFloatLinear> OESTextureFloatLinear::create(WebGLRenderingContextBase* context)
 {
-    return adoptRef(new OESTextureFloatLinear(context));
+    return adoptRefWillBeNoop(new OESTextureFloatLinear(context));
 }
 
 bool OESTextureFloatLinear::supported(WebGLRenderingContextBase* context)

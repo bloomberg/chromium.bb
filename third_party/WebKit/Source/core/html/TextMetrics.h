@@ -27,14 +27,15 @@
 #define TextMetrics_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
 
-class TextMetrics : public RefCounted<TextMetrics>, public ScriptWrappable {
+class TextMetrics FINAL : public RefCountedWillBeGarbageCollected<TextMetrics>, public ScriptWrappable {
 public:
-    static PassRefPtr<TextMetrics> create() { return adoptRef(new TextMetrics); }
+    static PassRefPtrWillBeRawPtr<TextMetrics> create() { return adoptRefWillBeNoop(new TextMetrics); }
 
     float width() const { return m_width; }
     void setWidth(float w) { m_width = w; }
@@ -71,6 +72,8 @@ public:
 
     float ideographicBaseline() const { return m_ideographicBaseline; }
     void setIdeographicBaseline(float ideographicBaseline) { m_ideographicBaseline = ideographicBaseline; }
+
+    void trace(Visitor*) { }
 
 private:
     TextMetrics()

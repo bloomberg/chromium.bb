@@ -39,7 +39,7 @@ public:
         UNMASKED_RENDERER_WEBGL = 0x9246
     };
 
-    static PassRefPtr<WebGLDebugRendererInfo> create(WebGLRenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<WebGLDebugRendererInfo> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
@@ -47,7 +47,7 @@ public:
     virtual WebGLExtensionName name() const OVERRIDE;
 
 private:
-    WebGLDebugRendererInfo(WebGLRenderingContextBase*);
+    explicit WebGLDebugRendererInfo(WebGLRenderingContextBase*);
 };
 
 } // namespace blink

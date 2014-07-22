@@ -34,7 +34,7 @@ namespace blink {
 
 class WebGLDepthTexture FINAL : public WebGLExtension, public ScriptWrappable {
 public:
-    static PassRefPtr<WebGLDepthTexture> create(WebGLRenderingContextBase*);
+    static PassRefPtrWillBeRawPtr<WebGLDepthTexture> create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
@@ -42,7 +42,7 @@ public:
     virtual WebGLExtensionName name() const OVERRIDE;
 
 private:
-    WebGLDepthTexture(WebGLRenderingContextBase*);
+    explicit WebGLDepthTexture(WebGLRenderingContextBase*);
 };
 
 } // namespace blink

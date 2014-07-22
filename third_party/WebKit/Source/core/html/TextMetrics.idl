@@ -23,6 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 [
+    WillBeGarbageCollected,
 ] interface TextMetrics {
     // x-direction
     readonly attribute float width;
@@ -40,4 +41,3 @@
     [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float alphabeticBaseline;
     [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float ideographicBaseline;
 };
-

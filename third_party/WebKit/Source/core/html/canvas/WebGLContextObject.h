@@ -35,6 +35,7 @@ class WebGraphicsContext3D;
 namespace blink {
 
 class WebGLRenderingContextBase;
+class WebGLSharedWebGraphicsContext3D;
 
 // WebGLContextObject the base class for objects that are owned by a specific
 // WebGLRenderingContextBase.
@@ -51,8 +52,10 @@ public:
 
     void detachContext();
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
-    WebGLContextObject(WebGLRenderingContextBase*);
+    explicit WebGLContextObject(WebGLRenderingContextBase*);
 
     virtual bool hasGroupOrContext() const OVERRIDE FINAL
     {
@@ -62,7 +65,10 @@ protected:
     virtual blink::WebGraphicsContext3D* getAWebGraphicsContext3D() const OVERRIDE FINAL;
 
 private:
-    WebGLRenderingContextBase* m_context;
+    RawPtrWillBeMember<WebGLRenderingContextBase> m_context;
+#if ENABLE(OILPAN)
+    RefPtr<WebGLSharedWebGraphicsContext3D> m_sharedWebGraphicsContext3D;
+#endif
 };
 
 } // namespace blink

@@ -29,6 +29,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/graphics/Gradient.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -37,20 +38,22 @@ namespace blink {
 
 class ExceptionState;
 
-class CanvasGradient : public RefCounted<CanvasGradient>, public ScriptWrappable {
+class CanvasGradient FINAL : public RefCountedWillBeGarbageCollectedFinalized<CanvasGradient>, public ScriptWrappable {
 public:
-    static PassRefPtr<CanvasGradient> create(const FloatPoint& p0, const FloatPoint& p1)
+    static PassRefPtrWillBeRawPtr<CanvasGradient> create(const FloatPoint& p0, const FloatPoint& p1)
     {
-        return adoptRef(new CanvasGradient(p0, p1));
+        return adoptRefWillBeNoop(new CanvasGradient(p0, p1));
     }
-    static PassRefPtr<CanvasGradient> create(const FloatPoint& p0, float r0, const FloatPoint& p1, float r1)
+    static PassRefPtrWillBeRawPtr<CanvasGradient> create(const FloatPoint& p0, float r0, const FloatPoint& p1, float r1)
     {
-        return adoptRef(new CanvasGradient(p0, r0, p1, r1));
+        return adoptRefWillBeNoop(new CanvasGradient(p0, r0, p1, r1));
     }
 
     Gradient* gradient() const { return m_gradient.get(); }
 
     void addColorStop(float value, const String& color, ExceptionState&);
+
+    void trace(Visitor*) { }
 
 private:
     CanvasGradient(const FloatPoint& p0, const FloatPoint& p1);

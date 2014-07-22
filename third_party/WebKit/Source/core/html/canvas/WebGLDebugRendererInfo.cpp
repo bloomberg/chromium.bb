@@ -44,9 +44,9 @@ WebGLExtensionName WebGLDebugRendererInfo::name() const
     return WebGLDebugRendererInfoName;
 }
 
-PassRefPtr<WebGLDebugRendererInfo> WebGLDebugRendererInfo::create(WebGLRenderingContextBase* context)
+PassRefPtrWillBeRawPtr<WebGLDebugRendererInfo> WebGLDebugRendererInfo::create(WebGLRenderingContextBase* context)
 {
-    return adoptRef(new WebGLDebugRendererInfo(context));
+    return adoptRefWillBeNoop(new WebGLDebugRendererInfo(context));
 }
 
 bool WebGLDebugRendererInfo::supported(WebGLRenderingContextBase*)

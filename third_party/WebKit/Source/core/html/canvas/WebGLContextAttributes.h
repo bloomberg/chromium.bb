@@ -37,14 +37,13 @@ namespace blink {
 class Settings;
 
 class WebGLContextAttributes FINAL : public CanvasContextAttributes, public ScriptWrappable {
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(WebGLContextAttributes);
 public:
-    virtual ~WebGLContextAttributes();
-
     // Create a new attributes object
-    static PassRefPtr<WebGLContextAttributes> create();
+    static PassRefPtrWillBeRawPtr<WebGLContextAttributes> create();
 
     // Create a copy of this object.
-    PassRefPtr<WebGLContextAttributes> clone() const;
+    PassRefPtrWillBeRawPtr<WebGLContextAttributes> clone() const;
 
     // Whether or not the drawing buffer has an alpha channel; default=true
     bool alpha() const;
