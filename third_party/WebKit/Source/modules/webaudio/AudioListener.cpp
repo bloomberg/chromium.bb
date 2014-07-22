@@ -35,6 +35,7 @@
 #include "modules/webaudio/PannerNode.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/HRTFDatabaseLoader.h"
+#include "wtf/MainThread.h"
 
 namespace blink {
 
@@ -51,11 +52,18 @@ AudioListener::AudioListener()
 
 AudioListener::~AudioListener()
 {
-    m_panners.clear();
+}
+
+void AudioListener::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_panners);
+#endif
 }
 
 void AudioListener::addPanner(PannerNode* panner)
 {
+    ASSERT(isMainThread());
     if (!panner)
         return;
 
@@ -64,6 +72,7 @@ void AudioListener::addPanner(PannerNode* panner)
 
 void AudioListener::removePanner(PannerNode* panner)
 {
+    ASSERT(isMainThread());
     for (unsigned i = 0; i < m_panners.size(); ++i) {
         if (panner == m_panners[i]) {
             m_panners.remove(i);

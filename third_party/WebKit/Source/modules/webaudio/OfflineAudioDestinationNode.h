@@ -64,7 +64,9 @@ private:
 
     // This AudioNode renders into this AudioBuffer.
     RefPtrWillBeMember<AudioBuffer> m_renderTarget;
-    RefPtr<OfflineAudioDestinationNode> m_keepAliveWhileRendering;
+    // Oilpan: This object must be alive during audio rendering.
+    GC_PLUGIN_IGNORE("http://crbug.com/395941")
+    RefPtrWillBePersistent<OfflineAudioDestinationNode> m_keepAliveWhileRendering;
     // Temporary AudioBus for each render quantum.
     RefPtr<AudioBus> m_renderBus;
 

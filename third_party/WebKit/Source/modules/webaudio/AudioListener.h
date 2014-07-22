@@ -86,7 +86,7 @@ public:
     bool isHRTFDatabaseLoaded();
     void waitForHRTFDatabaseLoaderThreadCompletion();
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
 private:
     AudioListener();
@@ -107,8 +107,9 @@ private:
 
     // Synchronize a panner's process() with setting of the state of the listener.
     mutable Mutex m_listenerLock;
-    // List for pannerNodes in context.
-    Vector<PannerNode*> m_panners;
+    // List for pannerNodes in context. This is updated only in the main thread,
+    // and can be referred in audio thread.
+    WillBeHeapVector<RawPtrWillBeMember<PannerNode> > m_panners;
     // HRTF DB loader for panner node.
     RefPtr<HRTFDatabaseLoader> m_hrtfDatabaseLoader;
 };
