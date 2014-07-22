@@ -60,7 +60,7 @@ TEST_F(JavascriptPolicyHandlerTest, JavascriptEnabledOverridden) {
   policy.Set(key::kDefaultJavaScriptSetting,
              POLICY_LEVEL_MANDATORY,
              POLICY_SCOPE_USER,
-             base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW),
+             new base::FundamentalValue(CONTENT_SETTING_ALLOW),
              NULL);
   UpdateProviderPolicy(policy);
   EXPECT_TRUE(store_->GetValue(prefs::kManagedDefaultJavaScriptSetting,

@@ -23,9 +23,9 @@ TEST(OriginIdentifierValueMapTest, SetGetValue) {
                ContentSettingsPattern::FromString("[*.]google.com"),
                CONTENT_SETTINGS_TYPE_COOKIES,
                std::string(),
-               base::Value::CreateIntegerValue(1));
+               new base::FundamentalValue(1));
 
-  scoped_ptr<base::Value> expected_value(base::Value::CreateIntegerValue(1));
+  scoped_ptr<base::Value> expected_value(new base::FundamentalValue(1));
   EXPECT_TRUE(expected_value->Equals(map.GetValue(GURL("http://www.google.com"),
                                                   GURL("http://www.google.com"),
                                                   CONTENT_SETTINGS_TYPE_COOKIES,
@@ -64,12 +64,11 @@ TEST(OriginIdentifierValueMapTest, SetDeleteValue) {
                                "java-plugin"));
 
   // Set sample values.
-  map.SetValue(
-      ContentSettingsPattern::FromString("[*.]google.com"),
-      ContentSettingsPattern::FromString("[*.]google.com"),
-      CONTENT_SETTINGS_TYPE_PLUGINS,
-      "java-plugin",
-      base::Value::CreateIntegerValue(1));
+  map.SetValue(ContentSettingsPattern::FromString("[*.]google.com"),
+               ContentSettingsPattern::FromString("[*.]google.com"),
+               CONTENT_SETTINGS_TYPE_PLUGINS,
+               "java-plugin",
+               new base::FundamentalValue(1));
 
   int actual_value;
   EXPECT_TRUE(map.GetValue(GURL("http://www.google.com"),
@@ -115,17 +114,16 @@ TEST(OriginIdentifierValueMapTest, Clear) {
   EXPECT_TRUE(map.empty());
 
   // Set two values.
-  map.SetValue(
-      ContentSettingsPattern::FromString("[*.]google.com"),
-      ContentSettingsPattern::FromString("[*.]google.com"),
-      CONTENT_SETTINGS_TYPE_PLUGINS,
-      "java-plugin",
-      base::Value::CreateIntegerValue(1));
+  map.SetValue(ContentSettingsPattern::FromString("[*.]google.com"),
+               ContentSettingsPattern::FromString("[*.]google.com"),
+               CONTENT_SETTINGS_TYPE_PLUGINS,
+               "java-plugin",
+               new base::FundamentalValue(1));
   map.SetValue(ContentSettingsPattern::FromString("[*.]google.com"),
                ContentSettingsPattern::FromString("[*.]google.com"),
                CONTENT_SETTINGS_TYPE_COOKIES,
                std::string(),
-               base::Value::CreateIntegerValue(1));
+               new base::FundamentalValue(1));
   EXPECT_FALSE(map.empty());
   int actual_value;
   EXPECT_TRUE(map.GetValue(GURL("http://www.google.com"),
@@ -150,13 +148,13 @@ TEST(OriginIdentifierValueMapTest, ListEntryPrecedences) {
                ContentSettingsPattern::FromString("[*.]google.com"),
                CONTENT_SETTINGS_TYPE_COOKIES,
                std::string(),
-               base::Value::CreateIntegerValue(1));
+               new base::FundamentalValue(1));
 
   map.SetValue(ContentSettingsPattern::FromString("www.google.com"),
                ContentSettingsPattern::FromString("[*.]google.com"),
                CONTENT_SETTINGS_TYPE_COOKIES,
                std::string(),
-               base::Value::CreateIntegerValue(2));
+               new base::FundamentalValue(2));
 
   int actual_value;
   EXPECT_TRUE(map.GetValue(GURL("http://mail.google.com"),
@@ -190,12 +188,12 @@ TEST(OriginIdentifierValueMapTest, IterateNonempty) {
                ContentSettingsPattern::Wildcard(),
                CONTENT_SETTINGS_TYPE_COOKIES,
                std::string(),
-               base::Value::CreateIntegerValue(1));
+               new base::FundamentalValue(1));
   map.SetValue(sub_pattern,
                ContentSettingsPattern::Wildcard(),
                CONTENT_SETTINGS_TYPE_COOKIES,
                std::string(),
-               base::Value::CreateIntegerValue(2));
+               new base::FundamentalValue(2));
 
   scoped_ptr<content_settings::RuleIterator> rule_iterator(
       map.GetRuleIterator(CONTENT_SETTINGS_TYPE_COOKIES, std::string(), NULL));

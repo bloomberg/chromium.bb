@@ -67,10 +67,8 @@ void JavascriptPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     }
   }
 
-  if (setting != CONTENT_SETTING_DEFAULT) {
-    prefs->SetValue(prefs::kManagedDefaultJavaScriptSetting,
-                    base::Value::CreateIntegerValue(setting));
-  }
+  if (setting != CONTENT_SETTING_DEFAULT)
+    prefs->SetInteger(prefs::kManagedDefaultJavaScriptSetting, setting);
 }
 
 }  // namespace policy

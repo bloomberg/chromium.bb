@@ -152,17 +152,22 @@ void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
                 POLICY_SCOPE_USER,
                 new base::FundamentalValue(true),
                 NULL);
-  expected->Set(key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY,
-                POLICY_SCOPE_USER, base::Value::CreateIntegerValue(4), NULL);
+  expected->Set(key::kRestoreOnStartup,
+                POLICY_LEVEL_MANDATORY,
+                POLICY_SCOPE_USER,
+                new base::FundamentalValue(4),
+                NULL);
   base::ListValue list;
   list.AppendString("dev.chromium.org");
   list.AppendString("youtube.com");
   expected->Set(
       key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
       list.DeepCopy(), NULL);
-  expected->Set(
-      key::kMaxInvalidationFetchDelay, POLICY_LEVEL_MANDATORY,
-      POLICY_SCOPE_USER, base::Value::CreateIntegerValue(1000), NULL);
+  expected->Set(key::kMaxInvalidationFetchDelay,
+                POLICY_LEVEL_MANDATORY,
+                POLICY_SCOPE_USER,
+                new base::FundamentalValue(1000),
+                NULL);
   expected->Set(key::kHomepageLocation,
                 POLICY_LEVEL_RECOMMENDED,
                 POLICY_SCOPE_USER,

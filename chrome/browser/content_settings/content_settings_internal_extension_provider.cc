@@ -189,7 +189,7 @@ void InternalExtensionProvider::SetContentSettingForExtensionAndResource(
                           secondary_pattern,
                           CONTENT_SETTINGS_TYPE_PLUGINS,
                           resource,
-                          base::Value::CreateIntegerValue(setting));
+                          new base::FundamentalValue(setting));
     }
   }
   NotifyObservers(primary_pattern,

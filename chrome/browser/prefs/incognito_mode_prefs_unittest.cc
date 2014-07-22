@@ -38,20 +38,17 @@ TEST_F(IncognitoModePrefsTest, IntToAvailability) {
 
 TEST_F(IncognitoModePrefsTest, GetAvailability) {
   prefs_.SetUserPref(prefs::kIncognitoModeAvailability,
-                     base::Value::CreateIntegerValue(
-                         IncognitoModePrefs::ENABLED));
+                     new base::FundamentalValue(IncognitoModePrefs::ENABLED));
   EXPECT_EQ(IncognitoModePrefs::ENABLED,
             IncognitoModePrefs::GetAvailability(&prefs_));
 
   prefs_.SetUserPref(prefs::kIncognitoModeAvailability,
-                     base::Value::CreateIntegerValue(
-                         IncognitoModePrefs::DISABLED));
+                     new base::FundamentalValue(IncognitoModePrefs::DISABLED));
   EXPECT_EQ(IncognitoModePrefs::DISABLED,
             IncognitoModePrefs::GetAvailability(&prefs_));
 
   prefs_.SetUserPref(prefs::kIncognitoModeAvailability,
-                     base::Value::CreateIntegerValue(
-                         IncognitoModePrefs::FORCED));
+                     new base::FundamentalValue(IncognitoModePrefs::FORCED));
   EXPECT_EQ(IncognitoModePrefs::FORCED,
             IncognitoModePrefs::GetAvailability(&prefs_));
 }
@@ -61,7 +58,7 @@ typedef IncognitoModePrefsTest IncognitoModePrefsDeathTest;
 #if GTEST_HAS_DEATH_TEST
 TEST_F(IncognitoModePrefsDeathTest, GetAvailabilityBadValue) {
   prefs_.SetUserPref(prefs::kIncognitoModeAvailability,
-                     base::Value::CreateIntegerValue(-1));
+                     new base::FundamentalValue(-1));
 #if defined(NDEBUG) && defined(DCHECK_ALWAYS_ON)
   EXPECT_DEATH({
     IncognitoModePrefs::Availability availability =

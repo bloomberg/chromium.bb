@@ -254,7 +254,7 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
 
     base::Value* value = NULL;
     if (setting != CONTENT_SETTING_DEFAULT)
-      value = base::Value::CreateIntegerValue(setting);
+      value = new base::FundamentalValue(setting);
     content_settings_->SetWebsiteSetting(
         primary_pattern, secondary_pattern, type, std::string(), value);
   }

@@ -586,7 +586,7 @@ void FileBrowserPrivateStartCopyFunction::RunAfterStartCopy(
     int operation_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  SetResult(base::Value::CreateIntegerValue(operation_id));
+  SetResult(new base::FundamentalValue(operation_id));
   SendResponse(true);
 }
 

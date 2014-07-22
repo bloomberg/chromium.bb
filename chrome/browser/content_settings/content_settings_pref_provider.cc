@@ -339,7 +339,7 @@ void PrefProvider::MigrateObsoleteMediaContentSetting() {
                         it->secondary_pattern,
                         CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
                         std::string(),
-                        base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+                        new base::FundamentalValue(CONTENT_SETTING_ALLOW));
     }
     // Add the exception to the new camera content setting.
     if (!video_device.empty()) {
@@ -347,7 +347,7 @@ void PrefProvider::MigrateObsoleteMediaContentSetting() {
                         it->secondary_pattern,
                         CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
                         std::string(),
-                        base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+                        new base::FundamentalValue(CONTENT_SETTING_ALLOW));
     }
 
     // Remove the old exception in CONTENT_SETTINGS_TYPE_MEDIASTREAM.
@@ -433,7 +433,7 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
                                 pattern_pair.second,
                                 content_type,
                                 resource_identifier,
-                                base::Value::CreateIntegerValue(setting));
+                                new base::FundamentalValue(setting));
           }
         }
       }
@@ -453,7 +453,7 @@ void PrefProvider::ReadContentSettingsFromPref(bool overwrite) {
           DCHECK_NE(CONTENT_SETTING_DEFAULT, setting);
           setting = FixObsoleteCookiePromptMode(content_type,
                                                 ContentSetting(setting));
-          value = base::Value::CreateIntegerValue(setting);
+          value = new base::FundamentalValue(setting);
         }
       }
 

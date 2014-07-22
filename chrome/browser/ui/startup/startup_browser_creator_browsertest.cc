@@ -1405,11 +1405,12 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // Set the following user policies:
   // * RestoreOnStartup = RestoreOnStartupIsURLs
   // * RestoreOnStartupURLs = [ "files/title1.html" ]
-  policy_map_.Set(policy::key::kRestoreOnStartup,
-                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                  base::Value::CreateIntegerValue(
-                      SessionStartupPref::kPrefValueURLs),
-                  NULL);
+  policy_map_.Set(
+      policy::key::kRestoreOnStartup,
+      policy::POLICY_LEVEL_MANDATORY,
+      policy::POLICY_SCOPE_USER,
+      new base::FundamentalValue(SessionStartupPref::kPrefValueURLs),
+      NULL);
   base::ListValue startup_urls;
   startup_urls.Append(
       new base::StringValue(test_server()->GetURL("files/title1.html").spec()));

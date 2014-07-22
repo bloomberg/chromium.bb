@@ -289,13 +289,12 @@ void PolicyProvider::GetContentSettingsFromPreferences(
       ContentSettingsPattern secondary_pattern =
           !pattern_pair.second.IsValid() ? ContentSettingsPattern::Wildcard()
                                          : pattern_pair.second;
-      value_map->SetValue(
-          pattern_pair.first,
-          secondary_pattern,
-          content_type,
-          NO_RESOURCE_IDENTIFIER,
-          base::Value::CreateIntegerValue(
-              kPrefsForManagedContentSettingsMap[i].setting));
+      value_map->SetValue(pattern_pair.first,
+                          secondary_pattern,
+                          content_type,
+                          NO_RESOURCE_IDENTIFIER,
+                          new base::FundamentalValue(
+                              kPrefsForManagedContentSettingsMap[i].setting));
     }
   }
 }
@@ -413,12 +412,11 @@ void PolicyProvider::UpdateManagedDefaultSetting(
         content_type,
         std::string());
   } else {
-    value_map_.SetValue(
-        ContentSettingsPattern::Wildcard(),
-        ContentSettingsPattern::Wildcard(),
-        content_type,
-        std::string(),
-        base::Value::CreateIntegerValue(setting));
+    value_map_.SetValue(ContentSettingsPattern::Wildcard(),
+                        ContentSettingsPattern::Wildcard(),
+                        content_type,
+                        std::string(),
+                        new base::FundamentalValue(setting));
   }
 }
 

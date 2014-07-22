@@ -1136,8 +1136,9 @@ void InternetOptionsHandler::SetPreferNetworkCallback(
   }
   content::RecordAction(base::UserMetricsAction("Options_NetworkSetPrefer"));
   int priority = (prefer_network_str == kTagTrue) ? kPreferredPriority : 0;
-  SetNetworkProperty(service_path, shill::kPriorityProperty,
-                     base::Value::CreateIntegerValue(priority));
+  SetNetworkProperty(service_path,
+                     shill::kPriorityProperty,
+                     new base::FundamentalValue(priority));
 }
 
 void InternetOptionsHandler::SetAutoConnectCallback(

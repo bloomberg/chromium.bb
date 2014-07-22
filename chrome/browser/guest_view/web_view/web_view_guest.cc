@@ -1185,16 +1185,12 @@ void WebViewGuest::RequestNewWindowPermission(
   std::string storage_partition_id = GetStoragePartitionIdFromSiteURL(site_url);
 
   base::DictionaryValue request_info;
-  request_info.Set(webview::kInitialHeight,
-                   base::Value::CreateIntegerValue(initial_bounds.height()));
-  request_info.Set(webview::kInitialWidth,
-                   base::Value::CreateIntegerValue(initial_bounds.width()));
+  request_info.SetInteger(webview::kInitialHeight, initial_bounds.height());
+  request_info.SetInteger(webview::kInitialWidth, initial_bounds.width());
   request_info.Set(webview::kTargetURL,
                    new base::StringValue(new_window_info.url.spec()));
   request_info.Set(webview::kName, new base::StringValue(new_window_info.name));
-  request_info.Set(webview::kWindowID,
-                   base::Value::CreateIntegerValue(
-                      guest->GetGuestInstanceID()));
+  request_info.SetInteger(webview::kWindowID, guest->GetGuestInstanceID());
   // We pass in partition info so that window-s created through newwindow
   // API can use it to set their partition attribute.
   request_info.Set(webview::kStoragePartitionId,

@@ -409,7 +409,7 @@ void AutomaticRebootManagerBasicTest::SetUptimeLimit(
   } else {
     local_state_.SetManagedPref(
         prefs::kUptimeLimit,
-        base::Value::CreateIntegerValue(limit.InSeconds()));
+        new base::FundamentalValue(static_cast<int>(limit.InSeconds())));
   }
   task_runner_->RunUntilIdle();
   EXPECT_EQ(expect_reboot ? 1 : 0,

@@ -97,7 +97,7 @@ void ErrorConsole::SetReportingForExtension(const std::string& extension_id,
 
   prefs_->UpdateExtensionPref(extension_id,
                               kStoreExtensionErrorsPref,
-                              base::Value::CreateIntegerValue(mask));
+                              new base::FundamentalValue(mask));
 }
 
 void ErrorConsole::SetReportingAllForExtension(
@@ -112,7 +112,7 @@ void ErrorConsole::SetReportingAllForExtension(
 
   prefs_->UpdateExtensionPref(extension_id,
                               kStoreExtensionErrorsPref,
-                              base::Value::CreateIntegerValue(mask));
+                              new base::FundamentalValue(mask));
 }
 
 bool ErrorConsole::IsReportingEnabledForExtension(

@@ -138,8 +138,7 @@ class UserImageManagerTest : public LoginManagerTest,
     RegisterUser(username);
     DictionaryPrefUpdate images_pref(local_state_, "UserImages");
     base::DictionaryValue* image_properties = new base::DictionaryValue();
-    image_properties->Set(
-        "index", base::Value::CreateIntegerValue(image_index));
+    image_properties->Set("index", new base::FundamentalValue(image_index));
     image_properties->Set(
         "path" , new base::StringValue(image_path.value()));
     images_pref->SetWithoutPathExpansion(username, image_properties);

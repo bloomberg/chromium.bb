@@ -140,7 +140,7 @@ void TtsExtensionEngine::Speak(Utterance* utterance,
   bool sends_end_event = voice.events.find(TTS_EVENT_END) != voice.events.end();
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Set(0, new base::StringValue(utterance->text()));
+  args->AppendString(utterance->text());
 
   // Pass through most options to the speech engine, but remove some
   // that are handled internally.
@@ -167,8 +167,8 @@ void TtsExtensionEngine::Speak(Utterance* utterance,
   if (!options->HasKey(constants::kLangKey))
     options->SetString(constants::kLangKey, voice.lang);
 
-  args->Set(1, options.release());
-  args->Set(2, base::Value::CreateIntegerValue(utterance->id()));
+  args->Append(options.release());
+  args->AppendInteger(utterance->id());
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
       tts_engine_events::kOnSpeak, args.Pass()));

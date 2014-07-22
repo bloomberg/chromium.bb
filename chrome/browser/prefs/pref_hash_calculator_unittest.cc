@@ -82,8 +82,7 @@ TEST(PrefHashCalculatorTest, CatchHashChanges) {
 
   scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
   scoped_ptr<base::Value> bool_value(new base::FundamentalValue(false));
-  scoped_ptr<base::Value> int_value(
-      base::Value::CreateIntegerValue(1234567890));
+  scoped_ptr<base::Value> int_value(new base::FundamentalValue(1234567890));
   scoped_ptr<base::Value> double_value(
       new base::FundamentalValue(123.0987654321));
   scoped_ptr<base::Value> string_value(

@@ -36,23 +36,23 @@ class ListIterator : public RuleIterator {
   std::list<Rule> rules_;
 };
 
-}
+}  // namespace
 
 TEST(RuleTest, ConcatenationIterator) {
   std::list<Rule> rules1;
   rules1.push_back(Rule(ContentSettingsPattern::FromString("a"),
                         ContentSettingsPattern::Wildcard(),
-                        base::Value::CreateIntegerValue(0)));
+                        new base::FundamentalValue(0)));
   rules1.push_back(Rule(ContentSettingsPattern::FromString("b"),
                         ContentSettingsPattern::Wildcard(),
-                        base::Value::CreateIntegerValue(0)));
+                        new base::FundamentalValue(0)));
   std::list<Rule> rules2;
   rules2.push_back(Rule(ContentSettingsPattern::FromString("c"),
                         ContentSettingsPattern::Wildcard(),
-                        base::Value::CreateIntegerValue(0)));
+                        new base::FundamentalValue(0)));
   rules2.push_back(Rule(ContentSettingsPattern::FromString("d"),
                         ContentSettingsPattern::Wildcard(),
-                        base::Value::CreateIntegerValue(0)));
+                        new base::FundamentalValue(0)));
 
   ScopedVector<RuleIterator> iterators;
   iterators.push_back(new ListIterator(rules1));

@@ -579,10 +579,10 @@ TEST_P(PrefHashFilterTest, FilterUntrackedPrefUpdate) {
 TEST_P(PrefHashFilterTest, MultiplePrefsFilterSerializeData) {
   base::DictionaryValue root_dict;
   // Ownership of the following values is transfered to |root_dict|.
-  base::Value* int_value1 = base::Value::CreateIntegerValue(1);
-  base::Value* int_value2 = base::Value::CreateIntegerValue(2);
-  base::Value* int_value3 = base::Value::CreateIntegerValue(3);
-  base::Value* int_value4 = base::Value::CreateIntegerValue(4);
+  base::Value* int_value1 = new base::FundamentalValue(1);
+  base::Value* int_value2 = new base::FundamentalValue(2);
+  base::Value* int_value3 = new base::FundamentalValue(3);
+  base::Value* int_value4 = new base::FundamentalValue(4);
   base::DictionaryValue* dict_value = new base::DictionaryValue;
   dict_value->Set("a", new base::FundamentalValue(true));
   root_dict.Set(kAtomicPref, int_value1);
@@ -598,7 +598,7 @@ TEST_P(PrefHashFilterTest, MultiplePrefsFilterSerializeData) {
   ASSERT_EQ(0u, mock_pref_hash_store_->stored_paths_count());
 
   // Update kAtomicPref3 again, nothing should be stored still.
-  base::Value* int_value5 = base::Value::CreateIntegerValue(5);
+  base::Value* int_value5 = new base::FundamentalValue(5);
   root_dict.Set(kAtomicPref3, int_value5);
   ASSERT_EQ(0u, mock_pref_hash_store_->stored_paths_count());
 
@@ -799,7 +799,7 @@ TEST_P(PrefHashFilterTest, InitialValueTrustedUnknown) {
 
 TEST_P(PrefHashFilterTest, InitialValueChanged) {
   // Ownership of this value is transfered to |pref_store_contents_|.
-  base::Value* int_value = base::Value::CreateIntegerValue(1234);
+  base::Value* int_value = new base::FundamentalValue(1234);
   pref_store_contents_->Set(kAtomicPref, int_value);
 
   base::DictionaryValue* dict_value = new base::DictionaryValue;
@@ -1029,9 +1029,9 @@ TEST_P(PrefHashFilterTest, InitialValueUnchangedLegacyId) {
 
 TEST_P(PrefHashFilterTest, DontResetReportOnly) {
   // Ownership of these values is transfered to |pref_store_contents_|.
-  base::Value* int_value1 = base::Value::CreateIntegerValue(1);
-  base::Value* int_value2 = base::Value::CreateIntegerValue(2);
-  base::Value* report_only_val = base::Value::CreateIntegerValue(3);
+  base::Value* int_value1 = new base::FundamentalValue(1);
+  base::Value* int_value2 = new base::FundamentalValue(2);
+  base::Value* report_only_val = new base::FundamentalValue(3);
   base::DictionaryValue* report_only_split_val = new base::DictionaryValue;
   report_only_split_val->SetInteger("a", 1234);
   pref_store_contents_->Set(kAtomicPref, int_value1);

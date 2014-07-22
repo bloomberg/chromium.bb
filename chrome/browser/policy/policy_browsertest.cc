@@ -854,8 +854,11 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_DefaultCookiesSetting) {
   EXPECT_EQ(kCookieValue, GetCookies(browser()->profile(), GURL(kURL)));
   // Now set the policy and the cookie should be gone after another restart.
   PolicyMap policies;
-  policies.Set(key::kDefaultCookiesSetting, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, base::Value::CreateIntegerValue(4), NULL);
+  policies.Set(key::kDefaultCookiesSetting,
+               POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               new base::FundamentalValue(4),
+               NULL);
   UpdateProviderPolicy(policies);
 }
 
@@ -986,7 +989,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PolicyPreprocessing) {
   policies.Set(key::kProxyServerMode,
                POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(3),
+               new base::FundamentalValue(3),
                NULL);
   UpdateProviderPolicy(policies);
 
@@ -1904,9 +1907,11 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Javascript) {
   // The javascript content setting policy overrides the javascript policy.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   EXPECT_FALSE(IsJavascriptEnabled(contents));
-  policies.Set(key::kDefaultJavaScriptSetting, POLICY_LEVEL_MANDATORY,
+  policies.Set(key::kDefaultJavaScriptSetting,
+               POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW), NULL);
+               new base::FundamentalValue(CONTENT_SETTING_ALLOW),
+               NULL);
   UpdateProviderPolicy(policies);
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   EXPECT_TRUE(IsJavascriptEnabled(contents));
@@ -2285,9 +2290,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_SessionLengthLimit) {
   EXPECT_CALL(observer, Observe(chrome::NOTIFICATION_APP_TERMINATING, _, _))
       .Times(0);
   PolicyMap policies;
-  policies.Set(key::kSessionLengthLimit, POLICY_LEVEL_MANDATORY,
+  policies.Set(key::kSessionLengthLimit,
+               POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(kThreeHoursInMs),
+               new base::FundamentalValue(kThreeHoursInMs),
                NULL);
   UpdateProviderPolicy(policies);
   base::RunLoop().RunUntilIdle();
@@ -2296,9 +2302,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_SessionLengthLimit) {
   // Decrease the session length limit to 1 hour. Verify that the session is
   // terminated immediately.
   EXPECT_CALL(observer, Observe(chrome::NOTIFICATION_APP_TERMINATING, _, _));
-  policies.Set(key::kSessionLengthLimit, POLICY_LEVEL_MANDATORY,
+  policies.Set(key::kSessionLengthLimit,
+               POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(kOneHourInMs),
+               new base::FundamentalValue(kOneHourInMs),
                NULL);
   UpdateProviderPolicy(policies);
   base::RunLoop().RunUntilIdle();
@@ -2338,9 +2345,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
   // terminated.
   EXPECT_CALL(observer, Observe(chrome::NOTIFICATION_APP_TERMINATING, _, _))
       .Times(0);
-  policies.Set(key::kSessionLengthLimit, POLICY_LEVEL_MANDATORY,
+  policies.Set(key::kSessionLengthLimit,
+               POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(kOneHourInMs),
+               new base::FundamentalValue(kOneHourInMs),
                NULL);
   UpdateProviderPolicy(policies);
   base::RunLoop().RunUntilIdle();
@@ -2378,9 +2386,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
                POLICY_SCOPE_USER,
                new base::FundamentalValue(true),
                NULL);
-  policies.Set(key::kSessionLengthLimit, POLICY_LEVEL_MANDATORY,
+  policies.Set(key::kSessionLengthLimit,
+               POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(kThreeHoursInMs),
+               new base::FundamentalValue(kThreeHoursInMs),
                NULL);
   UpdateProviderPolicy(policies);
   base::RunLoop().RunUntilIdle();
@@ -2389,9 +2398,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
   // Decrease the session length limit to 1 hour. Verify that the session is
   // terminated immediately.
   EXPECT_CALL(observer, Observe(chrome::NOTIFICATION_APP_TERMINATING, _, _));
-  policies.Set(key::kSessionLengthLimit, POLICY_LEVEL_MANDATORY,
+  policies.Set(key::kSessionLengthLimit,
+               POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(kOneHourInMs),
+               new base::FundamentalValue(kOneHourInMs),
                NULL);
   UpdateProviderPolicy(policies);
   base::RunLoop().RunUntilIdle();
@@ -2488,9 +2498,11 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ScreenMagnifierTypeNone) {
 
   // Verify that policy overrides the manual setting.
   PolicyMap policies;
-  policies.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
+  policies.Set(key::kScreenMagnifierType,
+               POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(0), NULL);
+               new base::FundamentalValue(0),
+               NULL);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(magnification_manager->IsMagnifierEnabled());
 
@@ -2509,9 +2521,11 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ScreenMagnifierTypeFull) {
 
   // Verify that policy can enable the full-screen magnifier.
   PolicyMap policies;
-  policies.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
+  policies.Set(key::kScreenMagnifierType,
+               POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(ash::MAGNIFIER_FULL), NULL);
+               new base::FundamentalValue(ash::MAGNIFIER_FULL),
+               NULL);
   UpdateProviderPolicy(policies);
   EXPECT_EQ(ash::MAGNIFIER_FULL, magnification_manager->GetMagnifierType());
   EXPECT_TRUE(magnification_manager->IsMagnifierEnabled());
@@ -2639,9 +2653,10 @@ class RestoreOnStartupPolicyTest
     // the homepage is not the NTP.
     PolicyMap policies;
     policies.Set(
-        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateIntegerValue(
-            SessionStartupPref::kPrefValueHomePage),
+        key::kRestoreOnStartup,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_USER,
+        new base::FundamentalValue(SessionStartupPref::kPrefValueHomePage),
         NULL);
     policies.Set(key::kHomepageIsNewTabPage,
                  POLICY_LEVEL_MANDATORY,
@@ -2663,9 +2678,10 @@ class RestoreOnStartupPolicyTest
     // the homepage is the NTP.
     PolicyMap policies;
     policies.Set(
-        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateIntegerValue(
-            SessionStartupPref::kPrefValueHomePage),
+        key::kRestoreOnStartup,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_USER,
+        new base::FundamentalValue(SessionStartupPref::kPrefValueHomePage),
         NULL);
     policies.Set(key::kHomepageIsNewTabPage,
                  POLICY_LEVEL_MANDATORY,
@@ -2685,10 +2701,11 @@ class RestoreOnStartupPolicyTest
       expected_urls_.push_back(GURL(kRestoredURLs[i]));
     }
     PolicyMap policies;
-    policies.Set(
-        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateIntegerValue(SessionStartupPref::kPrefValueURLs),
-        NULL);
+    policies.Set(key::kRestoreOnStartup,
+                 POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER,
+                 new base::FundamentalValue(SessionStartupPref::kPrefValueURLs),
+                 NULL);
     policies.Set(
         key::kRestoreOnStartupURLs, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
         urls.DeepCopy(), NULL);
@@ -2699,8 +2716,10 @@ class RestoreOnStartupPolicyTest
     // Verifies that policy can set the startup page to the NTP.
     PolicyMap policies;
     policies.Set(
-        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateIntegerValue(SessionStartupPref::kPrefValueNewTab),
+        key::kRestoreOnStartup,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_USER,
+        new base::FundamentalValue(SessionStartupPref::kPrefValueNewTab),
         NULL);
     provider_.UpdateChromePolicy(policies);
     expected_urls_.push_back(GURL(chrome::kChromeUINewTabURL));
@@ -2709,10 +2728,11 @@ class RestoreOnStartupPolicyTest
   void Last() {
     // Verifies that policy can set the startup pages to the last session.
     PolicyMap policies;
-    policies.Set(
-        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateIntegerValue(SessionStartupPref::kPrefValueLast),
-        NULL);
+    policies.Set(key::kRestoreOnStartup,
+                 POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER,
+                 new base::FundamentalValue(SessionStartupPref::kPrefValueLast),
+                 NULL);
     provider_.UpdateChromePolicy(policies);
     // This should restore the tabs opened at PRE_RunTest below.
     for (size_t i = 0; i < arraysize(kRestoredURLs); ++i)

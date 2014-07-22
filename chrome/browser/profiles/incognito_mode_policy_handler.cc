@@ -69,8 +69,8 @@ void IncognitoModePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     if (availability->GetAsInteger(&int_value) &&
         IncognitoModePrefs::IntToAvailability(int_value,
                                               &availability_enum_value)) {
-      prefs->SetValue(prefs::kIncognitoModeAvailability,
-                      base::Value::CreateIntegerValue(availability_enum_value));
+      prefs->SetInteger(prefs::kIncognitoModeAvailability,
+                        availability_enum_value);
     } else {
       NOTREACHED();
     }

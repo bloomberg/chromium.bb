@@ -216,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
   values.Set(policy::key::kRestoreOnStartup,
              policy::POLICY_LEVEL_RECOMMENDED,
              policy::POLICY_SCOPE_USER,
-             base::Value::CreateIntegerValue(4),
+             new base::FundamentalValue(4),
              NULL);
   expected_values[policy::key::kRestoreOnStartup] = "4";
   values.Set(policy::key::kShowHomeButton,

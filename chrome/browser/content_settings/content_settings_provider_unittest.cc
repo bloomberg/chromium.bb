@@ -22,8 +22,7 @@ TEST(ContentSettingsProviderTest, Mock) {
       pattern,
       CONTENT_SETTINGS_TYPE_PLUGINS,
       "java_plugin",
-      base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
-
+      new base::FundamentalValue(CONTENT_SETTING_BLOCK));
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(&mock_provider, url, url,
@@ -65,7 +64,7 @@ TEST(ContentSettingsProviderTest, Mock) {
       pattern,
       CONTENT_SETTINGS_TYPE_PLUGINS,
       "java_plugin",
-      base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+      new base::FundamentalValue(CONTENT_SETTING_ALLOW));
   EXPECT_TRUE(owned);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             GetContentSetting(&mock_provider, url, url,
@@ -74,7 +73,7 @@ TEST(ContentSettingsProviderTest, Mock) {
 
   mock_provider.set_read_only(true);
   scoped_ptr<base::Value> value(
-      base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+      new base::FundamentalValue(CONTENT_SETTING_BLOCK));
   owned = mock_provider.SetWebsiteSetting(
       pattern,
       pattern,
@@ -95,7 +94,7 @@ TEST(ContentSettingsProviderTest, Mock) {
       pattern,
       CONTENT_SETTINGS_TYPE_PLUGINS,
       "java_plugin",
-      base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+      new base::FundamentalValue(CONTENT_SETTING_BLOCK));
   EXPECT_TRUE(owned);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(&mock_provider, url, url,

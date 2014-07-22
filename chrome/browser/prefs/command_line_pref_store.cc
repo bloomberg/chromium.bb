@@ -115,8 +115,8 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
                    << " can not be converted to integer, ignoring!";
         continue;
       }
-      base::Value* value = base::Value::CreateIntegerValue(int_value);
-      SetValue(integer_switch_map_[i].preference_path, value);
+      SetValue(integer_switch_map_[i].preference_path,
+               new base::FundamentalValue(int_value));
     }
   }
 

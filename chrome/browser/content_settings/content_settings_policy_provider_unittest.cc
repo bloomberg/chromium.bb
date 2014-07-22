@@ -61,7 +61,7 @@ TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {
 
   // Change the managed value of the default geolocation setting
   prefs->SetManagedPref(prefs::kManagedDefaultGeolocationSetting,
-                        base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+                        new base::FundamentalValue(CONTENT_SETTING_BLOCK));
 
   rule_iterator.reset(
       provider.GetRuleIterator(
@@ -85,7 +85,7 @@ TEST_F(PolicyProviderTest, ManagedDefaultContentSettings) {
   PolicyProvider provider(prefs);
 
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
-                        base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+                        new base::FundamentalValue(CONTENT_SETTING_BLOCK));
 
   scoped_ptr<RuleIterator> rule_iterator(
       provider.GetRuleIterator(
@@ -121,7 +121,7 @@ TEST_F(PolicyProviderTest, ObserveManagedSettingsChange) {
 
   // Set the managed default-content-setting.
   prefs->SetManagedPref(prefs::kManagedDefaultImagesSetting,
-                        base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+                        new base::FundamentalValue(CONTENT_SETTING_BLOCK));
   ::testing::Mock::VerifyAndClearExpectations(&mock_observer);
   EXPECT_CALL(mock_observer,
               OnContentSettingChanged(_,
@@ -187,7 +187,7 @@ TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
   // enforced via policies and not set by the user or extension. So a call to
   // SetWebsiteSetting does nothing.
   scoped_ptr<base::Value> value_block(
-      base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+      new base::FundamentalValue(CONTENT_SETTING_BLOCK));
   bool owned = provider.SetWebsiteSetting(yt_url_pattern,
                                           yt_url_pattern,
                                           CONTENT_SETTINGS_TYPE_COOKIES,

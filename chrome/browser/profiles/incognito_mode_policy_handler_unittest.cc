@@ -41,9 +41,10 @@ class IncognitoModePolicyHandlerTest
                  NULL);
     }
     if (availability >= 0) {
-      policy.Set(key::kIncognitoModeAvailability, POLICY_LEVEL_MANDATORY,
+      policy.Set(key::kIncognitoModeAvailability,
+                 POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER,
-                 base::Value::CreateIntegerValue(availability),
+                 new base::FundamentalValue(availability),
                  NULL);
     }
     UpdateProviderPolicy(policy);

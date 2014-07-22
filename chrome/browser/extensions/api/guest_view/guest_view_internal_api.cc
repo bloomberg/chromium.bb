@@ -47,7 +47,7 @@ void GuestViewInternalCreateGuestFunction::CreateGuestCallback(
     GuestViewBase* guest = GuestViewBase::FromWebContents(guest_web_contents);
     guest_instance_id = guest->GetGuestInstanceID();
   }
-  SetResult(base::Value::CreateIntegerValue(guest_instance_id));
+  SetResult(new base::FundamentalValue(guest_instance_id));
   SendResponse(true);
 }
 
