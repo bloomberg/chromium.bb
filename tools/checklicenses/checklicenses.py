@@ -114,6 +114,12 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'chrome/common/extensions/docs/examples': [  # http://crbug.com/98092
         'UNKNOWN',
     ],
+    # This contains files copied from elsewhere from the tree. Since the copied
+    # directories might have suppressions below (like simplejson), whitelist the
+    # whole directory. This is also not shipped code.
+    'chrome/common/extensions/docs/server2/third_party': [
+        'UNKNOWN',
+    ],
     'courgette/third_party/bsdiff_create.cc': [  # http://crbug.com/98095
         'UNKNOWN',
     ],
