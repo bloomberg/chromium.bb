@@ -52,6 +52,7 @@ AudioRendererImpl::AudioRendererImpl(
                                                  decoders.Pass(),
                                                  set_decryptor_ready_cb)),
       hardware_config_(hardware_config),
+      playback_rate_(0),
       state_(kUninitialized),
       buffering_state_(BUFFERING_HAVE_NOTHING),
       rendering_(false),
@@ -86,7 +87,7 @@ void AudioRendererImpl::StartTicking() {
 
   base::AutoLock auto_lock(lock_);
   // Wait for an eventual call to SetPlaybackRate() to start rendering.
-  if (algorithm_->playback_rate() == 0) {
+  if (playback_rate_ == 0) {
     DCHECK(!sink_playing_);
     return;
   }
@@ -99,7 +100,7 @@ void AudioRendererImpl::StartRendering_Locked() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPlaying);
   DCHECK(!sink_playing_);
-  DCHECK_NE(algorithm_->playback_rate(), 0);
+  DCHECK_NE(playback_rate_, 0);
   lock_.AssertAcquired();
 
   sink_playing_ = true;
@@ -116,7 +117,7 @@ void AudioRendererImpl::StopTicking() {
 
   base::AutoLock auto_lock(lock_);
   // Rendering should have already been stopped with a zero playback rate.
-  if (algorithm_->playback_rate() == 0) {
+  if (playback_rate_ == 0) {
     DCHECK(!sink_playing_);
     return;
   }
@@ -326,7 +327,7 @@ void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
   // We're all good! Continue initializing the rest of the audio renderer
   // based on the decoder format.
   algorithm_.reset(new AudioRendererAlgorithm());
-  algorithm_->Initialize(0, audio_parameters_);
+  algorithm_->Initialize(audio_parameters_);
 
   ChangeState_Locked(kFlushed);
 
@@ -509,8 +510,8 @@ void AudioRendererImpl::SetPlaybackRate(float playback_rate) {
   // We have two cases here:
   // Play: current_playback_rate == 0 && playback_rate != 0
   // Pause: current_playback_rate != 0 && playback_rate == 0
-  float current_playback_rate = algorithm_->playback_rate();
-  algorithm_->SetPlaybackRate(playback_rate);
+  float current_playback_rate = playback_rate_;
+  playback_rate_ = playback_rate;
 
   if (!rendering_)
     return;
@@ -551,8 +552,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
       return 0;
     }
 
-    float playback_rate = algorithm_->playback_rate();
-    if (playback_rate == 0) {
+    if (playback_rate_ == 0) {
       audio_clock_->WroteSilence(requested_frames, delay_frames);
       return 0;
     }
@@ -578,9 +578,10 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
     const base::TimeDelta media_timestamp_before_filling =
         audio_clock_->CurrentMediaTimestamp(base::TimeDelta());
     if (algorithm_->frames_buffered() > 0) {
-      frames_written = algorithm_->FillBuffer(audio_bus, requested_frames);
+      frames_written =
+          algorithm_->FillBuffer(audio_bus, requested_frames, playback_rate_);
       audio_clock_->WroteAudio(
-          frames_written, delay_frames, playback_rate, algorithm_->GetTime());
+          frames_written, delay_frames, playback_rate_, algorithm_->GetTime());
     }
     audio_clock_->WroteSilence(requested_frames - frames_written, delay_frames);
 

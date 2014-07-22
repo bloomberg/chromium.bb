@@ -207,7 +207,7 @@ void FakeMediaSource::Start(scoped_refptr<AudioFrameInput> audio_frame_input,
   }
 
   // Send transcoding streams.
-  audio_algo_.Initialize(playback_rate_, audio_params_);
+  audio_algo_.Initialize(audio_params_);
   audio_algo_.FlushBuffers();
   audio_fifo_input_bus_ =
       AudioBus::Create(
@@ -476,7 +476,8 @@ void FakeMediaSource::DecodeAudio(ScopedAVPacket packet) {
       kAudioPacketsPerSecond;
   while (frames_needed_to_scale <= audio_algo_.frames_buffered()) {
     if (!audio_algo_.FillBuffer(audio_fifo_input_bus_.get(),
-                                audio_fifo_input_bus_->frames())) {
+                                audio_fifo_input_bus_->frames(),
+                                playback_rate_)) {
       // Nothing can be scaled. Decode some more.
       return;
     }

@@ -4,10 +4,7 @@
 
 // AudioRendererAlgorithm buffers and transforms audio data. The owner of
 // this object provides audio data to the object through EnqueueBuffer() and
-// requests data from the buffer via FillBuffer(). The owner also sets the
-// playback rate, and the AudioRendererAlgorithm will stretch or compress the
-// buffered audio as necessary to match the playback rate when fulfilling
-// FillBuffer() requests.
+// requests data from the buffer via FillBuffer().
 //
 // This class is *not* thread-safe. Calls to enqueue and retrieve data must be
 // locked if called from multiple threads.
@@ -20,7 +17,6 @@
 // description of the algorithm.
 //
 // Audio at very low or very high playback rates are muted to preserve quality.
-//
 
 #ifndef MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_H_
 #define MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_H_
@@ -41,17 +37,16 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   ~AudioRendererAlgorithm();
 
   // Initializes this object with information about the audio stream.
-  void Initialize(float initial_playback_rate, const AudioParameters& params);
+  void Initialize(const AudioParameters& params);
 
   // Tries to fill |requested_frames| frames into |dest| with possibly scaled
-  // data from our |audio_buffer_|. Data is scaled based on the playback rate,
+  // data from our |audio_buffer_|. Data is scaled based on |playback_rate|,
   // using a variation of the Overlap-Add method to combine sample windows.
   //
   // Data from |audio_buffer_| is consumed in proportion to the playback rate.
   //
-  // Returns the number of frames copied into |dest|. May request more reads via
-  // |request_read_cb_| before returning.
-  int FillBuffer(AudioBus* dest, int requested_frames);
+  // Returns the number of frames copied into |dest|.
+  int FillBuffer(AudioBus* dest, int requested_frames, float playback_rate);
 
   // Clears |audio_buffer_|.
   void FlushBuffers();
@@ -63,9 +58,6 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // Enqueues a buffer. It is called from the owner of the algorithm after a
   // read completes.
   void EnqueueBuffer(const scoped_refptr<AudioBuffer>& buffer_in);
-
-  float playback_rate() const { return playback_rate_; }
-  void SetPlaybackRate(float new_rate);
 
   // Returns true if |audio_buffer_| is at or exceeds capacity.
   bool IsQueueFull();
@@ -83,9 +75,6 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
 
   // Returns the samples per second for this audio stream.
   int samples_per_second() { return samples_per_second_; }
-
-  // Is the sound currently muted?
-  bool is_muted() { return muted_; }
 
  private:
   // Within |search_block_|, find the block of data that is most similar to
@@ -111,15 +100,15 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // Run one iteration of WSOLA, if there are sufficient frames. This will
   // overlap-and-add one block to |wsola_output_|, hence, |num_complete_frames_|
   // is incremented by |ola_hop_size_|.
-  bool RunOneWsolaIteration();
+  bool RunOneWsolaIteration(float playback_rate);
 
   // Seek |audio_buffer_| forward to remove frames from input that are not used
   // any more. State of the WSOLA will be updated accordingly.
-  void RemoveOldInputFrames();
+  void RemoveOldInputFrames(float playback_rate);
 
   // Update |output_time_| by |time_change|. In turn |search_block_index_| is
   // updated.
-  void UpdateOutputTime(double time_change);
+  void UpdateOutputTime(float playback_rate, double time_change);
 
   // Is |target_block_| fully within |search_block_|? If so, we don't need to
   // perform the search.
@@ -134,14 +123,8 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // Sample rate of audio stream.
   int samples_per_second_;
 
-  // Used by algorithm to scale output.
-  float playback_rate_;
-
   // Buffered audio data.
   AudioBufferQueue audio_buffer_;
-
-  // True if the audio should be muted.
-  bool muted_;
 
   // If muted, keep track of partial frames that should have been skipped over.
   double muted_partial_frame_;

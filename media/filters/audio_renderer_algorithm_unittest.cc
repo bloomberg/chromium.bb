@@ -94,7 +94,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
                            samples_per_second,
                            bytes_per_sample_ * 8,
                            samples_per_second / 100);
-    algorithm_.Initialize(1, params);
+    algorithm_.Initialize(params);
     FillAlgorithmQueue();
   }
 
@@ -145,14 +145,14 @@ class AudioRendererAlgorithmTest : public testing::Test {
     }
   }
 
-  void CheckFakeData(AudioBus* audio_data, int frames_written) {
-    // Check each channel individually.
+  bool AudioDataIsMuted(AudioBus* audio_data, int frames_written) {
     for (int ch = 0; ch < channels_; ++ch) {
-      bool all_zero = true;
-      for (int i = 0; i < frames_written && all_zero; ++i)
-        all_zero = audio_data->channel(ch)[i] == 0.0f;
-      ASSERT_EQ(algorithm_.is_muted(), all_zero) << " for channel " << ch;
+      for (int i = 0; i < frames_written; ++i) {
+        if (audio_data->channel(ch)[i] != 0.0f)
+          return false;
+      }
     }
+    return true;
   }
 
   int ComputeConsumedFrames(int initial_frames_enqueued,
@@ -178,22 +178,24 @@ class AudioRendererAlgorithmTest : public testing::Test {
                         int total_frames_requested) {
     int initial_frames_enqueued = frames_enqueued_;
     int initial_frames_buffered = algorithm_.frames_buffered();
-    algorithm_.SetPlaybackRate(static_cast<float>(playback_rate));
 
     scoped_ptr<AudioBus> bus =
         AudioBus::Create(channels_, buffer_size_in_frames);
     if (playback_rate == 0.0) {
-      int frames_written =
-          algorithm_.FillBuffer(bus.get(), buffer_size_in_frames);
+      int frames_written = algorithm_.FillBuffer(
+          bus.get(), buffer_size_in_frames, playback_rate);
       EXPECT_EQ(0, frames_written);
       return;
     }
+
+    bool expect_muted = (playback_rate < 0.5 || playback_rate > 4);
 
     int frames_remaining = total_frames_requested;
     bool first_fill_buffer = true;
     while (frames_remaining > 0) {
       int frames_requested = std::min(buffer_size_in_frames, frames_remaining);
-      int frames_written = algorithm_.FillBuffer(bus.get(), frames_requested);
+      int frames_written =
+          algorithm_.FillBuffer(bus.get(), frames_requested, playback_rate);
       ASSERT_GT(frames_written, 0) << "Requested: " << frames_requested
                                    << ", playing at " << playback_rate;
 
@@ -203,7 +205,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
       // if at very first buffer-fill only one frame is written, that is zero
       // which might cause exception in CheckFakeData().
       if (!first_fill_buffer || frames_written > 1)
-        CheckFakeData(bus.get(), frames_written);
+        ASSERT_EQ(expect_muted, AudioDataIsMuted(bus.get(), frames_written));
       first_fill_buffer = false;
       frames_remaining -= frames_written;
 
@@ -242,7 +244,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
     channels_ = ChannelLayoutToChannelCount(kChannelLayout);
     AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
                            kSampleRateHz, kBytesPerSample * 8, kNumFrames);
-    algorithm_.Initialize(playback_rate, params);
+    algorithm_.Initialize(params);
 
     // A pulse is 6 milliseconds (even number of samples).
     const int kPulseWidthSamples = 6 * kSampleRateHz / 1000;
@@ -279,7 +281,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
     for (int n = 0; n < kNumRequestedPulses; ++n) {
       int num_buffered_frames = 0;
       while (num_buffered_frames < kPulseWidthSamples) {
-        int num_samples = algorithm_.FillBuffer(output.get(), 1);
+        int num_samples = algorithm_.FillBuffer(output.get(), 1, playback_rate);
         ASSERT_LE(num_samples, 1);
         if (num_samples > 0) {
           output->CopyPartialFramesTo(0, num_samples, num_buffered_frames,
