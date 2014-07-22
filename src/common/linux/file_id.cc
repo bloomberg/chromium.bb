@@ -149,7 +149,7 @@ bool FileID::ElfFileIdentifierFromMappedFile(const void* base,
 }
 
 bool FileID::ElfFileIdentifier(uint8_t identifier[kMDGUIDSize]) {
-  MemoryMappedFile mapped_file(path_.c_str());
+  MemoryMappedFile mapped_file(path_.c_str(), 0);
   if (!mapped_file.data())  // Should probably check if size >= ElfW(Ehdr)?
     return false;
 

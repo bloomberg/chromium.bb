@@ -107,6 +107,7 @@ struct MappingInfo {
   uintptr_t start_addr;
   size_t size;
   size_t offset;  // offset into the backed file.
+  bool exec;  // true if the mapping has the execute bit set.
   char name[NAME_MAX];
 };
 
@@ -161,6 +162,13 @@ class LinuxDumper {
                                    bool member,
                                    unsigned int mapping_id,
                                    uint8_t identifier[sizeof(MDGUID)]);
+
+  // Find the shared object name (SONAME) by examining the ELF information
+  // for |mapping|. If the SONAME is found copy it into the passed buffer
+  // |soname| and return true. The size of the buffer is |soname_size|.
+  // The SONAME will be truncated if it is too long to fit in the buffer.
+  static bool ElfFileSoName(
+      const MappingInfo& mapping, char* soname, size_t soname_size);
 
   uintptr_t crash_address() const { return crash_address_; }
   void set_crash_address(uintptr_t crash_address) {

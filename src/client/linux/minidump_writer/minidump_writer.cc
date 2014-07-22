@@ -938,7 +938,9 @@ class MinidumpWriter {
 
   static bool ShouldIncludeMapping(const MappingInfo& mapping) {
     if (mapping.name[0] == 0 ||  // only want modules with filenames.
-        mapping.offset ||  // only want to include one mapping per shared lib.
+        // Only want to include one mapping per shared lib.
+        // Avoid filtering executable mappings.
+        (mapping.offset != 0 && !mapping.exec) ||
         mapping.size < 4096) {  // too small to get a signature for.
       return false;
     }
@@ -1029,7 +1031,8 @@ class MinidumpWriter {
 
     mod.base_of_image = mapping.start_addr;
     mod.size_of_image = mapping.size;
-    const size_t filepath_len = my_strlen(mapping.name);
+    const char* filepath_ptr = mapping.name;
+    size_t filepath_len = my_strlen(mapping.name);
 
     // Figure out file name from path
     const char* filename_ptr = mapping.name + filepath_len - 1;
@@ -1040,7 +1043,31 @@ class MinidumpWriter {
     }
     filename_ptr++;
 
-    const size_t filename_len = mapping.name + filepath_len - filename_ptr;
+    size_t filename_len = mapping.name + filepath_len - filename_ptr;
+
+    // If an executable is mapped from a non-zero offset, this is likely
+    // because the executable was loaded directly from inside an archive
+    // file. We try to find the name of the shared object (SONAME) by
+    // looking in the file for ELF sections.
+
+    char soname[NAME_MAX];
+    char pathname[NAME_MAX];
+    if (mapping.exec && mapping.offset != 0 &&
+        LinuxDumper::ElfFileSoName(mapping, soname, sizeof(soname))) {
+      filename_ptr = soname;
+      filename_len = my_strlen(soname);
+
+      if (filepath_len + filename_len + 1 < NAME_MAX) {
+        // It doesn't have a real pathname, but tools such as stackwalk
+        // extract the basename, so simulating a pathname is helpful.
+        my_memcpy(pathname, filepath_ptr, filepath_len);
+        pathname[filepath_len] = '/';
+        my_memcpy(pathname + filepath_len + 1, filename_ptr, filename_len);
+        pathname[filepath_len + filename_len + 1] = '\0';
+        filepath_ptr = pathname;
+        filepath_len = filepath_len + filename_len + 1;
+      }
+    }
 
     uint8_t cv_buf[MDCVInfoPDB70_minsize + NAME_MAX];
     uint8_t* cv_ptr = cv_buf;
@@ -1070,7 +1097,7 @@ class MinidumpWriter {
     mod.cv_record = cv.location();
 
     MDLocationDescriptor ld;
-    if (!minidump_writer_.WriteString(mapping.name, filepath_len, &ld))
+    if (!minidump_writer_.WriteString(filepath_ptr, filepath_len, &ld))
       return false;
     mod.module_name_rva = ld.rva;
     return true;

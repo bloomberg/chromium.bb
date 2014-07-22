@@ -997,7 +997,7 @@ main(int argc, char** argv) {
   if (argc != argi + 1)
     return usage(argv[0]);
 
-  MemoryMappedFile mapped_file(argv[argi]);
+  MemoryMappedFile mapped_file(argv[argi], 0);
   if (!mapped_file.data()) {
     fprintf(stderr, "Failed to mmap dump file\n");
     return 1;

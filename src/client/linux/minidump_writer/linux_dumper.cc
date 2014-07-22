@@ -38,12 +38,14 @@
 #include "client/linux/minidump_writer/linux_dumper.h"
 
 #include <assert.h>
+#include <elf.h>
 #include <fcntl.h>
 #include <limits.h>
 #include <stddef.h>
 #include <string.h>
 
 #include "client/linux/minidump_writer/line_reader.h"
+#include "common/linux/elfutils.h"
 #include "common/linux/file_id.h"
 #include "common/linux/linux_libc_support.h"
 #include "common/linux/memory_mapped_file.h"
@@ -115,15 +117,16 @@ LinuxDumper::ElfFileIdentifierForMapping(const MappingInfo& mapping,
 
   char filename[NAME_MAX];
   size_t filename_len = my_strlen(mapping.name);
-  assert(filename_len < NAME_MAX);
-  if (filename_len >= NAME_MAX)
+  if (filename_len >= NAME_MAX) {
+    assert(false);
     return false;
+  }
   my_memcpy(filename, mapping.name, filename_len);
   filename[filename_len] = '\0';
   bool filename_modified = HandleDeletedFileInMapping(filename);
 
-  MemoryMappedFile mapped_file(filename);
-  if (!mapped_file.data())  // Should probably check if size >= ElfW(Ehdr)?
+  MemoryMappedFile mapped_file(filename, mapping.offset);
+  if (!mapped_file.data() || mapped_file.size() < SELFMAG)
     return false;
 
   bool success =
@@ -134,6 +137,80 @@ LinuxDumper::ElfFileIdentifierForMapping(const MappingInfo& mapping,
   }
 
   return success;
+}
+
+namespace {
+bool ElfFileSoNameFromMappedFile(
+    const void* elf_base, char* soname, size_t soname_size) {
+  if (!IsValidElf(elf_base)) {
+    // Not ELF
+    return false;
+  }
+
+  const void* segment_start;
+  size_t segment_size;
+  int elf_class;
+  if (!FindElfSection(elf_base, ".dynamic", SHT_DYNAMIC,
+                      &segment_start, &segment_size, &elf_class)) {
+    // No dynamic section
+    return false;
+  }
+
+  const void* dynstr_start;
+  size_t dynstr_size;
+  if (!FindElfSection(elf_base, ".dynstr", SHT_STRTAB,
+                      &dynstr_start, &dynstr_size, &elf_class)) {
+    // No dynstr section
+    return false;
+  }
+
+  const ElfW(Dyn)* dynamic = static_cast<const ElfW(Dyn)*>(segment_start);
+  size_t dcount = segment_size / sizeof(ElfW(Dyn));
+  for (const ElfW(Dyn)* dyn = dynamic; dyn < dynamic + dcount; ++dyn) {
+    if (dyn->d_tag == DT_SONAME) {
+      const char* dynstr = static_cast<const char*>(dynstr_start);
+      if (dyn->d_un.d_val >= dynstr_size) {
+        // Beyond the end of the dynstr section
+        return false;
+      }
+      const char* str = dynstr + dyn->d_un.d_val;
+      const size_t maxsize = dynstr_size - dyn->d_un.d_val;
+      my_strlcpy(soname, str, maxsize < soname_size ? maxsize : soname_size);
+      return true;
+    }
+  }
+
+  // Did not find SONAME
+  return false;
+}
+}  // namespace
+
+// static
+bool LinuxDumper::ElfFileSoName(
+    const MappingInfo& mapping, char* soname, size_t soname_size) {
+  if (IsMappedFileOpenUnsafe(mapping)) {
+    // Not safe
+    return false;
+  }
+
+  char filename[NAME_MAX];
+  size_t filename_len = my_strlen(mapping.name);
+  if (filename_len >= NAME_MAX) {
+    assert(false);
+    // name too long
+    return false;
+  }
+
+  my_memcpy(filename, mapping.name, filename_len);
+  filename[filename_len] = '\0';
+
+  MemoryMappedFile mapped_file(filename, mapping.offset);
+  if (!mapped_file.data() || mapped_file.size() < SELFMAG) {
+    // mmap failed
+    return false;
+  }
+
+  return ElfFileSoNameFromMappedFile(mapped_file.data(), soname, soname_size);
 }
 
 bool LinuxDumper::ReadAuxv() {
@@ -195,6 +272,7 @@ bool LinuxDumper::EnumerateMappings() {
     if (*i1 == '-') {
       const char* i2 = my_read_hex_ptr(&end_addr, i1 + 1);
       if (*i2 == ' ') {
+        bool exec = (*(i2 + 3) == 'x');
         const char* i3 = my_read_hex_ptr(&offset, i2 + 6 /* skip ' rwxp ' */);
         if (*i3 == ' ') {
           const char* name = NULL;
@@ -223,6 +301,7 @@ bool LinuxDumper::EnumerateMappings() {
           module->start_addr = start_addr;
           module->size = end_addr - start_addr;
           module->offset = offset;
+          module->exec = exec;
           if (name != NULL) {
             const unsigned l = my_strlen(name);
             if (l < sizeof(module->name))
