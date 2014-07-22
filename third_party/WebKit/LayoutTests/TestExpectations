@@ -206,17 +206,13 @@ crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring.html
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom-style.html [ ImageOnlyFailure Pass ]
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom.html [ ImageOnlyFailure Pass ]
 
-# ICU 52 requires rebaseline for these tests
-crbug.com/378919 [ Linux Android ] fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ NeedsManualRebaseline ]
-crbug.com/378919 [ Linux Android ] fast/forms/calendar-picker/calendar-picker-appearance-required-ar.html [ NeedsManualRebaseline ]
-crbug.com/378919 [ Linux Android ] fast/forms/date/date-appearance-l10n.html [ NeedsManualRebaseline ]
-crbug.com/378919 fast/forms/datetimelocal/datetimelocal-appearance-l10n.html [ NeedsManualRebaseline ]
-crbug.com/378919 [ Linux Android ] fast/forms/datetimelocal/datetimelocal-appearance-basic.html [ NeedsManualRebaseline ]
-crbug.com/378919 fast/forms/month/month-appearance-l10n.html [ NeedsManualRebaseline ]
-crbug.com/378919 [ Linux Android ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-locale-hebrew.html [ NeedsManualRebaseline ]
-crbug.com/378919 [ Linux Android ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-rtl.html [ NeedsManualRebaseline ]
-crbug.com/378919 [ Linux Android ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-with-scroll-bar.html [ NeedsManualRebaseline ]
-crbug.com/378919 [ Linux Android ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance.html [ NeedsManualRebaseline ]
+# https://src.chromium.org/viewvc/blink?revision=176244 requires
+# rebaseline on Windows
+Bug(eae) [ Win ] fast/forms/datetimelocal/datetimelocal-appearance-l10n.html [ NeedsManualRebaseline ]
+Bug(eae) [ Win ] fast/forms/month/month-appearance-l10n.html [ NeedsManualRebaseline ]
+
+crbug.com/395877 [ Mac ] fast/forms/datetimelocal/datetimelocal-appearance-l10n.html [ NeedsManualRebaseline ]
+crbug.com/395877 [ Mac ] fast/forms/month/month-appearance-l10n.html [ NeedsManualRebaseline ]
 
 # Untriaged Linux-specific Aura failures
 
