@@ -14,10 +14,10 @@ Flinging input text should scroll text by the specified amount
 PASS box.scrollLeft is 40
 PASS container.scrollLeft is 0
 Flinging input text past the scrollable width shouldn't scroll containing div
-FAIL box.scrollLeft should be 686. Was 687.
+PASS box.scrollLeft is fullyScrolled
 PASS container.scrollLeft is 0
 Flinging fully scrolled input text should fling containing div
-FAIL box.scrollLeft should be 686. Was 687.
+PASS box.scrollLeft is fullyScrolled
 PASS container.scrollLeft is 60
 ===Testing scroll behavior===
 PASS box.scrollLeft is 0
@@ -26,8 +26,8 @@ Gesture scrolling input text should scroll text the specified amount
 PASS box.scrollLeft is 60
 PASS container.scrollLeft is 0
 Gesture scrolling input text past scroll width should scroll container div
-FAIL box.scrollLeft should be 686. Was 687.
-FAIL container.scrollLeft should be 50. Was 0.
+PASS box.scrollLeft is fullyScrolled
+PASS container.scrollLeft is 50
 ===Testing vertical scroll behavior===
 PASS box.scrollTop is 0
 PASS container.scrollTop is 0

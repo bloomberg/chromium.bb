@@ -432,8 +432,7 @@ IntPoint RenderLayerScrollableArea::maximumScrollPosition() const
 {
     if (!box().hasOverflowClip())
         return -scrollOrigin();
-
-    return -scrollOrigin() + enclosingIntRect(m_overflowRect).size() - enclosingIntRect(box().clientBoxRect()).size();
+    return -scrollOrigin() + IntPoint(pixelSnappedScrollWidth(), pixelSnappedScrollHeight()) - enclosingIntRect(box().clientBoxRect()).size();
 }
 
 IntRect RenderLayerScrollableArea::visibleContentRect(IncludeScrollbarsInRect scrollbarInclusion) const

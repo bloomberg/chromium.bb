@@ -607,8 +607,7 @@ crbug.com/310292 [ Mac ] http/tests/security/video-poster-cross-origin-crash.htm
 
 crbug.com/310323 [ Debug ] http/tests/plugins/third-party-cookie-accept-policy.html [ Crash Pass ]
 crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-multiple-violations-02.html [ Crash Pass ]
-# Failing because RenderLayerScrollableArea::clampScrollOffset seems to be off by one
-crbug.com/234871 [ Mac ] fast/scrolling/listbox-wheel-event.html [ ImageOnlyFailure ]
+
 crbug.com/234871 [ Win ] fast/scroll-behavior/listbox-scrollTop.html [ Failure Pass ]
 
 

@@ -14,10 +14,10 @@ Flinging the list box should scroll the list, the scrolls should be locked to it
 FAIL box.scrollTop should be 38.4. Was 38.
 PASS container.scrollTop is 0
 Flinging the list past the end shouldn't scroll containing div
-FAIL box.scrollTop should be 85. Was 86.
+PASS box.scrollTop is fullyScrolled
 PASS container.scrollTop is 0
 Flinging fully scrolled list should fling containing div
-FAIL box.scrollTop should be 85. Was 86.
+PASS box.scrollTop is fullyScrolled
 PASS container.scrollTop is 60
 ===Testing gesture scroll===
 PASS box.scrollTop is 0
@@ -28,8 +28,8 @@ PASS container.scrollTop is 0
 PASS box.scrollTop is 0
 PASS container.scrollTop is 0
 Gesture scrolling list past the end should scroll container div
-FAIL box.scrollTop should be 85. Was 86.
-FAIL container.scrollTop should be 50. Was 0.
+PASS box.scrollTop is fullyScrolled
+PASS container.scrollTop is 50
 ===Testing horizontal scroll===
 PASS box.scrollLeft is 0
 PASS container.scrollLeft is 0
