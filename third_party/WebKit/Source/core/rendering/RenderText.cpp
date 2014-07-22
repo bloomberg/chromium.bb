@@ -926,8 +926,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     if (isOverride(styleToUse->unicodeBidi())) {
         run = 0;
     } else {
-        BidiStatus status(LTR, false);
-        status.last = status.lastStrong = WTF::Unicode::OtherNeutral;
+        BidiStatus status(textDirection, false);
         bidiResolver.setStatus(status);
         bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&textRun, 0));
         bool hardLineBreak = false;
@@ -944,7 +943,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             // Treat adjacent runs with the same resolved directionality
             // (TextDirection as opposed to WTF::Unicode::Direction) as belonging
             // to the same run to avoid breaking unnecessarily.
-            while (i > run->stop() || (run->next() && run->next()->direction() == run->direction()))
+            while (i >= run->stop() || (run->next() && run->next()->direction() == run->direction()))
                 run = run->next();
 
             ASSERT(run);
