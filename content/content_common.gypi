@@ -11,7 +11,6 @@
     '../skia/skia.gyp:skia',
     '../third_party/WebKit/public/blink_headers.gyp:blink_headers',
     '../third_party/icu/icu.gyp:icuuc',
-    '../third_party/libjingle/libjingle.gyp:libjingle',
     '../ui/accessibility/accessibility.gyp:accessibility',
     '../ui/base/ui_base.gyp:ui_base',
     '../ui/events/ipc/events_ipc.gyp:events_ipc',
@@ -717,6 +716,11 @@
       'sources': [
         'common/gpu/media/android_video_encode_accelerator.cc',
         'common/gpu/media/android_video_encode_accelerator.h',
+      ],
+    }],
+    ['enable_webrtc==1', {
+      'dependencies': [
+        '../third_party/libjingle/libjingle.gyp:libjingle',
       ],
     }],
     ['target_arch=="arm" and chromeos == 1 and use_x11 == 1', {

@@ -281,11 +281,13 @@ class WebFrameTestProxy : public Base {
   }
 
  private:
+#if defined(ENABLE_WEBRTC)
   virtual scoped_ptr<MediaStreamRendererFactory>
   CreateRendererFactory() OVERRIDE {
     return scoped_ptr<MediaStreamRendererFactory>(
         new TestMediaStreamRendererFactory());
   }
+#endif
 
   WebTestProxyBase* base_proxy_;
 
