@@ -244,6 +244,11 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     [self setShouldOpenAsKeyWindow:NO];
     [[self bubble] setArrowLocation:info_bubble::kTopLeft];
     bridge_ = bridge;
+    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self
+               selector:@selector(parentWindowDidMove:)
+                   name:NSWindowDidMoveNotification
+                 object:parentWindow];
   }
   return self;
 }
@@ -258,6 +263,11 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 }
 
 - (void)parentWindowDidResize:(NSNotification*)notification {
+  DCHECK(bridge_);
+  [self setAnchorPoint:bridge_->GetAnchorPoint()];
+}
+
+- (void)parentWindowDidMove:(NSNotification*)notification {
   DCHECK(bridge_);
   [self setAnchorPoint:bridge_->GetAnchorPoint()];
 }
