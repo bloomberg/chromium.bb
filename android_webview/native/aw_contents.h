@@ -228,6 +228,7 @@ class AwContents : public FindHelper::Listener,
   void InitAutofillIfNecessary(bool enabled);
 
   void InitializeHardwareDrawIfNeeded();
+  void ReleaseHardwareDrawIfNeeded();
 
   // Geolocation API support
   void ShowGeolocationPrompt(const GURL& origin, base::Callback<void(bool)>);

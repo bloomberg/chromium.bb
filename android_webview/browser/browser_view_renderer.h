@@ -106,6 +106,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   gfx::Rect GetScreenRect() const;
   bool attached_to_window() const { return attached_to_window_; }
   bool hardware_enabled() const { return hardware_enabled_; }
+  void ReleaseHardware();
 
   // Set the memory policy in shared renderer state and request the tiles from
   // GlobalTileManager. The actually amount of memory allowed by

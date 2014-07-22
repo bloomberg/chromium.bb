@@ -24,6 +24,7 @@ class GLInProcessContext;
 namespace android_webview {
 
 class BrowserViewRendererClient;
+class InsideHardwareReleaseReset;
 
 // Set by BrowserViewRenderer and read by HardwareRenderer.
 struct DrawGLInput {
@@ -48,9 +49,7 @@ class SharedRendererState {
   void SetDrawGLInput(scoped_ptr<DrawGLInput> input);
   scoped_ptr<DrawGLInput> PassDrawGLInput();
 
-  // Set by UI and read by RT.
-  void SetHardwareAllowed(bool allowed);
-  bool IsHardwareAllowed() const;
+  bool IsInsideHardwareRelease() const;
 
   void SetSharedContext(gpu::GLInProcessContext* context);
   gpu::GLInProcessContext* GetSharedContext() const;
@@ -60,7 +59,10 @@ class SharedRendererState {
   bool ReturnedResourcesEmpty() const;
 
  private:
+  friend class InsideHardwareReleaseReset;
+
   void ClientRequestDrawGLOnUIThread();
+  void SetInsideHardwareRelease(bool inside);
 
   scoped_refptr<base::MessageLoopProxy> ui_loop_;
   BrowserViewRendererClient* client_on_ui_;
@@ -70,9 +72,23 @@ class SharedRendererState {
   // Accessed by both UI and RT thread.
   mutable base::Lock lock_;
   scoped_ptr<DrawGLInput> draw_gl_input_;
-  bool hardware_allowed_;
+  bool inside_hardware_release_;
   gpu::GLInProcessContext* share_context_;
   cc::ReturnedResourceArray returned_resources_;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedRendererState);
+};
+
+class InsideHardwareReleaseReset {
+ public:
+  explicit InsideHardwareReleaseReset(
+      SharedRendererState* shared_renderer_state);
+  ~InsideHardwareReleaseReset();
+
+ private:
+  SharedRendererState* shared_renderer_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(InsideHardwareReleaseReset);
 };
 
 }  // namespace android_webview
