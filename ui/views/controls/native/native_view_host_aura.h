@@ -40,7 +40,10 @@ class VIEWS_EXPORT NativeViewHostAura : public NativeViewHostWrapper,
  private:
   friend class NativeViewHostAuraTest;
 
+  class ClippingWindowDelegate;
+
   // Overridden from aura::WindowObserver:
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
   // Reparents the native view with the clipping window existing between it and
@@ -53,6 +56,8 @@ class VIEWS_EXPORT NativeViewHostAura : public NativeViewHostWrapper,
 
   // Our associated NativeViewHost.
   NativeViewHost* host_;
+
+  scoped_ptr<ClippingWindowDelegate> clipping_window_delegate_;
 
   // Window that exists between the native view and the parent that allows for
   // clipping to occur. This is positioned in the coordinate space of

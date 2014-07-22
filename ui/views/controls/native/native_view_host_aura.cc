@@ -8,16 +8,62 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/hit_test.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/view_constants_aura.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
 
+class NativeViewHostAura::ClippingWindowDelegate : public aura::WindowDelegate {
+ public:
+  ClippingWindowDelegate() : native_view_(NULL) {}
+  virtual ~ClippingWindowDelegate() {}
+
+  void set_native_view(aura::Window* native_view) {
+    native_view_ = native_view;
+  }
+
+  virtual gfx::Size GetMinimumSize() const OVERRIDE { return gfx::Size(); }
+  virtual gfx::Size GetMaximumSize() const OVERRIDE { return gfx::Size(); }
+  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
+                               const gfx::Rect& new_bounds) OVERRIDE {}
+  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
+    return gfx::kNullCursor;
+  }
+  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
+    return HTCLIENT;
+  }
+  virtual bool ShouldDescendIntoChildForEventHandling(
+      aura::Window* child,
+      const gfx::Point& location) OVERRIDE { return true; }
+  virtual bool CanFocus() OVERRIDE {
+    // Ask the hosted native view's delegate because directly calling
+    // aura::Window::CanFocus() will call back into this when checking whether
+    // parents can focus.
+    return native_view_ && native_view_->delegate()
+        ? native_view_->delegate()->CanFocus()
+        : true;
+  }
+  virtual void OnCaptureLost() OVERRIDE {}
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {}
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {}
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {}
+  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {}
+  virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {}
+  virtual bool HasHitTestMask() const OVERRIDE { return false; }
+  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {}
+
+ private:
+  aura::Window* native_view_;
+};
+
 NativeViewHostAura::NativeViewHostAura(NativeViewHost* host)
     : host_(host),
-      clipping_window_(NULL) {
+      clipping_window_delegate_(new ClippingWindowDelegate()),
+      clipping_window_(clipping_window_delegate_.get()) {
   clipping_window_.Init(aura::WINDOW_LAYER_NOT_DRAWN);
   clipping_window_.set_owned_by_parent(false);
   clipping_window_.SetName("NativeViewHostAuraClip");
@@ -39,6 +85,7 @@ NativeViewHostAura::~NativeViewHostAura() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewHostAura, NativeViewHostWrapper implementation:
 void NativeViewHostAura::AttachNativeView() {
+  clipping_window_delegate_->set_native_view(host_->native_view());
   host_->native_view()->AddObserver(this);
   host_->native_view()->SetProperty(views::kHostViewKey,
       static_cast<View*>(host_));
@@ -46,6 +93,7 @@ void NativeViewHostAura::AttachNativeView() {
 }
 
 void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
+  clipping_window_delegate_->set_native_view(NULL);
   RemoveClippingWindow();
   if (!destroyed) {
     host_->native_view()->RemoveObserver(this);
@@ -130,6 +178,11 @@ gfx::NativeCursor NativeViewHostAura::GetCursor(int x, int y) {
   if (host_->native_view())
     return host_->native_view()->GetCursor(gfx::Point(x, y));
   return gfx::kNullCursor;
+}
+
+void NativeViewHostAura::OnWindowDestroying(aura::Window* window) {
+  DCHECK(window == host_->native_view());
+  clipping_window_delegate_->set_native_view(NULL);
 }
 
 void NativeViewHostAura::OnWindowDestroyed(aura::Window* window) {
