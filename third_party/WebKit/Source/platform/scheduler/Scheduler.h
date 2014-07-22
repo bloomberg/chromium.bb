@@ -15,6 +15,8 @@ class WebThread;
 
 namespace blink {
 
+class TraceLocation;
+
 // The scheduler is an opinionated gateway for arranging work to be run the
 // main thread. It decides which tasks get priority over others based on a
 // scheduling policy and the overall system state.
@@ -29,9 +31,9 @@ public:
 
     // The following entrypoints are used to schedule different types of tasks
     // to be run on the main thread. They can be called from any thread.
-    void postInputTask(const Task&);
-    void postCompositorTask(const Task&);
-    void postTask(const Task&); // For generic (low priority) tasks.
+    void postInputTask(const TraceLocation&, const Task&);
+    void postCompositorTask(const TraceLocation&, const Task&);
+    void postTask(const TraceLocation&, const Task&); // For generic (low priority) tasks.
 
     // Returns true if there is high priority work pending on the main thread
     // and the caller should yield to let the scheduler service that work.
@@ -48,7 +50,7 @@ private:
     Scheduler();
     ~Scheduler();
 
-    void scheduleTask(const Task&);
+    void scheduleTask(const TraceLocation&, const Task&);
 
     static void sharedTimerAdapter();
     void tickSharedTimer();

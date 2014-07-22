@@ -149,7 +149,7 @@ static void cryptographicallyRandomValues(unsigned char* buffer, size_t length)
 
 static void callOnMainThreadFunction(WTF::MainThreadFunction function, void* context)
 {
-    blink::Scheduler::shared()->postTask(bind(function, context));
+    blink::Scheduler::shared()->postTask(FROM_HERE, bind(function, context));
 }
 
 void initializeWithoutV8(Platform* platform)

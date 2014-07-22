@@ -13,19 +13,22 @@ class Scheduler;
 
 namespace blink {
 
+class WebTraceLocation;
+
+// This class is used to submit tasks to Blink's main thread scheduler.
 class WebSchedulerProxy {
 public:
     BLINK_PLATFORM_EXPORT ~WebSchedulerProxy();
 
     BLINK_PLATFORM_EXPORT static WebSchedulerProxy create();
 
-    // Schedule an input processing task to be run on the blink main thread.
+    // Schedule an input processing task to be run on the Blink main thread.
     // Takes ownership of |Task|. Can be called from any thread.
-    BLINK_PLATFORM_EXPORT void postInputTask(WebThread::Task*);
+    BLINK_PLATFORM_EXPORT void postInputTask(const WebTraceLocation&, WebThread::Task*);
 
-    // Schedule a compositor task to run on the blink main thread. Takes
+    // Schedule a compositor task to run on the Blink main thread. Takes
     // ownership of |Task|. Can be called from any thread.
-    BLINK_PLATFORM_EXPORT void postCompositorTask(WebThread::Task*);
+    BLINK_PLATFORM_EXPORT void postCompositorTask(const WebTraceLocation&, WebThread::Task*);
 
 private:
     WebSchedulerProxy();

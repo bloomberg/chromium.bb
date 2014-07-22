@@ -7,6 +7,7 @@
 
 #include "platform/Task.h"
 #include "platform/TraceEvent.h"
+#include "platform/TraceLocation.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 
@@ -16,19 +17,23 @@ namespace {
 
 class MainThreadTaskAdapter : public blink::WebThread::Task {
 public:
-    explicit MainThreadTaskAdapter(const Scheduler::Task& task)
-        : m_task(task)
+    explicit MainThreadTaskAdapter(const TraceLocation& location, const Scheduler::Task& task)
+        : m_location(location)
+        , m_task(task)
     {
     }
 
     // WebThread::Task implementation.
     virtual void run() OVERRIDE
     {
-        TRACE_EVENT0("blink", "MainThreadTaskAdapter::run");
+        TRACE_EVENT2("blink", "MainThreadTaskAdapter::run",
+            "src_file", m_location.fileName(),
+            "src_func", m_location.functionName());
         m_task();
     }
 
 private:
+    const TraceLocation m_location;
     Scheduler::Task m_task;
 };
 
@@ -62,24 +67,24 @@ Scheduler::~Scheduler()
 {
 }
 
-void Scheduler::scheduleTask(const Task& task)
+void Scheduler::scheduleTask(const TraceLocation& location, const Task& task)
 {
-    m_mainThread->postTask(new MainThreadTaskAdapter(task));
+    m_mainThread->postTask(new MainThreadTaskAdapter(location, task));
 }
 
-void Scheduler::postTask(const Task& task)
+void Scheduler::postTask(const TraceLocation& location, const Task& task)
 {
-    scheduleTask(task);
+    scheduleTask(location, task);
 }
 
-void Scheduler::postInputTask(const Task& task)
+void Scheduler::postInputTask(const TraceLocation& location, const Task& task)
 {
-    scheduleTask(task);
+    scheduleTask(location, task);
 }
 
-void Scheduler::postCompositorTask(const Task& task)
+void Scheduler::postCompositorTask(const TraceLocation& location, const Task& task)
 {
-    scheduleTask(task);
+    scheduleTask(location, task);
 }
 
 void Scheduler::tickSharedTimer()
