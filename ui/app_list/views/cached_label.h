@@ -27,9 +27,12 @@ class CachedLabel : public views::Label {
   void PaintToBackingImage();
 
 #if defined(OS_WIN)
-  // views::View overrides.
+  // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 #endif
+
+  // Overridden from ui::LayerDelegate:
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
 
  private:
   bool needs_repaint_;

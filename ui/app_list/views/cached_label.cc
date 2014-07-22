@@ -5,8 +5,10 @@
 #include "ui/app_list/views/cached_label.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/widget/widget.h"
 
 namespace app_list {
 
@@ -19,7 +21,9 @@ void CachedLabel::PaintToBackingImage() {
     return;
 
   bool is_opaque = SkColorGetA(background_color()) == 0xFF;
-  gfx::Canvas canvas(size(), 1.0f, is_opaque);
+  float scale_factor =
+      ui::GetScaleFactorForNativeView(GetWidget()->GetNativeView());
+  gfx::Canvas canvas(size(), scale_factor, is_opaque);
   // If a background is provided, it will initialize the canvas in
   // View::OnPaintBackground(). Otherwise, the background must be set here.
   if (!background()) {
@@ -37,5 +41,11 @@ void CachedLabel::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawImageInt(image_, 0, 0);
 }
 #endif
+
+void CachedLabel::OnDeviceScaleFactorChanged(
+    float device_scale_factor) {
+  Invalidate();
+  View::OnDeviceScaleFactorChanged(device_scale_factor);
+}
 
 }  // namespace app_list
