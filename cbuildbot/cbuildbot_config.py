@@ -2018,6 +2018,16 @@ _grouped_variant_release = _release.derive(_grouped_variant_config)
 
 ### Master release config.
 
+# TODO: This config will replace x86-mario-release as the canary
+# master once the corresponding waterfall change is completed
+# (crbug.com/385267).
+_release.add_config('master-release',
+  boards=[],
+  master=False,
+  sync_chrome=False,
+  chrome_sdk=False,
+)
+
 _release.add_config('x86-mario-release',
   boards=['x86-mario'],
   master=True,
