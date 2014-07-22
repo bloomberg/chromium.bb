@@ -71,9 +71,6 @@ static bool hasClippedStackingAncestor(const RenderLayer* layer, const RenderLay
         return false;
     const RenderObject* clippingRenderer = clippingLayer->renderer();
     for (const RenderLayer* current = layer->compositingContainer(); current && current != clippingLayer; current = current->compositingContainer()) {
-        if (current->renderer()->hasClipOrOverflowClip() && !clippingRenderer->isDescendantOf(current->renderer()))
-            return true;
-
         if (const RenderObject* container = current->clippingContainer()) {
             if (clippingRenderer != container && !clippingRenderer->isDescendantOf(container))
                 return true;
