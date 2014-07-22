@@ -290,6 +290,7 @@
         {
           'action_name': 'generate_resources_map',
           'inputs': [
+            'browser/metrics/variations/generate_resources_map.py',
             '<(grit_out_dir)/grit/generated_resources.h'
           ],
           'outputs': [

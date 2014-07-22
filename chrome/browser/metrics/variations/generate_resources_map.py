@@ -156,11 +156,13 @@ def _GenerateFileContent(resources_content):
       "#include "
       "\"chrome/browser/metrics/variations/generated_resources_map.h\"\n\n"
       "namespace chrome_variations {\n\n"
+      "const size_t kNumResources = %i;\n\n"
       "%s"
       "\n"
       "%s"
       "\n"
-      "}  // namespace chrome_variations\n") % (hashes_array, indices_array)
+      "}  // namespace chrome_variations\n") % (
+          len(hashed_tuples), hashes_array, indices_array)
 
 
 def main(resources_file, map_file):

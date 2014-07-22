@@ -17,6 +17,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/variations/generated_resources_map.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -36,6 +37,7 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/device_form_factor.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
@@ -218,6 +220,17 @@ base::Time GetReferenceDateForExpiryChecks(PrefService* local_state) {
   return reference_date;
 }
 
+// Overrides the string resource sepecified by |hash| with |string| in the
+// resource bundle. Used as a callback passed to the variations seed processor.
+void OverrideUIString(uint32_t hash, const base::string16& string) {
+  int resource_id = GetResourceIndex(hash);
+  if (resource_id == -1)
+    return;
+
+  ui::ResourceBundle::GetSharedInstance().OverrideLocaleStringResource(
+      resource_id, string);
+}
+
 }  // namespace
 
 VariationsService::VariationsService(
@@ -254,9 +267,14 @@ bool VariationsService::CreateTrialsFromSeed() {
     return false;
 
   VariationsSeedProcessor().CreateTrialsFromSeed(
-      seed, g_browser_process->GetApplicationLocale(),
-      GetReferenceDateForExpiryChecks(local_state_), current_version,
-      GetChannelForVariations(), GetCurrentFormFactor(), GetHardwareClass());
+      seed,
+      g_browser_process->GetApplicationLocale(),
+      GetReferenceDateForExpiryChecks(local_state_),
+      current_version,
+      GetChannelForVariations(),
+      GetCurrentFormFactor(),
+      GetHardwareClass(),
+      base::Bind(&OverrideUIString));
 
   // Log the "freshness" of the seed that was just used. The freshness is the
   // time between the last successful seed download and now.

@@ -8,9 +8,11 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "components/variations/proto/study.pb.h"
@@ -23,6 +25,9 @@ class ProcessedStudy;
 // Helper class to instantiate field trials from a variations seed.
 class VariationsSeedProcessor {
  public:
+  typedef base::Callback<void(uint32_t, const base::string16&)>
+      UIStringOverrideCallback;
+
   VariationsSeedProcessor();
   virtual ~VariationsSeedProcessor();
 
@@ -35,7 +40,8 @@ class VariationsSeedProcessor {
                             const base::Version& version,
                             Study_Channel channel,
                             Study_FormFactor form_factor,
-                            const std::string& hardware_class);
+                            const std::string& hardware_class,
+                            const UIStringOverrideCallback& override_callback);
 
  private:
   friend class VariationsSeedProcessorTest;
@@ -63,7 +69,8 @@ class VariationsSeedProcessor {
 
   // Creates and registers a field trial from the |processed_study| data.
   // Disables the trial if |processed_study.is_expired| is true.
-  void CreateTrialFromStudy(const ProcessedStudy& processed_study);
+  void CreateTrialFromStudy(const ProcessedStudy& processed_study,
+                            const UIStringOverrideCallback& override_callback);
 
   DISALLOW_COPY_AND_ASSIGN(VariationsSeedProcessor);
 };

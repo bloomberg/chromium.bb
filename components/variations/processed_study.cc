@@ -5,6 +5,7 @@
 #include "components/variations/processed_study.h"
 
 #include <set>
+#include <string>
 
 #include "base/version.h"
 #include "components/variations/proto/study.pb.h"
@@ -89,6 +90,15 @@ bool ProcessedStudy::Init(const Study* study, bool is_expired) {
   is_expired_ = is_expired;
   total_probability_ = total_probability;
   return true;
+}
+
+int ProcessedStudy::GetExperimentIndexByName(const std::string& name) const {
+  for (int i = 0; i < study_->experiment_size(); ++i) {
+    if (study_->experiment(i).name() == name)
+      return i;
+  }
+
+  return -1;
 }
 
 // static
