@@ -23,7 +23,7 @@ namespace webcrypto {
 
 namespace {
 
-Status ExportPKeySpki(EVP_PKEY* key, std::vector<uint8>* buffer) {
+Status ExportPKeySpki(EVP_PKEY* key, std::vector<uint8_t>* buffer) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
   crypto::ScopedBIO bio(BIO_new(BIO_s_mem()));
 
@@ -41,7 +41,7 @@ Status ExportPKeySpki(EVP_PKEY* key, std::vector<uint8>* buffer) {
   return Status::Success();
 }
 
-Status ExportPKeyPkcs8(EVP_PKEY* key, std::vector<uint8>* buffer) {
+Status ExportPKeyPkcs8(EVP_PKEY* key, std::vector<uint8_t>* buffer) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
   crypto::ScopedBIO bio(BIO_new(BIO_s_mem()));
 
@@ -76,7 +76,7 @@ Status CreateRsaHashedKeyAlgorithm(
   unsigned int modulus_length_bits = BN_num_bits(rsa.get()->n);
 
   // Convert the public exponent to big-endian representation.
-  std::vector<uint8> e(BN_num_bytes(rsa.get()->e));
+  std::vector<uint8_t> e(BN_num_bytes(rsa.get()->e));
   if (e.size() == 0)
     return Status::ErrorUnexpected();
   if (static_cast<int>(e.size()) != BN_bn2bin(rsa.get()->e, &e[0]))
@@ -131,7 +131,7 @@ Status RsaHashedAlgorithm::ImportKeyPkcs8(
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  crypto::ScopedBIO bio(BIO_new_mem_buf(const_cast<uint8*>(key_data.bytes()),
+  crypto::ScopedBIO bio(BIO_new_mem_buf(const_cast<uint8_t*>(key_data.bytes()),
                                         key_data.byte_length()));
   if (!bio.get())
     return Status::ErrorUnexpected();
@@ -152,7 +152,7 @@ Status RsaHashedAlgorithm::ImportKeyPkcs8(
     return status;
 
   // TODO(eroman): This is probably going to be the same as the input.
-  std::vector<uint8> pkcs8_data;
+  std::vector<uint8_t> pkcs8_data;
   status = ExportPKeyPkcs8(private_key.get(), &pkcs8_data);
   if (status.IsError())
     return status;
@@ -179,7 +179,7 @@ Status RsaHashedAlgorithm::ImportKeySpki(
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  crypto::ScopedBIO bio(BIO_new_mem_buf(const_cast<uint8*>(key_data.bytes()),
+  crypto::ScopedBIO bio(BIO_new_mem_buf(const_cast<uint8_t*>(key_data.bytes()),
                                         key_data.byte_length()));
   if (!bio.get())
     return Status::ErrorUnexpected();
@@ -195,7 +195,7 @@ Status RsaHashedAlgorithm::ImportKeySpki(
     return status;
 
   // TODO(eroman): This is probably going to be the same as the input.
-  std::vector<uint8> spki_data;
+  std::vector<uint8_t> spki_data;
   status = ExportPKeySpki(public_key.get(), &spki_data);
   if (status.IsError())
     return status;
@@ -212,7 +212,7 @@ Status RsaHashedAlgorithm::ImportKeySpki(
 }
 
 Status RsaHashedAlgorithm::ExportKeyPkcs8(const blink::WebCryptoKey& key,
-                                          std::vector<uint8>* buffer) const {
+                                          std::vector<uint8_t>* buffer) const {
   if (key.type() != blink::WebCryptoKeyTypePrivate)
     return Status::ErrorUnexpectedKeyType();
   *buffer = AsymKeyOpenSsl::Cast(key)->serialized_key_data();
@@ -220,7 +220,7 @@ Status RsaHashedAlgorithm::ExportKeyPkcs8(const blink::WebCryptoKey& key,
 }
 
 Status RsaHashedAlgorithm::ExportKeySpki(const blink::WebCryptoKey& key,
-                                         std::vector<uint8>* buffer) const {
+                                         std::vector<uint8_t>* buffer) const {
   if (key.type() != blink::WebCryptoKeyTypePublic)
     return Status::ErrorUnexpectedKeyType();
   *buffer = AsymKeyOpenSsl::Cast(key)->serialized_key_data();

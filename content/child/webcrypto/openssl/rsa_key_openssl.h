@@ -51,10 +51,10 @@ class RsaHashedAlgorithm : public AlgorithmImplementation {
                                blink::WebCryptoKey* key) const OVERRIDE;
 
   virtual Status ExportKeyPkcs8(const blink::WebCryptoKey& key,
-                                std::vector<uint8>* buffer) const OVERRIDE;
+                                std::vector<uint8_t>* buffer) const OVERRIDE;
 
   virtual Status ExportKeySpki(const blink::WebCryptoKey& key,
-                               std::vector<uint8>* buffer) const OVERRIDE;
+                               std::vector<uint8_t>* buffer) const OVERRIDE;
 
  private:
   blink::WebCryptoKeyUsageMask all_public_key_usages_;
