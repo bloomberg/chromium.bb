@@ -4,6 +4,7 @@
 
 {
     'variables': {
+        # Note: list duplicated in custom.gni.
         'bindings_modules_v8_custom_files': [
             'V8AudioNodeCustom.cpp',
             'V8ClientCustom.cpp',

@@ -4,6 +4,7 @@
 
 import("//third_party/WebKit/Source/bindings/bindings.gni")
 import("//third_party/WebKit/Source/bindings/modules/v8/generated.gni")
+import("//third_party/WebKit/Source/bindings/modules/v8/v8.gni")
 import("//third_party/WebKit/Source/build/make_file_arrays.gni")
 import("//third_party/WebKit/Source/build/scripts/scripts.gni")
 import("//third_party/WebKit/Source/modules/modules.gni")
@@ -15,6 +16,7 @@ source_set("modules") {
   visibility = "//third_party/WebKit/*"
 
   sources = rebase_path(modules_files, ".", "//")
+  sources += bindings_modules_v8_files
   sources += rebase_path(bindings_modules_generated_aggregate_files, ".", "//")
 
   if (!is_win) {
