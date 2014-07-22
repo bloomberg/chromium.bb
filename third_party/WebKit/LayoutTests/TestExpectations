@@ -273,6 +273,16 @@ crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-containing-b
 
 crbug.com/225184 scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Failure Pass ]
 
+crbug.com/394619 svg/carto.net/window.svg [ NeedsRebaseline ]
+crbug.com/394619 svg/custom/relative-sized-shadow-tree-content.xhtml [ NeedsRebaseline ]
+crbug.com/394619 svg/custom/use-detach.svg [ NeedsRebaseline ]
+crbug.com/394619 svg/repaint/container-repaint.svg [ NeedsRebaseline ]
+crbug.com/394619 svg/repaint/image-with-clip-path.svg [ NeedsRebaseline ]
+crbug.com/394619 svg/repaint/inner-svg-change-viewPort-relative.svg [ NeedsRebaseline ]
+crbug.com/394619 svg/repaint/paintorder-filtered.svg [ NeedsRebaseline ]
+crbug.com/394619 svg/repaint/repaint-paintorder.svg [ NeedsRebaseline ]
+crbug.com/394619 svg/text/text-rescale.html [ NeedsRebaseline ]
+
 crbug.com/365340 editing/pasteboard/paste-noscript-xhtml.xhtml [ Failure Pass ]
 
 crbug.com/237270 [ Win ] http/tests/history/replacestate-post-to-get-2.html [ Pass Timeout ]

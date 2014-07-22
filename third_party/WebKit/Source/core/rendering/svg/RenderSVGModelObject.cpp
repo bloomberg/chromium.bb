@@ -133,6 +133,13 @@ void RenderSVGModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
     if (!shouldCheckForPaintInvalidation())
         return;
 
+    invalidatePaintIfNeeded(paintInvalidationState);
+
+    RenderObject::invalidateTreeIfNeeded(paintInvalidationState);
+}
+
+void RenderSVGModelObject::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
+{
     ForceHorriblySlowRectMapping slowRectMapping(&paintInvalidationState);
 
     const LayoutRect oldPaintInvalidationRect = previousPaintInvalidationRect();
@@ -151,14 +158,10 @@ void RenderSVGModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
     // If we are set to do a full paint invalidation that means the RenderView will be
     // issue paint invalidations. We can then skip issuing of paint invalidations for the child
     // renderers as they'll be covered by the RenderView.
-    if (view()->doingFullRepaint()) {
-        RenderObject::invalidateTreeIfNeeded(paintInvalidationState);
+    if (view()->doingFullRepaint())
         return;
-    }
 
-    invalidatePaintIfNeeded(paintInvalidationState.paintInvalidationContainer(), oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer, paintInvalidationState);
-
-    RenderObject::invalidateTreeIfNeeded(paintInvalidationState);
+    RenderObject::invalidatePaintIfNeeded(paintInvalidationState.paintInvalidationContainer(), oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer, paintInvalidationState);
 }
 
 } // namespace blink
