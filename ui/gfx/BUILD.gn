@@ -394,7 +394,6 @@ source_set("gfx_test_support") {
 
 test("gfx_unittests") {
   sources = [
-    "font_render_params_linux_unittest.cc",
     "geometry/box_unittest.cc",
     "geometry/cubic_bezier_unittest.cc",
     "geometry/insets_unittest.cc",
@@ -423,7 +422,10 @@ test("gfx_unittests") {
   ]
 
   if (use_pango) {
-    sources += [ "platform_font_pango_unittest.cc" ]
+    sources += [
+      "font_render_params_linux_unittest.cc",
+      "platform_font_pango_unittest.cc",
+    ]
     configs += [
       "//build/config/linux:pangocairo",
       "//build/config/linux:pangoft2",

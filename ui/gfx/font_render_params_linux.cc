@@ -86,27 +86,34 @@ bool QueryFontconfig(const std::vector<std::string>* family_list,
 
   if (params_out) {
     FcBool fc_antialias = 0;
-    FcPatternGetBool(match, FC_ANTIALIAS, 0, &fc_antialias);
-    params_out->antialiasing = fc_antialias;
+    if (FcPatternGetBool(match, FC_ANTIALIAS, 0, &fc_antialias) ==
+        FcResultMatch) {
+      params_out->antialiasing = fc_antialias;
+    }
 
     FcBool fc_autohint = 0;
-    FcPatternGetBool(match, FC_AUTOHINT, 0, &fc_autohint);
-    params_out->autohinter = fc_autohint;
+    if (FcPatternGetBool(match, FC_AUTOHINT, 0, &fc_autohint) ==
+        FcResultMatch) {
+      params_out->autohinter = fc_autohint;
+    }
 
     FcBool fc_bitmap = 0;
-    FcPatternGetBool(match, FC_EMBEDDED_BITMAP, 0, &fc_bitmap);
-    params_out->use_bitmaps = fc_bitmap;
+    if (FcPatternGetBool(match, FC_EMBEDDED_BITMAP, 0, &fc_bitmap) ==
+        FcResultMatch) {
+      params_out->use_bitmaps = fc_bitmap;
+    }
 
     FcBool fc_hinting = 0;
-    int fc_hint_style = FC_HINT_NONE;
-    FcPatternGetBool(match, FC_HINTING, 0, &fc_hinting);
-    if (fc_hinting)
-      FcPatternGetInteger(match, FC_HINT_STYLE, 0, &fc_hint_style);
-    params_out->hinting = ConvertFontconfigHintStyle(fc_hint_style);
+    if (FcPatternGetBool(match, FC_HINTING, 0, &fc_hinting) == FcResultMatch) {
+      int fc_hint_style = FC_HINT_NONE;
+      if (fc_hinting)
+        FcPatternGetInteger(match, FC_HINT_STYLE, 0, &fc_hint_style);
+      params_out->hinting = ConvertFontconfigHintStyle(fc_hint_style);
+    }
 
     int fc_rgba = FC_RGBA_NONE;
-    FcPatternGetInteger(match, FC_RGBA, 0, &fc_rgba);
-    params_out->subpixel_rendering = ConvertFontconfigRgba(fc_rgba);
+    if (FcPatternGetInteger(match, FC_RGBA, 0, &fc_rgba) == FcResultMatch)
+      params_out->subpixel_rendering = ConvertFontconfigRgba(fc_rgba);
   }
 
   FcPatternDestroy(match);

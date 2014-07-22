@@ -10,11 +10,41 @@
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/linux_font_delegate.h"
+#include "ui/gfx/pango_util.h"
 #include "ui/gfx/test/fontconfig_util_linux.h"
 
 namespace gfx {
 
 namespace {
+
+// Implementation of LinuxFontDelegate that returns a canned FontRenderParams
+// struct. This is used to isolate tests from the system's local configuration.
+class TestFontDelegate : public LinuxFontDelegate {
+ public:
+  TestFontDelegate() {}
+  virtual ~TestFontDelegate() {}
+
+  void set_params(const FontRenderParams& params) { params_ = params; }
+
+  virtual FontRenderParams GetDefaultFontRenderParams() const OVERRIDE {
+    return params_;
+  }
+  virtual scoped_ptr<ScopedPangoFontDescription>
+      GetDefaultPangoFontDescription() const OVERRIDE {
+    NOTIMPLEMENTED();
+    return scoped_ptr<ScopedPangoFontDescription>();
+  }
+  virtual double GetFontDPI() const OVERRIDE {
+    NOTIMPLEMENTED();
+    return 96.0;
+  }
+
+ private:
+  FontRenderParams params_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestFontDelegate);
+};
 
 // Loads the first system font defined by fontconfig_util_linux.h with a base
 // filename of |basename|. Case is ignored.
@@ -35,14 +65,20 @@ class FontRenderParamsTest : public testing::Test {
   FontRenderParamsTest() {
     SetUpFontconfig();
     CHECK(temp_dir_.CreateUniqueTempDir());
+    original_font_delegate_ = LinuxFontDelegate::instance();
+    LinuxFontDelegate::SetInstance(&test_font_delegate_);
   }
 
   virtual ~FontRenderParamsTest() {
+    LinuxFontDelegate::SetInstance(
+        const_cast<LinuxFontDelegate*>(original_font_delegate_));
     TearDownFontconfig();
   }
 
  protected:
   base::ScopedTempDir temp_dir_;
+  const LinuxFontDelegate* original_font_delegate_;
+  TestFontDelegate test_font_delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FontRenderParamsTest);
@@ -208,6 +244,29 @@ TEST_F(FontRenderParamsTest, UseBitmaps) {
   params = GetCustomFontRenderParams(
       false, NULL, &pixel_size, NULL, NULL, NULL);
   EXPECT_TRUE(params.use_bitmaps);
+}
+
+TEST_F(FontRenderParamsTest, OnlySetConfiguredValues) {
+  // Configure the LinuxFontDelegate (which queries GtkSettings on desktop
+  // Linux) to request subpixel rendering.
+  FontRenderParams system_params;
+  system_params.subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_RGB;
+  test_font_delegate_.set_params(system_params);
+
+  // Load a Fontconfig config that enables antialiasing but doesn't say anything
+  // about subpixel rendering.
+  ASSERT_TRUE(LoadSystemFont("arial.ttf"));
+  ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
+      std::string(kFontconfigFileHeader) +
+      kFontconfigMatchHeader +
+      CreateFontconfigEditStanza("antialias", "bool", "true") +
+      kFontconfigMatchFooter +
+      kFontconfigFileFooter));
+
+  // The subpixel rendering setting from the delegate should make it through.
+  FontRenderParams params = GetCustomFontRenderParams(
+      false, NULL, NULL, NULL, NULL, NULL);
+  EXPECT_EQ(system_params.subpixel_rendering, params.subpixel_rendering);
 }
 
 }  // namespace gfx

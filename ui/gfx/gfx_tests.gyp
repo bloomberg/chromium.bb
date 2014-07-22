@@ -43,7 +43,6 @@
         'display_change_notifier_unittest.cc',
         'display_unittest.cc',
         'font_list_unittest.cc',
-        'font_render_params_linux_unittest.cc',
         'geometry/box_unittest.cc',
         'geometry/cubic_bezier_unittest.cc',
         'geometry/insets_unittest.cc',
@@ -104,6 +103,7 @@
             '../../build/linux/system.gyp:pangocairo',
           ],
           'sources': [
+            'font_render_params_linux_unittest.cc',
             'platform_font_pango_unittest.cc',
           ],
           'conditions': [
