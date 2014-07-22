@@ -9,26 +9,29 @@ function CTCommit(author, message, baseUrl) {
   this.author = author;
   this.message = message;
   this.revision = this._findRevision();
-  // FIXME: This is a needlessly expensive way to grab the first line.
-  this.summary = this.message.split('\n')[0];
-  this._baseUrl = baseUrl;
+  this.summary = this._findSummary();
+  this.url = this._url(baseUrl);
 }
 
-Object.defineProperty(CTCommit.prototype, "url", {
-  get: function url() {
-    return this._baseUrl + '?' + Object.toQueryString({
-      view: 'rev',
-      revision: this.revision,
-    });
-  },
-});
+CTCommit.prototype._url = function(baseUrl) {
+  return baseUrl + '?' + Object.toQueryString({
+    view: 'rev',
+    revision: this.revision,
+  });
+}
 
 CTCommit.prototype._findRevision = function() {
-  // FIXME: Make this regexp more general.
-  var regexp = /git-svn-id: svn:\/\/svn.chromium.org\/blink\/trunk@(\d+)/;
+  // FIXME: This needs to be updated post git-migration to
+  // use the new commit numbers (ideally not git hashes!).
+  var regexp = /git-svn-id:[^@]*@(\d+)/;
   var match = regexp.exec(this.message);
   if (match)
     return parseInt(match[1], 10);
   return null;
+}
+
+CTCommit.prototype._findSummary = function() {
+  var index = this.message.indexOf('\n');
+  return this.message.substring(0, index);
 }
 </script>

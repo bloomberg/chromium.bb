@@ -34,10 +34,7 @@ found in the LICENSE file.
       _update: function() {
         if (!this.first || !this.last)
           return;
-
-        this._revisions = [];
-        for (var i = this.first; i <= this.last; i++)
-          this._revisions.push(i);
+        this._revisions = Number.range(this.first, this.last).every();
       },
     });
   </script>
