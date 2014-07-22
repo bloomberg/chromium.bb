@@ -203,7 +203,7 @@ String SVGTransform::valueAsString() const
     case SVG_TRANSFORM_TRANSLATE:
         return prefix + String::number(m_matrix.e()) + ' ' + String::number(m_matrix.f()) + ')';
     case SVG_TRANSFORM_SCALE:
-        return prefix + String::number(m_matrix.xScale()) + ' ' + String::number(m_matrix.yScale()) + ')';
+        return prefix + String::number(m_matrix.a()) + ' ' + String::number(m_matrix.d()) + ')';
     case SVG_TRANSFORM_ROTATE: {
         double angleInRad = deg2rad(m_angle);
         double cosAngle = cos(angleInRad);
