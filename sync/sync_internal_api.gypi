@@ -13,6 +13,7 @@
     '../base/base.gyp:base',
     '../net/net.gyp:net',
     '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
+    '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
     '../third_party/zlib/zlib.gyp:zlib',
     '../url/url.gyp:url_lib',
   ],
