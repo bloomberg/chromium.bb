@@ -82,6 +82,8 @@
          restore_scissor_on_fbo_change)                      \
   GPU_OP(REVERSE_POINT_SPRITE_COORD_ORIGIN,                  \
          reverse_point_sprite_coord_origin)                  \
+  GPU_OP(SCALARIZE_VEC_AND_MAT_CONSTRUCTOR_ARGS,             \
+         scalarize_vec_and_mat_constructor_args)             \
   GPU_OP(SET_TEXTURE_FILTER_BEFORE_GENERATING_MIPMAP,        \
          set_texture_filter_before_generating_mipmap)        \
   GPU_OP(SWIZZLE_RGBA_FOR_ASYNC_READPIXELS,                  \
