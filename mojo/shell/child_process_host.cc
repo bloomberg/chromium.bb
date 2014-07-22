@@ -56,9 +56,9 @@ void ChildProcessHost::Start() {
 int ChildProcessHost::Join() {
   DCHECK_NE(child_process_handle_, base::kNullProcessHandle);
   int rv = -1;
+  // Note: |WaitForExitCode()| closes the process handle.
   LOG_IF(ERROR, !base::WaitForExitCode(child_process_handle_, &rv))
       << "Failed to wait for child process";
-  base::CloseProcessHandle(child_process_handle_);
   child_process_handle_ = base::kNullProcessHandle;
   return rv;
 }
