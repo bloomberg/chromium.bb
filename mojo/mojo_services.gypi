@@ -522,10 +522,10 @@
         'services/public/cpp/view_manager/node.h',
         'services/public/cpp/view_manager/node_observer.h',
         'services/public/cpp/view_manager/view.h',
-        'services/public/cpp/view_manager/view_event_dispatcher.h',
         'services/public/cpp/view_manager/view_manager.h',
         'services/public/cpp/view_manager/view_manager_delegate.h',
         'services/public/cpp/view_manager/view_observer.h',
+        'services/public/cpp/view_manager/window_manager_delegate.h',
       ],
       'export_dependent_settings': [
         'mojo_view_manager_bindings',

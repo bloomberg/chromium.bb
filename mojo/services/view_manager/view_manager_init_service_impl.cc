@@ -44,11 +44,8 @@ void ViewManagerInitServiceImpl::MaybeEmbedRoot(
 void ViewManagerInitServiceImpl::EmbedRoot(
     const String& url,
     const Callback<void(bool)>& callback) {
-  if (connect_params_) {
-    DVLOG(1) << "Ignoring second connect";
-    callback.Run(false);
-    return;
-  }
+  // TODO(beng): This means you can only have one EmbedRoot in flight at a time.
+  //             Keep a vector of these around instead.
   connect_params_.reset(new ConnectParams);
   connect_params_->url = url.To<std::string>();
   connect_params_->callback = callback;
