@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_ANDROID_IN_PROCESS_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_
 #define CONTENT_BROWSER_ANDROID_IN_PROCESS_SYNCHRONOUS_COMPOSITOR_OUTPUT_SURFACE_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -13,6 +15,7 @@
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface.h"
 #include "content/public/browser/android/synchronous_compositor.h"
+#include "ipc/ipc_message.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -20,8 +23,13 @@ class ContextProvider;
 class CompositorFrameMetadata;
 }
 
+namespace IPC {
+class Message;
+}
+
 namespace content {
 
+class FrameSwapMessageQueue;
 class SynchronousCompositorClient;
 class SynchronousCompositorOutputSurface;
 class WebGraphicsContext3DCommandBufferImpl;
@@ -51,7 +59,9 @@ class SynchronousCompositorOutputSurfaceDelegate {
 class SynchronousCompositorOutputSurface
     : NON_EXPORTED_BASE(public cc::OutputSurface) {
  public:
-  explicit SynchronousCompositorOutputSurface(int routing_id);
+  explicit SynchronousCompositorOutputSurface(
+      int routing_id,
+      scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue);
   virtual ~SynchronousCompositorOutputSurface();
 
   // OutputSurface.
@@ -71,6 +81,7 @@ class SynchronousCompositorOutputSurface
   void ReturnResources(const cc::CompositorFrameAck& frame_ack);
   scoped_ptr<cc::CompositorFrame> DemandDrawSw(SkCanvas* canvas);
   void SetMemoryPolicy(const SynchronousCompositorMemoryPolicy& policy);
+  void GetMessagesToDeliver(ScopedVector<IPC::Message>* messages);
 
  private:
   class SoftwareDevice;
@@ -98,6 +109,8 @@ class SynchronousCompositorOutputSurface
 
   cc::OutputSurfaceClient* output_surface_client_;
   scoped_ptr<cc::CompositorFrame> frame_holder_;
+
+  scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorOutputSurface);
 };

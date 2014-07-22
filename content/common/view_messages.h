@@ -1444,9 +1444,11 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateZoomLimits,
 IPC_MESSAGE_CONTROL1(ViewHostMsg_SuddenTerminationChanged,
                      bool /* enabled */)
 
-IPC_MESSAGE_ROUTED2(ViewHostMsg_SwapCompositorFrame,
-                    uint32 /* output_surface_id */,
-                    cc::CompositorFrame /* frame */)
+IPC_MESSAGE_ROUTED3(
+    ViewHostMsg_SwapCompositorFrame,
+    uint32 /* output_surface_id */,
+    cc::CompositorFrame /* frame */,
+    std::vector<IPC::Message> /* messages_to_deliver_with_frame */)
 
 // Sent by the compositor when a flinging animation is stopped.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_DidStopFlinging)
@@ -1565,10 +1567,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_WillInsertBody)
 // Notification that the urls for the favicon of a site has been determined.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateFaviconURL,
                     std::vector<content::FaviconURL> /* candidates */)
-
-// Sent once a paint happens after the first non empty layout. In other words
-// after the page has painted something.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DidFirstVisuallyNonEmptyPaint)
 
 // Sent by the renderer to the browser to start a vibration with the given
 // duration.

@@ -160,6 +160,8 @@ void LayerTreeHost::InitializeProxy(scoped_ptr<Proxy> proxy) {
 LayerTreeHost::~LayerTreeHost() {
   TRACE_EVENT0("cc", "LayerTreeHost::~LayerTreeHost");
 
+  BreakSwapPromises(SwapPromise::COMMIT_FAILS);
+
   overhang_ui_resource_.reset();
 
   if (root_layer_.get())
@@ -1277,8 +1279,6 @@ void LayerTreeHost::NotifySwapPromiseMonitorsOfSetNeedsCommit() {
 
 void LayerTreeHost::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {
   DCHECK(swap_promise);
-  if (swap_promise_list_.size() > kMaxQueuedSwapPromiseNumber)
-    BreakSwapPromises(SwapPromise::SWAP_PROMISE_LIST_OVERFLOW);
   swap_promise_list_.push_back(swap_promise.Pass());
 }
 

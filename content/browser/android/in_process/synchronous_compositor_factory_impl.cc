@@ -6,6 +6,7 @@
 
 #include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_surface.h"
@@ -153,9 +154,12 @@ SynchronousCompositorFactoryImpl::RecordFullLayer() {
 }
 
 scoped_ptr<cc::OutputSurface>
-SynchronousCompositorFactoryImpl::CreateOutputSurface(int routing_id) {
+SynchronousCompositorFactoryImpl::CreateOutputSurface(
+    int routing_id,
+    scoped_refptr<content::FrameSwapMessageQueue> frame_swap_message_queue) {
   scoped_ptr<SynchronousCompositorOutputSurface> output_surface(
-      new SynchronousCompositorOutputSurface(routing_id));
+      new SynchronousCompositorOutputSurface(routing_id,
+                                             frame_swap_message_queue));
   return output_surface.PassAs<cc::OutputSurface>();
 }
 

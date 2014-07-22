@@ -3397,13 +3397,6 @@ void RenderViewImpl::DidFlushPaint() {
   if (!main_frame->provisionalDataSource()) {
     WebDataSource* ds = main_frame->dataSource();
     DocumentState* document_state = DocumentState::FromDataSource(ds);
-    InternalDocumentStateData* data =
-        InternalDocumentStateData::FromDocumentState(document_state);
-    if (data->did_first_visually_non_empty_layout() &&
-        !data->did_first_visually_non_empty_paint()) {
-      data->set_did_first_visually_non_empty_paint(true);
-      Send(new ViewHostMsg_DidFirstVisuallyNonEmptyPaint(routing_id_));
-    }
 
     // TODO(jar): The following code should all be inside a method, probably in
     // NavigatorState.

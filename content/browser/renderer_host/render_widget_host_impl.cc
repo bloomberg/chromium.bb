@@ -1436,6 +1436,8 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
   uint32 output_surface_id = param.a;
   param.b.AssignTo(frame.get());
+  std::vector<IPC::Message> messages_to_deliver_with_frame;
+  messages_to_deliver_with_frame.swap(param.c);
 
   for (size_t i = 0; i < frame->metadata.latency_info.size(); i++)
     AddLatencyInfoComponentIds(&frame->metadata.latency_info[i]);
@@ -1461,6 +1463,18 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
     SendSwapCompositorFrameAck(routing_id_, output_surface_id,
                                process_->GetID(), ack);
   }
+
+  RenderProcessHost* rph = GetProcess();
+  for (std::vector<IPC::Message>::const_iterator i =
+           messages_to_deliver_with_frame.begin();
+       i != messages_to_deliver_with_frame.end();
+       ++i) {
+    rph->OnMessageReceived(*i);
+    if (i->dispatch_error())
+      rph->OnBadMessageReceived(*i);
+  }
+  messages_to_deliver_with_frame.clear();
+
   return true;
 }
 

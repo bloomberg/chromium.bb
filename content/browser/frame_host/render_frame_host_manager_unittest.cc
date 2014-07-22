@@ -549,7 +549,8 @@ TEST_F(RenderFrameHostManagerTest, WhiteListSwapCompositorFrame) {
   process_host->sink().ClearMessages();
 
   cc::CompositorFrame frame;
-  ViewHostMsg_SwapCompositorFrame msg(rvh()->GetRoutingID(), 0, frame);
+  ViewHostMsg_SwapCompositorFrame msg(
+      rvh()->GetRoutingID(), 0, frame, std::vector<IPC::Message>());
 
   EXPECT_TRUE(swapped_out_rvh->OnMessageReceived(msg));
   EXPECT_TRUE(swapped_out_rwhv->did_swap_compositor_frame());

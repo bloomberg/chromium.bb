@@ -132,6 +132,7 @@ scoped_ptr<cc::CompositorFrame> SynchronousCompositorImpl::DemandDrawHw(
       output_surface_->DemandDrawHw(surface_size, transform, viewport, clip);
   if (frame.get())
     UpdateFrameMetaData(frame->metadata);
+
   return frame.Pass();
 }
 
@@ -157,6 +158,7 @@ void SynchronousCompositorImpl::UpdateFrameMetaData(
       contents_->GetRenderWidgetHostView());
   if (rwhv)
     rwhv->SynchronousFrameMetadata(frame_metadata);
+  DeliverMessages();
 }
 
 void SynchronousCompositorImpl::SetMemoryPolicy(
@@ -234,6 +236,17 @@ InputEventAckState SynchronousCompositorImpl::HandleInputEvent(
   DCHECK(CalledOnValidThread());
   return g_factory.Get().synchronous_input_event_filter()->HandleInputEvent(
       contents_->GetRoutingID(), input_event);
+}
+
+void SynchronousCompositorImpl::DeliverMessages() {
+  ScopedVector<IPC::Message> messages;
+  output_surface_->GetMessagesToDeliver(&messages);
+  RenderProcessHost* rph = contents_->GetRenderProcessHost();
+  for (ScopedVector<IPC::Message>::const_iterator i = messages.begin();
+       i != messages.end();
+       ++i) {
+    rph->OnMessageReceived(**i);
+  }
 }
 
 void SynchronousCompositorImpl::DidActivatePendingTree() {

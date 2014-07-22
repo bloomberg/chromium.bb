@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDER_WIDGET_HOST_DELEGATE_H_
 #define CONTENT_BROWSER_RENDER_WIDGET_HOST_DELEGATE_H_
 
+#include "base/basictypes.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"

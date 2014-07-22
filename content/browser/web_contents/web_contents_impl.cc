@@ -524,6 +524,8 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnMediaPlayingNotification)
     IPC_MESSAGE_HANDLER(FrameHostMsg_MediaPausedNotification,
                         OnMediaPausedNotification)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidFirstVisuallyNonEmptyPaint,
+                        OnFirstVisuallyNonEmptyPaint)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidDisplayInsecureContent,
@@ -546,8 +548,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                                 OnBrowserPluginMessage(message))
     IPC_MESSAGE_HANDLER(ImageHostMsg_DidDownloadImage, OnDidDownloadImage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidFirstVisuallyNonEmptyPaint,
-                        OnFirstVisuallyNonEmptyPaint)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowValidationMessage,
                         OnShowValidationMessage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HideValidationMessage,

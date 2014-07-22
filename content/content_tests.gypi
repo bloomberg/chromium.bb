@@ -678,6 +678,8 @@
         'renderer/device_sensors/device_orientation_event_pump_unittest.cc',
         'renderer/disambiguation_popup_helper_unittest.cc',
         'renderer/dom_storage/dom_storage_cached_area_unittest.cc',
+        'renderer/gpu/frame_swap_message_queue_unittest.cc',
+        'renderer/gpu/queue_message_swap_promise_unittest.cc',
         'renderer/ico_image_decoder_unittest.cc',
         'renderer/input/input_event_filter_unittest.cc',
         'renderer/input/input_handler_proxy_unittest.cc',

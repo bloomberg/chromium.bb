@@ -38,7 +38,9 @@
 #include "content/renderer/gpu/compositor_output_surface.h"
 #include "content/renderer/gpu/compositor_software_output_device.h"
 #include "content/renderer/gpu/delegated_compositor_output_surface.h"
+#include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "content/renderer/gpu/mailbox_output_surface.h"
+#include "content/renderer/gpu/queue_message_swap_promise.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/input_handler_manager.h"
@@ -409,6 +411,7 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       body_background_color_(SK_ColorWHITE),
 #endif
       popup_origin_scale_for_emulation_(0.f),
+      frame_swap_message_queue_(new FrameSwapMessageQueue()),
       resizing_mode_selector_(new ResizingModeSelector()),
       context_menu_source_type_(ui::MENU_SOURCE_MOUSE) {
   if (!swapped_out)
@@ -820,7 +823,8 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
 #if defined(OS_ANDROID)
   if (SynchronousCompositorFactory* factory =
       SynchronousCompositorFactory::GetInstance()) {
-    return factory->CreateOutputSurface(routing_id());
+    return factory->CreateOutputSurface(routing_id(),
+                                        frame_swap_message_queue_);
   }
 #endif
 
@@ -843,21 +847,22 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   if (command_line.HasSwitch(switches::kEnableDelegatedRenderer)) {
     DCHECK(IsThreadedCompositingEnabled());
     return scoped_ptr<cc::OutputSurface>(
-        new DelegatedCompositorOutputSurface(
-            routing_id(),
-            output_surface_id,
-            context_provider));
+        new DelegatedCompositorOutputSurface(routing_id(),
+                                             output_surface_id,
+                                             context_provider,
+                                             frame_swap_message_queue_));
   }
   if (!context_provider.get()) {
     scoped_ptr<cc::SoftwareOutputDevice> software_device(
         new CompositorSoftwareOutputDevice());
 
-    return scoped_ptr<cc::OutputSurface>(new CompositorOutputSurface(
-        routing_id(),
-        output_surface_id,
-        NULL,
-        software_device.Pass(),
-        true));
+    return scoped_ptr<cc::OutputSurface>(
+        new CompositorOutputSurface(routing_id(),
+                                    output_surface_id,
+                                    NULL,
+                                    software_device.Pass(),
+                                    frame_swap_message_queue_,
+                                    true));
   }
 
   if (command_line.HasSwitch(cc::switches::kCompositeToMailbox)) {
@@ -870,21 +875,21 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
     if (base::SysInfo::IsLowEndDevice())
       format = cc::RGB_565;
     return scoped_ptr<cc::OutputSurface>(
-        new MailboxOutputSurface(
-            routing_id(),
-            output_surface_id,
-            context_provider,
-            scoped_ptr<cc::SoftwareOutputDevice>(),
-            format));
+        new MailboxOutputSurface(routing_id(),
+                                 output_surface_id,
+                                 context_provider,
+                                 scoped_ptr<cc::SoftwareOutputDevice>(),
+                                 frame_swap_message_queue_,
+                                 format));
   }
   bool use_swap_compositor_frame_message = false;
   return scoped_ptr<cc::OutputSurface>(
-      new CompositorOutputSurface(
-          routing_id(),
-          output_surface_id,
-          context_provider,
-          scoped_ptr<cc::SoftwareOutputDevice>(),
-          use_swap_compositor_frame_message));
+      new CompositorOutputSurface(routing_id(),
+                                  output_surface_id,
+                                  context_provider,
+                                  scoped_ptr<cc::SoftwareOutputDevice>(),
+                                  frame_swap_message_queue_,
+                                  use_swap_compositor_frame_message));
 }
 
 void RenderWidget::OnSwapBuffersAborted() {
@@ -1230,6 +1235,59 @@ void RenderWidget::DidCommitCompositorFrame() {
   FOR_EACH_OBSERVER(RenderFrameImpl, video_hole_frames_,
                     DidCommitCompositorFrame());
 #endif  // defined(VIDEO_HOLE)
+}
+
+// static
+scoped_ptr<cc::SwapPromise> RenderWidget::QueueMessageImpl(
+    IPC::Message* msg,
+    MessageDeliveryPolicy policy,
+    FrameSwapMessageQueue* frame_swap_message_queue,
+    scoped_refptr<IPC::SyncMessageFilter> sync_message_filter,
+    bool commit_requested,
+    int source_frame_number) {
+  if (policy == MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE &&
+      // No need for lock: this gets changed only on this thread.
+      !commit_requested &&
+      // No need for lock: Messages are only enqueued from this thread, if we
+      // don't have any now, no other thread will add any.
+      frame_swap_message_queue->Empty()) {
+    sync_message_filter->Send(msg);
+    return scoped_ptr<cc::SwapPromise>();
+  }
+
+  bool first_message_for_frame = false;
+  frame_swap_message_queue->QueueMessageForFrame(policy,
+                                                 source_frame_number,
+                                                 make_scoped_ptr(msg),
+                                                 &first_message_for_frame);
+  if (first_message_for_frame) {
+    scoped_ptr<cc::SwapPromise> promise(new QueueMessageSwapPromise(
+        sync_message_filter, frame_swap_message_queue, source_frame_number));
+    return promise.PassAs<cc::SwapPromise>();
+  }
+  return scoped_ptr<cc::SwapPromise>();
+}
+
+void RenderWidget::QueueMessage(IPC::Message* msg,
+                                MessageDeliveryPolicy policy) {
+  // RenderThreadImpl::current() is NULL in some tests.
+  if (!compositor_ || !RenderThreadImpl::current()) {
+    Send(msg);
+    return;
+  }
+
+  scoped_ptr<cc::SwapPromise> swap_promise =
+      QueueMessageImpl(msg,
+                       policy,
+                       frame_swap_message_queue_,
+                       RenderThreadImpl::current()->sync_message_filter(),
+                       compositor_->commitRequested(),
+                       compositor_->GetSourceFrameNumber());
+
+  if (swap_promise) {
+    compositor_->QueueSwapPromise(swap_promise.Pass());
+    compositor_->SetNeedsCommit();
+  }
 }
 
 void RenderWidget::didCommitAndDrawCompositorFrame() {

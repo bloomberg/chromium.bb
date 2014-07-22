@@ -9,6 +9,7 @@
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/gl_frame_data.h"
 #include "cc/resources/resource_provider.h"
+#include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -26,11 +27,13 @@ MailboxOutputSurface::MailboxOutputSurface(
     uint32 output_surface_id,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     scoped_ptr<cc::SoftwareOutputDevice> software_device,
+    scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue,
     cc::ResourceFormat format)
     : CompositorOutputSurface(routing_id,
                               output_surface_id,
                               context_provider,
                               software_device.Pass(),
+                              swap_frame_message_queue,
                               true),
       fbo_(0),
       is_backbuffer_discarded_(false),

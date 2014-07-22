@@ -9,8 +9,6 @@
 
 namespace cc {
 
-const unsigned int kMaxQueuedSwapPromiseNumber = 100;
-
 // When a change to the compositor's state/invalidation/whatever happens, a
 // Swap Promise can be inserted into LayerTreeHost/LayerTreeImpl, to track
 // whether the compositor's reply to the new state/invaliadtion/whatever is
@@ -35,7 +33,7 @@ class CC_EXPORT SwapPromise {
     DID_NOT_SWAP_UNKNOWN,
     SWAP_FAILS,
     COMMIT_FAILS,
-    SWAP_PROMISE_LIST_OVERFLOW,
+    COMMIT_NO_UPDATE,
   };
 
   SwapPromise() {}

@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "cc/base/latency_info_swap_promise.h"
 #include "cc/base/latency_info_swap_promise_monitor.h"
+#include "cc/base/swap_promise.h"
 #include "cc/base/switches.h"
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/debug/micro_benchmark.h"
@@ -490,6 +491,14 @@ void RenderWidgetCompositor::QueueSwapPromise(
 
 int RenderWidgetCompositor::GetLayerTreeId() const {
   return layer_tree_host_->id();
+}
+
+int RenderWidgetCompositor::GetSourceFrameNumber() const {
+  return layer_tree_host_->source_frame_number();
+}
+
+void RenderWidgetCompositor::SetNeedsCommit() {
+  layer_tree_host_->SetNeedsCommit();
 }
 
 void RenderWidgetCompositor::NotifyInputThrottledUntilCommit() {

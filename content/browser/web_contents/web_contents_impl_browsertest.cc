@@ -515,5 +515,45 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, LoadProgress) {
   EXPECT_EQ(1.0, *progresses.rbegin());
 }
 
+struct FirstVisuallyNonEmptyPaintObserver : public WebContentsObserver {
+  FirstVisuallyNonEmptyPaintObserver(Shell* shell)
+      : WebContentsObserver(shell->web_contents()),
+        did_fist_visually_non_empty_paint_(false) {}
+
+  virtual void DidFirstVisuallyNonEmptyPaint() OVERRIDE {
+    did_fist_visually_non_empty_paint_ = true;
+    on_did_first_visually_non_empty_paint_.Run();
+  }
+
+  void WaitForDidFirstVisuallyNonEmptyPaint() {
+    if (did_fist_visually_non_empty_paint_)
+      return;
+    base::RunLoop run_loop;
+    on_did_first_visually_non_empty_paint_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  base::Closure on_did_first_visually_non_empty_paint_;
+  bool did_fist_visually_non_empty_paint_;
+};
+
+// See: http://crbug.com/395664
+#if defined(OS_ANDROID)
+#define MAYBE_FirstVisuallyNonEmptyPaint DISABLED_FirstVisuallyNonEmptyPaint
+#else
+#define MAYBE_FirstVisuallyNonEmptyPaint FirstVisuallyNonEmptyPaint
+#endif
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       MAYBE_FirstVisuallyNonEmptyPaint) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  scoped_ptr<FirstVisuallyNonEmptyPaintObserver> observer(
+      new FirstVisuallyNonEmptyPaintObserver(shell()));
+
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
+
+  observer->WaitForDidFirstVisuallyNonEmptyPaint();
+  ASSERT_TRUE(observer->did_fist_visually_non_empty_paint_);
+}
+
 }  // namespace content
 

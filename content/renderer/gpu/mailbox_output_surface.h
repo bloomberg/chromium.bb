@@ -7,6 +7,7 @@
 
 #include <queue>
 
+#include "base/memory/ref_counted.h"
 #include "cc/resources/resource_format.h"
 #include "cc/resources/transferable_resource.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
@@ -17,6 +18,7 @@ class CompositorFrameAck;
 }
 
 namespace content {
+class FrameSwapMessageQueue;
 
 // Implementation of CompositorOutputSurface that renders to textures which
 // are sent to the browser through the mailbox extension.
@@ -29,6 +31,7 @@ class MailboxOutputSurface : public CompositorOutputSurface {
       uint32 output_surface_id,
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
       scoped_ptr<cc::SoftwareOutputDevice> software_device,
+      scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue,
       cc::ResourceFormat format);
   virtual ~MailboxOutputSurface();
 

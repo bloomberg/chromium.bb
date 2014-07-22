@@ -27,6 +27,8 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gfx/frame_time.h"
 
+namespace cc {
+
 namespace {
 
 // Measured in seconds.
@@ -36,20 +38,18 @@ unsigned int nextBeginFrameId = 0;
 
 class SwapPromiseChecker {
  public:
-  explicit SwapPromiseChecker(cc::LayerTreeHost* layer_tree_host)
+  explicit SwapPromiseChecker(LayerTreeHost* layer_tree_host)
       : layer_tree_host_(layer_tree_host) {}
 
   ~SwapPromiseChecker() {
-    layer_tree_host_->BreakSwapPromises(cc::SwapPromise::COMMIT_FAILS);
+    layer_tree_host_->BreakSwapPromises(SwapPromise::COMMIT_FAILS);
   }
 
  private:
-  cc::LayerTreeHost* layer_tree_host_;
+  LayerTreeHost* layer_tree_host_;
 };
 
 }  // namespace
-
-namespace cc {
 
 struct ThreadProxy::CommitPendingRequest {
   CompletionEvent completion;
@@ -860,6 +860,7 @@ void ThreadProxy::BeginMainFrame(
     // went through, and input should no longer be throttled, etc.
     layer_tree_host()->CommitComplete();
     layer_tree_host()->DidBeginMainFrame();
+    layer_tree_host()->BreakSwapPromises(SwapPromise::COMMIT_NO_UPDATE);
     return;
   }
 

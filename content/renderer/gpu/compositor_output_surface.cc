@@ -15,6 +15,7 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -54,12 +55,14 @@ CompositorOutputSurface::CompositorOutputSurface(
     uint32 output_surface_id,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     scoped_ptr<cc::SoftwareOutputDevice> software_device,
+    scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue,
     bool use_swap_compositor_frame_message)
     : OutputSurface(context_provider, software_device.Pass()),
       output_surface_id_(output_surface_id),
       use_swap_compositor_frame_message_(use_swap_compositor_frame_message),
       output_surface_filter_(
           RenderThreadImpl::current()->compositor_output_surface_filter()),
+      frame_swap_message_queue_(swap_frame_message_queue),
       routing_id_(routing_id),
       prefers_smoothness_(false),
 #if defined(OS_WIN)
@@ -71,6 +74,7 @@ CompositorOutputSurface::CompositorOutputSurface(
       layout_test_mode_(RenderThreadImpl::current()->layout_test_mode()),
       weak_ptrs_(this) {
   DCHECK(output_surface_filter_.get());
+  DCHECK(frame_swap_message_queue_.get());
   DetachFromThread();
   message_sender_ = RenderThreadImpl::current()->sync_message_filter();
   DCHECK(message_sender_.get());
@@ -163,9 +167,20 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   }
 
   if (use_swap_compositor_frame_message_) {
-    Send(new ViewHostMsg_SwapCompositorFrame(routing_id_,
-                                             output_surface_id_,
-                                             *frame));
+    {
+      ScopedVector<IPC::Message> messages;
+      std::vector<IPC::Message> messages_to_deliver_with_frame;
+      scoped_ptr<FrameSwapMessageQueue::SendMessageScope> send_message_scope =
+          frame_swap_message_queue_->AcquireSendMessageScope();
+      frame_swap_message_queue_->DrainMessages(&messages);
+      FrameSwapMessageQueue::TransferMessages(messages,
+                                              &messages_to_deliver_with_frame);
+      Send(new ViewHostMsg_SwapCompositorFrame(routing_id_,
+                                               output_surface_id_,
+                                               *frame,
+                                               messages_to_deliver_with_frame));
+      // ~send_message_scope.
+    }
     client_->DidSwapBuffers();
     return;
   }

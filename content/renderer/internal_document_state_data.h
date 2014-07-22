@@ -37,16 +37,6 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
     did_first_visually_non_empty_layout_ = value;
   }
 
-  // Set to true once RenderViewImpl::DidFlushPaint() is inovked after
-  // RenderViewImpl::didFirstVisuallyNonEmptyLayout(). In other words after the
-  // page has painted something.
-  bool did_first_visually_non_empty_paint() const {
-    return did_first_visually_non_empty_paint_;
-  }
-  void set_did_first_visually_non_empty_paint(bool value) {
-    did_first_visually_non_empty_paint_ = value;
-  }
-
   int http_status_code() const { return http_status_code_; }
   void set_http_status_code(int http_status_code) {
     http_status_code_ = http_status_code;

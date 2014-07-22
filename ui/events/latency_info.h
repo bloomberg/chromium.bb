@@ -65,12 +65,12 @@ enum LatencyComponentType {
   // This component indicates that the input causes a commit to be scheduled
   // but the commit failed.
   INPUT_EVENT_LATENCY_TERMINATED_COMMIT_FAILED_COMPONENT,
+  // This component indicates that the input causes a commit to be scheduled
+  // but the commit was aborted since it carried no new information.
+  INPUT_EVENT_LATENCY_TERMINATED_COMMIT_NO_UPDATE_COMPONENT,
   // This component indicates that the input causes a swap to be scheduled
   // but the swap failed.
   INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT,
-  // This component indicates that the cached LatencyInfo number exceeds the
-  // maximal allowed size.
-  LATENCY_INFO_LIST_TERMINATED_OVERFLOW_COMPONENT,
   // Timestamp when the input event is considered not cause any rendering
   // damage in plugin and thus terminated.
   INPUT_EVENT_LATENCY_TERMINATED_PLUGIN_COMPONENT,

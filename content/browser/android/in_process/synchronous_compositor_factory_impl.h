@@ -33,7 +33,9 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   virtual scoped_refptr<base::MessageLoopProxy> GetCompositorMessageLoop()
       OVERRIDE;
   virtual bool RecordFullLayer() OVERRIDE;
-  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(int routing_id)
+  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
+      int routing_id,
+      scoped_refptr<content::FrameSwapMessageQueue> frame_swap_message_queue)
       OVERRIDE;
   virtual InputHandlerManagerClient* GetInputHandlerManagerClient() OVERRIDE;
   virtual scoped_refptr<webkit::gpu::ContextProviderWebContext>

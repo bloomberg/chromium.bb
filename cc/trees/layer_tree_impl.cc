@@ -94,6 +94,8 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
 }
 
 LayerTreeImpl::~LayerTreeImpl() {
+  BreakSwapPromises(SwapPromise::SWAP_FAILS);
+
   // Need to explicitly clear the tree prior to destroying this so that
   // the LayerTreeImpl pointer is still valid in the LayerImpl dtor.
   DCHECK(!root_layer_);
@@ -930,8 +932,6 @@ gfx::Vector2dF LayerTreeImpl::GetDelegatedScrollOffset(LayerImpl* layer) {
 
 void LayerTreeImpl::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {
   DCHECK(swap_promise);
-  if (swap_promise_list_.size() > kMaxQueuedSwapPromiseNumber)
-    BreakSwapPromises(SwapPromise::SWAP_PROMISE_LIST_OVERFLOW);
   swap_promise_list_.push_back(swap_promise.Pass());
 }
 

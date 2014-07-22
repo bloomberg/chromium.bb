@@ -7,6 +7,7 @@
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/web_contents/aura/image_window_delegate.h"
 #include "content/browser/web_contents/web_contents_view.h"
+#include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/test/test_render_view_host.h"
@@ -43,7 +44,8 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
   }
 
   void ReceivePaintUpdate() {
-    ViewHostMsg_DidFirstVisuallyNonEmptyPaint msg(test_rvh()->GetRoutingID());
+    FrameHostMsg_DidFirstVisuallyNonEmptyPaint msg(
+        main_test_rfh()->GetRoutingID());
     RenderViewHostTester::TestOnMessageReceived(test_rvh(), msg);
   }
 

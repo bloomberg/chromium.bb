@@ -68,6 +68,8 @@ class RenderWidgetCompositor : public blink::WebLayerTreeView,
   // LayerTreeHost.
   void QueueSwapPromise(scoped_ptr<cc::SwapPromise> swap_promise);
   int GetLayerTreeId() const;
+  int GetSourceFrameNumber() const;
+  void SetNeedsCommit();
   void NotifyInputThrottledUntilCommit();
   const cc::Layer* GetRootLayer() const;
   int ScheduleMicroBenchmark(

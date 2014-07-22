@@ -2693,6 +2693,10 @@ void RenderFrameImpl::didFirstVisuallyNonEmptyLayout(
   GetRenderWidget()->DidChangeBodyBackgroundColor(
       render_view_->webwidget_->backgroundColor());
 #endif
+
+  GetRenderWidget()->QueueMessage(
+      new FrameHostMsg_DidFirstVisuallyNonEmptyPaint(routing_id_),
+      MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
 }
 
 void RenderFrameImpl::didChangeScrollOffset(blink::WebLocalFrame* frame) {
