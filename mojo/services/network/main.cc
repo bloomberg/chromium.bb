@@ -43,13 +43,22 @@ extern "C" APPLICATION_EXPORT MojoResult CDECL MojoMain(
   base::AtExitManager at_exit;
 #endif
 
-  // The IO message loop allows us to use net::URLRequest on this thread.
-  base::MessageLoopForIO loop;
-
+  // The Delegate owns the NetworkContext, which needs to outlive
+  // MessageLoopForIO. Destruction of the message loop will serve to
+  // invalidate connections made to network services (URLLoader) and cause
+  // the service instances to be cleaned up as a result of observing pipe
+  // errors. This is important as ~URLRequestContext asserts that no out-
+  // standing URLRequests exist.
   Delegate delegate;
-  mojo::ApplicationImpl app(
-      &delegate, mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle)));
+  {
+    // The IO message loop allows us to use net::URLRequest on this thread.
+    base::MessageLoopForIO loop;
 
-  loop.Run();
+    mojo::ApplicationImpl app(
+        &delegate,
+        mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle)));
+
+    loop.Run();
+  }
   return MOJO_RESULT_OK;
 }
