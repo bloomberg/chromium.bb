@@ -20,7 +20,8 @@ scoped_ptr<chromeos::disks::DiskMountManager::Disk> CreateDisk(
   return make_scoped_ptr(
       new chromeos::disks::DiskMountManager::Disk(
           device_path, "", "", "", "", "", "", "", "", "", fs_uuid, "",
-          chromeos::DEVICE_TYPE_USB, 0, false, false, false, false, false));
+          chromeos::DEVICE_TYPE_USB, 0, false, false, false, false, false,
+          false));
 }
 
 }  // namespace

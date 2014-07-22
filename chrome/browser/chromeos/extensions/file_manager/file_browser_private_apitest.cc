@@ -32,6 +32,7 @@ struct TestDiskInfo {
   bool is_read_only;
   bool has_media;
   bool on_boot_device;
+  bool on_removable_device;
   bool is_hidden;
 };
 
@@ -219,6 +220,7 @@ class FileBrowserPrivateApiTest : public ExtensionApiTest {
                 kTestDisks[disk_info_index].is_read_only,
                 kTestDisks[disk_info_index].has_media,
                 kTestDisks[disk_info_index].on_boot_device,
+                kTestDisks[disk_info_index].on_removable_device,
                 kTestDisks[disk_info_index].is_hidden
             )
         ));

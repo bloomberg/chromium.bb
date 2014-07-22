@@ -125,6 +125,9 @@ class CHROMEOS_EXPORT DiskInfo {
   // Is the disk on device we booted the machine from.
   bool on_boot_device() const { return on_boot_device_; }
 
+  // Is the disk on a removable device.
+  bool on_removable_device() const { return on_removable_device_; }
+
   // Disk file path (e.g. /dev/sdb).
   const std::string& file_path() const { return file_path_; }
 
@@ -170,6 +173,7 @@ class CHROMEOS_EXPORT DiskInfo {
   bool is_drive_;
   bool has_media_;
   bool on_boot_device_;
+  bool on_removable_device_;
 
   std::string file_path_;
   std::string label_;

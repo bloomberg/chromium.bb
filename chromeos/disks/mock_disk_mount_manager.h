@@ -66,7 +66,8 @@ class MockDiskMountManager : public DiskMountManager {
       uint64 total_size_in_bytes,
       bool is_parent,
       bool has_media,
-      bool on_boot_device);
+      bool on_boot_device,
+      bool on_removable_device);
 
   // Removes the fake disk entry associated with the mounted device. This
   // function is primarily for StorageMonitorTest.

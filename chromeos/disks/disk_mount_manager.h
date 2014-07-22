@@ -69,6 +69,7 @@ class CHROMEOS_EXPORT DiskMountManager {
          bool is_read_only,
          bool has_media,
          bool on_boot_device,
+         bool on_removable_device,
          bool is_hidden);
     ~Disk();
 
@@ -134,6 +135,9 @@ class CHROMEOS_EXPORT DiskMountManager {
     // Is the device on the boot device.
     bool on_boot_device() const { return on_boot_device_; }
 
+    // Is the device on the removable device.
+    bool on_removable_device() const { return on_removable_device_; }
+
     // Shoud the device be shown in the UI, or automounted.
     bool is_hidden() const { return is_hidden_; }
 
@@ -162,6 +166,7 @@ class CHROMEOS_EXPORT DiskMountManager {
     bool is_read_only_;
     bool has_media_;
     bool on_boot_device_;
+    bool on_removable_device_;
     bool is_hidden_;
   };
   typedef std::map<std::string, Disk*> DiskMap;

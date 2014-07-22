@@ -41,6 +41,7 @@ struct TestDiskInfo {
   bool is_read_only;
   bool has_media;
   bool on_boot_device;
+  bool on_removable_device;
   bool is_hidden;
 };
 
@@ -73,6 +74,7 @@ const TestDiskInfo kTestDisks[] = {
     false,  // is read only
     true,  // has media
     false,  // is on boot device
+    true,  // is on removable device
     false  // is hidden
   },
 };
@@ -173,6 +175,7 @@ class DiskMountManagerTest : public testing::Test {
                                    disk.is_read_only,
                                    disk.has_media,
                                    disk.on_boot_device,
+                                   disk.on_removable_device,
                                    disk.is_hidden)));
   }
 

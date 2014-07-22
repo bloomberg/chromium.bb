@@ -43,6 +43,7 @@ TEST(CrosDisksClientTest, DiskInfo) {
   const bool kDeviceIsMediaAvailable = true;
   const bool kDeviceIsMounted = true;
   const bool kDeviceIsOnBootDevice = true;
+  const bool kDeviceIsOnRemovableDevice = true;
   const bool kDeviceIsReadOnly = true;
   const uint32 kDeviceMediaType = cros_disks::DEVICE_MEDIA_SD;
   const std::string kMountPath = "/media/removable/UNTITLED";
@@ -73,6 +74,8 @@ TEST(CrosDisksClientTest, DiskInfo) {
                         kDeviceIsMounted);
     AppendBoolDictEntry(&array_writer, cros_disks::kDeviceIsOnBootDevice,
                         kDeviceIsOnBootDevice);
+    AppendBoolDictEntry(&array_writer, cros_disks::kDeviceIsOnRemovableDevice,
+                        kDeviceIsOnRemovableDevice);
     AppendBoolDictEntry(&array_writer, cros_disks::kDeviceIsReadOnly,
                         kDeviceIsReadOnly);
     {
@@ -132,6 +135,7 @@ TEST(CrosDisksClientTest, DiskInfo) {
   EXPECT_TRUE(kDevicePresentationHide == result.is_hidden());
   EXPECT_EQ(kDeviceIsMediaAvailable, result.has_media());
   EXPECT_EQ(kDeviceIsOnBootDevice, result.on_boot_device());
+  EXPECT_EQ(kDeviceIsOnRemovableDevice, result.on_removable_device());
   EXPECT_EQ(kNativePath, result.system_path());
   EXPECT_EQ(kDeviceFile, result.file_path());
   EXPECT_EQ(kVendorId, result.vendor_id());

@@ -88,6 +88,7 @@ void MockDiskMountManager::NotifyDeviceInsertEvents() {
       false,  // is_read_only
       true,  // has_media
       false,  // on_boot_device
+      true,  // on_removable_device
       false));  // is_hidden
 
   disks_.clear();
@@ -120,6 +121,7 @@ void MockDiskMountManager::NotifyDeviceInsertEvents() {
       false,  // is_read_only
       true,  // has_media
       false,  // on_boot_device
+      true,  // on_removable_device
       false));  // is_hidden
   disks_.clear();
   disks_.insert(std::pair<std::string, DiskMountManager::Disk*>(
@@ -147,6 +149,7 @@ void MockDiskMountManager::NotifyDeviceRemoveEvents() {
       false,  // is_read_only
       true,  // has_media
       false,  // on_boot_device
+      true,  // on_removable_device
       false));  // is_hidden
   disks_.clear();
   disks_.insert(std::pair<std::string, DiskMountManager::Disk*>(
@@ -187,7 +190,8 @@ void MockDiskMountManager::CreateDiskEntryForMountDevice(
     uint64 total_size_in_bytes,
     bool is_parent,
     bool has_media,
-    bool on_boot_device) {
+    bool on_boot_device,
+    bool on_removable_device) {
   Disk* disk = new DiskMountManager::Disk(mount_info.source_path,
                                           mount_info.mount_path,
                                           std::string(),  // system_path
@@ -206,6 +210,7 @@ void MockDiskMountManager::CreateDiskEntryForMountDevice(
                                           false,  // is_read_only
                                           has_media,
                                           on_boot_device,
+                                          on_removable_device,
                                           false);  // is_hidden
   DiskMountManager::DiskMap::iterator it = disks_.find(mount_info.source_path);
   if (it == disks_.end()) {

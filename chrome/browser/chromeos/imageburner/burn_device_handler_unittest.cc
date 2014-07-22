@@ -172,6 +172,7 @@ class BurnDeviceHandlerTest : public testing::Test {
             false,  //  is read only
             has_media,
             on_boot_device,
+            true,  // on_removable_device
             false));  // is hidden
   }
 

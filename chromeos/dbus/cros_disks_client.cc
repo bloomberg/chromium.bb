@@ -646,6 +646,7 @@ DiskInfo::DiskInfo(const std::string& device_path, dbus::Response* response)
       is_drive_(false),
       has_media_(false),
       on_boot_device_(false),
+      on_removable_device_(false),
       device_type_(DEVICE_TYPE_UNKNOWN),
       total_size_in_bytes_(0),
       is_read_only_(false),
@@ -687,6 +688,10 @@ DiskInfo::~DiskInfo() {
 //   dict entry {
 //     string "DeviceIsOnBootDevice"
 //     variant       bool false
+//   }
+//   dict entry {
+//     string "DeviceIsOnRemovableDevice"
+//     variant       bool true
 //   }
 //   dict entry {
 //     string "DeviceIsReadOnly"
@@ -767,6 +772,8 @@ void DiskInfo::InitializeFromResponse(dbus::Response* response) {
       cros_disks::kDeviceIsMediaAvailable, &has_media_);
   properties->GetBooleanWithoutPathExpansion(
       cros_disks::kDeviceIsOnBootDevice, &on_boot_device_);
+  properties->GetBooleanWithoutPathExpansion(
+      cros_disks::kDeviceIsOnRemovableDevice, &on_removable_device_);
   properties->GetStringWithoutPathExpansion(
       cros_disks::kNativePath, &system_path_);
   properties->GetStringWithoutPathExpansion(

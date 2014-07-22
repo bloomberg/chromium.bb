@@ -462,6 +462,7 @@ class DiskMountManagerImpl : public DiskMountManager {
                           disk_info.is_read_only(),
                           disk_info.has_media(),
                           disk_info.on_boot_device(),
+                          disk_info.on_removable_device(),
                           disk_info.is_hidden());
     disks_.insert(std::make_pair(disk_info.device_path(), disk));
     NotifyDiskStatusUpdate(is_new ? DISK_ADDED : DISK_CHANGED, disk);
@@ -653,6 +654,7 @@ DiskMountManager::Disk::Disk(const std::string& device_path,
                              bool is_read_only,
                              bool has_media,
                              bool on_boot_device,
+                             bool on_removable_device,
                              bool is_hidden)
     : device_path_(device_path),
       mount_path_(mount_path),
@@ -672,6 +674,7 @@ DiskMountManager::Disk::Disk(const std::string& device_path,
       is_read_only_(is_read_only),
       has_media_(has_media),
       on_boot_device_(on_boot_device),
+      on_removable_device_(on_removable_device),
       is_hidden_(is_hidden) {
 }
 

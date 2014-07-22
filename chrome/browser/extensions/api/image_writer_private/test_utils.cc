@@ -195,6 +195,7 @@ void ImageWriterTestUtils::SetUp(bool is_browser_test) {
       kTestFileSize,
       true,
       true,
+      true,
       false);
   disk_manager->SetupDefaultReplies();
 #else

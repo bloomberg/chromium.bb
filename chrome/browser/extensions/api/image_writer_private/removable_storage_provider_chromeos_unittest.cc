@@ -24,6 +24,7 @@ const char kDeviceName[] = "Test Device Name";
 const char kVendorName[] = "Test Vendor";
 const char kProductName[] = "Test Product";
 const uint64 kDeviceSize = 1024 * 1024 * 1024;
+const bool kOnRemovableDevice = true;
 
 const char kUnknownSDDiskModel[] = "SD Card";
 const char kUnknownUSBDiskModel[] = "USB Drive";
@@ -77,7 +78,8 @@ class RemovableStorageProviderChromeOsUnitTest : public testing::Test {
                                                             kDeviceSize,
                                                             is_parent,
                                                             has_media,
-                                                            on_boot_device);
+                                                            on_boot_device,
+                                                            kOnRemovableDevice);
   }
 
   // Checks if the DeviceList has a specific entry.
