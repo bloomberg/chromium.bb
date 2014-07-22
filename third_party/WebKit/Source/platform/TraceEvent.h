@@ -632,9 +632,7 @@
 #define TRACE_EVENT_PHASE_BEGIN    ('B')
 #define TRACE_EVENT_PHASE_END      ('E')
 #define TRACE_EVENT_PHASE_COMPLETE ('X')
-// FIXME: unify instant events handling between blink and platform.
 #define TRACE_EVENT_PHASE_INSTANT  ('I')
-#define TRACE_EVENT_PHASE_INSTANT_WITH_SCOPE  ('i')
 #define TRACE_EVENT_PHASE_ASYNC_BEGIN ('S')
 #define TRACE_EVENT_PHASE_ASYNC_STEP_INTO  ('T')
 #define TRACE_EVENT_PHASE_ASYNC_STEP_PAST  ('p')
