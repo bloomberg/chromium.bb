@@ -2042,6 +2042,22 @@ TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForWidthEqualsDevice
         url, initialPageScaleFactor, scrollOffset, viewportSize, shouldScaleRelativeToViewportWidth);
 }
 
+TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForMinimumScale)
+{
+    // This tests a scenario where minimum-scale is set to 1.0, but some element
+    // on the page is slightly larger than the portrait width, so our "natural"
+    // minimum-scale would be lower. In that case, we should stick to 1.0 scale
+    // on rotation and not do anything strange.
+    const char* url = "resize_scroll_minimum_scale.html";
+    const float initialPageScaleFactor = 1;
+    const WebSize scrollOffset(0, 0);
+    const WebSize viewportSize(240, 320);
+    const bool shouldScaleRelativeToViewportWidth = false;
+
+    testResizeYieldsCorrectScrollAndScale(
+        url, initialPageScaleFactor, scrollOffset, viewportSize, shouldScaleRelativeToViewportWidth);
+}
+
 TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForFixedWidth)
 {
     // With a fixed width, pageScaleFactor scales by the relative change in viewport width.

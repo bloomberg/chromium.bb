@@ -1643,14 +1643,12 @@ void WebViewImpl::resize(const WebSize& newSize)
     if (!view)
         return;
 
-    WebSize oldSize = m_size;
+    bool shouldAnchorAndRescaleViewport = settings()->mainFrameResizesAreOrientationChanges()
+        && m_size.width && contentsSize().width() && newSize.width != m_size.width && !m_fullscreenController->isFullscreen();
     float oldPageScaleFactor = pageScaleFactor();
-    int oldContentsWidth = contentsSize().width();
+    float oldMinimumPageScaleFactor = minimumPageScaleFactor();
 
     m_size = newSize;
-
-    bool shouldAnchorAndRescaleViewport = settings()->mainFrameResizesAreOrientationChanges()
-        && oldSize.width && oldContentsWidth && newSize.width != oldSize.width && !m_fullscreenController->isFullscreen();
 
     ViewportAnchor viewportAnchor(&localFrameRootTemporary()->frame()->eventHandler());
     if (shouldAnchorAndRescaleViewport) {
@@ -1674,20 +1672,10 @@ void WebViewImpl::resize(const WebSize& newSize)
             view->layout();
 
         if (shouldAnchorAndRescaleViewport) {
-            float viewportWidthRatio = static_cast<float>(newSize.width) / oldSize.width;
-            float contentsWidthRatio = static_cast<float>(contentsSize().width()) / oldContentsWidth;
-            float scaleMultiplier = viewportWidthRatio / contentsWidthRatio;
-
-            IntSize viewportSize = view->visibleContentRect().size();
-            if (scaleMultiplier != 1) {
-                float newPageScaleFactor = oldPageScaleFactor * scaleMultiplier;
-                viewportSize.scale(pageScaleFactor() / newPageScaleFactor);
-                IntPoint scrollOffsetAtNewScale = viewportAnchor.computeOrigin(viewportSize);
-                setPageScaleFactor(newPageScaleFactor, scrollOffsetAtNewScale);
-            } else {
-                IntPoint scrollOffsetAtNewScale = clampOffsetAtScale(viewportAnchor.computeOrigin(viewportSize), pageScaleFactor());
-                updateMainFrameScrollPosition(scrollOffsetAtNewScale, false);
-            }
+            float newPageScaleFactor = oldPageScaleFactor / oldMinimumPageScaleFactor * minimumPageScaleFactor();
+            IntSize scaledViewportSize = newSize;
+            scaledViewportSize.scale(1 / newPageScaleFactor);
+            setPageScaleFactor(newPageScaleFactor, viewportAnchor.computeOrigin(scaledViewportSize));
         }
     }
 
