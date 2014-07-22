@@ -67,24 +67,32 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
 }
 
 // static
-bool GoogleUpdateSettings::LoadMetricsClientId(std::string* metrics_id) {
+// TODO(gab): Implement storing/loading for all ClientInfo fields on POSIX.
+scoped_ptr<metrics::ClientInfo> GoogleUpdateSettings::LoadMetricsClientInfo() {
+  scoped_ptr<metrics::ClientInfo> client_info(new metrics::ClientInfo);
+
   base::AutoLock lock(g_posix_client_id_lock.Get());
-  *metrics_id = g_posix_client_id.Get();
-  return true;
+  if (g_posix_client_id.Get().empty())
+    return scoped_ptr<metrics::ClientInfo>();
+  client_info->client_id = g_posix_client_id.Get();
+
+  return client_info.Pass();
 }
 
 // static
-bool GoogleUpdateSettings::StoreMetricsClientId(const std::string& client_id) {
+// TODO(gab): Implement storing/loading for all ClientInfo fields on POSIX.
+void GoogleUpdateSettings::StoreMetricsClientInfo(
+    const metrics::ClientInfo& client_info) {
   // Make sure that user has consented to send crashes.
   if (!GoogleUpdateSettings::GetCollectStatsConsent())
-    return false;
+    return;
 
   {
     // Since user has consented, write the metrics id to the file.
     base::AutoLock lock(g_posix_client_id_lock.Get());
-    g_posix_client_id.Get() = client_id;
+    g_posix_client_id.Get() = client_info.client_id;
   }
-  return GoogleUpdateSettings::SetCollectStatsConsent(true);
+  GoogleUpdateSettings::SetCollectStatsConsent(true);
 }
 
 // GetLastRunTime and SetLastRunTime are not implemented for posix. Their

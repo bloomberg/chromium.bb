@@ -101,6 +101,7 @@
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/metrics/client_info.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/translate/core/common/translate_switches.h"
@@ -1485,10 +1486,11 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     CommandLine* command_line, int child_process_id) {
 #if defined(OS_POSIX)
   if (breakpad::IsCrashReporterEnabled()) {
-    std::string enable_crash_reporter;
-    GoogleUpdateSettings::LoadMetricsClientId(&enable_crash_reporter);
+    scoped_ptr<metrics::ClientInfo> client_info =
+        GoogleUpdateSettings::LoadMetricsClientInfo();
     command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
-                                    enable_crash_reporter);
+                                    client_info ? client_info->client_id
+                                                : std::string());
   }
 #endif  // defined(OS_POSIX)
 

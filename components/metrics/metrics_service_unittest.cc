@@ -7,9 +7,11 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/threading/platform_thread.h"
+#include "components/metrics/client_info.h"
 #include "components/metrics/compression_utils.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -22,6 +24,13 @@
 namespace {
 
 using metrics::MetricsLogManager;
+
+void StoreNoClientInfoBackup(const metrics::ClientInfo& /* client_info */) {
+}
+
+scoped_ptr<metrics::ClientInfo> ReturnNoBackup() {
+  return scoped_ptr<metrics::ClientInfo>();
+}
 
 class TestMetricsService : public MetricsService {
  public:
@@ -62,7 +71,9 @@ class MetricsServiceTest : public testing::Test {
     metrics_state_manager_ = metrics::MetricsStateManager::Create(
         GetLocalState(),
         base::Bind(&MetricsServiceTest::is_metrics_reporting_enabled,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        base::Bind(&StoreNoClientInfoBackup),
+        base::Bind(&ReturnNoBackup));
   }
 
   virtual ~MetricsServiceTest() {

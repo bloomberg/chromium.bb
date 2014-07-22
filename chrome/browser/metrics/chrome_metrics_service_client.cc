@@ -35,7 +35,6 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/installer/util/google_update_settings.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "content/public/browser/browser_thread.h"
@@ -165,9 +164,6 @@ void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
 void ChromeMetricsServiceClient::SetMetricsClientId(
     const std::string& client_id) {
   crash_keys::SetCrashClientIdFromGUID(client_id);
-
-  // Store a backup of the client id in Google Update settings.
-  GoogleUpdateSettings::StoreMetricsClientId(client_id);
 }
 
 bool ChromeMetricsServiceClient::IsOffTheRecordSessionActive() {

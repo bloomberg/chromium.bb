@@ -8,10 +8,12 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "chrome/installer/util/util_constants.h"
+#include "components/metrics/client_info.h"
 
 class AppRegistrationData;
 class BrowserDistribution;
@@ -86,12 +88,15 @@ class GoogleUpdateSettings {
                                             bool consented);
 #endif
 
-  // Returns the metrics client id backed up in the registry. If none found,
-  // returns empty string.
-  static bool LoadMetricsClientId(std::string* metrics_id);
+  // Returns the metrics client info backed up in the registry. NULL
+  // if-and-only-if the client_id couldn't be retrieved (failure to retrieve
+  // other fields only makes them keep their default value). A non-null return
+  // will NEVER contain an empty client_id field.
+  static scoped_ptr<metrics::ClientInfo> LoadMetricsClientInfo();
 
-  // Stores a backup of the metrics client id in the registry.
-  static bool StoreMetricsClientId(const std::string& metrics_id);
+  // Stores a backup of the metrics client info in the registry. Storing a
+  // |client_info| with an empty client id will effectively void the backup.
+  static void StoreMetricsClientInfo(const metrics::ClientInfo& client_info);
 
   // Sets the machine-wide EULA consented flag required on OEM installs.
   // Returns false if the setting could not be recorded.

@@ -7,10 +7,12 @@
 #include <windows.h>
 
 #include "base/debug/crash_logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/metrics/client_info.h"
 
 namespace child_process_logging {
 
@@ -69,9 +71,10 @@ void Init() {
   // because of the aforementioned issue, crash keys aren't ready yet at the
   // time of Breakpad initialization, load the client id backed up in Google
   // Update settings instead.
-  std::string client_guid;
-  if (GoogleUpdateSettings::LoadMetricsClientId(&client_guid))
-    crash_keys::SetCrashClientIdFromGUID(client_guid);
+  scoped_ptr<metrics::ClientInfo> client_info =
+      GoogleUpdateSettings::LoadMetricsClientInfo();
+  if (client_info)
+    crash_keys::SetCrashClientIdFromGUID(client_info->client_id);
 }
 
 }  // namespace child_process_logging

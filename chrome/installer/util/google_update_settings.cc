@@ -296,16 +296,43 @@ bool GoogleUpdateSettings::SetCollectStatsConsentAtLevel(bool system_install,
   return (result == ERROR_SUCCESS);
 }
 
-bool GoogleUpdateSettings::LoadMetricsClientId(std::string* metrics_id) {
-  base::string16 metrics_id16;
-  bool rv = ReadGoogleUpdateStrKey(google_update::kRegMetricsId, &metrics_id16);
-  *metrics_id = base::UTF16ToUTF8(metrics_id16);
-  return rv;
+scoped_ptr<metrics::ClientInfo> GoogleUpdateSettings::LoadMetricsClientInfo() {
+  base::string16 client_id_16;
+  if (!ReadGoogleUpdateStrKey(google_update::kRegMetricsId, &client_id_16) ||
+      client_id_16.empty()) {
+    return scoped_ptr<metrics::ClientInfo>();
+  }
+
+  scoped_ptr<metrics::ClientInfo> client_info(new metrics::ClientInfo);
+  client_info->client_id = base::UTF16ToUTF8(client_id_16);
+
+  base::string16 installation_date_str;
+  if (ReadGoogleUpdateStrKey(google_update::kRegMetricsIdInstallDate,
+                             &installation_date_str)) {
+    base::StringToInt64(installation_date_str, &client_info->installation_date);
+  }
+
+  base::string16 reporting_enbaled_date_date_str;
+  if (ReadGoogleUpdateStrKey(google_update::kRegMetricsIdEnabledDate,
+                             &reporting_enbaled_date_date_str)) {
+    base::StringToInt64(reporting_enbaled_date_date_str,
+                        &client_info->reporting_enabled_date);
+  }
+
+  return client_info.Pass();
 }
 
-bool GoogleUpdateSettings::StoreMetricsClientId(const std::string& metrics_id) {
-  base::string16 metrics_id16 = base::UTF8ToUTF16(metrics_id);
-  return WriteGoogleUpdateStrKey(google_update::kRegMetricsId, metrics_id16);
+void GoogleUpdateSettings::StoreMetricsClientInfo(
+    const metrics::ClientInfo& client_info) {
+  // Attempt a best-effort at backing |client_info| in the registry (but don't
+  // handle/report failures).
+  WriteGoogleUpdateStrKey(google_update::kRegMetricsId,
+                          base::UTF8ToUTF16(client_info.client_id));
+  WriteGoogleUpdateStrKey(google_update::kRegMetricsIdInstallDate,
+                          base::Int64ToString16(client_info.installation_date));
+  WriteGoogleUpdateStrKey(
+      google_update::kRegMetricsIdEnabledDate,
+      base::Int64ToString16(client_info.reporting_enabled_date));
 }
 
 // EULA consent is only relevant for system-level installs.

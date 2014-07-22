@@ -10,8 +10,10 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "components/metrics/client_info.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -25,6 +27,15 @@ class ClonedInstallDetector;
 // not be instantiating or using this class directly.
 class MetricsStateManager {
  public:
+  // A callback that can be invoked to store client info to persistent storage.
+  // Storing an empty client_id will resulted in the backup being voided.
+  typedef base::Callback<void(const ClientInfo& client_info)>
+      StoreClientInfoCallback;
+
+  // A callback that can be invoked to load client info stored through the
+  // StoreClientInfoCallback.
+  typedef base::Callback<scoped_ptr<ClientInfo>(void)> LoadClientInfoCallback;
+
   virtual ~MetricsStateManager();
 
   // Returns true if the user opted in to sending metric reports.
@@ -57,7 +68,9 @@ class MetricsStateManager {
   // of the class exists at a time. Returns NULL if an instance exists already.
   static scoped_ptr<MetricsStateManager> Create(
       PrefService* local_state,
-      const base::Callback<bool(void)>& is_reporting_enabled_callback);
+      const base::Callback<bool(void)>& is_reporting_enabled_callback,
+      const StoreClientInfoCallback& store_client_info,
+      const LoadClientInfoCallback& load_client_info);
 
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -81,11 +94,22 @@ class MetricsStateManager {
 
   // Creates the MetricsStateManager with the given |local_state|. Calls
   // |is_reporting_enabled_callback| to query whether metrics reporting is
-  // enabled. Clients should instead use Create(), which enforces a single
-  // instance of this class is alive at any given time.
+  // enabled. Clients should instead use Create(), which enforces that a single
+  // instance of this class be alive at any given time.
+  // |store_client_info| should back up client info to persistent storage such
+  // that it is later retrievable by |load_client_info|.
   MetricsStateManager(
       PrefService* local_state,
-      const base::Callback<bool(void)>& is_reporting_enabled_callback);
+      const base::Callback<bool(void)>& is_reporting_enabled_callback,
+      const StoreClientInfoCallback& store_client_info,
+      const LoadClientInfoCallback& load_client_info);
+
+  // Backs up the current client info via |store_client_info_|.
+  void BackUpCurrentClientInfo();
+
+  // Loads the client info via |load_client_info_| and potentially migrates it
+  // before returning it if it comes back in its old form.
+  scoped_ptr<ClientInfo> LoadClientInfoAndMaybeMigrate();
 
   // Returns the low entropy source for this client. This is a random value
   // that is non-identifying amongst browser clients. This method will
@@ -110,7 +134,17 @@ class MetricsStateManager {
   // Weak pointer to the local state prefs store.
   PrefService* const local_state_;
 
+  // A callback run by this MetricsStateManager to know whether reporting is
+  // enabled.
   const base::Callback<bool(void)> is_reporting_enabled_callback_;
+
+  // A callback run during client id creation so this MetricsStateManager can
+  // store a backup of the newly generated ID.
+  const StoreClientInfoCallback store_client_info_;
+
+  // A callback run if this MetricsStateManager can't get the client id from
+  // its typical location and wants to attempt loading it from this backup.
+  const LoadClientInfoCallback load_client_info_;
 
   // The identifier that's sent to the server with the log reports.
   std::string client_id_;

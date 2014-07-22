@@ -45,9 +45,13 @@ bool MetricsStateManager::instance_exists_ = false;
 
 MetricsStateManager::MetricsStateManager(
     PrefService* local_state,
-    const base::Callback<bool(void)>& is_reporting_enabled_callback)
+    const base::Callback<bool(void)>& is_reporting_enabled_callback,
+    const StoreClientInfoCallback& store_client_info,
+    const LoadClientInfoCallback& retrieve_client_info)
     : local_state_(local_state),
       is_reporting_enabled_callback_(is_reporting_enabled_callback),
+      store_client_info_(store_client_info),
+      load_client_info_(retrieve_client_info),
       low_entropy_source_(kLowEntropySourceNotSet),
       entropy_source_returned_(ENTROPY_SOURCE_NONE) {
   ResetMetricsIDsIfNecessary();
@@ -72,9 +76,50 @@ void MetricsStateManager::ForceClientIdCreation() {
     return;
 
   client_id_ = local_state_->GetString(prefs::kMetricsClientID);
-  if (!client_id_.empty())
+  if (!client_id_.empty()) {
+    // It is technically sufficient to only save a backup of the client id when
+    // it is initially generated below, but since the backup was only introduced
+    // in M38, seed it explicitly from here for some time.
+    BackUpCurrentClientInfo();
     return;
+  }
 
+  const scoped_ptr<ClientInfo> client_info_backup =
+      LoadClientInfoAndMaybeMigrate();
+  if (client_info_backup) {
+    client_id_ = client_info_backup->client_id;
+
+    const base::Time now = base::Time::Now();
+
+    // Save the recovered client id and also try to reinstantiate the backup
+    // values for the dates corresponding with that client id in order to avoid
+    // weird scenarios where we could report an old client id with a recent
+    // install date.
+    local_state_->SetString(prefs::kMetricsClientID, client_id_);
+    local_state_->SetInt64(prefs::kInstallDate,
+                           client_info_backup->installation_date != 0
+                               ? client_info_backup->installation_date
+                               : now.ToTimeT());
+    local_state_->SetInt64(prefs::kMetricsReportingEnabledTimestamp,
+                           client_info_backup->reporting_enabled_date != 0
+                               ? client_info_backup->reporting_enabled_date
+                               : now.ToTimeT());
+
+    base::TimeDelta recovered_installation_age;
+    if (client_info_backup->installation_date != 0) {
+      recovered_installation_age =
+          now - base::Time::FromTimeT(client_info_backup->installation_date);
+    }
+    UMA_HISTOGRAM_COUNTS_10000("UMA.ClientIdBackupRecoveredWithAge",
+                               recovered_installation_age.InHours());
+
+    // Flush the backup back to persistent storage in case we re-generated
+    // missing data above.
+    BackUpCurrentClientInfo();
+    return;
+  }
+
+  // Failing attempts at getting an existing client ID, generate a new one.
   client_id_ = base::GenerateGUID();
   local_state_->SetString(prefs::kMetricsClientID, client_id_);
 
@@ -86,6 +131,8 @@ void MetricsStateManager::ForceClientIdCreation() {
     UMA_HISTOGRAM_BOOLEAN("UMA.ClientIdMigrated", true);
   }
   local_state_->ClearPref(prefs::kMetricsOldClientID);
+
+  BackUpCurrentClientInfo();
 }
 
 void MetricsStateManager::CheckForClonedInstall(
@@ -141,12 +188,16 @@ MetricsStateManager::CreateEntropyProvider() {
 // static
 scoped_ptr<MetricsStateManager> MetricsStateManager::Create(
     PrefService* local_state,
-    const base::Callback<bool(void)>& is_reporting_enabled_callback) {
+    const base::Callback<bool(void)>& is_reporting_enabled_callback,
+    const StoreClientInfoCallback& store_client_info,
+    const LoadClientInfoCallback& retrieve_client_info) {
   scoped_ptr<MetricsStateManager> result;
   // Note: |instance_exists_| is updated in the constructor and destructor.
   if (!instance_exists_) {
-    result.reset(
-        new MetricsStateManager(local_state, is_reporting_enabled_callback));
+    result.reset(new MetricsStateManager(local_state,
+                                         is_reporting_enabled_callback,
+                                         store_client_info,
+                                         retrieve_client_info));
   }
   return result.Pass();
 }
@@ -166,6 +217,48 @@ void MetricsStateManager::RegisterPrefs(PrefRegistrySimple* registry) {
   // http://crbug.com/357704
   registry->RegisterStringPref(prefs::kMetricsOldClientID, std::string());
   registry->RegisterIntegerPref(prefs::kMetricsOldLowEntropySource, 0);
+}
+
+void MetricsStateManager::BackUpCurrentClientInfo() {
+  ClientInfo client_info;
+  client_info.client_id = client_id_;
+  client_info.installation_date = local_state_->GetInt64(prefs::kInstallDate);
+  client_info.reporting_enabled_date =
+      local_state_->GetInt64(prefs::kMetricsReportingEnabledTimestamp);
+  store_client_info_.Run(client_info);
+}
+
+scoped_ptr<ClientInfo> MetricsStateManager::LoadClientInfoAndMaybeMigrate() {
+  scoped_ptr<metrics::ClientInfo> client_info = load_client_info_.Run();
+
+  // Prior to 2014-07, the client ID was stripped of its dashes before being
+  // saved. Migrate back to a proper GUID if this is the case. This migration
+  // code can be removed in M41+.
+  const size_t kGUIDLengthWithoutDashes = 32U;
+  if (client_info &&
+      client_info->client_id.length() == kGUIDLengthWithoutDashes) {
+    DCHECK(client_info->client_id.find('-') == std::string::npos);
+
+    std::string client_id_with_dashes;
+    client_id_with_dashes.reserve(kGUIDLengthWithoutDashes + 4U);
+    std::string::const_iterator client_id_it = client_info->client_id.begin();
+    for (size_t i = 0; i < kGUIDLengthWithoutDashes + 4U; ++i) {
+      if (i == 8U || i == 13U || i == 18U || i == 23U) {
+        client_id_with_dashes.push_back('-');
+      } else {
+        client_id_with_dashes.push_back(*client_id_it);
+        ++client_id_it;
+      }
+    }
+    DCHECK(client_id_it == client_info->client_id.end());
+    client_info->client_id.assign(client_id_with_dashes);
+  }
+
+  // The GUID retrieved (and possibly fixed above) should be valid unless
+  // retrieval failed.
+  DCHECK(!client_info || base::IsValidGUID(client_info->client_id));
+
+  return client_info.Pass();
 }
 
 int MetricsStateManager::GetLowEntropySource() {
@@ -212,6 +305,9 @@ void MetricsStateManager::ResetMetricsIDsIfNecessary() {
   local_state_->ClearPref(prefs::kMetricsClientID);
   local_state_->ClearPref(prefs::kMetricsLowEntropySource);
   local_state_->ClearPref(prefs::kMetricsResetIds);
+
+  // Also clear the backed up client info.
+  store_client_info_.Run(ClientInfo());
 }
 
 }  // namespace metrics
