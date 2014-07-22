@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.appmenu;
 
+import android.animation.Animator;
+import android.animation.AnimatorSet;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Rect;
@@ -147,6 +149,15 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
             mPopup.getListView().setVerticalFadingEdgeEnabled(true);
             mPopup.getListView().setFadingEdgeLength(mVerticalFadeDistance);
         }
+
+        mPopup.getListView().addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                mPopup.getListView().removeOnLayoutChangeListener(this);
+                runMenuItemEnterAnimations();
+            }
+        });
     }
 
     private void setPopupOffset(ListPopupWindow popup, int screenRotation, Rect appRect) {
@@ -225,7 +236,9 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
      */
     void dismiss() {
         mHandler.appMenuDismissed();
-        if (isShowing()) mPopup.dismiss();
+        if (isShowing()) {
+            mPopup.dismiss();
+        }
     }
 
     /**
@@ -276,5 +289,25 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         } else {
             mPopup.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
         }
+    }
+
+    private void runMenuItemEnterAnimations() {
+        AnimatorSet animation = new AnimatorSet();
+        AnimatorSet.Builder builder = null;
+
+        ViewGroup list = mPopup.getListView();
+        for (int i = 0; i < list.getChildCount(); i++) {
+            View view = list.getChildAt(i);
+            Object animatorObject = view.getTag(R.id.menu_item_enter_anim_id);
+            if (animatorObject != null) {
+                if (builder == null) {
+                    builder = animation.play((Animator) animatorObject);
+                } else {
+                    builder.with((Animator) animatorObject);
+                }
+            }
+        }
+
+        animation.start();
     }
 }
