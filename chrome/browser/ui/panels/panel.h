@@ -10,7 +10,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/command_updater_delegate.h"
@@ -18,7 +17,6 @@
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "extensions/browser/extension_registry_observer.h"
 #include "ui/base/base_window.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
@@ -38,7 +36,6 @@ struct NativeWebKeyboardEvent;
 
 namespace extensions {
 class Extension;
-class ExtensionRegistry;
 class WindowController;
 }
 
@@ -53,8 +50,7 @@ class WindowController;
 //   other Panels. For example deleting a panel would rearrange other panels.
 class Panel : public ui::BaseWindow,
               public CommandUpdaterDelegate,
-              public content::NotificationObserver,
-              public extensions::ExtensionRegistryObserver {
+              public content::NotificationObserver {
  public:
   enum ExpansionState {
     // The panel is fully expanded with both title-bar and the client-area.
@@ -148,12 +144,6 @@ class Panel : public ui::BaseWindow,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // extensions::ExtensionRegistryObserver implementation.
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   // Construct a native panel implementation.
   static NativePanel* CreateNativePanel(Panel* panel,
@@ -401,11 +391,6 @@ class Panel : public ui::BaseWindow,
   const SessionID session_id_;
   scoped_ptr<extensions::WindowController> extension_window_controller_;
   scoped_ptr<PanelHost> panel_host_;
-
-  // Listen to extension unloaded notification.
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
 
   // Icon showed in the task bar.
   gfx::Image app_icon_;
