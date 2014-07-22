@@ -5,15 +5,17 @@
 #ifndef CHROMEOS_NETWORK_PORTAL_DETECTOR_NETWORK_PORTAL_DETECTOR_STRATEGY_H_
 #define CHROMEOS_NETWORK_PORTAL_DETECTOR_NETWORK_PORTAL_DETECTOR_STRATEGY_H_
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
+#include "net/base/backoff_entry.h"
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT PortalDetectorStrategy {
+class CHROMEOS_EXPORT PortalDetectorStrategy : protected net::BackoffEntry {
  public:
   enum StrategyId {
     STRATEGY_ID_LOGIN_SCREEN,
@@ -25,8 +27,9 @@ class CHROMEOS_EXPORT PortalDetectorStrategy {
    public:
     virtual ~Delegate() {}
 
-    // Returns number of performed attempts.
-    virtual int AttemptCount() = 0;
+    // Returns number of attempts in a row with NO RESPONSE result.
+    // If last detection attempt has different result, returns 0.
+    virtual int NoResponseResultCount() = 0;
 
     // Returns time when current attempt was started.
     virtual base::TimeTicks AttemptStartTime() = 0;
@@ -41,14 +44,6 @@ class CHROMEOS_EXPORT PortalDetectorStrategy {
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
-  // Returns true when detection attempt can be performed according to
-  // current strategy.
-  bool CanPerformAttempt();
-
-  // Returns true if additional attempt could be scheduled after
-  // detection.
-  bool CanPerformAttemptAfterDetection();
-
   // Returns delay before next detection attempt. This delay is needed
   // to separate detection attempts in time.
   base::TimeDelta GetDelayTillNextAttempt();
@@ -58,20 +53,24 @@ class CHROMEOS_EXPORT PortalDetectorStrategy {
 
   virtual StrategyId Id() const = 0;
 
+  // Resets strategy to the initial state.
+  void Reset();
+
+  // Should be called when portal detection is completed and timeout before next
+  // attempt should be adjusted.
+  void OnDetectionCompleted();
+
  protected:
   PortalDetectorStrategy();
 
+  // net::BackoffEntry overrides:
+  virtual base::TimeTicks ImplGetTimeNow() const OVERRIDE;
+
   // Interface for subclasses:
-  virtual bool CanPerformAttemptImpl();
-  virtual bool CanPerformAttemptAfterDetectionImpl();
-  virtual base::TimeDelta GetDelayTillNextAttemptImpl();
   virtual base::TimeDelta GetNextAttemptTimeoutImpl();
 
-  // Adjusts |delay| according to current attempt count and elapsed time
-  // since previous attempt.
-  base::TimeDelta AdjustDelay(const base::TimeDelta& delay);
-
   Delegate* delegate_;
+  net::BackoffEntry::Policy policy_;
 
  private:
   friend class NetworkPortalDetectorImplTest;

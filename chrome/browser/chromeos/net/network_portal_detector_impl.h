@@ -82,7 +82,7 @@ class NetworkPortalDetectorImpl
   virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
 
   // PortalDetectorStrategy::Delegate implementation:
-  virtual int AttemptCount() OVERRIDE;
+  virtual int NoResponseResultCount() OVERRIDE;
   virtual base::TimeTicks AttemptStartTime() OVERRIDE;
   virtual base::TimeTicks GetCurrentTimeTicks() OVERRIDE;
 
@@ -126,12 +126,7 @@ class NetworkPortalDetectorImpl
   // Stops whole detection process.
   void StopDetection();
 
-  // Internal predicate which describes set of states from which
-  // DetectCaptivePortal() can be called.
-  bool CanPerformAttempt() const;
-
   // Initiates Captive Portal detection attempt after |delay|.
-  // You should check CanPerformAttempt() before calling this method.
   void ScheduleAttempt(const base::TimeDelta& delay);
 
   // Starts detection attempt.
@@ -170,12 +165,16 @@ class NetworkPortalDetectorImpl
     return state_ == STATE_CHECKING_FOR_PORTAL;
   }
 
-  int attempt_count_for_testing() {
-    return attempt_count_;
+  int same_detection_result_count_for_testing() const {
+    return same_detection_result_count_;
   }
 
-  void set_attempt_count_for_testing(int attempt_count) {
-    attempt_count_ = attempt_count;
+  int no_response_result_count_for_testing() const {
+    return no_response_result_count_;
+  }
+
+  void set_no_response_result_count_for_testing(int count) {
+    no_response_result_count_ = count;
   }
 
   // Returns delay before next portal check. Used by unit tests.
@@ -191,6 +190,10 @@ class NetworkPortalDetectorImpl
   // result in UMA.
   void RecordDetectionStats(const NetworkState* network,
                             CaptivePortalStatus status);
+
+  // Resets strategy and all counters used in computations of
+  // timeouts.
+  void ResetStrategyAndCounters();
 
   // Sets current test time ticks. Used by unit tests.
   void set_time_ticks_for_testing(const base::TimeTicks& time_ticks) {
@@ -233,14 +236,20 @@ class NetworkPortalDetectorImpl
   // Start time of detection attempt.
   base::TimeTicks attempt_start_time_;
 
-  // Number of already performed detection attempts.
-  int attempt_count_;
-
   // Delay before next portal detection.
   base::TimeDelta next_attempt_delay_;
 
   // Current detection strategy.
   scoped_ptr<PortalDetectorStrategy> strategy_;
+
+  // Last received result from captive portal detector.
+  CaptivePortalStatus last_detection_result_;
+
+  // Number of detection attempts with same result in a row.
+  int same_detection_result_count_;
+
+  // Number of detection attempts in a row with NO RESPONSE result.
+  int no_response_result_count_;
 
   // UI notification controller about captive portal state.
   NetworkPortalNotificationController notification_controller_;
