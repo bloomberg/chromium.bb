@@ -354,6 +354,8 @@
         'browser/content_verifier.cc',
         'browser/content_verifier.h',
         'browser/content_verifier_delegate.h',
+        'browser/content_verifier_io_data.cc',
+        'browser/content_verifier_io_data.h',
         'browser/content_verify_job.cc',
         'browser/content_verify_job.h',
         'browser/error_map.cc',

@@ -222,7 +222,15 @@ class ContentVerifierDelegateImpl : public ContentVerifierDelegate {
   }
 
   virtual void VerifyFailed(const std::string& extension_id) OVERRIDE {
-    if (service_)
+    if (!service_)
+      return;
+    ExtensionRegistry* registry = ExtensionRegistry::Get(service_->profile());
+    const Extension* extension =
+        registry->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
+    if (!extension)
+      return;
+    Mode mode = ShouldBeVerified(*extension);
+    if (mode >= ContentVerifierDelegate::ENFORCE)
       service_->DisableExtension(extension_id, Extension::DISABLE_CORRUPTED);
   }
 
@@ -324,7 +332,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
 #if defined(OS_CHROMEOS)
     mode = std::max(mode, ContentVerifierDelegate::BOOTSTRAP);
 #endif
-    if (mode > ContentVerifierDelegate::BOOTSTRAP)
+    if (mode >= ContentVerifierDelegate::BOOTSTRAP)
       content_verifier_->Start();
     info_map()->SetContentVerifier(content_verifier_.get());
 

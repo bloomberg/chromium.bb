@@ -23,6 +23,7 @@
 #include "crypto/sha2.h"
 #include "extensions/browser/computed_hashes.h"
 #include "extensions/browser/content_hash_tree.h"
+#include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/verified_contents.h"
 #include "extensions/common/constants.h"
@@ -51,7 +52,7 @@ class ContentHashFetcherJob
  public:
   typedef base::Callback<void(ContentHashFetcherJob*)> CompletionCallback;
   ContentHashFetcherJob(net::URLRequestContextGetter* request_context,
-                        ContentVerifierKey key,
+                        const ContentVerifierKey& key,
                         const std::string& extension_id,
                         const base::FilePath& extension_path,
                         const GURL& fetch_url,
@@ -156,7 +157,7 @@ class ContentHashFetcherJob
 
 ContentHashFetcherJob::ContentHashFetcherJob(
     net::URLRequestContextGetter* request_context,
-    ContentVerifierKey key,
+    const ContentVerifierKey& key,
     const std::string& extension_id,
     const base::FilePath& extension_path,
     const GURL& fetch_url,
@@ -419,7 +420,6 @@ ContentHashFetcher::ContentHashFetcher(content::BrowserContext* context,
     : context_(context),
       delegate_(delegate),
       fetch_callback_(callback),
-      observer_(this),
       weak_ptr_factory_(this) {
 }
 
@@ -427,11 +427,6 @@ ContentHashFetcher::~ContentHashFetcher() {
   for (JobMap::iterator i = jobs_.begin(); i != jobs_.end(); ++i) {
     i->second->Cancel();
   }
-}
-
-void ContentHashFetcher::Start() {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(context_);
-  observer_.Add(registry);
 }
 
 void ContentHashFetcher::DoFetch(const Extension* extension, bool force) {
@@ -471,17 +466,12 @@ void ContentHashFetcher::DoFetch(const Extension* extension, bool force) {
   job->Start();
 }
 
-void ContentHashFetcher::OnExtensionLoaded(
-    content::BrowserContext* browser_context,
-    const Extension* extension) {
+void ContentHashFetcher::ExtensionLoaded(const Extension* extension) {
   CHECK(extension);
   DoFetch(extension, false);
 }
 
-void ContentHashFetcher::OnExtensionUnloaded(
-    content::BrowserContext* browser_context,
-    const Extension* extension,
-    UnloadedExtensionInfo::Reason reason) {
+void ContentHashFetcher::ExtensionUnloaded(const Extension* extension) {
   CHECK(extension);
   IdAndVersion key(extension->id(), extension->version()->GetString());
   JobMap::iterator found = jobs_.find(key);

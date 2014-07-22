@@ -44,6 +44,7 @@ void VerifyContent(scoped_refptr<ContentVerifier> verifier,
                    const base::FilePath& extension_root,
                    const base::FilePath& relative_path,
                    const std::string& content) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   scoped_refptr<ContentVerifyJob> job(
       verifier->CreateJobFor(extension_id, extension_root, relative_path));
   if (job.get()) {
@@ -81,11 +82,14 @@ bool LoadScriptContent(const std::string& extension_id,
       return false;
     }
     if (verifier) {
-      VerifyContent(verifier,
-                    extension_id,
-                    script_file->extension_root(),
-                    script_file->relative_path(),
-                    content);
+      content::BrowserThread::PostTask(content::BrowserThread::IO,
+                                       FROM_HERE,
+                                       base::Bind(&VerifyContent,
+                                                  verifier,
+                                                  extension_id,
+                                                  script_file->extension_root(),
+                                                  script_file->relative_path(),
+                                                  content));
     }
   }
 

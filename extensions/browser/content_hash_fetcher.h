@@ -11,9 +11,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
-#include "extensions/browser/content_verifier_delegate.h"
-#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 
 namespace content {
@@ -24,6 +21,7 @@ namespace extensions {
 
 class ExtensionRegistry;
 class ContentHashFetcherJob;
+class ContentVerifierDelegate;
 
 // This class is responsible for getting signed expected hashes for use in
 // extension content verification. As extensions are loaded it will fetch and
@@ -31,7 +29,7 @@ class ContentHashFetcherJob;
 // hashes for each block of each file within an extension. (These unsigned leaf
 // node block level hashes will always be checked at time of use use to make
 // sure they match the signed treehash root hash).
-class ContentHashFetcher : public ExtensionRegistryObserver {
+class ContentHashFetcher {
  public:
   // A callback for when a fetch is complete. This reports back:
   // -extension id
@@ -50,22 +48,14 @@ class ContentHashFetcher : public ExtensionRegistryObserver {
                      const FetchCallback& callback);
   virtual ~ContentHashFetcher();
 
-  // Begins the process of trying to fetch any needed verified contents, and
-  // listening for extension load/unload.
-  void Start();
-
   // Explicitly ask to fetch hashes for |extension|. If |force| is true,
   // we will always check the validity of the verified_contents.json and
   // re-check the contents of the files in the filesystem.
   void DoFetch(const Extension* extension, bool force);
 
-  // ExtensionRegistryObserver interface
-  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
-                                 const Extension* extension) OVERRIDE;
-  virtual void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const Extension* extension,
-      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+  // These should be called when an extension is loaded or unloaded.
+  virtual void ExtensionLoaded(const Extension* extension);
+  virtual void ExtensionUnloaded(const Extension* extension);
 
  private:
   // Callback for when a job getting content hashes has completed.
@@ -81,9 +71,6 @@ class ContentHashFetcher : public ExtensionRegistryObserver {
   typedef std::pair<ExtensionId, std::string> IdAndVersion;
   typedef std::map<IdAndVersion, scoped_refptr<ContentHashFetcherJob> > JobMap;
   JobMap jobs_;
-
-  // For observing the ExtensionRegistry.
-  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_;
 
   // Used for binding callbacks passed to jobs.
   base::WeakPtrFactory<ContentHashFetcher> weak_ptr_factory_;

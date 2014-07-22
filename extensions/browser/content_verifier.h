@@ -11,7 +11,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/scoped_observer.h"
+#include "base/version.h"
+#include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/content_verify_job.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace base {
 class FilePath;
@@ -25,12 +29,13 @@ namespace extensions {
 
 class Extension;
 class ContentHashFetcher;
-class ContentVerifierDelegate;
+class ContentVerifierIOData;
 
 // Used for managing overall content verification - both fetching content
 // hashes as needed, and supplying job objects to verify file contents as they
 // are read.
-class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier> {
+class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
+                        public ExtensionRegistryObserver {
  public:
   // Takes ownership of |delegate|.
   ContentVerifier(content::BrowserContext* context,
@@ -49,10 +54,13 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier> {
   void VerifyFailed(const std::string& extension_id,
                     ContentVerifyJob::FailureReason reason);
 
-  void OnFetchComplete(const std::string& extension_id,
-                       bool success,
-                       bool was_force_check,
-                       const std::set<base::FilePath>& hash_mismatch_paths);
+  // ExtensionRegistryObserver interface
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentVerifier);
@@ -60,12 +68,24 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier> {
   friend class base::RefCountedThreadSafe<ContentVerifier>;
   virtual ~ContentVerifier();
 
+  void OnFetchComplete(const std::string& extension_id,
+                       bool success,
+                       bool was_force_check,
+                       const std::set<base::FilePath>& hash_mismatch_paths);
+
+  void OnFetchCompleteHelper(const std::string& extension_id,
+                             bool shouldVerifyAnyPathsResult);
+
   // Returns true if any of the paths in |relative_paths| *should* have their
   // contents verified. (Some files get transcoded during the install process,
   // so we don't want to verify their contents because they are expected not
   // to match).
-  bool ShouldVerifyAnyPaths(const Extension* extension,
+  bool ShouldVerifyAnyPaths(const std::string& extension_id,
+                            const base::FilePath& extension_root,
                             const std::set<base::FilePath>& relative_paths);
+
+  // Set to true once we've begun shutting down.
+  bool shutdown_;
 
   content::BrowserContext* context_;
 
@@ -73,6 +93,12 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier> {
 
   // For fetching content hash signatures.
   scoped_ptr<ContentHashFetcher> fetcher_;
+
+  // For observing the ExtensionRegistry.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_;
+
+  // Data that should only be used on the IO thread.
+  scoped_refptr<ContentVerifierIOData> io_data_;
 };
 
 }  // namespace extensions

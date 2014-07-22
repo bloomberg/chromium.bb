@@ -137,15 +137,16 @@ bool ContentVerifyJob::FinishBlock() {
     return true;
   std::string final(crypto::kSHA256Length, 0);
   current_hash_->Finish(string_as_array(&final), final.size());
+  current_hash_.reset();
+  current_hash_byte_count_ = 0;
+
+  int block = current_block_++;
 
   const std::string* expected_hash = NULL;
-  if (!hash_reader_->GetHashForBlock(current_block_, &expected_hash) ||
+  if (!hash_reader_->GetHashForBlock(block, &expected_hash) ||
       *expected_hash != final)
     return false;
 
-  current_hash_.reset();
-  current_hash_byte_count_ = 0;
-  current_block_++;
   return true;
 }
 

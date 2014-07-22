@@ -55,8 +55,8 @@ class ContentVerifierDelegate {
 
   virtual ~ContentVerifierDelegate() {}
 
-  // This should return true if the given extension should have its content
-  // verified.
+  // This should return what verification mode is appropriate for the given
+  // extension, if any.
   virtual Mode ShouldBeVerified(const Extension& extension) = 0;
 
   // Should return the public key to use for validating signatures via the two
