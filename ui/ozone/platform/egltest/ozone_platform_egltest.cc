@@ -200,7 +200,6 @@ class SurfaceFactoryEgltest : public ui::SurfaceFactoryOzone {
   virtual HardwareState InitializeHardware() OVERRIDE;
   virtual void ShutdownHardware() OVERRIDE;
   virtual intptr_t GetNativeDisplay() OVERRIDE;
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual scoped_ptr<SurfaceOzoneEGL> CreateEGLSurfaceForWidget(
       gfx::AcceleratedWidget widget) OVERRIDE;
   virtual const int32* GetEGLSurfaceProperties(
@@ -223,11 +222,6 @@ void SurfaceFactoryEgltest::ShutdownHardware() {
 
 intptr_t SurfaceFactoryEgltest::GetNativeDisplay() {
   return eglplatform_shim_->ShimGetNativeDisplay();
-}
-
-gfx::AcceleratedWidget SurfaceFactoryEgltest::GetAcceleratedWidget() {
-  NOTREACHED();
-  return gfx::kNullAcceleratedWidget;
 }
 
 scoped_ptr<SurfaceOzoneEGL> SurfaceFactoryEgltest::CreateEGLSurfaceForWidget(

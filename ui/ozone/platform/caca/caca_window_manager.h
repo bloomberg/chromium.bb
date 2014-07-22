@@ -31,7 +31,6 @@ class CacaWindowManager : public SurfaceFactoryOzone {
   // ui::SurfaceFactoryOzone overrides:
   virtual HardwareState InitializeHardware() OVERRIDE;
   virtual void ShutdownHardware() OVERRIDE;
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;

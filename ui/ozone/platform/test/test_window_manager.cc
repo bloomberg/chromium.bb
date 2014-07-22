@@ -98,11 +98,6 @@ SurfaceFactoryOzone::HardwareState TestWindowManager::InitializeHardware() {
 void TestWindowManager::ShutdownHardware() {
 }
 
-gfx::AcceleratedWidget TestWindowManager::GetAcceleratedWidget() {
-  NOTREACHED();
-  return -1;
-}
-
 scoped_ptr<SurfaceOzoneCanvas> TestWindowManager::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
   TestWindow* window = windows_.Lookup(widget);

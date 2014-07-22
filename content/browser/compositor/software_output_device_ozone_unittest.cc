@@ -53,7 +53,6 @@ class MockSurfaceFactoryOzone : public ui::SurfaceFactoryOzone {
   }
 
   virtual void ShutdownHardware() OVERRIDE {}
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE { return 1; }
   virtual bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE {
@@ -105,9 +104,9 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
   surface_factory_.reset(new MockSurfaceFactoryOzone());
 
   const gfx::Size size(500, 400);
-  compositor_.reset(new ui::Compositor(
-      ui::SurfaceFactoryOzone::GetInstance()->GetAcceleratedWidget(),
-      context_factory));
+  const gfx::AcceleratedWidget kTestAcceleratedWidget = 1;
+  compositor_.reset(
+      new ui::Compositor(kTestAcceleratedWidget, context_factory));
   compositor_->SetScaleAndSize(1.0f, size);
 
   output_device_.reset(new content::SoftwareOutputDeviceOzone(

@@ -128,11 +128,6 @@ ui::SurfaceFactoryOzone::HardwareState CacaWindowManager::InitializeHardware() {
 void CacaWindowManager::ShutdownHardware() {
 }
 
-gfx::AcceleratedWidget CacaWindowManager::GetAcceleratedWidget() {
-  NOTREACHED();
-  return gfx::kNullAcceleratedWidget;
-}
-
 bool CacaWindowManager::LoadEGLGLES2Bindings(
     AddGLLibraryCallback add_gl_library,
     SetGLGetProcAddressProcCallback set_gl_get_proc_address) {

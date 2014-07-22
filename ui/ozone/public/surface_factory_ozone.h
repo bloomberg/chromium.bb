@@ -97,11 +97,6 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   // display connection for the native display.
   virtual intptr_t GetNativeDisplay();
 
-  // Obtains an AcceleratedWidget backed by a native Linux framebuffer.
-  // The  returned AcceleratedWidget is an opaque token that must realized
-  // before it can be used to create a GL surface.
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() = 0;
-
   // Create SurfaceOzoneEGL for the specified gfx::AcceleratedWidget.
   //
   // Note: When used from content, this is called in the GPU process. The

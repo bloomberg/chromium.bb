@@ -33,16 +33,16 @@ class DriSurfaceFactory : public ui::SurfaceFactoryOzone,
   // SurfaceFactoryOzone overrides:
   virtual HardwareState InitializeHardware() OVERRIDE;
   virtual void ShutdownHardware() OVERRIDE;
-
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
-
   virtual scoped_ptr<ui::SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget w) OVERRIDE;
-
   virtual bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;
 
+  // Create a new window/surface/widget identifier.
+  gfx::AcceleratedWidget GetAcceleratedWidget();
+
+  // Determine dimensions of a widget.
   gfx::Size GetWidgetSize(gfx::AcceleratedWidget w);
 
   // HardwareCursorDelegate:

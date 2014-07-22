@@ -12,11 +12,14 @@
 
 namespace ui {
 
+class DriSurfaceFactory;
+
 class DriWindow : public PlatformWindow,
                   public PlatformEventDispatcher {
  public:
   DriWindow(PlatformWindowDelegate* delegate,
-            const gfx::Rect& bounds);
+            const gfx::Rect& bounds,
+            DriSurfaceFactory* surface_factory);
   virtual ~DriWindow();
 
   // PlatformWindow:

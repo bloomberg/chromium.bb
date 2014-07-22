@@ -65,7 +65,8 @@ class OzonePlatformDri : public OzonePlatform {
   virtual scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) OVERRIDE {
-    return scoped_ptr<PlatformWindow>(new DriWindow(delegate, bounds));
+    return scoped_ptr<PlatformWindow>(
+        new DriWindow(delegate, bounds, surface_factory_ozone_.get()));
   }
 #if defined(OS_CHROMEOS)
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()

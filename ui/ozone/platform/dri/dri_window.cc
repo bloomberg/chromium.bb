@@ -6,6 +6,7 @@
 
 #include "ui/events/event.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/ozone/platform/dri/dri_surface_factory.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -13,9 +14,10 @@
 namespace ui {
 
 DriWindow::DriWindow(PlatformWindowDelegate* delegate,
-                     const gfx::Rect& bounds)
+                     const gfx::Rect& bounds,
+                     DriSurfaceFactory* surface_factory)
     : delegate_(delegate), bounds_(bounds) {
-  widget_ = SurfaceFactoryOzone::GetInstance()->GetAcceleratedWidget();
+  widget_ = surface_factory->GetAcceleratedWidget();
   delegate_->OnAcceleratedWidgetAvailable(widget_);
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
 }

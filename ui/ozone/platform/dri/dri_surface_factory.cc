@@ -91,14 +91,6 @@ void DriSurfaceFactory::ShutdownHardware() {
   state_ = UNINITIALIZED;
 }
 
-gfx::AcceleratedWidget DriSurfaceFactory::GetAcceleratedWidget() {
-  CHECK(state_ != FAILED);
-
-  // We're not using 0 since other code assumes that a 0 AcceleratedWidget is an
-  // invalid widget.
-  return ++allocated_widgets_;
-}
-
 scoped_ptr<ui::SurfaceOzoneCanvas> DriSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget w) {
   CHECK(state_ == INITIALIZED);
@@ -113,6 +105,14 @@ bool DriSurfaceFactory::LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
   return false;
+}
+
+gfx::AcceleratedWidget DriSurfaceFactory::GetAcceleratedWidget() {
+  CHECK(state_ != FAILED);
+
+  // We're not using 0 since other code assumes that a 0 AcceleratedWidget is an
+  // invalid widget.
+  return ++allocated_widgets_;
 }
 
 gfx::Size DriSurfaceFactory::GetWidgetSize(gfx::AcceleratedWidget w) {
