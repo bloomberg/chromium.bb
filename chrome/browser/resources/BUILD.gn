@@ -6,30 +6,58 @@ import("//tools/grit/grit_rule.gni")
 
 grit("memory_internals_resources") {
   source = "memory_internals_resources.grd"
+  outputs = [
+    "grit/memory_internals_resources.h",
+    "memory_internals_resources.pak",
+  ]
 }
 
 grit("net_internals_resources") {
   source = "net_internals_resources.grd"
+  outputs = [
+    "grit/net_internals_resources.h",
+    "net_internals_resources.pak",
+  ]
 }
 
 grit("invalidations_resources") {
   source = "invalidations_resources.grd"
+  outputs = [
+    "grit/invalidations_resources.h",
+    "invalidations_resources.pak",
+  ]
 }
 
 grit("password_manager_internals_resources") {
   source = "password_manager_internals_resources.grd"
+  outputs = [
+    "grit/password_manager_internals_resources.h",
+    "password_manager_internals_resources.pak",
+  ]
 }
 
 grit("signin_internals_resources") {
   source = "signin_internals_resources.grd"
+  outputs = [
+    "grit/signin_internals_resources.h",
+    "signin_internals_resources.pak",
+  ]
 }
 
 grit("sync_internals_resources") {
   source = "sync_internals_resources.grd"
+  outputs = [
+    "grit/sync_internals_resources.h",
+    "sync_internals_resources.pak",
+  ]
 }
 
 grit("translate_internals_resources") {
   source = "translate_internals_resources.grd"
+  outputs = [
+    "grit/translate_internals_resources.h",
+    "translate_internals_resources.pak",
+  ]
 }
 
 # GYP version: copy command of chrome_extra_resources
@@ -41,17 +69,35 @@ copy("extension_resource_demo") {
 if (!is_ios) {
   grit("component_extension_resources") {
     source = "component_extension_resources.grd"
+    outputs = [
+      "grit/component_extension_resources.h",
+      "grit/component_extension_resources_map.cc",
+      "grit/component_extension_resources_map.h",
+      "component_extension_resources.pak",
+    ]
   }
 
   grit("options_resources") {
     source = "options_resources.grd"
+    outputs = [
+      "grit/options_resources.h",
+      "options_resources.pak",
+    ]
   }
 
   grit("quota_internals_resources") {
     source = "quota_internals_resources.grd"
+    outputs = [
+      "grit/quota_internals_resources.h",
+      "quota_internals_resources.pak",
+    ]
   }
 
   grit("sync_file_system_internals_resources") {
     source = "sync_file_system_internals_resources.grd"
+    outputs = [
+      "grit/sync_file_system_internals_resources.h",
+      "sync_file_system_internals_resources.pak",
+    ]
   }
 }
