@@ -169,7 +169,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       client_(client),
       delegate_(delegate),
       defer_load_cb_(params.defer_load_cb()),
-      accelerated_compositing_reported_(false),
       incremented_externally_allocated_memory_(false),
       gpu_factories_(RenderThreadImpl::current()->GetGpuFactories()),
       supports_save_(true),
@@ -520,16 +519,6 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
                                unsigned char alpha) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   TRACE_EVENT0("media", "WebMediaPlayerImpl:paint");
-
-  if (!accelerated_compositing_reported_) {
-    accelerated_compositing_reported_ = true;
-    // Normally paint() is only called in non-accelerated rendering, but there
-    // are exceptions such as webgl where compositing is used in the WebView but
-    // video frames are still rendered to a canvas.
-    UMA_HISTOGRAM_BOOLEAN(
-        "Media.AcceleratedCompositingActive",
-        frame_->view()->isAcceleratedCompositingActive());
-  }
 
   // TODO(scherkus): Clarify paint() API contract to better understand when and
   // why it's being called. For example, today paint() is called when:

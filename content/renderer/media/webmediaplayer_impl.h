@@ -300,10 +300,6 @@ class WebMediaPlayerImpl
 
   base::Callback<void(const base::Closure&)> defer_load_cb_;
 
-  // Since accelerated compositing status is only known after the first layout,
-  // we delay reporting it to UMA until that time.
-  bool accelerated_compositing_reported_;
-
   bool incremented_externally_allocated_memory_;
 
   // Factories for supporting video accelerators. May be null.

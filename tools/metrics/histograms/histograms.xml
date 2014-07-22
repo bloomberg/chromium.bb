@@ -9941,6 +9941,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Media.AcceleratedCompositingActive" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated as of July 21, 2014.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Whether accelerated compositing was used for HTML5 media rendering.
