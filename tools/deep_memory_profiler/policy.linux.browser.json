@@ -329,7 +329,7 @@
     },
     {
       "name": "tc-toplevel-string",
-      "stacktrace": "std::basic_string::_Rep::_S_create",
+      "stacktrace": ".*::allocate std::basic_string::_Rep::_S_create.*",
       "allocator": "malloc"
     },
     {

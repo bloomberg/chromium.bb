@@ -41,7 +41,7 @@
     "tc-stl-rbtree",
     "tc-stl-vector",
     "tc-stl-hashtable",
-    "tc-stl-node",
+    "tc-stl-other",
     "tc-catch-all",
     "tc-unused",
     "UNTIL_HERE_FOR_TOTAL",
@@ -271,8 +271,8 @@
       "allocator": "malloc"
     },
     {
-      "name": "tc-stl-node",
-      "stacktrace": ".*std::priv::_Impl_vector::.*",
+      "name": "tc-stl-other",
+      "stacktrace": ".*std::__stl_new.*",
       "allocator": "malloc"
     },
     {

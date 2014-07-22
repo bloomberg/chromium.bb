@@ -227,7 +227,7 @@
     },
     {
       "name": "tc-toplevel-string",
-      "backtrace_function": "std::basic_string::_Rep::_S_create"
+      "backtrace_function": ".*::allocate std::basic_string::_Rep::_S_create.*"
     },
     {
       "name": "tc-std-treemap",

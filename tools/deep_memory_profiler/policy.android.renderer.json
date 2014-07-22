@@ -63,11 +63,11 @@
     "tc-webkit-from-v8-catch-all",
     "tc-webkit-catch-all",
     "tc-v8-catch-all",
-    "tc-toplevel-string",
-    "tc-std-treemap",
-    "tc-std-hashmap",
-    "tc-std-vector",
-    "tc-std-other",
+    "tc-stl-string",
+    "tc-stl-rbtree",
+    "tc-stl-vector",
+    "tc-stl-hashtable",
+    "tc-stl-other",
     "tc-catch-all",
     "tc-unused",
     "UNTIL_HERE_FOR_TOTAL",
@@ -512,28 +512,28 @@
       "allocator": "malloc"
     },
     {
-      "name": "tc-toplevel-string",
-      "stacktrace": "std::basic_string::_Rep::_S_create",
+      "name": "tc-stl-string",
+      "stacktrace": ".*std::basic_string::.*",
       "allocator": "malloc"
     },
     {
-      "name": "tc-std-treemap",
-      "stacktrace": ".*::allocate std::(_Rb_tree|__1::__tree).*",
+      "name": "tc-stl-rbtree",
+      "stacktrace": ".*std::priv::_Rb_tree::.*",
       "allocator": "malloc"
     },
     {
-      "name": "tc-std-hashmap",
-      "stacktrace": ".*(std::vector::reserve __gnu_cxx::hashtable|::allocate std::_Hashtable|::allocate std::__1::__hash_table).*",
+      "name": "tc-stl-vector",
+      "stacktrace": ".*std::priv::_Impl_vector::.*",
       "allocator": "malloc"
     },
     {
-      "name": "tc-std-vector",
-      "stacktrace": ".*std::(_Vector_base::_M_allocate|__1::vector::allocate).*",
+      "name": "tc-stl-hashtable",
+      "stacktrace": ".*std::hashtable::.*",
       "allocator": "malloc"
     },
     {
-      "name": "tc-std-other",
-      "stacktrace": ".*(__gnu_cxx::new_allocator::allocate|std::__1::allocator::allocate).*",
+      "name": "tc-stl-other",
+      "stacktrace": ".*std::__stl_new.*",
       "allocator": "malloc"
     },
     {
