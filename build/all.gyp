@@ -1034,6 +1034,15 @@
           ],
         },
         {
+          'target_name': 'chromium_builder_lkgr_drmemory_win',
+          'type': 'none',
+          'dependencies': [
+            '../content/content_shell_and_tests.gyp:content_shell',
+            '../content/content_shell_and_tests.gyp:content_shell_crash_service',
+            '../content/content_shell_and_tests.gyp:layout_test_helper',
+          ],
+        },
+        {
           'target_name': 'chromium_builder_dbg_drmemory_win',
           'type': 'none',
           'dependencies': [
