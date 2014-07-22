@@ -105,6 +105,7 @@ crbug.com/364377 storage/websql/transaction-callback-isolated-world.html [ Leak 
 crbug.com/364377 storage/websql/transaction-error-callback-isolated-world.html [ Leak ]
 crbug.com/364377 storage/websql/transaction-success-callback-isolated-world.html [ Leak ]
 
+crbug.com/364390 fast/workers/shared-worker-event-listener.html [ Leak ]
 crbug.com/364390 fast/workers/worker-crash-with-invalid-location.html [ Leak ]
 crbug.com/364390 http/tests/security/contentSecurityPolicy/1.1/child-src/worker-shared-allowed.html [ Leak ]
 crbug.com/364390 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Leak ]
