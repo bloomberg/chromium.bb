@@ -210,6 +210,60 @@ GURL CookieOriginToURL(const std::string& domain, bool is_https) {
   return GURL(scheme + "://" + host);
 }
 
+void ParseRequestCookieLine(const std::string& header_value,
+                            ParsedRequestCookies* parsed_cookies) {
+  std::string::const_iterator i = header_value.begin();
+  while (i != header_value.end()) {
+    // Here we are at the beginning of a cookie.
+
+    // Eat whitespace.
+    while (i != header_value.end() && *i == ' ') ++i;
+    if (i == header_value.end()) return;
+
+    // Find cookie name.
+    std::string::const_iterator cookie_name_beginning = i;
+    while (i != header_value.end() && *i != '=') ++i;
+    base::StringPiece cookie_name(cookie_name_beginning, i);
+
+    // Find cookie value.
+    base::StringPiece cookie_value;
+    // Cookies may have no value, in this case '=' may or may not be there.
+    if (i != header_value.end() && i + 1 != header_value.end()) {
+      ++i;  // Skip '='.
+      std::string::const_iterator cookie_value_beginning = i;
+      if (*i == '"') {
+        ++i;  // Skip '"'.
+        while (i != header_value.end() && *i != '"') ++i;
+        if (i == header_value.end()) return;
+        ++i;  // Skip '"'.
+        cookie_value = base::StringPiece(cookie_value_beginning, i);
+        // i points to character after '"', potentially a ';'.
+      } else {
+        while (i != header_value.end() && *i != ';') ++i;
+        cookie_value = base::StringPiece(cookie_value_beginning, i);
+        // i points to ';' or end of string.
+      }
+    }
+    parsed_cookies->push_back(std::make_pair(cookie_name, cookie_value));
+    // Eat ';'.
+    if (i != header_value.end()) ++i;
+  }
+}
+
+std::string SerializeRequestCookieLine(
+    const ParsedRequestCookies& parsed_cookies) {
+  std::string buffer;
+  for (ParsedRequestCookies::const_iterator i = parsed_cookies.begin();
+       i != parsed_cookies.end(); ++i) {
+    if (!buffer.empty())
+      buffer.append("; ");
+    buffer.append(i->first.begin(), i->first.end());
+    buffer.push_back('=');
+    buffer.append(i->second.begin(), i->second.end());
+  }
+  return buffer;
+}
+
 }  // namespace cookie_utils
 }  // namespace net
 

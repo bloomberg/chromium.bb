@@ -34,14 +34,13 @@
 using base::Time;
 using content::ResourceType;
 using extensions::ExtensionWarning;
+using net::cookie_util::ParsedRequestCookie;
+using net::cookie_util::ParsedRequestCookies;
 
 namespace extension_web_request_api_helpers {
 
 namespace {
 
-// A ParsedRequestCookie consists of the key and value of the cookie.
-typedef std::pair<base::StringPiece, base::StringPiece> ParsedRequestCookie;
-typedef std::vector<ParsedRequestCookie> ParsedRequestCookies;
 typedef std::vector<linked_ptr<net::ParsedCookie> > ParsedResponseCookies;
 
 static const char* kResourceTypeStrings[] = {
@@ -483,67 +482,6 @@ void MergeOnBeforeRequestResponses(
   MergeRedirectUrlOfResponses(deltas, new_url, conflicting_extensions, net_log);
 }
 
-// Assumes that |header_value| is the cookie header value of a HTTP Request
-// following the cookie-string schema of RFC 6265, section 4.2.1, and returns
-// cookie name/value pairs. If cookie values are presented in double quotes,
-// these will appear in |parsed| as well. We can assume that the cookie header
-// is written by Chromium and therefore, well-formed.
-static void ParseRequestCookieLine(
-    const std::string& header_value,
-    ParsedRequestCookies* parsed_cookies) {
-  std::string::const_iterator i = header_value.begin();
-  while (i != header_value.end()) {
-    // Here we are at the beginning of a cookie.
-
-    // Eat whitespace.
-    while (i != header_value.end() && *i == ' ') ++i;
-    if (i == header_value.end()) return;
-
-    // Find cookie name.
-    std::string::const_iterator cookie_name_beginning = i;
-    while (i != header_value.end() && *i != '=') ++i;
-    base::StringPiece cookie_name(cookie_name_beginning, i);
-
-    // Find cookie value.
-    base::StringPiece cookie_value;
-    if (i != header_value.end()) {  // Cookies may have no value.
-      ++i;  // Skip '='.
-      std::string::const_iterator cookie_value_beginning = i;
-      if (*i == '"') {
-        ++i;  // Skip '"'.
-        while (i != header_value.end() && *i != '"') ++i;
-        if (i == header_value.end()) return;
-        ++i;  // Skip '"'.
-        cookie_value = base::StringPiece(cookie_value_beginning, i);
-        // i points to character after '"', potentially a ';'
-      } else {
-        while (i != header_value.end() && *i != ';') ++i;
-        cookie_value = base::StringPiece(cookie_value_beginning, i);
-        // i points to ';' or end of string.
-      }
-    }
-    parsed_cookies->push_back(make_pair(cookie_name, cookie_value));
-    // Eat ';'
-    if (i != header_value.end()) ++i;
-  }
-}
-
-// Writes all cookies of |parsed_cookies| into a HTTP Request header value
-// that belongs to the "Cookie" header.
-static std::string SerializeRequestCookieLine(
-    const ParsedRequestCookies& parsed_cookies) {
-  std::string buffer;
-  for (ParsedRequestCookies::const_iterator i = parsed_cookies.begin();
-       i != parsed_cookies.end(); ++i) {
-    if (!buffer.empty())
-      buffer += "; ";
-    buffer += i->first.as_string();
-    if (!i->second.empty())
-      buffer += "=" + i->second.as_string();
-  }
-  return buffer;
-}
-
 static bool DoesRequestCookieMatchFilter(
     const ParsedRequestCookie& cookie,
     RequestCookie* filter) {
@@ -681,7 +619,7 @@ void MergeCookiesInOnBeforeSendHeadersResponses(
   std::string cookie_header;
   request_headers->GetHeader(net::HttpRequestHeaders::kCookie, &cookie_header);
   ParsedRequestCookies cookies;
-  ParseRequestCookieLine(cookie_header, &cookies);
+  net::cookie_util::ParseRequestCookieLine(cookie_header, &cookies);
 
   // Modify cookies.
   bool modified = false;
@@ -691,7 +629,8 @@ void MergeCookiesInOnBeforeSendHeadersResponses(
 
   // Reassemble and store new cookie line.
   if (modified) {
-    std::string new_cookie_header = SerializeRequestCookieLine(cookies);
+    std::string new_cookie_header =
+        net::cookie_util::SerializeRequestCookieLine(cookies);
     request_headers->SetHeader(net::HttpRequestHeaders::kCookie,
                                new_cookie_header);
   }

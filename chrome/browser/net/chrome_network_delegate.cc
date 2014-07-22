@@ -16,7 +16,6 @@
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
@@ -25,19 +24,18 @@
 #include "chrome/browser/net/chrome_extensions_network_delegate.h"
 #include "chrome/browser/net/client_hints.h"
 #include "chrome/browser/net/connect_interceptor.h"
+#include "chrome/browser/net/safe_search_util.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_protocol.h"
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_usage_stats.h"
 #include "components/domain_reliability/monitor.h"
-#include "components/google/core/browser/google_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -98,61 +96,6 @@ namespace {
 
 const char kDNTHeader[] = "DNT";
 
-// Returns whether a URL parameter, |first_parameter| (e.g. foo=bar), has the
-// same key as the the |second_parameter| (e.g. foo=baz). Both parameters
-// must be in key=value form.
-bool HasSameParameterKey(const std::string& first_parameter,
-                         const std::string& second_parameter) {
-  DCHECK(second_parameter.find("=") != std::string::npos);
-  // Prefix for "foo=bar" is "foo=".
-  std::string parameter_prefix = second_parameter.substr(
-      0, second_parameter.find("=") + 1);
-  return StartsWithASCII(first_parameter, parameter_prefix, false);
-}
-
-// Examines the query string containing parameters and adds the necessary ones
-// so that SafeSearch is active. |query| is the string to examine and the
-// return value is the |query| string modified such that SafeSearch is active.
-std::string AddSafeSearchParameters(const std::string& query) {
-  std::vector<std::string> new_parameters;
-  std::string safe_parameter = chrome::kSafeSearchSafeParameter;
-  std::string ssui_parameter = chrome::kSafeSearchSsuiParameter;
-
-  std::vector<std::string> parameters;
-  base::SplitString(query, '&', &parameters);
-
-  std::vector<std::string>::iterator it;
-  for (it = parameters.begin(); it < parameters.end(); ++it) {
-    if (!HasSameParameterKey(*it, safe_parameter) &&
-        !HasSameParameterKey(*it, ssui_parameter)) {
-      new_parameters.push_back(*it);
-    }
-  }
-
-  new_parameters.push_back(safe_parameter);
-  new_parameters.push_back(ssui_parameter);
-  return JoinString(new_parameters, '&');
-}
-
-// If |request| is a request to Google Web Search the function
-// enforces that the SafeSearch query parameters are set to active.
-// Sets the query part of |new_url| with the new value of the parameters.
-void ForceGoogleSafeSearch(net::URLRequest* request,
-                           GURL* new_url) {
-  if (!google_util::IsGoogleSearchUrl(request->url()) &&
-      !google_util::IsGoogleHomePageUrl(request->url()))
-    return;
-
-  std::string query = request->url().query();
-  std::string new_query = AddSafeSearchParameters(query);
-  if (query == new_query)
-    return;
-
-  GURL::Replacements replacements;
-  replacements.SetQueryStr(new_query);
-  *new_url = request->url().ReplaceComponents(replacements);
-}
-
 // Gets called when the extensions finish work on the URL. If the extensions
 // did not do a redirect (so |new_url| is empty) then we enforce the
 // SafeSearch parameters. Otherwise we will get called again after the
@@ -163,7 +106,7 @@ void ForceGoogleSafeSearchCallbackWrapper(
     GURL* new_url,
     int rv) {
   if (rv == net::OK && new_url->is_empty())
-    ForceGoogleSafeSearch(request, new_url);
+    safe_search_util::ForceGoogleSafeSearch(request, new_url);
   callback.Run(rv);
 }
 
@@ -474,7 +417,7 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
       request, wrapped_callback, new_url);
 
   if (force_safe_search && rv == net::OK && new_url->is_empty())
-    ForceGoogleSafeSearch(request, new_url);
+    safe_search_util::ForceGoogleSafeSearch(request, new_url);
 
   if (connect_interceptor_)
     connect_interceptor_->WitnessURLRequest(request);
@@ -494,6 +437,11 @@ int ChromeNetworkDelegate::OnBeforeSendHeaders(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
+  bool force_safe_search = force_google_safe_search_ &&
+                           force_google_safe_search_->GetValue();
+  if (force_safe_search)
+    safe_search_util::ForceYouTubeSafetyMode(request, headers);
+
   TRACE_EVENT_ASYNC_STEP_PAST0("net", "URLRequest", request, "SendRequest");
   return extensions_delegate_->OnBeforeSendHeaders(request, callback, headers);
 }

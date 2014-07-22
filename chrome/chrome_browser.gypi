@@ -830,6 +830,8 @@
       'browser/net/proxy_service_factory.h',
       'browser/net/referrer.cc',
       'browser/net/referrer.h',
+      'browser/net/safe_search_util.cc',
+      'browser/net/safe_search_util.h',
       'browser/net/service_providers_win.cc',
       'browser/net/service_providers_win.h',
       'browser/net/spdyproxy/data_reduction_proxy_chrome_configurator.cc',

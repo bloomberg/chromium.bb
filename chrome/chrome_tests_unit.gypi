@@ -1144,6 +1144,7 @@
         'browser/net/pref_proxy_config_tracker_impl_unittest.cc',
         'browser/net/probe_message_unittest.cc',
         'browser/net/proxy_policy_handler_unittest.cc',
+        'browser/net/safe_search_util_unittest.cc',
         'browser/net/spdyproxy/data_reduction_proxy_chrome_configurator_unittest.cc',
         'browser/net/spdyproxy/data_reduction_proxy_settings_unittest_android.cc',
         'browser/net/sqlite_server_bound_cert_store_unittest.cc',
