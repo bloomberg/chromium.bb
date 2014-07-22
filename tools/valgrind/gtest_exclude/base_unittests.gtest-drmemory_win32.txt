@@ -36,6 +36,3 @@ TraceEventTestFixture.TraceContinuousSampling
 # so we can avoid excluding this for light mode.
 MessageLoopTestTypeUI.RecursiveDenial3
 
-# http://crbug.com/395739
-# Fails under Dr. Memory
-TraceEventTestFixture.TraceBufferVectorReportFull
