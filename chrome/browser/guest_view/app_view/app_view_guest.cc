@@ -17,6 +17,7 @@
 #include "extensions/browser/api/app_runtime/app_runtime_api.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/view_type_utils.h"
@@ -138,13 +139,13 @@ bool AppViewGuest::HandleContextMenu(const content::ContextMenuParams& params) {
 
 bool AppViewGuest::CanEmbedderUseGuestView(
     const std::string& embedder_extension_id) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(browser_context())->extension_service();
   const extensions::Extension* embedder_extension =
-      service->GetExtensionById(embedder_extension_id, false);
-  const extensions::PermissionsData* permissions_data =
-      embedder_extension->permissions_data();
-  return permissions_data->HasAPIPermission(
+      extensions::ExtensionRegistry::Get(browser_context())
+          ->enabled_extensions()
+          .GetByID(embedder_extension_id);
+  if (!embedder_extension)
+    return false;
+  return embedder_extension->permissions_data()->HasAPIPermission(
       extensions::APIPermission::kAppView);
 }
 

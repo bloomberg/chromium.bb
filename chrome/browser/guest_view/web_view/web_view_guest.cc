@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/web_view/web_view_internal_api.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -49,6 +48,7 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -228,14 +228,13 @@ scoped_ptr<base::ListValue> WebViewGuest::MenuModelToValue(
 
 bool WebViewGuest::CanEmbedderUseGuestView(
     const std::string& embedder_extension_id) {
-  Profile* profile = Profile::FromBrowserContext(browser_context());
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
   const extensions::Extension* embedder_extension =
-      service->GetExtensionById(embedder_extension_id, false);
-  const extensions::PermissionsData* permissions_data =
-      embedder_extension->permissions_data();
-  return permissions_data->HasAPIPermission(
+      extensions::ExtensionRegistry::Get(browser_context())
+          ->enabled_extensions()
+          .GetByID(embedder_extension_id);
+  if (!embedder_extension)
+    return false;
+  return embedder_extension->permissions_data()->HasAPIPermission(
       extensions::APIPermission::kWebView);
 }
 
