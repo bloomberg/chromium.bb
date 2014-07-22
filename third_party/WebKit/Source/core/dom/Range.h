@@ -72,7 +72,7 @@ public:
     enum CompareResults { NODE_BEFORE, NODE_AFTER, NODE_BEFORE_AND_AFTER, NODE_INSIDE };
     CompareResults compareNode(Node* refNode, ExceptionState&) const;
     enum CompareHow { START_TO_START, START_TO_END, END_TO_END, END_TO_START };
-    short compareBoundaryPoints(CompareHow, const Range* sourceRange, ExceptionState&) const;
+    short compareBoundaryPoints(CompareHow, const PassRefPtrWillBeRawPtr<Range> sourceRange, ExceptionState&) const;
     static short compareBoundaryPoints(Node* containerA, int offsetA, Node* containerB, int offsetB, ExceptionState&);
     static short compareBoundaryPoints(const RangeBoundaryPoint& boundaryA, const RangeBoundaryPoint& boundaryB, ExceptionState&);
     bool boundaryPointsValid() const;

@@ -321,10 +321,10 @@ Range::CompareResults Range::compareNode(Node* refNode, ExceptionState& exceptio
     return NODE_INSIDE; // ends inside the range
 }
 
-short Range::compareBoundaryPoints(CompareHow how, const Range* sourceRange, ExceptionState& exceptionState) const
+short Range::compareBoundaryPoints(CompareHow how, const PassRefPtrWillBeRawPtr<Range> sourceRange, ExceptionState& exceptionState) const
 {
-    if (!sourceRange) {
-        exceptionState.throwDOMException(NotFoundError, "The source range provided was null.");
+    if (!(how == START_TO_START || how == START_TO_END || how == END_TO_END || how == END_TO_START)) {
+        exceptionState.throwDOMException(NotSupportedError, "The comparison method provided must be one of 'START_TO_START', 'START_TO_END', 'END_TO_END', or 'END_TO_START'.");
         return 0;
     }
 
@@ -357,7 +357,7 @@ short Range::compareBoundaryPoints(CompareHow how, const Range* sourceRange, Exc
             return compareBoundaryPoints(m_start, sourceRange->m_end, exceptionState);
     }
 
-    exceptionState.throwDOMException(SyntaxError, "The comparison method provided must be one of 'START_TO_START', 'START_TO_END', 'END_TO_END', or 'END_TO_START'.");
+    ASSERT_NOT_REACHED();
     return 0;
 }
 
