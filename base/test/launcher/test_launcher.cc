@@ -343,7 +343,9 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
 
     // Enable test retries by default for bots. This can be still overridden
     // from command line using --test-launcher-retry-limit flag.
-    retry_limit_ = 3;
+    // TODO(sergeyberezin): decrease retry_limit_ back to 3 when the
+    // ignorer_bot is deployed to automatically disable flaky tests.
+    retry_limit_ = 12;
   } else {
     // Default to serial test execution if not running on a bot. This makes it
     // possible to disable stdio redirection and can still be overridden with
