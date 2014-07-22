@@ -40,6 +40,16 @@ function getUrlSpecs(imageSizes, notificationDetails) {
     });
   }
 
+  // |appIconMaskUrl| is optional.
+  if (notificationDetails.appIconMaskUrl) {
+    $Array.push(urlSpecs, {
+      path: notificationDetails.appIconMaskUrl,
+      width: imageSizes.appIconMask.width * imageSizes.scaleFactor,
+      height: imageSizes.appIconMask.height * imageSizes.scaleFactor,
+      callback: imageDataSetter(notificationDetails, 'appIconMaskBitmap')
+    });
+  }
+
   // |imageUrl| is optional.
   if (notificationDetails.imageUrl) {
     $Array.push(urlSpecs, {

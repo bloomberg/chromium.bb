@@ -10,9 +10,13 @@
 // This structure describes the size in DIPs of each type of image rendered
 // by the notification center within a notification.
 struct NotificationBitmapSizes {
+  NotificationBitmapSizes();
+  ~NotificationBitmapSizes();
+
   gfx::Size image_size;
   gfx::Size icon_size;
   gfx::Size button_icon_size;
+  gfx::Size app_icon_mask_size;
 };
 
 NotificationBitmapSizes GetNotificationBitmapSizes();

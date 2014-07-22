@@ -53,10 +53,22 @@ namespace notifications {
     // <em>Required for $(ref:notifications.create)</em> method.
     TemplateType? type;
 
-    // Sender's avatar, app icon, or a thumbnail for image notifications.
+    // A URL to the sender's avatar, app icon, or a thumbnail for image
+    // notifications.
+    //
+    // URLs can be a data URL, a blob URL, or a URL relative to a resource
+    // within this extension's .crx file
     // <em>Required for $(ref:notifications.create)</em> method.
     DOMString? iconUrl;
     [nodoc] NotificationBitmap? iconBitmap;
+
+    // A URL to the app icon mask. URLs have the same restrictions as
+    // $(ref:notifications.NotificationOptions.iconUrl iconUrl).
+    // 
+    // The app icon mask should be in alpha channel, as only the alpha channel
+    // of the image will be considered.
+    DOMString? appIconMaskUrl;
+    [nodoc] NotificationBitmap? appIconMaskBitmap;
 
     // Title of the notification (e.g. sender name for email).
     // <em>Required for $(ref:notifications.create)</em> method.
@@ -83,7 +95,9 @@ namespace notifications {
     // Secondary notification content.
     [nodoc] DOMString? expandedMessage;
 
-    // Image thumbnail for image-type notifications.
+    // A URL to the image thumbnail for image-type notifications.
+    // URLs have the same restrictions as 
+    // $(ref:notifications.NotificationOptions.iconUrl iconUrl).
     DOMString? imageUrl;
     [nodoc] NotificationBitmap? imageBitmap;
 

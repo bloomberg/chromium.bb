@@ -38,6 +38,10 @@ void NotificationsNativeHandler::GetNotificationImageSizes(
   dict->SetInteger("image.height", bitmap_sizes.image_size.height());
   dict->SetInteger("buttonIcon.width", bitmap_sizes.button_icon_size.width());
   dict->SetInteger("buttonIcon.height", bitmap_sizes.button_icon_size.height());
+  dict->SetInteger("appIconMask.width",
+                   bitmap_sizes.app_icon_mask_size.width());
+  dict->SetInteger("appIconMask.height",
+                   bitmap_sizes.app_icon_mask_size.height());
 
   scoped_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());

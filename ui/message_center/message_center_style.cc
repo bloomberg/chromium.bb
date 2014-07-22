@@ -23,6 +23,8 @@ const SkColor kImageBackgroundColor = SkColorSetRGB(0x22, 0x22, 0x22);
 const SkColor kRegularTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
 const SkColor kDimTextColor = SkColorSetRGB(0x7f, 0x7f, 0x7f);
 const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
+const SkColor kSmallImageMaskForegroundColor = SK_ColorWHITE;
+const SkColor kSmallImageMaskBackgroundColor = SkColorSetRGB(0xa3, 0xa3, 0xa3);
 
 // Limits.
 

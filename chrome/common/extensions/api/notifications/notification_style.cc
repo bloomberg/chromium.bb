@@ -6,6 +6,11 @@
 
 #include "ui/message_center/message_center_style.h"
 
+NotificationBitmapSizes::NotificationBitmapSizes() {
+}
+NotificationBitmapSizes::~NotificationBitmapSizes() {
+}
+
 NotificationBitmapSizes GetNotificationBitmapSizes() {
   NotificationBitmapSizes sizes;
   sizes.image_size =
@@ -16,5 +21,8 @@ NotificationBitmapSizes GetNotificationBitmapSizes() {
   sizes.button_icon_size =
       gfx::Size(message_center::kNotificationButtonIconSize,
                 message_center::kNotificationButtonIconSize);
+
+  sizes.app_icon_mask_size = gfx::Size(message_center::kSmallImageSize,
+                                       message_center::kSmallImageSize);
   return sizes;
 }

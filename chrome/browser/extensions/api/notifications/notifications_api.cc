@@ -285,6 +285,16 @@ bool NotificationsApiFunction::CreateNotification(
 
   // Then, handle any optional data that's been provided.
   message_center::RichNotificationData optional_fields;
+  if (options->app_icon_mask_url.get()) {
+    if (!NotificationBitmapToGfxImage(image_scale,
+                                      bitmap_sizes.app_icon_mask_size,
+                                      options->app_icon_mask_bitmap.get(),
+                                      &optional_fields.small_image)) {
+      SetError(kUnableToDecodeIconError);
+      return false;
+    }
+  }
+
   if (options->priority.get())
     optional_fields.priority = *options->priority;
 
@@ -400,6 +410,14 @@ bool NotificationsApiFunction::UpdateNotification(
     NotificationBitmapToGfxImage(
         image_scale, bitmap_sizes.icon_size, options->icon_bitmap.get(), &icon);
     notification->set_icon(icon);
+  }
+
+  gfx::Image app_icon_mask;
+  if (NotificationBitmapToGfxImage(image_scale,
+                                   bitmap_sizes.app_icon_mask_size,
+                                   options->app_icon_mask_bitmap.get(),
+                                   &app_icon_mask)) {
+    notification->set_small_image(app_icon_mask);
   }
 
   if (options->priority)
