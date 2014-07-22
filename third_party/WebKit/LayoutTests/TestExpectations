@@ -1256,6 +1256,10 @@ crbug.com/30536 [ Win ] http/tests/encoding/meta-switch-mid-parse-with-title.htm
 crbug.com/30536 [ Win ] http/tests/htmlimports/csp-import-block-but-domain-nested.html [ Timeout Pass ]
 crbug.com/30536 [ Win ] http/tests/ssl/referer-301.html [ Timeout Pass ]
 
+Bug(jchaffraix) fast/repaint/body-background-image.html [ NeedsRebaseline ]
+Bug(jchaffraix) fast/repaint/overflow-scroll-body-appear.html [ NeedsRebaseline ]
+Bug(jchaffraix) fast/repaint/positioned-document-element.html [ NeedsRebaseline ]
+
 crbug.com/390204 [ Release ] inspector/console/console-viewport-selection.html [ Pass Failure ]
 crbug.com/390204 [ Debug ] inspector/console/console-viewport-selection.html [ Pass Failure Slow ]
 crbug.com/394208 [ Win ] http/tests/security/link-crossorigin-stylesheet-use-credentials.html [ Timeout Pass ]
