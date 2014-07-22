@@ -38,6 +38,10 @@
 #include <memory>
 #include <vector>
 
+#if defined(MEMORY_SANITIZER)
+#include <sanitizer/msan_interface.h>
+#endif
+
 #ifdef __APPLE__
 #define sys_mmap mmap
 #define sys_mmap2 mmap
@@ -119,6 +123,12 @@ class PageAllocator {
 #endif
     if (a == MAP_FAILED)
       return NULL;
+
+#if defined(MEMORY_SANITIZER)
+    // We need to indicate to MSan that memory allocated through sys_mmap is
+    // initialized, since linux_syscall_support.h doesn't have MSan hooks.
+    __msan_unpoison(a, page_size_ * num_pages);
+#endif
 
     struct PageHeader *header = reinterpret_cast<PageHeader*>(a);
     header->next = last_;
