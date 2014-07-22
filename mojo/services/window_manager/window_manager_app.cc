@@ -261,7 +261,7 @@ void WindowManagerApp::RegisterSubtree(view_manager::Id id,
 
 void WindowManagerApp::UnregisterSubtree(view_manager::Id id) {
   view_manager::Node* node = view_manager_->GetNodeById(id);
-  NodeIdToWindowMap::const_iterator it = node_id_to_window_map_.find(id);
+  NodeIdToWindowMap::iterator it = node_id_to_window_map_.find(id);
   DCHECK(it != node_id_to_window_map_.end());
   scoped_ptr<aura::Window> window(it->second);
   node_id_to_window_map_.erase(it);
