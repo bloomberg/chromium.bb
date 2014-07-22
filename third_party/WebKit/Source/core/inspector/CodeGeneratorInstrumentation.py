@@ -247,6 +247,8 @@ class Method:
 
         if self.return_type == "bool":
             self.default_return_value = "false"
+        elif self.return_type == "int":
+            self.default_return_value = "0"
         elif self.return_type == "String":
             self.default_return_value = "\"\""
         else:

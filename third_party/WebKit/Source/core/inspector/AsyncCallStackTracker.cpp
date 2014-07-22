@@ -61,6 +61,7 @@ class AsyncCallStackTracker::ExecutionContextData FINAL : public ContextLifecycl
 public:
     ExecutionContextData(AsyncCallStackTracker* tracker, ExecutionContext* executionContext)
         : ContextLifecycleObserver(executionContext)
+        , m_circularSequentialID(0)
         , m_tracker(tracker)
     {
     }
@@ -74,6 +75,17 @@ public:
         delete self;
     }
 
+    int circularSequentialID()
+    {
+        ++m_circularSequentialID;
+        if (m_circularSequentialID <= 0)
+            m_circularSequentialID = 1;
+        return m_circularSequentialID;
+    }
+
+private:
+    int m_circularSequentialID;
+
 public:
     AsyncCallStackTracker* m_tracker;
     HashSet<int> m_intervalTimerIds;
@@ -84,6 +96,7 @@ public:
     HashMap<MutationObserver*, RefPtr<AsyncCallChain> > m_mutationObserverCallChains;
     HashMap<ExecutionContextTask*, RefPtr<AsyncCallChain> > m_executionContextTaskCallChains;
     HashMap<String, RefPtr<AsyncCallChain> > m_v8AsyncTaskCallChains;
+    HashMap<int, RefPtr<AsyncCallChain> > m_asyncOperationCallChains;
 };
 
 static XMLHttpRequest* toXmlHttpRequest(EventTarget* eventTarget)
@@ -108,6 +121,7 @@ AsyncCallStackTracker::AsyncCallStack::~AsyncCallStack()
 
 AsyncCallStackTracker::AsyncCallStackTracker()
     : m_maxAsyncCallStackDepth(0)
+    , m_nestedAsyncCallCount(0)
 {
 }
 
@@ -358,6 +372,40 @@ void AsyncCallStackTracker::willHandleV8AsyncTask(ExecutionContext* context, con
         setCurrentAsyncCallChain(context, nullptr);
 }
 
+int AsyncCallStackTracker::traceAsyncOperationStarting(ExecutionContext* context, const String& operationName, const ScriptValue& callFrames)
+{
+    ASSERT(context);
+    ASSERT(isEnabled());
+    if (!validateCallFrames(callFrames))
+        return 0;
+    ExecutionContextData* data = createContextDataIfNeeded(context);
+    int id = data->circularSequentialID();
+    while (data->m_asyncOperationCallChains.contains(id))
+        id = data->circularSequentialID();
+    data->m_asyncOperationCallChains.set(id, createAsyncCallChain(operationName, callFrames));
+    return id;
+}
+
+void AsyncCallStackTracker::traceAsyncOperationCompleted(ExecutionContext* context, int operationId)
+{
+    ASSERT(context);
+    ASSERT(isEnabled());
+    if (operationId <= 0)
+        return;
+    if (ExecutionContextData* data = m_executionContextDataMap.get(context))
+        data->m_asyncOperationCallChains.remove(operationId);
+}
+
+void AsyncCallStackTracker::traceAsyncCallbackStarting(ExecutionContext* context, int operationId)
+{
+    ASSERT(context);
+    ASSERT(isEnabled());
+    if (ExecutionContextData* data = m_executionContextDataMap.get(context))
+        setCurrentAsyncCallChain(context, operationId > 0 ? data->m_asyncOperationCallChains.get(operationId) : nullptr);
+    else
+        setCurrentAsyncCallChain(context, nullptr);
+}
+
 void AsyncCallStackTracker::didFireAsyncCall()
 {
     clearCurrentAsyncCallChain();
@@ -377,13 +425,13 @@ PassRefPtr<AsyncCallStackTracker::AsyncCallChain> AsyncCallStackTracker::createA
 
 void AsyncCallStackTracker::setCurrentAsyncCallChain(ExecutionContext* context, PassRefPtr<AsyncCallChain> chain)
 {
-    if (V8RecursionScope::recursionLevel(toIsolate(context))) {
-        if (m_currentAsyncCallChain)
-            ++m_nestedAsyncCallCount;
-    } else {
+    if (chain && !V8RecursionScope::recursionLevel(toIsolate(context))) {
         // Current AsyncCallChain corresponds to the bottommost JS call frame.
         m_currentAsyncCallChain = chain;
-        m_nestedAsyncCallCount = m_currentAsyncCallChain ? 1 : 0;
+        m_nestedAsyncCallCount = 1;
+    } else {
+        if (m_currentAsyncCallChain)
+            ++m_nestedAsyncCallCount;
     }
 }
 

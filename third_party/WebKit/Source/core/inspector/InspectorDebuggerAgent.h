@@ -165,6 +165,11 @@ public:
     void didKillAllExecutionContextTasks(ExecutionContext*);
     void willPerformExecutionContextTask(ExecutionContext*, ExecutionContextTask*);
     void didPerformExecutionContextTask();
+    int traceAsyncOperationStarting(ExecutionContext*, const String& operationName);
+    void traceAsyncOperationCompleted(ExecutionContext*, int operationId);
+    void traceAsyncOperationCompletedCallbackStarting(ExecutionContext*, int operationId);
+    void traceAsyncCallbackStarting(ExecutionContext*, int operationId);
+    void traceAsyncCallbackCompleted();
     bool canBreakProgram();
     void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
     void scriptExecutionBlockedByCSP(const String& directiveText);

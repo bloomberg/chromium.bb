@@ -128,6 +128,7 @@ public:
         , m_stackTrace(stackTrace)
         , m_userGestureToken(userGestureToken)
     {
+        m_asyncOperationId = InspectorInstrumentation::traceAsyncOperationStarting(executionContext(), "postMessage");
     }
 
     PassRefPtrWillBeRawPtr<MessageEvent> event()
@@ -142,8 +143,10 @@ public:
 private:
     virtual void fired() OVERRIDE
     {
+        InspectorInstrumentationCookie cookie = InspectorInstrumentation::traceAsyncOperationCompletedCallbackStarting(executionContext(), m_asyncOperationId);
         m_window->postMessageTimerFired(this);
         // This object is deleted now.
+        InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
     }
 
     // FIXME: Oilpan: This raw pointer is safe because the PostMessageTimer is
@@ -157,6 +160,7 @@ private:
     RefPtr<SecurityOrigin> m_targetOrigin;
     RefPtrWillBePersistent<ScriptCallStack> m_stackTrace;
     RefPtr<UserGestureToken> m_userGestureToken;
+    int m_asyncOperationId;
 };
 
 static void disableSuddenTermination()

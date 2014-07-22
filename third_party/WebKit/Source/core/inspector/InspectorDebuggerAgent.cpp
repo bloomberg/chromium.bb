@@ -838,6 +838,39 @@ void InspectorDebuggerAgent::didPerformExecutionContextTask()
         m_asyncCallStackTracker.didFireAsyncCall();
 }
 
+int InspectorDebuggerAgent::traceAsyncOperationStarting(ExecutionContext* context, const String& operationName)
+{
+    if (m_asyncCallStackTracker.isEnabled())
+        return m_asyncCallStackTracker.traceAsyncOperationStarting(context, operationName, scriptDebugServer().currentCallFramesForAsyncStack());
+    return 0;
+}
+
+void InspectorDebuggerAgent::traceAsyncOperationCompleted(ExecutionContext* context, int operationId)
+{
+    if (m_asyncCallStackTracker.isEnabled())
+        m_asyncCallStackTracker.traceAsyncOperationCompleted(context, operationId);
+}
+
+void InspectorDebuggerAgent::traceAsyncOperationCompletedCallbackStarting(ExecutionContext* context, int operationId)
+{
+    if (!m_asyncCallStackTracker.isEnabled())
+        return;
+    m_asyncCallStackTracker.traceAsyncCallbackStarting(context, operationId);
+    m_asyncCallStackTracker.traceAsyncOperationCompleted(context, operationId);
+}
+
+void InspectorDebuggerAgent::traceAsyncCallbackStarting(ExecutionContext* context, int operationId)
+{
+    if (m_asyncCallStackTracker.isEnabled())
+        m_asyncCallStackTracker.traceAsyncCallbackStarting(context, operationId);
+}
+
+void InspectorDebuggerAgent::traceAsyncCallbackCompleted()
+{
+    if (m_asyncCallStackTracker.isEnabled())
+        m_asyncCallStackTracker.didFireAsyncCall();
+}
+
 void InspectorDebuggerAgent::didReceiveV8AsyncTaskEvent(ExecutionContext* context, const String& eventType, const String& eventName, int id)
 {
     if (!m_asyncCallStackTracker.isEnabled())
@@ -1118,11 +1151,6 @@ PassRefPtr<StackTrace> InspectorDebuggerAgent::currentAsyncStackTrace()
 {
     if (!m_pausedScriptState || !m_asyncCallStackTracker.isEnabled())
         return nullptr;
-    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(m_pausedScriptState.get());
-    if (injectedScript.isEmpty()) {
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
     const AsyncCallStackTracker::AsyncCallChain* chain = m_asyncCallStackTracker.currentAsyncCallChain();
     if (!chain)
         return nullptr;
@@ -1131,9 +1159,16 @@ PassRefPtr<StackTrace> InspectorDebuggerAgent::currentAsyncStackTrace()
         return nullptr;
     RefPtr<StackTrace> result;
     int asyncOrdinal = callStacks.size();
-    for (AsyncCallStackTracker::AsyncCallStackVector::const_reverse_iterator it = callStacks.rbegin(); it != callStacks.rend(); ++it) {
+    for (AsyncCallStackTracker::AsyncCallStackVector::const_reverse_iterator it = callStacks.rbegin(); it != callStacks.rend(); ++it, --asyncOrdinal) {
+        ScriptValue callFrames = (*it)->callFrames();
+        ScriptState* scriptState = callFrames.scriptState();
+        InjectedScript injectedScript = scriptState ? m_injectedScriptManager->injectedScriptFor(scriptState) : InjectedScript();
+        if (injectedScript.isEmpty()) {
+            result.clear();
+            continue;
+        }
         RefPtr<StackTrace> next = StackTrace::create()
-            .setCallFrames(injectedScript.wrapCallFrames((*it)->callFrames(), asyncOrdinal--))
+            .setCallFrames(injectedScript.wrapCallFrames(callFrames, asyncOrdinal))
             .release();
         next->setDescription((*it)->description());
         if (result)

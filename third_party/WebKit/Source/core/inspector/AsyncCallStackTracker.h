@@ -108,6 +108,10 @@ public:
     void didEnqueueV8AsyncTask(ExecutionContext*, const String& eventName, int id, const ScriptValue& callFrames);
     void willHandleV8AsyncTask(ExecutionContext*, const String& eventName, int id);
 
+    int traceAsyncOperationStarting(ExecutionContext*, const String& operationName, const ScriptValue& callFrames);
+    void traceAsyncOperationCompleted(ExecutionContext*, int operationId);
+    void traceAsyncCallbackStarting(ExecutionContext*, int operationId);
+
     void didFireAsyncCall();
     void clear();
 

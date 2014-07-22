@@ -454,6 +454,21 @@ interface InspectorInstrumentation {
 
     [DOMDebugger, Inline=FastReturn]
     void willExecuteCustomElementCallback([Keep] Element*);
+
+    [Debugger, Inline=FastReturn]
+    int traceAsyncOperationStarting([Keep] ExecutionContext*, const String& operationName);
+
+    [Debugger, Inline=FastReturn]
+    void traceAsyncOperationCompleted([Keep] ExecutionContext*, int operationId);
+
+    [Debugger, Inline=FastReturn]
+    InspectorInstrumentationCookie traceAsyncOperationCompletedCallbackStarting([Keep] ExecutionContext*, int operationId);
+
+    [Debugger, Inline=FastReturn]
+    InspectorInstrumentationCookie traceAsyncCallbackStarting([Keep] ExecutionContext*, int operationId);
+
+    [Debugger, Inline=FastReturn]
+    void traceAsyncCallbackCompleted(const InspectorInstrumentationCookie&);
 }
 
 interface InspectorConsoleInstrumentation {
