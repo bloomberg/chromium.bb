@@ -295,13 +295,18 @@ class CastStreamingApiTestWithPixelOutput : public CastStreamingApiTest {
   }
 };
 
-// http://crbug.com/395726
+// http://crbug.com/177163
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_EndToEnd DISABLED_TabsApi
+#else
+#define MAYBE_EndToEnd EndToEnd
+#endif  // defined(OS_WIN) && !defined(NDEBUG)
 // Tests the Cast streaming API and its basic functionality end-to-end.  An
 // extension subtest is run to generate test content, capture that content, and
 // use the API to send it out.  At the same time, this test launches an
 // in-process Cast receiver, listening on a localhost UDP socket, to receive the
 // content and check whether it matches expectations.
-IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, DISABLED_EndToEnd) {
+IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, MAYBE_EndToEnd) {
   scoped_ptr<net::UDPSocket> receive_socket(
       new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
                          net::RandIntCallback(),
