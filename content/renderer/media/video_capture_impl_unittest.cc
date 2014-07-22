@@ -80,7 +80,7 @@ class VideoCaptureImplTest : public ::testing::Test {
 
     void DeviceReceiveEmptyBuffer(int device_id,
                                   int buffer_id,
-                                  const std::vector<uint32>& sync_points) {}
+                                  uint32 sync_point) {}
 
     void DeviceGetSupportedFormats(int device_id,
                                    media::VideoCaptureSessionId session_id) {

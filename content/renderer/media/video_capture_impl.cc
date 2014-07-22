@@ -213,8 +213,7 @@ void VideoCaptureImpl::OnBufferReceived(int buffer_id,
   DCHECK_EQ(format.pixel_format, media::PIXEL_FORMAT_I420);
 
   if (state_ != VIDEO_CAPTURE_STATE_STARTED || suspended_) {
-    Send(new VideoCaptureHostMsg_BufferReady(
-        device_id_, buffer_id, std::vector<uint32>()));
+    Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id, 0));
     return;
   }
 
@@ -247,7 +246,7 @@ void VideoCaptureImpl::OnBufferReceived(int buffer_id,
                          weak_factory_.GetWeakPtr(),
                          buffer_id,
                          buffer,
-                         std::vector<uint32>())));
+                         0)));
 
   for (ClientInfoMap::iterator it = clients_.begin(); it != clients_.end();
        ++it) {
@@ -265,8 +264,7 @@ void VideoCaptureImpl::OnMailboxBufferReceived(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state_ != VIDEO_CAPTURE_STATE_STARTED || suspended_) {
-    Send(new VideoCaptureHostMsg_BufferReady(
-        device_id_, buffer_id, std::vector<uint32>()));
+    Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id, 0));
     return;
   }
 
@@ -296,10 +294,10 @@ void VideoCaptureImpl::OnMailboxBufferReceived(
 void VideoCaptureImpl::OnClientBufferFinished(
     int buffer_id,
     const scoped_refptr<ClientBuffer>& /* ignored_buffer */,
-    const std::vector<uint32>& release_sync_points) {
+    uint32 release_sync_point) {
   DCHECK(thread_checker_.CalledOnValidThread());
   Send(new VideoCaptureHostMsg_BufferReady(
-      device_id_, buffer_id, release_sync_points));
+      device_id_, buffer_id, release_sync_point));
 }
 
 void VideoCaptureImpl::OnStateChanged(VideoCaptureState state) {

@@ -666,6 +666,7 @@ VideoFrame::VideoFrame(VideoFrame::Format format,
       mailbox_holder_(mailbox_holder.Pass()),
       shared_memory_handle_(base::SharedMemory::NULLHandle()),
       timestamp_(timestamp),
+      release_sync_point_(0),
       end_of_stream_(end_of_stream) {
   DCHECK(IsValidConfig(format_, coded_size_, visible_rect_, natural_size_));
 
@@ -675,12 +676,14 @@ VideoFrame::VideoFrame(VideoFrame::Format format,
 
 VideoFrame::~VideoFrame() {
   if (!mailbox_holder_release_cb_.is_null()) {
-    std::vector<uint32> release_sync_points;
+    uint32 release_sync_point;
     {
+      // To ensure that changes to |release_sync_point_| are visible on this
+      // thread (imply a memory barrier).
       base::AutoLock locker(release_sync_point_lock_);
-      release_sync_points_.swap(release_sync_points);
+      release_sync_point = release_sync_point_;
     }
-    base::ResetAndReturn(&mailbox_holder_release_cb_).Run(release_sync_points);
+    base::ResetAndReturn(&mailbox_holder_release_cb_).Run(release_sync_point);
   }
   if (!no_longer_needed_cb_.is_null())
     base::ResetAndReturn(&no_longer_needed_cb_).Run();
@@ -832,12 +835,15 @@ base::SharedMemoryHandle VideoFrame::shared_memory_handle() const {
   return shared_memory_handle_;
 }
 
-void VideoFrame::AppendReleaseSyncPoint(uint32 sync_point) {
+void VideoFrame::UpdateReleaseSyncPoint(SyncPointClient* client) {
   DCHECK_EQ(format_, NATIVE_TEXTURE);
-  if (!sync_point)
-    return;
   base::AutoLock locker(release_sync_point_lock_);
-  release_sync_points_.push_back(sync_point);
+  // Must wait on the previous sync point before inserting a new sync point so
+  // that |mailbox_holder_release_cb_| guarantees the previous sync point
+  // occurred when it waits on |release_sync_point_|.
+  if (release_sync_point_)
+    client->WaitSyncPoint(release_sync_point_);
+  release_sync_point_ = client->InsertSyncPoint();
 }
 
 #if defined(OS_POSIX)

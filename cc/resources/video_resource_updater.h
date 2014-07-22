@@ -106,6 +106,10 @@ class CC_EXPORT VideoResourceUpdater
                               RecycleResourceData data,
                               uint32 sync_point,
                               bool lost_resource);
+  static void ReturnTexture(base::WeakPtr<VideoResourceUpdater> updater,
+                            const scoped_refptr<media::VideoFrame>& video_frame,
+                            uint32 sync_point,
+                            bool lost_resource);
 
   ContextProvider* context_provider_;
   ResourceProvider* resource_provider_;

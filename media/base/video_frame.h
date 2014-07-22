@@ -86,7 +86,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // CB to be called on the mailbox backing this frame when the frame is
   // destroyed.
-  typedef base::Callback<void(const std::vector<uint32>&)> ReleaseMailboxCB;
+  typedef base::Callback<void(uint32)> ReleaseMailboxCB;
 
   // Wraps a native texture of the given parameters with a VideoFrame.  The
   // backing of the VideoFrame is held in the mailbox held by |mailbox_holder|,
@@ -261,12 +261,22 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     timestamp_ = timestamp;
   }
 
-  // Append |sync_point| into |release_sync_points_| which will be passed to
-  // the video decoder when |mailbox_holder_release_cb_| is called so that
-  // the video decoder waits for the sync points before reusing the mailbox.
-  // Multiple clients can append multiple sync points on one frame.
+  class SyncPointClient {
+   public:
+    SyncPointClient() {}
+    virtual uint32 InsertSyncPoint() = 0;
+    virtual void WaitSyncPoint(uint32 sync_point) = 0;
+
+   protected:
+    virtual ~SyncPointClient() {}
+
+    DISALLOW_COPY_AND_ASSIGN(SyncPointClient);
+  };
+  // It uses |client| to insert a new sync point and potentially waits on a
+  // older sync point. The final sync point will be used to release this
+  // VideoFrame.
   // This method is thread safe. Both blink and compositor threads can call it.
-  void AppendReleaseSyncPoint(uint32 sync_point);
+  void UpdateReleaseSyncPoint(SyncPointClient* client);
 
   // Used to keep a running hash of seen frames.  Expects an initialized MD5
   // context.  Calls MD5Update with the context and the contents of the frame.
@@ -335,7 +345,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   base::TimeDelta timestamp_;
 
   base::Lock release_sync_point_lock_;
-  std::vector<uint32> release_sync_points_;
+  uint32 release_sync_point_;
 
   const bool end_of_stream_;
 

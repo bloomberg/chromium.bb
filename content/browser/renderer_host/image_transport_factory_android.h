@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_IMAGE_TRANSPORT_FACTORY_ANDROID_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -28,9 +29,15 @@ class ImageTransportFactoryAndroidObserver {
   virtual void OnLostResources() = 0;
 };
 
-class ImageTransportFactoryAndroid {
+class CONTENT_EXPORT ImageTransportFactoryAndroid {
  public:
   virtual ~ImageTransportFactoryAndroid();
+
+  // Initializes the global transport factory for unit tests.
+  static void InitializeForUnitTests(
+      scoped_ptr<ImageTransportFactoryAndroid> test_factory);
+  // Terminates the global transport factory for unit tests.
+  static void TerminateForUnitTests();
 
   static ImageTransportFactoryAndroid* GetInstance();
 

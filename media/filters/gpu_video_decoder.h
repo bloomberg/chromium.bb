@@ -104,7 +104,7 @@ class MEDIA_EXPORT GpuVideoDecoder
       const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories,
       int64 picture_buffer_id,
       uint32 texture_id,
-      const std::vector<uint32>& release_sync_points);
+      uint32 release_sync_point);
   // Indicate the picture buffer can be reused by the decoder.
   void ReusePictureBuffer(int64 picture_buffer_id);
 

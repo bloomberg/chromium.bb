@@ -294,10 +294,9 @@ void VideoCaptureHost::OnPauseCapture(int device_id) {
   Send(new VideoCaptureMsg_StateChanged(device_id, VIDEO_CAPTURE_STATE_ERROR));
 }
 
-void VideoCaptureHost::OnReceiveEmptyBuffer(
-    int device_id,
-    int buffer_id,
-    const std::vector<uint32>& sync_points) {
+void VideoCaptureHost::OnReceiveEmptyBuffer(int device_id,
+                                            int buffer_id,
+                                            uint32 sync_point) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   VideoCaptureControllerID controller_id(device_id);
@@ -305,7 +304,7 @@ void VideoCaptureHost::OnReceiveEmptyBuffer(
   if (it != entries_.end()) {
     const base::WeakPtr<VideoCaptureController>& controller = it->second;
     if (controller)
-      controller->ReturnBuffer(controller_id, this, buffer_id, sync_points);
+      controller->ReturnBuffer(controller_id, this, buffer_id, sync_point);
   }
 }
 

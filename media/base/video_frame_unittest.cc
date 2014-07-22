@@ -240,59 +240,67 @@ TEST(VideoFrame, CheckFrameExtents) {
   ExpectFrameExtents(VideoFrame::YV16, "cce408a044b212db42a10dfec304b3ef");
 }
 
-static void TextureCallback(std::vector<uint32>* called_sync_point,
-                            const std::vector<uint32>& release_sync_points) {
-  called_sync_point->assign(release_sync_points.begin(),
-                            release_sync_points.end());
+static void TextureCallback(uint32* called_sync_point,
+                            uint32 release_sync_point) {
+  *called_sync_point = release_sync_point;
 }
 
 // Verify the gpu::MailboxHolder::ReleaseCallback is called when VideoFrame is
-// destroyed with the default release sync points.
+// destroyed with the default release sync point.
 TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
-  std::vector<uint32> called_sync_points;
-  called_sync_points.push_back(1);
+  uint32 called_sync_point = 1;
 
   {
     scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTexture(
         make_scoped_ptr(
             new gpu::MailboxHolder(gpu::Mailbox(), 5, 0 /* sync_point */)),
-        base::Bind(&TextureCallback, &called_sync_points),
+        base::Bind(&TextureCallback, &called_sync_point),
         gfx::Size(10, 10),            // coded_size
         gfx::Rect(10, 10),            // visible_rect
         gfx::Size(10, 10),            // natural_size
         base::TimeDelta(),            // timestamp
         VideoFrame::ReadPixelsCB());  // read_pixels_cb
-
-    EXPECT_EQ(1u, called_sync_points.size());
   }
-  EXPECT_TRUE(called_sync_points.empty());
+  // Nobody set a sync point to |frame|, so |frame| set |called_sync_point| to 0
+  // as default value.
+  EXPECT_EQ(0u, called_sync_point);
 }
 
+namespace {
+
+class SyncPointClientImpl : public VideoFrame::SyncPointClient {
+ public:
+  explicit SyncPointClientImpl(uint32 sync_point) : sync_point_(sync_point) {}
+  virtual ~SyncPointClientImpl() {}
+  virtual uint32 InsertSyncPoint() OVERRIDE { return sync_point_; }
+  virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE {}
+
+ private:
+  uint32 sync_point_;
+};
+
+}  // namespace
+
 // Verify the gpu::MailboxHolder::ReleaseCallback is called when VideoFrame is
-// destroyed with the release sync points, which was updated by clients.
+// destroyed with the release sync point, which was updated by clients.
 // (i.e. the compositor, webgl).
 TEST(VideoFrame, TextureNoLongerNeededCallbackAfterTakingAndReleasingMailbox) {
-  std::vector<uint32> called_sync_points;
-
   gpu::Mailbox mailbox;
   mailbox.name[0] = 50;
   uint32 sync_point = 7;
   uint32 target = 9;
-  std::vector<uint32> release_sync_points;
-  release_sync_points.push_back(1);
-  release_sync_points.push_back(2);
-  release_sync_points.push_back(3);
+  uint32 release_sync_point = 111;
+  uint32 called_sync_point = 0;
 
   {
     scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTexture(
         make_scoped_ptr(new gpu::MailboxHolder(mailbox, target, sync_point)),
-        base::Bind(&TextureCallback, &called_sync_points),
+        base::Bind(&TextureCallback, &called_sync_point),
         gfx::Size(10, 10),            // coded_size
         gfx::Rect(10, 10),            // visible_rect
         gfx::Size(10, 10),            // natural_size
         base::TimeDelta(),            // timestamp
         VideoFrame::ReadPixelsCB());  // read_pixels_cb
-    EXPECT_TRUE(called_sync_points.empty());
 
     const gpu::MailboxHolder* mailbox_holder = frame->mailbox_holder();
 
@@ -300,12 +308,11 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackAfterTakingAndReleasingMailbox) {
     EXPECT_EQ(target, mailbox_holder->texture_target);
     EXPECT_EQ(sync_point, mailbox_holder->sync_point);
 
-    frame->AppendReleaseSyncPoint(release_sync_points[0]);
-    frame->AppendReleaseSyncPoint(release_sync_points[1]);
-    frame->AppendReleaseSyncPoint(release_sync_points[2]);
+    SyncPointClientImpl client(release_sync_point);
+    frame->UpdateReleaseSyncPoint(&client);
     EXPECT_EQ(sync_point, mailbox_holder->sync_point);
   }
-  EXPECT_EQ(release_sync_points, called_sync_points);
+  EXPECT_EQ(release_sync_point, called_sync_point);
 }
 
 TEST(VideoFrame, ZeroInitialized) {

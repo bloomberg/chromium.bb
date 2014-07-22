@@ -16,6 +16,7 @@
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
+#include "content/common/gpu/client/gl_helper.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
@@ -23,6 +24,12 @@
 #include "media/video/capture/video_capture_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_ANDROID)
+#include "content/browser/renderer_host/test/no_transport_image_transport_factory_android.h"
+#else
+#include "content/browser/compositor/test/no_transport_image_transport_factory.h"
+#endif
 
 using ::testing::InSequence;
 using ::testing::Mock;
@@ -70,7 +77,7 @@ class MockVideoCaptureControllerEventHandler
                    id,
                    this,
                    buffer_id,
-                   std::vector<uint32>()));
+                   0));
   }
   virtual void OnMailboxBufferReady(const VideoCaptureControllerID& id,
                                     int buffer_id,
@@ -78,9 +85,6 @@ class MockVideoCaptureControllerEventHandler
                                     const media::VideoCaptureFormat& format,
                                     base::TimeTicks timestamp) OVERRIDE {
     DoMailboxBufferReady(id);
-    // Use a very different syncpoint value when returning a new syncpoint.
-    std::vector<uint32> release_sync_points;
-    release_sync_points.push_back(~mailbox_holder.sync_point);
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&VideoCaptureController::ReturnBuffer,
@@ -88,7 +92,7 @@ class MockVideoCaptureControllerEventHandler
                    id,
                    this,
                    buffer_id,
-                   release_sync_points));
+                   mailbox_holder.sync_point));
   }
   virtual void OnEnded(const VideoCaptureControllerID& id) OVERRIDE {
     DoEnded(id);
@@ -263,17 +267,25 @@ TEST_F(VideoCaptureControllerTest, AddAndRemoveClients) {
       << "Client count should return to zero after all clients are gone.";
 }
 
-static void CacheSyncPoint(std::vector<uint32>* called_release_sync_points,
-                           const std::vector<uint32>& release_sync_points) {
-  DCHECK(called_release_sync_points->empty());
-  called_release_sync_points->assign(release_sync_points.begin(),
-                                     release_sync_points.end());
+static void CacheSyncPoint(uint32* called_release_sync_point,
+                           uint32 release_sync_point) {
+  *called_release_sync_point = release_sync_point;
 }
 
 // This test will connect and disconnect several clients while simulating an
 // active capture device being started and generating frames. It runs on one
 // thread and is intended to behave deterministically.
 TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
+// VideoCaptureController::ReturnBuffer() uses ImageTransportFactory.
+#if defined(OS_ANDROID)
+  ImageTransportFactoryAndroid::InitializeForUnitTests(
+      scoped_ptr<ImageTransportFactoryAndroid>(
+          new NoTransportImageTransportFactoryAndroid));
+#else
+  ImageTransportFactory::InitializeForUnitTests(
+      scoped_ptr<ImageTransportFactory>(new NoTransportImageTransportFactory));
+#endif
+
   media::VideoCaptureParams session_100;
   session_100.requested_format = media::VideoCaptureFormat(
       gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
@@ -484,23 +496,28 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
     buffer = NULL;
   }
   std::vector<uint32> mailbox_syncpoints(mailbox_buffers);
-  std::vector<std::vector<uint32> > release_syncpoint_vectors(mailbox_buffers);
+  std::vector<uint32> release_syncpoints(mailbox_buffers);
+#if defined(OS_ANDROID)
+  GLHelper* gl_helper =
+      ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
+#else
+  GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
+#endif
   for (int i = 0; i < mailbox_buffers; ++i) {
     buffer = device_->ReserveOutputBuffer(media::VideoFrame::NATIVE_TEXTURE,
                                           gfx::Size(0, 0));
     ASSERT_TRUE(buffer);
-    mailbox_syncpoints[i] = i;
+    mailbox_syncpoints[i] = gl_helper->InsertSyncPoint();
     device_->OnIncomingCapturedVideoFrame(
         buffer,
         media::VideoCaptureFormat(capture_resolution,
                                   device_format.frame_rate,
                                   media::PIXEL_FORMAT_TEXTURE),
-        WrapMailboxBuffer(
-            buffer,
-            make_scoped_ptr(new gpu::MailboxHolder(
-                gpu::Mailbox(), 0, mailbox_syncpoints[i])),
-            base::Bind(&CacheSyncPoint, &release_syncpoint_vectors[i]),
-            capture_resolution),
+        WrapMailboxBuffer(buffer,
+                          make_scoped_ptr(new gpu::MailboxHolder(
+                              gpu::Mailbox(), 0, mailbox_syncpoints[i])),
+                          base::Bind(&CacheSyncPoint, &release_syncpoints[i]),
+                          capture_resolution),
         base::TimeTicks());
     buffer = NULL;
   }
@@ -515,11 +532,19 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
       .Times(mailbox_buffers);
   base::RunLoop().RunUntilIdle();
   for (size_t i = 0; i < mailbox_syncpoints.size(); ++i) {
-    // See: MockVideoCaptureControllerEventHandler::OnMailboxBufferReady()
-    ASSERT_EQ(1u, release_syncpoint_vectors[i].size());
-    ASSERT_EQ(mailbox_syncpoints[i], ~release_syncpoint_vectors[i][0]);
+    // A new release sync point must be inserted when the video frame is
+    // returned to the Browser process.
+    // See: MockVideoCaptureControllerEventHandler::OnMailboxBufferReady() and
+    // VideoCaptureController::ReturnBuffer()
+    ASSERT_NE(mailbox_syncpoints[i], release_syncpoints[i]);
   }
   Mock::VerifyAndClearExpectations(client_b_.get());
+
+#if defined(OS_ANDROID)
+  ImageTransportFactoryAndroid::TerminateForUnitTests();
+#else
+  ImageTransportFactory::Terminate();
+#endif
 }
 
 // Exercises the OnError() codepath of VideoCaptureController, and tests the

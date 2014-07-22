@@ -14,12 +14,19 @@
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
+#include "content/common/gpu/client/gl_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/base/yuv_convert.h"
 #include "third_party/libyuv/include/libyuv.h"
+
+#if defined(OS_ANDROID)
+#include "content/browser/renderer_host/image_transport_factory_android.h"
+#else
+#include "content/browser/compositor/image_transport_factory.h"
+#endif
 
 using media::VideoCaptureFormat;
 
@@ -52,6 +59,38 @@ class PoolBuffer : public media::VideoCaptureDevice::Client::Buffer {
 
   const scoped_refptr<VideoCaptureBufferPool> pool_;
 };
+
+class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
+ public:
+  explicit SyncPointClientImpl(GLHelper* gl_helper) : gl_helper_(gl_helper) {}
+  virtual ~SyncPointClientImpl() {}
+  virtual uint32 InsertSyncPoint() OVERRIDE {
+    return gl_helper_->InsertSyncPoint();
+  }
+  virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE {
+    gl_helper_->WaitSyncPoint(sync_point);
+  }
+
+ private:
+  GLHelper* gl_helper_;
+};
+
+void ReturnVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
+                      uint32 sync_point) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+#if defined(OS_ANDROID)
+  GLHelper* gl_helper =
+      ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
+#else
+  GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
+#endif
+  DCHECK(gl_helper);
+  // UpdateReleaseSyncPoint() creates a new sync_point using |gl_helper|, so
+  // wait the given |sync_point| using |gl_helper|.
+  gl_helper->WaitSyncPoint(sync_point);
+  SyncPointClientImpl client(gl_helper);
+  video_frame->UpdateReleaseSyncPoint(&client);
+}
 
 }  // anonymous namespace
 
@@ -249,7 +288,7 @@ void VideoCaptureController::ReturnBuffer(
     const VideoCaptureControllerID& id,
     VideoCaptureControllerEventHandler* event_handler,
     int buffer_id,
-    const std::vector<uint32>& sync_points) {
+    uint32 sync_point) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ControllerClient* client = FindClient(id, event_handler, controller_clients_);
@@ -264,13 +303,12 @@ void VideoCaptureController::ReturnBuffer(
   }
   scoped_refptr<media::VideoFrame> frame = iter->second;
   client->active_buffers.erase(iter);
-
-  if (frame->format() == media::VideoFrame::NATIVE_TEXTURE) {
-    for (size_t i = 0; i < sync_points.size(); i++)
-      frame->AppendReleaseSyncPoint(sync_points[i]);
-  }
-
   buffer_pool_->RelinquishConsumerHold(buffer_id, 1);
+
+  if (sync_point)
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&ReturnVideoFrame, frame, sync_point));
 }
 
 const media::VideoCaptureFormat&

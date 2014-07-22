@@ -92,7 +92,7 @@ IPC_MESSAGE_CONTROL1(VideoCaptureHostMsg_Stop,
 IPC_MESSAGE_CONTROL3(VideoCaptureHostMsg_BufferReady,
                      int /* device_id */,
                      int /* buffer_id */,
-                     std::vector<uint32> /* syncpoints */)
+                     uint32 /* syncpoint */)
 
 // Get the formats supported by a device referenced by |capture_session_id|.
 IPC_MESSAGE_CONTROL2(VideoCaptureHostMsg_GetDeviceSupportedFormats,

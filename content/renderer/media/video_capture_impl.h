@@ -130,7 +130,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   // buffer.
   void OnClientBufferFinished(int buffer_id,
                               const scoped_refptr<ClientBuffer>& buffer,
-                              const std::vector<uint32>& release_sync_points);
+                              uint32 release_sync_point);
 
   void StopDevice();
   void RestartCapture();

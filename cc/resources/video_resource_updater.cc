@@ -18,8 +18,27 @@
 
 namespace cc {
 
+namespace {
+
 const ResourceFormat kYUVResourceFormat = LUMINANCE_8;
 const ResourceFormat kRGBResourceFormat = RGBA_8888;
+
+class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
+ public:
+  explicit SyncPointClientImpl(gpu::gles2::GLES2Interface* gl) : gl_(gl) {}
+  virtual ~SyncPointClientImpl() {}
+  virtual uint32 InsertSyncPoint() OVERRIDE {
+    return GLC(gl_, gl_->InsertSyncPointCHROMIUM());
+  }
+  virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE {
+    GLC(gl_, gl_->WaitSyncPointCHROMIUM(sync_point));
+  }
+
+ private:
+  gpu::gles2::GLES2Interface* gl_;
+};
+
+}  // namespace
 
 VideoFrameExternalResources::VideoFrameExternalResources() : type(NONE) {}
 
@@ -285,10 +304,21 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   return external_resources;
 }
 
-static void ReturnTexture(const scoped_refptr<media::VideoFrame>& frame,
-                          uint32 sync_point,
-                          bool lost_resource) {
-  frame->AppendReleaseSyncPoint(sync_point);
+// static
+void VideoResourceUpdater::ReturnTexture(
+    base::WeakPtr<VideoResourceUpdater> updater,
+    const scoped_refptr<media::VideoFrame>& video_frame,
+    uint32 sync_point,
+    bool lost_resource) {
+  // TODO(dshwang) this case should be forwarded to the decoder as lost
+  // resource.
+  if (lost_resource || !updater.get())
+    return;
+  // VideoFrame::UpdateReleaseSyncPoint() creates new sync point using the same
+  // GL context which created the given |sync_point|, so discard the
+  // |sync_point|.
+  SyncPointClientImpl client(updater->context_provider_->ContextGL());
+  video_frame->UpdateReleaseSyncPoint(&client);
 }
 
 VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
@@ -326,7 +356,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
                      mailbox_holder->texture_target,
                      mailbox_holder->sync_point));
   external_resources.release_callbacks.push_back(
-      base::Bind(&ReturnTexture, video_frame));
+      base::Bind(&ReturnTexture, AsWeakPtr(), video_frame));
   return external_resources;
 }
 

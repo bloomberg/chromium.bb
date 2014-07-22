@@ -104,6 +104,20 @@ GLHelper* CmdBufferImageTransportFactory::GetGLHelper() {
 }  // anonymous namespace
 
 // static
+void ImageTransportFactoryAndroid::InitializeForUnitTests(
+    scoped_ptr<ImageTransportFactoryAndroid> test_factory) {
+  DCHECK(!g_factory);
+  g_factory = test_factory.release();
+}
+
+// static
+void ImageTransportFactoryAndroid::TerminateForUnitTests() {
+  DCHECK(g_factory);
+  delete g_factory;
+  g_factory = NULL;
+}
+
+// static
 ImageTransportFactoryAndroid* ImageTransportFactoryAndroid::GetInstance() {
   if (!g_factory)
     g_factory = new CmdBufferImageTransportFactory();
