@@ -390,7 +390,6 @@ crbug.com/378610 [ Win7 ] svg/custom/focus-ring-text.svg [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/text/tspan-outline.html [ ImageOnlyFailure ]
 
 # Text tests that needs investigation or test changes (mostly due to precision).
-crbug.com/378610 [ Win7 ] fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Failure ]
 crbug.com/378610 [ Win7 ] fast/forms/cursor-at-editable-content-boundary.html [ Failure ]
 crbug.com/378610 [ Win7 ] fast/replaced/table-percent-height-text-controls.html [ Failure ]
 crbug.com/378610 [ Win7 ] fast/table/table-all-rowspans-height-distribution-in-rows.html [ Failure ]
