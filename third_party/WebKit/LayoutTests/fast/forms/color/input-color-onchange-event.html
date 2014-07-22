@@ -28,6 +28,10 @@ eventSender.mouseMoveTo(10, 10);
 eventSender.mouseDown();
 eventSender.mouseUp();
 
+// Test that incorrect element arguments are (not) handled.
+shouldThrow("internals.selectColorInColorChooser({}, '#ff0000');");
+shouldThrow("internals.selectColorInColorChooser(document, '#ff0000');");
+
 // input.onchange should be called
 internals.selectColorInColorChooser(input, '#ff0000');
 // input.onchange should not be called

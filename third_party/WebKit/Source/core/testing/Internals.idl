@@ -80,7 +80,7 @@
 
     DOMString visiblePlaceholder(Element element);
 
-    void selectColorInColorChooser(Element element, DOMString colorValue);
+    [TypeChecking=Interface] void selectColorInColorChooser(Element element, DOMString colorValue);
 
     // If the argument is omitted, the top-level document is used.
     boolean hasAutofocusRequest(optional Document document);
