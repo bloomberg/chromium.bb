@@ -172,6 +172,12 @@ const int kIdleCPUUsageThresholdInPercents = 3;
 const int kMinRasterThreads = 1;
 const int kMaxRasterThreads = 64;
 
+// Maximum allocation size allowed for image scaling filters that
+// require pre-scaling. Skia will fallback to a filter that doesn't
+// require pre-scaling if the default filter would require an
+// allocation that exceeds this limit.
+const size_t kImageCacheSingleAllocationByteLimit = 64 * 1024 * 1024;
+
 // Keep the global RenderThreadImpl in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
 base::LazyInstance<base::ThreadLocalPointer<RenderThreadImpl> >
@@ -904,6 +910,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   if (!command_line.HasSwitch(switches::kEnableDeferredImageDecoding) &&
       !is_impl_side_painting_enabled_)
     SkGraphics::SetImageCacheByteLimit(0u);
+
+  SkGraphics::SetImageCacheSingleAllocationByteLimit(
+      kImageCacheSingleAllocationByteLimit);
 
   if (command_line.HasSwitch(switches::kMemoryMetrics)) {
     memory_observer_.reset(new MemoryObserver());
