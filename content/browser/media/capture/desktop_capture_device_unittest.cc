@@ -11,6 +11,8 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
@@ -137,21 +139,18 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
 
 class DesktopCaptureDeviceTest : public testing::Test {
  public:
-  virtual void SetUp() OVERRIDE {
-    worker_pool_ = new base::SequencedWorkerPool(3, "TestCaptureThread");
-  }
-
   void CreateScreenCaptureDevice(scoped_ptr<webrtc::DesktopCapturer> capturer) {
+    scoped_refptr<base::SequencedWorkerPool> worker_pool =
+        BrowserThread::GetBlockingPool();
     capture_device_.reset(new DesktopCaptureDevice(
-        worker_pool_->GetSequencedTaskRunner(worker_pool_->GetSequenceToken()),
-        thread_.Pass(),
+        worker_pool->GetSequencedTaskRunner(worker_pool->GetSequenceToken()),
+        scoped_ptr<base::Thread>(),
         capturer.Pass(),
         DesktopMediaID::TYPE_SCREEN));
   }
 
  protected:
-  scoped_refptr<base::SequencedWorkerPool> worker_pool_;
-  scoped_ptr<base::Thread> thread_;
+  TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<DesktopCaptureDevice> capture_device_;
 };
 
@@ -195,7 +194,7 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
   EXPECT_EQ(media::PIXEL_FORMAT_ARGB, format.pixel_format);
 
   EXPECT_EQ(format.frame_size.GetArea() * 4, frame_size);
-  worker_pool_->FlushForTesting();
+  BrowserThread::GetBlockingPool()->FlushForTesting();
 }
 
 // Test that screen capturer behaves correctly if the source frame size changes
@@ -240,7 +239,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
   EXPECT_EQ(media::PIXEL_FORMAT_ARGB, format.pixel_format);
 
   EXPECT_EQ(format.frame_size.GetArea() * 4, frame_size);
-  worker_pool_->FlushForTesting();
+  BrowserThread::GetBlockingPool()->FlushForTesting();
 }
 
 // Test that screen capturer behaves correctly if the source frame size changes
@@ -283,7 +282,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
   EXPECT_EQ(kTestFrameHeight1, format.frame_size.height());
   EXPECT_EQ(kFrameRate, format.frame_rate);
   EXPECT_EQ(media::PIXEL_FORMAT_ARGB, format.pixel_format);
-  worker_pool_->FlushForTesting();
+  BrowserThread::GetBlockingPool()->FlushForTesting();
 }
 
 }  // namespace content
