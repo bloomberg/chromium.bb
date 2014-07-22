@@ -13,7 +13,6 @@
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "crypto/nss_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/protobuf/src/google/protobuf/io/coded_stream.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream.h"
@@ -214,13 +213,14 @@ void FakeCryptohomeClient::Pkcs11IsTpmTokenReady(
 
 void FakeCryptohomeClient::Pkcs11GetTpmTokenInfo(
     const Pkcs11GetTpmTokenInfoCallback& callback) {
+  const char kStubTPMTokenName[] = "StubTPMTokenName";
   const char kStubUserPin[] = "012345";
   const int kStubSlot = 0;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,
                  DBUS_METHOD_CALL_SUCCESS,
-                 std::string(crypto::kTestTPMTokenName),
+                 std::string(kStubTPMTokenName),
                  std::string(kStubUserPin),
                  kStubSlot));
 }

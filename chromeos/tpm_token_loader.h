@@ -127,7 +127,6 @@ class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
   base::TimeDelta tpm_request_delay_;
 
   // Cached TPM token info.
-  std::string tpm_token_name_;
   int tpm_token_slot_id_;
   std::string tpm_user_pin_;
 

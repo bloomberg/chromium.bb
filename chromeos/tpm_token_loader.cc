@@ -184,7 +184,7 @@ void TPMTokenLoader::ContinueTokenInitialization() {
       return;
     }
     case TPM_TOKEN_READY: {
-      // Retrieve token_name_ and user_pin_ here since they will never change
+      // Retrieve user_pin_ here since they will never change
       // and CryptohomeClient calls are not thread safe.
       DBusThreadManager::Get()->GetCryptohomeClient()->Pkcs11GetTpmTokenInfo(
           base::Bind(&TPMTokenLoader::OnPkcs11GetTpmTokenInfo,
@@ -263,7 +263,6 @@ void TPMTokenLoader::OnPkcs11GetTpmTokenInfo(DBusMethodCallStatus call_status,
     return;
   }
 
-  tpm_token_name_ = token_name;
   tpm_token_slot_id_ = token_slot_id;
   tpm_user_pin_ = user_pin;
   tpm_token_state_ = TPM_TOKEN_INFO_RECEIVED;
