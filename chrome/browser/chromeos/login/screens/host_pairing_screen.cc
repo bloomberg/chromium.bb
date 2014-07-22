@@ -7,11 +7,12 @@
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/pairing/fake_host_pairing_controller.h"
+#include "components/pairing/fake_host_pairing_controller.h"
 
 namespace chromeos {
 
 using namespace host_pairing;
+using namespace pairing_chromeos;
 
 HostPairingScreen::HostPairingScreen(ScreenObserver* observer,
                                      HostPairingScreenActor* actor)

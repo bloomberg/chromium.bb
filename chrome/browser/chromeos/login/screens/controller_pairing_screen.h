@@ -10,20 +10,21 @@
 #include "chrome/browser/chromeos/login/screens/controller_pairing_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/screen_context.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
-#include "chromeos/pairing/controller_pairing_controller.h"
+#include "components/pairing/controller_pairing_controller.h"
 
 namespace chromeos {
 
-class ControllerPairingScreen : public WizardScreen,
-                                public ControllerPairingController::Observer,
-                                public ControllerPairingScreenActor::Delegate {
+class ControllerPairingScreen :
+  public WizardScreen,
+  public pairing_chromeos::ControllerPairingController::Observer,
+  public ControllerPairingScreenActor::Delegate {
  public:
   ControllerPairingScreen(ScreenObserver* observer,
                           ControllerPairingScreenActor* actor);
   virtual ~ControllerPairingScreen();
 
  private:
-  typedef ControllerPairingController::Stage Stage;
+  typedef pairing_chromeos::ControllerPairingController::Stage Stage;
 
   void CommitContextChanges();
   bool ExpectStageIs(Stage stage) const;
@@ -34,7 +35,7 @@ class ControllerPairingScreen : public WizardScreen,
   virtual void Hide() OVERRIDE;
   virtual std::string GetName() const OVERRIDE;
 
-  // Overridden from ControllerPairingController::Observer:
+  // Overridden from pairing_chromeos::ControllerPairingController::Observer:
   virtual void PairingStageChanged(Stage new_stage) OVERRIDE;
   virtual void DiscoveredDevicesListChanged() OVERRIDE;
 
@@ -52,7 +53,7 @@ class ControllerPairingScreen : public WizardScreen,
 
   // Controller performing pairing. Owned by the screen for now.
   // TODO(dzhioev): move to proper place later.
-  scoped_ptr<ControllerPairingController> controller_;
+  scoped_ptr<pairing_chromeos::ControllerPairingController> controller_;
 
   // Current stage of pairing process.
   Stage current_stage_;

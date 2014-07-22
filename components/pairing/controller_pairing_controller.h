@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_PAIRING_CONTROLLER_PAIRING_CONTROLLER_H_
-#define CHROMEOS_PAIRING_CONTROLLER_PAIRING_CONTROLLER_H_
+#ifndef COMPONENTS_PAIRING_CONTROLLER_PAIRING_CONTROLLER_H_
+#define COMPONENTS_PAIRING_CONTROLLER_PAIRING_CONTROLLER_H_
 
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 class UserContext;
@@ -19,9 +18,9 @@ namespace content {
 class BrowserContext;
 }
 
-namespace chromeos {
+namespace pairing_chromeos {
 
-class CHROMEOS_EXPORT ControllerPairingController {
+class ControllerPairingController {
  public:
   enum Stage {
     STAGE_NONE,
@@ -104,6 +103,6 @@ class CHROMEOS_EXPORT ControllerPairingController {
   DISALLOW_COPY_AND_ASSIGN(ControllerPairingController);
 };
 
-}  // namespace chromeos
+}  // namespace pairing_chromeos
 
-#endif  // CHROMEOS_PAIRING_CONTROLLER_PAIRING_CONTROLLER_H_
+#endif  // COMPONENTS_PAIRING_CONTROLLER_PAIRING_CONTROLLER_H_

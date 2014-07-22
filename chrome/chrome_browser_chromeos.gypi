@@ -51,6 +51,7 @@
         '../chromeos/ime/input_method.gyp:gencode',
         '../components/components.gyp:cloud_policy_proto',
         '../components/components.gyp:onc_component',
+        '../components/components.gyp:pairing',
         '../components/components.gyp:policy',
         '../components/components.gyp:session_manager_component',
         '../components/components.gyp:user_manager',

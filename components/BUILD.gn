@@ -85,6 +85,12 @@ group("all_components") {
     ]
   }
 
+  if (is_chromeos) {
+    deps += [
+      "//components/pairing",
+    ]
+  }
+
   if (!is_ios) {
     deps += [ "//components/keyed_service/content" ]
   }

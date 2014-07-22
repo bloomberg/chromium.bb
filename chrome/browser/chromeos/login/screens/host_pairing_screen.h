@@ -9,20 +9,22 @@
 #include "chrome/browser/chromeos/login/screens/host_pairing_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/screen_context.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
-#include "chromeos/pairing/host_pairing_controller.h"
+#include "components/pairing/host_pairing_controller.h"
 
 namespace chromeos {
 
-class HostPairingScreen : public WizardScreen,
-                          public HostPairingController::Observer,
-                          public HostPairingScreenActor::Delegate {
+class HostPairingScreen :
+  public WizardScreen,
+  public pairing_chromeos::HostPairingController::Observer,
+  public HostPairingScreenActor::Delegate {
  public:
   HostPairingScreen(ScreenObserver* observer, HostPairingScreenActor* actor);
   virtual ~HostPairingScreen();
 
  private:
-  typedef HostPairingController::Stage Stage;
-  typedef HostPairingController::UpdateProgress UpdateProgress;
+  typedef pairing_chromeos::HostPairingController::Stage Stage;
+  typedef pairing_chromeos::HostPairingController::UpdateProgress
+      UpdateProgress;
 
   void CommitContextChanges();
 
@@ -32,7 +34,7 @@ class HostPairingScreen : public WizardScreen,
   virtual void Hide() OVERRIDE;
   virtual std::string GetName() const OVERRIDE;
 
-  // Overridden from HostPairingController::Observer:
+  // Overridden from pairing_chromeos::HostPairingController::Observer:
   virtual void PairingStageChanged(Stage new_stage) OVERRIDE;
   virtual void UpdateAdvanced(const UpdateProgress& progress) OVERRIDE;
 
@@ -47,7 +49,7 @@ class HostPairingScreen : public WizardScreen,
 
   // Controller performing pairing. Owned by the screen for now.
   // TODO(dzhioev): move to proper place later.
-  scoped_ptr<HostPairingController> controller_;
+  scoped_ptr<pairing_chromeos::HostPairingController> controller_;
 
   // Current stage of pairing process.
   Stage current_stage_;

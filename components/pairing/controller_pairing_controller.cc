@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/pairing/controller_pairing_controller.h"
+#include "components/pairing/controller_pairing_controller.h"
 
-namespace chromeos {
+namespace pairing_chromeos {
 
 ControllerPairingController::Observer::Observer() {
 }
@@ -18,4 +18,4 @@ ControllerPairingController::ControllerPairingController() {
 ControllerPairingController::~ControllerPairingController() {
 }
 
-}  // namespace chromeos
+}  // namespace pairing_chromeos

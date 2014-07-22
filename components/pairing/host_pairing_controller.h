@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_PAIRING_HOST_PAIRING_CONTROLLER_H_
-#define CHROMEOS_PAIRING_HOST_PAIRING_CONTROLLER_H_
+#ifndef COMPONENTS_PAIRING_HOST_PAIRING_CONTROLLER_H_
+#define COMPONENTS_PAIRING_HOST_PAIRING_CONTROLLER_H_
 
 #include <string>
 
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 
-namespace chromeos {
+namespace pairing_chromeos {
 
-class CHROMEOS_EXPORT HostPairingController {
+class HostPairingController {
  public:
   enum Stage {
     STAGE_NONE,
@@ -75,6 +74,6 @@ class CHROMEOS_EXPORT HostPairingController {
   DISALLOW_COPY_AND_ASSIGN(HostPairingController);
 };
 
-}  // namespace chromeos
+}  // namespace pairing_chromeos
 
-#endif  // CHROMEOS_PAIRING_HOST_PAIRING_CONTROLLER_H_
+#endif  // COMPONENTS_PAIRING_HOST_PAIRING_CONTROLLER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/pairing/fake_controller_pairing_controller.h"
+#include "components/pairing/fake_controller_pairing_controller.h"
 
 #include <map>
 
@@ -14,7 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 
-namespace chromeos {
+namespace pairing_chromeos {
 
 FakeControllerPairingController::FakeControllerPairingController(
     const std::string& config)
@@ -332,4 +332,4 @@ void FakeControllerPairingController::PairingStageChanged(Stage new_stage) {
 void FakeControllerPairingController::DiscoveredDevicesListChanged() {
 }
 
-}  // namespace chromeos
+}  // namespace pairing_chromeos

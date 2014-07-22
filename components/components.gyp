@@ -77,6 +77,11 @@
         'usb_service.gypi',
       ]
     }],
+    ['chromeos == 1', {
+      'includes': [
+        'pairing.gypi',
+      ],
+    }],
     ['OS == "win" or OS == "mac"', {
       'includes': [
         'wifi.gypi',

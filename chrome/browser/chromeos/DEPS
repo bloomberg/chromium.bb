@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/pairing",
   "+components/onc",
   "+cros",
   "+dbus",

@@ -9,10 +9,11 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/auth/user_context.h"
-#include "chromeos/pairing/fake_controller_pairing_controller.h"
+#include "components/pairing/fake_controller_pairing_controller.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 using namespace chromeos::controller_pairing;
+using namespace pairing_chromeos;
 
 namespace chromeos {
 

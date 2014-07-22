@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_PAIRING_FAKE_CONTROLLER_PAIRING_CONTROLLER_H_
-#define CHROMEOS_PAIRING_FAKE_CONTROLLER_PAIRING_CONTROLLER_H_
+#ifndef COMPONENTS_PAIRING_FAKE_CONTROLLER_PAIRING_CONTROLLER_H_
+#define COMPONENTS_PAIRING_FAKE_CONTROLLER_PAIRING_CONTROLLER_H_
 
 #include <set>
 #include <utility>
@@ -11,12 +11,11 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "chromeos/chromeos_export.h"
-#include "chromeos/pairing/controller_pairing_controller.h"
+#include "components/pairing/controller_pairing_controller.h"
 
-namespace chromeos {
+namespace pairing_chromeos {
 
-class CHROMEOS_EXPORT FakeControllerPairingController
+class FakeControllerPairingController
     : public ControllerPairingController,
       public ControllerPairingController::Observer {
  public:
@@ -106,6 +105,6 @@ class CHROMEOS_EXPORT FakeControllerPairingController
   DISALLOW_COPY_AND_ASSIGN(FakeControllerPairingController);
 };
 
-}  // namespace chromeos
+}  // namespace pairing_chromeos
 
-#endif  // CHROMEOS_PAIRING_FAKE_CONTROLLER_PAIRING_CONTROLLER_H_
+#endif  // COMPONENTS_PAIRING_FAKE_CONTROLLER_PAIRING_CONTROLLER_H_

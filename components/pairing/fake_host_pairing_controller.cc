@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/pairing/fake_host_pairing_controller.h"
+#include "components/pairing/fake_host_pairing_controller.h"
 
 #include <map>
 #include <vector>
@@ -22,7 +22,7 @@ const size_t kCodeLength = 6;
 
 }  // namespace
 
-namespace chromeos {
+namespace pairing_chromeos {
 
 FakeHostPairingController::FakeHostPairingController(const std::string& config)
     : current_stage_(STAGE_NONE),
@@ -189,4 +189,4 @@ void FakeHostPairingController::PairingStageChanged(Stage new_stage) {
 void FakeHostPairingController::UpdateAdvanced(const UpdateProgress& progress) {
 }
 
-}  // namespace chromeos
+}  // namespace pairing_chromeos

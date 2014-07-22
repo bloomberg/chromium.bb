@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_PAIRING_FAKE_HOST_PAIRING_CONTROLLER_H_
-#define CHROMEOS_PAIRING_FAKE_HOST_PAIRING_CONTROLLER_H_
+#ifndef COMPONENTS_PAIRING_FAKE_HOST_PAIRING_CONTROLLER_H_
+#define COMPONENTS_PAIRING_FAKE_HOST_PAIRING_CONTROLLER_H_
 
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "chromeos/chromeos_export.h"
-#include "chromeos/pairing/host_pairing_controller.h"
+#include "components/pairing/host_pairing_controller.h"
 
-namespace chromeos {
+namespace pairing_chromeos {
 
-class CHROMEOS_EXPORT FakeHostPairingController
+class FakeHostPairingController
     : public HostPairingController,
       public HostPairingController::Observer {
  public:
@@ -28,7 +27,7 @@ class CHROMEOS_EXPORT FakeHostPairingController
   // empty, random code is generated.
   // * device_name - string. Default: "Chromebox-01".
   // * domain - string. Default: "example.com".
-  FakeHostPairingController(const std::string& config);
+  explicit FakeHostPairingController(const std::string& config);
   virtual ~FakeHostPairingController();
 
   // Applies given |config| to flow.
@@ -69,6 +68,6 @@ class CHROMEOS_EXPORT FakeHostPairingController
   DISALLOW_COPY_AND_ASSIGN(FakeHostPairingController);
 };
 
-}  // namespace chromeos
+}  // namespace pairing_chromeos
 
-#endif  // CHROMEOS_PAIRING_FAKE_HOST_PAIRING_CONTROLLER_H_
+#endif  // COMPONENTS_PAIRING_FAKE_HOST_PAIRING_CONTROLLER_H_
