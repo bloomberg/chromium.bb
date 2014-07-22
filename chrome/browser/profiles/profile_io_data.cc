@@ -537,7 +537,9 @@ void ProfileIOData::MediaRequestContext::SetHttpTransactionFactory(
   set_http_transaction_factory(http_factory_.get());
 }
 
-ProfileIOData::MediaRequestContext::~MediaRequestContext() {}
+ProfileIOData::MediaRequestContext::~MediaRequestContext() {
+  AssertNoURLRequests();
+}
 
 ProfileIOData::AppRequestContext::AppRequestContext() {
 }
@@ -560,7 +562,9 @@ void ProfileIOData::AppRequestContext::SetJobFactory(
   set_job_factory(job_factory_.get());
 }
 
-ProfileIOData::AppRequestContext::~AppRequestContext() {}
+ProfileIOData::AppRequestContext::~AppRequestContext() {
+  AssertNoURLRequests();
+}
 
 ProfileIOData::ProfileParams::ProfileParams()
     : io_thread(NULL),

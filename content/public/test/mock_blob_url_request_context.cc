@@ -24,6 +24,7 @@ MockBlobURLRequestContext::MockBlobURLRequestContext(
 }
 
 MockBlobURLRequestContext::~MockBlobURLRequestContext() {
+  AssertNoURLRequests();
 }
 
 ScopedTextBlob::ScopedTextBlob(

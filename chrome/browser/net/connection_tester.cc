@@ -59,7 +59,9 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
         storage_(this),
         weak_factory_(this) {}
 
-  virtual ~ExperimentURLRequestContext() {}
+  virtual ~ExperimentURLRequestContext() {
+    AssertNoURLRequests();
+  }
 
   // Creates a proxy config service for |experiment|. On success returns net::OK
   // and fills |config_service| with a new pointer. Otherwise returns a network

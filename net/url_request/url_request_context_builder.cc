@@ -165,7 +165,9 @@ class BasicURLRequestContext : public URLRequestContext {
   }
 
  protected:
-  virtual ~BasicURLRequestContext() {}
+  virtual ~BasicURLRequestContext() {
+    AssertNoURLRequests();
+  }
 
  private:
   // Threads should be torn down last.

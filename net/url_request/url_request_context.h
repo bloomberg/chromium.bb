@@ -199,6 +199,9 @@ class NET_EXPORT URLRequestContext
     return url_requests_.get();
   }
 
+  // CHECKs that no URLRequests using this context remain. Subclasses should
+  // additionally call AssertNoURLRequests() within their own destructor,
+  // prior to implicit destruction of subclass-owned state.
   void AssertNoURLRequests() const;
 
   // Get the underlying |HttpUserAgentSettings| implementation that provides

@@ -138,7 +138,9 @@ class TestExtensionURLRequestContext : public net::URLRequestContext {
     set_cookie_store(cookie_monster);
   }
 
-  virtual ~TestExtensionURLRequestContext() {}
+  virtual ~TestExtensionURLRequestContext() {
+    AssertNoURLRequests();
+  }
 };
 
 class TestExtensionURLRequestContextGetter

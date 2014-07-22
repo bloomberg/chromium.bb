@@ -501,6 +501,7 @@ SpdyURLRequestContext::SpdyURLRequestContext(NextProto protocol,
 }
 
 SpdyURLRequestContext::~SpdyURLRequestContext() {
+  AssertNoURLRequests();
 }
 
 bool HasSpdySession(SpdySessionPool* pool, const SpdySessionKey& key) {

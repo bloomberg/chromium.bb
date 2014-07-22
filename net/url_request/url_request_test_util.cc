@@ -61,6 +61,7 @@ TestURLRequestContext::TestURLRequestContext(bool delay_initialization)
 
 TestURLRequestContext::~TestURLRequestContext() {
   DCHECK(initialized_);
+  AssertNoURLRequests();
 }
 
 void TestURLRequestContext::Init() {

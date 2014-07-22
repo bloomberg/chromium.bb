@@ -85,6 +85,7 @@ class RequestContext : public URLRequestContext {
   }
 
   virtual ~RequestContext() {
+    AssertNoURLRequests();
   }
 
  private:

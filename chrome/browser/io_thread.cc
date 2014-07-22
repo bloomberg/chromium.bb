@@ -162,6 +162,7 @@ class SystemURLRequestContext : public net::URLRequestContext {
 
  private:
   virtual ~SystemURLRequestContext() {
+    AssertNoURLRequests();
 #if defined(USE_NSS) || defined(OS_IOS)
     net::SetURLRequestContextForNSSHttpIO(NULL);
 #endif

@@ -268,6 +268,7 @@ ChromeURLRequestContext::ChromeURLRequestContext()
 
 ChromeURLRequestContext::~ChromeURLRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  AssertNoURLRequests();
 }
 
 void ChromeURLRequestContext::CopyFrom(ChromeURLRequestContext* other) {

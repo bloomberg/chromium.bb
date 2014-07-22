@@ -167,6 +167,7 @@ HttpBridge::RequestContext::RequestContext(
 }
 
 HttpBridge::RequestContext::~RequestContext() {
+  AssertNoURLRequests();
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   delete http_transaction_factory();
 }

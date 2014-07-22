@@ -266,7 +266,9 @@ class MockURLRequestContext : public URLRequestContext {
                                       include_subdomains);
   }
 
-  virtual ~MockURLRequestContext() {}
+  virtual ~MockURLRequestContext() {
+    AssertNoURLRequests();
+  }
 
  private:
   TransportSecurityState transport_security_state_;
