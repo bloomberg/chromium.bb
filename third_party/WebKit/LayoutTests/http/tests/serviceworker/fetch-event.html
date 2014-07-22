@@ -9,101 +9,106 @@ var worker = 'resources/fetch-event-test-worker.js';
 (function() {
     var t = async_test('Service Worker responds to fetch event with blob body');
     var scope = 'referrer';
-    service_worker_unregister_and_register(t, worker, scope).then(t.step_func(onRegister));
-
-    function onRegister(sw) {
-        sw.addEventListener('statechange', t.step_func(onStateChange));
-    }
-
-    function onStateChange(event) {
-        if (event.target.state != 'activated')
-            return;
-        with_iframe(scope, t.step_func(function(frame) {
-            assert_equals(frame.contentDocument.body.textContent, 'Referrer: ' + document.location.href,
-                          'Service Worker should respond to fetch with the referrer URL');
-            service_worker_unregister_and_done(t, scope);
-        }));
-    }
+    service_worker_unregister_and_register(t, worker, scope)
+      .then(t.step_func(function(sw) {
+          return wait_for_state(t, sw, 'activated');
+        }))
+      .then(t.step_func(function() { return with_iframe(scope); }))
+      .then(t.step_func(function(frame) {
+          assert_equals(
+              frame.contentDocument.body.textContent,
+              'Referrer: ' + document.location.href,
+              'Service Worker should respond to fetch with the referrer URL');
+          return service_worker_unregister_and_done(t, scope);
+        }))
+      .catch(unreached_rejection(t));
 }());
 
 (function() {
     var t = async_test('Service Worker does not respond to fetch event');
     var scope = 'resources/simple.html?ignore';
-    service_worker_unregister_and_register(t, worker, scope).then(t.step_func(onRegister));
-
-    function onRegister(sw) {
-        sw.addEventListener('statechange', t.step_func(onStateChange));
-    }
-
-    function onStateChange(event) {
-        if (event.target.state != 'activated')
-            return;
-        with_iframe(scope, t.step_func(function(frame) {
-            assert_equals(frame.contentDocument.body.textContent, 'Here\'s a simple html file.\n',
-                          'Response should come from fallback to native fetch');
-            service_worker_unregister_and_done(t, scope);
-        }));
-    }
+    service_worker_unregister_and_register(t, worker, scope)
+      .then(t.step_func(function(sw) {
+          return wait_for_state(t, sw, 'activated');
+        }))
+      .then(t.step_func(function() { return with_iframe(scope); }))
+      .then(t.step_func(function(frame) {
+          assert_equals(frame.contentDocument.body.textContent,
+                        'Here\'s a simple html file.\n',
+                        'Response should come from fallback to native fetch');
+          return service_worker_unregister_and_done(t, scope);
+        }))
+      .catch(unreached_rejection(t));
 }());
 
 (function() {
-    var t = async_test('Service Worker responds to fetch event with null response body');
+    var t = async_test(
+        'Service Worker responds to fetch event with null response body');
     var scope = 'resources/simple.html?null';
-    service_worker_unregister_and_register(t, worker, scope).then(t.step_func(onRegister));
-
-    function onRegister(sw) {
-        sw.addEventListener('statechange', t.step_func(onStateChange));
-    }
-
-    function onStateChange(event) {
-        if (event.target.state != 'activated')
-            return;
-        with_iframe(scope, t.step_func(function(frame) {
-            assert_equals(frame.contentDocument.body.textContent, '',
-                          'Response should be the empty string');
-            service_worker_unregister_and_done(t, scope);
-        }));
-    }
+    service_worker_unregister_and_register(t, worker, scope)
+      .then(t.step_func(function(sw) {
+          return wait_for_state(t, sw, 'activated');
+        }))
+      .then(t.step_func(function() { return with_iframe(scope); }))
+      .then(t.step_func(function(frame) {
+          assert_equals(frame.contentDocument.body.textContent,
+                        '',
+                        'Response should be the empty string');
+          return service_worker_unregister_and_done(t, scope);
+        }))
+      .catch(unreached_rejection(t));
 }());
 
 (function() {
     var t = async_test('Service Worker rejects fetch event');
     var scope = 'resources/simple.html?reject';
-    service_worker_unregister_and_register(t, worker, scope).then(t.step_func(onRegister));
+    service_worker_unregister_and_register(t, worker, scope)
+      .then(t.step_func(function(sw) {
+          return wait_for_state(t, sw, 'activated');
+        }))
+      .then(t.step_func(function() { return with_iframe(scope); }))
+      .then(t.step_func(function(frame) {
+          assert_equals(frame.contentDocument.body.textContent,
+                        'Here\'s a simple html file.\n',
+                        'Response should come from fallback to native fetch');
+          return service_worker_unregister_and_done(t, scope);
+        }))
+      .catch(unreached_rejection(t));
+}());
 
-    function onRegister(sw) {
-        sw.addEventListener('statechange', t.step_func(onStateChange));
-    }
-
-    function onStateChange(event) {
-        if (event.target.state != 'activated')
-            return;
-        with_iframe(scope, t.step_func(function(frame) {
-            assert_equals(frame.contentDocument.body.textContent, 'Here\'s a simple html file.\n',
-                          'Response should come from fallback to native fetch');
-            service_worker_unregister_and_done(t, scope);
-        }));
-    }
+(function() {
+    var t = async_test(
+        'Service Worker responds to fetch event with unresolved promise');
+    var scope = 'resources/simple.html?unresolved';
+    service_worker_unregister_and_register(t, worker, scope)
+      .then(t.step_func(function(sw) {
+          return wait_for_state(t, sw, 'activated');
+        }))
+      .then(t.step_func(function() { return with_iframe(scope); }))
+      .then(t.step_func(function(frame) {
+          assert_equals(frame.contentDocument.body.textContent,
+                        'Here\'s a simple html file.\n',
+                        'Response should come from fallback to native fetch');
+          return service_worker_unregister_and_done(t, scope);
+        }))
+      .catch(unreached_rejection(t));
 }());
 
 (function() {
     var t = async_test('Service Worker fetches other file in fetch event');
     var scope = 'resources/simple.html?fetch';
-    service_worker_unregister_and_register(t, worker, scope).then(t.step_func(onRegister));
-
-    function onRegister(sw) {
-        sw.addEventListener('statechange', t.step_func(onStateChange));
-    }
-
-    function onStateChange(event) {
-        if (event.target.state != 'activated')
-            return;
-        with_iframe(scope, t.step_func(function(frame) {
-            assert_equals(frame.contentDocument.body.textContent, 'Here\'s an other html file.\n',
-                          'Response should come from fetched other file');
-            service_worker_unregister_and_done(t, scope);
-        }));
-    }
+    service_worker_unregister_and_register(t, worker, scope)
+      .then(t.step_func(function(sw) {
+          return wait_for_state(t, sw, 'activated');
+        }))
+      .then(t.step_func(function() { return with_iframe(scope); }))
+      .then(t.step_func(function(frame) {
+          assert_equals(frame.contentDocument.body.textContent,
+                        'Here\'s an other html file.\n',
+                        'Response should come from fetched other file');
+          return service_worker_unregister_and_done(t, scope);
+        }))
+      .catch(unreached_rejection(t));
 }());
 </script>
 </body>
