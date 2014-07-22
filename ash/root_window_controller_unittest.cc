@@ -610,8 +610,8 @@ TEST_F(NoSessionRootWindowControllerTest, Event) {
                 gfx::Point(size.width() - 1, size.height() - 1)));
 }
 
-class VirtualKeyboardRootWindowControllerTest : public RootWindowControllerTest
-{
+class VirtualKeyboardRootWindowControllerTest
+    : public RootWindowControllerTest {
  public:
   VirtualKeyboardRootWindowControllerTest() {};
   virtual ~VirtualKeyboardRootWindowControllerTest() {};

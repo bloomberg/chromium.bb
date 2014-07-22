@@ -10,6 +10,6 @@ namespace ash {
 // Sends a CancelMode event to all window hierarchies.
 void DispatchCancelMode();
 
-} // namespace ash
+}  // namespace ash
 
 #endif  // ASH_CANCEL_MODE_H_

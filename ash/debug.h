@@ -16,7 +16,7 @@ ASH_EXPORT void ToggleShowDebugBorders();
 ASH_EXPORT void ToggleShowFpsCounter();
 ASH_EXPORT void ToggleShowPaintRects();
 
-}  // debug
-}  // ash
+}  // namespace debug
+}  // namespace ash
 
 #endif  // ASH_DEBUG_H_

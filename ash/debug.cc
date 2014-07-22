@@ -57,5 +57,5 @@ void ToggleShowPaintRects() {
   }
 }
 
-}  // debug
-}  // ash
+}  // namespace debug
+}  // namespace ash

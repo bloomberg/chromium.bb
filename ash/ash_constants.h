@@ -37,6 +37,6 @@ extern const SkColor kFocusBorderColor;
 // immersive-fullscreen window.
 extern const int kImmersiveFullscreenTopEdgeInset;
 
-} // namespace ash
+}  // namespace ash
 
 #endif  // ASH_ASH_CONSTANTS_H_

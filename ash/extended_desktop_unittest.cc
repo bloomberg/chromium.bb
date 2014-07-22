@@ -318,7 +318,7 @@ TEST_F(ExtendedDesktopTest, GetRootWindowAt) {
   EXPECT_EQ(root_windows[1], wm::GetRootWindowAt(gfx::Point(-400, 100)));
   EXPECT_EQ(root_windows[1], wm::GetRootWindowAt(gfx::Point(-1, 100)));
   EXPECT_EQ(root_windows[0], wm::GetRootWindowAt(gfx::Point(0, 300)));
-  EXPECT_EQ(root_windows[0], wm::GetRootWindowAt(gfx::Point(700,300)));
+  EXPECT_EQ(root_windows[0], wm::GetRootWindowAt(gfx::Point(700, 300)));
 
   // Zero origin.
   EXPECT_EQ(root_windows[0], wm::GetRootWindowAt(gfx::Point(0, 0)));
@@ -671,7 +671,7 @@ TEST_F(ExtendedDesktopTest, MoveWindowWithTransient) {
   EXPECT_EQ("1300,100 80x80",
             w11_t1->GetWindowBoundsInScreen().ToString());
 
-  w1->SetBounds(gfx::Rect(1100,10,100,100));
+  w1->SetBounds(gfx::Rect(1100, 10, 100, 100));
 
   EXPECT_EQ(root_windows[1], w1_t1->GetNativeView()->GetRootWindow());
   EXPECT_EQ(root_windows[1], w1_t1->GetNativeView()->GetRootWindow());

@@ -56,7 +56,7 @@ class ASH_EXPORT ScreenUtil {
   // invalid display if no such display is connected.
   static const gfx::Display& GetDisplayForId(int64 display_id);
 
-private:
+ private:
   ScreenUtil() {}
   ~ScreenUtil() {}
 
