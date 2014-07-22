@@ -32,7 +32,6 @@
         '../components/components.gyp:sync_driver_test_support',
         '../content/content.gyp:content_app_both',
         '../content/content_shell_and_tests.gyp:test_support_content',
-        '../extensions/extensions.gyp:extensions_test_support',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',

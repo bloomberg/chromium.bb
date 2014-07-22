@@ -661,8 +661,6 @@
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'sources': [
-        'browser/extensions_test_browser_context.cc',
-        'browser/extensions_test_browser_context.h',
         'browser/test_extensions_browser_client.cc',
         'browser/test_extensions_browser_client.h',
         'browser/test_management_policy.cc',
