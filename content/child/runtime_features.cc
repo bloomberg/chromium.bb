@@ -13,6 +13,7 @@
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
 #include "base/android/build_info.h"
+#include "base/metrics/field_trial.h"
 #include "media/base/android/media_codec_bridge.h"
 #endif
 
@@ -53,6 +54,11 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::enableOrientationEvent(true);
   WebRuntimeFeatures::enableFastMobileScrolling(true);
   WebRuntimeFeatures::enableMediaCapture(true);
+  // If navigation transitions gets activated via field trial, enable it in
+  // blink. We don't set this to false in case the user has manually enabled
+  // the feature via experimental web platform features.
+  if (base::FieldTrialList::FindFullName("NavigationTransitions") == "Enabled")
+    WebRuntimeFeatures::enableNavigationTransitions(true);
 #else
   WebRuntimeFeatures::enableNavigatorContentUtils(true);
 #endif  // defined(OS_ANDROID)
