@@ -1178,6 +1178,9 @@
             '-fprofile-generate',
             '-finstrument-functions',
             '-O2',
+            # ARM GCC emits symbols like __aeabi_unwind_cpp_pr0 in
+            # .exidx sections with this flag.
+            '-funwind-tables',
           ],
           'ldflags': [
             '-nostdlib',
