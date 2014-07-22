@@ -699,11 +699,6 @@ crbug.com/346151 css3/filters/effect-reference-hidpi-hw.html [ Pass ImageOnlyFai
 
 crbug.com/337732 fast/css/fontfaceset-download-error.html [ Pass Timeout ]
 
-# Needs rebaseline due to tiny image changes after fix for bug 383205
-crbug.com/383205 editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsRebaseline ]
-crbug.com/383205 virtual/softwarecompositing/culling/tile-occlusion-boundaries.html [ NeedsRebaseline ]
-crbug.com/383205 virtual/softwarecompositing/lots-of-img-layers.html [ NeedsRebaseline ]
-
 crbug.com/349552 [ Android ] compositing/animation/animated-composited-inside-hidden.html [ Pass Timeout ]
 
 crbug.com/356834 fast/repaint/shift-relative-positioned-container-with-image-addition.html [ Failure Pass ]
