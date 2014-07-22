@@ -2475,6 +2475,9 @@
       ['use_ash==1', {
         'defines': ['USE_ASH=1'],
       }],
+      ['use_pango==1', {
+        'defines': ['USE_PANGO=1'],
+      }],
       ['use_cairo==1', {
         'defines': ['USE_CAIRO=1'],
       }],

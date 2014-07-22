@@ -68,7 +68,7 @@ const unsigned char kPngDataChunkType[4] = { 'I', 'D', 'A', 'T' };
 ResourceBundle* g_shared_instance_ = NULL;
 
 void InitDefaultFontList() {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && defined(USE_PANGO)
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   std::string font_family = base::UTF16ToUTF8(
       rb.GetLocalizedString(IDS_UI_FONT_FAMILY_CROS));
