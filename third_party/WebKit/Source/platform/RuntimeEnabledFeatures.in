@@ -71,7 +71,7 @@ HTMLImports status=stable
 HighResolutionTimeInWorkers status=stable
 IMEAPI status=experimental
 ImageDataConstructor status=experimental
-ImageRenderingPixelated status=experimental
+ImageRenderingPixelated status=stable
 IndexedDBExperimental status=experimental
 InputModeAttribute status=experimental
 LangAttributeAwareFormControlUI
