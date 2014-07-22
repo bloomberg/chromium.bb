@@ -82,7 +82,7 @@ class AFDOUpdateEbuildStage(generic_stages.BuilderStage):
     gs_context = gs.GSContext()
     cpv = portage_utilities.BestVisible(constants.CHROME_CP,
                                         buildroot=buildroot)
-    version_number = cpv.version_no_rev.split('_')[0]
+    version_number = cpv.version
 
     # We need the name of one board that has been setup in this
     # builder to find the Chrome ebuild. The chrome ebuild should be

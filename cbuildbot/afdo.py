@@ -28,7 +28,7 @@ AFDO_BASE_URL = AFDO_PROD_URL
 AFDO_CHROOT_ROOT = os.path.join('%(build_root)s', constants.DEFAULT_CHROOT_DIR)
 AFDO_LOCAL_DIR = os.path.join('%(root)s', 'tmp')
 AFDO_BUILDROOT_LOCAL = AFDO_LOCAL_DIR % {'root': AFDO_CHROOT_ROOT}
-CHROME_ARCH_VERSION = '%(package)s-%(arch)s-%(version_no_rev)s'
+CHROME_ARCH_VERSION = '%(package)s-%(arch)s-%(version)s'
 CHROME_PERF_AFDO_FILE = '%s.perf.data' % CHROME_ARCH_VERSION
 CHROME_PERF_AFDO_URL = '%s%s.bz2' % (AFDO_BASE_URL, CHROME_PERF_AFDO_FILE)
 CHROME_AFDO_FILE = '%s.afdo' % CHROME_ARCH_VERSION
@@ -111,6 +111,32 @@ def UncompressAFDOFile(to_decompress, buildroot):
   return dest
 
 
+def GSUploadIfNotPresent(gs_context, src, dest):
+  """Upload a file to GS only if the file does not exist.
+
+  Will not generate an error if the file already exist in GS. It will
+  only emit a warning.
+
+  I could use GSContext.Copy(src,dest,version=0) here but it does not seem
+  to work for large files. Using GSContext.Exists(dest) instead. See
+  crbug.com/395858.
+
+  Args:
+    gs_context: GS context instance.
+    src: File to copy.
+    dest: Destination location.
+
+  Returns:
+    True if file was uploaded. False otherwise.
+  """
+  if gs_context.Exists(dest):
+    cros_build_lib.Warning('File %s already in GS', dest)
+    return False
+  else:
+    gs_context.Copy(src, dest, acl='public-read')
+    return True
+
+
 def CheckAFDOPerfData(arch, cpv, buildroot, gs_context):
   """Check whether AFDO perf data exists for the given architecture.
 
@@ -126,10 +152,14 @@ def CheckAFDOPerfData(arch, cpv, buildroot, gs_context):
   Returns:
     True if AFDO perf data is available. False otherwise.
   """
+  # The file name of the perf data is based only in the chrome version.
+  # The test case that produces it does not know anything about the
+  # revision number.
+  # TODO(llozano): perf data filename should include the revision number.
   version_number = cpv.version_no_rev.split('_')[0]
   chrome_spec = {'package': cpv.package,
                  'arch': arch,
-                 'version_no_rev': version_number}
+                 'version': version_number}
   url = CHROME_PERF_AFDO_URL % chrome_spec
   if not gs_context.Exists(url):
     cros_build_lib.Info('Could not find AFDO perf data')
@@ -309,7 +339,7 @@ def GetLatestAFDOFile(cpv, arch, buildroot, gs_context):
     None otherwise.
   """
   generator_arch = AFDO_ARCH_GENERATORS[arch]
-  version_number = cpv.version_no_rev.split('_')[0]
+  version_number = cpv.version
   current_release = version_number.split('.')[0]
   afdo_release_spec = {'package': cpv.package,
                        'arch': generator_arch,
@@ -335,6 +365,10 @@ def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
   to the generated AFDO profile.
   Uploads the generated data to GS for retrieval by the chrome ebuild
   file when doing an 'afdo_use' build.
+  It is possible the generated data has previously been uploaded to GS
+  in which case this routine will not upload the data again. Uploading
+  again may cause verication failures for the ebuild file referencing
+  the previous contents of the data.
 
   Args:
     cpv: cpv object for Chrome.
@@ -348,10 +382,10 @@ def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
   """
   CHROME_UNSTRIPPED_NAME = 'chrome.unstripped'
 
-  version_number = cpv.version_no_rev.split('_')[0]
+  version_number = cpv.version
   afdo_spec = {'package': cpv.package,
                'arch': arch,
-               'version_no_rev': version_number}
+               'version': version_number}
   chroot_root = AFDO_CHROOT_ROOT % {'build_root': buildroot }
   local_dir = AFDO_LOCAL_DIR % {'root': chroot_root }
   in_chroot_local_dir = AFDO_LOCAL_DIR % {'root': '' }
@@ -362,9 +396,8 @@ def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
   debug_bin = CHROME_DEBUG_BIN % {'root': chroot_root,
                                   'board': board }
   comp_debug_bin_path = CompressAFDOFile(debug_bin, buildroot)
-  gs_context.Copy(comp_debug_bin_path,
-                  CHROME_DEBUG_BIN_URL % afdo_spec,
-                  acl='public-read')
+  GSUploadIfNotPresent(gs_context, comp_debug_bin_path,
+                       CHROME_DEBUG_BIN_URL % afdo_spec)
 
   # create_gcov demands the name of the profiled binary exactly matches
   # the name of the unstripped binary or it is named 'chrome.unstripped'.
@@ -378,7 +411,12 @@ def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
   # and upload it to GS. Need to call from within chroot since this tool
   # was built inside chroot.
   debug_sym = os.path.join(in_chroot_local_dir, CHROME_UNSTRIPPED_NAME)
-  perf_afdo_file = CHROME_PERF_AFDO_FILE % afdo_spec
+  # The name of the 'perf' file is based only on the version of chrome. The
+  # revision number is not included.
+  afdo_spec_no_rev = {'package': cpv.package,
+                      'arch': arch,
+                      'version': cpv.version_no_rev.split('_')[0]}
+  perf_afdo_file = CHROME_PERF_AFDO_FILE % afdo_spec_no_rev
   perf_afdo_path = os.path.join(in_chroot_local_dir, perf_afdo_file)
   afdo_file = CHROME_AFDO_FILE % afdo_spec
   afdo_path = os.path.join(in_chroot_local_dir, afdo_file)
@@ -391,22 +429,22 @@ def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
 
   afdo_local_path = os.path.join(local_dir, afdo_file)
   comp_afdo_path = CompressAFDOFile(afdo_local_path, buildroot)
-  gs_context.Copy(comp_afdo_path,
-                  CHROME_AFDO_URL % afdo_spec,
-                  acl='public-read')
+  uploaded_afdo_file = GSUploadIfNotPresent(gs_context, comp_afdo_path,
+                                            CHROME_AFDO_URL % afdo_spec)
 
-  # Create latest-chrome-<arch>-<release>.afdo pointing to the name
-  # of the AFDO profile file and upload to GS.
-  current_release = version_number.split('.')[0]
-  afdo_release_spec = {'package': cpv.package,
-                       'arch': arch,
-                       'release': current_release}
-  latest_afdo_file = LATEST_CHROME_AFDO_FILE % afdo_release_spec
-  latest_afdo_path = os.path.join(local_dir, latest_afdo_file)
-  osutils.WriteFile(latest_afdo_path, afdo_file)
-  gs_context.Copy(latest_afdo_path,
-                  LATEST_CHROME_AFDO_URL % afdo_release_spec,
-                  acl='public-read')
+  if uploaded_afdo_file:
+    # Create latest-chrome-<arch>-<release>.afdo pointing to the name
+    # of the AFDO profile file and upload to GS.
+    current_release = version_number.split('.')[0]
+    afdo_release_spec = {'package': cpv.package,
+                         'arch': arch,
+                         'release': current_release}
+    latest_afdo_file = LATEST_CHROME_AFDO_FILE % afdo_release_spec
+    latest_afdo_path = os.path.join(local_dir, latest_afdo_file)
+    osutils.WriteFile(latest_afdo_path, afdo_file)
+    gs_context.Copy(latest_afdo_path,
+                    LATEST_CHROME_AFDO_URL % afdo_release_spec,
+                    acl='public-read')
 
   return afdo_file
 
