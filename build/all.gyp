@@ -1264,6 +1264,8 @@
             # http://crbug.com/157234
             #'../chrome/chrome.gyp:sync_integration_tests_run',
             '../chrome/chrome.gyp:unit_tests_run',
+            '../content/content_shell_and_tests.gyp:content_browsertests_run',
+            '../content/content_shell_and_tests.gyp:content_unittests_run',
             '../net/net.gyp:net_unittests_run',
           ],
         }, # target_name: chromium_swarm_tests

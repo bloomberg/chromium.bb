@@ -39,6 +39,7 @@
         'isolate_dependency_tracked': [
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
+          '<(PRODUCT_DIR)/libosmesa.so',
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
       },
@@ -53,6 +54,7 @@
         ],
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/ffmpegsumo.so',
+          '<(PRODUCT_DIR)/osmesa.so',
         ],
       },
     }],
@@ -66,7 +68,7 @@
         ],
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
-          '<(PRODUCT_DIR)/ui_test.pak',
+          '<(PRODUCT_DIR)/osmesa.dll',
         ],
       },
     }],

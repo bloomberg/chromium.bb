@@ -944,6 +944,20 @@
     ['test_isolation_mode != "noop"', {
       'targets': [
         {
+          'target_name': 'content_browsertests_run',
+          'type': 'none',
+          'dependencies': [
+            'content_browsertests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+            'content_browsertests.isolate',
+          ],
+          'sources': [
+            'content_browsertests.isolate',
+          ],
+        },
+        {
           'target_name': 'content_unittests_run',
           'type': 'none',
           'dependencies': [

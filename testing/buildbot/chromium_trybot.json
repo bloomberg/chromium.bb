@@ -40,8 +40,18 @@
       "test": "courgette_unittests",
       "platforms": ["win"]
     },
-    "content_browsertests",
-    "content_unittests",
+    {
+      "test": "content_browsertests",
+      "swarming": {
+        "can_use_on_swarming_builders": true
+      }
+    },
+    {
+      "test": "content_unittests",
+      "swarming": {
+        "can_use_on_swarming_builders": true
+      }
+    },
     "crypto_unittests",
     {
       "test": "dbus_unittests",
