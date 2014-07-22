@@ -28,6 +28,8 @@ class CONTENT_EXPORT PowerMonitorMessageBroadcaster
   virtual void OnSuspend() OVERRIDE;
   virtual void OnResume() OVERRIDE;
 
+  void Init();
+
  private:
   IPC::Sender* sender_;
 

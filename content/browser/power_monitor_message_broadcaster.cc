@@ -24,6 +24,13 @@ PowerMonitorMessageBroadcaster::~PowerMonitorMessageBroadcaster() {
     power_monitor->RemoveObserver(this);
 }
 
+void PowerMonitorMessageBroadcaster::Init() {
+  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
+  // Unit tests does not initialize the PowerMonitor.
+  if (power_monitor)
+    OnPowerStateChange(power_monitor->IsOnBatteryPower());
+}
+
 void PowerMonitorMessageBroadcaster::OnPowerStateChange(bool on_battery_power) {
   sender_->Send(new PowerMonitorMsg_PowerStateChange(on_battery_power));
 }

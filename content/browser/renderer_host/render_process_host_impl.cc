@@ -659,6 +659,8 @@ bool RenderProcessHostImpl::Init() {
     GpuDataManagerImpl::GetInstance()->AddObserver(this);
   }
 
+  power_monitor_broadcaster_.Init();
+
   is_initialized_ = true;
   return true;
 }
