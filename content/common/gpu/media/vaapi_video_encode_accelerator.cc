@@ -745,6 +745,16 @@ void VaapiVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
   DCHECK(encoder_thread_proxy_->BelongsToCurrentThread());
   DCHECK_NE(state_, kUninitialized);
 
+  // This is a workaround to zero being temporarily, as part of the initial
+  // setup, provided by the webrtc video encode and a zero bitrate and
+  // framerate not being accepted by VAAPI
+  // TODO: This code is common with v4l2_video_encode_accelerator.cc, perhaps
+  // it could be pulled up to RTCVideoEncoder
+  if (bitrate < 1)
+    bitrate = 1;
+  if (framerate < 1)
+    framerate = 1;
+
   UpdateRates(bitrate, framerate);
 
   UpdateSPS();
