@@ -51,7 +51,7 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
 }
 
 PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& next, RenderInline& renderer, const RenderLayerModelObject& paintInvalidationContainer)
-    : m_clipped(next.m_clipped)
+    : m_clipped(false)
     , m_cachedOffsetsEnabled(true)
     , m_paintInvalidationContainer(paintInvalidationContainer)
     , m_renderer(renderer)
@@ -68,11 +68,11 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
 
             // RenderInline can't be out-of-flow positioned.
         }
-    }
 
-    // The following can't apply to RenderInline so we just propagate them.
-    m_clipped = next.m_clipped;
-    m_clipRect = next.m_clipRect;
+        // The following can't apply to RenderInline so we just propagate them.
+        m_clipped = next.m_clipped;
+        m_clipRect = next.m_clipRect;
+    }
 }
 
 PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& next, RenderBox& renderer, const RenderLayerModelObject& paintInvalidationContainer)
@@ -107,11 +107,11 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& nex
             if (m_renderer.style()->hasInFlowPosition() && renderer.hasLayer())
                 m_paintOffset += renderer.layer()->offsetForInFlowPosition();
         }
-    }
 
-    m_clipped = !fixed && next.m_clipped;
-    if (m_clipped)
-        m_clipRect = next.m_clipRect;
+        m_clipped = !fixed && next.m_clipped;
+        if (m_clipped)
+            m_clipRect = next.m_clipRect;
+    }
 
     applyClipIfNeeded(renderer);
 
