@@ -91,8 +91,8 @@ void TestWebContents::TestDidNavigateWithReferrer(
   frame_tree_.root()->navigator()->DidNavigate(rfh, params);
 }
 
-WebPreferences TestWebContents::TestGetWebkitPrefs() {
-  return GetWebkitPrefs();
+WebPreferences TestWebContents::TestComputeWebkitPrefs() {
+  return ComputeWebkitPrefs();
 }
 
 bool TestWebContents::CreateRenderViewForRenderManager(

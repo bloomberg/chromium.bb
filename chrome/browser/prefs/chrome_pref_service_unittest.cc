@@ -117,7 +117,7 @@ class ChromePrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
 // to a WebPreferences object.
 TEST_F(ChromePrefServiceWebKitPrefs, PrefsCopied) {
   WebPreferences webkit_prefs =
-      WebContentsTester::For(web_contents())->TestGetWebkitPrefs();
+      WebContentsTester::For(web_contents())->TestComputeWebkitPrefs();
 
   // These values have been overridden by the profile preferences.
   EXPECT_EQ("UTF-8", webkit_prefs.default_encoding);

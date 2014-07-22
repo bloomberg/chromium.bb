@@ -292,7 +292,7 @@ bool RenderViewHostImpl::CreateRenderView(
   ViewMsg_New_Params params;
   params.renderer_preferences =
       delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext());
-  params.web_preferences = delegate_->GetWebkitPrefs();
+  params.web_preferences = GetWebkitPreferences();
   params.view_id = GetRoutingID();
   params.main_frame_routing_id = main_frame_routing_id_;
   params.surface_id = surface_id();
@@ -333,7 +333,7 @@ void RenderViewHostImpl::SyncRendererPrefs() {
                                         GetProcess()->GetBrowserContext())));
 }
 
-WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
+WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
   TRACE_EVENT0("browser", "RenderViewHostImpl::GetWebkitPrefs");
   WebPreferences prefs;
 
@@ -1427,7 +1427,10 @@ void RenderViewHostImpl::ExitFullscreen() {
 }
 
 WebPreferences RenderViewHostImpl::GetWebkitPreferences() {
-  return delegate_->GetWebkitPrefs();
+  if (!web_preferences_.get()) {
+    OnWebkitPreferencesChanged();
+  }
+  return *web_preferences_;
 }
 
 void RenderViewHostImpl::DisownOpener() {
@@ -1443,7 +1446,12 @@ void RenderViewHostImpl::SetAccessibilityCallbackForTesting(
 }
 
 void RenderViewHostImpl::UpdateWebkitPreferences(const WebPreferences& prefs) {
+  web_preferences_.reset(new WebPreferences(prefs));
   Send(new ViewMsg_UpdateWebPreferences(GetRoutingID(), prefs));
+}
+
+void RenderViewHostImpl::OnWebkitPreferencesChanged() {
+  UpdateWebkitPreferences(delegate_->ComputeWebkitPrefs());
 }
 
 void RenderViewHostImpl::GetAudioOutputControllers(

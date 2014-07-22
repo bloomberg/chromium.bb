@@ -32,6 +32,8 @@ static void UpdateAutoplayStatus(JNIEnv* env,
   if (!prefs.user_gesture_required_for_media_playback)
     return;
 
+  // TODO(chrishtr): this is wrong. user_gesture_required_for_media_playback
+  // will be reset the next time a preference changes.
   prefs.user_gesture_required_for_media_playback =
       !google_util::IsGoogleSearchUrl(web_contents->GetLastCommittedURL());
   host->UpdateWebkitPreferences(prefs);

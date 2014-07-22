@@ -2503,6 +2503,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   }
   DCHECK(!web_prefs->default_encoding.empty());
 
+  // Note: it's not posible for kExtensionsScheme to change during the lifetime
+  // of the process.
   WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
   extensions::ViewType view_type = extensions::GetViewType(web_contents);
   ExtensionService* service =
