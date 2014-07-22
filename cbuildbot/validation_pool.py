@@ -1127,7 +1127,7 @@ class CalculateSuspects(object):
 
     In cases where there were no internal failures, we can assume that the
     external failures are at fault. Otherwise, this function just defers to
-    _FindPackagedBuildFailureSuspects and FindPreviouslyFailedChanges as needed.
+    _FindPackageBuildFailureSuspects and FindPreviouslyFailedChanges as needed.
     If the failures don't match either case, just fail everything.
 
     Args:
