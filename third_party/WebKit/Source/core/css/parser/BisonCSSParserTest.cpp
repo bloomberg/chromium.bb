@@ -6,7 +6,10 @@
 #include "core/css/parser/BisonCSSParser.h"
 
 #include "core/css/CSSTimingFunctionValue.h"
+#include "core/css/MediaList.h"
+#include "core/css/StyleRule.h"
 #include "platform/animation/TimingFunction.h"
+#include "wtf/dtoa/utils.h"
 
 #include <gtest/gtest.h>
 
@@ -62,6 +65,47 @@ TEST(BisonCSSParserTest, ParseAnimationTimingFunctionValue)
 
     timingFunctionValue = BisonCSSParser::parseAnimationTimingFunctionValue("cubic-bezier(0.1, 0, 4, 0.4)");
     EXPECT_EQ(0, timingFunctionValue.get());
+}
+
+static void testMediaQuery(const char* expected, MediaQuerySet& querySet)
+{
+    const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery> >& queryVector = querySet.queryVector();
+    size_t queryVectorSize = queryVector.size();
+    StringBuilder output;
+
+    for (size_t i = 0; i < queryVectorSize; ) {
+        String queryText = queryVector[i]->cssText();
+        output.append(queryText);
+        ++i;
+        if (i >= queryVectorSize)
+            break;
+        output.append(", ");
+    }
+    ASSERT_STREQ(expected, output.toString().ascii().data());
+}
+
+TEST(BisonCSSParserTest, MediaQuery)
+{
+    struct {
+        const char* input;
+        const char* output;
+    } testCases[] = {
+        {"@media s} {}", "not all"},
+        {"@media } {}", "not all"},
+        {"@media tv {}", "tv"},
+        {"@media tv, screen {}", "tv, screen"},
+        {"@media s}, tv {}", "not all, tv"},
+        {"@media tv, screen and (}) {}", "tv, not all"},
+    };
+
+    BisonCSSParser parser(strictCSSParserContext());
+
+    for (unsigned i = 0; i < ARRAY_SIZE(testCases); ++i) {
+        RefPtrWillBeRawPtr<StyleRuleBase> rule = parser.parseRule(nullptr, String(testCases[i].input));
+
+        EXPECT_TRUE(rule->isMediaRule());
+        testMediaQuery(testCases[i].output, *static_cast<StyleRuleMedia*>(rule.get())->mediaQueries());
+    }
 }
 
 } // namespace blink

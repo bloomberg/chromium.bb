@@ -728,7 +728,7 @@ media_rule_start:
     before_media_rule MEDIA_SYM maybe_space;
 
 media:
-    media_rule_start maybe_media_list at_rule_header_end '{' at_rule_body_start maybe_space block_rule_body closing_brace {
+    media_rule_start maybe_media_list '{' at_rule_header_end at_rule_body_start maybe_space block_rule_body closing_brace {
         $$ = parser->createMediaRule($2, $7);
     }
     ;
