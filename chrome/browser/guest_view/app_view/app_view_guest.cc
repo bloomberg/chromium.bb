@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/guest_view/app_view/app_view_constants.h"
 #include "chrome/browser/guest_view/guest_view_manager.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/context_menu_delegate.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/common/chrome_switches.h"
@@ -139,9 +138,8 @@ bool AppViewGuest::HandleContextMenu(const content::ContextMenuParams& params) {
 
 bool AppViewGuest::CanEmbedderUseGuestView(
     const std::string& embedder_extension_id) {
-  Profile* profile = Profile::FromBrowserContext(browser_context());
   ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
+      extensions::ExtensionSystem::Get(browser_context())->extension_service();
   const extensions::Extension* embedder_extension =
       service->GetExtensionById(embedder_extension_id, false);
   const extensions::PermissionsData* permissions_data =
@@ -161,9 +159,8 @@ void AppViewGuest::CreateWebContents(
     return;
   }
 
-  Profile* profile = Profile::FromBrowserContext(browser_context());
   ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
+      extensions::ExtensionSystem::Get(browser_context())->extension_service();
   const extensions::Extension* guest_extension =
       service->GetExtensionById(app_id, false);
   const extensions::Extension* embedder_extension =
@@ -183,9 +180,10 @@ void AppViewGuest::CreateWebContents(
                                         callback))));
 
   extensions::LazyBackgroundTaskQueue* queue =
-      extensions::ExtensionSystem::Get(profile)->lazy_background_task_queue();
-  if (queue->ShouldEnqueueTask(profile, guest_extension)) {
-    queue->AddPendingTask(profile,
+      extensions::ExtensionSystem::Get(browser_context())->
+          lazy_background_task_queue();
+  if (queue->ShouldEnqueueTask(browser_context(), guest_extension)) {
+    queue->AddPendingTask(browser_context(),
                           guest_extension->id(),
                           base::Bind(&AppViewGuest::LaunchAppAndFireEvent,
                                      weak_ptr_factory_.GetWeakPtr(),
@@ -194,7 +192,7 @@ void AppViewGuest::CreateWebContents(
   }
 
   extensions::ProcessManager* process_manager =
-      extensions::ExtensionSystem::Get(profile)->process_manager();
+      extensions::ExtensionSystem::Get(browser_context())->process_manager();
   ExtensionHost* host =
       process_manager->GetBackgroundHostForExtension(guest_extension->id());
   DCHECK(host);
@@ -242,7 +240,6 @@ void AppViewGuest::CompleteCreateWebContents(
 void AppViewGuest::LaunchAppAndFireEvent(
     const WebContentsCreatedCallback& callback,
     ExtensionHost* extension_host) {
-  Profile* profile = Profile::FromBrowserContext(browser_context());
   extensions::ExtensionSystem* system =
       extensions::ExtensionSystem::Get(browser_context());
   bool has_event_listener = system->event_router()->ExtensionHasEventListener(
@@ -257,6 +254,6 @@ void AppViewGuest::LaunchAppAndFireEvent(
   embed_request->SetInteger(appview::kGuestInstanceID, GetGuestInstanceID());
   embed_request->SetString(appview::kEmbedderID, embedder_extension_id());
   extensions::AppRuntimeEventRouter::DispatchOnEmbedRequestedEvent(
-      profile, embed_request.Pass(), extension_host->extension());
+      browser_context(), embed_request.Pass(), extension_host->extension());
 }
 
