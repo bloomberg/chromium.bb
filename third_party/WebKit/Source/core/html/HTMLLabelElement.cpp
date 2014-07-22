@@ -200,4 +200,49 @@ void HTMLLabelElement::accessKeyAction(bool sendMouseEvents)
         HTMLElement::accessKeyAction(sendMouseEvents);
 }
 
+void HTMLLabelElement::updateLabel(TreeScope& scope, const AtomicString& oldForAttributeValue, const AtomicString& newForAttributeValue)
+{
+    if (!inDocument())
+        return;
+
+    if (oldForAttributeValue == newForAttributeValue)
+        return;
+
+    if (!oldForAttributeValue.isEmpty())
+        scope.removeLabel(oldForAttributeValue, toHTMLLabelElement(this));
+    if (!newForAttributeValue.isEmpty())
+        scope.addLabel(newForAttributeValue, toHTMLLabelElement(this));
+}
+
+void HTMLLabelElement::attributeWillChange(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
+{
+    if (name == HTMLNames::forAttr) {
+        TreeScope& scope = treeScope();
+        if (scope.shouldCacheLabelsByForAttribute())
+            updateLabel(scope, oldValue, newValue);
+    }
+    HTMLElement::attributeWillChange(name, oldValue, newValue);
+}
+
+Node::InsertionNotificationRequest HTMLLabelElement::insertedInto(ContainerNode* insertionPoint)
+{
+    InsertionNotificationRequest result = HTMLElement::insertedInto(insertionPoint);
+    if (insertionPoint->isInTreeScope()) {
+        TreeScope& scope = insertionPoint->treeScope();
+        if (scope == treeScope() && scope.shouldCacheLabelsByForAttribute())
+            updateLabel(scope, nullAtom, fastGetAttribute(forAttr));
+    }
+    return result;
+}
+
+void HTMLLabelElement::removedFrom(ContainerNode* insertionPoint)
+{
+    if (insertionPoint->isInTreeScope() && treeScope() == document()) {
+        TreeScope& treeScope = insertionPoint->treeScope();
+        if (treeScope.shouldCacheLabelsByForAttribute())
+            updateLabel(treeScope, fastGetAttribute(forAttr), nullAtom);
+    }
+    HTMLElement::removedFrom(insertionPoint);
+}
+
 } // namespace

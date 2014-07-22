@@ -89,7 +89,6 @@
 #include "core/html/HTMLFormControlsCollection.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLOptionsCollection.h"
 #include "core/html/HTMLTableRowsCollection.h"
 #include "core/html/HTMLTemplateElement.h"
@@ -1300,11 +1299,6 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
     if (!nameValue.isNull())
         updateName(nullAtom, nameValue);
 
-    if (isHTMLLabelElement(*this)) {
-        if (scope.shouldCacheLabelsByForAttribute())
-            updateLabel(scope, nullAtom, fastGetAttribute(forAttr));
-    }
-
     if (parentElement() && parentElement()->isInCanvasSubtree())
         setIsInCanvasSubtree(true);
 
@@ -1333,12 +1327,6 @@ void Element::removedFrom(ContainerNode* insertionPoint)
         const AtomicString& nameValue = getNameAttribute();
         if (!nameValue.isNull())
             updateName(nameValue, nullAtom);
-
-        if (isHTMLLabelElement(*this)) {
-            TreeScope& treeScope = insertionPoint->treeScope();
-            if (treeScope.shouldCacheLabelsByForAttribute())
-                updateLabel(treeScope, fastGetAttribute(forAttr), nullAtom);
-        }
     }
 
     ContainerNode::removedFrom(insertionPoint);
@@ -2841,32 +2829,12 @@ inline void Element::updateId(TreeScope& scope, const AtomicString& oldId, const
         updateExtraNamedItemRegistration(oldId, newId);
 }
 
-void Element::updateLabel(TreeScope& scope, const AtomicString& oldForAttributeValue, const AtomicString& newForAttributeValue)
-{
-    ASSERT(isHTMLLabelElement(this));
-
-    if (!inDocument())
-        return;
-
-    if (oldForAttributeValue == newForAttributeValue)
-        return;
-
-    if (!oldForAttributeValue.isEmpty())
-        scope.removeLabel(oldForAttributeValue, toHTMLLabelElement(this));
-    if (!newForAttributeValue.isEmpty())
-        scope.addLabel(newForAttributeValue, toHTMLLabelElement(this));
-}
-
 void Element::willModifyAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
     if (isIdAttributeName(name)) {
         updateId(oldValue, newValue);
     } else if (name == HTMLNames::nameAttr) {
         updateName(oldValue, newValue);
-    } else if (name == HTMLNames::forAttr && isHTMLLabelElement(*this)) {
-        TreeScope& scope = treeScope();
-        if (scope.shouldCacheLabelsByForAttribute())
-            updateLabel(scope, oldValue, newValue);
     }
 
     if (oldValue != newValue) {

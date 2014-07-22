@@ -47,6 +47,10 @@ private:
     virtual bool isInteractiveContent() const OVERRIDE;
     virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE;
 
+    virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) OVERRIDE;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
+    virtual void removedFrom(ContainerNode*) OVERRIDE;
+
     // Overridden to update the hover/active state of the corresponding control.
     virtual void setActive(bool = true) OVERRIDE;
     virtual void setHovered(bool = true) OVERRIDE;
@@ -55,6 +59,8 @@ private:
     virtual void defaultEventHandler(Event*) OVERRIDE;
 
     virtual void focus(bool restorePreviousSelection, FocusType) OVERRIDE;
+
+    void updateLabel(TreeScope&, const AtomicString& oldForAttributeValue, const AtomicString& newForAttributeValue);
 };
 
 } //namespace
