@@ -630,7 +630,9 @@ GLenum WebGLFramebuffer::getDrawBuffer(GLenum drawBuffer)
 
 void WebGLFramebuffer::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_attachments);
+#endif
     WebGLContextObject::trace(visitor);
 }
 
