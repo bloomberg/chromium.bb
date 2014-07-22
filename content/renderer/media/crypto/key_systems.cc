@@ -10,6 +10,8 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/eme_codec.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -87,6 +89,8 @@ class KeySystems {
  public:
   static KeySystems& GetInstance();
 
+  void UpdateIfNeeded();
+
   bool IsConcreteSupportedKeySystem(const std::string& key_system);
 
   bool IsSupportedKeySystemWithMediaMimeType(
@@ -104,6 +108,8 @@ class KeySystems {
   void AddCodecMask(const std::string& codec, uint32 mask);
 
  private:
+  void UpdateSupportedKeySystems();
+
   void AddConcreteSupportedKeySystems(
       const std::vector<KeySystemInfo>& concrete_key_systems);
 
@@ -161,18 +167,26 @@ class KeySystems {
   CodecMaskMap container_codec_masks_;
   CodecMaskMap codec_masks_;
 
+  bool needs_update_;
+  base::Time last_update_time_;
+
+  // Makes sure all methods are called from the same thread.
+  base::ThreadChecker thread_checker_;
+
   DISALLOW_COPY_AND_ASSIGN(KeySystems);
 };
 
 static base::LazyInstance<KeySystems> g_key_systems = LAZY_INSTANCE_INITIALIZER;
 
 KeySystems& KeySystems::GetInstance() {
-  return g_key_systems.Get();
+  KeySystems& key_systems = g_key_systems.Get();
+  key_systems.UpdateIfNeeded();
+  return key_systems;
 }
 
 // Because we use a LazyInstance, the key systems info must be populated when
 // the instance is lazily initiated.
-KeySystems::KeySystems() {
+KeySystems::KeySystems() : needs_update_(true) {
   // Build container and codec masks for quick look up.
   for (size_t i = 0; i < arraysize(kContainerCodecMasks); ++i) {
     const CodecMask& container_codec_mask = kContainerCodecMasks[i];
@@ -187,18 +201,60 @@ KeySystems::KeySystems() {
     codec_masks_[codec_mask.type] = codec_mask.mask;
   }
 
-  std::vector<KeySystemInfo> key_systems_info;
-  GetContentClient()->renderer()->AddKeySystems(&key_systems_info);
-  // Clear Key is always supported.
-  AddClearKey(&key_systems_info);
-  AddConcreteSupportedKeySystems(key_systems_info);
+  UpdateSupportedKeySystems();
+
 #if defined(WIDEVINE_CDM_AVAILABLE)
   key_systems_support_uma_.AddKeySystemToReport(kWidevineKeySystem);
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 }
 
+void KeySystems::UpdateIfNeeded() {
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!needs_update_)
+    return;
+
+  // The update could involve a sync IPC to the browser process. Use a minimum
+  // update interval to avoid unnecessary frequent IPC to the browser.
+  static const int kMinUpdateIntervalInSeconds = 5;
+  base::Time now = base::Time::Now();
+  if (now - last_update_time_ <
+      base::TimeDelta::FromSeconds(kMinUpdateIntervalInSeconds)) {
+    return;
+  }
+
+  UpdateSupportedKeySystems();
+#endif
+}
+
+void KeySystems::UpdateSupportedKeySystems() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(needs_update_);
+  concrete_key_system_map_.clear();
+  parent_key_system_map_.clear();
+
+  // Build KeySystemInfo.
+  std::vector<KeySystemInfo> key_systems_info;
+  GetContentClient()->renderer()->AddKeySystems(&key_systems_info);
+  // Clear Key is always supported.
+  AddClearKey(&key_systems_info);
+
+  AddConcreteSupportedKeySystems(key_systems_info);
+
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
+  if (IsConcreteSupportedKeySystem(kWidevineKeySystem))
+    needs_update_ = false;
+#endif
+
+  last_update_time_ = base::Time::Now();
+}
+
 void KeySystems::AddConcreteSupportedKeySystems(
     const std::vector<KeySystemInfo>& concrete_key_systems) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(concrete_key_system_map_.empty());
+  DCHECK(parent_key_system_map_.empty());
+
   for (size_t i = 0; i < concrete_key_systems.size(); ++i) {
     const KeySystemInfo& key_system_info = concrete_key_systems[i];
     AddConcreteSupportedKeySystem(key_system_info.key_system,
@@ -219,6 +275,7 @@ void KeySystems::AddConcreteSupportedKeySystem(
 #endif
     SupportedCodecs supported_codecs,
     const std::string& parent_key_system) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!IsConcreteSupportedKeySystem(concrete_key_system))
       << "Key system '" << concrete_key_system << "' already registered";
   DCHECK(parent_key_system_map_.find(concrete_key_system) ==
@@ -247,6 +304,7 @@ void KeySystems::AddConcreteSupportedKeySystem(
 }
 
 bool KeySystems::IsConcreteSupportedKeySystem(const std::string& key_system) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return concrete_key_system_map_.find(key_system) !=
       concrete_key_system_map_.end();
 }
@@ -254,6 +312,7 @@ bool KeySystems::IsConcreteSupportedKeySystem(const std::string& key_system) {
 bool KeySystems::IsSupportedContainer(
     const std::string& container,
     SupportedCodecs key_system_supported_codecs) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!container.empty());
 
   // When checking container support for EME, "audio/foo" should be treated the
@@ -280,6 +339,7 @@ bool KeySystems::IsSupportedContainerAndCodecs(
     const std::string& container,
     const std::vector<std::string>& codecs,
     SupportedCodecs key_system_supported_codecs) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!container.empty());
   DCHECK(!codecs.empty());
   DCHECK(IsSupportedContainer(container, key_system_supported_codecs));
@@ -312,6 +372,8 @@ bool KeySystems::IsSupportedKeySystemWithMediaMimeType(
     const std::string& mime_type,
     const std::vector<std::string>& codecs,
     const std::string& key_system) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // If |key_system| is a parent key_system, use its concrete child.
   // Otherwise, use |key_system|.
   std::string concrete_key_system;
@@ -356,6 +418,8 @@ bool KeySystems::IsSupportedKeySystemWithMediaMimeType(
 }
 
 bool KeySystems::UseAesDecryptor(const std::string& concrete_key_system) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   KeySystemPropertiesMap::iterator key_system_iter =
       concrete_key_system_map_.find(concrete_key_system);
   if (key_system_iter == concrete_key_system_map_.end()) {
@@ -368,6 +432,8 @@ bool KeySystems::UseAesDecryptor(const std::string& concrete_key_system) {
 
 #if defined(ENABLE_PEPPER_CDMS)
 std::string KeySystems::GetPepperType(const std::string& concrete_key_system) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   KeySystemPropertiesMap::iterator key_system_iter =
       concrete_key_system_map_.find(concrete_key_system);
   if (key_system_iter == concrete_key_system_map_.end()) {
@@ -382,13 +448,17 @@ std::string KeySystems::GetPepperType(const std::string& concrete_key_system) {
 #endif
 
 void KeySystems::AddContainerMask(const std::string& container, uint32 mask) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(container_codec_masks_.find(container) ==
          container_codec_masks_.end());
+
   container_codec_masks_[container] = static_cast<EmeCodec>(mask);
 }
 
 void KeySystems::AddCodecMask(const std::string& codec, uint32 mask) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(codec_masks_.find(codec) == codec_masks_.end());
+
   codec_masks_[codec] = static_cast<EmeCodec>(mask);
 }
 
