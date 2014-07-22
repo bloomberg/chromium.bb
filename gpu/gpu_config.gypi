@@ -57,7 +57,7 @@
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
     }],
-    ['OS=="win" and branding=="Chrome"', {
+    ['OS=="win" and branding=="Chrome" and buildtype=="Official"', {
       'sources': [
         '../third_party/amd/AmdCfxPxExt.h',
         '../third_party/amd/amd_videocard_info_win.cc',

@@ -50,7 +50,7 @@ source_set("config") {
     deps += [ "//third_party/libxml" ]
     libs = [ "dxguid.lib", "setupapi.lib" ]
 
-    if (is_chrome_branded) {
+    if (is_chrome_branded && is_official_build) {
       sources += [
         "//third_party/amd/AmdCfxPxExt.h",
         "//third_party/amd/amd_videocard_info_win.cc",
