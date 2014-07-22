@@ -6,6 +6,35 @@
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_nsobject.h"
+
+// This view always takes the size of its superview. It is intended to be used
+// as a NSWindow's contentView.  It is needed because NSWindow's implementation
+// explicitly resizes the contentView at inopportune times.
+@interface FullSizeContentView : NSView
+@end
+
+namespace {
+
+// Reorders the subviews of NSWindow's root view so that the contentView is
+// moved to the back, and the ordering of the other views is unchanged.
+// |context| should be an NSArray containing the subviews of the root view as
+// they were previously ordered.
+NSComparisonResult ReorderContentViewToBack(id firstView,
+                                            id secondView,
+                                            void* context) {
+  NSView* contentView = [[firstView window] contentView];
+  NSArray* subviews = static_cast<NSArray*>(context);
+  if (firstView == contentView)
+    return NSOrderedAscending;
+  if (secondView == contentView)
+    return NSOrderedDescending;
+  NSUInteger index1 = [subviews indexOfObject:firstView];
+  NSUInteger index2 = [subviews indexOfObject:secondView];
+  return (index1 < index2) ? NSOrderedAscending : NSOrderedDescending;
+}
+
+}  // namespace
 
 @interface VersionIndependentWindow ()
 
@@ -13,12 +42,6 @@
 
 - (NSView*)chromeWindowView;
 
-@end
-
-// This view always takes the size of its superview. It is intended to be used
-// as a NSWindow's contentView.  It is needed because NSWindow's implementation
-// explicitly resizes the contentView at inopportune times.
-@interface FullSizeContentView : NSView
 @end
 
 @implementation FullSizeContentView
@@ -75,6 +98,18 @@
           setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
       [self setContentView:chromeWindowView_];
       [chromeWindowView_ setFrame:[[[self contentView] superview] bounds]];
+
+      // Move the content view to the back.
+      // In Yosemite, the content view takes up the full size of the window,
+      // and when it is in front of the zoom/fullscreen button, alt-clicking
+      // the button has the wrong effect.
+      // Adding subviews to the NSThemeFrame provokes a warning in Yosemite, so
+      // we sort the subviews in place.
+      // http://crbug.com/393808
+      NSView* superview = [[self contentView] superview];
+      base::scoped_nsobject<NSArray> subviews([[superview subviews] copy]);
+      [superview sortSubviewsUsingFunction:&ReorderContentViewToBack
+                                   context:subviews.get()];
     }
   }
   return self;
