@@ -469,13 +469,6 @@ unsigned short Internals::compareTreeScopePosition(const Node* node1, const Node
     return treeScope1->comparePosition(*treeScope2);
 }
 
-unsigned Internals::numberOfActiveAnimations() const
-{
-    LocalFrame* contextFrame = frame();
-    Document* document = contextFrame->document();
-    return document->timeline().numberOfActiveAnimationsForTesting();
-}
-
 void Internals::pauseAnimations(double pauseTime, ExceptionState& exceptionState)
 {
     if (pauseTime < 0) {

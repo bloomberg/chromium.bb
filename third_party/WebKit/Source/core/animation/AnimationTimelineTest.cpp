@@ -196,55 +196,6 @@ TEST_F(AnimationAnimationTimelineTest, PauseForTesting)
     EXPECT_FLOAT_EQ(seekTime, player2->currentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTimelineTest, NumberOfActiveAnimations)
-{
-    Timing timingForwardFill;
-    timingForwardFill.iterationDuration = 2;
-    timingForwardFill.fillMode = Timing::FillModeForwards;
-
-    Timing timingNoFill;
-    timingNoFill.iterationDuration = 2;
-    timingNoFill.fillMode = Timing::FillModeNone;
-
-    Timing timingBackwardFillDelay;
-    timingBackwardFillDelay.iterationDuration = 1;
-    timingBackwardFillDelay.fillMode = Timing::FillModeBackwards;
-    timingBackwardFillDelay.startDelay = 1;
-
-    Timing timingNoFillDelay;
-    timingNoFillDelay.iterationDuration = 1;
-    timingNoFillDelay.fillMode = Timing::FillModeNone;
-    timingNoFillDelay.startDelay = 1;
-
-    Timing timingAutoFill;
-    timingAutoFill.iterationDuration = 2;
-
-    RefPtrWillBeRawPtr<Animation> anim1 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingForwardFill);
-    RefPtrWillBeRawPtr<Animation> anim2 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingNoFill);
-    RefPtrWillBeRawPtr<Animation> anim3 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingBackwardFillDelay);
-    RefPtrWillBeRawPtr<Animation> anim4 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingNoFillDelay);
-    RefPtrWillBeRawPtr<Animation> anim5 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingAutoFill);
-
-    timeline->play(anim1.get());
-    timeline->play(anim2.get());
-    timeline->play(anim3.get());
-    timeline->play(anim4.get());
-    timeline->play(anim5.get());
-
-    platformTiming->expectNextFrameAction();
-    updateClockAndService(0);
-    EXPECT_EQ(5U, timeline->numberOfActiveAnimationsForTesting());
-    platformTiming->expectNextFrameAction();
-    updateClockAndService(0.5);
-    EXPECT_EQ(5U, timeline->numberOfActiveAnimationsForTesting());
-    platformTiming->expectNextFrameAction();
-    updateClockAndService(1.5);
-    EXPECT_EQ(5U, timeline->numberOfActiveAnimationsForTesting());
-    platformTiming->expectNoMoreActions();
-    updateClockAndService(3);
-    EXPECT_EQ(0U, timeline->numberOfActiveAnimationsForTesting());
-}
-
 TEST_F(AnimationAnimationTimelineTest, DelayBeforeAnimationStart)
 {
     timing.iterationDuration = 2;

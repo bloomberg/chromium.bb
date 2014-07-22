@@ -70,7 +70,6 @@
     [RaisesException] unsigned long hitTestCount(Document document);
 
     // CSS Animation and Transition testing.
-    unsigned long numberOfActiveAnimations();
     [RaisesException] void pauseAnimations(double pauseTime);
 
     [RaisesException] Node nextSiblingByWalker(Node node);

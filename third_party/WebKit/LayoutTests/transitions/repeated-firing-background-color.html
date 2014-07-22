@@ -11,12 +11,7 @@
   <script>
     function checkRunning()
     {
-      if (!window.testRunner) {
-        document.getElementById('result').innerHTML = "This test must be run in DRT."
-        return;
-      }
-
-      var current = internals.numberOfActiveAnimations();
+      var current = document.timeline.getAnimationPlayers().length;
       if (current == 0)
         document.getElementById('result').innerHTML = "PASS: Number of active transitions is (0) as expected";
       else

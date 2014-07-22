@@ -428,8 +428,6 @@ crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 crbug.com/254332 [ SnowLeopard Debug ] fast/forms/checkbox/checkbox-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ XP ] fast/forms/submit/submit-focus-by-mouse.html [ ImageOnlyFailure Pass ]
 
-crbug.com/244266 virtual/threaded/animations/animation-controller-drt-api.html [ Failure Pass ]
-
 crbug.com/265650 compositing/repaint/transform-style-change.html [ Pass ImageOnlyFailure ]
 crbug.com/265650 virtual/softwarecompositing/repaint/transform-style-change.html [ Pass ImageOnlyFailure ]
 
@@ -855,9 +853,6 @@ crbug.com/355274 http/tests/navigation/same-and-different-back.html [ Pass Failu
 
 crbug.com/354785 [ Win Debug ] svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure ]
 crbug.com/354785 [ Linux Debug ] svg/as-background-image/animated-svg-animation-control.html [ ImageOnlyFailure Pass ]
-
-crbug.com/354791 [ Mac ] transitions/webkit-clip-path-equality.html [ Pass Failure ]
-crbug.com/354791 [ Mac ] virtual/threaded/transitions/webkit-clip-path-equality.html [ Pass Failure ]
 
 crbug.com/356957 [ Win Debug ] editing/spelling/spellcheck-editable-on-focus.html [ Pass Timeout ]
 

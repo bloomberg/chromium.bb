@@ -40,7 +40,7 @@
       // Force at least one timing update and recalc after the interruption.
       id = requestAnimationFrame(function() {
         cancelAnimationFrame(id);
-        var current = internals.numberOfActiveAnimations();
+        var current = document.timeline.getAnimationPlayers().length;
         document.getElementById('result').innerHTML = (current == 0) ? "PASS" : "FAIL";
         if (window.testRunner)
             testRunner.notifyDone();

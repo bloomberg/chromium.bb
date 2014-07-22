@@ -223,19 +223,6 @@ void AnimationTimeline::setOutdatedAnimationPlayer(AnimationPlayer* player)
         m_timing->serviceOnNextFrame();
 }
 
-size_t AnimationTimeline::numberOfActiveAnimationsForTesting() const
-{
-    // Includes all players whose directly associated timed items
-    // are current or in effect.
-    size_t count = 0;
-    for (WillBeHeapHashSet<RefPtrWillBeMember<AnimationPlayer> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it) {
-        const AnimationNode* animationNode = (*it)->source();
-        if ((*it)->hasStartTime())
-            count += (animationNode && (animationNode->isCurrent() || animationNode->isInEffect()));
-    }
-    return count;
-}
-
 #if !ENABLE(OILPAN)
 void AnimationTimeline::detachFromDocument()
 {

@@ -108,7 +108,6 @@ public:
     void setShadowPseudoId(Element*, const AtomicString&, ExceptionState&);
 
     // CSS Animation / Transition testing.
-    unsigned numberOfActiveAnimations() const;
     void pauseAnimations(double pauseTime, ExceptionState&);
 
     bool isValidContentSelect(Element* insertionPoint, ExceptionState&);

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <style>
 #target {
-  -webkit-clip-path: circle(0px at 0px 0px);
+  -webkit-clip-path: circle(0px at 1px 2px);
   transition: -webkit-clip-path 1s;
 }
 </style>
@@ -20,22 +20,18 @@ onload = function() {
 };
 function step1() {
   target.offsetTop;
-  if (window.internals) {
-    result = (internals.numberOfActiveAnimations() == 0) ?
-        'PASS - No transition started.' :
-        'FAIL - Unexpected transition started.';
-  }
+  result = document.timeline.getAnimationPlayers().length == 0 ?
+      'PASS - No transition started.' :
+      'FAIL - Unexpected transition started.';
   target.style.webkitClipPath = 'circle(200px at 0px 0px)';
   requestAnimationFrame(step2);
 }
 function step2() {
-  if (window.internals) {
-    result += (internals.numberOfActiveAnimations() == 1) ?
-        '\nPASS - Transition started.' :
-        '\nFAIL - Transition did not start.';
-    document.documentElement.style.whiteSpace = 'pre';
-    document.documentElement.textContent = result;
-  }
+  result += document.timeline.getAnimationPlayers().length == 1 ?
+      '\nPASS - Transition started.' :
+      '\nFAIL - Transition did not start.';
+  document.documentElement.style.whiteSpace = 'pre';
+  document.documentElement.textContent = result;
   if (window.testRunner) {
     testRunner.notifyDone();
   }

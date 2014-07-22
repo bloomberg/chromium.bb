@@ -496,7 +496,7 @@ function runChecksWithRAF(checks)
 function runChecksWithPauseAPI(checks) {
     for (var k in checks) {
         var timeMs = Number(k);
-        log('Pausing at time: ' + timeMs + ', active animations: ' + internals.numberOfActiveAnimations());
+        log('Pausing at time: ' + timeMs + ', current players: ' + document.timeline.getAnimationPlayers().length);
         internals.pauseAnimations(timeMs / 1000);
         checks[k].forEach(function(check) { check(); });
     }
@@ -527,7 +527,7 @@ function log(message)
 
 function waitForAnimationsToStart(callback)
 {
-    if (!window.internals || internals.numberOfActiveAnimations() > 0) {
+    if (document.timeline.getAnimationPlayers().length > 0) {
         callback();
     } else {
         setTimeout(waitForAnimationsToStart.bind(this, callback), 0);
