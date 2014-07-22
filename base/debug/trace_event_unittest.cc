@@ -2450,16 +2450,17 @@ TEST_F(TraceEventTestFixture, TraceBufferVectorReportFull) {
           trace_log->buffer_limit_reached_timestamp_.ToInternalValue()),
       buffer_limit_reached_timestamp);
 
-  // Test that buffer_limit_reached_timestamp's value is near to the timestamp
-  // of the last trace event.
+  // Test that buffer_limit_reached_timestamp's value is between the timestamp
+  // of the last trace event and current time.
   DropTracedMetadataRecords();
   const DictionaryValue* last_trace_event = NULL;
   double last_trace_event_timestamp = 0;
   EXPECT_TRUE(trace_parsed_.GetDictionary(trace_parsed_.GetSize() - 1,
                                           &last_trace_event));
   EXPECT_TRUE(last_trace_event->GetDouble("ts", &last_trace_event_timestamp));
-  // The difference between the two timestamps should be less than 50ms.
-  EXPECT_NEAR(last_trace_event_timestamp, buffer_limit_reached_timestamp, 50);
+  EXPECT_LT(last_trace_event_timestamp, buffer_limit_reached_timestamp);
+  EXPECT_LT(buffer_limit_reached_timestamp,
+            trace_log->OffsetNow().ToInternalValue());
 }
 
 TEST_F(TraceEventTestFixture, TraceBufferRingBufferGetReturnChunk) {
