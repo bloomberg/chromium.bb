@@ -24,5 +24,13 @@
         ],
       },
     }],
+    # For debugging crbug.com/383963
+    ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
+      'variables': {
+        'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/chrome_child.dll.pdb',
+        ],
+      },
+    }],
   ]
 }

@@ -93,6 +93,7 @@
         '--config-variable', 'CONFIGURATION_NAME=<(CONFIGURATION_NAME)',
         '--config-variable', 'chromeos=<(chromeos)',
         '--config-variable', 'component=<(component)',
+        '--config-variable', 'fastbuild=<(fastbuild)',
         # TODO(kbr): move this to chrome_tests.gypi:gles2_conform_tests_run
         # once support for user-defined config variables is added.
         '--config-variable',
