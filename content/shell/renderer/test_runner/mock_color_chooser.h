@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKCOLORCHOOSER_H_
-#define CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKCOLORCHOOSER_H_
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCK_COLOR_CHOOSER_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCK_COLOR_CHOOSER_H_
 
 #include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
@@ -18,25 +18,27 @@ class WebTestProxyBase;
 
 class MockColorChooser : public blink::WebColorChooser {
 public:
-    MockColorChooser(blink::WebColorChooserClient*, WebTestDelegate*, WebTestProxyBase*);
+    MockColorChooser(blink::WebColorChooserClient* client,
+                     WebTestDelegate* delegate,
+                     WebTestProxyBase* proxy);
     virtual ~MockColorChooser();
 
     // blink::WebColorChooser implementation.
-    virtual void setSelectedColor(const blink::WebColor) OVERRIDE;
+    virtual void setSelectedColor(const blink::WebColor color) OVERRIDE;
     virtual void endChooser() OVERRIDE;
 
-    void invokeDidEndChooser();
-    WebTaskList* mutable_task_list() { return &m_taskList; }
+    void InvokeDidEndChooser();
+    WebTaskList* mutable_task_list() { return &task_list_; }
 
 private:
-    blink::WebColorChooserClient* m_client;
-    WebTestDelegate* m_delegate;
-    WebTestProxyBase* m_proxy;
-    WebTaskList m_taskList;
+    blink::WebColorChooserClient* client_;
+    WebTestDelegate* delegate_;
+    WebTestProxyBase* proxy_;
+    WebTaskList task_list_;
 
     DISALLOW_COPY_AND_ASSIGN(MockColorChooser);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKCOLORCHOOSER_H_
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCK_COLOR_CHOOSER_H_
