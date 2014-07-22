@@ -121,10 +121,18 @@ void ScreenOrientationProviderAndroid::OnOrientationChange() {
 
 void ScreenOrientationProviderAndroid::DidToggleFullscreenModeForTab(
     bool entered_fullscreen) {
-  if (lock_applied_) {
-    DCHECK(!entered_fullscreen);
-    UnlockOrientation();
-  }
+  if (!lock_applied_)
+    return;
+
+  // If fullscreen is not required in order to lock orientation, don't unlock
+  // when fullscreen state changes.
+  ContentViewCoreImpl* cvc =
+      ContentViewCoreImpl::FromWebContents(web_contents());
+  if (cvc && !cvc->IsFullscreenRequiredForOrientationLock())
+    return;
+
+  DCHECK(!entered_fullscreen);
+  UnlockOrientation();
 }
 
 bool ScreenOrientationProviderAndroid::LockMatchesCurrentOrientation(
