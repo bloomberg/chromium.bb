@@ -297,6 +297,7 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      # GN version: //cc/cc_perftests
       'target_name': 'cc_perftests',
       'type': '<(gtest_target_type)',
       'dependencies': [
@@ -314,6 +315,7 @@
         'cc_test_support',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'layers/layer_perftest.cc',
         'layers/picture_layer_impl_perftest.cc',
         'resources/picture_layer_tiling_perftest.cc',

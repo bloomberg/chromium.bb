@@ -24,10 +24,12 @@ component("ash") {
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//content/public/browser",
+    "//media",
     "//net",
     "//skia",
     "//third_party/icu",
     "//ui/accessibility",
+    "//ui/app_list",
     "//ui/aura",
     "//ui/base",
     "//ui/compositor",
@@ -36,17 +38,15 @@ component("ash") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/keyboard",
+    "//ui/message_center",
     "//ui/resources",
     "//ui/strings",
+    "//ui/views",
+    "//ui/views/controls/webview",
     "//ui/web_dialogs",
     "//ui/wm",
     "//url",
     #'../components/components.gyp:user_manager',  TODO(GYP)
-    #'../media/media.gyp:media',  TODO(GYP)
-    #"//ui/app_list",  TODO(GYP)
-    #'../ui/message_center/message_center.gyp:message_center',  TODO(GYP)
-    #'../ui/views/controls/webview/webview.gyp:webview',  TODO(GYP)
-    #'../ui/views/views.gyp:views'  TODO(GYP),
   ]
 
   forward_dependent_configs_from = [
@@ -80,15 +80,15 @@ component("ash") {
 
   if (is_chromeos) {
     deps += [
+      "//device/bluetooth",
+      "//ui/display",
+      "//ui/display/util",
       #'../chromeos/chromeos.gyp:chromeos',  TODO(GYP)
       # Ash #includes power_supply_properties.pb.h directly.
       #'../chromeos/chromeos.gyp:power_manager_proto',  TODO(GYP)
-      #'../device/bluetooth/bluetooth.gyp:device_bluetooth',  TODO(GYP)
       #'../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',  TODO(GYP)
       #'../ui/chromeos/ui_chromeos.gyp:ui_chromeos_strings',  TODO(GYP)
       #'../ui/chromeos/ui_chromeos.gyp:ui_chromeos',  TODO(GYP)
-      #'../ui/display/display.gyp:display',  TODO(GYP)
-      #'../ui/display/display.gyp:display_util',  TODO(GYP)
     ]
   } else {
     sources -= [
@@ -160,8 +160,8 @@ static_library("test_support") {
     "//skia",
     "//testing/gtest",
     "//ui/accessibility",
-    #"//ui/app_list",  TODO(GYP)
-    #"//ui/views",  TODO(GYP)
+    "//ui/app_list",
+    "//ui/views",
   ]
 
   if (is_win) {
@@ -194,7 +194,7 @@ static_library("ash_shell_lib") {
     "//content",
     "//skia",
     "//third_party/icu",
-    #"//ui/app_list",  TODO(GYP)
+    "//ui/app_list",
     "//ui/aura",
     "//ui/base",
     "//ui/compositor",
@@ -202,13 +202,13 @@ static_library("ash_shell_lib") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/keyboard",
-    #"//ui/message_center",  TODO(GYP)
+    "//ui/message_center",
     "//ui/resources",
+    "//ui/views",
+    "//ui/views:test_support",
     #'../content/content_shell_and_tests.gyp:content_shell_lib',  TODO(GYP)
     #'../ui/views/examples/examples.gyp:views_examples_lib',  TODO(GYP)
     #'../ui/views/examples/examples.gyp:views_examples_with_content_lib',  TODO(GYP)
-    #'../ui/views/views.gyp:views',  TODO(GYP)
-    #'../ui/views/views.gyp:views_test_support',  TODO(GYP)
   ]
 }
 
@@ -243,17 +243,17 @@ test("ash_unittests") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/keyboard",
+    "//ui/message_center",
+    "//ui/message_center:test_support",
     "//ui/resources",
+    "//ui/views",
+    "//ui/views:test_support",
+    "//ui/views/controls/webview:test_support",
     "//ui/web_dialogs",
     "//ui/wm",
     "//url",
     #'../components/components.gyp:user_manager',  TODO(GYP)
     #'../content/content_shell_and_tests.gyp:test_support_content',  TODO(GYP)
-    #'../ui/message_center/message_center.gyp:message_center',  TODO(GYP)
-    #'../ui/message_center/message_center.gyp:message_center_test_support',  TODO(GYP)
-    #'../ui/views/controls/webview/webview_tests.gyp:webview_test_support',  TODO(GYP)
-    #'../ui/views/views.gyp:views',  TODO(GYP)
-    #'../ui/views/views.gyp:views_test_support',  TODO(GYP)
   ]
 
   if (!is_chromeos) {
@@ -291,12 +291,12 @@ test("ash_unittests") {
   if (is_chromeos) {
     sources += [ "first_run/first_run_helper_unittest.cc" ]
     deps += [
+      "//device/bluetooth",
+      "//ui/display",
+      "//ui/display:test_util",
+      "//ui/display/types",
       #'../chromeos/chromeos.gyp:chromeos_test_support_without_gmock',  TODO(GYP)
       #'../chromeos/chromeos.gyp:power_manager_proto',  TODO(GYP)
-      #'../device/bluetooth/bluetooth.gyp:device_bluetooth',  TODO(GYP)
-      #'../ui/display/display.gyp:display',  TODO(GYP)
-      #'../ui/display/display.gyp:display_test_util',  TODO(GYP)
-      #'../ui/display/display.gyp:display_types',  TODO(GYP)
     ]
   } else {
     sources -= [
@@ -357,7 +357,7 @@ test("ash_shell_unittests") {
   ]
 
   if (is_chromeos) {
-    #deps += [ "//ui/display" ]  TODO(GYP)
+    deps += [ "//ui/display" ]
   }
 }
 

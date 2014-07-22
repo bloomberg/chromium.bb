@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //ui/views/controls/webview:test_support
       'target_name': 'webview_test_support',
       'type': 'static_library',
       'dependencies': [

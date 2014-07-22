@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //components/sync_driver
       'target_name': 'sync_driver',
       'type': 'static_library',
       'dependencies': [
@@ -16,6 +17,7 @@
         '..',
       ],
       'sources': [
+        # Note: file list duplicated in GN build.
         'sync_driver/backend_data_type_configurer.cc',
         'sync_driver/backend_data_type_configurer.h',
         'sync_driver/change_processor.cc',

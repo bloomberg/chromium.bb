@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN verison: //components/cdm/common
       'target_name': 'cdm_common',
       'type': 'static_library',
       'dependencies': [
@@ -19,6 +20,7 @@
       ],
     },
     {
+      # GN version: //components/cdm/renderer
       'target_name': 'cdm_renderer',
       'type': 'static_library',
       'dependencies': [
@@ -50,6 +52,7 @@
     ['OS == "android"', {
       'targets': [
         {
+          # GN version: //components/cdm/browser
           'target_name': 'cdm_browser',
           'type': 'static_library',
           'dependencies': [

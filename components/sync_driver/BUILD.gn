@@ -1,0 +1,91 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("sync_driver") {
+  sources = [
+    "backend_data_type_configurer.cc",
+    "backend_data_type_configurer.h",
+    "change_processor.cc",
+    "change_processor.h",
+    "data_type_controller.cc",
+    "data_type_controller.h",
+    "data_type_encryption_handler.cc",
+    "data_type_encryption_handler.h",
+    "data_type_error_handler.h",
+    "data_type_manager.cc",
+    "data_type_manager.h",
+    "data_type_manager_impl.cc",
+    "data_type_manager_impl.h",
+    "data_type_manager_observer.h",
+    "failed_data_types_handler.cc",
+    "failed_data_types_handler.h",
+    "generic_change_processor.cc",
+    "generic_change_processor.h",
+    "generic_change_processor_factory.cc",
+    "generic_change_processor_factory.h",
+    "model_association_manager.cc",
+    "model_association_manager.h",
+    "model_associator.h",
+    "non_blocking_data_type_controller.cc",
+    "non_blocking_data_type_controller.h",
+    "non_blocking_data_type_manager.cc",
+    "non_blocking_data_type_manager.h",
+    "non_ui_data_type_controller.cc",
+    "non_ui_data_type_controller.h",
+    "pref_names.cc",
+    "pref_names.h",
+    "proxy_data_type_controller.cc",
+    "proxy_data_type_controller.h",
+    "sync_api_component_factory.h",
+    "shared_change_processor.cc",
+    "shared_change_processor.h",
+    "shared_change_processor_ref.cc",
+    "shared_change_processor_ref.h",
+    "sync_frontend.cc",
+    "sync_frontend.h",
+    "sync_prefs.cc",
+    "sync_prefs.h",
+    "system_encryptor.cc",
+    "system_encryptor.h",
+    "ui_data_type_controller.cc",
+    "ui_data_type_controller.h",
+    "user_selectable_sync_type.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/os_crypt",
+    "//sync",
+  ]
+}
+
+static_library("test_support") {
+  sources = [
+    "change_processor_mock.cc",
+    "change_processor_mock.h",
+    "data_type_controller_mock.cc",
+    "data_type_controller_mock.h",
+    "data_type_error_handler_mock.cc",
+    "data_type_error_handler_mock.h",
+    "data_type_manager_mock.cc",
+    "data_type_manager_mock.h",
+    "fake_data_type_controller.cc",
+    "fake_data_type_controller.h",
+    "fake_generic_change_processor.cc",
+    "fake_generic_change_processor.h",
+    "model_associator_mock.cc",
+    "model_associator_mock.h",
+    "non_ui_data_type_controller_mock.cc",
+    "non_ui_data_type_controller_mock.h",
+  ]
+
+  deps = [
+    ":sync_driver",
+    "//base",
+    "//sync",
+    #'../sync/sync.gyp:test_support_sync_internal_api',  TODO(GYP)
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

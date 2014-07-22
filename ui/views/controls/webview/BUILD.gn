@@ -36,3 +36,27 @@ component("webview") {
     "//ui/views",
   ]
 }
+
+source_set("test_support") {
+  sources = [
+    "../../test/webview_test_helper.cc",
+    "../../test/webview_test_helper.h",
+  ]
+
+  deps = [
+    ":webview",
+    "//base",
+    "//content",
+    "//ipc",
+    "//skia",
+    "//testing/gtest",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/events",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/views",
+    "//ui/views:test_support",
+    #'../../../../content/content_shell_and_tests.gyp:test_support_content',  TODO(GYP)
+  ]
+}

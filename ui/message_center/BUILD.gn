@@ -162,9 +162,6 @@ static_library("test_support") {
   ]
 }
 
-# TODO(GYP) Enable this when media is linked.
-if (false) {
-
 test("message_center_unittests") {
   sources = [
     "test/run_all_unittests.cc",
@@ -223,5 +220,3 @@ test("message_center_unittests") {
     }
   }  # enable_notifications
 }
-
-}  # if false

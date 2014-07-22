@@ -90,7 +90,7 @@ source_set("browser") {
       "//content/browser/devtools:resources",
       "//content/common:mojo_bindings",
       "//cc",
-      "//cc:cc_surfaces",
+      "//cc/surfaces",
       "//mojo/public/cpp/bindings",
       "//mojo/public/interfaces/service_provider",
       "//mojo/public/js/bindings",

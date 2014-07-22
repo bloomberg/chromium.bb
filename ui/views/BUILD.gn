@@ -97,6 +97,7 @@ component("views") {
   if (use_aura) {
     sources += gypi_values.views_aura_sources
     if (!is_chromeos) {
+      sources += gypi_values.views_desktop_aura_sources
       if (use_x11) {
         sources += gypi_values.views_desktop_aura_x11_sources
       } else if (is_win) {

@@ -17,6 +17,9 @@ group("all_components") {
     "//components/bookmarks/common",
     "//components/bookmarks/test",
     "//components/captive_portal",
+    "//components/cdm/browser",
+    "//components/cdm/common",
+    "//components/cdm/renderer",
     "//components/cloud_devices/common",
     "//components/component_updater",
     "//components/data_reduction_proxy/browser",
@@ -36,6 +39,7 @@ group("all_components") {
     "//components/infobars/test:test_support",
     "//components/invalidation",
     "//components/json_schema",
+    "//components/keyed_service/content",
     "//components/language_usage_metrics",
     "//components/leveldb_proto",
     "//components/metrics",
@@ -45,6 +49,7 @@ group("all_components") {
     "//components/omaha_query_params",
     "//components/onc",
     "//components/os_crypt",
+    "//components/pairing",
     "//components/password_manager/content/browser",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
@@ -62,6 +67,7 @@ group("all_components") {
     "//components/signin/core/browser",
     "//components/startup_metric_utils",
     "//components/strings",
+    "//components/sync_driver",
     "//components/tracing",
     "//components/translate/content/browser",
     "//components/translate/content/common",
@@ -79,22 +85,18 @@ group("all_components") {
     "//components/visitedlink/renderer",
     "//components/web_modal",
     "//components/webdata/common",
+    "//components/wifi",
   ]
 
-  if (is_win || is_mac) {
-    deps += [
-      "//components/wifi",
-    ]
+  if (!is_win && !is_mac) {
+    deps -= [ "//components/wifi" ]
+  }
+  if (!is_chromeos) {
+    deps -= [ "//components/pairing" ]
   }
 
-  if (is_chromeos) {
-    deps += [
-      "//components/pairing",
-    ]
-  }
-
-  if (!is_ios) {
-    deps += [ "//components/keyed_service/content" ]
+  if (is_ios) {
+    deps -= [ "//components/keyed_service/content" ]
   }
 
   if (is_android) {
@@ -105,6 +107,9 @@ group("all_components") {
       "//components/autofill/content/renderer",  # Blocked on content/blink.
       "//components/captive_portal",  # Should work, needs checking.
       "//components/cloud_devices/common",  # Should work, needs checking.
+      "//components/cdm/browser",  # Blocked on content.
+      "//components/cdm/common",  # Blocked on content.
+      "//components/cdm/renderer",  # Blocked on content.
       "//components/data_reduction_proxy/browser",  # Should work, needs checking.
       "//components/data_reduction_proxy/common",  # Should work, needs checking.
       "//components/dom_distiller/core",  # Blocked on content.

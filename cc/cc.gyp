@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //cc
       'target_name': 'cc',
       'type': '<(component)',
       'dependencies': [
@@ -31,6 +32,7 @@
         'CC_IMPLEMENTATION=1',
       ],
       'sources': [
+        # Note: file list duplicated in GN build.
         'animation/animation.cc',
         'animation/animation.h',
         'animation/animation_curve.cc',
@@ -479,6 +481,7 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      # GN version: //cc/surfaces
       'target_name': 'cc_surfaces',
       'type': '<(component)',
       'dependencies': [
@@ -493,6 +496,7 @@
         'CC_SURFACES_IMPLEMENTATION=1',
       ],
       'sources': [
+        # Note: file list duplicated in GN build.
         'surfaces/display.cc',
         'surfaces/display.h',
         'surfaces/display_client.h',

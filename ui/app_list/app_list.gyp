@@ -8,6 +8,7 @@
   },
   'targets': [
     {
+      # GN version: //ui/app_list
       'target_name': 'app_list',
       'type': '<(component)',
       'dependencies': [
@@ -27,6 +28,7 @@
         'APP_LIST_IMPLEMENTATION',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'app_list_constants.cc',
         'app_list_constants.h',
         'app_list_export.h',
@@ -175,6 +177,7 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      # GN version: //ui/app_list:test_support
       'target_name': 'app_list_test_support',
       'type': 'static_library',
       'dependencies': [
@@ -185,6 +188,7 @@
         'app_list',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'test/app_list_test_model.cc',
         'test/app_list_test_model.h',
         'test/app_list_test_view_delegate.cc',
@@ -192,6 +196,7 @@
       ],
     },
     {
+      # GN version: //ui/app_list:app_list_unittests
       'target_name': 'app_list_unittests',
       'type': 'executable',
       'dependencies': [
@@ -207,6 +212,7 @@
         'app_list_test_support',
       ],
       'sources': [
+        # Note: sources list duplicated in GN build.
         'app_list_item_list_unittest.cc',
         'app_list_model_unittest.cc',
         'pagination_model_unittest.cc',

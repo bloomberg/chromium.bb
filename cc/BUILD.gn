@@ -458,7 +458,7 @@ component("cc") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//gpu",
-    #"//media",  TODO(GYP)
+    "//media",
     "//skia",
     "//ui/events:events_base",
     "//ui/gfx",
@@ -475,29 +475,6 @@ component("cc") {
     configs -= [ "//build/config/compiler:optimize" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
-}
-
-component("cc_surfaces") {
-  sources = [
-    "surfaces/surface.cc",
-    "surfaces/surface.h",
-    "surfaces/surface_aggregator.cc",
-    "surfaces/surface_aggregator.h",
-    "surfaces/surface_manager.cc",
-    "surfaces/surface_manager.h",
-    "surfaces/surfaces_export.h",
-  ]
-
-  defines = [ "CC_SURFACES_IMPLEMENTATION=1" ]
-
-  deps = [
-    ":cc",
-    "//base",
-    "//base/third_party/dynamic_annotations",
-    "//skia",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-  ]
 }
 
 source_set("test_support") {
@@ -642,9 +619,6 @@ source_set("test_support") {
   ]
 }
 
-# TODO(GYP) make these tests link when all deps are resolved.
-if (false) {
-
 test("cc_unittests") {
   sources = [
     "animation/animation_unittest.cc",
@@ -769,13 +743,12 @@ test("cc_unittests") {
 
   deps = [
     ":cc",
-    ":cc_surfaces",
     ":test_support",
     "//base/test:test_support",
+    "//cc/surfaces",
     "//gpu",
     "//gpu:gpu_unittest_utils",
-    # TODO(GYP)
-    #"//media",
+    "//media",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/events:events_base",
@@ -785,7 +758,33 @@ test("cc_unittests") {
 }
 
 test("cc_perftests") {
-  # TODO(GYP)
-}
+  sources = [
+    "layers/layer_perftest.cc",
+    "layers/picture_layer_impl_perftest.cc",
+    "resources/picture_layer_tiling_perftest.cc",
+    "resources/picture_pile_impl_perftest.cc",
+    "resources/raster_worker_pool_perftest.cc",
+    "resources/task_graph_runner_perftest.cc",
+    "resources/tile_manager_perftest.cc",
+    "test/cc_test_suite.cc",
+    "test/run_all_perftests.cc",
+    "trees/layer_tree_host_common_perftest.cc",
+    "trees/layer_tree_host_perftest.cc",
+    "trees/occlusion_tracker_perftest.cc",
+  ]
 
-}  # if false
+  deps = [
+    ":cc",
+    ":test_support",
+    "//base",
+    "//gpu",
+    "//gpu:gpu_unittest_utils",
+    "//media",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//testing/perf",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+  ]
+}
