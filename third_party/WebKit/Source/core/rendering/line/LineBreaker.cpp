@@ -57,7 +57,9 @@ void LineBreaker::reset()
     m_clear = CNONE;
 }
 
-InlineIterator LineBreaker::nextLineBreak(InlineBidiResolver& resolver, LineInfo& lineInfo, RenderTextInfo& renderTextInfo, FloatingObject* lastFloatFromPreviousLine, unsigned consecutiveHyphenatedLines, WordMeasurements& wordMeasurements)
+InlineIterator LineBreaker::nextLineBreak(InlineBidiResolver& resolver, LineInfo& lineInfo,
+    RenderTextInfo& renderTextInfo, FloatingObject* lastFloatFromPreviousLine,
+    WordMeasurements& wordMeasurements)
 {
     reset();
 

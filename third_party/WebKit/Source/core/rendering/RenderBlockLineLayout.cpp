@@ -731,12 +731,6 @@ void RenderBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState)
     InlineBidiResolver resolver;
     RootInlineBox* startLine = determineStartPosition(layoutState, resolver);
 
-    unsigned consecutiveHyphenatedLines = 0;
-    if (startLine) {
-        for (RootInlineBox* line = startLine->prevRootBox(); line && line->isHyphenated(); line = line->prevRootBox())
-            consecutiveHyphenatedLines++;
-    }
-
     if (containsFloats())
         layoutState.setLastFloat(m_floatingObjects->set().last().get());
 
@@ -769,7 +763,7 @@ void RenderBlockFlow::layoutRunsAndFloats(LineLayoutState& layoutState)
         }
     }
 
-    layoutRunsAndFloatsInRange(layoutState, resolver, cleanLineStart, cleanLineBidiStatus, consecutiveHyphenatedLines);
+    layoutRunsAndFloatsInRange(layoutState, resolver, cleanLineStart, cleanLineBidiStatus);
     linkToEndLineIfNeeded(layoutState);
     repaintDirtyFloats(layoutState.floats());
 }
@@ -783,7 +777,9 @@ inline const InlineIterator& RenderBlockFlow::restartLayoutRunsAndFloatsInRange(
     return oldEnd;
 }
 
-void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, InlineBidiResolver& resolver, const InlineIterator& cleanLineStart, const BidiStatus& cleanLineBidiStatus, unsigned consecutiveHyphenatedLines)
+void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
+    InlineBidiResolver& resolver, const InlineIterator& cleanLineStart,
+    const BidiStatus& cleanLineBidiStatus)
 {
     RenderStyle* styleToUse = style();
     bool paginated = view()->layoutState() && view()->layoutState()->isPaginated();
@@ -794,8 +790,6 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, I
     VerticalPositionCache verticalPositionCache;
 
     LineBreaker lineBreaker(this);
-
-    LayoutSize logicalOffsetFromShapeContainer;
 
     while (!endOfLine.atEnd()) {
         // FIXME: Is this check necessary before the first iteration or can it be moved to the end?
@@ -817,7 +811,8 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, I
         FloatingObject* lastFloatFromPreviousLine = (containsFloats()) ? m_floatingObjects->set().last().get() : 0;
 
         WordMeasurements wordMeasurements;
-        endOfLine = lineBreaker.nextLineBreak(resolver, layoutState.lineInfo(), renderTextInfo, lastFloatFromPreviousLine, consecutiveHyphenatedLines, wordMeasurements);
+        endOfLine = lineBreaker.nextLineBreak(resolver, layoutState.lineInfo(), renderTextInfo,
+            lastFloatFromPreviousLine, wordMeasurements);
         renderTextInfo.m_lineBreakIterator.resetPriorContext();
         if (resolver.position().atEnd()) {
             // FIXME: We shouldn't be creating any runs in nextLineBreak to begin with!
@@ -848,11 +843,8 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, I
 
             BidiRun* trailingSpaceRun = resolver.trailingSpaceRun();
 
-            if (bidiRuns.runCount() && lineBreaker.lineWasHyphenated()) {
+            if (bidiRuns.runCount() && lineBreaker.lineWasHyphenated())
                 bidiRuns.logicallyLastRun()->m_hasHyphen = true;
-                consecutiveHyphenatedLines++;
-            } else
-                consecutiveHyphenatedLines = 0;
 
             // Now that the runs have been ordered, we create the line boxes.
             // At the same time we figure out where border/padding/margin should be applied for

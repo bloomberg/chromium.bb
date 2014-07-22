@@ -115,10 +115,11 @@ void Font::drawText(GraphicsContext* context, const TextRunPaintInfo& runInfo, c
     if (codePathToUse != ComplexPath && fontDescription().typesettingFeatures() && (runInfo.from || runInfo.to != runInfo.run.length()))
         codePathToUse = ComplexPath;
 
-    if (codePathToUse != ComplexPath)
-        return drawSimpleText(context, runInfo, point);
-
-    return drawComplexText(context, runInfo, point);
+    if (codePathToUse != ComplexPath) {
+        drawSimpleText(context, runInfo, point);
+    } else {
+        drawComplexText(context, runInfo, point);
+    }
 }
 
 void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& runInfo, const AtomicString& mark, const FloatPoint& point) const

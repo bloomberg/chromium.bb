@@ -90,18 +90,6 @@ void RootInlineBox::clearTruncation()
     }
 }
 
-bool RootInlineBox::isHyphenated() const
-{
-    for (InlineBox* box = firstLeafChild(); box; box = box->nextLeafChild()) {
-        if (box->isInlineTextBox()) {
-            if (toInlineTextBox(box)->hasHyphen())
-                return true;
-        }
-    }
-
-    return false;
-}
-
 int RootInlineBox::baselinePosition(FontBaseline baselineType) const
 {
     return boxModelObject()->baselinePosition(baselineType, isFirstLineStyle(), isHorizontal() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);

@@ -109,8 +109,6 @@ public:
 
     virtual void clearTruncation() OVERRIDE FINAL;
 
-    bool isHyphenated() const;
-
     virtual int baselinePosition(FontBaseline baselineType) const OVERRIDE FINAL;
     virtual LayoutUnit lineHeight() const OVERRIDE FINAL;
 
