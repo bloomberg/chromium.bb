@@ -8,9 +8,9 @@
       location.href = 'database_callbacks_second.html';
     }
     function openConnection() {
-      var idbRequest = webkitIndexedDB.open("database_callbacks_first");
+      var idbRequest = indexedDB.open("database_callbacks_first");
       // setTimeout is needed so that the IDBRequest returned by
-      // webkitIndexedDB.open() can be garbage collected.
+      // indexedDB.open() can be garbage collected.
       idbRequest.onsuccess = function() { setTimeout(gcAndDetach, 0) };
     }
     openConnection();

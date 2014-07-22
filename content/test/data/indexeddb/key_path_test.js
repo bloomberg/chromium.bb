@@ -5,7 +5,7 @@
 
 function cursorSuccess()
 {
-    debug("Cursor opened successfully.")
+    debug("Cursor opened successfully.");
     // FIXME: check that we can iterate the cursor.
     shouldBe("event.target.result.direction", "'next'");
     shouldBe("event.target.result.key", "'myKey' + count");
@@ -20,7 +20,7 @@ function cursorSuccess()
 function openCursor()
 {
     debug("Opening cursor #" + count);
-    keyRange = webkitIDBKeyRange.lowerBound("myKey" + count);
+    keyRange = IDBKeyRange.lowerBound("myKey" + count);
     request = objectStore.openCursor(keyRange);
     request.onsuccess = cursorSuccess;
     request.onerror = unexpectedErrorCallback;

@@ -16,7 +16,6 @@ function initDomStorage(value) {
 // the functions get their results through callbacks and cannot return the
 // values directly.
 var isolation = {};
-window.indexedDB = window.indexedDB || window.webkitIndexedDB;
 
 isolation.db = null;
 isolation.onerror = function(e) {

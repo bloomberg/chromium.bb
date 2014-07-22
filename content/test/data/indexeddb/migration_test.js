@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 function test() {
-  request = webkitIndexedDB.open('open-close-version-test1');
+  request = indexedDB.open('open-close-version-test1');
   request.onsuccess = openTest2;
   request.onerror = unexpectedErrorCallback;
   request.onblocked = unexpectedBlockedCallback;
@@ -15,7 +15,7 @@ function openTest2(event) {
         "this script will create a new database that has no object stores");
   shouldBe("db.objectStoreNames.length", "1");
   shouldBeEqualToString("typeof db.version", "string");
-  request = webkitIndexedDB.open('open-close-version-test2');
+  request = indexedDB.open('open-close-version-test2');
   request.onsuccess = done;
   request.onerror = unexpectedErrorCallback;
   request.onblocked = unexpectedBlockedCallback;

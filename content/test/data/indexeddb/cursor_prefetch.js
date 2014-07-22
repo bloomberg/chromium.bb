@@ -67,7 +67,7 @@ function firstTest() {
     ++count;
 
     cursor.continue();
-  }
+  };
 }
 
 function secondTest() {
@@ -118,7 +118,7 @@ function secondTest() {
 
     ++expectedKey;
     cursor.continue();
-  }
+  };
 }
 
 function thirdTest() {
@@ -153,7 +153,7 @@ function thirdTest() {
     ++count;
 
     cursor.continue();
-  }
+  };
 }
 
 function fourthTest() {
@@ -167,7 +167,7 @@ function fourthTest() {
   trans.oncomplete = function() {
     debug("fourthTest() transaction completed");
     fifthTest();
-  }
+  };
 
   var store = trans.objectStore('store');
   var cursorReq = store.openCursor();
@@ -195,7 +195,7 @@ function fourthTest() {
           debug("Other request fired out-of-order!");
           fail();
         }
-      }
+      };
 
       cursor.continue();
       return;
@@ -214,7 +214,7 @@ function fourthTest() {
           debug("Other request didn't fire right after continue as expected.");
           fail();
         }
-      }
+      };
 
       return;
     }
@@ -224,7 +224,7 @@ function fourthTest() {
     }
 
     cursor.continue();
-  }
+  };
 }
 
 function fifthTest() {
@@ -258,7 +258,7 @@ function fifthTest() {
     debug("count: " + count);
     ++count;
     cursor.continue();
-  }
+  };
 }
 
 function sixthTest() {
@@ -308,7 +308,7 @@ function sixthTest() {
     } else {
       cursor1.continue();
     }
-  }
+  };
 
   var cursor2func = function() {
     var cursor = event.target.result;
@@ -333,7 +333,7 @@ function sixthTest() {
     } else {
       cursor2.continue();
     }
-  }
+  };
 
   var req = store.openCursor();
   req.onerror = unexpectedErrorCallback;
@@ -372,7 +372,7 @@ function seventhTest() {
 
     ++count;
     cursor.continue();
-  }
+  };
 }
 
 function eighthTest() {
@@ -405,5 +405,5 @@ function eighthTest() {
 
     ++count;
     cursor.continue();
-  }
+  };
 }

@@ -94,8 +94,7 @@ function onAbort() {
 }
 
 function logError() {
-  debug("Error function called: (" + event.target.errorCode + ") " +
-        event.target.webkitErrorMessage);
+  debug("Error function called: (" + event.target.error.name + ") " +
+        event.target.error.message);
   event.preventDefault();
 }
-

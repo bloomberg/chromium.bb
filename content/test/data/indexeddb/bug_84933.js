@@ -6,8 +6,8 @@ function test()
 {
   var n = 25;
   for (var i = 0; i < n; i++) {
-    webkitIndexedDB.open("bug_84933_" + i.toString()).onsuccess = function() {
+    indexedDB.open("bug_84933_" + i.toString()).onsuccess = function() {
       window.close();
-    }
+    };
   }
 }

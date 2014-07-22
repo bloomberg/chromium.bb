@@ -4,7 +4,7 @@
 
 function test()
 {
-  webkitIndexedDB.deleteDatabase('no-such-database').onsuccess = function() {
+  indexedDB.deleteDatabase('no-such-database').onsuccess = function() {
     window.close();
   };
 }

@@ -12,7 +12,7 @@
 
 function test() {
   dbname = "corrupted_open_db_detection.html";
-  request = webkitIndexedDB.open(dbname);
+  request = indexedDB.open(dbname);
   request.onupgradeneeded = upgradeNeeded;
   request.onsuccess = onSuccess;
   request.onerror = unexpectedErrorCallback;

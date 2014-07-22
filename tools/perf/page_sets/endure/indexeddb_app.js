@@ -8,10 +8,6 @@
 // state, the recorded actions are drained from the store (as if being sent
 // to the server).
 
-self.indexedDB = self.indexedDB || self.webkitIndexedDB ||
-  self.mozIndexedDB;
-self.IDBKeyRange = self.IDBKeyRange || self.webkitIDBKeyRange;
-
 var $ = function(s) {
   return document.querySelector(s);
 };
@@ -34,12 +30,12 @@ function error(message) {
 
 function unexpectedErrorCallback(e) {
   error("Unexpected error callback: (" + e.target.error.name + ") " +
-        e.target.webkitErrorMessage);
+        e.target.error.message);
 }
 
 function unexpectedAbortCallback(e) {
   error("Unexpected abort callback: (" + e.target.error.name + ") " +
-        e.target.webkitErrorMessage);
+        e.target.error.message);
 }
 
 function unexpectedBlockedCallback(e) {
@@ -91,22 +87,13 @@ worker.onmessage = function (event) {
   var data = event.data;
   switch (data.type) {
     case 'ABORT':
-      unexpectedAbortCallback(
-        {target:{
-           error: data.error,
-           webkitErrorMessage: data.webkitErrorMessage}});
+      unexpectedAbortCallback({target: {error: data.error}});
       break;
     case 'ERROR':
-      unexpectedErrorCallback(
-        {target:{
-           error: data.error,
-           webkitErrorMessage: data.webkitErrorMessage}});
+      unexpectedErrorCallback({target: {error: data.error}});
       break;
     case 'BLOCKED':
-      unexpectedBlockedCallback(
-        {target:{
-           error: data.error,
-           webkitErrorMessage: data.webkitErrorMessage}});
+      unexpectedBlockedCallback({target: {error: data.error}});
       break;
     case 'LOG':
       log('WORKER: ' + data.message);

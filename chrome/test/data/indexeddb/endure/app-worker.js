@@ -9,18 +9,18 @@
 // temporary store and combined into larger records in a permanent store.
 // When in an "offline" state, nothing else happens.
 
-self.indexedDB = self.indexedDB || self.webkitIndexedDB ||
-  self.mozIndexedDB;
-self.IDBKeyRange = self.IDBKeyRange || self.webkitIDBKeyRange;
-
 function unexpectedErrorCallback(e) {
-  self.postMessage({type: 'ERROR', error: { name: e.target.error.name },
-                    webkitErrorMessage: e.target.webkitErrorMessage});
+  self.postMessage({type: 'ERROR', error: {
+    name: e.target.error.name,
+    message: e.target.error.message
+  }});
 }
 
 function unexpectedAbortCallback(e) {
-  self.postMessage({type: 'ABORT', error: { name: e.target.error.name },
-                    webkitErrorMessage: e.target.webkitErrorMessage});
+  self.postMessage({type: 'ABORT', error: {
+    name: e.target.error.name,
+    message: e.target.error.message
+  }});
 }
 
 function log(message) {

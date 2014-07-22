@@ -71,8 +71,7 @@ Cache.prototype.initialize = function(callback) {
   // Establish a connection to the database or (re)create it if not available
   // or not up to date. After changing the database's schema, increment
   // Cache.DB_VERSION to force database recreating.
-  var openRequest = window.webkitIndexedDB.open(Cache.DB_NAME,
-                                                Cache.DB_VERSION);
+  var openRequest = window.indexedDB.open(Cache.DB_NAME, Cache.DB_VERSION);
 
   openRequest.onsuccess = function(e) {
     this.db_ = e.target.result;

@@ -69,11 +69,5 @@ function onSetVersion()
 
 function test()
 {
-  if ('webkitIndexedDB' in window) {
-    indexedDB = webkitIndexedDB;
-    IDBCursor = webkitIDBCursor;
-    IDBKeyRange = webkitIDBKeyRange;
-    IDBTransaction = webkitIDBTransaction;
-  }
   indexedDBTest(onSetVersion, onSetVersionComplete);
 }

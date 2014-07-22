@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 function test() {
-  request = webkitIndexedDB.open('database-basics');
+  request = indexedDB.open('database-basics');
   request.onupgradeneeded = upgradeNeeded;
   request.onsuccess = onSuccess;
   request.onerror = unexpectedErrorCallback;

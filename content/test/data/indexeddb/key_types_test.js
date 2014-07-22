@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-window.indexedDB = window.indexedDB || window.webkitIndexedDB;
-window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
-
 function test() {
   indexedDBTest(prepareDatabase, testValidKeys);
 }

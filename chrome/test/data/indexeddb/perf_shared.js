@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-window.indexedDB = window.indexedDB || window.webkitIndexedDB ||
-    window.mozIndexedDB || window.msIndexedDB;
-window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
-
 var automation = {
   results: {}
 };
@@ -42,10 +38,8 @@ function assert(t) {
 
 function onError(e) {
   var s = "Caught error.";
-  if (e.target && e.target.webkitErrorMessage)
-    s += "\n" + e.target.webkitErrorMessage;
-  else if (e.target && e.target.error)
-    s += "\n" + e.target.error.name;
+  if (e.target && e.target.error)
+    s += "\n" + e.target.error.name + "\n" + e.target.error.message;
   console.log(s);
   automation.setStatus(s);
   e.stopPropagation();
@@ -97,7 +91,7 @@ function createDatabase(
     var db = openRequest.result;
     curVersion = db.version;
     db.onerror = function(ev) {
-      console.log("db error", arguments, openRequest.webkitErrorMessage);
+      console.log("db error", arguments, openRequest.error.message);
       errorHandler(ev);
     };
     if (curVersion != baseVersion) {
@@ -132,7 +126,7 @@ function alterObjectStores(
     var db = openRequest.result;
     db.onerror = function(ev) {
       console.log("error altering db", arguments,
-          openRequest.webkitErrorMessage);
+          openRequest.error.message);
       errorHandler();
     };
     if (db.version != version) {
