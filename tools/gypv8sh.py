@@ -47,41 +47,6 @@ def main ():
       p = subprocess.Popen(
           cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=0)
       out, err = p.communicate()
-      if p.returncode:
-        # TODO(jochen): Remove once crbug.com/370551 is resolved.
-        if sys.platform == 'darwin':
-          sys.path.insert(0, '/Developer/Library/PrivateFrameworks/'
-                             'LLDB.framework/Resources/Python')
-          try:
-            import lldb
-          except:
-            raise Exception("Could not load lldb module")
-          debugger = lldb.SBDebugger.Create()
-          debugger.SetAsync(False)
-          target = debugger.CreateTargetWithFileAndArch(
-              cmd[0], lldb.LLDB_ARCH_DEFAULT)
-          if not target:
-            raise Exception("Failed to create d8 target")
-          process = target.LaunchSimple(cmd[1:], None, os.getcwd())
-          if not process:
-            raise Exception("Failed to start d8")
-          if process.GetState() == lldb.eStateStopped:
-            for thread in process:
-              print "Thread (id %d)" % thread.GetThreadID()
-              for frame in thread:
-                print frame
-              print ""
-            raise Exception(
-                "d8 crashed, please report this at http://crbug.com/370551")
-          else:
-            # For some reason d8 worked this time...
-            out = ''
-            while True:
-              s = process.GetSTDOUT(4096)
-              if s == '':
-                break
-              out += s
-
       with open(cxxoutfile, 'wb') as f:
         f.write(out)
       shutil.copyfile(inputfile, jsoutfile)
