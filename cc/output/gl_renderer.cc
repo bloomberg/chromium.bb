@@ -2405,23 +2405,12 @@ void GLRenderer::GetFramebufferPixelsAsync(
     bool own_mailbox = !request->has_texture_mailbox();
 
     GLuint texture_id = 0;
-    gl_->GenTextures(1, &texture_id);
-
     gpu::Mailbox mailbox;
     if (own_mailbox) {
       GLC(gl_, gl_->GenMailboxCHROMIUM(mailbox.name));
-    } else {
-      mailbox = request->texture_mailbox().mailbox();
-      DCHECK_EQ(static_cast<unsigned>(GL_TEXTURE_2D),
-                request->texture_mailbox().target());
-      DCHECK(!mailbox.IsZero());
-      unsigned incoming_sync_point = request->texture_mailbox().sync_point();
-      if (incoming_sync_point)
-        GLC(gl_, gl_->WaitSyncPointCHROMIUM(incoming_sync_point));
-    }
+      gl_->GenTextures(1, &texture_id);
+      GLC(gl_, gl_->BindTexture(GL_TEXTURE_2D, texture_id));
 
-    GLC(gl_, gl_->BindTexture(GL_TEXTURE_2D, texture_id));
-    if (own_mailbox) {
       GLC(gl_,
           gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
       GLC(gl_,
@@ -2434,16 +2423,26 @@ void GLRenderer::GetFramebufferPixelsAsync(
               GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
       GLC(gl_, gl_->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name));
     } else {
-      GLC(gl_, gl_->ConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name));
+      mailbox = request->texture_mailbox().mailbox();
+      DCHECK_EQ(static_cast<unsigned>(GL_TEXTURE_2D),
+                request->texture_mailbox().target());
+      DCHECK(!mailbox.IsZero());
+      unsigned incoming_sync_point = request->texture_mailbox().sync_point();
+      if (incoming_sync_point)
+        GLC(gl_, gl_->WaitSyncPointCHROMIUM(incoming_sync_point));
+
+      texture_id = GLC(
+          gl_,
+          gl_->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name));
     }
     GetFramebufferTexture(texture_id, RGBA_8888, window_rect);
-    GLC(gl_, gl_->BindTexture(GL_TEXTURE_2D, 0));
 
     unsigned sync_point = gl_->InsertSyncPointCHROMIUM();
     TextureMailbox texture_mailbox(mailbox, GL_TEXTURE_2D, sync_point);
 
     scoped_ptr<SingleReleaseCallback> release_callback;
     if (own_mailbox) {
+      GLC(gl_, gl_->BindTexture(GL_TEXTURE_2D, 0));
       release_callback = texture_mailbox_deleter_->GetReleaseCallback(
           output_surface_->context_provider(), texture_id);
     } else {

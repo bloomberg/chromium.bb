@@ -485,15 +485,12 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
     cached_stream_texture_size_ = natural_size_;
   }
 
-  uint32 source_texture = web_graphics_context->createTexture();
   web_graphics_context->waitSyncPoint(mailbox_holder->sync_point);
 
   // Ensure the target of texture is set before copyTextureCHROMIUM, otherwise
   // an invalid texture target may be used for copy texture.
-  web_graphics_context->bindTexture(mailbox_holder->texture_target,
-                                    source_texture);
-  web_graphics_context->consumeTextureCHROMIUM(mailbox_holder->texture_target,
-                                               mailbox_holder->mailbox.name);
+  uint32 source_texture = web_graphics_context->createAndConsumeTextureCHROMIUM(
+      mailbox_holder->texture_target, mailbox_holder->mailbox.name);
 
   // The video is stored in an unmultiplied format, so premultiply if
   // necessary.
@@ -512,10 +509,6 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
   web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
                                     false);
 
-  if (mailbox_holder->texture_target == GL_TEXTURE_EXTERNAL_OES)
-    web_graphics_context->bindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
-  else
-    web_graphics_context->bindTexture(GL_TEXTURE_2D, texture);
   web_graphics_context->deleteTexture(source_texture);
   web_graphics_context->flush();
   video_frame->AppendReleaseSyncPoint(web_graphics_context->insertSyncPoint());
@@ -1009,11 +1002,9 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
 #endif  // defined(VIDEO_HOLE)
   } else if (!is_remote_ && texture_id_) {
     GLES2Interface* gl = stream_texture_factory_->ContextGL();
-    GLuint texture_id_ref = 0;
-    gl->GenTextures(1, &texture_id_ref);
     GLuint texture_target = kGLTextureExternalOES;
-    gl->BindTexture(texture_target, texture_id_ref);
-    gl->ConsumeTextureCHROMIUM(texture_target, texture_mailbox_.name);
+    GLuint texture_id_ref = gl->CreateAndConsumeTextureCHROMIUM(
+        texture_target, texture_mailbox_.name);
     gl->Flush();
     GLuint texture_mailbox_sync_point = gl->InsertSyncPointCHROMIUM();
 

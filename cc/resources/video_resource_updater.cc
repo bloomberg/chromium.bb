@@ -190,9 +190,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         GLC(gl, gl->GenMailboxCHROMIUM(mailbox.name));
         ResourceProvider::ScopedWriteLockGL lock(resource_provider_,
                                                  resource_id);
-        GLC(gl, gl->BindTexture(GL_TEXTURE_2D, lock.texture_id()));
-        GLC(gl, gl->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name));
-        GLC(gl, gl->BindTexture(GL_TEXTURE_2D, 0));
+        GLC(gl,
+            gl->ProduceTextureDirectCHROMIUM(
+                lock.texture_id(), GL_TEXTURE_2D, mailbox.name));
       }
 
       if (resource_id)

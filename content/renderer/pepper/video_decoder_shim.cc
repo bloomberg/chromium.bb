@@ -385,12 +385,9 @@ void VideoDecoderShim::AssignPictureBuffers(
   GLuint num_textures = base::checked_cast<GLuint>(buffers.size());
   std::vector<uint32_t> local_texture_ids(num_textures);
   gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
-  gles2->GenTextures(num_textures, &local_texture_ids.front());
   for (uint32_t i = 0; i < num_textures; i++) {
-    gles2->ActiveTexture(GL_TEXTURE0);
-    gles2->BindTexture(GL_TEXTURE_2D, local_texture_ids[i]);
-    gles2->ConsumeTextureCHROMIUM(GL_TEXTURE_2D,
-                                  pending_texture_mailboxes_[i].name);
+    local_texture_ids[i] = gles2->CreateAndConsumeTextureCHROMIUM(
+        GL_TEXTURE_2D, pending_texture_mailboxes_[i].name);
     // Map the plugin texture id to the local texture id.
     uint32_t plugin_texture_id = buffers[i].texture_id();
     texture_id_map_[plugin_texture_id] = local_texture_ids[i];

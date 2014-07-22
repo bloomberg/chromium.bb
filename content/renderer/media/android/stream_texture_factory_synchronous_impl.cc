@@ -168,8 +168,8 @@ unsigned StreamTextureFactorySynchronousImpl::CreateStreamTexture(
   stream_id = gl->CreateStreamTextureCHROMIUM(*texture_id);
 
   gl->GenMailboxCHROMIUM(texture_mailbox->name);
-  gl->BindTexture(texture_target, *texture_id);
-  gl->ProduceTextureCHROMIUM(texture_target, texture_mailbox->name);
+  gl->ProduceTextureDirectCHROMIUM(
+      *texture_id, texture_target, texture_mailbox->name);
   return stream_id;
 }
 

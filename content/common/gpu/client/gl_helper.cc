@@ -850,8 +850,7 @@ gpu::MailboxHolder GLHelper::ProduceMailboxHolderFromTexture(
     GLuint texture_id) {
   gpu::Mailbox mailbox;
   gl_->GenMailboxCHROMIUM(mailbox.name);
-  content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, texture_id);
-  gl_->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+  gl_->ProduceTextureDirectCHROMIUM(texture_id, GL_TEXTURE_2D, mailbox.name);
   return gpu::MailboxHolder(mailbox, GL_TEXTURE_2D, InsertSyncPoint());
 }
 
@@ -861,9 +860,8 @@ GLuint GLHelper::ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
     return 0;
   if (sync_point)
     WaitSyncPoint(sync_point);
-  GLuint texture = CreateTexture();
-  content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, texture);
-  gl_->ConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+  GLuint texture =
+      gl_->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
   return texture;
 }
 

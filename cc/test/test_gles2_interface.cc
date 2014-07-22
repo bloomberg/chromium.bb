@@ -360,9 +360,21 @@ void TestGLES2Interface::ProduceTextureCHROMIUM(GLenum target,
   test_context_->produceTextureCHROMIUM(target, mailbox);
 }
 
+void TestGLES2Interface::ProduceTextureDirectCHROMIUM(GLuint texture,
+                                                      GLenum target,
+                                                      const GLbyte* mailbox) {
+  test_context_->produceTextureDirectCHROMIUM(texture, target, mailbox);
+}
+
 void TestGLES2Interface::ConsumeTextureCHROMIUM(GLenum target,
                                                 const GLbyte* mailbox) {
   test_context_->consumeTextureCHROMIUM(target, mailbox);
+}
+
+GLuint TestGLES2Interface::CreateAndConsumeTextureCHROMIUM(
+    GLenum target,
+    const GLbyte* mailbox) {
+  return test_context_->createAndConsumeTextureCHROMIUM(target, mailbox);
 }
 
 void TestGLES2Interface::ResizeCHROMIUM(GLuint width,

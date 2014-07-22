@@ -610,12 +610,9 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
   DCHECK_EQ(static_cast<GLuint>(bound_texture), texture);
 #endif
 
-  uint32 source_texture = web_graphics_context->createTexture();
-
   web_graphics_context->waitSyncPoint(mailbox_holder->sync_point);
-  web_graphics_context->bindTexture(GL_TEXTURE_2D, source_texture);
-  web_graphics_context->consumeTextureCHROMIUM(GL_TEXTURE_2D,
-                                               mailbox_holder->mailbox.name);
+  uint32 source_texture = web_graphics_context->createAndConsumeTextureCHROMIUM(
+      GL_TEXTURE_2D, mailbox_holder->mailbox.name);
 
   // The video is stored in a unmultiplied format, so premultiply
   // if necessary.
@@ -635,9 +632,6 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
   web_graphics_context->pixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, false);
   web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
                                     false);
-
-  // Restore the state for TEXTURE_2D binding point as mentioned above.
-  web_graphics_context->bindTexture(GL_TEXTURE_2D, texture);
 
   web_graphics_context->deleteTexture(source_texture);
   web_graphics_context->flush();
