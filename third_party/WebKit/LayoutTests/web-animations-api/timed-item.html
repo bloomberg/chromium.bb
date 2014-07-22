@@ -17,18 +17,18 @@ test(function() {
 }, 'TimedItem.localTime and TimedItem.currentIteration are null when animation is not associated with a Player');
 
 test(function() {
-    var animation = element.animate(keyframes, {fill: 'both', duration: 2, iterations: 3}).source;
-    animation.player.currentTime = -1;
-    assert_equals(animation.localTime, -1);
+    var animation = element.animate(keyframes, {fill: 'both', duration: 2000, iterations: 3}).source;
+    animation.player.currentTime = -1000;
+    assert_equals(animation.localTime, -1000, 'localTime');
     assert_equals(animation.currentIteration, 0);
-    animation.player.currentTime = 1;
-    assert_equals(animation.localTime, 1);
+    animation.player.currentTime = 1000;
+    assert_equals(animation.localTime, 1000);
     assert_equals(animation.currentIteration, 0);
-    animation.player.currentTime = 5;
-    assert_equals(animation.localTime, 5);
+    animation.player.currentTime = 5000;
+    assert_equals(animation.localTime, 5000);
     assert_equals(animation.currentIteration, 2);
-    animation.player.currentTime = 7;
-    assert_equals(animation.localTime, 7);
+    animation.player.currentTime = 7000;
+    assert_equals(animation.localTime, 7000);
     assert_equals(animation.currentIteration, 2);
 }, 'TimedItem.localTime and TimedItem.currentIteration return reasonable values when an animation is in effect');
 

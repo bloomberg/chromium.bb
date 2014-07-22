@@ -37,7 +37,6 @@
     [RuntimeEnabled=WebAnimationsAPI]          attribute AnimationNode? source;
     [RuntimeEnabled=WebAnimationsAPI]          attribute double     startTime;
     [RuntimeEnabled=WebAnimationsAPI]          attribute double     currentTime;
-    [RuntimeEnabled=WebAnimationsAPI] readonly attribute double     timeLag;
     [RuntimeEnabled=WebAnimationsAPI]          attribute double     playbackRate;
     [RuntimeEnabled=WebAnimationsAPI] readonly attribute boolean    paused;
     [RuntimeEnabled=WebAnimationsAPI] readonly attribute boolean    finished;

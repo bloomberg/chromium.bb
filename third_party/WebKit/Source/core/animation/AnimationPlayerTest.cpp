@@ -95,7 +95,6 @@ TEST_F(AnimationAnimationPlayerTest, InitialState)
     EXPECT_EQ(0, player->currentTimeInternal());
     EXPECT_FALSE(player->paused());
     EXPECT_EQ(1, player->playbackRate());
-    EXPECT_EQ(0, player->timeLagInternal());
     EXPECT_FALSE(player->hasStartTime());
     EXPECT_TRUE(isNull(player->startTimeInternal()));
 
@@ -106,7 +105,6 @@ TEST_F(AnimationAnimationPlayerTest, InitialState)
     EXPECT_FALSE(player->paused());
     EXPECT_EQ(1, player->playbackRate());
     EXPECT_EQ(0, player->startTimeInternal());
-    EXPECT_EQ(0, player->timeLagInternal());
     EXPECT_TRUE(player->hasStartTime());
 }
 
@@ -191,26 +189,24 @@ TEST_F(AnimationAnimationPlayerTest, SetCurrentTimeMax)
 TEST_F(AnimationAnimationPlayerTest, SetCurrentTimeUnrestrictedDouble)
 {
     updateTimeline(10);
-    player->setCurrentTimeInternal(nullValue());
+    player->setCurrentTime(nullValue());
     EXPECT_EQ(10, player->currentTimeInternal());
-    player->setCurrentTimeInternal(std::numeric_limits<double>::infinity());
+    player->setCurrentTime(std::numeric_limits<double>::infinity());
     EXPECT_EQ(10, player->currentTimeInternal());
-    player->setCurrentTimeInternal(-std::numeric_limits<double>::infinity());
+    player->setCurrentTime(-std::numeric_limits<double>::infinity());
     EXPECT_EQ(10, player->currentTimeInternal());
 }
 
-TEST_F(AnimationAnimationPlayerTest, TimeLag)
+
+TEST_F(AnimationAnimationPlayerTest, SetCurrentTimeSetsStartTime)
 {
-    player->setCurrentTimeInternal(10);
-    EXPECT_EQ(-10, player->timeLagInternal());
-    updateTimeline(10);
-    EXPECT_EQ(-10, player->timeLagInternal());
-    player->setCurrentTimeInternal(40);
-    EXPECT_EQ(-30, player->timeLagInternal());
-    updateTimeline(20);
-    EXPECT_EQ(-20, player->timeLagInternal());
+    EXPECT_EQ(0, player->startTime());
+    player->setCurrentTime(1000);
+    EXPECT_EQ(-1000, player->startTime());
+    updateTimeline(1);
+    EXPECT_EQ(-1000, player->startTime());
+    EXPECT_EQ(2000, player->currentTime());
 }
-
 
 TEST_F(AnimationAnimationPlayerTest, SetStartTime)
 {
@@ -246,6 +242,29 @@ TEST_F(AnimationAnimationPlayerTest, SetStartTimeOnLimitedAnimationPlayer)
     EXPECT_TRUE(player->finished());
 }
 
+TEST_F(AnimationAnimationPlayerTest, StartTimePauseFinish)
+{
+    player->pause();
+    EXPECT_TRUE(std::isnan(player->startTime()));
+    player->finish(exceptionState);
+    EXPECT_TRUE(std::isnan(player->startTime()));
+}
+
+TEST_F(AnimationAnimationPlayerTest, StartTimeFinishPause)
+{
+    double startTime = player->startTime();
+    player->finish(exceptionState);
+    EXPECT_EQ(startTime, player->startTime());
+    player->pause();
+    EXPECT_TRUE(std::isnan(player->startTime()));
+}
+
+TEST_F(AnimationAnimationPlayerTest, StartTimeWithZeroPlaybackRate)
+{
+    player->setPlaybackRate(0);
+    EXPECT_TRUE(std::isnan(player->startTime()));
+}
+
 TEST_F(AnimationAnimationPlayerTest, SetStartTimeWhilePaused)
 {
     updateTimeline(10);
@@ -256,7 +275,6 @@ TEST_F(AnimationAnimationPlayerTest, SetStartTimeWhilePaused)
     player->setStartTimeInternal(60);
     EXPECT_EQ(10, player->currentTimeInternal());
 }
-
 
 TEST_F(AnimationAnimationPlayerTest, PausePlay)
 {

@@ -61,7 +61,6 @@ AnimationPlayer::AnimationPlayer(ExecutionContext* executionContext, AnimationTi
     , m_playbackRate(1)
     , m_startTime(nullValue())
     , m_holdTime(nullValue())
-    , m_storedTimeLag(0)
     , m_sortInfo(nextSequenceNumber())
     , m_content(content)
     , m_timeline(&timeline)
@@ -99,49 +98,46 @@ bool AnimationPlayer::limited(double currentTime) const
     return (m_playbackRate < 0 && currentTime <= 0) || (m_playbackRate > 0 && currentTime >= sourceEnd());
 }
 
-double AnimationPlayer::currentTimeWithoutLag() const
+void AnimationPlayer::setCurrentTimeInternal(double newCurrentTime)
 {
-    if (isNull(m_startTime) || !m_timeline)
-        return 0;
-    return (m_timeline->effectiveTime() - m_startTime) * m_playbackRate;
-}
+    ASSERT(std::isfinite(newCurrentTime));
 
-double AnimationPlayer::currentTimeWithLag() const
-{
-    ASSERT(!m_held);
-    double time = currentTimeWithoutLag();
-    return std::isinf(time) ? time : time - m_storedTimeLag;
-}
-
-void AnimationPlayer::updateTimingState(double newCurrentTime)
-{
-    ASSERT(!isNull(newCurrentTime));
     bool oldHeld = m_held;
+    bool outdated = false;
     m_held = m_paused || !m_playbackRate || limited(newCurrentTime);
+
     if (m_held) {
         if (!oldHeld || m_holdTime != newCurrentTime)
-            setOutdated();
+            outdated = true;
         m_holdTime = newCurrentTime;
-        m_storedTimeLag = nullValue();
+        if (m_paused || !m_playbackRate)
+            m_startTime = nullValue();
     } else {
         m_holdTime = nullValue();
-        m_storedTimeLag = currentTimeWithoutLag() - newCurrentTime;
+        m_startTime = m_timeline->effectiveTime() - newCurrentTime / m_playbackRate;
         m_finished = false;
+        outdated = true;
+    }
+
+    if (outdated) {
         setOutdated();
+        cancelAnimationOnCompositor();
+        if (!m_held)
+            schedulePendingAnimationOnCompositor();
     }
 }
 
+// Update timing to reflect updated animation clock due to tick
 void AnimationPlayer::updateCurrentTimingState()
 {
     if (m_held) {
-        updateTimingState(m_holdTime);
+        setCurrentTimeInternal(m_holdTime);
         return;
     }
-    if (!limited(currentTimeWithLag()))
+    if (!limited(calculateCurrentTime()))
         return;
     m_held = true;
     m_holdTime = m_playbackRate < 0 ? 0 : sourceEnd();
-    m_storedTimeLag = nullValue();
 }
 
 double AnimationPlayer::currentTime()
@@ -154,37 +150,41 @@ double AnimationPlayer::currentTimeInternal()
     updateCurrentTimingState();
     if (m_held)
         return m_holdTime;
-    return currentTimeWithLag();
+    return calculateCurrentTime();
+}
+
+double AnimationPlayer::calculateCurrentTime() const
+{
+    ASSERT(!m_held);
+    if (isNull(m_startTime) || !m_timeline)
+        return 0;
+    return (m_timeline->effectiveTime() - m_startTime) * m_playbackRate;
 }
 
 void AnimationPlayer::setCurrentTime(double newCurrentTime)
 {
-    setCurrentTimeInternal(newCurrentTime / 1000);
-}
-
-void AnimationPlayer::setCurrentTimeInternal(double newCurrentTime)
-{
     if (!std::isfinite(newCurrentTime))
         return;
-    updateTimingState(newCurrentTime);
-    cancelAnimationOnCompositor();
-    schedulePendingAnimationOnCompositor();
+    setCurrentTimeInternal(newCurrentTime / 1000);
 }
 
 void AnimationPlayer::setStartTimeInternal(double newStartTime, bool isUpdateFromCompositor)
 {
     ASSERT(!isUpdateFromCompositor || !hasStartTime());
 
+    if (m_paused)
+        return;
     if (!std::isfinite(newStartTime))
         return;
     if (newStartTime == m_startTime)
         return;
-    updateCurrentTimingState(); // Update the value of held
+
     bool hadStartTime = hasStartTime();
     double previousCurrentTime = currentTimeInternal();
     m_startTime = newStartTime;
-    updateCurrentTimingState();
-    if (previousCurrentTime != currentTimeInternal()) {
+    double newCurrentTime = currentTimeInternal();
+
+    if (previousCurrentTime != newCurrentTime) {
         setOutdated();
     } else if (!hadStartTime && m_timeline) {
         // Even though this player is not outdated, time to effect change is
@@ -212,7 +212,7 @@ void AnimationPlayer::setSource(AnimationNode* newSource)
             newSource->player()->cancel();
         newSource->attach(this);
     }
-    updateTimingState(storedCurrentTime);
+    setCurrentTimeInternal(storedCurrentTime);
     schedulePendingAnimationOnCompositor();
 }
 
@@ -221,7 +221,7 @@ void AnimationPlayer::pause()
     if (m_paused)
         return;
     m_paused = true;
-    updateTimingState(currentTimeInternal());
+    setCurrentTimeInternal(currentTimeInternal());
     cancelAnimationOnCompositor();
 }
 
@@ -230,14 +230,12 @@ void AnimationPlayer::unpause()
     if (!m_paused)
         return;
     m_paused = false;
-    updateTimingState(currentTimeInternal());
-    schedulePendingAnimationOnCompositor();
+    setCurrentTimeInternal(currentTimeInternal());
 }
 
 void AnimationPlayer::play()
 {
     cancelAnimationOnCompositor();
-    // Note, unpause schedules pending animation on compositor if necessary.
     unpause();
     if (!m_content)
         return;
@@ -260,8 +258,6 @@ void AnimationPlayer::reverse()
             setCurrentTimeInternal(0);
     }
     setPlaybackRate(-m_playbackRate);
-    cancelAnimationOnCompositor();
-    // Note, unpause schedules pending animation on compositor if necessary.
     unpause();
 }
 
@@ -279,7 +275,6 @@ void AnimationPlayer::finish(ExceptionState& exceptionState)
         setCurrentTimeInternal(sourceEnd());
     }
     ASSERT(finished());
-    cancelAnimationOnCompositor();
 }
 
 const AtomicString& AnimationPlayer::interfaceName() const
@@ -318,9 +313,7 @@ void AnimationPlayer::setPlaybackRate(double playbackRate)
     if ((m_playbackRate < 0 && playbackRate >= 0) || (m_playbackRate > 0 && playbackRate <= 0))
         m_finished = false;
     m_playbackRate = playbackRate;
-    updateTimingState(storedCurrentTime);
-    cancelAnimationOnCompositor();
-    schedulePendingAnimationOnCompositor();
+    setCurrentTimeInternal(storedCurrentTime);
 }
 
 void AnimationPlayer::setOutdated()
@@ -344,7 +337,7 @@ bool AnimationPlayer::maybeStartAnimationOnCompositor()
     if (!canStartAnimationOnCompositor())
         return false;
 
-    return toAnimation(m_content.get())->maybeStartAnimationOnCompositor(timeline()->zeroTime() + startTimeInternal() + timeLagInternal());
+    return toAnimation(m_content.get())->maybeStartAnimationOnCompositor(timeline()->zeroTime() + startTimeInternal());
 }
 
 void AnimationPlayer::schedulePendingAnimationOnCompositor()
@@ -371,10 +364,11 @@ void AnimationPlayer::cancelAnimationOnCompositor()
 
 bool AnimationPlayer::update(TimingUpdateReason reason)
 {
-    m_outdated = false;
-
     if (!m_timeline)
         return false;
+
+    updateCurrentTimingState();
+    m_outdated = false;
 
     if (m_content) {
         double inheritedTime = isNull(m_timeline->currentTimeInternal()) ? nullValue() : currentTimeInternal();
@@ -432,7 +426,7 @@ bool AnimationPlayer::addEventListener(const AtomicString& eventType, PassRefPtr
 void AnimationPlayer::pauseForTesting(double pauseTime)
 {
     RELEASE_ASSERT(!paused());
-    updateTimingState(pauseTime);
+    setCurrentTimeInternal(pauseTime);
     if (!m_isPausedForTesting && hasActiveAnimationsOnCompositor())
         toAnimation(m_content.get())->pauseAnimationForTestingOnCompositor(currentTimeInternal());
     m_isPausedForTesting = true;
