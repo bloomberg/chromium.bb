@@ -95,6 +95,7 @@ Ht*
 IE*
 Ide*
 Inv*
+Insp*
 # J*
 # K*
 # L*
@@ -183,8 +184,7 @@ WebRtcB*
 WebUIA*
 WebUIBr*
 WebC*
-WebN*ss
-WebN*.S*
+WebN*
 WebstoreIn*
 WebstoreSt*
 WebSo*
