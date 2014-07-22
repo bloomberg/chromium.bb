@@ -88,15 +88,6 @@ RenderRubyBase* RenderRubyRun::rubyBaseSafe()
     return base;
 }
 
-RenderBlock* RenderRubyRun::firstLineBlock() const
-{
-    return 0;
-}
-
-void RenderRubyRun::updateFirstLetter()
-{
-}
-
 bool RenderRubyRun::isChildAllowed(RenderObject* child, RenderStyle*) const
 {
     return child->isRubyText() || child->isInline();

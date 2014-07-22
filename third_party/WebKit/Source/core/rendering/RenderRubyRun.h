@@ -58,9 +58,6 @@ public:
     virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) OVERRIDE;
     virtual void removeChild(RenderObject* child) OVERRIDE;
 
-    virtual RenderBlock* firstLineBlock() const OVERRIDE;
-    virtual void updateFirstLetter() OVERRIDE;
-
     void getOverhang(bool firstLine, RenderObject* startRenderer, RenderObject* endRenderer, int& startOverhang, int& endOverhang) const;
 
     static RenderRubyRun* staticCreateRubyRun(const RenderObject* parentRuby);
