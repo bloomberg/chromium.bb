@@ -17,6 +17,7 @@
 #include "media/base/filter_collection.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/text_track.h"
+#include "media/base/time_source.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
@@ -146,18 +147,30 @@ class MockAudioRenderer : public AudioRenderer {
                                 const BufferingStateCB& buffering_state_cb,
                                 const base::Closure& ended_cb,
                                 const PipelineStatusCB& error_cb));
-  MOCK_METHOD0(StartRendering, void());
-  MOCK_METHOD0(StopRendering, void());
-  MOCK_METHOD1(SetMediaTime, void(base::TimeDelta));
+  MOCK_METHOD0(GetTimeSource, TimeSource*());
   MOCK_METHOD1(Flush, void(const base::Closure& callback));
   MOCK_METHOD1(Stop, void(const base::Closure& callback));
-  MOCK_METHOD1(SetPlaybackRate, void(float playback_rate));
   MOCK_METHOD0(StartPlaying, void());
   MOCK_METHOD1(SetVolume, void(float volume));
-  MOCK_METHOD0(ResumeAfterUnderflow, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioRenderer);
+};
+
+class MockTimeSource : public TimeSource {
+ public:
+  MockTimeSource();
+  virtual ~MockTimeSource();
+
+  // TimeSource implementation.
+  MOCK_METHOD0(StartTicking, void());
+  MOCK_METHOD0(StopTicking, void());
+  MOCK_METHOD1(SetPlaybackRate, void(float));
+  MOCK_METHOD1(SetMediaTime, void(base::TimeDelta));
+  MOCK_METHOD0(CurrentMediaTime, base::TimeDelta());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockTimeSource);
 };
 
 class MockTextTrack : public TextTrack {

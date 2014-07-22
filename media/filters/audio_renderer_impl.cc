@@ -72,7 +72,7 @@ AudioRendererImpl::~AudioRendererImpl() {
   DCHECK(!algorithm_.get());
 }
 
-void AudioRendererImpl::StartRendering() {
+void AudioRendererImpl::StartTicking() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!rendering_);
@@ -102,7 +102,7 @@ void AudioRendererImpl::StartRendering_Locked() {
   sink_->Play();
 }
 
-void AudioRendererImpl::StopRendering() {
+void AudioRendererImpl::StopTicking() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(rendering_);
@@ -139,6 +139,21 @@ void AudioRendererImpl::SetMediaTime(base::TimeDelta time) {
   DCHECK_EQ(state_, kFlushed);
 
   start_timestamp_ = time;
+}
+
+base::TimeDelta AudioRendererImpl::CurrentMediaTime() {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // TODO(scherkus): Finish implementing when ready to switch Pipeline to using
+  // TimeSource http://crbug.com/370634
+  NOTIMPLEMENTED();
+
+  return base::TimeDelta();
+}
+
+TimeSource* AudioRendererImpl::GetTimeSource() {
+  return this;
 }
 
 void AudioRendererImpl::Flush(const base::Closure& callback) {

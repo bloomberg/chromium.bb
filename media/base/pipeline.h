@@ -34,6 +34,7 @@ class MediaLog;
 class TextRenderer;
 class TextTrackConfig;
 class TimeDeltaInterpolator;
+class TimeSource;
 class VideoRenderer;
 
 // Metadata describing a pipeline once it has been initialized.
@@ -317,7 +318,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   void PausePlayback();
   void StartPlayback();
 
-  void PauseClockAndStopRendering_Locked();
+  void PauseClockAndStopTicking_Locked();
   void StartClockIfWaitingForTimeUpdate_Locked();
 
   // Task runner used to execute pipeline tasks.
@@ -419,6 +420,9 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   scoped_ptr<AudioRenderer> audio_renderer_;
   scoped_ptr<VideoRenderer> video_renderer_;
   scoped_ptr<TextRenderer> text_renderer_;
+
+  // Renderer-provided time source used to control playback.
+  TimeSource* time_source_;
 
   PipelineStatistics statistics_;
 

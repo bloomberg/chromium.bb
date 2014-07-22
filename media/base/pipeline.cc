@@ -24,6 +24,7 @@
 #include "media/base/text_renderer.h"
 #include "media/base/text_track_config.h"
 #include "media/base/time_delta_interpolator.h"
+#include "media/base/time_source.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_renderer.h"
@@ -51,6 +52,7 @@ Pipeline::Pipeline(
       audio_buffering_state_(BUFFERING_HAVE_NOTHING),
       video_buffering_state_(BUFFERING_HAVE_NOTHING),
       demuxer_(NULL),
+      time_source_(NULL),
       underflow_disabled_for_testing_(false) {
   media_log_->AddEvent(media_log_->CreatePipelineStateChangedEvent(kCreated));
   media_log_->AddEvent(
@@ -380,6 +382,9 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
           return;
         }
 
+        if (audio_renderer_)
+          time_source_ = audio_renderer_->GetTimeSource();
+
         {
           PipelineMetadata metadata;
           metadata.has_audio = audio_renderer_;
@@ -402,10 +407,10 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
         interpolator_->SetBounds(start_timestamp_, start_timestamp_);
       }
 
-      if (audio_renderer_) {
-        audio_renderer_->SetMediaTime(start_timestamp_);
+      if (time_source_)
+        time_source_->SetMediaTime(start_timestamp_);
+      if (audio_renderer_)
         audio_renderer_->StartPlaying();
-      }
       if (video_renderer_)
         video_renderer_->StartPlaying();
       if (text_renderer_)
@@ -447,7 +452,7 @@ void Pipeline::DoSeek(
   SerialRunner::Queue bound_fns;
   {
     base::AutoLock auto_lock(lock_);
-    PauseClockAndStopRendering_Locked();
+    PauseClockAndStopTicking_Locked();
   }
 
   // Pause.
@@ -649,8 +654,8 @@ void Pipeline::PlaybackRateChangedTask(float playback_rate) {
     interpolator_->SetPlaybackRate(playback_rate);
   }
 
-  if (audio_renderer_)
-    audio_renderer_->SetPlaybackRate(playback_rate_);
+  if (time_source_)
+    time_source_->SetPlaybackRate(playback_rate_);
 }
 
 void Pipeline::VolumeChangedTask(float volume) {
@@ -750,7 +755,7 @@ void Pipeline::RunEndedCallbackIfNeeded() {
 
   {
     base::AutoLock auto_lock(lock_);
-    PauseClockAndStopRendering_Locked();
+    PauseClockAndStopTicking_Locked();
     interpolator_->SetBounds(duration_, duration_);
   }
 
@@ -863,7 +868,7 @@ void Pipeline::PausePlayback() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
-  PauseClockAndStopRendering_Locked();
+  PauseClockAndStopTicking_Locked();
 }
 
 void Pipeline::StartPlayback() {
@@ -873,12 +878,12 @@ void Pipeline::StartPlayback() {
   DCHECK(!WaitingForEnoughData());
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (audio_renderer_) {
+  if (time_source_) {
     // We use audio stream to update the clock. So if there is such a
     // stream, we pause the clock until we receive a valid timestamp.
     base::AutoLock auto_lock(lock_);
     interpolation_state_ = INTERPOLATION_WAITING_FOR_AUDIO_TIME_UPDATE;
-    audio_renderer_->StartRendering();
+    time_source_->StartTicking();
   } else {
     base::AutoLock auto_lock(lock_);
     interpolation_state_ = INTERPOLATION_STARTED;
@@ -887,19 +892,19 @@ void Pipeline::StartPlayback() {
   }
 }
 
-void Pipeline::PauseClockAndStopRendering_Locked() {
+void Pipeline::PauseClockAndStopTicking_Locked() {
   lock_.AssertAcquired();
   switch (interpolation_state_) {
     case INTERPOLATION_STOPPED:
       return;
 
     case INTERPOLATION_WAITING_FOR_AUDIO_TIME_UPDATE:
-      audio_renderer_->StopRendering();
+      time_source_->StopTicking();
       break;
 
     case INTERPOLATION_STARTED:
-      if (audio_renderer_)
-        audio_renderer_->StopRendering();
+      if (time_source_)
+        time_source_->StopTicking();
       interpolator_->StopInterpolating();
       break;
   }
