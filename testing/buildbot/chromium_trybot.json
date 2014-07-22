@@ -191,6 +191,7 @@
   ],
 
   "filter_builders": [
-    "linux_chromium_clang_dbg"
+    "linux_chromium_clang_dbg",
+    "mac_chromium_rel"
   ]
 }
