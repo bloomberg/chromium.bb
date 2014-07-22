@@ -726,6 +726,13 @@
         'test/test_permissions_provider.cc',
         'test/test_permissions_provider.h',
       ],
+      'conditions': [
+        ['OS=="win" and win_use_allocator_shim==1', {
+          'dependencies': [
+            '../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
+      ],
       'actions': [
         {
           'action_name': 'repack_components_pack',
