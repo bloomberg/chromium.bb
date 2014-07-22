@@ -112,7 +112,6 @@ class NativeViewportX11 : public NativeViewport,
 
 // static
 scoped_ptr<NativeViewport> NativeViewport::Create(
-    shell::Context* context,
     NativeViewportDelegate* delegate) {
   return scoped_ptr<NativeViewport>(new NativeViewportX11(delegate)).Pass();
 }

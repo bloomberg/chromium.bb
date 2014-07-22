@@ -10,9 +10,14 @@
 #include "mojo/services/native_viewport/native_viewport_export.h"
 #include "mojo/shell/context.h"
 
+namespace mojo {
+namespace services {
+
 MOJO_NATIVE_VIEWPORT_EXPORT mojo::ApplicationImpl*
     CreateNativeViewportService(
-        mojo::shell::Context* context,
-        mojo::ScopedMessagePipeHandle service_provider_handle);
+        ScopedMessagePipeHandle service_provider_handle);
+
+}  // namespace services
+}  // namespace mojo
 
 #endif  // MOJO_SERVICES_NATIVE_VIEWPORT_SERVICE_H_

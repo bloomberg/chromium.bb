@@ -38,7 +38,6 @@ LazyInstance<scoped_ptr<base::android::JavaHandlerThread> > g_shell_thread =
 
 void RunShell(std::vector<GURL> app_urls) {
   shell::Context* shell_context = new shell::Context();
-  shell_context->set_activity(base::android::GetApplicationContext());
   shell_context->set_ui_loop(g_java_message_loop.Get().get());
 
   g_context.Get().reset(shell_context);

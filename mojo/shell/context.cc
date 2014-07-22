@@ -65,21 +65,20 @@ static base::LazyInstance<Setup>::Leaky setup = LAZY_INSTANCE_INITIALIZER;
 
 class Context::NativeViewportServiceLoader : public ServiceLoader {
  public:
-  explicit NativeViewportServiceLoader(Context* context) : context_(context) {}
+  NativeViewportServiceLoader() {}
   virtual ~NativeViewportServiceLoader() {}
 
  private:
   virtual void LoadService(ServiceManager* manager,
                            const GURL& url,
                            ScopedMessagePipeHandle shell_handle) OVERRIDE {
-    app_.reset(::CreateNativeViewportService(context_, shell_handle.Pass()));
+    app_.reset(services::CreateNativeViewportService(shell_handle.Pass()));
   }
 
   virtual void OnServiceError(ServiceManager* manager,
                               const GURL& url) OVERRIDE {
   }
 
-  Context* context_;
   scoped_ptr<ApplicationImpl> app_;
   DISALLOW_COPY_AND_ASSIGN(NativeViewportServiceLoader);
 };
@@ -108,14 +107,14 @@ Context::Context()
   service_manager_.SetLoaderForURL(
       scoped_ptr<ServiceLoader>(
           new UIServiceLoader(
-              scoped_ptr<ServiceLoader>(new NativeViewportServiceLoader(this)),
+              scoped_ptr<ServiceLoader>(new NativeViewportServiceLoader()),
               this)),
       GURL("mojo:mojo_native_viewport_service"));
 #else
   service_manager_.SetLoaderForURL(
       scoped_ptr<ServiceLoader>(
           new BackgroundServiceLoader(
-              scoped_ptr<ServiceLoader>(new NativeViewportServiceLoader(this)),
+              scoped_ptr<ServiceLoader>(new NativeViewportServiceLoader()),
               "native_viewport",
               base::MessageLoop::TYPE_UI)),
       GURL("mojo:mojo_native_viewport_service"));

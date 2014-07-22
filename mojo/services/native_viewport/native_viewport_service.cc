@@ -33,10 +33,8 @@ class NativeViewportImpl
     : public InterfaceImpl<mojo::NativeViewport>,
       public NativeViewportDelegate {
  public:
-  NativeViewportImpl(ApplicationConnection* connection,
-                     shell::Context* context)
-      : context_(context),
-        widget_(gfx::kNullAcceleratedWidget),
+  explicit NativeViewportImpl(ApplicationConnection* connection)
+      : widget_(gfx::kNullAcceleratedWidget),
         waiting_for_event_ack_(false),
         weak_factory_(this) {}
   virtual ~NativeViewportImpl() {
@@ -46,8 +44,7 @@ class NativeViewportImpl
   }
 
   virtual void Create(RectPtr bounds) OVERRIDE {
-    native_viewport_ =
-        services::NativeViewport::Create(context_, this);
+    native_viewport_ = services::NativeViewport::Create(this);
     native_viewport_->Init(bounds.To<gfx::Rect>());
     client()->OnCreated();
     OnBoundsChanged(bounds.To<gfx::Rect>());
@@ -146,7 +143,6 @@ class NativeViewportImpl
     command_buffer_.reset();
   }
 
-  shell::Context* context_;
   gfx::AcceleratedWidget widget_;
   scoped_ptr<services::NativeViewport> native_viewport_;
   InterfaceRequest<CommandBuffer> command_buffer_request_;
@@ -157,27 +153,24 @@ class NativeViewportImpl
 
 class NVSDelegate : public ApplicationDelegate {
  public:
-  NVSDelegate(shell::Context* context) : context_(context) {}
+  NVSDelegate() {}
   virtual ~NVSDelegate() {}
 
   virtual bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) MOJO_OVERRIDE {
-    connection->AddService<NativeViewportImpl>(context_);
+    connection->AddService<NativeViewportImpl>();
     return true;
   }
-
- private:
-  mojo::shell::Context* context_;
 };
+
+MOJO_NATIVE_VIEWPORT_EXPORT mojo::ApplicationImpl*
+    CreateNativeViewportService(
+        ScopedMessagePipeHandle service_provider_handle) {
+  ApplicationImpl* app = new ApplicationImpl(
+      new NVSDelegate(), service_provider_handle.Pass());
+  return app;
+}
 
 }  // namespace services
 }  // namespace mojo
 
-MOJO_NATIVE_VIEWPORT_EXPORT mojo::ApplicationImpl*
-    CreateNativeViewportService(
-        mojo::shell::Context* context,
-        mojo::ScopedMessagePipeHandle service_provider_handle) {
-  mojo::ApplicationImpl* app = new mojo::ApplicationImpl(
-      new mojo::services::NVSDelegate(context), service_provider_handle.Pass());
-  return app;
-}

@@ -9,7 +9,6 @@
 
 #include "base/android/jni_android.h"
 #include "jni/NativeViewportAndroid_jni.h"
-#include "mojo/shell/context.h"
 #include "ui/events/event.h"
 #include "ui/gfx/point.h"
 
@@ -38,10 +37,8 @@ bool NativeViewportAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-NativeViewportAndroid::NativeViewportAndroid(shell::Context* context,
-                                             NativeViewportDelegate* delegate)
+NativeViewportAndroid::NativeViewportAndroid(NativeViewportDelegate* delegate)
     : delegate_(delegate),
-      context_(context),
       window_(NULL),
       id_generator_(0),
       weak_factory_(this) {
@@ -103,8 +100,10 @@ bool NativeViewportAndroid::TouchEvent(JNIEnv* env, jobject obj,
 
 void NativeViewportAndroid::Init(const gfx::Rect& bounds) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_NativeViewportAndroid_createForActivity(env, context_->activity(),
-                                               reinterpret_cast<jlong>(this));
+  Java_NativeViewportAndroid_createForActivity(
+      env,
+      base::android::GetApplicationContext(),
+      reinterpret_cast<jlong>(this));
 }
 
 void NativeViewportAndroid::Show() {
@@ -151,10 +150,8 @@ void NativeViewportAndroid::ReleaseWindow() {
 
 // static
 scoped_ptr<NativeViewport> NativeViewport::Create(
-    shell::Context* context,
     NativeViewportDelegate* delegate) {
-  return scoped_ptr<NativeViewport>(
-      new NativeViewportAndroid(context, delegate)).Pass();
+  return scoped_ptr<NativeViewport>(new NativeViewportAndroid(delegate)).Pass();
 }
 
 }  // namespace services

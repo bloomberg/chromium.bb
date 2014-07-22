@@ -29,8 +29,7 @@ class MOJO_NATIVE_VIEWPORT_EXPORT NativeViewportAndroid
  public:
   static MOJO_NATIVE_VIEWPORT_EXPORT bool Register(JNIEnv* env);
 
-  explicit NativeViewportAndroid(shell::Context* context,
-                                 NativeViewportDelegate* delegate);
+  explicit NativeViewportAndroid(NativeViewportDelegate* delegate);
   virtual ~NativeViewportAndroid();
 
   void Destroy(JNIEnv* env, jobject obj);
@@ -54,7 +53,6 @@ class MOJO_NATIVE_VIEWPORT_EXPORT NativeViewportAndroid
   void ReleaseWindow();
 
   NativeViewportDelegate* delegate_;
-  shell::Context* context_;
   ANativeWindow* window_;
   gfx::Rect bounds_;
   ui::SequentialIDGenerator id_generator_;
