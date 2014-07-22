@@ -26,6 +26,7 @@
 [
     CustomConstructor,
     CustomConstructor(float x, float y),
+    MeasureAs=WebKitPoint,
     WillBeGarbageCollected,
 ] interface WebKitPoint {
     attribute float x;
