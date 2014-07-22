@@ -72,7 +72,7 @@ GestureEventDataPacket& GestureEventDataPacket::operator=(
 
 void GestureEventDataPacket::Push(const GestureEventData& gesture) {
   DCHECK_NE(ET_UNKNOWN, gesture.type());
-  gestures_.push_back(gesture);
+  gestures_->push_back(gesture);
 }
 
 GestureEventDataPacket GestureEventDataPacket::FromTouch(
