@@ -32,9 +32,9 @@ config("media_config") {
   }
 }
 
-if (is_win) {
-  config("media_dependent_config") {
-    ldflags += [
+config("media_dependent_config") {
+  if (is_win) {
+    ldflags = [
       "/DELAYLOAD:mf.dll",
       "/DELAYLOAD:mfplat.dll",
       "/DELAYLOAD:mfreadwrite.dll",
@@ -354,7 +354,9 @@ component("media") {
   ]
 
   configs += [ ":media_config", ]
+  all_dependent_configs = [ ":media_dependent_config" ]
 
+  cflags = []
   libs = []
   defines = []
   deps = []
@@ -555,8 +557,6 @@ component("media") {
       "/wd4267"  # TODO(wolenetz): Fix size_t to int trunctaion in win64. See
                  # http://crbug.com/171009
     ]
-    configs += [ ":media_dependent_config" ]
-    all_dependent_configs = [ ":media_dependent_config" ]
   }
 
   if (proprietary_codecs) {

@@ -56,7 +56,6 @@ component("ash") {
 
   if (is_win) {
     sources -= [
-      "host/window_tree_host_factory.cc",
       "sticky_keys/sticky_keys_controller.cc",
       "sticky_keys/sticky_keys_controller.h",
     ]
@@ -76,8 +75,6 @@ component("ash") {
       "accelerators/magnifier_key_scroller.h",
       "accelerators/spoken_feedback_toggler.cc",
       "accelerators/spoken_feedback_toggler.h",
-      "touch/touch_transformer_controller.cc",
-      "touch/touch_transformer_controller.h",
     ]
   }
 
@@ -102,6 +99,11 @@ component("ash") {
       "system/tray/media_security/media_capture_observer.h",
       "system/tray/media_security/multi_profile_media_tray_item.cc",
       "system/tray/media_security/multi_profile_media_tray_item.h",
+    ]
+  }
+
+  if (!use_x11 || !is_chromeos) {
+    sources -= [
       "touch/touch_transformer_controller.cc",
       "touch/touch_transformer_controller.h",
     ]

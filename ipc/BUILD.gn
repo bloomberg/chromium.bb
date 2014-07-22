@@ -68,7 +68,6 @@ component("ipc") {
 
   if (is_win || is_ios) {
     sources -= [
-      "unix_domain_socket_acceptor.cc",
       "unix_domain_socket_util.cc",
     ]
   }
