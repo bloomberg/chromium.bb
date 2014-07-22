@@ -4805,7 +4805,7 @@ bool CSSPropertyParser::parseFontVariant(bool important)
 bool CSSPropertyParser::parseFontWeight(bool important)
 {
     CSSParserValue* value = m_valueList->current();
-    if ((value->id >= CSSValueNormal) && (value->id <= CSSValue900)) {
+    if (value->id >= CSSValueNormal && value->id <= CSSValueLighter) {
         addProperty(CSSPropertyFontWeight, cssValuePool().createIdentifierValue(value->id), important);
         return true;
     }
