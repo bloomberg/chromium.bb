@@ -6,6 +6,7 @@
 #include <openssl/evp.h>
 
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/openssl/aes_key_openssl.h"
 #include "content/child/webcrypto/openssl/key_openssl.h"
@@ -47,12 +48,19 @@ Status AesCbcEncryptDecrypt(CipherOperation cipher_operation,
   if (params->iv().size() != 16)
     return Status::ErrorIncorrectSizeAesCbcIv();
 
-  if (data.byte_length() >= INT_MAX - AES_BLOCK_SIZE) {
-    // TODO(padolph): Handle this by chunking the input fed into OpenSSL. Right
-    // now it doesn't make much difference since the one-shot API would end up
-    // blowing out the memory and crashing anyway.
+  // According to the openssl docs, the amount of data written may be as large
+  // as (data_size + cipher_block_size - 1), constrained to a multiple of
+  // cipher_block_size.
+  base::CheckedNumeric<int> output_max_len = data.byte_length();
+  output_max_len += AES_BLOCK_SIZE - 1;
+  if (!output_max_len.IsValid())
     return Status::ErrorDataTooLarge();
-  }
+
+  const unsigned remainder = output_max_len.ValueOrDie() % AES_BLOCK_SIZE;
+  if (remainder != 0)
+    output_max_len += AES_BLOCK_SIZE - remainder;
+  if (!output_max_len.IsValid())
+    return Status::ErrorDataTooLarge();
 
   // Note: PKCS padding is enabled by default
   crypto::ScopedOpenSSL<EVP_CIPHER_CTX, EVP_CIPHER_CTX_free>::Type context(
@@ -73,16 +81,7 @@ Status AesCbcEncryptDecrypt(CipherOperation cipher_operation,
     return Status::OperationError();
   }
 
-  // According to the openssl docs, the amount of data written may be as large
-  // as (data_size + cipher_block_size - 1), constrained to a multiple of
-  // cipher_block_size.
-  unsigned int output_max_len = data.byte_length() + AES_BLOCK_SIZE - 1;
-  const unsigned remainder = output_max_len % AES_BLOCK_SIZE;
-  if (remainder != 0)
-    output_max_len += AES_BLOCK_SIZE - remainder;
-  DCHECK_GT(output_max_len, data.byte_length());
-
-  buffer->resize(output_max_len);
+  buffer->resize(output_max_len.ValueOrDie());
 
   unsigned char* const buffer_data = Uint8VectorStart(buffer);
 
@@ -102,7 +101,6 @@ Status AesCbcEncryptDecrypt(CipherOperation cipher_operation,
   const unsigned int final_output_len =
       static_cast<unsigned int>(output_len) +
       static_cast<unsigned int>(final_output_chunk_len);
-  DCHECK_LE(final_output_len, output_max_len);
 
   buffer->resize(final_output_len);
 

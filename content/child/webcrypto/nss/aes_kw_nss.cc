@@ -4,6 +4,7 @@
 
 #include <secerr.h>
 
+#include "base/numerics/safe_math.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/nss/aes_key_nss.h"
 #include "content/child/webcrypto/nss/key_nss.h"
@@ -97,8 +98,6 @@ Status WrapSymKeyAesKw(PK11SymKey* key,
   const unsigned int input_length = PK11_GetKeyLength(key);
   DCHECK_GE(input_length, 16u);
   DCHECK((input_length % 8) == 0);
-  if (input_length > UINT_MAX - 8)
-    return Status::ErrorDataTooLarge();
 
   SECItem iv_item = MakeSECItemForBuffer(CryptoData(kAesIv, sizeof(kAesIv)));
   crypto::ScopedSECItem param_item(
@@ -106,8 +105,12 @@ Status WrapSymKeyAesKw(PK11SymKey* key,
   if (!param_item)
     return Status::ErrorUnexpected();
 
-  const unsigned int output_length = input_length + 8;
-  buffer->resize(output_length);
+  base::CheckedNumeric<unsigned int> output_length = input_length;
+  output_length += 8;
+  if (!output_length.IsValid())
+    return Status::ErrorDataTooLarge();
+
+  buffer->resize(output_length.ValueOrDie());
   SECItem wrapped_key_item = MakeSECItemForBuffer(CryptoData(*buffer));
 
   if (SECSuccess != PK11_WrapSymKey(CKM_NSS_AES_KEY_WRAP,
@@ -117,7 +120,7 @@ Status WrapSymKeyAesKw(PK11SymKey* key,
                                     &wrapped_key_item)) {
     return Status::OperationError();
   }
-  if (output_length != wrapped_key_item.len)
+  if (output_length.ValueOrDie() != wrapped_key_item.len)
     return Status::ErrorUnexpected();
 
   return Status::Success();

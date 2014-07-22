@@ -4,6 +4,7 @@
 
 #include <cryptohi.h>
 
+#include "base/numerics/safe_math.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/nss/aes_key_nss.h"
 #include "content/child/webcrypto/nss/key_nss.h"
@@ -50,7 +51,9 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
 
   // Oddly PK11_CipherOp takes input and output lengths as "int" rather than
   // "unsigned int". Do some checks now to avoid integer overflowing.
-  if (data.byte_length() >= INT_MAX - AES_BLOCK_SIZE) {
+  base::CheckedNumeric<int> output_max_len = data.byte_length();
+  output_max_len += AES_BLOCK_SIZE;
+  if (!output_max_len.IsValid()) {
     // TODO(eroman): Handle this by chunking the input fed into NSS. Right now
     // it doesn't make much difference since the one-shot API would end up
     // blowing out the memory and crashing anyway.
@@ -67,10 +70,7 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
 
   // TODO(eroman): Refine the output buffer size. It can be computed exactly for
   //               encryption, and can be smaller for decryption.
-  unsigned int output_max_len = data.byte_length() + AES_BLOCK_SIZE;
-  CHECK_GT(output_max_len, data.byte_length());
-
-  buffer->resize(output_max_len);
+  buffer->resize(output_max_len.ValueOrDie());
 
   unsigned char* buffer_data = Uint8VectorStart(buffer);
 
@@ -85,10 +85,11 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
   }
 
   unsigned int final_output_chunk_len;
-  if (SECSuccess != PK11_DigestFinal(context.get(),
-                                     buffer_data + output_len,
-                                     &final_output_chunk_len,
-                                     output_max_len - output_len)) {
+  if (SECSuccess !=
+      PK11_DigestFinal(context.get(),
+                       buffer_data + output_len,
+                       &final_output_chunk_len,
+                       (output_max_len - output_len).ValueOrDie())) {
     return Status::OperationError();
   }
 

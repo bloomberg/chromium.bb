@@ -5,6 +5,7 @@
 #include "content/child/webcrypto/nss/rsa_key_nss.h"
 
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/jwk.h"
 #include "content/child/webcrypto/nss/key_nss.h"
@@ -598,9 +599,10 @@ Status RsaHashedAlgorithm::GenerateKeyPair(
 
   PK11RSAGenParams rsa_gen_params;
   // keySizeInBits is a signed type, don't pass in a negative value.
-  if (params->modulusLengthBits() > INT_MAX)
+  base::CheckedNumeric<int> signed_modulus(params->modulusLengthBits());
+  if (!signed_modulus.IsValid())
     return Status::OperationError();
-  rsa_gen_params.keySizeInBits = params->modulusLengthBits();
+  rsa_gen_params.keySizeInBits = signed_modulus.ValueOrDie();
   rsa_gen_params.pe = public_exponent;
 
   const CK_FLAGS operation_flags_mask =

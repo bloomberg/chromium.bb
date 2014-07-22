@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/numerics/safe_math.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/nss/aes_key_nss.h"
 #include "content/child/webcrypto/nss/key_nss.h"
@@ -89,30 +90,28 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
   param.data = reinterpret_cast<unsigned char*>(&gcm_params);
   param.len = sizeof(gcm_params);
 
-  unsigned int buffer_size = 0;
+  base::CheckedNumeric<unsigned int> buffer_size(data.byte_length());
 
   // Calculate the output buffer size.
   if (mode == ENCRYPT) {
-    // TODO(eroman): This is ugly, abstract away the safe integer arithmetic.
-    if (data.byte_length() > (UINT_MAX - tag_length_bytes))
+    buffer_size += tag_length_bytes;
+    if (!buffer_size.IsValid())
       return Status::ErrorDataTooLarge();
-    buffer_size = data.byte_length() + tag_length_bytes;
-  } else {
-    // TODO(eroman): In theory the buffer allocated for the plain text should be
-    // sized as |data.byte_length() - tag_length_bytes|.
-    //
-    // However NSS has a bug whereby it will fail if the output buffer size is
-    // not at least as large as the ciphertext:
-    //
-    // https://bugzilla.mozilla.org/show_bug.cgi?id=%20853674
-    //
-    // From the analysis of that bug it looks like it might be safe to pass a
-    // correctly sized buffer but lie about its size. Since resizing the
-    // WebCryptoArrayBuffer is expensive that hack may be worth looking into.
-    buffer_size = data.byte_length();
   }
 
-  buffer->resize(buffer_size);
+  // TODO(eroman): In theory the buffer allocated for the plain text should be
+  // sized as |data.byte_length() - tag_length_bytes|.
+  //
+  // However NSS has a bug whereby it will fail if the output buffer size is
+  // not at least as large as the ciphertext:
+  //
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=%20853674
+  //
+  // From the analysis of that bug it looks like it might be safe to pass a
+  // correctly sized buffer but lie about its size. Since resizing the
+  // WebCryptoArrayBuffer is expensive that hack may be worth looking into.
+
+  buffer->resize(buffer_size.ValueOrDie());
   unsigned char* buffer_data = Uint8VectorStart(buffer);
 
   PK11_EncryptDecryptFunction encrypt_or_decrypt_func =
