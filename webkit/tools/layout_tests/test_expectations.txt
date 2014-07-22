@@ -30,3 +30,5 @@
 # src/third_party/WebKit/LayoutTests/TestExpectations . Right?)
 #
 # EVERYTHING BELOW THIS LINE WILL BE DELETED AT EVERY WEBKIT DEPS ROLL
+
+crbug.com/395882 http/tests/security/xss-DENIED-method-with-iframe-proto.html [ Skip ]
