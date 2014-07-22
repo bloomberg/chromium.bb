@@ -32,10 +32,8 @@ public:
     public:
         AllowSuperUnsafeScript();
         ~AllowSuperUnsafeScript();
-#if !ASSERT_ENABLED
     private:
         TemporaryChange<unsigned> m_change;
-#endif
     };
 
     static bool isScriptForbidden();

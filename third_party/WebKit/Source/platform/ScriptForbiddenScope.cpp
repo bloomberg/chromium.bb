@@ -41,17 +41,13 @@ ScriptForbiddenScope::AllowUserAgentScript::~AllowUserAgentScript()
 }
 
 ScriptForbiddenScope::AllowSuperUnsafeScript::AllowSuperUnsafeScript()
-#if !ASSERT_ENABLED
     : m_change(s_scriptForbiddenCount, 0)
-#endif
 {
 }
 
 ScriptForbiddenScope::AllowSuperUnsafeScript::~AllowSuperUnsafeScript()
 {
-#if !ASSERT_ENABLED
-    RELEASE_ASSERT(!s_scriptForbiddenCount);
-#endif
+    ASSERT(!s_scriptForbiddenCount);
 }
 
 } // namespace blink
