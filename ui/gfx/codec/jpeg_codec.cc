@@ -150,13 +150,8 @@ void TermDestination(jpeg_compress_struct* cinfo) {
 // reserved for the final data).
 void StripAlpha(const unsigned char* rgba, int pixel_width, unsigned char* rgb)
 {
-  for (int x = 0; x < pixel_width; x++) {
-    const unsigned char* pixel_in = &rgba[x * 4];
-    unsigned char* pixel_out = &rgb[x * 3];
-    pixel_out[0] = pixel_in[0];
-    pixel_out[1] = pixel_in[1];
-    pixel_out[2] = pixel_in[2];
-  }
+  for (int x = 0; x < pixel_width; x++)
+    memcpy(&rgb[x * 3], &rgba[x * 4], 3);
 }
 
 // Converts BGRA to RGB by reordering the color components and dropping the
@@ -407,12 +402,8 @@ void TermSource(j_decompress_ptr cinfo) {
 // value.
 void AddAlpha(const unsigned char* rgb, int pixel_width, unsigned char* rgba) {
   for (int x = 0; x < pixel_width; x++) {
-    const unsigned char* pixel_in = &rgb[x * 3];
-    unsigned char* pixel_out = &rgba[x * 4];
-    pixel_out[0] = pixel_in[0];
-    pixel_out[1] = pixel_in[1];
-    pixel_out[2] = pixel_in[2];
-    pixel_out[3] = 0xff;
+    memcpy(&rgba[x * 4], &rgb[x * 3], 3);
+    rgba[x * 4 + 3] = 0xff;
   }
 }
 
