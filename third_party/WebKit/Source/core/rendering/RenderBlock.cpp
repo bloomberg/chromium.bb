@@ -78,18 +78,13 @@ namespace blink {
 using namespace HTMLNames;
 
 struct SameSizeAsRenderBlock : public RenderBox {
-    void* pointers[1];
     RenderObjectChildList children;
     RenderLineBoxList lineBoxes;
+    int pageLogicalOffset;
     uint32_t bitfields;
 };
 
-struct SameSizeAsRenderBlockRareData {
-    int pageLogicalOffset;
-};
-
 COMPILE_ASSERT(sizeof(RenderBlock) == sizeof(SameSizeAsRenderBlock), RenderBlock_should_stay_small);
-COMPILE_ASSERT(sizeof(RenderBlock::RenderBlockRareData) == sizeof(SameSizeAsRenderBlockRareData), RenderBlockRareData_should_stay_small);
 
 typedef WTF::HashMap<const RenderBox*, OwnPtr<ColumnInfo> > ColumnInfoMap;
 static ColumnInfoMap* gColumnInfoMap = 0;
@@ -4311,16 +4306,6 @@ void RenderBlock::clearTruncation()
             }
         }
     }
-}
-
-void RenderBlock::setPageLogicalOffset(LayoutUnit logicalOffset)
-{
-    if (!m_rareData) {
-        if (!logicalOffset)
-            return;
-        m_rareData = adoptPtr(new RenderBlockRareData());
-    }
-    m_rareData->m_pageLogicalOffset = logicalOffset;
 }
 
 void RenderBlock::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accumulatedOffset) const

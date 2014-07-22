@@ -209,8 +209,8 @@ public:
 
     // The page logical offset is the object's offset from the top of the page in the page progression
     // direction (so an x-offset in vertical text and a y-offset for horizontal text).
-    LayoutUnit pageLogicalOffset() const { return m_rareData ? m_rareData->m_pageLogicalOffset : LayoutUnit(); }
-    void setPageLogicalOffset(LayoutUnit);
+    LayoutUnit pageLogicalOffset() const { return m_pageLogicalOffset; }
+    void setPageLogicalOffset(LayoutUnit offset) { m_pageLogicalOffset = offset; }
 
     // Accessors for logical width/height and margins in the containing block's block-flow direction.
     LayoutUnit logicalWidthForChild(const RenderBox* child) const { return isHorizontalWritingMode() ? child->width() : child->height(); }
@@ -482,25 +482,11 @@ protected:
 public:
     virtual LayoutUnit offsetFromLogicalTopOfFirstPage() const OVERRIDE FINAL;
 
-public:
-
-    // Allocated only when some of these fields have non-default values
-    struct RenderBlockRareData {
-        WTF_MAKE_NONCOPYABLE(RenderBlockRareData); WTF_MAKE_FAST_ALLOCATED;
-    public:
-        RenderBlockRareData()
-            : m_pageLogicalOffset(0)
-        {
-        }
-
-        LayoutUnit m_pageLogicalOffset;
-     };
-
 protected:
-    OwnPtr<RenderBlockRareData> m_rareData;
-
     RenderObjectChildList m_children;
     RenderLineBoxList m_lineBoxes;   // All of the root line boxes created for this block flow.  For example, <div>Hello<br>world.</div> will have two total lines for the <div>.
+
+    LayoutUnit m_pageLogicalOffset;
 
     unsigned m_hasMarginBeforeQuirk : 1; // Note these quirk values can't be put in RenderBlockRareData since they are set too frequently.
     unsigned m_hasMarginAfterQuirk : 1;
