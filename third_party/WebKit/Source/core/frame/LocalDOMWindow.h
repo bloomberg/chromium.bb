@@ -229,7 +229,7 @@ enum PageshowEventPersistence {
         String sanitizedCrossDomainAccessErrorMessage(LocalDOMWindow* callingWindow);
 
         void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, const String& targetOrigin, LocalDOMWindow* source, ExceptionState&);
-        void postMessageTimerFired(PassOwnPtr<PostMessageTimer>);
+        void postMessageTimerFired(PostMessageTimer*);
         void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtrWillBeRawPtr<Event>, PassRefPtrWillBeRawPtr<ScriptCallStack>);
 
         void scrollBy(int x, int y) const;
@@ -394,6 +394,8 @@ enum PageshowEventPersistence {
 
         RefPtrWillBeMember<DOMWindowEventQueue> m_eventQueue;
         RefPtr<SerializedScriptValue> m_pendingStateObject;
+
+        HashSet<OwnPtr<PostMessageTimer> > m_postMessageTimers;
     };
 
     inline String LocalDOMWindow::status() const

@@ -119,7 +119,7 @@ class PostMessageTimer FINAL : public SuspendableTimer {
 public:
     PostMessageTimer(LocalDOMWindow& window, PassRefPtr<SerializedScriptValue> message, const String& sourceOrigin, PassRefPtrWillBeRawPtr<LocalDOMWindow> source, PassOwnPtr<MessagePortChannelArray> channels, SecurityOrigin* targetOrigin, PassRefPtrWillBeRawPtr<ScriptCallStack> stackTrace, UserGestureToken* userGestureToken)
         : SuspendableTimer(window.document())
-        , m_window(window)
+        , m_window(&window)
         , m_message(message)
         , m_origin(sourceOrigin)
         , m_source(source)
@@ -142,11 +142,14 @@ public:
 private:
     virtual void fired() OVERRIDE
     {
-        m_window->postMessageTimerFired(adoptPtr(this));
+        m_window->postMessageTimerFired(this);
         // This object is deleted now.
     }
 
-    RefPtrWillBePersistent<LocalDOMWindow> m_window;
+    // FIXME: Oilpan: This raw pointer is safe because the PostMessageTimer is
+    // owned by the LocalDOMWindow. Ideally PostMessageTimer should be moved to
+    // the heap and use Member<LocalDOMWindow>.
+    LocalDOMWindow* m_window;
     RefPtr<SerializedScriptValue> m_message;
     String m_origin;
     RefPtrWillBePersistent<LocalDOMWindow> m_source;
@@ -862,30 +865,34 @@ void LocalDOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, cons
         stackTrace = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
 
     // Schedule the message.
-    PostMessageTimer* timer = new PostMessageTimer(*this, message, sourceOrigin, source, channels.release(), target.get(), stackTrace.release(), UserGestureIndicator::currentToken());
+    OwnPtr<PostMessageTimer> timer = adoptPtr(new PostMessageTimer(*this, message, sourceOrigin, source, channels.release(), target.get(), stackTrace.release(), UserGestureIndicator::currentToken()));
     timer->startOneShot(0, FROM_HERE);
     timer->suspendIfNeeded();
+    m_postMessageTimers.add(timer.release());
 }
 
-void LocalDOMWindow::postMessageTimerFired(PassOwnPtr<PostMessageTimer> t)
+void LocalDOMWindow::postMessageTimerFired(PostMessageTimer* timer)
 {
-    OwnPtr<PostMessageTimer> timer(t);
-
-    if (!isCurrentlyDisplayedInFrame())
+    if (!isCurrentlyDisplayedInFrame()) {
+        m_postMessageTimers.remove(timer);
         return;
+    }
 
     RefPtrWillBeRawPtr<MessageEvent> event = timer->event();
 
     // Give the embedder a chance to intercept this postMessage because this
     // LocalDOMWindow might be a proxy for another in browsers that support
     // postMessage calls across WebKit instances.
-    if (m_frame->loader().client()->willCheckAndDispatchMessageEvent(timer->targetOrigin(), event.get()))
+    if (m_frame->loader().client()->willCheckAndDispatchMessageEvent(timer->targetOrigin(), event.get())) {
+        m_postMessageTimers.remove(timer);
         return;
+    }
 
     UserGestureIndicator gestureIndicator(timer->userGestureToken());
 
     event->entangleMessagePorts(document());
     dispatchMessageEventWithOriginCheck(timer->targetOrigin(), event, timer->stackTrace());
+    m_postMessageTimers.remove(timer);
 }
 
 void LocalDOMWindow::dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtrWillBeRawPtr<Event> event, PassRefPtrWillBeRawPtr<ScriptCallStack> stackTrace)
