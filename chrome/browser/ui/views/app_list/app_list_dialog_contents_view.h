@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_APP_LIST_APP_LIST_DIALOG_CONTENTS_VIEW_H_
 
 #include "ui/views/controls/button/button.h"
-#include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/dialog_delegate.h"
 
 class AppListControllerDelegate;
 
@@ -17,7 +17,7 @@ class Widget;
 
 // The contents view for an App List Dialog, which covers the entire app list
 // and adds a close button.
-class AppListDialogContentsView : public views::WidgetDelegateView,
+class AppListDialogContentsView : public views::DialogDelegateView,
                                   public views::ButtonListener {
  public:
   AppListDialogContentsView(
@@ -48,7 +48,6 @@ class AppListDialogContentsView : public views::WidgetDelegateView,
  protected:
   // Overridden from views::WidgetDelegate:
   virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual ui::AXRole GetAccessibleWindowRole() const OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
 
  private:

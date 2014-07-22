@@ -154,10 +154,6 @@ ui::ModalType AppListDialogContentsView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-ui::AXRole AppListDialogContentsView::GetAccessibleWindowRole() const {
-  return ui::AX_ROLE_DIALOG;
-}
-
 void AppListDialogContentsView::WindowClosing() {
   app_list_controller_delegate_->OnCloseChildDialog();
 }
