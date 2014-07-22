@@ -38,7 +38,6 @@
 #include "core/loader/WorkerLoaderClientBridge.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerRunLoop.h"
 #include "core/workers/WorkerThread.h"
 
 namespace blink {

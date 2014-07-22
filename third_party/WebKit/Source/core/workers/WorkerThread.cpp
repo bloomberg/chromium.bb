@@ -245,4 +245,19 @@ bool WorkerThread::isCurrentThread() const
     return m_threadID == currentThread();
 }
 
+void WorkerThread::postTask(PassOwnPtr<ExecutionContextTask> task)
+{
+    m_runLoop.postTask(task);
+}
+
+void WorkerThread::postDebuggerTask(PassOwnPtr<ExecutionContextTask> task)
+{
+    m_runLoop.postDebuggerTask(task);
+}
+
+MessageQueueWaitResult WorkerThread::runDebuggerTask(WorkerRunLoop::WaitMode waitMode)
+{
+    return m_runLoop.runDebuggerTask(waitMode);
+}
+
 } // namespace blink

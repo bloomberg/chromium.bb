@@ -99,7 +99,7 @@ void WorkerScriptDebugServer::runMessageLoopOnPause(v8::Handle<v8::Context>)
 {
     MessageQueueWaitResult result;
     do {
-        result = m_workerGlobalScope->thread()->runLoop().runDebuggerTask();
+        result = m_workerGlobalScope->thread()->runDebuggerTask();
     // Keep waiting until execution is resumed.
     } while (result == MessageQueueMessageReceived && isPaused());
 

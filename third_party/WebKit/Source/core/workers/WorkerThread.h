@@ -65,6 +65,12 @@ namespace blink {
         WorkerLoaderProxy& workerLoaderProxy() const { return m_workerLoaderProxy; }
         WorkerReportingProxy& workerReportingProxy() const { return m_workerReportingProxy; }
 
+        void postTask(PassOwnPtr<ExecutionContextTask>);
+        void postDebuggerTask(PassOwnPtr<ExecutionContextTask>);
+
+        MessageQueueWaitResult runDebuggerTask(WorkerRunLoop::WaitMode = WorkerRunLoop::WaitForMessage);
+        bool terminated() { return m_runLoop.terminated(); }
+
         // Number of active worker threads.
         static unsigned workerThreadCount();
 

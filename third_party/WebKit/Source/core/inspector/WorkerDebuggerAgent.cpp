@@ -64,7 +64,7 @@ public:
     {
         // Process all queued debugger commands. WorkerThread is certainly
         // alive if this task is being executed.
-        while (MessageQueueMessageReceived == m_thread->runLoop().runDebuggerTask(WorkerRunLoop::DontWaitForMessage)) { }
+        while (MessageQueueMessageReceived == m_thread->runDebuggerTask(WorkerRunLoop::DontWaitForMessage)) { }
     }
 
 private:

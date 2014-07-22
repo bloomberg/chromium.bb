@@ -37,7 +37,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerRunLoop.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/websockets/MainThreadWebSocketChannel.h"
 #include "modules/websockets/NewWebSocketChannelImpl.h"

@@ -180,7 +180,7 @@ WorkerNavigator* WorkerGlobalScope::navigator() const
 
 void WorkerGlobalScope::postTask(PassOwnPtr<ExecutionContextTask> task)
 {
-    thread()->runLoop().postTask(task);
+    thread()->postTask(task);
 }
 
 void WorkerGlobalScope::clearInspector()

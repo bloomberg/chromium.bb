@@ -58,7 +58,6 @@ class ThreadableWebSocketChannelClientWrapper;
 class ThreadableWebSocketChannelSyncHelper;
 class WorkerGlobalScope;
 class WorkerLoaderProxy;
-class WorkerRunLoop;
 
 class WorkerThreadableWebSocketChannel FINAL : public WebSocketChannel {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;

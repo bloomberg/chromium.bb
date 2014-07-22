@@ -40,7 +40,6 @@
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/workers/WorkerLoaderProxy.h"
-#include "core/workers/WorkerRunLoop.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/websockets/MainThreadWebSocketChannel.h"
 #include "modules/websockets/NewWebSocketChannelImpl.h"
@@ -590,7 +589,7 @@ bool WorkerThreadableWebSocketChannel::Bridge::waitForMethodCompletion(PassOwnPt
     ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
     blink::Platform::current()->waitMultipleEvents(events);
     // This is checking whether a shutdown event is fired or not.
-    return !m_workerGlobalScope->thread()->runLoop().terminated();
+    return !m_workerGlobalScope->thread()->terminated();
 }
 
 void WorkerThreadableWebSocketChannel::Bridge::terminatePeer()
