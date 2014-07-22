@@ -4,8 +4,14 @@
 
 #include "config.h"
 
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
+#include "core/dom/Node.h"
+#include "core/html/HTMLElement.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "public/web/WebDocument.h"
+#include "web/WebLocalFrameImpl.h"
 #include "web/tests/FrameTestHelpers.h"
 #include "web/tests/URLTestHelpers.h"
 
@@ -57,14 +63,16 @@ public:
     }
 
 protected:
-    void sendGestureTap(WebView*, blink::IntPoint);
-    void runImeOnFocusTest(std::string, int, blink::IntPoint tapPoint = blink::IntPoint(-1, -1));
+    void sendGestureTap(WebView*, IntPoint);
+    void focus(const WTF::AtomicString& element);
+    void runImeOnFocusTest(std::string fileName, int, IntPoint tapPoint = IntPoint(-1, -1), const WTF::AtomicString& focusElement = WTF::nullAtom);
 
     std::string m_baseURL;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
+    RefPtrWillBePersistent<Document> m_document;
 };
 
-void ImeOnFocusTest::sendGestureTap(WebView* webView, blink::IntPoint clientPoint)
+void ImeOnFocusTest::sendGestureTap(WebView* webView, IntPoint clientPoint)
 {
     WebGestureEvent webGestureEvent;
     webGestureEvent.type = WebInputEvent::GestureTap;
@@ -80,18 +88,30 @@ void ImeOnFocusTest::sendGestureTap(WebView* webView, blink::IntPoint clientPoin
     FrameTestHelpers::runPendingTasks();
 }
 
-void ImeOnFocusTest::runImeOnFocusTest(std::string file, int expectedImeRequestCount, blink::IntPoint tapPoint)
+void ImeOnFocusTest::focus(const WTF::AtomicString& element)
+{
+    m_document->body()->getElementById(element)->focus();
+}
+
+void ImeOnFocusTest::runImeOnFocusTest(std::string fileName, int expectedImeRequestCount, IntPoint tapPoint, const WTF::AtomicString& focusElement)
 {
     ImeRequestTrackingWebViewClient client;
-    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL), WebString::fromUTF8(file));
-    WebView* webView = m_webViewHelper.initialize(true, 0, &client);
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL), WebString::fromUTF8(fileName));
+    WebViewImpl* webView = m_webViewHelper.initialize(true, 0, &client);
     m_webViewHelper.webView()->setPageScaleFactorLimits(1, 1);
     webView->resize(WebSize(800, 1200));
+    FrameTestHelpers::loadFrame(webView->mainFrame(), m_baseURL + fileName);
+    m_document = m_webViewHelper.webViewImpl()->mainFrameImpl()->document().unwrap<Document>();
 
+    if (!focusElement.isNull())
+        focus(focusElement);
     EXPECT_EQ(0, client.imeRequestCount());
-    FrameTestHelpers::loadFrame(webView->mainFrame(), m_baseURL + file);
+
     if (tapPoint.x() >= 0 && tapPoint.y() >= 0)
         sendGestureTap(webView, tapPoint);
+
+    if (!focusElement.isNull())
+        focus(focusElement);
     EXPECT_EQ(expectedImeRequestCount, client.imeRequestCount());
 
     m_webViewHelper.reset();
@@ -109,7 +129,17 @@ TEST_F(ImeOnFocusTest, OnAutofocus)
 
 TEST_F(ImeOnFocusTest, OnUserGesture)
 {
-    runImeOnFocusTest("ime-on-focus-on-user-gesture.html", 1, blink::IntPoint(50, 50));
+    runImeOnFocusTest("ime-on-focus-on-user-gesture.html", 1, IntPoint(50, 50));
+}
+
+TEST_F(ImeOnFocusTest, AfterFirstGesture)
+{
+    runImeOnFocusTest("ime-on-focus-after-first-gesture.html", 1, IntPoint(50, 50), "input");
+}
+
+TEST_F(ImeOnFocusTest, AfterNavigationWithinPage)
+{
+    runImeOnFocusTest("ime-on-focus-after-navigation-within-page.html", 1, IntPoint(50, 50), "input");
 }
 
 }

@@ -247,9 +247,9 @@ namespace {
 
 class UserGestureNotifier {
 public:
-    // If a UserGestureIndicator is created for a user gesture during the
-    // lifetime of a UserGestureNotifier and *userGestureObserved is false,
-    // the object will notify the client and set *userGestureObserved to true.
+    // If a UserGestureIndicator is created for a user gesture since the last
+    // page load and *userGestureObserved is false, the UserGestureNotifier
+    // will notify the client and set *userGestureObserved to true.
     UserGestureNotifier(WebAutofillClient*, bool* userGestureObserved);
     ~UserGestureNotifier();
 
@@ -263,13 +263,11 @@ UserGestureNotifier::UserGestureNotifier(WebAutofillClient* client, bool* userGe
     , m_userGestureObserved(userGestureObserved)
 {
     ASSERT(m_userGestureObserved);
-    if (m_client)
-        UserGestureIndicator::clearProcessedUserGestureInPast();
 }
 
 UserGestureNotifier::~UserGestureNotifier()
 {
-    if (!*m_userGestureObserved && UserGestureIndicator::processedUserGestureInPast()) {
+    if (!*m_userGestureObserved && UserGestureIndicator::processedUserGestureSinceLoad()) {
         *m_userGestureObserved = true;
         if (m_client)
             m_client->firstUserGestureObserved();
@@ -3692,6 +3690,8 @@ void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPag
     m_linkHighlights.clear();
     endActiveFlingAnimation();
     m_userGestureObserved = false;
+    if (!isNavigationWithinPage)
+        UserGestureIndicator::clearProcessedUserGestureSinceLoad();
 }
 
 void WebViewImpl::willInsertBody(WebLocalFrameImpl* webframe)

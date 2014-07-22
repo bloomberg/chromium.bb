@@ -46,8 +46,8 @@ TEST(WebUserGestureTokenTest, Basic)
 {
     WebUserGestureToken token;
     EXPECT_FALSE(token.hasGestures());
-    UserGestureIndicator::clearProcessedUserGestureInPast();
-    EXPECT_FALSE(UserGestureIndicator::processedUserGestureInPast());
+    UserGestureIndicator::clearProcessedUserGestureSinceLoad();
+    EXPECT_FALSE(UserGestureIndicator::processedUserGestureSinceLoad());
 
     {
         WebScopedUserGesture indicator(token);
@@ -58,7 +58,7 @@ TEST(WebUserGestureTokenTest, Basic)
         UserGestureIndicator indicator(DefinitelyProcessingNewUserGesture);
         EXPECT_TRUE(WebUserGestureIndicator::isProcessingUserGesture());
         token = WebUserGestureIndicator::currentUserGestureToken();
-        EXPECT_TRUE(UserGestureIndicator::processedUserGestureInPast());
+        EXPECT_TRUE(UserGestureIndicator::processedUserGestureSinceLoad());
     }
 
     EXPECT_TRUE(token.hasGestures());
@@ -78,7 +78,7 @@ TEST(WebUserGestureTokenTest, Basic)
         EXPECT_FALSE(WebUserGestureIndicator::isProcessingUserGesture());
     }
 
-    EXPECT_TRUE(UserGestureIndicator::processedUserGestureInPast());
+    EXPECT_TRUE(UserGestureIndicator::processedUserGestureSinceLoad());
 }
 
 }

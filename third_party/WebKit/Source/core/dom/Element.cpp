@@ -2105,9 +2105,11 @@ void Element::focus(bool restorePreviousSelection, FocusType type)
     cancelFocusAppearanceUpdate();
     updateFocusAppearance(restorePreviousSelection);
 
-    if (UserGestureIndicator::processingUserGesture()) {
-        // Programmatically invoking focus() should bring up the keyboard in
-        // the context of a user gesture.
+    if (UserGestureIndicator::processedUserGestureSinceLoad()) {
+        // Bring up the keyboard in the context of anything triggered by a user
+        // gesture. Since tracking that across arbitrary boundaries (eg.
+        // animations) is difficult, for now we match IE's heuristic and bring
+        // up the keyboard if there's been any gesture since load.
         document().page()->chrome().client().showImeIfNeeded();
     }
 }
