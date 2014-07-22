@@ -205,12 +205,24 @@
     ['OS == "android"', {
       'targets': [
         {
-          # GN version: //mojo/public/java
+          # GN version: //mojo/public/java_system
           'target_name': 'mojo_public_java',
           'type': 'none',
           'variables': {
-            'java_in_dir': 'public/java',
+            'java_in_dir': 'public/java/system',
           },
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
+          # GN version: //mojo/public/java_bindings
+          'target_name': 'mojo_bindings_java',
+          'type': 'none',
+          'variables': {
+            'java_in_dir': 'public/java/bindings',
+          },
+          'dependencies': [
+            'mojo_public_java',
+          ],
           'includes': [ '../build/java.gypi' ],
         },
       ],

@@ -25,8 +25,7 @@ Still reading?
     <ignore path="AndroidManifest.xml"/>
   </issue>
   <issue id="Assert">
-    <ignore regexp="mojo/public/java/src/.*"/>
-    <ignore regexp="mojo/bindings/java/src/.*"/>
+    <ignore regexp="mojo/public/java/.*"/>
   </issue>
   <issue id="CommitPrefEdits">
     <ignore path="third_party/cacheinvalidation/src/java/com/google/ipc/invalidation/ticl/android2/channel/AndroidChannelPreferences.java"/>

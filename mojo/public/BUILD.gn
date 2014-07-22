@@ -16,7 +16,8 @@ group("public") {
 
   if (is_android) {
     deps += [
-      "//mojo/public/java",
+      "//mojo/public/java:system",
+      "//mojo/public/java:bindings",
     ]
   }
 }
