@@ -193,9 +193,9 @@ class ProfileSyncServiceTest : public ::testing::Test {
     signin->SetAuthenticatedUsername("test");
     ProfileOAuth2TokenService* oauth2_token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-    components_factory_ = new StrictMock<ProfileSyncComponentsFactoryMock>();
+    components_factory_ = new ProfileSyncComponentsFactoryMock();
     service_.reset(new ProfileSyncService(
-        components_factory_,
+        scoped_ptr<ProfileSyncComponentsFactory>(components_factory_),
         profile_,
         make_scoped_ptr(new SupervisedUserSigninManagerWrapper(profile_,
                                                                signin)),

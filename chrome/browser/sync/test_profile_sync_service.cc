@@ -103,13 +103,13 @@ TestProfileSyncService::GetJsEventHandler() {
 }
 
 TestProfileSyncService::TestProfileSyncService(
-    ProfileSyncComponentsFactory* factory,
+    scoped_ptr<ProfileSyncComponentsFactory> factory,
     Profile* profile,
     SigninManagerBase* signin,
     ProfileOAuth2TokenService* oauth2_token_service,
     browser_sync::ProfileSyncServiceStartBehavior behavior)
     : ProfileSyncService(
-          factory,
+          factory.Pass(),
           profile,
           make_scoped_ptr(new SupervisedUserSigninManagerWrapper(profile,
                                                                  signin)),
@@ -129,13 +129,13 @@ KeyedService* TestProfileSyncService::TestFactoryFunction(
       SigninManagerFactory::GetForProfile(profile);
   ProfileOAuth2TokenService* oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  ProfileSyncComponentsFactoryMock* factory =
-      new ProfileSyncComponentsFactoryMock();
-  return new TestProfileSyncService(factory,
-                                    profile,
-                                    signin,
-                                    oauth2_token_service,
-                                    browser_sync::AUTO_START);
+  return new TestProfileSyncService(
+      scoped_ptr<ProfileSyncComponentsFactory>(
+          new ProfileSyncComponentsFactoryMock()),
+      profile,
+      signin,
+      oauth2_token_service,
+      browser_sync::AUTO_START);
 }
 
 // static

@@ -99,7 +99,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   static KeyedService* BuildService(content::BrowserContext* browser_context) {
     Profile* profile = static_cast<Profile*>(browser_context);
     return new ProfileSyncService(
-        new ProfileSyncComponentsFactoryMock(),
+        scoped_ptr<ProfileSyncComponentsFactory>(
+            new ProfileSyncComponentsFactoryMock()),
         profile,
         make_scoped_ptr(new SupervisedUserSigninManagerWrapper(
             profile, SigninManagerFactory::GetForProfile(profile))),
@@ -183,7 +184,8 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
     EXPECT_FALSE(signin->GetAuthenticatedUsername().empty());
     return new ProfileSyncService(
-        new ProfileSyncComponentsFactoryMock(),
+        scoped_ptr<ProfileSyncComponentsFactory>(
+            new ProfileSyncComponentsFactoryMock()),
         profile,
         make_scoped_ptr(new SupervisedUserSigninManagerWrapper(profile,
                                                                signin)),

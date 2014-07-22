@@ -133,11 +133,13 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
       browser_defaults::kSyncAutoStarts ? browser_sync::AUTO_START
                                         : browser_sync::MANUAL_START;
   ProfileSyncService* pss = new ProfileSyncService(
-      new ProfileSyncComponentsFactoryImpl(profile,
-                                           CommandLine::ForCurrentProcess(),
-                                           sync_service_url,
-                                           token_service,
-                                           url_request_context_getter),
+      scoped_ptr<ProfileSyncComponentsFactory>(
+          new ProfileSyncComponentsFactoryImpl(
+              profile,
+              CommandLine::ForCurrentProcess(),
+              sync_service_url,
+              token_service,
+              url_request_context_getter)),
       profile,
       signin_wrapper.Pass(),
       token_service,

@@ -44,6 +44,12 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
                    invalidation::InvalidationService* invalidator,
                    const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
                    const base::FilePath& sync_folder));
+
+  virtual scoped_ptr<browser_sync::LocalDeviceInfoProvider>
+      CreateLocalDeviceInfoProvider() OVERRIDE;
+  void SetLocalDeviceInfoProvider(
+      scoped_ptr<browser_sync::LocalDeviceInfoProvider> local_device);
+
   MOCK_METHOD1(GetSyncableServiceForType,
                base::WeakPtr<syncer::SyncableService>(syncer::ModelType));
   virtual scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
@@ -68,6 +74,9 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
 
   scoped_ptr<browser_sync::AssociatorInterface> model_associator_;
   scoped_ptr<browser_sync::ChangeProcessor> change_processor_;
+  // LocalDeviceInfoProvider is initially owned by this class,
+  // transferred to caller when CreateLocalDeviceInfoProvider is called.
+  scoped_ptr<browser_sync::LocalDeviceInfoProvider> local_device_;
 };
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_MOCK_H__

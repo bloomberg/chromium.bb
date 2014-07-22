@@ -27,6 +27,7 @@
 #include "chrome/browser/sync/glue/extension_backed_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_setting_data_type_controller.h"
+#include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
 #include "chrome/browser/sync/glue/password_data_type_controller.h"
 #include "chrome/browser/sync/glue/search_engine_data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
@@ -252,7 +253,11 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
          syncer::PROXY_TABS));
     pss->RegisterDataTypeController(
         new SessionDataTypeController(
-            this, profile_, MakeDisableCallbackFor(syncer::SESSIONS)));
+            this,
+            profile_,
+            pss->GetSyncedWindowDelegatesGetter(),
+            pss->GetLocalDeviceInfoProvider(),
+            MakeDisableCallbackFor(syncer::SESSIONS)));
   }
 
   // Favicon sync is enabled by default. Register unless explicitly disabled.
@@ -467,6 +472,12 @@ ProfileSyncComponentsFactoryImpl::CreateSyncBackendHost(
     const base::FilePath& sync_folder) {
   return new browser_sync::SyncBackendHostImpl(name, profile, invalidator,
                                                sync_prefs, sync_folder);
+}
+
+scoped_ptr<browser_sync::LocalDeviceInfoProvider>
+ProfileSyncComponentsFactoryImpl::CreateLocalDeviceInfoProvider() {
+  return scoped_ptr<browser_sync::LocalDeviceInfoProvider>(
+      new browser_sync::LocalDeviceInfoProviderImpl());
 }
 
 base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::

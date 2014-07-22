@@ -526,7 +526,8 @@ void SyncBackendHostCore::DoFinishInitialProcessControlTypes() {
              &SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop,
              js_backend_,
              debug_info_listener_,
-             sync_manager_->GetSyncContextProxy());
+             sync_manager_->GetSyncContextProxy(),
+             sync_manager_->cache_guid());
 
   js_backend_.Reset();
   debug_info_listener_.Reset();
