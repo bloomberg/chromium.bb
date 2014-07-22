@@ -50,18 +50,18 @@ class CSSToStyleMap {
     WTF_MAKE_NONCOPYABLE(CSSToStyleMap);
 public:
     CSSToStyleMap(const StyleResolverState& state, ElementStyleResources& elementStyleResources) : m_state(state), m_elementStyleResources(elementStyleResources) { }
-    void mapFillAttachment(CSSPropertyID, FillLayer*, CSSValue*) const;
-    void mapFillClip(CSSPropertyID, FillLayer*, CSSValue*) const;
-    void mapFillComposite(CSSPropertyID, FillLayer*, CSSValue*) const;
-    void mapFillBlendMode(CSSPropertyID, FillLayer*, CSSValue*) const;
-    void mapFillOrigin(CSSPropertyID, FillLayer*, CSSValue*) const;
-    void mapFillImage(CSSPropertyID, FillLayer*, CSSValue*);
-    void mapFillRepeatX(CSSPropertyID, FillLayer*, CSSValue*) const;
-    void mapFillRepeatY(CSSPropertyID, FillLayer*, CSSValue*) const;
-    void mapFillSize(CSSPropertyID, FillLayer*, CSSValue*) const;
-    void mapFillXPosition(CSSPropertyID, FillLayer*, CSSValue*) const;
-    void mapFillYPosition(CSSPropertyID, FillLayer*, CSSValue*) const;
-    void mapFillMaskSourceType(CSSPropertyID, FillLayer*, CSSValue*);
+    void mapFillAttachment(FillLayer*, CSSValue*) const;
+    void mapFillClip(FillLayer*, CSSValue*) const;
+    void mapFillComposite(FillLayer*, CSSValue*) const;
+    void mapFillBlendMode(FillLayer*, CSSValue*) const;
+    void mapFillOrigin(FillLayer*, CSSValue*) const;
+    void mapFillImage(FillLayer*, CSSValue*);
+    void mapFillRepeatX(FillLayer*, CSSValue*) const;
+    void mapFillRepeatY(FillLayer*, CSSValue*) const;
+    void mapFillSize(FillLayer*, CSSValue*) const;
+    void mapFillXPosition(FillLayer*, CSSValue*) const;
+    void mapFillYPosition(FillLayer*, CSSValue*) const;
+    void mapFillMaskSourceType(FillLayer*, CSSValue*) const;
 
     static double mapAnimationDelay(CSSValue*);
     static Timing::PlaybackDirection mapAnimationDirection(CSSValue*);

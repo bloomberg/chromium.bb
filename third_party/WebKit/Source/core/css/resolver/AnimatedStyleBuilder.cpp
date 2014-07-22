@@ -126,13 +126,12 @@ LengthSize animatableValueToLengthSize(const AnimatableValue* value, const Style
         animatableValueToLength(animatableLengthSize->height(), state, range));
 }
 
-template <CSSPropertyID property>
 void setFillSize(FillLayer* fillLayer, const AnimatableValue* value, const StyleResolverState& state)
 {
     if (value->isLengthSize())
         fillLayer->setSize(FillSize(SizeLength, animatableValueToLengthSize(value, state, ValueRangeNonNegative)));
     else
-        state.styleMap().mapFillSize(property, fillLayer, toAnimatableUnknown(value)->toCSSValue().get());
+        state.styleMap().mapFillSize(fillLayer, toAnimatableUnknown(value)->toCSSValue().get());
 }
 
 PassRefPtr<SVGLength> animatableValueToNonNegativeSVGLength(const AnimatableValue* value)
@@ -175,7 +174,7 @@ void setOnFillLayers(FillLayer& fillLayers, const AnimatableValue* value, StyleR
         case CSSPropertyBackgroundSize:
         case CSSPropertyWebkitBackgroundSize:
         case CSSPropertyWebkitMaskSize:
-            setFillSize<property>(fillLayer, layerValue, state);
+            setFillSize(fillLayer, layerValue, state);
             break;
         default:
             ASSERT_NOT_REACHED();

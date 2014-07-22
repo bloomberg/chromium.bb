@@ -425,12 +425,12 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
         for (unsigned int i = 0; i < valueList->length(); i++) {
             if (!currChild)
                 currChild = prevChild->ensureNext();
-            state.styleMap().{{map_fill}}({{property_id}}, currChild, valueList->item(i));
+            state.styleMap().{{map_fill}}(currChild, valueList->item(i));
             prevChild = currChild;
             currChild = currChild->next();
         }
     } else {
-        state.styleMap().{{map_fill}}({{property_id}}, currChild, value);
+        state.styleMap().{{map_fill}}(currChild, value);
         currChild = currChild->next();
     }
     while (currChild) {
