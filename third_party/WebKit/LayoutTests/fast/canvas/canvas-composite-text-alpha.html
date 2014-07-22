@@ -220,6 +220,8 @@
           ]
       ];
 
+      debugString = "";
+
       // Compare two colors with a few margin.
       function isDifferentColor(actualColor, expectedColor)
       {
@@ -371,14 +373,12 @@
                       messageElement.innerHTML = results;
                   }
 
-                  // Dump colors into text area for debugging purpose.
-                  var debugText = document.getElementById("debug");
                   img = ctx.getImageData(0, 0, 1, 1).data;
-                  debugText.value += img[0] + "," + img[1] + "," + img[2] + "," + img[3] + "\n";
+                  debugString += img[0] + "," + img[1] + "," + img[2] + "," + img[3] + "\n";
                   img = ctx.getImageData(12, 12, 1, 1).data;
-                  debugText.value += img[0] + "," + img[1] + "," + img[2] + "," + img[3] + "\n";
+                  debugString += img[0] + "," + img[1] + "," + img[2] + "," + img[3] + "\n";
                   img = ctx.getImageData(24, 24, 1, 1).data;
-                  debugText.value += img[0] + "," + img[1] + "," + img[2] + "," + img[3] + "\n";
+                  debugString += img[0] + "," + img[1] + "," + img[2] + "," + img[3] + "\n";
               }
           }
       }
@@ -421,6 +421,8 @@
       {
           drawTable(useFillText);
           drawTable(useStrokeText);
+          // Dump colors into text area for debugging purpose.
+          document.getElementById("debug").value = debugString;
           if (window.testRunner)
               testRunner.notifyDone();
       }
