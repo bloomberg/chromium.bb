@@ -682,8 +682,6 @@ crbug.com/374643 [ Mac ] fast/text-autosizing/tables/table-with-inline-block.htm
 crbug.com/335710 virtual/gpu/canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
 crbug.com/335710 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
 
-crbug.com/243871 [ Mac Win ] fast/scroll-behavior/listbox-interrupted-scroll.html [ NeedsRebaseline ]
-
 # Started failing after r162705.
 crbug.com/324369 compositing/video/video-reflection.html [ Failure ]
 crbug.com/324369 virtual/softwarecompositing/video/video-reflection.html [ Failure ]
