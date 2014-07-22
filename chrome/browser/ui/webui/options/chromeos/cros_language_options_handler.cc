@@ -4,21 +4,12 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 
-#include <algorithm>
-#include <iterator>
-#include <map>
-#include <set>
-#include <vector>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/i18n/rtl.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -29,6 +20,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
@@ -44,21 +36,8 @@
 
 using base::UserMetricsAction;
 
-namespace {
-// TODO(zork): Remove this blacklist when fonts are added to Chrome OS.
-// see: crbug.com/240586
-
-bool IsBlacklisted(const std::string& language_code) {
-  return language_code == "si";  // Sinhala
-}
-
-}  // namespace
-
 namespace chromeos {
 namespace options {
-
-const char kVendorOtherLanguagesListDivider[] =
-    "VENDOR_OTHER_LANGUAGES_LIST_DIVIDER";
 
 CrosLanguageOptionsHandler::CrosLanguageOptionsHandler()
     : composition_extension_appended_(false),
@@ -109,14 +88,12 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_NO_INPUT_METHODS));
 
+  // GetSupportedInputMethods() never returns NULL.
+  localized_strings->Set("languageList", GetAcceptLanguageList().release());
+  localized_strings->Set("inputMethodList", GetInputMethodList());
+
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
-  // GetSupportedInputMethods() never return NULL.
-  scoped_ptr<input_method::InputMethodDescriptors> descriptors(
-      manager->GetSupportedInputMethods());
-  localized_strings->Set("languageList", GetAcceptLanguageList(*descriptors));
-  localized_strings->Set("inputMethodList", GetInputMethodList(*descriptors));
-
   input_method::InputMethodDescriptors ext_ime_descriptors;
   manager->GetInputMethodExtensions(&ext_ime_descriptors);
 
@@ -160,16 +137,18 @@ void CrosLanguageOptionsHandler::RegisterMessages() {
 }
 
 // static
-base::ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
-    const input_method::InputMethodDescriptors& descriptors) {
+base::ListValue* CrosLanguageOptionsHandler::GetInputMethodList() {
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
+  // GetSupportedInputMethods() never return NULL.
+  scoped_ptr<input_method::InputMethodDescriptors> descriptors(
+      manager->GetSupportedInputMethods());
 
   base::ListValue* input_method_list = new base::ListValue();
 
-  for (size_t i = 0; i < descriptors.size(); ++i) {
+  for (size_t i = 0; i < descriptors->size(); ++i) {
     const input_method::InputMethodDescriptor& descriptor =
-        descriptors[i];
+        (*descriptors)[i];
     const std::string display_name =
         manager->GetInputMethodUtil()->GetInputMethodDisplayNameFromId(
             descriptor.id());
@@ -189,235 +168,6 @@ base::ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
   }
 
   return input_method_list;
-}
-
-// static
-base::ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
-    const input_method::InputMethodDescriptors& descriptors,
-    const std::vector<std::string>& base_language_codes,
-    const bool insert_divider) {
-  const std::string app_locale = g_browser_process->GetApplicationLocale();
-
-  std::set<std::string> language_codes;
-  // Collect the language codes from the supported input methods.
-  for (size_t i = 0; i < descriptors.size(); ++i) {
-    const input_method::InputMethodDescriptor& descriptor = descriptors[i];
-    const std::vector<std::string>& languages =
-        descriptor.language_codes();
-    for (size_t i = 0; i < languages.size(); ++i)
-      language_codes.insert(languages[i]);
-  }
-
-  const StartupCustomizationDocument* startup_manifest =
-      StartupCustomizationDocument::GetInstance();
-
-  const std::vector<std::string>& configured_locales =
-      startup_manifest->configured_locales();
-
-  // Languages sort order.
-  std::map<std::string, int /* index */> language_index;
-  for (size_t i = 0; i < configured_locales.size(); ++i) {
-    language_index[configured_locales[i]] = i;
-  }
-
-  // Map of display name -> {language code, native_display_name}.
-  // In theory, we should be able to create a map that is sorted by
-  // display names using ICU comparator, but doing it is hard, thus we'll
-  // use an auxiliary vector to achieve the same result.
-  typedef std::pair<std::string, base::string16> LanguagePair;
-  typedef std::map<base::string16, LanguagePair> LanguageMap;
-  LanguageMap language_map;
-
-  // The auxiliary vector mentioned above. (except vendor locales)
-  std::vector<base::string16> display_names;
-
-  // Separate vector of vendor locales.
-  std::vector<base::string16> configured_locales_display_names(
-      configured_locales.size());
-
-  size_t configured_locales_count = 0;
-
-  // Build the list of display names, and build the language map.
-
-  // The list of configured locales might have entries not in
-  // base_language_codes. If there are unsupported language variants,
-  // but they resolve to backup locale within base_language_codes, also
-  // add them to the list.
-  for (std::map<std::string, int>::const_iterator iter = language_index.begin();
-       iter != language_index.end();
-       ++iter) {
-    const std::string& language_id = iter->first;
-    const int language_idx = iter->second;
-
-    const size_t dash_pos = language_id.find_first_of('-');
-
-    // Ignore non-specific codes.
-    if (dash_pos == std::string::npos || dash_pos == 0)
-      continue;
-
-    if (std::find(base_language_codes.begin(),
-                  base_language_codes.end(),
-                  language_id) != base_language_codes.end()) {
-      // Language is supported. No need to replace
-      continue;
-    }
-    std::string resolved_locale;
-    if (!l10n_util::CheckAndResolveLocale(language_id, &resolved_locale))
-      continue;
-
-    if (std::find(base_language_codes.begin(),
-                  base_language_codes.end(),
-                  resolved_locale) == base_language_codes.end()) {
-      // Resolved locale is not supported.
-      continue;
-    }
-
-    const base::string16 display_name =
-        l10n_util::GetDisplayNameForLocale(language_id, app_locale, true);
-    const base::string16 native_display_name =
-        l10n_util::GetDisplayNameForLocale(
-            language_id, language_id, true);
-
-    language_map[display_name] =
-        std::make_pair(language_id, native_display_name);
-
-    configured_locales_display_names[language_idx] = display_name;
-    ++configured_locales_count;
-  }
-
-  // Translate language codes, generated from input methods.
-  for (std::set<std::string>::const_iterator iter = language_codes.begin();
-       iter != language_codes.end(); ++iter) {
-     // Exclude the language which is not in |base_langauge_codes| even it has
-     // input methods.
-    if (std::find(base_language_codes.begin(),
-                  base_language_codes.end(),
-                  *iter) == base_language_codes.end()) {
-      continue;
-    }
-
-    const base::string16 display_name =
-        l10n_util::GetDisplayNameForLocale(*iter, app_locale, true);
-    const base::string16 native_display_name =
-        l10n_util::GetDisplayNameForLocale(*iter, *iter, true);
-
-    language_map[display_name] =
-        std::make_pair(*iter, native_display_name);
-
-    const std::map<std::string, int>::const_iterator index_pos =
-        language_index.find(*iter);
-    if (index_pos != language_index.end()) {
-      base::string16& stored_display_name =
-          configured_locales_display_names[index_pos->second];
-      if (stored_display_name.empty()) {
-        stored_display_name = display_name;
-        ++configured_locales_count;
-      }
-    } else {
-      display_names.push_back(display_name);
-    }
-  }
-  DCHECK_EQ(display_names.size() + configured_locales_count,
-            language_map.size());
-
-  // Build the list of display names, and build the language map.
-  for (size_t i = 0; i < base_language_codes.size(); ++i) {
-    // Skip this language if it was already added.
-    if (language_codes.find(base_language_codes[i]) != language_codes.end())
-      continue;
-
-    // TODO(zork): Remove this blacklist when fonts are added to Chrome OS.
-    // see: crbug.com/240586
-    if (IsBlacklisted(base_language_codes[i]))
-      continue;
-
-    base::string16 display_name =
-        l10n_util::GetDisplayNameForLocale(
-            base_language_codes[i], app_locale, false);
-    base::string16 native_display_name =
-        l10n_util::GetDisplayNameForLocale(
-            base_language_codes[i], base_language_codes[i], false);
-    language_map[display_name] =
-        std::make_pair(base_language_codes[i], native_display_name);
-
-    const std::map<std::string, int>::const_iterator index_pos =
-        language_index.find(base_language_codes[i]);
-    if (index_pos != language_index.end()) {
-      configured_locales_display_names[index_pos->second] = display_name;
-      ++configured_locales_count;
-    } else {
-      display_names.push_back(display_name);
-    }
-  }
-
-  // Sort display names using locale specific sorter.
-  l10n_util::SortStrings16(app_locale, &display_names);
-  // Concatenate configured_locales_display_names and display_names.
-  // Insert special divider in between.
-  std::vector<base::string16> out_display_names;
-  for (size_t i = 0; i < configured_locales_display_names.size(); ++i) {
-    if (configured_locales_display_names[i].size() == 0)
-      continue;
-    out_display_names.push_back(configured_locales_display_names[i]);
-  }
-
-  base::string16 divider16;
-  if (insert_divider) {
-    divider16 = base::ASCIIToUTF16(
-        insert_divider ? "" : kVendorOtherLanguagesListDivider);
-    out_display_names.push_back(divider16);
-  }
-
-  std::copy(display_names.begin(),
-            display_names.end(),
-            std::back_inserter(out_display_names));
-
-  // Build the language list from the language map.
-  base::ListValue* language_list = new base::ListValue();
-  for (size_t i = 0; i < out_display_names.size(); ++i) {
-    // Sets the directionality of the display language name.
-    base::string16 display_name(out_display_names[i]);
-    if (insert_divider && display_name == divider16) {
-      // Insert divider.
-      base::DictionaryValue* dictionary = new base::DictionaryValue();
-      dictionary->SetString("code", kVendorOtherLanguagesListDivider);
-      language_list->Append(dictionary);
-      continue;
-    }
-    bool markup_removal =
-        base::i18n::UnadjustStringForLocaleDirection(&display_name);
-    DCHECK(markup_removal);
-    bool has_rtl_chars = base::i18n::StringContainsStrongRTLChars(display_name);
-    std::string directionality = has_rtl_chars ? "rtl" : "ltr";
-
-    const LanguagePair& pair = language_map[out_display_names[i]];
-    base::DictionaryValue* dictionary = new base::DictionaryValue();
-    dictionary->SetString("code", pair.first);
-    dictionary->SetString("displayName", out_display_names[i]);
-    dictionary->SetString("textDirection", directionality);
-    dictionary->SetString("nativeDisplayName", pair.second);
-    language_list->Append(dictionary);
-  }
-
-  return language_list;
-}
-
-// static
-base::ListValue* CrosLanguageOptionsHandler::GetAcceptLanguageList(
-    const input_method::InputMethodDescriptors& descriptors) {
-  // Collect the language codes from the supported accept-languages.
-  const std::string app_locale = g_browser_process->GetApplicationLocale();
-  std::vector<std::string> accept_language_codes;
-  l10n_util::GetAcceptLanguagesForLocale(app_locale, &accept_language_codes);
-  return GetLanguageListInternal(descriptors, accept_language_codes, false);
-}
-
-// static
-base::ListValue* CrosLanguageOptionsHandler::GetUILanguageList(
-    const input_method::InputMethodDescriptors& descriptors) {
-  // Collect the language codes from the available locales.
-  return GetLanguageListInternal(
-      descriptors, l10n_util::GetAvailableLocales(), true);
 }
 
 base::ListValue*

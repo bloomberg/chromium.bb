@@ -968,6 +968,8 @@
       'browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h',
       'browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.cc',
       'browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h',
+      'browser/ui/webui/chromeos/login/l10n_util.cc',
+      'browser/ui/webui/chromeos/login/l10n_util.h',
       'browser/ui/webui/chromeos/login/network_dropdown.cc',
       'browser/ui/webui/chromeos/login/network_dropdown.h',
       'browser/ui/webui/chromeos/login/network_dropdown_handler.cc',

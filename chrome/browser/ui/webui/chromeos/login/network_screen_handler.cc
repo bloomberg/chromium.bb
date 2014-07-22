@@ -4,15 +4,11 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 
-#include <algorithm>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_service.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/values.h"
@@ -21,13 +17,12 @@
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/idle_detector.h"
-#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
+#include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/extension_ime_util.h"
@@ -49,21 +44,6 @@ const char kJsApiNetworkOnExit[] = "networkOnExit";
 const char kJsApiNetworkOnLanguageChanged[] = "networkOnLanguageChanged";
 const char kJsApiNetworkOnInputMethodChanged[] = "networkOnInputMethodChanged";
 const char kJsApiNetworkOnTimezoneChanged[] = "networkOnTimezoneChanged";
-
-// Returns true if element was inserted.
-bool InsertString(const std::string& str, std::set<std::string>& to) {
-  const std::pair<std::set<std::string>::iterator, bool> result =
-      to.insert(str);
-  return result.second;
-}
-
-void AddOptgroupOtherLayouts(base::ListValue* input_methods_list) {
-  base::DictionaryValue* optgroup = new base::DictionaryValue;
-  optgroup->SetString(
-      "optionGroupName",
-      l10n_util::GetStringUTF16(IDS_OOBE_OTHER_KEYBOARD_LAYOUTS));
-  input_methods_list->Append(optgroup);
-}
 
 // For "UI Language" drop-down menu at OOBE screen we need to decide which
 // entry to mark "selected". If user has just selected "requested_locale",
@@ -211,8 +191,18 @@ void NetworkScreenHandler::DeclareLocalizedValues(
 
 void NetworkScreenHandler::GetAdditionalParameters(
     base::DictionaryValue* dict) {
-  dict->Set("languageList", GetLanguageList());
-  dict->Set("inputMethodsList", GetInputMethods());
+  const std::string application_locale =
+      g_browser_process->GetApplicationLocale();
+  const std::string selected_language = selected_language_code_.empty() ?
+      application_locale : selected_language_code_;
+  const std::string selected_input_method =
+      input_method::InputMethodManager::Get()->GetCurrentInputMethod().id();
+
+  dict->Set("languageList",
+            GetUILanguageList(NULL, selected_language).release());
+  dict->Set("inputMethodsList",
+            GetLoginKeyboardLayouts(application_locale,
+                                    selected_input_method).release());
   dict->Set("timezoneList", GetTimezoneList());
 }
 
@@ -340,67 +330,6 @@ void NetworkScreenHandler::OnSystemTimezoneChanged() {
   CallJS("setTimezone", current_timezone_id);
 }
 
-base::ListValue* NetworkScreenHandler::GetLanguageList() {
-  const std::string app_locale = g_browser_process->GetApplicationLocale();
-  input_method::InputMethodManager* manager =
-      input_method::InputMethodManager::Get();
-  ComponentExtensionIMEManager* comp_manager =
-      manager->GetComponentExtensionIMEManager();
-  input_method::InputMethodDescriptors descriptors;
-  if (comp_manager->IsInitialized())
-    descriptors = comp_manager->GetXkbIMEAsInputMethodDescriptor();
-  base::ListValue* languages_list =
-      options::CrosLanguageOptionsHandler::GetUILanguageList(descriptors);
-  for (size_t i = 0; i < languages_list->GetSize(); ++i) {
-    base::DictionaryValue* language_info = NULL;
-    if (!languages_list->GetDictionary(i, &language_info))
-      NOTREACHED();
-
-    std::string value;
-    language_info->GetString("code", &value);
-    std::string display_name;
-    language_info->GetString("displayName", &display_name);
-    std::string native_name;
-    language_info->GetString("nativeDisplayName", &native_name);
-
-    // If it's option group divider, add field name.
-    if (value == options::kVendorOtherLanguagesListDivider) {
-      language_info->SetString(
-          "optionGroupName",
-          l10n_util::GetStringUTF16(IDS_OOBE_OTHER_LANGUAGES));
-    }
-    if (display_name != native_name) {
-      display_name = base::StringPrintf("%s - %s",
-                                        display_name.c_str(),
-                                        native_name.c_str());
-    }
-
-    language_info->SetString("value", value);
-    language_info->SetString("title", display_name);
-    if (selected_language_code_.empty()) {
-      if (value == app_locale)
-        language_info->SetBoolean("selected", true);
-    } else {
-      if (value == selected_language_code_)
-        language_info->SetBoolean("selected", true);
-    }
-  }
-  return languages_list;
-}
-
-base::DictionaryValue* CreateInputMethodsEntry(
-    const input_method::InputMethodDescriptor& method,
-    const std::string current_input_method_id) {
-  input_method::InputMethodUtil* util =
-      input_method::InputMethodManager::Get()->GetInputMethodUtil();
-  const std::string& ime_id = method.id();
-  scoped_ptr<base::DictionaryValue> input_method(new base::DictionaryValue);
-  input_method->SetString("value", ime_id);
-  input_method->SetString("title", util->GetInputMethodLongName(method));
-  input_method->SetBoolean("selected", ime_id == current_input_method_id);
-  return input_method.release();
-}
-
 void NetworkScreenHandler::OnImeComponentExtensionInitialized() {
   // Refreshes the language and keyboard list once the component extension
   // IMEs are initialized.
@@ -423,78 +352,6 @@ void NetworkScreenHandler::ReloadLocalizedContent() {
 
   // Buttons are recreated, updated "Continue" button state.
   EnableContinue(is_continue_enabled_);
-}
-
-// static
-base::ListValue* NetworkScreenHandler::GetInputMethods() {
-  base::ListValue* input_methods_list = new base::ListValue;
-  input_method::InputMethodManager* manager =
-      input_method::InputMethodManager::Get();
-  input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
-  ComponentExtensionIMEManager* comp_manager =
-      manager->GetComponentExtensionIMEManager();
-  if (!comp_manager->IsInitialized()) {
-    input_method::InputMethodDescriptor fallback =
-        util->GetFallbackInputMethodDescriptor();
-    input_methods_list->Append(
-        CreateInputMethodsEntry(fallback, fallback.id()));
-    return input_methods_list;
-  }
-
-  const std::vector<std::string>& hardware_login_input_methods =
-      util->GetHardwareLoginInputMethodIds();
-  manager->EnableLoginLayouts(g_browser_process->GetApplicationLocale(),
-                              hardware_login_input_methods);
-
-  scoped_ptr<input_method::InputMethodDescriptors> input_methods(
-      manager->GetActiveInputMethods());
-  const std::string current_input_method_id =
-      manager->GetCurrentInputMethod().id();
-  std::set<std::string> input_methods_added;
-
-  for (std::vector<std::string>::const_iterator i =
-           hardware_login_input_methods.begin();
-       i != hardware_login_input_methods.end();
-       ++i) {
-    const input_method::InputMethodDescriptor* ime =
-        util->GetInputMethodDescriptorFromId(*i);
-    DCHECK(ime != NULL);
-    // Do not crash in case of misconfiguration.
-    if (ime != NULL) {
-      input_methods_added.insert(*i);
-      input_methods_list->Append(
-          CreateInputMethodsEntry(*ime, current_input_method_id));
-    }
-  }
-
-  bool optgroup_added = false;
-  for (size_t i = 0; i < input_methods->size(); ++i) {
-    // Makes sure the id is in legacy xkb id format.
-    const std::string& ime_id = (*input_methods)[i].id();
-    if (!InsertString(ime_id, input_methods_added))
-      continue;
-    if (!optgroup_added) {
-      optgroup_added = true;
-      AddOptgroupOtherLayouts(input_methods_list);
-    }
-    input_methods_list->Append(
-        CreateInputMethodsEntry((*input_methods)[i], current_input_method_id));
-  }
-  // "xkb:us::eng" should always be in the list of available layouts.
-  const std::string us_keyboard_id =
-      util->GetFallbackInputMethodDescriptor().id();
-  if (input_methods_added.find(us_keyboard_id) == input_methods_added.end()) {
-    const input_method::InputMethodDescriptor* us_eng_descriptor =
-        util->GetInputMethodDescriptorFromId(us_keyboard_id);
-    DCHECK(us_eng_descriptor != NULL);
-    if (!optgroup_added) {
-      optgroup_added = true;
-      AddOptgroupOtherLayouts(input_methods_list);
-    }
-    input_methods_list->Append(
-        CreateInputMethodsEntry(*us_eng_descriptor, current_input_method_id));
-  }
-  return input_methods_list;
 }
 
 // static

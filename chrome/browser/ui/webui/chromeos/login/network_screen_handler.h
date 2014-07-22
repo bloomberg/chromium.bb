@@ -85,14 +85,6 @@ class NetworkScreenHandler : public NetworkScreenActor,
   // Callback when the system timezone settings is changed.
   void OnSystemTimezoneChanged();
 
-  // Returns available languages. Caller gets the ownership. Note, it does
-  // depend on the current locale.
-  base::ListValue* GetLanguageList();
-
-  // Returns available input methods. Caller gets the ownership. Note, it does
-  // depend on the current locale.
-  static base::ListValue* GetInputMethods();
-
   // Returns available timezones. Caller gets the ownership.
   static base::ListValue* GetTimezoneList();
 

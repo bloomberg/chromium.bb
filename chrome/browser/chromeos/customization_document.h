@@ -37,13 +37,12 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-// This test is in global namespace so it must be declared here.
-void Test__InitStartupCustomizationDocument(const std::string& manifest);
-
 namespace chromeos {
 
 class CustomizationWallpaperDownloader;
 class ServicesCustomizationExternalLoader;
+
+void InitStartupCustomizationDocumentForTesting(const std::string& manifest);
 
 namespace system {
 class StatisticsProvider;
@@ -107,7 +106,7 @@ class StartupCustomizationDocument : public CustomizationDocument {
   FRIEND_TEST_ALL_PREFIXES(StartupCustomizationDocumentTest, BadManifest);
   FRIEND_TEST_ALL_PREFIXES(ServicesCustomizationDocumentTest, MultiLanguage);
   friend class OobeLocalizationTest;
-  friend void ::Test__InitStartupCustomizationDocument(
+  friend void InitStartupCustomizationDocumentForTesting(
       const std::string& manifest);
   friend struct DefaultSingletonTraits<StartupCustomizationDocument>;
 
