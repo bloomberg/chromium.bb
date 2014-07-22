@@ -64,6 +64,9 @@ class AutofillProfile : public AutofillDataModel {
                        const std::vector<base::string16>& values);
   void GetRawMultiInfo(ServerFieldType type,
                        std::vector<base::string16>* values) const;
+  void SetMultiInfo(const AutofillType& type,
+                    const std::vector<base::string16>& values,
+                    const std::string& app_locale);
   void GetMultiInfo(const AutofillType& type,
                     const std::string& app_locale,
                     std::vector<base::string16>* values) const;

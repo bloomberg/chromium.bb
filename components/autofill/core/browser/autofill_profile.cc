@@ -136,17 +136,30 @@ base::string16 GetFormGroupInfo(const FormGroup& form_group,
 }
 
 template <class T>
-void CopyValuesToItems(ServerFieldType type,
-                       const std::vector<base::string16>& values,
-                       std::vector<T>* form_group_items,
-                       const T& prototype) {
+void CopyRawValuesToItems(ServerFieldType type,
+                          const std::vector<base::string16>& values,
+                          const T& prototype,
+                          std::vector<T>* form_group_items) {
   form_group_items->resize(values.size(), prototype);
   for (size_t i = 0; i < form_group_items->size(); ++i) {
     (*form_group_items)[i].SetRawInfo(type, values[i]);
   }
   // Must have at least one (possibly empty) element.
-  if (form_group_items->empty())
-    form_group_items->resize(1, prototype);
+  form_group_items->resize(std::max<size_t>(1UL, values.size()), prototype);
+}
+
+template <class T>
+void CopyValuesToItems(AutofillType type,
+                       const std::vector<base::string16>& values,
+                       const T& prototype,
+                       const std::string& app_locale,
+                       std::vector<T>* form_group_items) {
+  form_group_items->resize(values.size(), prototype);
+  for (size_t i = 0; i < form_group_items->size(); ++i) {
+    (*form_group_items)[i].SetInfo(type, values[i], app_locale);
+  }
+  // Must have at least one (possibly empty) element.
+  form_group_items->resize(std::max<size_t>(1UL, values.size()), prototype);
 }
 
 template <class T>
@@ -349,22 +362,22 @@ void AutofillProfile::SetRawMultiInfo(
   switch (AutofillType(type).group()) {
     case NAME:
     case NAME_BILLING:
-      CopyValuesToItems(type, values, &name_, NameInfo());
+      CopyRawValuesToItems(type, values, NameInfo(), &name_);
       break;
+
     case EMAIL:
-      CopyValuesToItems(type, values, &email_, EmailInfo());
+      CopyRawValuesToItems(type, values, EmailInfo(), &email_);
       break;
+
     case PHONE_HOME:
     case PHONE_BILLING:
-      CopyValuesToItems(type,
-                        values,
-                        &phone_number_,
-                        PhoneNumber(this));
+      CopyRawValuesToItems(type, values, PhoneNumber(this), &phone_number_);
       break;
+
     default:
-      if (values.size() == 1) {
+      if (values.size() == 1U) {
         SetRawInfo(type, values[0]);
-      } else if (values.size() == 0) {
+      } else if (values.empty()) {
         SetRawInfo(type, base::string16());
       } else {
         // Shouldn't attempt to set multiple values on single-valued field.
@@ -378,6 +391,38 @@ void AutofillProfile::GetRawMultiInfo(
     ServerFieldType type,
     std::vector<base::string16>* values) const {
   GetMultiInfoImpl(AutofillType(type), std::string(), values);
+}
+
+void AutofillProfile::SetMultiInfo(const AutofillType& type,
+                                   const std::vector<base::string16>& values,
+                                   const std::string& app_locale) {
+  switch (AutofillType(type).group()) {
+    case NAME:
+    case NAME_BILLING:
+      CopyValuesToItems(type, values, NameInfo(), app_locale, &name_);
+      break;
+
+    case EMAIL:
+      CopyValuesToItems(type, values, EmailInfo(), app_locale, &email_);
+      break;
+
+    case PHONE_HOME:
+    case PHONE_BILLING:
+      CopyValuesToItems(
+          type, values, PhoneNumber(this), app_locale, &phone_number_);
+      break;
+
+    default:
+      if (values.size() == 1U) {
+        SetInfo(type, values[0], app_locale);
+      } else if (values.empty()) {
+        SetInfo(type, base::string16(), app_locale);
+      } else {
+        // Shouldn't attempt to set multiple values on single-valued field.
+        NOTREACHED();
+      }
+      break;
+  }
 }
 
 void AutofillProfile::GetMultiInfo(const AutofillType& type,

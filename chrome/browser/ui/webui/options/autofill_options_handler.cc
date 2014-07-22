@@ -36,6 +36,7 @@
 #include "ui/base/webui/web_ui_util.h"
 
 using autofill::AutofillCountry;
+using autofill::AutofillType;
 using autofill::ServerFieldType;
 using autofill::AutofillProfile;
 using autofill::CreditCard;
@@ -200,17 +201,15 @@ void GetValueList(const AutofillProfile& profile,
   }
 }
 
-// Set the multi-valued element for |type| from input |list| values.
-void SetValueList(const base::ListValue* list,
-                  ServerFieldType type,
-                  AutofillProfile* profile) {
-  std::vector<base::string16> values(list->GetSize());
-  for (size_t i = 0; i < list->GetSize(); ++i) {
+// Converts a ListValue of StringValues to a vector of string16s.
+void ListValueToStringVector(const base::ListValue& list,
+                             std::vector<base::string16>* output) {
+  output->resize(list.GetSize());
+  for (size_t i = 0; i < list.GetSize(); ++i) {
     base::string16 value;
-    if (list->GetString(i, &value))
-      values[i] = value;
+    if (list.GetString(i, &value))
+      (*output)[i].swap(value);
   }
-  profile->SetRawMultiInfo(type, values);
 }
 
 // Pulls the phone number |index|, |phone_number_list|, and |country_code| from
@@ -601,8 +600,13 @@ void AutofillOptionsHandler::SetAddress(const base::ListValue* args) {
 
   base::string16 value;
   const base::ListValue* list_value;
-  if (args->GetList(arg_counter++, &list_value))
-    SetValueList(list_value, autofill::NAME_FULL, &profile);
+  if (args->GetList(arg_counter++, &list_value)) {
+    std::vector<base::string16> values;
+    ListValueToStringVector(*list_value, &values);
+    profile.SetMultiInfo(AutofillType(autofill::NAME_FULL),
+                         values,
+                         g_browser_process->GetApplicationLocale());
+  }
 
   if (args->GetString(arg_counter++, &value))
     profile.SetRawInfo(autofill::COMPANY_NAME, value);
@@ -628,11 +632,17 @@ void AutofillOptionsHandler::SetAddress(const base::ListValue* args) {
   if (args->GetString(arg_counter++, &value))
     profile.SetRawInfo(autofill::ADDRESS_HOME_COUNTRY, value);
 
-  if (args->GetList(arg_counter++, &list_value))
-    SetValueList(list_value, autofill::PHONE_HOME_WHOLE_NUMBER, &profile);
+  if (args->GetList(arg_counter++, &list_value)) {
+    std::vector<base::string16> values;
+    ListValueToStringVector(*list_value, &values);
+    profile.SetRawMultiInfo(autofill::PHONE_HOME_WHOLE_NUMBER, values);
+  }
 
-  if (args->GetList(arg_counter++, &list_value))
-    SetValueList(list_value, autofill::EMAIL_ADDRESS, &profile);
+  if (args->GetList(arg_counter++, &list_value)) {
+    std::vector<base::string16> values;
+    ListValueToStringVector(*list_value, &values);
+    profile.SetRawMultiInfo(autofill::EMAIL_ADDRESS, values);
+  }
 
   if (args->GetString(arg_counter++, &value))
     profile.set_language_code(base::UTF16ToUTF8(value));
