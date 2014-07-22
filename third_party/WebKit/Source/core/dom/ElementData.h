@@ -111,6 +111,10 @@ private:
     PassRefPtrWillBeRawPtr<UniqueElementData> makeUniqueCopy() const;
 };
 
+#define DEFINE_ELEMENT_DATA_TYPE_CASTS(thisType,  pointerPredicate, referencePredicate) \
+    template<typename T> inline thisType* to##thisType(const RefPtr<T>& data) { return to##thisType(data.get()); } \
+    DEFINE_TYPE_CASTS(thisType, ElementData, data, pointerPredicate, referencePredicate)
+
 #if COMPILER(MSVC)
 #pragma warning(push)
 #pragma warning(disable: 4200) // Disable "zero-sized array in struct/union" warning
@@ -144,6 +148,8 @@ public:
 
     Attribute m_attributeArray[0];
 };
+
+DEFINE_ELEMENT_DATA_TYPE_CASTS(ShareableElementData, !data->isUnique(), !data.isUnique());
 
 #if COMPILER(MSVC)
 #pragma warning(pop)
@@ -183,6 +189,8 @@ public:
     Vector<Attribute, 4> m_attributeVector;
 };
 
+DEFINE_ELEMENT_DATA_TYPE_CASTS(UniqueElementData, data->isUnique(), data.isUnique());
+
 #if !ENABLE(OILPAN)
 inline void ElementData::deref()
 {
@@ -196,14 +204,14 @@ inline const StylePropertySet* ElementData::presentationAttributeStyle() const
 {
     if (!m_isUnique)
         return 0;
-    return static_cast<const UniqueElementData*>(this)->m_presentationAttributeStyle.get();
+    return toUniqueElementData(this)->m_presentationAttributeStyle.get();
 }
 
 inline AttributeCollection ElementData::attributes() const
 {
     if (isUnique())
-        return static_cast<const UniqueElementData*>(this)->attributes();
-    return static_cast<const ShareableElementData*>(this)->attributes();
+        return toUniqueElementData(this)->attributes();
+    return toShareableElementData(this)->attributes();
 }
 
 inline AttributeCollection ShareableElementData::attributes() const

@@ -785,7 +785,7 @@ inline UniqueElementData& Element::ensureUniqueElementData()
 {
     if (!elementData() || !elementData()->isUnique())
         createUniqueElementData();
-    return static_cast<UniqueElementData&>(*m_elementData);
+    return toUniqueElementData(*m_elementData);
 }
 
 // Put here to make them inline.

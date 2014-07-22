@@ -83,25 +83,25 @@ ElementData::ElementData(const ElementData& other, bool isUnique)
 void ElementData::finalizeGarbageCollectedObject()
 {
     if (m_isUnique)
-        static_cast<UniqueElementData*>(this)->~UniqueElementData();
+        toUniqueElementData(this)->~UniqueElementData();
     else
-        static_cast<ShareableElementData*>(this)->~ShareableElementData();
+        toShareableElementData(this)->~ShareableElementData();
 }
 #else
 void ElementData::destroy()
 {
     if (m_isUnique)
-        delete static_cast<UniqueElementData*>(this);
+        delete toUniqueElementData(this);
     else
-        delete static_cast<ShareableElementData*>(this);
+        delete toShareableElementData(this);
 }
 #endif
 
 PassRefPtrWillBeRawPtr<UniqueElementData> ElementData::makeUniqueCopy() const
 {
     if (isUnique())
-        return adoptRefWillBeNoop(new UniqueElementData(static_cast<const UniqueElementData&>(*this)));
-    return adoptRefWillBeNoop(new UniqueElementData(static_cast<const ShareableElementData&>(*this)));
+        return adoptRefWillBeNoop(new UniqueElementData(toUniqueElementData(*this)));
+    return adoptRefWillBeNoop(new UniqueElementData(toShareableElementData(*this)));
 }
 
 bool ElementData::isEquivalent(const ElementData* other) const
@@ -126,9 +126,9 @@ bool ElementData::isEquivalent(const ElementData* other) const
 void ElementData::trace(Visitor* visitor)
 {
     if (m_isUnique)
-        static_cast<UniqueElementData*>(this)->traceAfterDispatch(visitor);
+        toUniqueElementData(this)->traceAfterDispatch(visitor);
     else
-        static_cast<ShareableElementData*>(this)->traceAfterDispatch(visitor);
+        toShareableElementData(this)->traceAfterDispatch(visitor);
 }
 
 void ElementData::traceAfterDispatch(Visitor* visitor)
