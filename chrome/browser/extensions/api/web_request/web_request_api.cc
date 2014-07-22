@@ -138,9 +138,8 @@ const char* GetRequestStageAsString(
   return "Not reached";
 }
 
-// TODO(dcheng): Fix plumbing. Frame ID is not an int64--it's just an int.
-int GetFrameId(bool is_main_frame, int64 frame_id) {
-  return is_main_frame ? 0 : static_cast<int>(frame_id);
+int GetFrameId(bool is_main_frame, int frame_id) {
+  return is_main_frame ? 0 : frame_id;
 }
 
 bool IsWebRequestEvent(const std::string& event_name) {
@@ -197,9 +196,9 @@ bool GetWebViewInfo(net::URLRequest* request,
 
 void ExtractRequestInfoDetails(net::URLRequest* request,
                                bool* is_main_frame,
-                               int64* frame_id,
+                               int* frame_id,
                                bool* parent_is_main_frame,
-                               int64* parent_frame_id,
+                               int* parent_frame_id,
                                int* tab_id,
                                int* window_id,
                                int* render_process_host_id,
@@ -230,9 +229,9 @@ void ExtractRequestInfoDetails(net::URLRequest* request,
 // on to extensions.
 void ExtractRequestInfo(net::URLRequest* request, base::DictionaryValue* out) {
   bool is_main_frame = false;
-  int64 frame_id = -1;
+  int frame_id = -1;
   bool parent_is_main_frame = false;
-  int64 parent_frame_id = -1;
+  int parent_frame_id = -1;
   int frame_id_for_extension = -1;
   int parent_frame_id_for_extension = -1;
   int tab_id = -1;
@@ -1406,9 +1405,9 @@ void ExtensionWebRequestEventRouter::AddCallbackForPageLoad(
 bool ExtensionWebRequestEventRouter::IsPageLoad(
     net::URLRequest* request) const {
   bool is_main_frame = false;
-  int64 frame_id = -1;
+  int frame_id = -1;
   bool parent_is_main_frame = false;
-  int64 parent_frame_id = -1;
+  int parent_frame_id = -1;
   int tab_id = -1;
   int window_id = -1;
   int render_process_host_id = -1;
@@ -1544,9 +1543,9 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
   *extra_info_spec = 0;
 
   bool is_main_frame = false;
-  int64 frame_id = -1;
+  int frame_id = -1;
   bool parent_is_main_frame = false;
-  int64 parent_frame_id = -1;
+  int parent_frame_id = -1;
   int tab_id = -1;
   int window_id = -1;
   int render_process_host_id = -1;
