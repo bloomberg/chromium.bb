@@ -101,14 +101,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     DISABLE_REMOTE_INSTALL = 1 << 11
   };
 
-  enum InstallType {
-    INSTALL_ERROR,
-    DOWNGRADE,
-    REINSTALL,
-    UPGRADE,
-    NEW_INSTALL
-  };
-
   // A base class for parsed manifest data that APIs want to store on
   // the extension. Related to base::SupportsUserData, but with an immutable
   // thread-safe interface to match Extension.
