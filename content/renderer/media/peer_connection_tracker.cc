@@ -36,6 +36,29 @@ static string SerializeServers(
   return result;
 }
 
+static RTCMediaConstraints GetNativeMediaConstraints(
+    const blink::WebMediaConstraints& constraints) {
+  RTCMediaConstraints native_constraints;
+
+  if (constraints.isNull())
+    return native_constraints;
+
+  blink::WebVector<blink::WebMediaConstraint> mandatory;
+  constraints.getMandatoryConstraints(mandatory);
+  for (size_t i = 0; i < mandatory.size(); ++i) {
+    native_constraints.AddMandatory(
+        mandatory[i].m_name.utf8(), mandatory[i].m_value.utf8(), false);
+  }
+
+  blink::WebVector<blink::WebMediaConstraint> optional;
+  constraints.getOptionalConstraints(optional);
+  for (size_t i = 0; i < optional.size(); ++i) {
+    native_constraints.AddOptional(
+        optional[i].m_name.utf8(), optional[i].m_value.utf8(), false);
+  }
+  return native_constraints;
+}
+
 static string SerializeMediaConstraints(
     const RTCMediaConstraints& constraints) {
   string result;
@@ -441,8 +464,10 @@ void PeerConnectionTracker::TrackCreateDTMFSender(
 
 void PeerConnectionTracker::TrackGetUserMedia(
     const blink::WebUserMediaRequest& user_media_request) {
-  RTCMediaConstraints audio_constraints(user_media_request.audioConstraints());
-  RTCMediaConstraints video_constraints(user_media_request.videoConstraints());
+  RTCMediaConstraints audio_constraints(
+      GetNativeMediaConstraints(user_media_request.audioConstraints()));
+  RTCMediaConstraints video_constraints(
+      GetNativeMediaConstraints(user_media_request.videoConstraints()));
 
   RenderThreadImpl::current()->Send(new PeerConnectionTrackerHost_GetUserMedia(
       user_media_request.securityOrigin().toString().utf8(),

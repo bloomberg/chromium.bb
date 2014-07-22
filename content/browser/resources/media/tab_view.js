@@ -50,9 +50,9 @@ var TabView = (function() {
       if (this.tabElements_[id])
         throw 'Tab already exists: ' + id;
 
-      var head = document.createElement('div');
+      var head = document.createElement('span');
       head.className = this.TAB_HEAD_CLASS_;
-      head.textContent = title + ' [' + id + ']';
+      head.textContent = title;
       head.title = title;
       this.headBar_.appendChild(head);
       head.addEventListener('click', this.switchTab_.bind(this, id));

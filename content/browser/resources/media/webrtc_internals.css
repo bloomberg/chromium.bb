@@ -88,8 +88,9 @@ th {
   text-decoration: underline;
   cursor: pointer;
   display: inline-block;
-  word-break: break-all;
+  overflow: hidden;
   width: 20em;
+  height: 3em;
 }
 
 .active-tab-head {
@@ -106,4 +107,13 @@ th {
 
 .active-tab-body {
   display: block;
+}
+
+.user-media-request-div-class {
+  background-color: lightgray;
+  margin: 10px 0 10px 0;
+}
+
+.user-media-request-div-class > div {
+  margin: 5px 0 5px 0;
 }

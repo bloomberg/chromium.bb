@@ -232,7 +232,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
     ASSERT_TRUE(ExecuteScriptAndExtractString(
         shell()->web_contents(),
         "window.domAutomationController.send("
-        "JSON.stringify(userMediaRequests));",
+            "JSON.stringify(userMediaRequests));",
         &json_requests));
     scoped_ptr<base::Value> value_requests;
     value_requests.reset(base::JSONReader::Read(json_requests));
@@ -258,6 +258,24 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
       EXPECT_EQ(requests[i].origin, origin);
       EXPECT_EQ(requests[i].audio_constraints, audio);
       EXPECT_EQ(requests[i].video_constraints, video);
+    }
+
+    bool user_media_tab_existed = false;
+    ASSERT_TRUE(ExecuteScriptAndExtractBool(
+        shell()->web_contents(),
+        "window.domAutomationController.send("
+            "$('user-media-tab-id') != null);",
+        &user_media_tab_existed));
+    EXPECT_EQ(!requests.empty(), user_media_tab_existed);
+
+    if (user_media_tab_existed) {
+      int user_media_request_count = -1;
+      ASSERT_TRUE(ExecuteScriptAndExtractInt(
+          shell()->web_contents(),
+          "window.domAutomationController.send("
+              "$('user-media-tab-id').childNodes.length);",
+          &user_media_request_count));
+      ASSERT_EQ(requests.size(), static_cast<size_t>(user_media_request_count));
     }
   }
 
