@@ -46,17 +46,6 @@ const int kMinDimensionsForAnalysis = 256;
 
 namespace cc {
 
-PictureLayerImpl::Pair::Pair() : active(NULL), pending(NULL) {
-}
-
-PictureLayerImpl::Pair::Pair(PictureLayerImpl* active_layer,
-                             PictureLayerImpl* pending_layer)
-    : active(active_layer), pending(pending_layer) {
-}
-
-PictureLayerImpl::Pair::~Pair() {
-}
-
 PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id),
       twin_layer_(NULL),

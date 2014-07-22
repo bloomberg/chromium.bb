@@ -41,7 +41,6 @@ namespace cc {
 class CompletionEvent;
 class CompositorFrameMetadata;
 class DebugRectHistory;
-class EvictionTilePriorityQueue;
 class FrameRateCounter;
 class LayerImpl;
 class LayerTreeHostImplTimeSourceAdapter;
@@ -50,7 +49,6 @@ class MemoryHistory;
 class PageScaleAnimation;
 class PaintTimeCounter;
 class PictureLayerImpl;
-class RasterTilePriorityQueue;
 class RasterWorkerPool;
 class RenderPassDrawQuad;
 class RenderingStatsInstrumentation;
@@ -235,14 +233,9 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void RunOnDemandRasterTask(Task* on_demand_raster_task) OVERRIDE;
 
   // TileManagerClient implementation.
-  virtual const std::vector<PictureLayerImpl*>& GetPictureLayers()
-      const OVERRIDE;
+  virtual const std::vector<PictureLayerImpl*>& GetPictureLayers() OVERRIDE;
   virtual void NotifyReadyToActivate() OVERRIDE;
   virtual void NotifyTileStateChanged(const Tile* tile) OVERRIDE;
-  virtual void BuildRasterQueue(RasterTilePriorityQueue* queue,
-                                TreePriority tree_priority) OVERRIDE;
-  virtual void BuildEvictionQueue(EvictionTilePriorityQueue* queue,
-                                  TreePriority tree_priority) OVERRIDE;
 
   // ScrollbarAnimationControllerClient implementation.
   virtual void PostDelayedScrollbarFade(const base::Closure& start_fade,
@@ -469,9 +462,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   void RegisterPictureLayerImpl(PictureLayerImpl* layer);
   void UnregisterPictureLayerImpl(PictureLayerImpl* layer);
-
-  void GetPictureLayerImplPairs(
-      std::vector<PictureLayerImpl::Pair>* layers) const;
 
  protected:
   LayerTreeHostImpl(
@@ -700,7 +690,6 @@ class CC_EXPORT LayerTreeHostImpl
   size_t transfer_buffer_memory_limit_;
 
   std::vector<PictureLayerImpl*> picture_layers_;
-  std::vector<PictureLayerImpl::Pair> picture_layer_pairs_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

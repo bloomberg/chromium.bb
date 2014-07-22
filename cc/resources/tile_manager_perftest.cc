@@ -180,13 +180,13 @@ class TileManagerPerfTest : public testing::Test {
     timer_.Reset();
     do {
       int count = tile_count;
-      RasterTilePriorityQueue queue;
-      host_impl_.BuildRasterQueue(&queue, SAME_PRIORITY_FOR_BOTH_TREES);
-      while (count--) {
-        ASSERT_FALSE(queue.IsEmpty());
-        ASSERT_TRUE(queue.Top() != NULL);
-        queue.Pop();
+      for (TileManager::RasterTileIterator it(tile_manager(),
+                                              SAME_PRIORITY_FOR_BOTH_TREES);
+           it && count;
+           ++it) {
+        --count;
       }
+      ASSERT_EQ(0, count);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 

@@ -14,8 +14,8 @@ FakeTileManagerClient::FakeTileManagerClient() {
 FakeTileManagerClient::~FakeTileManagerClient() {
 }
 
-const std::vector<PictureLayerImpl*>& FakeTileManagerClient::GetPictureLayers()
-    const {
+const std::vector<PictureLayerImpl*>&
+FakeTileManagerClient::GetPictureLayers() {
   return picture_layers_;
 }
 

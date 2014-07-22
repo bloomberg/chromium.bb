@@ -6711,50 +6711,5 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
   EXPECT_EQ(NULL, host_impl_->CurrentlyScrollingLayer());
 }
 
-TEST_F(LayerTreeHostImplTest, GetPictureLayerImplPairs) {
-  host_impl_->CreatePendingTree();
-  host_impl_->ActivateSyncTree();
-  host_impl_->CreatePendingTree();
-
-  LayerTreeImpl* active_tree = host_impl_->active_tree();
-  LayerTreeImpl* pending_tree = host_impl_->pending_tree();
-  EXPECT_NE(active_tree, pending_tree);
-
-  scoped_ptr<FakePictureLayerImpl> active_layer =
-      FakePictureLayerImpl::Create(active_tree, 10);
-  scoped_ptr<FakePictureLayerImpl> pending_layer =
-      FakePictureLayerImpl::Create(pending_tree, 10);
-
-  std::vector<PictureLayerImpl::Pair> layer_pairs;
-  host_impl_->GetPictureLayerImplPairs(&layer_pairs);
-
-  EXPECT_EQ(2u, layer_pairs.size());
-  if (layer_pairs[0].active) {
-    EXPECT_EQ(active_layer.get(), layer_pairs[0].active);
-    EXPECT_EQ(NULL, layer_pairs[0].pending);
-  } else {
-    EXPECT_EQ(pending_layer.get(), layer_pairs[0].pending);
-    EXPECT_EQ(NULL, layer_pairs[0].active);
-  }
-
-  if (layer_pairs[1].active) {
-    EXPECT_EQ(active_layer.get(), layer_pairs[1].active);
-    EXPECT_EQ(NULL, layer_pairs[1].pending);
-  } else {
-    EXPECT_EQ(pending_layer.get(), layer_pairs[1].pending);
-    EXPECT_EQ(NULL, layer_pairs[1].active);
-  }
-
-  active_layer->set_twin_layer(pending_layer.get());
-  pending_layer->set_twin_layer(active_layer.get());
-
-  layer_pairs.clear();
-  host_impl_->GetPictureLayerImplPairs(&layer_pairs);
-  EXPECT_EQ(1u, layer_pairs.size());
-
-  EXPECT_EQ(active_layer.get(), layer_pairs[0].active);
-  EXPECT_EQ(pending_layer.get(), layer_pairs[0].pending);
-}
-
 }  // namespace
 }  // namespace cc
