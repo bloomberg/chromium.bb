@@ -33,6 +33,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/common/constants.h"
@@ -439,17 +440,20 @@ void Panel::Observe(int type,
     case content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED:
       ConfigureAutoResize(content::Source<content::WebContents>(source).ptr());
       break;
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
-      if (content::Details<extensions::UnloadedExtensionInfo>(
-              details)->extension->id() == extension_id())
-        Close();
-      break;
     case chrome::NOTIFICATION_APP_TERMINATING:
       Close();
       break;
     default:
       NOTREACHED() << "Received unexpected notification " << type;
   }
+}
+
+void Panel::OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) {
+  if (extension->id() == extension_id())
+    Close();
 }
 
 void Panel::OnTitlebarClicked(panel::ClickModifier modifier) {
@@ -532,8 +536,8 @@ void Panel::Initialize(const GURL& url,
     native_panel_->AttachWebContents(web_contents);
 
   // Close when the extension is unloaded or the browser is exiting.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
+  extension_registry_observer_.Add(
+      extensions::ExtensionRegistry::Get(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
@@ -815,6 +819,7 @@ Panel::Panel(Profile* profile, const std::string& app_name,
       attention_mode_(USE_PANEL_ATTENTION),
       expansion_state_(EXPANDED),
       command_updater_(this),
+      extension_registry_observer_(this),
       image_loader_ptr_factory_(this) {
 }
 
