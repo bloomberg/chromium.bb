@@ -143,12 +143,6 @@ void GuestViewBase::InitWithWebContents(
 }
 
 // static
-void GuestViewBase::RegisterGuestViewTypes() {
-  GuestView<WebViewGuest>::Register();
-  GuestView<AppViewGuest>::Register();
-}
-
-// static
 void GuestViewBase::RegisterGuestViewType(
     const std::string& view_type,
     const GuestCreationCallback& callback) {
@@ -163,6 +157,9 @@ GuestViewBase* GuestViewBase::Create(
     content::BrowserContext* browser_context,
     int guest_instance_id,
     const std::string& view_type) {
+  if (guest_view_registry.Get().empty())
+    RegisterGuestViewTypes();
+
   GuestViewCreationMap::iterator it =
       guest_view_registry.Get().find(view_type);
   if (it == guest_view_registry.Get().end()) {
@@ -385,4 +382,10 @@ void GuestViewBase::CompleteInit(const std::string& embedder_extension_id,
                       embedder_render_process_id,
                       guest_web_contents);
   callback.Run(guest_web_contents);
+}
+
+// static
+void GuestViewBase::RegisterGuestViewTypes() {
+  AppViewGuest::Register();
+  WebViewGuest::Register();
 }

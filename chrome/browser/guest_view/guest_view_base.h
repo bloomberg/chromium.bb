@@ -52,8 +52,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
     return NULL;
   }
 
-  static void RegisterGuestViewTypes();
-
   typedef base::Callback<GuestViewBase*(
       content::BrowserContext*, int)> GuestCreationCallback;
   static void RegisterGuestViewType(const std::string& view_type,
@@ -235,6 +233,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
                     int embedder_render_process_id,
                     const WebContentsCreatedCallback& callback,
                     content::WebContents* guest_web_contents);
+
+  static void RegisterGuestViewTypes();
 
   // WebContentsObserver implementation.
   virtual void DidStopLoading(
