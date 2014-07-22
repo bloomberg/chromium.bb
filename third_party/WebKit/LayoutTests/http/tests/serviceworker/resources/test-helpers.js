@@ -41,8 +41,10 @@ function service_worker_unregister_and_done(test, scope) {
 
 // Rejection-specific helper that provides more details
 function unreached_rejection(test, prefix) {
-    return test.step_func(function(reason) {
-        assert_unreached(prefix + ': ' + reason.name);
+    return test.step_func(function(error) {
+        var reason = error.name ? error.name : error;
+        var prefix = prefix ? prefix : "unexpected rejection";
+        assert_unreached(prefix + ': ' + reason);
     });
 }
 

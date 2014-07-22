@@ -6,47 +6,66 @@
 var worker_url = 'resources/simple-intercept-worker.js';
 
 async_test(function(t) {
-    var scope = 'resources/unregister-controller-page.html?load-before-unregister';
+  var scope =
+      'resources/unregister-controller-page.html?load-before-unregister';
+  var worker;
+  var frame_window;
+  var controller;
 
-    service_worker_unregister_and_register(t, worker_url, scope).then(t.step_func(function(worker) {
-        worker.addEventListener('statechange', t.step_func(on_state_change));
-    }));
-
-    function on_state_change(event) {
-        if (event.target.state != 'activated')
-            return;
-        with_iframe(scope, t.step_func(function(frame) {
-            var w = frame.contentWindow;
-            assert_true(w.navigator.serviceWorker.controller instanceof w.ServiceWorker,
-                        'document should load with a controller');
-            w.fetch_url('simple.txt').then(t.step_func(function(response) {
-                assert_equals(response, 'intercepted by service worker', 'controller should intercept requests');
-                t.done();
-            }), unreached_rejection(t, 'fetch failed'));
-        }));
-    }
+  service_worker_unregister_and_register(t, worker_url, scope)
+    .then(function(registered_worker) {
+        worker = registered_worker;
+        return wait_for_state(t, worker, 'activated');
+      })
+    .then(function() {
+        return with_iframe(scope);
+      })
+    .then(function(frame) {
+        frame_window = frame.contentWindow;
+        controller = frame_window.navigator.serviceWorker.controller;
+        assert_true(controller instanceof frame_window.ServiceWorker,
+                    'document should load with a controller');
+        return navigator.serviceWorker.unregister(scope);
+      })
+    .then(function() {
+        assert_equals(frame_window.navigator.serviceWorker.controller,
+                      controller,
+                      'unregistration should not modify controller');
+        return frame_window.fetch_url('simple.txt');
+      })
+    .then(function(response) {
+        assert_equals(response, 'intercepted by service worker',
+                      'controller should intercept requests');
+        t.done();
+      })
+    .catch(unreached_rejection(t));
 }, 'Unregister does not affect existing controller');
 
 async_test(function(t) {
-    var scope = 'resources/unregister-controller-page.html?load-after-unregister';
+  var scope =
+      'resources/unregister-controller-page.html?load-after-unregister';
 
-    service_worker_unregister_and_register(t, worker_url, scope).then(t.step_func(function(worker) {
-        worker.addEventListener('statechange', t.step_func(on_state_change));
-    }));
-
-    function on_state_change(event) {
-        if (event.target.state != 'activated')
-            return;
-        navigator.serviceWorker.unregister(scope).then(t.step_func(function() {
-            with_iframe(scope, t.step_func(function(frame) {
-                var w = frame.contentWindow;
-                assert_equals(w.navigator.serviceWorker.controller, null, 'document should not have a controller');
-                w.fetch_url('simple.txt').then(t.step_func(function(response) {
-                    assert_equals(response, 'a simple text file\n', 'requests should not be intercepted');
-                    t.done();
-                }), unreached_rejection(t, 'fetch failed'));
-            }));
-        }));
-    }
+  service_worker_unregister_and_register(t, worker_url, scope)
+    .then(function(worker) {
+        return wait_for_state(t, worker, 'activated');
+      })
+    .then(function() {
+        return navigator.serviceWorker.unregister(scope);
+      })
+    .then(function() {
+        return with_iframe(scope);
+      })
+    .then(function(frame) {
+        var frame_window = frame.contentWindow;
+        assert_equals(frame_window.navigator.serviceWorker.controller, null,
+                      'document should not have a controller');
+        return frame_window.fetch_url('simple.txt');
+      })
+    .then(function(response) {
+        assert_equals(response, 'a simple text file\n',
+                      'requests should not be intercepted');
+        t.done();
+      })
+    .catch(unreached_rejection(t));
 }, 'Unregister prevents control of subsequent navigations');
 </script>
