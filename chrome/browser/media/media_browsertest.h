@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_MEDIA_MEDIA_BROWSERTEST_H_
 #define CHROME_BROWSER_MEDIA_MEDIA_BROWSERTEST_H_
 
-#include <utility>
-#include <vector>
+#include <string>
 
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "media/base/test_data_util.h"
 
 namespace content {
 class TitleWatcher;
@@ -21,8 +21,6 @@ class TitleWatcher;
 class MediaBrowserTest : public InProcessBrowserTest,
                          public content::WebContentsObserver {
  protected:
-  typedef std::pair<std::string, std::string> StringPair;
-
   // Common test results.
   static const char kEnded[];
   // TODO(xhwang): Report detailed errors, e.g. "ERROR-3".
@@ -38,12 +36,13 @@ class MediaBrowserTest : public InProcessBrowserTest,
   // page, otherwise a local file URL is loaded inside the content shell.
   // It uses RunTest() to check for expected test output.
   void RunMediaTestPage(const std::string& html_page,
-                        std::vector<StringPair>* query_params,
-                        const std::string& expected, bool http);
+                        const media::QueryParams& query_params,
+                        const std::string& expected,
+                        bool http);
 
   // Opens a URL and waits for the document title to match either one of the
-  // default strings or the expected string.
-  base::string16 RunTest(const GURL& gurl, const std::string& expected);
+  // default strings or the expected string. Returns the matching title value.
+  std::string RunTest(const GURL& gurl, const std::string& expected);
 
   virtual void AddWaitForTitles(content::TitleWatcher* title_watcher);
 

@@ -998,6 +998,7 @@ source_set("test_support") {
     ":media",
     ":shared_memory_support",
     "//base",
+    "//net:test_support",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
