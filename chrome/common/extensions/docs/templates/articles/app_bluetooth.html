@@ -507,3 +507,423 @@ chrome.bluetoothSocket.onAccept.addListener(function(acceptInfo) {
 <pre>
 chrome.bluetoothSocket.disconnect(serverSocketId);
 </pre>
+
+<h2 id="low-energy">Interacting with Low Energy devices</h2>
+
+<p>
+  Bluetooth Low Energy or (Bluetooth Smart) is a wireless technology aimed at
+  reduced power consumption. The
+  <a href="bluetoothLowEnergy.html">Bluetooth Low Energy</a> API allows
+  applications to implement the central role in a LE connection to a
+  peripheral. The following sections describe how to discover,
+  connect to, and interact with Bluetooth Low Energy peripherals.
+</p>
+
+<h3 id="le-discovery">Discovering and connecting to peripherals</h3>
+
+<p>
+  As with traditional Bluetooth devices, LE peripherals can be discovered
+  using the methods described in <a href="#discovery">Discovering nearby devices
+  </a>. An LE device makes itself discoverable by sending data packets called
+  "Advertising Data" and the device is said to be in <em>advertising mode</em>.
+  The advertising data may contain UUIDs of services that are available on the
+  device. If present, these UUIDs will be accessible using the
+  <code>uuids</code> property of the corresponding $(ref:bluetooth.Device)
+  object.
+</p>
+
+<p>
+  Once discovered, an LE device can be connected to by calling
+  $(ref:bluetoothLowEnergy.connect) so that the application can interact with
+  its services:
+</p>
+
+<pre>
+chrome.bluetooth.onDeviceAdded.addListener(function(device) {
+  var uuid = '0000180d-0000-1000-8000-00805f9b34fb';
+  if (!device.uuids || device.uuids.indexOf(uuid) < 0)
+    return;
+
+  // The device has a service with the desired UUID.
+  chrome.bluetoothLowEnergy.connect(device.address, function () {
+    if (chrome.runtime.lastError) {
+      console.log('Failed to connect: ' + chrome.runtime.lastError.message);
+      return;
+    }
+
+    // Connected! Do stuff...
+    ...
+  });
+});
+</pre>
+
+<p>
+  Once connected, the <code>connected</code> property of the corresponding
+  $(ref:bluetooth.Device) object will have the value <code>true</code>. Calling
+  $(ref:bluetoothLowEnergy.connect) establishes a claim by the application on
+  the physical connection to the device. A physical connection to the device
+  can exist without ever calling $(ref:bluetoothLowEnergy.connect) (for example
+  due to another application). In this case, while your application can still
+  interact with the services of the device, it should always call
+  $(ref:bluetoothLowEnergy.connect) to prevent another application from
+  disconnecting the physical link.
+</p>
+
+<p>
+  Once your application no longer needs to be connected, it can remove its
+  claim on the connection by calling $(ref:bluetoothLowEnergy.disconnect):
+</p>
+
+<pre>
+chrome.bluetoothLowEnergy.disconnect(deviceAddress);
+</pre>
+
+<p>
+  Note that this won't necessarily destroy the physical link to the device, as
+  there may be other applications who have active connections to the device.
+  Sometimes the device might become disconnected due to reasons that are beyond
+  the control of the application (e.g. if the device disappears or gets
+  explicitly disconnected by the user through utilities of the operating
+  system). Your application should observe the $(ref:bluetooth.onDeviceChanged)
+  event to get notified of changes to the connection and reconnect if necessary.
+</p>
+
+<p>
+  Once connected, the device that is running Chrome will be in the
+  so called <em>central role</em>, while the remote device is said to be in the
+  <em>peripheral role</em>. At this point, your application can interact with
+  the services on the device using the methods described in the following
+  section. <em>Note:</em> The APIs currently do not support acting as a LE
+  peripheral; apps can only implement the central role.
+</p>
+
+<h3 id="gatt">Services, Characteristics, and Descriptors</h3>
+
+<p>
+Bluetooth Low Energy is based on a simple request-response protocol called the
+<em>Attribute Protocol</em> (ATT). Using ATT, a central device interacts with
+the so called <em>attributes</em> on a peripheral device by conforming to a
+special Bluetooth profile called the <em>Generic Attribute Profile</em> (GATT).
+GATT defines the following high level concepts:
+</p>
+
+<ul style="list-style-type: none;">
+  <li>
+    <span style="font-weight: bold;">Service:</span> A GATT service
+    represents a collection of data and associated behaviors to accomplish a
+    particular function of a device. For example, a heart rate monitor will
+    typically have at least one "Heart Rate Service". Information about a
+    GATT service is contained in a $(ref:bluetoothLowEnergy.Service) object.
+  </li>
+  <li>
+    <span style="font-weight: bold;">Characteristic:</span> A GATT
+    characteristic is a basic data element used to construct a GATT service,
+    containing a value along with properties that define how that value can
+    be accessed. For example, the "Heart Rate Service" has the "Heart Rate
+    Measurement" characteristic, which is used to obtain the value of the
+    user's heart rate. Information about a GATT characteristic is contained
+    in a $(ref:bluetoothLowEnergy.Characteristic) object.
+  </li>
+  <li>
+    <span style="font-weight: bold;">Descriptor:</span> A GATT characteristic
+    descriptor contains further information about a characteristic. Information
+    about a GATT characteristic descriptor is contained in a
+    $(ref:bluetoothLowEnergy.Descriptor) object.
+  </li>
+</ul>
+
+<p>
+  The <a href="bluetoothLowEnergy.html">Bluetooth Low Energy</a> API allows
+  applications to find information about a device's services, characteristics,
+  and descriptors by calling $(ref:bluetoothLowEnergy.getServices),
+  $(ref:bluetoothLowEnergy.getCharacteristics), and
+  $(ref:bluetoothLowEnergy.getDescriptors). Apps can filter through services,
+  characteristics, and descriptors by comparing their <code>uuid</code> field
+  to the desired GATT UUID:
+</p>
+
+<pre>
+chrome.bluetoothLowEnergy.getServices(deviceAddress, function(services) {
+  ...
+  for (var i = 0; i < services.length; i++) {
+    if (services[i].uuid == HEART_RATE_SERVICE_UUID) {
+      heartRateService = services[i];
+      break;
+    }
+  }
+  ...
+});
+</pre>
+
+<p>
+  Each service, characteristic, and descriptor accessible through the API is
+  assigned a unique instance identifier, which can be obtained using the
+  <code>instanceId</code> field. This instance ID can be used to identify a
+  GATT object and to perform specific operations on it:
+</p>
+
+<pre>
+chrome.bluetoothLowEnergy.getCharacteristics(heartRateService.instanceId,
+                                             function(chracteristics) {
+  ...
+  for (var i = 0; i < characteristics.length; i++) {
+    if (characteristics[i].uuid == HEART_RATE_MEASUREMENT_UUID) {
+      measurementChar = characteristics[i];
+      break;
+    }
+  }
+  ...
+  chrome.bluetoothLowEnergy.getDescriptors(measurementChar.instanceId,
+                                           function(descriptors) {
+    ...
+  });
+});
+</pre>
+
+<h3 id="service-events">Service events</h3>
+
+<p>
+  Once a device is connected, Chrome will discover its services. As each service
+  is discovered and removed, the application will receive the
+  $(ref:bluetoothLowEnergy.onServiceAdded) and
+  $(ref:bluetoothLowEnergy.onServiceRemoved) events:
+</p>
+
+<pre>
+  var initializeService = function(service) {
+    if (!service) {
+      console.log('No service selected!');
+      // Reset UI, etc.
+      ...
+      return;
+    }
+
+    myService = service;
+
+    // Get all the characteristics and descriptors and bootstrap the app.
+    ...
+  };
+
+  chrome.bluetoothLowEnergy.onServiceAdded.addListener(function(service) {
+    if (service.uuid == MY_SERVICE_UUID)
+      initializeService(service);
+  });
+
+  chrome.bluetoothLowEnergy.onServiceRemoved.addListener(function(service) {
+    if (service.instanceId == myService.instanceId)
+      initializeService(null);
+  });
+</pre>
+
+<p>
+  Chrome discovers all characteristics and descriptors of a service
+  asynchronously. This means that, at the time a
+  $(ref:bluetoothLowEnergy.onServiceAdded) event is sent to the app, not all
+  characteristics of a service may have been discovered yet. Each time a
+  characteristic or a descriptor is added through discovery, the app will
+  receive the $(ref:bluetoothLowEnergy.onServiceChanged) event. This event will
+  also be sent if a notification is received from the remote device telling
+  Chrome that the service definition itself has changed:
+</p>
+
+<pre>
+  chrome.bluetoothLowEnergy.onServiceChanged.addListener(function(service) {
+    if (service.instanceId != myService.instanceId)
+      return;
+
+    // Get characteristics
+    chrome.bluetoothLowEnergy.getCharacteristics(service.instanceId,
+                                                 function(result) {
+      ...
+      if (result.length == 0) {
+        console.log('Characteristics not discovered yet');
+        return;
+      }
+
+      for (var i = 0; i < result.length; i++) {
+        if (result[i].uuid == MY_CHARACTERISTIC_UUID) {
+          myChar = result[i];
+          break;
+        }
+
+        if (!myChar) {
+          console.log('The relevant characteristic not discovered yet.');
+          return;
+        }
+        ...
+      }
+    });
+  });
+</pre>
+
+<h3 id="gatt-read-write">Reading and writing a characteristic's value</h3>
+
+<p>
+  A GATT characteristic encodes one aspect of its service. A central app reads,
+  acts on, and modifies the state of a peripheral's service by operating on a
+  characteristic's value. The characteristic value is a sequence of bytes and
+  its meaning is defined by the high-level specification that defines a certain
+  characteristic. For example, the value of the <em>Heart Rate Measurement</em>
+  characteristic encodes the user's heart rate and the total amount of calories
+  they burned, while the <em>Body Sensor Location</em> characteristic encodes
+  where in the body the heart rate sensor should be worn.
+</p>
+
+<p>
+  Chrome provides the $(ref:bluetoothLowEnergy.readCharacteristicValue) method
+  to read the value of a characteristic:
+</p>
+
+<pre>
+chrome.bluetoothLowEnergy.readCharacteristicValue(chrc.instanceId,
+                                                  function(result) {
+  if (chrome.runtime.lastError) {
+    console.log('Failed to read value: ' + chrome.runtime.lastError.message);
+    return;
+  }
+
+  var bytes = new Uint8Array(result.value);
+
+  // Do stuff with the bytes.
+  ...
+});
+</pre>
+
+<p>
+  Some characteristics are writable, especially those that behave as "Control
+  Points", where writing the value has side effects. For example, the <em>Heart
+  Rate Control Point</em> characteristic is used to tell a heart rate sensor to
+  reset its count of total calories burned and only supports writes. To achieve
+  this, Chrome provides the $(ref:bluetootLowEnergy.writeCharacteristicValue)
+  method:
+</p>
+
+<pre>
+var myBytes = new Uint8Array([ ... ]);
+chrome.bluetoothLowEnergy.writeCharacteristicValue(chrc.instanceId,
+                                                   myBytes.buffer,
+                                                   function() {
+  if (chrome.runtime.lastError) {
+    console.log('Failed to write value: ' +
+                chrome.runtime.lastError.message);
+    return;
+  }
+
+  // Value is written now.
+});
+</pre>
+
+<p>
+  Characteristic descriptors behave the same way and can be readable and/or
+  writable. Chrome provides the $(ref:bluetoothLowEnergy.readDescriptorValue)
+  and $(ref:bluetoothLowEnergy.writeDescriptorValue) methods to read and write
+  the value of a descriptor.
+</p>
+
+<p>
+  To check if a characteristic supports reads or writes, an application can
+  check the <code>properties</code> field of a
+  $(ref:bluetoothLowEnergy.Characteristic) object. While this field does not
+  contain information about the security requirements to access a value, it does
+  describe which value operation the characteristic supports in general.
+</p>
+
+<h3 id="gatt-notifications">Handling value notifications</h3>
+
+<p>
+  Some characteristics make their value known using notifications or
+  indications. For example the <em>Heart Rate Measurement</em> characteristic is
+  neither readable nor writable but sends updates on its current value at
+  regular intervals. Applications can listen to these notifications using the
+  $(ref:bluetoothLowEnergy.onCharacteristicValueChanged) event.
+</p>
+
+<pre>
+  chrome.bluetoothLowEnergy.onCharacteristicValueChanged.addListener(
+      function(chrc) {
+    if (chrc.instanceId != myCharId)
+      return;
+
+    var bytes = new Uint8Array(chrc.value);
+
+    // Do stuff with the bytes.
+    ...
+  });
+</pre>
+
+<p>
+  Even if a characteristic supports notifications/indications, they aren't
+  enabled by default. An application should call the
+  $(ref:bluetoothLowEnergy.startCharacteristicNotifications) and
+  $(ref:bluetoothLowEnergy.stopCharacteristicNotifications) methods to start or
+  stop receiving the $(ref:bluetoothLowEnergy.onCharacteristicValueChanged)
+  event.
+</p>
+
+<pre>
+  // Start receiving characteristic value notifications.
+  var notifying = false;
+  chrome.bluetoothLowEnergy.startCharacteristicNotifications(chrc.instanceId,
+                                                             function() {
+    if (chrome.runtime.lastError) {
+      console.log('Failed to enable notifications: ' +
+                  chrome.runtime.lastError.message);
+      return;
+    }
+
+    notifying = true;
+  });
+
+  ...
+
+  // No longer interested in notifications from this characteristic.
+  if (notifying) {
+    chrome.bluetoothLowEnergy.stopCharacteristicNotifications(
+        chrc.instanceId);
+  }
+</pre>
+
+<p>
+  Once notifications are started, the application will receive the
+  $(ref:bluetoothLowEnergy.onCharacteristicValueChanged) every time a
+  notification or indication is received from the characteristic. If the
+  characteristic supports reads, then this event will also be sent after a
+  successful call to $(ref:bluetoothLowEnergy.readCharacteristicValue). This
+  allows apps to unify the control flow of a value update triggered through a
+  read request and notifications:
+</p>
+
+<pre>
+  chrome.bluetoothLowEnergy.onCharacteristicValueChanged.addListener(
+      function(chrc) {
+    // Process the value.
+    ...
+  });
+
+  chrome.bluetoothLowEnergy.startCharacteristicNotifications(chrc.instanceId,
+                                                             function() {
+    // Notifications started. Read the initial value.
+    chrome.bluetoothLowEnergy.readCharacteristicValue(chrc.instanceId,
+                                                      function(result) {
+      ...
+      // No need to do anything here since onCharacteristicValueChanged
+      // will handle it.
+    });
+  });
+</pre>
+
+<p>
+  If a characteristic supports notifications, its <code>properties</code> field
+  will contain either the <code>"notify"</code> or <code>"indicate"</code>
+  property.
+</p>
+
+<p>
+  <span style="font-weight: bold;">NOTE:</span> If a characteristic supports
+  notifications/indications, it will have the "Client Characteristic
+  Configuration" descriptor to enable/disable notifications. Chrome does not
+  permit apps to write to this descriptor. Apps should instead use the
+  $(ref:bluetoothLowEnergy.startCharacteristicNotifications) and
+  $(ref:bluetoothLowEnergy.stopCharacteristicNotifications) methods to control
+  notification behavior.
+</p>
