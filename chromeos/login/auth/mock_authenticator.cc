@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/auth/mock_authenticator.h"
+#include "chromeos/login/auth/mock_authenticator.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -43,13 +43,11 @@ void MockAuthenticator::AuthenticateToLogin(Profile* profile,
                  AuthFailure::FromNetworkAuthFailure(error)));
 }
 
-void MockAuthenticator::AuthenticateToUnlock(
-    const UserContext& user_context) {
+void MockAuthenticator::AuthenticateToUnlock(const UserContext& user_context) {
   AuthenticateToLogin(NULL /* not used */, user_context);
 }
 
-void MockAuthenticator::LoginAsSupervisedUser(
-    const UserContext& user_context) {
+void MockAuthenticator::LoginAsSupervisedUser(const UserContext& user_context) {
   UserContext new_user_context = user_context;
   new_user_context.SetUserIDHash(user_context.GetUserID());
   consumer_->OnAuthSuccess(new_user_context);

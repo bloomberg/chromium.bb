@@ -97,6 +97,7 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/login/user_names.h"
+#include "chromeos/login_event_recorder.h"
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_change_notifier_factory_chromeos.h"
 #include "chromeos/network/network_handler.h"
@@ -345,6 +346,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   // Now that the file thread exists we can record our stats.
   BootTimesLoader::Get()->RecordChromeMainStats();
+  LoginEventRecorder::Get()->SetDelegate(BootTimesLoader::Get());
 
   // Trigger prefetching of ownership status.
   DeviceSettingsService::Get()->Load();

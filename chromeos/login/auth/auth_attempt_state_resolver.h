@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_AUTH_ATTEMPT_STATE_RESOLVER_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_AUTH_ATTEMPT_STATE_RESOLVER_H_
+#ifndef CHROMEOS_LOGIN_AUTH_AUTH_ATTEMPT_STATE_RESOLVER_H_
+#define CHROMEOS_LOGIN_AUTH_AUTH_ATTEMPT_STATE_RESOLVER_H_
+
+#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
-class AuthAttemptStateResolver {
+class CHROMEOS_EXPORT AuthAttemptStateResolver {
  public:
   AuthAttemptStateResolver();
   virtual ~AuthAttemptStateResolver();
@@ -18,4 +20,4 @@ class AuthAttemptStateResolver {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_AUTH_ATTEMPT_STATE_RESOLVER_H_
+#endif  // CHROMEOS_LOGIN_AUTH_AUTH_ATTEMPT_STATE_RESOLVER_H_

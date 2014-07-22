@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/login/test_login_utils.h"
 
 #include "base/logging.h"
-#include "chrome/browser/chromeos/login/auth/mock_authenticator.h"
+#include "chromeos/login/auth/mock_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 
 namespace chromeos {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/auth/auth_attempt_state.h"
+#include "chromeos/login/auth/auth_attempt_state.h"
 
 #include <string>
 
@@ -34,7 +34,8 @@ AuthAttemptState::AuthAttemptState(const UserContext& user_context,
       username_hash_valid_(true) {
 }
 
-AuthAttemptState::~AuthAttemptState() {}
+AuthAttemptState::~AuthAttemptState() {
+}
 
 void AuthAttemptState::RecordOnlineLoginStatus(const AuthFailure& outcome) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
