@@ -159,6 +159,8 @@ class SupplementableTracing<T, true> { };
 template<typename T>
 class SupplementableTracing<T, false> { };
 
+// Helper class for implementing Supplementable, HeapSupplementable, and
+// PersistentHeapSupplementable.
 template<typename T, bool isGarbageCollected = false>
 class SupplementableBase : public SupplementableTracing<T, isGarbageCollected> {
 public:
@@ -188,7 +190,11 @@ public:
 #endif
     }
 
-    virtual void trace(Visitor* visitor) { visitor->trace(m_supplements); }
+    // We have a trace method in the SupplementableBase class to ensure we have
+    // the vtable at the first word of the object. However we don't trace the
+    // m_supplements here, but in the partially specialized template subclasses
+    // since we only want to trace it for garbage collected classes.
+    virtual void trace(Visitor*) { }
 
     void willBeDestroyed()
     {
@@ -211,6 +217,8 @@ private:
 #endif
 };
 
+// This class is used to make an on-heap class supplementable. Its supplements
+// must be HeapSupplement.
 template<typename T>
 class HeapSupplement : public SupplementBase<T, true> { };
 
@@ -218,11 +226,17 @@ class HeapSupplement : public SupplementBase<T, true> { };
 template<typename T>
 class GC_PLUGIN_IGNORE("http://crbug.com/395036") HeapSupplementable : public SupplementableBase<T, true>, public GarbageCollectedMixin {
 public:
-    virtual void trace(Visitor* visitor) { SupplementableBase<T, true>::trace(visitor); }
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(this->m_supplements);
+        SupplementableBase<T, true>::trace(visitor);
+    }
 };
 
+// This class is used to make an off-heap class supplementable with supplements
+// that are on-heap, aka. HeapSupplements.
 template<typename T>
-class PersistentHeapSupplementable : public SupplementableBase<T, true> {
+class GC_PLUGIN_IGNORE("http://crbug.com/395036") PersistentHeapSupplementable : public SupplementableBase<T, true> {
 public:
     PersistentHeapSupplementable() : m_root(this) { }
     virtual ~PersistentHeapSupplementable()
@@ -231,6 +245,13 @@ public:
         for (SupplementIterator it = this->m_supplements.begin(); it != this->m_supplements.end(); ++it)
             it->value->persistentHostHasBeenDestroyed();
     }
+
+    virtual void trace(Visitor* visitor)
+    {
+        visitor->trace(this->m_supplements);
+        SupplementableBase<T, true>::trace(visitor);
+    }
+
 private:
     class TraceDelegate : PersistentBase<ThreadLocalPersistents<AnyThread>, TraceDelegate> {
     public:
@@ -246,8 +267,21 @@ private:
 template<typename T>
 class Supplement : public SupplementBase<T, false> { };
 
+// This class is used to make an off-heap class supplementable with off-heap
+// supplements (Supplement).
 template<typename T>
-class Supplementable : public SupplementableBase<T, false> { };
+class GC_PLUGIN_IGNORE("http://crbug.com/395036") Supplementable : public SupplementableBase<T, false> {
+public:
+    virtual void trace(Visitor* visitor)
+    {
+        // No tracing of off-heap supplements. We should not have any Supplementable
+        // object on the heap. Either the object is HeapSupplementable or if it is
+        // off heap it should use PersistentHeapSupplementable to trace any on-heap
+        // supplements.
+        COMPILE_ASSERT(!IsGarbageCollectedType<T>::value, GarbageCollectedObjectMustBeHeapSupplementable);
+        SupplementableBase<T, false>::trace(visitor);
+    }
+};
 
 template<typename T>
 struct ThreadingTrait<blink::SupplementBase<T, true> > {

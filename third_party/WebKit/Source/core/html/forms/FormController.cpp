@@ -294,7 +294,12 @@ class FormKeyGenerator FINAL : public NoBaseWillBeGarbageCollectedFinalized<Form
 
 public:
     static PassOwnPtrWillBeRawPtr<FormKeyGenerator> create() { return adoptPtrWillBeNoop(new FormKeyGenerator); }
-    void trace(Visitor* visitor) { visitor->trace(m_formToKeyMap); }
+    void trace(Visitor* visitor)
+    {
+#if ENABLE(OILPAN)
+        visitor->trace(m_formToKeyMap);
+#endif
+    }
     const AtomicString& formKey(const HTMLFormControlElementWithState&);
     void willDeleteForm(HTMLFormElement*);
 

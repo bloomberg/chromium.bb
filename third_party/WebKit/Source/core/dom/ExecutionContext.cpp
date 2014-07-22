@@ -335,7 +335,7 @@ void ExecutionContext::trace(Visitor* visitor)
 #if ENABLE(OILPAN)
     visitor->trace(m_pendingExceptions);
 #endif
-    Supplementable<blink::ExecutionContext>::trace(visitor);
+    WillBeHeapSupplementable<blink::ExecutionContext>::trace(visitor);
 }
 
 } // namespace blink

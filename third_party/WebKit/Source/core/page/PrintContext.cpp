@@ -381,7 +381,9 @@ void PrintContext::spoolAllPagesWithBoundaries(LocalFrame* frame, GraphicsContex
 
 void PrintContext::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_linkedDestinations);
+#endif
 }
 
 }

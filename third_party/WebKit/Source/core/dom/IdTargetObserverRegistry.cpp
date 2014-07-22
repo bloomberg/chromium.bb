@@ -37,8 +37,10 @@ PassOwnPtrWillBeRawPtr<IdTargetObserverRegistry> IdTargetObserverRegistry::creat
 
 void IdTargetObserverRegistry::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_registry);
     visitor->trace(m_notifyingObserversInSet);
+#endif
 }
 
 void IdTargetObserverRegistry::addObserver(const AtomicString& id, IdTargetObserver* observer)

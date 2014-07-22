@@ -38,7 +38,9 @@ PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyfra
 
 void AnimatableValueKeyframe::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_propertyValues);
+#endif
     Keyframe::trace(visitor);
 }
 

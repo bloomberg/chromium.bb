@@ -828,10 +828,12 @@ bool CSSAnimations::isAllowedAnimation(CSSPropertyID property)
 
 void CSSAnimations::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_transitions);
     visitor->trace(m_pendingUpdate);
     visitor->trace(m_animations);
     visitor->trace(m_previousActiveInterpolationsForAnimations);
+#endif
 }
 
 void CSSAnimationUpdate::trace(Visitor* visitor)

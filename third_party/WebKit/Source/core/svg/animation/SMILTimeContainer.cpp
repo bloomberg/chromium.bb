@@ -467,7 +467,9 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
 
 void SMILTimeContainer::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_scheduledAnimations);
+#endif
 }
 
 }

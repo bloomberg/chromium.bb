@@ -857,6 +857,7 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define WillBeHeapLinkedStack blink::HeapLinkedStack
 #define PersistentHeapHashSetWillBeHeapHashSet blink::HeapHashSet
 #define PersistentHeapDequeWillBeHeapDeque blink::HeapDeque
+#define PersistentHeapVectorWillBeHeapVector blink::HeapVector
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr)
 {
@@ -977,6 +978,7 @@ template class PLATFORM_EXPORT DummyBase<void>;
 #define WillBeHeapLinkedStack WTF::LinkedStack
 #define PersistentHeapHashSetWillBeHeapHashSet blink::PersistentHeapHashSet
 #define PersistentHeapDequeWillBeHeapDeque blink::PersistentHeapDeque
+#define PersistentHeapVectorWillBeHeapVector blink::PersistentHeapVector
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return adoptRef(ptr); }
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeRefCountedGarbageCollected(T* ptr) { return adoptRef(ptr); }

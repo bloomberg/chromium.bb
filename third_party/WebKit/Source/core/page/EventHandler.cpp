@@ -237,6 +237,7 @@ EventHandler::~EventHandler()
 
 void EventHandler::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_mousePressNode);
     visitor->trace(m_capturingMouseEventsNode);
     visitor->trace(m_nodeUnderMouse);
@@ -251,6 +252,7 @@ void EventHandler::trace(Visitor* visitor)
     visitor->trace(m_scrollGestureHandlingNode);
     visitor->trace(m_previousGestureScrolledNode);
     visitor->trace(m_lastDeferredTapElement);
+#endif
 }
 
 DragState& EventHandler::dragState()

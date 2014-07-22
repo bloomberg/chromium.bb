@@ -93,9 +93,11 @@ void ActiveAnimations::cancelAnimationOnCompositor()
 
 void ActiveAnimations::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_cssAnimations);
     visitor->trace(m_defaultStack);
     visitor->trace(m_players);
+#endif
 }
 
 } // namespace blink

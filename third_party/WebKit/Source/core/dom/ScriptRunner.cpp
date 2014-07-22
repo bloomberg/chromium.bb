@@ -135,10 +135,12 @@ void ScriptRunner::timerFired(Timer<ScriptRunner>* timer)
 
 void ScriptRunner::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_document);
     visitor->trace(m_scriptsToExecuteInOrder);
     visitor->trace(m_scriptsToExecuteSoon);
     visitor->trace(m_pendingAsyncScripts);
+#endif
 }
 
 }

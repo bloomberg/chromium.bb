@@ -56,11 +56,10 @@ class SecurityOrigin;
 class ScriptCallStack;
 
 class ExecutionContext
-    : public WillBeGarbageCollectedMixin
-    , public LifecycleContext<ExecutionContext>
-    , public Supplementable<ExecutionContext> {
+    : public LifecycleContext<ExecutionContext>
+    , public WillBeHeapSupplementable<ExecutionContext> {
 public:
-    virtual void trace(Visitor*);
+    virtual void trace(Visitor*) OVERRIDE;
 
     // Delegating to ExecutionContextClient
     bool isDocument() const { return m_client && m_client->isDocument(); }

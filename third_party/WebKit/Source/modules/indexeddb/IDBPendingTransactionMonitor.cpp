@@ -31,6 +31,8 @@
 
 namespace blink {
 
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(IDBPendingTransactionMonitor)
+
 const char* IDBPendingTransactionMonitor::supplementName()
 {
     return "IDBPendingTransactionMonitor";
@@ -40,18 +42,14 @@ inline IDBPendingTransactionMonitor::IDBPendingTransactionMonitor()
 {
 }
 
-IDBPendingTransactionMonitor& IDBPendingTransactionMonitor::from(Supplementable<ExecutionContext>& context)
+IDBPendingTransactionMonitor& IDBPendingTransactionMonitor::from(WillBeHeapSupplementable<ExecutionContext>& context)
 {
-    IDBPendingTransactionMonitor* supplement = static_cast<IDBPendingTransactionMonitor*>(Supplement<ExecutionContext>::from(context, supplementName()));
+    IDBPendingTransactionMonitor* supplement = static_cast<IDBPendingTransactionMonitor*>(WillBeHeapSupplement<ExecutionContext>::from(context, supplementName()));
     if (!supplement) {
         supplement = new IDBPendingTransactionMonitor();
-        provideTo(context, supplementName(), adoptPtr(supplement));
+        provideTo(context, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
-}
-
-IDBPendingTransactionMonitor::~IDBPendingTransactionMonitor()
-{
 }
 
 void IDBPendingTransactionMonitor::addNewTransaction(IDBTransaction& transaction)
@@ -67,4 +65,12 @@ void IDBPendingTransactionMonitor::deactivateNewTransactions()
     m_transactions.clear();
 }
 
-};
+void IDBPendingTransactionMonitor::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_transactions);
+#endif
+    WillBeHeapSupplement<ExecutionContext>::trace(visitor);
+}
+
+} // namespace blink

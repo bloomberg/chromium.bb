@@ -158,7 +158,9 @@ CustomElementCallbackQueue& CustomElementScheduler::schedule(PassRefPtrWillBeRaw
 
 void CustomElementScheduler::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_elementCallbackQueueMap);
+#endif
 }
 
 } // namespace blink

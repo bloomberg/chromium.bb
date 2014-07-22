@@ -379,10 +379,12 @@ void RuleData::trace(Visitor* visitor)
 
 void RuleSet::PendingRuleMaps::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(idRules);
     visitor->trace(classRules);
     visitor->trace(tagRules);
     visitor->trace(shadowPseudoElementRules);
+#endif
 }
 
 void RuleSet::trace(Visitor* visitor)

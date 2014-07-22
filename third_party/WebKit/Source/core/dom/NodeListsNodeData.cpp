@@ -49,9 +49,11 @@ void NodeListsNodeData::invalidateCaches(const QualifiedName* attrName)
 
 void NodeListsNodeData::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_childNodeList);
     visitor->trace(m_atomicNameCaches);
     visitor->trace(m_tagCollectionCacheNS);
+#endif
 }
 
 } // namespace blink

@@ -161,7 +161,9 @@ bool StyleInvalidator::invalidate(Element& element)
 
 void StyleInvalidator::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_pendingInvalidationMap);
+#endif
 }
 
 } // namespace blink

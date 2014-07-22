@@ -51,7 +51,9 @@ SQLTransactionCoordinator::SQLTransactionCoordinator()
 
 void SQLTransactionCoordinator::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_coordinationInfoMap);
+#endif
 }
 
 void SQLTransactionCoordinator::processPendingTransactions(CoordinationInfo& info)

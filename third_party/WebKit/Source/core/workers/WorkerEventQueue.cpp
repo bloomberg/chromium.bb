@@ -52,8 +52,10 @@ WorkerEventQueue::~WorkerEventQueue()
 
 void WorkerEventQueue::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_executionContext);
     visitor->trace(m_eventTaskMap);
+#endif
     EventQueue::trace(visitor);
 }
 

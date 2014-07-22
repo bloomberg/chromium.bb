@@ -679,6 +679,7 @@ void StyleEngine::fontsNeedUpdate(CSSFontSelector*)
 
 void StyleEngine::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_document);
     visitor->trace(m_injectedAuthorStyleSheets);
     visitor->trace(m_authorStyleSheets);
@@ -689,6 +690,7 @@ void StyleEngine::trace(Visitor* visitor)
     visitor->trace(m_textToSheetCache);
     visitor->trace(m_sheetToTextCache);
     visitor->trace(m_xslStyleSheet);
+#endif
     CSSFontSelectorClient::trace(visitor);
 }
 

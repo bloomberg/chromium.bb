@@ -181,7 +181,9 @@ Element* DocumentOrderedMap::getElementByLabelForAttribute(StringImpl* key, cons
 
 void DocumentOrderedMap::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_map);
+#endif
 }
 
 void DocumentOrderedMap::MapEntry::trace(Visitor* visitor)

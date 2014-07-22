@@ -202,7 +202,9 @@ bool MatchedPropertiesCache::isCacheable(const Element* element, const RenderSty
 
 void MatchedPropertiesCache::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_cache);
+#endif
 }
 
 }

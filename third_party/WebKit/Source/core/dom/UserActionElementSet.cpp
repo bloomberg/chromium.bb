@@ -120,7 +120,9 @@ inline void UserActionElementSet::setFlags(Element* element, unsigned flags)
 
 void UserActionElementSet::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_elements);
+#endif
 }
 
 }

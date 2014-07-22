@@ -85,7 +85,9 @@ void MutationObserverInterestGroup::enqueueMutationRecord(PassRefPtrWillBeRawPtr
 
 void MutationObserverInterestGroup::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_observers);
+#endif
 }
 
 } // namespace blink

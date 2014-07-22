@@ -41,15 +41,14 @@ class IDBTransaction;
 // which is set to true on creation, but must be set to false when control
 // returns to the event loop.
 
-class IDBPendingTransactionMonitor : public Supplement<ExecutionContext> {
+class IDBPendingTransactionMonitor : public NoBaseWillBeGarbageCollected<IDBPendingTransactionMonitor>, public WillBeHeapSupplement<ExecutionContext> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(IDBPendingTransactionMonitor);
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(IDBPendingTransactionMonitor);
     WTF_MAKE_NONCOPYABLE(IDBPendingTransactionMonitor);
 
 public:
-    static IDBPendingTransactionMonitor& from(Supplementable<ExecutionContext>&);
-    virtual ~IDBPendingTransactionMonitor();
-    // The trace functino doesn't work until ExecutionContext is moved to Oilpan
-    // heap.
-    virtual void trace(Visitor* visitor) OVERRIDE { Supplement<ExecutionContext>::trace(visitor); }
+    static IDBPendingTransactionMonitor& from(WillBeHeapSupplementable<ExecutionContext>&);
+    virtual void trace(Visitor*) OVERRIDE;
     void addNewTransaction(IDBTransaction&);
     void deactivateNewTransactions();
 
@@ -57,8 +56,7 @@ private:
     IDBPendingTransactionMonitor();
     static const char* supplementName();
 
-    typedef PersistentHeapVector<Member<IDBTransaction> > TransactionList;
-    TransactionList m_transactions;
+    PersistentHeapVectorWillBeHeapVector<Member<IDBTransaction> > m_transactions;
 };
 
 } // namespace blink

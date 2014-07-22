@@ -301,12 +301,6 @@ public:
         OffHeapCollectionTraceTrait<Deque<T, N> >::trace(this, deque);
     }
 
-    template<typename T, typename U, typename V, typename W, typename X>
-    void trace(const HashMap<T, U, V, W, X, WTF::DefaultAllocator>& map)
-    {
-        OffHeapCollectionTraceTrait<HashMap<T, U, V, W, X, WTF::DefaultAllocator> >::trace(this, map);
-    }
-
 #if !ENABLE(OILPAN)
     // These trace methods are needed to allow compiling and calling trace on
     // transition types. We need to support calls in the non-oilpan build
@@ -433,26 +427,6 @@ private:
         T** cell = reinterpret_cast<T**>(obj);
         if (*cell && !self->isAlive(*cell))
             *cell = 0;
-    }
-};
-
-template<typename Key, typename Value, typename HashFunctions, typename KeyTraits, typename ValueTraits>
-struct OffHeapCollectionTraceTrait<WTF::HashMap<Key, Value, HashFunctions, KeyTraits, ValueTraits, WTF::DefaultAllocator> > {
-    typedef WTF::HashMap<Key, Value, HashFunctions, KeyTraits, ValueTraits, WTF::DefaultAllocator> HashMap;
-
-    static void trace(Visitor* visitor, const HashMap& map)
-    {
-        if (map.isEmpty())
-            return;
-        if (WTF::ShouldBeTraced<KeyTraits>::value || WTF::ShouldBeTraced<ValueTraits>::value) {
-            HashMap& iterMap = const_cast<HashMap&>(map);
-            for (typename HashMap::iterator it = iterMap.begin(), end = iterMap.end(); it != end; ++it) {
-                CollectionBackingTraceTrait<WTF::ShouldBeTraced<KeyTraits>::value, KeyTraits::weakHandlingFlag, WTF::WeakPointersActWeak, typename HashMap::KeyType, KeyTraits>::trace(visitor, it->key);
-                CollectionBackingTraceTrait<WTF::ShouldBeTraced<ValueTraits>::value, ValueTraits::weakHandlingFlag, WTF::WeakPointersActWeak, typename HashMap::MappedType, ValueTraits>::trace(visitor, it->value);
-            }
-        }
-        COMPILE_ASSERT(KeyTraits::weakHandlingFlag == WTF::NoWeakHandlingInCollections, WeakOffHeapCollectionsConsideredDangerous1);
-        COMPILE_ASSERT(ValueTraits::weakHandlingFlag == WTF::NoWeakHandlingInCollections, WeakOffHeapCollectionsConsideredDangerous2);
     }
 };
 

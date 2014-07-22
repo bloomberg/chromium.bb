@@ -478,7 +478,9 @@ Vector<IntRect> DocumentMarkerController::renderedRectsForMarkers(DocumentMarker
 
 void DocumentMarkerController::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_markers);
+#endif
 }
 
 void DocumentMarkerController::removeMarkers(Node* node, DocumentMarker::MarkerTypes markerTypes)

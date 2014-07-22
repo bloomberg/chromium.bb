@@ -109,8 +109,10 @@ void TreeBoundaryCrossingRules::collectFeaturesTo(RuleFeatureSet& features)
 
 void TreeBoundaryCrossingRules::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_treeBoundaryCrossingRuleSetMap);
     visitor->trace(m_scopingNodes);
+#endif
 }
 
 } // namespace blink

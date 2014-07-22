@@ -148,6 +148,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSValuePool::createFontFaceValue(const Ato
 
 void CSSValuePool::trace(Visitor* visitor)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_inheritedValue);
     visitor->trace(m_implicitInitialValue);
     visitor->trace(m_explicitInitialValue);
@@ -161,6 +162,7 @@ void CSSValuePool::trace(Visitor* visitor)
     visitor->trace(m_numberValueCache);
     visitor->trace(m_fontFaceValueCache);
     visitor->trace(m_fontFamilyValueCache);
+#endif
 }
 
 }
