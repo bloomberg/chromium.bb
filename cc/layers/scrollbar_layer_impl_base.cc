@@ -212,9 +212,13 @@ gfx::Rect ScrollbarLayerImplBase::ComputeThumbQuadRect() const {
   // With the length known, we can compute the thumb's position.
   float clamped_current_pos =
       std::min(std::max(current_pos_, 0.f), static_cast<float>(maximum_));
-  float ratio = clamped_current_pos / maximum_;
-  float max_offset = track_length - thumb_length;
-  int thumb_offset = static_cast<int>(ratio * max_offset) + TrackStart();
+
+  int thumb_offset = TrackStart();
+  if (maximum_ > 0) {
+    float ratio = clamped_current_pos / maximum_;
+    float max_offset = track_length - thumb_length;
+    thumb_offset += static_cast<int>(ratio * max_offset);
+  }
 
   float thumb_thickness_adjustment =
       thumb_thickness * (1.f - thumb_thickness_scale_factor_);
