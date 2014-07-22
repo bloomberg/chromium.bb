@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/platform/dri/test/mock_dri_wrapper.h"
-#include "ui/ozone/platform/dri/test/mock_surface_generator.h"
 
 namespace {
 
@@ -17,8 +17,8 @@ const drmModeModeInfo kDefaultMode =
 class MockScreenManager : public ui::ScreenManager {
  public:
   MockScreenManager(ui::DriWrapper* dri,
-                    ui::ScanoutSurfaceGenerator* surface_generator)
-      : ScreenManager(dri, surface_generator), dri_(dri) {}
+                    ui::ScanoutBufferGenerator* buffer_generator)
+      : ScreenManager(dri, buffer_generator), dri_(dri) {}
 
   virtual void ForceInitializationOfPrimaryDisplay() OVERRIDE {}
 
@@ -37,9 +37,9 @@ class ScreenManagerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     dri_.reset(new ui::MockDriWrapper(3));
-    surface_generator_.reset(new ui::MockSurfaceGenerator(dri_.get()));
+    buffer_generator_.reset(new ui::DriBufferGenerator(dri_.get()));
     screen_manager_.reset(new MockScreenManager(
-        dri_.get(), surface_generator_.get()));
+        dri_.get(), buffer_generator_.get()));
   }
   virtual void TearDown() OVERRIDE {
     screen_manager_.reset();
@@ -48,7 +48,7 @@ class ScreenManagerTest : public testing::Test {
 
  protected:
   scoped_ptr<ui::MockDriWrapper> dri_;
-  scoped_ptr<ui::MockSurfaceGenerator> surface_generator_;
+  scoped_ptr<ui::DriBufferGenerator> buffer_generator_;
   scoped_ptr<MockScreenManager> screen_manager_;
 
  private:

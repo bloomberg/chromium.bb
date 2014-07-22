@@ -21,26 +21,29 @@ class Point;
 
 namespace ui {
 
-class NativePixmap;
 class ScanoutBuffer;
-class ScanoutSurface;
 
-typedef std::vector<scoped_refptr<NativePixmap> > NativePixmapList;
+struct OverlayPlane {
+  // Simpler constructor for the primary plane.
+  explicit OverlayPlane(scoped_refptr<ScanoutBuffer> buffer);
 
-struct OzoneOverlayPlane {
-  OzoneOverlayPlane(ScanoutSurface* scanout,
-                    int z_order,
-                    gfx::OverlayTransform plane_transform,
-                    const gfx::Rect& display_bounds,
-                    const gfx::RectF& crop_rect);
+  OverlayPlane(scoped_refptr<ScanoutBuffer> buffer,
+               int z_order,
+               gfx::OverlayTransform plane_transform,
+               const gfx::Rect& display_bounds,
+               const gfx::RectF& crop_rect);
 
-  ScanoutSurface* scanout;
+  ~OverlayPlane();
+
+  scoped_refptr<ScanoutBuffer> buffer;
   int z_order;
   gfx::OverlayTransform plane_transform;
   gfx::Rect display_bounds;
   gfx::RectF crop_rect;
   int overlay_plane;
 };
+
+typedef std::vector<OverlayPlane> OverlayPlaneList;
 
 // The HDCOz will handle modesettings and scannout operations for hardware
 // devices.
@@ -105,11 +108,10 @@ class HardwareDisplayController
 
   ~HardwareDisplayController();
 
-  // Associate the HDCO with a surface implementation and initialize it.
-  bool BindSurfaceToController(scoped_ptr<ScanoutSurface> surface,
-                               drmModeModeInfo mode);
-
-  void UnbindSurfaceFromController();
+  // Performs the initial CRTC configuration. If successful, it will display the
+  // framebuffer for |primary| with |mode|.
+  bool Modeset(const OverlayPlane& primary,
+               drmModeModeInfo mode);
 
   // Reconfigures the CRTC with the current surface and mode.
   bool Enable();
@@ -117,14 +119,14 @@ class HardwareDisplayController
   // Disables the CRTC.
   void Disable();
 
-  // Schedules the |surface_|'s framebuffer to be displayed on the next vsync
+  // Schedules the |overlays|' framebuffers to be displayed on the next vsync
   // event. The event will be posted on the graphics card file descriptor |fd_|
   // and it can be read and processed by |drmHandleEvent|. That function can
   // define the callback for the page flip event. A generic data argument will
   // be presented to the callback. We use that argument to pass in the HDCO
   // object the event belongs to.
   //
-  // Between this call and the callback, the framebuffer used in this call
+  // Between this call and the callback, the framebuffers used in this call
   // should not be modified in any way as it would cause screen tearing if the
   // hardware performed the flip. Note that the frontbuffer should also not
   // be modified as it could still be displayed.
@@ -133,8 +135,7 @@ class HardwareDisplayController
   // called again before the page flip occurrs.
   //
   // Returns true if the page flip was successfully registered, false otherwise.
-  bool SchedulePageFlip(const std::vector<OzoneOverlayPlane>& overlays,
-                        NativePixmapList* references);
+  bool SchedulePageFlip(const OverlayPlaneList& overlays);
 
   // TODO(dnicoara) This should be on the MessageLoop when Ozone can have
   // BeginFrame can be triggered explicitly by Ozone.
@@ -161,19 +162,14 @@ class HardwareDisplayController
   const drmModeModeInfo& get_mode() const { return mode_; };
   uint32_t connector_id() const { return connector_id_; }
   uint32_t crtc_id() const { return crtc_id_; }
-  ScanoutSurface* surface() const {
-    return surface_.get();
-  };
 
   uint64_t get_time_of_last_flip() const {
     return time_of_last_flip_;
   };
 
  private:
-  ScanoutSurface* GetPrimaryPlane(
-      const std::vector<OzoneOverlayPlane>& overlays);
-
-  NativePixmapList current_overlay_references_;
+  OverlayPlaneList current_planes_;
+  OverlayPlaneList pending_planes_;
 
   // Object containing the connection to the graphics device and wraps the API
   // calls to control it.
@@ -185,8 +181,6 @@ class HardwareDisplayController
   uint32_t crtc_id_;
 
   drmModeModeInfo mode_;
-
-  scoped_ptr<ScanoutSurface> surface_;
 
   scoped_refptr<ScanoutBuffer> cursor_buffer_;
 

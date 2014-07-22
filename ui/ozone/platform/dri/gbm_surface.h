@@ -28,6 +28,10 @@ class GbmSurface : public ScanoutSurface {
   GbmSurface(gbm_device* device, DriWrapper* dri, const gfx::Size& size);
   virtual ~GbmSurface();
 
+  scoped_refptr<GbmBufferBase> backbuffer() const {
+    return buffers_[front_buffer_ ^ 1];
+  }
+
   // ScanoutSurface:
   virtual bool Initialize() OVERRIDE;
   virtual uint32_t GetFramebufferId() const OVERRIDE;

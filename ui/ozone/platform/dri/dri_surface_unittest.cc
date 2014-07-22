@@ -60,15 +60,13 @@ TEST_F(DriSurfaceTest, SuccessfulInitialization) {
 
 TEST_F(DriSurfaceTest, CheckFBIDOnSwap) {
   EXPECT_TRUE(surface_->Initialize());
-  controller_->BindSurfaceToController(surface_.PassAs<ui::ScanoutSurface>(),
-                                       kDefaultMode);
 
   // Check that the framebuffer ID is correct.
-  EXPECT_EQ(2u, controller_->surface()->GetFramebufferId());
+  EXPECT_EQ(2u, surface_->GetFramebufferId());
 
-  controller_->surface()->SwapBuffers();
+  surface_->SwapBuffers();
 
-  EXPECT_EQ(1u, controller_->surface()->GetFramebufferId());
+  EXPECT_EQ(1u, surface_->GetFramebufferId());
 }
 
 TEST_F(DriSurfaceTest, CheckPixelPointerOnSwap) {

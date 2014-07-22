@@ -27,6 +27,9 @@ class DriSurface : public ScanoutSurface {
 
   // Get a Skia canvas for a backbuffer.
   SkCanvas* GetDrawableForWidget();
+  scoped_refptr<DriBuffer> backbuffer() const {
+    return bitmaps_[front_buffer_ ^ 1];
+  }
 
   // ScanoutSurface:
   virtual bool Initialize() OVERRIDE;
@@ -37,9 +40,6 @@ class DriSurface : public ScanoutSurface {
   virtual gfx::Size Size() const OVERRIDE;
 
  private:
-  DriBuffer* frontbuffer() const { return bitmaps_[front_buffer_].get(); }
-  DriBuffer* backbuffer() const { return bitmaps_[front_buffer_ ^ 1].get(); }
-
   // Stores the connection to the graphics card. Pointer not owned by this
   // class.
   DriWrapper* dri_;

@@ -13,6 +13,8 @@
 
 namespace ui {
 
+class HardwareDisplayController;
+
 // The real DriWrapper makes actual DRM calls which we can't use in unit tests.
 class MockDriWrapper : public ui::DriWrapper {
  public:
@@ -38,6 +40,8 @@ class MockDriWrapper : public ui::DriWrapper {
   void set_create_dumb_buffer_expectation(bool state) {
     create_dumb_buffer_expectation_ = state;
   }
+
+  uint32_t current_framebuffer() const { return current_framebuffer_; }
 
   const std::vector<skia::RefPtr<SkSurface> > buffers() const {
     return buffers_;
@@ -100,7 +104,11 @@ class MockDriWrapper : public ui::DriWrapper {
   bool page_flip_expectation_;
   bool create_dumb_buffer_expectation_;
 
+  uint32_t current_framebuffer_;
+
   std::vector<skia::RefPtr<SkSurface> > buffers_;
+
+  HardwareDisplayController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDriWrapper);
 };

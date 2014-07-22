@@ -45,7 +45,8 @@ void UpdateCursorImage(DriBuffer* cursor, const SkBitmap& image) {
 
 class DriSurfaceAdapter : public ui::SurfaceOzoneCanvas {
  public:
-  DriSurfaceAdapter(const base::WeakPtr<HardwareDisplayController>& controller);
+  DriSurfaceAdapter(DriWrapper* dri,
+                    const base::WeakPtr<HardwareDisplayController>& controller);
   virtual ~DriSurfaceAdapter();
 
   // SurfaceOzoneCanvas:
@@ -57,6 +58,8 @@ class DriSurfaceAdapter : public ui::SurfaceOzoneCanvas {
  private:
   void UpdateNativeSurface(const gfx::Rect& damage);
 
+  DriWrapper* dri_;
+  scoped_ptr<DriSurface> native_surface_;
   skia::RefPtr<SkSurface> surface_;
   gfx::Rect last_damage_;
   base::WeakPtr<HardwareDisplayController> controller_;
@@ -65,8 +68,9 @@ class DriSurfaceAdapter : public ui::SurfaceOzoneCanvas {
 };
 
 DriSurfaceAdapter::DriSurfaceAdapter(
+    DriWrapper* dri,
     const base::WeakPtr<HardwareDisplayController>& controller)
-    : controller_(controller) {
+    : dri_(dri), controller_(controller) {
 }
 
 DriSurfaceAdapter::~DriSurfaceAdapter() {
@@ -80,6 +84,16 @@ void DriSurfaceAdapter::ResizeCanvas(const gfx::Size& viewport_size) {
   SkImageInfo info = SkImageInfo::MakeN32(
       viewport_size.width(), viewport_size.height(), kOpaque_SkAlphaType);
   surface_ = skia::AdoptRef(SkSurface::NewRaster(info));
+
+  if (controller_) {
+    // Need to use the mode size rather than |viewport_size| since a display
+    // cannot scanout from a buffer smaller than the mode.
+    native_surface_.reset(
+        new DriSurface(dri_,
+                       gfx::Size(controller_->get_mode().hdisplay,
+                                 controller_->get_mode().vdisplay)));
+    CHECK(native_surface_->Initialize());
+  }
 }
 
 void DriSurfaceAdapter::PresentCanvas(const gfx::Rect& damage) {
@@ -88,8 +102,10 @@ void DriSurfaceAdapter::PresentCanvas(const gfx::Rect& damage) {
     return;
 
   UpdateNativeSurface(damage);
-  controller_->SchedulePageFlip(std::vector<OzoneOverlayPlane>(), NULL);
+  controller_->SchedulePageFlip(std::vector<OverlayPlane>(
+      1, OverlayPlane(native_surface_->backbuffer())));
   controller_->WaitForPageFlipEvent();
+  native_surface_->SwapBuffers();
 }
 
 scoped_ptr<gfx::VSyncProvider> DriSurfaceAdapter::CreateVSyncProvider() {
@@ -97,8 +113,7 @@ scoped_ptr<gfx::VSyncProvider> DriSurfaceAdapter::CreateVSyncProvider() {
 }
 
 void DriSurfaceAdapter::UpdateNativeSurface(const gfx::Rect& damage) {
-  SkCanvas* canvas = static_cast<DriSurface*>(controller_->surface())
-      ->GetDrawableForWidget();
+  SkCanvas* canvas = native_surface_->GetDrawableForWidget();
 
   // The DriSurface is double buffered, so the current back buffer is
   // missing the previous update. Expand damage region.
@@ -175,7 +190,7 @@ scoped_ptr<ui::SurfaceOzoneCanvas> DriSurfaceFactory::CreateCanvasForWidget(
   ResetCursor(w);
 
   return scoped_ptr<ui::SurfaceOzoneCanvas>(
-      new DriSurfaceAdapter(screen_manager_->GetDisplayController(w)));
+      new DriSurfaceAdapter(drm_, screen_manager_->GetDisplayController(w)));
 }
 
 bool DriSurfaceFactory::LoadEGLGLES2Bindings(

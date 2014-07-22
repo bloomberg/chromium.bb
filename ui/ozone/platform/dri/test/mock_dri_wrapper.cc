@@ -8,7 +8,6 @@
 #include <xf86drmMode.h>
 
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 
 namespace ui {
@@ -32,7 +31,9 @@ MockDriWrapper::MockDriWrapper(int fd)
       set_crtc_expectation_(true),
       add_framebuffer_expectation_(true),
       page_flip_expectation_(true),
-      create_dumb_buffer_expectation_(true) {
+      create_dumb_buffer_expectation_(true),
+      current_framebuffer_(0),
+      controller_(NULL) {
   fd_ = fd;
 }
 
@@ -49,6 +50,7 @@ bool MockDriWrapper::SetCrtc(uint32_t crtc_id,
                              uint32_t framebuffer,
                              uint32_t* connectors,
                              drmModeModeInfo* mode) {
+  current_framebuffer_ = framebuffer;
   return set_crtc_expectation_;
 }
 
@@ -78,7 +80,8 @@ bool MockDriWrapper::PageFlip(uint32_t crtc_id,
                               uint32_t framebuffer,
                               void* data) {
   page_flip_call_count_++;
-  static_cast<ui::HardwareDisplayController*>(data)->surface()->SwapBuffers();
+  current_framebuffer_ = framebuffer;
+  controller_ = static_cast<ui::HardwareDisplayController*>(data);
   return page_flip_expectation_;
 }
 
@@ -119,6 +122,8 @@ bool MockDriWrapper::MoveCursor(uint32_t crtc_id, const gfx::Point& point) {
 }
 
 void MockDriWrapper::HandleEvent(drmEventContext& event) {
+  if (controller_)
+    controller_->OnPageFlipEvent(0, 0, 0);
 }
 
 bool MockDriWrapper::CreateDumbBuffer(const SkImageInfo& info,

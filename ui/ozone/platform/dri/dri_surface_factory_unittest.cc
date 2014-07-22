@@ -16,20 +16,20 @@
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/platform/dri/test/mock_dri_wrapper.h"
-#include "ui/ozone/platform/dri/test/mock_surface_generator.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
 namespace {
 
+// Mode of size 6x4.
 const drmModeModeInfo kDefaultMode =
     {0, 6, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, {'\0'}};
 
 class MockScreenManager : public ui::ScreenManager {
  public:
   MockScreenManager(ui::DriWrapper* dri,
-                    ui::ScanoutSurfaceGenerator* surface_generator)
-      : ScreenManager(dri, surface_generator),
+                    ui::ScanoutBufferGenerator* buffer_generator)
+      : ScreenManager(dri, buffer_generator),
         dri_(dri) {}
   virtual ~MockScreenManager() {}
 
@@ -56,7 +56,7 @@ class DriSurfaceFactoryTest : public testing::Test {
  protected:
   scoped_ptr<base::MessageLoop> message_loop_;
   scoped_ptr<ui::MockDriWrapper> dri_;
-  scoped_ptr<ui::MockSurfaceGenerator> surface_generator_;
+  scoped_ptr<ui::DriBufferGenerator> buffer_generator_;
   scoped_ptr<MockScreenManager> screen_manager_;
   scoped_ptr<ui::DriSurfaceFactory> factory_;
 
@@ -67,9 +67,9 @@ class DriSurfaceFactoryTest : public testing::Test {
 void DriSurfaceFactoryTest::SetUp() {
   message_loop_.reset(new base::MessageLoopForUI);
   dri_.reset(new ui::MockDriWrapper(3));
-  surface_generator_.reset(new ui::MockSurfaceGenerator(dri_.get()));
+  buffer_generator_.reset(new ui::DriBufferGenerator(dri_.get()));
   screen_manager_.reset(new MockScreenManager(dri_.get(),
-                                              surface_generator_.get()));
+                                              buffer_generator_.get()));
   factory_.reset(new ui::DriSurfaceFactory(dri_.get(), screen_manager_.get()));
 }
 
@@ -120,11 +120,12 @@ TEST_F(DriSurfaceFactoryTest, CheckNativeSurfaceContents) {
       gfx::Rect(0, 0, kDefaultMode.hdisplay / 2, kDefaultMode.vdisplay / 2));
 
   SkBitmap image;
-  // Buffers 0 and 1 are the cursor buffers and 2 and 3 are the surface buffers.
-  // Buffer 3 is the backbuffer we just painted in, so we want to make sure its
+  // Buffers 0 and 1 are the cursor buffers, 2 is the modeset buffer, and
+  // 3 and 4 are the surface buffers.
+  // Buffer 4 is the backbuffer we just painted in, so we want to make sure its
   // contents are correct.
-  image.setInfo(dri_->buffers()[3]->getCanvas()->imageInfo());
-  EXPECT_TRUE(dri_->buffers()[3]->getCanvas()->readPixels(&image, 0, 0));
+  image.setInfo(dri_->buffers()[4]->getCanvas()->imageInfo());
+  EXPECT_TRUE(dri_->buffers()[4]->getCanvas()->readPixels(&image, 0, 0));
 
   EXPECT_EQ(kDefaultMode.hdisplay, image.width());
   EXPECT_EQ(kDefaultMode.vdisplay, image.height());

@@ -11,13 +11,13 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
-#include "ui/ozone/platform/dri/scanout_surface.h"
+#include "ui/ozone/platform/dri/scanout_buffer.h"
 
 namespace ui {
 
 ScreenManager::ScreenManager(
-    DriWrapper* dri, ScanoutSurfaceGenerator* surface_generator)
-    : dri_(dri), surface_generator_(surface_generator), last_added_widget_(0) {
+    DriWrapper* dri, ScanoutBufferGenerator* buffer_generator)
+    : dri_(dri), buffer_generator_(buffer_generator), last_added_widget_(0) {
 }
 
 ScreenManager::~ScreenManager() {
@@ -45,7 +45,6 @@ bool ScreenManager::ConfigureDisplayController(uint32_t crtc,
       return it->second->Enable();
 
     controller = it->second;
-    controller->UnbindSurfaceFromController();
   }
 
   if (it == controllers_.end()) {
@@ -54,19 +53,16 @@ bool ScreenManager::ConfigureDisplayController(uint32_t crtc,
   }
 
   // Create a surface suitable for the current controller.
-  scoped_ptr<ScanoutSurface> surface(
-      surface_generator_->Create(gfx::Size(mode.hdisplay, mode.vdisplay)));
+  scoped_refptr<ScanoutBuffer> buffer =
+      buffer_generator_->Create(gfx::Size(mode.hdisplay, mode.vdisplay));
 
-  if (!surface->Initialize()) {
-    LOG(ERROR) << "Failed to initialize surface";
+  if (!buffer) {
+    LOG(ERROR) << "Failed to create scanout buffer";
     return false;
   }
 
-  // Bind the surface to the controller. This will register the backing buffers
-  // with the hardware CRTC such that we can show the buffers and performs the
-  // initial modeset. The controller takes ownership of the surface.
-  if (!controller->BindSurfaceToController(surface.Pass(), mode)) {
-    LOG(ERROR) << "Failed to bind surface to controller";
+  if (!controller->Modeset(OverlayPlane(buffer), mode)) {
+    LOG(ERROR) << "Failed to modeset controller";
     return false;
   }
 

@@ -19,7 +19,7 @@
 #include "ui/ozone/platform/dri/gbm_surface_factory.h"
 #include "ui/ozone/platform/dri/gpu_platform_support_gbm.h"
 #include "ui/ozone/platform/dri/gpu_platform_support_host_gbm.h"
-#include "ui/ozone/platform/dri/scanout_surface.h"
+#include "ui/ozone/platform/dri/scanout_buffer.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/platform/dri/virtual_terminal_manager.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
@@ -40,13 +40,13 @@ namespace {
 
 const char kDefaultGraphicsCardPath[] = "/dev/dri/card0";
 
-class GbmSurfaceGenerator : public ScanoutSurfaceGenerator {
+class GbmBufferGenerator : public ScanoutBufferGenerator {
  public:
-  GbmSurfaceGenerator(DriWrapper* dri)
+  GbmBufferGenerator(DriWrapper* dri)
       : dri_(dri),
         glapi_lib_(dlopen("libglapi.so.0", RTLD_LAZY | RTLD_GLOBAL)),
         device_(gbm_create_device(dri_->get_fd())) {}
-  virtual ~GbmSurfaceGenerator() {
+  virtual ~GbmBufferGenerator() {
     gbm_device_destroy(device_);
     if (glapi_lib_)
       dlclose(glapi_lib_);
@@ -54,8 +54,9 @@ class GbmSurfaceGenerator : public ScanoutSurfaceGenerator {
 
   gbm_device* device() const { return device_; }
 
-  virtual ScanoutSurface* Create(const gfx::Size& size) OVERRIDE {
-    return new GbmSurface(device_, dri_, size);
+  virtual scoped_refptr<ScanoutBuffer> Create(const gfx::Size& size) OVERRIDE {
+    return GbmBuffer::CreateBuffer(
+        dri_, device_, SurfaceFactoryOzone::RGBA_8888, size, true);
   }
 
  protected:
@@ -66,22 +67,7 @@ class GbmSurfaceGenerator : public ScanoutSurfaceGenerator {
 
   gbm_device* device_;
 
-  DISALLOW_COPY_AND_ASSIGN(GbmSurfaceGenerator);
-};
-
-class GbmEglImageSurfaceGenerator : public GbmSurfaceGenerator {
- public:
-  GbmEglImageSurfaceGenerator(DriWrapper* dri) : GbmSurfaceGenerator(dri) {}
-  virtual ~GbmEglImageSurfaceGenerator() {}
-
-  virtual ScanoutSurface* Create(const gfx::Size& size) OVERRIDE {
-    scoped_ptr<GbmBuffer> buffer =
-        scoped_ptr<GbmBuffer>(new GbmBuffer(device_, dri_, size));
-    if (!buffer->InitializeBuffer(SurfaceFactoryOzone::RGBA_8888, true)) {
-      return NULL;
-    }
-    return buffer.release();
-  }
+  DISALLOW_COPY_AND_ASSIGN(GbmBufferGenerator);
 };
 
 class OzonePlatformGbm : public OzonePlatform {
@@ -142,17 +128,14 @@ class OzonePlatformGbm : public OzonePlatform {
 
   virtual void InitializeGPU() OVERRIDE {
     dri_.reset(new DriWrapper(kDefaultGraphicsCardPath));
-    if (use_surfaceless_)
-      surface_generator_.reset(new GbmEglImageSurfaceGenerator(dri_.get()));
-    else
-      surface_generator_.reset(new GbmSurfaceGenerator(dri_.get()));
+    buffer_generator_.reset(new GbmBufferGenerator(dri_.get()));
     screen_manager_.reset(new ScreenManager(dri_.get(),
-                                            surface_generator_.get()));
+                                            buffer_generator_.get()));
     if (!surface_factory_ozone_)
       surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
 
     surface_factory_ozone_->InitializeGpu(dri_.get(),
-                                          surface_generator_->device(),
+                                          buffer_generator_->device(),
                                           screen_manager_.get());
 
     gpu_platform_support_.reset(
@@ -171,7 +154,7 @@ class OzonePlatformGbm : public OzonePlatform {
   bool use_surfaceless_;
   scoped_ptr<VirtualTerminalManager> vt_manager_;
   scoped_ptr<DriWrapper> dri_;
-  scoped_ptr<GbmSurfaceGenerator> surface_generator_;
+  scoped_ptr<GbmBufferGenerator> buffer_generator_;
   scoped_ptr<ScreenManager> screen_manager_;
   scoped_ptr<DeviceManager> device_manager_;
 

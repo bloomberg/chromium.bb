@@ -10,10 +10,9 @@
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/ozone/common/window/platform_window_compat.h"
 #include "ui/ozone/platform/dri/cursor_factory_evdev_dri.h"
-#include "ui/ozone/platform/dri/dri_surface.h"
+#include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
-#include "ui/ozone/platform/dri/scanout_surface.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/platform/dri/virtual_terminal_manager.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -29,21 +28,6 @@ namespace {
 
 const char kDefaultGraphicsCardPath[] = "/dev/dri/card0";
 
-class DriSurfaceGenerator : public ScanoutSurfaceGenerator {
- public:
-  DriSurfaceGenerator(DriWrapper* dri) : dri_(dri) {}
-  virtual ~DriSurfaceGenerator() {}
-
-  virtual ScanoutSurface* Create(const gfx::Size& size) OVERRIDE {
-    return new DriSurface(dri_, size);
-  }
-
- private:
-  DriWrapper* dri_;  // Not owned.
-
-  DISALLOW_COPY_AND_ASSIGN(DriSurfaceGenerator);
-};
-
 // OzonePlatform for Linux DRI (Direct Rendering Infrastructure)
 //
 // This platform is Linux without any display server (no X, wayland, or
@@ -53,9 +37,9 @@ class OzonePlatformDri : public OzonePlatform {
   OzonePlatformDri()
       : vt_manager_(new VirtualTerminalManager()),
         dri_(new DriWrapper(kDefaultGraphicsCardPath)),
-        surface_generator_(new DriSurfaceGenerator(dri_.get())),
+        buffer_generator_(new DriBufferGenerator(dri_.get())),
         screen_manager_(new ScreenManager(dri_.get(),
-                                          surface_generator_.get())),
+                                          buffer_generator_.get())),
         device_manager_(CreateDeviceManager()) {
     base::AtExitManager::RegisterTask(
         base::Bind(&base::DeletePointer<OzonePlatformDri>, this));
@@ -110,7 +94,7 @@ class OzonePlatformDri : public OzonePlatform {
  private:
   scoped_ptr<VirtualTerminalManager> vt_manager_;
   scoped_ptr<DriWrapper> dri_;
-  scoped_ptr<DriSurfaceGenerator> surface_generator_;
+  scoped_ptr<DriBufferGenerator> buffer_generator_;
   scoped_ptr<ScreenManager> screen_manager_;
   scoped_ptr<DeviceManager> device_manager_;
 

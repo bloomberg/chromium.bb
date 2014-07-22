@@ -60,7 +60,6 @@ void DriSurface::PreSwapBuffers() {
 // This call is made after the hardware just started displaying our back buffer.
 // We need to update our pointer reference and synchronize the two buffers.
 void DriSurface::SwapBuffers() {
-  CHECK(frontbuffer());
   CHECK(backbuffer());
 
   // Update our front buffer pointer.

@@ -101,8 +101,6 @@
           'screen_manager_unittest.cc',
           'test/mock_dri_wrapper.cc',
           'test/mock_dri_wrapper.h',
-          'test/mock_surface_generator.cc',
-          'test/mock_surface_generator.h',
         ],
       },
     },

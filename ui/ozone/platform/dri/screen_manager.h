@@ -23,12 +23,12 @@ class Size;
 namespace ui {
 
 class DriWrapper;
-class ScanoutSurfaceGenerator;
+class ScanoutBufferGenerator;
 
 // Responsible for keeping track of active displays and configuring them.
 class ScreenManager {
  public:
-  ScreenManager(DriWrapper* dri, ScanoutSurfaceGenerator* surface_generator);
+  ScreenManager(DriWrapper* dri, ScanoutBufferGenerator* surface_generator);
   virtual ~ScreenManager();
 
   // Remove a display controller from the list of active controllers. The
@@ -70,7 +70,7 @@ class ScreenManager {
   virtual void ForceInitializationOfPrimaryDisplay();
 
   DriWrapper* dri_;  // Not owned.
-  ScanoutSurfaceGenerator* surface_generator_;  // Not owned.
+  ScanoutBufferGenerator* buffer_generator_;  // Not owned.
   // Mapping between an accelerated widget and an active display.
   HardwareDisplayControllerMap controllers_;
   gfx::AcceleratedWidget last_added_widget_;

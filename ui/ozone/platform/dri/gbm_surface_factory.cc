@@ -23,8 +23,13 @@ namespace {
 
 class GbmSurfaceAdapter : public ui::SurfaceOzoneEGL {
  public:
-  GbmSurfaceAdapter(const base::WeakPtr<HardwareDisplayController>& controller);
+  GbmSurfaceAdapter(
+      gbm_device* device,
+      DriWrapper* dri,
+      const base::WeakPtr<HardwareDisplayController>& controller);
   virtual ~GbmSurfaceAdapter();
+
+  bool Initialize();
 
   // SurfaceOzoneEGL:
   virtual intptr_t GetNativeWindow() OVERRIDE;
@@ -38,40 +43,64 @@ class GbmSurfaceAdapter : public ui::SurfaceOzoneEGL {
                                     const gfx::RectF& crop_rect) OVERRIDE;
 
  private:
+  gbm_device* device_;
+  DriWrapper* dri_;
+  scoped_ptr<GbmSurface> surface_;
   base::WeakPtr<HardwareDisplayController> controller_;
-  NativePixmapList overlay_refs_;
-  std::vector<OzoneOverlayPlane> overlays_;
+  OverlayPlaneList overlays_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmSurfaceAdapter);
 };
 
 GbmSurfaceAdapter::GbmSurfaceAdapter(
+    gbm_device* device,
+    DriWrapper* dri,
     const base::WeakPtr<HardwareDisplayController>& controller)
-    : controller_(controller) {}
+    : device_(device), dri_(dri), controller_(controller) {}
 
 GbmSurfaceAdapter::~GbmSurfaceAdapter() {}
+
+bool GbmSurfaceAdapter::Initialize() {
+  if (controller_) {
+    surface_.reset(
+        new GbmSurface(device_,
+                       dri_,
+                       gfx::Size(controller_->get_mode().hdisplay,
+                                 controller_->get_mode().vdisplay)));
+    return surface_->Initialize();
+  }
+
+  return false;
+}
 
 intptr_t GbmSurfaceAdapter::GetNativeWindow() {
   if (!controller_)
     return 0;
 
-  return reinterpret_cast<intptr_t>(
-      static_cast<GbmSurface*>(controller_->surface())->native_surface());
+  return reinterpret_cast<intptr_t>(surface_->native_surface());
 }
 
 bool GbmSurfaceAdapter::ResizeNativeWindow(const gfx::Size& viewport_size) {
-  NOTIMPLEMENTED();
-  return false;
+
+  return true;
 }
 
 bool GbmSurfaceAdapter::OnSwapBuffers() {
   if (!controller_)
     return false;
-  bool flip_succeeded =
-      controller_->SchedulePageFlip(overlays_, &overlay_refs_);
+  if (surface_) {
+    surface_->PreSwapBuffers();
+    overlays_.push_back(OverlayPlane(surface_->backbuffer()));
+  }
+
+  bool flip_succeeded = controller_->SchedulePageFlip(overlays_);
   overlays_.clear();
   if (flip_succeeded)
     controller_->WaitForPageFlipEvent();
+
+  if (surface_)
+    surface_->SwapBuffers();
+
   return flip_succeeded;
 }
 
@@ -86,12 +115,11 @@ bool GbmSurfaceAdapter::ScheduleOverlayPlane(
     LOG(ERROR) << "ScheduleOverlayPlane passed NULL buffer";
     return false;
   }
-  overlays_.push_back(OzoneOverlayPlane(pixmap->buffer(),
-                                        plane_z_order,
-                                        plane_transform,
-                                        display_bounds,
-                                        crop_rect));
-  overlay_refs_.push_back(buffer);
+  overlays_.push_back(OverlayPlane(pixmap->buffer(),
+                                   plane_z_order,
+                                   plane_transform,
+                                   display_bounds,
+                                   crop_rect));
   return true;
 }
 
@@ -181,18 +209,25 @@ scoped_ptr<ui::SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
   CHECK(state_ == INITIALIZED);
   ResetCursor(w);
 
-  return scoped_ptr<ui::SurfaceOzoneEGL>(
-      new GbmSurfaceAdapter(screen_manager_->GetDisplayController(w)));
+  scoped_ptr<GbmSurfaceAdapter> surface(
+      new GbmSurfaceAdapter(device_,
+                            drm_,
+                            screen_manager_->GetDisplayController(w)));
+  if (!allow_surfaceless_ && !surface->Initialize())
+    return scoped_ptr<SurfaceOzoneEGL>();
+
+  return surface.PassAs<SurfaceOzoneEGL>();
 }
 
 scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     gfx::Size size,
     BufferFormat format) {
-  scoped_refptr<GbmPixmap> buf = new GbmPixmap(device_, drm_, size);
-  if (!buf->buffer()->InitializeBuffer(format, true)) {
+  scoped_refptr<GbmBuffer> buffer = GbmBuffer::CreateBuffer(
+      drm_, device_, format, size, true);
+  if (!buffer)
     return NULL;
-  }
-  return buf;
+
+  return scoped_refptr<GbmPixmap>(new GbmPixmap(buffer));
 }
 
 bool GbmSurfaceFactory::CanShowPrimaryPlaneAsOverlay() {
