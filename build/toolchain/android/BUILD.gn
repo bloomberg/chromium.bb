@@ -32,8 +32,14 @@ template("android_gcc_toolchain") {
     # The tools should be run relative to the build dir.
     tool_prefix = rebase_path(invoker.tool_prefix, root_build_dir)
 
-    cc = tool_prefix + "gcc"
-    cxx = tool_prefix + "g++"
+    if (use_goma) {
+      goma_prefix = "$goma_dir/gomacc "
+    } else {
+      goma_prefix = ""
+    }
+
+    cc = goma_prefix + tool_prefix + "gcc"
+    cxx = goma_prefix + tool_prefix + "g++"
     ar = tool_prefix + "ar"
     ld = cxx
 
