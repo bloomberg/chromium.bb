@@ -6084,6 +6084,63 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
   // TODO(akalin): Figure out a way to test |info.ShouldAllowInstall()|.
 }
 
+TEST_F(ExtensionServiceTest, SyncUninstallForSupervisedUser) {
+  InitializeEmptyExtensionService();
+  InitializeExtensionSyncService();
+  extension_sync_service()->MergeDataAndStartSyncing(
+      syncer::EXTENSIONS,
+      syncer::SyncDataList(),
+      scoped_ptr<syncer::SyncChangeProcessor>(
+          new syncer::FakeSyncChangeProcessor),
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+
+  // Install two extensions.
+  base::FilePath path1 = data_dir().AppendASCII("good.crx");
+  base::FilePath path2 = data_dir().AppendASCII("good2048.crx");
+  const Extension* extensions[2] = {
+    InstallCRX(path1, INSTALL_NEW),
+    InstallCRX(path2, INSTALL_NEW, Extension::WAS_INSTALLED_BY_CUSTODIAN)
+  };
+
+  // Add a policy provider that will disallow any changes.
+  extensions::TestManagementPolicyProvider provider(
+      extensions::TestManagementPolicyProvider::PROHIBIT_MODIFY_STATUS);
+  GetManagementPolicy()->RegisterProvider(&provider);
+
+  // Create a sync deletion for each extension.
+  syncer::SyncChangeList change_list;
+  for (int i = 0; i < 2; i++) {
+    const std::string& id = extensions[i]->id();
+    sync_pb::EntitySpecifics specifics;
+    sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
+    ext_specifics->set_id(id);
+    ext_specifics->set_version("1.0");
+    ext_specifics->set_installed_by_custodian(
+        extensions[i]->was_installed_by_custodian());
+    syncer::SyncData sync_data =
+        syncer::SyncData::CreateLocalData(id, "Name", specifics);
+    change_list.push_back(syncer::SyncChange(FROM_HERE,
+                                             syncer::SyncChange::ACTION_DELETE,
+                                             sync_data));
+  }
+
+  // Save the extension ids, as uninstalling destroys the Extension instance.
+  std::string extension_ids[2] = {
+    extensions[0]->id(),
+    extensions[1]->id()
+  };
+
+  // Now apply the uninstallations.
+  extension_sync_service()->ProcessSyncChanges(FROM_HERE, change_list);
+
+  // Uninstalling the extension without installed_by_custodian should have been
+  // blocked by policy.
+  EXPECT_TRUE(service()->GetExtensionById(extension_ids[0], true));
+
+  // But installed_by_custodian should result in bypassing the policy check.
+  EXPECT_FALSE(service()->GetExtensionById(extension_ids[1], true));
+}
+
 TEST_F(ExtensionServiceTest, InstallPriorityExternalUpdateUrl) {
   InitializeEmptyExtensionService();
 

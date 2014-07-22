@@ -701,7 +701,9 @@ bool ExtensionService::UninstallExtension(
   bool external_uninstall =
       (reason == extensions::UNINSTALL_REASON_INTERNAL_MANAGEMENT) ||
       (reason == extensions::UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION) ||
-      (reason == extensions::UNINSTALL_REASON_ORPHANED_SHARED_MODULE);
+      (reason == extensions::UNINSTALL_REASON_ORPHANED_SHARED_MODULE) ||
+      (reason == extensions::UNINSTALL_REASON_SYNC &&
+           extension->was_installed_by_custodian());
   if (!external_uninstall &&
       !system_->management_policy()->UserMayModifySettings(
         extension.get(), error)) {
