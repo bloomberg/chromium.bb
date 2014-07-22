@@ -1548,6 +1548,7 @@
             'rendering/RenderFrameSet.h',
             'rendering/RenderFullScreen.cpp',
             'rendering/RenderFullScreen.h',
+            'rendering/RenderGeometryMapStep.h',
             'rendering/RenderGeometryMap.cpp',
             'rendering/RenderGeometryMap.h',
             'rendering/RenderGrid.cpp',

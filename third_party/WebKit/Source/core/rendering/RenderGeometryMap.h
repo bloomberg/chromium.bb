@@ -26,50 +26,20 @@
 #ifndef RenderGeometryMap_h
 #define RenderGeometryMap_h
 
+#include "core/rendering/RenderGeometryMapStep.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/geometry/LayoutSize.h"
-#include "platform/transforms/TransformationMatrix.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
 
 class RenderLayer;
 class RenderLayerModelObject;
+class TransformationMatrix;
 class TransformState;
-
-// Stores data about how to map from one renderer to its container.
-struct RenderGeometryMapStep {
-    RenderGeometryMapStep(const RenderGeometryMapStep& o)
-        : m_renderer(o.m_renderer)
-        , m_offset(o.m_offset)
-        , m_offsetForFixedPosition(o.m_offsetForFixedPosition)
-        , m_accumulatingTransform(o.m_accumulatingTransform)
-        , m_isNonUniform(o.m_isNonUniform)
-        , m_isFixedPosition(o.m_isFixedPosition)
-        , m_hasTransform(o.m_hasTransform)
-    {
-        ASSERT(!o.m_transform);
-    }
-    RenderGeometryMapStep(const RenderObject* renderer, bool accumulatingTransform, bool isNonUniform, bool isFixedPosition, bool hasTransform)
-        : m_renderer(renderer)
-        , m_accumulatingTransform(accumulatingTransform)
-        , m_isNonUniform(isNonUniform)
-        , m_isFixedPosition(isFixedPosition)
-        , m_hasTransform(hasTransform)
-    {
-    }
-    const RenderObject* m_renderer;
-    LayoutSize m_offset;
-    OwnPtr<TransformationMatrix> m_transform; // Includes offset if non-null.
-    LayoutSize m_offsetForFixedPosition;
-    bool m_accumulatingTransform;
-    bool m_isNonUniform; // Mapping depends on the input point, e.g. because of CSS columns.
-    bool m_isFixedPosition;
-    bool m_hasTransform;
-};
 
 // Can be used while walking the Renderer tree to cache data about offsets and transforms.
 class RenderGeometryMap {
@@ -139,7 +109,5 @@ private:
 };
 
 } // namespace blink
-
-WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::RenderGeometryMapStep);
 
 #endif // RenderGeometryMap_h
