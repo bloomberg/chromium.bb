@@ -307,9 +307,11 @@ void NewWebSocketChannelImpl::sendInternal()
 {
     ASSERT(m_handle);
     unsigned long consumedBufferedAmount = 0;
-    while (!m_messages.isEmpty() && m_sendingQuota > 0 && !m_blobLoader) {
+    while (!m_messages.isEmpty() && !m_blobLoader) {
         bool final = false;
         Message* message = m_messages.first().get();
+        if (m_sendingQuota <= 0 && message->type != MessageTypeClose)
+            break;
         switch (message->type) {
         case MessageTypeText: {
             WebSocketHandle::MessageType type =
