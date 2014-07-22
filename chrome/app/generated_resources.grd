@@ -4354,10 +4354,10 @@ Make sure you do not expose any sensitive information.
         Read all text spoken using synthesized speech
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_CONTENT_SETTINGS" desc="Permission string for access to content settings.">
-        Change settings that control websites' access to cookies, JavaScript, and plug-ins
+        Change your settings that control websites' access to cookies, JavaScript, and plug-ins
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_PRIVACY" desc="Permission string for access to privacy settings.">
-        Change privacy-related settings
+        Change your privacy-related settings
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_SIGNED_IN_DEVICES" desc="Permission string for access to privacy settings.">
         Read the list of your signed-in devices
