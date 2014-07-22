@@ -149,7 +149,6 @@ class MockAudioRenderer : public AudioRenderer {
                                 const PipelineStatusCB& error_cb));
   MOCK_METHOD0(GetTimeSource, TimeSource*());
   MOCK_METHOD1(Flush, void(const base::Closure& callback));
-  MOCK_METHOD1(Stop, void(const base::Closure& callback));
   MOCK_METHOD0(StartPlaying, void());
   MOCK_METHOD1(SetVolume, void(float volume));
 

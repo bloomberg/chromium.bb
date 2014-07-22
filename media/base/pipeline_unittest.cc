@@ -312,9 +312,6 @@ class PipelineTest : public ::testing::Test {
     if (demuxer_)
       EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
 
-    if (audio_stream_)
-      EXPECT_CALL(*audio_renderer_, Stop(_)).WillOnce(RunClosure<0>());
-
     if (video_stream_)
       EXPECT_CALL(*video_renderer_, Stop(_)).WillOnce(RunClosure<0>());
   }
@@ -687,8 +684,6 @@ TEST_F(PipelineTest, ErrorDuringSeek) {
       .WillOnce(DoAll(SetBufferingState(&audio_buffering_state_cb_,
                                         BUFFERING_HAVE_NOTHING),
                       RunClosure<0>()));
-  EXPECT_CALL(*audio_renderer_, Stop(_))
-      .WillOnce(RunClosure<0>());
 
   EXPECT_CALL(*demuxer_, Seek(seek_time, _))
       .WillOnce(RunCallback<1>(PIPELINE_ERROR_READ));
@@ -743,8 +738,6 @@ TEST_F(PipelineTest, NoMessageDuringTearDownFromError) {
       .WillOnce(DoAll(SetBufferingState(&audio_buffering_state_cb_,
                                         BUFFERING_HAVE_NOTHING),
                       RunClosure<0>()));
-  EXPECT_CALL(*audio_renderer_, Stop(_))
-      .WillOnce(RunClosure<0>());
 
   EXPECT_CALL(*demuxer_, Seek(seek_time, _))
       .WillOnce(RunCallback<1>(PIPELINE_ERROR_READ));
@@ -966,7 +959,6 @@ class PipelineTeardownTest : public PipelineTest {
       }
 
       EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
-      EXPECT_CALL(*audio_renderer_, Stop(_)).WillOnce(RunClosure<0>());
       return status;
     }
 
@@ -987,7 +979,6 @@ class PipelineTeardownTest : public PipelineTest {
       }
 
       EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
-      EXPECT_CALL(*audio_renderer_, Stop(_)).WillOnce(RunClosure<0>());
       EXPECT_CALL(*video_renderer_, Stop(_)).WillOnce(RunClosure<0>());
       return status;
     }
@@ -1023,7 +1014,6 @@ class PipelineTeardownTest : public PipelineTest {
     PipelineStatus status = SetSeekExpectations(state, stop_or_error);
 
     EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
-    EXPECT_CALL(*audio_renderer_, Stop(_)).WillOnce(RunClosure<0>());
     EXPECT_CALL(*video_renderer_, Stop(_)).WillOnce(RunClosure<0>());
     EXPECT_CALL(callbacks_, OnSeek(status));
 
@@ -1094,7 +1084,6 @@ class PipelineTeardownTest : public PipelineTest {
     InSequence s;
 
     EXPECT_CALL(*demuxer_, Stop(_)).WillOnce(RunClosure<0>());
-    EXPECT_CALL(*audio_renderer_, Stop(_)).WillOnce(RunClosure<0>());
     EXPECT_CALL(*video_renderer_, Stop(_)).WillOnce(RunClosure<0>());
 
     switch (stop_or_error) {

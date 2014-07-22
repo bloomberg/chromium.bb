@@ -23,6 +23,8 @@ class MEDIA_EXPORT AudioRenderer {
   typedef base::Callback<void(base::TimeDelta, base::TimeDelta)> TimeCB;
 
   AudioRenderer();
+
+  // Stop all operations and fire all pending callbacks.
   virtual ~AudioRenderer();
 
   // Initialize an AudioRenderer with |stream|, executing |init_cb| upon
@@ -59,10 +61,6 @@ class MEDIA_EXPORT AudioRenderer {
   //
   // Only valid to call after a successful Initialize() or Flush().
   virtual void StartPlaying() = 0;
-
-  // Stop all operations in preparation for being deleted, executing |callback|
-  // when complete.
-  virtual void Stop(const base::Closure& callback) = 0;
 
   // Sets the output volume.
   virtual void SetVolume(float volume) = 0;

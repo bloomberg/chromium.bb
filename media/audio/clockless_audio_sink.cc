@@ -78,7 +78,8 @@ void ClocklessAudioSink::Start() {
 }
 
 void ClocklessAudioSink::Stop() {
-  Pause();
+  if (initialized_)
+    Pause();
 }
 
 void ClocklessAudioSink::Play() {

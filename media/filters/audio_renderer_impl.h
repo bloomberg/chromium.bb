@@ -84,7 +84,6 @@ class MEDIA_EXPORT AudioRendererImpl
                           const PipelineStatusCB& error_cb) OVERRIDE;
   virtual TimeSource* GetTimeSource() OVERRIDE;
   virtual void Flush(const base::Closure& callback) OVERRIDE;
-  virtual void Stop(const base::Closure& callback) OVERRIDE;
   virtual void StartPlaying() OVERRIDE;
   virtual void SetVolume(float volume) OVERRIDE;
 
@@ -113,8 +112,7 @@ class MEDIA_EXPORT AudioRendererImpl
     kInitializing,
     kFlushing,
     kFlushed,
-    kPlaying,
-    kStopped,
+    kPlaying
   };
 
   // Callback from the audio decoder delivering decoded audio samples.

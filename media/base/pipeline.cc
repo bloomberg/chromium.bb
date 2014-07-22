@@ -494,16 +494,14 @@ void Pipeline::DoSeek(
 void Pipeline::DoStop(const PipelineStatusCB& done_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!pending_callbacks_.get());
+
+  audio_renderer_.reset();
+
   SerialRunner::Queue bound_fns;
 
   if (demuxer_) {
     bound_fns.Push(base::Bind(
         &Demuxer::Stop, base::Unretained(demuxer_)));
-  }
-
-  if (audio_renderer_) {
-    bound_fns.Push(base::Bind(
-        &AudioRenderer::Stop, base::Unretained(audio_renderer_.get())));
   }
 
   if (video_renderer_) {
@@ -522,6 +520,7 @@ void Pipeline::DoStop(const PipelineStatusCB& done_cb) {
 void Pipeline::OnStopCompleted(PipelineStatus status) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kStopping);
+  DCHECK(!audio_renderer_);
   {
     base::AutoLock l(lock_);
     running_ = false;
@@ -530,7 +529,6 @@ void Pipeline::OnStopCompleted(PipelineStatus status) {
   SetState(kStopped);
   pending_callbacks_.reset();
   filter_collection_.reset();
-  audio_renderer_.reset();
   video_renderer_.reset();
   text_renderer_.reset();
   demuxer_ = NULL;

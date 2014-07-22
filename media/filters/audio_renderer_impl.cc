@@ -67,9 +67,15 @@ AudioRendererImpl::AudioRendererImpl(
 }
 
 AudioRendererImpl::~AudioRendererImpl() {
-  // Stop() should have been called and |algorithm_| should have been destroyed.
-  DCHECK(state_ == kUninitialized || state_ == kStopped);
-  DCHECK(!algorithm_.get());
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // If Render() is in progress, this call will wait for Render() to finish.
+  // After this call, the |sink_| will not call back into |this| anymore.
+  sink_->Stop();
+
+  if (!init_cb_.is_null())
+    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_ABORT);
 }
 
 void AudioRendererImpl::StartTicking() {
@@ -189,8 +195,6 @@ void AudioRendererImpl::ResetDecoderDone() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   {
     base::AutoLock auto_lock(lock_);
-    if (state_ == kStopped)
-      return;
 
     DCHECK_EQ(state_, kFlushed);
     DCHECK(!flush_cb_.is_null());
@@ -212,37 +216,6 @@ void AudioRendererImpl::ResetDecoderDone() {
   // Changes in buffering state are always posted. Flush callback must only be
   // run after buffering state has been set back to nothing.
   task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&flush_cb_));
-}
-
-void AudioRendererImpl::Stop(const base::Closure& callback) {
-  DVLOG(1) << __FUNCTION__;
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(!callback.is_null());
-
-  // TODO(scherkus): Consider invalidating |weak_factory_| and replacing
-  // task-running guards that check |state_| with DCHECK().
-
-  {
-    base::AutoLock auto_lock(lock_);
-
-    if (state_ == kStopped) {
-      task_runner_->PostTask(FROM_HERE, callback);
-      return;
-    }
-
-    ChangeState_Locked(kStopped);
-    algorithm_.reset();
-    time_cb_.Reset();
-    flush_cb_.Reset();
-  }
-
-  if (sink_) {
-    sink_->Stop();
-    sink_ = NULL;
-  }
-
-  audio_buffer_stream_.reset();
-  task_runner_->PostTask(FROM_HERE, callback);
 }
 
 void AudioRendererImpl::StartPlaying() {
@@ -333,11 +306,6 @@ void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
-
-  if (state_ == kStopped) {
-    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_ABORT);
-    return;
-  }
 
   if (!success) {
     state_ = kUninitialized;
@@ -469,7 +437,7 @@ bool AudioRendererImpl::HandleSplicerBuffer_Locked(
         return true;
     }
 
-    if (state_ != kUninitialized && state_ != kStopped)
+    if (state_ != kUninitialized)
       algorithm_->EnqueueBuffer(buffer);
   }
 
@@ -491,9 +459,6 @@ bool AudioRendererImpl::HandleSplicerBuffer_Locked(
         return false;
       }
       return true;
-
-    case kStopped:
-      return false;
   }
   return false;
 }
@@ -523,7 +488,6 @@ bool AudioRendererImpl::CanRead_Locked() {
     case kInitializing:
     case kFlushing:
     case kFlushed:
-    case kStopped:
       return false;
 
     case kPlaying:
@@ -690,7 +654,6 @@ void AudioRendererImpl::HandleAbortedReadOrDecodeError(bool is_decode_error) {
 
     case kFlushed:
     case kPlaying:
-    case kStopped:
       if (status != PIPELINE_OK)
         error_cb_.Run(status);
       return;
