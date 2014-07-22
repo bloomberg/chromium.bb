@@ -63,34 +63,12 @@ nacl::string GetArchitectureAttributes(Plugin* plugin) {
   return attrs_var.AsString();
 }
 
-void DidCacheHit(void* user_data, PP_FileHandle nexe_file_handle) {
-  PnaclCoordinator* coordinator = static_cast<PnaclCoordinator*>(user_data);
-  coordinator->BitcodeStreamCacheHit(nexe_file_handle);
-}
-
-void DidCacheMiss(void* user_data, int64_t expected_pexe_size) {
-  PnaclCoordinator* coordinator = static_cast<PnaclCoordinator*>(user_data);
-  coordinator->BitcodeStreamCacheMiss(expected_pexe_size);
-}
-
-void DidStreamData(void* user_data, const void* stream_data, int32_t length) {
-  PnaclCoordinator* coordinator = static_cast<PnaclCoordinator*>(user_data);
-  coordinator->BitcodeStreamGotData(stream_data, length);
-}
-
-void DidFinishStream(void* user_data, int32_t pp_error) {
-  PnaclCoordinator* coordinator = static_cast<PnaclCoordinator*>(user_data);
-  coordinator->BitcodeStreamDidFinish(pp_error);
-}
-
-PPP_PexeStreamHandler kPexeStreamHandler = {
-  &DidCacheHit,
-  &DidCacheMiss,
-  &DidStreamData,
-  &DidFinishStream
-};
-
 }  // namespace
+
+// Out-of-line destructor to keep it from getting put in every .o where
+// callback_source.h is included
+template<>
+CallbackSource<FileStreamData>::~CallbackSource() {}
 
 PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
     Plugin* plugin,
@@ -129,6 +107,7 @@ PnaclCoordinator::PnaclCoordinator(
     pnacl_options_(pnacl_options),
     architecture_attributes_(GetArchitectureAttributes(plugin)),
     split_module_count_(1),
+    is_cache_hit_(PP_FALSE),
     error_already_reported_(false),
     pexe_size_(0),
     pexe_bytes_compiled_(0),
@@ -286,6 +265,44 @@ void PnaclCoordinator::NexeReadDidOpen(int32_t pp_error) {
 }
 
 void PnaclCoordinator::OpenBitcodeStream() {
+  // Now open the pexe stream.
+  streaming_downloader_.reset(new FileDownloader(plugin_));
+  // Mark the request as requesting a PNaCl bitcode file,
+  // so that component updater can detect this user action.
+  streaming_downloader_->set_request_headers(
+      "Accept: application/x-pnacl, */*");
+
+  // Even though we haven't started downloading, create the translation
+  // thread object immediately. This ensures that any pieces of the file
+  // that get downloaded before the compilation thread is accepting
+  // SRPCs won't get dropped.
+  translate_thread_.reset(new PnaclTranslateThread());
+  if (translate_thread_ == NULL) {
+    ReportNonPpapiError(
+        PP_NACL_ERROR_PNACL_THREAD_CREATE,
+        "PnaclCoordinator: could not allocate translation thread.");
+    return;
+  }
+
+  pp::CompletionCallback cb =
+      callback_factory_.NewCallback(&PnaclCoordinator::BitcodeStreamDidOpen);
+  if (!streaming_downloader_->OpenStream(pexe_url_, cb, this)) {
+    ReportNonPpapiError(
+        PP_NACL_ERROR_PNACL_PEXE_FETCH_OTHER,
+        nacl::string("PnaclCoordinator: failed to open stream ") + pexe_url_);
+    return;
+  }
+}
+
+void PnaclCoordinator::BitcodeStreamDidOpen(int32_t pp_error) {
+  if (pp_error != PP_OK) {
+    BitcodeStreamDidFinish(pp_error);
+    // We have not spun up the translation process yet, so we need to call
+    // TranslateFinished here.
+    TranslateFinished(pp_error);
+    return;
+  }
+
   // The component updater's resource throttles + OnDemand update/install
   // should block the URL request until the compiler is present. Now we
   // can load the resources (e.g. llc and ld nexes).
@@ -309,73 +326,87 @@ void PnaclCoordinator::OpenBitcodeStream() {
     return;
   }
 
-  // Even though we haven't started downloading, create the translation
-  // thread object immediately. This ensures that any pieces of the file
-  // that get downloaded before the compilation thread is accepting
-  // SRPCs won't get dropped.
-  translate_thread_.reset(new PnaclTranslateThread());
-  if (translate_thread_ == NULL) {
-    ReportNonPpapiError(
-        PP_NACL_ERROR_PNACL_THREAD_CREATE,
-        "PnaclCoordinator: could not allocate translation thread.");
+  // Okay, now that we've started the HTTP request for the pexe
+  // and we've ensured that the PNaCl compiler + metadata is installed,
+  // get the cache key from the response headers and from the
+  // compiler's version metadata.
+  nacl::string headers = streaming_downloader_->GetResponseHeaders();
+
+  temp_nexe_file_.reset(new TempFile(plugin_));
+  pp::CompletionCallback cb =
+      callback_factory_.NewCallback(&PnaclCoordinator::NexeFdDidOpen);
+  int32_t nexe_fd_err =
+      plugin_->nacl_interface()->GetNexeFd(
+          plugin_->pp_instance(),
+          streaming_downloader_->full_url().c_str(),
+          // TODO(dschuff): Get this value from the pnacl json file after it
+          // rolls in from NaCl.
+          1,
+          pnacl_options_.opt_level,
+          headers.c_str(),
+          architecture_attributes_.c_str(), // Extra compile flags.
+          &is_cache_hit_,
+          temp_nexe_file_->internal_handle(),
+          cb.pp_completion_callback());
+  if (nexe_fd_err < PP_OK_COMPLETIONPENDING) {
+    ReportPpapiError(PP_NACL_ERROR_PNACL_CREATE_TEMP, nexe_fd_err,
+                     nacl::string("Call to GetNexeFd failed"));
+  }
+}
+
+void PnaclCoordinator::NexeFdDidOpen(int32_t pp_error) {
+  PLUGIN_PRINTF(("PnaclCoordinator::NexeFdDidOpen (pp_error=%"
+                 NACL_PRId32 ", hit=%d)\n", pp_error,
+                 is_cache_hit_ == PP_TRUE));
+  if (pp_error < PP_OK) {
+    ReportPpapiError(PP_NACL_ERROR_PNACL_CREATE_TEMP, pp_error,
+                     nacl::string("GetNexeFd failed"));
     return;
   }
 
-  GetNaClInterface()->StreamPexe(plugin_->pp_instance(),
-                                 pexe_url_.c_str(),
-                                 pnacl_options_.opt_level,
-                                 &kPexeStreamHandler,
-                                 this);
-}
-
-void PnaclCoordinator::BitcodeStreamCacheHit(PP_FileHandle handle) {
-  HistogramEnumerateTranslationCache(plugin_->uma_interface(), true);
-  if (handle == PP_kInvalidFileHandle) {
+  if (*temp_nexe_file_->internal_handle() == PP_kInvalidFileHandle) {
     ReportNonPpapiError(
         PP_NACL_ERROR_PNACL_CREATE_TEMP,
         nacl::string(
             "PnaclCoordinator: Got bad temp file handle from GetNexeFd"));
-    BitcodeStreamDidFinish(PP_ERROR_FAILED);
     return;
   }
-  *temp_nexe_file_->internal_handle() = handle;
-  // Open it for reading as the cached nexe file.
-  NexeReadDidOpen(temp_nexe_file_->Open(false));
-}
+  HistogramEnumerateTranslationCache(plugin_->uma_interface(), is_cache_hit_);
 
-void PnaclCoordinator::BitcodeStreamCacheMiss(int64_t expected_pexe_size) {
-  HistogramEnumerateTranslationCache(plugin_->uma_interface(), false);
-  expected_pexe_size_ = expected_pexe_size;
-
-  // Open an object file first so the translator can start writing to it
-  // during streaming translation.
-  temp_nexe_file_.reset(new TempFile(plugin_));
-
-  for (int i = 0; i < split_module_count_; i++) {
-    nacl::scoped_ptr<TempFile> temp_file(new TempFile(plugin_));
-    int32_t pp_error = temp_file->Open(true);
-    if (pp_error != PP_OK) {
-      ReportPpapiError(PP_NACL_ERROR_PNACL_CREATE_TEMP,
-                       pp_error,
-                       "Failed to open scratch object file.");
-      return;
-    } else {
-      obj_files_.push_back(temp_file.release());
+  if (is_cache_hit_ == PP_TRUE) {
+    // Cache hit -- no need to stream the rest of the file.
+    streaming_downloader_.reset(NULL);
+    // Open it for reading as the cached nexe file.
+    NexeReadDidOpen(temp_nexe_file_->Open(false));
+  } else {
+    // Open an object file first so the translator can start writing to it
+    // during streaming translation.
+    for (int i = 0; i < split_module_count_; i++) {
+      nacl::scoped_ptr<TempFile> temp_file(new TempFile(plugin_));
+      int32_t pp_error = temp_file->Open(true);
+      if (pp_error != PP_OK) {
+        ReportPpapiError(PP_NACL_ERROR_PNACL_CREATE_TEMP,
+                         pp_error,
+                         "Failed to open scratch object file.");
+        return;
+      } else {
+        obj_files_.push_back(temp_file.release());
+      }
     }
+    invalid_desc_wrapper_.reset(plugin_->wrapper_factory()->MakeInvalid());
+
+    // Meanwhile, a miss means we know we need to stream the bitcode, so stream
+    // the rest of it now. (Calling BeginStreaming means that the downloader
+    // will begin handing data to the coordinator, which is safe any time after
+    // the translate_thread_ object has been initialized).
+    pp::CompletionCallback finish_cb = callback_factory_.NewCallback(
+        &PnaclCoordinator::BitcodeStreamDidFinish);
+    streaming_downloader_->BeginStreaming(finish_cb);
+
+    // Open the nexe file for connecting ld and sel_ldr.
+    // Start translation when done with this last step of setup!
+    RunTranslate(temp_nexe_file_->Open(true));
   }
-  invalid_desc_wrapper_.reset(plugin_->wrapper_factory()->MakeInvalid());
-
-  // Open the nexe file for connecting ld and sel_ldr.
-  // Start translation when done with this last step of setup!
-  RunTranslate(temp_nexe_file_->Open(true));
-}
-
-void PnaclCoordinator::BitcodeStreamGotData(const void* data, int32_t length) {
-  DCHECK(translate_thread_.get());
-
-  translate_thread_->PutBytes(data, length);
-  if (data && length > 0)
-    pexe_size_ += length;
 }
 
 void PnaclCoordinator::BitcodeStreamDidFinish(int32_t pp_error) {
@@ -398,24 +429,47 @@ void PnaclCoordinator::BitcodeStreamDidFinish(int32_t pp_error) {
       ss << "PnaclCoordinator: pexe load failed (pp_error=" << pp_error << ").";
       error_info_.SetReport(PP_NACL_ERROR_PNACL_PEXE_FETCH_OTHER, ss.str());
     }
-
-    if (translate_thread_->started())
-      translate_thread_->AbortSubprocesses();
-    else
-      TranslateFinished(pp_error);
+    translate_thread_->AbortSubprocesses();
   } else {
     // Compare download completion pct (100% now), to compile completion pct.
     HistogramRatio(plugin_->uma_interface(),
                    "NaCl.Perf.PNaClLoadTime.PctCompiledWhenFullyDownloaded",
                    pexe_bytes_compiled_, pexe_size_);
+  }
+}
+
+void PnaclCoordinator::BitcodeStreamGotData(int32_t pp_error,
+                                            FileStreamData data) {
+  PLUGIN_PRINTF(("PnaclCoordinator::BitcodeStreamGotData (pp_error=%"
+                 NACL_PRId32 ", data=%p)\n", pp_error, data ? &(*data)[0] : 0));
+  DCHECK(translate_thread_.get());
+
+  // When we have received data, pp_error is set to the number of bytes
+  // received.
+  if (pp_error > 0) {
+    CHECK(data);
+    translate_thread_->PutBytes(data, pp_error);
+    pexe_size_ += pp_error;
+  } else {
     translate_thread_->EndStream();
   }
+}
+
+StreamCallback PnaclCoordinator::GetCallback() {
+  return callback_factory_.NewCallbackWithOutput(
+      &PnaclCoordinator::BitcodeStreamGotData);
 }
 
 void PnaclCoordinator::BitcodeGotCompiled(int32_t pp_error,
                                           int64_t bytes_compiled) {
   DCHECK(pp_error == PP_OK);
   pexe_bytes_compiled_ += bytes_compiled;
+  // If we don't know the expected total yet, ask.
+  if (expected_pexe_size_ == -1) {
+    int64_t amount_downloaded;  // dummy variable.
+    streaming_downloader_->GetDownloadProgress(&amount_downloaded,
+                                               &expected_pexe_size_);
+  }
   // Hold off reporting the last few bytes of progress, since we don't know
   // when they are actually completely compiled.  "bytes_compiled" only means
   // that bytes were sent to the compiler.

@@ -17,11 +17,11 @@
 
 #include "ppapi/cpp/completion_callback.h"
 
+#include "ppapi/native_client/src/trusted/plugin/callback_source.h"
+#include "ppapi/native_client/src/trusted/plugin/file_downloader.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
 #include "ppapi/native_client/src/trusted/plugin/pnacl_resources.h"
-
-#include "ppapi/utility/completion_callback_factory.h"
 
 struct PP_PNaClOptions;
 
@@ -51,7 +51,7 @@ class TempFile;
 // Translation proceeds in two steps:
 // (1) llc translates the bitcode in pexe_url_ to an object in obj_file_.
 // (2) ld links the object code in obj_file_ and produces a nexe in nexe_file_.
-class PnaclCoordinator {
+class PnaclCoordinator: public CallbackSource<FileStreamData> {
  public:
   // Maximum number of object files passable to the translator. Cannot be
   // changed without changing the RPC signatures.
@@ -68,6 +68,12 @@ class PnaclCoordinator {
   // Call this to take ownership of the FD of the translated nexe after
   // BitcodeToNative has completed (and the finish_callback called).
   PP_FileHandle TakeTranslatedFileHandle();
+
+  // Implement FileDownloader's template of the CallbackSource interface.
+  // This method returns a callback which will be called by the FileDownloader
+  // to stream the bitcode data as it arrives. The callback
+  // (BitcodeStreamGotData) passes it to llc over SRPC.
+  StreamCallback GetCallback();
 
   // Return a callback that should be notified when |bytes_compiled| bytes
   // have been compiled.
@@ -86,16 +92,6 @@ class PnaclCoordinator {
             expected_pexe_size_) < kProgressEventSlopPct;
   }
 
-
-  void BitcodeStreamCacheHit(PP_FileHandle handle);
-  void BitcodeStreamCacheMiss(int64_t expected_pexe_size);
-
-  // Invoked when a pexe data chunk arrives (when using streaming translation)
-  void BitcodeStreamGotData(const void* data, int32_t length);
-
-  // Invoked when the pexe download finishes (using streaming translation)
-  void BitcodeStreamDidFinish(int32_t pp_error);
-
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PnaclCoordinator);
 
@@ -108,9 +104,19 @@ class PnaclCoordinator {
 
   // Invoke to issue a GET request for bitcode.
   void OpenBitcodeStream();
+  // Invoked when we've started an URL fetch for the pexe to check for
+  // caching metadata.
+  void BitcodeStreamDidOpen(int32_t pp_error);
 
+  // Invoked when we've gotten a temp FD for the nexe, either with the nexe
+  // data, or a writeable fd to save to.
+  void NexeFdDidOpen(int32_t pp_error);
+  // Invoked when a pexe data chunk arrives (when using streaming translation)
+  void BitcodeStreamGotData(int32_t pp_error, FileStreamData data);
   // Invoked when a pexe data chunk is compiled.
   void BitcodeGotCompiled(int32_t pp_error, int64_t bytes_compiled);
+  // Invoked when the pexe download finishes (using streaming translation)
+  void BitcodeStreamDidFinish(int32_t pp_error);
   // Once llc and ld nexes have been loaded and the two temporary files have
   // been created, this starts the translation.  Translation starts two
   // subprocesses, one for llc and one for ld.
@@ -174,6 +180,12 @@ class PnaclCoordinator {
 
   // Translated nexe file, produced by the linker.
   nacl::scoped_ptr<TempFile> temp_nexe_file_;
+  // Passed to the browser, which sets it to true if there is a translation
+  // cache hit.
+  PP_Bool is_cache_hit_;
+
+  // Downloader for streaming translation
+  nacl::scoped_ptr<FileDownloader> streaming_downloader_;
 
   // Used to report information when errors (PPAPI or otherwise) are reported.
   ErrorInfo error_info_;
