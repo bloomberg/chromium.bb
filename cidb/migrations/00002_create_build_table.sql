@@ -1,6 +1,7 @@
 CREATE TABLE buildTable (
   id INT NOT NULL AUTO_INCREMENT,
   master_build_id INT,
+  buildbot_generation INT NOT NULL,
   builder_name VARCHAR(80) NOT NULL,
   waterfall ENUM('chromeos', 'chromiumos', 'chromiumos.tryserver') NOT NULL,
   build_number INT NOT NULL,
@@ -28,7 +29,7 @@ CREATE TABLE buildTable (
   PRIMARY KEY (id),
   FOREIGN KEY (master_build_id)
     REFERENCES buildTable(id),
-  UNIQUE INDEX (builder_name, waterfall, build_number),
+  UNIQUE INDEX (buildbot_generation, builder_name, waterfall, build_number),
   INDEX (master_build_id)
 );
 

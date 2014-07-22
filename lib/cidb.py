@@ -372,6 +372,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     dt = datetime.datetime.fromtimestamp(start_time)
 
     return self._Insert('buildTable', {'builder_name': builder_name,
+                                       'buildbot_generation':
+                                         constants.BUILDBOT_GENERATION,
                                        'waterfall': waterfall,
                                        'build_number': build_number,
                                        'build_type' : build_type,

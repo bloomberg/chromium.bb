@@ -47,6 +47,13 @@ REEXEC_API_MAJOR = 0
 REEXEC_API_MINOR = 2
 REEXEC_API_VERSION = '%i.%i' % (REEXEC_API_MAJOR, REEXEC_API_MINOR)
 
+# We rely on the (waterfall, builder name, build number) to uniquely identify
+# a build. However, future migrations or state wipes of the buildbot master may
+# cause it to reset its build number counter. When that happens, this value
+# should be incremented, ensuring that (waterfall, builder name, build number,
+# buildbot generation) is a unique identifier of builds.
+BUILDBOT_GENERATION = 1
+
 ISOLATESERVER = 'https://isolateserver.appspot.com'
 
 GOOGLE_EMAIL = '@google.com'
