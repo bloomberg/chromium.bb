@@ -54,11 +54,18 @@
             '../chrome/chrome.gyp:chrome_shell_apk',
             '../remoting/remoting.gyp:remoting_apk',
             '../tools/telemetry/telemetry.gyp:*#host',
-            '../tools/relocation_packer/relocation_packer.gyp:relocation_packer_unittests#host',
             # TODO(nyquist) This should instead by a target for sync when all of
             # the sync-related code for Android has been upstreamed.
             # See http://crbug.com/159203
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_javalib',
+          ],
+          'conditions': [
+            ['target_arch == "arm" or target_arch == "arm64"', {
+              'dependencies': [
+                # The relocation packer only works on ARM or ARM64.
+                '../tools/relocation_packer/relocation_packer.gyp:relocation_packer_unittests#host',
+              ],
+            }],
           ],
         }, {
           'dependencies': [
