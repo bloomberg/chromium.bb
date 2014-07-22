@@ -84,11 +84,6 @@ class User : public user_manager::UserInfo {
   const user_manager::UserImage::RawImage& raw_image() const {
     return user_image_.raw_image();
   }
-  bool has_animated_image() const { return user_image_.has_animated_image(); }
-  // Returns raw representation of animated user image.
-  const user_manager::UserImage::RawImage& animated_image() const {
-    return user_image_.animated_image();
-  }
 
   // Whether |raw_image| contains data in format that is considered safe to
   // decode in sensitive environment (on Login screen).

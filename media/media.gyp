@@ -650,19 +650,6 @@
             'DISABLE_USER_INPUT_MONITOR',
           ],
         }],
-        # A simple WebM encoder for animated avatars on ChromeOS.
-        ['chromeos==1', {
-          'dependencies': [
-            '../third_party/libvpx/libvpx.gyp:libvpx',
-            '../third_party/libyuv/libyuv.gyp:libyuv',
-          ],
-          'sources': [
-            'formats/webm/chromeos/ebml_writer.cc',
-            'formats/webm/chromeos/ebml_writer.h',
-            'formats/webm/chromeos/webm_encoder.cc',
-            'formats/webm/chromeos/webm_encoder.h',
-          ],
-        }],
         # For VaapiVideoEncodeAccelerator.
         ['target_arch != "arm" and chromeos == 1 and use_x11 == 1', {
           'sources': [

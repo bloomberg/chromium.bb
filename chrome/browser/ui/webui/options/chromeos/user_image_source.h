@@ -35,11 +35,9 @@ class UserImageSource : public content::URLDataSource {
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
 
-  // Returns PNG or GIF (when possible and if |is_image_animated| flag
-  // is true) encoded image for user with specified email.  If there's
+  // Returns PNG encoded image for user with specified email. If there's
   // no user with such email, returns the first default image.
   base::RefCountedMemory* GetUserImage(const std::string& email,
-                                       bool is_image_animated,
                                        ui::ScaleFactor scale_factor) const;
 
  private:
