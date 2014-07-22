@@ -39,8 +39,6 @@ struct ViewConfigurationData {
         Java_ViewConfigurationHelper_getLongPressTimeout(env);
     tap_timeout_in_ms_ = Java_ViewConfigurationHelper_getTapTimeout(env);
     scroll_friction_ = Java_ViewConfigurationHelper_getScrollFriction(env);
-    should_use_touch_major_in_scaling_span_ =
-        Java_ViewConfigurationHelper_shouldUseTouchMajorInScalingSpan(env);
 
     jobject obj = j_view_configuration_helper_.obj();
     Update(
@@ -73,9 +71,6 @@ struct ViewConfigurationData {
   int long_press_timeout_in_ms() const { return long_press_timeout_in_ms_; }
   int tap_timeout_in_ms() const { return tap_timeout_in_ms_; }
   float scroll_friction() const { return scroll_friction_; }
-  bool should_use_touch_major_in_scaling_span() const {
-    return should_use_touch_major_in_scaling_span_;
-  }
 
   int max_fling_velocity_in_pixels_s() {
     base::AutoLock autolock(lock_);
@@ -132,7 +127,6 @@ struct ViewConfigurationData {
   int long_press_timeout_in_ms_;
   int tap_timeout_in_ms_;
   float scroll_friction_;
-  bool should_use_touch_major_in_scaling_span_;
 
   // These values may vary as view-specific parameters (DPI scale) are changed,
   // so read/write access must be synchronized.
@@ -207,10 +201,6 @@ int ViewConfiguration::GetMinScalingSpanInPixels() {
 
 int ViewConfiguration::GetMinScalingTouchMajorInPixels() {
   return g_view_configuration.Get().min_scaling_touch_major_in_pixels();
-}
-
-bool ViewConfiguration::ShouldUseTouchMajorInScalingSpan() {
-  return g_view_configuration.Get().should_use_touch_major_in_scaling_span();
 }
 
 bool ViewConfiguration::RegisterViewConfiguration(JNIEnv* env) {

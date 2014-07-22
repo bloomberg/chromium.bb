@@ -8,7 +8,6 @@ import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.os.Build;
 import android.util.TypedValue;
 import android.view.ViewConfiguration;
 
@@ -134,14 +133,6 @@ public class ViewConfigurationHelper {
             return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                     MIN_SCALING_TOUCH_MAJOR_DIP, res.getDisplayMetrics());
         }
-    }
-
-    @CalledByNative
-    private static boolean shouldUseTouchMajorInScalingSpan() {
-        // Android's ScaleGestureDetector started using touch major values in
-        // JBMR1. Many devices from versions prior report wildly inconsistent
-        // touch sizes, so disable touch major use in such scenarios.
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1;
     }
 
     @CalledByNative

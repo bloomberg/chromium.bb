@@ -264,12 +264,6 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     SetUpWithConfig(config);
   }
 
-  void EnableTouchMajorUseInScaling() {
-    GestureProvider::Config config = GetDefaultConfig();
-    config.scale_gesture_detector_config.use_touch_major_in_span = true;
-    SetUpWithConfig(config);
-  }
-
   bool HasDownEvent() const { return gesture_provider_->current_down_event(); }
 
  protected:
@@ -1569,91 +1563,9 @@ TEST_F(GestureProviderTest, PinchZoom) {
             GetMostRecentGestureEvent().details.bounding_box());
 }
 
-// Verify that pinch zoom that uses touch major values sends the proper event
-// sequence.
-TEST_F(GestureProviderTest, PinchZoomWithTouchMajor) {
-  EnableTouchMajorUseInScaling();
-
-  base::TimeTicks event_time = base::TimeTicks::Now();
-  const float touch_slop = GetTouchSlop();
-  gesture_provider_->SetMultiTouchZoomSupportEnabled(true);
-
-  int secondary_coord_x = kFakeCoordX + 20 * touch_slop;
-  int secondary_coord_y = kFakeCoordY + 20 * touch_slop;
-
-  MockMotionEvent event =
-      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
-  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
-  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
-
-  event = ObtainMotionEvent(event_time,
-                            MotionEvent::ACTION_POINTER_DOWN,
-                            kFakeCoordX,
-                            kFakeCoordY,
-                            secondary_coord_x,
-                            secondary_coord_y);
-
-  gesture_provider_->OnTouchEvent(event);
-  EXPECT_EQ(1U, GetReceivedGestureCount());
-
-  secondary_coord_x += 5 * touch_slop;
-  secondary_coord_y += 5 * touch_slop;
-  event = ObtainMotionEvent(event_time,
-                            MotionEvent::ACTION_MOVE,
-                            kFakeCoordX,
-                            kFakeCoordY,
-                            secondary_coord_x,
-                            secondary_coord_y);
-  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
-  EXPECT_EQ(2, GetMostRecentGestureEvent().details.touch_points());
-  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_PINCH_BEGIN));
-  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_BEGIN));
-  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_UPDATE));
-
-  secondary_coord_x += 2 * touch_slop;
-  secondary_coord_y += 2 * touch_slop;
-  event = ObtainMotionEvent(event_time,
-                            MotionEvent::ACTION_MOVE,
-                            kFakeCoordX,
-                            kFakeCoordY,
-                            secondary_coord_x,
-                            secondary_coord_y);
-  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
-  EXPECT_EQ(ET_GESTURE_PINCH_UPDATE, GetMostRecentGestureEventType());
-  EXPECT_LT(1.f, GetMostRecentGestureEvent().details.scale());
-
-  secondary_coord_x -= 2 * touch_slop;
-  secondary_coord_y -= 2 * touch_slop;
-  event = ObtainMotionEvent(event_time,
-                            MotionEvent::ACTION_MOVE,
-                            kFakeCoordX,
-                            kFakeCoordY,
-                            secondary_coord_x,
-                            secondary_coord_y);
-  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
-  EXPECT_EQ(ET_GESTURE_PINCH_UPDATE, GetMostRecentGestureEventType());
-  EXPECT_GT(1.f, GetMostRecentGestureEvent().details.scale());
-
-  event = ObtainMotionEvent(event_time,
-                            MotionEvent::ACTION_POINTER_UP,
-                            kFakeCoordX,
-                            kFakeCoordY,
-                            secondary_coord_x,
-                            secondary_coord_y);
-  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
-  EXPECT_EQ(ET_GESTURE_PINCH_END, GetMostRecentGestureEventType());
-  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_SCROLL_END));
-
-  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_UP);
-  gesture_provider_->OnTouchEvent(event);
-  EXPECT_EQ(ET_GESTURE_SCROLL_END, GetMostRecentGestureEventType());
-}
-
 // Verify that no accidental pinching occurs if the touch size is large relative
 // to the min scaling span when the touch major value is used in scaling.
-TEST_F(GestureProviderTest, NoPinchZoomWithTouchMajorAndFatFinger) {
-  EnableTouchMajorUseInScaling();
-
+TEST_F(GestureProviderTest, NoPinchZoomWithFatFinger) {
   base::TimeTicks event_time = base::TimeTicks::Now();
   const float kFatFingerSize = GetMinScalingSpan() * 3.f;
 
@@ -1691,6 +1603,22 @@ TEST_F(GestureProviderTest, NoPinchZoomWithTouchMajorAndFatFinger) {
   event.SetTouchMajor(kFatFingerSize * 5.f);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(1U, GetReceivedGestureCount());
+
+  event = ObtainMotionEvent(event_time + kOneSecond * 4,
+                            MotionEvent::ACTION_MOVE,
+                            kFakeCoordX + 50.f,
+                            kFakeCoordY - 25.f);
+  event.SetTouchMajor(kFatFingerSize * 10.f);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_PINCH_BEGIN));
+
+  event = ObtainMotionEvent(event_time + kOneSecond * 4,
+                            MotionEvent::ACTION_MOVE,
+                            kFakeCoordX + 100.f,
+                            kFakeCoordY - 50.f);
+  event.SetTouchMajor(kFatFingerSize * 5.f);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_PINCH_BEGIN));
 }
 
 // Verify that multi-finger swipe sends the proper event sequence.

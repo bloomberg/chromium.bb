@@ -31,10 +31,6 @@ class ScaleGestureDetector : public GestureDetector::SimpleGestureListener {
     // Minimum span needed to initiate a scaling gesture (in dips).
     float min_scaling_span;
 
-    // Whether to use touch major values when determining the scale span.
-    // Defaults to false.
-    bool use_touch_major_in_span;
-
     // Whether double-tap drag scaling is enabled.
     bool quick_scale_enabled;
 
@@ -140,7 +136,6 @@ class ScaleGestureDetector : public GestureDetector::SimpleGestureListener {
   float min_span_;
 
   // Bounds for recently seen values.
-  bool use_touch_major_in_span_;
   float touch_upper_;
   float touch_lower_;
   float touch_history_last_accepted_;

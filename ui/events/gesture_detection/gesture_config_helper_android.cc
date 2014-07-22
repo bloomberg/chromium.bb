@@ -55,17 +55,8 @@ ScaleGestureDetector::Config DefaultScaleGestureDetectorConfig(
   const float px_to_dp = 1.f / display.device_scale_factor();
   config.min_scaling_touch_major =
       ViewConfiguration::GetMinScalingTouchMajorInPixels() * px_to_dp;
-  config.use_touch_major_in_span =
-      ViewConfiguration::ShouldUseTouchMajorInScalingSpan();
   config.min_scaling_span =
       ViewConfiguration::GetMinScalingSpanInPixels() * px_to_dp;
-  // As the |min_scaling_span| platform constant assumes that touch major values
-  // are used when computing the span, subtract off a reasonable touch major
-  // value for the case where the touch major values are not used.
-  if (!config.use_touch_major_in_span) {
-    config.min_scaling_span = std::max(
-        0.f, config.min_scaling_span - 2.f * config.min_scaling_touch_major);
-  }
 
   return config;
 }
