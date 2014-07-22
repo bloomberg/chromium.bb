@@ -26,9 +26,21 @@ namespace {
 // File name of the Pepper Flash plugin on different platforms.
 const base::FilePath::CharType kDataPath[] =
 #if defined(OS_MACOSX)
+#if defined(ARCH_CPU_X86)
     FILE_PATH_LITERAL("components/flapper/mac");
+#elif defined(ARCH_CPU_X86_64)
+    FILE_PATH_LITERAL("components/flapper/mac_x64");
+#else
+    FILE_PATH_LITERAL("components/flapper/NONEXISTENT");
+#endif
 #elif defined(OS_WIN)
+#if defined(ARCH_CPU_X86)
     FILE_PATH_LITERAL("components\\flapper\\windows");
+#elif defined(ARCH_CPU_X86_64)
+    FILE_PATH_LITERAL("components\\flapper\\windows_x64");
+#else
+    FILE_PATH_LITERAL("components\\flapper\\NONEXISTENT");
+#endif
 #else  // OS_LINUX, etc.
 #if defined(ARCH_CPU_X86)
     FILE_PATH_LITERAL("components/flapper/linux");
@@ -40,20 +52,8 @@ const base::FilePath::CharType kDataPath[] =
 #endif
 }  // namespace
 
-// TODO(jschuh): Get Pepper Flash supported on Win64 build.
-// http://crbug.com/179716
-#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
-#define MAYBE_PepperFlashCheck DISABLED_PepperFlashCheck
-// TODO(avi): Get Pepper Flash supported on the Mac 64 bit build.
-// http://crbug.com/225777
-#elif defined(OS_MACOSX) && defined(ARCH_CPU_X86_64)
-#define MAYBE_PepperFlashCheck DISABLED_PepperFlashCheck
-#else
-#define MAYBE_PepperFlashCheck PepperFlashCheck
-#endif
-
 // TODO(viettrungluu): Separate out into two separate tests; use a test fixture.
-TEST(ComponentInstallerTest, MAYBE_PepperFlashCheck) {
+TEST(ComponentInstallerTest, PepperFlashCheck) {
   base::MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
 
