@@ -22020,6 +22020,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Plugin.AvailabilityStatus.WidevineCdm"
+    enum="PluginAvailabilityStatus">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    The availability status of Widevine CDM. In normal cases, this is reported
+    per render process if EME API is used. This is not reported if EME API is
+    not used. This could be reported multiple times per render process until
+    PLUGIN_AVAILABLE is reported (which should be a rare case).
+  </summary>
+</histogram>
+
 <histogram name="Plugin.FlashNavigateUsage" enum="FlashNavigateUsageType">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Record usage of PPB_Flash.Navigate() Pepper API.</summary>
@@ -44576,6 +44587,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="14" label="NOT_EMPTY"/>
   <int value="15" label="INVALID_URL"/>
   <int value="16" label="I/O"/>
+</enum>
+
+<enum name="PluginAvailabilityStatus" type="int">
+  <int value="0" label="PLUGIN_NOT_REGISTERED"/>
+  <int value="1" label="PLUGIN_AVAILABLE"/>
+  <int value="2" label="PLUGIN_DISABLED"/>
 </enum>
 
 <enum name="PluginLoadResult" type="int">
