@@ -24,7 +24,6 @@ MONITORINFOEX GetMonitorInfoForMonitor(HMONITOR monitor) {
 }
 
 gfx::Display GetDisplay(MONITORINFOEX& monitor_info) {
-  // TODO(oshima): Implement Observer.
   int64 id = static_cast<int64>(
       base::Hash(base::WideToUTF8(monitor_info.szDevice)));
   gfx::Rect bounds = gfx::Rect(monitor_info.rcMonitor);
@@ -48,14 +47,24 @@ BOOL CALLBACK EnumMonitorCallback(HMONITOR monitor,
   return TRUE;
 }
 
+std::vector<gfx::Display> GetDisplays() {
+  std::vector<gfx::Display> displays;
+  EnumDisplayMonitors(NULL, NULL, EnumMonitorCallback,
+                      reinterpret_cast<LPARAM>(&displays));
+  return displays;
+}
+
 }  // namespace
 
 namespace gfx {
 
-ScreenWin::ScreenWin() {
+ScreenWin::ScreenWin()
+    : displays_(GetDisplays()) {
+  SingletonHwnd::GetInstance()->AddObserver(this);
 }
 
 ScreenWin::~ScreenWin() {
+  SingletonHwnd::GetInstance()->RemoveObserver(this);
 }
 
 bool ScreenWin::IsDIPEnabled() {
@@ -85,10 +94,7 @@ int ScreenWin::GetNumDisplays() const {
 }
 
 std::vector<gfx::Display> ScreenWin::GetAllDisplays() const {
-  std::vector<gfx::Display> all_displays;
-  EnumDisplayMonitors(NULL, NULL, EnumMonitorCallback,
-                      reinterpret_cast<LPARAM>(&all_displays));
-  return all_displays;
+  return displays_;
 }
 
 gfx::Display ScreenWin::GetDisplayNearestWindow(gfx::NativeView window) const {
@@ -140,11 +146,24 @@ gfx::Display ScreenWin::GetPrimaryDisplay() const {
 }
 
 void ScreenWin::AddObserver(DisplayObserver* observer) {
-  // TODO(oshima): crbug.com/122863.
+  change_notifier_.AddObserver(observer);
 }
 
 void ScreenWin::RemoveObserver(DisplayObserver* observer) {
-  // TODO(oshima): crbug.com/122863.
+  change_notifier_.RemoveObserver(observer);
+}
+
+void ScreenWin::OnWndProc(HWND hwnd,
+                          UINT message,
+                          WPARAM wparam,
+                          LPARAM lparam) {
+  if (message != WM_DISPLAYCHANGE)
+    return;
+
+  std::vector<gfx::Display> old_displays = displays_;
+  displays_ = GetDisplays();
+
+  change_notifier_.NotifyDisplaysChanged(old_displays, displays_);
 }
 
 HWND ScreenWin::GetHWNDFromNativeView(NativeView window) const {
