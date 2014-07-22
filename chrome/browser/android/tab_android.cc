@@ -111,11 +111,7 @@ TabAndroid::TabAndroid(JNIEnv* env, jobject obj)
 
 TabAndroid::~TabAndroid() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
-  if (obj.is_null())
-    return;
-
-  Java_Tab_clearNativePtr(env, obj.obj());
+  Java_Tab_clearNativePtr(env, weak_java_tab_.get(env).obj());
 }
 
 base::android::ScopedJavaLocalRef<jobject> TabAndroid::GetJavaObject() {
@@ -125,44 +121,29 @@ base::android::ScopedJavaLocalRef<jobject> TabAndroid::GetJavaObject() {
 
 int TabAndroid::GetAndroidId() const {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
-  if (obj.is_null())
-    return -1;
-  return Java_Tab_getId(env, obj.obj());
+  return Java_Tab_getId(env, weak_java_tab_.get(env).obj());
 }
 
 int TabAndroid::GetSyncId() const {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
-  if (obj.is_null())
-    return 0;
-  return Java_Tab_getSyncId(env, obj.obj());
+  return Java_Tab_getSyncId(env, weak_java_tab_.get(env).obj());
 }
 
 base::string16 TabAndroid::GetTitle() const {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
-  if (obj.is_null())
-    return base::string16();
   return base::android::ConvertJavaStringToUTF16(
-      Java_Tab_getTitle(env, obj.obj()));
+      Java_Tab_getTitle(env, weak_java_tab_.get(env).obj()));
 }
 
 GURL TabAndroid::GetURL() const {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
-  if (obj.is_null())
-    return GURL::EmptyGURL();
   return GURL(base::android::ConvertJavaStringToUTF8(
-      Java_Tab_getUrl(env, obj.obj())));
+      Java_Tab_getUrl(env, weak_java_tab_.get(env).obj())));
 }
 
 bool TabAndroid::LoadIfNeeded() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
-  if (obj.is_null())
-    return false;
-  return Java_Tab_loadIfNeeded(env, obj.obj());
+  return Java_Tab_loadIfNeeded(env, weak_java_tab_.get(env).obj());
 }
 
 content::ContentViewCore* TabAndroid::GetContentViewCore() const {
@@ -196,10 +177,7 @@ void TabAndroid::SetWindowSessionID(SessionID::id_type window_id) {
 
 void TabAndroid::SetSyncId(int sync_id) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
-  if (obj.is_null())
-    return;
-  Java_Tab_setSyncId(env, obj.obj(), sync_id);
+  Java_Tab_setSyncId(env, weak_java_tab_.get(env).obj(), sync_id);
 }
 
 void TabAndroid::HandlePopupNavigation(chrome::NavigateParams* params) {
