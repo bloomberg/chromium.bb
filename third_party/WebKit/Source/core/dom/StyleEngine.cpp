@@ -319,7 +319,7 @@ void StyleEngine::addXSLStyleSheet(ProcessingInstruction* node, bool createdByPa
     if (createdByParser || !m_xslStyleSheet) {
         needToUpdate = !m_xslStyleSheet;
     } else {
-        unsigned position = m_xslStyleSheet->compareDocumentPositionInternal(node, Node::TreatShadowTreesAsDisconnected);
+        unsigned position = m_xslStyleSheet->compareDocumentPosition(node, Node::TreatShadowTreesAsDisconnected);
         needToUpdate = position & Node::DOCUMENT_POSITION_FOLLOWING;
     }
 

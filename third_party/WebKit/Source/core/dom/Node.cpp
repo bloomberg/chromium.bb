@@ -1542,12 +1542,7 @@ bool Node::offsetInCharacters() const
     return false;
 }
 
-unsigned short Node::compareDocumentPosition(const Node* otherNode) const
-{
-    return compareDocumentPositionInternal(otherNode, TreatShadowTreesAsDisconnected);
-}
-
-unsigned short Node::compareDocumentPositionInternal(const Node* otherNode, ShadowTreesTreatment treatment) const
+unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesTreatment treatment) const
 {
     // It is not clear what should be done if |otherNode| is 0.
     if (!otherNode)

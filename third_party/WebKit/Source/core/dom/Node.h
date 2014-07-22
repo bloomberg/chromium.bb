@@ -601,14 +601,12 @@ public:
     virtual bool willRespondToMouseClickEvents();
     virtual bool willRespondToTouchEvents();
 
-    unsigned short compareDocumentPosition(const Node*) const;
-
     enum ShadowTreesTreatment {
         TreatShadowTreesAsDisconnected,
         TreatShadowTreesAsComposed
     };
 
-    unsigned short compareDocumentPositionInternal(const Node*, ShadowTreesTreatment) const;
+    unsigned short compareDocumentPosition(const Node*, ShadowTreesTreatment = TreatShadowTreesAsDisconnected) const;
 
     virtual Node* toNode() OVERRIDE FINAL;
 

@@ -47,7 +47,7 @@ void DocumentOrderedList::add(Node* node)
     do {
         --it;
         Node* n = *it;
-        unsigned short position = n->compareDocumentPositionInternal(node, Node::TreatShadowTreesAsComposed);
+        unsigned short position = n->compareDocumentPosition(node, Node::TreatShadowTreesAsComposed);
         if (position & Node::DOCUMENT_POSITION_FOLLOWING) {
             m_nodes.insertBefore(followingNode, node);
             return;
@@ -60,7 +60,7 @@ void DocumentOrderedList::add(Node* node)
 
 void DocumentOrderedList::parserAdd(Node* node)
 {
-    ASSERT(m_nodes.isEmpty() || m_nodes.last()->compareDocumentPositionInternal(node, Node::TreatShadowTreesAsComposed) & Node::DOCUMENT_POSITION_FOLLOWING);
+    ASSERT(m_nodes.isEmpty() || m_nodes.last()->compareDocumentPosition(node, Node::TreatShadowTreesAsComposed) & Node::DOCUMENT_POSITION_FOLLOWING);
     m_nodes.add(node);
 }
 
