@@ -160,7 +160,7 @@ AC_ARG_ENABLE(libinput-backend, [  --enable-libinput-backend],,
 AM_CONDITIONAL([ENABLE_LIBINPUT_BACKEND], [test x$enable_libinput_backend = xyes])
 if test x$enable_libinput_backend = xyes; then
   AC_DEFINE([BUILD_LIBINPUT_BACKEND], [1], [Build the libinput input device backend])
-  PKG_CHECK_MODULES(LIBINPUT_BACKEND, [libinput >= 0.4.0])
+  PKG_CHECK_MODULES(LIBINPUT_BACKEND, [libinput >= 0.5.0])
 fi
 
 
