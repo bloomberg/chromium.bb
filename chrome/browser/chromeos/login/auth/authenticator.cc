@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/login/auth/authenticator.h"
+#include "chrome/browser/chromeos/login/auth/authenticator.h"
 
 namespace chromeos {
 
@@ -12,8 +12,7 @@ Authenticator::Authenticator(AuthStatusConsumer* consumer)
     : consumer_(consumer), authentication_profile_(NULL) {
 }
 
-Authenticator::~Authenticator() {
-}
+Authenticator::~Authenticator() {}
 
 void Authenticator::SetConsumer(AuthStatusConsumer* consumer) {
   consumer_ = consumer;

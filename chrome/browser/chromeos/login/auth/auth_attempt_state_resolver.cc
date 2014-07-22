@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/login/auth/auth_attempt_state_resolver.h"
+#include "chrome/browser/chromeos/login/auth/auth_attempt_state_resolver.h"
 
 namespace chromeos {
 
-AuthAttemptStateResolver::AuthAttemptStateResolver() {
-}
+AuthAttemptStateResolver::AuthAttemptStateResolver() {}
 
-AuthAttemptStateResolver::~AuthAttemptStateResolver() {
-}
+AuthAttemptStateResolver::~AuthAttemptStateResolver() {}
 
 }  // namespace chromeos

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/login/auth/extended_authenticator.h"
+#include "chrome/browser/chromeos/login/auth/extended_authenticator.h"
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/homedir_methods.h"
@@ -16,7 +17,6 @@
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
-#include "chromeos/login_event_recorder.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -32,14 +32,14 @@ void RecordStartMarker(const std::string& marker) {
   std::string full_marker = "Cryptohome-";
   full_marker.append(marker);
   full_marker.append("-Start");
-  chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(full_marker, false);
+  chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(full_marker, false);
 }
 
 void RecordEndMarker(const std::string& marker) {
   std::string full_marker = "Cryptohome-";
   full_marker.append(marker);
   full_marker.append("-End");
-  chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(full_marker, false);
+  chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(full_marker, false);
 }
 
 }  // namespace
@@ -158,11 +158,11 @@ void ExtendedAuthenticator::TransformKeyIfNeeded(
   }
 
   if (!salt_obtained_) {
-    system_salt_callbacks_.push_back(
-        base::Bind(&ExtendedAuthenticator::TransformKeyIfNeeded,
-                   this,
-                   user_context,
-                   callback));
+    system_salt_callbacks_.push_back(base::Bind(
+        &ExtendedAuthenticator::TransformKeyIfNeeded,
+        this,
+        user_context,
+        callback));
     return;
   }
 
@@ -182,8 +182,7 @@ void ExtendedAuthenticator::OnSaltObtained(const std::string& system_salt) {
   system_salt_ = system_salt;
   for (std::vector<base::Closure>::const_iterator it =
            system_salt_callbacks_.begin();
-       it != system_salt_callbacks_.end();
-       ++it) {
+       it != system_salt_callbacks_.end(); ++it) {
     it->Run();
   }
   system_salt_callbacks_.clear();

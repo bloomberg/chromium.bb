@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_LOGIN_AUTH_AUTHENTICATOR_H_
-#define CHROMEOS_LOGIN_AUTH_AUTHENTICATOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_AUTHENTICATOR_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_AUTHENTICATOR_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
@@ -24,8 +23,7 @@ class UserContext;
 // 1. On successful authentication, will call consumer_->OnAuthSuccess().
 // 2. On failure, will call consumer_->OnAuthFailure().
 // 3. On password change, will call consumer_->OnPasswordChangeDetected().
-class CHROMEOS_EXPORT Authenticator
-    : public base::RefCountedThreadSafe<Authenticator> {
+class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
  public:
   explicit Authenticator(AuthStatusConsumer* consumer);
 
@@ -46,7 +44,8 @@ class CHROMEOS_EXPORT Authenticator
   virtual void AuthenticateToUnlock(const UserContext& user_context) = 0;
 
   // Initiates supervised user login.
-  virtual void LoginAsSupervisedUser(const UserContext& user_context) = 0;
+  virtual void LoginAsSupervisedUser(
+      const UserContext& user_context) = 0;
 
   // Initiates retail mode login.
   virtual void LoginRetailMode() = 0;
@@ -80,7 +79,8 @@ class CHROMEOS_EXPORT Authenticator
   // Call this method to migrate the user's encrypted data
   // forward to use his new password.  |old_password| is the password
   // his data was last encrypted with.
-  virtual void RecoverEncryptedData(const std::string& old_password) = 0;
+  virtual void RecoverEncryptedData(
+      const std::string& old_password) = 0;
 
   // Call this method to erase the user's encrypted data
   // and create a new cryptohome.
@@ -107,4 +107,4 @@ class CHROMEOS_EXPORT Authenticator
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_LOGIN_AUTH_AUTHENTICATOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_AUTHENTICATOR_H_

@@ -1,5 +1,4 @@
 include_rules = [
   "+components/user_manager",
-  "+content/public/browser",
   "+google_apis",
 ]

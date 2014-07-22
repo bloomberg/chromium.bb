@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/login/auth/test_attempt_state.h"
+#include "chrome/browser/chromeos/login/auth/test_attempt_state.h"
 
 #include "components/user_manager/user_type.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -18,8 +18,7 @@ TestAttemptState::TestAttemptState(const UserContext& credentials,
                        user_is_new) {
 }
 
-TestAttemptState::~TestAttemptState() {
-}
+TestAttemptState::~TestAttemptState() {}
 
 void TestAttemptState::PresetOnlineLoginStatus(const AuthFailure& outcome) {
   online_complete_ = true;

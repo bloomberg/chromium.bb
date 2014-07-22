@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
-#include "chromeos/login_event_recorder.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_widget_host.h"
@@ -32,22 +31,18 @@ namespace chromeos {
 // . Define the callback method, something like:
 //   void OnBootTimesLoaded(const BootTimesLoader::BootTimes& boot_times);
 // . When you want the version invoke: loader.GetBootTimes(callback, &tracker_);
-class BootTimesLoader : public content::NotificationObserver,
-                        public LoginEventRecorder::Delegate {
+class BootTimesLoader : public content::NotificationObserver {
  public:
   BootTimesLoader();
   virtual ~BootTimesLoader();
 
   static BootTimesLoader* Get();
 
-  // LoginEventRecorder::Delegate override.
-
   // Add a time marker for login. A timeline will be dumped to
   // /tmp/login-times-sent after login is done. If |send_to_uma| is true
   // the time between this marker and the last will be sent to UMA with
   // the identifier BootTime.|marker_name|.
-  virtual void AddLoginTimeMarker(const std::string& marker_name,
-                                  bool send_to_uma) OVERRIDE;
+  void AddLoginTimeMarker(const std::string& marker_name, bool send_to_uma);
 
   // Add a time marker for logout. A timeline will be dumped to
   // /tmp/logout-times-sent after logout is done. If |send_to_uma| is true

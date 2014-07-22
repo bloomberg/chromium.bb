@@ -8,12 +8,12 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/chromeos/login/auth/authenticator.h"
 #include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
-#include "chromeos/login/auth/authenticator.h"
 
 namespace chromeos {
 

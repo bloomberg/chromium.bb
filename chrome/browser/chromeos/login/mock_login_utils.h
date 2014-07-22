@@ -9,10 +9,10 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/chromeos/login/auth/authenticator.h"
 #include "chrome/browser/chromeos/login/fake_login_utils.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chromeos/login/auth/authenticator.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"

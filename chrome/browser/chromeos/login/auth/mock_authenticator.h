@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_LOGIN_AUTH_MOCK_AUTHENTICATOR_H_
-#define CHROMEOS_LOGIN_AUTH_MOCK_AUTHENTICATOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_MOCK_AUTHENTICATOR_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_MOCK_AUTHENTICATOR_H_
 
 #include <string>
 
-#include "chromeos/chromeos_export.h"
-#include "chromeos/login/auth/authenticator.h"
+#include "chrome/browser/chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,7 +17,7 @@ namespace chromeos {
 
 class AuthStatusConsumer;
 
-class CHROMEOS_EXPORT MockAuthenticator : public Authenticator {
+class MockAuthenticator : public Authenticator {
  public:
   MockAuthenticator(AuthStatusConsumer* consumer,
                     const UserContext& expected_user_context);
@@ -29,7 +28,8 @@ class CHROMEOS_EXPORT MockAuthenticator : public Authenticator {
   virtual void AuthenticateToLogin(Profile* profile,
                                    const UserContext& user_context) OVERRIDE;
   virtual void AuthenticateToUnlock(const UserContext& user_context) OVERRIDE;
-  virtual void LoginAsSupervisedUser(const UserContext& user_context) OVERRIDE;
+  virtual void LoginAsSupervisedUser(
+      const UserContext& user_context) OVERRIDE;
   virtual void LoginRetailMode() OVERRIDE;
   virtual void LoginOffTheRecord() OVERRIDE;
   virtual void LoginAsPublicAccount(const std::string& username) OVERRIDE;
@@ -38,7 +38,8 @@ class CHROMEOS_EXPORT MockAuthenticator : public Authenticator {
   virtual void OnRetailModeAuthSuccess() OVERRIDE;
   virtual void OnAuthSuccess() OVERRIDE;
   virtual void OnAuthFailure(const AuthFailure& failure) OVERRIDE;
-  virtual void RecoverEncryptedData(const std::string& old_password) OVERRIDE;
+  virtual void RecoverEncryptedData(
+      const std::string& old_password) OVERRIDE;
   virtual void ResyncEncryptedData() OVERRIDE;
 
   virtual void SetExpectedCredentials(const UserContext& user_context);
@@ -54,4 +55,4 @@ class CHROMEOS_EXPORT MockAuthenticator : public Authenticator {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_LOGIN_AUTH_MOCK_AUTHENTICATOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_MOCK_AUTHENTICATOR_H_

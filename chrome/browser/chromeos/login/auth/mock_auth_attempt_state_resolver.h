@@ -2,28 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_LOGIN_AUTH_MOCK_AUTH_ATTEMPT_STATE_RESOLVER_H_
-#define CHROMEOS_LOGIN_AUTH_MOCK_AUTH_ATTEMPT_STATE_RESOLVER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_MOCK_AUTH_ATTEMPT_STATE_RESOLVER_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_MOCK_AUTH_ATTEMPT_STATE_RESOLVER_H_
 
 #include "base/basictypes.h"
-#include "chromeos/chromeos_export.h"
-#include "chromeos/login/auth/auth_attempt_state_resolver.h"
+#include "chrome/browser/chromeos/login/auth/auth_attempt_state_resolver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT MockAuthAttemptStateResolver
-    : public AuthAttemptStateResolver {
+class MockAuthAttemptStateResolver : public AuthAttemptStateResolver {
  public:
   MockAuthAttemptStateResolver();
   virtual ~MockAuthAttemptStateResolver();
 
   MOCK_METHOD0(Resolve, void(void));
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAuthAttemptStateResolver);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_LOGIN_AUTH_MOCK_AUTH_ATTEMPT_STATE_RESOLVER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_AUTH_MOCK_AUTH_ATTEMPT_STATE_RESOLVER_H_
