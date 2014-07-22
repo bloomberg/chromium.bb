@@ -269,6 +269,8 @@ public:
     void setShouldRevealPassword(bool value);
     bool shouldRevealPassword() const { return m_shouldRevealPassword; }
 
+    virtual void didNotifySubtreeInsertionsToDocument() OVERRIDE;
+
 protected:
     HTMLInputElement(Document&, HTMLFormElement*, bool createdByParser);
 

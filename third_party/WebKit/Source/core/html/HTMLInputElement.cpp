@@ -1438,7 +1438,7 @@ Node::InsertionNotificationRequest HTMLInputElement::insertedInto(ContainerNode*
     if (insertionPoint->inDocument() && !form())
         addToRadioButtonGroup();
     resetListAttributeTargetObserver();
-    return InsertionDone;
+    return InsertionShouldCallDidNotifySubtreeInsertions;
 }
 
 void HTMLInputElement::removedFrom(ContainerNode* insertionPoint)
@@ -1884,6 +1884,11 @@ PassRefPtr<RenderStyle> HTMLInputElement::customStyleForRenderer()
 bool HTMLInputElement::shouldDispatchFormControlChangeEvent(String& oldValue, String& newValue)
 {
     return m_inputType->shouldDispatchFormControlChangeEvent(oldValue, newValue);
+}
+
+void HTMLInputElement::didNotifySubtreeInsertionsToDocument()
+{
+    listAttributeTargetChanged();
 }
 
 } // namespace
