@@ -770,59 +770,6 @@
    fun:_Z*13AddEntryToZip*
 }
 {
-   bug_30704a
-   Memcheck:Uninitialized
-   fun:crc32
-   ...
-   fun:png_write_row
-}
-{
-   bug_30704b
-   Memcheck:Param
-   write(buf)
-   ...
-   fun:_ZN17SandboxedUnpacker17RewriteImageFilesEv
-}
-{
-   bug_30704c
-   Memcheck:Param
-   write(buf)
-   ...
-   fun:_ZNK16BrowserThemePack11WriteToDiskE*
-}
-{
-   bug_30704d
-   Memcheck:Uninitialized
-   ...
-   fun:png_process_data
-   fun:_ZN5blink14PNGImageReader6decodeERKNS_12SharedBufferEb
-   fun:_ZN5blink15PNGImageDecoder6decodeEb
-   fun:_ZN5blink15PNGImageDecoder18frameBufferAtIndexEm
-}
-{
-   bug_30704e
-   Memcheck:Uninitialized
-   obj:*/libpng*
-   fun:png_write_row
-}
-{
-   bug_30704f
-   Memcheck:Uninitialized
-   ...
-   fun:wk_png_write_find_filter
-   fun:wk_png_write_row
-}
-{
-   bug_30704g
-   Memcheck:Param
-   write(buf)
-   obj:*libpthread*
-   fun:_ZN9file_util19WriteFileDescriptorE*
-   fun:_ZN9file_util9WriteFileE*
-   fun:*SaveScreenshotInternalE*4base8Callback*
-   fun:*SaveScreenshotE*4base8Callback*
-}
-{
    bug_87232
    Memcheck:Uninitialized
    fun:_ZN5blink12base64EncodeEPKcjRN3WTF6VectorIcLj0EEEb
