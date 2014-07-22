@@ -199,10 +199,8 @@ static void appendImagesFromStyle(Vector<ImageResource*>& images, RenderStyle& b
     appendLayers(images, blockStyle.maskLayers());
 
     const ContentData* contentData = blockStyle.contentData();
-    if (contentData && contentData->isImage()) {
-        const ImageContentData* imageContentData = static_cast<const ImageContentData*>(contentData);
-        appendImageIfNotNull(images, imageContentData->image());
-    }
+    if (contentData && contentData->isImage())
+        appendImageIfNotNull(images, toImageContentData(contentData)->image());
     if (blockStyle.boxReflect())
         appendImageIfNotNull(images, blockStyle.boxReflect()->mask().image());
     appendImageIfNotNull(images, blockStyle.listStyleImage());

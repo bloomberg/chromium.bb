@@ -134,11 +134,11 @@ void StyleResourceLoader::loadPendingImages(RenderStyle* style, ElementStyleReso
         case CSSPropertyContent: {
             for (ContentData* contentData = const_cast<ContentData*>(style->contentData()); contentData; contentData = contentData->next()) {
                 if (contentData->isImage()) {
-                    StyleImage* image = static_cast<ImageContentData*>(contentData)->image();
+                    StyleImage* image = toImageContentData(contentData)->image();
                     if (image->isPendingImage()) {
                         RefPtr<StyleImage> loadedImage = loadPendingImage(toStylePendingImage(image), elementStyleResources.deviceScaleFactor());
                         if (loadedImage)
-                            static_cast<ImageContentData*>(contentData)->setImage(loadedImage.release());
+                            toImageContentData(contentData)->setImage(loadedImage.release());
                     }
                 }
             }

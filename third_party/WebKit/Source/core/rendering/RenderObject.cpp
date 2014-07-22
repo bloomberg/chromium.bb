@@ -158,7 +158,7 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
         // trigger a style change now as the node is not fully attached. Moving this code to style change
         // doesn't make sense as it should be run once at renderer creation.
         image->setStyleInternal(style);
-        if (const StyleImage* styleImage = static_cast<const ImageContentData*>(contentData)->image()) {
+        if (const StyleImage* styleImage = toImageContentData(contentData)->image()) {
             image->setImageResource(RenderImageResourceStyleImage::create(const_cast<StyleImage*>(styleImage)));
             image->setIsGeneratedContent();
         } else

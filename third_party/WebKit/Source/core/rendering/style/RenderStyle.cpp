@@ -784,7 +784,7 @@ void RenderStyle::setContent(const String& string, bool add)
         if (lastContent) {
             // We attempt to merge with the last ContentData if possible.
             if (lastContent->isText()) {
-                TextContentData* textContent = static_cast<TextContentData*>(lastContent);
+                TextContentData* textContent = toTextContentData(lastContent);
                 textContent->setText(textContent->text() + string);
             } else
                 lastContent->setNext(ContentData::create(string));
