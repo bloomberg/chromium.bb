@@ -10,6 +10,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -51,7 +52,16 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/base_paths_win.h"
+#include "base/path_service.h"
+#include "base/strings/string16.h"
 #include "base/win/windows_version.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/common/url_constants.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -214,6 +224,80 @@ void RecordSSLBlockingPageDetailedStats(
       break;
     }
   }
+}
+
+void LaunchDateAndTimeSettings() {
+#if defined(OS_CHROMEOS)
+  std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
+      l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
+  chrome::ShowSettingsSubPageForProfile(
+      ProfileManager::GetActiveUserProfile(), sub_page);
+  return;
+#elif defined(OS_ANDROID)
+  CommandLine command(base::FilePath("/system/bin/am"));
+  command.AppendArg("start");
+  command.AppendArg(
+      "'com.android.settings/.Settings$DateTimeSettingsActivity'");
+#elif defined(OS_IOS)
+  // Apparently, iOS really does not have a way to launch the date and time
+  // settings. Weird. TODO(palmer): Do something more graceful than ignoring
+  // the user's click! crbug.com/394993
+  return;
+#elif defined(OS_LINUX)
+  struct ClockCommand {
+    const char* pathname;
+    const char* argument;
+  };
+  static const ClockCommand kClockCommands[] = {
+    // GNOME
+    //
+    // NOTE: On old Ubuntu, naming control panels doesn't work, so it
+    // opens the overview. This will have to be good enough.
+    { "/usr/bin/gnome-control-center", "datetime" },
+    { "/usr/local/bin/gnome-control-center", "datetime" },
+    { "/opt/bin/gnome-control-center", "datetime" },
+    // KDE
+    { "/usr/bin/kcmshell4", "clock" },
+    { "/usr/local/bin/kcmshell4", "clock" },
+    { "/opt/bin/kcmshell4", "clock" },
+  };
+
+  CommandLine command(base::FilePath(""));
+  for (size_t i = 0; i < arraysize(kClockCommands); ++i) {
+    base::FilePath pathname(kClockCommands[i].pathname);
+    if (base::PathExists(pathname)) {
+      command.SetProgram(pathname);
+      command.AppendArg(kClockCommands[i].argument);
+      break;
+    }
+  }
+  if (command.GetProgram().empty()) {
+    // Alas, there is nothing we can do.
+    return;
+  }
+#elif defined(OS_MACOSX)
+  CommandLine command(base::FilePath("/usr/bin/open"));
+  command.AppendArg("/System/Library/PreferencePanes/DateAndTime.prefPane");
+#elif defined(OS_WIN)
+  base::FilePath path;
+  PathService::Get(base::DIR_SYSTEM, &path);
+  static const base::char16 kControlPanelExe[] = L"control.exe";
+  path = path.Append(base::string16(kControlPanelExe));
+  CommandLine command(path);
+  command.AppendArg(std::string("/name"));
+  command.AppendArg(std::string("Microsoft.DateAndTime"));
+#else
+  return;
+#endif
+
+#if !defined(OS_CHROMEOS)
+  base::LaunchOptions options;
+  options.wait = false;
+#if defined(OS_LINUX)
+  options.allow_new_privs = true;
+#endif
+  base::LaunchProcess(command, options, NULL);
+#endif
 }
 
 }  // namespace
@@ -611,9 +695,7 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
       break;
     }
     case CMD_CLOCK: {
-      content::NavigationController::LoadURLParams help_page_params(GURL(
-          "https://support.google.com/chrome/?p=ui_system_clock"));
-      web_contents_->GetController().LoadURLWithParams(help_page_params);
+      LaunchDateAndTimeSettings();
       break;
     }
     default: {
