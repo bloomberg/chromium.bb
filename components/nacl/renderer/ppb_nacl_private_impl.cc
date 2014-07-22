@@ -17,6 +17,8 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "components/nacl/common/nacl_messages.h"
 #include "components/nacl/common/nacl_nonsfi_util.h"
@@ -52,6 +54,7 @@
 #include "ppapi/shared_impl/var_tracker.h"
 #include "ppapi/thunk/enter.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
+#include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -587,80 +590,40 @@ PP_Bool PPIsNonSFIModeEnabled() {
   return PP_FromBool(IsNonSFIModeEnabled());
 }
 
-void GetNexeFdContinuation(scoped_refptr<ppapi::TrackedCallback> callback,
-                           PP_Bool* out_is_hit,
-                           PP_FileHandle* out_handle,
-                           int32_t pp_error,
-                           bool is_hit,
-                           PP_FileHandle handle) {
-  if (pp_error == PP_OK) {
-    *out_is_hit = PP_FromBool(is_hit);
-    *out_handle = handle;
+void GetNexeFd(PP_Instance instance,
+               const std::string& pexe_url,
+               uint32_t opt_level,
+               const base::Time& last_modified_time,
+               const std::string& etag,
+               bool has_no_store_header,
+               base::Callback<void(int32_t, bool, PP_FileHandle)> callback) {
+  if (!InitializePnaclResourceHost()) {
+    ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+    FROM_HERE,
+    base::Bind(callback,
+               static_cast<int32_t>(PP_ERROR_FAILED),
+               false,
+               PP_kInvalidFileHandle));
+    return;
   }
-  callback->PostRun(pp_error);
-}
-
-int32_t GetNexeFd(PP_Instance instance,
-                  const char* pexe_url,
-                  uint32_t abi_version,
-                  uint32_t opt_level,
-                  const char* http_headers_param,
-                  const char* extra_flags,
-                  PP_Bool* is_hit,
-                  PP_FileHandle* handle,
-                  struct PP_CompletionCallback callback) {
-  ppapi::thunk::EnterInstance enter(instance, callback);
-  if (enter.failed())
-    return enter.retval();
-  if (!pexe_url || !is_hit || !handle)
-    return enter.SetResult(PP_ERROR_BADARGUMENT);
-  if (!InitializePnaclResourceHost())
-    return enter.SetResult(PP_ERROR_FAILED);
-
-  std::string http_headers(http_headers_param);
-  net::HttpUtil::HeadersIterator iter(
-      http_headers.begin(), http_headers.end(), "\r\n");
-
-  std::string last_modified;
-  std::string etag;
-  bool has_no_store_header = false;
-  while (iter.GetNext()) {
-    if (StringToLowerASCII(iter.name()) == "last-modified")
-      last_modified = iter.values();
-    if (StringToLowerASCII(iter.name()) == "etag")
-      etag = iter.values();
-    if (StringToLowerASCII(iter.name()) == "cache-control") {
-      net::HttpUtil::ValuesIterator values_iter(
-          iter.values_begin(), iter.values_end(), ',');
-      while (values_iter.GetNext()) {
-        if (StringToLowerASCII(values_iter.value()) == "no-store")
-          has_no_store_header = true;
-      }
-    }
-  }
-
-  base::Time last_modified_time;
-  // If FromString fails, it doesn't touch last_modified_time and we just send
-  // the default-constructed null value.
-  base::Time::FromString(last_modified.c_str(), &last_modified_time);
 
   PnaclCacheInfo cache_info;
   cache_info.pexe_url = GURL(pexe_url);
-  cache_info.abi_version = abi_version;
+  // TODO(dschuff): Get this value from the pnacl json file after it
+  // rolls in from NaCl.
+  cache_info.abi_version = 1;
   cache_info.opt_level = opt_level;
   cache_info.last_modified = last_modified_time;
   cache_info.etag = etag;
   cache_info.has_no_store_header = has_no_store_header;
   cache_info.sandbox_isa = GetSandboxArch();
-  cache_info.extra_flags = std::string(extra_flags);
+  cache_info.extra_flags = GetCpuFeatures();
 
   g_pnacl_resource_host.Get()->RequestNexeFd(
       GetRoutingID(instance),
       instance,
       cache_info,
-      base::Bind(&GetNexeFdContinuation, enter.callback(), is_hit, handle));
-
-  return enter.SetResult(PP_OK_COMPLETIONPENDING);
+      callback);
 }
 
 void ReportTranslationFinished(PP_Instance instance,
@@ -1563,6 +1526,160 @@ void SetPNaClStartTime(PP_Instance instance) {
     load_manager->set_pnacl_start_time(base::Time::Now());
 }
 
+class PexeDownloader : public blink::WebURLLoaderClient {
+ public:
+  PexeDownloader(PP_Instance instance,
+                 scoped_ptr<blink::WebURLLoader> url_loader,
+                 const std::string& pexe_url,
+                 int32_t pexe_opt_level,
+                 const PPP_PexeStreamHandler* stream_handler,
+                 void* stream_handler_user_data)
+      : instance_(instance),
+        url_loader_(url_loader.Pass()),
+        pexe_url_(pexe_url),
+        pexe_opt_level_(pexe_opt_level),
+        stream_handler_(stream_handler),
+        stream_handler_user_data_(stream_handler_user_data),
+        success_(false),
+        expected_content_length_(-1),
+        weak_factory_(this) { }
+
+  void Load(const blink::WebURLRequest& request) {
+    url_loader_->loadAsynchronously(request, this);
+  }
+
+ private:
+  virtual void didReceiveResponse(blink::WebURLLoader* loader,
+                                  const blink::WebURLResponse& response) {
+    success_ = (response.httpStatusCode() == 200);
+    if (!success_)
+      return;
+
+    expected_content_length_ = response.expectedContentLength();
+
+    // Defer loading after receiving headers. This is because we may already
+    // have a cached translated nexe, so check for that now.
+    url_loader_->setDefersLoading(true);
+
+    std::string etag = response.httpHeaderField("etag").utf8();
+    std::string last_modified =
+        response.httpHeaderField("last-modified").utf8();
+    base::Time last_modified_time;
+    base::Time::FromString(last_modified.c_str(), &last_modified_time);
+
+    bool has_no_store_header = false;
+    std::string cache_control =
+        response.httpHeaderField("cache-control").utf8();
+
+    std::vector<std::string> values;
+    base::SplitString(cache_control, ',', &values);
+    for (std::vector<std::string>::const_iterator it = values.begin();
+         it != values.end();
+         ++it) {
+      if (StringToLowerASCII(*it) == "no-store")
+        has_no_store_header = true;
+    }
+
+    GetNexeFd(instance_,
+              pexe_url_,
+              pexe_opt_level_,
+              last_modified_time,
+              etag,
+              has_no_store_header,
+              base::Bind(&PexeDownloader::didGetNexeFd,
+                         weak_factory_.GetWeakPtr()));
+  }
+
+  virtual void didGetNexeFd(int32_t pp_error,
+                            bool cache_hit,
+                            PP_FileHandle file_handle) {
+    if (cache_hit) {
+      stream_handler_->DidCacheHit(stream_handler_user_data_, file_handle);
+
+      // We delete the PexeDownloader at this point since we successfully got a
+      // cached, translated nexe.
+      delete this;
+      return;
+    }
+    stream_handler_->DidCacheMiss(stream_handler_user_data_,
+                                  expected_content_length_);
+
+    // No translated nexe was found in the cache, so we should download the
+    // file to start streaming it.
+    url_loader_->setDefersLoading(false);
+  }
+
+  virtual void didReceiveData(blink::WebURLLoader* loader,
+                              const char* data,
+                              int data_length,
+                              int encoded_data_length) {
+    // Stream the data we received to the stream callback.
+    stream_handler_->DidStreamData(stream_handler_user_data_,
+                                   data,
+                                   data_length);
+  }
+
+  virtual void didFinishLoading(blink::WebURLLoader* loader,
+                                double finish_time,
+                                int64_t total_encoded_data_length) {
+    int32_t result = success_ ? PP_OK : PP_ERROR_FAILED;
+    stream_handler_->DidFinishStream(stream_handler_user_data_, result);
+    delete this;
+  }
+
+  virtual void didFail(blink::WebURLLoader* loader,
+                       const blink::WebURLError& error) {
+    success_ = false;
+  }
+
+  PP_Instance instance_;
+  scoped_ptr<blink::WebURLLoader> url_loader_;
+  std::string pexe_url_;
+  int32_t pexe_opt_level_;
+  const PPP_PexeStreamHandler* stream_handler_;
+  void* stream_handler_user_data_;
+  bool success_;
+  int64_t expected_content_length_;
+  base::WeakPtrFactory<PexeDownloader> weak_factory_;
+};
+
+void StreamPexe(PP_Instance instance,
+                const char* pexe_url,
+                int32_t opt_level,
+                const PPP_PexeStreamHandler* handler,
+                void* handler_user_data) {
+  content::PepperPluginInstance* plugin_instance =
+      content::PepperPluginInstance::Get(instance);
+  if (!plugin_instance) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(handler->DidFinishStream,
+                   handler_user_data,
+                   static_cast<int32_t>(PP_ERROR_FAILED)));
+    return;
+  }
+
+  GURL gurl(pexe_url);
+  const blink::WebDocument& document =
+      plugin_instance->GetContainer()->element().document();
+  scoped_ptr<blink::WebURLLoader> url_loader(
+      CreateWebURLLoader(document, gurl));
+  PexeDownloader* downloader = new PexeDownloader(instance,
+                                                  url_loader.Pass(),
+                                                  pexe_url,
+                                                  opt_level,
+                                                  handler,
+                                                  handler_user_data);
+
+  blink::WebURLRequest url_request = CreateWebURLRequest(document, gurl);
+  // Mark the request as requesting a PNaCl bitcode file,
+  // so that component updater can detect this user action.
+  url_request.addHTTPHeaderField(
+      blink::WebString::fromUTF8("Accept"),
+      blink::WebString::fromUTF8("application/x-pnacl, */*"));
+  downloader->Load(url_request);
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -1573,7 +1690,6 @@ const PPB_NaCl_Private nacl_interface = {
   &CreateTemporaryFile,
   &GetNumberOfProcessors,
   &PPIsNonSFIModeEnabled,
-  &GetNexeFd,
   &ReportTranslationFinished,
   &DispatchEvent,
   &ReportLoadSuccess,
@@ -1603,7 +1719,8 @@ const PPB_NaCl_Private nacl_interface = {
   &ReportSelLdrStatus,
   &LogTranslateTime,
   &OpenManifestEntry,
-  &SetPNaClStartTime
+  &SetPNaClStartTime,
+  &StreamPexe
 };
 
 }  // namespace

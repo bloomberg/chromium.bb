@@ -61,13 +61,16 @@ class PnaclTranslateThread {
   void AbortSubprocesses();
 
   // Send bitcode bytes to the translator. Called from the main thread.
-  void PutBytes(std::vector<char>* data, int count);
+  void PutBytes(const void* data, int count);
 
   // Notify the translator that the end of the bitcode stream has been reached.
   // Called from the main thread.
   void EndStream();
 
   int64_t GetCompileTime() const { return compile_time_; }
+
+  // Returns true if RunTranslate() has been called, false otherwise.
+  bool started() const { return plugin_ != NULL; }
 
  private:
   // Helper thread entry point for translation. Takes a pointer to
