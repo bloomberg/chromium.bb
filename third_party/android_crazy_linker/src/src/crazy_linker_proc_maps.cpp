@@ -56,10 +56,15 @@ bool ParseProcMapsLine(const char* line,
       p++;
 
     // find start and end of current token, and compute start of
-    // next search.
+    // next search. The result of memchr(_,_,0) is undefined, treated as
+    // not-found.
     const char* tok_start = p;
-    const char* tok_end =
-        static_cast<const char*>(memchr(p, separator, line_end - p));
+    const size_t range = line_end - p;
+    const char* tok_end;
+    if (range > 0)
+      tok_end = static_cast<const char*>(memchr(p, separator, range));
+    else
+      tok_end = NULL;
     if (!tok_end) {
       tok_end = line_end;
       p = line_end;

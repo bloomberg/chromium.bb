@@ -51,10 +51,15 @@ bool LineReader::GetNextLine() {
          buff_size_,
          buff_capacity_);
 
-    // Find the end of the current line in the current buffer.
+    // Find the end of the current line in the current buffer. The result
+    // of memchr(_,_,0) is undefined, treated as not-found.
     const char* line = buff_ + line_start_;
-    const char* line_end = reinterpret_cast<const char*>(
-        ::memchr(line, '\n', buff_size_ - line_start_));
+    const size_t range = buff_size_ - line_start_;
+    const char* line_end;
+    if (range > 0)
+      line_end = reinterpret_cast<const char*>(::memchr(line, '\n', range));
+    else
+      line_end = NULL;
     if (line_end != NULL) {
       // Found one, return it directly.
       line_len_ = static_cast<size_t>(line_end + 1 - line);

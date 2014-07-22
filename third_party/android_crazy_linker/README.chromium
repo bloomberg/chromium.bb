@@ -29,3 +29,5 @@ Local Modifications:
 - Fix -Werror=sign-compare error encountered in NDK build.
 
 - Improve permission denied message to mention upgrading from L-preview.
+
+- Fix for crbug/394306 (Chrome crashes during startup ... on Arm64 AAW15)
