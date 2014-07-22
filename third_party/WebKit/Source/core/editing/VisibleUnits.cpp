@@ -653,9 +653,7 @@ static unsigned endWordBoundary(const UChar* characters, unsigned length, unsign
         return length;
     }
     needMoreContext = false;
-    int start, end;
-    findWordBoundary(characters, length, offset, &start, &end);
-    return end;
+    return findWordEndBoundary(characters, length, offset);
 }
 
 VisiblePosition endOfWord(const VisiblePosition &c, EWordSide side)

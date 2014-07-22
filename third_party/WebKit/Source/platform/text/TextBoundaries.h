@@ -40,6 +40,7 @@ PLATFORM_EXPORT int endOfFirstWordBoundaryContext(const UChar* characters, int l
 PLATFORM_EXPORT int startOfLastWordBoundaryContext(const UChar* characters, int length);
 
 PLATFORM_EXPORT void findWordBoundary(const UChar*, int len, int position, int* start, int* end);
+PLATFORM_EXPORT int findWordEndBoundary(const UChar*, int len, int position);
 PLATFORM_EXPORT int findNextWordFromIndex(const UChar*, int len, int position, bool forward);
 
 }
