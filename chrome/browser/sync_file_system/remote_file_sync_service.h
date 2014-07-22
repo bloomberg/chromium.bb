@@ -211,7 +211,7 @@ class RemoteFileSyncService {
   // REMOTE_SERVICE_TEMPORARY_UNAVAILABLE).
   virtual void SetSyncEnabled(bool enabled) = 0;
 
-  virtual void PromoteDemotedChanges() = 0;
+  virtual void PromoteDemotedChanges(const base::Closure& callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoteFileSyncService);

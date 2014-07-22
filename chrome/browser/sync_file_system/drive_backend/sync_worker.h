@@ -89,7 +89,7 @@ class SyncWorker : public SyncWorkerInterface,
   virtual scoped_ptr<base::ListValue> DumpFiles(const GURL& origin) OVERRIDE;
   virtual scoped_ptr<base::ListValue> DumpDatabase() OVERRIDE;
   virtual void SetSyncEnabled(bool enabled) OVERRIDE;
-  virtual void PromoteDemotedChanges() OVERRIDE;
+  virtual void PromoteDemotedChanges(const base::Closure& callback) OVERRIDE;
   virtual void ApplyLocalChange(
       const FileChange& local_change,
       const base::FilePath& local_path,

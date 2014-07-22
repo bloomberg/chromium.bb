@@ -85,7 +85,7 @@ class SyncWorkerInterface {
   virtual scoped_ptr<base::ListValue> DumpFiles(const GURL& origin) = 0;
   virtual scoped_ptr<base::ListValue> DumpDatabase() = 0;
   virtual void SetSyncEnabled(bool enabled) = 0;
-  virtual void PromoteDemotedChanges() = 0;
+  virtual void PromoteDemotedChanges(const base::Closure& callback) = 0;
 
   // See LocalChangeProcessor for the details.
   virtual void ApplyLocalChange(

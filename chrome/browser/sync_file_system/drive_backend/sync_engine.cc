@@ -578,14 +578,20 @@ void SyncEngine::SetSyncEnabled(bool sync_enabled) {
                  sync_enabled));
 }
 
-void SyncEngine::PromoteDemotedChanges() {
-  if (!sync_worker_)
+void SyncEngine::PromoteDemotedChanges(const base::Closure& callback) {
+  if (!sync_worker_) {
+    callback.Run();
     return;
+  }
+
+  base::Closure relayed_callback = RelayCallbackToCurrentThread(
+      FROM_HERE, callback_tracker_.Register(callback, callback));
 
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorkerInterface::PromoteDemotedChanges,
-                 base::Unretained(sync_worker_.get())));
+                 base::Unretained(sync_worker_.get()),
+                 relayed_callback));
 }
 
 void SyncEngine::ApplyLocalChange(

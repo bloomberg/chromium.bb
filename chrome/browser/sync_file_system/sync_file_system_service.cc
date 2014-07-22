@@ -361,7 +361,7 @@ void SyncFileSystemService::OnSyncIdle() {
        iter != remote_sync_runners_.end(); ++iter)
     remote_changes += (*iter)->pending_changes();
   if (remote_changes == 0)
-    local_service_->PromoteDemotedChanges();
+    local_service_->PromoteDemotedChanges(NoopClosure());
 
   int64 local_changes = 0;
   for (ScopedVector<SyncProcessRunner>::iterator iter =
@@ -369,7 +369,7 @@ void SyncFileSystemService::OnSyncIdle() {
        iter != local_sync_runners_.end(); ++iter)
     local_changes += (*iter)->pending_changes();
   if (local_changes == 0 && v2_remote_service_)
-    v2_remote_service_->PromoteDemotedChanges();
+    v2_remote_service_->PromoteDemotedChanges(NoopClosure());
 }
 
 SyncServiceState SyncFileSystemService::GetSyncServiceState() {

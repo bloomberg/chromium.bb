@@ -356,8 +356,18 @@ class DriveBackendSyncTest : public testing::Test,
 
       if (local_sync_status == SYNC_STATUS_NO_CHANGE_TO_SYNC &&
           remote_sync_status == SYNC_STATUS_NO_CHANGE_TO_SYNC) {
-        remote_sync_service_->PromoteDemotedChanges();
-        local_sync_service_->PromoteDemotedChanges();
+
+        {
+          base::RunLoop run_loop;
+          remote_sync_service_->PromoteDemotedChanges(run_loop.QuitClosure());
+          run_loop.Run();
+        }
+
+        {
+          base::RunLoop run_loop;
+          local_sync_service_->PromoteDemotedChanges(run_loop.QuitClosure());
+          run_loop.Run();
+        }
 
         if (pending_remote_changes_ || pending_local_changes_)
           continue;

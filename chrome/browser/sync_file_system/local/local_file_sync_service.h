@@ -123,7 +123,7 @@ class LocalFileSyncService
       const fileapi::FileSystemURL& url,
       const HasPendingLocalChangeCallback& callback);
 
-  void PromoteDemotedChanges();
+  void PromoteDemotedChanges(const base::Closure& callback);
 
   // Returns the metadata of a remote file pointed by |url|.
   virtual void GetLocalFileMetadata(

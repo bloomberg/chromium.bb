@@ -130,12 +130,13 @@ void FakeSyncWorker::SetSyncEnabled(bool enabled) {
     UpdateServiceState(REMOTE_SERVICE_DISABLED, "Disabled FakeSyncWorker.");
 }
 
-void FakeSyncWorker::PromoteDemotedChanges() {
+void FakeSyncWorker::PromoteDemotedChanges(const base::Closure& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   FOR_EACH_OBSERVER(
       Observer,
       observers_,
       OnPendingFileListUpdated(10));
+  callback.Run();
 }
 
 void FakeSyncWorker::ApplyLocalChange(

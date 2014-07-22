@@ -52,7 +52,7 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   MOCK_METHOD1(GetOriginStatusMap,
                void(const StatusMapCallback& callback));
   MOCK_METHOD1(SetSyncEnabled, void(bool enabled));
-  MOCK_METHOD0(PromoteDemotedChanges, void());
+  MOCK_METHOD1(PromoteDemotedChanges, void(const base::Closure& callback));
 
   virtual void DumpFiles(const GURL& origin,
                          const ListCallback& callback) OVERRIDE;

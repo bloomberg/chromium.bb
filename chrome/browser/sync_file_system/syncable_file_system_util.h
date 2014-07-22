@@ -102,6 +102,8 @@ class ScopedDisableSyncFSV2 {
 void RunSoon(const tracked_objects::Location& from_here,
              const base::Closure& callback);
 
+base::Closure NoopClosure();
+
 }  // namespace sync_file_system
 
 #endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNCABLE_FILE_SYSTEM_UTIL_H_

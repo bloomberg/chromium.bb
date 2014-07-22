@@ -234,7 +234,7 @@ void SyncWorker::SetSyncEnabled(bool enabled) {
           enabled ? "Sync is enabled" : "Sync is disabled"));
 }
 
-void SyncWorker::PromoteDemotedChanges() {
+void SyncWorker::PromoteDemotedChanges(const base::Closure& callback) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   MetadataDatabase* metadata_db = GetMetadataDatabase();
@@ -245,6 +245,7 @@ void SyncWorker::PromoteDemotedChanges() {
         observers_,
         OnPendingFileListUpdated(metadata_db->CountDirtyTracker()));
   }
+  callback.Run();
 }
 
 void SyncWorker::ApplyLocalChange(

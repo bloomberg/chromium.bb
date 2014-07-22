@@ -253,7 +253,9 @@ void DriveFileSyncService::SetSyncEnabled(bool enabled) {
       OnRemoteServiceStateUpdated(GetCurrentState(), status_message));
 }
 
-void DriveFileSyncService::PromoteDemotedChanges() {
+void DriveFileSyncService::PromoteDemotedChanges(
+    const base::Closure& callback) {
+  callback.Run();
 }
 
 void DriveFileSyncService::ApplyLocalChange(

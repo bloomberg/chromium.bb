@@ -103,7 +103,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
                          const ListCallback& callback) OVERRIDE;
   virtual void DumpDatabase(const ListCallback& callback) OVERRIDE;
   virtual void SetSyncEnabled(bool enabled) OVERRIDE;
-  virtual void PromoteDemotedChanges() OVERRIDE;
+  virtual void PromoteDemotedChanges(const base::Closure& callback) OVERRIDE;
 
   // LocalChangeProcessor overrides.
   virtual void ApplyLocalChange(

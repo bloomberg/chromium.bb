@@ -38,6 +38,8 @@ const base::FilePath::CharType kSyncFileSystemDir[] =
 // Flags to enable features for testing.
 bool g_is_syncfs_v2_enabled = true;
 
+void Noop() {}
+
 }  // namespace
 
 void RegisterSyncableFileSystem() {
@@ -163,6 +165,10 @@ ScopedDisableSyncFSV2::~ScopedDisableSyncFSV2() {
 void RunSoon(const tracked_objects::Location& from_here,
              const base::Closure& callback) {
   base::MessageLoop::current()->PostTask(from_here, callback);
+}
+
+base::Closure NoopClosure() {
+  return base::Bind(&Noop);
 }
 
 }  // namespace sync_file_system
