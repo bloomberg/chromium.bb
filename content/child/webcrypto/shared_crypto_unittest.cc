@@ -2688,7 +2688,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsaBadExponent)) {
   }
 }
 
-TEST_F(SharedCryptoTest, MAYBE(RsaSsaSignVerifyFailures)) {
+TEST_F(SharedCryptoTest, RsaSsaSignVerifyFailures) {
   if (!SupportsRsaKeyImport())
     return;
 
@@ -2820,7 +2820,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSsaSignVerifyFailures)) {
   EXPECT_FALSE(is_match);
 }
 
-TEST_F(SharedCryptoTest, MAYBE(RsaSignVerifyKnownAnswer)) {
+TEST_F(SharedCryptoTest, RsaSignVerifyKnownAnswer) {
   if (!SupportsRsaKeyImport())
     return;
 
