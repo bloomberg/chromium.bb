@@ -33,6 +33,7 @@
 
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/svg/RenderSVGContainer.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
@@ -152,7 +153,8 @@ void RenderSVGModelObject::invalidatePaintIfNeeded(const PaintInvalidationState&
     // need to update the RenderSVGModelObject's repaint rect above. The invalidation
     // will be handled by the container where the transform changed. This essentially
     // means that we prune the entire branch for performance.
-    if (!SVGRenderSupport::parentTransformDidChange(this))
+    RenderObject* parent = this->parent();
+    if (parent && parent->isSVGContainer() && toRenderSVGContainer(parent)->didTransformToRootUpdate())
         return;
 
     // If we are set to do a full paint invalidation that means the RenderView will be
