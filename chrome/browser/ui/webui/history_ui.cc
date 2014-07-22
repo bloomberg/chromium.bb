@@ -143,6 +143,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
       "deleteWarning",
       l10n_util::GetStringFUTF16(IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING,
                                  base::UTF8ToUTF16(kIncognitoModeShortcut)));
+  source->AddLocalizedString("removeBookmark", IDS_HISTORY_REMOVE_BOOKMARK);
   source->AddLocalizedString("actionMenuDescription",
                              IDS_HISTORY_ACTION_MENU_DESCRIPTION);
   source->AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);

@@ -187,6 +187,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
 
   var bookmarkSection = createElementWithClassName('div', 'bookmark-section');
   if (this.starred_) {
+    bookmarkSection.title = loadTimeData.getString('removeBookmark');
     bookmarkSection.classList.add('starred');
     bookmarkSection.addEventListener('click', function f(e) {
       recordUmaAction('HistoryPage_BookmarkStarClicked');
@@ -291,13 +292,9 @@ Visit.prototype.removeFromHistory = function() {
 Visit.prototype.setIsLead = function(isLead) {
   this.domNode_.querySelector('.entry-box').classList.toggle('lead', isLead);
   if (!isLead) {
-    if (this.checkBox)
-      this.checkBox.tabIndex = -1;
-
-    this.titleLink.tabIndex = -1;
-
-    if (this.dropDown)
-      this.dropDown.tabIndex = -1;
+    this.getFocusableControls_().forEach(function(control) {
+      control.tabIndex = -1;
+    });
   }
 };
 
@@ -305,14 +302,7 @@ Visit.prototype.setIsLead = function(isLead) {
  * @param {Element} control A control element to focus.
  */
 Visit.prototype.focusControl = function(control) {
-  var controls = [this.titleLink];
-
-  if (this.checkBox)
-    controls.push(this.checkBox);
-
-  if (this.dropDown)
-    controls.push(this.dropDown);
-
+  var controls = this.getFocusableControls_();
   assert(controls.indexOf(control) >= 0);
 
   for (var i = 0; i < controls.length; ++i) {
@@ -326,6 +316,12 @@ Visit.prototype.focusControl = function(control) {
 Object.defineProperty(Visit.prototype, 'checkBox', {
   get: function() {
     return this.domNode_.querySelector('input[type=checkbox]');
+  },
+});
+
+Object.defineProperty(Visit.prototype, 'bookmarkStar', {
+  get: function() {
+    return this.domNode_.querySelector('.bookmark-section.starred');
   },
 });
 
@@ -459,6 +455,27 @@ Visit.prototype.showMoreFromSite_ = function() {
 };
 
 /**
+ * @return {Array.<Element>} A list of focusable controls.
+ * @private
+ */
+Visit.prototype.getFocusableControls_ = function() {
+  var controls = [];
+
+  if (this.checkBox)
+    controls.push(this.checkBox);
+
+  if (this.bookmarkStar)
+    controls.push(this.bookmarkStar);
+
+  controls.push(this.titleLink);
+
+  if (this.dropDown)
+    controls.push(this.dropDown);
+
+  return controls;
+};
+
+/**
  * @param {Event} e A keydown event to handle.
  * @private
  */
@@ -471,21 +488,23 @@ Visit.prototype.handleKeydown_ = function(e) {
   }
 
   var target = e.target;
-  if (target != document.activeElement ||
-      !(keyCode == 37 || keyCode == 39) ||  // Left or right.
-      (keyCode == 37 && target == this.checkBox) ||
-      (keyCode == 39 && target == this.dropDown)) {
+  if (target != document.activeElement || !(keyCode == 37 || keyCode == 39)) {
+    // Handling key code for inactive element or key wasn't left or right.
     return;
   }
 
-  var toFocus;
-  if (e.keyCode == 37)  // Left.
-    toFocus = target == this.dropDown ? this.titleLink : this.checkBox;
-  else  // Right.
-    toFocus = target == this.checkBox ? this.titleLink : this.dropDown;
-
-  this.focusControl(toFocus);
-  e.preventDefault();
+  var controls = this.getFocusableControls_();
+  for (var i = 0; i < controls.length; ++i) {
+    if (controls[i].contains(target)) {
+      /** @const */ var isLeft = e.keyCode == 37;
+      var toFocus = isLeft ? controls[i - 1] : controls[i + 1];
+      if (toFocus) {
+        this.focusControl(toFocus);
+        e.preventDefault();
+      }
+      break;
+    }
+  }
 };
 
 /**
@@ -1627,16 +1646,32 @@ HistoryView.prototype.swapFocusedVisit_ = function(visit) {
   if (!visit)
     return;
 
-  var control;
   var activeVisit = findAncestorByClass(document.activeElement, 'entry').visit;
-  if (document.activeElement == activeVisit.checkBox)
-    control = visit.checkBox;
-  else if (document.activeElement == activeVisit.titleLink)
-    control = visit.titleLink;
-  else if (document.activeElement == activeVisit.dropDown)
-    control = visit.dropDown;
+  var controls = activeVisit.getFocusableControls_();
 
-  visit.focusControl(control);
+  for (var i = 0; i < controls.length; ++i) {
+    var control = controls[i];
+    if (!control.contains(document.activeElement))
+      continue;
+
+    // Try to focus the same type of control if the new visit has it.
+    if (control == activeVisit.checkBox && visit.checkBox) {
+      visit.focusControl(visit.checkBox);
+    } else if (control == activeVisit.bookmarkStar && visit.bookmarkStar) {
+      visit.focusControl(visit.bookmarkStar);
+    } else if (control == activeVisit.titleLink) {
+      visit.focusControl(visit.titleLink);
+    } else if (control == activeVisit.dropDown && visit.dropDown) {
+      visit.focusControl(visit.dropDown);
+    } else {
+      // Otherwise, just focus something that might be in a similar column.
+      var controlsToFocus = visit.getFocusableControls_();
+      var indexToFocus = Math.min(i, controlsToFocus.length - 1);
+      visit.focusControl(controlsToFocus[indexToFocus]);
+    }
+    break;
+  }
+
   activeVisit.setIsLead(false);
 };
 
@@ -1667,6 +1702,9 @@ HistoryView.prototype.handleMousedown_ = function(e) {
     return;
 
   var visit = entry.visit;
+  if (visit.bookmarkStar && visit.bookmarkStar.contains(target))
+    return;
+
   if (visit.titleLink.contains(target))
     visit.focusControl(visit.titleLink);
   else if (visit.dropDown && visit.dropDown.contains(target))
