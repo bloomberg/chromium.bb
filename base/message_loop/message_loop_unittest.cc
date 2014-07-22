@@ -730,30 +730,20 @@ TEST(MessageLoopTest, HighResolutionTimer) {
   const TimeDelta kFastTimer = TimeDelta::FromMilliseconds(5);
   const TimeDelta kSlowTimer = TimeDelta::FromMilliseconds(100);
 
-  EXPECT_FALSE(loop.IsHighResolutionTimerEnabledForTesting());
-
+  EXPECT_FALSE(loop.HasHighResolutionTasks());
   // Post a fast task to enable the high resolution timers.
   loop.PostDelayedTask(FROM_HERE, Bind(&PostNTasksThenQuit, 1),
                        kFastTimer);
+  EXPECT_TRUE(loop.HasHighResolutionTasks());
   loop.Run();
-  EXPECT_TRUE(loop.IsHighResolutionTimerEnabledForTesting());
-
-  // Post a slow task and verify high resolution timers
-  // are still enabled.
+  EXPECT_FALSE(loop.HasHighResolutionTasks());
+  EXPECT_FALSE(Time::IsHighResolutionTimerInUse());
+  // Check that a slow task does not trigger the high resolution logic.
   loop.PostDelayedTask(FROM_HERE, Bind(&PostNTasksThenQuit, 1),
                        kSlowTimer);
+  EXPECT_FALSE(loop.HasHighResolutionTasks());
   loop.Run();
-  EXPECT_TRUE(loop.IsHighResolutionTimerEnabledForTesting());
-
-  // Wait for a while so that high-resolution mode elapses.
-  PlatformThread::Sleep(TimeDelta::FromMilliseconds(
-      MessageLoop::kHighResolutionTimerModeLeaseTimeMs));
-
-  // Post a slow task to disable the high resolution timers.
-  loop.PostDelayedTask(FROM_HERE, Bind(&PostNTasksThenQuit, 1),
-                       kSlowTimer);
-  loop.Run();
-  EXPECT_FALSE(loop.IsHighResolutionTimerEnabledForTesting());
+  EXPECT_FALSE(loop.HasHighResolutionTasks());
 }
 
 #endif  // defined(OS_WIN)
