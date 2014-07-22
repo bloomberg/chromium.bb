@@ -366,7 +366,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   if (!request.allowStoredCredentials())
     load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
 
-  if (request.targetType() == WebURLRequest::TargetIsXHR &&
+  if (request.requestContext() == WebURLRequest::RequestContextXMLHttpRequest &&
       (url.has_username() || url.has_password())) {
     load_flags |= net::LOAD_DO_NOT_PROMPT_FOR_LOGIN;
   }
@@ -678,12 +678,12 @@ bool WebURLLoaderImpl::Context::CanHandleDataURL(const GURL& url) const {
 #if defined(OS_ANDROID)
   // For compatibility reasons on Android we need to expose top-level data://
   // to the browser.
-  if (request_.targetType() == WebURLRequest::TargetIsMainFrame)
+  if (request_.frameType() == WebURLRequest::FrameTypeTopLevel)
     return false;
 #endif
 
-  if (request_.targetType() != WebURLRequest::TargetIsMainFrame &&
-      request_.targetType() != WebURLRequest::TargetIsSubframe)
+  if (request_.frameType() != WebURLRequest::FrameTypeTopLevel &&
+      request_.frameType() != WebURLRequest::FrameTypeNested)
     return true;
 
   std::string mime_type, unused_charset;
