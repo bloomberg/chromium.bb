@@ -39,6 +39,8 @@
         'gbm_buffer_base.h',
         'gbm_surface.cc',
         'gbm_surface.h',
+        'gbm_surfaceless.cc',
+        'gbm_surfaceless.h',
         'gbm_surface_factory.cc',
         'gbm_surface_factory.h',
         'gpu_platform_support_gbm.cc',

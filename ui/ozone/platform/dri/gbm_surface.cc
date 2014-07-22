@@ -7,11 +7,9 @@
 #include <gbm.h>
 
 #include "base/logging.h"
-#include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/gbm_buffer_base.h"
-#include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/scanout_buffer.h"
 
 namespace ui {
@@ -75,25 +73,19 @@ void GbmSurfaceBuffer::Destroy(gbm_bo* buffer, void* data) {
 
 }  // namespace
 
-GbmSurface::GbmSurface(gbm_device* device,
-                       DriWrapper* dri,
-                       const gfx::Size& size)
-    : gbm_device_(device),
+GbmSurface::GbmSurface(
+    const base::WeakPtr<HardwareDisplayController>& controller,
+    gbm_device* device,
+    DriWrapper* dri)
+    : GbmSurfaceless(controller),
+      gbm_device_(device),
       dri_(dri),
-      size_(size),
       native_surface_(NULL),
-      buffers_(),
-      front_buffer_(0) {
-  for (size_t i = 0; i < arraysize(buffers_); ++i)
-    buffers_[i] = NULL;
-}
+      current_buffer_(NULL) {}
 
 GbmSurface::~GbmSurface() {
-  for (size_t i = 0; i < arraysize(buffers_); ++i) {
-    if (buffers_[i]) {
-      gbm_surface_release_buffer(native_surface_, buffers_[i]->bo());
-    }
-  }
+  if (current_buffer_)
+    gbm_surface_release_buffer(native_surface_, current_buffer_);
 
   if (native_surface_)
     gbm_surface_destroy(native_surface_);
@@ -103,73 +95,51 @@ bool GbmSurface::Initialize() {
   // TODO(dnicoara) Check underlying system support for pixel format.
   native_surface_ = gbm_surface_create(
       gbm_device_,
-      size_.width(),
-      size_.height(),
+      controller_->get_mode().hdisplay,
+      controller_->get_mode().vdisplay,
       GBM_BO_FORMAT_XRGB8888,
       GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
 
   if (!native_surface_)
     return false;
 
-  dumb_buffer_ = new DriBuffer(dri_);
-  if (!dumb_buffer_->Initialize(SkImageInfo::MakeN32Premul(size_.width(),
-                                                           size_.height())))
-    return false;
-
   return true;
 }
 
-uint32_t GbmSurface::GetFramebufferId() const {
-  if (!buffers_[front_buffer_ ^ 1])
-    return dumb_buffer_->GetFramebufferId();
-
-  return buffers_[front_buffer_ ^ 1]->GetFramebufferId();
-}
-
-uint32_t GbmSurface::GetHandle() const {
-  if (!buffers_[front_buffer_ ^ 1])
-    return dumb_buffer_->GetHandle();
-
-  return buffers_[front_buffer_ ^ 1]->GetHandle();
-}
-
-gfx::Size GbmSurface::Size() const {
-  return size_;
-}
-
-// Before scheduling the backbuffer to be scanned out we need to "lock" it.
-// When we lock it, GBM will give a pointer to a buffer representing the
-// backbuffer. It will also update its information on which buffers can not be
-// used for drawing. The buffer will be released when the page flip event
-// occurs (see SwapBuffers). This is called from HardwareDisplayController
-// before scheduling a page flip.
-void GbmSurface::PreSwapBuffers() {
+intptr_t GbmSurface::GetNativeWindow() {
   CHECK(native_surface_);
-  // Lock the buffer we want to display.
-  gbm_bo* bo = gbm_surface_lock_front_buffer(native_surface_);
-
-  buffers_[front_buffer_ ^ 1] = GbmSurfaceBuffer::GetBuffer(bo);
-  // If it is a new buffer, it won't have any data associated with it. So we
-  // create it. On creation it will associate itself with the buffer and
-  // register the buffer.
-  if (!buffers_[front_buffer_ ^ 1]) {
-    buffers_[front_buffer_ ^ 1] = GbmSurfaceBuffer::CreateBuffer(dri_, bo);
-    DCHECK(buffers_[front_buffer_ ^ 1])
-        << "Failed to associate the buffer with the controller";
-  }
+  return reinterpret_cast<intptr_t>(native_surface_);
 }
 
-void GbmSurface::SwapBuffers() {
-  // If there was a frontbuffer, is no longer active. Release it back to GBM.
-  if (buffers_[front_buffer_])
-    gbm_surface_release_buffer(native_surface_, buffers_[front_buffer_]->bo());
+bool GbmSurface::OnSwapBuffers() {
+  CHECK(native_surface_);
 
-  // Update the index to the frontbuffer.
-  front_buffer_ ^= 1;
-  // We've just released it. Since GBM doesn't guarantee we'll get the same
-  // buffer back, we set it to NULL so we don't keep track of objects that may
-  // have been destroyed.
-  buffers_[front_buffer_ ^ 1] = NULL;
+  if (!controller_)
+    return false;
+
+  gbm_bo* pending_buffer = gbm_surface_lock_front_buffer(native_surface_);
+  scoped_refptr<GbmSurfaceBuffer> primary =
+      GbmSurfaceBuffer::GetBuffer(pending_buffer);
+  if (!primary) {
+    primary = GbmSurfaceBuffer::CreateBuffer(dri_, pending_buffer);
+    if (!primary) {
+      LOG(ERROR) << "Failed to associate the buffer with the controller";
+      return false;
+    }
+  }
+
+  // The primary buffer is a special case.
+  queued_planes_.push_back(OverlayPlane(primary));
+
+  if (!GbmSurfaceless::OnSwapBuffers())
+    return false;
+
+  // If there was a frontbuffer, it is no longer active. Release it back to GBM.
+  if (current_buffer_)
+    gbm_surface_release_buffer(native_surface_, current_buffer_);
+
+  current_buffer_ = pending_buffer;
+  return true;
 }
 
 }  // namespace ui

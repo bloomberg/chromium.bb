@@ -16,7 +16,6 @@ namespace ui {
 
 class DriBuffer;
 class DriWrapper;
-class HardwareDisplayController;
 class ScreenManager;
 class SurfaceOzoneCanvas;
 

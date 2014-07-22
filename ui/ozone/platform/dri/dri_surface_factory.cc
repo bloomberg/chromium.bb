@@ -7,7 +7,6 @@
 #include <errno.h>
 
 #include "base/debug/trace_event.h"
-#include "base/message_loop/message_loop.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -15,7 +14,6 @@
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/dri_util.h"
-#include "ui/ozone/platform/dri/dri_vsync_provider.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
@@ -43,96 +41,14 @@ void UpdateCursorImage(DriBuffer* cursor, const SkBitmap& image) {
   canvas->drawBitmapRectToRect(image, &damage, damage);
 }
 
-class DriSurfaceAdapter : public ui::SurfaceOzoneCanvas {
- public:
-  DriSurfaceAdapter(DriWrapper* dri,
-                    const base::WeakPtr<HardwareDisplayController>& controller);
-  virtual ~DriSurfaceAdapter();
-
-  // SurfaceOzoneCanvas:
-  virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE;
-  virtual void ResizeCanvas(const gfx::Size& viewport_size) OVERRIDE;
-  virtual void PresentCanvas(const gfx::Rect& damage) OVERRIDE;
-  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() OVERRIDE;
-
- private:
-  void UpdateNativeSurface(const gfx::Rect& damage);
-
-  DriWrapper* dri_;
-  scoped_ptr<DriSurface> native_surface_;
-  skia::RefPtr<SkSurface> surface_;
-  gfx::Rect last_damage_;
-  base::WeakPtr<HardwareDisplayController> controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(DriSurfaceAdapter);
-};
-
-DriSurfaceAdapter::DriSurfaceAdapter(
-    DriWrapper* dri,
-    const base::WeakPtr<HardwareDisplayController>& controller)
-    : dri_(dri), controller_(controller) {
-}
-
-DriSurfaceAdapter::~DriSurfaceAdapter() {
-}
-
-skia::RefPtr<SkCanvas> DriSurfaceAdapter::GetCanvas() {
-  return skia::SharePtr(surface_->getCanvas());
-}
-
-void DriSurfaceAdapter::ResizeCanvas(const gfx::Size& viewport_size) {
-  SkImageInfo info = SkImageInfo::MakeN32(
-      viewport_size.width(), viewport_size.height(), kOpaque_SkAlphaType);
-  surface_ = skia::AdoptRef(SkSurface::NewRaster(info));
-
-  if (controller_) {
-    // Need to use the mode size rather than |viewport_size| since a display
-    // cannot scanout from a buffer smaller than the mode.
-    native_surface_.reset(
-        new DriSurface(dri_,
-                       gfx::Size(controller_->get_mode().hdisplay,
-                                 controller_->get_mode().vdisplay)));
-    CHECK(native_surface_->Initialize());
-  }
-}
-
-void DriSurfaceAdapter::PresentCanvas(const gfx::Rect& damage) {
-  CHECK(base::MessageLoopForUI::IsCurrent());
-  if (!controller_)
-    return;
-
-  UpdateNativeSurface(damage);
-  controller_->SchedulePageFlip(std::vector<OverlayPlane>(
-      1, OverlayPlane(native_surface_->backbuffer())));
-  controller_->WaitForPageFlipEvent();
-  native_surface_->SwapBuffers();
-}
-
-scoped_ptr<gfx::VSyncProvider> DriSurfaceAdapter::CreateVSyncProvider() {
-  return scoped_ptr<gfx::VSyncProvider>(new DriVSyncProvider(controller_));
-}
-
-void DriSurfaceAdapter::UpdateNativeSurface(const gfx::Rect& damage) {
-  SkCanvas* canvas = native_surface_->GetDrawableForWidget();
-
-  // The DriSurface is double buffered, so the current back buffer is
-  // missing the previous update. Expand damage region.
-  SkRect real_damage = RectToSkRect(UnionRects(damage, last_damage_));
-
-  // Copy damage region.
-  skia::RefPtr<SkImage> image = skia::AdoptRef(surface_->newImageSnapshot());
-  image->draw(canvas, &real_damage, real_damage, NULL);
-
-  last_damage_ = damage;
-}
-
 }  // namespace
 
 // static
 const gfx::AcceleratedWidget DriSurfaceFactory::kDefaultWidgetHandle = 1;
 
-DriSurfaceFactory::DriSurfaceFactory(DriWrapper* drm,
-                                     ScreenManager* screen_manager)
+DriSurfaceFactory::DriSurfaceFactory(
+    DriWrapper* drm,
+    ScreenManager* screen_manager)
     : drm_(drm),
       screen_manager_(screen_manager),
       state_(UNINITIALIZED),
@@ -190,7 +106,7 @@ scoped_ptr<ui::SurfaceOzoneCanvas> DriSurfaceFactory::CreateCanvasForWidget(
   ResetCursor(w);
 
   return scoped_ptr<ui::SurfaceOzoneCanvas>(
-      new DriSurfaceAdapter(drm_, screen_manager_->GetDisplayController(w)));
+      new DriSurface(drm_, screen_manager_->GetDisplayController(w)));
 }
 
 bool DriSurfaceFactory::LoadEGLGLES2Bindings(

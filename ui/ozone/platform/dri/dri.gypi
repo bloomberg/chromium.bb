@@ -66,7 +66,6 @@
         'screen_manager.cc',
         'screen_manager.h',
         'scanout_buffer.h',
-        'scanout_surface.h',
         'virtual_terminal_manager.cc',
         'virtual_terminal_manager.h',
       ],
@@ -74,7 +73,7 @@
         ['use_drm_atomic_flip==1', {
           'sources': [
             'hardware_display_plane.cc',
-	    'hardware_display_plane.h',
+            'hardware_display_plane.h',
           ],
         }],
       ],      

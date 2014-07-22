@@ -98,49 +98,6 @@ TEST_F(DriSurfaceFactoryTest, SuccessfulWidgetRealization) {
   EXPECT_TRUE(factory_->CreateCanvasForWidget(w));
 }
 
-TEST_F(DriSurfaceFactoryTest, CheckNativeSurfaceContents) {
-  EXPECT_EQ(ui::SurfaceFactoryOzone::INITIALIZED,
-            factory_->InitializeHardware());
-
-  gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
-  EXPECT_EQ(ui::DriSurfaceFactory::kDefaultWidgetHandle, w);
-
-  scoped_ptr<ui::SurfaceOzoneCanvas> surface =
-      factory_->CreateCanvasForWidget(w);
-
-  surface->ResizeCanvas(
-      gfx::Size(kDefaultMode.hdisplay, kDefaultMode.vdisplay));
-
-  SkPaint paint;
-  paint.setColor(SK_ColorWHITE);
-  SkRect rect = SkRect::MakeWH(kDefaultMode.hdisplay / 2,
-                               kDefaultMode.vdisplay / 2);
-  surface->GetCanvas()->drawRect(rect, paint);
-  surface->PresentCanvas(
-      gfx::Rect(0, 0, kDefaultMode.hdisplay / 2, kDefaultMode.vdisplay / 2));
-
-  SkBitmap image;
-  // Buffers 0 and 1 are the cursor buffers, 2 is the modeset buffer, and
-  // 3 and 4 are the surface buffers.
-  // Buffer 4 is the backbuffer we just painted in, so we want to make sure its
-  // contents are correct.
-  image.setInfo(dri_->buffers()[4]->getCanvas()->imageInfo());
-  EXPECT_TRUE(dri_->buffers()[4]->getCanvas()->readPixels(&image, 0, 0));
-
-  EXPECT_EQ(kDefaultMode.hdisplay, image.width());
-  EXPECT_EQ(kDefaultMode.vdisplay, image.height());
-
-  // Make sure the updates are correctly propagated to the native surface.
-  for (int i = 0; i < image.height(); ++i) {
-    for (int j = 0; j < image.width(); ++j) {
-      if (j < kDefaultMode.hdisplay / 2 && i < kDefaultMode.vdisplay / 2)
-        EXPECT_EQ(SK_ColorWHITE, image.getColor(j, i));
-      else
-        EXPECT_EQ(SK_ColorBLACK, image.getColor(j, i));
-    }
-  }
-}
-
 TEST_F(DriSurfaceFactoryTest, SetCursorImage) {
   EXPECT_EQ(ui::SurfaceFactoryOzone::INITIALIZED,
             factory_->InitializeHardware());

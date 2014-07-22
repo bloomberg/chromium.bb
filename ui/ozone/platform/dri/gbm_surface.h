@@ -8,7 +8,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/ozone/platform/dri/scanout_surface.h"
+#include "ui/ozone/platform/dri/gbm_surfaceless.h"
+#include "ui/ozone/public/surface_ozone_egl.h"
 
 struct gbm_bo;
 struct gbm_device;
@@ -18,52 +19,34 @@ namespace ui {
 
 class DriBuffer;
 class DriWrapper;
-class GbmBufferBase;
 
-// Implement the ScanoutSurface interface on top of GBM (Generic Buffer
-// Manager). GBM provides generic access to hardware accelerated surfaces which
-// can be used in association with EGL to provide accelerated drawing.
-class GbmSurface : public ScanoutSurface {
+// Extends the GBM surfaceless functionality and adds an implicit surface for
+// the primary plane. Arbitrary buffers can still be allocated and displayed as
+// overlay planes, however the primary plane is associated with the native
+// surface and is updated via an EGLSurface.
+class GbmSurface : public GbmSurfaceless {
  public:
-  GbmSurface(gbm_device* device, DriWrapper* dri, const gfx::Size& size);
+  GbmSurface(const base::WeakPtr<HardwareDisplayController>& controller,
+             gbm_device* device,
+             DriWrapper* dri);
   virtual ~GbmSurface();
 
-  scoped_refptr<GbmBufferBase> backbuffer() const {
-    return buffers_[front_buffer_ ^ 1];
-  }
+  bool Initialize();
 
-  // ScanoutSurface:
-  virtual bool Initialize() OVERRIDE;
-  virtual uint32_t GetFramebufferId() const OVERRIDE;
-  virtual uint32_t GetHandle() const OVERRIDE;
-  virtual gfx::Size Size() const OVERRIDE;
-  virtual void PreSwapBuffers() OVERRIDE;
-  virtual void SwapBuffers() OVERRIDE;
-
-  gbm_surface* native_surface() { return native_surface_; };
+  // GbmSurfaceless:
+  virtual intptr_t GetNativeWindow() OVERRIDE;
+  virtual bool OnSwapBuffers() OVERRIDE;
 
  private:
   gbm_device* gbm_device_;
 
   DriWrapper* dri_;
 
-  gfx::Size size_;
-
   // The native GBM surface. In EGL this represents the EGLNativeWindowType.
   gbm_surface* native_surface_;
 
-  // Backing GBM buffers. One is the current front buffer. The other is the
-  // current backbuffer that is pending scan out.
-  scoped_refptr<GbmBufferBase> buffers_[2];
-
-  // Index to the front buffer.
-  int front_buffer_;
-
-  // We can't lock (and get) an accelerated buffer from the GBM surface until
-  // after something draws into it. But modesetting needs to happen earlier,
-  // before an actual window is created and draws. So, we create a dumb buffer
-  // for this purpose.
-  scoped_refptr<DriBuffer> dumb_buffer_;
+  // Buffer currently used for scanout.
+  gbm_bo* current_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmSurface);
 };

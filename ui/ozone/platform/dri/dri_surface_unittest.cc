@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -27,6 +28,7 @@ class DriSurfaceTest : public testing::Test {
   virtual void TearDown() OVERRIDE;
 
  protected:
+  scoped_ptr<base::MessageLoop> message_loop_;
   scoped_ptr<ui::MockDriWrapper> drm_;
   scoped_ptr<ui::HardwareDisplayController> controller_;
   scoped_ptr<ui::DriSurface> surface_;
@@ -36,51 +38,63 @@ class DriSurfaceTest : public testing::Test {
 };
 
 void DriSurfaceTest::SetUp() {
+  message_loop_.reset(new base::MessageLoopForUI);
   drm_.reset(new ui::MockDriWrapper(3));
-  controller_.reset(new ui::HardwareDisplayController(drm_.get(), 1, 1));
 
-  surface_.reset(new ui::DriSurface(
-      drm_.get(), gfx::Size(kDefaultMode.hdisplay, kDefaultMode.vdisplay)));
+  controller_.reset(new ui::HardwareDisplayController(drm_.get(), 1, 1));
+  scoped_refptr<ui::DriBuffer> buffer(new ui::DriBuffer(drm_.get()));
+  SkImageInfo info = SkImageInfo::MakeN32Premul(kDefaultMode.hdisplay,
+                                                kDefaultMode.vdisplay);
+  EXPECT_TRUE(buffer->Initialize(info));
+  EXPECT_TRUE(controller_->Modeset(ui::OverlayPlane(buffer), kDefaultMode));
+
+  surface_.reset(new ui::DriSurface(drm_.get(), controller_->AsWeakPtr()));
+  surface_->ResizeCanvas(gfx::Size(kDefaultMode.hdisplay,
+                                   kDefaultMode.vdisplay));
 }
 
 void DriSurfaceTest::TearDown() {
   surface_.reset();
   controller_.reset();
   drm_.reset();
-}
-
-TEST_F(DriSurfaceTest, FailInitialization) {
-  drm_->set_create_dumb_buffer_expectation(false);
-  EXPECT_FALSE(surface_->Initialize());
-}
-
-TEST_F(DriSurfaceTest, SuccessfulInitialization) {
-  EXPECT_TRUE(surface_->Initialize());
+  message_loop_.reset();
 }
 
 TEST_F(DriSurfaceTest, CheckFBIDOnSwap) {
-  EXPECT_TRUE(surface_->Initialize());
-
-  // Check that the framebuffer ID is correct.
-  EXPECT_EQ(2u, surface_->GetFramebufferId());
-
-  surface_->SwapBuffers();
-
-  EXPECT_EQ(1u, surface_->GetFramebufferId());
+  surface_->PresentCanvas(gfx::Rect());
+  // Framebuffer ID 1 is allocated in SetUp for the buffer used to modeset.
+  EXPECT_EQ(3u, drm_->current_framebuffer());
+  surface_->PresentCanvas(gfx::Rect());
+  EXPECT_EQ(2u, drm_->current_framebuffer());
 }
 
-TEST_F(DriSurfaceTest, CheckPixelPointerOnSwap) {
-  EXPECT_TRUE(surface_->Initialize());
+TEST_F(DriSurfaceTest, CheckSurfaceContents) {
+  SkPaint paint;
+  paint.setColor(SK_ColorWHITE);
+  SkRect rect = SkRect::MakeWH(kDefaultMode.hdisplay / 2,
+                               kDefaultMode.vdisplay / 2);
+  surface_->GetCanvas()->drawRect(rect, paint);
+  surface_->PresentCanvas(
+      gfx::Rect(0, 0, kDefaultMode.hdisplay / 2, kDefaultMode.vdisplay / 2));
 
-  void* bitmap_pixels1 = surface_->GetDrawableForWidget()->getDevice()
-      ->accessBitmap(false).getPixels();
+  SkBitmap image;
+  // Buffer 0 is the buffer used in SetUp for modesetting and buffer 1 is the
+  // frontbuffer.
+  // Buffer 2 is the backbuffer we just painted in, so we want to make sure its
+  // contents are correct.
+  image.setInfo(drm_->buffers()[2]->getCanvas()->imageInfo());
+  EXPECT_TRUE(drm_->buffers()[2]->getCanvas()->readPixels(&image, 0, 0));
 
-  surface_->SwapBuffers();
+  EXPECT_EQ(kDefaultMode.hdisplay, image.width());
+  EXPECT_EQ(kDefaultMode.vdisplay, image.height());
 
-  void* bitmap_pixels2 = surface_->GetDrawableForWidget()->getDevice()
-      ->accessBitmap(false).getPixels();
-
-  // Check that once the buffers have been swapped the drawable's underlying
-  // pixels have been changed.
-  EXPECT_NE(bitmap_pixels1, bitmap_pixels2);
+  // Make sure the updates are correctly propagated to the native surface.
+  for (int i = 0; i < image.height(); ++i) {
+    for (int j = 0; j < image.width(); ++j) {
+      if (j < kDefaultMode.hdisplay / 2 && i < kDefaultMode.vdisplay / 2)
+        EXPECT_EQ(SK_ColorWHITE, image.getColor(j, i));
+      else
+        EXPECT_EQ(SK_ColorBLACK, image.getColor(j, i));
+    }
+  }
 }
