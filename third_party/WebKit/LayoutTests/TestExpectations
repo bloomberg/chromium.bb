@@ -78,9 +78,6 @@ crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ Failure ImageO
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 
-crbug.com/371916 [ Debug ] http/tests/security/contentSecurityPolicy/xsl-unaffected-by-style-src-2.php [ Crash Timeout ]
-crbug.com/371916 [ Debug ] http/tests/security/contentSecurityPolicy/xsl-allowed.php [ Crash Timeout ]
-
 # Pixel tests for RTL iframe scrollbar is erroneous. Cannot observe on actual browser.
 crbug.com/338794 crbug.com/192172 compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/338794 compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Failure ImageOnlyFailure Pass ]
@@ -127,10 +124,10 @@ crbug.com/360889 fast/sub-pixel/cssom-subpixel-precision.html [ ImageOnlyFailure
 crbug.com/360889 fast/sub-pixel/scroll-offset-precision.html  [ ImageOnlyFailure ]
 crbug.com/360889 fast/dom/HTMLDialogElement/dialog-scrolled-viewport.html [ Failure ]
 crbug.com/360889 fast/block/float/logical-bottom-exceeds-layoutunit-max.html [ Failure ]
-crbug.com/360889 fast/hidpi/image-srcset-intrinsic-size-zero.html [ Failure ]
+crbug.com/360889 [ Linux Mac ] fast/hidpi/image-srcset-intrinsic-size-zero.html [ Failure ]
 crbug.com/360889 media/video-scales-in-media-document.html [ Failure ]
-crbug.com/360889 fast/css/css3-ch-unit.html [ Failure ]
-crbug.com/360889 fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
+crbug.com/360889 [ Win ] fast/css/css3-ch-unit.html [ Failure ]
+crbug.com/360889 [ Win ] fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
 crbug.com/360889 virtual/antialiasedtext/fast/text/whitespace/nowrap-line-break-after-white-space.html [ Failure ]
 
 # New W3C failures (dpranke@ to triage)
@@ -141,9 +138,6 @@ crbug.com/330083 w3c/web-platform-tests/custom-elements/creating-and-passing-reg
 crbug.com/330083 w3c/web-platform-tests/custom-elements/creating-and-passing-registries/share-registry-import-document.html [ Timeout ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-014.html [ Timeout Failure ]
 crbug.com/330083 w3c/web-platform-tests/webrtc/simplecall.html [ Failure ]
-
-# Untriaged Aura-specific failure.
-crbug.com/229207 [ Win ] fast/forms/select/popup-closes-on-blur.html [ Failure ]
 
 crbug.com/377944 svg/animations/smil-leak-dynamically-added-element-instances.svg [ Failure Pass ]
 
@@ -162,15 +156,9 @@ crbug.com/366437 fast/repaint/box-shadow-v.html [ Pass ImageOnlyFailure ]
 
 # ThemePainter-related diffs, could rebaseline them or implement the clipping/transform code.
 crbug.com/229207 [ Win ] fast/forms/datalist/input-appearance-range-with-transform.html [ ImageOnlyFailure ]
-crbug.com/229207 [ Win ] fast/forms/range/input-appearance-range.html [ ImageOnlyFailure ]
-
-# Can't distinguish between hot and hover on scrollbar thumbs.
-crbug.com/229207 [ Win ] ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ ImageOnlyFailure ]
 
 # Untriaged pixel diffs, unclear if aura-related?
 crbug.com/229207 [ Win ] virtual/deferred/fast/images/2-dht.html [ ImageOnlyFailure ]
-crbug.com/229207 [ Win ] virtual/gpu/compositedscrolling/overflow/theme-affects-visual-overflow.html [ ImageOnlyFailure ]
-crbug.com/229207 [ Win ] virtual/softwarecompositing/overflow/theme-affects-visual-overflow.html [ ImageOnlyFailure ]
 # Linux Aura doesn't support NPAPI plugins (yet?)
 crbug.com/318978 [ Linux ] compositing/plugins/invalidate_rect.html [ Skip ]
 crbug.com/318978 [ Linux ] fast/dom/Window/Plug-ins.html [ Skip ]
@@ -371,7 +359,6 @@ crbug.com/248938 [ Debug ] virtual/threaded/transitions/change-duration-during-t
 crbug.com/364640 animations/compositor-start-event-timing.html [ Pass Failure ]
 
 crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal.html [ Pass Crash ]
-crbug.com/347484 [ Debug ] inspector/profiler/canvas2d/canvas-replay-log-grid.html [ Timeout ]
 
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
@@ -669,7 +656,6 @@ crbug.com/323858 fast/workers/storage/interrupt-database.html [ Pass Timeout ]
 
 crbug.com/343892 [ Linux Mac ] fast/workers/shared-worker-name.html [ Pass Crash ]
 
-crbug.com/345831 [ Win ] fast/dom/Window/open-window-min-size.html [ Failure ]
 crbug.com/345831 [ Linux Mac ] fast/dom/Window/open-window-min-size.html [ Failure Pass ]
 
 crbug.com/368560 [ Win ] http/tests/svg/image-fetch-fail.svg [ Timeout Pass ]
@@ -789,6 +775,7 @@ crbug.com/350829 [ Win Debug ] virtual/threaded/animations/missing-keyframe-prop
 crbug.com/350829 [ Linux ] virtual/threaded/animations/missing-keyframe-properties-timing-function.html [ Timeout Pass ]
 crbug.com/350829 [ Win Debug ] virtual/threaded/animations/missing-keyframe-properties-timing-function.html [ Timeout Pass ]
 crbug.com/350829 [ Win Debug ] virtual/threaded/animations/duplicated-keyframes-name-unprefixed-03.html [ Timeout Pass ]
+crbug.com/350829 [ Win Debug ] virtual/threaded/animations/keyframes-unprefixed-03.html [ Timeout Pass ]
 
 crbug.com/352377 svg/animations/repeatn-event-1c.svg [ ImageOnlyFailure Pass ]
 crbug.com/352385 [ Debug ] virtual/threaded/animations/3d/transform-perspective.html [ Timeout Pass ]
@@ -1162,7 +1149,7 @@ crbug.com/313438 svg/custom/relative-sized-use-without-attributes-on-symbol.xhtm
 # Bug(fmalita) to be re-enabled after https://codereview.chromium.org/362333002/
 # crbug.com/366442 svg/custom/masking-clipping-hidpi.svg [ Pass Failure ]
 
-crbug.com/390488 [ Mac ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
+crbug.com/390488 [ SnowLeopard Debug ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
 
 crbug.com/375565 [ Mac ] fast/repaint/caret-with-transformation.html [ Pass Failure ]
 

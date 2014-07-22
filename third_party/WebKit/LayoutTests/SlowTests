@@ -73,6 +73,7 @@ crbug.com/24182 fast/dom/timer-throttling-background-page-near-alignment-interva
 webkit.org/b/60109 inspector/elements/edit-dom-actions.html [ Slow ]
 webkit.org/b/84735 [ Win ] http/tests/inspector/change-iframe-src.html [ Slow ]
 webkit.org/b/90488 [ Debug ] inspector/ [ Slow ]
+webkit.org/b/90488 [ Release ] inspector/profiler/canvas2d/canvas-replay-log-grid.html [ Slow ]
 webkit.org/b/90488 [ Debug ] http/tests/inspector/ [ Slow ]
 webkit.org/b/90488 [ Release ] http/tests/inspector/compiler-source-mapping-debug.html [ Slow ]
 webkit.org/b/90488 [ Debug ] http/tests/inspector-enabled/ [ Slow ]
