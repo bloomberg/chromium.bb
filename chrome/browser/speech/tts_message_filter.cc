@@ -6,9 +6,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/speech/tts_controller.h"
-#include "chrome/browser/speech/tts_message_filter.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
 
