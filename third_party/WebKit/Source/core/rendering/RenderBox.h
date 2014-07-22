@@ -718,6 +718,8 @@ private:
     void savePreviousBorderBoxSizeIfNeeded();
     bool logicalHeightComputesAsNone(SizeType) const;
 
+    void invalidatePaintIfNeeded(const PaintInvalidationState&, const RenderLayerModelObject& newPaintInvalidationContainer);
+
 private:
     // The width/height of the contents + borders + padding.  The x/y location is relative to our container (which is not always our parent).
     LayoutRect m_frameRect;

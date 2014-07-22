@@ -1553,6 +1553,17 @@ void RenderBox::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvali
     // FIXME: This assert should be re-enabled when we move paint invalidation to after compositing update. crbug.com/360286
     // ASSERT(&newPaintInvalidationContainer == containerForPaintInvalidation());
 
+    invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
+
+    // This is for the next invalidatePaintIfNeeded so must be after invalidatePaintIfNeeded.
+    savePreviousBorderBoxSizeIfNeeded();
+
+    PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, newPaintInvalidationContainer);
+    RenderObject::invalidateTreeIfNeeded(childTreeWalkState);
+}
+
+void RenderBox::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const RenderLayerModelObject& newPaintInvalidationContainer)
+{
     const LayoutRect oldPaintInvalidationRect = previousPaintInvalidationRect();
     const LayoutPoint oldPositionFromPaintInvalidationContainer = previousPositionFromPaintInvalidationContainer();
     setPreviousPaintInvalidationRect(boundsRectForPaintInvalidation(&newPaintInvalidationContainer, &paintInvalidationState));
@@ -1561,13 +1572,8 @@ void RenderBox::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvali
     // If we are set to do a full paint invalidation that means the RenderView will be
     // issue paint invalidations. We can then skip issuing of paint invalidations for the child
     // renderers as they'll be covered by the RenderView.
-    if (view()->doingFullRepaint()) {
-        PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, newPaintInvalidationContainer);
-        RenderObject::invalidateTreeIfNeeded(childTreeWalkState);
-        // For the next invalidatePaintIfNeeded.
-        savePreviousBorderBoxSizeIfNeeded();
+    if (view()->doingFullRepaint())
         return;
-    }
 
     if ((onlyNeededPositionedMovementLayout() && compositingState() != PaintsIntoOwnBacking)
         || (shouldDoFullPaintInvalidationIfSelfPaintingLayer()
@@ -1576,11 +1582,8 @@ void RenderBox::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvali
         setShouldDoFullPaintInvalidation(true);
     }
 
-    if (!invalidatePaintIfNeeded(newPaintInvalidationContainer, oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer, paintInvalidationState))
+    if (!RenderObject::invalidatePaintIfNeeded(newPaintInvalidationContainer, oldPaintInvalidationRect, oldPositionFromPaintInvalidationContainer, paintInvalidationState))
         invalidatePaintForOverflowIfNeeded();
-
-    // This is for the next invalidatePaintIfNeeded so must be after invalidatePaintIfNeeded.
-    savePreviousBorderBoxSizeIfNeeded();
 
     // Issue paint invalidations for any scrollbars if there is a scrollable area for this renderer.
     if (enclosingLayer()) {
@@ -1592,9 +1595,6 @@ void RenderBox::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvali
             area->resetScrollbarDamage();
         }
     }
-
-    PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, newPaintInvalidationContainer);
-    RenderObject::invalidateTreeIfNeeded(childTreeWalkState);
 }
 
 bool RenderBox::pushContentsClip(PaintInfo& paintInfo, const LayoutPoint& accumulatedOffset, ContentsClipBehavior contentsClipBehavior)
