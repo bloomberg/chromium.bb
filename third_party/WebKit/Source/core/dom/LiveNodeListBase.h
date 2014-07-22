@@ -27,9 +27,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/NodeTraversal.h"
 #include "core/html/CollectionType.h"
 #include "platform/heap/Handle.h"
 

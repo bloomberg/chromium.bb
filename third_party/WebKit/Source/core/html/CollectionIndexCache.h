@@ -32,8 +32,6 @@
 #ifndef CollectionIndexCache_h
 #define CollectionIndexCache_h
 
-#include "core/dom/Element.h"
-
 namespace blink {
 
 template <typename Collection, typename NodeType>

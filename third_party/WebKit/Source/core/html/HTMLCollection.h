@@ -28,8 +28,6 @@
 #include "core/html/CollectionIndexCache.h"
 #include "core/html/CollectionType.h"
 #include "wtf/Forward.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 
