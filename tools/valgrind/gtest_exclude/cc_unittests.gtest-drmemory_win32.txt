@@ -2,3 +2,5 @@
 LayerTreeHostAnimationTestNoBackgroundTickingWithoutActiveTree.RunSingleThread_DirectRenderer
 LayerTreeHostBlendingPixelTest.*
 LayerTreeHostFiltersPixelTest.*
+SchedulerTest.*
+LayerTreeHostTestContinuousPainting.*
