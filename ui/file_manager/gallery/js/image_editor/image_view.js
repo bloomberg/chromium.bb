@@ -101,16 +101,7 @@ ImageView.prototype.getZIndex = function() { return -1; };
 ImageView.prototype.draw = function() {
   if (!this.contentCanvas_)  // Do nothing if the image content is not set.
     return;
-
-  var forceRepaint = false;
-  var deviceBounds = this.viewport_.getDeviceBounds();
-  if (deviceBounds.width != this.screenImage_.width ||
-      deviceBounds.height != this.screenImage_.height) {
-    this.setupDeviceBuffer(this.screenImage_);
-    forceRepaint = true;
-  }
-
-  if (forceRepaint ||
+  if (this.setupDeviceBuffer(this.screenImage_) ||
       this.displayedContentGeneration_ !== this.contentGeneration_) {
     this.displayedContentGeneration_ = this.contentGeneration_;
     ImageUtil.trace.resetTimer('paint');
@@ -211,22 +202,31 @@ ImageView.prototype.createOverlayCanvas = function() {
  * Sets up the canvas as a buffer in the device resolution.
  *
  * @param {HTMLCanvasElement} canvas The buffer canvas.
+ * @return {boolean} True if the canvas needs to be rendered.
  */
 ImageView.prototype.setupDeviceBuffer = function(canvas) {
   // Set the canvas position and size in device pixels.
   var deviceRect = this.viewport_.getDeviceBounds();
-  if (canvas.width !== deviceRect.width)
+  var needRepaint = false;
+  if (canvas.width !== deviceRect.width) {
     canvas.width = deviceRect.width;
-  if (canvas.height !== deviceRect.height)
+    needRepaint = true;
+  }
+  if (canvas.height !== deviceRect.height) {
     canvas.height = deviceRect.height;
+    needRepaint = true;
+  }
 
   // Center the image.
-  var imageBoudns = this.viewport_.getImageElementBoundsOnScreen();
-  canvas.style.left = imageBoudns.left + 'px';
-  canvas.style.top = imageBoudns.top + 'px';
+  var imageBounds = this.viewport_.getImageElementBoundsOnScreen();
+  canvas.style.left = imageBounds.left + 'px';
+  canvas.style.top = imageBounds.top + 'px';
+  canvas.style.width = imageBounds.width + 'px';
+  canvas.style.height = imageBounds.height + 'px';
 
-  // Scale the canvas down to screen pixels.
   this.setTransform(canvas);
+
+  return needRepaint;
 };
 
 /**
@@ -827,8 +827,7 @@ ImageView.Effect.prototype.transform = function(element, viewport) {
 };
 
 /**
- * Default effect. It is not a no-op as it needs to adjust a canvas scale
- * for devicePixelRatio.
+ * Default effect.
  *
  * @constructor
  * @extends {ImageView.Effect}
@@ -888,8 +887,7 @@ ImageView.Effect.Slide.prototype.transform = function(element, viewport) {
 /**
  * Zoom effect.
  *
- * Animates the original rectangle to the target rectangle. Both parameters
- * should be given in device coordinates (accounting for devicePixelRatio).
+ * Animates the original rectangle to the target rectangle.
  *
  * @param {number} previousImageWidth Width of the full resolution image.
  * @param {number} previousImageHeight Hieght of the full resolution image.

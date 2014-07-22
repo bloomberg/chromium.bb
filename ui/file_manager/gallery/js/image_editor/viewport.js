@@ -437,7 +437,7 @@ Viewport.prototype.update_ = function() {
  */
 Viewport.prototype.getTransformation = function() {
   return 'translate(' + this.offsetX_ + 'px, ' + this.offsetY_ + 'px) ' +
-      'scale(' + (1 / window.devicePixelRatio * this.zoom_) + ')';
+      'scale(' + this.zoom_ + ')';
 };
 
 /**
