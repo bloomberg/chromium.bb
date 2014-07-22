@@ -269,8 +269,7 @@ void InspectorTimelineAgent::setFrontend(InspectorFrontend* frontend)
 void InspectorTimelineAgent::clearFrontend()
 {
     ErrorString error;
-    RefPtr<TypeBuilder::Array<TimelineEvent> > events;
-    stop(&error, events);
+    stop(&error);
     disable(&error);
     m_frontend = 0;
 }
@@ -288,7 +287,7 @@ void InspectorTimelineAgent::restore()
         // Tell front-end timline is no longer collecting.
         m_state->setBoolean(TimelineAgentState::started, false);
         bool fromConsole = true;
-        m_frontend->stopped(&fromConsole);
+        m_frontend->stopped(&fromConsole, nullptr);
     }
 }
 
@@ -376,7 +375,7 @@ void InspectorTimelineAgent::innerStart()
     }
 }
 
-void InspectorTimelineAgent::stop(ErrorString* errorString, RefPtr<TypeBuilder::Array<TimelineEvent> >& events)
+void InspectorTimelineAgent::stop(ErrorString* errorString)
 {
     m_state->setBoolean(TimelineAgentState::startedFromProtocol, false);
     m_state->setBoolean(TimelineAgentState::bufferEvents, false);
@@ -387,8 +386,6 @@ void InspectorTimelineAgent::stop(ErrorString* errorString, RefPtr<TypeBuilder::
         return;
     }
     innerStop(false);
-    if (m_bufferedEvents)
-        events = m_bufferedEvents.release();
     m_liveEvents.clear();
 }
 
@@ -419,7 +416,7 @@ void InspectorTimelineAgent::innerStop(bool fromConsole)
     }
     m_consoleTimelines.clear();
 
-    m_frontend->stopped(&fromConsole);
+    m_frontend->stopped(&fromConsole, m_bufferedEvents.release());
     if (m_overlay)
         m_overlay->finishedRecordingProfile();
 }

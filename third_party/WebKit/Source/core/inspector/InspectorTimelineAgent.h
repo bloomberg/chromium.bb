@@ -129,7 +129,7 @@ public:
     virtual void enable(ErrorString*) OVERRIDE;
     virtual void disable(ErrorString*) OVERRIDE;
     virtual void start(ErrorString*, const int* maxCallStackDepth, const bool* bufferEvents, const String* liveEvents, const bool* includeCounters, const bool* includeGPUEvents) OVERRIDE;
-    virtual void stop(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent> >& events) OVERRIDE;
+    virtual void stop(ErrorString*) OVERRIDE;
 
     void setLayerTreeId(int layerTreeId) { m_layerTreeId = layerTreeId; }
     int id() const { return m_id; }

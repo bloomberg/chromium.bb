@@ -11,6 +11,7 @@ function testFunction()
 function test()
 {
     InspectorTest.eventHandler["Timeline.eventRecorded"] = eventRecorded;
+    InspectorTest.eventHandler["Timeline.stopped"] = timelineStopped;
     InspectorTest.log("Recording started");
     InspectorTest.sendCommand("Timeline.start", { bufferEvents: true }, onStart);
 
@@ -29,13 +30,19 @@ function test()
         InspectorTest.log("FAIL: event recorded: " + event.params.record.type);
     }
 
+    function timelineStopped(event)
+    {
+        InspectorTest.log("Timeline.stopped event has arrived.");
+        InspectorTest.assert(!event.params.consoleTimeline, "It souldn't be event forced by console.timelineEnd");
+        InspectorTest.log("Events:");
+        var events = event.params.events;
+        for (var i = 0; i < events.length; ++i)
+            dump(events[i], "");
+    }
+
     function onStop(response)
     {
         InspectorTest.log("Recording stopped");
-        InspectorTest.log("Events:");
-        var events = response.result.events;
-        for (var i = 0; i < events.length; ++i)
-            dump(events[i], "");
         InspectorTest.completeTest();
     }
 
