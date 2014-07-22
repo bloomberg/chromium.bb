@@ -13,18 +13,23 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class AppSyncUIStateObserver;
 class Profile;
 class ProfileSyncService;
+
+namespace extensions {
+class ExtensionRegistry;
+}
 
 // AppSyncUIState watches app sync and installation and change its state
 // accordingly. Its status is for UI display only. It only watches for new
 // normal user profile (i.e. it does not watch for guest profile or exsiting
 // user profile) and lasts for at the most 1 minute.
 class AppSyncUIState : public KeyedService,
-                       public content::NotificationObserver,
-                       public ProfileSyncServiceObserver {
+                       public ProfileSyncServiceObserver,
+                       public extensions::ExtensionRegistryObserver {
  public:
   enum Status {
     STATUS_NORMAL,
@@ -62,15 +67,13 @@ class AppSyncUIState : public KeyedService,
   // Invoked when |max_syncing_status_timer_| fires.
   void OnMaxSyncingTimer();
 
-  // content::NotificationObserver overrides:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // ProfileSyncServiceObserver overrides:
   virtual void OnStateChanged() OVERRIDE;
 
-  content::NotificationRegistrar registrar_;
+  // extensions::ExtensionRegistryObserver overrides:
+  virtual void OnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
 
   Profile* profile_;
   ProfileSyncService* sync_service_;
@@ -80,6 +83,8 @@ class AppSyncUIState : public KeyedService,
 
   Status status_;
   ObserverList<AppSyncUIStateObserver> observers_;
+
+  extensions::ExtensionRegistry* extension_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(AppSyncUIState);
 };

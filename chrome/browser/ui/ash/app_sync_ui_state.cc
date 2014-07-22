@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/app_sync_ui_state.h"
 
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,9 +12,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state_factory.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state_observer.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 
 #if defined(OS_CHROMEOS)
@@ -55,7 +52,8 @@ bool AppSyncUIState::ShouldObserveAppSyncForProfile(Profile* profile) {
 AppSyncUIState::AppSyncUIState(Profile* profile)
     : profile_(profile),
       sync_service_(NULL),
-      status_(STATUS_NORMAL) {
+      status_(STATUS_NORMAL),
+      extension_registry_(NULL) {
   StartObserving();
 }
 
@@ -74,10 +72,10 @@ void AppSyncUIState::RemoveObserver(AppSyncUIStateObserver* observer) {
 void AppSyncUIState::StartObserving() {
   DCHECK(ShouldObserveAppSyncForProfile(profile_));
   DCHECK(!sync_service_);
+  DCHECK(!extension_registry_);
 
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
+  extension_registry_ = extensions::ExtensionRegistry::Get(profile_);
+  extension_registry_->AddObserver(this);
 
   sync_service_ = ProfileSyncServiceFactory::GetForProfile(profile_);
   CHECK(sync_service_);
@@ -88,9 +86,13 @@ void AppSyncUIState::StopObserving() {
   if (!sync_service_)
     return;
 
-  registrar_.RemoveAll();
   sync_service_->RemoveObserver(this);
   sync_service_ = NULL;
+
+  if (extension_registry_)
+    extension_registry_->RemoveObserver(this);
+  extension_registry_ = NULL;
+
   profile_ = NULL;
 }
 
@@ -137,14 +139,12 @@ void AppSyncUIState::OnMaxSyncingTimer() {
   SetStatus(STATUS_TIMED_OUT);
 }
 
-void AppSyncUIState::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED, type);
+void AppSyncUIState::OnStateChanged() {
+  DCHECK(sync_service_);
   CheckAppSync();
 }
 
-void AppSyncUIState::OnStateChanged() {
-  DCHECK(sync_service_);
+void AppSyncUIState::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                       const extensions::Extension* extension) {
   CheckAppSync();
 }
