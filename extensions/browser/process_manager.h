@@ -33,6 +33,8 @@ namespace extensions {
 
 class Extension;
 class ExtensionHost;
+class ExtensionRegistry;
+class ProcessManagerDelegate;
 class ProcessManagerObserver;
 
 // Manages dynamic state of running Chromium extensions. There is one instance
@@ -122,8 +124,9 @@ class ProcessManager : public content::NotificationObserver {
   // onSuspendCanceled() event to it.
   void CancelSuspend(const Extension* extension);
 
-  // Ensures background hosts are loaded for a new browser window.
-  void OnBrowserWindowReady();
+  // Creates background hosts if the embedder is ready and they are not already
+  // loaded.
+  void MaybeCreateStartupBackgroundHosts();
 
   // Gets the BrowserContext associated with site_instance_ and all other
   // related SiteInstances.
@@ -137,18 +140,30 @@ class ProcessManager : public content::NotificationObserver {
   void SetKeepaliveImpulseDecrementCallbackForTesting(
       const ImpulseCallbackForTesting& callback);
 
-  // Creates an incognito-context instance for tests. Tests for non-incognito
-  // contexts can just use Create() above.
+  // Creates a non-incognito instance for tests. |registry| allows unit tests
+  // to inject an ExtensionRegistry that is not managed by the usual
+  // BrowserContextKeyedServiceFactory system.
+  static ProcessManager* CreateForTesting(content::BrowserContext* context,
+                                          ExtensionRegistry* registry);
+
+  // Creates an incognito-context instance for tests.
   static ProcessManager* CreateIncognitoForTesting(
       content::BrowserContext* incognito_context,
       content::BrowserContext* original_context,
-      ProcessManager* original_manager);
+      ProcessManager* original_manager,
+      ExtensionRegistry* registry);
+
+  bool startup_background_hosts_created_for_test() const {
+    return startup_background_hosts_created_;
+  }
 
  protected:
   // If |context| is incognito pass the master context as |original_context|.
-  // Otherwise pass the same context for both.
+  // Otherwise pass the same context for both. Pass the ExtensionRegistry for
+  // |context| as |registry|, or override it for testing.
   ProcessManager(content::BrowserContext* context,
-                 content::BrowserContext* original_context);
+                 content::BrowserContext* original_context,
+                 ExtensionRegistry* registry);
 
   // Called on browser shutdown to close our extension hosts.
   void CloseBackgroundHosts();
@@ -157,10 +172,6 @@ class ProcessManager : public content::NotificationObserver {
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // Load all background pages once the profile data is ready and the pages
-  // should be loaded.
-  void CreateBackgroundHostsForProfileStartup();
 
   content::NotificationRegistrar registrar_;
 
@@ -172,6 +183,9 @@ class ProcessManager : public content::NotificationObserver {
   // browsing instance is created.  This controls process grouping.
   scoped_refptr<content::SiteInstance> site_instance_;
 
+  // Not owned. Also used by IncognitoProcessManager.
+  ExtensionRegistry* extension_registry_;
+
  private:
   friend class ProcessManagerTest;
 
@@ -181,6 +195,10 @@ class ProcessManager : public content::NotificationObserver {
   typedef std::map<ExtensionId, BackgroundPageData> BackgroundPageDataMap;
   typedef std::map<content::RenderViewHost*,
       extensions::ViewType> ExtensionRenderViews;
+
+  // Load all background pages once the profile data is ready and the pages
+  // should be loaded.
+  void CreateStartupBackgroundHosts();
 
   // Called just after |host| is created so it can be registered in our lists.
   void OnBackgroundHostCreated(ExtensionHost* host);
@@ -215,9 +233,6 @@ class ProcessManager : public content::NotificationObserver {
 
   // Clears background page data for this extension.
   void ClearBackgroundPageData(const std::string& extension_id);
-
-  // Returns true if loading background pages should be deferred.
-  bool DeferLoadingBackgroundHosts() const;
 
   void OnDevToolsStateChanged(content::DevToolsAgentHost*, bool attached);
 

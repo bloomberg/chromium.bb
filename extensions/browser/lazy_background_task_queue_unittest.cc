@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -22,7 +23,9 @@ namespace extensions {
 class TestProcessManager : public ProcessManager {
  public:
   explicit TestProcessManager(Profile* profile)
-      : ProcessManager(profile, profile->GetOriginalProfile()),
+      : ProcessManager(profile,
+                       profile->GetOriginalProfile(),
+                       ExtensionRegistry::Get(profile)),
         create_count_(0) {}
   virtual ~TestProcessManager() {}
 

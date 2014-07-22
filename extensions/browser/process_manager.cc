@@ -33,6 +33,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/process_manager_delegate.h"
 #include "extensions/browser/process_manager_observer.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
@@ -105,7 +106,8 @@ class IncognitoProcessManager : public ProcessManager {
  public:
   IncognitoProcessManager(BrowserContext* incognito_context,
                           BrowserContext* original_context,
-                          ProcessManager* original_manager);
+                          ProcessManager* original_manager,
+                          ExtensionRegistry* extension_registry);
   virtual ~IncognitoProcessManager() {}
   virtual bool CreateBackgroundHost(const Extension* extension,
                                     const GURL& url) OVERRIDE;
@@ -190,6 +192,7 @@ struct ProcessManager::BackgroundPageData {
 
 // static
 ProcessManager* ProcessManager::Create(BrowserContext* context) {
+  ExtensionRegistry* extension_registry = ExtensionRegistry::Get(context);
   ExtensionsBrowserClient* client = ExtensionsBrowserClient::Get();
   if (client->IsGuestSession(context)) {
     // In the guest session, there is a single off-the-record context.  Unlike
@@ -197,7 +200,7 @@ ProcessManager* ProcessManager::Create(BrowserContext* context) {
     // created regardless of whether extensions use "spanning" or "split"
     // incognito behavior.
     BrowserContext* original_context = client->GetOriginalContext(context);
-    return new ProcessManager(context, original_context);
+    return new ProcessManager(context, original_context, extension_registry);
   }
 
   if (context->IsOffTheRecord()) {
@@ -205,31 +208,46 @@ ProcessManager* ProcessManager::Create(BrowserContext* context) {
     ProcessManager* original_manager =
         ExtensionSystem::Get(original_context)->process_manager();
     return new IncognitoProcessManager(
-        context, original_context, original_manager);
+        context, original_context, original_manager, extension_registry);
   }
 
-  return new ProcessManager(context, context);
+  return new ProcessManager(context, context, extension_registry);
+}
+
+// static
+ProcessManager* ProcessManager::CreateForTesting(
+    BrowserContext* context,
+    ExtensionRegistry* extension_registry) {
+  DCHECK(!context->IsOffTheRecord());
+  return new ProcessManager(context, context, extension_registry);
 }
 
 // static
 ProcessManager* ProcessManager::CreateIncognitoForTesting(
     BrowserContext* incognito_context,
     BrowserContext* original_context,
-    ProcessManager* original_manager) {
+    ProcessManager* original_manager,
+    ExtensionRegistry* extension_registry) {
   DCHECK(incognito_context->IsOffTheRecord());
   DCHECK(!original_context->IsOffTheRecord());
-  return new IncognitoProcessManager(
-      incognito_context, original_context, original_manager);
+  return new IncognitoProcessManager(incognito_context,
+                                     original_context,
+                                     original_manager,
+                                     extension_registry);
 }
 
 ProcessManager::ProcessManager(BrowserContext* context,
-                               BrowserContext* original_context)
+                               BrowserContext* original_context,
+                               ExtensionRegistry* extension_registry)
     : site_instance_(SiteInstance::Create(context)),
+      extension_registry_(extension_registry),
       startup_background_hosts_created_(false),
       devtools_callback_(base::Bind(&ProcessManager::OnDevToolsStateChanged,
                                     base::Unretained(this))),
       last_background_close_sequence_id_(0),
       weak_ptr_factory_(this) {
+  // ExtensionRegistry is shared between incognito and regular contexts.
+  DCHECK_EQ(original_context, extension_registry_->browser_context());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                  content::Source<BrowserContext>(original_context));
   registrar_.Add(this,
@@ -245,8 +263,6 @@ ProcessManager::ProcessManager(BrowserContext* context,
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
-                 content::Source<BrowserContext>(original_context));
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::Source<BrowserContext>(context));
   if (context->IsOffTheRecord()) {
@@ -307,11 +323,14 @@ bool ProcessManager::CreateBackgroundHost(const Extension* extension,
                                           const GURL& url) {
   // Hosted apps are taken care of from BackgroundContentsService. Ignore them
   // here.
-  if (extension->is_hosted_app() ||
-      !ExtensionsBrowserClient::Get()->
-          IsBackgroundPageAllowed(GetBrowserContext())) {
+  if (extension->is_hosted_app())
     return false;
-  }
+
+  // Don't create hosts if the embedder doesn't allow it.
+  ProcessManagerDelegate* delegate =
+      ExtensionsBrowserClient::Get()->GetProcessManagerDelegate();
+  if (delegate && !delegate->IsBackgroundPageAllowed(GetBrowserContext()))
+    return false;
 
   // Don't create multiple background hosts for an extension.
   if (GetBackgroundHostForExtension(extension->id()))
@@ -360,11 +379,7 @@ const Extension* ProcessManager::GetExtensionForRenderViewHost(
   if (!render_view_host->GetSiteInstance())
     return NULL;
 
-  ExtensionRegistry* registry = ExtensionRegistry::Get(GetBrowserContext());
-  if (!registry)
-    return NULL;
-
-  return registry->enabled_extensions().GetByID(
+  return extension_registry_->enabled_extensions().GetByID(
       GetExtensionID(render_view_host));
 }
 
@@ -440,9 +455,7 @@ void ProcessManager::DecrementLazyKeepaliveCount(
     const std::string& extension_id) {
   int& count = background_page_data_[extension_id].lazy_keepalive_count;
   DCHECK(count > 0 ||
-         !ExtensionRegistry::Get(GetBrowserContext())
-              ->enabled_extensions()
-              .Contains(extension_id));
+         !extension_registry_->enabled_extensions().Contains(extension_id));
 
   // If we reach a zero keepalive count when the lazy background page is about
   // to be closed, incrementing close_sequence_id will cancel the close
@@ -620,16 +633,6 @@ void ProcessManager::CancelSuspend(const Extension* extension) {
   }
 }
 
-void ProcessManager::OnBrowserWindowReady() {
-  // If the extension system isn't ready yet the background hosts will be
-  // created via NOTIFICATION_EXTENSIONS_READY below.
-  ExtensionSystem* system = ExtensionSystem::Get(GetBrowserContext());
-  if (!system->ready().is_signaled())
-    return;
-
-  CreateBackgroundHostsForProfileStartup();
-}
-
 content::BrowserContext* ProcessManager::GetBrowserContext() const {
   return site_instance_->GetBrowserContext();
 }
@@ -648,15 +651,10 @@ void ProcessManager::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSIONS_READY:
-    case chrome::NOTIFICATION_PROFILE_CREATED: {
-       // Don't load background hosts now if the loading should be deferred.
-       // Instead they will be loaded when a browser window for this profile
-       // (or an incognito profile from this profile) is ready.
-       if (DeferLoadingBackgroundHosts())
-         break;
-
-      CreateBackgroundHostsForProfileStartup();
+    case chrome::NOTIFICATION_EXTENSIONS_READY: {
+      // TODO(jamescook): Convert this to use ExtensionSystem::ready() instead
+      // of a notification.
+      MaybeCreateStartupBackgroundHosts();
       break;
     }
 
@@ -784,24 +782,24 @@ void ProcessManager::OnDevToolsStateChanged(
   }
 }
 
-void ProcessManager::CreateBackgroundHostsForProfileStartup() {
-  if (startup_background_hosts_created_ ||
-      !ExtensionsBrowserClient::Get()->
-          IsBackgroundPageAllowed(GetBrowserContext())) {
+void ProcessManager::MaybeCreateStartupBackgroundHosts() {
+  if (startup_background_hosts_created_)
     return;
-  }
 
-  const ExtensionSet& enabled_extensions =
-      ExtensionRegistry::Get(GetBrowserContext())->enabled_extensions();
-  for (ExtensionSet::const_iterator extension = enabled_extensions.begin();
-       extension != enabled_extensions.end();
-       ++extension) {
-    CreateBackgroundHostForExtensionLoad(this, extension->get());
+  // The embedder might disallow background pages entirely.
+  ProcessManagerDelegate* delegate =
+      ExtensionsBrowserClient::Get()->GetProcessManagerDelegate();
+  if (delegate && !delegate->IsBackgroundPageAllowed(GetBrowserContext()))
+    return;
 
-    FOR_EACH_OBSERVER(ProcessManagerObserver,
-                      observer_list_,
-                      OnBackgroundHostStartup(*extension));
-  }
+  // The embedder might want to defer background page loading. For example,
+  // Chrome defers background page loading when it is launched to show the app
+  // list, then triggers a load later when a browser window opens.
+  if (delegate &&
+      delegate->DeferCreatingStartupBackgroundHosts(GetBrowserContext()))
+    return;
+
+  CreateStartupBackgroundHosts();
   startup_background_hosts_created_ = true;
 
   // Background pages should only be loaded once. To prevent any further loads
@@ -810,19 +808,26 @@ void ProcessManager::CreateBackgroundHostsForProfileStartup() {
       ExtensionsBrowserClient::Get()->GetOriginalContext(GetBrowserContext());
   if (registrar_.IsRegistered(
           this,
-          chrome::NOTIFICATION_PROFILE_CREATED,
-          content::Source<BrowserContext>(original_context))) {
-    registrar_.Remove(this,
-                      chrome::NOTIFICATION_PROFILE_CREATED,
-                      content::Source<BrowserContext>(original_context));
-  }
-  if (registrar_.IsRegistered(
-          this,
           chrome::NOTIFICATION_EXTENSIONS_READY,
           content::Source<BrowserContext>(original_context))) {
     registrar_.Remove(this,
                       chrome::NOTIFICATION_EXTENSIONS_READY,
                       content::Source<BrowserContext>(original_context));
+  }
+}
+
+void ProcessManager::CreateStartupBackgroundHosts() {
+  DCHECK(!startup_background_hosts_created_);
+  const ExtensionSet& enabled_extensions =
+      extension_registry_->enabled_extensions();
+  for (ExtensionSet::const_iterator extension = enabled_extensions.begin();
+       extension != enabled_extensions.end();
+       ++extension) {
+    CreateBackgroundHostForExtensionLoad(this, extension->get());
+
+    FOR_EACH_OBSERVER(ProcessManagerObserver,
+                      observer_list_,
+                      OnBackgroundHostStartup(*extension));
   }
 }
 
@@ -890,12 +895,6 @@ void ProcessManager::ClearBackgroundPageData(const std::string& extension_id) {
   }
 }
 
-bool ProcessManager::DeferLoadingBackgroundHosts() const {
-  // The extensions embedder may have special rules about background hosts.
-  return ExtensionsBrowserClient::Get()->DeferLoadingBackgroundHosts(
-      GetBrowserContext());
-}
-
 //
 // IncognitoProcessManager
 //
@@ -903,8 +902,9 @@ bool ProcessManager::DeferLoadingBackgroundHosts() const {
 IncognitoProcessManager::IncognitoProcessManager(
     BrowserContext* incognito_context,
     BrowserContext* original_context,
-    ProcessManager* original_manager)
-    : ProcessManager(incognito_context, original_context),
+    ProcessManager* original_manager,
+    ExtensionRegistry* extension_registry)
+    : ProcessManager(incognito_context, original_context, extension_registry),
       original_manager_(original_manager) {
   DCHECK(incognito_context->IsOffTheRecord());
 
@@ -913,8 +913,6 @@ IncognitoProcessManager::IncognitoProcessManager(
   // manager need only worry about the split mode extensions, which is handled
   // in the NOTIFICATION_BROWSER_WINDOW_READY notification handler.
   registrar_.Remove(this, chrome::NOTIFICATION_EXTENSIONS_READY,
-                    content::Source<BrowserContext>(original_context));
-  registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_CREATED,
                     content::Source<BrowserContext>(original_context));
 }
 
@@ -932,14 +930,11 @@ bool IncognitoProcessManager::CreateBackgroundHost(const Extension* extension,
 }
 
 SiteInstance* IncognitoProcessManager::GetSiteInstanceForURL(const GURL& url) {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(GetBrowserContext());
-  if (registry) {
-    const Extension* extension =
-        registry->enabled_extensions().GetExtensionOrAppByURL(url);
-    if (extension && !IncognitoInfo::IsSplitMode(extension)) {
-      return original_manager_->GetSiteInstanceForURL(url);
-    }
-  }
+  const Extension* extension =
+      extension_registry_->enabled_extensions().GetExtensionOrAppByURL(url);
+  if (extension && !IncognitoInfo::IsSplitMode(extension))
+    return original_manager_->GetSiteInstanceForURL(url);
+
   return ProcessManager::GetSiteInstanceForURL(url);
 }
 

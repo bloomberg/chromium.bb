@@ -43,6 +43,8 @@ class ExtensionRegistry : public KeyedService {
   // Returns the instance for the given |browser_context|.
   static ExtensionRegistry* Get(content::BrowserContext* browser_context);
 
+  content::BrowserContext* browser_context() const { return browser_context_; }
+
   // NOTE: These sets are *eventually* mututally exclusive, but an extension can
   // appear in two sets for short periods of time.
   const ExtensionSet& enabled_extensions() const {

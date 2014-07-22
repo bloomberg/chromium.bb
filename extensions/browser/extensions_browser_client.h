@@ -41,6 +41,7 @@ class ExtensionPrefsObserver;
 class ExtensionSystem;
 class ExtensionSystemProvider;
 class InfoMap;
+class ProcessManagerDelegate;
 class RuntimeAPIDelegate;
 
 // Interface to allow the extensions module to make browser-process-specific
@@ -133,12 +134,9 @@ class ExtensionsBrowserClient {
       content::BrowserContext* context,
       std::vector<ExtensionPrefsObserver*>* observers) const = 0;
 
-  // Returns true if loading background pages should be deferred.
-  virtual bool DeferLoadingBackgroundHosts(
-      content::BrowserContext* context) const = 0;
-
-  virtual bool IsBackgroundPageAllowed(
-      content::BrowserContext* context) const = 0;
+  // Returns the ProcessManagerDelegate shared across all BrowserContexts. May
+  // return NULL in tests or for simple embedders.
+  virtual ProcessManagerDelegate* GetProcessManagerDelegate() const = 0;
 
   // Creates a new ExtensionHostDelegate instance.
   virtual scoped_ptr<ExtensionHostDelegate> CreateExtensionHostDelegate() = 0;
