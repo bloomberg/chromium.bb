@@ -1414,7 +1414,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
   ASSERT_NO_FATAL_FAILURE(cld_data_harness->Init());
   ASSERT_TRUE(test_server()->Start());
 
-  LanguageDetectionDetails details;
+  translate::LanguageDetectionDetails details;
 
   // Open a new tab with a page in English.
   AddTabAtIndex(0, GURL(test_server()->GetURL("files/english_page.html")),
@@ -1427,7 +1427,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
   content::Source<WebContents> source(current_web_contents);
 
   ui_test_utils::WindowedNotificationObserverWithDetails<
-    LanguageDetectionDetails>
+      translate::LanguageDetectionDetails>
       en_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
                                   source);
   EXPECT_EQ("",
@@ -1441,7 +1441,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
 
   // Now navigate to a page in French.
   ui_test_utils::WindowedNotificationObserverWithDetails<
-    LanguageDetectionDetails>
+      translate::LanguageDetectionDetails>
       fr_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
                                   source);
   ui_test_utils::NavigateToURL(

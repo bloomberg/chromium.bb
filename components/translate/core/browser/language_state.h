@@ -9,6 +9,8 @@
 
 #include "base/basictypes.h"
 
+namespace translate {
+
 class TranslateDriver;
 
 // This class holds the language state of the current page.
@@ -120,5 +122,7 @@ class LanguageState {
 
   DISALLOW_COPY_AND_ASSIGN(LanguageState);
 };
+
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_LANGUAGE_STATE_H_

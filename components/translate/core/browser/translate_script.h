@@ -14,6 +14,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 
+namespace translate {
+
 class TranslateScriptTest;
 class TranslateURLFetcher;
 
@@ -89,5 +91,7 @@ class TranslateScript {
 
   DISALLOW_COPY_AND_ASSIGN(TranslateScript);
 };
+
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_SCRIPT_H_

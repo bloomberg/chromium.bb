@@ -10,9 +10,10 @@
 
 TranslateBubbleModelImpl::TranslateBubbleModelImpl(
     translate::TranslateStep step,
-    scoped_ptr<TranslateUIDelegate> ui_delegate)
+    scoped_ptr<translate::TranslateUIDelegate> ui_delegate)
     : ui_delegate_(ui_delegate.Pass()),
-      view_state_transition_(TranslateStepToViewState(step)) {}
+      view_state_transition_(TranslateStepToViewState(step)) {
+}
 
 TranslateBubbleModelImpl::~TranslateBubbleModelImpl() {
 }
@@ -45,7 +46,8 @@ void TranslateBubbleModelImpl::SetViewState(
   view_state_transition_.SetViewState(view_state);
 }
 
-void TranslateBubbleModelImpl::ShowError(TranslateErrors::Type error_type) {
+void TranslateBubbleModelImpl::ShowError(
+    translate::TranslateErrors::Type error_type) {
   ui_delegate_->OnErrorShown(error_type);
 }
 
@@ -106,7 +108,8 @@ void TranslateBubbleModelImpl::TranslationDeclined(bool explicitly_closed) {
 }
 
 bool TranslateBubbleModelImpl::IsPageTranslatedInCurrentLanguages() const {
-  const LanguageState& language_state = ui_delegate_->GetLanguageState();
+  const translate::LanguageState& language_state =
+      ui_delegate_->GetLanguageState();
   return ui_delegate_->GetOriginalLanguageCode() ==
       language_state.original_language() &&
       ui_delegate_->GetTargetLanguageCode() ==

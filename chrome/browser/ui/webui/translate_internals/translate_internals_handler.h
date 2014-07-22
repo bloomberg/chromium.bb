@@ -16,9 +16,11 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/webplugininfo.h"
 
+namespace translate {
 struct LanguageDetectionDetails;
 struct TranslateErrorDetails;
 struct TranslateEventDetails;
+}
 
 namespace base {
 class DictionaryValue;
@@ -48,10 +50,11 @@ class TranslateInternalsHandler : public content::WebUIMessageHandler,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Callback for translate errors.
-  void OnTranslateError(const TranslateErrorDetails& details);
+  void OnTranslateError(const translate::TranslateErrorDetails& details);
 
   // Callback for translate events.
-  virtual void OnTranslateEvent(const TranslateEventDetails& details);
+  virtual void OnTranslateEvent(
+      const translate::TranslateEventDetails& details);
 
   // Handles the Javascript message 'removePrefItem'. This message is sent
   // when UI requests to remove an item in the preference.
@@ -73,11 +76,12 @@ class TranslateInternalsHandler : public content::WebUIMessageHandler,
   void SendSupportedLanguagesToJs();
 
   // Subscription for translate events coming from the translate language list.
-  scoped_ptr<TranslateLanguageList::EventCallbackList::Subscription>
+  scoped_ptr<translate::TranslateLanguageList::EventCallbackList::Subscription>
       event_subscription_;
 
   // Subscription for translate errors coming from the translate manager.
-  scoped_ptr<TranslateManager::TranslateErrorCallbackList::Subscription>
+  scoped_ptr<
+      translate::TranslateManager::TranslateErrorCallbackList::Subscription>
       error_subscription_;
 
   content::NotificationRegistrar notification_registrar_;

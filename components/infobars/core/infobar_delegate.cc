@@ -84,7 +84,8 @@ ThemeInstalledInfoBarDelegate*
   return NULL;
 }
 
-TranslateInfoBarDelegate* InfoBarDelegate::AsTranslateInfoBarDelegate() {
+translate::TranslateInfoBarDelegate*
+InfoBarDelegate::AsTranslateInfoBarDelegate() {
   return NULL;
 }
 

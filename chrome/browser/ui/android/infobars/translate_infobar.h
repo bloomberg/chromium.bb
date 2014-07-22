@@ -10,11 +10,14 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 
+namespace translate {
 class TranslateInfoBarDelegate;
+}
 
 class TranslateInfoBar : public InfoBarAndroid {
  public:
-  explicit TranslateInfoBar(scoped_ptr<TranslateInfoBarDelegate> delegate);
+  explicit TranslateInfoBar(
+      scoped_ptr<translate::TranslateInfoBarDelegate> delegate);
   virtual ~TranslateInfoBar();
 
   // JNI methods specific to translate.
@@ -39,7 +42,7 @@ class TranslateInfoBar : public InfoBarAndroid {
   void SetJavaDelegate(jobject delegate);
   bool ShouldDisplayNeverTranslateInfoBarOnCancel();
 
-  TranslateInfoBarDelegate* GetDelegate();
+  translate::TranslateInfoBarDelegate* GetDelegate();
 
   base::android::ScopedJavaGlobalRef<jobject> java_translate_delegate_;
 

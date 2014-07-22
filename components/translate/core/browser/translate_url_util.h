@@ -7,7 +7,7 @@
 
 #include "url/gurl.h"
 
-namespace TranslateURLUtil {
+namespace translate {
 
 // Appends Translate API Key as a part of query to a passed |url|, and returns
 // GURL instance.
@@ -17,6 +17,6 @@ GURL AddApiKeyToUrl(const GURL& url);
 // returns GURL instance.
 GURL AddHostLocaleToUrl(const GURL& url);
 
-}  // namespace TranslateURLUtil
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_URL_UTIL_H_

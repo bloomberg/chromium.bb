@@ -10,6 +10,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+namespace translate {
+
 namespace {
 
 const std::string kHtmlMimeType = "text/html";
@@ -143,3 +145,5 @@ TEST(LanguageStateTest, Driver) {
   EXPECT_TRUE(language_state.translate_enabled());
   EXPECT_TRUE(driver->on_translate_enabled_changed_called());
 }
+
+}  // namespace translate

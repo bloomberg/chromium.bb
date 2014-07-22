@@ -13,8 +13,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 
-struct TranslateEventDetails;
 class GURL;
+
+namespace translate {
+
+struct TranslateEventDetails;
 class TranslateURLFetcher;
 
 // The TranslateLanguageList class is responsible for maintaining the latest
@@ -112,5 +115,7 @@ class TranslateLanguageList {
 
   DISALLOW_COPY_AND_ASSIGN(TranslateLanguageList);
 };
+
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_LANGUAGE_LIST_H_

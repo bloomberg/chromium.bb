@@ -42,12 +42,12 @@
   // Space between controls in pixels - read from the NIB.
   CGFloat spaceBetweenControls_;
 
-  scoped_ptr<OptionsMenuModel> optionsMenuModel_;
+  scoped_ptr<translate::OptionsMenuModel> optionsMenuModel_;
 }
 
 // Returns the delegate as a TranslateInfoBarDelegate.  The return
 // value can be NULL if the infobar is closing.
-- (TranslateInfoBarDelegate*)delegate;
+- (translate::TranslateInfoBarDelegate*)delegate;
 
 // Called when the "Show Original" button is pressed.
 - (IBAction)showOriginal:(id)sender;

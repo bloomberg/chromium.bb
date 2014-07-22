@@ -17,6 +17,8 @@ template <typename T> struct DefaultSingletonTraits;
 
 class PrefService;
 
+namespace translate {
+
 // Manages the downloaded resources for Translate, such as the translate script
 // and the language list.
 class TranslateDownloadManager {
@@ -100,5 +102,7 @@ class TranslateDownloadManager {
   std::string application_locale_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 };
+
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_DOWNLOAD_MANAGER_H_

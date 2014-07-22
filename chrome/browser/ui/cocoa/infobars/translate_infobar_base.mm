@@ -29,7 +29,7 @@ using InfoBarUtilities::CreateLabel;
 using InfoBarUtilities::AddMenuItem;
 
 scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
-    scoped_ptr<TranslateInfoBarDelegate> delegate) const {
+    scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const {
   scoped_ptr<InfoBarCocoa> infobar(
       new InfoBarCocoa(delegate.PassAs<infobars::InfoBarDelegate>()));
   base::scoped_nsobject<TranslateInfoBarControllerBase> infobar_controller;
@@ -76,7 +76,7 @@ scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
 - (void)constructViews;
 
 // Reloads text for all labels for the current state.
-- (void)loadLabelText:(TranslateErrors::Type)error;
+- (void)loadLabelText:(translate::TranslateErrors::Type)error;
 
 // Main function to update the toolbar graphic state and data model after
 // the state has changed.
@@ -99,8 +99,9 @@ scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
 
 @implementation TranslateInfoBarControllerBase
 
-- (TranslateInfoBarDelegate*)delegate {
-  return reinterpret_cast<TranslateInfoBarDelegate*>([super delegate]);
+- (translate::TranslateInfoBarDelegate*)delegate {
+  return reinterpret_cast<translate::TranslateInfoBarDelegate*>(
+      [super delegate]);
 }
 
 - (void)constructViews {
@@ -124,7 +125,7 @@ scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
 
 - (void)sourceLanguageModified:(NSInteger)newLanguageIdx {
   size_t newLanguageIdxSizeT = static_cast<size_t>(newLanguageIdx);
-  DCHECK_NE(TranslateInfoBarDelegate::kNoIndex, newLanguageIdxSizeT);
+  DCHECK_NE(translate::TranslateInfoBarDelegate::kNoIndex, newLanguageIdxSizeT);
   if (newLanguageIdxSizeT == [self delegate]->original_language_index())
     return;
   [self delegate]->UpdateOriginalLanguageIndex(newLanguageIdxSizeT);
@@ -138,7 +139,7 @@ scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
 
 - (void)targetLanguageModified:(NSInteger)newLanguageIdx {
   size_t newLanguageIdxSizeT = static_cast<size_t>(newLanguageIdx);
-  DCHECK_NE(TranslateInfoBarDelegate::kNoIndex, newLanguageIdxSizeT);
+  DCHECK_NE(translate::TranslateInfoBarDelegate::kNoIndex, newLanguageIdxSizeT);
   if (newLanguageIdxSizeT == [self delegate]->target_language_index())
     return;
   [self delegate]->UpdateTargetLanguageIndex(newLanguageIdxSizeT);
@@ -221,7 +222,7 @@ scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
 
   // The options model doesn't know how to handle state transitions, so rebuild
   // it each time through here.
-  optionsMenuModel_.reset(new OptionsMenuModel([self delegate]));
+  optionsMenuModel_.reset(new translate::OptionsMenuModel([self delegate]));
 
   [optionsPopUp_ removeAllItems];
   // Set title.
@@ -271,7 +272,7 @@ scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
                 i == [self delegate]->target_language_index());
   }
   if ([self delegate]->original_language_index() !=
-      TranslateInfoBarDelegate::kNoIndex) {
+      translate::TranslateInfoBarDelegate::kNoIndex) {
     [fromLanguagePopUp_
         selectItemAtIndex:([self delegate]->original_language_index())];
   }
@@ -400,7 +401,7 @@ scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
 - (void)ok:(id)sender {
   if (![self isOwned])
     return;
-  TranslateInfoBarDelegate* delegate = [self delegate];
+  translate::TranslateInfoBarDelegate* delegate = [self delegate];
   translate::TranslateStep state = delegate->translate_step();
   DCHECK(state == translate::TRANSLATE_STEP_BEFORE_TRANSLATE ||
          state == translate::TRANSLATE_STEP_TRANSLATE_ERROR);
@@ -411,7 +412,7 @@ scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
 - (void)cancel:(id)sender {
   if (![self isOwned])
     return;
-  TranslateInfoBarDelegate* delegate = [self delegate];
+  translate::TranslateInfoBarDelegate* delegate = [self delegate];
   DCHECK_EQ(translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
             delegate->translate_step());
   delegate->TranslationDeclined();

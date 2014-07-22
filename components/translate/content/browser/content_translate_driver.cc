@@ -15,6 +15,8 @@
 #include "content/public/common/referrer.h"
 #include "url/gurl.h"
 
+namespace translate {
+
 ContentTranslateDriver::ContentTranslateDriver(
     content::NavigationController* nav_controller)
     : navigation_controller_(nav_controller),
@@ -105,3 +107,5 @@ void ContentTranslateDriver::OpenUrlInNewTab(const GURL& url) {
                                 false);
   navigation_controller_->GetWebContents()->OpenURL(params);
 }
+
+}  // namespace translate

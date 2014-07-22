@@ -18,6 +18,8 @@ using base::SampleCountIterator;
 using base::StatisticsRecorder;
 using base::TimeTicks;
 
+namespace translate {
+
 namespace {
 
 const int kTrue = 1;
@@ -282,3 +284,5 @@ TEST(TranslateMetricsTest, ReportLanguageDetectionTime) {
   recorder.CheckValueInLogs(9.009);
   recorder.CheckTotalCount(1);
 }
+
+}  // namespace translate

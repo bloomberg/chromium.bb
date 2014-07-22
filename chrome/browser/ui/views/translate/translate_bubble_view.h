@@ -45,7 +45,7 @@ class TranslateBubbleView : public views::BubbleDelegateView,
   static void ShowBubble(views::View* anchor_view,
                          content::WebContents* web_contents,
                          translate::TranslateStep step,
-                         TranslateErrors::Type error_type);
+                         translate::TranslateErrors::Type error_type);
 
   // If true, the Translate bubble is being shown.
   static bool IsShowing();
@@ -120,7 +120,7 @@ class TranslateBubbleView : public views::BubbleDelegateView,
 
   TranslateBubbleView(views::View* anchor_view,
                       scoped_ptr<TranslateBubbleModel> model,
-                      TranslateErrors::Type error_type,
+                      translate::TranslateErrors::Type error_type,
                       content::WebContents* web_contents);
 
   // Returns the current child view.
@@ -160,7 +160,7 @@ class TranslateBubbleView : public views::BubbleDelegateView,
   void SwitchView(TranslateBubbleModel::ViewState view_state);
 
   // Switches to the error view.
-  void SwitchToErrorView(TranslateErrors::Type error_type);
+  void SwitchToErrorView(translate::TranslateErrors::Type error_type);
 
   // Updates the advanced view.
   void UpdateAdvancedView();
@@ -188,7 +188,7 @@ class TranslateBubbleView : public views::BubbleDelegateView,
 
   scoped_ptr<TranslateBubbleModel> model_;
 
-  TranslateErrors::Type error_type_;
+  translate::TranslateErrors::Type error_type_;
 
   // Whether the window is an incognito window.
   const bool is_in_incognito_window_;

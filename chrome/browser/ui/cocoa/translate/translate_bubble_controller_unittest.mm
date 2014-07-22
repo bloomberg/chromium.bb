@@ -53,7 +53,7 @@ TEST_F(TranslateBubbleControllerTest, ShowAndClose) {
 
   [bwc showTranslateBubbleForWebContents:webContents
                                     step:step
-                               errorType:TranslateErrors::NONE];
+                               errorType:translate::TranslateErrors::NONE];
   bubble = [bwc translateBubbleController];
   EXPECT_TRUE(bubble);
   InfoBubbleWindow* window = (InfoBubbleWindow*)[bubble window];

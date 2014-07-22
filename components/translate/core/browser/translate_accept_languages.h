@@ -13,6 +13,8 @@
 
 class PrefService;
 
+namespace translate {
+
 // TranslateAcceptLanguages tracks the value of the "Accept-Language" HTTP
 // header.
 class TranslateAcceptLanguages {
@@ -49,5 +51,7 @@ class TranslateAcceptLanguages {
 
   DISALLOW_COPY_AND_ASSIGN(TranslateAcceptLanguages);
 };
+
+}  // namespace translate
 
 #endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_ACCEPT_LANGUAGES_H_

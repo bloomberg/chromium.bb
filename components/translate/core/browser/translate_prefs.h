@@ -13,7 +13,6 @@
 
 class PrefService;
 class Profile;
-class TranslateAcceptLanguages;
 
 namespace base {
 class DictionaryValue;
@@ -23,6 +22,10 @@ class ListValue;
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
+
+namespace translate {
+
+class TranslateAcceptLanguages;
 
 // The wrapper of PrefService object for Translate.
 //
@@ -161,5 +164,7 @@ class TranslatePrefs {
 
   DISALLOW_COPY_AND_ASSIGN(TranslatePrefs);
 };
+
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_PREFS_H_

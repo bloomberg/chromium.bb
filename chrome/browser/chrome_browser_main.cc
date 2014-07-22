@@ -1453,7 +1453,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     variations_service->set_policy_pref_service(profile_->GetPrefs());
     variations_service->StartRepeatedVariationsSeedFetch();
   }
-  TranslateDownloadManager::RequestLanguageList(profile_->GetPrefs());
+  translate::TranslateDownloadManager::RequestLanguageList(
+      profile_->GetPrefs());
 
 #else
   // Most general initialization is behind us, but opening a
@@ -1519,7 +1520,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif
       }
 
-      TranslateDownloadManager::RequestLanguageList(profile_->GetPrefs());
+      translate::TranslateDownloadManager::RequestLanguageList(
+          profile_->GetPrefs());
     }
 
     run_message_loop_ = true;

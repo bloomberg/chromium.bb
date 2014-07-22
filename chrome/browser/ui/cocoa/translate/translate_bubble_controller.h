@@ -64,6 +64,6 @@ class WebContents;
                      model:(scoped_ptr<TranslateBubbleModel>)model
                webContents:(content::WebContents*)webContents;
 - (void)switchView:(TranslateBubbleModel::ViewState)viewState;
-- (void)switchToErrorView:(TranslateErrors::Type)errorType;
+- (void)switchToErrorView:(translate::TranslateErrors::Type)errorType;
 
 @end

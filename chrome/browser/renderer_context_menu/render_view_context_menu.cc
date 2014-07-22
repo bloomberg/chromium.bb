@@ -922,7 +922,7 @@ void RenderViewContextMenu::AppendPageItems() {
 
   if (TranslateService::IsTranslatableURL(params_.page_url)) {
     std::string locale = g_browser_process->GetApplicationLocale();
-    locale = TranslateDownloadManager::GetLanguageCode(locale);
+    locale = translate::TranslateDownloadManager::GetLanguageCode(locale);
     base::string16 language =
         l10n_util::GetDisplayNameForLocale(locale, locale, true);
     menu_model_.AddItem(
@@ -1181,7 +1181,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       std::string original_lang =
           chrome_translate_client->GetLanguageState().original_language();
       std::string target_lang = g_browser_process->GetApplicationLocale();
-      target_lang = TranslateDownloadManager::GetLanguageCode(target_lang);
+      target_lang =
+          translate::TranslateDownloadManager::GetLanguageCode(target_lang);
       // Note that we intentionally enable the menu even if the original and
       // target languages are identical.  This is to give a way to user to
       // translate a page that might contains text fragments in a different
@@ -1192,7 +1193,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
              !source_web_contents_->GetInterstitialPage() &&
              // There are some application locales which can't be used as a
              // target language for translation.
-             TranslateDownloadManager::IsSupportedLanguage(target_lang) &&
+             translate::TranslateDownloadManager::IsSupportedLanguage(
+                 target_lang) &&
              // Disable on the Instant Extended NTP.
              !chrome::IsInstantNTP(source_web_contents_);
     }
@@ -1735,14 +1737,15 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       std::string original_lang =
           chrome_translate_client->GetLanguageState().original_language();
       std::string target_lang = g_browser_process->GetApplicationLocale();
-      target_lang = TranslateDownloadManager::GetLanguageCode(target_lang);
+      target_lang =
+          translate::TranslateDownloadManager::GetLanguageCode(target_lang);
       // Since the user decided to translate for that language and site, clears
       // any preferences for not translating them.
-      scoped_ptr<TranslatePrefs> prefs(
+      scoped_ptr<translate::TranslatePrefs> prefs(
           ChromeTranslateClient::CreateTranslatePrefs(profile_->GetPrefs()));
       prefs->UnblockLanguage(original_lang);
       prefs->RemoveSiteFromBlacklist(params_.page_url.HostNoBrackets());
-      TranslateManager* manager =
+      translate::TranslateManager* manager =
           chrome_translate_client->GetTranslateManager();
       DCHECK(manager);
       manager->TranslatePage(original_lang, target_lang, true);

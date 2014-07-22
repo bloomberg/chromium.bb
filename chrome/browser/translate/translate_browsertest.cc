@@ -75,7 +75,7 @@ class TranslateBrowserTest : public InProcessBrowserTest {
     return https_server_.GetURL(prefix + path);
   }
 
-  TranslateInfoBarDelegate* GetExistingTranslateInfoBarDelegate() {
+  translate::TranslateInfoBarDelegate* GetExistingTranslateInfoBarDelegate() {
     if (!infobar_service_) {
       content::WebContents* web_contents =
           browser()->tab_strip_model()->GetActiveWebContents();
@@ -87,7 +87,7 @@ class TranslateBrowserTest : public InProcessBrowserTest {
       return NULL;
     }
 
-    TranslateInfoBarDelegate* delegate = NULL;
+    translate::TranslateInfoBarDelegate* delegate = NULL;
     for (size_t i = 0; i < infobar_service_->infobar_count(); ++i) {
       // Check if the shown infobar is a confirm infobar coming from the
       // |kTranslateSecurityOrigin| flag specified in SetUpCommandLine().
@@ -98,9 +98,10 @@ class TranslateBrowserTest : public InProcessBrowserTest {
         continue;
       }
 
-      TranslateInfoBarDelegate* translate =
-          infobar_service_->infobar_at(i)->delegate()->
-              AsTranslateInfoBarDelegate();
+      translate::TranslateInfoBarDelegate* translate =
+          infobar_service_->infobar_at(i)
+              ->delegate()
+              ->AsTranslateInfoBarDelegate();
       if (translate) {
         EXPECT_FALSE(delegate) << "multiple infobars are shown unexpectedly";
         delegate = translate;
@@ -131,7 +132,8 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslateInIsolatedWorld) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Check if there is no Translate infobar.
-  TranslateInfoBarDelegate* translate = GetExistingTranslateInfoBarDelegate();
+  translate::TranslateInfoBarDelegate* translate =
+      GetExistingTranslateInfoBarDelegate();
   EXPECT_FALSE(translate);
 
   // Setup infobar observer.
@@ -174,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslateInIsolatedWorld) {
     "} } } };\n"
     "cr.googleTranslate.onTranslateElementLoad();\n";
   net::TestURLFetcher* fetcher =
-      factory.GetFetcherByID(TranslateScript::kFetcherId);
+      factory.GetFetcherByID(translate::TranslateScript::kFetcherId);
   ASSERT_TRUE(fetcher);
   net::URLRequestStatus status;
   status.set_status(net::URLRequestStatus::SUCCESS);
@@ -197,7 +199,8 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTag) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Check if there is no Translate infobar.
-  TranslateInfoBarDelegate* translate = GetExistingTranslateInfoBarDelegate();
+  translate::TranslateInfoBarDelegate* translate =
+      GetExistingTranslateInfoBarDelegate();
   EXPECT_FALSE(translate);
 
   // Setup page title observer.
@@ -230,7 +233,8 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest,
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Check if there is no Translate infobar.
-  TranslateInfoBarDelegate* translate = GetExistingTranslateInfoBarDelegate();
+  translate::TranslateInfoBarDelegate* translate =
+      GetExistingTranslateInfoBarDelegate();
   EXPECT_FALSE(translate);
 
   // Setup page title observer.
@@ -262,7 +266,8 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTagAtOnload) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Check if there is no Translate infobar.
-  TranslateInfoBarDelegate* translate = GetExistingTranslateInfoBarDelegate();
+  translate::TranslateInfoBarDelegate* translate =
+      GetExistingTranslateInfoBarDelegate();
   EXPECT_FALSE(translate);
 
   // Setup page title observer.
@@ -294,7 +299,8 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocation) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Check if there is no Translate infobar.
-  TranslateInfoBarDelegate* translate = GetExistingTranslateInfoBarDelegate();
+  translate::TranslateInfoBarDelegate* translate =
+      GetExistingTranslateInfoBarDelegate();
   EXPECT_FALSE(translate);
 
   // Setup page title observer.
@@ -326,7 +332,8 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocationAtOnload) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Check if there is no Translate infobar.
-  TranslateInfoBarDelegate* translate = GetExistingTranslateInfoBarDelegate();
+  translate::TranslateInfoBarDelegate* translate =
+      GetExistingTranslateInfoBarDelegate();
   EXPECT_FALSE(translate);
 
   // Setup page title observer.

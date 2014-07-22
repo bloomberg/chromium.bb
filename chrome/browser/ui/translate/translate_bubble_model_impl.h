@@ -11,13 +11,16 @@
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
 
+namespace translate {
 class TranslateUIDelegate;
+}
 
 // The standard implementation of TranslateBubbleModel.
 class TranslateBubbleModelImpl : public TranslateBubbleModel {
  public:
-  TranslateBubbleModelImpl(translate::TranslateStep step,
-                           scoped_ptr<TranslateUIDelegate> ui_delegate);
+  TranslateBubbleModelImpl(
+      translate::TranslateStep step,
+      scoped_ptr<translate::TranslateUIDelegate> ui_delegate);
   virtual ~TranslateBubbleModelImpl();
 
   // Converts a TranslateStep to a ViewState.
@@ -29,7 +32,7 @@ class TranslateBubbleModelImpl : public TranslateBubbleModel {
   virtual TranslateBubbleModel::ViewState GetViewState() const OVERRIDE;
   virtual void SetViewState(TranslateBubbleModel::ViewState view_state)
       OVERRIDE;
-  virtual void ShowError(TranslateErrors::Type error_type) OVERRIDE;
+  virtual void ShowError(translate::TranslateErrors::Type error_type) OVERRIDE;
   virtual void GoBackFromAdvanced() OVERRIDE;
   virtual int GetNumberOfLanguages() const OVERRIDE;
   virtual base::string16 GetLanguageNameAt(int index) const OVERRIDE;
@@ -47,7 +50,7 @@ class TranslateBubbleModelImpl : public TranslateBubbleModel {
   virtual bool IsPageTranslatedInCurrentLanguages() const OVERRIDE;
 
  private:
-  scoped_ptr<TranslateUIDelegate> ui_delegate_;
+  scoped_ptr<translate::TranslateUIDelegate> ui_delegate_;
   TranslateBubbleViewStateTransition view_state_transition_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateBubbleModelImpl);

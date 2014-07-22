@@ -9,14 +9,16 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace translate {
 class TranslateAcceptLanguages;
+}
 
 // TranslateAcceptLanguagesFactory is a way to associate a
 // TranslateAcceptLanguages instance to a BrowserContext.
 class TranslateAcceptLanguagesFactory
     : public BrowserContextKeyedServiceFactory {
  public:
-  static TranslateAcceptLanguages* GetForBrowserContext(
+  static translate::TranslateAcceptLanguages* GetForBrowserContext(
       content::BrowserContext* browser_context);
   static TranslateAcceptLanguagesFactory* GetInstance();
 

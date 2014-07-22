@@ -15,6 +15,8 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/common/translate_util.h"
 
+namespace translate {
+
 const char TranslatePrefs::kPrefTranslateLanguageBlacklist[] =
     "translate_language_blacklist";
 const char TranslatePrefs::kPrefTranslateSiteBlacklist[] =
@@ -572,3 +574,5 @@ bool TranslatePrefs::IsDictionaryEmpty(const char* pref_id) const {
   const base::DictionaryValue* dict = prefs_->GetDictionary(pref_id);
   return (dict == NULL || dict->empty());
 }
+
+}  // namespace translate

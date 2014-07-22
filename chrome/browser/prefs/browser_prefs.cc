@@ -381,7 +381,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   RegisterBrowserUserPrefs(registry);
   SessionStartupPref::RegisterProfilePrefs(registry);
   TemplateURLPrepopulateData::RegisterProfilePrefs(registry);
-  TranslatePrefs::RegisterProfilePrefs(registry);
+  translate::TranslatePrefs::RegisterProfilePrefs(registry);
   ZeroSuggestProvider::RegisterProfilePrefs(registry);
 
 #if defined(ENABLE_AUTOFILL_DIALOG)
@@ -523,7 +523,7 @@ void MigrateUserPrefs(Profile* profile) {
 #endif
 
   PromoResourceService::MigrateUserPrefs(prefs);
-  TranslatePrefs::MigrateUserPrefs(prefs, prefs::kAcceptLanguages);
+  translate::TranslatePrefs::MigrateUserPrefs(prefs, prefs::kAcceptLanguages);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   autofill::AutofillManager::MigrateUserPrefs(prefs);

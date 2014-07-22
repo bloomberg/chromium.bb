@@ -183,7 +183,7 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
   [self performLayout];
 }
 
-- (void)switchToErrorView:(TranslateErrors::Type)errorType {
+- (void)switchToErrorView:(translate::TranslateErrors::Type)errorType {
   // FIXME: Implement this.
 }
 

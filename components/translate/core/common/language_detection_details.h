@@ -11,6 +11,8 @@
 #include "base/time/time.h"
 #include "url/gurl.h"
 
+namespace translate {
+
 struct LanguageDetectionDetails {
   LanguageDetectionDetails();
   ~LanguageDetectionDetails();
@@ -39,5 +41,7 @@ struct LanguageDetectionDetails {
   // The contents which is used for detection.
   base::string16 contents;
 };
+
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_COMMON_LANGUAGE_DETECTION_DETAILS_H_

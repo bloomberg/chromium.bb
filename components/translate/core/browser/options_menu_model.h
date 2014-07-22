@@ -7,6 +7,8 @@
 
 #include "ui/base/models/simple_menu_model.h"
 
+namespace translate {
+
 class TranslateInfoBarDelegate;
 
 // A menu model that builds the contents of the options menu in the translate
@@ -39,5 +41,7 @@ class OptionsMenuModel : public ui::SimpleMenuModel,
 
   DISALLOW_COPY_AND_ASSIGN(OptionsMenuModel);
 };
+
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_OPTIONS_MENU_MODEL_H_

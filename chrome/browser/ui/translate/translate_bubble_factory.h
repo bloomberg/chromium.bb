@@ -25,7 +25,7 @@ class TranslateBubbleFactory {
   static void Show(BrowserWindow* window,
                    content::WebContents* web_contents,
                    translate::TranslateStep step,
-                   TranslateErrors::Type error_type);
+                   translate::TranslateErrors::Type error_type);
 
   // Sets the factory to change the behavior how to show the bubble.
   // TranslateBubbleFactory doesn't take the ownership of |factory|.
@@ -33,10 +33,11 @@ class TranslateBubbleFactory {
 
  protected:
   // Shows the translate bubble.
-  virtual void ShowImplementation(BrowserWindow* window,
-                                  content::WebContents* web_contents,
-                                  translate::TranslateStep step,
-                                  TranslateErrors::Type error_type) = 0;
+  virtual void ShowImplementation(
+      BrowserWindow* window,
+      content::WebContents* web_contents,
+      translate::TranslateStep step,
+      translate::TranslateErrors::Type error_type) = 0;
 
  private:
   static TranslateBubbleFactory* current_factory_;

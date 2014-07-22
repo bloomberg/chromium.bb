@@ -19,13 +19,15 @@
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_errors.h"
 
-class TranslateClient;
-class TranslateDriver;
-class TranslateManager;
-
 namespace infobars {
 class InfoBarManager;
 }
+
+namespace translate {
+
+class TranslateClient;
+class TranslateDriver;
+class TranslateManager;
 
 class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
  public:
@@ -217,5 +219,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   bool triggered_from_menu_;
   DISALLOW_COPY_AND_ASSIGN(TranslateInfoBarDelegate);
 };
+
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_INFOBAR_DELEGATE_H_

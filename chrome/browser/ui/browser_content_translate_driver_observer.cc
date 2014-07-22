@@ -23,7 +23,8 @@ void BrowserContentTranslateDriverObserver::OnIsPageTranslatedChanged(
   if (source == browser_->tab_strip_model()->GetActiveWebContents()) {
     ChromeTranslateClient* chrome_translate_client =
         ChromeTranslateClient::FromWebContents(source);
-    LanguageState& language_state = chrome_translate_client->GetLanguageState();
+    translate::LanguageState& language_state =
+        chrome_translate_client->GetLanguageState();
     browser_->window()->SetTranslateIconToggled(
         language_state.IsPageTranslated());
   }

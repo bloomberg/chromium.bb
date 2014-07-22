@@ -23,6 +23,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+namespace translate {
+
 namespace {
 
 // The default list of languages the Google translation server supports.
@@ -185,8 +187,8 @@ void TranslateLanguageList::RequestLanguageList() {
       (language_list_fetcher_->state() == TranslateURLFetcher::IDLE ||
        language_list_fetcher_->state() == TranslateURLFetcher::FAILED)) {
     GURL url = TranslateLanguageUrl();
-    url = TranslateURLUtil::AddHostLocaleToUrl(url);
-    url = TranslateURLUtil::AddApiKeyToUrl(url);
+    url = AddHostLocaleToUrl(url);
+    url = AddApiKeyToUrl(url);
     url = net::AppendQueryParameter(
         url, kAlphaLanguageQueryName, kAlphaLanguageQueryValue);
 
@@ -337,3 +339,5 @@ void TranslateLanguageList::SetSupportedLanguages(
     alpha_languages_.insert(lang);
   }
 }
+
+}  // namespace translate

@@ -22,10 +22,12 @@ class TranslateAcceptLanguagesService : public KeyedService {
   virtual ~TranslateAcceptLanguagesService();
 
   // Returns the associated TranslateAcceptLanguages.
-  TranslateAcceptLanguages& accept_languages() { return accept_languages_; }
+  translate::TranslateAcceptLanguages& accept_languages() {
+    return accept_languages_;
+  }
 
  private:
-  TranslateAcceptLanguages accept_languages_;
+  translate::TranslateAcceptLanguages accept_languages_;
   DISALLOW_COPY_AND_ASSIGN(TranslateAcceptLanguagesService);
 };
 
@@ -44,7 +46,8 @@ TranslateAcceptLanguagesFactory::GetInstance() {
 }
 
 // static
-TranslateAcceptLanguages* TranslateAcceptLanguagesFactory::GetForBrowserContext(
+translate::TranslateAcceptLanguages*
+TranslateAcceptLanguagesFactory::GetForBrowserContext(
     content::BrowserContext* context) {
   TranslateAcceptLanguagesService* service =
       static_cast<TranslateAcceptLanguagesService*>(

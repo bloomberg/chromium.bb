@@ -10,6 +10,8 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
+namespace translate {
+
 namespace {
 
 // Retry parameter for fetching.
@@ -80,3 +82,5 @@ void TranslateURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   scoped_ptr<const net::URLFetcher> delete_ptr(fetcher_.release());
   callback_.Run(id_, state_ == COMPLETED, data);
 }
+
+}  // namespace translate

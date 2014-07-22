@@ -492,12 +492,14 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowCocoa::ShowTranslateBubble(content::WebContents* contents,
-                                             translate::TranslateStep step,
-                                             TranslateErrors::Type error_type) {
+void BrowserWindowCocoa::ShowTranslateBubble(
+    content::WebContents* contents,
+    translate::TranslateStep step,
+    translate::TranslateErrors::Type error_type) {
   ChromeTranslateClient* chrome_translate_client =
       ChromeTranslateClient::FromWebContents(contents);
-  LanguageState& language_state = chrome_translate_client->GetLanguageState();
+  translate::LanguageState& language_state =
+      chrome_translate_client->GetLanguageState();
   language_state.SetTranslateEnabled(true);
 
   [controller_ showTranslateBubbleForWebContents:contents

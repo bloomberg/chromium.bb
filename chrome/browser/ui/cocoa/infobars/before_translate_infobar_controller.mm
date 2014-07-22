@@ -45,7 +45,7 @@ NSButton* CreateNSButtonWithResourceIDAndParameter(
 }
 
 - (void)initializeExtraControls {
-  TranslateInfoBarDelegate* delegate = [self delegate];
+  translate::TranslateInfoBarDelegate* delegate = [self delegate];
   const base::string16& language =
       delegate->language_name_at(delegate->original_language_index());
   neverTranslateButton_.reset(

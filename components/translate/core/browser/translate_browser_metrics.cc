@@ -11,6 +11,8 @@
 #include "base/metrics/sparse_histogram.h"
 #include "components/language_usage_metrics/language_usage_metrics.h"
 
+namespace translate {
+
 namespace {
 
 // Constant string values to indicate UMA names. All entries should have
@@ -92,3 +94,5 @@ const char* GetMetricsName(MetricsNameIndex index) {
 }
 
 }  // namespace TranslateBrowserMetrics
+
+}  // namespace translate

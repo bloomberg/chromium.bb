@@ -19,7 +19,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
  public:
   explicit MockTranslateBubbleModel(TranslateBubbleModel::ViewState view_state)
       : view_state_transition_(view_state),
-        error_type_(TranslateErrors::NONE),
+        error_type_(translate::TranslateErrors::NONE),
         original_language_index_(0),
         target_language_index_(1),
         never_translate_language_(false),
@@ -30,8 +30,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
         revert_translation_called_(false),
         translation_declined_called_(false),
         original_language_index_on_translation_(-1),
-        target_language_index_on_translation_(-1) {
-  }
+        target_language_index_on_translation_(-1) {}
 
   virtual TranslateBubbleModel::ViewState GetViewState() const OVERRIDE {
     return view_state_transition_.view_state();
@@ -42,7 +41,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
     view_state_transition_.SetViewState(view_state);
   }
 
-  virtual void ShowError(TranslateErrors::Type error_type) OVERRIDE {
+  virtual void ShowError(translate::TranslateErrors::Type error_type) OVERRIDE {
     error_type_ = error_type;
   }
 
@@ -112,7 +111,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
   }
 
   TranslateBubbleViewStateTransition view_state_transition_;
-  TranslateErrors::Type error_type_;
+  translate::TranslateErrors::Type error_type_;
   int original_language_index_;
   int target_language_index_;
   bool never_translate_language_;
@@ -151,7 +150,7 @@ class TranslateBubbleViewTest : public views::ViewsTestBase {
     scoped_ptr<TranslateBubbleModel> model(mock_model_);
     bubble_ = new TranslateBubbleView(anchor_widget_->GetContentsView(),
                                       model.Pass(),
-                                      TranslateErrors::NONE,
+                                      translate::TranslateErrors::NONE,
                                       NULL);
     views::BubbleDelegateView::CreateBubble(bubble_)->Show();
   }
@@ -195,9 +194,9 @@ TEST_F(TranslateBubbleViewTest, ShowOriginalButton) {
 }
 
 TEST_F(TranslateBubbleViewTest, TryAgainButton) {
-  bubble_->SwitchToErrorView(TranslateErrors::NETWORK);
+  bubble_->SwitchToErrorView(translate::TranslateErrors::NETWORK);
 
-  EXPECT_EQ(TranslateErrors::NETWORK, mock_model_->error_type_);
+  EXPECT_EQ(translate::TranslateErrors::NETWORK, mock_model_->error_type_);
 
   // Click the "Try again" button to translate.
   EXPECT_FALSE(mock_model_->translate_called_);

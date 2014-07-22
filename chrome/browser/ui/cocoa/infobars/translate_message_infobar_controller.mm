@@ -15,7 +15,7 @@ using InfoBarUtilities::MoveControl;
   [self removeOkCancelButtons];
   MoveControl(
       label1_, translateMessageButton_, spaceBetweenControls_ * 2, true);
-  TranslateInfoBarDelegate* delegate = [self delegate];
+  translate::TranslateInfoBarDelegate* delegate = [self delegate];
   if ([self delegate]->ShouldShowMessageInfoBarButton()) {
     base::string16 buttonText = delegate->GetMessageInfoBarButtonText();
     [translateMessageButton_ setTitle:base::SysUTF16ToNSString(buttonText)];
@@ -36,7 +36,7 @@ using InfoBarUtilities::MoveControl;
 }
 
 - (void)loadLabelText {
-  TranslateInfoBarDelegate* delegate = [self delegate];
+  translate::TranslateInfoBarDelegate* delegate = [self delegate];
   base::string16 messageText = delegate->GetMessageInfoBarText();
   NSString* string1 = base::SysUTF16ToNSString(messageText);
   [label1_ setStringValue:string1];

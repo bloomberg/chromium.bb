@@ -11,6 +11,8 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace translate {
+
 TEST(TranslatePrefsTest, CreateBlockedLanguages) {
   TranslateDownloadManager::GetInstance()->set_application_locale("en");
   std::vector<std::string> blacklisted_languages;
@@ -118,3 +120,5 @@ TEST(TranslatePrefsTest, CreateBlockedLanguagesNonEnglishUI) {
     }
   }
 }
+
+}  // namespace translate

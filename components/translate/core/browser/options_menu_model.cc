@@ -10,6 +10,8 @@
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace translate {
+
 namespace {
 
 const char kAboutGoogleTranslateURL[] =
@@ -135,3 +137,5 @@ void OptionsMenuModel::ExecuteCommand(int command_id, int event_flags) {
       break;
   }
 }
+
+}  // namespace translate

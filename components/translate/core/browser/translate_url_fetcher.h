@@ -10,6 +10,8 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
+namespace translate {
+
 // Downloads raw Translate data such as the Translate script and the language
 // list.
 class TranslateURLFetcher : public net::URLFetcherDelegate {
@@ -82,5 +84,7 @@ class TranslateURLFetcher : public net::URLFetcherDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(TranslateURLFetcher);
 };
+
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_URL_FETCHER_H_

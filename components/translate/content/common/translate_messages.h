@@ -12,9 +12,9 @@
 
 #define IPC_MESSAGE_START TranslateMsgStart
 
-IPC_ENUM_TRAITS(TranslateErrors::Type)
+IPC_ENUM_TRAITS(translate::TranslateErrors::Type)
 
-IPC_STRUCT_TRAITS_BEGIN(LanguageDetectionDetails)
+IPC_STRUCT_TRAITS_BEGIN(translate::LanguageDetectionDetails)
   IPC_STRUCT_TRAITS_MEMBER(time)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(content_language)
@@ -53,12 +53,14 @@ IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_TranslateAssignedSequenceNumber,
                     int /* page_seq_no */)
 
 // Notification that the language for the tab has been determined.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_TranslateLanguageDetermined,
-                    LanguageDetectionDetails /* details about lang detection */,
-                    bool /* whether the page needs translation */)
+IPC_MESSAGE_ROUTED2(
+    ChromeViewHostMsg_TranslateLanguageDetermined,
+    translate::LanguageDetectionDetails /* details about lang detection */,
+    bool /* whether the page needs translation */)
 
 // Notifies the browser that a page has been translated.
-IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_PageTranslated,
-                    std::string           /* the original language */,
-                    std::string           /* the translated language */,
-                    TranslateErrors::Type /* the error type if available */)
+IPC_MESSAGE_ROUTED3(
+    ChromeViewHostMsg_PageTranslated,
+    std::string /* the original language */,
+    std::string /* the translated language */,
+    translate::TranslateErrors::Type /* the error type if available */)

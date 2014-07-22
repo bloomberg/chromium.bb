@@ -31,38 +31,44 @@ namespace test {
 class ScopedCLDDynamicDataHarness;
 }  // namespace test
 
+class PrefService;
+
+namespace translate {
 struct LanguageDetectionDetails;
 class LanguageState;
-class PrefService;
 class TranslateAcceptLanguages;
 class TranslatePrefs;
 class TranslateManager;
+}  // namespace translate
 
 class ChromeTranslateClient
-    : public TranslateClient,
+    : public translate::TranslateClient,
       public content::WebContentsObserver,
       public content::WebContentsUserData<ChromeTranslateClient> {
  public:
   virtual ~ChromeTranslateClient();
 
   // Gets the LanguageState associated with the page.
-  LanguageState& GetLanguageState();
+  translate::LanguageState& GetLanguageState();
 
   // Returns the ContentTranslateDriver instance associated with this
   // WebContents.
-  ContentTranslateDriver& translate_driver() { return translate_driver_; }
+  translate::ContentTranslateDriver& translate_driver() {
+    return translate_driver_;
+  }
 
   // Helper method to return a new TranslatePrefs instance.
-  static scoped_ptr<TranslatePrefs> CreateTranslatePrefs(PrefService* prefs);
+  static scoped_ptr<translate::TranslatePrefs> CreateTranslatePrefs(
+      PrefService* prefs);
 
   // Helper method to return the TranslateAcceptLanguages instance associated
   // with |browser_context|.
-  static TranslateAcceptLanguages* GetTranslateAcceptLanguages(
+  static translate::TranslateAcceptLanguages* GetTranslateAcceptLanguages(
       content::BrowserContext* browser_context);
 
   // Helper method to return the TranslateManager instance associated with
   // |web_contents|, or NULL if there is no such associated instance.
-  static TranslateManager* GetManagerFromWebContents(
+  static translate::TranslateManager* GetManagerFromWebContents(
       content::WebContents* web_contents);
 
   // Gets |source| and |target| language for translation.
@@ -71,7 +77,7 @@ class ChromeTranslateClient
                                     std::string* target);
 
   // Gets the associated TranslateManager.
-  TranslateManager* GetTranslateManager();
+  translate::TranslateManager* GetTranslateManager();
 
   // Gets the associated WebContents. Returns NULL if the WebContents is being
   // destroyed.
@@ -83,17 +89,18 @@ class ChromeTranslateClient
   }
 
   // TranslateClient implementation.
-  virtual TranslateDriver* GetTranslateDriver() OVERRIDE;
+  virtual translate::TranslateDriver* GetTranslateDriver() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
-  virtual scoped_ptr<TranslatePrefs> GetTranslatePrefs() OVERRIDE;
-  virtual TranslateAcceptLanguages* GetTranslateAcceptLanguages() OVERRIDE;
+  virtual scoped_ptr<translate::TranslatePrefs> GetTranslatePrefs() OVERRIDE;
+  virtual translate::TranslateAcceptLanguages* GetTranslateAcceptLanguages()
+      OVERRIDE;
   virtual int GetInfobarIconID() const OVERRIDE;
   virtual scoped_ptr<infobars::InfoBar> CreateInfoBar(
-      scoped_ptr<TranslateInfoBarDelegate> delegate) const OVERRIDE;
+      scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const OVERRIDE;
   virtual void ShowTranslateUI(translate::TranslateStep step,
                                const std::string source_language,
                                const std::string target_language,
-                               TranslateErrors::Type error_type,
+                               translate::TranslateErrors::Type error_type,
                                bool triggered_from_menu) OVERRIDE;
   virtual bool IsTranslatableURL(const GURL& url) OVERRIDE;
   virtual void ShowReportLanguageDetectionErrorUI(
@@ -117,21 +124,21 @@ class ChromeTranslateClient
 
   // IPC handlers.
   void OnTranslateAssignedSequenceNumber(int page_seq_no);
-  void OnLanguageDetermined(const LanguageDetectionDetails& details,
+  void OnLanguageDetermined(const translate::LanguageDetectionDetails& details,
                             bool page_needs_translation);
   void OnPageTranslated(const std::string& original_lang,
                         const std::string& translated_lang,
-                        TranslateErrors::Type error_type);
+                        translate::TranslateErrors::Type error_type);
 
   // Shows the translate bubble.
   void ShowBubble(translate::TranslateStep step,
-                  TranslateErrors::Type error_type);
+                  translate::TranslateErrors::Type error_type);
 
   // Max number of attempts before checking if a page has been reloaded.
   int max_reload_check_attempts_;
 
-  ContentTranslateDriver translate_driver_;
-  scoped_ptr<TranslateManager> translate_manager_;
+  translate::ContentTranslateDriver translate_driver_;
+  scoped_ptr<translate::TranslateManager> translate_manager_;
 
   // Provides CLD data for this process.
   scoped_ptr<translate::BrowserCldDataProvider> cld_data_provider_;

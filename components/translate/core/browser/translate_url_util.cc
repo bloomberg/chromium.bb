@@ -8,6 +8,8 @@
 #include "google_apis/google_api_keys.h"
 #include "net/base/url_util.h"
 
+namespace translate {
+
 namespace {
 
 // Used in all translate URLs to specify API Key.
@@ -18,8 +20,6 @@ const char kApiKeyName[] = "key";
 const char kHostLocaleQueryName[] = "hl";
 
 }  // namespace
-
-namespace TranslateURLUtil {
 
 GURL AddApiKeyToUrl(const GURL& url) {
   return net::AppendQueryParameter(url, kApiKeyName, google_apis::GetAPIKey());
@@ -33,4 +33,4 @@ GURL AddHostLocaleToUrl(const GURL& url) {
           TranslateDownloadManager::GetInstance()->application_locale()));
 }
 
-}  // namespace TranslateURLUtil
+}  // namespace translate

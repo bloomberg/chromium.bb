@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "components/translate/core/browser/translate_driver.h"
 
+namespace translate {
+
 LanguageState::LanguageState(TranslateDriver* driver)
     : is_page_translated_(false),
       translate_driver_(driver),
@@ -110,3 +112,5 @@ void LanguageState::SetIsPageTranslated(bool value) {
   if (is_page_translated_)
     SetTranslateEnabled(true);
 }
+
+}  // namespace translate

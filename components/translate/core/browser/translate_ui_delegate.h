@@ -14,6 +14,8 @@
 #include "base/strings/string16.h"
 #include "components/translate/core/common/translate_errors.h"
 
+namespace translate {
+
 class LanguageState;
 class TranslateClient;
 class TranslateDriver;
@@ -127,5 +129,7 @@ class TranslateUIDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(TranslateUIDelegate);
 };
+
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_UI_DELEGATE_H_

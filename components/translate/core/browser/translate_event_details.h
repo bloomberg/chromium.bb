@@ -9,6 +9,8 @@
 
 #include "base/time/time.h"
 
+namespace translate {
+
 struct TranslateEventDetails {
   TranslateEventDetails(const std::string& in_filename,
                         int in_line,
@@ -26,5 +28,7 @@ struct TranslateEventDetails {
   // The message to show in event logs.
   std::string message;
 };
+
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_EVENT_DETAILS_H_

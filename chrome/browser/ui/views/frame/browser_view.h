@@ -321,9 +321,10 @@ class BrowserView : public BrowserWindow,
   virtual void ShowBookmarkAppBubble(
       const WebApplicationInfo& web_app_info,
       const std::string& extension_id) OVERRIDE;
-  virtual void ShowTranslateBubble(content::WebContents* contents,
-                                   translate::TranslateStep step,
-                                   TranslateErrors::Type error_type) OVERRIDE;
+  virtual void ShowTranslateBubble(
+      content::WebContents* contents,
+      translate::TranslateStep step,
+      translate::TranslateErrors::Type error_type) OVERRIDE;
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   virtual void ShowOneClickSigninBubble(
       OneClickSigninBubbleType type,

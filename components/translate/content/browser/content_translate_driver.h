@@ -13,6 +13,8 @@ class NavigationController;
 class WebContents;
 }
 
+namespace translate {
+
 // Content implementation of TranslateDriver.
 class ContentTranslateDriver : public TranslateDriver {
  public:
@@ -61,5 +63,7 @@ class ContentTranslateDriver : public TranslateDriver {
 
   DISALLOW_COPY_AND_ASSIGN(ContentTranslateDriver);
 };
+
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CONTENT_BROWSER_CONTENT_TRANSLATE_DRIVER_H_

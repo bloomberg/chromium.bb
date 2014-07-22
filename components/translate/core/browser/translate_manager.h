@@ -18,6 +18,9 @@
 
 class GURL;
 class PrefService;
+
+namespace translate {
+
 class TranslateClient;
 class TranslateDriver;
 class TranslatePrefs;
@@ -124,5 +127,7 @@ class TranslateManager {
 
   DISALLOW_COPY_AND_ASSIGN(TranslateManager);
 };
+
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_MANAGER_H_

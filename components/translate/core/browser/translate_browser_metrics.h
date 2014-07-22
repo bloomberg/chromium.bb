@@ -7,6 +7,8 @@
 
 #include <string>
 
+namespace translate {
+
 namespace TranslateBrowserMetrics {
 
 // An indexing type to query each UMA entry name via GetMetricsName() function.
@@ -60,5 +62,7 @@ void ReportUnsupportedLanguageAtInitiation(const std::string& language);
 const char* GetMetricsName(MetricsNameIndex index);
 
 }  // namespace TranslateBrowserMetrics
+
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_BROWSER_METRICS_H_

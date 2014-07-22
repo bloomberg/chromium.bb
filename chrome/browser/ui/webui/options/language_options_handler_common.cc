@@ -132,7 +132,7 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
                                default_target_language);
 
   std::vector<std::string> languages;
-  TranslateDownloadManager::GetSupportedLanguages(&languages);
+  translate::TranslateDownloadManager::GetSupportedLanguages(&languages);
 
   base::ListValue* languages_list = new base::ListValue();
   for (std::vector<std::string>::iterator it = languages.begin();
@@ -266,7 +266,7 @@ void LanguageOptionsHandlerCommon::UpdateLanguageListCallback(
   }
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  scoped_ptr<TranslatePrefs> translate_prefs =
+  scoped_ptr<translate::TranslatePrefs> translate_prefs =
       ChromeTranslateClient::CreateTranslatePrefs(profile->GetPrefs());
   translate_prefs->UpdateLanguageList(languages);
 }

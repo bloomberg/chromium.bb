@@ -4,6 +4,10 @@
 
 #include "components/translate/core/common/language_detection_details.h"
 
+namespace translate {
+
 LanguageDetectionDetails::LanguageDetectionDetails() {}
 
 LanguageDetectionDetails::~LanguageDetectionDetails() {}
+
+}  // namespace translate

@@ -4,6 +4,8 @@
 
 #include "components/translate/core/browser/translate_event_details.h"
 
+namespace translate {
+
 TranslateEventDetails::TranslateEventDetails(const std::string& in_filename,
                                              int in_line,
                                              const std::string& in_message)
@@ -12,3 +14,5 @@ TranslateEventDetails::TranslateEventDetails(const std::string& in_filename,
       message(in_message) {
   time = base::Time::Now();
 }
+
+}  // namespace translate

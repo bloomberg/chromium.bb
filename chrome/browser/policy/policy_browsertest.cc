@@ -1994,7 +1994,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_TranslateEnabled) {
   ChromeTranslateClient* chrome_translate_client =
       ChromeTranslateClient::FromWebContents(contents);
   ASSERT_TRUE(chrome_translate_client);
-  LanguageState& language_state = chrome_translate_client->GetLanguageState();
+  translate::LanguageState& language_state =
+      chrome_translate_client->GetLanguageState();
   EXPECT_EQ("fr", language_state.original_language());
   EXPECT_TRUE(language_state.page_needs_translation());
   EXPECT_FALSE(language_state.translation_pending());
@@ -2004,7 +2005,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_TranslateEnabled) {
   // Verify that the translate infobar showed up.
   ASSERT_EQ(1u, infobar_service->infobar_count());
   infobars::InfoBar* infobar = infobar_service->infobar_at(0);
-  TranslateInfoBarDelegate* translate_infobar_delegate =
+  translate::TranslateInfoBarDelegate* translate_infobar_delegate =
       infobar->delegate()->AsTranslateInfoBarDelegate();
   ASSERT_TRUE(translate_infobar_delegate);
   EXPECT_EQ(translate::TRANSLATE_STEP_BEFORE_TRANSLATE,

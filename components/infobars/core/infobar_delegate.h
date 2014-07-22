@@ -19,7 +19,10 @@ class RegisterProtocolHandlerInfoBarDelegate;
 class ScreenCaptureInfoBarDelegate;
 class ThemeInstalledInfoBarDelegate;
 class ThreeDAPIInfoBarDelegate;
+
+namespace translate {
 class TranslateInfoBarDelegate;
+}
 
 namespace gfx {
 class Image;
@@ -111,7 +114,7 @@ class InfoBarDelegate {
       AsRegisterProtocolHandlerInfoBarDelegate();
   virtual ScreenCaptureInfoBarDelegate* AsScreenCaptureInfoBarDelegate();
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
-  virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
+  virtual translate::TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
 
   void set_infobar(InfoBar* infobar) { infobar_ = infobar; }
 

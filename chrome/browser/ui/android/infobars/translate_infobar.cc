@@ -17,7 +17,7 @@
 // ----------------------------------------------------------
 
 scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
-    scoped_ptr<TranslateInfoBarDelegate> delegate) const {
+    scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const {
   return scoped_ptr<infobars::InfoBar>(new TranslateInfoBar(delegate.Pass()));
 }
 
@@ -25,7 +25,7 @@ scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
 // TranslateInfoBar -----------------------------------------------------------
 
 TranslateInfoBar::TranslateInfoBar(
-    scoped_ptr<TranslateInfoBarDelegate> delegate)
+    scoped_ptr<translate::TranslateInfoBarDelegate> delegate)
     : InfoBarAndroid(delegate.PassAs<infobars::InfoBarDelegate>()),
       java_translate_delegate_() {
 }
@@ -35,7 +35,7 @@ TranslateInfoBar::~TranslateInfoBar() {
 
 ScopedJavaLocalRef<jobject> TranslateInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   java_translate_delegate_.Reset(Java_TranslateInfoBarDelegate_create(env));
-  TranslateInfoBarDelegate* delegate = GetDelegate();
+  translate::TranslateInfoBarDelegate* delegate = GetDelegate();
   std::vector<base::string16> languages;
   languages.reserve(delegate->num_languages());
   for (size_t i = 0; i < delegate->num_languages(); ++i)
@@ -56,7 +56,7 @@ void TranslateInfoBar::ProcessButton(int action,
   if (!owner())
     return;  // We're closing; don't call anything, it might access the owner.
 
-  TranslateInfoBarDelegate* delegate = GetDelegate();
+  translate::TranslateInfoBarDelegate* delegate = GetDelegate();
   if (action == InfoBarAndroid::ACTION_TRANSLATE) {
     delegate->Translate();
     return;
@@ -73,7 +73,7 @@ void TranslateInfoBar::ProcessButton(int action,
 }
 
 void TranslateInfoBar::PassJavaInfoBar(InfoBarAndroid* source) {
-  TranslateInfoBarDelegate* delegate = GetDelegate();
+  translate::TranslateInfoBarDelegate* delegate = GetDelegate();
   DCHECK_NE(translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
             delegate->translate_step());
 
@@ -90,7 +90,7 @@ void TranslateInfoBar::ApplyTranslateOptions(JNIEnv* env,
                                              bool always_translate,
                                              bool never_translate_language,
                                              bool never_translate_site) {
-  TranslateInfoBarDelegate* delegate = GetDelegate();
+  translate::TranslateInfoBarDelegate* delegate = GetDelegate();
   delegate->UpdateOriginalLanguageIndex(source_language_index);
   delegate->UpdateTargetLanguageIndex(target_language_index);
 
@@ -121,13 +121,13 @@ void TranslateInfoBar::SetJavaDelegate(jobject delegate) {
 }
 
 bool TranslateInfoBar::ShouldDisplayNeverTranslateInfoBarOnCancel() {
-  TranslateInfoBarDelegate* delegate = GetDelegate();
+  translate::TranslateInfoBarDelegate* delegate = GetDelegate();
   return (delegate->translate_step() ==
           translate::TRANSLATE_STEP_BEFORE_TRANSLATE) &&
          delegate->ShouldShowNeverTranslateShortcut();
 }
 
-TranslateInfoBarDelegate* TranslateInfoBar::GetDelegate() {
+translate::TranslateInfoBarDelegate* TranslateInfoBar::GetDelegate() {
   return delegate()->AsTranslateInfoBarDelegate();
 }
 

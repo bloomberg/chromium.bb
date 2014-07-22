@@ -31,6 +31,8 @@
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 
+namespace translate {
+
 namespace {
 
 // Callbacks for translate errors.
@@ -272,8 +274,8 @@ void TranslateManager::ReportLanguageDetectionError() {
                                 kSourceLanguageQueryName,
                                 language_state_.original_language());
 
-  report_error_url = TranslateURLUtil::AddHostLocaleToUrl(report_error_url);
-  report_error_url = TranslateURLUtil::AddApiKeyToUrl(report_error_url);
+  report_error_url = translate::AddHostLocaleToUrl(report_error_url);
+  report_error_url = translate::AddApiKeyToUrl(report_error_url);
 
   translate_client_->ShowReportLanguageDetectionErrorUI(report_error_url);
 }
@@ -387,3 +389,5 @@ std::string TranslateManager::GetAutoTargetLanguage(
 LanguageState& TranslateManager::GetLanguageState() {
   return language_state_;
 }
+
+}  // namespace translate

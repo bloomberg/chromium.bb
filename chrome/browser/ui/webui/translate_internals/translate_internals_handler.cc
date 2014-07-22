@@ -34,12 +34,13 @@ TranslateInternalsHandler::TranslateInternalsHandler() {
                               chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
                               content::NotificationService::AllSources());
 
-  error_subscription_ = TranslateManager::RegisterTranslateErrorCallback(
-      base::Bind(&TranslateInternalsHandler::OnTranslateError,
-                 base::Unretained(this)));
+  error_subscription_ =
+      translate::TranslateManager::RegisterTranslateErrorCallback(
+          base::Bind(&TranslateInternalsHandler::OnTranslateError,
+                     base::Unretained(this)));
 
-  TranslateLanguageList* language_list =
-      TranslateDownloadManager::GetInstance()->language_list();
+  translate::TranslateLanguageList* language_list =
+      translate::TranslateDownloadManager::GetInstance()->language_list();
   if (!language_list) {
     NOTREACHED();
     return;
@@ -66,8 +67,9 @@ void TranslateInternalsHandler::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED, type);
-  const LanguageDetectionDetails* language_detection_details =
-      content::Details<const LanguageDetectionDetails>(details).ptr();
+  const translate::LanguageDetectionDetails* language_detection_details =
+      content::Details<const translate::LanguageDetectionDetails>(details)
+          .ptr();
   content::WebContents* web_contents =
       content::Source<content::WebContents>(source).ptr();
 
@@ -100,7 +102,7 @@ void TranslateInternalsHandler::Observe(
 }
 
 void TranslateInternalsHandler::OnTranslateError(
-    const TranslateErrorDetails& details) {
+    const translate::TranslateErrorDetails& details) {
   base::DictionaryValue dict;
   dict.Set("time",
            new base::FundamentalValue(details.time.ToJsTime()));
@@ -112,7 +114,7 @@ void TranslateInternalsHandler::OnTranslateError(
 }
 
 void TranslateInternalsHandler::OnTranslateEvent(
-    const TranslateEventDetails& details) {
+    const translate::TranslateEventDetails& details) {
   base::DictionaryValue dict;
   dict.Set("time", new base::FundamentalValue(details.time.ToJsTime()));
   dict.Set("filename", new base::StringValue(details.filename));
@@ -126,7 +128,7 @@ void TranslateInternalsHandler::OnRemovePrefItem(const base::ListValue* args) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   PrefService* prefs = profile->GetOriginalProfile()->GetPrefs();
-  scoped_ptr<TranslatePrefs> translate_prefs(
+  scoped_ptr<translate::TranslatePrefs> translate_prefs(
       ChromeTranslateClient::CreateTranslatePrefs(prefs));
 
   std::string pref_name;
@@ -187,14 +189,14 @@ void TranslateInternalsHandler::SendPrefsToJs() {
   std::vector<std::string> keys;
   keys.push_back(prefs::kEnableTranslate);
 
-  keys.push_back(TranslatePrefs::kPrefTranslateBlockedLanguages);
-  keys.push_back(TranslatePrefs::kPrefTranslateLanguageBlacklist);
-  keys.push_back(TranslatePrefs::kPrefTranslateSiteBlacklist);
-  keys.push_back(TranslatePrefs::kPrefTranslateWhitelists);
-  keys.push_back(TranslatePrefs::kPrefTranslateDeniedCount);
-  keys.push_back(TranslatePrefs::kPrefTranslateAcceptedCount);
-  keys.push_back(TranslatePrefs::kPrefTranslateLastDeniedTime);
-  keys.push_back(TranslatePrefs::kPrefTranslateTooOftenDenied);
+  keys.push_back(translate::TranslatePrefs::kPrefTranslateBlockedLanguages);
+  keys.push_back(translate::TranslatePrefs::kPrefTranslateLanguageBlacklist);
+  keys.push_back(translate::TranslatePrefs::kPrefTranslateSiteBlacklist);
+  keys.push_back(translate::TranslatePrefs::kPrefTranslateWhitelists);
+  keys.push_back(translate::TranslatePrefs::kPrefTranslateDeniedCount);
+  keys.push_back(translate::TranslatePrefs::kPrefTranslateAcceptedCount);
+  keys.push_back(translate::TranslatePrefs::kPrefTranslateLastDeniedTime);
+  keys.push_back(translate::TranslatePrefs::kPrefTranslateTooOftenDenied);
 
   for (std::vector<std::string>::const_iterator it = keys.begin();
        it != keys.end(); ++it) {
@@ -211,9 +213,9 @@ void TranslateInternalsHandler::SendSupportedLanguagesToJs() {
   base::DictionaryValue dict;
 
   std::vector<std::string> languages;
-  TranslateDownloadManager::GetSupportedLanguages(&languages);
+  translate::TranslateDownloadManager::GetSupportedLanguages(&languages);
   base::Time last_updated =
-      TranslateDownloadManager::GetSupportedLanguagesLastUpdated();
+      translate::TranslateDownloadManager::GetSupportedLanguagesLastUpdated();
 
   base::ListValue* languages_list = new base::ListValue();
   base::ListValue* alpha_languages_list = new base::ListValue();
@@ -221,7 +223,7 @@ void TranslateInternalsHandler::SendSupportedLanguagesToJs() {
        it != languages.end(); ++it) {
     const std::string& lang = *it;
     languages_list->Append(new base::StringValue(lang));
-    if (TranslateDownloadManager::IsAlphaLanguage(lang))
+    if (translate::TranslateDownloadManager::IsAlphaLanguage(lang))
       alpha_languages_list->Append(new base::StringValue(lang));
   }
 

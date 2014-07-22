@@ -16,6 +16,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+namespace translate {
+
 class TranslateScriptTest : public testing::Test {
  public:
   TranslateScriptTest() : testing::Test() {}
@@ -118,3 +120,5 @@ TEST_F(TranslateScriptTest, CheckScriptURL) {
   EXPECT_EQ(expected_url.GetOrigin().spec(), url.GetOrigin().spec());
   EXPECT_EQ(expected_url.path(), url.path());
 }
+
+}  // namespace translate

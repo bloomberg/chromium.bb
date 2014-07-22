@@ -40,8 +40,8 @@ void TranslateService::Initialize() {
   g_translate_service = new TranslateService;
   // Initialize the allowed state for resource requests.
   g_translate_service->OnResourceRequestsAllowed();
-  TranslateDownloadManager* download_manager =
-      TranslateDownloadManager::GetInstance();
+  translate::TranslateDownloadManager* download_manager =
+      translate::TranslateDownloadManager::GetInstance();
   download_manager->set_request_context(
       g_browser_process->system_request_context());
   download_manager->set_application_locale(
@@ -50,8 +50,8 @@ void TranslateService::Initialize() {
 
 // static
 void TranslateService::Shutdown(bool cleanup_pending_fetcher) {
-  TranslateDownloadManager* download_manager =
-      TranslateDownloadManager::GetInstance();
+  translate::TranslateDownloadManager* download_manager =
+      translate::TranslateDownloadManager::GetInstance();
   if (cleanup_pending_fetcher) {
     download_manager->Shutdown();
   } else {
@@ -65,19 +65,19 @@ void TranslateService::InitializeForTesting() {
   if (!g_translate_service) {
     TranslateService::Initialize();
   } else {
-    TranslateDownloadManager::GetInstance()->ResetForTesting();
+    translate::TranslateDownloadManager::GetInstance()->ResetForTesting();
     g_translate_service->OnResourceRequestsAllowed();
   }
 }
 
 // static
 void TranslateService::ShutdownForTesting() {
-  TranslateDownloadManager::GetInstance()->Shutdown();
+  translate::TranslateDownloadManager::GetInstance()->Shutdown();
 }
 
 void TranslateService::OnResourceRequestsAllowed() {
-  TranslateLanguageList* language_list =
-      TranslateDownloadManager::GetInstance()->language_list();
+  translate::TranslateLanguageList* language_list =
+      translate::TranslateDownloadManager::GetInstance()->language_list();
   if (!language_list) {
     NOTREACHED();
     return;
@@ -106,7 +106,7 @@ std::string TranslateService::GetTargetLanguage(PrefService* prefs) {
   std::vector<std::string> accept_languages_list;
   base::SplitString(prefs->GetString(prefs::kAcceptLanguages), ',',
                     &accept_languages_list);
-  return TranslateManager::GetTargetLanguage(accept_languages_list);
+  return translate::TranslateManager::GetTargetLanguage(accept_languages_list);
 }
 
 // static

@@ -31,6 +31,8 @@ const char kShowErrorUI[] = "Translate.ShowErrorUI";
 
 }  // namespace
 
+namespace translate {
+
 TranslateUIDelegate::TranslateUIDelegate(
     const base::WeakPtr<TranslateManager>& translate_manager,
     const std::string& original_language,
@@ -257,3 +259,5 @@ std::string TranslateUIDelegate::GetPageHost() {
     return std::string();
   return translate_driver_->GetActiveURL().HostNoBrackets();
 }
+
+}  // namespace translate

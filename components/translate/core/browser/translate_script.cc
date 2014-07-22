@@ -21,6 +21,8 @@
 #include "net/base/url_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+namespace translate {
+
 namespace {
 
 const int kExpirationDelayDays = 1;
@@ -101,10 +103,8 @@ void TranslateScript::Request(const RequestCallback& callback) {
       kJavascriptLoaderCallbackQueryValue);
 #endif  // !defined(OS_IOS)
 
-  translate_script_url =
-      TranslateURLUtil::AddHostLocaleToUrl(translate_script_url);
-  translate_script_url =
-      TranslateURLUtil::AddApiKeyToUrl(translate_script_url);
+  translate_script_url = AddHostLocaleToUrl(translate_script_url);
+  translate_script_url = AddApiKeyToUrl(translate_script_url);
 
   fetcher_.reset(new TranslateURLFetcher(kFetcherId));
   fetcher_->set_extra_request_header(kRequestHeader);
@@ -154,3 +154,5 @@ void TranslateScript::OnScriptFetchComplete(
   }
   callback_list_.clear();
 }
+
+}  // namespace translate

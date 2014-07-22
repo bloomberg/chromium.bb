@@ -181,7 +181,7 @@ void TranslateHelper::PageCapturedImpl(int page_seq_no,
   language_determined_time_ = base::TimeTicks::Now();
 
   GURL url(document.url());
-  LanguageDetectionDetails details;
+  translate::LanguageDetectionDetails details;
   details.time = base::Time::Now();
   details.url = url;
   details.content_language = content_language;
@@ -465,7 +465,8 @@ void TranslateHelper::CheckTranslateStatus(int page_seq_no) {
   // First check if there was an error.
   if (HasTranslationFailed()) {
     // TODO(toyoshim): Check |errorCode| of translate.js and notify it here.
-    NotifyBrowserTranslationFailed(TranslateErrors::TRANSLATION_ERROR);
+    NotifyBrowserTranslationFailed(
+        translate::TranslateErrors::TRANSLATION_ERROR);
     return;  // There was an error.
   }
 
@@ -476,10 +477,12 @@ void TranslateHelper::CheckTranslateStatus(int page_seq_no) {
     if (source_lang_ == kAutoDetectionLanguage) {
       actual_source_lang = GetOriginalPageLanguage();
       if (actual_source_lang.empty()) {
-        NotifyBrowserTranslationFailed(TranslateErrors::UNKNOWN_LANGUAGE);
+        NotifyBrowserTranslationFailed(
+            translate::TranslateErrors::UNKNOWN_LANGUAGE);
         return;
       } else if (actual_source_lang == target_lang_) {
-        NotifyBrowserTranslationFailed(TranslateErrors::IDENTICAL_LANGUAGES);
+        NotifyBrowserTranslationFailed(
+            translate::TranslateErrors::IDENTICAL_LANGUAGES);
         return;
       }
     } else {
@@ -498,9 +501,11 @@ void TranslateHelper::CheckTranslateStatus(int page_seq_no) {
         ExecuteScriptAndGetDoubleResult("cr.googleTranslate.translationTime"));
 
     // Notify the browser we are done.
-    render_view()->Send(new ChromeViewHostMsg_PageTranslated(
-        render_view()->GetRoutingID(), actual_source_lang, target_lang_,
-        TranslateErrors::NONE));
+    render_view()->Send(
+        new ChromeViewHostMsg_PageTranslated(render_view()->GetRoutingID(),
+                                             actual_source_lang,
+                                             target_lang_,
+                                             translate::TranslateErrors::NONE));
     return;
   }
 
@@ -521,7 +526,8 @@ void TranslateHelper::TranslatePageImpl(int page_seq_no, int count) {
     // The library is not ready, try again later, unless we have tried several
     // times unsucessfully already.
     if (++count >= kMaxTranslateInitCheckAttempts) {
-      NotifyBrowserTranslationFailed(TranslateErrors::INITIALIZATION_ERROR);
+      NotifyBrowserTranslationFailed(
+          translate::TranslateErrors::INITIALIZATION_ERROR);
       return;
     }
     base::MessageLoop::current()->PostDelayedTask(
@@ -541,7 +547,8 @@ void TranslateHelper::TranslatePageImpl(int page_seq_no, int count) {
       ExecuteScriptAndGetDoubleResult("cr.googleTranslate.loadTime"));
 
   if (!StartTranslation()) {
-    NotifyBrowserTranslationFailed(TranslateErrors::TRANSLATION_ERROR);
+    NotifyBrowserTranslationFailed(
+        translate::TranslateErrors::TRANSLATION_ERROR);
     return;
   }
   // Check the status of the translation.
@@ -553,7 +560,7 @@ void TranslateHelper::TranslatePageImpl(int page_seq_no, int count) {
 }
 
 void TranslateHelper::NotifyBrowserTranslationFailed(
-    TranslateErrors::Type error) {
+    translate::TranslateErrors::Type error) {
   translation_pending_ = false;
   // Notify the browser there was an error.
   render_view()->Send(new ChromeViewHostMsg_PageTranslated(

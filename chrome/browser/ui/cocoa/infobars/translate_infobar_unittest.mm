@@ -35,12 +35,13 @@ translate::TranslateStep kTranslateToolbarStates[] = {
     translate::TRANSLATE_STEP_TRANSLATING,
     translate::TRANSLATE_STEP_TRANSLATE_ERROR};
 
-class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
+class MockTranslateInfoBarDelegate
+    : public translate::TranslateInfoBarDelegate {
  public:
   MockTranslateInfoBarDelegate(content::WebContents* web_contents,
                                translate::TranslateStep step,
-                               TranslateErrors::Type error)
-      : TranslateInfoBarDelegate(
+                               translate::TranslateErrors::Type error)
+      : translate::TranslateInfoBarDelegate(
             ChromeTranslateClient::GetManagerFromWebContents(web_contents)
                 ->GetWeakPtr(),
             false,
@@ -74,7 +75,7 @@ class TranslationInfoBarTest : public CocoaProfileTest {
   // Each test gets a single Mock translate delegate for the lifetime of
   // the test.
   virtual void SetUp() OVERRIDE {
-    TranslateLanguageList::DisableUpdate();
+    translate::TranslateLanguageList::DisableUpdate();
     CocoaProfileTest::SetUp();
     web_contents_.reset(
         WebContents::Create(WebContents::CreateParams(profile())));
@@ -91,14 +92,14 @@ class TranslationInfoBarTest : public CocoaProfileTest {
   }
 
   void CreateInfoBar(translate::TranslateStep type) {
-    TranslateErrors::Type error = TranslateErrors::NONE;
+    translate::TranslateErrors::Type error = translate::TranslateErrors::NONE;
     if (type == translate::TRANSLATE_STEP_TRANSLATE_ERROR)
-      error = TranslateErrors::NETWORK;
+      error = translate::TranslateErrors::NETWORK;
     [[infobar_controller_ view] removeFromSuperview];
 
     ChromeTranslateClient* chrome_translate_client =
         ChromeTranslateClient::FromWebContents(web_contents_.get());
-    scoped_ptr<TranslateInfoBarDelegate> delegate(
+    scoped_ptr<translate::TranslateInfoBarDelegate> delegate(
         new MockTranslateInfoBarDelegate(web_contents_.get(), type, error));
     scoped_ptr<infobars::InfoBar> infobar(
         chrome_translate_client->CreateInfoBar(delegate.Pass()));
@@ -205,9 +206,10 @@ TEST_F(TranslationInfoBarTest, OptionsMenuItemsHookedUp) {
   {
     // Can't mock these effectively, so just check that the tag is set
     // correctly.
-    EXPECT_EQ(OptionsMenuModel::REPORT_BAD_DETECTION,
+    EXPECT_EQ(translate::OptionsMenuModel::REPORT_BAD_DETECTION,
               [reportBadLanguageItem tag]);
-    EXPECT_EQ(OptionsMenuModel::ABOUT_TRANSLATE, [aboutTranslateItem tag]);
+    EXPECT_EQ(translate::OptionsMenuModel::ABOUT_TRANSLATE,
+              [aboutTranslateItem tag]);
   }
 }
 
@@ -241,7 +243,7 @@ TEST_F(TranslationInfoBarTest, Bug36895) {
 // Verify that the infobar shows the "Always translate this language" button
 // after doing 3 translations.
 TEST_F(TranslationInfoBarTest, TriggerShowAlwaysTranslateButton) {
-  scoped_ptr<TranslatePrefs> translate_prefs(
+  scoped_ptr<translate::TranslatePrefs> translate_prefs(
       ChromeTranslateClient::CreateTranslatePrefs(profile()->GetPrefs()));
   translate_prefs->ResetTranslationAcceptedCount("en");
   for (int i = 0; i < 4; ++i) {
@@ -257,7 +259,7 @@ TEST_F(TranslationInfoBarTest, TriggerShowAlwaysTranslateButton) {
 // Verify that the infobar shows the "Never translate this language" button
 // after denying 3 translations.
 TEST_F(TranslationInfoBarTest, TriggerShowNeverTranslateButton) {
-  scoped_ptr<TranslatePrefs> translate_prefs(
+  scoped_ptr<translate::TranslatePrefs> translate_prefs(
       ChromeTranslateClient::CreateTranslatePrefs(profile()->GetPrefs()));
   translate_prefs->ResetTranslationDeniedCount("en");
   for (int i = 0; i < 4; ++i) {

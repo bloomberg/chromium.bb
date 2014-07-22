@@ -67,12 +67,13 @@ class TranslateHelperBrowserTest : public ChromeRenderViewTest {
 
   bool GetPageTranslatedMessage(std::string* original_lang,
                                 std::string* target_lang,
-                                TranslateErrors::Type* error) {
+                                translate::TranslateErrors::Type* error) {
     const IPC::Message* message = render_thread_->sink().
         GetUniqueMessageMatching(ChromeViewHostMsg_PageTranslated::ID);
     if (!message)
       return false;
-    Tuple3<std::string, std::string, TranslateErrors::Type> translate_param;
+    Tuple3<std::string, std::string, translate::TranslateErrors::Type>
+        translate_param;
     ChromeViewHostMsg_PageTranslated::Read(message, &translate_param);
     if (original_lang)
       *original_lang = translate_param.a;
@@ -106,9 +107,9 @@ TEST_F(TranslateHelperBrowserTest, TranslateLibNeverReady) {
   translate_helper_->TranslatePage("en", "fr", std::string());
   base::MessageLoop::current()->RunUntilIdle();
 
-  TranslateErrors::Type error;
+  translate::TranslateErrors::Type error;
   ASSERT_TRUE(GetPageTranslatedMessage(NULL, NULL, &error));
-  EXPECT_EQ(TranslateErrors::INITIALIZATION_ERROR, error);
+  EXPECT_EQ(translate::TranslateErrors::INITIALIZATION_ERROR, error);
 }
 
 // Tests that the browser gets notified of the translation success when the
@@ -145,13 +146,13 @@ TEST_F(TranslateHelperBrowserTest, TranslateSuccess) {
 
   std::string received_original_lang;
   std::string received_target_lang;
-  TranslateErrors::Type error;
+  translate::TranslateErrors::Type error;
   ASSERT_TRUE(GetPageTranslatedMessage(&received_original_lang,
                                        &received_target_lang,
                                        &error));
   EXPECT_EQ(original_lang, received_original_lang);
   EXPECT_EQ(target_lang, received_target_lang);
-  EXPECT_EQ(TranslateErrors::NONE, error);
+  EXPECT_EQ(translate::TranslateErrors::NONE, error);
 }
 
 // Tests that the browser gets notified of the translation failure when the
@@ -186,9 +187,9 @@ TEST_F(TranslateHelperBrowserTest, TranslateFailure) {
   translate_helper_->TranslatePage("en", "fr", std::string());
   base::MessageLoop::current()->RunUntilIdle();
 
-  TranslateErrors::Type error;
+  translate::TranslateErrors::Type error;
   ASSERT_TRUE(GetPageTranslatedMessage(NULL, NULL, &error));
-  EXPECT_EQ(TranslateErrors::TRANSLATION_ERROR, error);
+  EXPECT_EQ(translate::TranslateErrors::TRANSLATION_ERROR, error);
 }
 
 // Tests that when the browser translate a page for which the language is
@@ -222,13 +223,13 @@ TEST_F(TranslateHelperBrowserTest, UndefinedSourceLang) {
                                    std::string());
   base::MessageLoop::current()->RunUntilIdle();
 
-  TranslateErrors::Type error;
+  translate::TranslateErrors::Type error;
   std::string original_lang;
   std::string target_lang;
   ASSERT_TRUE(GetPageTranslatedMessage(&original_lang, &target_lang, &error));
   EXPECT_EQ("de", original_lang);
   EXPECT_EQ("fr", target_lang);
-  EXPECT_EQ(TranslateErrors::NONE, error);
+  EXPECT_EQ(translate::TranslateErrors::NONE, error);
 }
 
 // Tests that starting a translation while a similar one is pending does not
@@ -263,13 +264,13 @@ TEST_F(TranslateHelperBrowserTest, MultipleSimilarTranslations) {
 
   std::string received_original_lang;
   std::string received_target_lang;
-  TranslateErrors::Type error;
+  translate::TranslateErrors::Type error;
   ASSERT_TRUE(GetPageTranslatedMessage(&received_original_lang,
                                        &received_target_lang,
                                        &error));
   EXPECT_EQ(original_lang, received_original_lang);
   EXPECT_EQ(target_lang, received_target_lang);
-  EXPECT_EQ(TranslateErrors::NONE, error);
+  EXPECT_EQ(translate::TranslateErrors::NONE, error);
 }
 
 // Tests that starting a translation while a different one is pending works.
@@ -301,13 +302,13 @@ TEST_F(TranslateHelperBrowserTest, MultipleDifferentTranslations) {
 
   std::string received_original_lang;
   std::string received_target_lang;
-  TranslateErrors::Type error;
+  translate::TranslateErrors::Type error;
   ASSERT_TRUE(GetPageTranslatedMessage(&received_original_lang,
                                        &received_target_lang,
                                        &error));
   EXPECT_EQ(original_lang, received_original_lang);
   EXPECT_EQ(new_target_lang, received_target_lang);
-  EXPECT_EQ(TranslateErrors::NONE, error);
+  EXPECT_EQ(translate::TranslateErrors::NONE, error);
 }
 
 // Tests that we send the right translate language message for a page and that

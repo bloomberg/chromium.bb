@@ -195,7 +195,7 @@ class TranslateHelper : public content::RenderViewObserver {
 
   // Sends a message to the browser to notify it that the translation failed
   // with |error|.
-  void NotifyBrowserTranslationFailed(TranslateErrors::Type error);
+  void NotifyBrowserTranslationFailed(translate::TranslateErrors::Type error);
 
   // Convenience method to access the main frame.  Can return NULL, typically
   // if the page is being closed.

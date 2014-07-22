@@ -11,6 +11,8 @@
 #include "components/translate/core/common/translate_pref_names.h"
 #include "components/translate/core/common/translate_switches.h"
 
+namespace translate {
+
 // static
 TranslateDownloadManager* TranslateDownloadManager::GetInstance() {
   return Singleton<TranslateDownloadManager>::get();
@@ -130,3 +132,5 @@ void TranslateDownloadManager::SetTranslateScriptExpirationDelay(int delay_ms) {
   }
   script_->set_expiration_delay(delay_ms);
 }
+
+}  // namespace translate

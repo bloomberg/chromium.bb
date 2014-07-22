@@ -7,6 +7,8 @@
 
 #include "base/basictypes.h"
 
+namespace translate {
+
 // This file consolidates all the error types for translation of a page.
 // Note: TranslateErrors is used for UMA and translate_internals.js.
 // Assigned numbers should be changed because the number is binded to UMA value.
@@ -37,5 +39,7 @@ class TranslateErrors {
 
   DISALLOW_COPY_AND_ASSIGN(TranslateErrors);
 };
+
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_COMMON_TRANSLATE_ERRORS_H_

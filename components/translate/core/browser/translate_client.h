@@ -15,13 +15,16 @@
 
 class GURL;
 class PrefService;
-class TranslateAcceptLanguages;
-class TranslateDriver;
-class TranslateInfoBarDelegate;
 
 namespace infobars {
 class InfoBar;
 }
+
+namespace translate {
+
+class TranslateAcceptLanguages;
+class TranslateDriver;
+class TranslateInfoBarDelegate;
 
 // A client interface that needs to be supplied to TranslateManager by the
 // embedder.
@@ -65,5 +68,7 @@ class TranslateClient {
   // detection errors as desired.
   virtual void ShowReportLanguageDetectionErrorUI(const GURL& report_url) = 0;
 };
+
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_CLIENT_H_

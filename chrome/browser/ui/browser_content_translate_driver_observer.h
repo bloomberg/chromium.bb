@@ -16,7 +16,7 @@ class Browser;
 // wether Translate is enabled or not, and updates toolbar in response to
 // changes in state of translate.
 class BrowserContentTranslateDriverObserver
-    : public ContentTranslateDriver::Observer {
+    : public translate::ContentTranslateDriver::Observer {
  public:
   explicit BrowserContentTranslateDriverObserver(Browser* browser);
 

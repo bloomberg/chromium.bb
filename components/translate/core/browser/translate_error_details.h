@@ -9,6 +9,8 @@
 #include "components/translate/core/common/translate_errors.h"
 #include "url/gurl.h"
 
+namespace translate {
+
 struct TranslateErrorDetails {
   // The time when this was created
   base::Time time;
@@ -19,5 +21,7 @@ struct TranslateErrorDetails {
   // Translation error type
   TranslateErrors::Type error;
 };
+
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_ERROR_DETAILS_H_

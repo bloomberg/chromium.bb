@@ -20,6 +20,8 @@
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace translate {
+
 namespace {
 
 // Counts used to decide whether infobars should be shown.
@@ -366,3 +368,5 @@ TranslateInfoBarDelegate*
     TranslateInfoBarDelegate::AsTranslateInfoBarDelegate() {
   return this;
 }
+
+}  // namespace translate

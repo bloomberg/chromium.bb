@@ -225,9 +225,10 @@ class BrowserWindow : public ui::BaseWindow {
                                      const std::string& extension_id) = 0;
 
   // Shows the translate bubble.
-  virtual void ShowTranslateBubble(content::WebContents* contents,
-                                   translate::TranslateStep step,
-                                   TranslateErrors::Type error_type) = 0;
+  virtual void ShowTranslateBubble(
+      content::WebContents* contents,
+      translate::TranslateStep step,
+      translate::TranslateErrors::Type error_type) = 0;
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   enum OneClickSigninBubbleType {

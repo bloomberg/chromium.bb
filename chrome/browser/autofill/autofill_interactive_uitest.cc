@@ -1007,7 +1007,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterTranslate) {
   infobar_observer.Wait();
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(GetWebContents());
-  TranslateInfoBarDelegate* delegate =
+  translate::TranslateInfoBarDelegate* delegate =
       infobar_service->infobar_at(0)->delegate()->AsTranslateInfoBarDelegate();
   ASSERT_TRUE(delegate);
   EXPECT_EQ(translate::TRANSLATE_STEP_BEFORE_TRANSLATE,

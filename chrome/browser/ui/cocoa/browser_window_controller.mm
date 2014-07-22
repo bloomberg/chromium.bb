@@ -1753,7 +1753,8 @@ using content::WebContents;
 
 - (void)showTranslateBubbleForWebContents:(content::WebContents*)contents
                                      step:(translate::TranslateStep)step
-                                errorType:(TranslateErrors::Type)errorType {
+                                errorType:(translate::TranslateErrors::Type)
+                                errorType {
   // TODO(hajimehoshi): The similar logic exists at TranslateBubbleView::
   // ShowBubble. This should be unified.
   if (translateBubbleController_) {
@@ -1779,10 +1780,12 @@ using content::WebContents;
   ChromeTranslateClient::GetTranslateLanguages(
       contents, &sourceLanguage, &targetLanguage);
 
-  scoped_ptr<TranslateUIDelegate> uiDelegate(new TranslateUIDelegate(
-      ChromeTranslateClient::GetManagerFromWebContents(contents)->GetWeakPtr(),
-      sourceLanguage,
-      targetLanguage));
+  scoped_ptr<translate::TranslateUIDelegate> uiDelegate(
+      new translate::TranslateUIDelegate(
+          ChromeTranslateClient::GetManagerFromWebContents(contents)
+              ->GetWeakPtr(),
+          sourceLanguage,
+          targetLanguage));
   scoped_ptr<TranslateBubbleModel> model(
       new TranslateBubbleModelImpl(step, uiDelegate.Pass()));
   translateBubbleController_ = [[TranslateBubbleController alloc]

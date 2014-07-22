@@ -13,10 +13,11 @@ using InfoBarUtilities::VerifyControlOrderAndSpacing;
 @implementation AfterTranslateInfobarController
 
 - (void)loadLabelText {
-  autodeterminedSourceLanguage_ = ([self delegate]->original_language_index() ==
-                        TranslateInfoBarDelegate::kNoIndex);
+  autodeterminedSourceLanguage_ =
+      ([self delegate]->original_language_index() ==
+       translate::TranslateInfoBarDelegate::kNoIndex);
   std::vector<base::string16> strings;
-  TranslateInfoBarDelegate::GetAfterTranslateStrings(
+  translate::TranslateInfoBarDelegate::GetAfterTranslateStrings(
       &strings, &swappedLanugageButtons_, autodeterminedSourceLanguage_);
   DCHECK_EQ(autodeterminedSourceLanguage_ ? 2U : 3U, strings.size());
   [label1_ setStringValue:base::SysUTF16ToNSString(strings[0])];

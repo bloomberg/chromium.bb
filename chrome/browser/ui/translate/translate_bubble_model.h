@@ -41,7 +41,7 @@ class TranslateBubbleModel {
   virtual void SetViewState(ViewState view_state) = 0;
 
   // Shows an error.
-  virtual void ShowError(TranslateErrors::Type error_type) = 0;
+  virtual void ShowError(translate::TranslateErrors::Type error_type) = 0;
 
   // Goes back from the 'Advanced' view state.
   virtual void GoBackFromAdvanced() = 0;

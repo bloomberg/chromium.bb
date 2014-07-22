@@ -9,6 +9,8 @@
 
 class GURL;
 
+namespace translate {
+
 // Interface that allows Translate core code to interact with its driver (i.e.,
 // obtain information from it and give information to it). A concrete
 // implementation must be provided by the driver.
@@ -54,5 +56,7 @@ class TranslateDriver {
   // Opens |url| in a new tab.
   virtual void OpenUrlInNewTab(const GURL& url) = 0;
 };
+
+}  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_DRIVER_H_

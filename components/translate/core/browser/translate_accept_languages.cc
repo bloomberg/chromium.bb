@@ -12,6 +12,8 @@
 #include "components/translate/core/common/translate_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace translate {
+
 TranslateAcceptLanguages::TranslateAcceptLanguages(
     PrefService* prefs,
     const char* accept_languages_pref)
@@ -79,3 +81,4 @@ void TranslateAcceptLanguages::InitAcceptLanguages(PrefService* prefs) {
   }
 }
 
+}  // namespace translate
