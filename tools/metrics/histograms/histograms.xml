@@ -17330,6 +17330,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.DHCPClientStatus" enum="NetworkDhcpClientStatus">
+  <owner>pstew@chromium.org</owner>
+  <summary>
+    Chrome OS network diagnostic metric sampling the current state of the DHCP
+    client.  A sample is emitted each time the DHCP client state changes.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.DHCPOptionFailureDetected"
     enum="NetworkTechnology">
   <owner>zqiu@chromium.org</owner>
@@ -43065,6 +43073,73 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <enum name="NetworkCorruptedProfile" type="int">
   <int value="0" label="Corrupted Profile"/>
+</enum>
+
+<enum name="NetworkDhcpClientStatus" type="int">
+  <int value="0" label="Arp Gateway">
+    The DHCP client will attempt to identify the default gateway using a unicast
+    ARP to the gateway's MAC address.  This may help speed up the re-connection
+    process.
+  </int>
+  <int value="1" label="Arp Self">
+    The DHCP client will attempt to ARP for the IP address that it was supplied.
+    This indicates that the client is unsure whether the address it was assigned
+    is valid.
+  </int>
+  <int value="2" label="Bound">
+    The DHCP client has successfully acquired an IP address.
+  </int>
+  <int value="3" label="Discover">
+    The DHCP client has inititated a DHCP DISCOVER, a broadcast request for any
+    server to provide it with an address.
+  </int>
+  <int value="4" label="Additional Offer">
+    The DHCP client has received more than one offer in response to its DHCP
+    DISCOVER request.
+  </int>
+  <int value="5" label="Failed Offer">
+    The DHCP client has received an offer in response to its DHCP DISCOVER which
+    is the same as an address it previously failed to validate via an &quot;Arp
+    Self&quot; test.
+  </int>
+  <int value="6" label="Invalid Offer">
+    The DHCP client has received an offer in response to its DHCP DISCOVER which
+    is either an all-zeros or all-ones IP address, and therefore invalid.
+  </int>
+  <int value="7" label="Ignore Non-Offer">
+    The DHCP client has received a response to its DHCP DISCOVER which is not
+    actually a DHCP OFFER.
+  </int>
+  <int value="8" label="Inform">
+    The DHCP client has issued a DHCP INFORM message for an IP address it has
+    self-assigned.
+  </int>
+  <int value="9" label="Init">
+    The DHCP client is intializing its internal state.
+  </int>
+  <int value="10" label="Nak Defer">
+    The DHCP client has received a DHCP NAK and will defer processing this
+    response for a receive interval.
+  </int>
+  <int value="11" label="Rebind">
+    The DHCP client is performing the second level &quot;rebind&quot; lease
+    renewal stage, and has presumably failed the first level &quot;renew&quot;
+    stage.
+  </int>
+  <int value="12" label="Reboot">
+    The DHCP client is attempting to re-acquire a lease on a network where it
+    had previously been connected at some time in the past.
+  </int>
+  <int value="13" label="Release">
+    The DHCP client is releasing its current lease to its assigned IP address.
+  </int>
+  <int value="14" label="Renew">
+    The DHCP client is performing a first level renewal of its current lease.
+  </int>
+  <int value="15" label="Request">
+    The DHCP client is performing a DHCP REQUEST for a lease it has been
+    offered.
+  </int>
 </enum>
 
 <enum name="NetworkDHCPOptionFailure" type="int">
