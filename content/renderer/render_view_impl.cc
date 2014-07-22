@@ -1050,9 +1050,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->setLayerSquashingEnabled(prefs.layer_squashing_enabled);
 
-  // Enable gpu-accelerated compositing always.
-  settings->setAcceleratedCompositingEnabled(true);
-
   // Enable gpu-accelerated 2d canvas if requested on the command line.
   settings->setAccelerated2dCanvasEnabled(prefs.accelerated_2d_canvas_enabled);
 
