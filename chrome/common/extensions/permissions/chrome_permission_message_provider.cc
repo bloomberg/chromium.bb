@@ -80,6 +80,33 @@ ChromePermissionMessageProvider::~ChromePermissionMessageProvider() {
 PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
+  // Some warnings are more generic and/or powerful and superseed other
+  // warnings. In that case, the first message suppresses the second one.
+  std::multimap<PermissionMessage::ID, PermissionMessage::ID> kSuppressList;
+  kSuppressList.insert(
+      {PermissionMessage::kBluetooth, PermissionMessage::kBluetoothDevices});
+  kSuppressList.insert(
+      {PermissionMessage::kBookmarks, PermissionMessage::kOverrideBookmarksUI});
+  // History already allows reading favicons.
+  kSuppressList.insert(
+      {PermissionMessage::kBrowsingHistory, PermissionMessage::kFavicon});
+  // History already allows tabs access.
+  kSuppressList.insert(
+      {PermissionMessage::kBrowsingHistory, PermissionMessage::kTabs});
+  // A special hack: If kFileSystemWriteDirectory would be displayed, hide
+  // kFileSystemDirectory as the write directory message implies it.
+  // TODO(sammc): Remove this. See http://crbug.com/284849.
+  kSuppressList.insert({PermissionMessage::kFileSystemWriteDirectory,
+                        PermissionMessage::kFileSystemDirectory});
+  // Full access already allows DeclarativeWebRequest.
+  kSuppressList.insert({PermissionMessage::kHostsAll,
+                        PermissionMessage::kDeclarativeWebRequest});
+  // Full access already covers tabs access.
+  kSuppressList.insert(
+      {PermissionMessage::kHostsAll, PermissionMessage::kTabs});
+  // Tabs already allows reading favicons.
+  kSuppressList.insert({PermissionMessage::kTabs, PermissionMessage::kFavicon});
+
   PermissionMessages messages;
 
   if (permissions->HasEffectiveFullAccess()) {
@@ -99,32 +126,13 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
   messages.insert(messages.end(), manifest_permission_msgs.begin(),
                   manifest_permission_msgs.end());
 
-  // Some warnings are more generic and/or powerful and superseed other
-  // warnings. In that case, suppress the superseeded warning.
-  SuppressMessage(messages,
-                  PermissionMessage::kBookmarks,
-                  PermissionMessage::kOverrideBookmarksUI);
-  // Both tabs and history already allow reading favicons.
-  SuppressMessage(messages,
-                  PermissionMessage::kTabs,
-                  PermissionMessage::kFavicon);
-  SuppressMessage(messages,
-                  PermissionMessage::kBrowsingHistory,
-                  PermissionMessage::kFavicon);
-  // Warning for history permission already covers warning for tabs permission.
-  SuppressMessage(messages,
-                  PermissionMessage::kBrowsingHistory,
-                  PermissionMessage::kTabs);
-  // Warning for full access permission already covers warning for tabs
-  // permission.
-  SuppressMessage(messages,
-                  PermissionMessage::kHostsAll,
-                  PermissionMessage::kTabs);
-  // Warning for full access already covers warning for DeclarativeWebRequest
-  // permission.
-  SuppressMessage(messages,
-                  PermissionMessage::kHostsAll,
-                  PermissionMessage::kDeclarativeWebRequest);
+  for (std::multimap<PermissionMessage::ID,
+                     PermissionMessage::ID>::const_iterator it =
+           kSuppressList.begin();
+       it != kSuppressList.end();
+       ++it) {
+    SuppressMessage(messages, it->first, it->second);
+  }
 
   return messages;
 }
@@ -135,10 +143,6 @@ std::vector<base::string16> ChromePermissionMessageProvider::GetWarningMessages(
   std::vector<base::string16> message_strings;
   PermissionMessages messages =
       GetPermissionMessages(permissions, extension_type);
-
-  SuppressMessage(messages,
-                  PermissionMessage::kBluetooth,
-                  PermissionMessage::kBluetoothDevices);
 
   for (PermissionMessages::const_iterator i = messages.begin();
        i != messages.end(); ++i) {
@@ -316,12 +320,6 @@ ChromePermissionMessageProvider::GetAPIPermissionMessages(
     }
   }
 
-  // A special hack: If kFileSystemWriteDirectory would be displayed, hide
-  // kFileSystemDirectory as the write directory message implies it.
-  // TODO(sammc): Remove this. See http://crbug.com/284849.
-  SuppressMessage(messages,
-                  PermissionMessage::kFileSystemWriteDirectory,
-                  PermissionMessage::kFileSystemDirectory);
   // A special hack: The warning message for declarativeWebRequest
   // permissions speaks about blocking parts of pages, which is a
   // subset of what the "<all_urls>" access allows. Therefore we
