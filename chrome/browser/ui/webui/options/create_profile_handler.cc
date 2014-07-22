@@ -283,7 +283,9 @@ void CreateProfileHandler::ShowProfileCreationError(
   web_ui()->CallJavascriptFunction(
       GetJavascriptMethodName(PROFILE_CREATION_ERROR),
       base::StringValue(error));
-  helper::DeleteProfileAtPath(profile->GetPath(), web_ui());
+  // The ProfileManager calls us back with a NULL profile in some cases.
+  if (profile)
+    helper::DeleteProfileAtPath(profile->GetPath(), web_ui());
 }
 
 void CreateProfileHandler::ShowProfileCreationWarning(
