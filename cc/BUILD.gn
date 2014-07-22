@@ -614,7 +614,7 @@ source_set("test_support") {
     #"//third_party/mesa/mesa.gyp:osmesa",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/gfx:gfx_test_support",
+    "//ui/gfx:test_support",
     "//ui/gl",
   ]
 }

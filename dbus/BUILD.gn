@@ -46,13 +46,13 @@ component("dbus") {
   ]
 }
 
-proto_library("dbus_test_proto") {
+proto_library("test_proto") {
   sources = [ "test_proto.proto" ]
 }
 
 # This target contains mocks that can be used to write unit tests without
 # issuing actual D-Bus calls.
-source_set("dbus_test_support") {
+source_set("test_support") {
   sources = [
     "mock_bus.cc",
     "mock_bus.h",
@@ -95,8 +95,8 @@ test("dbus_unittests") {
 
   deps = [
     ":dbus",
-    ":dbus_test_proto",
-    ":dbus_test_support",
+    ":test_proto",
+    ":test_support",
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",

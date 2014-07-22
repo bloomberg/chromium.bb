@@ -216,7 +216,7 @@ test("printing_unittests") {
     "//testing/gtest",
     "//ui/base",
     "//ui/gfx",
-    "//ui/gfx:gfx_test_support",
+    "//ui/gfx:test_support",
     "//ui/gfx/geometry",
   ]
 }

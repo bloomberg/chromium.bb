@@ -363,7 +363,7 @@ component("gfx") {
 
 # Looking for gfx_geometry? It's //ui/gfx/geometry:geometry
 
-source_set("gfx_test_support") {
+source_set("test_support") {
   sources = [
     "test/fontconfig_util_linux.cc",
     "test/fontconfig_util_linux.h",
@@ -412,7 +412,7 @@ test("gfx_unittests") {
 
   deps = [
     ":gfx",
-    ":gfx_test_support",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//testing/gtest",

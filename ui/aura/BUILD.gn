@@ -176,11 +176,11 @@ source_set("test_support") {
     "//skia",
     "//testing/gtest",
     "//ui/base",
-    "//ui/base:ui_base_test_support",
+    "//ui/base:test_support",
     "//ui/compositor:test_support",
     "//ui/events",
     "//ui/events:events_base",
-    "//ui/events:events_test_support",
+    "//ui/events:test_support",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
@@ -214,7 +214,7 @@ source_set("test_support") {
 #
 #  deps = [
 #    ":aura",
-#    ":aura_test_support",
+#    ":test_support",
 #    "//base",
 #    "//base:i18n",
 #    "//skia",
@@ -242,7 +242,7 @@ source_set("test_support") {
 #
 #  deps = [
 #    ":aura",
-#    ":aura_test_support",
+#    ":test_support",
 #    "//base",
 #    "//base:i18n",
 #    "//cc",
@@ -275,12 +275,12 @@ source_set("test_support") {
 #
 #  deps = [
 #    ":aura",
-#    ":aura_test_support",
-#   "//base/test:test_support",
+#    ":test_support",
+#    "//base/test:test_support",
 #    "//skia",
 #    "//testing/gtest",
 #    "//ui/base",
-#    "//ui/base:ui_base_test_support",
+#    "//ui/base:test_support",
 #    "//ui/compositor",
 #    "//ui/compositor:test_support",
 #    "//ui/events",

@@ -833,7 +833,7 @@ test("media_unittests") {
 #        }],
   deps = [
     ":media",
-    ":media_test_support",
+    ":test_support",
     "//base/test:test_support",
     "//media/audio:unittests",
     "//media/audio:test_support",
@@ -843,7 +843,7 @@ test("media_unittests") {
     # TODO(dalecurtis): Port the rest of Widevine stuff.
     "//third_party/widevine/cdm:version_h",
     "//ui/base",
-    "//ui/gfx:gfx_test_support",
+    "//ui/gfx:test_support",
   ]
   if (media_use_ffmpeg) {
     deps += [
@@ -871,8 +871,8 @@ test("media_perftests") {
   configs += [ ":media_config" ]
   deps = [
     ":media",
-    ":media_test_support",
     ":shared_memory_support",
+    ":test_support",
     "//base/test:test_support",
     "//media/audio:test_support",
     "//testing/gmock",
@@ -880,7 +880,7 @@ test("media_perftests") {
     "//testing/perf",
     "//third_party/widevine/cdm:version_h",
     "//ui/gl",
-    "//ui/gfx:gfx_test_support",
+    "//ui/gfx:test_support",
   ]
   if (media_use_ffmpeg) {
     deps += [
@@ -966,7 +966,7 @@ if (cpu_arch == "x86" || cpu_arch == "x64") {
   }
 }
 
-source_set("media_test_support") {
+source_set("test_support") {
   sources = [
     "base/fake_audio_render_callback.cc",
     "base/fake_audio_render_callback.h",
@@ -1028,13 +1028,13 @@ if (media_use_ffmpeg) {
 
     deps = [
        ":media",
-       ":media_test_support",
+       ":test_support",
        "//base",
        "//base:i18n",
        "//base/test:test_support",
        "//testing/gtest",
        "//third_party/ffmpeg",
-       "//ui/gfx:gfx_test_support",
+       "//ui/gfx:test_support",
     ]
   }
 
@@ -1047,14 +1047,14 @@ if (media_use_ffmpeg) {
     configs += [ ":media_config" ]
     deps = [
       ":media",
-      ":media_test_support",
+      ":test_support",
       "//base/test:test_support",
       "//media/audio:test_support",
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/ffmpeg",
       "//ui/gfx/geometry",
-      "//ui/gfx:gfx_test_support",
+      "//ui/gfx:test_support",
     ]
   # TODO(ajwong): This was in the original gyp, but it seems silly.
   #        ['os_posix==1 and OS!="mac"', {
