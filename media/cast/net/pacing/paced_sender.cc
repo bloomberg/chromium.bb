@@ -252,8 +252,6 @@ void PacedSender::SendStoredPackets() {
   }
   DCHECK_LE(sent_time_buffer_.size(),
             kMaxBurstSize * kMaxDedupeWindowMs / kPacingIntervalMs);
-  DCHECK_LE(sent_time_.size(),
-            2 * kMaxBurstSize * kMaxDedupeWindowMs / kPacingIntervalMs);
   state_ = State_Unblocked;
 }
 
