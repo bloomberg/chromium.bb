@@ -57,6 +57,12 @@ TEST_F(InputMethodControllerTest, BackspaceFromEndOfInput)
     input->setValue("fooX");
     controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
     EXPECT_STREQ("fooX", input->value().utf8().data());
+    controller().extendSelectionAndDelete(0, 0);
+    EXPECT_STREQ("fooX", input->value().utf8().data());
+
+    input->setValue("fooX");
+    controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
+    EXPECT_STREQ("fooX", input->value().utf8().data());
     controller().extendSelectionAndDelete(1, 0);
     EXPECT_STREQ("foo", input->value().utf8().data());
 
@@ -77,6 +83,12 @@ TEST_F(InputMethodControllerTest, BackspaceFromEndOfInput)
     EXPECT_STREQ("foo\xE0\xB8\x81\xE0\xB9\x89", input->value().utf8().data());
     controller().extendSelectionAndDelete(1, 0);
     EXPECT_STREQ("foo", input->value().utf8().data());
+
+    input->setValue("fooX");
+    controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
+    EXPECT_STREQ("fooX", input->value().utf8().data());
+    controller().extendSelectionAndDelete(0, 1);
+    EXPECT_STREQ("fooX", input->value().utf8().data());
 }
 
 TEST_F(InputMethodControllerTest, SetCompositionFromExistingText)

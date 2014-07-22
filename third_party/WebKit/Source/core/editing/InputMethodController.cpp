@@ -417,6 +417,8 @@ void InputMethodController::extendSelectionAndDelete(int before, int after)
     do {
         if (!setSelectionOffsets(PlainTextRange(std::max(static_cast<int>(selectionOffsets.start()) - before, 0), selectionOffsets.end() + after)))
             return;
+        if (before == 0)
+            break;
         ++before;
     } while (m_frame.selection().start() == m_frame.selection().end() && before <= static_cast<int>(selectionOffsets.start()));
     TypingCommand::deleteSelection(*m_frame.document());
