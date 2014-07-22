@@ -5,6 +5,7 @@
 #include "chromeos/network/host_resolver_impl_chromeos.h"
 
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/sys_info.h"
 #include "base/values.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_handler.h"
@@ -61,8 +62,9 @@ class HostResolverImplChromeOS::NetworkObserver
     const DeviceState* device_state =
         network_state_handler_->GetDeviceState(network->device_path());
     if (!device_state) {
-      LOG(ERROR) << "DefaultNetworkChanged: Network missing device: "
-                 << network->path();
+      LOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS())
+          << "DefaultNetworkChanged: Network missing device: "
+          << network->path();
       CallResolverSetIpAddress("", "");
       return;
     }

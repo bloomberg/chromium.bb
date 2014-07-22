@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/sys_info.h"
 #include "chromeos/chromeos_paths.h"
 #include "crypto/rsa_private_key.h"
 
@@ -58,7 +59,8 @@ bool OwnerKeyUtilImpl::ImportPublicKey(std::vector<uint8>* output) {
   // Get the file size (must fit in a 32 bit int for NSS).
   int64 file_size;
   if (!base::GetFileSize(key_file_, &file_size)) {
-    LOG(ERROR) << "Could not get size of " << key_file_.value();
+    LOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS())
+        << "Could not get size of " << key_file_.value();
     return false;
   }
   if (file_size > static_cast<int64>(std::numeric_limits<int>::max())) {
