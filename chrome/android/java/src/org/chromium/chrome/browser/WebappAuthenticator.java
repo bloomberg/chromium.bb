@@ -115,7 +115,7 @@ public class WebappAuthenticator {
                 if (input != null) {
                     input.close();
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 Log.e(TAG, "Could not close key input stream '" + file + "': " + e);
             }
         }
@@ -124,6 +124,7 @@ public class WebappAuthenticator {
     private static boolean writeKeyToFile(Context context, String basename, SecretKey key) {
         File file = context.getFileStreamPath(basename);
         byte[] keyBytes = key.getEncoded();
+        FileOutputStream output = null;
         if (MAC_KEY_BYTE_COUNT != keyBytes.length) {
             Log.e(TAG, "writeKeyToFile got key encoded bytes length " + keyBytes.length +
                        "; expected " + MAC_KEY_BYTE_COUNT);
@@ -131,13 +132,20 @@ public class WebappAuthenticator {
         }
 
         try {
-            FileOutputStream output = new FileOutputStream(file);
+            output = new FileOutputStream(file);
             output.write(keyBytes);
-            output.close();
             return true;
         } catch (Exception e) {
             Log.e(TAG, "Could not write key to '" + file + "': " + e);
             return false;
+        } finally {
+            try {
+                if (output != null) {
+                    output.close();
+                }
+            } catch (IOException e) {
+                Log.e(TAG, "Could not close key output stream '" + file + "': " + e);
+            }
         }
     }
 
