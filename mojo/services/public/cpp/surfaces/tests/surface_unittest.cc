@@ -143,6 +143,38 @@ TEST_F(SurfaceLibQuadTest, TextureQuad) {
   EXPECT_EQ(flipped, mojo_texture_state->flipped);
 }
 
+TEST_F(SurfaceLibQuadTest, TextureQuadEmptyVertexOpacity) {
+  surfaces::QuadPtr mojo_texture_quad = surfaces::Quad::New();
+  mojo_texture_quad->material = surfaces::MATERIAL_TEXTURE_CONTENT;
+  surfaces::TextureQuadStatePtr mojo_texture_state =
+      surfaces::TextureQuadState::New();
+  mojo_texture_state->background_color = surfaces::Color::New();
+  mojo_texture_quad->texture_quad_state = mojo_texture_state.Pass();
+  surfaces::PassPtr mojo_pass = surfaces::Pass::New();
+  mojo_pass->quads.push_back(mojo_texture_quad.Pass());
+  surfaces::SharedQuadStatePtr mojo_sqs = surfaces::SharedQuadState::New();
+  mojo_pass->shared_quad_states.push_back(mojo_sqs.Pass());
+
+  scoped_ptr<cc::RenderPass> pass = ConvertTo(mojo_pass.Pass());
+  EXPECT_FALSE(pass);
+}
+
+TEST_F(SurfaceLibQuadTest, TextureQuadEmptyBackgroundColor) {
+  surfaces::QuadPtr mojo_texture_quad = surfaces::Quad::New();
+  mojo_texture_quad->material = surfaces::MATERIAL_TEXTURE_CONTENT;
+  surfaces::TextureQuadStatePtr mojo_texture_state =
+      surfaces::TextureQuadState::New();
+  mojo_texture_state->vertex_opacity = mojo::Array<float>::New(4);
+  mojo_texture_quad->texture_quad_state = mojo_texture_state.Pass();
+  surfaces::PassPtr mojo_pass = surfaces::Pass::New();
+  mojo_pass->quads.push_back(mojo_texture_quad.Pass());
+  surfaces::SharedQuadStatePtr mojo_sqs = surfaces::SharedQuadState::New();
+  mojo_pass->shared_quad_states.push_back(mojo_sqs.Pass());
+
+  scoped_ptr<cc::RenderPass> pass = ConvertTo(mojo_pass.Pass());
+  EXPECT_FALSE(pass);
+}
+
 TEST(SurfaceLibTest, SharedQuadState) {
   gfx::Transform content_to_target_transform;
   content_to_target_transform.Scale3d(0.3f, 0.7f, 0.9f);
@@ -332,10 +364,17 @@ TEST(SurfaceLibTest, Mailbox) {
   mailbox.Generate();
 
   surfaces::MailboxPtr mojo_mailbox = surfaces::Mailbox::From(mailbox);
-  EXPECT_EQ(0, memcmp(mailbox.name, mojo_mailbox->name.storage().data(), 64));
+  EXPECT_EQ(0, memcmp(mailbox.name, &mojo_mailbox->name.storage()[0], 64));
 
   gpu::Mailbox round_trip_mailbox = mojo_mailbox.To<gpu::Mailbox>();
   EXPECT_EQ(mailbox, round_trip_mailbox);
+}
+
+TEST(SurfaceLibTest, MailboxEmptyName) {
+  surfaces::MailboxPtr mojo_mailbox = surfaces::Mailbox::New();
+
+  gpu::Mailbox converted_mailbox = mojo_mailbox.To<gpu::Mailbox>();
+  EXPECT_TRUE(converted_mailbox.IsZero());
 }
 
 TEST(SurfaceLibTest, MailboxHolder) {

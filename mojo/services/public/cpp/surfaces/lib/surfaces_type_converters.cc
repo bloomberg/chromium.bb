@@ -4,6 +4,7 @@
 
 #include "mojo/services/public/cpp/surfaces/surfaces_type_converters.h"
 
+#include "base/macros.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/draw_quad.h"
@@ -15,6 +16,23 @@
 #include "mojo/services/public/cpp/geometry/geometry_type_converters.h"
 
 namespace mojo {
+
+#define ASSERT_ENUM_VALUES_EQUAL(value)                                      \
+  COMPILE_ASSERT(cc::DrawQuad::value == static_cast<cc::DrawQuad::Material>( \
+                                            surfaces::MATERIAL_##value),     \
+                 value##_enum_value_matches)
+
+ASSERT_ENUM_VALUES_EQUAL(CHECKERBOARD);
+ASSERT_ENUM_VALUES_EQUAL(DEBUG_BORDER);
+ASSERT_ENUM_VALUES_EQUAL(IO_SURFACE_CONTENT);
+ASSERT_ENUM_VALUES_EQUAL(PICTURE_CONTENT);
+ASSERT_ENUM_VALUES_EQUAL(RENDER_PASS);
+ASSERT_ENUM_VALUES_EQUAL(SOLID_COLOR);
+ASSERT_ENUM_VALUES_EQUAL(STREAM_VIDEO_CONTENT);
+ASSERT_ENUM_VALUES_EQUAL(SURFACE_CONTENT);
+ASSERT_ENUM_VALUES_EQUAL(TEXTURE_CONTENT);
+ASSERT_ENUM_VALUES_EQUAL(TILED_CONTENT);
+ASSERT_ENUM_VALUES_EQUAL(YUV_VIDEO_CONTENT);
 
 namespace {
 
@@ -33,11 +51,13 @@ cc::SharedQuadState* ConvertToSharedQuadState(
   return state;
 }
 
-cc::DrawQuad* ConvertToDrawQuad(const surfaces::QuadPtr& input,
-                                cc::SharedQuadState* sqs,
-                                cc::RenderPass* render_pass) {
+bool ConvertToDrawQuad(const surfaces::QuadPtr& input,
+                       cc::SharedQuadState* sqs,
+                       cc::RenderPass* render_pass) {
   switch (input->material) {
     case surfaces::MATERIAL_SOLID_COLOR: {
+      if (input->solid_color_quad_state.is_null())
+        return false;
       cc::SolidColorDrawQuad* color_quad =
           render_pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
       color_quad->SetAll(
@@ -48,9 +68,11 @@ cc::DrawQuad* ConvertToDrawQuad(const surfaces::QuadPtr& input,
           input->needs_blending,
           input->solid_color_quad_state->color.To<SkColor>(),
           input->solid_color_quad_state->force_anti_aliasing_off);
-      return color_quad;
+      break;
     }
     case surfaces::MATERIAL_SURFACE_CONTENT: {
+      if (input->surface_quad_state.is_null())
+        return false;
       cc::SurfaceDrawQuad* surface_quad =
           render_pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
       surface_quad->SetAll(
@@ -60,13 +82,17 @@ cc::DrawQuad* ConvertToDrawQuad(const surfaces::QuadPtr& input,
           input->visible_rect.To<gfx::Rect>(),
           input->needs_blending,
           input->surface_quad_state->surface.To<cc::SurfaceId>());
-      return surface_quad;
+      break;
     }
     case surfaces::MATERIAL_TEXTURE_CONTENT: {
-      cc::TextureDrawQuad* texture_quad =
-          render_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
       surfaces::TextureQuadStatePtr& texture_quad_state =
           input->texture_quad_state;
+      if (texture_quad_state.is_null() ||
+          texture_quad_state->vertex_opacity.is_null() ||
+          texture_quad_state->background_color.is_null())
+        return false;
+      cc::TextureDrawQuad* texture_quad =
+          render_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
       texture_quad->SetAll(
           sqs,
           input->rect.To<gfx::Rect>(),
@@ -78,14 +104,15 @@ cc::DrawQuad* ConvertToDrawQuad(const surfaces::QuadPtr& input,
           texture_quad_state->uv_top_left.To<gfx::PointF>(),
           texture_quad_state->uv_bottom_right.To<gfx::PointF>(),
           texture_quad_state->background_color.To<SkColor>(),
-          texture_quad_state->vertex_opacity.storage().data(),
+          &texture_quad_state->vertex_opacity.storage()[0],
           texture_quad_state->flipped);
-      return texture_quad;
+      break;
     }
     default:
       NOTREACHED() << "Unsupported material " << input->material;
+      return false;
   }
-  return NULL;
+  return true;
 }
 
 }  // namespace
@@ -248,8 +275,9 @@ scoped_ptr<cc::RenderPass> ConvertTo(const surfaces::PassPtr& input) {
   pass->quad_list.reserve(input->quads.size());
   for (size_t i = 0; i < input->quads.size(); ++i) {
     surfaces::QuadPtr quad = input->quads[i].Pass();
-    ConvertToDrawQuad(
-        quad, sqs_list[quad->shared_quad_state_index], pass.get());
+    if (!ConvertToDrawQuad(
+            quad, sqs_list[quad->shared_quad_state_index], pass.get()))
+      return scoped_ptr<cc::RenderPass>();
   }
   return pass.Pass();
 }
@@ -271,7 +299,8 @@ TypeConverter<surfaces::MailboxPtr, gpu::Mailbox>::ConvertFrom(
 gpu::Mailbox TypeConverter<surfaces::MailboxPtr, gpu::Mailbox>::ConvertTo(
     const surfaces::MailboxPtr& input) {
   gpu::Mailbox mailbox;
-  mailbox.SetName(input->name.storage().data());
+  if (!input->name.is_null())
+    mailbox.SetName(&input->name.storage()[0]);
   return mailbox;
 }
 
@@ -415,7 +444,10 @@ scoped_ptr<cc::CompositorFrame> ConvertTo(const surfaces::FramePtr& input) {
       input->resources.To<cc::TransferableResourceArray>();
   frame_data->render_pass_list.reserve(input->passes.size());
   for (size_t i = 0; i < input->passes.size(); ++i) {
-    frame_data->render_pass_list.push_back(ConvertTo(input->passes[i]));
+    scoped_ptr<cc::RenderPass> pass = ConvertTo(input->passes[i]);
+    if (!pass)
+      return scoped_ptr<cc::CompositorFrame>();
+    frame_data->render_pass_list.push_back(pass.Pass());
   }
   scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
   frame->delegated_frame_data = frame_data.Pass();
