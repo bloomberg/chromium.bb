@@ -325,20 +325,31 @@ void Dispatcher::WillReleaseScriptContext(
 }
 
 void Dispatcher::DidCreateDocumentElement(blink::WebFrame* frame) {
-  if (IsWithinPlatformApp()) {
-    // WebKit doesn't let us define an additional user agent stylesheet, so we
-    // insert the default platform app stylesheet into all documents that are
-    // loaded in each app.
+  // Note: use GetEffectiveDocumentURL not just frame->document()->url()
+  // so that this also injects the stylesheet on about:blank frames that
+  // are hosted in the extension process.
+  GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
+      frame, frame->document().url(), true /* match_about_blank */);
+  const Extension* extension =
+      extensions_.GetExtensionOrAppByURL(effective_document_url);
+
+  if (extension &&
+      (extension->is_extension() || extension->is_platform_app())) {
+    int resource_id =
+        extension->is_platform_app() ? IDR_PLATFORM_APP_CSS : IDR_EXTENSION_CSS;
     std::string stylesheet = ResourceBundle::GetSharedInstance()
-                                 .GetRawDataResource(IDR_PLATFORM_APP_CSS)
+                                 .GetRawDataResource(resource_id)
                                  .as_string();
     ReplaceFirstSubstringAfterOffset(
         &stylesheet, 0, "$FONTFAMILY", system_font_family_);
     ReplaceFirstSubstringAfterOffset(
         &stylesheet, 0, "$FONTSIZE", system_font_size_);
+
+    // Blink doesn't let us define an additional user agent stylesheet, so
+    // we insert the default platform app or extension stylesheet into all
+    // documents that are loaded in each app or extension.
     frame->document().insertStyleSheet(WebString::fromUTF8(stylesheet));
   }
-
   content_watcher_->DidCreateDocumentElement(frame);
 }
 
