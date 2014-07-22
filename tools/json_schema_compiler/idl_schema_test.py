@@ -226,9 +226,10 @@ class IdlSchemaTest(unittest.TestCase):
           '$ref': 'MyType1'}],
         func['parameters'])
     func = getFunction(schema, 'function4')
-    self.assertEquals(('This tests if "double-quotes" are escaped correctly.'
-                       '<br/><br/> It also tests a comment with two newlines.'),
-                      func['description'])
+    self.assertEquals(
+        '<p>This tests if "double-quotes" are escaped correctly.</p>'
+        '<p>It also tests a comment with two newlines.</p>',
+        func['description'])
 
   def testReservedWords(self):
     schema = idl_schema.Load('test/idl_reserved_words.idl')[0]

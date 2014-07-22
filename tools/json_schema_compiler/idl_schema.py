@@ -56,19 +56,20 @@ def ProcessComment(comment):
       }
     )
   '''
+  def add_paragraphs(content):
+    paragraphs = content.split('\n\n')
+    if len(paragraphs) < 2:
+      return content
+    return '<p>' + '</p><p>'.join(p.strip() for p in paragraphs) + '</p>'
+
   # Find all the parameter comments of the form '|name|: comment'.
   parameter_starts = list(re.finditer(r' *\|([^|]*)\| *: *', comment))
 
   # Get the parent comment (everything before the first parameter comment.
   first_parameter_location = (parameter_starts[0].start()
                               if parameter_starts else len(comment))
-  parent_comment = comment[:first_parameter_location]
-
-  # We replace \n\n with <br/><br/> here and below, because the documentation
-  # needs to know where the newlines should be, and this is easier than
-  # escaping \n.
-  parent_comment = (parent_comment.strip().replace('\n\n', '<br/><br/>')
-                                          .replace('\n', ''))
+  parent_comment = (add_paragraphs(comment[:first_parameter_location].strip())
+                    .replace('\n', ''))
 
   params = OrderedDict()
   for (cur_param, next_param) in itertools.izip_longest(parameter_starts,
@@ -79,9 +80,10 @@ def ProcessComment(comment):
     # beginning of the next parameter's introduction.
     param_comment_start = cur_param.end()
     param_comment_end = next_param.start() if next_param else len(comment)
-    params[param_name] = (comment[param_comment_start:param_comment_end
-                                  ].strip().replace('\n\n', '<br/><br/>')
-                                           .replace('\n', ''))
+    params[param_name] = (
+        add_paragraphs(comment[param_comment_start:param_comment_end].strip())
+        .replace('\n', ''))
+
   return (parent_comment, params)
 
 

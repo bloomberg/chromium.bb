@@ -11,7 +11,7 @@ namespace comments {
   
     //
     // There's a blank line at the start of this comment.
-    // 
+    //
     // Documentation for basicFunction.
     // BasicFunction() is a great function.
     // There is a newline after this.

@@ -99,28 +99,35 @@ namespace app.window {
 
   dictionary FrameOptions {
     // Frame type: <code>none</code> or <code>chrome</code> (defaults to
-    // <code>chrome</code>).<br>
+    // <code>chrome</code>).
+    //
     // For <code>none</code>, the <code>-webkit-app-region</code> CSS property
     // can be used to apply draggability to the app's window.
+    //
     // <code>-webkit-app-region: drag</code> can be used to mark regions
     // draggable. <code>no-drag</code> can be used to disable this style on
-    // nested elements.<br>
+    // nested elements.
     DOMString? type;
     // Allows the frame color to be set. Frame coloring is only available if the
-    // frame type is <code>chrome</code>.<br>
+    // frame type is <code>chrome</code>.
+    //
     // Frame coloring is new in Chrome 36.
     DOMString? color;
     // Allows the frame color of the window when active to be set. Frame
-    // coloring is only available if the frame type is <code>chrome</code>.<br>
+    // coloring is only available if the frame type is <code>chrome</code>.
+    //
     // Frame coloring is only available if the frame type is
-    // <code>chrome</code>.<br>
+    // <code>chrome</code>.
+    //
     // Frame coloring is new in Chrome 36.
     DOMString? activeColor;
     // Allows the frame color of the window when inactive to be set differently
     // to the active color. Frame
-    // coloring is only available if the frame type is <code>chrome</code>.<br>
+    // coloring is only available if the frame type is <code>chrome</code>.
+    //
     // <code>inactiveColor</code> must be used in conjunction with <code>
-    // color</code>.<br>
+    // color</code>.
+    //
     // Frame coloring is new in Chrome 36.
     DOMString? inactiveColor;
   };
@@ -213,7 +220,8 @@ namespace app.window {
     // <code>-webkit-app-region</code> CSS property can be used to apply
     // draggability to the app's window. <code>-webkit-app-region: drag</code>
     // can be used to mark regions draggable. <code>no-drag</code> can be used
-    // to disable this style on nested elements.<br>
+    // to disable this style on nested elements.
+    //
     // Use of <code>FrameOptions</code> is new in M36.
     (DOMString or FrameOptions)? frame;
 
@@ -247,9 +255,10 @@ namespace app.window {
     // If true, the window will stay above most other windows. If there are
     // multiple windows of this kind, the currently focused window will be in
     // the foreground. Requires the <code>"alwaysOnTopWindows"</code>
-    // permission. Defaults to false.<br>
+    // permission. Defaults to false.
+    //
     // Call <code>setAlwaysOnTop()</code> on the window to change this property
-    // after creation.<br>
+    // after creation.
     boolean? alwaysOnTop;
 
     // If true, the window will be focused when created. Defaults to true.
@@ -258,10 +267,13 @@ namespace app.window {
 
   // Called in the creating window (parent) before the load event is called in
   // the created window (child). The parent can set fields or functions on the
-  // child usable from onload. E.g. background.js:<br>
+  // child usable from onload. E.g. background.js:
+  //
   // <code>function(createdWindow) { createdWindow.contentWindow.foo =
   // function () { }; };</code>
-  // <br>window.js:<br>
+  //
+  // window.js:
+  //
   // <code>window.onload = function () { foo(); }</code>
   callback CreateWindowCallback =
       void ([instanceOf=AppWindow] object createdWindow);
@@ -270,11 +282,13 @@ namespace app.window {
     // Focus the window.
     static void focus();
 
-    // Fullscreens the window.<br>
+    // Fullscreens the window.
+    //
     // The user will be able to restore the window by pressing ESC. An
     // application can prevent the fullscreen state to be left when ESC is
     // pressed by requesting the <b>overrideEscFullscreen</b> permission and
-    // canceling the event by calling .preventDefault(), like this:<br>
+    // canceling the event by calling .preventDefault(), like this:
+    //
     // <code>window.onKeyDown = function(e) { if (e.keyCode == 27 /* ESC */) {
     // e.preventDefault(); } };</code>
     static void fullscreen();

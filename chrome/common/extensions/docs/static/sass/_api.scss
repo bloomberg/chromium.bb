@@ -17,17 +17,23 @@
     .description {
       margin-left: 20px;
     }
-    table.innerTable {
-      margin: 10px 0;
-      td, th {
-        padding: 5px 10px;
-        border: 1px solid #eee;
-      }
-      th {
-        background: none;
+    table {
+      .innerTable {
+        margin: 10px 0;
+        td, th {
+          padding: 5px 10px;
+          border: 1px solid #eee;
+        }
+        th {
+          background: none;
+        }
       }
       p {
-        margin: 0;
+        margin-top: 0.75em;
+        margin-bottom: 0.75em;
+      }
+      p:first-child {
+        margin-top: 0;
       }
     }
     td, th {

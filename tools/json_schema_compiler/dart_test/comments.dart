@@ -18,12 +18,12 @@ class API_comments {
   /*
    * Functions
    */
-  /// There's a blank line at the start of this comment.  Documentation for
-  /// basicFunction. BasicFunction() is a great function. There is a newline
-  /// after this.<br/><br/> It works like so:        +-----+        |     |
-  /// +--+        |     |     |  |        +-----+ --> +--+<br/><br/> Some other
-  /// stuff here.    This paragraph starts with whitespace.    Overall, its a
-  /// great function. There's also a blank line at the end of this comment.
+  /// <p>There's a blank line at the start of this comment.</p><p>Documentation
+  /// for basicFunction. BasicFunction() is a great function. There is a newline
+  /// after this.</p><p>It works like so:        +-----+        |     |     +--+
+  ///       |     |     |  |        +-----+ --> +--+</p><p>Some other stuff here.
+  ///    This paragraph starts with whitespace.    Overall, its a great function.
+  /// There's also a blank line at the end of this comment.</p>
   void basicFunction() => JS('void', '#.basicFunction()', this._jsObject);
 
   API_comments(this._jsObject) {

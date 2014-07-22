@@ -77,7 +77,8 @@ namespace identity {
 
   interface Functions {
     // Retrieves a list of AccountInfo objects describing the accounts
-    // present on the profile.<br>
+    // present on the profile.
+    //
     // <code>getAccounts</code> is only supported on dev channel.
     static void getAccounts(GetAccountsCallback callback);
 
