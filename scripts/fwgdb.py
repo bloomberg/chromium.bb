@@ -33,7 +33,7 @@ _SRC_LP = os.path.join(_SRC_ROOT, 'third_party/coreboot/payloads/libpayload')
 
 _PTRN_DEVMODE = 'Entering VbBootDeveloper()'
 _PTRN_GDB = 'Ready for GDB connection'
-_PTRN_BOARD = 'Starting depthcharge on ([a-z_]+)...'
+_PTRN_BOARD = 'Starting(?: read-only| read/write)? depthcharge on ([a-z_]+)...'
 
 
 class TerminalFreezer(object):
@@ -137,11 +137,11 @@ def FindSymbols(firmware_dir, board, use):
     return firmware_dir
 
   if 'unified_depthcharge' in use:
-    basename = 'depthcharge.elf'
+    basename = 'dev.elf'
   else:
-    basename = 'depthcharge.ro.elf'
+    basename = 'dev.ro.elf'
 
-  path = os.path.join(firmware_dir, 'depthcharge_gdb', basename)
+  path = os.path.join(firmware_dir, 'depthcharge', basename)
   if not os.path.exists(path):
     path = os.path.join(firmware_dir, basename)
 
