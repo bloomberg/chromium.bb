@@ -1179,6 +1179,19 @@ internal_chromium_pfq = internal.derive(
   prebuilts=constants.PUBLIC,
 )
 
+# TODO: this config will replace x86-generic-chromium-pfq as the
+# master config once the waterfall change is completed
+# (crbug.com/363659).
+internal_chromium_pfq.add_config('master-chromium-pfq',
+  boards=[],
+  master=False,
+  push_overlays=constants.BOTH_OVERLAYS,
+  afdo_update_ebuild=True,
+  sync_chrome=False,
+  chrome_sdk=False,
+  important=False,
+)
+
 internal_chromium_pfq.add_config('x86-generic-chromium-pfq',
   boards=['x86-generic'],
   master=True,
