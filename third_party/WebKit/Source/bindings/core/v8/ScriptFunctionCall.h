@@ -53,6 +53,7 @@ public:
     void appendArgument(int);
     void appendArgument(bool);
     void appendArgument(const Vector<ScriptValue>&);
+    void appendUndefinedArgument();
 
 protected:
     RefPtr<ScriptState> m_scriptState;

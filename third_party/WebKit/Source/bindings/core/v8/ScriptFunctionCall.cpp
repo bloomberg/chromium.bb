@@ -45,7 +45,7 @@ namespace blink {
 void ScriptCallArgumentHandler::appendArgument(const ScriptValue& argument)
 {
     if (argument.scriptState() != m_scriptState) {
-        ASSERT_NOT_REACHED();
+        appendUndefinedArgument();
         return;
     }
     m_arguments.append(argument);
@@ -111,9 +111,19 @@ void ScriptCallArgumentHandler::appendArgument(const Vector<ScriptValue>& argume
     v8::Isolate* isolate = m_scriptState->isolate();
     ScriptState::Scope scope(m_scriptState.get());
     v8::Handle<v8::Array> result = v8::Array::New(isolate, argument.size());
-    for (size_t i = 0; i < argument.size(); ++i)
-        result->Set(v8::Integer::New(isolate, i), argument[i].v8Value());
+    for (size_t i = 0; i < argument.size(); ++i) {
+        if (argument[i].scriptState() != m_scriptState)
+            result->Set(v8::Integer::New(isolate, i), v8::Undefined(isolate));
+        else
+            result->Set(v8::Integer::New(isolate, i), argument[i].v8Value());
+    }
     m_arguments.append(ScriptValue(m_scriptState.get(), result));
+}
+
+void ScriptCallArgumentHandler::appendUndefinedArgument()
+{
+    v8::Isolate* isolate = m_scriptState->isolate();
+    m_arguments.append(ScriptValue(m_scriptState.get(), v8::Undefined(isolate)));
 }
 
 ScriptFunctionCall::ScriptFunctionCall(const ScriptValue& thisObject, const String& name)
