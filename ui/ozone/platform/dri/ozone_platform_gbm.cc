@@ -11,8 +11,8 @@
 #include "base/at_exit.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
-#include "ui/ozone/common/window/platform_window_compat.h"
 #include "ui/ozone/platform/dri/cursor_factory_evdev_dri.h"
+#include "ui/ozone/platform/dri/dri_window.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/gbm_buffer.h"
 #include "ui/ozone/platform/dri/gbm_surface.h"
@@ -97,8 +97,7 @@ class OzonePlatformGbm : public OzonePlatform {
   virtual scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) OVERRIDE {
-    return make_scoped_ptr<PlatformWindow>(
-        new PlatformWindowCompat(delegate, bounds));
+    return scoped_ptr<PlatformWindow>(new DriWindow(delegate, bounds));
   }
 #if defined(OS_CHROMEOS)
   virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()

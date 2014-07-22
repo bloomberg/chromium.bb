@@ -55,6 +55,8 @@
         'dri_util.h',
         'dri_vsync_provider.cc',
         'dri_vsync_provider.h',
+        'dri_window.cc',
+        'dri_window.h',
         'dri_wrapper.cc',
         'dri_wrapper.h',
         'hardware_display_controller.cc',

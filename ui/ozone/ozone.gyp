@@ -100,8 +100,6 @@
         'common/gpu/ozone_gpu_message_params.cc',
         'common/gpu/ozone_gpu_message_params.h',
         'common/gpu/ozone_gpu_messages.h',
-        'common/window/platform_window_compat.cc',
-        'common/window/platform_window_compat.h',
         'public/ozone_platform.cc',
         'public/ozone_platform.h',
         'public/ozone_switches.cc',
