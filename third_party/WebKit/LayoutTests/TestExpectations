@@ -196,6 +196,8 @@ crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-fl
 
 crbug.com/389648 fast/text-autosizing/table-inflation-crash.html [ Pass Crash ]
 
+crbug.com/394081 fonts/mongolian-glyphs.html [ NeedsRebaseline ]
+
 # Flaky:
 crbug.com/374270 http/tests/security/frameNavigation/context-for-location.html [ Failure Pass ]
 crbug.com/374270 http/tests/security/frameNavigation/context-for-location-assign.html [ Failure Pass ]
