@@ -56,9 +56,9 @@ enable_pepper_cdms = enable_plugins && (is_linux || is_mac || is_win)
 # fully, and 2 enables only the codepath to generate a Metafile (e.g.  usually
 # a PDF or EMF) and disables print preview, cloud print, UI, etc.
 if (is_android) {
-  enable_printing = 2
+  printing_mode = 2
 } else {
-  enable_printing = 1
+  printing_mode = 1
 }
 
 # The seccomp-bpf sandbox is only supported on three architectures

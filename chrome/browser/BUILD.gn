@@ -404,7 +404,7 @@ static_library("browser") {
                            ".", "//chrome")
   }
 
-  if (enable_printing != 0) {
+  if (printing_mode != 0) {
     # Some form of printing support.
     sources += rebase_path(gypi_values.chrome_browser_basic_printing_sources,
                            ".", "//chrome")
@@ -415,11 +415,11 @@ static_library("browser") {
       sources += rebase_path(gypi_values.chrome_browser_printing_emf_sources,
                              ".", "//chrome")
     }
-    if (enable_printing == 1) {
+    if (printing_mode == 1) {
       # Full printing on top of the above.
       sources += rebase_path(gypi_values.chrome_browser_full_printing_sources,
                              ".", "//chrome")
-    } else if (enable_printing == 2) {
+    } else if (printing_mode == 2) {
       # Partial-only printing support.
       sources += rebase_path(
           gypi_values.chrome_browser_basic_only_printing_sources,

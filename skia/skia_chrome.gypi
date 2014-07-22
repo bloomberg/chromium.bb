@@ -21,6 +21,7 @@
   },
 
   'sources': [
+    # Note: file list duplicated in GN build.
     'ext/analysis_canvas.cc',
     'ext/analysis_canvas.h',
     'ext/benchmarking_canvas.cc',

@@ -126,7 +126,7 @@ static_library("ui") {
     deps += [ "//net" ]
   }
 
-  if (enable_printing != 0) {
+  if (printing_mode != 0) {
     deps += [ "//printing" ]
   }
 
@@ -258,7 +258,7 @@ static_library("ui") {
   if (!enable_themes) {
     sources -= [ "webui/theme_source.cc" ]
   }
-  if (enable_printing == 1) {
+  if (printing_mode == 1) {
     sources += rebase_path(gypi_values.chrome_browser_ui_print_preview_sources,
                            ".", "//chrome")
   }

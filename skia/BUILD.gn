@@ -9,7 +9,7 @@ if (cpu_arch == "arm") {
 }
 
 skia_support_gpu = !is_ios
-skia_support_pdf = !is_ios && enable_printing != 0
+skia_support_pdf = !is_ios && printing_mode != 0
 
 # The list of Skia defines that are to be set for chromium.
 gypi_skia_defines = exec_script(
@@ -248,14 +248,6 @@ component("skia") {
     "ext/benchmarking_canvas.cc",
     "ext/benchmarking_canvas.h",
     "ext/bitmap_platform_device.h",
-    "ext/bitmap_platform_device_cairo.cc",
-    "ext/bitmap_platform_device_cairo.h",
-    "ext/bitmap_platform_device_mac.cc",
-    "ext/bitmap_platform_device_mac.h",
-    #"ext/bitmap_platform_device_skia.cc",
-    #"ext/bitmap_platform_device_skia.h",
-    "ext/bitmap_platform_device_win.cc",
-    "ext/bitmap_platform_device_win.h",
     "ext/convolver.cc",
     "ext/convolver.h",
     "ext/event_tracer_impl.cc",
@@ -415,7 +407,7 @@ component("skia") {
   if (is_win) {
     sources -= [ "ext/SkThread_chrome.cc" ]
   }
-  if (is_android && enable_printing == 0) {
+  if (is_android && printing_mode == 0) {
     sources -= [
       "ext/skia_utils_base.cc",
       "ext/vector_platform_device_skia.cc"
@@ -469,10 +461,26 @@ component("skia") {
     ]
   }
 
-  if (!use_cairo) {
-    sources -= [
+  # Select the right BitmapPlatformDevice.
+  if (is_win) {
+    sources += [
+      "ext/bitmap_platform_device_win.cc",
+      "ext/bitmap_platform_device_win.h",
+    ]
+  } else if (is_mac) {
+    sources += [ 
+      "ext/bitmap_platform_device_mac.cc",
+      "ext/bitmap_platform_device_mac.h",
+    ]
+  } else if (use_cairo) {
+    sources += [
       "ext/bitmap_platform_device_cairo.cc",
       "ext/bitmap_platform_device_cairo.h",
+    ]
+  } else {
+    sources += [
+      "ext/bitmap_platform_device_skia.cc",
+      "ext/bitmap_platform_device_skia.h",
     ]
   }
 
