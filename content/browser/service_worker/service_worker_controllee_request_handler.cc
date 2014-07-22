@@ -96,6 +96,18 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
   return job_.get();
 }
 
+void ServiceWorkerControlleeRequestHandler::GetExtraResponseInfo(
+    bool* was_fetched_via_service_worker,
+    GURL* original_url_via_service_worker) const {
+  if (!job_) {
+    *was_fetched_via_service_worker = false;
+    *original_url_via_service_worker = GURL();
+    return;
+  }
+  job_->GetExtraResponseInfo(was_fetched_via_service_worker,
+                             original_url_via_service_worker);
+}
+
 void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
     const GURL& url) {
   DCHECK(job_.get());

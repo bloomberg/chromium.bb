@@ -262,7 +262,8 @@ void EmbeddedWorkerContextClient::didHandleFetchEvent(
     headers[base::UTF16ToUTF8(key)] =
         base::UTF16ToUTF8(web_response.getHeader(key));
   }
-  ServiceWorkerResponse response(web_response.status(),
+  ServiceWorkerResponse response(web_response.url(),
+                                 web_response.status(),
                                  web_response.statusText().utf8(),
                                  headers,
                                  web_response.blobUUID().utf8());

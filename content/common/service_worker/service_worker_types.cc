@@ -27,11 +27,13 @@ ServiceWorkerFetchRequest::~ServiceWorkerFetchRequest() {}
 ServiceWorkerResponse::ServiceWorkerResponse() : status_code(0) {}
 
 ServiceWorkerResponse::ServiceWorkerResponse(
+    const GURL& url,
     int status_code,
     const std::string& status_text,
     const std::map<std::string, std::string>& headers,
     const std::string& blob_uuid)
-    : status_code(status_code),
+    : url(url),
+      status_code(status_code),
       status_text(status_text),
       headers(headers),
       blob_uuid(blob_uuid) {

@@ -117,6 +117,8 @@ IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(was_fetched_via_proxy)
   IPC_STRUCT_TRAITS_MEMBER(npn_negotiated_protocol)
   IPC_STRUCT_TRAITS_MEMBER(socket_address)
+  IPC_STRUCT_TRAITS_MEMBER(was_fetched_via_service_worker)
+  IPC_STRUCT_TRAITS_MEMBER(original_url_via_service_worker)
 IPC_STRUCT_TRAITS_END()
 
 // Parameters for a resource request.

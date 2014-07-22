@@ -358,6 +358,13 @@ void ResourceDispatcher::OnReceivedResponse(
       request_info->peer = new_peer;
   }
 
+  // Updates the response_url if the response was fetched by a ServiceWorker,
+  // and it was not generated inside the ServiceWorker.
+  if (response_head.was_fetched_via_service_worker &&
+      !response_head.original_url_via_service_worker.is_empty()) {
+    request_info->response_url = response_head.original_url_via_service_worker;
+  }
+
   ResourceResponseInfo renderer_response_info;
   ToResourceResponseInfo(*request_info, response_head, &renderer_response_info);
   request_info->site_isolation_metadata =

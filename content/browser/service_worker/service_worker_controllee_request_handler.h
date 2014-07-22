@@ -34,6 +34,10 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) OVERRIDE;
 
+  virtual void GetExtraResponseInfo(
+      bool* was_fetched_via_service_worker,
+      GURL* original_url_via_service_worker) const OVERRIDE;
+
  private:
   typedef ServiceWorkerControlleeRequestHandler self;
 

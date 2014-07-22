@@ -72,6 +72,13 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
   return NULL;
 }
 
+void ServiceWorkerContextRequestHandler::GetExtraResponseInfo(
+    bool* was_fetched_via_service_worker,
+    GURL* original_url_via_service_worker) const {
+  *was_fetched_via_service_worker = false;
+  *original_url_via_service_worker = GURL();
+}
+
 bool ServiceWorkerContextRequestHandler::ShouldAddToScriptCache(
     const GURL& url) {
   // We only write imports that occur during the initial eval.

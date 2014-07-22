@@ -82,6 +82,9 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
 
   const net::HttpResponseInfo* http_info() const;
 
+  void GetExtraResponseInfo(bool* was_fetched_via_service_worker,
+                            GURL* original_url_via_service_worker) const;
+
  protected:
   virtual ~ServiceWorkerURLRequestJob();
 
@@ -124,6 +127,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   scoped_ptr<net::HttpResponseInfo> http_response_info_;
   // Headers that have not yet been committed to |http_response_info_|.
   scoped_refptr<net::HttpResponseHeaders> http_response_headers_;
+  GURL response_url_;
 
   // Used when response type is FORWARD_TO_SERVICE_WORKER.
   scoped_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;

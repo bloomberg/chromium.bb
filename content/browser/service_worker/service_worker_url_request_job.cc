@@ -173,6 +173,19 @@ const net::HttpResponseInfo* ServiceWorkerURLRequestJob::http_info() const {
   return http_response_info_.get();
 }
 
+void ServiceWorkerURLRequestJob::GetExtraResponseInfo(
+    bool* was_fetched_via_service_worker,
+    GURL* original_url_via_service_worker) const {
+  if (response_type_ != FORWARD_TO_SERVICE_WORKER) {
+    *was_fetched_via_service_worker = false;
+    *original_url_via_service_worker = GURL();
+    return;
+  }
+  *was_fetched_via_service_worker = true;
+  *original_url_via_service_worker = response_url_;
+}
+
+
 ServiceWorkerURLRequestJob::~ServiceWorkerURLRequestJob() {
 }
 
@@ -262,6 +275,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     blob_request_->Start();
   }
 
+  response_url_ = response.url;
   CreateResponseHeader(
       response.status_code, response.status_text, response.headers);
   if (!blob_request_)

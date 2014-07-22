@@ -146,7 +146,9 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
           embedded_worker_id,
           request_id,
           SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
-          ServiceWorkerResponse(200, "OK",
+          ServiceWorkerResponse(GURL(""),
+                                200,
+                                "OK",
                                 std::map<std::string, std::string>(),
                                 std::string())));
 }

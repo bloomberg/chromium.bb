@@ -63,6 +63,10 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) = 0;
 
+  virtual void GetExtraResponseInfo(
+      bool* was_fetched_via_service_worker,
+      GURL* original_url_via_service_worker) const = 0;
+
  protected:
   ServiceWorkerRequestHandler(
       base::WeakPtr<ServiceWorkerContextCore> context,

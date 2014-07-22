@@ -14,6 +14,7 @@
 #include "content/browser/loader/detachable_resource_handler.h"
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/resource_request_info_impl.h"
+#include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/common/ssl_status_serialization.h"
@@ -54,6 +55,12 @@ void PopulateResourceResponse(net::URLRequest* request,
   response->head.connection_info = response_info.connection_info;
   response->head.was_fetched_via_proxy = request->was_fetched_via_proxy();
   response->head.socket_address = request->GetSocketAddress();
+  if (ServiceWorkerRequestHandler* handler =
+          ServiceWorkerRequestHandler::GetHandler(request)) {
+    handler->GetExtraResponseInfo(
+        &response->head.was_fetched_via_service_worker,
+        &response->head.original_url_via_service_worker);
+  }
   AppCacheInterceptor::GetExtraResponseInfo(
       request,
       &response->head.appcache_id,

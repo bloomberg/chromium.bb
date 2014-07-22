@@ -28,6 +28,10 @@ class CONTENT_EXPORT ServiceWorkerContextRequestHandler
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) OVERRIDE;
 
+  virtual void GetExtraResponseInfo(
+      bool* was_fetched_via_service_worker,
+      GURL* original_url_via_service_worker) const OVERRIDE;
+
  private:
   bool ShouldAddToScriptCache(const GURL& url);
   bool ShouldReadFromScriptCache(const GURL& url, int64* response_id_out);
