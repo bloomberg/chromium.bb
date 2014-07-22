@@ -95,7 +95,7 @@ SyncBackendHostImpl::~SyncBackendHostImpl() {
 }
 
 void SyncBackendHostImpl::Initialize(
-    SyncFrontend* frontend,
+    sync_driver::SyncFrontend* frontend,
     scoped_ptr<base::Thread> sync_thread,
     const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
     const GURL& sync_service_url,
@@ -452,7 +452,7 @@ void SyncBackendHostImpl::EnableEncryptEverything() {
 
 void SyncBackendHostImpl::ActivateDataType(
     syncer::ModelType type, syncer::ModelSafeGroup group,
-    ChangeProcessor* change_processor) {
+    sync_driver::ChangeProcessor* change_processor) {
   registrar_->ActivateDataType(type, group, change_processor, GetUserShare());
 }
 

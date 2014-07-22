@@ -14,15 +14,15 @@
 #include "sync/internal_api/public/data_type_association_stats.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 
+namespace sync_driver {
+
+class DataTypeController;
+
 // |ModelAssociationManager| does the heavy lifting for doing the actual model
 // association. It instructs DataTypeControllers to load models, start
 // associating and stopping. Since the operations are async it uses an
 // interface to inform DataTypeManager the results of the operations.
 // This class is owned by DataTypeManager.
-namespace browser_sync {
-
-class DataTypeController;
-
 // |ModelAssociationManager| association functions are async. The results of
 // those operations are passed back via this interface.
 class ModelAssociationManagerDelegate {
@@ -167,5 +167,7 @@ class ModelAssociationManager {
 
   DISALLOW_COPY_AND_ASSIGN(ModelAssociationManager);
 };
-}  // namespace browser_sync
+
+}  // namespace sync_driver
+
 #endif  // COMPONENTS_SYNC_DRIVER_MODEL_ASSOCIATION_MANAGER_H__

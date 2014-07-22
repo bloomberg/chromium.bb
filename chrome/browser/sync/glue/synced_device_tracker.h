@@ -22,7 +22,7 @@ namespace browser_sync {
 
 class DeviceInfo;
 
-class SyncedDeviceTracker : public ChangeProcessor {
+class SyncedDeviceTracker : public sync_driver::ChangeProcessor {
  public:
   SyncedDeviceTracker(syncer::UserShare* user_share,
                       const std::string& cache_guid);

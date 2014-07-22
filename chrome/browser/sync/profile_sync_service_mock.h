@@ -104,7 +104,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   // DataTypeManagerObserver mocks.
   MOCK_METHOD0(OnConfigureBlocked, void());
   MOCK_METHOD1(OnConfigureDone,
-               void(const browser_sync::DataTypeManager::ConfigureResult&));
+               void(const sync_driver::DataTypeManager::ConfigureResult&));
   MOCK_METHOD0(OnConfigureRetry, void());
   MOCK_METHOD0(OnConfigureStart, void());
 

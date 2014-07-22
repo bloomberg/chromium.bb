@@ -15,7 +15,7 @@ class BaseNode;
 class SyncMergeResult;
 }
 
-namespace browser_sync {
+namespace sync_driver {
 
 // This represents the fundamental operations used for model association that
 // are common to all ModelAssociators and do not depend on types of the models
@@ -90,6 +90,6 @@ class PerDataTypeAssociatorInterface : public AssociatorInterface {
   virtual void Disassociate(int64 sync_id) = 0;
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_MODEL_ASSOCIATOR_H_

@@ -13,7 +13,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/util/data_type_histogram.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 UIDataTypeController::UIDataTypeController()
     : DataTypeController(base::MessageLoopProxy::current(),
@@ -351,4 +351,4 @@ void UIDataTypeController::RecordStartFailure(StartResult result) {
 #undef PER_DATA_TYPE_MACRO
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

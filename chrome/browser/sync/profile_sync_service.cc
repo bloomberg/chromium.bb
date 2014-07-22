@@ -103,13 +103,13 @@
 #include "sync/internal_api/public/read_transaction.h"
 #endif
 
-using browser_sync::ChangeProcessor;
-using browser_sync::DataTypeController;
-using browser_sync::DataTypeManager;
-using browser_sync::FailedDataTypesHandler;
 using browser_sync::NotificationServiceSessionsRouter;
 using browser_sync::ProfileSyncServiceStartBehavior;
 using browser_sync::SyncBackendHost;
+using sync_driver::ChangeProcessor;
+using sync_driver::DataTypeController;
+using sync_driver::DataTypeManager;
+using sync_driver::FailedDataTypesHandler;
 using syncer::ModelType;
 using syncer::ModelTypeSet;
 using syncer::JsBackend;
@@ -488,8 +488,8 @@ void ProfileSyncService::RemoveObserverForDeviceInfoChange(
 }
 
 void ProfileSyncService::GetDataTypeControllerStates(
-  browser_sync::DataTypeController::StateMap* state_map) const {
-    for (browser_sync::DataTypeController::TypeMap::const_iterator iter =
+  DataTypeController::StateMap* state_map) const {
+    for (DataTypeController::TypeMap::const_iterator iter =
          directory_data_type_controllers_.begin();
          iter != directory_data_type_controllers_.end();
          ++iter)
@@ -1459,7 +1459,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
 }
 
 void ProfileSyncService::OnConfigureDone(
-    const browser_sync::DataTypeManager::ConfigureResult& result) {
+    const DataTypeManager::ConfigureResult& result) {
   // We should have cleared our cached passphrase before we get here (in
   // OnBackendInitialized()).
   DCHECK(cached_passphrase_.empty());
@@ -1718,17 +1718,17 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
   // Only log the data types that are shown in the sync settings ui.
   // Note: the order of these types must match the ordering of
   // the respective types in ModelType
-const browser_sync::user_selectable_type::UserSelectableSyncType
+const sync_driver::user_selectable_type::UserSelectableSyncType
       user_selectable_types[] = {
-    browser_sync::user_selectable_type::BOOKMARKS,
-    browser_sync::user_selectable_type::PREFERENCES,
-    browser_sync::user_selectable_type::PASSWORDS,
-    browser_sync::user_selectable_type::AUTOFILL,
-    browser_sync::user_selectable_type::THEMES,
-    browser_sync::user_selectable_type::TYPED_URLS,
-    browser_sync::user_selectable_type::EXTENSIONS,
-    browser_sync::user_selectable_type::APPS,
-    browser_sync::user_selectable_type::PROXY_TABS
+    sync_driver::user_selectable_type::BOOKMARKS,
+    sync_driver::user_selectable_type::PREFERENCES,
+    sync_driver::user_selectable_type::PASSWORDS,
+    sync_driver::user_selectable_type::AUTOFILL,
+    sync_driver::user_selectable_type::THEMES,
+    sync_driver::user_selectable_type::TYPED_URLS,
+    sync_driver::user_selectable_type::EXTENSIONS,
+    sync_driver::user_selectable_type::APPS,
+    sync_driver::user_selectable_type::PROXY_TABS
   };
 
   COMPILE_ASSERT(32 == syncer::MODEL_TYPE_COUNT, UpdateCustomConfigHistogram);
@@ -1750,7 +1750,7 @@ const browser_sync::user_selectable_type::UserSelectableSyncType
         UMA_HISTOGRAM_ENUMERATION(
             "Sync.CustomSync",
             user_selectable_types[i],
-            browser_sync::user_selectable_type::SELECTABLE_DATATYPE_COUNT + 1);
+            sync_driver::user_selectable_type::SELECTABLE_DATATYPE_COUNT + 1);
       }
     }
   }
@@ -1759,7 +1759,7 @@ const browser_sync::user_selectable_type::UserSelectableSyncType
 #if defined(OS_CHROMEOS)
 void ProfileSyncService::RefreshSpareBootstrapToken(
     const std::string& passphrase) {
-  browser_sync::SystemEncryptor encryptor;
+  sync_driver::SystemEncryptor encryptor;
   syncer::Cryptographer temp_cryptographer(&encryptor);
   // The first 2 params (hostname and username) doesn't have any effect here.
   syncer::KeyParams key_params = {"localhost", "dummy", passphrase};

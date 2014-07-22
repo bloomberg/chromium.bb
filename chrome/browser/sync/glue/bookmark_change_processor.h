@@ -33,11 +33,11 @@ namespace browser_sync {
 // All operations and use of this class are from the UI thread.
 // This is currently bookmarks specific.
 class BookmarkChangeProcessor : public BookmarkModelObserver,
-                                public ChangeProcessor {
+                                public sync_driver::ChangeProcessor {
  public:
   BookmarkChangeProcessor(Profile* profile,
                           BookmarkModelAssociator* model_associator,
-                          DataTypeErrorHandler* error_handler);
+                          sync_driver::DataTypeErrorHandler* error_handler);
   virtual ~BookmarkChangeProcessor();
 
   // BookmarkModelObserver implementation.
@@ -131,14 +131,14 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
                               int index,
                               syncer::WriteTransaction* trans,
                               BookmarkModelAssociator* associator,
-                              DataTypeErrorHandler* error_handler);
+                              sync_driver::DataTypeErrorHandler* error_handler);
 
   // Update |bookmark_node|'s sync node.
   static int64 UpdateSyncNode(const BookmarkNode* bookmark_node,
                               BookmarkModel* model,
                               syncer::WriteTransaction* trans,
                               BookmarkModelAssociator* associator,
-                              DataTypeErrorHandler* error_handler);
+                              sync_driver::DataTypeErrorHandler* error_handler);
 
   // Update transaction version of |model| and |nodes| to |new_version| if
   // it's valid.

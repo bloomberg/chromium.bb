@@ -33,7 +33,7 @@ ExtensionBackedDataTypeController::ExtensionBackedDataTypeController(
     const DisableTypeCallback& disable_callback,
     syncer::ModelType type,
     const std::string& extension_hash,
-    SyncApiComponentFactory* sync_factory,
+    sync_driver::SyncApiComponentFactory* sync_factory,
     Profile* profile)
     : UIDataTypeController(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),

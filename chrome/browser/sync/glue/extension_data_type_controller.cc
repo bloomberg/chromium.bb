@@ -16,7 +16,7 @@ namespace browser_sync {
 
 ExtensionDataTypeController::ExtensionDataTypeController(
     syncer::ModelType type,
-    SyncApiComponentFactory* sync_factory,
+    sync_driver::SyncApiComponentFactory* sync_factory,
     Profile* profile,
     const DisableTypeCallback& disable_callback)
     : UIDataTypeController(

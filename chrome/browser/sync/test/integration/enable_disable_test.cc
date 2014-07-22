@@ -32,7 +32,7 @@ bool DoesTopLevelNodeExist(syncer::UserShare* user_share,
     return node.InitTypeRoot(type) == syncer::BaseNode::INIT_OK;
 }
 
-bool IsUnready(const browser_sync::FailedDataTypesHandler& failed_handler,
+bool IsUnready(const sync_driver::FailedDataTypesHandler& failed_handler,
                syncer::ModelType type) {
   return failed_handler.GetUnreadyErrorTypes().Has(type);
 }
@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
   const syncer::ModelTypeSet registered_types =
       GetSyncService(0)->GetRegisteredDataTypes();
   syncer::UserShare* user_share = GetSyncService(0)->GetUserShare();
-  const browser_sync::FailedDataTypesHandler& failed_handler =
+  const sync_driver::FailedDataTypesHandler& failed_handler =
       GetSyncService(0)->failed_data_types_handler();
   for (syncer::ModelTypeSet::Iterator it = registered_types.First();
        it.Good(); it.Inc()) {
@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
 
   syncer::UserShare* user_share = GetSyncService(0)->GetUserShare();
 
-  const browser_sync::FailedDataTypesHandler& failed_handler =
+  const sync_driver::FailedDataTypesHandler& failed_handler =
       GetSyncService(0)->failed_data_types_handler();
 
   // Make sure all top-level nodes exist first.

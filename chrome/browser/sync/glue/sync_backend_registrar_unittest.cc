@@ -43,7 +43,7 @@ void TriggerChanges(SyncBackendRegistrar* registrar, ModelType type) {
 
 class SyncBackendRegistrarTest : public testing::Test {
  public:
-  void TestNonUIDataTypeActivationAsync(ChangeProcessor* processor,
+  void TestNonUIDataTypeActivationAsync(sync_driver::ChangeProcessor* processor,
                                         base::WaitableEvent* done) {
     registrar_->ActivateDataType(AUTOFILL,
                                  syncer::GROUP_DB,
@@ -182,7 +182,7 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
   // Should do nothing.
   TriggerChanges(registrar_.get(), BOOKMARKS);
 
-  StrictMock<ChangeProcessorMock> change_processor_mock;
+  StrictMock<sync_driver::ChangeProcessorMock> change_processor_mock;
   EXPECT_CALL(change_processor_mock, StartImpl());
   EXPECT_CALL(change_processor_mock, IsRunning())
       .WillRepeatedly(Return(true));
@@ -223,7 +223,7 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
   // Should do nothing.
   TriggerChanges(registrar_.get(), AUTOFILL);
 
-  StrictMock<ChangeProcessorMock> change_processor_mock;
+  StrictMock<sync_driver::ChangeProcessorMock> change_processor_mock;
   EXPECT_CALL(change_processor_mock, StartImpl());
   EXPECT_CALL(change_processor_mock, IsRunning())
       .WillRepeatedly(Return(true));

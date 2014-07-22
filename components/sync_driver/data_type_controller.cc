@@ -8,7 +8,7 @@
 #include "sync/internal_api/public/user_share.h"
 #include "sync/util/data_type_histogram.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 DataTypeController::DataTypeController(
     scoped_refptr<base::MessageLoopProxy> ui_thread,
@@ -60,4 +60,4 @@ bool DataTypeController::ReadyForStart() const {
   return true;
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

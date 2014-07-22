@@ -4,7 +4,7 @@
 
 #include "components/sync_driver/shared_change_processor_ref.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 SharedChangeProcessorRef::SharedChangeProcessorRef(
     const scoped_refptr<SharedChangeProcessor>& change_processor)
@@ -39,4 +39,4 @@ syncer::SyncError SharedChangeProcessorRef::CreateAndUploadError(
   return change_processor_->CreateAndUploadError(from_here, message);
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

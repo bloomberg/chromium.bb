@@ -5,7 +5,7 @@
 #include "base/location.h"
 #include "components/sync_driver/data_type_manager_mock.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 DataTypeManagerMock::DataTypeManagerMock()
     : result_(OK, syncer::ModelTypeSet()) {
@@ -13,4 +13,4 @@ DataTypeManagerMock::DataTypeManagerMock()
 
 DataTypeManagerMock::~DataTypeManagerMock() {}
 
-}  // namespace browser_sync
+}  // namespace sync_driver

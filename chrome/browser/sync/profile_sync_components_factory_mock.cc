@@ -11,8 +11,8 @@
 #include "sync/api/attachments/attachment_service_impl.h"
 #include "sync/internal_api/public/attachments/fake_attachment_store.h"
 
-using browser_sync::AssociatorInterface;
-using browser_sync::ChangeProcessor;
+using sync_driver::AssociatorInterface;
+using sync_driver::ChangeProcessor;
 using testing::_;
 using testing::InvokeWithoutArgs;
 using testing::Return;

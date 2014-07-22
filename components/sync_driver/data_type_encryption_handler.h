@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "sync/internal_api/public/base/model_type.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 // The DataTypeEncryptionHandler provides the status of datatype encryption.
 class DataTypeEncryptionHandler {
@@ -24,6 +24,6 @@ class DataTypeEncryptionHandler {
   virtual syncer::ModelTypeSet GetEncryptedDataTypes() const = 0;
 };
 
-} // namespace browser_sync
+} // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_ENCRYPTION_HANDLER_H_

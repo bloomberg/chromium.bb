@@ -18,14 +18,14 @@ namespace browser_sync {
 // A data type controller for types backed by an extension. Manages waiting for
 // extension enable/disable and triggering reconfigurations as necessary.
 class ExtensionBackedDataTypeController
-    : public UIDataTypeController,
+    : public sync_driver::UIDataTypeController,
       public extensions::ExtensionRegistryObserver {
  public:
   ExtensionBackedDataTypeController(
       const DisableTypeCallback& disable_callback,
       syncer::ModelType type,
       const std::string& extension_hash,
-      SyncApiComponentFactory* sync_factory,
+      sync_driver::SyncApiComponentFactory* sync_factory,
       Profile* profile);
 
   // UIDataTypeController overrides.

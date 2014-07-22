@@ -22,34 +22,34 @@ class Profile;
 class ProfileSyncService;
 
 namespace browser_sync {
+class LocalDeviceInfoProvider;
+class SyncBackendHost;
+}  // namespace browser_sync
+
+namespace sync_driver {
 class AssociatorInterface;
 class ChangeProcessor;
 class DataTypeEncryptionHandler;
+class DataTypeErrorHandler;
 class DataTypeManager;
 class DataTypeManagerObserver;
 class FailedDataTypesHandler;
 class GenericChangeProcessor;
-class LocalDeviceInfoProvider;
-class SyncBackendHost;
-class DataTypeErrorHandler;
-}  // namespace browser_sync
-
-namespace sync_driver {
 class SyncPrefs;
-}
+}  // namespace sync_driver
 
 namespace syncer {
 class DataTypeDebugInfoListener;
 class SyncableService;
-}
+}  // namespace syncer
 
 namespace history {
 class HistoryBackend;
-}
+}  // namespace history
 
 // Factory class for all profile sync related classes.
 class ProfileSyncComponentsFactory
-    : public browser_sync::SyncApiComponentFactory {
+    : public sync_driver::SyncApiComponentFactory {
  public:
   // The various factory methods for the data type model associators
   // and change processors all return this struct.  This is needed
@@ -65,10 +65,10 @@ class ProfileSyncComponentsFactory
   // TODO(zea): Have all datatypes using the new API switch to returning
   // SyncableService weak pointers instead of SyncComponents (crbug.com/100114).
   struct SyncComponents {
-    browser_sync::AssociatorInterface* model_associator;
-    browser_sync::ChangeProcessor* change_processor;
-    SyncComponents(browser_sync::AssociatorInterface* ma,
-                   browser_sync::ChangeProcessor* cp)
+    sync_driver::AssociatorInterface* model_associator;
+    sync_driver::ChangeProcessor* change_processor;
+    SyncComponents(sync_driver::AssociatorInterface* ma,
+                   sync_driver::ChangeProcessor* cp)
         : model_associator(ma), change_processor(cp) {}
   };
 
@@ -81,14 +81,14 @@ class ProfileSyncComponentsFactory
   // Instantiates a new DataTypeManager with a SyncBackendHost, a list of data
   // type controllers and a DataTypeManagerObserver.  The return pointer is
   // owned by the caller.
-  virtual browser_sync::DataTypeManager* CreateDataTypeManager(
+  virtual sync_driver::DataTypeManager* CreateDataTypeManager(
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
-      const browser_sync::DataTypeController::TypeMap* controllers,
-      const browser_sync::DataTypeEncryptionHandler* encryption_handler,
+      const sync_driver::DataTypeController::TypeMap* controllers,
+      const sync_driver::DataTypeEncryptionHandler* encryption_handler,
       browser_sync::SyncBackendHost* backend,
-      browser_sync::DataTypeManagerObserver* observer,
-      browser_sync::FailedDataTypesHandler* failed_data_types_handler) = 0;
+      sync_driver::DataTypeManagerObserver* observer,
+      sync_driver::FailedDataTypesHandler* failed_data_types_handler) = 0;
 
   // Creating this in the factory helps us mock it out in testing.
   virtual browser_sync::SyncBackendHost* CreateSyncBackendHost(
@@ -105,11 +105,11 @@ class ProfileSyncComponentsFactory
   // Legacy datatypes that need to be converted to the SyncableService API.
   virtual SyncComponents CreateBookmarkSyncComponents(
       ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler) = 0;
+      sync_driver::DataTypeErrorHandler* error_handler) = 0;
   virtual SyncComponents CreateTypedUrlSyncComponents(
       ProfileSyncService* profile_sync_service,
       history::HistoryBackend* history_backend,
-      browser_sync::DataTypeErrorHandler* error_handler) = 0;
+      sync_driver::DataTypeErrorHandler* error_handler) = 0;
 };
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_H__

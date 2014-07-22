@@ -25,10 +25,12 @@ namespace syncer {
 class SyncError;
 }
 
-namespace browser_sync {
-
+namespace sync_driver {
 class AssociatorInterface;
 class ChangeProcessor;
+}
+
+namespace browser_sync {
 
 // Implementation for datatypes that reside on the frontend thread
 // (UI thread). This is the same thread we perform initialization on, so we
@@ -40,7 +42,7 @@ class ChangeProcessor;
 // NOTE: This class is deprecated! New sync datatypes should be using the
 // syncer::SyncableService API and the UIDataTypeController instead.
 // TODO(zea): Delete this once all types are on the new API.
-class FrontendDataTypeController : public DataTypeController {
+class FrontendDataTypeController : public sync_driver::DataTypeController {
  public:
   FrontendDataTypeController(
       scoped_refptr<base::MessageLoopProxy> ui_thread,
@@ -100,10 +102,11 @@ class FrontendDataTypeController : public DataTypeController {
   // Record causes of start failure.
   virtual void RecordStartFailure(StartResult result);
 
-  virtual AssociatorInterface* model_associator() const;
-  virtual void set_model_associator(AssociatorInterface* associator);
-  virtual ChangeProcessor* GetChangeProcessor() const OVERRIDE;
-  virtual void set_change_processor(ChangeProcessor* processor);
+  virtual sync_driver::AssociatorInterface* model_associator() const;
+  virtual void set_model_associator(
+      sync_driver::AssociatorInterface* associator);
+  virtual sync_driver::ChangeProcessor* GetChangeProcessor() const OVERRIDE;
+  virtual void set_change_processor(sync_driver::ChangeProcessor* processor);
 
   // Handles the reporting of unrecoverable error. It records stuff in
   // UMA and reports to breakpad.
@@ -123,8 +126,8 @@ class FrontendDataTypeController : public DataTypeController {
 
   // TODO(sync): transition all datatypes to SyncableService and deprecate
   // AssociatorInterface.
-  scoped_ptr<AssociatorInterface> model_associator_;
-  scoped_ptr<ChangeProcessor> change_processor_;
+  scoped_ptr<sync_driver::AssociatorInterface> model_associator_;
+  scoped_ptr<sync_driver::ChangeProcessor> change_processor_;
 
  private:
   // Build sync components and associate models.

@@ -44,8 +44,8 @@ class NonFrontendDataTypeController::BackendComponentsContainer {
   // For returning association results to controller on UI.
   syncer::WeakHandle<NonFrontendDataTypeController> controller_handle_;
 
-  scoped_ptr<AssociatorInterface> model_associator_;
-  scoped_ptr<ChangeProcessor> change_processor_;
+  scoped_ptr<sync_driver::AssociatorInterface> model_associator_;
+  scoped_ptr<sync_driver::ChangeProcessor> change_processor_;
 };
 
 NonFrontendDataTypeController::
@@ -292,7 +292,8 @@ std::string NonFrontendDataTypeController::name() const {
   return syncer::ModelTypeToString(type());
 }
 
-DataTypeController::State NonFrontendDataTypeController::state() const {
+sync_driver::DataTypeController::State NonFrontendDataTypeController::state()
+    const {
   return state_;
 }
 
@@ -448,11 +449,13 @@ void NonFrontendDataTypeController::set_state(State state) {
   state_ = state;
 }
 
-AssociatorInterface* NonFrontendDataTypeController::associator() const {
+sync_driver::AssociatorInterface* NonFrontendDataTypeController::associator()
+    const {
   return model_associator_;
 }
 
-ChangeProcessor* NonFrontendDataTypeController::GetChangeProcessor() const {
+sync_driver::ChangeProcessor*
+NonFrontendDataTypeController::GetChangeProcessor() const {
   return change_processor_;
 }
 

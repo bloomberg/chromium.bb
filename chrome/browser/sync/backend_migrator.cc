@@ -27,7 +27,7 @@ MigrationObserver::~MigrationObserver() {}
 BackendMigrator::BackendMigrator(const std::string& name,
                                  syncer::UserShare* user_share,
                                  ProfileSyncService* service,
-                                 DataTypeManager* manager,
+                                 sync_driver::DataTypeManager* manager,
                                  const base::Closure &migration_done_callback)
     : name_(name), user_share_(user_share), service_(service),
       manager_(manager), state_(IDLE),
@@ -91,7 +91,7 @@ void BackendMigrator::ChangeState(State new_state) {
 
 bool BackendMigrator::TryStart() {
   DCHECK_EQ(state_, WAITING_TO_START);
-  if (manager_->state() == DataTypeManager::CONFIGURED) {
+  if (manager_->state() == sync_driver::DataTypeManager::CONFIGURED) {
     RestartMigration();
     return true;
   }
@@ -108,7 +108,7 @@ void BackendMigrator::RestartMigration() {
 }
 
 void BackendMigrator::OnConfigureDone(
-    const DataTypeManager::ConfigureResult& result) {
+    const sync_driver::DataTypeManager::ConfigureResult& result) {
   if (state_ == IDLE)
     return;
 
@@ -141,7 +141,7 @@ syncer::ModelTypeSet GetUnsyncedDataTypes(syncer::UserShare* user_share) {
 }  // namespace
 
 void BackendMigrator::OnConfigureDoneImpl(
-    const DataTypeManager::ConfigureResult& result) {
+    const sync_driver::DataTypeManager::ConfigureResult& result) {
   SDVLOG(1) << "OnConfigureDone with requested types "
             << ModelTypeSetToString(result.requested_types)
             << ", status " << result.status
@@ -164,8 +164,8 @@ void BackendMigrator::OnConfigureDoneImpl(
     return;
   }
 
-  if (result.status != DataTypeManager::OK &&
-      result.status != DataTypeManager::PARTIAL_SUCCESS) {
+  if (result.status != sync_driver::DataTypeManager::OK &&
+      result.status != sync_driver::DataTypeManager::PARTIAL_SUCCESS) {
     // If this fails, and we're disabling types, a type may or may not be
     // disabled until the user restarts the browser.  If this wasn't an abort,
     // any failure will be reported as an unrecoverable error to the UI. If it

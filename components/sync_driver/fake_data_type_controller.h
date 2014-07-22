@@ -8,7 +8,8 @@
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_manager.h"
 
-namespace browser_sync {
+namespace sync_driver {
+
 // Fake DataTypeController implementation that simulates the state
 // machine of a typical asynchronous data type.
 //
@@ -65,5 +66,6 @@ class FakeDataTypeController : public DataTypeController {
   syncer::SyncError load_error_;
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
+
 #endif  // COMPONENTS_SYNC_DRIVER_FAKE_DATA_TYPE_CONTROLLER_H__

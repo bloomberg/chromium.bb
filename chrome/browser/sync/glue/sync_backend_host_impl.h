@@ -81,7 +81,7 @@ class SyncBackendHostImpl
 
   // SyncBackendHost implementation.
   virtual void Initialize(
-      SyncFrontend* frontend,
+      sync_driver::SyncFrontend* frontend,
       scoped_ptr<base::Thread> sync_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,
@@ -111,7 +111,7 @@ class SyncBackendHostImpl
       const base::Callback<void()>& retry_callback) OVERRIDE;
   virtual void ActivateDataType(
      syncer::ModelType type, syncer::ModelSafeGroup group,
-     ChangeProcessor* change_processor) OVERRIDE;
+     sync_driver::ChangeProcessor* change_processor) OVERRIDE;
   virtual void DeactivateDataType(syncer::ModelType type) OVERRIDE;
   virtual void EnableEncryptEverything() OVERRIDE;
   virtual syncer::UserShare* GetUserShare() const OVERRIDE;
@@ -210,7 +210,7 @@ class SyncBackendHostImpl
       syncer::ModelType type,
       const syncer::StatusCounters& counters);
 
-  SyncFrontend* frontend() { return frontend_; }
+  sync_driver::SyncFrontend* frontend() { return frontend_; }
 
  private:
   friend class SyncBackendHostCore;
@@ -336,7 +336,7 @@ class SyncBackendHostImpl
   scoped_ptr<SyncBackendRegistrar> registrar_;
 
   // The frontend which we serve (and are owned by).
-  SyncFrontend* frontend_;
+  sync_driver::SyncFrontend* frontend_;
 
   // We cache the cryptographer's pending keys whenever NotifyPassphraseRequired
   // is called. This way, before the UI calls SetDecryptionPassphrase on the

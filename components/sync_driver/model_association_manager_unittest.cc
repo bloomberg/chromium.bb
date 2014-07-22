@@ -10,7 +10,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
-namespace browser_sync {
+
+namespace sync_driver {
+
 class MockModelAssociationManagerDelegate :
     public ModelAssociationManagerDelegate {
  public:
@@ -388,4 +390,4 @@ TEST_F(SyncModelAssociationManagerTest, ModelLoadFailBeforeAssociationStart) {
             GetController(controllers_, syncer::BOOKMARKS)->state());
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

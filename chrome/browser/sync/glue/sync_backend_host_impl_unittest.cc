@@ -72,7 +72,7 @@ void QuitMessageLoop() {
   base::MessageLoop::current()->Quit();
 }
 
-class MockSyncFrontend : public SyncFrontend {
+class MockSyncFrontend : public sync_driver::SyncFrontend {
  public:
   virtual ~MockSyncFrontend() {}
 
@@ -237,16 +237,17 @@ class SyncBackendHostTest : public testing::Test {
   void ConfigureDataTypes(syncer::ModelTypeSet types_to_add,
                           syncer::ModelTypeSet types_to_remove,
                           syncer::ModelTypeSet types_to_unapply) {
-    BackendDataTypeConfigurer::DataTypeConfigStateMap config_state_map;
-    BackendDataTypeConfigurer::SetDataTypesState(
-        BackendDataTypeConfigurer::CONFIGURE_ACTIVE,
+    sync_driver::BackendDataTypeConfigurer::DataTypeConfigStateMap
+        config_state_map;
+    sync_driver::BackendDataTypeConfigurer::SetDataTypesState(
+        sync_driver::BackendDataTypeConfigurer::CONFIGURE_ACTIVE,
         types_to_add,
         &config_state_map);
-    BackendDataTypeConfigurer::SetDataTypesState(
-        BackendDataTypeConfigurer::DISABLED,
+    sync_driver::BackendDataTypeConfigurer::SetDataTypesState(
+        sync_driver::BackendDataTypeConfigurer::DISABLED,
         types_to_remove, &config_state_map);
-    BackendDataTypeConfigurer::SetDataTypesState(
-        BackendDataTypeConfigurer::UNREADY,
+    sync_driver::BackendDataTypeConfigurer::SetDataTypesState(
+        sync_driver::BackendDataTypeConfigurer::UNREADY,
         types_to_unapply, &config_state_map);
 
     types_to_add.PutAll(syncer::ControlTypes());

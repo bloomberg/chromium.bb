@@ -47,7 +47,7 @@ class NonFrontendDataTypeControllerMock : public NonFrontendDataTypeController {
                     DataTypeController::State new_state,
                     const syncer::SyncMergeResult& local_merge_result,
                     const syncer::SyncMergeResult& syncer_merge_result));
-  MOCK_METHOD1(DisconnectProcessor, void(ChangeProcessor*));
+  MOCK_METHOD1(DisconnectProcessor, void(sync_driver::ChangeProcessor*));
   MOCK_METHOD2(OnUnrecoverableErrorImpl, void(const tracked_objects::Location&,
                                               const std::string&));
   MOCK_METHOD2(RecordUnrecoverableError, void(const tracked_objects::Location&,

@@ -44,14 +44,14 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
 
   virtual void RegisterDataTypes(ProfileSyncService* pss) OVERRIDE;
 
-  virtual browser_sync::DataTypeManager* CreateDataTypeManager(
+  virtual sync_driver::DataTypeManager* CreateDataTypeManager(
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
-      const browser_sync::DataTypeController::TypeMap* controllers,
-      const browser_sync::DataTypeEncryptionHandler* encryption_handler,
+      const sync_driver::DataTypeController::TypeMap* controllers,
+      const sync_driver::DataTypeEncryptionHandler* encryption_handler,
       browser_sync::SyncBackendHost* backend,
-      browser_sync::DataTypeManagerObserver* observer,
-      browser_sync::FailedDataTypesHandler* failed_data_types_handler)
+      sync_driver::DataTypeManagerObserver* observer,
+      sync_driver::FailedDataTypesHandler* failed_data_types_handler)
           OVERRIDE;
 
   virtual browser_sync::SyncBackendHost* CreateSyncBackendHost(
@@ -73,11 +73,11 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   // Legacy datatypes that need to be converted to the SyncableService API.
   virtual SyncComponents CreateBookmarkSyncComponents(
       ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
+      sync_driver::DataTypeErrorHandler* error_handler) OVERRIDE;
   virtual SyncComponents CreateTypedUrlSyncComponents(
       ProfileSyncService* profile_sync_service,
       history::HistoryBackend* history_backend,
-      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
+      sync_driver::DataTypeErrorHandler* error_handler) OVERRIDE;
 
  private:
   // Register data types which are enabled on desktop platforms only.
@@ -94,7 +94,7 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
                                ProfileSyncService* pss);
   // Used to bind a callback to give to DataTypeControllers to disable
   // data types.
-  browser_sync::DataTypeController::DisableTypeCallback
+  sync_driver::DataTypeController::DisableTypeCallback
       MakeDisableCallbackFor(syncer::ModelType type);
   void DisableBrokenType(syncer::ModelType type,
                          const tracked_objects::Location& from_here,

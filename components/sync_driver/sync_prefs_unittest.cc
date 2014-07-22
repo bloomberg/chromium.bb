@@ -234,4 +234,4 @@ TEST_F(SyncPrefsTest, ClearPreferences) {
 
 }  // namespace
 
-}  // namespace browser_sync
+}  // namespace sync_driver

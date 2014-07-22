@@ -23,7 +23,7 @@ namespace browser_sync {
 
 // A class that manages the startup and shutdown of autofill sync.
 class AutofillDataTypeController
-    : public NonUIDataTypeController {
+    : public sync_driver::NonUIDataTypeController {
  public:
   AutofillDataTypeController(
       ProfileSyncComponentsFactory* profile_sync_factory,

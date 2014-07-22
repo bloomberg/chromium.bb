@@ -11,7 +11,7 @@
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_error_factory.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 // A syncer::SyncChangeProcessor stub for interacting with a refcounted
 // SharedChangeProcessor.
@@ -19,7 +19,7 @@ class SharedChangeProcessorRef : public syncer::SyncChangeProcessor,
                                  public syncer::SyncErrorFactory {
  public:
   SharedChangeProcessorRef(
-      const scoped_refptr<browser_sync::SharedChangeProcessor>&
+      const scoped_refptr<SharedChangeProcessor>&
           change_processor);
   virtual ~SharedChangeProcessorRef();
 
@@ -42,9 +42,9 @@ class SharedChangeProcessorRef : public syncer::SyncChangeProcessor,
   // Default copy and assign welcome (and safe due to refcounted-ness).
 
  private:
-  scoped_refptr<browser_sync::SharedChangeProcessor> change_processor_;
+  scoped_refptr<SharedChangeProcessor> change_processor_;
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_H_REF_H_

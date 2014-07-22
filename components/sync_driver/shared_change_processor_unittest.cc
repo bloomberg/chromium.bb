@@ -20,7 +20,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 namespace {
 
@@ -29,7 +29,7 @@ using ::testing::StrictMock;
 
 class SyncSharedChangeProcessorTest :
     public testing::Test,
-    public browser_sync::SyncApiComponentFactory {
+    public SyncApiComponentFactory {
  public:
   SyncSharedChangeProcessorTest() : backend_thread_("dbthread"),
                                     did_connect_(false) {}
@@ -142,4 +142,4 @@ TEST_F(SyncSharedChangeProcessorTest, Basic) {
 
 }  // namespace
 
-}  // namespace browser_sync
+}  // namespace sync_driver

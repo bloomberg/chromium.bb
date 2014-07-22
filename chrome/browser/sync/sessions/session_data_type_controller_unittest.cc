@@ -104,7 +104,7 @@ class SessionDataTypeControllerTest
         &profile_,
         synced_window_getter_.get(),
         local_device_.get(),
-        DataTypeController::DisableTypeCallback());
+        sync_driver::DataTypeController::DisableTypeCallback());
 
     load_finished_ = false;
     last_type_ = syncer::UNSPECIFIED;
@@ -169,7 +169,8 @@ class SessionDataTypeControllerTest
 
 TEST_F(SessionDataTypeControllerTest, StartModels) {
   Start();
-  EXPECT_EQ(DataTypeController::MODEL_LOADED, controller_->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
+            controller_->state());
   EXPECT_TRUE(LoadResult());
 }
 
@@ -177,10 +178,12 @@ TEST_F(SessionDataTypeControllerTest, StartModelsDelayedByLocalDevice) {
   local_device_->SetInitialized(false);
   Start();
   EXPECT_FALSE(load_finished_);
-  EXPECT_EQ(DataTypeController::MODEL_STARTING, controller_->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
+            controller_->state());
 
   local_device_->SetInitialized(true);
-  EXPECT_EQ(DataTypeController::MODEL_LOADED, controller_->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
+            controller_->state());
   EXPECT_TRUE(LoadResult());
 }
 
@@ -188,47 +191,55 @@ TEST_F(SessionDataTypeControllerTest, StartModelsDelayedByRestoreInProgress) {
   synced_window_delegate_->SetSessionRestoreInProgress(true);
   Start();
   EXPECT_FALSE(load_finished_);
-  EXPECT_EQ(DataTypeController::MODEL_STARTING, controller_->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
+            controller_->state());
 
   synced_window_delegate_->SetSessionRestoreInProgress(false);
-  EXPECT_EQ(DataTypeController::MODEL_LOADED, controller_->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
+            controller_->state());
   EXPECT_TRUE(LoadResult());
 }
 
 TEST_F(SessionDataTypeControllerTest,
-    StartModelsDelayedByLocalDeviceThenRestoreInProgress) {
+       StartModelsDelayedByLocalDeviceThenRestoreInProgress) {
   local_device_->SetInitialized(false);
   synced_window_delegate_->SetSessionRestoreInProgress(true);
   Start();
   EXPECT_FALSE(load_finished_);
-  EXPECT_EQ(DataTypeController::MODEL_STARTING, controller_->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
+            controller_->state());
 
   local_device_->SetInitialized(true);
   EXPECT_FALSE(load_finished_);
-  EXPECT_EQ(DataTypeController::MODEL_STARTING, controller_->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
+            controller_->state());
 
   synced_window_delegate_->SetSessionRestoreInProgress(false);
-  EXPECT_EQ(DataTypeController::MODEL_LOADED, controller_->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
+            controller_->state());
   EXPECT_TRUE(LoadResult());
 }
 
 TEST_F(SessionDataTypeControllerTest,
-    StartModelsDelayedByRestoreInProgressThenLocalDevice) {
+       StartModelsDelayedByRestoreInProgressThenLocalDevice) {
   local_device_->SetInitialized(false);
   synced_window_delegate_->SetSessionRestoreInProgress(true);
   Start();
   EXPECT_FALSE(load_finished_);
-  EXPECT_EQ(DataTypeController::MODEL_STARTING, controller_->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
+            controller_->state());
 
   synced_window_delegate_->SetSessionRestoreInProgress(false);
   EXPECT_FALSE(load_finished_);
-  EXPECT_EQ(DataTypeController::MODEL_STARTING, controller_->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
+            controller_->state());
 
   local_device_->SetInitialized(true);
-  EXPECT_EQ(DataTypeController::MODEL_LOADED, controller_->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
+            controller_->state());
   EXPECT_TRUE(LoadResult());
 }
 
-} // namespace
+}  // namespace
 
-} // namespace browser_sync
+}  // namespace browser_sync

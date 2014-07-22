@@ -81,7 +81,6 @@ using base::TimeDelta;
 using base::WaitableEvent;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillProfileDataTypeController;
-using browser_sync::DataTypeController;
 using content::BrowserThread;
 using syncer::AUTOFILL;
 using syncer::AUTOFILL_PROFILE;
@@ -95,6 +94,7 @@ using syncer::syncable::SPECIFICS;
 using syncer::syncable::UNITTEST;
 using syncer::syncable::WriterTag;
 using syncer::syncable::WriteTransaction;
+using sync_driver::DataTypeController;
 using testing::_;
 using testing::DoAll;
 using testing::ElementsAre;
@@ -356,7 +356,7 @@ ACTION_P(MakeAutocompleteSyncComponents, wds) {
 }
 
 ACTION_P(ReturnNewDataTypeManagerWithDebugListener, debug_listener) {
-  return new browser_sync::DataTypeManagerImpl(
+  return new sync_driver::DataTypeManagerImpl(
       base::Closure(),
       debug_listener,
       arg1,
@@ -388,12 +388,14 @@ class AbstractAutofillFactory {
 
 class AutofillEntryFactory : public AbstractAutofillFactory {
  public:
-  virtual browser_sync::DataTypeController* CreateDataTypeController(
+  virtual DataTypeController* CreateDataTypeController(
       ProfileSyncComponentsFactory* factory,
       TestingProfile* profile,
       ProfileSyncService* service) OVERRIDE {
     return new AutofillDataTypeController(
-        factory, profile, DataTypeController::DisableTypeCallback());
+        factory,
+        profile,
+        DataTypeController::DisableTypeCallback());
   }
 
   virtual void SetExpectation(ProfileSyncComponentsFactoryMock* factory,
@@ -407,12 +409,14 @@ class AutofillEntryFactory : public AbstractAutofillFactory {
 
 class AutofillProfileFactory : public AbstractAutofillFactory {
  public:
-  virtual browser_sync::DataTypeController* CreateDataTypeController(
+  virtual DataTypeController* CreateDataTypeController(
       ProfileSyncComponentsFactory* factory,
       TestingProfile* profile,
       ProfileSyncService* service) OVERRIDE {
     return new AutofillProfileDataTypeController(
-        factory, profile, DataTypeController::DisableTypeCallback());
+        factory,
+        profile,
+        DataTypeController::DisableTypeCallback());
   }
 
   virtual void SetExpectation(ProfileSyncComponentsFactoryMock* factory,

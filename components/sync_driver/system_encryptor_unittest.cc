@@ -7,7 +7,7 @@
 #include "components/os_crypt/os_crypt.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 namespace {
 
@@ -34,4 +34,4 @@ TEST_F(SystemEncryptorTest, EncryptDecrypt) {
 
 }  // namespace
 
-}  // namespace browser_sync
+}  // namespace sync_driver

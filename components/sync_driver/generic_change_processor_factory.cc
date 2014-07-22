@@ -6,7 +6,7 @@
 
 #include "components/sync_driver/generic_change_processor.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 
 GenericChangeProcessorFactory::GenericChangeProcessorFactory() {}
@@ -16,7 +16,7 @@ GenericChangeProcessorFactory::~GenericChangeProcessorFactory() {}
 scoped_ptr<GenericChangeProcessor>
 GenericChangeProcessorFactory::CreateGenericChangeProcessor(
     syncer::UserShare* user_share,
-    browser_sync::DataTypeErrorHandler* error_handler,
+    DataTypeErrorHandler* error_handler,
     const base::WeakPtr<syncer::SyncableService>& local_service,
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
     SyncApiComponentFactory* sync_factory) {
@@ -26,6 +26,6 @@ GenericChangeProcessorFactory::CreateGenericChangeProcessor(
                                                     merge_result,
                                                     user_share,
                                                     sync_factory)).Pass();
-  }
+}
 
-}  // namespace browser_sync
+}  // namespace sync_driver

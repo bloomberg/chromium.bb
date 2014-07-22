@@ -167,7 +167,7 @@ TestProfileSyncService::components_factory_mock() {
 }
 
 void TestProfileSyncService::OnConfigureDone(
-    const browser_sync::DataTypeManager::ConfigureResult& result) {
+    const sync_driver::DataTypeManager::ConfigureResult& result) {
   ProfileSyncService::OnConfigureDone(result);
   base::MessageLoop::current()->Quit();
 }

@@ -18,7 +18,7 @@ using testing::_;
 using testing::InvokeWithoutArgs;
 using testing::Return;
 
-namespace browser_sync {
+namespace sync_driver {
 namespace {
 
 // TODO(zea): Expand this to make the dtc type paramterizable. This will let us
@@ -204,4 +204,4 @@ TEST_F(SyncUIDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
 }
 
 }  // namespace
-}  // namespace browser_sync
+}  // namespace sync_driver

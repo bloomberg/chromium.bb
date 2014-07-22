@@ -6,7 +6,7 @@
 
 #include "components/os_crypt/os_crypt.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 SystemEncryptor::~SystemEncryptor() {}
 
@@ -20,4 +20,4 @@ bool SystemEncryptor::DecryptString(const std::string& ciphertext,
   return ::OSCrypt::DecryptString(ciphertext, plaintext);
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

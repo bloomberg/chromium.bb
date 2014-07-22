@@ -45,13 +45,13 @@ namespace browser_sync {
 namespace {
 
 ACTION(ReturnNewDataTypeManager) {
-  return new browser_sync::DataTypeManagerImpl(base::Closure(),
-                                               arg0,
-                                               arg1,
-                                               arg2,
-                                               arg3,
-                                               arg4,
-                                               arg5);
+  return new sync_driver::DataTypeManagerImpl(base::Closure(),
+                                              arg0,
+                                              arg1,
+                                              arg2,
+                                              arg3,
+                                              arg4,
+                                              arg5);
 }
 
 using testing::Return;
@@ -76,7 +76,7 @@ class TestProfileSyncServiceObserver : public ProfileSyncServiceObserver {
 // that could happen while backend init is in progress.
 class SyncBackendHostNoReturn : public SyncBackendHostMock {
   virtual void Initialize(
-      SyncFrontend* frontend,
+      sync_driver::SyncFrontend* frontend,
       scoped_ptr<base::Thread> sync_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,
@@ -96,7 +96,7 @@ class SyncBackendHostMockCollectDeleteDirParam : public SyncBackendHostMock {
      : delete_dir_param_(delete_dir_param) {}
 
   virtual void Initialize(
-      SyncFrontend* frontend,
+      sync_driver::SyncFrontend* frontend,
       scoped_ptr<base::Thread> sync_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,

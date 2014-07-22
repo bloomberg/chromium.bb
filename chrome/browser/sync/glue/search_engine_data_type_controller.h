@@ -19,10 +19,11 @@ class Profile;
 
 namespace browser_sync {
 
-class SearchEngineDataTypeController : public UIDataTypeController {
+class SearchEngineDataTypeController
+    : public sync_driver::UIDataTypeController {
  public:
   SearchEngineDataTypeController(
-      SyncApiComponentFactory* profile_sync_factory,
+      sync_driver::SyncApiComponentFactory* profile_sync_factory,
       Profile* profile,
       const DisableTypeCallback& disable_callback);
 

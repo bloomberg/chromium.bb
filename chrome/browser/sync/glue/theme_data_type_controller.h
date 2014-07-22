@@ -11,10 +11,10 @@ class Profile;
 
 namespace browser_sync {
 
-class ThemeDataTypeController : public UIDataTypeController {
+class ThemeDataTypeController : public sync_driver::UIDataTypeController {
  public:
   ThemeDataTypeController(
-      SyncApiComponentFactory* sync_factory,
+      sync_driver::SyncApiComponentFactory* sync_factory,
       Profile* profile,
       const DisableTypeCallback& disable_callback);
 

@@ -19,10 +19,10 @@ class SyncedWindowDelegatesGetter;
 // Overrides StartModels to avoid sync contention with sessions during
 // a session restore operation at startup and to wait for the local
 // device info to become available.
-class SessionDataTypeController : public UIDataTypeController,
+class SessionDataTypeController : public sync_driver::UIDataTypeController,
                                   public content::NotificationObserver {
  public:
-  SessionDataTypeController(SyncApiComponentFactory* factory,
+  SessionDataTypeController(sync_driver::SyncApiComponentFactory* factory,
                             Profile* profile,
                             SyncedWindowDelegatesGetter* synced_window_getter,
                             LocalDeviceInfoProvider* local_device,

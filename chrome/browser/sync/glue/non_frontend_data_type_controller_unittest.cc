@@ -25,14 +25,14 @@
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 
 using base::WaitableEvent;
-using browser_sync::ChangeProcessorMock;
-using browser_sync::DataTypeController;
 using syncer::GROUP_DB;
 using browser_sync::NonFrontendDataTypeController;
 using browser_sync::NonFrontendDataTypeControllerMock;
-using browser_sync::ModelAssociatorMock;
-using browser_sync::ModelLoadCallbackMock;
-using browser_sync::StartCallbackMock;
+using sync_driver::ChangeProcessorMock;
+using sync_driver::DataTypeController;
+using sync_driver::ModelAssociatorMock;
+using sync_driver::ModelLoadCallbackMock;
+using sync_driver::StartCallbackMock;
 using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
@@ -101,7 +101,7 @@ class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
     mock_->RecordStartFailure(result);
   }
   virtual void DisconnectProcessor(
-      browser_sync::ChangeProcessor* processor) OVERRIDE{
+      sync_driver::ChangeProcessor* processor) OVERRIDE{
     mock_->DisconnectProcessor(processor);
   }
 

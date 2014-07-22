@@ -24,7 +24,7 @@ class StorageFrontend;
 namespace browser_sync {
 
 class ExtensionSettingDataTypeController
-    : public NonUIDataTypeController {
+    : public sync_driver::NonUIDataTypeController {
  public:
   ExtensionSettingDataTypeController(
       // Either EXTENSION_SETTINGS or APP_SETTINGS.

@@ -4,7 +4,7 @@
 
 #include "components/sync_driver/data_type_manager.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 DataTypeManager::ConfigureResult::ConfigureResult()
     : status(UNKNOWN) {
@@ -51,4 +51,4 @@ std::string DataTypeManager::ConfigureStatusToString(ConfigureStatus status) {
   }
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

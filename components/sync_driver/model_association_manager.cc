@@ -15,7 +15,7 @@
 
 using syncer::ModelTypeSet;
 
-namespace browser_sync {
+namespace sync_driver {
 
 namespace {
 
@@ -461,4 +461,4 @@ base::OneShotTimer<ModelAssociationManager>*
   return &timer_;
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

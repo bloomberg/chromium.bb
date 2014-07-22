@@ -20,7 +20,7 @@ class PasswordStore;
 namespace browser_sync {
 
 // A class that manages the startup and shutdown of password sync.
-class PasswordDataTypeController : public NonUIDataTypeController {
+class PasswordDataTypeController : public sync_driver::NonUIDataTypeController {
  public:
   PasswordDataTypeController(
       ProfileSyncComponentsFactory* profile_sync_factory,

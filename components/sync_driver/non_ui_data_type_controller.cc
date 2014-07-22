@@ -14,7 +14,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/util/data_type_histogram.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 SharedChangeProcessor*
 NonUIDataTypeController::CreateSharedChangeProcessor() {
@@ -437,4 +437,4 @@ void NonUIDataTypeController::StopLocalService() {
   local_service_.reset();
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

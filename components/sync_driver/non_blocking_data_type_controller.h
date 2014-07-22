@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_NON_BLOCKING_DATA_TYPE_CONTROLLER_H_
-#define CHROME_BROWSER_SYNC_NON_BLOCKING_DATA_TYPE_CONTROLLER_H_
+#ifndef COMPONENTS_SYNC_DRIVER_NON_BLOCKING_DATA_TYPE_CONTROLLER_H_
+#define COMPONENTS_SYNC_DRIVER_NON_BLOCKING_DATA_TYPE_CONTROLLER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -15,7 +15,7 @@ namespace syncer {
 class ModelTypeSyncProxy;
 }
 
-namespace browser_sync {
+namespace sync_driver {
 
 // Lives on the UI thread and manages the interactions between many sync
 // components.
@@ -134,6 +134,6 @@ class NonBlockingDataTypeController {
   DISALLOW_COPY_AND_ASSIGN(NonBlockingDataTypeController);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
-#endif  // CHROME_BROWSER_SYNC_NON_BLOCKING_DATA_TYPE_CONTROLLER_H_
+#endif  // COMPONENTS_SYNC_DRIVER_NON_BLOCKING_DATA_TYPE_CONTROLLER_H_

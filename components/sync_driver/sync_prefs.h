@@ -180,6 +180,6 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   DISALLOW_COPY_AND_ASSIGN(SyncPrefs);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_SYNC_PREFS_H_

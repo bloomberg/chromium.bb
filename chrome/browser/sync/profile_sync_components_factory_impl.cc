@@ -104,26 +104,26 @@ using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkDataTypeController;
 using browser_sync::BookmarkModelAssociator;
 using browser_sync::ChromeReportUnrecoverableError;
-using browser_sync::DataTypeController;
-using browser_sync::DataTypeErrorHandler;
-using browser_sync::DataTypeManager;
-using browser_sync::DataTypeManagerImpl;
-using browser_sync::DataTypeManagerObserver;
 using browser_sync::ExtensionBackedDataTypeController;
 using browser_sync::ExtensionDataTypeController;
 using browser_sync::ExtensionSettingDataTypeController;
 using browser_sync::PasswordDataTypeController;
-using browser_sync::ProxyDataTypeController;
 using browser_sync::SearchEngineDataTypeController;
 using browser_sync::SessionDataTypeController;
-using browser_sync::SharedChangeProcessor;
 using browser_sync::SyncBackendHost;
 using browser_sync::ThemeDataTypeController;
 using browser_sync::TypedUrlChangeProcessor;
 using browser_sync::TypedUrlDataTypeController;
 using browser_sync::TypedUrlModelAssociator;
-using browser_sync::UIDataTypeController;
 using content::BrowserThread;
+using sync_driver::DataTypeController;
+using sync_driver::DataTypeErrorHandler;
+using sync_driver::DataTypeManager;
+using sync_driver::DataTypeManagerImpl;
+using sync_driver::DataTypeManagerObserver;
+using sync_driver::ProxyDataTypeController;
+using sync_driver::SharedChangeProcessor;
+using sync_driver::UIDataTypeController;
 
 namespace {
 
@@ -450,10 +450,10 @@ DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
         debug_info_listener,
     const DataTypeController::TypeMap* controllers,
-    const browser_sync::DataTypeEncryptionHandler* encryption_handler,
+    const sync_driver::DataTypeEncryptionHandler* encryption_handler,
     SyncBackendHost* backend,
     DataTypeManagerObserver* observer,
-    browser_sync::FailedDataTypesHandler* failed_data_types_handler) {
+    sync_driver::FailedDataTypesHandler* failed_data_types_handler) {
   return new DataTypeManagerImpl(base::Bind(ChromeReportUnrecoverableError),
                                  debug_info_listener,
                                  controllers,
@@ -688,7 +688,7 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
 ProfileSyncComponentsFactory::SyncComponents
     ProfileSyncComponentsFactoryImpl::CreateBookmarkSyncComponents(
         ProfileSyncService* profile_sync_service,
-        DataTypeErrorHandler* error_handler) {
+        sync_driver::DataTypeErrorHandler* error_handler) {
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForProfile(profile_sync_service->profile());
   syncer::UserShare* user_share = profile_sync_service->GetUserShare();
@@ -715,7 +715,7 @@ ProfileSyncComponentsFactory::SyncComponents
     ProfileSyncComponentsFactoryImpl::CreateTypedUrlSyncComponents(
         ProfileSyncService* profile_sync_service,
         history::HistoryBackend* history_backend,
-        browser_sync::DataTypeErrorHandler* error_handler) {
+        sync_driver::DataTypeErrorHandler* error_handler) {
   TypedUrlModelAssociator* model_associator =
       new TypedUrlModelAssociator(profile_sync_service,
                                   history_backend,

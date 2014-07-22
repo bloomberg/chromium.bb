@@ -160,7 +160,7 @@ TypedUrlDataTypeController::CreateSyncComponents() {
 }
 
 void TypedUrlDataTypeController::DisconnectProcessor(
-    ChangeProcessor* processor) {
+    sync_driver::ChangeProcessor* processor) {
   static_cast<TypedUrlChangeProcessor*>(processor)->Disconnect();
 }
 

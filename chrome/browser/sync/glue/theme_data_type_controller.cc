@@ -14,7 +14,7 @@ using content::BrowserThread;
 namespace browser_sync {
 
 ThemeDataTypeController::ThemeDataTypeController(
-    SyncApiComponentFactory* sync_factory,
+    sync_driver::SyncApiComponentFactory* sync_factory,
     Profile* profile,
     const DisableTypeCallback& disable_callback)
     : UIDataTypeController(

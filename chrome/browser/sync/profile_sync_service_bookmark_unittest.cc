@@ -229,7 +229,7 @@ class FakeServerChange {
   }
 
   // Pass the fake change list to |service|.
-  void ApplyPendingChanges(ChangeProcessor* processor) {
+  void ApplyPendingChanges(sync_driver::ChangeProcessor* processor) {
     processor->ApplyChangesFromSyncModel(
         trans_, 0, syncer::ImmutableChangeRecordList(&changes_));
   }
@@ -748,7 +748,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   BookmarkModel* model_;
   syncer::TestUserShare test_user_share_;
   scoped_ptr<BookmarkChangeProcessor> change_processor_;
-  StrictMock<DataTypeErrorHandlerMock> mock_error_handler_;
+  StrictMock<sync_driver::DataTypeErrorHandlerMock> mock_error_handler_;
   scoped_ptr<BookmarkModelAssociator> model_associator_;
 
  private:

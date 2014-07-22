@@ -8,7 +8,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 class DataTypeErrorHandlerMock : public DataTypeErrorHandler {
  public:
@@ -23,6 +23,6 @@ class DataTypeErrorHandlerMock : public DataTypeErrorHandler {
 
 };
 
-}  // namesspace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_ERROR_HANDLER_MOCK_H__

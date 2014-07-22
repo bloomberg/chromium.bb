@@ -17,7 +17,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 using syncer::ModelType;
 using syncer::ModelTypeSet;
@@ -104,7 +104,7 @@ class DataTypeManagerObserverMock : public DataTypeManagerObserver {
   virtual ~DataTypeManagerObserverMock() {}
 
   MOCK_METHOD1(OnConfigureDone,
-               void(const browser_sync::DataTypeManager::ConfigureResult&));
+               void(const DataTypeManager::ConfigureResult&));
   MOCK_METHOD0(OnConfigureRetry, void());
   MOCK_METHOD0(OnConfigureStart, void());
 };
@@ -1196,4 +1196,4 @@ TEST_F(SyncDataTypeManagerImplTest, ReenableAfterDataTypeError) {
   EXPECT_EQ(DataTypeController::RUNNING, GetController(BOOKMARKS)->state());
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

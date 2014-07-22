@@ -12,7 +12,7 @@
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 class ChangeProcessor;
 
@@ -79,6 +79,6 @@ class BackendDataTypeConfigurer {
   virtual ~BackendDataTypeConfigurer() {}
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_BACKEND_DATA_TYPE_CONFIGURER_H_

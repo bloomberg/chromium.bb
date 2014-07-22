@@ -4,7 +4,7 @@
 
 #include "components/sync_driver/data_type_controller_mock.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 StartCallbackMock::StartCallbackMock() {}
 
@@ -14,4 +14,4 @@ ModelLoadCallbackMock::ModelLoadCallbackMock() {}
 
 ModelLoadCallbackMock::~ModelLoadCallbackMock() {}
 
-}  // namespace browser_sync
+}  // namespace sync_driver

@@ -8,7 +8,7 @@
 #include "components/sync_driver/non_blocking_data_type_controller.h"
 #include "sync/engine/model_type_sync_proxy_impl.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 NonBlockingDataTypeManager::NonBlockingDataTypeManager()
     : non_blocking_data_type_controllers_deleter_(
@@ -75,4 +75,4 @@ syncer::ModelTypeSet NonBlockingDataTypeManager::GetRegisteredTypes() const {
   return result;
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

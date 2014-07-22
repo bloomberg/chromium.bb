@@ -63,8 +63,6 @@ class CommandLine;
 
 namespace browser_sync {
 class BackendMigrator;
-class ChangeProcessor;
-class DataTypeManager;
 class DeviceInfo;
 class FaviconCache;
 class JsController;
@@ -74,6 +72,11 @@ namespace sessions {
 class SyncSessionSnapshot;
 }  // namespace sessions
 }  // namespace browser_sync
+
+namespace sync_driver {
+class ChangeProcessor;
+class DataTypeManager;
+}  // namespace sync_driver
 
 namespace syncer {
 class BaseTransaction;
@@ -176,12 +179,12 @@ using browser_sync::SessionsSyncManager;
 //   data from the sync server.
 //
 class ProfileSyncService : public ProfileSyncServiceBase,
-                           public browser_sync::SyncFrontend,
+                           public sync_driver::SyncFrontend,
                            public sync_driver::SyncPrefObserver,
-                           public browser_sync::DataTypeManagerObserver,
+                           public sync_driver::DataTypeManagerObserver,
                            public syncer::UnrecoverableErrorHandler,
                            public KeyedService,
-                           public browser_sync::DataTypeEncryptionHandler,
+                           public sync_driver::DataTypeEncryptionHandler,
                            public OAuth2TokenService::Consumer,
                            public OAuth2TokenService::Observer,
                            public SigninManagerBase::Observer {
@@ -328,7 +331,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // enable or activate the synchronization of the data type (see
   // ActivateDataType).  Takes ownership of the pointer.
   void RegisterDataTypeController(
-      browser_sync::DataTypeController* data_type_controller);
+      sync_driver::DataTypeController* data_type_controller);
 
   // Registers a type whose sync storage will not be managed by the
   // ProfileSyncService.  It declares that this sync type may be activated at
@@ -383,7 +386,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Fills state_map with a map of current data types that are possible to
   // sync, as well as their states.
   void GetDataTypeControllerStates(
-    browser_sync::DataTypeController::StateMap* state_map) const;
+    sync_driver::DataTypeController::StateMap* state_map) const;
 
   // Disables sync for user. Use ShowLoginDialog to enable.
   virtual void DisableForUser();
@@ -429,7 +432,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // DataTypeManagerObserver implementation.
   virtual void OnConfigureDone(
-      const browser_sync::DataTypeManager::ConfigureResult& result) OVERRIDE;
+      const sync_driver::DataTypeManager::ConfigureResult& result) OVERRIDE;
   virtual void OnConfigureRetry() OVERRIDE;
   virtual void OnConfigureStart() OVERRIDE;
 
@@ -710,9 +713,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   }
 
   // TODO(sync): This is only used in tests.  Can we remove it?
-  const browser_sync::FailedDataTypesHandler& failed_data_types_handler() const;
+  const sync_driver::FailedDataTypesHandler& failed_data_types_handler() const;
 
-  browser_sync::DataTypeManager::ConfigureStatus configure_status() {
+  sync_driver::DataTypeManager::ConfigureStatus configure_status() {
     return configure_status_;
   }
 
@@ -795,7 +798,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler();
 
-  const browser_sync::DataTypeController::TypeMap&
+  const sync_driver::DataTypeController::TypeMap&
       directory_data_type_controllers() {
     return directory_data_type_controllers_;
   }
@@ -987,7 +990,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   bool is_first_time_sync_configure_;
 
   // List of available data type controllers for directory types.
-  browser_sync::DataTypeController::TypeMap directory_data_type_controllers_;
+  sync_driver::DataTypeController::TypeMap directory_data_type_controllers_;
 
   // Whether the SyncBackendHost has been initialized.
   bool backend_initialized_;
@@ -1011,10 +1014,10 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   tracked_objects::Location unrecoverable_error_location_;
 
   // Manages the start and stop of the directory data types.
-  scoped_ptr<browser_sync::DataTypeManager> directory_data_type_manager_;
+  scoped_ptr<sync_driver::DataTypeManager> directory_data_type_manager_;
 
   // Manager for the non-blocking data types.
-  browser_sync::NonBlockingDataTypeManager non_blocking_data_type_manager_;
+  sync_driver::NonBlockingDataTypeManager non_blocking_data_type_manager_;
 
   ObserverList<ProfileSyncServiceBase::Observer> observers_;
   ObserverList<browser_sync::ProtocolEventObserver> protocol_event_observers_;
@@ -1056,9 +1059,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // Tracks the set of failed data types (those that encounter an error
   // or must delay loading for some reason).
-  browser_sync::FailedDataTypesHandler failed_data_types_handler_;
+  sync_driver::FailedDataTypesHandler failed_data_types_handler_;
 
-  browser_sync::DataTypeManager::ConfigureStatus configure_status_;
+  sync_driver::DataTypeManager::ConfigureStatus configure_status_;
 
   // The set of currently enabled sync experiments.
   syncer::Experiments current_experiments_;

@@ -14,7 +14,7 @@ SyncBackendHostMock::SyncBackendHostMock() : fail_initial_download_(false) {}
 SyncBackendHostMock::~SyncBackendHostMock() {}
 
 void SyncBackendHostMock::Initialize(
-    SyncFrontend* frontend,
+    sync_driver::SyncFrontend* frontend,
     scoped_ptr<base::Thread> sync_thread,
     const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
     const GURL& service_url,
@@ -65,7 +65,7 @@ void SyncBackendHostMock::EnableEncryptEverything() {}
 
 void SyncBackendHostMock::ActivateDataType(
     syncer::ModelType type, syncer::ModelSafeGroup group,
-    ChangeProcessor* change_processor) {}
+    sync_driver::ChangeProcessor* change_processor) {}
 void SyncBackendHostMock::DeactivateDataType(syncer::ModelType type) {}
 
 syncer::UserShare* SyncBackendHostMock::GetUserShare() const {

@@ -14,7 +14,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/configure_reason.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 // This interface is for managing the start up and shut down life cycle
 // of many different syncable data types.
@@ -106,6 +106,6 @@ class DataTypeManager {
   virtual State state() const = 0;
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_MANAGER_H__

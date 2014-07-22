@@ -142,7 +142,7 @@ class TestTypedUrlModelAssociator : public TypedUrlModelAssociator {
   TestTypedUrlModelAssociator(
       ProfileSyncService* sync_service,
       history::HistoryBackend* history_backend,
-      browser_sync::DataTypeErrorHandler* error_handler) :
+      sync_driver::DataTypeErrorHandler* error_handler) :
       TypedUrlModelAssociator(sync_service, history_backend, error_handler) {}
 
  protected:
@@ -348,7 +348,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   TestingProfile* profile_;
   scoped_refptr<HistoryBackendMock> history_backend_;
   HistoryServiceMock* history_service_;
-  browser_sync::DataTypeErrorHandlerMock error_handler_;
+  sync_driver::DataTypeErrorHandlerMock error_handler_;
 };
 
 void AddTypedUrlEntries(ProfileSyncServiceTypedUrlTest* test,

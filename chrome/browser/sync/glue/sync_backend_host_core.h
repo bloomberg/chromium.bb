@@ -290,7 +290,7 @@ class SyncBackendHostCore
   scoped_ptr<base::RepeatingTimer<SyncBackendHostCore> > save_changes_timer_;
 
   // Our encryptor, which uses Chrome's encryption functions.
-  SystemEncryptor encryptor_;
+  sync_driver::SystemEncryptor encryptor_;
 
   // A special ChangeProcessor that tracks the DEVICE_INFO type for us.
   scoped_ptr<SyncedDeviceTracker> synced_device_tracker_;

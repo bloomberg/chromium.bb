@@ -25,7 +25,7 @@ namespace sync_pb {
 class EncryptedData;
 }  // namespace sync_pb
 
-namespace browser_sync {
+namespace sync_driver {
 
 // SyncFrontend is the interface used by SyncBackendHost to communicate with
 // the entity that created it and, presumably, is interested in sync-related
@@ -140,6 +140,6 @@ class SyncFrontend {
   virtual void OnActionableError(const syncer::SyncProtocolError& error) = 0;
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_SYNC_FRONTEND_H_

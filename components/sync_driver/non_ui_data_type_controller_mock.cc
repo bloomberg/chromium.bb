@@ -4,10 +4,10 @@
 
 #include "components/sync_driver/non_ui_data_type_controller_mock.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 NonUIDataTypeControllerMock::NonUIDataTypeControllerMock() {}
 
 NonUIDataTypeControllerMock::~NonUIDataTypeControllerMock() {}
 
-}  // namespace browser_sync
+}  // namespace sync_driver

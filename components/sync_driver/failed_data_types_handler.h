@@ -9,7 +9,7 @@
 
 #include "components/sync_driver/data_type_manager.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 // Class to keep track of data types that have encountered an error during sync.
 class FailedDataTypesHandler {
@@ -88,6 +88,6 @@ class FailedDataTypesHandler {
   DISALLOW_COPY_AND_ASSIGN(FailedDataTypesHandler);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_FAILED_DATA_TYPES_HANDLER_H_

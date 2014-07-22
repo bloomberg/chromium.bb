@@ -24,7 +24,7 @@ class SyncError;
 struct UserShare;
 }
 
-namespace browser_sync {
+namespace sync_driver {
 
 class ChangeProcessor;
 
@@ -172,6 +172,6 @@ class DataTypeController
   syncer::UserShare* user_share_;
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_CONTROLLER_H__

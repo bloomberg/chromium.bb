@@ -4,10 +4,10 @@
 
 #include "components/sync_driver/data_type_error_handler_mock.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 DataTypeErrorHandlerMock::DataTypeErrorHandlerMock() {}
 
 DataTypeErrorHandlerMock::~DataTypeErrorHandlerMock() {}
 
-}
+}  // namespace sync_driver

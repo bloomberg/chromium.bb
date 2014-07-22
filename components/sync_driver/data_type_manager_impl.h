@@ -25,7 +25,7 @@ class DataTypeDebugInfoListener;
 template <typename T> class WeakHandle;
 }
 
-namespace browser_sync {
+namespace sync_driver {
 
 class DataTypeController;
 class DataTypeEncryptionHandler;
@@ -161,7 +161,7 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   // For querying failed data types (having unrecoverable error) when
   // configuring backend.
-  browser_sync::FailedDataTypesHandler* failed_data_types_handler_;
+  FailedDataTypesHandler* failed_data_types_handler_;
 
   // Types waiting to be downloaded.
   TypeSetPriorityList download_types_queue_;
@@ -182,7 +182,7 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   // The encryption handler lets the DataTypeManager know the state of sync
   // datatype encryption.
-  const browser_sync::DataTypeEncryptionHandler* encryption_handler_;
+  const DataTypeEncryptionHandler* encryption_handler_;
 
   // Association and time stats of data type configuration.
   std::vector<syncer::DataTypeConfigurationStats> configuration_stats_;
@@ -194,6 +194,6 @@ class DataTypeManagerImpl : public DataTypeManager,
   DISALLOW_COPY_AND_ASSIGN(DataTypeManagerImpl);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_MANAGER_IMPL_H__

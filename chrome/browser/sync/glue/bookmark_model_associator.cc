@@ -213,7 +213,7 @@ BookmarkModelAssociator::BookmarkModelAssociator(
     BookmarkModel* bookmark_model,
     Profile* profile,
     syncer::UserShare* user_share,
-    DataTypeErrorHandler* unrecoverable_error_handler,
+    sync_driver::DataTypeErrorHandler* unrecoverable_error_handler,
     bool expect_mobile_bookmarks_folder)
     : bookmark_model_(bookmark_model),
       profile_(profile),

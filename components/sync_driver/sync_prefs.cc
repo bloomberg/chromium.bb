@@ -499,4 +499,4 @@ void SyncPrefs::ClearFirstSyncTime() {
   pref_service_->ClearPref(prefs::kSyncFirstSyncTime);
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

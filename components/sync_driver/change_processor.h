@@ -14,7 +14,7 @@ namespace syncer {
 class UnrecoverableErrorHandler;
 }  // namespace syncer
 
-namespace browser_sync {
+namespace sync_driver {
 
 class ModelAssociator;
 
@@ -83,6 +83,6 @@ class ChangeProcessor {
   DISALLOW_COPY_AND_ASSIGN(ChangeProcessor);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_CHANGE_PROCESSOR_H_

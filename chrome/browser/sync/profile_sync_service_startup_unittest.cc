@@ -35,10 +35,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using browser_sync::DataTypeManager;
-using browser_sync::DataTypeManagerMock;
 using browser_sync::SyncBackendHostMock;
 using content::BrowserThread;
+using sync_driver::DataTypeManager;
+using sync_driver::DataTypeManagerMock;
 using testing::_;
 using testing::AnyNumber;
 using testing::DoAll;

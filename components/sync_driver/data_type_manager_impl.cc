@@ -21,7 +21,7 @@
 #include "components/sync_driver/failed_data_types_handler.h"
 #include "sync/internal_api/public/data_type_debug_info_listener.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 namespace {
 
@@ -49,10 +49,10 @@ DataTypeManagerImpl::DataTypeManagerImpl(
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
         debug_info_listener,
     const DataTypeController::TypeMap* controllers,
-    const browser_sync::DataTypeEncryptionHandler* encryption_handler,
+    const DataTypeEncryptionHandler* encryption_handler,
     BackendDataTypeConfigurer* configurer,
     DataTypeManagerObserver* observer,
-    browser_sync::FailedDataTypesHandler* failed_data_types_handler)
+    FailedDataTypesHandler* failed_data_types_handler)
     : configurer_(configurer),
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
@@ -614,4 +614,4 @@ void DataTypeManagerImpl::AddToConfigureTime() {
   configure_time_delta_ += (base::Time::Now() - last_restart_time_);
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

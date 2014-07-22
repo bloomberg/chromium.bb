@@ -20,13 +20,13 @@
 #include "components/sync_driver/model_associator_mock.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 
-using browser_sync::ChangeProcessorMock;
-using browser_sync::DataTypeController;
 using browser_sync::FrontendDataTypeController;
 using browser_sync::FrontendDataTypeControllerMock;
-using browser_sync::ModelAssociatorMock;
-using browser_sync::ModelLoadCallbackMock;
-using browser_sync::StartCallbackMock;
+using sync_driver::ChangeProcessorMock;
+using sync_driver::DataTypeController;
+using sync_driver::ModelAssociatorMock;
+using sync_driver::ModelLoadCallbackMock;
+using sync_driver::StartCallbackMock;
 using testing::_;
 using testing::DoAll;
 using testing::InvokeWithoutArgs;

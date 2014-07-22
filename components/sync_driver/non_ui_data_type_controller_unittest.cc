@@ -23,7 +23,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 namespace {
 
@@ -61,7 +61,7 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
   SharedChangeProcessorMock() {}
 
   MOCK_METHOD6(Connect, base::WeakPtr<syncer::SyncableService>(
-      browser_sync::SyncApiComponentFactory*,
+      SyncApiComponentFactory*,
       GenericChangeProcessorFactory*,
       syncer::UserShare*,
       DataTypeErrorHandler*,
@@ -93,7 +93,7 @@ class NonUIDataTypeControllerFake
     : public NonUIDataTypeController {
  public:
   NonUIDataTypeControllerFake(
-      browser_sync::SyncApiComponentFactory* sync_factory,
+      SyncApiComponentFactory* sync_factory,
       NonUIDataTypeControllerMock* mock,
       SharedChangeProcessor* change_processor,
       const DisableTypeCallback& disable_callback,
@@ -520,4 +520,4 @@ TEST_F(SyncNonUIDataTypeControllerTest,
 
 }  // namespace
 
-}  // namespace browser_sync
+}  // namespace sync_driver

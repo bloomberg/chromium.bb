@@ -46,8 +46,8 @@ static const char kMobileBookmarksTag[] = "synced_bookmarks";
 BookmarkChangeProcessor::BookmarkChangeProcessor(
     Profile* profile,
     BookmarkModelAssociator* model_associator,
-    DataTypeErrorHandler* error_handler)
-    : ChangeProcessor(error_handler),
+    sync_driver::DataTypeErrorHandler* error_handler)
+    : sync_driver::ChangeProcessor(error_handler),
       bookmark_model_(NULL),
       profile_(profile),
       model_associator_(model_associator) {
@@ -263,7 +263,7 @@ void BookmarkChangeProcessor::BookmarkNodeAdded(BookmarkModel* model,
 int64 BookmarkChangeProcessor::CreateSyncNode(const BookmarkNode* parent,
     BookmarkModel* model, int index, syncer::WriteTransaction* trans,
     BookmarkModelAssociator* associator,
-    DataTypeErrorHandler* error_handler) {
+    sync_driver::DataTypeErrorHandler* error_handler) {
   const BookmarkNode* child = parent->GetChild(index);
   DCHECK(child);
 
@@ -317,7 +317,7 @@ int64 BookmarkChangeProcessor::UpdateSyncNode(
     BookmarkModel* model,
     syncer::WriteTransaction* trans,
     BookmarkModelAssociator* associator,
-    DataTypeErrorHandler* error_handler) {
+    sync_driver::DataTypeErrorHandler* error_handler) {
   // Lookup the sync node that's associated with |node|.
   syncer::WriteNode sync_node(trans);
   if (!associator->InitSyncNodeFromChromeId(node->id(), &sync_node)) {

@@ -22,7 +22,7 @@ class ModelTypeSyncProxyImpl;
 class SyncContextProxy;
 }  //namespace syncer
 
-namespace browser_sync {
+namespace sync_driver {
 
 class NonBlockingDataTypeController;
 
@@ -67,7 +67,7 @@ class NonBlockingDataTypeManager {
 
  private:
   typedef
-      std::map<syncer::ModelType, browser_sync::NonBlockingDataTypeController*>
+      std::map<syncer::ModelType, NonBlockingDataTypeController*>
       NonBlockingDataTypeControllerMap;
 
   // List of data type controllers for non-blocking types.
@@ -78,6 +78,6 @@ class NonBlockingDataTypeManager {
       non_blocking_data_type_controllers_deleter_;
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_NON_BLOCKING_DATA_TYPE_MANAGER_H_

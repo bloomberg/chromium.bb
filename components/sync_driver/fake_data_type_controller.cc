@@ -8,7 +8,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using syncer::ModelType;
-namespace browser_sync {
+
+namespace sync_driver {
 
 FakeDataTypeController::FakeDataTypeController(ModelType type)
       : DataTypeController(base::MessageLoopProxy::current(), base::Closure(),
@@ -151,4 +152,4 @@ void FakeDataTypeController::SimulateModelLoadFinishing() {
   model_load_callback_.Reset();
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

@@ -9,7 +9,7 @@
 #include "sync/api/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 class NonUIDataTypeControllerMock
     : public NonUIDataTypeController {
@@ -52,6 +52,6 @@ class NonUIDataTypeControllerMock
   virtual ~NonUIDataTypeControllerMock();
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // CHROME_BROWSER_SYNC_GLUE_NON_UI_DATA_TYPE_CONTROLLER_MOCK_H_

@@ -6,11 +6,11 @@
 
 #include "base/compiler_specific.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 ChangeProcessorMock::ChangeProcessorMock()
     : ChangeProcessor(this) {}
 
 ChangeProcessorMock::~ChangeProcessorMock() {}
 
-}  // namespace browser_sync
+}  // namespace sync_driver

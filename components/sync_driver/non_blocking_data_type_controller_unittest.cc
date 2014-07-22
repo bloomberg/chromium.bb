@@ -17,19 +17,20 @@
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer {
+namespace sync_driver {
 
 class ModelTypeSyncWorker;
 
 namespace {
 
 // A useless instance of ModelTypeSyncWorker.
-class NullModelTypeSyncWorker : public ModelTypeSyncWorker {
+class NullModelTypeSyncWorker : public syncer::ModelTypeSyncWorker {
  public:
   NullModelTypeSyncWorker();
   virtual ~NullModelTypeSyncWorker();
 
-  virtual void EnqueueForCommit(const CommitRequestDataList& list) OVERRIDE;
+  virtual void EnqueueForCommit(
+      const syncer::CommitRequestDataList& list) OVERRIDE;
 };
 
 NullModelTypeSyncWorker::NullModelTypeSyncWorker() {
@@ -39,7 +40,7 @@ NullModelTypeSyncWorker::~NullModelTypeSyncWorker() {
 }
 
 void NullModelTypeSyncWorker::EnqueueForCommit(
-    const CommitRequestDataList& list) {
+    const syncer::CommitRequestDataList& list) {
   NOTREACHED() << "Not implemented.";
 }
 
@@ -55,7 +56,7 @@ class MockSyncContext {
         FROM_HERE,
         base::Bind(&syncer::ModelTypeSyncProxyImpl::OnConnect,
                    type_proxy,
-                   base::Passed(scoped_ptr<ModelTypeSyncWorker>(
+                   base::Passed(scoped_ptr<syncer::ModelTypeSyncWorker>(
                                     new NullModelTypeSyncWorker()).Pass())));
   }
 
@@ -83,7 +84,7 @@ class MockSyncContextProxy : public syncer::SyncContextProxy {
 
   virtual void ConnectTypeToSync(
       syncer::ModelType type,
-      const DataTypeState& data_type_state,
+      const syncer::DataTypeState& data_type_state,
       const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_proxy)
       OVERRIDE {
     // Normally we'd use MessageLoopProxy::current() as the TaskRunner argument
@@ -186,7 +187,7 @@ class NonBlockingDataTypeControllerTest : public testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> model_thread_;
   scoped_refptr<base::TestSimpleTaskRunner> sync_thread_;
 
-  browser_sync::NonBlockingDataTypeController controller_;
+  NonBlockingDataTypeController controller_;
 
   MockSyncContext mock_sync_context_;
   MockSyncContextProxy mock_context_proxy_;
@@ -436,4 +437,4 @@ TEST_F(NonBlockingDataTypeControllerTest, EnableDisableEnableRace) {
   EXPECT_TRUE(type_sync_proxy_.IsConnected());
 }
 
-}  // namespace syncer
+}  // namespace sync_driver

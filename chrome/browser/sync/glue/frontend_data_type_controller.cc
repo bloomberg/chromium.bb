@@ -140,7 +140,8 @@ std::string FrontendDataTypeController::name() const {
   return syncer::ModelTypeToString(type());
 }
 
-DataTypeController::State FrontendDataTypeController::state() const {
+sync_driver::DataTypeController::State FrontendDataTypeController::state()
+    const {
   return state_;
 }
 
@@ -306,21 +307,23 @@ void FrontendDataTypeController::RecordStartFailure(StartResult result) {
 #undef PER_DATA_TYPE_MACRO
 }
 
-AssociatorInterface* FrontendDataTypeController::model_associator() const {
+sync_driver::AssociatorInterface* FrontendDataTypeController::model_associator()
+    const {
   return model_associator_.get();
 }
 
 void FrontendDataTypeController::set_model_associator(
-    AssociatorInterface* model_associator) {
+    sync_driver::AssociatorInterface* model_associator) {
   model_associator_.reset(model_associator);
 }
 
-ChangeProcessor* FrontendDataTypeController::GetChangeProcessor() const {
+sync_driver::ChangeProcessor* FrontendDataTypeController::GetChangeProcessor()
+    const {
   return change_processor_.get();
 }
 
 void FrontendDataTypeController::set_change_processor(
-    ChangeProcessor* change_processor) {
+    sync_driver::ChangeProcessor* change_processor) {
   change_processor_.reset(change_processor);
 }
 

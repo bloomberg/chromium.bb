@@ -11,9 +11,9 @@
 SupervisedUserSyncDataTypeController::SupervisedUserSyncDataTypeController(
     const DisableTypeCallback& disable_callback,
     syncer::ModelType type,
-    browser_sync::SyncApiComponentFactory* sync_factory,
+    sync_driver::SyncApiComponentFactory* sync_factory,
     Profile* profile)
-    : browser_sync::UIDataTypeController(
+    : sync_driver::UIDataTypeController(
           content::BrowserThread::GetMessageLoopProxyForThread(
               content::BrowserThread::UI),
           base::Bind(&browser_sync::ChromeReportUnrecoverableError),

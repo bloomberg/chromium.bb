@@ -17,11 +17,11 @@ namespace browser_sync {
 
 // TODO(zea): Rename this and ExtensionSettingsDTC to ExtensionOrApp*, since
 // both actually handle the APP datatypes as well.
-class ExtensionDataTypeController : public UIDataTypeController {
+class ExtensionDataTypeController : public sync_driver::UIDataTypeController {
  public:
   ExtensionDataTypeController(
       syncer::ModelType type,  // Either EXTENSIONS or APPS.
-      SyncApiComponentFactory* sync_factory,
+      sync_driver::SyncApiComponentFactory* sync_factory,
       Profile* profile,
       const DisableTypeCallback& disable_callback);
 

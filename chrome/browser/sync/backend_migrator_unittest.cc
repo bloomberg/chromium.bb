@@ -22,6 +22,8 @@ using ::testing::Eq;
 using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::Return;
+using sync_driver::DataTypeManager;
+using sync_driver::DataTypeManagerMock;
 
 namespace browser_sync {
 

@@ -7,14 +7,14 @@
 
 #include "components/sync_driver/data_type_manager.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 // Various data type configuration events can be consumed by observing the
 // DataTypeManager through this interface.
 class DataTypeManagerObserver {
  public:
   virtual void OnConfigureDone(
-      const browser_sync::DataTypeManager::ConfigureResult& result) = 0;
+      const DataTypeManager::ConfigureResult& result) = 0;
   virtual void OnConfigureRetry() = 0;
   virtual void OnConfigureStart() = 0;
 
@@ -22,6 +22,6 @@ class DataTypeManagerObserver {
   virtual ~DataTypeManagerObserver() { }
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_MANAGER_OBSERVER_H_

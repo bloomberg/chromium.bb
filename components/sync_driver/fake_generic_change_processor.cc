@@ -9,7 +9,7 @@
 #include "sync/api/attachments/attachment_service_impl.h"
 #include "sync/api/syncable_service.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 FakeGenericChangeProcessor::FakeGenericChangeProcessor(
     SyncApiComponentFactory* sync_factory)
@@ -73,11 +73,11 @@ FakeGenericChangeProcessorFactory::~FakeGenericChangeProcessorFactory() {}
 scoped_ptr<GenericChangeProcessor>
 FakeGenericChangeProcessorFactory::CreateGenericChangeProcessor(
     syncer::UserShare* user_share,
-    browser_sync::DataTypeErrorHandler* error_handler,
+    DataTypeErrorHandler* error_handler,
     const base::WeakPtr<syncer::SyncableService>& local_service,
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
     SyncApiComponentFactory* sync_factory) {
   return processor_.PassAs<GenericChangeProcessor>();
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

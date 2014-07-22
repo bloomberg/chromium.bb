@@ -4,7 +4,7 @@
 
 #include "components/sync_driver/change_processor.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 ChangeProcessor::ChangeProcessor(DataTypeErrorHandler* error_handler)
     : error_handler_(error_handler),
@@ -30,4 +30,4 @@ syncer::UserShare* ChangeProcessor::share_handle() const {
   return share_handle_;
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

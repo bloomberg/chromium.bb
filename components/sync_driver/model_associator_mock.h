@@ -10,7 +10,7 @@
 #include "sync/api/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 ACTION_P(SetSyncError, type) {
   arg0->Reset(FROM_HERE, "test", type);
@@ -30,6 +30,6 @@ class ModelAssociatorMock : public AssociatorInterface {
   MOCK_METHOD0(CryptoReadyIfNecessary, bool());
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_MODEL_ASSOCIATOR_MOCK_H__

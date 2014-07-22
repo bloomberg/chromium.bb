@@ -34,17 +34,20 @@ class NetworkResources;
 class SyncManagerFactory;
 }
 
-namespace browser_sync {
-
+namespace sync_driver {
 class ChangeProcessor;
 class SyncFrontend;
+}
+
+namespace browser_sync {
+
 class SyncedDeviceTracker;
 
 // An API to "host" the top level SyncAPI element.
 //
 // This class handles dispatch of potentially blocking calls to appropriate
 // threads and ensures that the SyncFrontend is only accessed on the UI loop.
-class SyncBackendHost : public BackendDataTypeConfigurer {
+class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
  public:
   typedef syncer::SyncStatus Status;
 
@@ -59,7 +62,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // |report_unrecoverable_error_function| can be NULL.  Note:
   // |unrecoverable_error_handler| may be invoked from any thread.
   virtual void Initialize(
-      SyncFrontend* frontend,
+      sync_driver::SyncFrontend* frontend,
       scoped_ptr<base::Thread> sync_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,

@@ -5,7 +5,7 @@
 
 #include "components/sync_driver/backend_data_type_configurer.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 // static
 syncer::ModelTypeSet
@@ -29,4 +29,4 @@ void BackendDataTypeConfigurer::SetDataTypesState(
   }
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

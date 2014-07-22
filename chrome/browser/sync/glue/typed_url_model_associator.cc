@@ -60,7 +60,7 @@ static bool CheckVisitOrdering(const history::VisitVector& visits) {
 TypedUrlModelAssociator::TypedUrlModelAssociator(
     ProfileSyncService* sync_service,
     history::HistoryBackend* history_backend,
-    DataTypeErrorHandler* error_handler)
+    sync_driver::DataTypeErrorHandler* error_handler)
     : sync_service_(sync_service),
       history_backend_(history_backend),
       expected_loop_(base::MessageLoop::current()),

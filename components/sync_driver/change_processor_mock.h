@@ -10,7 +10,7 @@
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 class ChangeProcessorMock
     : public ChangeProcessor, public DataTypeErrorHandler{
@@ -35,6 +35,6 @@ class ChangeProcessorMock
 
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_CHANGE_PROCESSOR_MOCK_H_

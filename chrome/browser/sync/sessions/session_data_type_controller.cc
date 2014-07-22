@@ -19,7 +19,7 @@ using content::BrowserThread;
 namespace browser_sync {
 
 SessionDataTypeController::SessionDataTypeController(
-    SyncApiComponentFactory* sync_factory,
+    sync_driver::SyncApiComponentFactory* sync_factory,
     Profile* profile,
     SyncedWindowDelegatesGetter* synced_window_getter,
     LocalDeviceInfoProvider* local_device,

@@ -26,7 +26,7 @@ class SyncBackendHostMock : public SyncBackendHost {
   virtual ~SyncBackendHostMock();
 
   virtual void Initialize(
-      SyncFrontend* frontend,
+      sync_driver::SyncFrontend* frontend,
       scoped_ptr<base::Thread> sync_thread,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,
@@ -67,7 +67,7 @@ class SyncBackendHostMock : public SyncBackendHost {
 
   virtual void ActivateDataType(
       syncer::ModelType type, syncer::ModelSafeGroup group,
-      ChangeProcessor* change_processor) OVERRIDE;
+      sync_driver::ChangeProcessor* change_processor) OVERRIDE;
   virtual void DeactivateDataType(syncer::ModelType type) OVERRIDE;
 
   virtual syncer::UserShare* GetUserShare() const OVERRIDE;

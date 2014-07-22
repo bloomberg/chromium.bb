@@ -10,7 +10,7 @@
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/ui_data_type_controller.h"
 
-namespace browser_sync {
+namespace sync_driver {
 class SyncApiComponentFactory;
 }
 
@@ -19,12 +19,12 @@ class Profile;
 // A UIDataTypeController for supervised user sync datatypes, which enables or
 // disables these types based on the profile's IsSupervised state.
 class SupervisedUserSyncDataTypeController
-    : public browser_sync::UIDataTypeController {
+    : public sync_driver::UIDataTypeController {
  public:
   SupervisedUserSyncDataTypeController(
       const DisableTypeCallback& disable_callback,
       syncer::ModelType type,
-      browser_sync::SyncApiComponentFactory* sync_factory,
+      sync_driver::SyncApiComponentFactory* sync_factory,
       Profile* profile);
 
   virtual bool ReadyForStart() const OVERRIDE;

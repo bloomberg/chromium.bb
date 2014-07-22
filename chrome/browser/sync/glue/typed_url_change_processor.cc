@@ -39,8 +39,8 @@ TypedUrlChangeProcessor::TypedUrlChangeProcessor(
     Profile* profile,
     TypedUrlModelAssociator* model_associator,
     history::HistoryBackend* history_backend,
-    DataTypeErrorHandler* error_handler)
-    : ChangeProcessor(error_handler),
+    sync_driver::DataTypeErrorHandler* error_handler)
+    : sync_driver::ChangeProcessor(error_handler),
       profile_(profile),
       model_associator_(model_associator),
       history_backend_(history_backend),

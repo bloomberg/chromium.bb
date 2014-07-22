@@ -4,7 +4,7 @@
 
 #include "components/sync_driver/proxy_data_type_controller.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 ProxyDataTypeController::ProxyDataTypeController(
     scoped_refptr<base::MessageLoopProxy> ui_thread,
@@ -70,4 +70,4 @@ void ProxyDataTypeController::OnModelLoaded() {
   NOTIMPLEMENTED();
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

@@ -42,7 +42,7 @@ namespace browser_sync {
 // * Persisting model associations and loading them back.
 // We do not check if we have local data before this run; we always
 // merge and sync.
-class TypedUrlModelAssociator : public AssociatorInterface {
+class TypedUrlModelAssociator : public sync_driver::AssociatorInterface {
  public:
   typedef std::vector<std::pair<GURL, std::vector<history::VisitInfo> > >
       TypedUrlVisitVector;
@@ -50,7 +50,7 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   static syncer::ModelType model_type() { return syncer::TYPED_URLS; }
   TypedUrlModelAssociator(ProfileSyncService* sync_service,
                           history::HistoryBackend* history_backend,
-                          DataTypeErrorHandler* error_handler);
+                          sync_driver::DataTypeErrorHandler* error_handler);
   virtual ~TypedUrlModelAssociator();
 
   // AssociatorInterface implementation.
@@ -188,7 +188,8 @@ class TypedUrlModelAssociator : public AssociatorInterface {
   bool abort_requested_;
   base::Lock abort_lock_;
 
-  DataTypeErrorHandler* error_handler_; // Guaranteed to outlive datatypes.
+  // Guaranteed to outlive datatypes.
+  sync_driver::DataTypeErrorHandler* error_handler_;
 
   // Statistics for the purposes of tracking the percentage of DB accesses that
   // fail for each client via UMA.

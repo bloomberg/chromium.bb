@@ -12,7 +12,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 class DataTypeErrorHandler {
  public:
@@ -34,5 +34,6 @@ class DataTypeErrorHandler {
   virtual ~DataTypeErrorHandler() { }
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
+
 #endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_ERROR_HANDLER_H__

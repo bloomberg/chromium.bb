@@ -23,7 +23,7 @@ class SyncableService;
 struct UserShare;
 }  // namespace syncer
 
-namespace browser_sync {
+namespace sync_driver {
 
 class ChangeProcessor;
 class GenericChangeProcessor;
@@ -60,7 +60,7 @@ class SharedChangeProcessor
   // Note: If this SharedChangeProcessor has been disconnected, or the
   // syncer::SyncableService was not alive, will return a null weak pointer.
   virtual base::WeakPtr<syncer::SyncableService> Connect(
-      browser_sync::SyncApiComponentFactory* sync_factory,
+      SyncApiComponentFactory* sync_factory,
       GenericChangeProcessorFactory* processor_factory,
       syncer::UserShare* user_share,
       DataTypeErrorHandler* error_handler,
@@ -137,6 +137,6 @@ class SharedChangeProcessor
   DISALLOW_COPY_AND_ASSIGN(SharedChangeProcessor);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_H_

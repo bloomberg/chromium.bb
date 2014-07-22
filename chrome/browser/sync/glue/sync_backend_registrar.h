@@ -27,9 +27,12 @@ namespace syncer {
 struct UserShare;
 }  // namespace syncer
 
+namespace sync_driver {
+class ChangeProcessor;
+}
+
 namespace browser_sync {
 
-class ChangeProcessor;
 class UIModelWorker;
 
 // A class that keep track of the workers, change processors, and
@@ -88,7 +91,7 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   // from |group|'s native thread.
   void ActivateDataType(syncer::ModelType type,
                         syncer::ModelSafeGroup group,
-                        ChangeProcessor* change_processor,
+                        sync_driver::ChangeProcessor* change_processor,
                         syncer::UserShare* user_share);
 
   // Deactivates the given type if necessary.  Must be called from the
@@ -126,7 +129,7 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
  private:
   typedef std::map<syncer::ModelSafeGroup,
       scoped_refptr<syncer::ModelSafeWorker> > WorkerMap;
-  typedef std::map<syncer::ModelType, ChangeProcessor*>
+  typedef std::map<syncer::ModelType, sync_driver::ChangeProcessor*>
       ProcessorMap;
 
   // Callback after workers unregister from observing destruction of their
@@ -137,12 +140,13 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
 
   // Returns the change processor for the given model, or NULL if none
   // exists.  Must be called from |group|'s native thread.
-  ChangeProcessor* GetProcessor(syncer::ModelType type) const;
+  sync_driver::ChangeProcessor* GetProcessor(syncer::ModelType type) const;
 
   // Must be called with |lock_| held.  Simply returns the change
   // processor for the given type, if it exists.  May be called from
   // any thread.
-  ChangeProcessor* GetProcessorUnsafe(syncer::ModelType type) const;
+  sync_driver::ChangeProcessor* GetProcessorUnsafe(
+      syncer::ModelType type) const;
 
   // Return true if |model_type| lives on the current thread.  Must be
   // called with |lock_| held.  May be called on any thread.

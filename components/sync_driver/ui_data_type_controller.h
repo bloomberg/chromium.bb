@@ -23,7 +23,7 @@ class SyncableService;
 class SyncError;
 }
 
-namespace browser_sync {
+namespace sync_driver {
 
 // Implementation for datatypes that reside on the (UI thread). This is the same
 // thread we perform initialization on, so we don't have to worry about thread
@@ -133,6 +133,6 @@ class UIDataTypeController : public DataTypeController {
   DISALLOW_COPY_AND_ASSIGN(UIDataTypeController);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_UI_DATA_TYPE_CONTROLLER_H_

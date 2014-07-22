@@ -20,7 +20,7 @@
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/syncable/entry.h"  // TODO(tim): Bug 123674.
 
-namespace browser_sync {
+namespace sync_driver {
 
 namespace {
 
@@ -732,4 +732,4 @@ syncer::UserShare* GenericChangeProcessor::share_handle() const {
   return share_handle_;
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

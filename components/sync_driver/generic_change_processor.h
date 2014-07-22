@@ -27,7 +27,7 @@ class WriteTransaction;
 typedef std::vector<syncer::SyncData> SyncDataList;
 }  // namespace syncer
 
-namespace browser_sync {
+namespace sync_driver {
 class SyncApiComponentFactory;
 
 // Datatype agnostic change processor. One instance of GenericChangeProcessor
@@ -158,6 +158,6 @@ class GenericChangeProcessor : public ChangeProcessor,
   DISALLOW_COPY_AND_ASSIGN(GenericChangeProcessor);
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_GENERIC_CHANGE_PROCESSOR_H_

@@ -27,7 +27,7 @@
 #include "sync/internal_api/public/write_transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 namespace {
 
@@ -419,4 +419,4 @@ TEST_F(SyncGenericChangeProcessorTest, AttachmentUploaded) {
 
 }  // namespace
 
-}  // namespace browser_sync
+}  // namespace sync_driver

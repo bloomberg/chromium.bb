@@ -12,7 +12,7 @@
 
 using base::AutoLock;
 
-namespace browser_sync {
+namespace sync_driver {
 
 SharedChangeProcessor::SharedChangeProcessor()
     : disconnected_(false),
@@ -43,7 +43,7 @@ SharedChangeProcessor::~SharedChangeProcessor() {
 }
 
 base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
-    browser_sync::SyncApiComponentFactory* sync_factory,
+    SyncApiComponentFactory* sync_factory,
     GenericChangeProcessorFactory* processor_factory,
     syncer::UserShare* user_share,
     DataTypeErrorHandler* error_handler,
@@ -208,4 +208,4 @@ syncer::SyncError SharedChangeProcessor::CreateAndUploadError(
   }
 }
 
-}  // namespace browser_sync
+}  // namespace sync_driver

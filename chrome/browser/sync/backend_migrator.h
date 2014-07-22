@@ -50,7 +50,7 @@ class BackendMigrator {
   BackendMigrator(const std::string& name,
                   syncer::UserShare* user_share,
                   ProfileSyncService* service,
-                  DataTypeManager* manager,
+                  sync_driver::DataTypeManager* manager,
                   const base::Closure &migration_done_callback);
   virtual ~BackendMigrator();
 
@@ -65,7 +65,8 @@ class BackendMigrator {
 
   // Called from ProfileSyncService to notify us of configure done.
   // Note: We receive these notificiations only when our state is not IDLE.
-  void OnConfigureDone(const DataTypeManager::ConfigureResult& result);
+  void OnConfigureDone(
+      const sync_driver::DataTypeManager::ConfigureResult& result);
 
   // Returns the types that are currently pending migration (if any).
   syncer::ModelTypeSet GetPendingMigrationTypesForTest() const;
@@ -83,12 +84,13 @@ class BackendMigrator {
   void RestartMigration();
 
   // Called by OnConfigureDone().
-  void OnConfigureDoneImpl(const DataTypeManager::ConfigureResult& result);
+  void OnConfigureDoneImpl(
+      const sync_driver::DataTypeManager::ConfigureResult& result);
 
   const std::string name_;
   syncer::UserShare* user_share_;
   ProfileSyncService* service_;
-  DataTypeManager* manager_;
+  sync_driver::DataTypeManager* manager_;
 
   State state_;
 

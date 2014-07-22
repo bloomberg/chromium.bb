@@ -34,7 +34,7 @@ namespace browser_sync {
 // * Methods to get a bookmark node for a given sync node and vice versa.
 // * Persisting model associations and loading them back.
 class BookmarkModelAssociator
-    : public PerDataTypeAssociatorInterface<BookmarkNode, int64> {
+    : public sync_driver::PerDataTypeAssociatorInterface<BookmarkNode, int64> {
  public:
   static syncer::ModelType model_type() { return syncer::BOOKMARKS; }
   // |expect_mobile_bookmarks_folder| controls whether or not we
@@ -44,7 +44,7 @@ class BookmarkModelAssociator
       BookmarkModel* bookmark_model,
       Profile* profile_,
       syncer::UserShare* user_share,
-      DataTypeErrorHandler* unrecoverable_error_handler,
+      sync_driver::DataTypeErrorHandler* unrecoverable_error_handler,
       bool expect_mobile_bookmarks_folder);
   virtual ~BookmarkModelAssociator();
 
@@ -150,7 +150,7 @@ class BookmarkModelAssociator
   BookmarkModel* bookmark_model_;
   Profile* profile_;
   syncer::UserShare* user_share_;
-  DataTypeErrorHandler* unrecoverable_error_handler_;
+  sync_driver::DataTypeErrorHandler* unrecoverable_error_handler_;
   const bool expect_mobile_bookmarks_folder_;
   BookmarkIdToSyncIdMap id_map_;
   SyncIdToBookmarkNodeMap id_map_inverse_;

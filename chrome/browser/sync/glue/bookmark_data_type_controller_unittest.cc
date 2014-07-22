@@ -35,11 +35,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::BookmarkDataTypeController;
-using browser_sync::ChangeProcessorMock;
-using browser_sync::DataTypeController;
-using browser_sync::ModelAssociatorMock;
-using browser_sync::ModelLoadCallbackMock;
-using browser_sync::StartCallbackMock;
+using sync_driver::ChangeProcessorMock;
+using sync_driver::DataTypeController;
+using sync_driver::ModelAssociatorMock;
+using sync_driver::ModelLoadCallbackMock;
+using sync_driver::StartCallbackMock;
 using testing::_;
 using testing::DoAll;
 using testing::InvokeWithoutArgs;

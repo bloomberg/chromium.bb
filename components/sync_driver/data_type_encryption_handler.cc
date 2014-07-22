@@ -4,7 +4,7 @@
 
 #include "components/sync_driver/data_type_encryption_handler.h"
 
-namespace browser_sync {
+namespace sync_driver {
 
 DataTypeEncryptionHandler::DataTypeEncryptionHandler() {}
 DataTypeEncryptionHandler::~DataTypeEncryptionHandler() {}

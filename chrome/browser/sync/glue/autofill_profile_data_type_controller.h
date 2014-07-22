@@ -21,7 +21,7 @@ class PersonalDataManager;
 namespace browser_sync {
 
 class AutofillProfileDataTypeController
-    : public NonUIDataTypeController,
+    : public sync_driver::NonUIDataTypeController,
       public autofill::PersonalDataManagerObserver {
  public:
   AutofillProfileDataTypeController(

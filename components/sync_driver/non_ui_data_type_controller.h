@@ -18,7 +18,7 @@ namespace syncer {
 class SyncableService;
 }
 
-namespace browser_sync {
+namespace sync_driver {
 
 class SyncApiComponentFactory;
 
@@ -162,6 +162,6 @@ class NonUIDataTypeController : public DataTypeController {
   scoped_refptr<base::MessageLoopProxy> ui_thread_;
 };
 
-}  // namespace browser_sync
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_NON_UI_DATA_TYPE_CONTROLLER_H_
