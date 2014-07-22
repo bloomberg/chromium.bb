@@ -246,6 +246,21 @@ InspectorTest.addUISourceCode = function(target, breakpointManager, url, doNotSe
 
 InspectorTest.createBreakpointManager = function(targetManager, persistentBreakpoints)
 {
+    InspectorTest._pendingBreakpointUpdates = 0;
+    InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_updateInDebugger", updateInDebugger, true);
+    InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_didUpdateInDebugger", didUpdateInDebugger, true);
+
+    function updateInDebugger()
+    {
+        InspectorTest._pendingBreakpointUpdates++;
+    }
+
+    function didUpdateInDebugger()
+    {
+        InspectorTest._pendingBreakpointUpdates--;
+        InspectorTest._notifyAfterBreakpointUpdate();
+    }
+
     persistentBreakpoints = persistentBreakpoints || [];
     var setting = {
         get: function() { return persistentBreakpoints; },
@@ -331,7 +346,6 @@ InspectorTest.dumpBreakpointLocations = function(breakpointManager)
 
 InspectorTest.resetBreakpointManager = function(breakpointManager, next)
 {
-    InspectorTest.dumpBreakpointStorage(breakpointManager);
     InspectorTest.addResult("  Resetting breakpoint manager");
     breakpointManager.removeAllBreakpoints();
     breakpointManager.removeProvisionalBreakpointsForTest();
@@ -339,16 +353,47 @@ InspectorTest.resetBreakpointManager = function(breakpointManager, next)
     next();
 }
 
+InspectorTest.runAfterPendingBreakpointUpdates = function(breakpointManager, callback)
+{
+    InspectorTest._pendingBreakpointUpdatesCallback = callback;
+    InspectorTest._notifyAfterBreakpointUpdate();
+}
+
+InspectorTest._notifyAfterBreakpointUpdate = function()
+{
+    if (!InspectorTest._pendingBreakpointUpdates && InspectorTest._pendingBreakpointUpdatesCallback) {
+        var callback = InspectorTest._pendingBreakpointUpdatesCallback;
+        delete InspectorTest._pendingBreakpointUpdatesCallback;
+        callback();
+    }
+}
+
 InspectorTest.finishBreakpointTest = function(breakpointManager, next)
 {
+    InspectorTest.runAfterPendingBreakpointUpdates(breakpointManager, dump);
+
+    function dump()
+    {
+        InspectorTest.dumpBreakpointLocations(breakpointManager);
+        InspectorTest.dumpBreakpointStorage(breakpointManager);
+        InspectorTest.runAfterPendingBreakpointUpdates(breakpointManager, reset);
+    }
+
+    function reset()
+    {
+        InspectorTest.resetBreakpointManager(breakpointManager, didReset);
+    }
+
+    function didReset()
+    {
+        InspectorTest.runAfterPendingBreakpointUpdates(breakpointManager, finish);
+    }
+
     function finish()
     {
         InspectorTest.dumpBreakpointLocations(breakpointManager);
         next();
     }
-
-    InspectorTest.dumpBreakpointLocations(breakpointManager);
-    InspectorTest.resetBreakpointManager(breakpointManager, finish);
 }
 
 }

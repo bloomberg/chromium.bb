@@ -95,7 +95,7 @@ var test = function()
         InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", didSetBreakpointInDebugger);
         InspectorTest.setBreakpoint(sourceFrame, lineNumber, condition, true);
 
-        function didSetBreakpointInDebugger(breakpointId)
+        function didSetBreakpointInDebugger(breakpointManagerCallback, breakpointId)
         {
             if (callback)
                 callback(breakpointId);

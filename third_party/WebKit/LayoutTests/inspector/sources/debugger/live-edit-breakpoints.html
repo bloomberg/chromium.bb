@@ -88,12 +88,13 @@ function test()
                 InspectorTest.addSniffer(javaScriptSourceFrame._textEditor.__proto__, "removeBreakpoint", removeBreakpointSniffer, true);
                 
                 InspectorTest.addResult("Setting breakpoint:");
-                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
+                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolved);
                 InspectorTest.setBreakpoint(sourceFrame, 2, "", true);
             }
 
-            function breakpointResolved(location)
+            function breakpointResolved(callback, breakpointId, locations)
             {
+                var location = locations[0];
                 script = WebInspector.debuggerModel.scriptForId(location.scriptId);
 
                 dumpBreakpointStorageAndLocations();
@@ -112,7 +113,7 @@ function test()
 
                 dumpBreakpointStorageAndLocations();
                 InspectorTest.addResult("Undoing source editing:");
-                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", breakpointResolvedAgain);
+                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolvedAgain);
                 InspectorTest.undoSourceEditing(javaScriptSourceFrame);
             }
 
@@ -139,12 +140,13 @@ function test()
                 uiSourceCode = sourceFrame._uiSourceCode;
                 
                 InspectorTest.addResult("Setting breakpoint:");
-                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
+                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolved);
                 InspectorTest.setBreakpoint(sourceFrame, 2, "", true);
             }
 
-            function breakpointResolved(location)
+            function breakpointResolved(callback, breakpointId, locations)
             {
+                var location = locations[0];
                 script = WebInspector.debuggerModel.scriptForId(location.scriptId);
 
                 dumpBreakpointStorageAndLocations();
@@ -163,7 +165,7 @@ function test()
 
                 dumpBreakpointStorageAndLocations();
                 InspectorTest.addResult("Committing edited source:");
-                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", breakpointResolvedAgain);
+                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolvedAgain);
                 InspectorTest.commitSource(javaScriptSourceFrame);
             }
 
@@ -190,12 +192,13 @@ function test()
                 uiSourceCode = sourceFrame._uiSourceCode;
                 
                 InspectorTest.addResult("Setting breakpoint:");
-                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
+                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolved);
                 InspectorTest.setBreakpoint(sourceFrame, 2, "", true);
             }
 
-            function breakpointResolved(location)
+            function breakpointResolved(callback, breakpointId, locations)
             {
+                var location = locations[0];
                 script = WebInspector.debuggerModel.scriptForId(location.scriptId);
 
                 dumpBreakpointStorageAndLocations();
@@ -227,7 +230,7 @@ function test()
 
                 dumpBreakpointStorageAndLocations();
                 InspectorTest.addResult("Committing edited source again:");
-                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", breakpointResolvedAgain);
+                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolvedAgain);
                 InspectorTest.commitSource(javaScriptSourceFrame);
             }
 
@@ -254,12 +257,13 @@ function test()
                 uiSourceCode = sourceFrame._uiSourceCode;
                 
                 InspectorTest.addResult("Setting breakpoint:");
-                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
+                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolved);
                 InspectorTest.setBreakpoint(sourceFrame, 2, "", true);
             }
 
-            function breakpointResolved(location)
+            function breakpointResolved(callback, breakpointId, locations)
             {
+                var location = locations[0];
                 script = WebInspector.debuggerModel.scriptForId(location.scriptId);
 
                 dumpBreakpointStorageAndLocations();
@@ -291,7 +295,7 @@ function test()
 
                 dumpBreakpointStorageAndLocations();
                 InspectorTest.addResult("Committing edited source again:");
-                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", breakpointResolvedAgain);
+                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolvedAgain);
                 InspectorTest.commitSource(javaScriptSourceFrame);
             }
 
@@ -332,12 +336,13 @@ function test()
                 uiSourceCode = sourceFrame._uiSourceCode;
                 
                 InspectorTest.addResult("Setting breakpoint:");
-                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
+                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolved);
                 InspectorTest.setBreakpoint(sourceFrame, 2, "", true);
             }
 
-            function breakpointResolved(location)
+            function breakpointResolved(callback, breakpointId, locations)
             {
+                var location = locations[0];
                 script = WebInspector.debuggerModel.scriptForId(location.scriptId);
 
                 dumpBreakpointStorageAndLocations();
@@ -394,12 +399,13 @@ function test()
                 uiSourceCode = sourceFrame._uiSourceCode;
                 
                 InspectorTest.addResult("Setting breakpoint:");
-                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
+                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", breakpointResolved);
                 InspectorTest.setBreakpoint(sourceFrame, 2, "", true);
             }
 
-            function breakpointResolved(location)
+            function breakpointResolved(callback, breakpointId, locations)
             {
+                var location = locations[0];
                 script = WebInspector.debuggerModel.scriptForId(location.scriptId);
 
                 dumpBreakpointStorageAndLocations();

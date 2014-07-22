@@ -312,8 +312,8 @@ Running: testNavigation
     breakpointAdded(a.js, 10, 0, foo == bar, true)
     Location disposed: a.js:11
     debuggerModel.removeBreakpoint(a.js:10)
-    debuggerModel.setBreakpoint(a.js:10:foo == bar)
     breakpointAdded(a.js, 20, 0, , false)
+    debuggerModel.setBreakpoint(a.js:10:foo == bar)
     breakpointRemoved(a.js, 10, 0)
     breakpointAdded(a.js, 10, 0, foo == bar, true)
     Location created: a.js:10
@@ -432,8 +432,8 @@ Running: testSourceMappingReload
     debuggerModel.setBreakpoint(b.js:20:foo == bar)
 
   Toggling source mapping.
-    debuggerModel.setBreakpoint(a.js:10:foo == bar)
     debuggerModel.removeBreakpoint(b.js:20)
+    debuggerModel.setBreakpoint(a.js:10:foo == bar)
     breakpointRemoved(b.js, 20, 0)
     breakpointAdded(b.js, 20, 0, foo == bar, true)
     Location created: a.js:10
@@ -457,12 +457,9 @@ Running: testSourceMappingReload
     breakpointAdded(b.js, 20, 0, foo == bar, true)
     Location disposed: a.js:10
     debuggerModel.removeBreakpoint(a.js:10)
-    debuggerModel.setBreakpoint(b.js:20:foo == bar)
 
   Toggling source mapping.
-    debuggerModel.removeBreakpoint(a.js:10)
     debuggerModel.setBreakpoint(a.js:10:foo == bar)
-    debuggerModel.removeBreakpoint(b.js:20)
     breakpointRemoved(b.js, 20, 0)
     breakpointAdded(b.js, 20, 0, foo == bar, true)
     Location created: a.js:10
@@ -502,7 +499,6 @@ Running: testBreakpointInCollectedReload
   Adding UISourceCode: a.js
     breakpointAdded(a.js, 10, 0, , true)
     debuggerModel.removeBreakpoint(a.js:10)
-    debuggerModel.setBreakpoint(a.js:10:)
 
   Emulating breakpoint resolved event:
     breakpointRemoved(a.js, 10, 0)
@@ -513,6 +509,7 @@ Running: testBreakpointInCollectedReload
     breakpointRemoved(a.js, 10, 0)
     breakpointAdded(a.js, 10, 0, , true)
     Location disposed: a.js:10
+    debuggerModel.setBreakpoint(a.js:10:)
     breakpointRemoved(a.js, 10, 0)
     breakpointAdded(a.js, 10, 0, , true)
     Location created: a.js:10
