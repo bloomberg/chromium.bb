@@ -49,6 +49,7 @@ public:
     HTMLMediaElement* mediaElement() { return m_mediaElement.get(); }
 
     // AudioNode
+    virtual void dispose() OVERRIDE;
     virtual void process(size_t framesToProcess) OVERRIDE;
 
     // AudioSourceProviderClient

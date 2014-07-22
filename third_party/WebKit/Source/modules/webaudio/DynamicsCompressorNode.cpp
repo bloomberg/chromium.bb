@@ -59,7 +59,13 @@ DynamicsCompressorNode::DynamicsCompressorNode(AudioContext* context, float samp
 
 DynamicsCompressorNode::~DynamicsCompressorNode()
 {
+    ASSERT(!isInitialized());
+}
+
+void DynamicsCompressorNode::dispose()
+{
     uninitialize();
+    AudioNode::dispose();
 }
 
 void DynamicsCompressorNode::process(size_t framesToProcess)

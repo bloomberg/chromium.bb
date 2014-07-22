@@ -49,6 +49,7 @@ public:
     virtual ~AudioBufferSourceNode();
 
     // AudioNode
+    virtual void dispose() OVERRIDE;
     virtual void process(size_t framesToProcess) OVERRIDE;
 
     // setBuffer() is called on the main thread. This is the buffer we use for playback.

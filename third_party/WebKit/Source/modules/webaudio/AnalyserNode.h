@@ -43,6 +43,7 @@ public:
     virtual ~AnalyserNode();
 
     // AudioNode
+    virtual void dispose() OVERRIDE;
     virtual void process(size_t framesToProcess) OVERRIDE;
 
     // Javascript bindings

@@ -48,7 +48,13 @@ AudioDestinationNode::AudioDestinationNode(AudioContext* context, float sampleRa
 
 AudioDestinationNode::~AudioDestinationNode()
 {
+    ASSERT(!isInitialized());
+}
+
+void AudioDestinationNode::dispose()
+{
     uninitialize();
+    AudioNode::dispose();
 }
 
 void AudioDestinationNode::render(AudioBus* sourceBus, AudioBus* destinationBus, size_t numberOfFrames)

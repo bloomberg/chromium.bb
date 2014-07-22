@@ -46,6 +46,7 @@ public:
     virtual ~ConvolverNode();
 
     // AudioNode
+    virtual void dispose() OVERRIDE;
     virtual void process(size_t framesToProcess) OVERRIDE;
     virtual void initialize() OVERRIDE;
     virtual void uninitialize() OVERRIDE;

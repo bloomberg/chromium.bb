@@ -46,7 +46,13 @@ AnalyserNode::AnalyserNode(AudioContext* context, float sampleRate)
 
 AnalyserNode::~AnalyserNode()
 {
+    ASSERT(!isInitialized());
+}
+
+void AnalyserNode::dispose()
+{
     uninitialize();
+    AudioBasicInspectorNode::dispose();
 }
 
 void AnalyserNode::process(size_t framesToProcess)

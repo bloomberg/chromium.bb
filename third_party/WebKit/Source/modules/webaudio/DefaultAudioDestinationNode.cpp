@@ -48,7 +48,13 @@ DefaultAudioDestinationNode::DefaultAudioDestinationNode(AudioContext* context)
 
 DefaultAudioDestinationNode::~DefaultAudioDestinationNode()
 {
+    ASSERT(!isInitialized());
+}
+
+void DefaultAudioDestinationNode::dispose()
+{
     uninitialize();
+    AudioDestinationNode::dispose();
 }
 
 void DefaultAudioDestinationNode::initialize()

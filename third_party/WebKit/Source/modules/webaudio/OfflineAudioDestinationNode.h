@@ -46,6 +46,7 @@ public:
     virtual ~OfflineAudioDestinationNode();
 
     // AudioNode
+    virtual void dispose() OVERRIDE;
     virtual void initialize() OVERRIDE;
     virtual void uninitialize() OVERRIDE;
 

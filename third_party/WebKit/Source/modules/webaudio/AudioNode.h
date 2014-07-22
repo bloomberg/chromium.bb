@@ -57,6 +57,9 @@ public:
 
     AudioNode(AudioContext*, float sampleRate);
     virtual ~AudioNode();
+    // dispose() is called just before the destructor. This must be called in
+    // the main thread, and while the graph lock is held.
+    virtual void dispose();
 
     AudioContext* context() { return m_context.get(); }
     const AudioContext* context() const { return m_context.get(); }

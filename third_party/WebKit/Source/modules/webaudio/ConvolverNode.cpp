@@ -66,7 +66,13 @@ ConvolverNode::ConvolverNode(AudioContext* context, float sampleRate)
 
 ConvolverNode::~ConvolverNode()
 {
+    ASSERT(!isInitialized());
+}
+
+void ConvolverNode::dispose()
+{
     uninitialize();
+    AudioNode::dispose();
 }
 
 void ConvolverNode::process(size_t framesToProcess)

@@ -77,8 +77,14 @@ AudioBufferSourceNode::AudioBufferSourceNode(AudioContext* context, float sample
 
 AudioBufferSourceNode::~AudioBufferSourceNode()
 {
+    ASSERT(!isInitialized());
+}
+
+void AudioBufferSourceNode::dispose()
+{
     clearPannerNode();
     uninitialize();
+    AudioScheduledSourceNode::dispose();
 }
 
 void AudioBufferSourceNode::process(size_t framesToProcess)

@@ -217,6 +217,7 @@ public:
     // Only accessed when the graph lock is held.
     void markSummingJunctionDirty(AudioSummingJunction*);
     void markAudioNodeOutputDirty(AudioNodeOutput*);
+    void unmarkDirtyNode(AudioNode&);
 
     // Must be called on main thread.
     void removeMarkedSummingJunction(AudioSummingJunction*);

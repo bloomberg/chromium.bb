@@ -44,6 +44,7 @@ public:
     virtual ~DefaultAudioDestinationNode();
 
     // AudioNode
+    virtual void dispose() OVERRIDE;
     virtual void initialize() OVERRIDE;
     virtual void uninitialize() OVERRIDE;
     virtual void setChannelCount(unsigned long, ExceptionState&) OVERRIDE;

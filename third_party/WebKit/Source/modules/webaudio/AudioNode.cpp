@@ -88,6 +88,13 @@ void AudioNode::uninitialize()
     m_isInitialized = false;
 }
 
+void AudioNode::dispose()
+{
+    ASSERT(isMainThread());
+    ASSERT(context()->isGraphOwner());
+    context()->unmarkDirtyNode(*this);
+}
+
 String AudioNode::nodeTypeName() const
 {
     switch (m_nodeType) {

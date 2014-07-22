@@ -836,15 +836,7 @@ void AudioContext::deleteMarkedNodes()
             AudioNode* node = m_nodesToDelete[n - 1];
             m_nodesToDelete.removeLast();
 
-            // Before deleting the node, clear out any AudioNodeInputs from m_dirtySummingJunctions.
-            unsigned numberOfInputs = node->numberOfInputs();
-            for (unsigned i = 0; i < numberOfInputs; ++i)
-                m_dirtySummingJunctions.remove(node->input(i));
-
-            // Before deleting the node, clear out any AudioNodeOutputs from m_dirtyAudioNodeOutputs.
-            unsigned numberOfOutputs = node->numberOfOutputs();
-            for (unsigned i = 0; i < numberOfOutputs; ++i)
-                m_dirtyAudioNodeOutputs.remove(node->output(i));
+            node->dispose();
 
 #if ENABLE(OILPAN)
             // Finally, clear the keep alive handle that keeps this
@@ -857,6 +849,21 @@ void AudioContext::deleteMarkedNodes()
         }
         m_isDeletionScheduled = false;
     }
+}
+
+void AudioContext::unmarkDirtyNode(AudioNode& node)
+{
+    // Before deleting the node, clear out any AudioNodeInputs from
+    // m_dirtySummingJunctions.
+    unsigned numberOfInputs = node.numberOfInputs();
+    for (unsigned i = 0; i < numberOfInputs; ++i)
+        m_dirtySummingJunctions.remove(node.input(i));
+
+    // Before deleting the node, clear out any AudioNodeOutputs from
+    // m_dirtyAudioNodeOutputs.
+    unsigned numberOfOutputs = node.numberOfOutputs();
+    for (unsigned i = 0; i < numberOfOutputs; ++i)
+        m_dirtyAudioNodeOutputs.remove(node.output(i));
 }
 
 void AudioContext::markSummingJunctionDirty(AudioSummingJunction* summingJunction)

@@ -121,7 +121,13 @@ ScriptProcessorNode::ScriptProcessorNode(AudioContext* context, float sampleRate
 
 ScriptProcessorNode::~ScriptProcessorNode()
 {
+    ASSERT(!isInitialized());
+}
+
+void ScriptProcessorNode::dispose()
+{
     uninitialize();
+    AudioNode::dispose();
 }
 
 void ScriptProcessorNode::initialize()

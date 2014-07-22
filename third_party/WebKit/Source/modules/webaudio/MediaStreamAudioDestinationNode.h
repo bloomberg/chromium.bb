@@ -46,6 +46,7 @@ public:
     MediaStream* stream() { return m_stream.get(); }
 
     // AudioNode.
+    virtual void dispose() OVERRIDE;
     virtual void process(size_t framesToProcess) OVERRIDE;
 
 private:

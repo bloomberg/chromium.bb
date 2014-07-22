@@ -73,7 +73,13 @@ OscillatorNode::OscillatorNode(AudioContext* context, float sampleRate)
 
 OscillatorNode::~OscillatorNode()
 {
+    ASSERT(!isInitialized());
+}
+
+void OscillatorNode::dispose()
+{
     uninitialize();
+    AudioScheduledSourceNode::dispose();
 }
 
 String OscillatorNode::type() const

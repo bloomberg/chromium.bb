@@ -59,7 +59,13 @@ MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(AudioContext* context, Me
 
 MediaStreamAudioSourceNode::~MediaStreamAudioSourceNode()
 {
+    ASSERT(!isInitialized());
+}
+
+void MediaStreamAudioSourceNode::dispose()
+{
     uninitialize();
+    AudioSourceNode::dispose();
 }
 
 void MediaStreamAudioSourceNode::setFormat(size_t numberOfChannels, float sourceSampleRate)

@@ -57,6 +57,7 @@ public:
     virtual ~OscillatorNode();
 
     // AudioNode
+    virtual void dispose() OVERRIDE;
     virtual void process(size_t framesToProcess) OVERRIDE;
 
     String type() const;

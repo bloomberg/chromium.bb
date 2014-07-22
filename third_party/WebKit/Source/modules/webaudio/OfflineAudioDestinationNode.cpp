@@ -50,7 +50,13 @@ OfflineAudioDestinationNode::OfflineAudioDestinationNode(AudioContext* context, 
 
 OfflineAudioDestinationNode::~OfflineAudioDestinationNode()
 {
+    ASSERT(!isInitialized());
+}
+
+void OfflineAudioDestinationNode::dispose()
+{
     uninitialize();
+    AudioDestinationNode::dispose();
 }
 
 void OfflineAudioDestinationNode::initialize()

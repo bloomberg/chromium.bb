@@ -81,7 +81,13 @@ PannerNode::PannerNode(AudioContext* context, float sampleRate)
 
 PannerNode::~PannerNode()
 {
+    ASSERT(!isInitialized());
+}
+
+void PannerNode::dispose()
+{
     uninitialize();
+    AudioNode::dispose();
 }
 
 void PannerNode::pullInputs(size_t framesToProcess)

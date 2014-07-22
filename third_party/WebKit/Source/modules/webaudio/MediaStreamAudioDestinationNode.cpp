@@ -61,7 +61,13 @@ MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(AudioContext* c
 
 MediaStreamAudioDestinationNode::~MediaStreamAudioDestinationNode()
 {
+    ASSERT(!isInitialized());
+}
+
+void MediaStreamAudioDestinationNode::dispose()
+{
     uninitialize();
+    AudioBasicInspectorNode::dispose();
 }
 
 void MediaStreamAudioDestinationNode::trace(Visitor* visitor)
