@@ -36,15 +36,18 @@ found in the LICENSE file.
     <ct-tree-status project="chromium"></ct-tree-status>
     <ct-tree-status project="blink"></ct-tree-status>
     <ct-failing-builders builders="{{ failures.builders }}"></ct-failing-builders>
-    <ct-failure-stream groups="{{ failures.unexpected }}" builderLatestRevisions="{{ builderLatestRevisions }}" commits="{{revisionLog.commits}}"></ct-failure-stream>
+    <ct-failure-stream groups="{{ failures.unexpected }}" commits="{{revisionLog.commits}}"></ct-failure-stream>
   </template>
   <script>
+  (function() {
+    var kUpdateFrequency = 1000 * 30;
+
     Polymer({
       revisionLog: new CTCommitLog(),
 
       attached: function() {
         this.update();
-        setInterval(this.update.bind(this), config.kUpdateFrequency);
+        setInterval(this.update.bind(this), kUpdateFrequency);
       },
 
       update: function() {
@@ -56,5 +59,6 @@ found in the LICENSE file.
           treeStatuses[i].update();
       },
     });
+  })();
   </script>
 </polymer-element>

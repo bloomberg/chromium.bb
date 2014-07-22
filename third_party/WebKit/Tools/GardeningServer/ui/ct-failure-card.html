@@ -8,7 +8,7 @@ found in the LICENSE file.
 <link rel="import" href="ct-commit-list.html">
 <link rel="import" href="ct-test-list.html">
 
-<polymer-element name="ct-failure-card" attributes="failures builderLatestRevisions commits">
+<polymer-element name="ct-failure-card" attributes="failures commits">
   <template>
     <style>
       :host {
@@ -55,7 +55,7 @@ found in the LICENSE file.
         align-self: flex-start;
       }
     </style>
-    <ct-builder-grid failures="{{failures}}" builderLatestRevisions="{{builderLatestRevisions}}"></ct-builder-grid>
+    <ct-builder-grid failures="{{failures}}"></ct-builder-grid>
     <div class="failure">
       <ct-test-list tests="{{failures|testNames}}"></ct-test-list>
       <ct-commit-list first="{{failures[0].newestPassingRevision + 1}}"
@@ -67,7 +67,6 @@ found in the LICENSE file.
   <script>
     Polymer({
       failures: [],
-      builderLatestRevisions: {},
       commits: {},
 
       testNames: function(failures) {

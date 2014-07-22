@@ -13,14 +13,14 @@ module("ct-builder");
 
 asyncTest("basic", 2, function() {
   var builder = document.createElement('ct-builder');
-  builder.builderName = 'WebKit Linux (dbg)';
+  builder.builder = 'WebKit Linux (dbg)';
 
   builder.async(function() {
     var html = builder.shadowRoot.innerHTML;
 
     var a = builder.shadowRoot.querySelector('a');
     ok(a);
-    notEqual(a.href.indexOf('WebKit%20Linux%20(dbg)'), -1);
+    notEqual(a.href.indexOf('WebKit+Linux+(dbg)'), -1);
 
     start();
   });
@@ -28,13 +28,13 @@ asyncTest("basic", 2, function() {
 
 asyncTest("steps", 3, function() {
   var builder = document.createElement('ct-builder');
-  builder.builderName = 'WebKit Linux (dbg)';
+  builder.builder = 'WebKit Linux (dbg)';
   builder.steps = ['gclient_revert', 'compile', 'unittests'];
 
   builder.async(function() {
     var a = builder.shadowRoot.querySelector('a');
     ok(a);
-    notEqual(a.href.indexOf('WebKit%20Linux%20(dbg)'), -1);
+    notEqual(a.href.indexOf('WebKit+Linux+(dbg)'), -1);
     notEqual(a.innerText.indexOf('gclient_revert, compile, unittests'), -1);
 
     start();

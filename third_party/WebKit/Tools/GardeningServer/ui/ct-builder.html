@@ -9,52 +9,30 @@ Styled link to a builder composed of the version and architecture, or the
 builder name if the builder is unknown. If an array is passed to |steps|, the
 link will show the builder name and architecture followed by the steps instead.
 -->
-<polymer-element name="ct-builder" attributes="builderName steps">
+<polymer-element name="ct-builder" attributes="builder steps">
   <template>
     <style>
       a {
         border: 1px solid gray;
         color: black;
         display: inline-block;
-        font-size: 0px;
+        font-size: 11px;
         margin-bottom: 2px;
         padding: 1px;
         text-decoration: none;
       }
 
       span {
-        font-size: 11px;
         padding: 0 2px;
       }
 
-      .version {
+      .builder {
         background-color: #555;
         color: white;
       }
-
-      .version:not(.architecture) {
-        text-transform: uppercase;
-      }
-
-      .details {
-        padding-left: 3px;
-      }
     </style>
-    <a href="{{ builderName|builderURL }}">
-      <template if="{{ configuration }}">
-        <span class="version">{{ configuration.version }}</span>
-        <template if="{{ configuration.is64bit }}">
-          <template if="{{ stepList }}">
-            <span class="version architecture">64-bit</span>
-          </template>
-          <template if="{{ !stepList }}">
-            <span>64-bit</span>
-          </template>
-        </template>
-      </template>
-      <template if="{{ !configuration }}">
-        <span class="version">{{ builderName }}</span>
-      </template>
+    <a href="{{ builder|builderURL }}">
+      <span class="builder">{{ builder }}</span>
       <template if="{{ stepList }}">
         <span class="details">{{ stepList }}</span>
       </template>
@@ -64,17 +42,16 @@ link will show the builder name and architecture followed by the steps instead.
     Polymer({
       steps: [],
 
-      ready: function() {
-        this.configuration = config.builders[this.builderName];
-      },
-
       stepsChanged: function() {
         this.stepList = this.steps.join(', ');
       },
 
       builderURL: function() {
-        return config.waterfallURL + '?builder=' +
-            encodeURIComponent(this.builderName);
+        // FIXME: Pass in the waterfall URL instead so this can work with different waterfalls.
+        var waterfall = 'http://build.chromium.org/p/chromium.webkit';
+        return waterfall + '/waterfall?' + Object.toQueryString({
+          builder: this.builder,
+        });
       },
     });
   </script>

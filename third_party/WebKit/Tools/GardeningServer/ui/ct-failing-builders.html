@@ -21,7 +21,7 @@ found in the LICENSE file.
       }
     </style>
     <template repeat="{{ builder in builders|keys }}">
-      <ct-builder builderName="{{ builder }}" steps="{{ builders[builder] }}"></ct-builder>
+      <ct-builder builder="{{ builder }}" steps="{{ builders[builder] }}"></ct-builder>
     </template>
   </template>
   <script>

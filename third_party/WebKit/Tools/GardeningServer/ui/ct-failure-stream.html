@@ -6,7 +6,7 @@ found in the LICENSE file.
 
 <link rel="import" href="ct-failure-card.html">
 
-<polymer-element name="ct-failure-stream" attributes="groups builderLatestRevisions commits" noscript>
+<polymer-element name="ct-failure-stream" attributes="groups commits" noscript>
   <template>
     <style>
       :host {
@@ -20,7 +20,7 @@ found in the LICENSE file.
       }
     </style>
     <template repeat="{{failures in groups}}">
-      <ct-failure-card failures="{{failures}}" builderLatestRevisions="{{builderLatestRevisions}}" commits="{{commits}}"></ct-failure-card>
+      <ct-failure-card failures="{{failures}}" commits="{{commits}}"></ct-failure-card>
     </template>
   </template>
 </polymer-element>

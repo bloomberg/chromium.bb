@@ -136,7 +136,8 @@ function failureTypeList(failureBlob)
 
 function resultsDirectoryURL(builderName)
 {
-    return config.layoutTestResultsURL + '/' + builderName.replace(/[ .()]/g, '_') + '/results/layout-test-results/';
+    return 'https://storage.googleapis.com/chromium-layout-test-archives/' +
+        builderName.replace(/[ .()]/g, '_') + '/results/layout-test-results/';
 }
 
 results.failureInfo = function(testName, builderName, result)

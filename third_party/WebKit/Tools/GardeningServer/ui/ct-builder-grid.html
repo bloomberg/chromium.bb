@@ -7,7 +7,7 @@ found in the LICENSE file.
 <link rel="import" href="ct-builder.html">
 
 <!-- Table of failure types, listing the failing builders for each type. -->
-<polymer-element name="ct-builder-grid" attributes="failures builderLatestRevisions">
+<polymer-element name="ct-builder-grid" attributes="failures">
   <template>
     <style>
       table {
@@ -64,31 +64,15 @@ found in the LICENSE file.
       }
     </style>
     <table>
-      <thead>
-        <tr>
-          <td>type</td>
-          <td>release</td>
-          <td>debug</td>
-        </tr>
-      </thead>
       <tbody>
-        <template repeat="{{ type in resultTypes|resultTypeKeys }}">
+        <template repeat="{{ type in _resultTypes | _keys }}">
           <tr>
             <td class="{{ type }}">
               <span>{{ type }}</span>
             </td>
             <td>
-              <template repeat="{{ builder in resultTypes[type]|keys }}">
-                <template if="{{ !resultTypes[type][builder].debug }}">
-                  <ct-builder builderName="{{ builder }}"></ct-builder>
-                </template>
-              </template>
-            </td>
-            <td>
-              <template repeat="{{ builder in resultTypes[type]|keys }}">
-                <template if="{{ resultTypes[type][builder].debug }}">
-                  <ct-builder builderName="{{ builder }}"></ct-builder>
-                </template>
+              <template repeat="{{ builder in _resultTypes[type] | _keys }}">
+                <ct-builder builder="{{ builder }}"></ct-builder>
               </template>
             </td>
           </tr>
@@ -99,67 +83,24 @@ found in the LICENSE file.
   <script>
     Polymer({
       failures: [],
-      builderLatestRevisions: {},
-      resultTypes: {},
+      _resultTypes: {},
 
-      keys: function(obj) {
+      _keys: function(obj) {
         return Object.keys(obj).sort();
-      },
-
-      resultTypeKeys: function(obj) {
-        // Get the keys, but the BUILDING type should be last.
-        var keys = this.keys(obj);
-        var index = keys.indexOf('BUILDING');
-        if (index != -1) {
-          var buildingResult = keys.splice(index, 1);
-          keys.push(buildingResult[0]);
-        }
-        return keys;
       },
 
       failuresChanged: function() {
         // Create a set of builders for each result type (e.g., text, crash).
-        this.resultTypes = {};
-        var passingRevisions = [];
+        this._resultTypes = {};
         this.failures.forEach(function(failure) {
-          passingRevisions.push(failure.newestPassingRevision);
           var results = failure.resultNodesByBuilder;
           Object.keys(results, (function(builder) {
             var result = results[builder].actual;
-            if (!Object.has(this.resultTypes, result))
-              this.resultTypes[result] = {};
-            this.resultTypes[result][builder] =
-                config.builders[builder];
+            if (!this._resultTypes[result])
+              this._resultTypes[result] = {};
+            this._resultTypes[result][builder] = 1;
           }).bind(this));
         }, this);
-
-        var buildingType = this._getBuilding(passingRevisions);
-        if (!Object.isEmpty(buildingType))
-            this.resultTypes['BUILDING'] = buildingType;
-      },
-
-      _buildersInFlightForRevision: function(revision) {
-        return Object.keys(this.builderLatestRevisions).filter(function(builder) {
-          // FIXME: This should look at all chromium/v8/etc revisions as well.
-          // Is this concept of "building" builders even useful as is?
-          return parseInt(this.builderLatestRevisions[builder].blink, 10) < revision;
-        }.bind(this));
-      },
-
-      _getBuilding: function(revisions) {
-        var building = {};
-        var builders = [];
-        revisions.unique().forEach(function(revision) {
-          builders.push.apply(builders, this._buildersInFlightForRevision(revision + 1));
-        }.bind(this));
-
-        builders.unique().forEach(function(builder) {
-          if (!config.builders[builder])
-            return;
-          building[builder] = {'debug': config.builders[builder].debug};
-        });
-
-        return building;
       },
     });
   </script>
