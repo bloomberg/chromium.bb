@@ -141,15 +141,13 @@ bool AXTable::isDataTable() const
     RefPtrWillBeRawPtr<HTMLTableRowsCollection> rows = tableElement->rows();
     unsigned rowCount = rows->length();
     for (unsigned rowIndex = 0; rowIndex < rowCount; ++rowIndex) {
-        Element* rowElement = rows->item(rowIndex);
+        HTMLTableRowElement* rowElement = rows->item(rowIndex);
         if (elementHasAriaRole(rowElement))
             return false;
-        if (isHTMLTableRowElement(*rowElement)) {
-            RefPtrWillBeRawPtr<HTMLCollection> cells = toHTMLTableRowElement(rowElement)->cells();
-            for (unsigned cellIndex = 0; cellIndex < cells->length(); ++cellIndex) {
-                if (elementHasAriaRole(cells->item(cellIndex)))
-                    return false;
-            }
+        RefPtrWillBeRawPtr<HTMLCollection> cells = rowElement->cells();
+        for (unsigned cellIndex = 0; cellIndex < cells->length(); ++cellIndex) {
+            if (elementHasAriaRole(cells->item(cellIndex)))
+                return false;
         }
     }
 

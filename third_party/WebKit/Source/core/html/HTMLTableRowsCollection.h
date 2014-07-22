@@ -30,6 +30,7 @@
 #define HTMLTableRowsCollection_h
 
 #include "core/html/HTMLCollection.h"
+#include "core/html/HTMLTableRowElement.h"
 
 namespace blink {
 
@@ -39,6 +40,8 @@ class HTMLTableRowElement;
 class HTMLTableRowsCollection FINAL : public HTMLCollection {
 public:
     static PassRefPtrWillBeRawPtr<HTMLTableRowsCollection> create(ContainerNode&, CollectionType);
+
+    HTMLTableRowElement* item(unsigned offset) const { return toHTMLTableRowElement(HTMLCollection::item(offset)); }
 
     static HTMLTableRowElement* rowAfter(HTMLTableElement&, HTMLTableRowElement*);
     static HTMLTableRowElement* lastRow(HTMLTableElement&);
