@@ -48,7 +48,7 @@ void ReadFile(
 
 DevToolsTracingHandler::DevToolsTracingHandler(
     DevToolsTracingHandler::Target target)
-    : weak_factory_(this), target_(target) {
+    : weak_factory_(this), target_(target), is_recording_(false) {
   RegisterCommandHandler(devtools::Tracing::start::kName,
                          base::Bind(&DevToolsTracingHandler::OnStart,
                                     base::Unretained(this)));
@@ -138,6 +138,7 @@ TracingController::Options DevToolsTracingHandler::TraceOptionsFromString(
 scoped_refptr<DevToolsProtocol::Response>
 DevToolsTracingHandler::OnStart(
     scoped_refptr<DevToolsProtocol::Command> command) {
+  is_recording_ = true;
   std::string categories;
   base::DictionaryValue* params = command->params();
   if (params)
@@ -211,12 +212,14 @@ DevToolsTracingHandler::OnEnd(
 
 void DevToolsTracingHandler::DisableRecording(
     const TracingController::TracingFileResultCallback& callback) {
+  is_recording_ = false;
   buffer_usage_poll_timer_.reset();
   TracingController::GetInstance()->DisableRecording(base::FilePath(),
                                                      callback);
 }
 
 void DevToolsTracingHandler::OnClientDetached() {
+  if (is_recording_)
     DisableRecording();
 }
 
