@@ -380,11 +380,6 @@ void HTMLInputElement::endEditing()
     frame->host()->chrome().client().didEndEditingOnTextField(*this);
 }
 
-bool HTMLInputElement::shouldUseInputMethod()
-{
-    return m_inputType->shouldUseInputMethod();
-}
-
 void HTMLInputElement::handleFocusEvent(Element* oldFocusedElement, FocusType type)
 {
     m_inputTypeView->handleFocusEvent(oldFocusedElement, type);

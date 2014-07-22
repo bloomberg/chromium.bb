@@ -380,11 +380,6 @@ bool TextFieldInputType::supportsReadOnly() const
     return true;
 }
 
-bool TextFieldInputType::shouldUseInputMethod() const
-{
-    return true;
-}
-
 static bool isASCIILineBreak(UChar c)
 {
     return c == '\r' || c == '\n';

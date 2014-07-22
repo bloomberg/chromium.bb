@@ -494,11 +494,6 @@ void BaseMultipleFieldsDateAndTimeInputType::setValue(const String& sanitizedVal
     }
 }
 
-bool BaseMultipleFieldsDateAndTimeInputType::shouldUseInputMethod() const
-{
-    return false;
-}
-
 void BaseMultipleFieldsDateAndTimeInputType::stepAttributeChanged()
 {
     updateView();

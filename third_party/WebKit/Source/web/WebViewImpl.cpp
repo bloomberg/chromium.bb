@@ -2252,7 +2252,7 @@ WebTextInputType WebViewImpl::textInputType()
     }
 #endif
 
-    if (element->shouldUseInputMethod())
+    if (element->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable))
         return WebTextInputTypeContentEditable;
 
     return WebTextInputTypeNone;

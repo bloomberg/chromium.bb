@@ -76,13 +76,6 @@ void PasswordInputType::restoreFormControlState(const FormControlState&)
     ASSERT_NOT_REACHED();
 }
 
-bool PasswordInputType::shouldUseInputMethod() const
-{
-    // Input methods are disabled for the password field because otherwise
-    // anyone can access the underlying password and display it in clear text.
-    return false;
-}
-
 bool PasswordInputType::shouldRespectListAttribute()
 {
     return false;

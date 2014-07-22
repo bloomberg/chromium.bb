@@ -82,7 +82,6 @@ private:
     virtual void forwardEvent(Event*) OVERRIDE FINAL;
     virtual bool shouldSubmitImplicitly(Event*) OVERRIDE FINAL;
     virtual RenderObject* createRenderer(RenderStyle*) const OVERRIDE;
-    virtual bool shouldUseInputMethod() const OVERRIDE;
     virtual String sanitizeValue(const String&) const OVERRIDE;
     virtual bool shouldRespectListAttribute() OVERRIDE;
     virtual void listAttributeTargetChanged() OVERRIDE;

@@ -523,11 +523,6 @@ void HTMLTextAreaElement::setRows(int rows)
     setIntegralAttribute(rowsAttr, rows);
 }
 
-bool HTMLTextAreaElement::shouldUseInputMethod()
-{
-    return true;
-}
-
 bool HTMLTextAreaElement::matchesReadOnlyPseudoClass() const
 {
     return isReadOnly();

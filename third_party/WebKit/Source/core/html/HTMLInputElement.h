@@ -295,7 +295,6 @@ private:
     virtual bool isEnumeratable() const OVERRIDE FINAL;
     virtual bool isInteractiveContent() const OVERRIDE FINAL;
     virtual bool supportLabels() const OVERRIDE FINAL;
-    virtual bool shouldUseInputMethod() OVERRIDE FINAL;
 
     virtual bool isTextFormControl() const OVERRIDE FINAL { return isTextField(); }
 

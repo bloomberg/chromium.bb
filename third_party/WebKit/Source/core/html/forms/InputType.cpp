@@ -467,11 +467,6 @@ bool InputType::shouldShowFocusRingOnMouseFocus() const
     return false;
 }
 
-bool InputType::shouldUseInputMethod() const
-{
-    return false;
-}
-
 void InputType::enableSecureTextInput()
 {
 }

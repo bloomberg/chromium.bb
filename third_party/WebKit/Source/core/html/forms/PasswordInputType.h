@@ -46,7 +46,6 @@ private:
     virtual bool shouldSaveAndRestoreFormControlState() const OVERRIDE;
     virtual FormControlState saveFormControlState() const OVERRIDE;
     virtual void restoreFormControlState(const FormControlState&) OVERRIDE;
-    virtual bool shouldUseInputMethod() const OVERRIDE;
     virtual bool shouldRespectListAttribute() OVERRIDE;
     virtual bool shouldRespectSpeechAttribute() OVERRIDE;
     virtual bool isPasswordField() const OVERRIDE;

@@ -155,7 +155,6 @@ public:
 
     virtual bool isKeyboardFocusable() const;
     virtual bool shouldShowFocusRingOnMouseFocus() const;
-    virtual bool shouldUseInputMethod() const;
     virtual void enableSecureTextInput();
     virtual void disableSecureTextInput();
     virtual void accessKeyAction(bool sendMouseEvents);
