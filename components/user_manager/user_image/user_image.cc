@@ -15,6 +15,17 @@ namespace {
 // Default quality for encoding user images.
 const int kDefaultEncodingQuality = 90;
 
+bool IsAnimatedImage(const UserImage::RawImage& data) {
+  const char kGIFStamp[] = "GIF";
+  const size_t kGIFStampLength = sizeof(kGIFStamp) - 1;
+
+  if (data.size() >= kGIFStampLength &&
+      memcmp(&data[0], kGIFStamp, kGIFStampLength) == 0) {
+    return true;
+  }
+  return false;
+}
+
 bool EncodeImageSkia(const gfx::ImageSkia& image,
                      std::vector<unsigned char>* output) {
   TRACE_EVENT2("oobe", "EncodeImageSkia",
@@ -47,12 +58,14 @@ UserImage UserImage::CreateAndEncode(const gfx::ImageSkia& image) {
 
 UserImage::UserImage()
     : has_raw_image_(false),
+      has_animated_image_(false),
       is_safe_format_(false) {
 }
 
 UserImage::UserImage(const gfx::ImageSkia& image)
     : image_(image),
       has_raw_image_(false),
+      has_animated_image_(false),
       is_safe_format_(false) {
 }
 
@@ -60,9 +73,19 @@ UserImage::UserImage(const gfx::ImageSkia& image,
                      const RawImage& raw_image)
     : image_(image),
       has_raw_image_(false),
+      has_animated_image_(false),
       is_safe_format_(false) {
-  has_raw_image_ = true;
-  raw_image_ = raw_image;
+  if (IsAnimatedImage(raw_image)) {
+    has_animated_image_ = true;
+    animated_image_ = raw_image;
+    if (EncodeImageSkia(image_, &raw_image_)) {
+      has_raw_image_ = true;
+      MarkAsSafe();
+    }
+  } else {
+    has_raw_image_ = true;
+    raw_image_ = raw_image;
+  }
 }
 
 UserImage::~UserImage() {}

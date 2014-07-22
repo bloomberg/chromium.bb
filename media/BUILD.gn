@@ -450,6 +450,27 @@ component("media") {
     }
   }
 
+  if (is_chromeos) {
+    # A simple WebM encoder for animated avatars on ChromeOS.
+    sources += [
+      "formats/webm/chromeos/ebml_writer.cc",
+      "formats/webm/chromeos/ebml_writer.h",
+      "formats/webm/chromeos/webm_encoder.cc",
+      "formats/webm/chromeos/webm_encoder.h",
+    ]
+    deps += [
+      "//third_party/libvpx",
+      "//third_party/libyuv"
+    ]
+    # For VaapiVideoEncodeAccelerator.
+    if (cpu_arch != "arm" && use_x11) {
+      sources += [
+        "filters/h264_bitstream_buffer.cc",
+        "filters/h264_bitstream_buffer.h",
+      ]
+    }
+  }
+
   if (!is_ios) {
     deps += [ "//third_party/libyuv" ]
   }
