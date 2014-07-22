@@ -36,11 +36,16 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/google_update_settings.h"
-#include "chrome/installer/util/install_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/base/win/shell.h"
+
+#if defined(GOOGLE_CHROME_BUILD)
+#include "chrome/installer/launcher_support/chrome_launcher_support.h"
+#include "chrome/installer/util/google_update_settings.h"
+#include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/updating_app_registration_data.h"
+#endif  // GOOGLE_CHROME_BUILD
 
 // static
 AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
@@ -122,6 +127,7 @@ base::string16 GetAppModelId() {
   return ShellIntegration::GetAppListAppModelIdForProfile(initial_profile_path);
 }
 
+#if defined(GOOGLE_CHROME_BUILD)
 void SetDidRunForNDayActiveStats() {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   base::FilePath exe_path;
@@ -140,14 +146,13 @@ void SetDidRunForNDayActiveStats() {
           BrowserDistribution::CHROME_BINARIES);
   if (chrome_binaries_dist &&
       InstallUtil::IsMultiInstall(chrome_binaries_dist, system_install)) {
-    BrowserDistribution* app_launcher_dist =
-        BrowserDistribution::GetSpecificDistribution(
-            BrowserDistribution::CHROME_APP_HOST);
+    UpdatingAppRegistrationData app_launcher_reg_data(
+        chrome_launcher_support::kAppLauncherGuid);
     GoogleUpdateSettings::UpdateDidRunStateForApp(
-        app_launcher_dist->GetAppRegistrationData(),
-        true /* did_run */);
+        app_launcher_reg_data, true /* did_run */);
   }
 }
+#endif  // GOOGLE_CHROME_BUILD
 
 // The start menu shortcut is created on first run by users that are
 // upgrading. The desktop and taskbar shortcuts are created the first time the
@@ -260,8 +265,11 @@ AppListServiceWin::~AppListServiceWin() {
 
 void AppListServiceWin::ShowForProfile(Profile* requested_profile) {
   AppListServiceViews::ShowForProfile(requested_profile);
+
+#if defined(GOOGLE_CHROME_BUILD)
   content::BrowserThread::PostBlockingPoolTask(
       FROM_HERE, base::Bind(SetDidRunForNDayActiveStats));
+#endif  // GOOGLE_CHROME_BUILD
 }
 
 void AppListServiceWin::OnLoadProfileForWarmup(Profile* initial_profile) {

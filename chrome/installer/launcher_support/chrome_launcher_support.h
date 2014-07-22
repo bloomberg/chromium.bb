@@ -22,6 +22,9 @@ enum InstallationState {
   INSTALLED_AT_SYSTEM_LEVEL,
 };
 
+// The app GUID for Chrome App Launcher.
+extern const wchar_t kAppLauncherGuid[];
+
 // Returns the path to an existing setup.exe at the specified level, if it can
 // be found via Omaha client state.
 base::FilePath GetSetupExeForInstallationLevel(InstallationLevel level);

@@ -29,9 +29,6 @@ const wchar_t kGoogleRegClientStateKey[] =
 const wchar_t kGoogleRegClientsKey[] = L"Software\\Google\\Update\\Clients";
 const wchar_t kRegVersionField[] = L"pv";
 
-// Copied from binaries_installer_internal.cc
-const wchar_t kAppHostAppId[] = L"{FDA71E6F-AC4C-4a00-8B70-9958A68906BF}";
-
 // Copied from chrome_appid.cc.
 const wchar_t kBinariesAppGuid[] = L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}";
 
@@ -86,7 +83,7 @@ bool IsProductInstalled(InstallationLevel level, const wchar_t* app_guid) {
 bool IsAppLauncherEnabledAtLevel(InstallationLevel level) {
   base::string16 uninstall_arguments;
   if (GetClientStateValue(level,
-                          kAppHostAppId,
+                          kAppLauncherGuid,
                           kUninstallArgumentsField,
                           &uninstall_arguments)) {
     return CommandLine::FromString(L"dummy.exe " + uninstall_arguments)
@@ -134,13 +131,15 @@ base::FilePath FindExeRelativeToSetupExe(const base::FilePath setup_exe_path,
 
 }  // namespace
 
+const wchar_t kAppLauncherGuid[] = L"{FDA71E6F-AC4C-4a00-8B70-9958A68906BF}";
+
 void UninstallLegacyAppLauncher(InstallationLevel level) {
-  base::FilePath setup_exe(GetSetupExeFromRegistry(level, kAppHostAppId));
+  base::FilePath setup_exe(GetSetupExeFromRegistry(level, kAppLauncherGuid));
   if (setup_exe.empty())
     return;
   base::string16 uninstall_arguments;
   if (GetClientStateValue(level,
-                          kAppHostAppId,
+                          kAppLauncherGuid,
                           kUninstallArgumentsField,
                           &uninstall_arguments)) {
     CommandLine uninstall_cmd = CommandLine::FromString(
@@ -170,7 +169,7 @@ base::FilePath GetChromePathForInstallationLevel(InstallationLevel level) {
 
 base::FilePath GetAppHostPathForInstallationLevel(InstallationLevel level) {
   return FindExeRelativeToSetupExe(
-      GetSetupExeFromRegistry(level, kAppHostAppId), kChromeAppHostExe);
+      GetSetupExeFromRegistry(level, kAppLauncherGuid), kChromeAppHostExe);
 }
 
 base::FilePath GetChromeSxSPathForInstallationLevel(InstallationLevel level) {
