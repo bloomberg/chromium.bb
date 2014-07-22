@@ -17,19 +17,9 @@ export THISDIR=`dirname $0`
 
 setup_memcheck() {
   RUN_COMMAND="valgrind"
-  GDB=gdb
-  EXE_INFO=$(file $1)
-  if [[ $? -eq 0 ]]; then
-    # Prefer a gdb that matches the executable if it's available.
-    if [[ "$EXE_INFO" == *32-bit* && -x /usr/bin/gdb32 ]]; then
-      GDB="/usr/bin/gdb32";
-    elif [[ "$EXE_INFO" == *64-bit* && -x /usr/bin/gdb64 ]]; then
-      GDB="/usr/bin/gdb64";
-    fi
-  fi
 
   # Prompt to attach gdb when there was an error detected.
-  DEFAULT_TOOL_FLAGS=("--db-command=$GDB -nw %f %p" "--db-attach=yes" \
+  DEFAULT_TOOL_FLAGS=("--db-command=gdb -nw %f %p" "--db-attach=yes" \
                       # Keep the registers in gdb in sync with the code.
                       "--vex-iropt-register-updates=allregs-at-mem-access" \
                       # Overwrite newly allocated or freed objects
