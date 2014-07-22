@@ -10,6 +10,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_problem.h"
@@ -247,7 +248,7 @@ TEST_F(AddressValidatorTest, BasicValidation) {
   EXPECT_TRUE(problems.empty());
 
   // Ignore diacriticals.
-  address.administrative_area = "T\u00E9xas";
+  address.administrative_area = base::WideToUTF8(L"T\u00E9xas");
   problems.clear();
   EXPECT_EQ(AddressValidator::SUCCESS,
             validator_->ValidateAddress(address, NULL, &problems));

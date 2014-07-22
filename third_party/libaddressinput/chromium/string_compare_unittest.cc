@@ -4,13 +4,14 @@
 
 #include "third_party/libaddressinput/src/cpp/src/util/string_compare.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
 TEST(ChromeStringCompareTest, IgnoreDiacritics) {
   i18n::addressinput::StringCompare sc;
-  EXPECT_TRUE(sc.NaturalEquals("Texas", "T\u00E9xas"));
+  EXPECT_TRUE(sc.NaturalEquals("Texas", base::WideToUTF8(L"T\u00E9xas")));
 }
 
 TEST(ChromeStringCompareTest, IgnoreCapitalization) {
