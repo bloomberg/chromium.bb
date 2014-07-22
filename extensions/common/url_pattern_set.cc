@@ -171,6 +171,15 @@ bool URLPatternSet::MatchesURL(const GURL& url) const {
   return false;
 }
 
+bool URLPatternSet::MatchesAllURLs() const {
+  for (URLPatternSet::const_iterator host = begin(); host != end(); ++host) {
+    if (host->match_all_urls() ||
+        (host->match_subdomains() && host->host().empty()))
+      return true;
+  }
+  return false;
+}
+
 bool URLPatternSet::MatchesSecurityOrigin(const GURL& origin) const {
   for (URLPatternSet::const_iterator pattern = patterns_.begin();
        pattern != patterns_.end(); ++pattern) {
@@ -227,6 +236,17 @@ bool URLPatternSet::Populate(const std::vector<std::string>& patterns,
     AddPattern(pattern);
   }
   return true;
+}
+
+scoped_ptr<std::vector<std::string> > URLPatternSet::ToStringVector() const {
+  scoped_ptr<std::vector<std::string> > value(new std::vector<std::string>);
+  for (URLPatternSet::const_iterator i = patterns_.begin();
+       i != patterns_.end();
+       ++i) {
+    value->push_back(i->GetAsString());
+  }
+  std::unique(value->begin(), value->end());
+  return value.Pass();
 }
 
 bool URLPatternSet::Populate(const base::ListValue& value,

@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TestRendererAccessibilityEnabled) {
 }
 
 #if defined(ADDRESS_SANITIZER)
-#define Maybe_SanityCheck DISABLED_SanityCheck
+#define Maybe_SanityCheck SanityCheck
 #else
 #define Maybe_SanityCheck SanityCheck
 #endif
@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Unit) {
 }
 
 // Test is failing on ASAN bots, crbug.com/379927
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_GetTreeByTabId) {
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, GetTreeByTabId) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "tab_id.html"))
       << message_;
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_GetTreeByTabId) {
 
 #if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
 // Failing on Linux ASan bot: http://crbug.com/391279
-#define MAYBE_Events DISABLED_Events
+#define MAYBE_Events Events
 #else
 #define MAYBE_Events Events
 #endif
@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_Events) {
 
 #if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
 // Timing out on linux ASan bot: http://crbug.com/385701
-#define MAYBE_Actions DISABLED_Actions
+#define MAYBE_Actions Actions
 #else
 #define MAYBE_Actions Actions
 #endif
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_Actions) {
 }
 
 #if defined(ADDRESS_SANITIZER)
-#define Maybe_Location DISABLED_Location
+#define Maybe_Location Location
 #else
 #define Maybe_Location Location
 #endif
@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationBooleanPermissions) {
 
 // See crbug.com/384673
 #if defined(ADDRESS_SANITIZER) || defined(OS_CHROMEOS) || defined(OS_LINUX)
-#define Maybe_TabsAutomationBooleanActions DISABLED_TabsAutomationBooleanActions
+#define Maybe_TabsAutomationBooleanActions TabsAutomationBooleanActions
 #else
 #define Maybe_TabsAutomationBooleanActions TabsAutomationBooleanActions
 #endif
