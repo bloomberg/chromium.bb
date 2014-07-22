@@ -5,10 +5,9 @@
 #ifndef CRYPTO_SIGNATURE_CREATOR_H_
 #define CRYPTO_SIGNATURE_CREATOR_H_
 
-#include "build/build_config.h"
-
 #include <vector>
 
+#include "build/build_config.h"
 #include "base/basictypes.h"
 #include "crypto/crypto_export.h"
 

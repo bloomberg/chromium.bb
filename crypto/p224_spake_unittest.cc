@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
 #include <crypto/p224_spake.h>
 
 #include "base/logging.h"
@@ -13,7 +14,6 @@ namespace {
 
 bool RunExchange(P224EncryptedKeyExchange* client,
                  P224EncryptedKeyExchange* server) {
-
   for (;;) {
     std::string client_message, server_message;
     client_message = client->GetMessage();

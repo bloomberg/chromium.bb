@@ -245,12 +245,12 @@ bool ECPrivateKey::ExportEncryptedPrivateKey(
   };
 
   SECKEYEncryptedPrivateKeyInfo* encrypted = PK11_ExportEncryptedPrivKeyInfo(
-      NULL, // Slot, optional.
+      NULL,  // Slot, optional.
       SEC_OID_PKCS12_V2_PBE_WITH_SHA1_AND_3KEY_TRIPLE_DES_CBC,
       &password_item,
       key_,
       iterations,
-      NULL); // wincx.
+      NULL);  // wincx.
 
   if (!encrypted) {
     DLOG(ERROR) << "PK11_ExportEncryptedPrivKeyInfo: " << PORT_GetError();

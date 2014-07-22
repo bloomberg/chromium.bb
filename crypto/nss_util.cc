@@ -873,8 +873,7 @@ class NSSInitSingleton {
     if (db_slot) {
       if (PK11_NeedUserInit(db_slot))
         PK11_InitPin(db_slot, NULL, NULL);
-    }
-    else {
+    } else {
       LOG(ERROR) << "Error opening persistent database (" << modspec
                  << "): " << GetNSSErrorMessage();
     }

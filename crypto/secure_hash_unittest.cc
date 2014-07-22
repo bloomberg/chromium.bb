@@ -4,6 +4,8 @@
 
 #include "crypto/secure_hash.h"
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"

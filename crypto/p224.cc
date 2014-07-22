@@ -149,7 +149,7 @@ void ReduceLarge(FieldElement* out, LargeFieldElement* inptr) {
   // Eliminate the term at 2*224 that we introduced while keeping the same
   // value mod p.
   in[0] -= in[8];  // reflection off the "+1" term of p.
-  (*out)[3] += static_cast<uint32>(in[8] & 0xffff) << 12; // "-2**96" term
+  (*out)[3] += static_cast<uint32>(in[8] & 0xffff) << 12;  // "-2**96" term
   (*out)[4] += static_cast<uint32>(in[8] >> 16);  // rest of "-2**96" term
   // in[0] < 2**64
   // out[3] < 2**29
@@ -638,7 +638,7 @@ void Put224Bits(uint32* out, const uint32* in) {
   out[0] = HostToNet32((in[6] >> 24) | (in[7] << 4));
 }
 
-} // anonymous namespace
+}  // anonymous namespace
 
 namespace crypto {
 

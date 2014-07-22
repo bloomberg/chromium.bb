@@ -140,7 +140,6 @@ class CRYPTO_EXPORT MockAppleKeychain : public AppleKeychain {
   int password_data_count() const { return password_data_count_; }
 
  private:
-
   // Type used for the keys in the std::map(s) and MockAppleKeychain items.
   typedef uintptr_t MockKeychainItemType;
 
