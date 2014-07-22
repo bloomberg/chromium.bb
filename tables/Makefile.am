@@ -172,7 +172,7 @@ table_files = \
 	marburg_unicode_defs.cti \
 	ml.ctb \
 	mni.ctb \
-	moa-nz-g1.ctb \
+	mao-nz-g1.ctb \
 	mr.ctb \
 	mt.ctb \
 	mun.ctb \
