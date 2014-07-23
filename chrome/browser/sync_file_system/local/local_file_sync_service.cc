@@ -113,7 +113,10 @@ scoped_ptr<LocalFileSyncService> LocalFileSyncService::Create(
 scoped_ptr<LocalFileSyncService> LocalFileSyncService::CreateForTesting(
     Profile* profile,
     leveldb::Env* env) {
-  return make_scoped_ptr(new LocalFileSyncService(profile, env));
+  scoped_ptr<LocalFileSyncService> sync_service(
+      new LocalFileSyncService(profile, env));
+  sync_service->sync_context_->set_mock_notify_changes_duration_in_sec(0);
+  return sync_service.Pass();
 }
 
 LocalFileSyncService::~LocalFileSyncService() {
