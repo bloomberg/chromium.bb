@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "6.6",
+  "version": "6.7",
   "entries": [
     {
       "id": 1,
@@ -1101,6 +1101,18 @@ LONG_STRING_CONST(
       "vendor_id": "0x10de",
       "features": [
         "scalarize_vec_and_mat_constructor_args"
+      ]
+    },
+    {
+      "id": 86,
+      "description": "Disable use of Direct3D 11 on Matrox video cards",
+      "cr_bugs": [395861],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x102b",
+      "features": [
+        "disable_d3d11"
       ]
     }
   ]
