@@ -91,6 +91,7 @@ private:
     void didFinish();
     void shareLoader();
     void createCustomElementMicrotaskStepIfNeeded();
+    void invalidateCustomElementMicrotaskStep();
 
     KURL m_url;
     WeakPtrWillBeWeakMember<CustomElementMicrotaskImportStep> m_customElementMicrotaskStep;

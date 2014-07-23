@@ -59,7 +59,7 @@ CustomElementMicrotaskImportStep::~CustomElementMicrotaskImportStep()
 {
 }
 
-void CustomElementMicrotaskImportStep::parentWasChanged()
+void CustomElementMicrotaskImportStep::invalidate()
 {
     m_queue = CustomElementSyncMicrotaskQueue::create();
     m_import.clear();

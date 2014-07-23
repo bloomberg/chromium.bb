@@ -131,19 +131,17 @@ void HTMLImportChild::stateDidChange()
         didFinish();
 }
 
+void HTMLImportChild::invalidateCustomElementMicrotaskStep()
+{
+    if (!m_customElementMicrotaskStep)
+        return;
+    m_customElementMicrotaskStep->invalidate();
+    m_customElementMicrotaskStep.clear();
+}
+
 void HTMLImportChild::createCustomElementMicrotaskStepIfNeeded()
 {
-    // HTMLImportChild::normalize(), which is called from HTMLImportLoader::addImport(),
-    // can move import children to new parents. So their microtask steps should be updated as well,
-    // to let the steps be in the new parent queues.This method handles such migration.
-    // For implementation simplicity, outdated step objects that are owned by moved children
-    // aren't removed from the (now wrong) queues. Instead, each step invalidates its content so that
-    // it is removed from the wrong queue during the next traversal. See parentWasChanged() for the detail.
-
-    if (m_customElementMicrotaskStep) {
-        m_customElementMicrotaskStep->parentWasChanged();
-        m_customElementMicrotaskStep.clear();
-    }
+    ASSERT(!m_customElementMicrotaskStep);
 
     if (!isDone() && !formsCycle()) {
 #if ENABLE(OILPAN)
@@ -152,9 +150,6 @@ void HTMLImportChild::createCustomElementMicrotaskStepIfNeeded()
         m_customElementMicrotaskStep = CustomElement::didCreateImport(this)->weakPtr();
 #endif
     }
-
-    for (HTMLImport* child = firstChild(); child; child = child->next())
-        toHTMLImportChild(child)->createCustomElementMicrotaskStepIfNeeded();
 }
 
 bool HTMLImportChild::isDone() const
@@ -205,8 +200,11 @@ void HTMLImportChild::normalize()
         takeChildrenFrom(oldFirst);
     }
 
-    for (HTMLImport* child = firstChild(); child; child = child->next())
-        toHTMLImportChild(child)->normalize();
+    for (HTMLImportChild* child = toHTMLImportChild(firstChild()); child; child = toHTMLImportChild(child->next())) {
+        if (child->formsCycle())
+            child->invalidateCustomElementMicrotaskStep();
+        child->normalize();
+    }
 }
 
 #if !defined(NDEBUG)
