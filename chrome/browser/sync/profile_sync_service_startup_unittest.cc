@@ -310,7 +310,13 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartInvalidCredentials) {
   EXPECT_TRUE(sync_->ShouldPushChanges());
 }
 
-TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
+#if defined(OS_WIN)
+// http://crbug.com/396402
+#define MAYBE_StartCrosNoCredentials DISABLED_StartCrosNoCredentials
+#else
+#define MAYBE_StartCrosNoCredentials StartCrosNoCredentials
+#endif
+TEST_F(ProfileSyncServiceStartupCrosTest, MAYBE_StartCrosNoCredentials) {
   EXPECT_CALL(*components_factory_mock(),
               CreateDataTypeManager(_, _, _, _, _, _)).Times(0);
   EXPECT_CALL(*components_factory_mock(),
@@ -342,7 +348,13 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
   EXPECT_TRUE(sync_->ShouldPushChanges());
 }
 
-TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
+#if defined(OS_WIN)
+// http://crbug.com/396402
+#define MAYBE_StartNormal DISABLED_StartNormal
+#else
+#define MAYBE_StartNormal StartNormal
+#endif
+TEST_F(ProfileSyncServiceStartupTest, MAYBE_StartNormal) {
   // Pre load the tokens
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                   "test_user@gmail.com");
@@ -401,7 +413,13 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
 
 // Verify that the recovery of datatype preferences doesn't overwrite a valid
 // case where only bookmarks are enabled.
-TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
+#if defined(OS_WIN)
+// http://crbug.com/396402
+#define MAYBE_StartDontRecoverDatatypePrefs DISABLED_StartDontRecoverDatatypePrefs
+#else
+#define MAYBE_StartDontRecoverDatatypePrefs StartDontRecoverDatatypePrefs
+#endif
+TEST_F(ProfileSyncServiceStartupTest, MAYBE_StartDontRecoverDatatypePrefs) {
   // Explicitly set Keep Everything Synced to false and have only bookmarks
   // enabled.
   profile_->GetPrefs()->SetBoolean(
@@ -428,7 +446,13 @@ TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
       sync_driver::prefs::kSyncKeepEverythingSynced));
 }
 
-TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
+#if defined(OS_WIN)
+// http://crbug.com/396402
+#define MAYBE_ManagedStartup DISABLED_ManagedStartup
+#else
+#define MAYBE_ManagedStartup ManagedStartup
+#endif
+TEST_F(ProfileSyncServiceStartupTest, MAYBE_ManagedStartup) {
   // Service should not be started by Initialize() since it's managed.
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                   "test_user@gmail.com");

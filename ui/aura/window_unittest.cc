@@ -874,7 +874,13 @@ TEST_F(WindowTest, TouchCaptureCancelsOtherTouches) {
   EXPECT_EQ(0, delegate2.touch_event_count());
 }
 
-TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
+#if defined(OS_WIN)
+// http://crbug.com/396387
+#define MAYBE_TouchCaptureDoesntCancelCapturedTouches DISABLED_TouchCaptureDoesntCancelCapturedTouches
+#else
+#define MAYBE_TouchCaptureDoesntCancelCapturedTouches TouchCaptureDoesntCancelCapturedTouches
+#endif
+TEST_F(WindowTest, MAYBE_TouchCaptureDoesntCancelCapturedTouches) {
   CaptureWindowDelegateImpl delegate;
   scoped_ptr<Window> window(CreateTestWindowWithDelegate(
       &delegate, 0, gfx::Rect(0, 0, 50, 50), root_window()));

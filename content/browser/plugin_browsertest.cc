@@ -354,6 +354,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, PluginSingleRangeRequest) {
   LoadAndWait(GetURL("plugin_single_range_request.html"));
 }
 
+#if !defined(OS_WIN) // http://crbug.com/396373
 // Test checking the privacy mode is on.
 // If this flakes on Linux, use http://crbug.com/104380
 IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(PrivateEnabled)) {
@@ -361,14 +362,15 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(PrivateEnabled)) {
   url = GURL(url.spec() + "?private");
   LoadAndWaitInWindow(CreateOffTheRecordBrowser(), url);
 }
+#endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+// These used to run on Windows: http://crbug.com/396373
+#if defined(OS_MACOSX)
 // Test a browser hang due to special case of multiple
 // plugin instances indulged in sync calls across renderer.
 IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(MultipleInstancesSyncCalls)) {
   LoadAndWait(GetURL("multiple_instances_sync_calls.html"));
 }
-#endif
 
 IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(GetURLRequestFailWrite)) {
   GURL url(URLRequestMockHTTPJob::GetMockUrl(
@@ -376,6 +378,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(GetURLRequestFailWrite)) {
                        AppendASCII("plugin_url_request_fail_write.html")));
   LoadAndWait(url);
 }
+#endif
 
 #if defined(OS_WIN)
 // Flaky on Windows x86.  http://crbug.com/388245

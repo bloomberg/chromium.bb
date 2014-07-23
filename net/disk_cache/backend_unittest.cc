@@ -1783,11 +1783,23 @@ void DiskCacheBackendTest::BackendRecoverRemove() {
   ASSERT_TRUE(success_) << "remove_head4";
 }
 
-TEST_F(DiskCacheBackendTest, RecoverRemove) {
+#if defined(OS_WIN)
+// http://crbug.com/396392
+#define MAYBE_RecoverRemove DISABLED_RecoverRemove
+#else
+#define MAYBE_RecoverRemove RecoverRemove
+#endif
+TEST_F(DiskCacheBackendTest, MAYBE_RecoverRemove) {
   BackendRecoverRemove();
 }
 
-TEST_F(DiskCacheBackendTest, NewEvictionRecoverRemove) {
+#if defined(OS_WIN)
+// http://crbug.com/396392
+#define MAYBE_NewEvictionRecoverRemove DISABLED_NewEvictionRecoverRemove
+#else
+#define MAYBE_NewEvictionRecoverRemove NewEvictionRecoverRemove
+#endif
+TEST_F(DiskCacheBackendTest, MAYBE_NewEvictionRecoverRemove) {
   SetNewEviction();
   BackendRecoverRemove();
 }

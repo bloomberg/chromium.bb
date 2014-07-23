@@ -169,7 +169,8 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
 #endif
 };
 
-TEST_F(ProfileSigninConfirmationHelperTest, DoNotPromptForNewProfile) {
+// http://crbug.com/393149
+TEST_F(ProfileSigninConfirmationHelperTest, DISABLED_DoNotPromptForNewProfile) {
   // Profile is new and there's no profile data.
   EXPECT_FALSE(
       GetCallbackResult(
@@ -217,7 +218,9 @@ TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Extensions) {
       base::Bind(&ui::CheckShouldPromptForNewProfile, profile_.get())));
 }
 
-TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_History) {
+// http://crbug.com/393149
+TEST_F(ProfileSigninConfirmationHelperTest,
+       DISABLED_PromptForNewProfile_History) {
   HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile_.get(),
       Profile::EXPLICIT_ACCESS);
@@ -240,7 +243,9 @@ TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_History) {
               profile_.get())));
 }
 
-TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_TypedURLs) {
+// http://crbug.com/393149
+TEST_F(ProfileSigninConfirmationHelperTest,
+       DISABLED_PromptForNewProfile_TypedURLs) {
   HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile_.get(),
       Profile::EXPLICIT_ACCESS);

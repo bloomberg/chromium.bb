@@ -444,13 +444,8 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlibStderrPM, RedirectBg1) {
 }
 
 // TODO(ncbray) support glibc and PNaCl
-#if defined(OS_MACOSX)
-// crbug.com/375894
-#define MAYBE_MimeHandler DISABLED_MimeHandler
-#else
-#define MAYBE_MimeHandler MimeHandler
-#endif
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlibExtension, MAYBE_MimeHandler) {
+// flaky: crbug.com/375894
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlibExtension, DISABLED_MimeHandler) {
   RunNaClIntegrationTest(FILE_PATH_LITERAL(
       "ppapi_extension_mime_handler.html"));
 }

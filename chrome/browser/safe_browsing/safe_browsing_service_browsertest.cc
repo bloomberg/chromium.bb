@@ -715,7 +715,14 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlRedirects) {
   EXPECT_EQ(SB_THREAT_TYPE_BINARY_MALWARE_URL, client->GetThreatType());
 }
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlTimedOut) {
+#if defined(OS_WIN)
+// http://crbug.com/396409
+#define MAYBE_CheckDownloadUrlTimedOut DISABLED_CheckDownloadUrlTimedOut
+#else
+#define MAYBE_CheckDownloadUrlTimedOut CheckDownloadUrlTimedOut
+#endif
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
+                       MAYBE_CheckDownloadUrlTimedOut) {
   GURL badbin_url = test_server()->GetURL(kMalwareFile);
   std::vector<GURL> badbin_urls(1, badbin_url);
 

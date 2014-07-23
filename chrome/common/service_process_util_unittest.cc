@@ -108,7 +108,8 @@ TEST_F(ServiceProcessStateTest, Singleton) {
   LaunchAndWait("ServiceProcessStateTestSingleton");
 }
 
-TEST_F(ServiceProcessStateTest, ReadyState) {
+// http://crbug.com/396390
+TEST_F(ServiceProcessStateTest, DISABLED_ReadyState) {
   ASSERT_FALSE(CheckServiceProcessReady());
   ServiceProcessState state;
   ASSERT_TRUE(state.Initialize());
@@ -167,7 +168,8 @@ TEST_F(ServiceProcessStateTest, AutoRun) {
 #endif  // defined(OS_WIN)
 }
 
-TEST_F(ServiceProcessStateTest, SharedMem) {
+// http://crbug.com/396390
+TEST_F(ServiceProcessStateTest, DISABLED_SharedMem) {
   std::string version;
   base::ProcessId pid;
 #if defined(OS_WIN)

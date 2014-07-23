@@ -188,7 +188,13 @@ class SpeechRecognitionBrowserTest :
 
 // Simply loads the test page and checks if it was able to create a Speech
 // Recognition object in JavaScript, to make sure the Web Speech API is enabled.
-IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, Precheck) {
+// http://crbug.com/396414
+#if defined(OS_WIN)
+#define MAYBE_Precheck DISABLED_Precheck
+#else
+#define MAYBE_Precheck Precheck
+#endif
+IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, MAYBE_Precheck) {
   NavigateToURLBlockUntilNavigationsComplete(
       shell(), GetTestUrlFromFragment("precheck"), 2);
 

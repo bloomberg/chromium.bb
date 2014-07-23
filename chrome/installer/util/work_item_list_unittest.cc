@@ -51,7 +51,8 @@ class WorkItemListTest : public testing::Test {
 }  // namespace
 
 // Execute a WorkItem list successfully and then rollback.
-TEST_F(WorkItemListTest, ExecutionSuccess) {
+// http://crbug.com/396405
+TEST_F(WorkItemListTest, DISABLED_ExecutionSuccess) {
   scoped_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
   scoped_ptr<WorkItem> work_item;
 
@@ -232,7 +233,8 @@ TEST_F(WorkItemListTest, ConditionalExecutionSuccess) {
   EXPECT_FALSE(base::PathExists(top_dir_to_create));
 }
 
-TEST_F(WorkItemListTest, ConditionalExecutionConditionFailure) {
+// http://crbug.com/396405
+TEST_F(WorkItemListTest, DISABLED_ConditionalExecutionConditionFailure) {
   scoped_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
   scoped_ptr<WorkItem> work_item;
 
