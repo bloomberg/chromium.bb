@@ -54,7 +54,11 @@ config("blink_headers_config") {
 # Depend on this target to use public blink API headers for things like enums
 # and public structures without actually linking against any Blink libraries.
 source_set("blink_headers") {
-  direct_dependent_configs = [ ":blink_headers_config" ]
+  direct_dependent_configs = [
+    ":blink_headers_config",
+    # Blink exposes NPAPI headers in the public API.
+    "//third_party/npapi:npapi_config",
+  ]
 }
 
 # GYP version: WebKit/public/blink_devtools.gyp:blink_devtools_frontend_resources
