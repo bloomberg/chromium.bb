@@ -31,6 +31,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "modules/geolocation/GeoNotifier.h"
+#include "modules/geolocation/GeolocationWatchers.h"
 #include "modules/geolocation/Geoposition.h"
 #include "modules/geolocation/PositionCallback.h"
 #include "modules/geolocation/PositionError.h"
@@ -111,25 +112,6 @@ private:
     typedef HeapVector<Member<GeoNotifier> > GeoNotifierVector;
     typedef HeapHashSet<Member<GeoNotifier> > GeoNotifierSet;
 
-    class Watchers {
-        DISALLOW_ALLOCATION();
-    public:
-        void trace(Visitor*);
-        bool add(int id, GeoNotifier*);
-        GeoNotifier* find(int id);
-        void remove(int id);
-        void remove(GeoNotifier*);
-        bool contains(GeoNotifier*) const;
-        void clear();
-        bool isEmpty() const;
-        void getNotifiersVector(GeoNotifierVector&) const;
-    private:
-        typedef HeapHashMap<int, Member<GeoNotifier> > IdToNotifierMap;
-        typedef HeapHashMap<Member<GeoNotifier>, int> NotifierToIdMap;
-        IdToNotifierMap m_idToNotifierMap;
-        NotifierToIdMap m_notifierToIdMap;
-    };
-
     bool hasListeners() const { return !m_oneShots.isEmpty() || !m_watchers.isEmpty(); }
 
     void sendError(GeoNotifierVector&, PositionError*);
@@ -188,7 +170,7 @@ private:
     void makeCachedPositionCallbacks();
 
     GeoNotifierSet m_oneShots;
-    Watchers m_watchers;
+    GeolocationWatchers m_watchers;
     GeoNotifierSet m_pendingForPermissionNotifiers;
     Member<Geoposition> m_lastPosition;
 

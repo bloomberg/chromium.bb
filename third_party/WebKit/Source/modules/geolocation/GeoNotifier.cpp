@@ -6,9 +6,7 @@
 #include "modules/geolocation/GeoNotifier.h"
 
 #include "modules/geolocation/Geolocation.h"
-#include "modules/geolocation/PositionCallback.h"
 #include "modules/geolocation/PositionError.h"
-#include "modules/geolocation/PositionErrorCallback.h"
 #include "modules/geolocation/PositionOptions.h"
 
 namespace blink {
