@@ -136,7 +136,7 @@ class LaunchObserver {
   LaunchObserver()
       : done_(false),
         waiting_(false),
-        result_(webstore_install::UNKNOWN_ERROR) {}
+        result_(webstore_install::OTHER_ERROR) {}
 
   webstore_install::Result result() const { return result_; }
   const std::string& error() const { return error_; }

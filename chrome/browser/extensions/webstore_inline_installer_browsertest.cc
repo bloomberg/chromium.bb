@@ -106,7 +106,9 @@ class WebstoreInlineInstallerForTest : public WebstoreInlineInstaller {
 
   friend class base::RefCountedThreadSafe<WebstoreStandaloneInstaller>;
 
-  static void DummyCallback(bool /*success*/, const std::string& /*error*/) {
+  static void DummyCallback(bool success,
+                            const std::string& error,
+                            webstore_install::Result result) {
   }
 
   ProgrammableInstallPrompt* programmable_prompt_;

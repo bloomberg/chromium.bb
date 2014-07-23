@@ -2,20 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_WEBSTORE_INSTALL_RESULT_H_
-#define CHROME_BROWSER_EXTENSIONS_WEBSTORE_INSTALL_RESULT_H_
+#ifndef CHROME_COMMON_EXTENSIONS_WEBSTORE_INSTALL_RESULT_H_
+#define CHROME_COMMON_EXTENSIONS_WEBSTORE_INSTALL_RESULT_H_
 
 namespace extensions {
 
 namespace webstore_install {
 
 // Result codes returned by WebstoreStandaloneInstaller and its subclasses.
+// IMPORTANT: Keep this list in sync with both the definition in
+// chrome/common/extensions/api/webstore.json and
+// chrome/common/extensions/api/webstore/webstore_install_constants.cc!
 enum Result {
   // Successful operation.
   SUCCESS,
 
   // Unknown error.
-  UNKNOWN_ERROR,
+  OTHER_ERROR,
 
   // The operation was aborted as the requestor is no longer alive.
   ABORTED,
@@ -65,11 +68,15 @@ enum Result {
   LAUNCH_UNSUPPORTED_EXTENSION_TYPE,
 
   // A launch of the same extension is in progress.
-  LAUNCH_IN_PROGRESS
+  LAUNCH_IN_PROGRESS,
+
+  // The final (and unused) result type for enum verification.
+  // New results should go above this entry, and this entry should be updated.
+  RESULT_LAST = LAUNCH_IN_PROGRESS,
 };
 
 }  // namespace webstore_install
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_WEBSTORE_INSTALL_RESULT_H_
+#endif  // CHROME_COMMON_EXTENSIONS_WEBSTORE_INSTALL_RESULT_H_

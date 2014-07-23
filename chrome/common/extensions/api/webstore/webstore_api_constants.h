@@ -22,6 +22,12 @@ enum InstallStage {
   INSTALL_STAGE_INSTALLING,
 };
 
+// Result codes returned by WebstoreStandaloneInstaller and its subclasses.
+// IMPORTANT: Keep this list in sync with both the definition in
+// chrome/common/extensions/api/webstore.json and
+// chrome/common/extensions/webstore_install_result.h!
+extern const char* kInstallResultCodes[];
+
 extern const char kInstallStageDownloading[];
 extern const char kInstallStageInstalling[];
 extern const char kOnInstallStageChangedMethodName[];

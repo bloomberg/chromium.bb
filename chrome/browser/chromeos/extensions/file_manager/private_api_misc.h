@@ -9,6 +9,7 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MISC_H_
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
+#include "chrome/common/extensions/webstore_install_result.h"
 #include "google_apis/drive/gdata_errorcode.h"
 
 namespace google_apis {
@@ -108,7 +109,9 @@ class FileBrowserPrivateInstallWebstoreItemFunction
 
   // AsyncExtensionFunction overrides.
   virtual bool RunAsync() OVERRIDE;
-  void OnInstallComplete(bool success, const std::string& error);
+  void OnInstallComplete(bool success,
+                         const std::string& error,
+                         extensions::webstore_install::Result result);
 
  private:
   std::string webstore_item_id_;

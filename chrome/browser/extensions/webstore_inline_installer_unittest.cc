@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "chrome/browser/extensions/webstore_inline_installer.h"
+#include "chrome/common/extensions/webstore_install_result.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,7 +31,9 @@ class TestWebstoreInlineInstaller : public WebstoreInlineInstaller {
   virtual ~TestWebstoreInlineInstaller();
 };
 
-void TestInstallerCallback(bool success, const std::string& error) {}
+void TestInstallerCallback(bool success,
+                           const std::string& error,
+                           webstore_install::Result result) {}
 
 TestWebstoreInlineInstaller::TestWebstoreInlineInstaller(
     content::WebContents* contents,

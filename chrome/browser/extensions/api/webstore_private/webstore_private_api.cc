@@ -828,7 +828,7 @@ void WebstorePrivateLaunchEphemeralAppFunction::OnLaunchComplete(
     case webstore_install::SUCCESS:
       api_result = LaunchEphemeralAppResult::RESULT_SUCCESS;
       break;
-    case webstore_install::UNKNOWN_ERROR:
+    case webstore_install::OTHER_ERROR:
       api_result = LaunchEphemeralAppResult::RESULT_UNKNOWN_ERROR;
       break;
     case webstore_install::INVALID_ID:

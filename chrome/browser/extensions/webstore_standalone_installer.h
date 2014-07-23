@@ -14,8 +14,8 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_data_fetcher_delegate.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
-#include "chrome/browser/extensions/webstore_install_result.h"
 #include "chrome/browser/extensions/webstore_installer.h"
+#include "chrome/common/extensions/webstore_install_result.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -52,7 +52,9 @@ class WebstoreStandaloneInstaller
   // A callback for when the install process completes, successfully or not. If
   // there was a failure, |success| will be false and |error| may contain a
   // developer-readable error message about why it failed.
-  typedef base::Callback<void(bool success, const std::string& error)> Callback;
+  typedef base::Callback<void(bool success,
+                              const std::string& error,
+                              webstore_install::Result result)> Callback;
 
   WebstoreStandaloneInstaller(const std::string& webstore_item_id,
                               Profile* profile,

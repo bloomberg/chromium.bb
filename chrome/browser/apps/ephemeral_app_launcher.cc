@@ -132,7 +132,7 @@ void EphemeralAppLauncher::Start() {
       ExtensionRegistry::Get(profile())
           ->GetExtensionById(id(), ExtensionRegistry::EVERYTHING);
   if (extension) {
-    webstore_install::Result result = webstore_install::UNKNOWN_ERROR;
+    webstore_install::Result result = webstore_install::OTHER_ERROR;
     std::string error;
     if (!CanLaunchInstalledApp(extension, &result, &error)) {
       InvokeCallback(result, error);
@@ -225,7 +225,7 @@ bool EphemeralAppLauncher::CanLaunchInstalledApp(
 
 void EphemeralAppLauncher::EnableInstalledApp(const Extension* extension) {
   // Check whether an install is already in progress.
-  webstore_install::Result result = webstore_install::UNKNOWN_ERROR;
+  webstore_install::Result result = webstore_install::OTHER_ERROR;
   std::string error;
   if (!EnsureUniqueInstall(&result, &error)) {
     InvokeCallback(result, error);
@@ -246,7 +246,7 @@ void EphemeralAppLauncher::EnableInstalledApp(const Extension* extension) {
 }
 
 void EphemeralAppLauncher::MaybeLaunchApp() {
-  webstore_install::Result result = webstore_install::UNKNOWN_ERROR;
+  webstore_install::Result result = webstore_install::OTHER_ERROR;
   std::string error;
 
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
@@ -329,7 +329,7 @@ void EphemeralAppLauncher::CheckEphemeralInstallPermitted() {
 
 void EphemeralAppLauncher::OnInstallChecked(int check_failures) {
   if (!CheckRequestorAlive()) {
-    AbortLaunch(webstore_install::UNKNOWN_ERROR, std::string());
+    AbortLaunch(webstore_install::OTHER_ERROR, std::string());
     return;
   }
 
@@ -410,7 +410,7 @@ void EphemeralAppLauncher::OnManifestParsed() {
     return;
   }
 
-  webstore_install::Result result = webstore_install::UNKNOWN_ERROR;
+  webstore_install::Result result = webstore_install::OTHER_ERROR;
   std::string error;
   if (!CheckCommonLaunchCriteria(profile(), extension, &result, &error)) {
     AbortLaunch(result, error);

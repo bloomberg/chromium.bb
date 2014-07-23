@@ -12,6 +12,7 @@
 
 #include "base/strings/string16.h"
 #include "chrome/common/extensions/api/webstore/webstore_api_constants.h"
+#include "chrome/common/extensions/webstore_install_result.h"
 #include "chrome/common/web_application_info.h"
 #include "extensions/common/stack_frame.h"
 #include "ipc/ipc_message_macros.h"
@@ -21,6 +22,8 @@
 
 IPC_ENUM_TRAITS_MAX_VALUE(extensions::api::webstore::InstallStage,
                           extensions::api::webstore::INSTALL_STAGE_INSTALLING)
+IPC_ENUM_TRAITS_MAX_VALUE(extensions::webstore_install::Result,
+                          extensions::webstore_install::RESULT_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(extensions::StackFrame)
   IPC_STRUCT_TRAITS_MEMBER(line_number)
@@ -70,10 +73,11 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_InlineInstallDownloadProgress,
 
 // Send to renderer once the installation mentioned on
 // ExtensionHostMsg_InlineWebstoreInstall is complete.
-IPC_MESSAGE_ROUTED3(ExtensionMsg_InlineWebstoreInstallResponse,
+IPC_MESSAGE_ROUTED4(ExtensionMsg_InlineWebstoreInstallResponse,
                     int32 /* install id */,
                     bool /* whether the install was successful */,
-                    std::string /* error */)
+                    std::string /* error */,
+                    extensions::webstore_install::Result /* result */)
 
 // Messages sent from the renderer to the browser.
 

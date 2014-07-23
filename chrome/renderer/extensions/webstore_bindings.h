@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_EXTENSIONS_WEBSTORE_BINDINGS_H_
 
 #include "base/compiler_specific.h"
+#include "chrome/common/extensions/webstore_install_result.h"
 #include "chrome/renderer/extensions/chrome_v8_extension_handler.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -26,8 +27,10 @@ class WebstoreBindings : public ObjectBackedNativeHandler,
  private:
   void Install(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  void OnInlineWebstoreInstallResponse(
-      int install_id, bool success, const std::string& error);
+  void OnInlineWebstoreInstallResponse(int install_id,
+                                       bool success,
+                                       const std::string& error,
+                                       webstore_install::Result result);
 
   void OnInlineInstallStageChanged(int stage);
 

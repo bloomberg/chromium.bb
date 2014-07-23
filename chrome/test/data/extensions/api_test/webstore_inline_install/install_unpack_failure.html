@@ -18,8 +18,9 @@
             console.log('Unexpected install success');
             window.domAutomationController.send(false);
           },
-          function(error) {
-            if (error.indexOf('Package is invalid') != -1) {
+          function(error, errorCode) {
+            if (error.indexOf('Package is invalid') != -1 &&
+                errorCode == 'otherError') {
               window.domAutomationController.send(true);
             } else {
               console.log('Unexpected install error: ' + error);

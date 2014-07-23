@@ -29,7 +29,7 @@ using content::BrowserThread;
 namespace {
 
 void PrintPackExtensionMessage(const std::string& message) {
-  printf("%s\n", message.c_str());
+  VLOG(1) << message;
 }
 
 }  // namespace
@@ -213,7 +213,9 @@ class AppInstallHelper {
 
  private:
   WebstoreStandaloneInstaller::Callback Callback();
-  void OnAppInstallComplete(bool success, const std::string& error);
+  void OnAppInstallComplete(bool success,
+                            const std::string& error,
+                            webstore_install::Result result);
 
   DoneCallback done_callback_;
 
@@ -252,7 +254,8 @@ void AppInstallHelper::BeginInstall(
 }
 
 void AppInstallHelper::OnAppInstallComplete(bool success,
-                                            const std::string& error) {
+                                            const std::string& error,
+                                            webstore_install::Result result) {
   success_ = success;
   error_= error;
   done_callback_.Run();

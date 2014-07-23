@@ -46,7 +46,8 @@ Installer.prototype.install = function(url, onSuccess, onFailure) {
   }
 };
 
-Installer.prototype.onInstallResponse = function(installId, success, error) {
+Installer.prototype.onInstallResponse =
+    function(installId, success, error, resultCode) {
   var pendingInstall = this._pendingInstall;
   if (!pendingInstall || pendingInstall.installId != installId) {
     // TODO(kalman): should this be an error?
@@ -57,7 +58,7 @@ Installer.prototype.onInstallResponse = function(installId, success, error) {
     if (success && pendingInstall.onSuccess)
       pendingInstall.onSuccess();
     else if (!success && pendingInstall.onFailure)
-      pendingInstall.onFailure(error);
+      pendingInstall.onFailure(error, resultCode);
   } catch (e) {
     console.error('Exception in chrome.webstore.install response handler: ' +
                   e.stack);

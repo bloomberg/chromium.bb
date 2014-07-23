@@ -385,8 +385,10 @@ void TabHelper::OnInlineWebstoreInstall(int install_id,
       return_route_id, this, webstore_item_id, listeners_mask);
 
   WebstoreStandaloneInstaller::Callback callback =
-      base::Bind(&TabHelper::OnInlineInstallComplete, base::Unretained(this),
-                 install_id, return_route_id);
+      base::Bind(&TabHelper::OnInlineInstallComplete,
+                 base::Unretained(this),
+                 install_id,
+                 return_route_id);
   scoped_refptr<WebstoreInlineInstaller> installer(
       webstore_inline_installer_factory_->CreateInstaller(
           web_contents(),
@@ -516,9 +518,14 @@ WindowController* TabHelper::GetExtensionWindowController() const  {
 void TabHelper::OnInlineInstallComplete(int install_id,
                                         int return_route_id,
                                         bool success,
-                                        const std::string& error) {
+                                        const std::string& error,
+                                        webstore_install::Result result) {
   Send(new ExtensionMsg_InlineWebstoreInstallResponse(
-      return_route_id, install_id, success, success ? std::string() : error));
+      return_route_id,
+      install_id,
+      success,
+      success ? std::string() : error,
+      result));
 }
 
 WebContents* TabHelper::GetAssociatedWebContents() const {

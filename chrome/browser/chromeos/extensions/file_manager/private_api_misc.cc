@@ -282,7 +282,8 @@ bool FileBrowserPrivateInstallWebstoreItemFunction::RunAsync() {
 
 void FileBrowserPrivateInstallWebstoreItemFunction::OnInstallComplete(
     bool success,
-    const std::string& error) {
+    const std::string& error,
+    extensions::webstore_install::Result result) {
   drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
   if (success) {
     if (logger) {

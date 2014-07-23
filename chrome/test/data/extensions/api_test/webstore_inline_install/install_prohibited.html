@@ -22,8 +22,9 @@
             console.log('did not expect install success');
             window.domAutomationController.send(false);
           },
-          function(error) {
-            if (error.indexOf('cannot be modified') != -1) {
+          function(error, errorCode) {
+            if (error.indexOf('cannot be modified') != -1 &&
+                errorCode == 'otherError') {
               console.log('Ran test, sending response');
               window.domAutomationController.send(true);
               console.log('Test complete');

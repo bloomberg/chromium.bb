@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
+#include "chrome/common/extensions/webstore_install_result.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -224,7 +225,8 @@ class TabHelper : public content::WebContentsObserver,
   virtual void OnInlineInstallComplete(int install_id,
                                        int return_route_id,
                                        bool success,
-                                       const std::string& error);
+                                       const std::string& error,
+                                       webstore_install::Result result);
 
   // content::NotificationObserver.
   virtual void Observe(int type,

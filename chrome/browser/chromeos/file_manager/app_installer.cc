@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/file_manager/app_installer.h"
 
+#include "chrome/common/extensions/webstore_install_result.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -96,7 +97,9 @@ bool AppInstaller::CheckRequestorPermitted(
 
 void AppInstaller::OnWebContentsDestroyed(
     content::WebContents* web_contents) {
-  callback_.Run(false, kWebContentsDestroyedError);
+  callback_.Run(false,
+                kWebContentsDestroyedError,
+                extensions::webstore_install::OTHER_ERROR);
   AbortInstall();
 }
 

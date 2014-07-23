@@ -215,7 +215,10 @@ void WebstoreResult::StartInstall(bool launch_ephemeral_app) {
   installer->BeginInstall();
 }
 
-void WebstoreResult::InstallCallback(bool success, const std::string& error) {
+void WebstoreResult::InstallCallback(
+    bool success,
+    const std::string& error,
+    extensions::webstore_install::Result result) {
   if (!success) {
     LOG(ERROR) << "Failed to install app, error=" << error;
     SetIsInstalling(false);
