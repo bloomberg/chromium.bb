@@ -1,0 +1,4 @@
+This tests that the video should not be rendered in full screen if requestFullScreen() fails.
+
+END OF TEST
+

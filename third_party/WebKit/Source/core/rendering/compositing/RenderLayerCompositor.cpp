@@ -165,13 +165,17 @@ bool RenderLayerCompositor::acceleratedCompositingForOverflowScrollEnabled() con
 
 static RenderVideo* findFullscreenVideoRenderer(Document& document)
 {
+    // Recursively find the document that is in fullscreen.
     Element* fullscreenElement = FullscreenElementStack::fullscreenElementFrom(document);
+    Document* contentDocument = &document;
     while (fullscreenElement && fullscreenElement->isFrameOwnerElement()) {
-        Document* contentDocument = toHTMLFrameOwnerElement(fullscreenElement)->contentDocument();
+        contentDocument = toHTMLFrameOwnerElement(fullscreenElement)->contentDocument();
         if (!contentDocument)
             return 0;
         fullscreenElement = FullscreenElementStack::fullscreenElementFrom(*contentDocument);
     }
+    // Get the current fullscreen element from the document.
+    fullscreenElement = FullscreenElementStack::currentFullScreenElementFrom(*contentDocument);
     if (!isHTMLVideoElement(fullscreenElement))
         return 0;
     RenderObject* renderer = fullscreenElement->renderer();
