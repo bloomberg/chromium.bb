@@ -53,6 +53,7 @@
 #include "chrome/browser/extensions/api/notifications/notifications_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/info_map.h"
@@ -387,7 +388,8 @@ DesktopNotificationService::DesktopNotificationService(
     Profile* profile,
     NotificationUIManager* ui_manager)
     : profile_(profile),
-      ui_manager_(ui_manager) {
+      ui_manager_(ui_manager),
+      extension_registry_observer_(this) {
   OnStringListPrefChanged(
       prefs::kMessageCenterDisabledExtensionIds, &disabled_extension_ids_);
   OnStringListPrefChanged(
@@ -409,9 +411,8 @@ DesktopNotificationService::DesktopNotificationService(
           base::Unretained(this),
           base::Unretained(prefs::kMessageCenterDisabledSystemComponentIds),
           base::Unretained(&disabled_system_component_ids_)));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED,
-                 content::Source<Profile>(profile_));
+  extension_registry_observer_.Add(
+      extensions::ExtensionRegistry::Get(profile_));
 }
 
 DesktopNotificationService::~DesktopNotificationService() {
@@ -690,15 +691,11 @@ void DesktopNotificationService::OnStringListPrefChanged(
   }
 }
 
-void DesktopNotificationService::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void DesktopNotificationService::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UninstallReason reason) {
 #if defined(ENABLE_EXTENSIONS)
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UNINSTALLED_DEPRECATED, type);
-
-  extensions::Extension* extension =
-      content::Details<extensions::Extension>(details).ptr();
   NotifierId notifier_id(NotifierId::APPLICATION, extension->id());
   if (IsNotifierEnabled(notifier_id))
     return;

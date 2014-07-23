@@ -14,13 +14,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/notifications/extension_welcome_notification.h"
 #include "chrome/common/content_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "third_party/WebKit/public/web/WebNotificationPresenter.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/message_center/notifier_settings.h"
@@ -38,6 +38,10 @@ class RenderFrameHost;
 struct ShowDesktopNotificationHostMsgParams;
 }
 
+namespace extensions {
+class ExtensionRegistry;
+}
+
 namespace gfx {
 class Image;
 }
@@ -48,8 +52,9 @@ class PrefRegistrySyncable;
 
 // The DesktopNotificationService is an object, owned by the Profile,
 // which provides the creation of desktop "toasts" to web pages and workers.
-class DesktopNotificationService : public KeyedService,
-                                   public content::NotificationObserver {
+class DesktopNotificationService
+    : public KeyedService,
+      public extensions::ExtensionRegistryObserver {
  public:
   // Register profile-specific prefs of notifications.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* prefs);
@@ -158,10 +163,11 @@ class DesktopNotificationService : public KeyedService,
       const message_center::NotifierId& notifier_id,
       bool enabled);
 
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // extensions::ExtensionRegistryObserver:
+  virtual void OnExtensionUninstalled(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UninstallReason reason) OVERRIDE;
 
   // The profile which owns this object.
   Profile* profile_;
@@ -182,8 +188,10 @@ class DesktopNotificationService : public KeyedService,
   // On-memory data for the availability of system_component.
   std::set<std::string> disabled_system_component_ids_;
 
-  // Registrar for the other kind of notifications (event signaling).
-  content::NotificationRegistrar registrar_;
+  // An observer to listen when extension is uninstalled.
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   // Welcome Notification
   scoped_ptr<ExtensionWelcomeNotification> chrome_now_welcome_notification_;
