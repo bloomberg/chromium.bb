@@ -62,6 +62,10 @@ HardwareDisplayPlane::HardwareDisplayPlane(
 HardwareDisplayPlane::~HardwareDisplayPlane() {
 }
 
+bool HardwareDisplayPlane::CanUseForCrtc(uint32_t crtc_id) {
+  return plane_->possible_crtcs & (1 << crtc_id);
+}
+
 bool HardwareDisplayPlane::SetPlaneData(uint32_t crtc_id,
                                         uint32_t framebuffer,
                                         const gfx::Rect& crtc_rect,

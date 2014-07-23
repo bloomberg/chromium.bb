@@ -13,6 +13,7 @@ typedef struct _drmModeEncoder drmModeEncoder;
 typedef struct _drmModeFB drmModeFB;
 typedef struct _drmModeObjectProperties drmModeObjectProperties;
 typedef struct _drmModePlane drmModePlane;
+typedef struct _drmModePlaneRes drmModePlaneRes;
 typedef struct _drmModeProperty drmModePropertyRes;
 typedef struct _drmModePropertyBlob drmModePropertyBlobRes;
 typedef struct _drmModeRes drmModeRes;
@@ -37,6 +38,9 @@ struct DrmObjectPropertiesDeleter {
 struct DrmPlaneDeleter {
   void operator()(drmModePlane* plane) const;
 };
+struct DrmPlaneResDeleter {
+  void operator()(drmModePlaneRes* plane_res) const;
+};
 struct DrmPropertyDeleter {
   void operator()(drmModePropertyRes* property) const;
 };
@@ -54,6 +58,7 @@ typedef scoped_ptr<drmModeEncoder, DrmEncoderDeleter> ScopedDrmEncoderPtr;
 typedef scoped_ptr<drmModeObjectProperties, DrmObjectPropertiesDeleter>
     ScopedDrmObjectPropertyPtr;
 typedef scoped_ptr<drmModePlane, DrmPlaneDeleter> ScopedDrmPlanePtr;
+typedef scoped_ptr<drmModePlaneRes, DrmPlaneResDeleter> ScopedDrmPlaneResPtr;
 typedef scoped_ptr<drmModePropertyRes, DrmPropertyDeleter> ScopedDrmPropertyPtr;
 typedef scoped_ptr<drmModePropertyBlobRes, DrmPropertyBlobDeleter>
 ScopedDrmPropertyBlobPtr;

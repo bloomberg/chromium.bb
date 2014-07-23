@@ -30,10 +30,14 @@ class HardwareDisplayPlane {
 
   bool Initialize();
 
+  bool CanUseForCrtc(uint32_t crtc_id);
   bool SetPlaneData(uint32_t crtc_id,
                     uint32_t framebuffer,
                     const gfx::Rect& crtc_rect,
                     const gfx::Rect& src_rect);
+
+  bool in_use() const { return in_use_; }
+  void set_in_use(bool in_use) { in_use_ = in_use; }
 
  private:
   struct Property {
@@ -52,6 +56,7 @@ class HardwareDisplayPlane {
 
   ScopedDrmPlanePtr plane_;
   uint32_t plane_id_;
+  bool in_use_;
 
   Property crtc_prop_;
   Property fb_prop_;

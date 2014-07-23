@@ -33,6 +33,10 @@ void DrmPlaneDeleter::operator()(drmModePlane* plane) const {
   drmModeFreePlane(plane);
 }
 
+void DrmPlaneResDeleter::operator()(drmModePlaneRes* plane) const {
+  drmModeFreePlaneResources(plane);
+}
+
 void DrmPropertyDeleter::operator()(drmModePropertyRes* property) const {
   drmModeFreeProperty(property);
 }

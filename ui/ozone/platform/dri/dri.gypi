@@ -76,6 +76,8 @@
           'sources': [
             'hardware_display_plane.cc',
             'hardware_display_plane.h',
+            'hardware_display_plane_manager.cc',
+            'hardware_display_plane_manager.h',
           ],
         }],
       ],      
