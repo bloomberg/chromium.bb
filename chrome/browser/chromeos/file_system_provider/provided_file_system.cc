@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/file_system_provider/notification_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/close_file.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/create_directory.h"
+#include "chrome/browser/chromeos/file_system_provider/operations/create_file.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/delete_entry.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/open_file.h"
@@ -162,6 +163,18 @@ void ProvidedFileSystem::DeleteEntry(
                                           entry_path,
                                           recursive,
                                           callback)))) {
+    callback.Run(base::File::FILE_ERROR_SECURITY);
+  }
+}
+
+void ProvidedFileSystem::CreateFile(
+    const base::FilePath& file_path,
+    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+  if (!request_manager_.CreateRequest(
+          CREATE_FILE,
+          scoped_ptr<RequestManager::HandlerInterface>(
+              new operations::CreateFile(
+                  event_router_, file_system_info_, file_path, callback)))) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
   }
 }

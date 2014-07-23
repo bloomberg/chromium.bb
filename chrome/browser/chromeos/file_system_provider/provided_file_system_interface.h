@@ -109,6 +109,12 @@ class ProvidedFileSystemInterface {
       bool recursive,
       const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
 
+  // Requests creating a file. If the entry already exists, then the
+  // FILE_ERROR_EXISTS error must be returned.
+  virtual void CreateFile(
+      const base::FilePath& file_path,
+      const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
+
   // Requests deleting a directory. If |recursive| is passed and the entry is
   // a directory, then all contents of it (recursively) will be deleted too.
   virtual void DeleteEntry(

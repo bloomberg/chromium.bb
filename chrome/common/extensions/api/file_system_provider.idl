@@ -126,6 +126,13 @@ namespace fileSystemProvider {
     boolean recursive;
   };
 
+  // Options for the <code>onCreateFileRequested()</code> event.
+  dictionary CreateFileRequestedOptions {
+    DOMString fileSystemId;
+    long requestId;
+    DOMString filePath;
+  };
+
   // Callback to receive the result of mount() function.
   callback MountCallback = void([nodoc, instanceOf=DOMError] object error);
 
@@ -249,6 +256,14 @@ namespace fileSystemProvider {
     // must be recursively deleted as well.
     [maxListeners=1, nodoc] static void onDeleteEntryRequested(
         DeleteEntryRequestedOptions options,
+        ProviderSuccessCallback successCallback,
+        ProviderErrorCallback errorCallback);
+
+    // Raised when creating a file is requested. If the file already exists,
+    // then <code>errorCallback</code> must be called with the <code>EXISTS
+    // </code> error code.
+    [maxListeners=1, nodoc] static void onCreateFileRequested(
+        CreateFileRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
   };

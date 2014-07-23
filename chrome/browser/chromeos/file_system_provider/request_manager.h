@@ -32,6 +32,7 @@ enum RequestType {
   READ_FILE,
   CREATE_DIRECTORY,
   DELETE_ENTRY,
+  CREATE_FILE,
   TESTING
 };
 

@@ -36,6 +36,8 @@ std::string RequestTypeToString(RequestType type) {
       return "CREATE_DIRECTORY";
     case DELETE_ENTRY:
       return "DELETE_ENTRY";
+    case CREATE_FILE:
+      return "CREATE_FILE";
     case TESTING:
       return "TESTING";
   }

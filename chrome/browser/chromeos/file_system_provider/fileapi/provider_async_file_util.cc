@@ -129,6 +129,36 @@ void OnDeleteEntry(const fileapi::AsyncFileUtil::StatusCallback& callback,
       BrowserThread::IO, FROM_HERE, base::Bind(callback, result));
 }
 
+// Executes CreateFile on the UI thread.
+void CreateFileOnUIThread(
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
+    const fileapi::FileSystemURL& url,
+    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+  util::FileSystemURLParser parser(url);
+  if (!parser.Parse()) {
+    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    return;
+  }
+
+  parser.file_system()->CreateFile(parser.file_path(), callback);
+}
+
+// Routes the response of CreateFile to a callback of EnsureFileExists() on the
+// IO thread.
+void OnCreateFileForEnsureFileExists(
+    const fileapi::AsyncFileUtil::EnsureFileExistsCallback& callback,
+    base::File::Error result) {
+  const bool created = result == base::File::FILE_OK;
+
+  // If the file already existed, then return success anyway, since it is not
+  // an error.
+  const base::File::Error error =
+      result == base::File::FILE_ERROR_EXISTS ? base::File::FILE_OK : result;
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE, base::Bind(callback, error, created));
+}
+
 }  // namespace
 
 ProviderAsyncFileUtil::ProviderAsyncFileUtil() {}
@@ -160,7 +190,13 @@ void ProviderAsyncFileUtil::EnsureFileExists(
     const fileapi::FileSystemURL& url,
     const EnsureFileExistsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  callback.Run(base::File::FILE_ERROR_ACCESS_DENIED, false /* created */);
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&CreateFileOnUIThread,
+                 base::Passed(&context),
+                 url,
+                 base::Bind(&OnCreateFileForEnsureFileExists, callback)));
 }
 
 void ProviderAsyncFileUtil::CreateDirectory(

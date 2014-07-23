@@ -239,6 +239,17 @@ void FakeProvidedFileSystem::DeleteEntry(
       FROM_HERE, base::Bind(callback, base::File::FILE_OK));
 }
 
+void FakeProvidedFileSystem::CreateFile(
+    const base::FilePath& file_path,
+    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+  const base::File::Error result = file_path.AsUTF8Unsafe() != kFakeFilePath
+                                       ? base::File::FILE_ERROR_EXISTS
+                                       : base::File::FILE_OK;
+
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+                                              base::Bind(callback, result));
+}
+
 const ProvidedFileSystemInfo& FakeProvidedFileSystem::GetFileSystemInfo()
     const {
   return file_system_info_;

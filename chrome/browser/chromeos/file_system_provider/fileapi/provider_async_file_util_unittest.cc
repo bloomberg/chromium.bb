@@ -41,7 +41,7 @@ const char kFileSystemId[] = "testing-file-system";
 // anything else than just an error.
 class EventLogger {
  public:
-  EventLogger() : weak_ptr_factory_(this) {}
+  EventLogger() {}
   virtual ~EventLogger() {}
 
   void OnStatus(base::File::Error error) {
@@ -81,16 +81,10 @@ class EventLogger {
 
   void OnCopyFileProgress(int64 size) {}
 
-  base::WeakPtr<EventLogger> GetWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
   base::File::Error* result() { return result_.get(); }
 
  private:
   scoped_ptr<base::File::Error> result_;
-  base::WeakPtrFactory<EventLogger> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(EventLogger);
 };
 
@@ -152,8 +146,10 @@ class FileSystemProviderProviderAsyncFileUtilTest : public testing::Test {
     const std::string mount_point_name =
         file_system_info.mount_path().BaseName().AsUTF8Unsafe();
 
-    file_url_ = CreateFileSystemURL(
-        mount_point_name, base::FilePath::FromUTF8Unsafe("hello/world.txt"));
+    file_url_ =
+        CreateFileSystemURL(mount_point_name,
+                            base::FilePath::FromUTF8Unsafe(
+                                kFakeFilePath + 1 /* No leading slash. */));
     ASSERT_TRUE(file_url_.is_valid());
     directory_url_ = CreateFileSystemURL(
         mount_point_name, base::FilePath::FromUTF8Unsafe("hello"));
@@ -191,7 +187,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateOrOpen_Create) {
       CreateOperationContext(),
       file_url_,
       base::File::FLAG_CREATE,
-      base::Bind(&EventLogger::OnCreateOrOpen, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnCreateOrOpen, base::Unretained(&logger)));
 
   ASSERT_TRUE(logger.result());
   EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.result());
@@ -204,7 +200,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateOrOpen_CreateAlways) {
       CreateOperationContext(),
       file_url_,
       base::File::FLAG_CREATE_ALWAYS,
-      base::Bind(&EventLogger::OnCreateOrOpen, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnCreateOrOpen, base::Unretained(&logger)));
 
   ASSERT_TRUE(logger.result());
   EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.result());
@@ -217,7 +213,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateOrOpen_OpenAlways) {
       CreateOperationContext(),
       file_url_,
       base::File::FLAG_OPEN_ALWAYS,
-      base::Bind(&EventLogger::OnCreateOrOpen, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnCreateOrOpen, base::Unretained(&logger)));
 
   ASSERT_TRUE(logger.result());
   EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.result());
@@ -231,7 +227,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest,
       CreateOperationContext(),
       file_url_,
       base::File::FLAG_OPEN_TRUNCATED,
-      base::Bind(&EventLogger::OnCreateOrOpen, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnCreateOrOpen, base::Unretained(&logger)));
 
   ASSERT_TRUE(logger.result());
   EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.result());
@@ -244,7 +240,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateOrOpen_Open) {
       CreateOperationContext(),
       file_url_,
       base::File::FLAG_OPEN,
-      base::Bind(&EventLogger::OnCreateOrOpen, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnCreateOrOpen, base::Unretained(&logger)));
 
   ASSERT_TRUE(logger.result());
   EXPECT_EQ(base::File::FILE_ERROR_INVALID_OPERATION, *logger.result());
@@ -256,10 +252,11 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, EnsureFileExists) {
   async_file_util_->EnsureFileExists(
       CreateOperationContext(),
       file_url_,
-      base::Bind(&EventLogger::OnEnsureFileExists, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnEnsureFileExists, base::Unretained(&logger)));
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(logger.result());
-  EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.result());
+  EXPECT_EQ(base::File::FILE_OK, *logger.result());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateDirectory) {
@@ -270,7 +267,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateDirectory) {
       directory_url_,
       false,  // exclusive
       false,  // recursive
-      base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnStatus, base::Unretained(&logger)));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(logger.result());
@@ -283,7 +280,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, GetFileInfo) {
   async_file_util_->GetFileInfo(
       CreateOperationContext(),
       root_url_,
-      base::Bind(&EventLogger::OnGetFileInfo, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnGetFileInfo, base::Unretained(&logger)));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(logger.result());
@@ -296,7 +293,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, ReadDirectory) {
   async_file_util_->ReadDirectory(
       CreateOperationContext(),
       root_url_,
-      base::Bind(&EventLogger::OnReadDirectory, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnReadDirectory, base::Unretained(&logger)));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(logger.result());
@@ -311,7 +308,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, Touch) {
       file_url_,
       base::Time(),  // last_modified_time
       base::Time(),  // last_access_time
-      base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnStatus, base::Unretained(&logger)));
 
   ASSERT_TRUE(logger.result());
   EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.result());
@@ -324,7 +321,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, Truncate) {
       CreateOperationContext(),
       file_url_,
       0,  // length
-      base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnStatus, base::Unretained(&logger)));
 
   ASSERT_TRUE(logger.result());
   EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.result());
@@ -338,8 +335,8 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CopyFileLocal) {
       file_url_,  // src_url
       file_url_,  // dst_url
       fileapi::FileSystemOperation::OPTION_NONE,
-      base::Bind(&EventLogger::OnCopyFileProgress, logger.GetWeakPtr()),
-      base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnCopyFileProgress, base::Unretained(&logger)),
+      base::Bind(&EventLogger::OnStatus, base::Unretained(&logger)));
 
   ASSERT_TRUE(logger.result());
   EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.result());
@@ -353,7 +350,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, MoveFileLocal) {
       file_url_,  // src_url
       file_url_,  // dst_url
       fileapi::FileSystemOperation::OPTION_NONE,
-      base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnStatus, base::Unretained(&logger)));
 
   ASSERT_TRUE(logger.result());
   EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.result());
@@ -366,7 +363,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CopyInForeignFile) {
       CreateOperationContext(),
       base::FilePath(),  // src_file_path
       file_url_,         // dst_url
-      base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnStatus, base::Unretained(&logger)));
 
   ASSERT_TRUE(logger.result());
   EXPECT_EQ(base::File::FILE_ERROR_ACCESS_DENIED, *logger.result());
@@ -378,7 +375,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, DeleteFile) {
   async_file_util_->DeleteFile(
       CreateOperationContext(),
       file_url_,
-      base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnStatus, base::Unretained(&logger)));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(logger.result());
@@ -391,7 +388,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, DeleteDirectory) {
   async_file_util_->DeleteDirectory(
       CreateOperationContext(),
       directory_url_,
-      base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnStatus, base::Unretained(&logger)));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(logger.result());
@@ -404,7 +401,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, DeleteRecursively) {
   async_file_util_->DeleteRecursively(
       CreateOperationContext(),
       directory_url_,
-      base::Bind(&EventLogger::OnStatus, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnStatus, base::Unretained(&logger)));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(logger.result());
@@ -417,7 +414,8 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateSnapshotFile) {
   async_file_util_->CreateSnapshotFile(
       CreateOperationContext(),
       file_url_,
-      base::Bind(&EventLogger::OnCreateSnapshotFile, logger.GetWeakPtr()));
+      base::Bind(&EventLogger::OnCreateSnapshotFile,
+                 base::Unretained(&logger)));
 
   ASSERT_TRUE(logger.result());
   EXPECT_EQ(base::File::FILE_ERROR_INVALID_OPERATION, *logger.result());

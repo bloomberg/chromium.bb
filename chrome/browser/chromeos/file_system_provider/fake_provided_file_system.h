@@ -95,6 +95,9 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
       const base::FilePath& entry_path,
       bool recursive,
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
+  virtual void CreateFile(
+      const base::FilePath& file_path,
+      const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const OVERRIDE;
   virtual RequestManager* GetRequestManager() OVERRIDE;
   virtual base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() OVERRIDE;
