@@ -80,4 +80,14 @@ void SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost() {
 #endif
 }
 
+  // Forwards to detection host is client-side detection is enabled.
+bool SafeBrowsingTabObserver::DidPageReceiveSafeBrowsingMatch() const {
+#if defined(FULL_SAFE_BROWSING)
+  return safebrowsing_detection_host_ &&
+      safebrowsing_detection_host_->DidPageReceiveSafeBrowsingMatch();
+#else
+  return false;
+#endif
+}
+
 }  // namespace safe_browsing

@@ -64,7 +64,17 @@ const base::FilePath::CharType kIPBlacklistDBFile[] =
 // for little benefit.  If/when file formats change (say to put all
 // the data in one file), that would be a convenient point to rectify
 // this.
+// TODO(shess): This shouldn't be OS-driven <http://crbug.com/394379>
+#if defined(OS_ANDROID)
+// NOTE(shess): This difference is also reflected in the list name in
+// safe_browsing_util.cc.
+// TODO(shess): Spin up an alternate list id which can be persisted in the
+// store.  Then if a mistake is made, it won't cause confusion between
+// incompatible lists.
+const base::FilePath::CharType kBrowseDBFile[] = FILE_PATH_LITERAL(" Mobile");
+#else
 const base::FilePath::CharType kBrowseDBFile[] = FILE_PATH_LITERAL(" Bloom");
+#endif
 
 // Maximum number of entries we allow in any of the whitelists.
 // If a whitelist on disk contains more entries then all lookups to

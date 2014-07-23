@@ -213,6 +213,9 @@ SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager(
       check_timeout_(base::TimeDelta::FromMilliseconds(kCheckTimeoutMs)) {
   DCHECK(sb_service_.get() != NULL);
 
+  // Android only supports a subset of FULL_SAFE_BROWSING.
+  // TODO(shess): This shouldn't be OS-driven <http://crbug.com/394379>
+#if !defined(OS_ANDROID)
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
   enable_download_protection_ =
       !cmdline->HasSwitch(switches::kSbDisableDownloadProtection);
@@ -253,6 +256,7 @@ SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager(
   UMA_HISTOGRAM_ENUMERATION("SB2.SideEffectFreeWhitelistStatus",
                             side_effect_free_whitelist_status,
                             SIDE_EFFECT_FREE_WHITELIST_STATUS_MAX);
+#endif
 }
 
 SafeBrowsingDatabaseManager::~SafeBrowsingDatabaseManager() {

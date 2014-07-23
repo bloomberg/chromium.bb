@@ -36,6 +36,14 @@ const char kClient[] = "unittest";
 const char kAppVer[] = "1.0";
 const char kAdditionalQuery[] = "additional_query";
 
+#if defined(OS_ANDROID)
+const char kDefaultPhishList[] = "goog-mobilephish-shavar";
+const char kDefaultMalwareList[] = "goog-mobilemalware-shavar";
+#else
+const char kDefaultPhishList[] = "goog-phish-shavar";
+const char kDefaultMalwareList[] = "goog-malware-shavar";
+#endif
+
 // Add-prefix chunk with single prefix.
 const char kRawChunkPayload1[] = {
   '\0', '\0', '\0', '\x08',  // 32-bit payload length in network byte order.
@@ -94,8 +102,11 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
       const std::string& expected_prefix) {
     ASSERT_TRUE(url_fetcher);
     EXPECT_EQ(net::LOAD_DISABLE_CACHE, url_fetcher->GetLoadFlags());
-    EXPECT_EQ("goog-phish-shavar;\ngoog-malware-shavar;\n",
-              url_fetcher->upload_data());
+
+    std::string expected_lists(base::StringPrintf("%s;\n%s;\n",
+                                                  kDefaultPhishList,
+                                                  kDefaultMalwareList));
+    EXPECT_EQ(expected_lists, url_fetcher->upload_data());
     EXPECT_EQ(GURL(expected_prefix + "/downloads?client=unittest&appver=1.0"
                    "&pver=3.0" + key_param_),
               url_fetcher->GetOriginalURL());
@@ -168,27 +179,31 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestChunkStrings) {
   scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
 
   // Add and Sub chunks.
-  SBListChunkRanges phish("goog-phish-shavar");
+  SBListChunkRanges phish(kDefaultPhishList);
   phish.adds = "1,4,6,8-20,99";
   phish.subs = "16,32,64-96";
-  EXPECT_EQ("goog-phish-shavar;a:1,4,6,8-20,99:s:16,32,64-96\n",
+  EXPECT_EQ(base::StringPrintf("%s;a:1,4,6,8-20,99:s:16,32,64-96\n",
+                               kDefaultPhishList),
             safe_browsing::FormatList(phish));
 
   // Add chunks only.
   phish.subs = "";
-  EXPECT_EQ("goog-phish-shavar;a:1,4,6,8-20,99\n",
+  EXPECT_EQ(base::StringPrintf("%s;a:1,4,6,8-20,99\n",
+                               kDefaultPhishList),
             safe_browsing::FormatList(phish));
 
   // Sub chunks only.
   phish.adds = "";
   phish.subs = "16,32,64-96";
-  EXPECT_EQ("goog-phish-shavar;s:16,32,64-96\n",
+  EXPECT_EQ(base::StringPrintf("%s;s:16,32,64-96\n",
+                               kDefaultPhishList),
             safe_browsing::FormatList(phish));
 
   // No chunks of either type.
   phish.adds = "";
   phish.subs = "";
-  EXPECT_EQ("goog-phish-shavar;\n", safe_browsing::FormatList(phish));
+  EXPECT_EQ(base::StringPrintf("%s;\n", kDefaultPhishList),
+            safe_browsing::FormatList(phish));
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashBackOffTimes) {
@@ -418,9 +433,10 @@ TEST_F(SafeBrowsingProtocolManagerTest, ExistingDatabase) {
   net::TestURLFetcher* url_fetcher = url_fetcher_factory.GetFetcherByID(0);
   ASSERT_TRUE(url_fetcher);
   EXPECT_EQ(net::LOAD_DISABLE_CACHE, url_fetcher->GetLoadFlags());
-  EXPECT_EQ("goog-phish-shavar;a:adds_phish:s:subs_phish\n"
-            "unknown_list;a:adds_unknown:s:subs_unknown\n"
-            "goog-malware-shavar;\n",
+  EXPECT_EQ(base::StringPrintf("%s;a:adds_phish:s:subs_phish\n"
+                               "unknown_list;a:adds_unknown:s:subs_unknown\n"
+                               "%s;\n",
+                               kDefaultPhishList, kDefaultMalwareList),
             url_fetcher->upload_data());
   EXPECT_EQ(GURL("https://prefix.com/foo/downloads?client=unittest&appver=1.0"
                  "&pver=3.0" + key_param_),
@@ -927,8 +943,9 @@ TEST_F(SafeBrowsingProtocolManagerTest, EmptyRedirectResponse) {
   url_fetcher->set_status(net::URLRequestStatus());
   url_fetcher->set_response_code(200);
   url_fetcher->SetResponseString(
-      "i:goog-phish-shavar\n"
-      "u:redirect-server.example.com/path\n");
+      base::StringPrintf("i:%s\n"
+                         "u:redirect-server.example.com/path\n",
+                         kDefaultPhishList));
   url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
 
   // The redirect response contains an empty body.
@@ -973,8 +990,9 @@ TEST_F(SafeBrowsingProtocolManagerTest, InvalidRedirectResponse) {
   url_fetcher->set_status(net::URLRequestStatus());
   url_fetcher->set_response_code(200);
   url_fetcher->SetResponseString(
-      "i:goog-phish-shavar\n"
-      "u:redirect-server.example.com/path\n");
+      base::StringPrintf("i:%s\n"
+                         "u:redirect-server.example.com/path\n",
+                         kDefaultPhishList));
   url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
 
   // The redirect response contains an invalid body.
@@ -1004,7 +1022,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, SingleRedirectResponseWithChunks) {
       Invoke(testing::CreateFunctor(InvokeGetChunksCallback,
                                     std::vector<SBListChunkRanges>(),
                                     false)));
-  EXPECT_CALL(test_delegate, AddChunksRaw("goog-phish-shavar", _, _)).WillOnce(
+  EXPECT_CALL(test_delegate, AddChunksRaw(kDefaultPhishList, _, _)).WillOnce(
       Invoke(HandleAddChunks));
   EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
 
@@ -1021,8 +1039,9 @@ TEST_F(SafeBrowsingProtocolManagerTest, SingleRedirectResponseWithChunks) {
   url_fetcher->set_status(net::URLRequestStatus());
   url_fetcher->set_response_code(200);
   url_fetcher->SetResponseString(
-      "i:goog-phish-shavar\n"
-      "u:redirect-server.example.com/path\n");
+      base::StringPrintf("i:%s\n"
+                         "u:redirect-server.example.com/path\n",
+                         kDefaultPhishList));
   url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
 
   // The redirect response contains a single chunk.
@@ -1057,7 +1076,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, MultipleRedirectResponsesWithChunks) {
       Invoke(testing::CreateFunctor(InvokeGetChunksCallback,
                                     std::vector<SBListChunkRanges>(),
                                     false)));
-  EXPECT_CALL(test_delegate, AddChunksRaw("goog-phish-shavar", _, _)).
+  EXPECT_CALL(test_delegate, AddChunksRaw(kDefaultPhishList, _, _)).
       WillRepeatedly(Invoke(HandleAddChunks));
   EXPECT_CALL(test_delegate, UpdateFinished(true)).Times(1);
 
@@ -1074,9 +1093,10 @@ TEST_F(SafeBrowsingProtocolManagerTest, MultipleRedirectResponsesWithChunks) {
   url_fetcher->set_status(net::URLRequestStatus());
   url_fetcher->set_response_code(200);
   url_fetcher->SetResponseString(
-      "i:goog-phish-shavar\n"
-      "u:redirect-server.example.com/one\n"
-      "u:redirect-server.example.com/two\n");
+      base::StringPrintf("i:%s\n"
+                         "u:redirect-server.example.com/one\n"
+                         "u:redirect-server.example.com/two\n",
+                         kDefaultPhishList));
   url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
 
   // The first redirect response contains a single chunk.

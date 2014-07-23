@@ -167,8 +167,7 @@ bool OriginChip::IsMalware(const GURL& url, const content::WebContents* tab) {
 
   const safe_browsing::SafeBrowsingTabObserver* sb_observer =
       safe_browsing::SafeBrowsingTabObserver::FromWebContents(tab);
-  return sb_observer && sb_observer->detection_host() &&
-      sb_observer->detection_host()->DidPageReceiveSafeBrowsingMatch();
+  return sb_observer && sb_observer->DidPageReceiveSafeBrowsingMatch();
 }
 
 // static

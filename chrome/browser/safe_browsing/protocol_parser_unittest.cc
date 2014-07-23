@@ -4,10 +4,21 @@
 
 #include <string>
 
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+#if defined(OS_ANDROID)
+const char kDefaultPhishList[] = "goog-mobilephish-shavar";
+const char kDefaultMalwareList[] = "goog-mobilemalware-shavar";
+#else
+const char kDefaultPhishList[] = "goog-phish-shavar";
+const char kDefaultMalwareList[] = "goog-malware-shavar";
+#endif
 
 // Test parsing one add chunk.
 TEST(SafeBrowsingProtocolParsingTest, TestAddChunk) {
@@ -323,12 +334,14 @@ TEST(SafeBrowsingProtocolParsingTest, TestChunkDelete) {
 
 // Test parsing the SafeBrowsing update response.
 TEST(SafeBrowsingProtocolParsingTest, TestRedirects) {
-  std::string redirects("i:goog-malware-shavar\n"
-    "u:cache.googlevideo.com/safebrowsing/rd/goog-malware-shavar_s_1\n"
-    "u:cache.googlevideo.com/safebrowsing/rd/goog-malware-shavar_s_2\n"
-    "u:cache.googlevideo.com/safebrowsing/rd/goog-malware-shavar_s_3\n"
-    "u:s.ytimg.com/safebrowsing/rd/goog-phish-shavar_a_8641-8800:8641-8689,"
-    "8691-8731,8733-8786\n");
+  const std::string redirects(base::StringPrintf(
+      "i:%s\n"
+      "u:cache.googlevideo.com/safebrowsing/rd/goog-malware-shavar_s_1\n"
+      "u:cache.googlevideo.com/safebrowsing/rd/goog-malware-shavar_s_2\n"
+      "u:cache.googlevideo.com/safebrowsing/rd/goog-malware-shavar_s_3\n"
+      "u:s.ytimg.com/safebrowsing/rd/goog-phish-shavar_a_8641-8800:8641-8689,"
+      "8691-8731,8733-8786\n",
+      kDefaultMalwareList));
 
   size_t next_query_sec = 0;
   bool reset = false;
@@ -372,11 +385,13 @@ TEST(SafeBrowsingProtocolParsingTest, TestNextQueryTime) {
 
 // Test parsing data from a GetHashRequest
 TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
-  std::string get_hash("45\n"
-                       "goog-phish-shavar:32:3\n"
-                       "00112233445566778899aabbccddeeff"
-                       "00001111222233334444555566667777"
-                       "ffffeeeeddddccccbbbbaaaa99998888");
+  const std::string get_hash(base::StringPrintf(
+      "45\n"
+      "%s:32:3\n"
+      "00112233445566778899aabbccddeeff"
+      "00001111222233334444555566667777"
+      "ffffeeeeddddccccbbbbaaaa99998888",
+      kDefaultPhishList));
   std::vector<SBFullHashResult> full_hashes;
   base::TimeDelta cache_lifetime;
   EXPECT_TRUE(safe_browsing::ParseGetHash(get_hash.data(), get_hash.length(),
@@ -397,12 +412,15 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
   EXPECT_EQ(safe_browsing_util::PHISH, full_hashes[2].list_id);
 
   // Test multiple lists in the GetHash results.
-  std::string get_hash2("45\n"
-                        "goog-phish-shavar:32:1\n"
-                        "00112233445566778899aabbccddeeff"
-                        "goog-malware-shavar:32:2\n"
-                        "cafebeefcafebeefdeaddeaddeaddead"
-                        "zzzzyyyyxxxxwwwwvvvvuuuuttttssss");
+  const std::string get_hash2(base::StringPrintf(
+      "45\n"
+      "%s:32:1\n"
+      "00112233445566778899aabbccddeeff"
+      "%s:32:2\n"
+      "cafebeefcafebeefdeaddeaddeaddead"
+      "zzzzyyyyxxxxwwwwvvvvuuuuttttssss",
+      kDefaultPhishList,
+      kDefaultMalwareList));
   EXPECT_TRUE(safe_browsing::ParseGetHash(get_hash2.data(), get_hash2.length(),
                                           &cache_lifetime, &full_hashes));
 
@@ -423,13 +441,16 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
   // Test metadata parsing.
   // TODO(shess): Currently the code doesn't actually put the metadata anywhere,
   // this is just testing that metadata doesn't break parsing.
-  std::string get_hash3("45\n"
-                        "goog-malware-shavar:32:2:m\n"
-                        "zzzzyyyyxxxxwwwwvvvvuuuuttttssss"
-                        "00112233445566778899aabbccddeeff"
-                        "2\nab2\nxy"
-                        "goog-phish-shavar:32:1\n"
-                        "cafebeefcafebeefdeaddeaddeaddead");
+  const std::string get_hash3(base::StringPrintf(
+      "45\n"
+      "%s:32:2:m\n"
+      "zzzzyyyyxxxxwwwwvvvvuuuuttttssss"
+      "00112233445566778899aabbccddeeff"
+      "2\nab2\nxy"
+      "%s:32:1\n"
+      "cafebeefcafebeefdeaddeaddeaddead",
+      kDefaultMalwareList,
+      kDefaultPhishList));
   EXPECT_TRUE(safe_browsing::ParseGetHash(get_hash3.data(), get_hash3.length(),
                                           &cache_lifetime, &full_hashes));
 
@@ -449,11 +470,13 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
 }
 
 TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownList) {
-  std::string hash_response = "45\n"
-                              "goog-phish-shavar:32:1\n"
-                              "12345678901234567890123456789012"
-                              "googpub-phish-shavar:32:1\n"
-                              "09876543210987654321098765432109";
+  std::string hash_response(base::StringPrintf(
+      "45\n"
+      "%s:32:1\n"
+      "12345678901234567890123456789012"
+      "googpub-phish-shavar:32:1\n"
+      "09876543210987654321098765432109",
+      kDefaultPhishList));
   std::vector<SBFullHashResult> full_hashes;
   base::TimeDelta cache_lifetime;
   EXPECT_TRUE(safe_browsing::ParseGetHash(hash_response.data(),
@@ -466,8 +489,10 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownList) {
                    &full_hashes[0].hash, sizeof(SBFullHash)), 0);
   EXPECT_EQ(safe_browsing_util::PHISH, full_hashes[0].list_id);
 
-  hash_response += "goog-malware-shavar:32:1\n"
-                   "abcdefghijklmnopqrstuvwxyz123457";
+  hash_response += base::StringPrintf(
+      "%s:32:1\n"
+      "abcdefghijklmnopqrstuvwxyz123457",
+      kDefaultMalwareList);
   full_hashes.clear();
   EXPECT_TRUE(safe_browsing::ParseGetHash(hash_response.data(),
                                           hash_response.size(),
@@ -665,3 +690,5 @@ TEST(SafeBrowsingProtocolParsingTest, TestZeroSizeSubChunk) {
   EXPECT_EQ(0x70707070U, chunks[2]->PrefixAt(0));  // pppp
   EXPECT_EQ(11, chunks[2]->AddChunkNumberAt(0));
 }
+
+}  // namespace
