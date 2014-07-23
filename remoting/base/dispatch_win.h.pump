@@ -128,7 +128,7 @@ $range ARG 1..ARITY
 $if ARITY > 0 [[template <$for ARG , [[typename P$(ARG)]]>]]
 
 HRESULT Invoke(IDispatch* object,
-               LPOLESTR name,
+               LPCOLESTR const_name,
                WORD flags,
 $for ARG [[
 
@@ -138,8 +138,9 @@ $for ARG [[
                VARIANT* const & result_out) {
   // Retrieve the ID of the method to be called.
   DISPID disp_id;
-  HRESULT hr = object->GetIDsOfNames(IID_NULL, &name, 1, LOCALE_USER_DEFAULT,
-                                     &disp_id);
+  LPOLESTR name = const_cast<LPOLESTR>(const_name);
+  HRESULT hr = object->GetIDsOfNames(
+      IID_NULL, &name, 1, LOCALE_USER_DEFAULT, &disp_id);
   if (FAILED(hr))
     return hr;
 

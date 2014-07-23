@@ -36,7 +36,8 @@ bool GetSubjectPublicKeyInfo(HCRYPTPROV prov, std::vector<BYTE>* output) {
   // as a CERT_PUBLIC_KEY_INFO structure. Currently, only RSA public keys are
   // supported.
   ok = CryptExportPublicKeyInfoEx(prov, AT_KEYEXCHANGE, X509_ASN_ENCODING,
-                                  szOID_RSA_RSA, 0, NULL, NULL, &size);
+                                  const_cast<char*>(szOID_RSA_RSA), 0, NULL,
+                                  NULL, &size);
   DCHECK(ok);
   if (!ok)
     return false;
@@ -46,8 +47,8 @@ bool GetSubjectPublicKeyInfo(HCRYPTPROV prov, std::vector<BYTE>* output) {
   PCERT_PUBLIC_KEY_INFO public_key_casted =
       reinterpret_cast<PCERT_PUBLIC_KEY_INFO>(&(*output)[0]);
   ok = CryptExportPublicKeyInfoEx(prov, AT_KEYEXCHANGE, X509_ASN_ENCODING,
-                                  szOID_RSA_RSA, 0, NULL, public_key_casted,
-                                  &size);
+                                  const_cast<char*>(szOID_RSA_RSA), 0, NULL,
+                                  public_key_casted, &size);
   DCHECK(ok);
   if (!ok)
     return false;
@@ -82,7 +83,7 @@ bool GetSignedPublicKeyAndChallenge(HCRYPTPROV prov,
 
   CRYPT_ALGORITHM_IDENTIFIER sig_alg;
   memset(&sig_alg, 0, sizeof(sig_alg));
-  sig_alg.pszObjId = szOID_RSA_MD5RSA;
+  sig_alg.pszObjId = const_cast<char*>(szOID_RSA_MD5RSA);
 
   BOOL ok;
   DWORD size = 0;

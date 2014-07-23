@@ -117,13 +117,14 @@ COMPILE_ASSERT(sizeof(ScopedVariantArg) == sizeof(VARIANTARG),
 //   - VARIANT is the only supported parameter type at the moment.
 
 HRESULT Invoke(IDispatch* object,
-               LPOLESTR name,
+               LPCOLESTR const_name,
                WORD flags,
                VARIANT* const & result_out) {
   // Retrieve the ID of the method to be called.
   DISPID disp_id;
-  HRESULT hr = object->GetIDsOfNames(IID_NULL, &name, 1, LOCALE_USER_DEFAULT,
-                                     &disp_id);
+  LPOLESTR name = const_cast<LPOLESTR>(const_name);
+  HRESULT hr = object->GetIDsOfNames(
+      IID_NULL, &name, 1, LOCALE_USER_DEFAULT, &disp_id);
   if (FAILED(hr))
     return hr;
 
@@ -161,14 +162,15 @@ HRESULT Invoke(IDispatch* object,
 
 template <typename P1>
 HRESULT Invoke(IDispatch* object,
-               LPOLESTR name,
+               LPCOLESTR const_name,
                WORD flags,
                const P1& p1,
                VARIANT* const & result_out) {
   // Retrieve the ID of the method to be called.
   DISPID disp_id;
-  HRESULT hr = object->GetIDsOfNames(IID_NULL, &name, 1, LOCALE_USER_DEFAULT,
-                                     &disp_id);
+  LPOLESTR name = const_cast<LPOLESTR>(const_name);
+  HRESULT hr = object->GetIDsOfNames(
+      IID_NULL, &name, 1, LOCALE_USER_DEFAULT, &disp_id);
   if (FAILED(hr))
     return hr;
 
@@ -213,15 +215,16 @@ HRESULT Invoke(IDispatch* object,
 
 template <typename P1, typename P2>
 HRESULT Invoke(IDispatch* object,
-               LPOLESTR name,
+               LPCOLESTR const_name,
                WORD flags,
                const P1& p1,
                const P2& p2,
                VARIANT* const & result_out) {
   // Retrieve the ID of the method to be called.
   DISPID disp_id;
-  HRESULT hr = object->GetIDsOfNames(IID_NULL, &name, 1, LOCALE_USER_DEFAULT,
-                                     &disp_id);
+  LPOLESTR name = const_cast<LPOLESTR>(const_name);
+  HRESULT hr = object->GetIDsOfNames(
+      IID_NULL, &name, 1, LOCALE_USER_DEFAULT, &disp_id);
   if (FAILED(hr))
     return hr;
 
@@ -270,7 +273,7 @@ HRESULT Invoke(IDispatch* object,
 
 template <typename P1, typename P2, typename P3>
 HRESULT Invoke(IDispatch* object,
-               LPOLESTR name,
+               LPCOLESTR const_name,
                WORD flags,
                const P1& p1,
                const P2& p2,
@@ -278,8 +281,9 @@ HRESULT Invoke(IDispatch* object,
                VARIANT* const & result_out) {
   // Retrieve the ID of the method to be called.
   DISPID disp_id;
-  HRESULT hr = object->GetIDsOfNames(IID_NULL, &name, 1, LOCALE_USER_DEFAULT,
-                                     &disp_id);
+  LPOLESTR name = const_cast<LPOLESTR>(const_name);
+  HRESULT hr = object->GetIDsOfNames(
+      IID_NULL, &name, 1, LOCALE_USER_DEFAULT, &disp_id);
   if (FAILED(hr))
     return hr;
 
@@ -332,7 +336,7 @@ HRESULT Invoke(IDispatch* object,
 
 template <typename P1, typename P2, typename P3, typename P4>
 HRESULT Invoke(IDispatch* object,
-               LPOLESTR name,
+               LPCOLESTR const_name,
                WORD flags,
                const P1& p1,
                const P2& p2,
@@ -341,8 +345,9 @@ HRESULT Invoke(IDispatch* object,
                VARIANT* const & result_out) {
   // Retrieve the ID of the method to be called.
   DISPID disp_id;
-  HRESULT hr = object->GetIDsOfNames(IID_NULL, &name, 1, LOCALE_USER_DEFAULT,
-                                     &disp_id);
+  LPOLESTR name = const_cast<LPOLESTR>(const_name);
+  HRESULT hr = object->GetIDsOfNames(
+      IID_NULL, &name, 1, LOCALE_USER_DEFAULT, &disp_id);
   if (FAILED(hr))
     return hr;
 
@@ -399,7 +404,7 @@ HRESULT Invoke(IDispatch* object,
 
 template <typename P1, typename P2, typename P3, typename P4, typename P5>
 HRESULT Invoke(IDispatch* object,
-               LPOLESTR name,
+               LPCOLESTR const_name,
                WORD flags,
                const P1& p1,
                const P2& p2,
@@ -409,8 +414,9 @@ HRESULT Invoke(IDispatch* object,
                VARIANT* const & result_out) {
   // Retrieve the ID of the method to be called.
   DISPID disp_id;
-  HRESULT hr = object->GetIDsOfNames(IID_NULL, &name, 1, LOCALE_USER_DEFAULT,
-                                     &disp_id);
+  LPOLESTR name = const_cast<LPOLESTR>(const_name);
+  HRESULT hr = object->GetIDsOfNames(
+      IID_NULL, &name, 1, LOCALE_USER_DEFAULT, &disp_id);
   if (FAILED(hr))
     return hr;
 
@@ -472,7 +478,7 @@ HRESULT Invoke(IDispatch* object,
 template <typename P1, typename P2, typename P3, typename P4, typename P5,
     typename P6>
 HRESULT Invoke(IDispatch* object,
-               LPOLESTR name,
+               LPCOLESTR const_name,
                WORD flags,
                const P1& p1,
                const P2& p2,
@@ -483,8 +489,9 @@ HRESULT Invoke(IDispatch* object,
                VARIANT* const & result_out) {
   // Retrieve the ID of the method to be called.
   DISPID disp_id;
-  HRESULT hr = object->GetIDsOfNames(IID_NULL, &name, 1, LOCALE_USER_DEFAULT,
-                                     &disp_id);
+  LPOLESTR name = const_cast<LPOLESTR>(const_name);
+  HRESULT hr = object->GetIDsOfNames(
+      IID_NULL, &name, 1, LOCALE_USER_DEFAULT, &disp_id);
   if (FAILED(hr))
     return hr;
 
@@ -550,7 +557,7 @@ HRESULT Invoke(IDispatch* object,
 template <typename P1, typename P2, typename P3, typename P4, typename P5,
     typename P6, typename P7>
 HRESULT Invoke(IDispatch* object,
-               LPOLESTR name,
+               LPCOLESTR const_name,
                WORD flags,
                const P1& p1,
                const P2& p2,
@@ -562,8 +569,9 @@ HRESULT Invoke(IDispatch* object,
                VARIANT* const & result_out) {
   // Retrieve the ID of the method to be called.
   DISPID disp_id;
-  HRESULT hr = object->GetIDsOfNames(IID_NULL, &name, 1, LOCALE_USER_DEFAULT,
-                                     &disp_id);
+  LPOLESTR name = const_cast<LPOLESTR>(const_name);
+  HRESULT hr = object->GetIDsOfNames(
+      IID_NULL, &name, 1, LOCALE_USER_DEFAULT, &disp_id);
   if (FAILED(hr))
     return hr;
 

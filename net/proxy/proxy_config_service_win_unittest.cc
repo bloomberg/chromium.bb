@@ -12,9 +12,16 @@
 namespace net {
 
 TEST(ProxyConfigServiceWinTest, SetFromIEConfig) {
+  // Like WINHTTP_CURRENT_USER_IE_PROXY_CONFIG, but with const strings.
+  struct IEProxyConfig {
+    BOOL auto_detect;
+    const wchar_t* auto_config_url;
+    const wchar_t* proxy;
+    const wchar_t* proxy_bypass;
+  };
   const struct {
     // Input.
-    WINHTTP_CURRENT_USER_IE_PROXY_CONFIG ie_config;
+    IEProxyConfig ie_config;
 
     // Expected outputs (fields of the ProxyConfig).
     bool auto_detect;
@@ -190,8 +197,13 @@ TEST(ProxyConfigServiceWinTest, SetFromIEConfig) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    WINHTTP_CURRENT_USER_IE_PROXY_CONFIG ie_config = {
+        tests[i].ie_config.auto_detect,
+        const_cast<wchar_t*>(tests[i].ie_config.auto_config_url),
+        const_cast<wchar_t*>(tests[i].ie_config.proxy),
+        const_cast<wchar_t*>(tests[i].ie_config.proxy_bypass)};
     ProxyConfig config;
-    ProxyConfigServiceWin::SetFromIEConfig(&config, tests[i].ie_config);
+    ProxyConfigServiceWin::SetFromIEConfig(&config, ie_config);
 
     EXPECT_EQ(tests[i].auto_detect, config.auto_detect());
     EXPECT_EQ(tests[i].pac_url, config.pac_url());

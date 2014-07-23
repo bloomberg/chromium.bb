@@ -153,7 +153,7 @@ bool CreateMachineState() {
   ea.grfAccessMode = GRANT_ACCESS;
   ea.grfInheritance= SUB_CONTAINERS_AND_OBJECTS_INHERIT;
   ea.Trustee.TrusteeForm = TRUSTEE_IS_NAME;
-  ea.Trustee.ptstrName = L"Everyone";
+  ea.Trustee.ptstrName = const_cast<wchar_t*>(L"Everyone");
 
   ACL* new_dacl = NULL;
   result = SetEntriesInAcl(1, &ea, dacl, &new_dacl);

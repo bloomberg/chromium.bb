@@ -571,7 +571,7 @@ int CertVerifyProcWin::VerifyInternal(
   // We still need to request szOID_SERVER_GATED_CRYPTO and szOID_SGC_NETSCAPE
   // today because some certificate chains need them.  IE also requests these
   // two usages.
-  static const LPSTR usage[] = {
+  static const LPCSTR usage[] = {
     szOID_PKIX_KP_SERVER_AUTH,
     szOID_SERVER_GATED_CRYPTO,
     szOID_SGC_NETSCAPE

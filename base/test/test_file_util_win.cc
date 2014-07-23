@@ -47,7 +47,7 @@ bool DenyFilePermission(const FilePath& path, DWORD permission) {
   change.Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
   change.Trustee.TrusteeForm = TRUSTEE_IS_NAME;
   change.Trustee.TrusteeType = TRUSTEE_IS_USER;
-  change.Trustee.ptstrName = L"CURRENT_USER";
+  change.Trustee.ptstrName = const_cast<wchar_t*>(L"CURRENT_USER");
 
   PACL new_dacl;
   if (SetEntriesInAcl(1, &change, old_dacl, &new_dacl) != ERROR_SUCCESS) {

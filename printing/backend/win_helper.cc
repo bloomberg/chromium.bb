@@ -472,14 +472,18 @@ scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevModeWithColor(
 
 scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevMode(HANDLE printer,
                                                      DEVMODE* in) {
-  LONG buffer_size = DocumentProperties(NULL, printer, L"", NULL, NULL, 0);
+  LONG buffer_size = DocumentProperties(
+      NULL, printer, const_cast<wchar_t*>(L""), NULL, NULL, 0);
   if (buffer_size < static_cast<int>(sizeof(DEVMODE)))
     return scoped_ptr<DEVMODE, base::FreeDeleter>();
   scoped_ptr<DEVMODE, base::FreeDeleter> out(
       reinterpret_cast<DEVMODE*>(malloc(buffer_size)));
   DWORD flags = (in ? (DM_IN_BUFFER) : 0) | DM_OUT_BUFFER;
-  if (DocumentProperties(NULL, printer, L"", out.get(), in, flags) != IDOK)
+  if (DocumentProperties(
+          NULL, printer, const_cast<wchar_t*>(L""), out.get(), in, flags) !=
+      IDOK) {
     return scoped_ptr<DEVMODE, base::FreeDeleter>();
+  }
   CHECK_GE(buffer_size, out.get()->dmSize + out.get()->dmDriverExtra);
   return out.Pass();
 }
