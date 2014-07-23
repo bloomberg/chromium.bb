@@ -107,6 +107,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // coordinates. This may return a point outside the root window's bounds.
   gfx::Point GetLastMouseLocationInRoot() const;
 
+  void OnHostLostMouseGrab();
   void OnCursorMovedToRootLocation(const gfx::Point& root_location);
 
   // TODO(beng): This is only needed because this cleanup needs to happen after

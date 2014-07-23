@@ -1618,8 +1618,13 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       break;
     }
     case FocusOut:
-      ReleaseCapture();
-      X11DesktopHandler::get()->ProcessXEvent(xev);
+      if (xev->xfocus.mode != NotifyGrab) {
+        ReleaseCapture();
+        OnHostLostWindowCapture();
+        X11DesktopHandler::get()->ProcessXEvent(xev);
+      } else {
+        dispatcher()->OnHostLostMouseGrab();
+      }
       break;
     case FocusIn:
       X11DesktopHandler::get()->ProcessXEvent(xev);
