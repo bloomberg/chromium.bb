@@ -2973,6 +2973,31 @@ class BisectPerformanceMetrics(object):
       # Cros/svn use integers
       return int(good_revision) <= int(bad_revision)
 
+  def CanPerformBisect(self, revision_to_check):
+    """Checks whether a given revision is bisectable.
+
+    Note: At present it checks whether a given revision is bisectable on
+    android bots(refer crbug.com/385324).
+
+    Args:
+      revision_to_check: Known good revision.
+
+    Returns:
+      A dictionary indicating the result. If revision is not bisectable,
+      this will contain the field "error", otherwise None.
+    """
+    if self.opts.target_platform == 'android':
+      revision_to_check = self.source_control.SVNFindRev(revision_to_check)
+      if IsStringInt(revision_to_check) and revision_to_check < 265549:
+        return {'error': (
+            'Bisect cannot conitnue for the given revision range.\n'
+            'It is impossible to bisect Android regressions '
+            'prior to r265549, which allows the bisect bot to '
+            'rely on Telemetry to do apk installation of the most recently '
+            'built local ChromeShell(refer to crbug.com/385324).\n'
+            'Please try bisecting revisions greater than or equal to r265549.')}
+    return None
+
   def Run(self, command_to_run, bad_revision_in, good_revision_in, metric):
     """Given known good and bad revisions, run a binary search on all
     intermediate revisions to determine the CL where the performance regression
@@ -3058,6 +3083,11 @@ class BisectPerformanceMetrics(object):
 
     if self.opts.output_buildbot_annotations:
       bisect_utils.OutputAnnotationStepStart('Gathering Revisions')
+
+    cannot_bisect = self.CanPerformBisect(good_revision)
+    if cannot_bisect:
+      results['error'] = cannot_bisect.get('error')
+      return results
 
     print 'Gathering revision range for bisection.'
     # Retrieve a list of revisions to do bisection on.
