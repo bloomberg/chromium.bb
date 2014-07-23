@@ -168,10 +168,7 @@ void BluetoothAdapterWin::CreateRfcommService(
     const CreateServiceErrorCallback& error_callback) {
   scoped_refptr<BluetoothSocketWin> socket =
       BluetoothSocketWin::CreateBluetoothSocket(
-          ui_task_runner_,
-          socket_thread_,
-          NULL,
-          net::NetLog::Source());
+          ui_task_runner_, socket_thread_);
   socket->Listen(this, uuid, options,
                  base::Bind(callback, socket),
                  error_callback);

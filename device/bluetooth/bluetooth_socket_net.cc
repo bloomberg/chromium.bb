@@ -18,6 +18,7 @@
 #include "device/bluetooth/bluetooth_socket_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 
 namespace {
 
@@ -39,13 +40,9 @@ BluetoothSocketNet::WriteRequest::~WriteRequest() {}
 
 BluetoothSocketNet::BluetoothSocketNet(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<BluetoothSocketThread> socket_thread,
-    net::NetLog* net_log,
-    const net::NetLog::Source& source)
+    scoped_refptr<BluetoothSocketThread> socket_thread)
     : ui_task_runner_(ui_task_runner),
-      socket_thread_(socket_thread),
-      net_log_(net_log),
-      source_(source) {
+      socket_thread_(socket_thread) {
   DCHECK(ui_task_runner->RunsTasksOnCurrentThread());
   socket_thread_->OnSocketActivate();
 }
@@ -119,7 +116,7 @@ void BluetoothSocketNet::ResetData() {
 }
 
 void BluetoothSocketNet::ResetTCPSocket() {
-  tcp_socket_.reset(new net::TCPSocket(net_log_, source_));
+  tcp_socket_.reset(new net::TCPSocket(NULL, net::NetLog::Source()));
 }
 
 void BluetoothSocketNet::SetTCPSocket(scoped_ptr<net::TCPSocket> tcp_socket) {

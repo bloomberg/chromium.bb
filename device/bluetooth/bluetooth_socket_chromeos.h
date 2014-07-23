@@ -36,9 +36,7 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
  public:
   static scoped_refptr<BluetoothSocketChromeOS> CreateBluetoothSocket(
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-      scoped_refptr<device::BluetoothSocketThread> socket_thread,
-      net::NetLog* net_log,
-      const net::NetLog::Source& source);
+      scoped_refptr<device::BluetoothSocketThread> socket_thread);
 
   // Connects this socket to the service on |device| published as UUID |uuid|,
   // the underlying protocol and PSM or Channel is obtained through service
@@ -80,9 +78,7 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
  private:
   BluetoothSocketChromeOS(
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-      scoped_refptr<device::BluetoothSocketThread> socket_thread,
-      net::NetLog* net_log,
-      const net::NetLog::Source& source);
+      scoped_refptr<device::BluetoothSocketThread> socket_thread);
 
   // Register the underlying profile client object with the Bluetooth Daemon.
   void RegisterProfile(const base::Closure& success_callback,

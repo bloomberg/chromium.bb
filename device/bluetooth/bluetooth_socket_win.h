@@ -29,9 +29,7 @@ class BluetoothSocketWin : public BluetoothSocketNet {
  public:
   static scoped_refptr<BluetoothSocketWin> CreateBluetoothSocket(
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-      scoped_refptr<BluetoothSocketThread> socket_thread,
-      net::NetLog* net_log,
-      const net::NetLog::Source& source);
+      scoped_refptr<BluetoothSocketThread> socket_thread);
 
   // Connect to the peer device and calls |success_callback| when the
   // connection has been established successfully. If an error occurs, calls
@@ -66,10 +64,7 @@ class BluetoothSocketWin : public BluetoothSocketNet {
   struct ServiceRegData;
 
   BluetoothSocketWin(scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-                     scoped_refptr<BluetoothSocketThread> socket_thread,
-                     net::NetLog* net_log,
-                     const net::NetLog::Source& source);
-
+                     scoped_refptr<BluetoothSocketThread> socket_thread);
 
   void DoConnect(const base::Closure& success_callback,
                  const ErrorCompletionCallback& error_callback);

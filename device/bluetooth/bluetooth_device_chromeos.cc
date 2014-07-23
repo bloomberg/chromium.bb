@@ -442,13 +442,8 @@ void BluetoothDeviceChromeOS::ConnectToService(
           << uuid.canonical_value();
   scoped_refptr<BluetoothSocketChromeOS> socket =
       BluetoothSocketChromeOS::CreateBluetoothSocket(
-          ui_task_runner_,
-          socket_thread_,
-          NULL,
-          net::NetLog::Source());
-  socket->Connect(this, uuid,
-                  base::Bind(callback, socket),
-                  error_callback);
+          ui_task_runner_, socket_thread_);
+  socket->Connect(this, uuid, base::Bind(callback, socket), error_callback);
 }
 
 void BluetoothDeviceChromeOS::CreateGattConnection(

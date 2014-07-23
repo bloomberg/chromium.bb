@@ -240,10 +240,7 @@ void BluetoothAdapterChromeOS::CreateRfcommService(
           << uuid.canonical_value();
   scoped_refptr<BluetoothSocketChromeOS> socket =
       BluetoothSocketChromeOS::CreateBluetoothSocket(
-          ui_task_runner_,
-          socket_thread_,
-          NULL,
-          net::NetLog::Source());
+          ui_task_runner_, socket_thread_);
   socket->Listen(this,
                  BluetoothSocketChromeOS::kRfcomm,
                  uuid,
@@ -261,10 +258,7 @@ void BluetoothAdapterChromeOS::CreateL2capService(
           << uuid.canonical_value();
   scoped_refptr<BluetoothSocketChromeOS> socket =
       BluetoothSocketChromeOS::CreateBluetoothSocket(
-          ui_task_runner_,
-          socket_thread_,
-          NULL,
-          net::NetLog::Source());
+          ui_task_runner_, socket_thread_);
   socket->Listen(this,
                  BluetoothSocketChromeOS::kL2cap,
                  uuid,

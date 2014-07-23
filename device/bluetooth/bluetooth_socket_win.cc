@@ -75,21 +75,17 @@ struct BluetoothSocketWin::ServiceRegData {
 scoped_refptr<BluetoothSocketWin>
 BluetoothSocketWin::CreateBluetoothSocket(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<device::BluetoothSocketThread> socket_thread,
-    net::NetLog* net_log,
-    const net::NetLog::Source& source) {
+    scoped_refptr<device::BluetoothSocketThread> socket_thread) {
   DCHECK(ui_task_runner->RunsTasksOnCurrentThread());
 
   return make_scoped_refptr(
-      new BluetoothSocketWin(ui_task_runner, socket_thread, net_log, source));
+      new BluetoothSocketWin(ui_task_runner, socket_thread));
 }
 
 BluetoothSocketWin::BluetoothSocketWin(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<BluetoothSocketThread> socket_thread,
-    net::NetLog* net_log,
-    const net::NetLog::Source& source)
-    : BluetoothSocketNet(ui_task_runner, socket_thread, net_log, source),
+    scoped_refptr<BluetoothSocketThread> socket_thread)
+    : BluetoothSocketNet(ui_task_runner, socket_thread),
       supports_rfcomm_(false),
       rfcomm_channel_(0xFF),
       bth_addr_(BTH_ADDR_NULL) {
@@ -389,11 +385,8 @@ void BluetoothSocketWin::OnAcceptOnUI(
     return;
   }
 
-  scoped_refptr<BluetoothSocketWin> peer_socket = CreateBluetoothSocket(
-          ui_task_runner(),
-          socket_thread(),
-          net_log(),
-          source());
+  scoped_refptr<BluetoothSocketWin> peer_socket =
+      CreateBluetoothSocket(ui_task_runner(), socket_thread());
   peer_socket->SetTCPSocket(accept_socket.Pass());
   success_callback.Run(peer_device, peer_socket);
 }

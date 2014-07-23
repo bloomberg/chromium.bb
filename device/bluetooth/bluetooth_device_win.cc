@@ -196,7 +196,7 @@ void BluetoothDeviceWin::ConnectToService(
     const ConnectToServiceErrorCallback& error_callback) {
   scoped_refptr<BluetoothSocketWin> socket(
       BluetoothSocketWin::CreateBluetoothSocket(
-          ui_task_runner_, socket_thread_, NULL, net::NetLog::Source()));
+          ui_task_runner_, socket_thread_));
   socket->Connect(this, uuid, base::Bind(callback, socket), error_callback);
 }
 

@@ -15,7 +15,6 @@
 #include "base/sequenced_task_runner.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
-#include "net/base/net_log.h"
 #include "net/socket/tcp_socket.h"
 
 namespace net {
@@ -45,9 +44,7 @@ class BluetoothSocketNet : public BluetoothSocket {
 
  protected:
   BluetoothSocketNet(scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-                     scoped_refptr<BluetoothSocketThread> socket_thread,
-                     net::NetLog* net_log,
-                     const net::NetLog::Source& source);
+                     scoped_refptr<BluetoothSocketThread> socket_thread);
   virtual ~BluetoothSocketNet();
 
   // Resets locally held data after a socket is closed. Default implementation
@@ -62,9 +59,6 @@ class BluetoothSocketNet : public BluetoothSocket {
   scoped_refptr<BluetoothSocketThread> socket_thread() const {
     return socket_thread_;
   }
-
-  net::NetLog* net_log() const { return net_log_; }
-  const net::NetLog::Source& source() const { return source_; }
 
   net::TCPSocket* tcp_socket() { return tcp_socket_.get(); }
 
@@ -116,8 +110,6 @@ class BluetoothSocketNet : public BluetoothSocket {
 
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
   scoped_refptr<BluetoothSocketThread> socket_thread_;
-  net::NetLog* net_log_;
-  const net::NetLog::Source source_;
 
   scoped_ptr<net::TCPSocket> tcp_socket_;
   scoped_refptr<net::IOBufferWithSize> read_buffer_;

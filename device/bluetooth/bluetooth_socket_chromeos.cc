@@ -56,14 +56,11 @@ namespace chromeos {
 scoped_refptr<BluetoothSocketChromeOS>
 BluetoothSocketChromeOS::CreateBluetoothSocket(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<BluetoothSocketThread> socket_thread,
-    net::NetLog* net_log,
-    const net::NetLog::Source& source) {
+    scoped_refptr<BluetoothSocketThread> socket_thread) {
   DCHECK(ui_task_runner->RunsTasksOnCurrentThread());
 
   return make_scoped_refptr(
-      new BluetoothSocketChromeOS(
-          ui_task_runner, socket_thread, net_log, source));
+      new BluetoothSocketChromeOS(ui_task_runner, socket_thread));
 }
 
 BluetoothSocketChromeOS::AcceptRequest::AcceptRequest() {}
@@ -78,10 +75,8 @@ BluetoothSocketChromeOS::ConnectionRequest::~ConnectionRequest() {}
 
 BluetoothSocketChromeOS::BluetoothSocketChromeOS(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<BluetoothSocketThread> socket_thread,
-    net::NetLog* net_log,
-    const net::NetLog::Source& source)
-    : BluetoothSocketNet(ui_task_runner, socket_thread, net_log, source) {
+    scoped_refptr<BluetoothSocketThread> socket_thread)
+    : BluetoothSocketNet(ui_task_runner, socket_thread) {
 }
 
 BluetoothSocketChromeOS::~BluetoothSocketChromeOS() {
@@ -438,10 +433,7 @@ void BluetoothSocketChromeOS::AcceptConnectionRequest() {
 
   scoped_refptr<BluetoothSocketChromeOS> client_socket =
       BluetoothSocketChromeOS::CreateBluetoothSocket(
-          ui_task_runner(),
-          socket_thread(),
-          net_log(),
-          source());
+          ui_task_runner(), socket_thread());
 
   client_socket->device_address_ = device->GetAddress();
   client_socket->device_path_ = request->device_path;
