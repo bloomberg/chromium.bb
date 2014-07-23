@@ -6212,3 +6212,10 @@
    fun:_ZN7content28ShellURLRequestContextGetter20GetURLRequestContextEv
    fun:_ZN7content21ChromeAppCacheService20InitializeOnIOThreadERKN4base8FilePathEPNS_15ResourceContextEPN3net23URLRequestContextGetterE13scoped_refptrIN5quota20SpecialStoragePolicyEE
 }
+{
+   bug_396658
+   Memcheck:Uninitialized	
+   ...
+   fun:wk_png_write_find_filter	
+   fun:wk_png_write_row	
+}
