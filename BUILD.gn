@@ -141,6 +141,9 @@ if (build_ffmpegsumo) {
     libs = []
     deps = []
 
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+
     # Since we are not often debugging FFmpeg, and performance is
     # unacceptable without optimization, freeze the optimizations to -O2.
     # If someone really wants -O1 , they can change these in their checkout.
@@ -317,9 +320,6 @@ if (build_ffmpegsumo) {
         "_snprintf=avpriv_snprintf",
         "vsnprintf=avpriv_vsnprintf",
       ]
-
-      configs -= [ "//build/config/compiler:chromium_code" ]
-      configs += [ "//build/config/compiler:no_chromium_code" ]
 
       include_dirs += [
         "chromium/include/win"
