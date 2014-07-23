@@ -106,7 +106,8 @@
   <project name="platform/external/harfbuzz" path="external/harfbuzz" revision="7a08026033b424da3b7022ebcce35f033949df8b"/>
   <project name="platform/external/harfbuzz_ng" path="external/harfbuzz_ng" revision="f9f004a535cf5c36d55f2b102520aac8badfda36"/>
   <project name="platform/external/hyphenation" path="external/hyphenation" revision="bfa84834dfeb7fe8d058c2e7e07b5981451ddf82"/>
-  <project groups="pdk" name="platform/external/icu4c" path="external/icu4c" revision="6a29d748029fd83f526f695cccdf00afed570231"/>
+  <project groups="pdk" name="platform/external/icu" path="external/icu" revision="1e9af9f17f0d22602c65b6115eaef2076e4136b0"/>
+  <project groups="pdk" name="platform/external/icu4c" path="external/icu4c" revision="e5311394ca22b280da41cd17059288dab3fb1ea6"/>
   <project groups="pdk" name="platform/external/iproute2" path="external/iproute2" revision="c0ed926d42a0d24095991bc1df603e629b9a7323"/>
   <project name="platform/external/ipsec-tools" path="external/ipsec-tools" revision="f4cb1ee4b00abbfb6f968dc25818c23b4b47e584"/>
   <project name="platform/external/iptables" path="external/iptables" revision="e3928b77f18db0fdc615693017c6c15eb71bf4e0"/>
