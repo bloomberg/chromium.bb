@@ -258,6 +258,14 @@ void FakeProvidedFileSystem::CopyEntry(
       FROM_HERE, base::Bind(callback, base::File::FILE_OK));
 }
 
+void FakeProvidedFileSystem::MoveEntry(
+    const base::FilePath& source_path,
+    const base::FilePath& target_path,
+    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(callback, base::File::FILE_OK));
+}
+
 const ProvidedFileSystemInfo& FakeProvidedFileSystem::GetFileSystemInfo()
     const {
   return file_system_info_;

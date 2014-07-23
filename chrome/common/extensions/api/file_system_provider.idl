@@ -141,6 +141,14 @@ namespace fileSystemProvider {
     DOMString targetPath;
   };
 
+  // Options for the <code>onMoveEntryRequested()</code> event.
+  dictionary MoveEntryRequestedOptions {
+    DOMString fileSystemId;
+    long requestId;
+    DOMString sourcePath;
+    DOMString targetPath;
+  };
+
   // Callback to receive the result of mount() function.
   callback MountCallback = void([nodoc, instanceOf=DOMError] object error);
 
@@ -279,6 +287,13 @@ namespace fileSystemProvider {
     // If an error occurs, then <code>errorCallback</code> must be called.
     [maxListeners=1, nodoc] static void onCopyEntryRequested(
         CopyEntryRequestedOptions options,
+        ProviderSuccessCallback successCallback,
+        ProviderErrorCallback errorCallback);
+
+    // Raised when moving an entry (recursively if a directory) is requested.
+    // If an error occurs, then <code>errorCallback</code> must be called.
+    [maxListeners=1, nodoc] static void onMoveEntryRequested(
+        MoveEntryRequestedOptions options,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
   };

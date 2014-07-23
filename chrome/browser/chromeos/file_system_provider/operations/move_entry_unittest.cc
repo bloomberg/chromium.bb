@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/file_system_provider/operations/create_directory.h"
+#include "chrome/browser/chromeos/file_system_provider/operations/move_entry.h"
 
 #include <string>
 #include <vector>
@@ -27,14 +27,15 @@ namespace {
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kFileSystemId[] = "testing-file-system";
 const int kRequestId = 2;
-const base::FilePath::CharType kDirectoryPath[] = "/kitty/and/puppy/happy";
+const base::FilePath::CharType kSourcePath[] = "/bunny/and/bear/happy";
+const base::FilePath::CharType kTargetPath[] = "/kitty/and/puppy/happy";
 
 }  // namespace
 
-class FileSystemProviderOperationsCreateDirectoryTest : public testing::Test {
+class FileSystemProviderOperationsMoveEntryTest : public testing::Test {
  protected:
-  FileSystemProviderOperationsCreateDirectoryTest() {}
-  virtual ~FileSystemProviderOperationsCreateDirectoryTest() {}
+  FileSystemProviderOperationsMoveEntryTest() {}
+  virtual ~FileSystemProviderOperationsMoveEntryTest() {}
 
   virtual void SetUp() OVERRIDE {
     file_system_info_ =
@@ -48,28 +49,26 @@ class FileSystemProviderOperationsCreateDirectoryTest : public testing::Test {
   ProvidedFileSystemInfo file_system_info_;
 };
 
-TEST_F(FileSystemProviderOperationsCreateDirectoryTest, Execute) {
+TEST_F(FileSystemProviderOperationsMoveEntryTest, Execute) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  CreateDirectory create_directory(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kDirectoryPath),
-      false /* exclusive */,
-      true /* recursive */,
-      base::Bind(&util::LogStatusCallback, &callback_log));
-  create_directory.SetDispatchEventImplForTesting(
+  MoveEntry move_entry(NULL,
+                       file_system_info_,
+                       base::FilePath::FromUTF8Unsafe(kSourcePath),
+                       base::FilePath::FromUTF8Unsafe(kTargetPath),
+                       base::Bind(&util::LogStatusCallback, &callback_log));
+  move_entry.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_TRUE(create_directory.Execute(kRequestId));
+  EXPECT_TRUE(move_entry.Execute(kRequestId));
 
   ASSERT_EQ(1u, dispatcher.events().size());
   extensions::Event* event = dispatcher.events()[0];
-  EXPECT_EQ(extensions::api::file_system_provider::OnCreateDirectoryRequested::
-                kEventName,
-            event->event_name);
+  EXPECT_EQ(
+      extensions::api::file_system_provider::OnMoveEntryRequested::kEventName,
+      event->event_name);
   base::ListValue* event_args = event->event_args.get();
   ASSERT_EQ(1u, event_args->GetSize());
 
@@ -84,81 +83,71 @@ TEST_F(FileSystemProviderOperationsCreateDirectoryTest, Execute) {
   EXPECT_TRUE(options->GetInteger("requestId", &event_request_id));
   EXPECT_EQ(kRequestId, event_request_id);
 
-  std::string event_directory_path;
-  EXPECT_TRUE(options->GetString("directoryPath", &event_directory_path));
-  EXPECT_EQ(kDirectoryPath, event_directory_path);
+  std::string event_source_path;
+  EXPECT_TRUE(options->GetString("sourcePath", &event_source_path));
+  EXPECT_EQ(kSourcePath, event_source_path);
 
-  bool event_exclusive;
-  EXPECT_TRUE(options->GetBoolean("exclusive", &event_exclusive));
-  EXPECT_FALSE(event_exclusive);
-
-  bool event_recursive;
-  EXPECT_TRUE(options->GetBoolean("recursive", &event_recursive));
-  EXPECT_TRUE(event_recursive);
+  std::string event_target_path;
+  EXPECT_TRUE(options->GetString("targetPath", &event_target_path));
+  EXPECT_EQ(kTargetPath, event_target_path);
 }
 
-TEST_F(FileSystemProviderOperationsCreateDirectoryTest, Execute_NoListener) {
+TEST_F(FileSystemProviderOperationsMoveEntryTest, Execute_NoListener) {
   util::LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  CreateDirectory create_directory(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kDirectoryPath),
-      false /* exclusive */,
-      true /* recursive */,
-      base::Bind(&util::LogStatusCallback, &callback_log));
-  create_directory.SetDispatchEventImplForTesting(
+  MoveEntry move_entry(NULL,
+                       file_system_info_,
+                       base::FilePath::FromUTF8Unsafe(kSourcePath),
+                       base::FilePath::FromUTF8Unsafe(kTargetPath),
+                       base::Bind(&util::LogStatusCallback, &callback_log));
+  move_entry.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_FALSE(create_directory.Execute(kRequestId));
+  EXPECT_FALSE(move_entry.Execute(kRequestId));
 }
 
-TEST_F(FileSystemProviderOperationsCreateDirectoryTest, OnSuccess) {
+TEST_F(FileSystemProviderOperationsMoveEntryTest, OnSuccess) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  CreateDirectory create_directory(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kDirectoryPath),
-      false /* exclusive */,
-      true /* recursive */,
-      base::Bind(&util::LogStatusCallback, &callback_log));
-  create_directory.SetDispatchEventImplForTesting(
+  MoveEntry move_entry(NULL,
+                       file_system_info_,
+                       base::FilePath::FromUTF8Unsafe(kSourcePath),
+                       base::FilePath::FromUTF8Unsafe(kTargetPath),
+                       base::Bind(&util::LogStatusCallback, &callback_log));
+  move_entry.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_TRUE(create_directory.Execute(kRequestId));
+  EXPECT_TRUE(move_entry.Execute(kRequestId));
 
-  create_directory.OnSuccess(kRequestId,
-                             scoped_ptr<RequestValue>(new RequestValue()),
-                             false /* has_more */);
+  move_entry.OnSuccess(kRequestId,
+                       scoped_ptr<RequestValue>(new RequestValue()),
+                       false /* has_more */);
   ASSERT_EQ(1u, callback_log.size());
   EXPECT_EQ(base::File::FILE_OK, callback_log[0]);
 }
 
-TEST_F(FileSystemProviderOperationsCreateDirectoryTest, OnError) {
+TEST_F(FileSystemProviderOperationsMoveEntryTest, OnError) {
   util::LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   util::StatusCallbackLog callback_log;
 
-  CreateDirectory create_directory(
-      NULL,
-      file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kDirectoryPath),
-      false /* exclusive */,
-      true /* recursive */,
-      base::Bind(&util::LogStatusCallback, &callback_log));
-  create_directory.SetDispatchEventImplForTesting(
+  MoveEntry move_entry(NULL,
+                       file_system_info_,
+                       base::FilePath::FromUTF8Unsafe(kSourcePath),
+                       base::FilePath::FromUTF8Unsafe(kTargetPath),
+                       base::Bind(&util::LogStatusCallback, &callback_log));
+  move_entry.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_TRUE(create_directory.Execute(kRequestId));
+  EXPECT_TRUE(move_entry.Execute(kRequestId));
 
-  create_directory.OnError(kRequestId,
-                           scoped_ptr<RequestValue>(new RequestValue()),
-                           base::File::FILE_ERROR_TOO_MANY_OPENED);
+  move_entry.OnError(kRequestId,
+                     scoped_ptr<RequestValue>(new RequestValue()),
+                     base::File::FILE_ERROR_TOO_MANY_OPENED);
   ASSERT_EQ(1u, callback_log.size());
   EXPECT_EQ(base::File::FILE_ERROR_TOO_MANY_OPENED, callback_log[0]);
 }

@@ -34,6 +34,7 @@ enum RequestType {
   DELETE_ENTRY,
   CREATE_FILE,
   COPY_ENTRY,
+  MOVE_ENTRY,
   TESTING
 };
 

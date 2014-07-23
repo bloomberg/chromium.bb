@@ -216,4 +216,8 @@ eventBindings.registerArgumentMassager(
     'fileSystemProvider.onCopyEntryRequested',
     massageArgumentsDefault);
 
+eventBindings.registerArgumentMassager(
+    'fileSystemProvider.onMoveEntryRequested',
+    massageArgumentsDefault);
+
 exports.binding = binding.generate();

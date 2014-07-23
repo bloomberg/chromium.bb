@@ -98,4 +98,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, CopyEntry) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, MoveEntry) {
+  ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/move_entry",
+                                          kFlagLoadAsComponent))
+      << message_;
+}
+
 }  // namespace extensions

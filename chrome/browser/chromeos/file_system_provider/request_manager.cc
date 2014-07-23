@@ -40,6 +40,8 @@ std::string RequestTypeToString(RequestType type) {
       return "CREATE_FILE";
     case COPY_ENTRY:
       return "COPY_ENTRY";
+    case MOVE_ENTRY:
+      return "MOVE_ENTRY";
     case TESTING:
       return "TESTING";
   }
