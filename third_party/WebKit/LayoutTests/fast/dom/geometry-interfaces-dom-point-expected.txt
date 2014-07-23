@@ -1,0 +1,75 @@
+# DOMPoint(2, 3)
+PASS point.x is 2
+PASS point.y is 3
+PASS point.z is 0
+PASS point.w is 1
+
+# DOMPoint(5, 7, 9)
+PASS point.x is 5
+PASS point.y is 7
+PASS point.z is 9
+PASS point.w is 1
+
+# DOMPoint(8, 2, 1, 6)
+PASS point.x is 8
+PASS point.y is 2
+PASS point.z is 1
+PASS point.w is 6
+
+# DOMPoint({ x : 2 })
+PASS point.x is 2
+PASS point.y is 0
+PASS point.z is 0
+PASS point.w is 1
+
+# DOMPoint({ y : 2 })
+PASS point.x is 0
+PASS point.y is 2
+PASS point.z is 0
+PASS point.w is 1
+
+# DOMPoint({ z : 2 })
+PASS point.x is 0
+PASS point.y is 0
+PASS point.z is 2
+PASS point.w is 1
+
+# DOMPoint({ w : 2 })
+PASS point.x is 0
+PASS point.y is 0
+PASS point.z is 0
+PASS point.w is 2
+
+# DOMPoint({ x : 2, y : 3, z : 4, w : 5 })
+PASS point.x is 2
+PASS point.y is 3
+PASS point.z is 4
+PASS point.w is 5
+
+# DOMPoint()
+PASS point.x is 0
+PASS point.y is 0
+PASS point.z is 0
+PASS point.w is 1
+
+# DOMPoint setter
+PASS point.x is 10
+PASS point.y is 20
+PASS point.z is 30
+PASS point.w is 40
+
+# DOMPointReadOnly(10, 20, 30, 40)
+PASS point.x is 10
+PASS point.y is 20
+PASS point.z is 30
+PASS point.w is 40
+
+# DOMPointReadOnly readonly test
+PASS point.x is 10
+PASS point.y is 20
+PASS point.z is 30
+PASS point.w is 40
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

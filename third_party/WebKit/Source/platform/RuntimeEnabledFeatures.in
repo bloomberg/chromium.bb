@@ -67,6 +67,7 @@ FontLoadEvents status=stable
 FastTextAutosizing status=stable
 Gamepad status=stable
 Geofencing status=test
+GeometryInterfaces status=test
 HTMLImports status=stable
 HighResolutionTimeInWorkers status=stable
 IMEAPI status=experimental
