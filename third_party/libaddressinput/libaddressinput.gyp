@@ -86,6 +86,7 @@
         ],
       },
       'dependencies': [
+        '../../base/base.gyp:base',
         '../re2/re2.gyp:re2',
         'libaddressinput_strings',
       ],
