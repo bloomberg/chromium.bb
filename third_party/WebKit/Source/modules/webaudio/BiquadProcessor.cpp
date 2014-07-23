@@ -60,6 +60,15 @@ BiquadProcessor::~BiquadProcessor()
         uninitialize();
 }
 
+void BiquadProcessor::trace(Visitor* visitor)
+{
+    visitor->trace(m_parameter1);
+    visitor->trace(m_parameter2);
+    visitor->trace(m_parameter3);
+    visitor->trace(m_parameter4);
+    AudioDSPKernelProcessor::trace(visitor);
+}
+
 PassOwnPtr<AudioDSPKernel> BiquadProcessor::createKernel()
 {
     return adoptPtr(new BiquadDSPKernel(this));

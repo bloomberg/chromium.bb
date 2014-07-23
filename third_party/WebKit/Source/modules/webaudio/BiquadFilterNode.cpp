@@ -35,7 +35,7 @@ BiquadFilterNode::BiquadFilterNode(AudioContext* context, float sampleRate)
 {
     ScriptWrappable::init(this);
     // Initially setup as lowpass filter.
-    m_processor = adoptPtr(new BiquadProcessor(context, sampleRate, 1, false));
+    m_processor = adoptPtrWillBeNoop(new BiquadProcessor(context, sampleRate, 1, false));
     setNodeType(NodeTypeBiquadFilter);
 }
 

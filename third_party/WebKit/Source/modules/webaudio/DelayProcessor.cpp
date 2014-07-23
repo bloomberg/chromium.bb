@@ -45,6 +45,12 @@ DelayProcessor::~DelayProcessor()
         uninitialize();
 }
 
+void DelayProcessor::trace(Visitor* visitor)
+{
+    visitor->trace(m_delayTime);
+    AudioDSPKernelProcessor::trace(visitor);
+}
+
 PassOwnPtr<AudioDSPKernel> DelayProcessor::createKernel()
 {
     return adoptPtr(new DelayDSPKernel(this));

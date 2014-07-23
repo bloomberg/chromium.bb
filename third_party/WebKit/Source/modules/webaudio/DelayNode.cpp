@@ -49,7 +49,7 @@ DelayNode::DelayNode(AudioContext* context, float sampleRate, double maxDelayTim
             + ", exclusive.");
         return;
     }
-    m_processor = adoptPtr(new DelayProcessor(context, sampleRate, 1, maxDelayTime));
+    m_processor = adoptPtrWillBeNoop(new DelayProcessor(context, sampleRate, 1, maxDelayTime));
     setNodeType(NodeTypeDelay);
 }
 

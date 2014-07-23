@@ -45,6 +45,23 @@ AudioBasicProcessorNode::AudioBasicProcessorNode(AudioContext* context, float sa
     // The subclass must create m_processor.
 }
 
+AudioBasicProcessorNode::~AudioBasicProcessorNode()
+{
+    ASSERT(!isInitialized());
+}
+
+void AudioBasicProcessorNode::trace(Visitor* visitor)
+{
+    visitor->trace(m_processor);
+    AudioNode::trace(visitor);
+}
+
+void AudioBasicProcessorNode::dispose()
+{
+    uninitialize();
+    AudioNode::dispose();
+}
+
 void AudioBasicProcessorNode::initialize()
 {
     if (isInitialized())

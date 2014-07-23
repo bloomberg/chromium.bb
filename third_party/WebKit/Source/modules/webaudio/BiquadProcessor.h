@@ -50,8 +50,8 @@ public:
     };
 
     BiquadProcessor(AudioContext*, float sampleRate, size_t numberOfChannels, bool autoInitialize);
-
     virtual ~BiquadProcessor();
+    virtual void trace(Visitor*) OVERRIDE;
 
     virtual PassOwnPtr<AudioDSPKernel> createKernel() OVERRIDE;
 
@@ -80,10 +80,10 @@ public:
 private:
     FilterType m_type;
 
-    RefPtrWillBePersistent<AudioParam> m_parameter1;
-    RefPtrWillBePersistent<AudioParam> m_parameter2;
-    RefPtrWillBePersistent<AudioParam> m_parameter3;
-    RefPtrWillBePersistent<AudioParam> m_parameter4;
+    RefPtrWillBeMember<AudioParam> m_parameter1;
+    RefPtrWillBeMember<AudioParam> m_parameter2;
+    RefPtrWillBeMember<AudioParam> m_parameter3;
+    RefPtrWillBeMember<AudioParam> m_parameter4;
 
     // so DSP kernels know when to re-compute coefficients
     bool m_filterCoefficientsDirty;
