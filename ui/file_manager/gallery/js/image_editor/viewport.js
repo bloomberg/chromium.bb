@@ -53,13 +53,6 @@ function Viewport() {
   this.scale_ = 1;
 
   /**
-   * Index of zoom ratio. 0 is "zoom ratio = 1".
-   * @type {number}
-   * @private
-   */
-  this.zoomIndex_ = 0;
-
-  /**
    * Zoom ratio specified by user operations.
    * @type {number}
    * @private
@@ -93,18 +86,10 @@ function Viewport() {
 /**
  * Zoom ratios.
  *
- * @type {Object.<string, number>}
+ * @type {Array.<number>}
  * @const
  */
-Viewport.ZOOM_RATIOS = Object.freeze({
-  '3': 3,
-  '2': 2,
-  '1': 1.5,
-  '0': 1,
-  '-1': 0.75,
-  '-2': 0.5,
-  '-3': 0.25
-});
+Viewport.ZOOM_RATIOS = Object.freeze([1, 1.5, 2, 3]);
 
 /**
  * @param {number} width Image width.
@@ -125,24 +110,15 @@ Viewport.prototype.setScreenSize = function(width, height) {
 };
 
 /**
- * Sets the new zoom ratio.
- * @param {number} zoomIndex New zoom index.
+ * Sets zoom value directly.
+ * @param {number} zoom New zoom value.
  */
-Viewport.prototype.setZoomIndex = function(zoomIndex) {
-  // Ignore the invalid zoomIndex.
-  if (!Viewport.ZOOM_RATIOS[zoomIndex.toString()])
-    return;
-  this.zoomIndex_ = zoomIndex;
-  this.zoom_ = Viewport.ZOOM_RATIOS[zoomIndex];
+Viewport.prototype.setZoom = function(zoom) {
+  var zoomMin = Viewport.ZOOM_RATIOS[0];
+  var zoomMax = Viewport.ZOOM_RATIOS[Viewport.ZOOM_RATIOS.length - 1];
+  var adjustedZoom = Math.max(zoomMin, Math.min(zoom, zoomMax));
+  this.zoom_ = adjustedZoom;
   this.update_();
-};
-
-/**
- * Returns the current zoom index.
- * @return {number} Zoon index.
- */
-Viewport.prototype.getZoomIndex = function() {
-  return this.zoomIndex_;
 };
 
 /**
@@ -150,7 +126,41 @@ Viewport.prototype.getZoomIndex = function() {
  * @return {number} Zoom value.
  */
 Viewport.prototype.getZoom = function() {
-  return this.zoomIndex_;
+  return this.zoom_;
+};
+
+/**
+ * Sets the nearset larger value of ZOOM_RATIOS.
+ */
+Viewport.prototype.zoomIn = function() {
+  var zoom = Viewport.ZOOM_RATIOS[0];
+  for (var i = 0; i < Viewport.ZOOM_RATIOS.length; i++) {
+    zoom = Viewport.ZOOM_RATIOS[i];
+    if (zoom > this.zoom_)
+      break;
+  }
+  this.setZoom(zoom);
+};
+
+/**
+ * Sets the nearest smaller value of ZOOM_RATIOS.
+ */
+Viewport.prototype.zoomOut = function() {
+  var zoom = Viewport.ZOOM_RATIOS[Viewport.ZOOM_RATIOS.length - 1];
+  for (var i = Viewport.ZOOM_RATIOS.length - 1; i >= 0; i--) {
+    zoom = Viewport.ZOOM_RATIOS[i];
+    if (zoom < this.zoom_)
+      break;
+  }
+  this.setZoom(zoom);
+};
+
+/**
+ * Obtains whether the picture is zoomed or not.
+ * @return {boolean}
+ */
+Viewport.prototype.isZoomed = function() {
+  return this.zoom_ !== 1;
 };
 
 /**
@@ -379,7 +389,6 @@ Viewport.prototype.getCenteredRect_ = function(
  * Resets zoom and offset.
  */
 Viewport.prototype.resetView = function() {
-  this.zoomIndex_ = 0;
   this.zoom_ = 1;
   this.offsetX_ = 0;
   this.offsetY_ = 0;

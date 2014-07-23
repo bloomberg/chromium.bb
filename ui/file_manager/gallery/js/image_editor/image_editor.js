@@ -747,8 +747,10 @@ ImageEditor.MouseControl.prototype.onTouchStart = function(e) {
  * @param {TouchEvent} e Event.
  */
 ImageEditor.MouseControl.prototype.onTouchEnd = function(e) {
-  if (!this.dragHappened_ && Date.now() - this.touchStartInfo_.time <=
-                             ImageEditor.MouseControl.MAX_TAP_DURATION_) {
+  if (!this.dragHappened_ &&
+      this.touchStartInfo_ &&
+      Date.now() - this.touchStartInfo_.time <=
+          ImageEditor.MouseControl.MAX_TAP_DURATION_) {
     this.buffer_.onClick(this.touchStartInfo_.x, this.touchStartInfo_.y);
     if (this.previousTouchStartInfo_ &&
         Date.now() - this.previousTouchStartInfo_.time <
