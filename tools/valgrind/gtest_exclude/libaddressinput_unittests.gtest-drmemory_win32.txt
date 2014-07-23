@@ -9,6 +9,9 @@ FakeDownloaderTest.*
 
 # Test crashes - http://crbug.com/395169
 AddressInputHelperTest.*
+# These are speculatively assumed to be part of the same issue:
+RegionDataBuilderTest.*
+PreloadSupplierTest.*
 
 # Crashes: http://crbug.com/396203
 AddressNormalizerTest.*

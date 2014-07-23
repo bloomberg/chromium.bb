@@ -96,6 +96,7 @@ IE*
 Ide*
 Inv*
 Insp*
+Inl*Safe*
 # J*
 # K*
 # L*
@@ -117,6 +118,7 @@ Man*t.*
 # N*
 NaCl*lib*
 NaCl*Pn*
+NaCl*Vc*
 NetIn*
 Noti*
 NoSe*
