@@ -1035,10 +1035,12 @@ void EditingStyle::mergeInlineAndImplicitStyleOfElement(Element* element, CSSPro
 {
     RefPtrWillBeRawPtr<EditingStyle> styleFromRules = EditingStyle::create();
     styleFromRules->mergeStyleFromRulesForSerialization(element);
+
+    if (element->inlineStyle())
+        styleFromRules->m_mutableStyle->mergeAndOverrideOnConflict(element->inlineStyle());
+
     styleFromRules->m_mutableStyle = extractEditingProperties(styleFromRules->m_mutableStyle.get(), propertiesToInclude);
     mergeStyle(styleFromRules->m_mutableStyle.get(), mode);
-
-    mergeInlineStyleOfElement(element, mode, propertiesToInclude);
 
     const WillBeHeapVector<OwnPtrWillBeMember<HTMLElementEquivalent> >& elementEquivalents = htmlElementEquivalents();
     for (size_t i = 0; i < elementEquivalents.size(); ++i) {
