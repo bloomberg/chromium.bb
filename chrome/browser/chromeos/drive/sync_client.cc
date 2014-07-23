@@ -232,6 +232,20 @@ void SyncClient::AddUpdateTask(const ClientContext& context,
   AddUpdateTaskInternal(context, local_id, delay_);
 }
 
+bool SyncClient:: WaitForUpdateTaskToComplete(
+    const std::string& local_id,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  SyncTasks::iterator it = tasks_.find(SyncTasks::key_type(UPDATE, local_id));
+  if (it == tasks_.end())
+    return false;
+
+  SyncTask* task = &it->second;
+  task->waiting_callbacks.push_back(callback);
+  return true;
+}
+
 base::Closure SyncClient::PerformFetchTask(const std::string& local_id,
                                            const ClientContext& context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -438,6 +452,12 @@ void SyncClient::OnTaskComplete(SyncType type,
       LOG(WARNING) << "Failed: type = " << type << ", id = " << local_id
                    << ": " << FileErrorToString(error);
   }
+
+  for (size_t i = 0; i < it->second.waiting_callbacks.size(); ++i) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(it->second.waiting_callbacks[i], error));
+  }
+  it->second.waiting_callbacks.clear();
 
   if (it->second.should_run_again) {
     DVLOG(1) << "Running again: type = " << type << ", id = " << local_id;

@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "content/public/test/test_utils.h"
@@ -19,6 +20,20 @@
 
 namespace drive {
 namespace file_system {
+
+namespace {
+
+// Used to handle WaitForSyncComplete() calls.
+bool CopyWaitForSyncCompleteArguments(std::string* out_local_id,
+                                      FileOperationCallback* out_callback,
+                                      const std::string& local_id,
+                                      const FileOperationCallback& callback) {
+  *out_local_id = local_id;
+  *out_callback = callback;
+  return true;
+}
+
+}  // namespace
 
 class CopyOperationTest : public OperationTestBase {
  protected:
@@ -424,6 +439,84 @@ TEST_F(CopyOperationTest, PreserveLastModified) {
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &entry2));
   EXPECT_EQ(entry.file_info().last_modified(),
             entry2.file_info().last_modified());
+}
+
+TEST_F(CopyOperationTest, WaitForSyncComplete) {
+  // Create a directory locally.
+  base::FilePath src_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
+  base::FilePath directory_path(FILE_PATH_LITERAL("drive/root/New Directory"));
+  base::FilePath dest_path = directory_path.AppendASCII("File 1.txt");
+
+  ResourceEntry directory_parent;
+  EXPECT_EQ(FILE_ERROR_OK,
+            GetLocalResourceEntry(directory_path.DirName(), &directory_parent));
+
+  ResourceEntry directory;
+  directory.set_parent_local_id(directory_parent.local_id());
+  directory.set_title(directory_path.BaseName().AsUTF8Unsafe());
+  directory.mutable_file_info()->set_is_directory(true);
+  directory.set_metadata_edit_state(ResourceEntry::DIRTY);
+
+  std::string directory_local_id;
+  FileError error = FILE_ERROR_FAILED;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::AddEntry,
+                 base::Unretained(metadata()), directory, &directory_local_id),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  content::RunAllBlockingPoolTasksUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // Try to copy a file to the new directory which lacks resource ID.
+  // This should result in waiting for the directory to sync.
+  std::string waited_local_id;
+  FileOperationCallback pending_callback;
+  observer()->set_wait_for_sync_complete_handler(
+      base::Bind(&CopyWaitForSyncCompleteArguments,
+                 &waited_local_id, &pending_callback));
+
+  FileError copy_error = FILE_ERROR_FAILED;
+  operation_->Copy(src_path,
+                   dest_path,
+                   true,  // Preserve last modified.
+                   google_apis::test_util::CreateCopyResultCallback(
+                       &copy_error));
+  content::RunAllBlockingPoolTasksUntilIdle();
+  EXPECT_EQ(directory_local_id, waited_local_id);
+  ASSERT_FALSE(pending_callback.is_null());
+
+  // Add a new directory to the server and store the resource ID locally.
+  google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::FileResource> file_resource;
+  fake_service()->AddNewDirectory(
+      directory_parent.resource_id(),
+      directory.title(),
+      DriveServiceInterface::AddNewDirectoryOptions(),
+      google_apis::test_util::CreateCopyResultCallback(
+          &status, &file_resource));
+  content::RunAllBlockingPoolTasksUntilIdle();
+  EXPECT_EQ(google_apis::HTTP_CREATED, status);
+  ASSERT_TRUE(file_resource);
+
+  directory.set_local_id(directory_local_id);
+  directory.set_resource_id(file_resource->file_id());
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::RefreshEntry,
+                 base::Unretained(metadata()), directory),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  content::RunAllBlockingPoolTasksUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // Resume the copy operation.
+  pending_callback.Run(FILE_ERROR_OK);
+  content::RunAllBlockingPoolTasksUntilIdle();
+
+  EXPECT_EQ(FILE_ERROR_OK, copy_error);
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(dest_path, &entry));
 }
 
 }  // namespace file_system

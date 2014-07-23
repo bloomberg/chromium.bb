@@ -168,6 +168,9 @@ class FileSystem : public FileSystemInterface,
   virtual void OnEntryUpdatedByOperation(const std::string& local_id) OVERRIDE;
   virtual void OnDriveSyncError(file_system::DriveSyncErrorType type,
                                 const std::string& local_id) OVERRIDE;
+  virtual bool WaitForSyncComplete(
+      const std::string& local_id,
+      const FileOperationCallback& callback) OVERRIDE;
 
   // ChangeListLoader::Observer overrides.
   // Used to propagate events from ChangeListLoader.

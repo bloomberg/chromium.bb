@@ -827,6 +827,11 @@ void FileSystem::OnDriveSyncErrorAfterGetFilePath(
                     OnDriveSyncError(type, *file_path));
 }
 
+bool FileSystem::WaitForSyncComplete(const std::string& local_id,
+                                     const FileOperationCallback& callback) {
+  return sync_client_->WaitForUpdateTaskToComplete(local_id, callback);
+}
+
 void FileSystem::OnDirectoryReloaded(const base::FilePath& directory_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

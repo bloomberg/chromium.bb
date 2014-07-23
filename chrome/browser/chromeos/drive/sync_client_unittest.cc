@@ -489,5 +489,38 @@ TEST_F(SyncClientTest, Dependencies) {
   EXPECT_EQ(ResourceEntry::CLEAN, entry2.metadata_edit_state());
 }
 
+TEST_F(SyncClientTest, WaitForUpdateTaskToComplete) {
+  // Create a directory locally.
+  const base::FilePath kPath(FILE_PATH_LITERAL("drive/root/dir1"));
+
+  ResourceEntry parent;
+  EXPECT_EQ(FILE_ERROR_OK,
+            metadata_->GetResourceEntryByPath(kPath.DirName(), &parent));
+
+  ResourceEntry entry;
+  entry.set_parent_local_id(parent.local_id());
+  entry.set_title(kPath.BaseName().AsUTF8Unsafe());
+  entry.mutable_file_info()->set_is_directory(true);
+  entry.set_metadata_edit_state(ResourceEntry::DIRTY);
+  std::string local_id;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->AddEntry(entry, &local_id));
+
+  // Sync task is not yet avialable.
+  FileError error = FILE_ERROR_FAILED;
+  EXPECT_FALSE(sync_client_->WaitForUpdateTaskToComplete(
+      local_id, google_apis::test_util::CreateCopyResultCallback(&error)));
+
+  // Start syncing the directory and wait for it to complete.
+  sync_client_->AddUpdateTask(ClientContext(USER_INITIATED), local_id);
+
+  EXPECT_TRUE(sync_client_->WaitForUpdateTaskToComplete(
+      local_id, google_apis::test_util::CreateCopyResultCallback(&error)));
+
+  base::RunLoop().RunUntilIdle();
+
+  // The callback is called.
+  EXPECT_EQ(FILE_ERROR_OK, error);
+}
+
 }  // namespace internal
 }  // namespace drive

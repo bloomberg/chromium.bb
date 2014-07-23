@@ -89,6 +89,14 @@ class CopyOperation {
       const bool* should_copy_on_server,
       FileError error);
 
+  // Part of Copy(). Called after the parent entry gets synced.
+  void CopyAfterParentSync(const CopyParams& params, FileError error);
+
+  // Part of Copy(). Called after the parent resource ID is resolved.
+  void CopyAfterGetParentResourceId(const CopyParams& params,
+                                    const ResourceEntry* parent,
+                                    FileError error);
+
   // Part of TransferFileFromLocalToRemote(). Called after preparation is done.
   // |gdoc_resource_id| and |parent_resource_id| is available only if the file
   // is JSON GDoc file.

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPERATION_OBSERVER_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_OPERATION_OBSERVER_H_
 
+#include "chrome/browser/chromeos/drive/file_errors.h"
+
 namespace base {
 class FilePath;
 }
@@ -26,6 +28,7 @@ enum DriveSyncErrorType {
 };
 
 // Passes notifications from Drive operations back to the file system.
+// TODO(hashimoto): Give this class a more appropriate name.
 class OperationObserver {
  public:
   // Sent when a content of a directory has been changed.
@@ -40,6 +43,11 @@ class OperationObserver {
   // |local_id| is the local ID of the resource entry.
   virtual void OnDriveSyncError(DriveSyncErrorType type,
                                 const std::string& local_id) {}
+
+  // Waits for the sync task to complete and runs the callback.
+  // Returns false if no task is found for the spcecified ID.
+  virtual bool WaitForSyncComplete(const std::string& local_id,
+                                   const FileOperationCallback& callback);
 };
 
 }  // namespace file_system

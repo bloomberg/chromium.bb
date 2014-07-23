@@ -44,6 +44,13 @@ void OperationTestBase::LoggingObserver::OnDriveSyncError(
   drive_sync_errors_.push_back(type);
 }
 
+bool OperationTestBase::LoggingObserver::WaitForSyncComplete(
+    const std::string& local_id,
+    const FileOperationCallback& callback) {
+  return wait_for_sync_complete_handler_.is_null() ?
+      false : wait_for_sync_complete_handler_.Run(local_id, callback);
+}
+
 OperationTestBase::OperationTestBase() {
 }
 

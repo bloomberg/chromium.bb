@@ -48,6 +48,10 @@ class OperationTestBase : public testing::Test {
   // OperationObserver that records all the events.
   class LoggingObserver : public OperationObserver {
    public:
+    typedef base::Callback<bool(
+        const std::string& local_id,
+        const FileOperationCallback& callback)> WaitForSyncCompleteHandler;
+
     LoggingObserver();
     ~LoggingObserver();
 
@@ -58,6 +62,9 @@ class OperationTestBase : public testing::Test {
         const std::string& local_id) OVERRIDE;
     virtual void OnDriveSyncError(DriveSyncErrorType type,
                                   const std::string& local_id) OVERRIDE;
+    virtual bool WaitForSyncComplete(
+        const std::string& local_id,
+        const FileOperationCallback& callback) OVERRIDE;
 
     // Gets the set of changed paths.
     const FileChange& get_changed_files() { return changed_files_; }
@@ -72,10 +79,17 @@ class OperationTestBase : public testing::Test {
       return drive_sync_errors_;
     }
 
+    // Sets the callback used to handle WaitForSyncComplete() method calls.
+    void set_wait_for_sync_complete_handler(
+        const WaitForSyncCompleteHandler& wait_for_sync_complete_handler) {
+      wait_for_sync_complete_handler_ = wait_for_sync_complete_handler;
+    }
+
    private:
     FileChange changed_files_;
     std::set<std::string> updated_local_ids_;
     std::vector<DriveSyncErrorType> drive_sync_errors_;
+    WaitForSyncCompleteHandler wait_for_sync_complete_handler_;
   };
 
   OperationTestBase();
