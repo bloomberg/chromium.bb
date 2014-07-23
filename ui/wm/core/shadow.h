@@ -67,7 +67,12 @@ class WM_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   // The current style, set when the transition animation starts.
   Style style_;
 
+  // The parent layer of the shadow layer. It serves as a container accessible
+  // from the outside to control the visibility of the shadow.
   scoped_ptr<ui::Layer> layer_;
+
+  // The actual shadow layer corresponding to a cc::NinePatchLayer.
+  scoped_ptr<ui::Layer> shadow_layer_;
 
   // Bounds of the content that the shadow encloses.
   gfx::Rect content_bounds_;

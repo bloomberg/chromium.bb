@@ -81,12 +81,15 @@ Shadow::~Shadow() {
 void Shadow::Init(Style style) {
   style_ = style;
 
-  layer_.reset(new ui::Layer(ui::LAYER_NINE_PATCH));
+  layer_.reset(new ui::Layer(ui::LAYER_NOT_DRAWN));
+  shadow_layer_.reset(new ui::Layer(ui::LAYER_NINE_PATCH));
+  layer()->Add(shadow_layer_.get());
+
   UpdateImagesForStyle();
-  layer()->set_name("Shadow");
-  layer()->SetVisible(true);
-  layer()->SetFillsBoundsOpaquely(false);
-  layer()->SetOpacity(GetOpacityForStyle(style_));
+  shadow_layer_->set_name("Shadow");
+  shadow_layer_->SetVisible(true);
+  shadow_layer_->SetFillsBoundsOpaquely(false);
+  shadow_layer_->SetOpacity(GetOpacityForStyle(style_));
 }
 
 void Shadow::SetContentBounds(const gfx::Rect& content_bounds) {
@@ -108,7 +111,7 @@ void Shadow::SetStyle(Style style) {
   // animations.
   if (style == STYLE_SMALL || old_style == STYLE_SMALL) {
     UpdateImagesForStyle();
-    layer()->SetOpacity(GetOpacityForStyle(style));
+    shadow_layer_->SetOpacity(GetOpacityForStyle(style));
     return;
   }
 
@@ -118,21 +121,21 @@ void Shadow::SetStyle(Style style) {
   if (style == STYLE_ACTIVE) {
     UpdateImagesForStyle();
     // Opacity was baked into inactive image, start opacity low to match.
-    layer()->SetOpacity(kInactiveShadowOpacity);
+    shadow_layer_->SetOpacity(kInactiveShadowOpacity);
   }
 
   {
     // Property sets within this scope will be implicitly animated.
-    ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
+    ui::ScopedLayerAnimationSettings settings(shadow_layer_->GetAnimator());
     settings.AddObserver(this);
     settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kShadowAnimationDurationMs));
     switch (style_) {
       case STYLE_ACTIVE:
-        layer()->SetOpacity(kActiveShadowOpacity);
+        shadow_layer_->SetOpacity(kActiveShadowOpacity);
         break;
       case STYLE_INACTIVE:
-        layer()->SetOpacity(kInactiveShadowOpacity);
+        shadow_layer_->SetOpacity(kInactiveShadowOpacity);
         break;
       default:
         NOTREACHED() << "Unhandled style " << style_;
@@ -147,7 +150,7 @@ void Shadow::OnImplicitAnimationsCompleted() {
   if (style_ == STYLE_INACTIVE) {
     UpdateImagesForStyle();
     // Opacity is baked into inactive image, so set fully opaque.
-    layer()->SetOpacity(1.0f);
+    shadow_layer_->SetOpacity(1.0f);
   }
 }
 
@@ -177,7 +180,7 @@ void Shadow::UpdateImagesForStyle() {
                      image.Height() - shadow_aperture * 2);
 
   // Update nine-patch layer with new bitmap and aperture.
-  layer()->UpdateNinePatchLayerBitmap(image.AsBitmap(), aperture);
+  shadow_layer_->UpdateNinePatchLayerBitmap(image.AsBitmap(), aperture);
 
   // Update interior inset for style.
   interior_inset_ = GetInteriorInsetForStyle(style_);
@@ -191,17 +194,20 @@ void Shadow::UpdateLayerBounds() {
   gfx::Rect layer_bounds = content_bounds_;
   layer_bounds.Inset(-interior_inset_, -interior_inset_);
   layer()->SetBounds(layer_bounds);
+  shadow_layer_->SetBounds(gfx::Rect(layer_bounds.size()));
 
-  // Calculate shadow border for style. Note that |border| is in layer space
+  // Calculate shadow border for style. Note that border is in layer space
   // and it cannot exceed the bounds of the layer.
   int shadow_aperture = GetShadowApertureForStyle(style_);
-  int border_width = std::min(shadow_aperture * 2, layer_bounds.width());
-  int border_height = std::min(shadow_aperture * 2, layer_bounds.height());
-  gfx::Rect border(border_width / 2,
-                   border_height / 2,
-                   border_width,
-                   border_height);
-  layer()->UpdateNinePatchLayerBorder(border);
+  gfx::Rect border(shadow_aperture, shadow_aperture,
+                   shadow_aperture * 2, shadow_aperture * 2);
+  if (layer_bounds.width() < border.width() ||
+      layer_bounds.height() < border.height()) {
+    shadow_layer_->SetVisible(false);
+  } else {
+    shadow_layer_->SetVisible(true);
+    shadow_layer_->UpdateNinePatchLayerBorder(border);
+  }
 }
 
 }  // namespace wm
