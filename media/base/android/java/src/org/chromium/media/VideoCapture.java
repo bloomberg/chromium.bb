@@ -177,7 +177,12 @@ public abstract class VideoCapture implements PreviewCallback {
                                   mCaptureFormat.mHeight);
         parameters.setPreviewFpsRange(fpsMinMax[0], fpsMinMax[1]);
         parameters.setPreviewFormat(mCaptureFormat.mPixelFormat);
-        mCamera.setParameters(parameters);
+        try {
+            mCamera.setParameters(parameters);
+        } catch (RuntimeException ex) {
+            Log.e(TAG, "setParameters: " + ex);
+            return false;
+        }
 
         // Set SurfaceTexture. Android Capture needs a SurfaceTexture even if
         // it is not going to be used.
