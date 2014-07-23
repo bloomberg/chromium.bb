@@ -269,4 +269,27 @@ TEST_F(FontRenderParamsTest, OnlySetConfiguredValues) {
   EXPECT_EQ(system_params.subpixel_rendering, params.subpixel_rendering);
 }
 
+TEST_F(FontRenderParamsTest, NoFontconfigMatch) {
+  // Don't load a Fontconfig configuration.
+  FontRenderParams system_params;
+  system_params.antialiasing = true;
+  system_params.hinting = FontRenderParams::HINTING_MEDIUM;
+  system_params.subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_RGB;
+  test_font_delegate_.set_params(system_params);
+
+  std::vector<std::string> families;
+  families.push_back("Arial");
+  families.push_back("Times New Roman");
+  const int pixel_size = 10;
+  std::string suggested_family;
+  FontRenderParams params = GetCustomFontRenderParams(
+      false, &families, &pixel_size, NULL, NULL, &suggested_family);
+
+  // The system params and the first requested family should be returned.
+  EXPECT_EQ(system_params.antialiasing, params.antialiasing);
+  EXPECT_EQ(system_params.hinting, params.hinting);
+  EXPECT_EQ(system_params.subpixel_rendering, params.subpixel_rendering);
+  EXPECT_EQ("Arial", suggested_family);
+}
+
 }  // namespace gfx
