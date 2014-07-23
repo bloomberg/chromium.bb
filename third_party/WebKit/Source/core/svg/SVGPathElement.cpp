@@ -219,7 +219,7 @@ void SVGPathElement::svgAttributeChanged(const QualifiedName& attrName)
 
     SVGElement::InvalidationGuard invalidationGuard(this);
 
-    RenderSVGPath* renderer = toRenderSVGPath(this->renderer());
+    RenderSVGShape* renderer = toRenderSVGShape(this->renderer());
 
     if (attrName == SVGNames::dAttr) {
         if (renderer)
@@ -264,7 +264,7 @@ void SVGPathElement::pathSegListChanged(ListModification listModification)
 
     invalidateSVGAttributes();
 
-    RenderSVGPath* renderer = toRenderSVGPath(this->renderer());
+    RenderSVGShape* renderer = toRenderSVGShape(this->renderer());
     if (!renderer)
         return;
 
@@ -283,7 +283,7 @@ FloatRect SVGPathElement::getBBox()
     if (!renderer())
         return FloatRect();
 
-    RenderSVGPath* renderer = toRenderSVGPath(this->renderer());
+    RenderSVGShape* renderer = toRenderSVGShape(this->renderer());
     return renderer->path().boundingRect();
 }
 
