@@ -38,6 +38,8 @@ std::string RequestTypeToString(RequestType type) {
       return "DELETE_ENTRY";
     case CREATE_FILE:
       return "CREATE_FILE";
+    case COPY_ENTRY:
+      return "COPY_ENTRY";
     case TESTING:
       return "TESTING";
   }

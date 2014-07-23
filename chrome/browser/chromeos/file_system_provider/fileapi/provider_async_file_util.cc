@@ -159,6 +159,33 @@ void OnCreateFileForEnsureFileExists(
       BrowserThread::IO, FROM_HERE, base::Bind(callback, error, created));
 }
 
+// Executes CopyEntry on the UI thread.
+void CopyEntryOnUIThread(
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
+    const fileapi::FileSystemURL& source_url,
+    const fileapi::FileSystemURL& target_url,
+    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+  util::FileSystemURLParser source_parser(source_url);
+  util::FileSystemURLParser target_parser(target_url);
+
+  if (!source_parser.Parse() || !target_parser.Parse() ||
+      source_parser.file_system() != target_parser.file_system()) {
+    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    return;
+  }
+
+  target_parser.file_system()->CopyEntry(
+      source_parser.file_path(), target_parser.file_path(), callback);
+}
+
+// Routes the response of CopyEntry to a callback of CopyLocalFile() on the
+// IO thread.
+void OnCopyEntry(const fileapi::AsyncFileUtil::StatusCallback& callback,
+                 base::File::Error result) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE, base::Bind(callback, result));
+}
+
 }  // namespace
 
 ProviderAsyncFileUtil::ProviderAsyncFileUtil() {}
@@ -269,7 +296,15 @@ void ProviderAsyncFileUtil::CopyFileLocal(
     const CopyFileProgressCallback& progress_callback,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  callback.Run(base::File::FILE_ERROR_ACCESS_DENIED);
+  // TODO(mtomasz): Consier adding support for options (preserving last modified
+  // time) as well as the progress callback.
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&CopyEntryOnUIThread,
+                                     base::Passed(&context),
+                                     src_url,
+                                     dest_url,
+                                     base::Bind(&OnCopyEntry, callback)));
 }
 
 void ProviderAsyncFileUtil::MoveFileLocal(

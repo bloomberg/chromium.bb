@@ -401,6 +401,8 @@
         'browser/chromeos/file_system_provider/observer.h',
         'browser/chromeos/file_system_provider/operations/close_file.cc',
         'browser/chromeos/file_system_provider/operations/close_file.h',
+        'browser/chromeos/file_system_provider/operations/copy_entry.cc',
+        'browser/chromeos/file_system_provider/operations/copy_entry.h',
         'browser/chromeos/file_system_provider/operations/create_directory.cc',
         'browser/chromeos/file_system_provider/operations/create_directory.h',
         'browser/chromeos/file_system_provider/operations/create_file.cc',

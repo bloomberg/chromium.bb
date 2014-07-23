@@ -33,6 +33,7 @@ enum RequestType {
   CREATE_DIRECTORY,
   DELETE_ENTRY,
   CREATE_FILE,
+  COPY_ENTRY,
   TESTING
 };
 

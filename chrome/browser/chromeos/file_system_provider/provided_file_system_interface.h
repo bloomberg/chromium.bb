@@ -122,6 +122,13 @@ class ProvidedFileSystemInterface {
       bool recursive,
       const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
 
+  // Requests copying an entry (recursively in case of a directory) within the
+  // same file system.
+  virtual void CopyEntry(
+      const base::FilePath& source_path,
+      const base::FilePath& target_path,
+      const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
+
   // Returns a provided file system info for this file system.
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const = 0;
 
