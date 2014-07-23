@@ -118,8 +118,10 @@ var loadTimeData;
    * @param {string} message The message to display if the check fails.
    */
   function expect(condition, message) {
-    if (!condition)
-      console.error(message);
+    if (!condition) {
+      console.error('Unexpected condition on ' + document.location.href + ': ' +
+                    message);
+    }
   }
 
   /**
