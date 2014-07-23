@@ -136,6 +136,24 @@ def WipeDeviceData(device):
                            as_root=True)
 
 
+def WipeDevicesIfPossible(devices):
+  devices_to_reboot = []
+  for device_serial in devices:
+    device = device_utils.DeviceUtils(device_serial)
+    if not device.old_interface.EnableAdbRoot():
+      continue
+    WipeDeviceData(device)
+    devices_to_reboot.append(device)
+
+  if devices_to_reboot:
+    try:
+      device_utils.DeviceUtils.parallel(devices_to_reboot).Reboot(True)
+    except errors.DeviceUnresponsiveError:
+      pass
+    for device_serial in devices_to_reboot:
+      device.WaitUntilFullyBooted(timeout=90)
+
+
 def ProvisionDevices(options):
   is_perf = 'perf' in os.environ.get('BUILDBOT_BUILDERNAME', '').lower()
   # TODO(jbudorick): Parallelize provisioning of all attached devices after
@@ -147,16 +165,7 @@ def ProvisionDevices(options):
 
   # Wipe devices (unless --skip-wipe was specified)
   if not options.skip_wipe:
-    for device_serial in devices:
-      device = device_utils.DeviceUtils(device_serial)
-      device.old_interface.EnableAdbRoot()
-      WipeDeviceData(device)
-    try:
-      device_utils.DeviceUtils.parallel(devices).Reboot(True)
-    except errors.DeviceUnresponsiveError:
-      pass
-    for device_serial in devices:
-      device.WaitUntilFullyBooted(timeout=90)
+    WipeDevicesIfPossible(devices)
 
   # Provision devices
   for device_serial in devices:
