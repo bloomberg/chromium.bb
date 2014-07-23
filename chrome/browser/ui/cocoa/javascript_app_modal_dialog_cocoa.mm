@@ -279,7 +279,7 @@ JavaScriptAppModalDialogCocoa::JavaScriptAppModalDialogCocoa(
     if (slots_count > kMessageTextMaxSlots) {
       base::string16 info_text = base::SysNSStringToUTF16(informative_text);
       informative_text = base::SysUTF16ToNSString(
-          gfx::TruncateString(info_text, index));
+          gfx::TruncateString(info_text, index, gfx::WORD_BREAK));
       break;
     }
   }

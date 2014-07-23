@@ -117,7 +117,7 @@ void TooltipAura::TrimTooltipToFit(const gfx::FontList& font_list,
     result_lines.resize(kMaxLines);
     // Add ellipses character to last line.
     result_lines[kMaxLines - 1] = gfx::TruncateString(
-        result_lines.back(), result_lines.back().length() - 1);
+        result_lines.back(), result_lines.back().length() - 1, gfx::WORD_BREAK);
   }
   *line_count = result_lines.size();
 

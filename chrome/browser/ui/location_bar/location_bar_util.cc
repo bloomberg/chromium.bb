@@ -16,7 +16,8 @@ base::string16 CalculateMinString(const base::string16& description) {
   const size_t chop_index = description.find_first_of(
       base::kWhitespaceUTF16 + base::ASCIIToUTF16("."));
   base::string16 min_string((chop_index == base::string16::npos) ?
-      gfx::TruncateString(description, 3) : description.substr(0, chop_index));
+      gfx::TruncateString(description, 3, gfx::WORD_BREAK) :
+      description.substr(0, chop_index));
   base::i18n::AdjustStringForLocaleDirection(&min_string);
   return min_string;
 }

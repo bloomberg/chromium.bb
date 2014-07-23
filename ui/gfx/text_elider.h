@@ -143,7 +143,7 @@ enum ReformattingResultFlags {
 // too long are broken into pieces. For words that are too wide to fit on a
 // single line, the wrapping behavior can be specified with the |wrap_behavior|
 // param. Returns a combination of |ReformattingResultFlags| that indicate
-// whether the given rectangle had insufficient space to accommodate |texŧ|,
+// whether the given rectangle had insufficient space to accommodate |text|,
 // leading to elision or truncation (and not just reformatting).
 GFX_EXPORT int ElideRectangleText(const base::string16& text,
                                   const gfx::FontList& font_list,
@@ -152,13 +152,14 @@ GFX_EXPORT int ElideRectangleText(const base::string16& text,
                                   WordWrapBehavior wrap_behavior,
                                   std::vector<base::string16>* lines);
 
-// Truncates the string to length characters. This breaks the string at
-// the first word break before length, adding the horizontal ellipsis
-// character (unicode character 0x2026) to render ...
-// The supplied string is returned if the string has length characters or
-// less.
+// Truncates |string| to |length| characters. This breaks the string according
+// to the specified |break_type|, which must be either WORD_BREAK or
+// CHARACTER_BREAK, and adds the horizontal ellipsis character (unicode
+// character 0x2026) to render "...". The supplied string is returned if the
+// string has |length| characters or less.
 GFX_EXPORT base::string16 TruncateString(const base::string16& string,
-                                         size_t length);
+                                         size_t length,
+                                         BreakType break_type);
 
 }  // namespace gfx
 

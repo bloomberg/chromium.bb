@@ -30,7 +30,7 @@ int TooltipManager::GetMaxWidth(const gfx::Display& display) {
 void TooltipManager::TrimTooltipText(base::string16* text) {
   // Clamp the tooltip length to kMaxTooltipLength so that we don't
   // accidentally DOS the user with a mega tooltip.
-  *text = gfx::TruncateString(*text, kMaxTooltipLength);
+  *text = gfx::TruncateString(*text, kMaxTooltipLength, gfx::WORD_BREAK);
 }
 
 }  // namespace views

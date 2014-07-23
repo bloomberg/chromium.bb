@@ -34,6 +34,11 @@ void RegisterPrefs(PrefRegistrySimple* registry);
 // custom name.
 base::string16 GetAvatarNameForProfile(const base::FilePath& profile_path);
 
+// Returns the string to use in the avatar button for the specified profile.
+// This is essentially the name returned by GetAvatarNameForProfile, but it
+// may be elided and contain an indicator for supervised users.
+base::string16 GetAvatarButtonTextForProfile(Profile* profile);
+
 // Update the name of |profile| to |new_profile_name|. This updates the
 // profile preferences, which triggers an update in the ProfileInfoCache.
 void UpdateProfileName(Profile* profile,

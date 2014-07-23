@@ -13,16 +13,13 @@
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "components/signin/core/browser/signin_error_controller.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #import "ui/base/cocoa/appkit_utils.h"
 #import "ui/base/cocoa/hover_image_button.h"
-#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/nine_image_painter_factory.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
-#include "ui/gfx/text_elider.h"
 
 namespace {
 
@@ -30,7 +27,6 @@ const CGFloat kButtonPadding = 12;
 const CGFloat kButtonDefaultPadding = 5;
 const CGFloat kButtonHeight = 27;
 const CGFloat kButtonTitleImageSpacing = 10;
-const CGFloat kMaxButtonContentWidth = 100;
 
 const ui::NinePartImageIds kNormalBorderImageIds =
     IMAGE_GRID(IDR_AVATAR_MAC_BUTTON_NORMAL);
@@ -148,7 +144,6 @@ NSImage* GetImageFromResourceID(int resourceId) {
 @end
 
 @interface AvatarButtonController (Private)
-- (base::string16)getElidedAvatarName;
 - (void)updateAvatarButtonAndLayoutParent:(BOOL)layoutParent;
 - (void)updateErrorStatus:(BOOL)hasError;
 - (void)dealloc;
@@ -221,14 +216,6 @@ NSImage* GetImageFromResourceID(int resourceId) {
   }
 }
 
-- (base::string16)getElidedAvatarName {
-  base::string16 name = profiles::GetAvatarNameForProfile(
-      browser_->profile()->GetPath());
-  int maxTextWidth = kMaxButtonContentWidth - [[button_ image] size].width;
-  return gfx::ElideText(name, gfx::FontList(gfx::Font([button_ font])),
-                        maxTextWidth, gfx::ELIDE_TAIL);
-}
-
 - (void)updateAvatarButtonAndLayoutParent:(BOOL)layoutParent {
   // The button text has a black foreground and a white drop shadow for regular
   // windows, and a light text with a dark drop shadow for guest windows
@@ -249,16 +236,8 @@ NSImage* GetImageFromResourceID(int resourceId) {
     [shadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.4]];
   }
 
-  base::string16 profileName = [self getElidedAvatarName];
-  NSString* buttonTitle = nil;
-  if (browser_->profile()->IsSupervised()) {
-    // Add the "supervised" label after eliding the profile name, so the label
-    // will not get elided, but will instead enlarge the button.
-    buttonTitle = l10n_util::GetNSStringF(IDS_SUPERVISED_USER_NEW_AVATAR_LABEL,
-                                          profileName);
-  } else {
-    buttonTitle = base::SysUTF16ToNSString(profileName);
-  }
+  NSString* buttonTitle = base::SysUTF16ToNSString(
+      profiles::GetAvatarButtonTextForProfile(browser_->profile()));
 
   base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
       [[NSMutableParagraphStyle alloc] init]);

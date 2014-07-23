@@ -1930,7 +1930,8 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
 
 base::string16 RenderViewContextMenu::PrintableSelectionText() {
   return gfx::TruncateString(params_.selection_text,
-                            kMaxSelectionTextLength);
+                             kMaxSelectionTextLength,
+                             gfx::WORD_BREAK);
 }
 
 // Controller functions --------------------------------------------------------

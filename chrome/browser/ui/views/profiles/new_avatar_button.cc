@@ -4,23 +4,14 @@
 
 #include "chrome/browser/ui/views/profiles/new_avatar_button.h"
 
-#include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_utils.h"
-#include "ui/gfx/font_list.h"
-#include "ui/gfx/text_constants.h"
-#include "ui/gfx/text_elider.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/painter.h"
@@ -48,24 +39,6 @@ scoped_ptr<views::Border> CreateBorder(const int normal_image_set[],
   return border.PassAs<views::Border>();
 }
 
-base::string16 GetElidedText(const base::string16& original_text) {
-  // Maximum characters the button can be before the text will get elided.
-  const int kMaxCharactersToDisplay = 15;
-  const gfx::FontList font_list;
-  return gfx::ElideText(original_text, font_list,
-                        font_list.GetExpectedTextWidth(kMaxCharactersToDisplay),
-                        gfx::ELIDE_TAIL);
-}
-
-base::string16 GetButtonText(Profile* profile) {
-  base::string16 name = GetElidedText(profiles::GetAvatarNameForProfile(
-      profile->GetPath()));
-  if (profile->IsSupervised())
-    name = l10n_util::GetStringFUTF16(IDS_SUPERVISED_USER_NEW_AVATAR_LABEL,
-                                      name);
-  return name;
-}
-
 }  // namespace
 
 NewAvatarButton::NewAvatarButton(
@@ -73,7 +46,10 @@ NewAvatarButton::NewAvatarButton(
     const base::string16& profile_name,
     AvatarButtonStyle button_style,
     Browser* browser)
-    : MenuButton(listener, GetButtonText(browser->profile()), NULL, true),
+    : MenuButton(listener,
+                 profiles::GetAvatarButtonTextForProfile(browser->profile()),
+                 NULL,
+                 true),
       browser_(browser) {
   set_animate_on_state_change(false);
   SetTextColor(views::Button::STATE_NORMAL, SK_ColorWHITE);
@@ -173,7 +149,7 @@ void NewAvatarButton::OnErrorChanged() {
 
 void NewAvatarButton::UpdateAvatarButtonAndRelayoutParent() {
   // We want the button to resize if the new text is shorter.
-  SetText(GetButtonText(browser_->profile()));
+  SetText(profiles::GetAvatarButtonTextForProfile(browser_->profile()));
   set_min_size(gfx::Size());
   InvalidateLayout();
 

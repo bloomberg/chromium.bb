@@ -178,7 +178,7 @@ base::string16 MenuItem::TitleWithReplacement(const base::string16& selection,
   ReplaceSubstringsAfterOffset(&result, 0, base::ASCIIToUTF16("%s"), selection);
 
   if (result.length() > max_length)
-    result = gfx::TruncateString(result, max_length);
+    result = gfx::TruncateString(result, max_length, gfx::WORD_BREAK);
   return result;
 }
 

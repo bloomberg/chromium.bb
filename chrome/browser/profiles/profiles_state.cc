@@ -22,6 +22,7 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/text_elider.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/user_manager.h"
@@ -79,6 +80,19 @@ base::string16 GetAvatarNameForProfile(const base::FilePath& profile_path) {
     }
   }
   return display_name;
+}
+
+base::string16 GetAvatarButtonTextForProfile(Profile* profile) {
+  const int kMaxCharactersToDisplay = 15;
+  base::string16 name = GetAvatarNameForProfile(profile->GetPath());
+  name = gfx::TruncateString(name,
+                             kMaxCharactersToDisplay,
+                             gfx::CHARACTER_BREAK);
+  if (profile->IsSupervised()) {
+    name = l10n_util::GetStringFUTF16(IDS_SUPERVISED_USER_NEW_AVATAR_LABEL,
+                                      name);
+  }
+  return name;
 }
 
 void UpdateProfileName(Profile* profile,

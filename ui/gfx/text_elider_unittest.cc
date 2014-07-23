@@ -876,28 +876,51 @@ TEST(TextEliderTest, ElideRectangleWide32) {
 TEST(TextEliderTest, TruncateString) {
   base::string16 string = ASCIIToUTF16("foooooey    bxxxar baz");
 
+  // Tests that apply to both break behaviors:
+
   // Make sure it doesn't modify the string if length > string length.
-  EXPECT_EQ(string, TruncateString(string, 100));
+  EXPECT_EQ(string, TruncateString(string, 100, WORD_BREAK));
+  EXPECT_EQ(string, TruncateString(string, 100, CHARACTER_BREAK));
 
   // Test no characters.
-  EXPECT_EQ(L"", UTF16ToWide(TruncateString(string, 0)));
+  EXPECT_EQ(L"", UTF16ToWide(TruncateString(string, 0, WORD_BREAK)));
+  EXPECT_EQ(L"", UTF16ToWide(TruncateString(string, 0, CHARACTER_BREAK)));
 
   // Test 1 character.
-  EXPECT_EQ(L"\x2026", UTF16ToWide(TruncateString(string, 1)));
+  EXPECT_EQ(L"\x2026", UTF16ToWide(TruncateString(string, 1, WORD_BREAK)));
+  EXPECT_EQ(L"\x2026", UTF16ToWide(TruncateString(string, 1, CHARACTER_BREAK)));
+
+  // Test completely truncates string if break is on initial whitespace.
+  EXPECT_EQ(L"\x2026",
+            UTF16ToWide(TruncateString(ASCIIToUTF16("   "), 2, WORD_BREAK)));
+  EXPECT_EQ(L"\x2026",
+            UTF16ToWide(TruncateString(ASCIIToUTF16("   "), 2,
+                                       CHARACTER_BREAK)));
+
+  // Break-only-at-word-boundaries tests:
 
   // Test adds ... at right spot when there is enough room to break at a
   // word boundary.
-  EXPECT_EQ(L"foooooey\x2026", UTF16ToWide(TruncateString(string, 14)));
+  EXPECT_EQ(L"foooooey\x2026", UTF16ToWide(TruncateString(string, 14,
+                                                          WORD_BREAK)));
 
   // Test adds ... at right spot when there is not enough space in first word.
-  EXPECT_EQ(L"f\x2026", UTF16ToWide(TruncateString(string, 2)));
+  EXPECT_EQ(L"f\x2026", UTF16ToWide(TruncateString(string, 2, WORD_BREAK)));
 
   // Test adds ... at right spot when there is not enough room to break at a
   // word boundary.
-  EXPECT_EQ(L"foooooey\x2026", UTF16ToWide(TruncateString(string, 11)));
+  EXPECT_EQ(L"foooooey\x2026", UTF16ToWide(TruncateString(string, 11,
+                                                          WORD_BREAK)));
 
-  // Test completely truncates string if break is on initial whitespace.
-  EXPECT_EQ(L"\x2026", UTF16ToWide(TruncateString(ASCIIToUTF16("   "), 2)));
+  // Break-anywhere tests:
+
+  // Test adds ... at right spot within a word.
+  EXPECT_EQ(L"f\x2026", UTF16ToWide(TruncateString(string, 2,
+                                                   CHARACTER_BREAK)));
+
+  // Test removes trailing whitespace if break falls between words.
+  EXPECT_EQ(L"foooooey\x2026", UTF16ToWide(TruncateString(string, 12,
+                                                          CHARACTER_BREAK)));
 }
 
 }  // namespace gfx

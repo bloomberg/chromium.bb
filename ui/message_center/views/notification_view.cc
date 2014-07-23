@@ -535,12 +535,13 @@ void NotificationView::CreateOrUpdateTitleView(
   int title_character_limit =
       kNotificationWidth * kMaxTitleLines / kMinPixelsPerTitleCharacter;
 
+  base::string16 title = gfx::TruncateString(notification.title(),
+                                             title_character_limit,
+                                             gfx::WORD_BREAK);
   if (!title_view_) {
     int padding = kTitleLineHeight - font_list.GetHeight();
 
-    title_view_ = new BoundedLabel(
-        gfx::TruncateString(notification.title(), title_character_limit),
-        font_list);
+    title_view_ = new BoundedLabel(title, font_list);
     title_view_->SetLineHeight(kTitleLineHeight);
     title_view_->SetLineLimit(kMaxTitleLines);
     title_view_->SetColors(message_center::kRegularTextColor,
@@ -548,8 +549,7 @@ void NotificationView::CreateOrUpdateTitleView(
     title_view_->SetBorder(MakeTextBorder(padding, 3, 0));
     top_view_->AddChildView(title_view_);
   } else {
-    title_view_->SetText(
-        gfx::TruncateString(notification.title(), title_character_limit));
+    title_view_->SetText(title);
   }
 }
 
@@ -566,18 +566,19 @@ void NotificationView::CreateOrUpdateMessageView(
 
   DCHECK(top_view_ != NULL);
 
+  base::string16 text = gfx::TruncateString(notification.message(),
+                                            kMessageCharacterLimit,
+                                            gfx::WORD_BREAK);
   if (!message_view_) {
     int padding = kMessageLineHeight - views::Label().font_list().GetHeight();
-    message_view_ = new BoundedLabel(
-        gfx::TruncateString(notification.message(), kMessageCharacterLimit));
+    message_view_ = new BoundedLabel(text);
     message_view_->SetLineHeight(kMessageLineHeight);
     message_view_->SetColors(message_center::kRegularTextColor,
                              kDimTextBackgroundColor);
     message_view_->SetBorder(MakeTextBorder(padding, 4, 0));
     top_view_->AddChildView(message_view_);
   } else {
-    message_view_->SetText(
-        gfx::TruncateString(notification.message(), kMessageCharacterLimit));
+    message_view_->SetText(text);
   }
 
   message_view_->SetVisible(!notification.items().size());
@@ -596,10 +597,12 @@ void NotificationView::CreateOrUpdateContextMessageView(
 
   DCHECK(top_view_ != NULL);
 
+  base::string16 text = gfx::TruncateString(notification.context_message(),
+                                            kContextMessageCharacterLimit,
+                                            gfx::WORD_BREAK);
   if (!context_message_view_) {
     int padding = kMessageLineHeight - views::Label().font_list().GetHeight();
-    context_message_view_ = new BoundedLabel(gfx::TruncateString(
-        notification.context_message(), kContextMessageCharacterLimit));
+    context_message_view_ = new BoundedLabel(text);
     context_message_view_->SetLineLimit(
         message_center::kContextMessageLineLimit);
     context_message_view_->SetLineHeight(kMessageLineHeight);
@@ -608,8 +611,7 @@ void NotificationView::CreateOrUpdateContextMessageView(
     context_message_view_->SetBorder(MakeTextBorder(padding, 4, 0));
     top_view_->AddChildView(context_message_view_);
   } else {
-    context_message_view_->SetText(gfx::TruncateString(
-        notification.context_message(), kContextMessageCharacterLimit));
+    context_message_view_->SetText(text);
   }
 }
 
