@@ -28,9 +28,7 @@ class MEDIA_EXPORT VideoRenderer {
 
   VideoRenderer();
 
-  // Stops all operations and drops all pending callbacks.
-  // TODO(xhwang): Fires all pending callbacks to be consistent with the rest of
-  // media pipeline.
+  // Stops all operations and fires all pending callbacks.
   virtual ~VideoRenderer();
 
   // Initializes a VideoRenderer with |stream|, executing |init_cb| upon

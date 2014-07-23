@@ -57,6 +57,12 @@ VideoRendererImpl::~VideoRendererImpl() {
 
   if (!thread_.is_null())
     base::PlatformThread::Join(thread_);
+
+  if (!init_cb_.is_null())
+    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_ABORT);
+
+  if (!flush_cb_.is_null())
+    base::ResetAndReturn(&flush_cb_).Run();
 }
 
 void VideoRendererImpl::Flush(const base::Closure& callback) {

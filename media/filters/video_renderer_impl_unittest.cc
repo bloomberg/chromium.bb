@@ -26,10 +26,8 @@
 
 using ::testing::_;
 using ::testing::AnyNumber;
-using ::testing::AtLeast;
 using ::testing::Invoke;
 using ::testing::NiceMock;
-using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
@@ -357,13 +355,8 @@ TEST_F(VideoRendererImplTest, InitializeAndStartPlaying) {
   Destroy();
 }
 
-static void ExpectNotCalled(PipelineStatus) {
-  base::debug::StackTrace stack;
-  ADD_FAILURE() << "Expected callback not to be called\n" << stack.ToString();
-}
-
 TEST_F(VideoRendererImplTest, DestroyWhileInitializing) {
-  CallInitialize(base::Bind(&ExpectNotCalled), false, PIPELINE_OK);
+  CallInitialize(NewExpectedStatusCB(PIPELINE_ERROR_ABORT), false, PIPELINE_OK);
   Destroy();
 }
 
@@ -374,7 +367,7 @@ TEST_F(VideoRendererImplTest, DestroyWhileFlushing) {
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_ENOUGH));
   StartPlaying();
   EXPECT_CALL(mock_cb_, BufferingStateChange(BUFFERING_HAVE_NOTHING));
-  renderer_->Flush(base::Bind(&ExpectNotCalled, PIPELINE_OK));
+  renderer_->Flush(NewExpectedClosure());
   Destroy();
 }
 
