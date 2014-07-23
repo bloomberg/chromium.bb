@@ -749,15 +749,6 @@ hooks = [
                 "-s", "src/buildtools/linux64/clang-format.sha1",
     ],
   },
-  {
-    # Remove clang-format binaries from third_party/clang_format/bin that
-    # aren't used anymore.
-    # TODO(jochen) remove this and the .gitignore entry after the end of July,
-    # 2014.
-    "name": "remove_old_clang_format_binaries",
-    "pattern": ".",
-    "action": ["python", "src/third_party/clang_format/bin/rm_binaries.py"],
-  },
   # Pull binutils for linux, enabled debug fission for faster linking /
   # debugging when used with clang on Ubuntu Precise.
   # https://code.google.com/p/chromium/issues/detail?id=352046

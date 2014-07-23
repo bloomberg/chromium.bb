@@ -234,9 +234,6 @@ v8.log
 /third_party/chromeos_login_manager
 /third_party/chromeos_text_input
 /third_party/chromite
-/third_party/clang_format/bin/*/*
-/third_party/clang_format/script
-!/third_party/clang_format/bin/*/*.sha1
 /third_party/cld_2/src
 /third_party/colorama/src
 /third_party/cros
