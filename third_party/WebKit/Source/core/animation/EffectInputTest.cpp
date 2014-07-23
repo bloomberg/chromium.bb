@@ -70,7 +70,7 @@ TEST_F(AnimationEffectInputTest, UnsortedOffsets)
     jsKeyframes.append(Dictionary(keyframe1, m_isolate));
     jsKeyframes.append(Dictionary(keyframe2, m_isolate));
 
-    RefPtrWillBeRawPtr<AnimationEffect> animationEffect = EffectInput::convert(element.get(), jsKeyframes, exceptionState);
+    EffectInput::convert(element.get(), jsKeyframes, exceptionState);
     EXPECT_TRUE(exceptionState.hadException());
     EXPECT_EQ(InvalidModificationError, exceptionState.code());
 }
@@ -119,7 +119,7 @@ TEST_F(AnimationEffectInputTest, OutOfOrderWithNullOffsets)
     jsKeyframes.append(Dictionary(keyframe3, m_isolate));
     jsKeyframes.append(Dictionary(keyframe4, m_isolate));
 
-    RefPtrWillBeRawPtr<AnimationEffect> animationEffect = EffectInput::convert(element.get(), jsKeyframes, exceptionState);
+    EffectInput::convert(element.get(), jsKeyframes, exceptionState);
     EXPECT_TRUE(exceptionState.hadException());
 }
 
@@ -141,7 +141,7 @@ TEST_F(AnimationEffectInputTest, Invalid)
     jsKeyframes.append(Dictionary(keyframe2, m_isolate));
     jsKeyframes.append(Dictionary(keyframe3, m_isolate));
 
-    RefPtrWillBeRawPtr<AnimationEffect> animationEffect ALLOW_UNUSED = EffectInput::convert(element.get(), jsKeyframes, exceptionState);
+    EffectInput::convert(element.get(), jsKeyframes, exceptionState);
     EXPECT_TRUE(exceptionState.hadException());
     EXPECT_EQ(InvalidModificationError, exceptionState.code());
 }
