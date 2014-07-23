@@ -67,7 +67,7 @@ bool VolumeController::HandleVolumeDown(const ui::Accelerator& accelerator) {
     audio_handler->SetOutputVolumePercent(0);
   } else {
     audio_handler->AdjustOutputVolumeByPercent(-kStepPercentage);
-    if (audio_handler->IsOutputVolumeBelowDefaultMuteLvel())
+    if (audio_handler->IsOutputVolumeBelowDefaultMuteLevel())
       audio_handler->SetOutputMute(true);
     else
       PlayVolumeAdjustSound();
