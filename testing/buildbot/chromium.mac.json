@@ -64,6 +64,7 @@
       "cc_unittests",
       "chromedriver_unittests",
       "crypto_unittests",
+      "extensions_unittests",
       "gpu_unittests",
       "url_unittests",
       "jingle_unittests",

@@ -15,6 +15,7 @@
       "crypto_unittests",
       "dbus_unittests",
       "display_unittests",
+      "extensions_unittests",
       "gcm_unit_tests",
       "gfx_unittests",
       "google_apis_unittests",

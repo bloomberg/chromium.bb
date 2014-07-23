@@ -130,6 +130,7 @@
       "chromedriver_unittests",
       "courgette_unittests",
       "crypto_unittests",
+      "extensions_unittests",
       "gfx_unittests",
       "gpu_unittests",
       "url_unittests",
