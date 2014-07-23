@@ -5735,7 +5735,7 @@ bool CSSPropertyParser::parseFlex(CSSParserValueList* args, bool important)
                 // We only allow 3 numbers without units if the last value is 0. E.g., flex:1 1 1 is invalid.
                 return false;
             }
-        } else if (!flexBasis && (arg->id == CSSValueAuto || (validUnit(arg, FLength | FPercent | FNonNeg) && !isFlexBasisMiddleArg(flexGrow, flexShrink, unsetValue, args->size()))))
+        } else if (!flexBasis && (arg->id == CSSValueAuto || validUnit(arg, FLength | FPercent | FNonNeg)) && !isFlexBasisMiddleArg(flexGrow, flexShrink, unsetValue, args->size()))
             flexBasis = parseValidPrimitive(arg->id, arg);
         else {
             // Not a valid arg for flex.

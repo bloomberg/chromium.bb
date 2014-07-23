@@ -9,7 +9,6 @@
 }
 
 .flexbox > div {
-    flex: 1 0% 1;
     width: 50px;
     background: yellow;
 }
@@ -17,9 +16,15 @@
 <script src="../../resources/check-layout.js"></script>
 <body onload="checkLayout('.flexbox')">
 <div class="flexbox">
-    <div data-expected-width="50"></div>
-    <div data-expected-width="50"></div>
-    <div data-expected-width="50"></div>
+    <div data-expected-width="50" style="flex: 1 0% 1"></div>
+    <div data-expected-width="50" style="flex: 1 0% 1"></div>
+    <div data-expected-width="50" style="flex: 1 0% 1"></div>
+</div>
+
+<div class="flexbox">
+    <div data-expected-width="50" style="flex: 1 auto 1"></div>
+    <div data-expected-width="50" style="flex: 1 auto 1"></div>
+    <div data-expected-width="50" style="flex: 1 auto 1"></div>
 </div>
 </body>
 </html>

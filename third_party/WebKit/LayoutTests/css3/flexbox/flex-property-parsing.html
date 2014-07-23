@@ -141,6 +141,10 @@ flexitem.style.webkitFlex = '1 3px 2'; // Invalid, return previous value.
 shouldBeEqualToString('flexitem.style.webkitFlex', '1.75 2 3px');
 shouldBeEqualToString('getComputedStyle(flexitem).webkitFlex', '1.75 2 3px');
 
+flexitem.style.webkitFlex = '1 auto 1'; // Invalid, return previous value.
+shouldBeEqualToString('flexitem.style.webkitFlex', '1.75 2 3px');
+shouldBeEqualToString('getComputedStyle(flexitem).webkitFlex', '1.75 2 3px');
+
 flexitem.style.webkitFlex = '3px 1 2';
 shouldBeEqualToString('flexitem.style.webkitFlex', '1 2 3px');
 shouldBeEqualToString('getComputedStyle(flexitem).webkitFlex', '1 2 3px');
