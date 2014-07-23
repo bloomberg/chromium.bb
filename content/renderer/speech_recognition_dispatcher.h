@@ -28,6 +28,9 @@ class SpeechRecognitionDispatcher : public RenderViewObserver,
   explicit SpeechRecognitionDispatcher(RenderViewImpl* render_view);
   virtual ~SpeechRecognitionDispatcher();
 
+  // Aborts all speech recognitions.
+  void AbortAllRecognitions();
+
  private:
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

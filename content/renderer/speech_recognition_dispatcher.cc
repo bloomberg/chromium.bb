@@ -35,6 +35,15 @@ SpeechRecognitionDispatcher::SpeechRecognitionDispatcher(
 SpeechRecognitionDispatcher::~SpeechRecognitionDispatcher() {
 }
 
+void SpeechRecognitionDispatcher::AbortAllRecognitions() {
+  for (HandleMap::iterator iter = handle_map_.begin();
+      iter != handle_map_.end();
+      ++iter) {
+    // OnEnd event will be sent to the SpeechRecognition object later.
+    abort(iter->second, recognizer_client_);
+  }
+}
+
 bool SpeechRecognitionDispatcher::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
