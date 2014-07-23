@@ -370,8 +370,9 @@ TEST_F(NetworkConnectionHandlerTest, ConnectWithCertificateSuccess) {
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
 }
 
+// Disabled, see http://crbug.com/396729.
 TEST_F(NetworkConnectionHandlerTest,
-       ConnectWithCertificateRequestedBeforeCertsAreLoaded) {
+       DISABLED_ConnectWithCertificateRequestedBeforeCertsAreLoaded) {
   net::CertificateList certs;
   ImportClientCertAndKey("websocket_client_cert.p12",
                          test_nssdb_.get(),
