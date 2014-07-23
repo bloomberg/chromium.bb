@@ -151,19 +151,13 @@ void ScreenOrientationController::setOrientation(ScreenOrientation* orientation)
 
 void ScreenOrientationController::lock(blink::WebScreenOrientationLockType orientation, blink::WebLockOrientationCallback* callback)
 {
-    if (!m_client) {
-        return;
-    }
-
+    ASSERT(m_client);
     m_client->lockOrientation(orientation, callback);
 }
 
 void ScreenOrientationController::unlock()
 {
-    if (!m_client) {
-        return;
-    }
-
+    ASSERT(m_client);
     m_client->unlockOrientation();
 }
 
