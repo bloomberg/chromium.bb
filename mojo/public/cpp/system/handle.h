@@ -174,7 +174,7 @@ class Handle {
     return value_ != kInvalidHandleValue;
   }
 
-  MojoHandle value() const { return value_; }
+  const MojoHandle& value() const { return value_; }
   MojoHandle* mutable_value() { return &value_; }
   void set_value(MojoHandle value) { value_ = value; }
 
